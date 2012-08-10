@@ -1,0 +1,98 @@
+Dimple Documentation
+==================
+
+About
+-----
+The Dimple Documentation is written in an asciidoc format.  This allows for 
+efficient integration with source control, relative ease of use for writers, 
+excellent latex integration and the ability to generate both pdf and html 
+documents.  The downside is that people contributing to the documentation 
+must install asciidoc and dblatex in order to test that their modifications 
+to the documentation will build.
+
+Requirements
+------------
+* dblatex - dblatex allows writers to embed latex within asciidoc documentaiton.
+* LaTeX - LaTeX provides an easy way to embed mathematical equations within 
+  	  documentation.
+* AsciiDoc - AsciiDoc converts files in AsciiDoc format into various formats 
+  	     including HTML and pdf.
+
+
+Ubuntu
+~~~~~~
+
+-----------------------------
+sudo apt-get install asciidoc
+sudo apt-get install dvipng
+sudo apt-get install dblatex
+-----------------------------
+
+Be sure to open a new terminal after doing all of this.
+
+Mac OS X
+~~~~~~~~
+
+To install all of these components you can use macports:
+
+-------------------------
+sudo port install dvi2png
+sudo port install asciidoc
+sudo port install dblatex
+-------------------------
+
+WARNING: Macports is a bit dangerous since it installs a lot of dependencies.  
+This can result in your machine containing parallel installations of various 
+packages.  
+
+Building the Documentation
+--------------------------
+
+.Cleaning out the documentation
+
+The following command removes the output directory as well as the pdfs.
+
+----
+python builddoc.py -c
+----
+
+.Building the user documentation as a pdf
+
+----
+python builddoc.py -u -p
+----
+
+.Building the user documentation as HTML
+
+----
+python builddoc.py -u -x
+----
+
+.Building the user documentation with nicer formatting
+
+----
+python builddoc.py -u -n
+----
+
+.Building Developer Documentation as pdf
+
+----
+python builddoc.py -d -p
+----
+
+The developer documentation takes the same flags as the user documentation
+
+.Multiple commands
+
+----
+python builddoc.py -c -d -u -n -x -p
+----
+
+This will first run a clean and then build the user and developer doc as both 
+nice HTML and pdf
+
+Generated Files
+---------------
+All documentation files are generated in the "output" directory.  The pdfs 
+(if they are created) are copied to the same directory that contains this 
+README.

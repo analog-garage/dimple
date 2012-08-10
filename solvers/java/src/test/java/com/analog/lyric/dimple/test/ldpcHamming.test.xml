@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ldpcHamming.test>
+    <version version="02.00.00"/>
+    <graph edgedefault="undirected" explicitName="graph"
+        id="8c1fbcdb-944a-4a41-bda9-246db3b53087"
+        numBoundaryVariables="0" solverClass="com.lyricsemi.dimple.solvers.llr.minsum.Solver">
+        <node belief="0.5 0.5 " class="Discrete" explicitName="v0"
+            id="0c7114f3-e06c-4560-87a4-2a7f7a83097a" input="0.5 0.5 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v1"
+            id="d36e964b-9ee1-41f4-9e93-db3b33756910"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v2"
+            id="2d9b5c61-1591-4fa2-8416-7a35c8380821" input="10.0 -9.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="0.5 0.5 " class="Discrete" explicitName="v3"
+            id="b3076dcf-da0f-48b6-8195-b3d7ddcf85b3" input="0.5 0.5 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v4"
+            id="3121644d-335f-4bf4-b21a-24560f578ea0"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="0.5 0.5 " class="Discrete" explicitName="v5"
+            id="e5fac308-bf62-4701-87b6-b751d2d1bb65" input="0.5 0.5 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v6"
+            id="4596777d-e66e-4c02-b902-bc091a179d28"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v7"
+            id="912e8230-aceb-49bf-837b-85c4021dda34"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v8"
+            id="8a8698a0-1955-4ae2-8914-c813b8fdd547"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node belief="NaN NaN " class="Discrete" explicitName="v9"
+            id="c986d847-05f3-4758-8824-edcdbf4355c4"
+            input="-10.0 11.0 " type="Variable">
+            <domain>
+                <domain_element value="1.0"/>
+                <domain_element value="0.0"/>
+            </domain>
+        </node>
+        <node class="xorDelta" comboTable="2069766375" explicitName="f0"
+            id="edb57475-89fd-4c53-bca4-1e1188c68bdc" numEdges="3" type="Function"/>
+        <edge source="edb57475-89fd-4c53-bca4-1e1188c68bdc" srcIdx="0" target="0c7114f3-e06c-4560-87a4-2a7f7a83097a"/>
+        <edge source="edb57475-89fd-4c53-bca4-1e1188c68bdc" srcIdx="1" target="d36e964b-9ee1-41f4-9e93-db3b33756910"/>
+        <edge source="edb57475-89fd-4c53-bca4-1e1188c68bdc" srcIdx="2" target="2d9b5c61-1591-4fa2-8416-7a35c8380821"/>
+        <node class="xorDelta" comboTable="1623350519" explicitName="f1"
+            id="f1472f3d-058c-4c73-87c5-1fb8d864bf3b" numEdges="3" type="Function"/>
+        <edge source="f1472f3d-058c-4c73-87c5-1fb8d864bf3b" srcIdx="0" target="b3076dcf-da0f-48b6-8195-b3d7ddcf85b3"/>
+        <edge source="f1472f3d-058c-4c73-87c5-1fb8d864bf3b" srcIdx="1" target="3121644d-335f-4bf4-b21a-24560f578ea0"/>
+        <edge source="f1472f3d-058c-4c73-87c5-1fb8d864bf3b" srcIdx="2" target="2d9b5c61-1591-4fa2-8416-7a35c8380821"/>
+        <node class="xorDelta" comboTable="2019921345" explicitName="f2"
+            id="8eecbda2-b3fd-4d5b-a3e9-6da342af563e" numEdges="3" type="Function"/>
+        <edge source="8eecbda2-b3fd-4d5b-a3e9-6da342af563e" srcIdx="0" target="e5fac308-bf62-4701-87b6-b751d2d1bb65"/>
+        <edge source="8eecbda2-b3fd-4d5b-a3e9-6da342af563e" srcIdx="1" target="4596777d-e66e-4c02-b902-bc091a179d28"/>
+        <edge source="8eecbda2-b3fd-4d5b-a3e9-6da342af563e" srcIdx="2" target="912e8230-aceb-49bf-837b-85c4021dda34"/>
+        <node class="xorDelta" comboTable="1396553639" explicitName="f3"
+            id="89371128-bf73-41fb-80dd-078108374248" numEdges="3" type="Function"/>
+        <edge source="89371128-bf73-41fb-80dd-078108374248" srcIdx="0" target="e5fac308-bf62-4701-87b6-b751d2d1bb65"/>
+        <edge source="89371128-bf73-41fb-80dd-078108374248" srcIdx="1" target="d36e964b-9ee1-41f4-9e93-db3b33756910"/>
+        <edge source="89371128-bf73-41fb-80dd-078108374248" srcIdx="2" target="2d9b5c61-1591-4fa2-8416-7a35c8380821"/>
+        <node class="xorDelta" comboTable="2028232610" explicitName="f4"
+            id="33e8cc0b-bed1-4dbf-9814-22fde613ba88" numEdges="3" type="Function"/>
+        <edge source="33e8cc0b-bed1-4dbf-9814-22fde613ba88" srcIdx="0" target="b3076dcf-da0f-48b6-8195-b3d7ddcf85b3"/>
+        <edge source="33e8cc0b-bed1-4dbf-9814-22fde613ba88" srcIdx="1" target="8a8698a0-1955-4ae2-8914-c813b8fdd547"/>
+        <edge source="33e8cc0b-bed1-4dbf-9814-22fde613ba88" srcIdx="2" target="912e8230-aceb-49bf-837b-85c4021dda34"/>
+        <node class="xorDelta" comboTable="1497547439" explicitName="f5"
+            id="a523f816-5a59-4170-adb7-5839cad67577" numEdges="3" type="Function"/>
+        <edge source="a523f816-5a59-4170-adb7-5839cad67577" srcIdx="0" target="0c7114f3-e06c-4560-87a4-2a7f7a83097a"/>
+        <edge source="a523f816-5a59-4170-adb7-5839cad67577" srcIdx="1" target="c986d847-05f3-4758-8824-edcdbf4355c4"/>
+        <edge source="a523f816-5a59-4170-adb7-5839cad67577" srcIdx="2" target="3121644d-335f-4bf4-b21a-24560f578ea0"/>
+        <comboTables>
+            <ComboTable function="xorDelta" id="1497547439">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+            <ComboTable function="xorDelta" id="2028232610">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+            <ComboTable function="xorDelta" id="2019921345">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+            <ComboTable function="xorDelta" id="1396553639">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+            <ComboTable function="xorDelta" id="1623350519">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+            <ComboTable function="xorDelta" id="2069766375">
+                <size columns="3" rows="4"/>
+                <indices>
+                    <entry column="0" pretty="r:c:v [0][0][1]" row="0" value="1"/>
+                    <entry column="1" pretty="r:c:v [0][1][0]" row="0" value="0"/>
+                    <entry column="2" pretty="r:c:v [0][2][0]" row="0" value="0"/>
+                    <entry column="0" pretty="r:c:v [1][0][0]" row="1" value="0"/>
+                    <entry column="1" pretty="r:c:v [1][1][1]" row="1" value="1"/>
+                    <entry column="2" pretty="r:c:v [1][2][0]" row="1" value="0"/>
+                    <entry column="0" pretty="r:c:v [2][0][0]" row="2" value="0"/>
+                    <entry column="1" pretty="r:c:v [2][1][0]" row="2" value="0"/>
+                    <entry column="2" pretty="r:c:v [2][2][1]" row="2" value="1"/>
+                    <entry column="0" pretty="r:c:v [3][0][1]" row="3" value="1"/>
+                    <entry column="1" pretty="r:c:v [3][1][1]" row="3" value="1"/>
+                    <entry column="2" pretty="r:c:v [3][2][1]" row="3" value="1"/>
+                </indices>
+                <values>
+                    <value row="0" value="1.000000"/>
+                    <value row="1" value="1.000000"/>
+                    <value row="2" value="1.000000"/>
+                    <value row="3" value="1.000000"/>
+                </values>
+                <domains>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                    <domain>
+                        <domain_element value="1.0"/>
+                        <domain_element value="0.0"/>
+                    </domain>
+                </domains>
+            </ComboTable>
+        </comboTables>
+    </graph>
+</ldpcHamming.test>

@@ -1,0 +1,85 @@
+package com.analog.lyric.dimple.solvers.core;
+
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+
+public abstract class SFactorBase implements ISolverFactor 
+{
+	protected Factor _factor;
+	
+	public SFactorBase(Factor factor)
+	{
+		_factor = factor;
+	}
+	
+	public Factor getFactor()
+	{
+		return _factor;
+	}
+
+	public void initialize()  
+	{
+		
+	}
+
+	public void update()  
+	{
+		for (int i = 0; i < _factor.getPorts().size(); i++)
+			updateEdge(i);
+		
+	}
+	
+	public Object getDefaultMessage(Port port) 
+	{
+		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
+		SVariableBase v = (SVariableBase)var.getSolver();
+		return v.getDefaultMessage(port);
+	}
+
+	public double [] getBelief() 
+	{
+		throw new DimpleException("not supported");
+	}
+
+	public ISolverFactorGraph getParentGraph()
+	{
+		ISolverFactorGraph graph = null;
+		FactorGraph mgraph = _factor.getParentGraph();
+		if(mgraph != null)
+		{
+			graph = mgraph.getSolver();
+		}
+		return graph;
+	}
+	public ISolverFactorGraph getRootGraph()
+	{
+		ISolverFactorGraph graph = null;
+		FactorGraph mgraph = _factor.getRootGraph();
+		if(mgraph != null)
+		{
+			graph = mgraph.getSolver();
+		}
+		return graph;
+	}
+
+	@Override
+	public int[][] getPossibleBeliefIndices()  {
+		// TODO Auto-generated method stub
+		throw new DimpleException("not implemented");
+	}
+	
+	@Override
+	public double getEnergy()  
+	{
+		throw new DimpleException("getEnergy not yet supported for GaussianConstMult");
+	}
+
+	public void connectPort(Port p) 
+	{
+		
+	}
+}

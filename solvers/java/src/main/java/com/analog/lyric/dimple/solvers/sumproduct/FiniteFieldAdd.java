@@ -1,0 +1,134 @@
+package com.analog.lyric.dimple.solvers.sumproduct;
+
+import java.util.ArrayList;
+
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.solvers.core.SFactorBase;
+
+
+
+public class FiniteFieldAdd extends SFactorBase
+{
+	
+	public FiniteFieldAdd(com.analog.lyric.dimple.model.Factor factor) 
+	{
+		super(factor);
+		if (factor.getPorts().size() != 3)
+			throw new DimpleException("Only supports 3 arguments");
+
+	}	
+
+	public void updateEdge(int outPortNum) 
+	{
+		double [] inputs1 = null;
+		double [] inputs2 = null;
+		double [] outputs = null;
+				
+		ArrayList<Port> ports = _factor.getPorts();
+		Port port;
+
+		for (int i = 0; i < 3; i++)
+		{
+			port = ports.get(i);
+			if (outPortNum == i)
+			{
+				outputs = (double[])port.getOutputMsg();
+			}
+			else
+			{
+				if (inputs1 == null)
+					inputs1 = (double[])port.getInputMsg();
+				else
+					inputs2 = (double[])port.getInputMsg();
+			}
+		}
+
+		inputs1 = inputs1.clone();
+		inputs2 = inputs2.clone();
+		
+		//TODO: fix this.
+		int n = (int) (Math.log(inputs1.length)/Math.log(2));
+
+		double [] tmp1 = new double[inputs1.length];
+		double [] tmp2 = new double[inputs2.length];
+		double [] tmp3 = new double[outputs.length];
+
+		//Fast hadamard input 1 probs
+		fast_hadamard(n,inputs1, tmp1);
+		fast_hadamard(n,inputs2, tmp2);
+
+		//Point-wise multiply values
+		for (int i = 0; i < outputs.length; i++)
+		{
+			tmp3[i] = tmp1[i]*tmp2[i];
+		}
+
+
+		//Fast hadamard result
+		fast_hadamard(n,tmp3,outputs);
+		double sum = 0;
+		for (int i = 0; i < outputs.length; i++)
+			sum += outputs[i];
+		for (int i = 0; i < outputs.length; i++)
+		{
+			if (outputs[i] < 0)
+				outputs[i] = 0;
+			else
+				outputs[i] /= sum;
+		}
+		
+	}
+
+
+	//TODO: can we do this in place?
+	public static void fast_hadamard(int n, double [] in, double [] out)
+	{
+		int i, bit, flip_bit;
+		int leftmask, rightmask, leftshifted, ind0, ind1;
+		double [] tmp;
+		for (bit=0;bit<n;bit++)
+		{
+			flip_bit=1<<bit;
+			
+			for (leftmask=0;leftmask< (1<<(n-bit-1));leftmask++)
+			{
+				leftshifted=leftmask<<(bit+1);
+				for (rightmask=0;rightmask< (1<<bit); rightmask++)
+				{
+					ind0=leftshifted | rightmask;
+					ind1=leftshifted | rightmask | flip_bit;
+					out[ind0]=in[ind0]+in[ind1];
+					out[ind1]=in[ind0]-in[ind1];
+				}
+			}
+			
+			tmp=in;
+			in=out;
+			out=tmp;
+		} 
+
+		/* If "n" is even, then we need to copy "out" to "in" to make the
+		     output appear in the correct array. */
+		if ((n&1) == 0){
+			for (i=0;i< (1<<n);i++){
+				out[i]=in[i];
+			}
+		}
+
+	}
+
+	@Override
+	public void initialize() 
+	{
+		
+	}
+
+	@Override
+	public double getEnergy()  
+	{
+		throw new DimpleException("getEnergy not yet supported for FiniteFieldAdd");
+	}
+
+
+}

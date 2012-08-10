@@ -1,0 +1,65 @@
+apply plugin: 'java'
+
+defaultTasks 'build'
+
+repositories {
+  mavenCentral()
+  maven {
+    url "http://mbari-maven-repository.googlecode.com/svn/repository/"
+  }
+  maven {
+    url "http://www.array.ca/nest-web/maven/"
+  }
+
+}
+
+configurations {
+  jarfiles
+}
+
+dependencies
+{
+  myjars = [
+    "org.apache.commons:commons-math:2.2",
+    "edu.emory.mathcs:jtransforms:2.3",
+    "jama:jama:1.0.2"
+  ]
+  for (j in myjars)
+  {
+    compile(j)
+    jarfiles(j)
+  }
+
+
+  testCompile 'junit:junit:4.8.2'
+  
+}
+
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.output
+}
+
+task('copyjars', type: Copy) {
+  from configurations.jarfiles
+  into file('../lib')
+}
+
+task copyJarsForEclipse(type: Copy) {
+  from configurations.jarfiles
+  into file('build/external-libs')
+}
+
+task(copydimplejar,type: Copy) {
+  from(file('build/libs/dimple.jar'))
+  into(file('../lib'))
+}
+
+
+clean {
+  delete '../lib'
+  delete 'jarsforeclipse'
+}
+
+build.dependsOn copyjars, copydimplejar, testJar, copyJarsForEclipse
+

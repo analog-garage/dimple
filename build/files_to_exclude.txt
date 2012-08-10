@@ -1,0 +1,27 @@
+build
+theory
+disclosure
+solvers/cpp
+solvers/examples
+solvers/java
+tools
+modelers/python
+doc/dimple_uml.ldb
+doc/Dimple_Figures.pptx
+modelers/matlab/demo/04_Factorizer
+modelers/matlab/demo/05_MultipleSudoku
+modelers/matlab/demo/06_SoftAdder
+modelers/matlab/demo/10_SquareRoot
+modelers/matlab/demo/16_equalizer/exampleC
+modelers/matlab/lyric
+modelers/matlab/demo/02_LDPC
+modelers/matlab/tests/algoLlrMinSumLyric
+legal/Lyric Semiconductor - Dimple - Research Use License Agreement.pdf
+doc/DimpleUserDocumentation.txt
+doc/DimpleDeveloperDocumentation.txt
+doc/DimpleDeveloperDocumentation.pdf
+doc/README
+doc/README.pdf
+doc/output
+doc/images
+doc/builddoc.py

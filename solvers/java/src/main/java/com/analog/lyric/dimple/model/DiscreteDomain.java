@@ -1,0 +1,80 @@
+package com.analog.lyric.dimple.model;
+
+import java.util.Arrays;
+
+
+public class DiscreteDomain extends Domain 
+{
+	private Object [] _elements;
+	
+	public DiscreteDomain(Object ... elements)
+	{
+		//TODO: should we check for uniqueness?
+		_elements = elements;
+	}
+	
+	public Object [] getElements()
+	{
+		return _elements;
+	}
+
+	@Override
+	public boolean isDiscrete() 
+	{
+		// TODO Auto-generated method stub
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(this._elements);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		
+		if (obj == null)
+			return false;
+		
+		if (!(obj instanceof DiscreteDomain))
+			return false;
+		
+		DiscreteDomain other = (DiscreteDomain) obj;
+		if (!Arrays.equals(this._elements, other._elements))
+			return false;
+		return true;
+	}
+
+	public int size()
+	{
+		return getElements().length;
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder(String.format("DiscreteDomain - %d elements - ", _elements != null ? _elements.length : 0));
+		if(_elements != null)
+		{
+			for (int i = 0; i < _elements.length; i++)
+			{
+				sb.append(String.format("type: %s value:%s" 
+						,_elements[i] != null ? _elements[i].getClass() : "null"
+						,_elements[i] != null ? _elements[i].toString() : "null"));
+				if (i < _elements.length-1)
+					sb.append(", ");
+			}
+		}
+		return sb.toString();
+	}
+	
+	public boolean isJoint()
+	{
+		return false;
+	}
+
+}

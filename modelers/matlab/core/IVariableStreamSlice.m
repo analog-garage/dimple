@@ -1,0 +1,3 @@
+classdef IVariableStreamSlice < handle
+    
+end

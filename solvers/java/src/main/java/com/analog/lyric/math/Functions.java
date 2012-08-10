@@ -1,0 +1,50 @@
+package com.analog.lyric.math;
+
+public class Functions 
+{
+	private static class ApproximateFactorialHelper
+	{
+		private static int CACHE_SIZE = 100;
+		private double [] _cache = new double[CACHE_SIZE];
+		
+		public double run(int n)
+		{
+			n = Math.abs(n);
+			
+			if (n < CACHE_SIZE)
+				return getFromCache(n);
+			else
+			{
+				//stirling
+				//log(n!)=nlog(n) - n +1/2 log(2pi n)+ 1/(12 n)
+				return n*Math.log(n)- n + 1.0/2.0*Math.log(2.0*Math.PI*n) + 1.0/(12.0*n);
+			}
+		}
+		
+		public double getFromCache(int n)
+		{
+			if (n <= 2)
+			{
+				_cache[2] = Math.log(n);
+				return _cache[n];
+			}
+			else
+			{
+				if (_cache[n] == 0)
+				{
+					_cache[n] = getFromCache(n-1)+ Math.log(n);
+				}
+				return _cache[n];
+			}
+		}
+	}
+	private static ApproximateFactorialHelper _factorialHelper;
+	
+	public static double logfactorial(int n)
+	{
+		if (_factorialHelper == null)
+			_factorialHelper = new ApproximateFactorialHelper();
+		
+		return _factorialHelper.run(n);
+	}
+}

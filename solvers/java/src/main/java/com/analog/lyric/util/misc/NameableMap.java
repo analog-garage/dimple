@@ -1,0 +1,97 @@
+package com.analog.lyric.util.misc;
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.INameable;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.UUID;
+
+public class NameableMap implements Iterable<INameable>
+{
+	private HashMap<String, INameable> _nameMap = null;
+	private HashMap<UUID, INameable> _UUIDMap = null;
+	private ArrayList<INameable> _list = null;
+	
+	public NameableMap() 
+	{
+		this(null);
+	}
+	public NameableMap(Collection<INameable> collection) 
+	{
+		_nameMap = new HashMap<String, INameable>();
+		_UUIDMap = new HashMap<UUID, INameable>();
+		_list = new ArrayList<INameable>();
+		
+		if(collection != null)
+		{
+			for(INameable n : collection)
+			{
+				add(n);
+			}
+		}
+	}
+	
+	public String toString()
+	{
+		String s = String.format("NameableMap %d - %d - %d\n"
+				,_nameMap.size()
+				,_UUIDMap.size()
+				,_list.size());
+		for(INameable n : _list)
+		{
+			s += "\t" + n.getQualifiedLabel() + "\n";
+		}
+		return s;
+	}
+	
+	public void add(INameable n) 
+	{
+		if(_nameMap.containsKey(n.getName()))
+		{
+			throw new DimpleException("ERROR: name [" + n.getName() + 
+								"] already in map with type [" +
+								_nameMap.get(n.getName()).getClass().toString() +
+								"] - tried to add with type [" +
+								n.getClass().toString() + 
+								"]");
+			
+		}
+		if(_UUIDMap.containsKey(n.getUUID()))
+		{
+			throw new DimpleException(
+					"\nERROR: incoming UUID [" + 
+					n.getUUID().toString() + 
+					"] already in map. \nIncoming Name: [" + 
+					n.getQualifiedLabel() + 
+					"]\nName in map:   [" +
+					_UUIDMap.get(n.getUUID()).getQualifiedLabel() + 
+					"]\nMap string: [\n" + 
+					this.toString() + "]");
+		}
+		_nameMap.put(n.getName(), n);
+		_UUIDMap.put(n.getUUID(), n);
+		_list.add(n);
+	}
+	
+	public INameable get(String name)
+	{
+		return _nameMap.get(name);
+	}
+
+	public INameable get(UUID uuid)
+	{
+		return _UUIDMap.get(uuid);
+	}
+	
+	public Iterator<INameable> iterator()
+	{
+		return _list.iterator();
+	}
+	
+	public int size()
+	{
+		return _nameMap.size();
+	}
+}

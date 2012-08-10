@@ -1,0 +1,66 @@
+package com.analog.lyric.dimple.FactorFunctions.core;
+
+import java.util.ArrayList;
+
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Domain;
+
+public class JointFactorFunction extends FactorFunction
+{
+	private FactorFunctionBase _factor1;
+	private FactorFunctionBase _factor2;
+	private ArrayList<Integer> _inputsForFf1;
+	private ArrayList<Integer> _inputsForFf2;
+	private int _newNumInputs;
+
+	public JointFactorFunction(String name,FactorFunctionBase ff1, FactorFunctionBase ff2,
+			ArrayList<Integer> inputsForFf1, ArrayList<Integer> inputsForFf2) 
+	{
+		super(name);
+		
+		_newNumInputs = 0;
+		for (int i = 0; i < inputsForFf1.size(); i++)
+			if (_newNumInputs < (inputsForFf1.get(i)+1))
+				_newNumInputs = inputsForFf1.get(i)+1;
+		for (int i = 0; i < inputsForFf2.size(); i++)
+			if (_newNumInputs < (inputsForFf2.get(i)+1))
+				_newNumInputs = inputsForFf2.get(i)+1;
+		
+		_factor1 = ff1;
+		_factor2 = ff2;
+		_inputsForFf1 = inputsForFf1;
+		_inputsForFf2 = inputsForFf2;
+		
+	}
+
+	@Override
+	public double eval(Object... input) 
+	{
+		//Make sure length of inputs is correct
+		if (input.length != _newNumInputs)
+			throw new DimpleException("expected " + _newNumInputs + " args");
+		
+		//map inputs to input for factor function 1 and factor function 2
+		Object [] input1 = new Object[_inputsForFf1.size()];
+		for (int i = 0; i < _inputsForFf1.size(); i++)
+			input1[i] = input[_inputsForFf1.get(i)];
+		
+		Object [] input2 = new Object[_inputsForFf2.size()];
+		for (int i = 0; i < _inputsForFf2.size(); i++)
+			input2[i] = input[_inputsForFf2.get(i)];
+		
+		
+		double prod =  _factor1.eval(input1)*_factor2.eval(input2);
+		return prod;
+	}
+	
+	//TODO: we should override the function that generates a combo table and build a combo table
+	//     more efficiently.
+	@Override
+    public FactorTable getFactorTable(Domain [] domainList)
+    {
+		return super.getFactorTable(domainList);
+    }
+	
+
+}

@@ -1,0 +1,115 @@
+package com.analog.lyric.collect.tests;
+
+import static org.junit.Assert.*;
+
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import com.analog.lyric.collect.SkipMap;
+
+public class SkipMapTester<K, V> extends MapTester<K, V>
+{
+	public SkipMapTester()
+	{
+		super();
+	}
+	
+	@Override
+	public void validateMap(Map<K,V> map)
+	{
+		if (map instanceof SkipMap)
+		{
+			this.validateSkipMap((SkipMap<K, V>) map);
+		}
+		else
+		{
+			super.validateMap(map);
+		}
+	}
+	
+	public void validateSkipMap(SkipMap<K,V> map)
+	{
+		super.validateMap(map);
+		
+		Map.Entry<K,V> firstEntry = map.firstEntry();
+		Map.Entry<K,V> lastEntry = map.lastEntry();
+		
+		assertEquals(map.isEmpty(), firstEntry == null);
+		assertEquals(map.isEmpty(), lastEntry == null);
+
+		if (map.isEmpty())
+		{
+			try
+			{
+				map.firstKey();
+				fail("Expected NoSuchElementException");
+			}
+			catch (NoSuchElementException ex) {}
+			
+			try
+			{
+				map.lastKey();
+				fail("Expected NoSuchElementException");
+			}
+			catch (NoSuchElementException ex) {}
+
+			assertNull(map.pollFirstEntry());
+			assertNull(map.pollLastEntry());
+		}
+		else
+		{
+			assertEquals(map.firstKey(), firstEntry.getKey());
+			assertEquals(map.lastKey(), lastEntry.getKey());
+		}
+		
+		Map.Entry<K, V> prevEntry = null;
+		for (K key : map.keySet())
+		{
+			assertTrue(map.containsKey2(key));
+			
+			V value = map.get(key);
+			assertEquals(value, map.get2(key));
+			
+			Map.Entry<K, V> entry = map.floorEntry(key);
+			assertNotNull(entry);
+			assertEquals(key, entry.getKey());
+			assertEquals(value, entry.getValue());
+			assertEquals(key, map.floorKey(key));
+			
+			entry = map.ceilingEntry(key);
+			assertEquals(key, entry.getKey());
+			assertEquals(value, entry.getValue());
+			assertEquals(key, map.ceilingKey(key));
+			
+			if (prevEntry == null)
+			{
+				assertEquals(key, map.firstKey());
+				assertNull(map.lowerEntry(key));
+				assertNull(map.lowerKey(key));
+			}
+			else
+			{
+				K prevKey = prevEntry.getKey();
+				assertEquals(prevKey, map.lowerKey(key));
+				assertEquals(key, map.higherKey(prevKey));
+				
+				Map.Entry<K,V> lowerEntry = map.lowerEntry(key);
+				assertEquals(prevKey, lowerEntry.getKey());
+				assertEquals(prevEntry.getValue(), lowerEntry.getValue());
+				
+				Map.Entry<K,V> higherEntry = map.higherEntry(prevKey);
+				assertEquals(key, higherEntry.getKey());
+				assertEquals(value, higherEntry.getValue());
+			}
+			
+			prevEntry = entry;
+		}
+		
+		if (prevEntry != null)
+		{
+			K lastKey = prevEntry.getKey();
+			
+			assertNull(map.higherKey(lastKey));
+		}
+	}
+}

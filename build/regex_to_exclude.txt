@@ -1,0 +1,10 @@
+.*\.svn$
+.*\.git*
+.*\.DS_Store$
+.*\.doc$
+.*\.docx$
+.*\.zargo$
+.*\.eap$
+testDimpleexitDone
+\.classpath$
+\.project$

@@ -1,0 +1,87 @@
+package com.analog.lyric.dimple.schedulers;
+
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+
+/**
+ * @author jeffb
+ * 
+ *         The class generates a flooding schedule on a graph.
+ * 
+ *         This scheduler respects any schedulers already assigned to
+ *         sub-graphs. That is, if a sub-graph already has a scheduler
+ *         associated with it, that scheduler will be used for that sub-graph
+ *         instead of this one.
+ * 
+ *         Implements setSubGraphScheduler method, which allows modifying the
+ *         default scheduler used for sub-graphs. This is useful in cases where
+ *         this scheduler is used as a fall-back to a different scheduler.
+ */
+public class FloodingScheduler implements IScheduler
+{	
+	@SuppressWarnings("all")
+	protected Class _subGraphSchedulerClass = FloodingScheduler.class;
+
+	
+	@SuppressWarnings("unchecked")
+	public ISchedule createSchedule(FactorGraph factorGraph) 
+	{
+		FixedSchedule schedule = new FixedSchedule();
+
+		// Update all the variables
+		for (VariableBase v : factorGraph.getVariablesTop())
+			schedule.add(new NodeScheduleEntry(v));
+		
+		// Include boundary variables only if there's no parent to do it
+		if (!factorGraph.hasParentGraph())
+			for (VariableBase v : factorGraph.getBoundaryVariables())
+				schedule.add(new NodeScheduleEntry(v));
+		
+		// Update all the function nodes
+		for (Factor f : factorGraph.getNonGraphFactorsTop())
+			schedule.add(new NodeScheduleEntry(f));
+		
+		// Update all the sub-graphs
+		for (FactorGraph sg : factorGraph.getNestedGraphs())
+			if (sg.getAssociatedScheduler() != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
+			{
+				ISchedule tmp = sg.getAssociatedScheduler().createSchedule(sg);
+				tmp.attach(sg);
+				schedule.add(tmp);
+			}
+			else										// Otherwise, create a new schedule for the sub-graph too (flooding by default)
+			{
+				ISchedule tmp=null;
+				try {
+					tmp = ((IScheduler)_subGraphSchedulerClass.getConstructor().newInstance()).createSchedule(sg);
+				} catch (Exception e) {
+					throw new DimpleException("could not instantiate scheduler class");
+				}
+				tmp.attach(sg);
+				schedule.add(tmp);
+			}
+
+		return schedule;
+	}
+	
+	
+	@SuppressWarnings("all")
+	public void setSubGraphScheduler(Class schedulerClass)
+	{
+		_subGraphSchedulerClass = schedulerClass;
+	}
+
+
+//	@Override
+//	public ISchedule createSchedule(com.lyricsemi.dimple.schedulers.FactorGraph g)
+//			 {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+
+}

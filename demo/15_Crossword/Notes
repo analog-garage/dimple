@@ -1,0 +1,16 @@
+There is a semi-standard online format for storing crossword puzzles,
+with a *.puz suffix.  The format is described (well,
+reverse-engineered) here:
+    http://code.google.com/p/puz/wiki/FileFormat
+There is a fixed-length header, 
+a variable-length section with the answer to the puzzle along with the black squares,
+and the questions.
+
+More specifically, the fixed-length header is 52 (0x34) bytes long.  These
+include some useful fields: 
+  At byte 0x2C, that byte is the width
+  At byte 0x2D, that byte is the length
+
+Assuming width W and length L, there are 2LW bytes defining the
+crossword (one copy with the answers, followed by one copy with
+blanks, to store partial state).

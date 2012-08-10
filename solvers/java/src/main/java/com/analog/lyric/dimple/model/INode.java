@@ -1,0 +1,100 @@
+package com.analog.lyric.dimple.model;
+
+import java.util.ArrayList;
+
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.MapList;
+
+
+public interface INode  extends INameable
+{
+	/**
+	 * If node is a {@link Factor} returns it, otherwise null.
+	 * @see #isFactor()
+	 */
+	public Factor asFactor();
+	
+	/**
+	 * If node is a {@link FactorGraph} returns it, otherwise null.
+	 * @see #isFactorGraph()
+	 */
+	public FactorGraph asFactorGraph();
+	
+	/**
+	 * If node is a {@link VariableBase} returns it, otherwise null.
+	 * @see #isVariable()
+	 */
+	public VariableBase asVariable();
+	
+	/**
+	 * True if this is a {@link Factor}.
+	 * @see #asFactor()
+	 */
+	public boolean isFactor();
+	
+	/**
+	 * True if this is a {@link FactorGraph}.
+	 * @see #asFactorGraph()
+	 */
+	public boolean isFactorGraph();
+	
+	/**
+	 * True if this is a {@link VariableBase}
+	 * @see #asVariable()
+	 */
+	public boolean isVariable();
+
+    public ArrayList<Port> getPorts();
+    public MapList<INode> getConnectedNodes();
+    public MapList<INode> getConnectedNodes(int relativeNestingDepth);
+    public MapList<INode> getConnectedNodesFlat();
+    public MapList<INode> getConnectedNodesTop();
+
+    //TODO: should these only be on solver?
+    public void update() ;
+	public void updateEdge(int outPortNum) ;
+	
+	public ISolverNode getSolver();
+	
+	public void setParentGraph(FactorGraph parentGraph) ;
+	public FactorGraph getParentGraph();
+	public FactorGraph getRootGraph();
+	public boolean hasParentGraph();
+	public int getPortNum(INode node) ;
+	
+	/**
+	 * Returns the ancestor of this node at the specified height, where height zero
+	 * refers to the immediate parent of the node returned by {@link #hasParentGraph}.
+	 * Returns null if {@code height} is greater than the distance between this node
+	 * and the root graph.
+	 * <p>
+	 * When this returns a non-null value, then the following should be true:
+	 * <pre>
+	 *    n.getDepthBelowAncestor(n.getAncestorAtHeight(h)) == h
+	 * </pre>
+	 * @see #getDepthBelowAncestor
+	 */
+	FactorGraph getAncestorAtHeight(int height);
+	
+	/**
+	 * Returns the node's depth below the root {@link FactorGraph}, the number
+	 * of graphs visited when walking through the chain of {@link #getParentGraph()}s.
+	 */
+	public int getDepth();
+	
+	/**
+	 * Returns the depth of the node relative to the given {@code ancestor}. It is the
+	 * number of graphs between the node and the {@code ancestor} graph when walking through
+	 * the chain of {@link #getParentGraph()}. Returns 0 if {@code ancestor} is parent
+	 * of this node. Returns the negative depth minus one if {@code ancestor} is not an ancestor
+	 * of this node.
+	 * <p>
+	 * When this returns a non-negative value, then the following should be true:
+	 * <pre>
+	 *   n.getAncestorAtHeight(n.getDepthBelowAncestor(g)) == g
+	 * </pre>
+	 * @see #getAncestorAtHeight
+	 */
+	public int getDepthBelowAncestor(FactorGraph ancestor);
+	
+}
