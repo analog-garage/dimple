@@ -72,7 +72,7 @@ class Builder:
         mfiles_to_keep_file_name = 'mfiles_to_keep.txt'
         mfiles_not_to_copyright_file_name = 'mfiles_not_to_copyright.txt'
 
-        dest_file_name = progName + '_v' + file(versionFile).readlines()[0].replace('.','_')
+        dest_file_name = progName + '_v' + file(versionFile).readlines()[0].replace('.','_').rstrip()
 
         self.main(exclude_file_name,regex_exclude_file_name,
              mfiles_to_keep_file_name,
