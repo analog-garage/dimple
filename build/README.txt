@@ -1,8 +1,7 @@
-The current supported Dimple kit builder is newBuild.py.
 
 Instructions:
-1) execute the installer by typing python newBuild.py
-   optionally you can do "newBuild.py -t" if you want tests to run
+1) execute the installer by typing python build.py
+   optionally you can do "build.py -t" if you want tests to run
 2) The resulting zip file will reside in this directory and will be called
    dimple_v<version num>.zip
 3) The zip file can be copied anywhere and users will simply have to
@@ -25,7 +24,3 @@ There are four main text files that can be used to modify the kit:
 			     be included here so that we do not modify
 			     open source files.
 
-Legacy:
-buildDimpleKit.py and installDimple.py have been left in this directory 
-temporarily.  Me may eventually remove them or merge them with
-newBuild.py
