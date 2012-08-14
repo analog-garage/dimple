@@ -21,8 +21,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	public void updateEdge(int outPortNum)
 	{
 		ArrayList<Port> ports = _factor.getPorts();
-	    int[][] table = _factorTable.getIndices();
-	    double[] values = _factorTable.getWeights();
+	    int[][] table = getFactorTable().getIndices();
+	    double[] values = getFactorTable().getWeights();
 	    int tableLength = table.length;
 	    int numPorts = ports.size();
 	    int[] inPortMsgs = new int[numPorts];
@@ -79,8 +79,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	public double getPotential(int[] inputs)
 	{
-	    int[][] table = _factorTable.getIndices();
-	    double[] values = _factorTable.getWeights();
+	    int[][] table = getFactorTable().getIndices();
+	    double[] values = getFactorTable().getWeights();
 	    int tableLength = table.length;
 	    
 	    double prob = 0;

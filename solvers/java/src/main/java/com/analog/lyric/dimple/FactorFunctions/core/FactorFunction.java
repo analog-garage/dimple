@@ -19,6 +19,24 @@ public abstract class FactorFunction extends FactorFunctionBase
 
 	public abstract double eval(Object ... input);
 
+	public boolean factorTableExists(Domain [] domainList)
+	{
+    	//first step, convert domains to DiscreteDOmains
+		if (_factory == null)
+			return false;
+		
+    	DiscreteDomain [] dds = new DiscreteDomain[domainList.length];
+    	
+    	for (int i = 0; i < domainList.length; i++)
+    	{
+    		if (!( domainList[i] instanceof DiscreteDomain))
+    			return false;
+    		
+    		dds[i] = (DiscreteDomain)domainList[i];
+    	}
+    	return _factory.tableExists(this, dds);
+	}
+	
     public FactorTable getFactorTable(Domain [] domainList)
     {
     	//first step, convert domains to DiscreteDOmains
@@ -57,6 +75,11 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        }
 	        
 	        public Object [] getCombinationTable(DiscreteDomain [] domains)
+	        {
+	        	return getCombinationTable(domains,true);
+	        }
+	        
+	        public Object [] getCombinationTable(DiscreteDomain [] domains,boolean create)
 	        {
 	        	FactorTable table = null;
     			boolean matched = false;
@@ -101,6 +124,9 @@ public abstract class FactorFunction extends FactorFunctionBase
     			
     			if(!matched)
     			{
+    				if (!create)
+    					return null;
+    				
     				table = createCombinationTable(domains);
     			}
 	        	return new Object[]{table,!matched};
@@ -191,6 +217,20 @@ public abstract class FactorFunction extends FactorFunctionBase
 	    		return table;
 	        }
 			
+		}
+		
+		public boolean tableExists(FactorFunction factorFunction, DiscreteDomain [] domain)
+		{
+			FunctionEntry fe = _name2FunctionEntry.get(factorFunction.getName());
+			if(fe == null)
+			{
+				return false;
+			}
+			if (fe.getCombinationTable(domain,false)==null)
+				return false;
+			else
+				return true;
+				
 		}
 		
 		public Object[] getTable(FactorFunction factorFunction, DiscreteDomain [] domain) 

@@ -9,7 +9,7 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 {
 	//protected Factor _factor;
 	//protected TableFactor _tableFactor;
-	protected final FactorTable _factorTable;
+	private FactorTable _factorTable = null;
 
 	public STableFactorBase(Factor factor) 
 	{
@@ -18,7 +18,7 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 		if (!factor.isDiscrete())
 			throw new DimpleException("only discrete factors supported");
 		
-		_factorTable = factor.getFactorFunction().getFactorTable(factor.getDomains());
+		//_factorTable = factor.getFactorFunction().getFactorTable(factor.getDomains());
 
 		//if (!factor.isDiscreteFactor())
 		//	throw new Exception
@@ -28,13 +28,15 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 	
 	public final FactorTable getFactorTable()
 	{
+		if (_factorTable==null)
+			_factorTable = getFactor().getFactorFunction().getFactorTable(getFactor().getDomains());
 		return this._factorTable;
 	}
 
 	@Override
 	public int [][] getPossibleBeliefIndices() 
 	{
-		return _factorTable.getIndices();
+		return getFactorTable().getIndices();
 	}
 
 }

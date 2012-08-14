@@ -2,15 +2,19 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.core.KBestFactorEngine;
+import com.analog.lyric.dimple.solvers.core.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.core.KBestFactorEngine.IKBestFactor;
 
 
 
-public class STableFactor extends STableFactorBase
+public class STableFactor extends STableFactorBase implements IKBestFactor
 {	
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -21,14 +25,26 @@ public class STableFactor extends STableFactorBase
 	double [][] _savedOutMsgArray;
 	double [] _dampingParams;
 	boolean _initCalled = true;
+	TableFactorEngine _tableFactorEngine;
+	KBestFactorEngine _kbestFactorEngine;
+	private int _k;
+	private boolean _kIsSmallerThanDomain = false;
 	
 
 	public STableFactor(Factor factor)  
 	{
 		super(factor);
-		
-		
 		_dampingParams = new double[_factor.getPorts().size()];
+		_tableFactorEngine = new TableFactorEngine(this);
+			
+		//TODO: should I recheck for factor table every once in a while?
+		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
+			_kbestFactorEngine = new KBestFactorTableEngine(this);
+		else
+			_kbestFactorEngine = new KBestFactorEngine(this);
+		
+		setK(Integer.MAX_VALUE);
+
 	}
 	
 	public void setDamping(int index, double val)
@@ -41,6 +57,22 @@ public class STableFactor extends STableFactorBase
 		return _dampingParams[index];
 	}
 	
+	public void setK(int k)
+	{
+		updateCache();
+		
+		_k = k;
+		_kbestFactorEngine.setK(k);
+		_kIsSmallerThanDomain = false;
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			if (_k < _inPortMsgs[i].length)
+			{
+				_kIsSmallerThanDomain = true;
+				break;
+			}
+		}
+	}
 
 	public double getEnergy()
 	{
@@ -52,8 +84,8 @@ public class STableFactor extends STableFactorBase
 			indices[i] = tmp.getGuessIndex();
 		}
 		
-		 int[][] table = _factorTable.getIndices();
-	     double[] values = _factorTable.getWeights();
+		 int[][] table = getFactorTable().getIndices();
+	     double[] values = getFactorTable().getWeights();
 	     double maxValue = Double.NEGATIVE_INFINITY;
 	     double retVal = Double.POSITIVE_INFINITY;
 
@@ -90,137 +122,31 @@ public class STableFactor extends STableFactorBase
 	public void updateEdge(int outPortNum) 
 	{
 		updateCache();
-		
+		if (_kIsSmallerThanDomain)
+			_kbestFactorEngine.updateEdge(outPortNum);
+		else
+			_tableFactorEngine.updateEdge(outPortNum);
 
-		
-		ArrayList<Port> ports = _factor.getPorts();
-	    int[][] table = _factorTable.getIndices();
-	    double[] values = _factorTable.getWeights();
-	    int tableLength = table.length;
-	    int numPorts = ports.size();
-	    
-        double[] outputMsgs = _outMsgArray[outPortNum];
-        
-    	double damping = _dampingParams[outPortNum];
-    	double [] saved = _savedOutMsgArray[outPortNum];
-    	
-    	if (damping != 0)
-    	{
-    		for (int i = 0; i < outputMsgs.length; i++)
-    			saved[i] = outputMsgs[i];
-    	}
-        
-    	int outputMsgLength = outputMsgs.length;
-        for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] = 0;
-                
-        
-        for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-        {
-        	double prob = values[tableIndex];
-        	int[] tableRow = table[tableIndex];
-    		int outputIndex = tableRow[outPortNum];
-        	
-        	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
-        		if (inPortNum != outPortNum)
-        			prob *= _inPortMsgs[inPortNum][tableRow[inPortNum]];
-        	outputMsgs[outputIndex] += prob;
-        }
-        
-    	double sum = 0; 
-
-    	
-    	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
-    	
-
-		if (sum == 0)
-		{
-			throw new DimpleException("UpdateEdge failed in SumProduct Solver.  All probabilities were zero when calculating message for port " 
-					+ outPortNum + " on factor " + _factor.getLabel());
-		}
-
-    	
-    	for (int i = 0; i < outputMsgLength; i++) 
-    		{
-    		outputMsgs[i] /= sum;
-    		
-
-    		}
-
-    	
-    	if (damping != 0)
-    		for (int i = 0; i < outputMsgLength; i++)
-    			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
-    	
 	}
 	
+	/*
+	 * Testing
+	 * update and update edge
+	 * kbestFactorTable, kbestFactor, tableFactorEngine
+	 */
 
 	
 	
 	@Override
 	public void update() 
 	{		
-		updateCache();
+		updateCache();	
+		if (_kIsSmallerThanDomain)
+			//TODO: damping
+			_kbestFactorEngine.update();
+		else
+			_tableFactorEngine.update();
 		
-
-		
-		ArrayList<Port> ports = _factor.getPorts();
-	    int[][] table = _factorTable.getIndices();
-	    double[] values = _factorTable.getWeights();
-	    int tableLength = table.length;
-	    int numPorts = ports.size();
-	    
-	    
-	    for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
-	    {
-	    	double[] outputMsgs = _outMsgArray[outPortNum];
-	    		    	
-	    	double damping = _dampingParams[outPortNum];	    	
-	    	double [] saved = _savedOutMsgArray[outPortNum];
-	    	
-	    	if (damping != 0)
-	    	{
-	    		for (int i = 0; i < outputMsgs.length; i++)
-	    			saved[i] = outputMsgs[i];
-	    	}
-	    	
-	    	int outputMsgLength = outputMsgs.length;
-	    	for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] = 0;
-
-	    	for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-	    	{
-	    		double prob = values[tableIndex];
-	    		int[] tableRow = table[tableIndex];
-	    		int outputIndex = tableRow[outPortNum];
-
-	    		for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
-	    			if (inPortNum != outPortNum)
-	    			{	    				
-	    				prob *= _inPortMsgs[inPortNum][tableRow[inPortNum]];
-	    			}
-	    		outputMsgs[outputIndex] += prob;
-	    	}
-
-	    	double sum = 0; 
-	    	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
-
-    		if (sum == 0)
-    		{
-    			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port " 
-    					+ outPortNum + " on factor " +_factor.getLabel());
-    		}
-
-	    	for (int i = 0; i < outputMsgLength; i++) 
-	    	{
-	    		
-	    		outputMsgs[i] /= sum;
-	    		
-	    	}
-	    	
-	    	if (damping != 0)
-	    		for (int i = 0; i < outputMsgLength; i++)
-	    			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
-	    	
-	    }
 	}
 	
 	@Override
@@ -268,8 +194,8 @@ public class STableFactor extends STableFactorBase
 		updateCache();
 		
 		//throw new DimpleException("not supported");
-		int [][] table = _factorTable.getIndices();
-		double [] values = _factorTable.getWeights();
+		int [][] table = getFactorTable().getIndices();
+		double [] values = getFactorTable().getWeights();
 		double [] retval = new double[table.length];
 		
 		double sum = 0;
@@ -290,6 +216,72 @@ public class STableFactor extends STableFactorBase
 		}
 		
 		return retval;
+	}
+
+	@Override
+	public ArrayList<Port> getPorts() 
+	{
+		return getFactor().getPorts();
+	}
+
+	@Override
+	public FactorFunction getFactorFunction() 
+	{
+		return getFactor().getFactorFunction();
+	}
+
+	@Override
+	public double initAccumulator() 
+	{
+		return 1;
+	}
+
+	@Override
+	public double accumulate(double oldVal, double newVal) 
+	{
+		return oldVal*newVal;
+	}
+
+	@Override
+	public double combine(double oldVal, double newVal) 
+	{
+		// TODO Auto-generated method stub
+		return oldVal+newVal;
+	}
+
+	@Override
+	public void normalize(double[] outputMsg) 
+	{
+		double sum = 0;
+		for (int i = 0; i < outputMsg.length; i++)
+			sum += outputMsg[i];
+		
+		if (sum == 0)
+			throw new DimpleException("Update failed in SumProduct Solver.  All probabilities were zero when calculating message for port " 
+					+ " on factor " +_factor.getLabel());
+
+    	for (int i = 0; i < outputMsg.length; i++) 
+    		
+    		outputMsg[i] /= sum;
+	}
+
+	@Override
+	public double evalFactorFunction(Object[] inputs) 
+	{
+		return getFactor().getFactorFunction().eval(inputs);
+	}
+
+	@Override
+	public void initMsg(double[] msg) 
+	{
+		for (int i = 0; i < msg.length;i++)
+			msg[i] = 0;
+	}
+
+	@Override
+	public double getFactorTableValue(int index) 
+	{
+		return getFactorTable().getWeights()[index];
 	}
 
 }
