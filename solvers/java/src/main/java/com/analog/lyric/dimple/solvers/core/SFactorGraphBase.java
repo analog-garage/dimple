@@ -167,7 +167,7 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		{
 			Exception e = _exception;
 			_exception = null;				// Clear the exception; the exception should happen only once; no exception if this is called again
-			throw new DimpleException(e.getMessage());						// Pass the exception up to the client
+			throw new DimpleException(e);						// Pass the exception up to the client
 		}
 		else if (_thread != null)
 			return _thread.isAlive();

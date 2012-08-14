@@ -143,7 +143,9 @@ function testVariable()
     end
 
     assertTrue(exFound);
-    assertTrue(findstr(message,'variable node failed in gaussian solver because two incoming messages were certain of conflicting things.')>0);
+    result = findstr(message,'variable node failed in gaussian solver because two incoming messages were certain of conflicting things.');
+    result = result(1);
+    assertTrue(result>0);
 
 
 end
