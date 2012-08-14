@@ -17,14 +17,15 @@ configurations {
   jarfiles
 }
 
-dependencies
-{
-  myjars = [
+project.ext.myjars = [
     "org.apache.commons:commons-math:2.2",
     "edu.emory.mathcs:jtransforms:2.3",
     "jama:jama:1.0.2"
   ]
-  for (j in myjars)
+
+dependencies
+{
+  for (j in project.myjars)
   {
     compile(j)
     jarfiles(j)
