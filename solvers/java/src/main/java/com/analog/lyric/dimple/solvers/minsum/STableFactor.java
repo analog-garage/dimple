@@ -2,15 +2,16 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.KBestFactorEngine;
-import com.analog.lyric.dimple.solvers.core.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
-import com.analog.lyric.dimple.solvers.core.KBestFactorEngine.IKBestFactor;
+import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
+import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
+import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 
 public class STableFactor extends STableFactorBase implements IKBestFactor
 {	
@@ -203,5 +204,10 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return getFactorTable().getPotentials()[index];
 	}
 	
+	@Override
+	public int[] findKBestForMsg(double[] msg, int k) 
+	{
+		return Sort.quickfindFirstKindices(msg, k);
+	}
 }
 

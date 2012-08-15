@@ -6,17 +6,18 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 
+/*
+ * Provides the update and updateEdge logic for sumproduct
+ */
 public class TableFactorEngine 
 {
 	STableFactor _tableFactor;
 	Factor _factor;
-	//FactorTable _factorTable;
 	
 	public TableFactorEngine(STableFactor tableFactor)
 	{
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();
-		//_factorTable = _tableFactor.getFactorTable();
 	}
 	
 	public void updateEdge(int outPortNum) 

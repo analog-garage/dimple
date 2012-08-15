@@ -110,6 +110,7 @@ public class Sort
 		return quickfindFirstKindices(newlist,k);
 	}
 
+	
 	/*
 	 * Given a list of objects and an index, k, this method
 	 * will return indices for the k smallest values.  The objects
@@ -142,4 +143,42 @@ public class Sort
 		 
 		 return result;
 	 }
+	
+
+	public static int [] quickfindLastKindices(double [] list, int k)
+	{
+		Double [] newlist = new Double[list.length];
+		for (int i = 0; i < newlist.length; i++)
+			newlist[i] = list[i];
+		
+		return quickfindLastKindices(newlist,k);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static int [] quickfindLastKindices(Object [] list, int k)
+	{
+		Object obj = select(list,list.length-k);
+		
+		 int [] result = new int[k];
+		 
+		 int index = 0;
+		 int indexOfObj = -1;
+		 
+		 for (int i = 0; i < list.length; i++)
+		 {
+			 if (((Comparable)list[i]).compareTo(obj) > 0)
+			 {
+				 result[index] = i;
+				 index++;
+			 }
+			 else if (obj == list[i])
+				 indexOfObj = i;
+		 }
+		 
+		 for (int i = index; index < result.length; index++)
+			 result[i] = indexOfObj;
+		 
+		 return result;
+	}
+	
 }
