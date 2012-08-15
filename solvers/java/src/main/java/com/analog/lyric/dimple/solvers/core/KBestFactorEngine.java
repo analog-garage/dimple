@@ -81,9 +81,6 @@ public class KBestFactorEngine
 		for (int i = 0; i < _ports.size(); i++)
 			domains[i] = ((Discrete)_ports.get(i).getConnectedNode()).getDiscreteDomain().getElements();
 		
-		//We will fill this object with inputs to the factor function later on.
-		Object [] ffInput = new Object[_ports.size()];
-		
 		//We will store the kbest indices in this array
 		int [][] domainIndices = new int[_ports.size()][];
 		
