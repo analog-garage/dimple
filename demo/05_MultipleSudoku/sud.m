@@ -1,3 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This sudoku puzzle generator was downloaded from MATLAB Central:
+% http://www.mathworks.com/matlabcentral/fileexchange/13846-solve-and-create-sudoku-puzzles-for-different-levels/content/sudoku/sud.m
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function fff = sud(filename)
 %usage: sudoku(filename)
 % filename is a string which is exactly the name of the sudoku data file.
