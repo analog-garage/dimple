@@ -62,5 +62,6 @@ clean {
   delete 'jarsforeclipse'
 }
 
-build.dependsOn copyjars, copydimplejar, testJar, copyJarsForEclipse
+assemble.dependsOn copyjars, copydimplejar, copyJarsForEclipse
+build.dependsOn testJar
 

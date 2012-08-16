@@ -2,15 +2,16 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.KBestFactorEngine;
-import com.analog.lyric.dimple.solvers.core.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
-import com.analog.lyric.dimple.solvers.core.KBestFactorEngine.IKBestFactor;
+import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
+import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
+import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 
 
 
@@ -128,13 +129,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			_tableFactorEngine.updateEdge(outPortNum);
 
 	}
-	
-	/*
-	 * Testing
-	 * update and update edge
-	 * kbestFactorTable, kbestFactor, tableFactorEngine
-	 */
-
 	
 	
 	@Override
@@ -282,6 +276,12 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public double getFactorTableValue(int index) 
 	{
 		return getFactorTable().getWeights()[index];
+	}
+
+	@Override
+	public int[] findKBestForMsg(double[] msg, int k) 
+	{
+		return Sort.quickfindLastKindices(msg, k);
 	}
 
 }

@@ -1,40 +1,46 @@
-package com.analog.lyric.dimple.solvers.core;
+package com.analog.lyric.dimple.solvers.core.kbest;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.util.misc.IndexCounter;
 
+/*
+ * This class provides an implementation for update and updateEdge that can 
+ * be used by solver factor classes.  It implements a k best algorithm.
+ * 
+ * pseudocode of algorithm
+ * 
+ * updateEdge(outPort)
+ *	For each input msg
+ *		sort by probability and pick the k most likely
+ *
+ *	initialize outputMsg to zero (or equivalent) for all values	
+ *
+ *	For every single value of the output message (not just the kbset)
+ *	
+ *		For the n^k combinations of inputs (where n is number of input edges)
+ *			prod = calculate factor function (or equivalent for minsum)
+ *			prod *= all of the input probabilities for those values
+ *			
+ *			sum the prod with the current value for the output message at this value (or equivalent for minsum)
+ *
+ *	Normalize outputmsg (subtract smallest value)
+ *
+ * There is no optimization for update(all)
+ */
 public class KBestFactorEngine 
 {
-	//TODO: do I have to be careful of caching
 	private ArrayList<Port> _ports;
 	private int _k;
 	private IKBestFactor _kbestFactor;
 	private double [][] _outPortMsgs;
 	private double [][] _inPortMsgs;
 	
-	public interface IKBestFactor
+	private void updateCache()
 	{
-		ArrayList<Port> getPorts();
-		FactorFunction getFactorFunction();
-		double initAccumulator();
-		double accumulate(double oldVal,double newVal);
-		double combine(double oldVal,double newVal);
-		void normalize(double [] outputMsg);
-		FactorTable getFactorTable();
-		double evalFactorFunction(Object [] inputs);
-		void initMsg(double [] msg);
-		double getFactorTableValue(int index);
-	}
-	
-	public KBestFactorEngine(IKBestFactor f)
-	{
-		_kbestFactor = f;
-		_ports = f.getPorts();
+		_ports = _kbestFactor.getPorts();
 		
 		_inPortMsgs = new double[_ports.size()][];
 		_outPortMsgs = new double[_ports.size()][];
@@ -44,12 +50,20 @@ public class KBestFactorEngine
 			_inPortMsgs[i] = (double[])_ports.get(i).getInputMsg();
 			_outPortMsgs[i] = (double[])_ports.get(i).getOutputMsg();
 		}
+	
+	}
+	
+	public KBestFactorEngine(IKBestFactor f)
+	{
+		_kbestFactor = f;
 	}
 	
 	public void update()
 	{
+		updateCache();
+
 		for (int i = 0; i < _ports.size(); i++)
-			updateEdge(i);
+			updateEdgeInternal(i);
 	}
 	
 	public void setK(int k)
@@ -62,6 +76,12 @@ public class KBestFactorEngine
 	 * Code for updating given no factor table but java factor function
 	 */
 	public void updateEdge(int outPortNum)
+	{
+		updateCache();
+		updateEdgeInternal(outPortNum);
+	}
+	
+	private void updateEdgeInternal(int outPortNum)
 	{
 		
 		//Get the outputPort we're going to update.
@@ -99,7 +119,7 @@ public class KBestFactorEngine
 			{
 				//Here we check to see that k is actually less than the domain length
 				if (_k < inPortMsg.length)
-					domainIndices[i] = com.analog.lyric.cs.Sort.quickfindFirstKindices(inPortMsg, _k);
+					domainIndices[i] = _kbestFactor.findKBestForMsg(inPortMsg,_k);					
 				else
 				{
 					//If it's not, we just map indices one to one.

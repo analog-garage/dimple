@@ -5,10 +5,10 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 /*
  * Function for testing kbestminsum works
  */
-public class FactorFunctionForTesting extends FactorFunction 
+public class SumOfInputs extends FactorFunction 
 {
 
-	public FactorFunctionForTesting() {
+	public SumOfInputs() {
 		super("FactorFunctionForTesting");
 	}
 
@@ -20,6 +20,6 @@ public class FactorFunctionForTesting extends FactorFunction
 		{
 			sum += (Double)input[i];
 		}
-		return sum;
+		return sum; 
 	}
 }

@@ -2348,10 +2348,42 @@ Sum Product
 
 The Sum Product solver only supports discrete variables.
 
+Damping
++++++++
+
+The sum product solver supports setting damping:
+
+--------------------------------
+fg.Solver.setDamping(dampingVal);
+--------------------------------
+
+
+
+K Best
+++++++
+
+The sum product solver supports a k-best algorithm.  Users can set a K value on 
+each factor:
+
+-----------------------
+fg = FactorGraph();
+vars = Discrete(1:D,NumVars,1);
+f = fg.addFactor(factorFunction,vars);
+f.Solver.setK(K);
+vars.Input = 1:D;
+fg.solve();
+-------------------------
+
+The solver will only use the k-best values for each variable when calculating output messages
+on a factor node.
+
+IMPORTANT: k-best and damping are not yet compatible.
+
 Min Sum
 ^^^^^^^^
 
-The Min Sum solver only supports discrete variables.
+The Min Sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping
+and k-best.
 
 Particle BP
 ^^^^^^^^^^^
