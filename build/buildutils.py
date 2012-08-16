@@ -16,19 +16,11 @@
 
 import optparse 
 import os
-#import sys
 import re
 import shutil
 import zipfile
 import datetime
 import time
-
-
-the_copyright = '''%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Copyright (c) %(year)s, Lyric Semiconductor, Inc.
-%% All rights reserved.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'''
 
 def make_zip_file(dest):
     print('Making zip file...')
@@ -64,6 +56,7 @@ def uncompress_kit(dest):
 def builddoc():
     #if exists ../doc/builddoc.py
     if os.path.exists('../doc/builddoc.py'):
+        print "building documentation"
         p = os.getcwd()
         os.chdir('../doc')
         os.system('python builddoc.py -c -u -p')
@@ -80,19 +73,17 @@ class Builder:
         parser.add_option('-u', '--unzip', action = 'store_true', help = 'unzip', default=False)
         parser.add_option('-d', '--developer', action = 'store_true', help="developer", default=False)
 	parser.add_option('-r', '--reuse',action='store_true',help="reuse",default=False)
-        parser.add_option('-n', '--doc',action='store_false',default=True)
+        parser.add_option('-n', '--no_doc',action='store_false',default=True)
         (opt, args_left_after_parse) = parser.parse_args(args)
         
         exclude_file_name = 'files_to_exclude.txt'
         regex_exclude_file_name = 'regex_to_exclude.txt'
         mfiles_to_keep_file_name = 'mfiles_to_keep.txt'
-        mfiles_not_to_copyright_file_name = 'mfiles_not_to_copyright.txt'
 
         dest_file_name = progName + '_v' + file(versionFile).readlines()[0].replace('.','_').rstrip()
 
         self.main(exclude_file_name,regex_exclude_file_name,
              mfiles_to_keep_file_name,
-             mfiles_not_to_copyright_file_name,
              dest_file_name,
              opt.unzip,
              opt.test,
@@ -103,13 +94,12 @@ class Builder:
                   pFileToCheck,
                   buildCommand,
                   opt.reuse,
-                  opt.doc)
+                  opt.no_doc)
         
 
     def main(self,exclude_file_name,
              regex_to_exclude_file_name,
              mfiles_to_keep_file_name,
-             mfiles_not_to_copyright_file_name,
              dest,
              unzip,
              test,
@@ -120,19 +110,17 @@ class Builder:
              pFileToCheck,
              buildCommand,
              reuse,
-             doc):
+             no_doc):
 
 
             self.build_java_solver(javaBuildDir,javaTargetDir,buildCommand,reuse)
             
             (fexcludes, 
              rexcludes, 
-             mfiles_to_keep,
-             mfiles_not_to_copyright) = self.load_exclude_files(
+             mfiles_to_keep) = self.load_exclude_files(
                 exclude_file_name,
                 regex_to_exclude_file_name,
-                mfiles_to_keep_file_name,
-                mfiles_not_to_copyright_file_name)
+                mfiles_to_keep_file_name)
 
             self.make_dest_directory(dest)
             
@@ -141,9 +129,6 @@ class Builder:
 
             if not developer:
                 self.convert_mfiles_to_pfiles(mfiles_to_keep,dest,pFileToCheck)
-
-
-            self.add_copyright_to_files(dest,mfiles_not_to_copyright)
 
 
             make_zip_file(dest)
@@ -159,7 +144,7 @@ class Builder:
             if test:
                 self.test_kit(dest)
 
-            if doc:
+            if not no_doc:
                 builddoc()
     
 
@@ -194,7 +179,7 @@ class Builder:
         if not os.path.exists(target_dir):
             raise Exception('failed to build java solver!  Aborting')
 
-    def load_exclude_files(self,exclude_file_name,regex_to_exclude_file_name,mfiles_to_keep_file_name,mfiles_not_to_copyright_file_name):
+    def load_exclude_files(self,exclude_file_name,regex_to_exclude_file_name,mfiles_to_keep_file_name):
 
 
         print('Loading exclude files...')
@@ -214,12 +199,7 @@ class Builder:
         mfiles_to_keep = set([l.strip() for l in mfiles_to_keep])
     
   
-        #load file we don't want to copyright
-        f = file(mfiles_not_to_copyright_file_name)
-        mfiles_not_to_copyright = f.readlines()
-        mfiles_not_to_copyright = set([l.strip() for l in mfiles_not_to_copyright])
-
-        return (fexcludes, rexcludes, mfiles_to_keep,mfiles_not_to_copyright)
+        return (fexcludes, rexcludes, mfiles_to_keep)
 
 
     def copy_files_to_destination(self,fexcludes,rexcludes,dest,copyRoot):
@@ -354,58 +334,6 @@ class Builder:
                     script.write('pcode ' + full_name + ' -inplace;\n')
         
     
-    def add_copyright(self,root_dir, dest, files_not_to_copyright):
-        files = os.listdir(root_dir + '/' + dest)
-        now = datetime.datetime.now()
-
-        num_files = 0
-
-        for fn in files:
-        
-            if len(dest) > 0:
-                local_name = dest + '/' + fn
-            else:
-                local_name = fn
-            
-            full_name = root_dir + '/' + local_name
-        
-            if not local_name in files_not_to_copyright:
-                isdir = os.path.isdir(full_name)
-
-                if isdir:
-                    num_files += self.add_copyright(root_dir,local_name,files_not_to_copyright)
-                else:
-                    if local_name.endswith('.m'):
-                    
-                        f = file(full_name)
-                        lines = f.readlines()
-                        f.close()
-                    
-                        is_copyrighted = False
-                        if len(lines) >= 2:
-                            is_copyrighted = lines[1].lower().find('copyright') >= 0
-
-                        if not is_copyrighted:
-                            f = file(full_name,'w')
-                            f.write(the_copyright % {'year':now.year})
-
-                            for l in lines:
-                                f.write(l)
-
-                            f.close()
-                            num_files += 1
-
-        return num_files
-
-    def add_copyright_to_files(self,root_dir,files_not_to_copyright):
-        print('Add Copyright to all remaining m files...')
-        num_files = self.add_copyright(root_dir,'',files_not_to_copyright)
-        print('Added copyright to ' + str(num_files) + ' files')
-        num_files = self.add_copyright(root_dir,'',files_not_to_copyright)
-        if num_files != 0:
-            raise Exception('Failed to add copyright to ' + str(num_files) + ' files! Aborting')
-
-
     def make_dest_directory(self,dest):
         print('Making the destination directory...')
         #Make the dest directory
