@@ -1,0 +1,33 @@
+Dimple
+Copyright 2012 Analog Devices Inc.
+
+This product contains the following software:
+
+=======================================================
+matlab_xunit
+Used for regression tests.
+License file: modelers/matlab/lib/xunit_dist/license.txt
+Copyright (c) 2009, The MathWorks, Inc.
+
+=======================================================
+jama-1.0.2
+A Java Matrix Package
+Public Domain: http://math.nist.gov/javanumerics/jama/
+
+=======================================================
+commons-math-2.2
+License file: solvers/licenses/commons-math-2.2.license.txt
+Copyright 2001-2011 The Apache Software Foundation
+
+=======================================================
+jtransforms-2.3
+License files: solvers/licenses/jtransforms-2.3-license.html
+               solvers/licenses/jtransforms-2.3-license-boilerplate
+Copyright (C) 2007-2009, Piotr Wendykier, Emory University
+
+=======================================================
+GraphViz2Mat1.2
+Used for graph plotting. 
+License file: modelers/matlab/lib/GraphViz2Mat1.2/license.txt
+Copyright (c) 2009, Leonid Peshkin
+
