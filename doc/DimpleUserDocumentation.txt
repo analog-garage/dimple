@@ -394,12 +394,12 @@ TuesdayWeather.Belief
 ----
 
 This returns a vector of probability of the same length as the domain total size (i.e. the product of its dimensions), with the probability of each domain variable.
-Another way to solve the factor graph is to use the iterate(n) command, which runs the factor graph for n iterations (without arguments, it runs for 1 iteration).
+Another way to solve the factor graph is to use the Solver.iterate(n) command, which runs the factor graph for n iterations (without arguments, it runs for 1 iteration).
 
 
 ----
-HMM.iterate();
-HMM.iterate(5);
+HMM.Solver.iterate();
+HMM.Solver.iterate(5);
 ----
 
 IMPORTANT: The iterate command is useful to access intermediate results (i.e, see how beliefs change through the iterations).
@@ -2542,7 +2542,7 @@ Note that when the second constructor is used, tempering is automatically enable
 
 All existing {swname} methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
-NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term "iteration" is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The iterate() method, common to all solvers, is still supported, but performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
+NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term "iteration" is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
 The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
 
