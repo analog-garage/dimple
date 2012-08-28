@@ -1,4 +1,25 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+classdef FactorGraph < handle
+% The FactorGraph class represents a collection of variables and the
+% factors that relate these variables to one another.  Users create new
+% factors by calling addFactor, set inputs on the variables, and solve
+% using the FactorGraph.solve method.
+%
+% FactorGraph properties:
+%    Solver - Retrieves the underlying solver object.
+%    Name - Can be used to set/get the name of the FactorGraph.
+%    Label - Used when plotting the graph.
+%    NumIterations - Sets the nuber of iterations on the solver.  This 
+%                    property has a solver specific meaning.
+%    Factors - Returns the list of Factors associated with this graph.
+%    Variables - Returns the list of Variables associated with this graph.
+%
+% FactorGraph Methods
+%    solve - Calls the solve method on the underlying solver.
+%    plot - Plots the graph.
+%    addFactor - Associates one or more variables with a Factor.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2012 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +33,28 @@
 %   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef FactorGraph < handle
+    
     properties(Access=public)
-        TableFactory;
+        TableFactory;        
+        %Retrieves the Solver object.
         Solver;
+        %Set/get the name for the FactorGraph
         Name;
         ExplicitName;
         QualifiedName;
+        %Set/get the label used for plotting the FactorGraph
         Label;
         QualifiedLabel;
         UUID;
         Energy;
+        %Set/get the number of iterations of the underlying solver.
         NumIterations;
         NestedGraphs;
         IGraph;
         Modeler;
+        %Gets the Factors created by calling addFactor on the graph.
         Factors;
         FactorsFlat;
         FactorsTop;
@@ -38,6 +64,8 @@ classdef FactorGraph < handle
         Nodes;
         NodesFlat;
         NodesTop;
+        %Gets all of the variables that are associated with the graph
+        %through addFactor.
         Variables;
         VariablesFlat;
         VariablesTop;
@@ -49,7 +77,6 @@ classdef FactorGraph < handle
     end
     methods
         function obj = FactorGraph(varargin)
-            
             setFactorGraph(obj);
             if numel(varargin) == 2 && isequal(varargin{1},'nestedGraph')
                 obj.IGraph = varargin{2};
@@ -162,6 +189,8 @@ classdef FactorGraph < handle
         end
         
         function retval = addFactor(obj,firstArg,varargin)
+            %Examples:
+            % fg.addFactor(someFunction,var1,var2);
             retval = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
         end
         
@@ -427,6 +456,7 @@ function factors = get.Factors(obj)
         end
         
         function solve(obj,initialize)
+            %Calls solve on the underlying solver object.
             
             if nargin < 2
                 initialize = true;
@@ -548,6 +578,7 @@ function factors = get.Factors(obj)
         end
         
         function [x,y] = plot(obj,varargin)
+            %Plots the graph.
             
             %For legacy
             if length(varargin)==1 && isa(varargin{1},'double')
@@ -835,6 +866,7 @@ function factors = get.Factors(obj)
         end
         
         function name = get.Name(obj)
+            %Gets the name for this Factor Graph.
             name = char(obj.IGraph.getName());
         end
         
@@ -857,6 +889,7 @@ function factors = get.Factors(obj)
         end
         
         function set.Name(obj,name)
+            %Sets the name for this graph.
             obj.IGraph.setName(name);
         end
         
