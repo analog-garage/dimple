@@ -18,7 +18,8 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
 
     if nargin < 1
        f = fileparts(mfilename('fullpath')); 
-       DimpleDirectory = fullfile(f, '..');
+       f = f(1:(strfind(f,'/util')-1));
+       DimpleDirectory = f;
     end
 
     setenv('_Dimple_START_PATH', DimpleDirectory);
