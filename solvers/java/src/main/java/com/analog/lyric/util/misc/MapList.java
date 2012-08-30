@@ -34,9 +34,10 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	
 	private HashMap<Integer,T> _hashMap = new HashMap<Integer, T>();
 	private ArrayList<T> _arrayList = new ArrayList<T>();
-	
+		
 	public T getByKey(int id)
 	{
+		
 		return _hashMap.get(id);
 	}
 	
@@ -48,7 +49,8 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	@Override
 	public int size()
 	{
-		return _hashMap.size();
+		return _arrayList.size();
+		//return _hashMap.size();
 	}
 	
 	public Collection<T> values()

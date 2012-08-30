@@ -475,7 +475,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 		protected static <K,V> Iterator<K,V> make(SkipMap<K,V> map)
 		{
-			@SuppressWarnings("unchecked")
 			Iterator<K,V> iter = (Iterator<K, V>)Iterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -603,7 +602,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		
 		public static <K,V> KeyIterator<K,V> make(SkipMap<K,V> map)
 		{
-			@SuppressWarnings("unchecked")
 			KeyIterator<K,V> iter = (KeyIterator<K, V>) KeyIterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -663,7 +661,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		
 		public static <K,V> ValueIterator<K,V> make(SkipMap<K,V> map)
 		{
-			@SuppressWarnings("unchecked")
 			ValueIterator<K,V> iter = (ValueIterator<K, V>) ValueIterator.reusableInstance.get();
 			
 			if (iter != null)

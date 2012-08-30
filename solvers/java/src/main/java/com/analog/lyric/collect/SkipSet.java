@@ -107,7 +107,6 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		
 		protected static <T> Iterator<T> make(SkipSet<T> set)
 		{
-			@SuppressWarnings("unchecked")
 			Iterator<T> iter = (Iterator<T>)Iterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -211,7 +210,6 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		return this.toArray(new Object[this.size()]);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] a)
 	{

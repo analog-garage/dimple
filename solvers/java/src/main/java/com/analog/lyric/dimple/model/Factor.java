@@ -24,13 +24,12 @@ import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
-
-
 public class Factor extends FactorBase implements Cloneable
 {
 	private String _modelerFunctionName = "";
 	protected ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
+	private VariableList _variables = null;
 	
 	@Override
 	public final Factor asFactor()
@@ -99,6 +98,8 @@ public class Factor extends FactorBase implements Cloneable
 	
 	protected void addVariable(VariableBase variable) 
 	{
+		_variables = null;
+		
 		Port p = new Port(this,_ports.size());
 		_ports.add(p);
 		variable.connect(p);
@@ -137,6 +138,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void attach(ISolverFactorGraph factorGraph) 
 	{
+		_variables = null;
 		//_solverFactor = factorGraph.createCustomFactor(this);
 		_solverFactor = factorGraph.createFactor(this);
 		initialize();
@@ -168,6 +170,8 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public Factor clone()
 	{
+		_variables = null;
+		
 		/*******
 		 * NOTE: Any derived class that defines instance variables that are
 		 * objects (rather than primitive types) must implement clone(), which
@@ -213,18 +217,15 @@ public class Factor extends FactorBase implements Cloneable
 		
 	public VariableList getVariables()
 	{
-		VariableList vl = new VariableList();
-		//Discrete [] retval = new Discrete[_ports.size()];
-		for (int i = 0; i < _ports.size(); i++)
+		//Cache the variables for performance reasons
+		if (_variables == null)
 		{
-			//retval[i] = (Discrete)_ports.get(i).getConnectedNode();
-			vl.add((VariableBase)_ports.get(i).getConnectedNodeFlat());
+			_variables = new VariableList();
+			for (int i = 0; i < _ports.size(); i++)
+				_variables.add((VariableBase)_ports.get(i).getConnectedNodeFlat());			
 		}
 		
-		//FactorList fl = new FactorList();
-		//fl.addAll(retval);
-		// TODO Auto-generated method stub
-		return vl;
+		return _variables;
 	}
 
 	@Override
@@ -257,6 +258,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	Factor join(Factor other) 
 	{
+		_variables = null;
 		ArrayList<VariableBase> varList = new ArrayList<VariableBase>();
 		
 		//go through variables from first factor and

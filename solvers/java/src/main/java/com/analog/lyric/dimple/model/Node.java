@@ -33,7 +33,7 @@ public abstract class Node implements INode, Cloneable
 	public Node()
 	{
 		init(NodeId.getNext(),
-			 java.util.UUID.randomUUID(),
+			 NodeId.getNextUUID(),
 			 null,
 			 null,
 			 null,
@@ -42,7 +42,7 @@ public abstract class Node implements INode, Cloneable
 	public Node(int id)
 	{
 		init(id,
-			 java.util.UUID.randomUUID(),
+				NodeId.getNextUUID(),
 			 null,
 			 null,
 			 null,
@@ -104,7 +104,7 @@ public abstract class Node implements INode, Cloneable
 		
 		n._ports = new ArrayList<Port>();	// Clear the ports in the clone
 		n._id = NodeId.getNext();
-		n._UUID = java.util.UUID.randomUUID();
+		n._UUID = NodeId.getNextUUID();
 		n._parentGraph = null;
 		n._name = _name;
 		

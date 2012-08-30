@@ -226,7 +226,7 @@ public class FactorGraphDiffs
 		}
 		catch(Exception e)
 		{
-			s += "\nException - " + e.toString();
+			s += "\nException - " + e.toString() + " Path debug: " + pathDBG;
 		}
 		return s;
 		
