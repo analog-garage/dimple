@@ -52,11 +52,11 @@ public class FactorGraphDiffsTest {
 	public void tearDown()  {
 	}
 	
-	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean expectedResult, String tag) throws Exception 	
+	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean expectedResult, String tag)
 	{
 		return check(a, b, expectedResult, true, tag, false);
 	}
-	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint) throws Exception 
+	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint)
 	{
 		FactorGraphDiffs diffs = null;
 		try
@@ -76,7 +76,7 @@ public class FactorGraphDiffsTest {
 			System.out.println("Exception diffing [" + tag + "]");
 			System.out.println(a.getFullString());
 			System.out.println(b.getFullString());
-			throw e;
+			throw new RuntimeException(e);
 		}
 		if(diffs.noDiffs())
 		{
@@ -85,60 +85,60 @@ public class FactorGraphDiffsTest {
 		return diffs;
 	}
 	
-	void compareToSelf(FactorGraph fg) 
+	void compareToSelf(FactorGraph fg)
 	{
-		FactorGraphDiffs fgvsfgName 
+		FactorGraphDiffs fgvsfgName
 			= fg.getFactorGraphDiffsByName(fg);
 		
 		if(!fgvsfgName.noDiffs())
 		{
-			System.out.println(fgvsfgName);			
+			System.out.println(fgvsfgName);
 		}
 
 		assertTrue(fgvsfgName.noDiffs());
 
-		FactorGraphDiffs fgvsfgNameRoot 
+		FactorGraphDiffs fgvsfgNameRoot
 			= fg.getFactorGraphDiffsByName(fg.copyRoot());
 	
 		if(!fgvsfgNameRoot.noDiffs())
 		{
-			System.out.println(fgvsfgNameRoot);			
+			System.out.println(fgvsfgNameRoot);
 		}
 
 		assertTrue(fgvsfgName.noDiffs());
 		
 		
-		FactorGraphDiffs fgvsfgUUID 
+		FactorGraphDiffs fgvsfgUUID
 			= fg.getFactorGraphDiffsByUUID(fg);
 		
 		fgvsfgUUID.toString();
 		if(!fgvsfgUUID.noDiffs())
 		{
-			System.out.println(fgvsfgUUID);			
+			System.out.println(fgvsfgUUID);
 		}
 		
 		assertTrue(fgvsfgUUID.noDiffs());
 	}
 	
-	public void checkNameChange( INameable n, 
-			 FactorGraph g1, 
-			 FactorGraph g2, 
+	public void checkNameChange( INameable n,
+			 FactorGraph g1,
+			 FactorGraph g2,
 			 FactorGraph pg1,
-			 FactorGraph pg2) 
+			 FactorGraph pg2)
 	{
-		checkNameChange(n, 
+		checkNameChange(n,
 				 null,
-				 g1, 
-				 g2, 
+				 g1,
+				 g2,
 				 pg1,
-				 pg2);		
+				 pg2);
 	}
 	public void checkNameChange( INameable n,
 								 INameable n2,
-								 FactorGraph g1, 
-								 FactorGraph g2, 
+								 FactorGraph g1,
+								 FactorGraph g2,
 								 FactorGraph pg1,
-								 FactorGraph pg2) 
+								 FactorGraph pg2)
 	{
 		String oldName = n.getName();
 		n.setName("x");
@@ -147,10 +147,10 @@ public class FactorGraphDiffsTest {
 		if(n2 != null)
 		{
 			oldName2 = n2.getName();
-			n2.setName("y");			
+			n2.setName("y");
 		}
 
-		FactorGraphDiffs diffs 
+		FactorGraphDiffs diffs
 			= g1.getFactorGraphDiffsByName(g2);
 		assertTrue(!diffs.noDiffs());
 
@@ -158,7 +158,7 @@ public class FactorGraphDiffsTest {
 		{
 			diffs = pg1.getFactorGraphDiffsByName(pg2);
 			diffs.toString();
-			assertTrue(!diffs.noDiffs());			
+			assertTrue(!diffs.noDiffs());
 		}
 		
 		n.setName(oldName);
@@ -172,7 +172,7 @@ public class FactorGraphDiffsTest {
 			{
 				diffs = pg1.getFactorGraphDiffsByName(pg2);
 				diffs.toString();
-				assertTrue(!diffs.noDiffs());			
+				assertTrue(!diffs.noDiffs());
 			}
 			n2.setName(oldName2);
 		}
@@ -187,9 +187,9 @@ public class FactorGraphDiffsTest {
 	}
 
 	@Test
-	public void test_simple_one_level_compare_names_only() 
+	public void test_simple_one_level_compare_names_only()
 	{
-		FactorGraph[] fgs1 
+		FactorGraph[] fgs1
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		FactorGraph[] fgs2
 			= Helpers.MakeSimpleThreeLevelGraphs();
@@ -250,31 +250,31 @@ public class FactorGraphDiffsTest {
 		assertTrue(diffs.noDiffs());
 	}
 
-	public void leaf_connectivity(FactorGraph fgLeaf1, FactorGraph fgLeaf2, Discrete vB1, Discrete vB2) throws Exception 
-	{	
-		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 1");		
+	public void leaf_connectivity(FactorGraph fgLeaf1, FactorGraph fgLeaf2, Discrete vB1, Discrete vB2)
+	{
+		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 1");
 		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 1 root");
-		XorDelta xorFF = new XorDelta();	
+		XorDelta xorFF = new XorDelta();
 		//add factor to one to difference
 		Discrete vLeafO3 = new Discrete(0.0, 1.0);
 		vLeafO3.setName("vLeafO3");
-		Factor fLeafNew11 
-			= fgLeaf1.addFactor(xorFF, 
-								vB1, 
+		Factor fLeafNew11
+			= fgLeaf1.addFactor(xorFF,
+								vB1,
 								vLeafO3);
 		fLeafNew11.setName("fLeafNew1");
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 2");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 2");
 		
 		//add factor to other to same
 		vLeafO3 = new Discrete(0.0, 1.0);
 		vLeafO3.setName("vLeafO3");
 		Factor fLeafNew12
-			= fgLeaf2.addFactor(xorFF, 
-								vB2, 
+			= fgLeaf2.addFactor(xorFF,
+								vB2,
 								vLeafO3);
 		fLeafNew12.setName("fLeafNew1");
-		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 3");		
-		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 3 root");		
+		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 3");
+		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 3 root");
 		
 		//same factor name, different number of variables should still be different
 		Discrete vLeafO5 = new Discrete(0.0, 1.0);
@@ -282,72 +282,72 @@ public class FactorGraphDiffsTest {
 		vLeafO5.setName("vLeafO5");
 		vLeafO6.setName("vLeafO6");
 		Factor fLeafNew21
-			= fgLeaf1.addFactor(xorFF, 
-								vB1, 
+			= fgLeaf1.addFactor(xorFF,
+								vB1,
 								vLeafO5,
 								vLeafO6);
 		fLeafNew21.setName("fLeafNew2");
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 4");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 4");
 		
 		vLeafO5 = new Discrete(0.0, 1.0);
 		vLeafO6 = new Discrete(0.0, 1.0);
 		vLeafO5.setName("vLeafO5");
 		vLeafO6.setName("vLeafO6");
 		Factor fLeafNew22
-			= fgLeaf2.addFactor(xorFF, 
-								vB2, 
+			= fgLeaf2.addFactor(xorFF,
+								vB2,
 								vLeafO5);
 		fLeafNew22.setName("fLeafNew2");
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 5");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 5");
 		
 		
-		//fix up both		
+		//fix up both
 		fLeafNew22.setName("fLeafNew2x");
 		Factor fix
-			= fgLeaf2.addFactor(xorFF, 
-							vB2, 
+			= fgLeaf2.addFactor(xorFF,
+							vB2,
 							vLeafO5,
 							vLeafO6);
 		fix.setName("fLeafNew2");
 		
 		vLeafO5 = (Discrete) fgLeaf1.getObjectByName("vLeafO5");
 		fix
-			= fgLeaf1.addFactor(xorFF, 
-						vB1, 
+			= fgLeaf1.addFactor(xorFF,
+						vB1,
 						vLeafO5);
 		fix.setName("fLeafNew2x");
-		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 6");		
-		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 6 root");		
+		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 6");
+		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 6 root");
 
 		//add graph to one, get difference
-		FactorGraph fgOther = Helpers.MakeSimpleGraph("Other"); 		
+		FactorGraph fgOther = Helpers.MakeSimpleGraph("Other");
 		fgLeaf1.addGraph(fgOther, vB1);
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 7");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 7");
 	
 		//add graph to other, get same
 		fgLeaf2.addGraph(fgOther, vB2);
-		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 8");		
-		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 8 root");		
+		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 8");
+		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 8 root");
 
 		//add different 2 graphs with different connectivity, same name
-		FactorGraph fgOtherA = Helpers.MakeSimpleGraph("Other2"); 		
-		Factor fOtherA = fgOtherA.addFactor(xorFF, 
+		FactorGraph fgOtherA = Helpers.MakeSimpleGraph("Other2");
+		Factor fOtherA = fgOtherA.addFactor(xorFF,
 				 (Discrete) fgOtherA.getObjectByName("vOther2B1"),
-				 (Discrete) fgOtherA.getObjectByName("vOther2O1"));	
+				 (Discrete) fgOtherA.getObjectByName("vOther2O1"));
 		fOtherA.setName("fOtherA");
 		
 		fgLeaf1.addGraph(fgOtherA, vB1);
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 9");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 9");
 		
-		FactorGraph fgOtherB = Helpers.MakeSimpleGraph("Other2"); 		
-		Factor fOtherB = fgOtherB.addFactor(xorFF, 
+		FactorGraph fgOtherB = Helpers.MakeSimpleGraph("Other2");
+		Factor fOtherB = fgOtherB.addFactor(xorFF,
 				 (Discrete) fgOtherB.getObjectByName("vOther2B1"),
 				 (Discrete) fgOtherB.getObjectByName("vOther2O1"),
-				 (Discrete) fgOtherB.getObjectByName("vOther2O2"));	
+				 (Discrete) fgOtherB.getObjectByName("vOther2O2"));
 		fOtherB.setName("fOtherA");
 
 		fgLeaf2.addGraph(fgOtherB, vB2);
-		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 10");		
+		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 10");
 		
 		//fix up
 		FactorGraph ownedFgOtherB = (FactorGraph) fgLeaf2.getObjectByName("Other2");
@@ -360,35 +360,35 @@ public class FactorGraphDiffsTest {
 		fOtherB.setName("fOtherB");
 		fgLeaf1.addGraph(fgOtherB, vB1);
 		
-		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 11");	
+		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 11");
 		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 11 root");
 		
 	}
 	
 	
-	public void mid_connectivity(FactorGraph fgMid1, 
+	public void mid_connectivity(FactorGraph fgMid1,
 								 FactorGraph fgMid2,
 								 Discrete vB1,
 								 Discrete vB2,
 								 String boundaryName,
-								 String leafName) throws Exception 
-	{	
+								 String leafName)
+	{
 		FactorGraph fgLeaf1 = (FactorGraph)fgMid1.getObjectByName(leafName);
 		FactorGraph fgLeaf2 = (FactorGraph)fgMid2.getObjectByName(leafName);
-		leaf_connectivity(fgLeaf1, 
-						  fgLeaf2, 
-						  (Discrete) fgMid1.getObjectByName(boundaryName), 
+		leaf_connectivity(fgLeaf1,
+						  fgLeaf2,
+						  (Discrete) fgMid1.getObjectByName(boundaryName),
 						  (Discrete) fgMid2.getObjectByName(boundaryName));
-		leaf_connectivity(fgMid1, 
-						  fgMid2, 
-						  vB1, 
+		leaf_connectivity(fgMid1,
+						  fgMid2,
+						  vB1,
 						  vB2);
 	}
 	
 	@Test
-	public void test_simple_one_level_compare_connectivity() throws Exception 
+	public void test_simple_one_level_compare_connectivity()
 	{
-		FactorGraph[] fgs1 
+		FactorGraph[] fgs1
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		FactorGraph[] fgs2
 			= Helpers.MakeSimpleThreeLevelGraphs();
@@ -396,15 +396,15 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgLeaf1 = fgs1[fgs1.length - 1];
 		FactorGraph fgLeaf2 = fgs2[fgs2.length - 1];
 		String boundaryName = "vLeafB1";
-		leaf_connectivity(fgLeaf1, fgLeaf2, 
+		leaf_connectivity(fgLeaf1, fgLeaf2,
 						  (Discrete) fgLeaf1.getObjectByName(boundaryName),
 						  (Discrete) fgLeaf2.getObjectByName(boundaryName));
 	}
 	
 	@Test
-	public void test_simple_two_level_compare_connectivity() throws Exception 
+	public void test_simple_two_level_compare_connectivity()
 	{
-		FactorGraph[] fgs1 
+		FactorGraph[] fgs1
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		FactorGraph[] fgs2
 			= Helpers.MakeSimpleThreeLevelGraphs();
@@ -412,7 +412,7 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgMid1 = fgs1[fgs1.length - 2];
 		FactorGraph fgMid2 = fgs2[fgs2.length - 2];
 
-		mid_connectivity(fgMid1, 
+		mid_connectivity(fgMid1,
 						 fgMid2,
 						 (Discrete)fgMid1.getObjectByName("vMidB1"),
 						 (Discrete)fgMid2.getObjectByName("vMidB1"),
@@ -422,16 +422,16 @@ public class FactorGraphDiffsTest {
 	}
 
 	@Test
-	public void test_simple_three_level_compare_connectivity() throws Exception 
+	public void test_simple_three_level_compare_connectivity()
 	{
-		FactorGraph[] fgs1 
+		FactorGraph[] fgs1
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		FactorGraph[] fgs2
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		for(int i = 0; i < fgs1.length; ++i)
 		{
 			compareToSelf(fgs1[i]);
-			compareToSelf(fgs2[i]);			
+			compareToSelf(fgs2[i]);
 		}
 
 		FactorGraph fgRoot1 = fgs1[0];
@@ -441,8 +441,8 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgMid2 = (FactorGraph)fgRoot2.getObjectByName("Mid");
 		
 		String boundaryName = "vRootO2";
-		mid_connectivity(fgMid1, fgMid2, 
-						  (Discrete) fgRoot1.getObjectByName(boundaryName), 
+		mid_connectivity(fgMid1, fgMid2,
+						  (Discrete) fgRoot1.getObjectByName(boundaryName),
 						  (Discrete) fgRoot2.getObjectByName(boundaryName),
 						  "vMidO2",
 						  "Leaf");
@@ -458,9 +458,9 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgLeaf2 = (FactorGraph)fgRoot2.getObjectByName(leafName);
 		Discrete vB1 = (Discrete)fgRoot1.getObjectByName(boundaryName);
 		Discrete vB2 = (Discrete)fgRoot2.getObjectByName(boundaryName);
-		leaf_connectivity(fgLeaf1, 
-						  fgLeaf2, 
-						  vB1, 
+		leaf_connectivity(fgLeaf1,
+						  fgLeaf2,
+						  vB1,
 						  vB2);
 
 		leafName = "Mid";
@@ -469,23 +469,23 @@ public class FactorGraphDiffsTest {
 		fgMid2 = (FactorGraph)fgRoot2.getObjectByName(leafName);
 		vB1 = (Discrete)fgRoot1.getObjectByName(boundaryName);
 		vB2 = (Discrete)fgRoot2.getObjectByName(boundaryName);
-		leaf_connectivity(fgMid1, 
-						  fgMid2, 
-						  vB1, 
+		leaf_connectivity(fgMid1,
+						  fgMid2,
+						  vB1,
 						  vB2);
 
 		
-		leaf_connectivity(fgRoot1, 
+		leaf_connectivity(fgRoot1,
 		 		 fgRoot2,
 				 (Discrete)fgRoot1.getObjectByName(boundaryName),
-				 (Discrete)fgRoot2.getObjectByName(boundaryName));		
+				 (Discrete)fgRoot2.getObjectByName(boundaryName));
 	
 	}
 	
 	@Test
-	public void test_simple_three_level_compare() throws Exception 
+	public void test_simple_three_level_compare()
 	{
-		FactorGraph[] fgs1 
+		FactorGraph[] fgs1
 			= Helpers.MakeSimpleThreeLevelGraphs();
 		FactorGraph[] fgs2
 			= Helpers.MakeSimpleThreeLevelGraphs();
@@ -536,43 +536,43 @@ public class FactorGraphDiffsTest {
 		Discrete vLeafO1 = (Discrete) fgMid1Leaf.getObjectByName("vLeafO1");
 		Discrete vLeafO2 = (Discrete) fgMid1Leaf.getObjectByName("vLeafO2");
 		
-		checkNameChange(fMid, 
+		checkNameChange(fMid,
 				fgMid1, fgMid2,
-				null, null);		
+				null, null);
 
-		checkNameChange(vMidB1, 
+		checkNameChange(vMidB1,
 				fgMid1, fgMid2,
-				null, null);		
+				null, null);
 
-		checkNameChange(vMidO1, 
+		checkNameChange(vMidO1,
 				fgMid1, fgMid2,
-				null, null);		
+				null, null);
 
 		checkNameChange(vMidO1, vMidO2, fgMid1, fgMid2, null, null);
 		
-		checkNameChange(fMidLeaf, 
-						fgMid1Leaf, fgMid2Leaf, 
-						fgMid1, fgMid2);		
+		checkNameChange(fMidLeaf,
+						fgMid1Leaf, fgMid2Leaf,
+						fgMid1, fgMid2);
 
-		checkNameChange(fLeaf, 
-				fgMid1Leaf, fgMid2Leaf, 
-				fgMid1, fgMid2);		
+		checkNameChange(fLeaf,
+				fgMid1Leaf, fgMid2Leaf,
+				fgMid1, fgMid2);
 	
-		checkNameChange(vMidLeafO1, 
-				fgMid1Leaf, fgMid2Leaf, 
-				fgMid1, fgMid2);		
+		checkNameChange(vMidLeafO1,
+				fgMid1Leaf, fgMid2Leaf,
+				fgMid1, fgMid2);
 		
-		checkNameChange(vMidLeafO1, vMidLeafO2, 
+		checkNameChange(vMidLeafO1, vMidLeafO2,
 						fgMid1, fgMid2, null, null);
 				
-		checkNameChange(vLeafO1, 
-				fgMid1Leaf, fgMid2Leaf, 
-				fgMid1, fgMid2);		
+		checkNameChange(vLeafO1,
+				fgMid1Leaf, fgMid2Leaf,
+				fgMid1, fgMid2);
 		
 		
-		checkNameChange(vLeafO1, vLeafO2, 
-				fgMid1Leaf, fgMid2Leaf, 
-				fgMid1, fgMid2);		
+		checkNameChange(vLeafO1, vLeafO2,
+				fgMid1Leaf, fgMid2Leaf,
+				fgMid1, fgMid2);
 
 		fRoot = (Factor) fgRoot1.getObjectByName("fRoot");
 		fMid = (Factor) fgRoot1.getObjectByName("Mid.fMid");
@@ -604,18 +604,18 @@ public class FactorGraphDiffsTest {
 	}
 
 	@Test
-	public void test_empty_compare() 
+	public void test_empty_compare()
 	{
 		FactorGraph fg1 = new FactorGraph();
 		FactorGraph fg2 = new FactorGraph();
 		
-		FactorGraphDiffs fg1vsfg1Name 
+		FactorGraphDiffs fg1vsfg1Name
 			= fg1.getFactorGraphDiffsByName(fg1);
-		FactorGraphDiffs fg1vsfg2Name 
+		FactorGraphDiffs fg1vsfg2Name
 			= fg1.getFactorGraphDiffsByName(fg2);
-		FactorGraphDiffs fg1vsfg1UUID 
+		FactorGraphDiffs fg1vsfg1UUID
 			= fg1.getFactorGraphDiffsByUUID(fg1);
-		FactorGraphDiffs fg1vsfg2UUID 
+		FactorGraphDiffs fg1vsfg2UUID
 			= fg1.getFactorGraphDiffsByUUID(fg2);
 		
 		assertTrue(fg1vsfg1Name.noDiffs());
@@ -625,13 +625,13 @@ public class FactorGraphDiffsTest {
 		
 		fg1.setName("x");
 		fg2.setName("x");
-		fg1vsfg1Name 
+		fg1vsfg1Name
 			= fg1.getFactorGraphDiffsByName(fg1);
-		fg1vsfg2Name 
+		fg1vsfg2Name
 			= fg1.getFactorGraphDiffsByName(fg2);
-		fg1vsfg1UUID 
+		fg1vsfg1UUID
 			= fg1.getFactorGraphDiffsByUUID(fg1);
-		fg1vsfg2UUID 
+		fg1vsfg2UUID
 			= fg1.getFactorGraphDiffsByUUID(fg2);
 
 		assertTrue(fg1vsfg1Name.noDiffs());
@@ -640,13 +640,13 @@ public class FactorGraphDiffsTest {
 		assertTrue(!fg1vsfg2UUID.noDiffs());
 
 		fg2.setName("y");
-		fg1vsfg1Name 
+		fg1vsfg1Name
 			= fg1.getFactorGraphDiffsByName(fg1);
-		fg1vsfg2Name 
+		fg1vsfg2Name
 			= fg1.getFactorGraphDiffsByName(fg2);
-		fg1vsfg1UUID 
+		fg1vsfg1UUID
 			= fg1.getFactorGraphDiffsByUUID(fg1);
-		fg1vsfg2UUID 
+		fg1vsfg2UUID
 			= fg1.getFactorGraphDiffsByUUID(fg2);
 
 		assertTrue(fg1vsfg1Name.noDiffs());

@@ -25,34 +25,34 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class TrivialMD5Sum 
+public class TrivialMD5Sum
 {
-	static public MessageDigest getMessageDigest(byte[] buffer) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public MessageDigest getMessageDigest(byte[] buffer) throws NoSuchAlgorithmException
 	{
 		MessageDigest digest = MessageDigest.getInstance("MD5");
 		digest.update(buffer, 0, buffer.length);
 		return digest;
 	}
-	static public byte[] getDigestBytes(byte[] buffer) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public byte[] getDigestBytes(byte[] buffer) throws NoSuchAlgorithmException
 	{
 		MessageDigest messageDigest = getMessageDigest(buffer);
 		return messageDigest.digest();
 	}
-	static public BigInteger getDigestBigInteger(byte[] buffer) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public BigInteger getDigestBigInteger(byte[] buffer) throws NoSuchAlgorithmException
 	{
 		return new BigInteger(1, getDigestBytes(buffer));
 	}
 
-	static public MessageDigest getMessageDigest(File f) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public MessageDigest getMessageDigest(File f) throws NoSuchAlgorithmException, FileNotFoundException
 	{
 		MessageDigest digest = MessageDigest.getInstance("MD5");
-		InputStream is = new FileInputStream(f);				
+		InputStream is = new FileInputStream(f);
 		byte[] buffer = new byte[8192];
 		int read = 0;
 		try {
 			while( (read = is.read(buffer)) > 0) {
 				digest.update(buffer, 0, read);
-			}		
+			}
 		}
 		catch(IOException e) {
 			throw new RuntimeException("Unable to process file for MD5", e);
@@ -67,12 +67,12 @@ public class TrivialMD5Sum
 		}
 		return digest;
 	}
-	static public byte[] getDigestBytes(File f) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public byte[] getDigestBytes(File f) throws NoSuchAlgorithmException, FileNotFoundException
 	{
 		MessageDigest messageDigest = getMessageDigest(f);
 		return messageDigest.digest();
 	}
-	static public BigInteger getDigestBigInteger(File f) throws NoSuchAlgorithmException, FileNotFoundException 
+	static public BigInteger getDigestBigInteger(File f) throws NoSuchAlgorithmException, FileNotFoundException
 	{
 		return new BigInteger(1, getDigestBytes(f));
 	}
