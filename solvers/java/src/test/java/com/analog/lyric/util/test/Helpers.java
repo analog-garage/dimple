@@ -1072,4 +1072,9 @@ public class Helpers
 		diffDBG = System.currentTimeMillis() - initialStartDBG;
 		System.out.println(String.format("verifyDecode time:%d (total)\n", diffDBG));
 	}
+	
+	static public void setSeed(long seed) 
+	{
+		_r.setSeed(seed);
+	}
 }
