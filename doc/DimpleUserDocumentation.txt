@@ -1994,6 +1994,61 @@ image:images/plot16.png["plot 1",height=200]
 Energy
 ^^^^^^^
 
+Bethe Free Energy
+
+[latex]
+\[
+BetheFreeEnergy = InternalEnergy - BetheEntropy
+\]
+
+----
+bfe = fg.Solver.BetheFreeEnergy();
+----
+
+Internal Energy
+
+[latex]
+$ InternalEnergy = \sum_{a \in F }InternalEnergy(a) + \sum_{i \in V}InternalEnergy(i) $
+
+Where F is the set of all Factors and V is the set of all variables.
+
+----
+ie = fg.Solver.InternalEnergy();
+----
+
+Bethe Entropy
+
+[latex]
+$ BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}BetheEntropy(i) $
+
+Where F is the set of all Factors and V is the set of all variables.
+
+----
+be = fg.Solver.BetheEntropy();
+----
+
+Factor Internal Energy
+
+[latex]
+$ InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*log(Weight(\vec{x})) $
+
+Where a is an instance of a Factor, X is the set of variables connected to a, Weight is the FactorTable entry for the specified set of variable values, and B~a~ is the belief of that factor node.
+
+----
+ie = f.Solver.getInternalEnergy();
+----
+
+Factor Bethe Entropy
+
+[latex]
+$ BetheEntropy(f) =   $
+
+Variable Internal Energy
+
+Variable Bethe Entropy
+
+.TODO is factor belief documented?
+
 Users can retrieve the Energy of a Factor Graph, Variable Vector, or Factor. This feature is currently only supported with the SumProduct algorithm.
 
 The following are examples of ways to retrieve the energy of FactorGraphs, factors, and variables:
