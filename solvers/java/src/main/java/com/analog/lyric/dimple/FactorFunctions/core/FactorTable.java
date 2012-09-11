@@ -127,6 +127,7 @@ public class FactorTable extends FactorTableBase
 			
 	}
 	
+	
 	//////////////////////////////////////////////////////////////////
 	// Methods for creating new Combo Tables
 	//////////////////////////////////////////////////////////////////
@@ -195,7 +196,6 @@ public class FactorTable extends FactorTableBase
 	}
 
 	
-	//TODO: this should
 	public FactorTable joinVariablesAndCreateNewTable(int [] varIndices,
 			int [] indexToJointIndex,
 			DiscreteDomain [] allDomains,

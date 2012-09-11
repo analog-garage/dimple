@@ -27,4 +27,5 @@ public class Solver extends SolverBase
 		return new SFactorGraph(factorGraph);
 	}
 	
+	
 }

@@ -2002,7 +2002,7 @@ BetheFreeEnergy = InternalEnergy - BetheEntropy
 \]
 
 ----
-bfe = fg.Solver.BetheFreeEnergy();
+bfe = fg.BetheFreeEnergy;
 ----
 
 Internal Energy
@@ -2010,10 +2010,10 @@ Internal Energy
 [latex]
 $ InternalEnergy = \sum_{a \in F }InternalEnergy(a) + \sum_{i \in V}InternalEnergy(i) $
 
-Where F is the set of all Factors and V is the set of all variables.
+Where F is the set of all Factors and V is the set of all variables.  If Dimple treated inputs as single node Factors, this method would only sum over factors.
 
 ----
-ie = fg.Solver.InternalEnergy();
+ie = fg.InternalEnergy;
 ----
 
 Bethe Entropy
@@ -2024,7 +2024,7 @@ $ BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}BetheEntropy(i) $
 Where F is the set of all Factors and V is the set of all variables.
 
 ----
-be = fg.Solver.BetheEntropy();
+be = fg.BetheEntropy;
 ----
 
 Factor Internal Energy
@@ -2035,19 +2035,65 @@ $ InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*log(Weight(\vec{x})
 Where a is an instance of a Factor, X is the set of variables connected to a, Weight is the FactorTable entry for the specified set of variable values, and B~a~ is the belief of that factor node.
 
 ----
-ie = f.Solver.getInternalEnergy();
+ie = f.InternalEnergy;
 ----
 
 Factor Bethe Entropy
 
 [latex]
-$ BetheEntropy(f) =   $
+$ BetheEntropy(a) = - \sum_{\vec{x} \in domain(\vec{X})}B_a(\vec{x})*log(B_a(\vec{x})) $
+
+Where a is an instance of a Factor, X is the set of variables connected to a, and B~a~ is the belief of that factor node.
+
+----
+be = f.BetheEntropy;
+----
 
 Variable Internal Energy
 
+[latex]
+$ InternalEnergy(i) = \sum_{d \in D}B_i(d)*log(Input(d)) $
+
+Where D is variable i's domain and Input is the variable's input.
+
+----
+ie = v.InternalEnergy;
+----
+
 Variable Bethe Entropy
 
-.TODO is factor belief documented?
+[latex]
+$ BentheEntropy(i) = - \sum{d \in D}B_i(d)*log(B_i(d)) $
+
+Where D is variable i's domain.
+
+----
+be = v.BetheEntropy();
+----
+
+Factor Belief
+
+To support the Bethe Free Energy property, Dimple provides getBelief associated with a Factor.
+
+[latex]
+$ Belief_a(\vec{x}) = Weight(\vec{x})\prod_{i=0}^N \mu_{X_i \rightarrow a}(x_i) $
+
+Where 
+
+[latex]
+\vec{x} \in domain(\vec{X})
+
+and 
+
+\vec{X}
+
+is the set of variables connected to the factor a.
+
+----
+b = f.Belief;
+----
+
+Score
 
 Users can retrieve the Energy of a Factor Graph, Variable Vector, or Factor. This feature is currently only supported with the SumProduct algorithm.
 
@@ -2058,33 +2104,33 @@ fg = FactorGraph();
 b = Bit(3,1);
 f = fg.addFactor(@xorDelta,b);
 
-fg.Energy
-f.Energy
-b.Energy
-b(1).Energy
+fg.Score
+f.Score
+b.Score
+b(1).Score
 ----
 
-When computing the energy, the most likely variable value is used. It's possible to override that by setting a guess on a variable using:
+When computing the score, the most likely variable value is used. It's possible to override that by setting a guess on a variable using:
 
 ----
 b.Guess = 1; %For other variable types, var.Guess takes a domain item.
 ----
 
-.Math behind the energy
+.Math behind the score
 The variable energy is normalized by the maximum input probability.
 
 [latex]
-$ energy(v) = -log(inputProb(guess) + log(max(inputProb)) $
+$ score(v) = -log(inputProb(guess) + log(max(inputProb)) $
 
 The factor energy is normalized by the largest factor value.
 
 [latex]
-$  energy(f) = −log(f(guessxguessyguessz))+log(max(f)) $
+$  score(f) = −log(f(guessxguessyguessz))+log(max(f)) $
 
 And the Factor Graph’s energy is as follows:
 
 [latex]
-$ energy(fg) = \sum_{v \in V} energy(v) + \sum_{f \in F} energy(f) $
+$ score(fg) = \sum_{v \in V} score(v) + \sum_{f \in F} score(f) $
 
 Introspection
 ^^^^^^^^^^^^^^

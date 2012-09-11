@@ -91,7 +91,13 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 	}
 
-	public double getEnergy()
+	/*
+	 * (non-Javadoc)
+	 * @see com.analog.lyric.dimple.solvers.core.SFactorBase#getEnergy()
+	 * 
+	 * Calculates what kind of energy?
+	 */
+	public double getScore()
 	{
 		int [] indices = new int[_factor.getPorts().size()];
 		
@@ -198,7 +204,12 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		_initCalled = true;
 	}
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see com.analog.lyric.dimple.solvers.core.SFactorBase#getBelief()
+	 * 
+	 * Calculates a piece of the beta free energy
+	 */
 	public double [] getBelief() 
 	{
 		updateCache();
@@ -226,6 +237,27 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 		
 		return retval;
+	}
+	
+	public double getInternalEnergy()
+	{
+		double [] belief = getBelief();
+		double sum = 0;
+		for (int i = 0; i < belief.length; i++)
+			sum += belief[i] * Math.log(getFactorTable().getWeights()[i]);
+		
+		return sum;		
+	}
+	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		double [] belief = getBelief();
+		for (int i = 0; i < belief.length; i++)
+			sum -= belief[i] * Math.log(belief[i]);
+		
+		return sum;		
 	}
 
 	@Override
@@ -299,5 +331,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	{
 		return Sort.quickfindLastKindices(msg, k);
 	}
+
 
 }

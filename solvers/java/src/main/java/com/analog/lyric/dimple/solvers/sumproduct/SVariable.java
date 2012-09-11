@@ -142,7 +142,7 @@ public class SVariable extends SVariableBase
 		_guessIndex = index;
 	}
 	
-	public double getEnergy()
+	public double getScore()
 	{
 		int index = getGuessIndex();
 		
@@ -432,6 +432,35 @@ public class SVariable extends SVariableBase
 		
 	}
 
+	public double getInternalEnergy()
+	{
+		double sum = 0;
+		
+		double [] belief = (double[])getBelief();
+		double [] input = _input;
+		
+		//make sure input is normalized
+		double norm = 0;
+		for (int i = 0; i < input.length; i++)
+			norm += input[i];
+		
+		
+		for (int i = 0; i < _domain.size(); i++)
+			sum += belief[i] * Math.log(input[i]/norm);
+		
+		return sum;		
+	}
 
-
+	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		double [] belief = (double[])getBelief();
+		for (int i = 0; i < belief.length; i++)
+			sum -= belief[i] * Math.log(belief[i]);
+		
+		return sum;		
+	}
+	
 }

@@ -89,10 +89,25 @@ public abstract class SFactorBase implements ISolverFactor
 	}
 	
 	@Override
-	public double getEnergy()  
+	public double getSomethingEnergy()  
 	{
-		throw new DimpleException("getEnergy not yet supported for GaussianConstMult");
+		throw new DimpleException("getSomethingEnergy not yet supported");
 	}
+
+	public double getInternalEnergy()
+	{
+		throw new DimpleException("getInternalEnergy not yet supported");
+		
+	}
+	public double getBetheEntropy()
+	{
+		throw new DimpleException("getBetheEntropy not yet supported");		
+	}
+	
+    public double getScore()
+    {    	
+    	throw new DimpleException("not supported");    	
+    }
 
 	public void connectPort(Port p) 
 	{

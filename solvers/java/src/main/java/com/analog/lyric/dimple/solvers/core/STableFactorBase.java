@@ -55,4 +55,5 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 		return getFactorTable().getIndices();
 	}
 
+
 }

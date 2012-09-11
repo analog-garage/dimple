@@ -92,6 +92,21 @@ public abstract class SVariableBase implements ISolverVariable
 		throw new DimpleException("not supported");
 	}
 
+    public double getInternalEnergy()
+    {
+    	throw new DimpleException("not supported");
+    }
+    
+    public double getBetheEntropy() 
+    {
+    	throw new DimpleException("not supported");    	
+    }
+    
+    public double getScore()
+    {    	
+    	throw new DimpleException("not supported");    	
+    }
+	
 
 	@Override
 	public void update()  

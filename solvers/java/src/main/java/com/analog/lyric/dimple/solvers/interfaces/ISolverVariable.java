@@ -28,6 +28,4 @@ public interface ISolverVariable extends ISolverNode
 	public double getEnergy() ;
     public void setGuess(Object guess) ;
     public Object getGuess() ;
-    //public void updateBlastFromPast(ArrayList<Port> ports) ;
-
 }

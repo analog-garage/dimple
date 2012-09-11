@@ -2257,8 +2257,10 @@ public class FactorGraph extends FactorBase
 		return edges;
 	}
 	@Override
-	public double getEnergy() 
+	public double getScore() 
 	{
+		return getSolver().getScore();
+		/*
 		double energy = 0;
 
 		for (VariableBase v : getVariablesTop())
@@ -2268,6 +2270,22 @@ public class FactorGraph extends FactorBase
 			energy += f.getEnergy();
 
 		return energy;
+		*/
+	}
+	
+	public double getBetheFreeEnergy()
+	{
+		return getSolver().getBetheFreeEnergy();
+	}
+	
+	public double getInternalEnergy()
+	{
+		return getSolver().getInternalEnergy();
+	}
+	
+	public double getBetheEntropy()
+	{
+		return getSolver().getBetheEntropy();
 	}
 
 	/****************************

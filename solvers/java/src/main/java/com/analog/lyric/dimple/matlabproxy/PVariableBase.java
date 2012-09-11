@@ -49,11 +49,6 @@ public abstract class PVariableBase implements IPNode, Cloneable
 		return _variable.getId();
 	}
 	
-	public double getEnergy() 
-	{
-		return _variable.getEnergy();
-	}
-	
 	public void setGuess(Object guess) 
 	{
 		_variable.setGuess(guess);
@@ -220,6 +215,19 @@ public abstract class PVariableBase implements IPNode, Cloneable
 		_variable.setLabel(name);
 	}
 
-
+	public double getScore()
+	{
+		return _variable.getScore();
+	}
+	
+	public double getInternalEnergy()
+	{
+		return _variable.getInternalEnergy();
+	}
+	
+	public double getBetheEntropy()
+	{
+		return _variable.getBetheEntropy();
+	}
 
 }

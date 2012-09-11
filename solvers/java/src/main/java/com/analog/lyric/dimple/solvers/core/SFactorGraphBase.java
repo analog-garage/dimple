@@ -1,27 +1,30 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
 package com.analog.lyric.dimple.solvers.core;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -33,17 +36,17 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 {
 	protected FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
-	
+
 	public SFactorGraphBase(FactorGraph fg)
 	{
 		_factorGraph = fg;
 	}
-	
+
 	public FactorGraph getModel()
 	{
 		return _factorGraph;
 	}
-	
+
 
 
 	public boolean customFactorExists(String funcName) 
@@ -55,7 +58,7 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 	{
 
 	}
-	
+
 	public void setNumIterations(int numIter) 
 	{
 		_numIterations = numIter;
@@ -64,14 +67,14 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 	{
 		return _numIterations;
 	}
-	
+
 	public void update() 
 	{
 		for (IScheduleEntry entry : _factorGraph.getSchedule())
 		{
 			entry.update();
 		}
-	
+
 	}
 	public void updateEdge(int outPortNum) 
 	{
@@ -100,16 +103,16 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 			iterateMultiThreaded(numIters);
 		}
 	}
-	
+
 	public void solve(boolean initialize) 
 	{
 		if (initialize)
 			_factorGraph.initialize();
 		iterate(_numIterations);
 	}
-	
 
-	
+
+
 	public ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -124,15 +127,64 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 	{
 		return _factorGraph.getRootGraph().getSolver();
 	}
-	
+
 	@Override
 	public void connectPort(Port p) 
 	{
 	}
-	
-	
 
+	public double getBetheFreeEnergy()
+	{
+		return getInternalEnergy() - getBetheEntropy();
+	}
 	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		//Sum up factor internal energy
+		for (Factor f : _factorGraph.getFactorsFlat())
+			sum += f.getBetheEntropy();
+		
+		//The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase v : _factorGraph.getVariablesFlat())
+			sum -= v.getBetheEntropy() * (v.getFactors().length - 1);
+		
+		return sum;
+	}
+
+	public double getScore()
+	{
+		
+		double energy = 0;
+
+		for (VariableBase v : getModel().getVariablesTop())
+			energy += v.getScore();
+
+		for (FactorBase f : getModel().getFactorsTop())
+			energy += f.getScore();
+
+		return energy;
+		
+	}
+	
+	//TODO: should this live in the model?
+	public double getInternalEnergy()
+	{
+		double sum = 0;
+		
+		//Sum up factor internal energy
+		for (Factor f : _factorGraph.getFactorsFlat())
+			sum += f.getInternalEnergy();
+		
+		//The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase v : _factorGraph.getVariablesFlat())
+			sum += v.getInternalEnergy();
+		
+		return sum;
+	}
+
+
 	/***********************************************
 	 * 
 	 * Threading for Ctrl+C
@@ -169,7 +221,7 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		{
 			System.out.println(">>> Interrupting solver");
 			_thread.interrupt();
-			
+
 			// See if there are any running sub-threads; in which case, interrupt those too
 			if (_solverSubThreads != null)
 				for (Thread thread : _solverSubThreads)
@@ -190,7 +242,7 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		else
 			return false;
 	}
-	
+
 	// Allow interruption (if the solver is run as a thread)
 	protected void interruptCheck()
 	{
@@ -203,7 +255,7 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 	}
 
 
-	
+
 
 	/***********************************************
 	 * 
@@ -252,8 +304,8 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 			_iterationsWhenLastBuilt = numIters;
 		}
 	}
-	
-	
+
+
 	// Run iterations using multi-threading (called by iterate if multi-threading is in use)
 	protected void iterateMultiThreaded(int numIters) 
 	{
@@ -283,13 +335,13 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		if (_subThreadException != null)
 			throw new DimpleException(_subThreadException.getMessage());
 	}
-	
+
 	// Callback from the threads; must be synchronized
 	protected synchronized void scheduleEntryCompleted(DependencyGraphNode<IScheduleEntry> entry)
 	{
 		// Mark this entry completed
 		entry.markCompleted();
-		
+
 		// Are we done?
 		if (--_numScheduleEntriesRemaining == 0)
 		{
@@ -303,24 +355,24 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 				_workQueue.add(dependentEntry);
 	}
 
-	
+
 	// Get the work queue
 	protected LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>> getWorkQueue()
 	{
 		return _workQueue;
 	}
 
-	
+
 	// This is the class defining the sub-threads
 	private class SFactorGraphThread implements Runnable
 	{
 		SFactorGraphBase _parentGraph;
-		
+
 		public SFactorGraphThread(SFactorGraphBase graph)
 		{
 			_parentGraph = graph;
 		}
-		
+
 		@Override
 		public void run()
 		{
@@ -349,8 +401,8 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 			}
 		}
 	}
-	
-	
+
+
 	// Notifier, to notify from the thread that completes the final entry to the main task to tell it that we're done
 	// Adapted from http://tutorials.jenkov.com/java-concurrency/thread-signaling.html
 	protected class MonitorObject {}

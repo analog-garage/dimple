@@ -93,4 +93,8 @@ public class PFactorTable
 		return _table;
 	}
 	
+	public boolean isFactorTable()
+	{
+		return true;
+	}
 }

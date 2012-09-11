@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -151,6 +152,19 @@ public class SFactorGraph extends SFactorGraphBase
 		}		
 
 	}
-
-
+	
+	public void estimateParameters(FactorTable [] fts, int numReEstimations, int numReStarts, double epsilon)
+	{
+		//Save current values of factor tables
+		//Calculate energy
+		for (int i = 0; i < numReStarts; i++)
+		{
+			//Randomize starting values of factor tables
+			//Estimate parameters for given starting value
+			//Reestimate parameters using derivative
+			//Calculate Energy
+			//if  energy is less than min
+			//   Save this set of Factor Tables
+		}		
+	}
 }

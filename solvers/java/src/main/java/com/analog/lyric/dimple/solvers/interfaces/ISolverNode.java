@@ -32,5 +32,9 @@ public interface ISolverNode
 	public void initialize() ;
 	public void connectPort(Port p) ;
 	public ISolverFactorGraph getParentGraph();
-	public ISolverFactorGraph getRootGraph();	
+	public ISolverFactorGraph getRootGraph();
+	public double getScore() ;
+    public double getInternalEnergy() ;
+    public double getBetheEntropy() ;
+
 }

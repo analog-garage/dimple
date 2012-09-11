@@ -48,7 +48,10 @@ classdef FactorGraph < handle
         Label;
         QualifiedLabel;
         UUID;
-        Energy;
+        Score;
+        BetheFreeEnergy;
+        BetheEntropy;
+        InternalEnergy;
         %Set/get the number of iterations of the underlying solver.
         NumIterations;
         NestedGraphs;
@@ -133,10 +136,21 @@ classdef FactorGraph < handle
         function initialize(obj)
             obj.IGraph.initialize();
         end
+
+        function ie = get.InternalEnergy(obj)
+           ie = obj.IGraph.getInternalEnergy(); 
+        end
         
+        function be = get.BetheEntropy(obj)
+            be = obj.IGraph.getBetheEntropy();
+        end
         
-        function energy = get.Energy(obj)
-            energy = obj.IGraph.getEnergy();
+        function bfe = get.BetheFreeEnergy(obj)
+            bfe = obj.IGraph.getBetheFreeEnergy();
+        end
+        
+        function score = get.Score(obj)
+            score = obj.IGraph.getScore();
         end
         
         %createTable is kept around for legacy.

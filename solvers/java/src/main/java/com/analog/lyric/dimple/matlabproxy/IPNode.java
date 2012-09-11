@@ -35,4 +35,8 @@ public interface IPNode extends INameable
 	public boolean isFactor();
 	public boolean isVariable();
 	public boolean isGraph();
+	
+	public double getScore();
+	public double getBetheEntropy();
+	public double getInternalEnergy();
 }

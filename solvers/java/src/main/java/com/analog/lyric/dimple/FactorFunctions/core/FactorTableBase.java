@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 
 public class FactorTableBase
@@ -246,6 +247,17 @@ public class FactorTableBase
 			uniqueRows.add(key);
 		}
 	}
+	
+	public void randomize()
+	{
+		_potentials = null;
+		Random r = new Random();
+		
+		for (int i = 0; i < _weights.length; i++)
+			_weights[i] = r.nextDouble();
+
+	}
+	
 	
 	@Override
 	public String toString()

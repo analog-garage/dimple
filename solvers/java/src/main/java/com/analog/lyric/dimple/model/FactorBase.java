@@ -41,3 +41,4 @@ public abstract class FactorBase extends Node
 	public FactorGraph asFactorGraph() { return null; }
 
 }
+

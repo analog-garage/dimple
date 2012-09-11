@@ -36,7 +36,7 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
-	public double getEnergy() {
+	public double getSomethingEnergy() {
 		// TODO Auto-generated method stub
 		return 0;
 	}	

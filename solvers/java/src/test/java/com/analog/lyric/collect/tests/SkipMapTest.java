@@ -156,7 +156,6 @@ public class SkipMapTest
 	
 		// Test entries iterator
 		map1.putAll(testInputMap);
-		@SuppressWarnings("unchecked")
 		SkipMap.EntrySet<Integer,String> entries = map1.entrySet();
 		SkipMap.Iterator<Integer,String> iter = entries.iterator();
 		while (iter.next() != null) {}

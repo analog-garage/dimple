@@ -362,11 +362,22 @@ public class PFactorGraph extends PFactorBase
 		
 	}
 
-	public double getEnergy() 
+	public double getScore() 
 	{
-		return _graph.getEnergy();
+		return _graph.getScore();
 	}
-
+	public double getBetheFreeEnergy()
+	{
+		return _graph.getBetheFreeEnergy();
+	}
+	public double getInternalEnergy()
+	{
+		return _graph.getInternalEnergy();
+	}
+	public double getBetheEntropy()
+	{
+		return _graph.getBetheEntropy();
+	}
 	
 	
 	/*

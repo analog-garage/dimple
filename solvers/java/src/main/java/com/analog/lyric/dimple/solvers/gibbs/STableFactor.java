@@ -149,7 +149,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
         return true;
     }
 
-	public double getEnergy()  
+	public double getSomethingEnergy()  
 	{
 		throw new DimpleException("getEnergy not yet supported for gibbs");
 	}

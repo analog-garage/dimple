@@ -150,7 +150,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	}
 
 
-	public double getEnergy()  
+	public double getSomethingEnergy()  
 	{
 		throw new DimpleException("getEnergy not yet supported for MinSum");
 	}

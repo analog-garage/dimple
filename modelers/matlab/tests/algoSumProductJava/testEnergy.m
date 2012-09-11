@@ -16,82 +16,59 @@
 
 function testEnergy()
 
-    %Let's create a simple graph
     fg = FactorGraph();
-
-    %We make three variables
-    a = Variable({0,1});
-    b = Variable({0,1});
-    c = Variable({0,1});
-
-    %We create a factor that enforces equality and puts some weight on
-    %the variables being 0
-    t = [0 0; 1 1];
-    v = [3 2];
-
-    table = fg.createTable(t,v,DiscreteDomain({0,1}),DiscreteDomain({0,1}));
-    f1 = fg.addFactor(table,a,b);
-    f2 = fg.addFactor(table,b,c);
-
-    a.Input = [2 4];
-    b.Input = [2 4];
-    c.Input = [3 1];
-
-    %Before we solve the energy should be infinite since c will pick a 
-    %value of 0 and b will pick a value of 1 and f2 enforces equality.
-    assertEqual(fg.Energy,Inf);
+    b = Discrete({0,1},2,1);
+    f1 = fg.addFactor([1 2; 3 4],b(1),b(2));
+    f2 = fg.addFactor([3 2; 5 4],b(1),b(2));
+    f3 = fg.addFactor([6 2; 7 4],b(1),b(2));
+    b(1).Input = [.1 .9];
+    b(2).Input = [.2 .8];
 
     fg.solve();
 
-    %Now guess the energy and compare
-    f1Energy = -log(3/3);
-    f2Energy = -log(3/3);
-    aEnergy = -log(2/4);
-    bEnergy = -log(2/4);
-    cEnergy = -log(3/3);
-    guessEnergy = f1Energy+f2Energy+aEnergy+bEnergy+cEnergy;
-    firstGuessEnergy = guessEnergy;
-    assertElementsAlmostEqual(guessEnergy,fg.Energy);
-    assertElementsAlmostEqual(f1.Energy,f1Energy);
-    assertElementsAlmostEqual(f2.Energy,f2Energy);
-    assertElementsAlmostEqual(a.Energy,aEnergy);
-    assertElementsAlmostEqual(b.Energy,bEnergy);
-    assertElementsAlmostEqual(c.Energy,cEnergy);
+    bfe = fg.BetheFreeEnergy;
+    internalEnergy = fg.InternalEnergy;
+    bfentropy = fg.BetheEntropy;
 
-    %Test we can get a vector of variables energy
-    tmp = [a b];
-    assertElementsAlmostEqual(tmp.Energy,aEnergy+bEnergy);
+    f1Entropy = f1.BetheEntropy;
+    f1Energy = f1.InternalEnergy;
 
-    %Now let's try setting guesses.
+    f2Entropy = f2.BetheEntropy;
+    f2Energy = f2.InternalEnergy;
 
-    %First we initialize and make sure it's back to infinite
-    fg.initialize();
-    assertEqual(fg.Energy,Inf);
+    f3Entropy = f3.BetheEntropy();
+    f3Energy = f3.InternalEnergy();
 
-    a.Guess = 0;
-    b.Guess = 0;
-    c.Guess = 0;
-    assertElementsAlmostEqual(fg.Energy,guessEnergy);
+    b1Entropy = b(1).BetheEntropy();
+    b1Energy = b(1).InternalEnergy();
 
-    %Now we set a guess
-    a.Guess = 1;
-    b.Guess = 1;
-    c.Guess = 1;
+    b2Entropy = b(2).BetheEntropy();
+    b2Energy = b(2).InternalEnergy();
 
-    aEnergy = -log(4/4);
-    bEnergy = -log(4/4);
-    cEnergy = -log(1/3);
-    f1Energy = -log(2/3);
-    f2Energy = -log(2/3);
-    guessEnergy = aEnergy+bEnergy+cEnergy+f1Energy+f2Energy;
-    assertElementsAlmostEqual(fg.Energy,guessEnergy);
+    % Bethe Free Energy = Internal Energy - Bethe Entropy
+    assertElementsAlmostEqual(bfe,internalEnergy-bfentropy);
 
-    %Verify that the guesses hold their values
-    fg.Solver.iterate();
-    assertElementsAlmostEqual(fg.Energy,guessEnergy);
+    % InternalEnergy = sum of variable and factor internal entropy
+    assertElementsAlmostEqual(internalEnergy,f1Energy+f2Energy+f3Energy+b1Energy+b2Energy);
 
-    %Make sure the guesses are cleared.
-    fg.solve();
-    assertElementsAlmostEqual(fg.Energy,firstGuessEnergy);
-    
+    % Bethe Entropy = sum of factor enropy - sum of ( variable entropy * (degree -1) )
+    assertElementsAlmostEqual(bfentropy, f1Entropy+f2Entropy+f3Entropy - b1Entropy * 2 - b2Entropy * 2);
+
+    %Test Factor Energy -> sum (factor beliefs * log (factor weight))
+    f1b = f1.Belief();
+    f1values = f1.FactorTable.Weights;
+    assertElementsAlmostEqual(f1Energy,sum(f1b .* log(f1values)));
+
+    %Test Variable Energy
+    b1b = b(1).Belief;
+    assertElementsAlmostEqual(b1Energy,sum(b1b .* log(b(1).Input)));
+
+    %Test Factor Bethe Entropy
+    f1b = f1.Solver.getBelief();
+    assertElementsAlmostEqual(f1Entropy,-sum(f1b .* log(f1b)));
+
+    %Test Variable Bethe Entropy
+    b1b = b(1).Belief;
+    assertElementsAlmostEqual(b1Entropy,-sum(b1b .* log(b1b)));
 end
+

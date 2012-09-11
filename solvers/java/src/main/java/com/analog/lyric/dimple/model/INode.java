@@ -113,4 +113,8 @@ public interface INode  extends INameable
 	 */
 	public int getDepthBelowAncestor(FactorGraph ancestor);
 	
+	public abstract double getScore() ;
+	public abstract double getInternalEnergy() ;
+	public abstract double getBetheEntropy() ;
+
 }

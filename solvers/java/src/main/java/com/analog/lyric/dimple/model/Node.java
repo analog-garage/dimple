@@ -242,7 +242,6 @@ public ArrayList<Port> getPorts()
 		return _parentGraph != null;
 	}
 	
-	public abstract double getEnergy() ;
 	
 	@Override
 	public int getId()

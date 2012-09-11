@@ -284,7 +284,7 @@ public class SRealFactor extends SFactorBase
     }
 
 
-	public double getEnergy()  
+	public double getSomethingEnergy()  
 	{
 		throw new DimpleException("getEnergy not yet supported for ParticleBP");
 	}

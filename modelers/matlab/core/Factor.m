@@ -27,7 +27,9 @@ classdef Factor < handle
         Variables;
         Solver;
         Ports;
-        Energy;
+        Score;
+        InternalEnergy;
+        BetheEntropy;
     end
     
     methods
@@ -55,8 +57,16 @@ classdef Factor < handle
             obj.IFactor.update();
         end
         
-        function energy = get.Energy(obj)
-            energy = obj.IFactor.getEnergy();
+        function score = get.Score(obj)
+            score = obj.IFactor.getScore();
+        end
+        
+        function be = get.BetheEntropy(obj)
+            be = obj.IFactor.getBetheEntropy();
+        end
+        
+        function ie = get.InternalEnergy(obj)
+            ie = obj.IFactor.getInternalEnergy();
         end
         
         function updateEdge(obj,portNumOrPort)

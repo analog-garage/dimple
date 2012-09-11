@@ -47,7 +47,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public double getEnergy() {
+	public double getSomethingEnergy() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

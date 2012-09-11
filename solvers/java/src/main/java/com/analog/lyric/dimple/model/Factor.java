@@ -157,16 +157,7 @@ public class Factor extends FactorBase implements Cloneable
 		return retval;
 	}
 	
-	@Override
-	public double getEnergy() 
-	{
-		if (_solverFactor == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverFactor.getEnergy();
-	}
 
-	
 	@Override
 	public Factor clone()
 	{
@@ -315,6 +306,35 @@ public class Factor extends FactorBase implements Cloneable
 		varList.toArray(vars);
 		return getParentGraph().addFactor(jff, vars);
 
+	}
+
+	
+
+	@Override
+	public double getScore() 
+	{
+		if (_solverFactor == null)
+			throw new DimpleException("solver needs to be set before calculating energy");
+		
+		return _solverFactor.getScore();
+	}
+	
+	public double getInternalEnergy()
+	{
+		if (_solverFactor == null)
+			throw new DimpleException("solver needs to be set before calculating energy");
+		
+		return _solverFactor.getInternalEnergy();
+		
+	}
+
+	public double getBetheEntropy()
+	{
+		if (_solverFactor == null)
+			throw new DimpleException("solver needs to be set before calculating energy");
+		
+		return _solverFactor.getBetheEntropy();
+		
 	}
 
 

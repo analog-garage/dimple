@@ -31,5 +31,8 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void startSolver();
 	public void setNumIterations(int numIterations);
 	public int getNumIterations();
-
+	public double getScore();
+	public double getBetheFreeEnergy();
+	public double getInternalEnergy();
+	public double getBetheEntropy();
 }

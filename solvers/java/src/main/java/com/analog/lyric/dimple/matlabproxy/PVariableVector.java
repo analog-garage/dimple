@@ -189,13 +189,34 @@ public class PVariableVector
 		return ids;
 	}
 	
-	public double [] getEnergy() 
+	public double getScore() 
 	{
-		double [] energy = new double [_variables.length];
-		for (int i = 0; i < energy.length; i++)
-			energy[i] = _variables[i].getEnergy();
+		double sum = 0;
+
+		for (int i = 0; i < _variables.length; i++)
+			sum += _variables[i].getScore();
 		
-		return energy;
+		return sum;
+	}
+	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		for (int i = 0; i < _variables.length; i++)
+			sum += _variables[i].getBetheEntropy();
+		
+		return sum;
+	}
+	
+	public double getInternalEnergy()
+	{
+		double sum = 0;
+		
+		for (int i = 0; i < _variables.length; i++)
+			sum += _variables[i].getInternalEnergy();
+		
+		return sum;
 	}
 	
 	public void setName(String name) 

@@ -111,14 +111,30 @@ public abstract class VariableBase extends Node implements Cloneable
     }
     
 	@Override
-	public double getEnergy() 
+	public double getScore() 
 	{
 		if (_solverVariable == null)
 			throw new DimpleException("solver needs to be set before calculating energy");
 		
-		return _solverVariable.getEnergy();
+		return _solverVariable.getScore();
 	}
 
+	public double getBetheEntropy()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver needs to be set");
+		
+		return _solverVariable.getBetheEntropy();
+	}
+	
+	public double getInternalEnergy()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver needs to be set");
+		
+		return _solverVariable.getInternalEnergy();
+		
+	}
 	
 	public void attach(ISolverFactorGraph factorGraph)
 	{

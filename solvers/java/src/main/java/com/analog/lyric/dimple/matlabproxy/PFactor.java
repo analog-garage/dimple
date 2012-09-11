@@ -67,11 +67,6 @@ public class PFactor extends PFactorBase
 		return _factor.isDiscrete();
 	}
 	
-	public double getEnergy() 
-	{
-		return _factor.getEnergy();
-	}
-	
 	
 	public Factor getModelerObject()
 	{
@@ -229,5 +224,19 @@ public class PFactor extends PFactorBase
 		_factor.setLabel(name);
 	}
 	
+	public double getInternalEnergy()
+	{
+		return _factor.getInternalEnergy();
+	}
+	
+	public double getBetheEntropy()
+	{
+		return _factor.getBetheEntropy();
+	}
+	
+	public double getScore()
+	{
+		return _factor.getScore();
+	}
 
 }

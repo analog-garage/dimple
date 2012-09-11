@@ -39,6 +39,12 @@ classdef FactorTable < handle
                     obj.constructFromNDimensionalArray(varargin{1},{varargin{2:end}});
                 end
             else
+            	try 
+                    varargin{1}.isFactorTable();
+                catch exception
+                    error('Must specify either domains or indices, values, and domains');
+                end
+
                 obj.constructFromITable(varargin{1});
             end
         end

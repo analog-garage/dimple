@@ -99,7 +99,7 @@ public class GaussianAdd extends SFactorBase
 	}
 
 	@Override
-	public double getEnergy()  
+	public double getSomethingEnergy()  
 	{
 		throw new DimpleException("getEnergy not yet supported for GaussianAdd");
 	}

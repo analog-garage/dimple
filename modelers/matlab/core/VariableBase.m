@@ -38,7 +38,9 @@ classdef VariableBase < handle
         QualifiedLabel;
         UUID;
         Ports;
-        Energy;
+        Score;
+        InternalEnergy;
+        BetheEntropy;
         Guess;
     end
     
@@ -236,35 +238,20 @@ classdef VariableBase < handle
             x = 1+2;
         end
         
-        function energy = getEnergy(obj)
-            energy = sum(obj.VarMat.getEnergy());
+        function score = getScore(obj)
+            score = sum(obj.VarMat.getScore());
+        end
+        
+        function be = getBetheEntropy(obj)
+            be = obj.VarMat.getBetheEntropy();
+        end
+        function ie = getInternalEnergy(obj)
+            ie = obj.VarMat.getInternalEnergy();
         end
         
         function guess = getGuess(obj)
             guess = wrapNames(obj.VarMat.getGuess());
         end
-        
-        %{
-        function retval = split(obj,varargin)
-            if (obj.VarMat.size() ~= 1)
-                error('only support with one variable for now');
-            end
-            
-            
-            v = obj.VarMat.getVariable(0);
-            ifactors = cell(size(varargin));
-            
-            for i = 1:numel(varargin)
-                tmp = varargin{i};
-                ifactors{i} = tmp.IFactor;
-            end
-            
-            varmat = v.split(ifactors);
-            
-            retval = obj.createVariable(obj.Domain,varmat,0);
-            
-        end
-        %}
         
         function b = subsref(a,s)
             b = [];
@@ -333,8 +320,12 @@ classdef VariableBase < handle
                         case 'getPortNum'
                             b = a.getPortNum(s(2).subs{1});
                             dontdescend = 1;
-                        case 'Energy'
-                            b = a.getEnergy();
+                        case 'Score'
+                            b = a.getScore();
+                        case 'InternalEnergy'
+                            b = a.getInternalEnergy();
+                        case 'BetheEntropy'
+                            b = a.getBetheEntropy();
                         case 'Guess'
                             b = a.getGuess();
                         otherwise
