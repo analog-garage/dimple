@@ -446,7 +446,11 @@ public class SVariable extends SVariableBase
 		
 		
 		for (int i = 0; i < _domain.size(); i++)
-			sum += belief[i] * Math.log(input[i]/norm);
+		{
+			double tmp = input[i]/norm;
+			if (tmp != 0)
+				sum += belief[i] *(- Math.log(tmp));
+		}
 		
 		return sum;		
 	}
@@ -458,7 +462,10 @@ public class SVariable extends SVariableBase
 		
 		double [] belief = (double[])getBelief();
 		for (int i = 0; i < belief.length; i++)
-			sum -= belief[i] * Math.log(belief[i]);
+		{
+			if (belief[i] != 0)					
+				sum -= belief[i] * Math.log(belief[i]);
+		}
 		
 		return sum;		
 	}

@@ -54,14 +54,14 @@ function testEnergy()
     % Bethe Entropy = sum of factor enropy - sum of ( variable entropy * (degree -1) )
     assertElementsAlmostEqual(bfentropy, f1Entropy+f2Entropy+f3Entropy - b1Entropy * 2 - b2Entropy * 2);
 
-    %Test Factor Energy -> sum (factor beliefs * log (factor weight))
+    %Test Factor Energy -> sum (factor beliefs * (-log (factor weight)))
     f1b = f1.Belief();
     f1values = f1.FactorTable.Weights;
-    assertElementsAlmostEqual(f1Energy,sum(f1b .* log(f1values)));
+    assertElementsAlmostEqual(f1Energy,sum(f1b .* (-log(f1values))));
 
     %Test Variable Energy
     b1b = b(1).Belief;
-    assertElementsAlmostEqual(b1Energy,sum(b1b .* log(b(1).Input)));
+    assertElementsAlmostEqual(b1Energy,sum(b1b .* (-log(b(1).Input))));
 
     %Test Factor Bethe Entropy
     f1b = f1.Solver.getBelief();
@@ -70,5 +70,98 @@ function testEnergy()
     %Test Variable Bethe Entropy
     b1b = b(1).Belief;
     assertElementsAlmostEqual(b1Entropy,-sum(b1b .* log(b1b)));
-end
 
+    %% The following tests confirm that the BetheFreeEnergy is equal 
+    %  to the -log(Z) where Z is the partition function.  The partition
+    %  function is the sum over all models P(Observation|Model)*P(Model)
+    
+    %First we try a really simple case
+    fg = FactorGraph();
+    x = Bit();
+    y = Bit();
+    fg.addFactor(@(x,y) x == y,x,y);
+    x.Input = .8;
+    y.Input = 1;
+    fg.solve();
+    actual = -log(1*.8 + 0*.2);
+    assertElementsAlmostEqual(fg.BetheFreeEnergy,actual);
+
+
+    %Same simple case with soft factor.
+    fg = FactorGraph();
+    x = Bit();
+    y = Bit();
+    fg.addFactor(@(x,y) x+y+2,x,y);
+    x.Input = .7;
+    y.Input = 1;
+    fg.solve();
+    actual = -log(.7 * 4 + .3 * 3);
+    assertElementsAlmostEqual(fg.BetheFreeEnergy,actual);
+
+    %2 Node HMM
+    fg = FactorGraph();
+    x = Bit(2,1);
+    y = Bit(2,1);
+    transitionMatrix = rand(2);
+    emissionMatrix = rand(2);
+    transition = FactorTable(transitionMatrix,x.Domain,x.Domain);
+    emission = FactorTable(emissionMatrix,x.Domain,y.Domain);
+    fg.addFactor(transition,x(1),x(2));
+    fg.addFactor(emission,x(1),y(1));
+    fg.addFactor(emission,x(2),y(2));
+    x(1).Input = rand();
+    x(2).Input = rand();
+    y(1).Input = .99999999;
+    y(2).Input = .99999999;
+    fg.solve();
+    estimate = -log(x(1).Input(1)*x(2).Input(1)*emissionMatrix(1,2)^2*transitionMatrix(1,1) + ...
+         x(1).Input(1)*x(2).Input(2)*emissionMatrix(1,2)*emissionMatrix(2,2)*transitionMatrix(1,2) + ...
+         x(1).Input(2)*x(2).Input(1)*emissionMatrix(1,2)*emissionMatrix(2,2)*transitionMatrix(2,1) + ...
+         x(1).Input(2)*x(2).Input(2)*emissionMatrix(2,2)*emissionMatrix(2,2)*transitionMatrix(2,2));
+
+    assertElementsAlmostEqual(fg.BetheFreeEnergy,estimate);
+
+    %Bigger HMM with observations randomized.
+    N = 5;
+    fg = FactorGraph();
+    x = Bit(N,1);
+    y = Bit(N,1);
+    transitionMatrix = rand(2);
+    emissionMatrix = rand(2);
+    transition = FactorTable(transitionMatrix,x.Domain,x.Domain);
+    emission = FactorTable(emissionMatrix,x.Domain,y.Domain);
+    for i = 2:N
+       fg.addFactor(transition,x(i-1),x(i));
+    end
+    for i = 1:N
+        fg.addFactor(emission,x(i),y(i));
+    end
+    x.Input = rand(N,1);
+    yInputs = rand(N,1) > 0.5;
+    y.Input = yInputs;
+    fg.solve();
+
+    %calculate partition function
+    estimate = 0;
+    %for every combination of hidden states
+    for i = 0:(2^N-1)
+        states = dec2bin(i,N)-'0';
+        tmp = 1;
+        %multiply priors
+        for j = 1:N
+           tmp = tmp*x(j).Input(states(j)+1); 
+        end
+        %multiply emission probabilities
+        for j = 1:N
+           tmp = tmp * emissionMatrix(states(j)+1,(yInputs(j)>.5) + 1); 
+        end
+        %multiply transition proabilities
+        for j = 2:N
+           tmp = tmp * transitionMatrix(states(j-1)+1,states(j)+1); 
+        end
+        estimate = estimate + tmp;
+    end
+    estimate = -log(estimate);
+    assertElementsAlmostEqual(fg.BetheFreeEnergy,estimate);
+
+end

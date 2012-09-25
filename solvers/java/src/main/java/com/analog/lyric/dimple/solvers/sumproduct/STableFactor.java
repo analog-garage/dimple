@@ -244,7 +244,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		double [] belief = getBelief();
 		double sum = 0;
 		for (int i = 0; i < belief.length; i++)
-			sum += belief[i] * Math.log(getFactorTable().getWeights()[i]);
+		{
+			double tmp = - Math.log(getFactorTable().getWeights()[i]);
+			if (tmp != 0)
+				sum += belief[i] * tmp;
+		}
 		
 		return sum;		
 	}
@@ -255,7 +259,10 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		
 		double [] belief = getBelief();
 		for (int i = 0; i < belief.length; i++)
-			sum -= belief[i] * Math.log(belief[i]);
+		{
+			if (belief[i] != 0)
+				sum -= belief[i] * Math.log(belief[i]);
+		}
 		
 		return sum;		
 	}

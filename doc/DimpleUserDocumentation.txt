@@ -2030,7 +2030,7 @@ be = fg.BetheEntropy;
 Factor Internal Energy
 
 [latex]
-$ InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*log(Weight(\vec{x})) $
+$ InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*(-log(Weight(\vec{x}))) $
 
 Where a is an instance of a Factor, X is the set of variables connected to a, Weight is the FactorTable entry for the specified set of variable values, and B~a~ is the belief of that factor node.
 
@@ -2052,7 +2052,7 @@ be = f.BetheEntropy;
 Variable Internal Energy
 
 [latex]
-$ InternalEnergy(i) = \sum_{d \in D}B_i(d)*log(Input(d)) $
+$ InternalEnergy(i) = \sum_{d \in D}B_i(d)*(-log(Input(d))) $
 
 Where D is variable i's domain and Input is the variable's input.
 
