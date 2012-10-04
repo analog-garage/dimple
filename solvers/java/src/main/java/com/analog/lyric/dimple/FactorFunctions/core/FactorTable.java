@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -30,6 +29,32 @@ public class FactorTable extends FactorTableBase
 {
 	private DiscreteDomain [] _domains;
 
+	public FactorTable(double [][] table, DiscreteDomain domain1, DiscreteDomain domain2)
+	{
+		int [][] indices = new int[domain1.size()*domain2.size()][2];
+		double [] weights = new double[indices.length];
+		
+		IndexCounter ic = new IndexCounter(new int [] {domain1.size(),domain2.size()});
+
+		int i = 0;
+		for (int [] tmp : ic)
+		{
+			indices[i][0] = tmp[0];
+			indices[i][1] = tmp[1];
+			weights[i] = table[tmp[0]][tmp[1]];
+			i++;
+		}
+		
+		_domains = new DiscreteDomain[]{domain1,domain2};
+		change(indices, weights);
+	}
+	
+	public FactorTable(FactorTable copy)
+	{
+		super(copy);
+		
+		_domains = copy._domains;
+	}
 	
 	public FactorTable(int [][] indices, double [] weights, Discrete... variables)
 	{
@@ -41,6 +66,17 @@ public class FactorTable extends FactorTableBase
 			domains[i] = variables[i].getDiscreteDomain();
 		}
 		_domains = domains;
+	}
+	
+	public void copy(FactorTable copy)
+	{
+		super.copy(copy);
+		_domains = copy._domains;
+	}
+	
+	public FactorTable copy()
+	{
+		return new FactorTable(this);
 	}
 	
 	public FactorTable(Object table, DiscreteDomain [] domains)
@@ -127,7 +163,7 @@ public class FactorTable extends FactorTableBase
 			
 	}
 	
-	
+
 	//////////////////////////////////////////////////////////////////
 	// Methods for creating new Combo Tables
 	//////////////////////////////////////////////////////////////////

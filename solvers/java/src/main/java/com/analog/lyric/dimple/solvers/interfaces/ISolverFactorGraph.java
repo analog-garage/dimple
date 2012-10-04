@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 
@@ -35,4 +36,6 @@ public interface ISolverFactorGraph extends ISolverNode
 	public double getBetheFreeEnergy();
 	public double getInternalEnergy();
 	public double getBetheEntropy();
+	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
+	
 }

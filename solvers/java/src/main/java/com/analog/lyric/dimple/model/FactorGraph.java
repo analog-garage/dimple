@@ -33,7 +33,9 @@ import org.xml.sax.SAXException;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.schedulers.DefaultScheduler;
@@ -274,6 +276,11 @@ public class FactorGraph extends FactorBase
 	public ArrayList<FactorGraphStream> getFactorGraphStreams()
 	{
 		return _factorGraphStreams;
+	}
+	
+	public Factor addFactor(FactorTable ft, VariableBase ... vars)
+	{
+		return addFactor(new TableFactorFunction("TableFactorFunction",ft),vars);
 	}
 	
 	public Factor addFactor(FactorFunction factorFunction, VariableBase ... vars) 
@@ -946,6 +953,51 @@ public class FactorGraph extends FactorBase
 	 * Operations on FactorGraph
 	 * 
 	 ******************************************************************/
+
+	/*
+	 * This method tries to optimize the BetheFreeEnergy by searching over the space of 
+	 * FactorTable values.  
+	 * 
+	 * numRestarts - Determines how many times to randomly initialize the FactorTable parameters
+	 *               Because the BetheFreeEnergy function is not convex, random restarts can help
+	 *               find a better optimum.
+	 * numSteps - How many times to change each parameter
+	 * 
+	 * stepScaleFactor - What to mutliply the gradient by for each step.
+	 */
+	public void estimateParameters(Object [] factorsAndTables,int numRestarts,int numSteps, double stepScaleFactor)
+	{
+		HashSet<FactorTable> sfactorTables = new HashSet<FactorTable>();
+		for (Object o : factorsAndTables)
+		{
+			if (o instanceof Factor)
+			{
+				Factor f = (Factor)o;
+				sfactorTables.add(f.getFactorTable());
+			}
+			else if (o instanceof FactorTable)
+			{
+				sfactorTables.add((FactorTable)o);
+			}
+		}
+		
+		FactorTable [] factorTables = new FactorTable[sfactorTables.size()];
+		int i = 0;
+		for (FactorTable ft : sfactorTables)
+		{
+			factorTables[i] = ft;
+			i++;
+		}
+		estimateParameters(factorTables,numRestarts,numSteps,stepScaleFactor);
+		
+	}
+	
+	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor)
+	{
+		getSolver().estimateParameters(tables, numRestarts, numSteps,  stepScaleFactor);
+
+	}
+	
 
 
 	private void addOwnedVariable(VariableBase variable) 

@@ -34,11 +34,12 @@ public class SVariable extends SVariableBase
     double [][] _inPortMsgs;
     double [][] _logInPortMsgs;
     double [][] _outMsgArray;
-    double [][] _savedOutMsgArray;
+    double [][] _savedOutMsgArray;    
+    double [][] _outPortDerivativeMsgs;
+    
     double [] _dampingParams = new double[0];
     boolean _initCalled = true;
     protected double [] _input;
-    //protected Discrete _varDiscrete;
     private int _guessIndex = 0;
     private boolean _guessWasSet = false;
     private DiscreteDomain _domain;
@@ -50,9 +51,7 @@ public class SVariable extends SVariableBase
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
 		
-		_domain = (DiscreteDomain)var.getDomain();
-		
-		//_varDiscrete = (Discrete)_var;
+		_domain = (DiscreteDomain)var.getDomain();		
 		_input = (double[])getDefaultMessage(null);
 	}
 	
@@ -92,7 +91,6 @@ public class SVariable extends SVariableBase
 	public Object getValue()
 	{
 		int index = getValueIndex();
-		//Discrete var = (Discrete)getVariable();
 		return _domain.getElements()[index];
 	}
 
@@ -244,6 +242,7 @@ public class SVariable extends SVariableBase
         	for (int m = 0; m < M; m++)
         		outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
 	    
+        updateDerivative(outPortNum);
     }
     
 
@@ -320,8 +319,12 @@ public class SVariable extends SVariableBase
             		outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
             
 	    }
+	   
+	    for (int i = 0; i < _inPortMsgs.length; i++)
+	    	updateDerivative(i);
     }
     
+        
     public Object getBelief()
     {
     	updateCache();
@@ -432,6 +435,44 @@ public class SVariable extends SVariableBase
 		
 	}
 
+
+	public double [] getNormalizedInputs()
+	{
+		double [] tmp = new double [_input.length];
+		double sum = 0;
+		for (int i = 0; i < _input.length; i++)
+			sum += _input[i];
+		for (int i = 0; i < tmp.length; i++)
+			tmp[i] = _input[i]/sum;
+		
+		return tmp;
+	}
+
+	public double [] getUnormalizedBelief()
+	{
+		//TODO: log regime
+		double [] input = getNormalizedInputs();
+		
+		double [] retval = new double[_input.length];
+		for (int i = 0; i <  retval.length ; i++)
+			retval[i] = input[i];
+		
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			for (int j=  0; j < retval.length; j++)
+			{
+				retval[j] *= _inPortMsgs[i][j];
+			}
+		}
+		
+		return retval;
+			
+	}
+	
+	/******************************************************
+	 * Energy, Entropy, and derivatives of all that. 
+	 ******************************************************/
+	
 	public double getInternalEnergy()
 	{
 		double sum = 0;
@@ -449,13 +490,12 @@ public class SVariable extends SVariableBase
 		{
 			double tmp = input[i]/norm;
 			if (tmp != 0)
-				sum += belief[i] *(- Math.log(tmp));
+				sum += belief[i] * (- Math.log(tmp));
 		}
 		
 		return sum;		
 	}
 
-	
 	public double getBetheEntropy()
 	{
 		double sum = 0;
@@ -469,5 +509,189 @@ public class SVariable extends SVariableBase
 		
 		return sum;		
 	}
+	
+	public double calculatedf(double f, int weightIndex, int domain)
+	{
+		double sum = 0;
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			STableFactor sft = (STableFactor)getVariable().getPorts().get(i).getConnectedNode().getSolver();
+			double inputMsg = _inPortMsgs[i][domain];
+			double tmp = f / inputMsg;
+			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
+			tmp = tmp * der;
+			sum += tmp; 
+		}
+		return sum;
+	}
+	
+	
+	public double calculateDerivativeOfBelief(int weightIndex, int domain)
+	{
+		double [] un = getUnormalizedBelief();
+		//Calculate unormalized belief
+		double f = un[domain];
+		double g = 0;
+		for (int i = 0; i < _input.length; i++)
+			g += un[i];
+		
+		double df = calculatedf(f,weightIndex,domain);
+		double dg = 0;
+		for (int i = 0; i < _input.length; i++)
+		{
+			double tmp = un[i];
+			dg += calculatedf(tmp,weightIndex,i);
+		}
+		
+		//return df;
+		return (df*g - f*dg)/(g*g);
+	}
+	
+	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
+	{
+		double sum = 0;
+
+		//double [] belief = (double[])getBelief();
+		double [] input = getNormalizedInputs();
+		
+		//for each domain
+		for (int d = 0; d < _input.length; d++)
+		{
+			//calculate belief(d)
+			//double beliefd = belief[d];
+			
+			//calculate input(d)
+			double inputd = input[d];
+			
+			//get derviativebelief(d,weightindex)
+			double dbelief = calculateDerivativeOfBelief(weightIndex,d);
+			
+			sum += dbelief * (-Math.log(inputd));
+		}
+		return sum;
+	}
+	public double calculateDerivativeOfBetheEntropyWithRespectToWeight(int weightIndex)
+	{
+		double sum = 0;
+		
+		double [] belief = (double[])getBelief();
+		
+		for (int d = 0; d < _input.length; d++)
+		{
+			double beliefd = belief[d];
+			double dbelief = calculateDerivativeOfBelief(weightIndex, d);
+			
+			sum += dbelief * (Math.log(beliefd)) + dbelief;
+		}
+		
+		return -sum * (_inPortMsgs.length-1);
+	}
+
+
+    private double calculateProdFactorMessagesForDomain(int outPortNum, int d)
+    {
+		double f = getNormalizedInputs()[d];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			if (i != outPortNum)
+			{
+				f *= _inPortMsgs[i][d];
+			}
+		}
+		return f;
+    }
+    
+    public void updateDerivativeForWeightNumAndDomainItem(int outPortNum, int weight, int d)
+    {
+    	//calculate f
+    	double f = calculateProdFactorMessagesForDomain(outPortNum,d);
+    	
+    	//calculate g
+    	double g = 0; 
+    	for (int i = 0; i < _input.length; i++)
+    		g += calculateProdFactorMessagesForDomain(outPortNum, i);
+    	
+    	double derivative = 0;
+    	if (g != 0)
+    	{
+	    	//calculate df
+	    	double df = calculatedf(outPortNum,f,d,weight);
+	    	
+	    	//calculate dg
+	    	double dg = calculatedg(outPortNum,weight);
+	    	
+	    	derivative = (df*g - f*dg)/(g*g);
+    	}    	
+    	
+    	_outMessageDerivative[weight][outPortNum][d] = derivative;
+    }
+    
+    public double calculatedg(int outPortNum,int wn)
+    {
+    	double sum = 0;
+    	for (int d = 0; d < _input.length; d++)
+    	{
+    		double prod = calculateProdFactorMessagesForDomain(outPortNum, d);
+    		sum += calculatedf(outPortNum,prod,d,wn);
+    	}
+    	
+    	return sum;
+    }
+
+    double [][][] _outMessageDerivative;
+
+	public void initializeDerivativeMessages(int weights)
+	{
+		_outMessageDerivative = new double[weights][_inPortMsgs.length][_input.length];
+	}
+    
+    public double [] getMessageDerivative(int wn, Factor f)
+    {
+    	int portNum = getVariable().getPortNum(f);
+    	return _outMessageDerivative[wn][portNum];
+    }
+    
+    public double calculatedf(int outPortNum, double f, int d, int wn)
+    {
+    	double df = 0;
+		
+		int j = 0;
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			if (i != outPortNum)
+			{
+				double thisMsg = _inPortMsgs[i][d];
+				STableFactor stf = (STableFactor)getVariable().getPorts().get(j).getConnectedNode().getSolver();
+				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
+				
+				df += f/thisMsg * dfactor[d]; 
+			}
+			j++;
+		}
+		return df;
+    }
+    
+    public void updateDerivativeForWeightNum(int outPortNum, int weight)
+    {
+    	for (int d = 0; d < _input.length; d++)
+    	{
+    		updateDerivativeForWeightNumAndDomainItem(outPortNum,weight,d);
+    	}
+    }
+    
+    public void updateDerivative(int outPortNum)
+    {
+    	SFactorGraph sfg = (SFactorGraph)getRootGraph();
+    	if (sfg.getCalculateDerivateOfMessages())
+    	{
+	    	int numWeights = sfg.getCurrentFactorTable().getWeights().length;
+	    	
+	    	for (int wn = 0; wn < numWeights; wn++)
+	    	{
+	    		updateDerivativeForWeightNum(outPortNum, wn);
+	    	}
+    	}
+    	
+    }
 	
 }

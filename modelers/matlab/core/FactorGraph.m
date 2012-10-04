@@ -241,22 +241,23 @@ classdef FactorGraph < handle
             end
         end
         
+        function estimateParameters(obj,factorsAndTables,numRestarts,numSteps,stepScaleFactor)
+            if ~ iscell(factorsAndTables)
+                factorsAndTables = {factorsAndTables};
+            end
+            ifandt = cell(size(factorsAndTables));
+            for i = 1:length(factorsAndTables)
+                if isa(factorsAndTables{i},'Factor')
+                    ifandt{i} = factorsAndTables{i}.IFactor;
+                elseif isa(factorsAndTables{i},'FactorTable')
+                    ifandt{i} = factorsAndTables{i}.ITable;
+                else
+                    error('Second argument should be an array of FactorTables and/or Factors');
+                end                
+            end
+            obj.IGraph.estimateParameters(ifandt,numRestarts,numSteps,stepScaleFactor);
+        end
         
-        %{
-        Factors;
-        FactorsFlat;
-        FactorsTop;
-        FactorsAndNestedGraphs;
-        FactorsAndNestedGraphsTop;
-        FactorsAndNestedGraphsFlat;
-        getFactors(nestingLevel)
-        getFactorsAndNestedGraphs(nestingLevel)
-        
-        Variables
-        VariablesFlat
-        VariablesTop
-        getVariables(nestingLevel)
-        %}
         
         function nodes = getNodes(obj,relativeNestingDepth,forceIncludeBoundaryVariables)
             if nargin < 3

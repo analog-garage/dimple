@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
@@ -40,6 +41,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	double [][] _inPortMsgs;
 	double [][] _outMsgArray;
 	double [][] _savedOutMsgArray;
+	double [][][] _outPortDerivativeMsgs;
 	double [] _dampingParams;
 	boolean _initCalled = true;
 	TableFactorEngine _tableFactorEngine;
@@ -150,6 +152,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		else
 			_tableFactorEngine.updateEdge(outPortNum);
 
+		updateDerivative(outPortNum);
 	}
 	
 	
@@ -163,6 +166,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		else
 			_tableFactorEngine.update();
 		
+		for (int i = 0; i < _inPortMsgs.length ;i++)
+			updateDerivative(i);
 	}
 	
 	@Override
@@ -214,12 +219,23 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	{
 		updateCache();
 		
-		//throw new DimpleException("not supported");
+		double [] retval = getUnormalizedBelief();
+		double sum = 0; 
+		for (int i = 0; i < retval.length; i++)
+			sum += retval[i];
+		for (int i = 0; i < retval.length; i++)
+			retval[i] /= sum;
+		return retval;
+	}
+	
+	public double [] getUnormalizedBelief()
+	{
+		updateCache();
+		
 		int [][] table = getFactorTable().getIndices();
 		double [] values = getFactorTable().getWeights();
 		double [] retval = new double[table.length];
 		
-		double sum = 0;
 		
 		for (int i = 0; i < table.length; i++)
 		{
@@ -228,44 +244,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			{
 				retval[i] *= _inPortMsgs[j][table[i][j]];
 			}
-			sum += retval[i];
-		}
-		
-		for (int i = 0; i < retval.length; i++)
-		{
-			retval[i] /= sum;
-		}
+		}		
 		
 		return retval;
 	}
 	
-	public double getInternalEnergy()
-	{
-		double [] belief = getBelief();
-		double sum = 0;
-		for (int i = 0; i < belief.length; i++)
-		{
-			double tmp = - Math.log(getFactorTable().getWeights()[i]);
-			if (tmp != 0)
-				sum += belief[i] * tmp;
-		}
-		
-		return sum;		
-	}
-	
-	public double getBetheEntropy()
-	{
-		double sum = 0;
-		
-		double [] belief = getBelief();
-		for (int i = 0; i < belief.length; i++)
-		{
-			if (belief[i] != 0)
-				sum -= belief[i] * Math.log(belief[i]);
-		}
-		
-		return sum;		
-	}
 
 	@Override
 	public ArrayList<Port> getPorts() 
@@ -339,5 +322,289 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return Sort.quickfindLastKindices(msg, k);
 	}
 
+	/******************************************************
+	 * Energy, Entropy, and derivatives of all that. 
+	 ******************************************************/
+
+
+	public double getInternalEnergy()
+	{
+		double [] belief = getBelief();
+		double sum = 0;
+		for (int i = 0; i < belief.length; i++)
+		{
+			double tmp = - Math.log(getFactorTable().getWeights()[i]);
+			if (tmp != 0)
+				sum += belief[i] * tmp;
+		}
+		
+		return sum;		
+	}
+	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		double [] belief = getBelief();
+		for (int i = 0; i < belief.length; i++)
+		{
+			if (belief[i] != 0)
+				sum -= belief[i] * Math.log(belief[i]);
+		}
+		
+		return sum;		
+	}
+	
+	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
+	{
+		SFactorGraph sfg = (SFactorGraph)getRootGraph();
+		
+		boolean isFactorOfInterest = sfg.getCurrentFactorTable() == getFactor().getFactorTable();
+		
+		double [] weights = _factor.getFactorTable().getWeights();
+		//TODO: avoid recompute
+		double [] beliefs = getBelief();
+		
+		double sum = 0;
+		
+		for (int i = 0; i < weights.length; i++)
+		{
+			//beliefs = getUnormalizedBelief();
+	
+			//Belief'(weightIndex)*(-log(weight(weightIndex))) + Belief(weightIndex)*(-log(weight(weightIndex)))'
+			//(-log(weight(weightIndex)))' = - 1 / weight(weightIndex)
+			double mlogweight = -Math.log(weights[i]);
+			double belief = beliefs[i];
+			double mlogweightderivative = 0;
+			if (i == weightIndex && isFactorOfInterest)
+				mlogweightderivative = -1.0 / weights[weightIndex];
+			double beliefderivative = calculateDerivativeOfBeliefWithRespectToWeight(weightIndex,i,isFactorOfInterest);
+			sum += beliefderivative*mlogweight + belief*mlogweightderivative;
+			//sum += beliefderivative;
+		}		
+		//return beliefderivative*mlogweight + belief*mlogweightderivative;
+	
+		return sum;
+	}
+	
+	public double calculateDerivativeOfBeliefNumeratorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
+	{
+		double [] weights = _factor.getFactorTable().getWeights();
+		int [][] indices = _factor.getFactorTable().getIndices();
+		
+		//calculate product of messages and phi
+		double prod = weights[index];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			prod *= _inPortMsgs[i][indices[index][i]];
+
+		double sum = 0;
+		
+		//if index == weightIndex, add in this term
+		if (index == weightIndex && isFactorOfInterest)
+		{
+			sum = prod / weights[index];
+		}
+		
+		//for each variable
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			SVariable var = (SVariable)getFactor().getPorts().get(i).getConnectedNode().getSolver();
+			
+			//divide out contribution
+			sum += prod / _inPortMsgs[i][indices[index][i]] * var.getMessageDerivative(weightIndex,getFactor())[indices[index][i]];
+		}
+		return sum;
+	}
+	
+	public double calculateDerivativeOfBeliefDenomenatorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
+	{
+		double sum = 0;
+		for (int i = 0; i < getFactor().getFactorTable().getWeights().length; i++)
+			sum += calculateDerivativeOfBeliefNumeratorWithRespectToWeight(weightIndex,i,isFactorOfInterest);
+		return sum;
+	}
+	
+	public double calculateDerivativeOfBeliefWithRespectToWeight(int weightIndex,int index, boolean isFactorOfInterest)
+	{
+		double [] un = getUnormalizedBelief();
+		double f = un[index];
+		double fderivative = calculateDerivativeOfBeliefNumeratorWithRespectToWeight(weightIndex, index,isFactorOfInterest);
+		double gderivative = calculateDerivativeOfBeliefDenomenatorWithRespectToWeight(weightIndex, index,isFactorOfInterest);
+		double g = 0;
+		for (int i = 0; i < un.length; i++)
+			g += un[i];
+		
+		double tmp = (fderivative*g-f*gderivative)/(g*g);
+		return tmp;
+	}
+	
+	public void initializeDerivativeMessages(int weights)
+	{
+		_outPortDerivativeMsgs = new double[weights][_inPortMsgs.length][];
+		for (int i = 0; i < weights; i++)
+			for (int j = 0; j < _inPortMsgs.length; j++)
+				_outPortDerivativeMsgs[i][j] = new double[_inPortMsgs[j].length];
+	}
+	
+	public double [] getMessageDerivative(int wn, VariableBase var)
+	{
+		int index = getFactor().getPortNum(var);		
+		return _outPortDerivativeMsgs[wn][index];
+	}	
+	
+	public double calculateMessageForDomainValueAndTableIndex(int domainValue, int outPortNum, int tableIndex)
+	{
+		FactorTable ft = getFactor().getFactorTable();
+		int [][] indices = ft.getIndices();
+		double [] weights = ft.getWeights();
+
+		if (indices[tableIndex][outPortNum] == domainValue)
+		{
+			double prod = weights[tableIndex];
+			for (int j = 0; j < _inPortMsgs.length; j++)
+			{
+				if (outPortNum != j)
+				{
+					prod *= _inPortMsgs[j][indices[tableIndex][j]];
+				}
+			}
+			
+			return prod;
+		}
+		else
+			return 0;
+	}
+	
+	public double calculateMessageForDomainValue(int domainValue, int outPortNum)
+	{
+		FactorTable ft = getFactor().getFactorTable();
+		double sum = 0;
+		int [][] indices = ft.getIndices();
+		
+		for (int i = 0; i < ft.getWeights().length; i++)
+			if (indices[i][outPortNum] == domainValue)
+				sum += calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,i);
+		
+		return sum;
+	}
+	
+	
+	public double calculatedf(int outPortNum, int domainValue, int wn, boolean factorUsesTable)
+	{
+		FactorTable ft = getFactor().getFactorTable();
+		double sum = 0;
+		int [][] indices = ft.getIndices();
+		double [] weights = ft.getWeights();
+		
+		for (int i = 0; i < indices.length; i++)
+		{
+			if (indices[i][outPortNum] == domainValue)
+			{
+				double prod = calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,i);
+				
+				if (factorUsesTable && (wn == i))
+				{
+					sum += prod/weights[i];
+				}
+				
+				for (int j = 0; j < _inPortMsgs.length; j++)
+				{
+					
+					if (j != outPortNum)
+					{
+						SVariable sv = (SVariable)getFactor().getPorts().get(j).getConnectedNode().getSolver();
+						double [] dvar = sv.getMessageDerivative(wn,getFactor());
+								
+						sum += (prod / _inPortMsgs[j][indices[i][j]]) * dvar[indices[i][j]];
+					}
+				}
+								
+			}
+		}
+		
+		return sum;
+	}
+	
+	public double calculatedg(int outPortNum, int wn, boolean factorUsesTable)
+	{
+		double sum = 0;
+		for (int i = 0; i < _inPortMsgs[outPortNum].length; i++)
+			sum += calculatedf(outPortNum,i,wn,factorUsesTable);
+		
+		return sum;
+				
+	}
+	
+	public void updateDerivativeForWeightAndDomain(int outPortNum, int wn, int d,boolean factorUsesTable)
+	{
+		//TODO: not re-using computation efficiently.
+		
+		//calculate f
+		double f = calculateMessageForDomainValue(d,outPortNum);
+		
+		//calculate g
+		double g = 0;
+		for (int i = 0; i < _inPortMsgs[outPortNum].length; i++)
+			g += calculateMessageForDomainValue(i,outPortNum);
+		
+		double derivative = 0;
+		if (g != 0)
+		{
+			double df = calculatedf(outPortNum,d,wn,factorUsesTable);
+			double dg = calculatedg(outPortNum,wn,factorUsesTable);
+		
+			
+			//derivative = df;
+			derivative = (df*g - f*dg) / (g*g);
+			
+		}
+		
+		_outPortDerivativeMsgs[wn][outPortNum][d] = derivative;
+		
+		
+	}
+	
+	public void updateDerivativeForWeight(int outPortNum, int wn,boolean factorUsesTable)
+	{
+		int D = _inPortMsgs[outPortNum].length;
+		
+		for (int d = 0; d < D; d++)
+		{
+			updateDerivativeForWeightAndDomain(outPortNum,wn,d,factorUsesTable);
+		}
+	}
+	
+	public void updateDerivative(int outPortNum)
+	{
+		SFactorGraph sfg = (SFactorGraph)getRootGraph();
+		if (sfg.getCalculateDerivateOfMessages())
+		{
+			FactorTable ft = sfg.getCurrentFactorTable();
+			int numWeights = ft.getWeights().length;
+			
+			for (int wn = 0; wn < numWeights; wn++)
+			{
+				updateDerivativeForWeight(outPortNum,wn,ft == getFactor().getFactorTable());
+			}
+		}
+	}
+	
+	public double calculateDerivativeOfBetheEntropyWithRespectToWeight(int weightIndex)
+	{
+		
+		boolean isFactorOfInterest = ((SFactorGraph)getRootGraph()).getCurrentFactorTable() == getFactor().getFactorTable(); 
+				
+		//Belief'(weightIndex)*(-log(Belief(weightIndex))) + Belief(weightIndex)*(-log(Belief(weightIndex)))'
+		double [] beliefs = getBelief();
+		double sum = 0;
+		for (int i = 0; i < beliefs.length; i++)
+		{
+			double beliefderivative = calculateDerivativeOfBeliefWithRespectToWeight(weightIndex,i,isFactorOfInterest);
+			double belief = beliefs[i];
+			sum += beliefderivative*(-Math.log(belief)) - beliefderivative;
+		}
+		return sum;
+	}
+	
 
 }

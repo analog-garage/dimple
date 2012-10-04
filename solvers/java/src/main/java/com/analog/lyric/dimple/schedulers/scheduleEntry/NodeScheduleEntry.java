@@ -44,7 +44,7 @@ public class NodeScheduleEntry implements IScheduleEntry
 	{
 		_node.update();
 	}
-	
+
 	public INode getNode()
 	{
 		return _node;

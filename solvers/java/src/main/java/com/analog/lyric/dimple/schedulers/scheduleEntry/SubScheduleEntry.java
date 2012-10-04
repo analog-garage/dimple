@@ -50,6 +50,7 @@ public class SubScheduleEntry implements IScheduleEntry
 		}
 	}
 	
+
 	public ISchedule getSchedule()
 	{
 		return _subschedule;

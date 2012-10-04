@@ -39,6 +39,27 @@ public class FactorTableBase
 		
 	}
 
+	public void copy(FactorTableBase copy)
+	{
+		_indices = copy._indices.clone();
+		_weights = copy._weights.clone();
+		//maybe clone potentials if they're not null
+		_potentials = null;
+		
+	}
+	
+	public FactorTableBase(FactorTableBase copy)
+	{
+		copy(copy);
+	}
+	
+	public void changeWeight(int index, double weight)
+	{
+		_weights[index] = weight;
+		//TODO: maybe just recompute potential if it exists.
+		_potentials = null;
+	}
+	
 	public FactorTableBase(int [][] table, double [] probs)
 	{
 		this(table,probs,true);
@@ -248,10 +269,9 @@ public class FactorTableBase
 		}
 	}
 	
-	public void randomize()
+	public void randomizeWeights(Random r)
 	{
 		_potentials = null;
-		Random r = new Random();
 		
 		for (int i = 0; i < _weights.length; i++)
 			_weights[i] = r.nextDouble();

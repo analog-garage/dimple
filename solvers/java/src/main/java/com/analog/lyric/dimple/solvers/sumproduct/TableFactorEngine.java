@@ -66,9 +66,11 @@ public class TableFactorEngine
         	int[] tableRow = table[tableIndex];
     		int outputIndex = tableRow[outPortNum];
         	
+    		
         	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
         		if (inPortNum != outPortNum)
         			prob *= _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+        	
         	outputMsgs[outputIndex] += prob;
         }
         
@@ -84,14 +86,12 @@ public class TableFactorEngine
 					+ outPortNum + " on factor " + _factor.getLabel());
 		}
 
-    	
     	for (int i = 0; i < outputMsgLength; i++) 
     		{
     		outputMsgs[i] /= sum;
     		
 
     		}
-
     	
     	if (damping != 0)
     		for (int i = 0; i < outputMsgLength; i++)

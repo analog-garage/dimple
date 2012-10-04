@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorBase;
@@ -135,7 +136,16 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 
 	public double getBetheFreeEnergy()
 	{
+		//return getInternalEnergy();
+		//return - getBetheEntropy();
 		return getInternalEnergy() - getBetheEntropy();
+	}
+	
+	@Override
+	public void estimateParameters(FactorTable[] tables, int numRestarts,
+			int numSteps, double stepScaleFactor) {
+		throw new DimpleException("not supported by this solver");
+		
 	}
 	
 	public double getBetheEntropy()

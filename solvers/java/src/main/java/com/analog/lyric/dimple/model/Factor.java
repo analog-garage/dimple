@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -71,6 +72,10 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 
+	public FactorTable getFactorTable()
+	{
+		return getFactorFunction().getFactorTable(getDomains());
+	}
 	
 	public boolean isDiscrete()
 	{
