@@ -241,6 +241,23 @@ classdef FactorGraph < handle
             end
         end
         
+        function baumWelch(obj,factorsAndTables,numRestarts,numSteps)
+            if ~ iscell(factorsAndTables)
+                factorsAndTables = {factorsAndTables};
+            end
+            ifandt = cell(size(factorsAndTables));
+            for i = 1:length(factorsAndTables)
+                if isa(factorsAndTables{i},'Factor')
+                    ifandt{i} = factorsAndTables{i}.IFactor;
+                elseif isa(factorsAndTables{i},'FactorTable')
+                    ifandt{i} = factorsAndTables{i}.ITable;
+                else
+                    error('Second argument should be an array of FactorTables and/or Factors');
+                end                
+            end
+            obj.IGraph.baumWelch(ifandt,numRestarts,numSteps);
+        end        
+        
         function estimateParameters(obj,factorsAndTables,numRestarts,numSteps,stepScaleFactor)
             if ~ iscell(factorsAndTables)
                 factorsAndTables = {factorsAndTables};

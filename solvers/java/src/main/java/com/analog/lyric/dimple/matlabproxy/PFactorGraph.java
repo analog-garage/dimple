@@ -247,6 +247,22 @@ public class PFactorGraph extends PFactorBase
 		return new PFactorGraphStream(rfg);
 	}
 
+    public void baumWelch(Object [] factorsAndTables,int numRestarts,int numSteps)
+    {
+		Object [] mfandt = new Object[factorsAndTables.length];
+		for (int i = 0; i < factorsAndTables.length; i++)
+		{
+			if (factorsAndTables[i] instanceof PFactorTable)
+				mfandt[i] = ((PFactorTable)factorsAndTables[i]).getModelerObject();
+			else if (factorsAndTables[i] instanceof PFactor)
+				mfandt[i] = ((PFactor)factorsAndTables[i]).getModelerObject();
+			else
+				throw new DimpleException("Unsupported argument to estimateParameters");
+		}
+		this._graph.baumWelch(mfandt,numRestarts,numSteps);
+    }
+
+	
 	public void estimateParameters(Object [] factorsAndTables,int numRestarts,int numSteps, double stepScaleFactor)
 	{
 		Object [] mfandt = new Object[factorsAndTables.length];

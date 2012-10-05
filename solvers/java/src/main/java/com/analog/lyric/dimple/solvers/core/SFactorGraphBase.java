@@ -148,6 +148,13 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		
 	}
 	
+	@Override
+	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps)
+	{
+		throw new DimpleException("not supported by this solver");		
+	}
+
+	
 	public double getBetheEntropy()
 	{
 		double sum = 0;

@@ -16,16 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorList;
+import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -172,113 +170,54 @@ public class SFactorGraph extends SFactorGraphBase
 
 	}
 	
-	@Override
-	public void estimateParameters(FactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
+	public void baumWelch(FactorTable [] fts, int numRestarts, int numSteps)
 	{
-		//Create a mapping from factor tables to Factors.
-		HashMap<FactorTable,ArrayList<Factor>> factorTable2Factors = new HashMap<FactorTable, ArrayList<Factor>>();
-		FactorList factors = _factorGraph.getFactorsFlat();
-		
-		for (Factor f : factors)
-		{
-			FactorTable ft = f.getFactorTable();
-			if (! factorTable2Factors.containsKey(ft))
-				factorTable2Factors.put(ft, new ArrayList<Factor>());
-			factorTable2Factors.get(ft).add(f);
-		}
-		
-		_factorGraph.solve();
-		double currentBetheFreeEnergy = _factorGraph.getBetheFreeEnergy();
-
-		//TODO: be careful about whether I really replace this or not.
-		//Save current values of factor tables
-		FactorTable [] savedFts = saveFactorTables(fts);
-		
-		//Calculate energy
-		for (int i = 0; i < numRestarts; i++)
-		{
-			//TODO: add ability to specify starting values.
-			//Randomize starting values of factor tables
-			for (int j = 0; j < fts.length; j++)
-				fts[j].randomizeWeights(SFactorGraph.getRandom());
-			
-			
-			//Estimate parameters for given starting value
-			double newBetheFreeEnergy = estimateParametersFromStartValue(factorTable2Factors,numSteps,stepScaleFactor);
-			_factorGraph.solve();
-			newBetheFreeEnergy = _factorGraph.getBetheFreeEnergy();
-			
-			
-			if (newBetheFreeEnergy < currentBetheFreeEnergy)
-			{
-				currentBetheFreeEnergy = newBetheFreeEnergy;
-				savedFts = saveFactorTables(fts);
-			}
-			//Reestimate parameters using derivative
-			//Calculate Energy
-			//if  energy is less than min
-			//   Save this set of Factor Tables
-		}	
-		for (int i = 0; i < fts.length; i++)
-		{
-			fts[i].copy(savedFts[i]);
-		}
+		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SFactorGraph.getRandom());
+		pe.run(numRestarts, numSteps);
 	}
 	
-	FactorTable [] saveFactorTables(FactorTable [] fts)
+	
+	public class GradientDescent extends ParameterEstimator
 	{
-		FactorTable [] savedFts = new FactorTable[fts.length];
-		for (int i = 0; i < fts.length; i++)
-			savedFts[i] = fts[i].copy();
-		return savedFts;
-	}
+		private double _scaleFactor;
 
-	public double  estimateParametersFromStartValue(HashMap<FactorTable,
-			ArrayList<Factor>> factorTable2Factors, 
-			int numReEstimations, double epsilon)
-	{
-		//for each factor table
-		for (int j = 0; j < numReEstimations; j++)
+		public GradientDescent(FactorGraph fg, FactorTable[] tables, Random r, double scaleFactor) 
 		{
+			super(fg, tables, r);
+			_scaleFactor = scaleFactor;
+		}
+
+		@Override
+		public void runStep(FactorGraph fg) 
+		{
+			// TODO Auto-generated method stub
 			//_factorGraph.solve();
-			for (FactorTable ft : factorTable2Factors.keySet())
+			for (FactorTable ft : getTables())
 			{
 				double [] weights = ft.getWeights();
 			      //for each weight
 				for (int i = 0; i < weights.length; i++)
 				{
 			           //calculate the derivative
-					double derivative = calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(ft, 
-							factorTable2Factors.get(ft), i);
+					double derivative = calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(ft, i);
 					
 			        //move the weight in that direction scaled by epsilon
-					ft.changeWeight(i,weights[i] - weights[i]*derivative*epsilon);
+					ft.changeWeight(i,weights[i] - weights[i]*derivative*_scaleFactor);
 				}
 			}
 		}
-		//_factorGraph.solve();
 		
-		return _factorGraph.getBetheFreeEnergy();
-
 	}
+	
+	@Override
+	public void estimateParameters(FactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
+	{
+		new GradientDescent(_factorGraph, fts, getRandom(), stepScaleFactor).run(numRestarts, numSteps);
+	}
+
 	
 	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(FactorTable ft,
 			int weightIndex)
-	{
-		FactorList factors = _factorGraph.getFactorsFlat();
-		ArrayList<Factor> factorArray = new ArrayList<Factor>();
-		//TODO: Write commmon code
-		for (Factor f : factors)
-		{
-			factorArray.add(f);
-		}
-		
-		return calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(ft, factorArray, weightIndex);
-	}
-
-	
-	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(FactorTable ft,
-			ArrayList<Factor> factors,int weightIndex)
 	{
 		//BFE = InternalEnergy - BetheEntropy
 		//InternalEnergy = Sum over all factors (Internal Energy of Factor) 

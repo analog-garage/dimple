@@ -992,6 +992,38 @@ public class FactorGraph extends FactorBase
 		
 	}
 	
+	public void baumWelch(Object [] factorsAndTables,int numRestarts,int numSteps)
+	{
+		HashSet<FactorTable> sfactorTables = new HashSet<FactorTable>();
+		for (Object o : factorsAndTables)
+		{
+			if (o instanceof Factor)
+			{
+				Factor f = (Factor)o;
+				sfactorTables.add(f.getFactorTable());
+			}
+			else if (o instanceof FactorTable)
+			{
+				sfactorTables.add((FactorTable)o);
+			}
+		}
+		
+		FactorTable [] factorTables = new FactorTable[sfactorTables.size()];
+		int i = 0;
+		for (FactorTable ft : sfactorTables)
+		{
+			factorTables[i] = ft;
+			i++;
+		}
+		baumWelch(factorTables,numRestarts,numSteps);
+	}
+
+	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps)
+	{
+		getSolver().baumWelch(tables, numRestarts, numSteps);
+
+	}
+	
 	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor)
 	{
 		getSolver().estimateParameters(tables, numRestarts, numSteps,  stepScaleFactor);

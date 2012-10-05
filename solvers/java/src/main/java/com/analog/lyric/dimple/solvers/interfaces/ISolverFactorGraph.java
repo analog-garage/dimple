@@ -37,5 +37,6 @@ public interface ISolverFactorGraph extends ISolverNode
 	public double getInternalEnergy();
 	public double getBetheEntropy();
 	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
+	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps);
 	
 }
