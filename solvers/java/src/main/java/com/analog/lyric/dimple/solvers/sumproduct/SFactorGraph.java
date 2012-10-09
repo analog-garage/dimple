@@ -31,7 +31,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public class SFactorGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
-	private boolean _calculateDerivativeOfMessages = false;
 	private FactorTable _currentFactorTable = null;
 
 	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
@@ -230,41 +229,62 @@ public class SFactorGraph extends SFactorGraphBase
 		//                        
 		
 		_currentFactorTable = ft;
-		_calculateDerivativeOfMessages = true;
 		
+				
 		for (Factor f : _factorGraph.getFactorsFlat())
+		{
 			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.getWeights().length);
+		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
 			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.getWeights().length);
 		
-		_factorGraph.solve();
+		setCalculateDerivative(true);
+		
 		double result = 0;
+		try
+		{
+			_factorGraph.solve();
+			for (Factor f : _factorGraph.getFactorsFlat())
+			{
+				STableFactor stf = (STableFactor)f.getSolver();
+				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
+				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
+						
+			}
+			for (VariableBase v : _factorGraph.getVariablesFlat())
+			{
+				SVariable sv = (SVariable)v.getSolver();
+				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
+				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
+			}
+		} 
+		finally
+		{
+			setCalculateDerivative(false);
+		}
+		
+		return result;
+	}
+	
+	public void setCalculateDerivative(boolean val)
+	{
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
 			STableFactor stf = (STableFactor)f.getSolver();
-			result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
-			result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
-					
+			stf.setUpdateDerivative(val);
 		}
-		for (VariableBase v : _factorGraph.getVariablesFlat())
+		for (VariableBase vb : _factorGraph.getVariablesFlat())
 		{
-			SVariable sv = (SVariable)v.getSolver();
-			result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
-			result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
+			SVariable sv = (SVariable)vb.getSolver();
+			sv.setCalculateDerivative(val);
 		}
-		
-		_calculateDerivativeOfMessages = false;
-		return result;
 	}
+	
 	
 	public FactorTable getCurrentFactorTable()
 	{
 		return _currentFactorTable;
 	}
 	
-	public boolean getCalculateDerivateOfMessages()
-	{
-		return _calculateDerivativeOfMessages;
-	}
 
 }

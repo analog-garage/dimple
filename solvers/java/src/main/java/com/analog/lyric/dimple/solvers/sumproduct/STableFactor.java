@@ -48,6 +48,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	KBestFactorEngine _kbestFactorEngine;
 	private int _k;
 	private boolean _kIsSmallerThanDomain = false;
+	private boolean _updateDerivative = false;
 	
 
 	public STableFactor(Factor factor)  
@@ -144,6 +145,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		
 	}
 	
+	public void setUpdateDerivative(boolean updateDer)
+	{
+		_updateDerivative = updateDer;
+	}
+	
 	public void updateEdge(int outPortNum) 
 	{
 		updateCache();
@@ -152,7 +158,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		else
 			_tableFactorEngine.updateEdge(outPortNum);
 
-		updateDerivative(outPortNum);
+		if (_updateDerivative)
+			updateDerivative(outPortNum);
 	}
 	
 	
@@ -166,8 +173,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		else
 			_tableFactorEngine.update();
 		
-		for (int i = 0; i < _inPortMsgs.length ;i++)
-			updateDerivative(i);
+		if (_updateDerivative)
+			for (int i = 0; i < _inPortMsgs.length ;i++)
+				updateDerivative(i);
 	}
 	
 	@Override
@@ -577,15 +585,12 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public void updateDerivative(int outPortNum)
 	{
 		SFactorGraph sfg = (SFactorGraph)getRootGraph();
-		if (sfg.getCalculateDerivateOfMessages())
+		FactorTable ft = sfg.getCurrentFactorTable();
+		int numWeights = ft.getWeights().length;
+		
+		for (int wn = 0; wn < numWeights; wn++)
 		{
-			FactorTable ft = sfg.getCurrentFactorTable();
-			int numWeights = ft.getWeights().length;
-			
-			for (int wn = 0; wn < numWeights; wn++)
-			{
-				updateDerivativeForWeight(outPortNum,wn,ft == getFactor().getFactorTable());
-			}
+			updateDerivativeForWeight(outPortNum,wn,ft == getFactor().getFactorTable());
 		}
 	}
 	

@@ -23,8 +23,6 @@ import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 
-
-
 public class SVariable extends SVariableBase
 {
 	/*
@@ -43,6 +41,7 @@ public class SVariable extends SVariableBase
     private int _guessIndex = 0;
     private boolean _guessWasSet = false;
     private DiscreteDomain _domain;
+    private boolean _calculateDerivative = false;
     
 	public SVariable(VariableBase var)  
     {
@@ -58,6 +57,11 @@ public class SVariable extends SVariableBase
 	public VariableBase getVariable()
 	{
 		return _var;
+	}
+	
+	public void setCalculateDerivative(boolean val)
+	{
+		_calculateDerivative = val;
 	}
 
 	public Object getDefaultMessage(Port port) 
@@ -242,7 +246,8 @@ public class SVariable extends SVariableBase
         	for (int m = 0; m < M; m++)
         		outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
 	    
-        updateDerivative(outPortNum);
+        if (_calculateDerivative)
+        	updateDerivative(outPortNum);
     }
     
 
@@ -320,8 +325,9 @@ public class SVariable extends SVariableBase
             
 	    }
 	   
-	    for (int i = 0; i < _inPortMsgs.length; i++)
-	    	updateDerivative(i);
+	    if (_calculateDerivative)
+		    for (int i = 0; i < _inPortMsgs.length; i++)
+		    	updateDerivative(i);
     }
     
         
@@ -682,16 +688,12 @@ public class SVariable extends SVariableBase
     public void updateDerivative(int outPortNum)
     {
     	SFactorGraph sfg = (SFactorGraph)getRootGraph();
-    	if (sfg.getCalculateDerivateOfMessages())
-    	{
-	    	int numWeights = sfg.getCurrentFactorTable().getWeights().length;
-	    	
-	    	for (int wn = 0; wn < numWeights; wn++)
-	    	{
-	    		updateDerivativeForWeightNum(outPortNum, wn);
-	    	}
-    	}
+    	int numWeights = sfg.getCurrentFactorTable().getWeights().length;
     	
+    	for (int wn = 0; wn < numWeights; wn++)
+    	{
+    		updateDerivativeForWeightNum(outPortNum, wn);
+    	}
     }
 	
 }
