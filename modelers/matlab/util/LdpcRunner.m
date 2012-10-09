@@ -20,14 +20,17 @@ classdef LdpcRunner
         X;
     end
     methods
-       function obj = LdpcRunner(numIterations,useNested)
+       function obj = LdpcRunner(numIterations,useNested,A)
            if nargin < 1
                numIterations = 20;
            end
            if nargin < 2
                useNested = 1;
            end
-           [obj.Ldpc,obj.X] = createLdpc(load('matrixout.txt'),useNested,numIterations);
+           if nargin < 3
+               A = load('matrixout.txt');
+           end
+           [obj.Ldpc,obj.X] = createLdpc(A,useNested,numIterations);
            obj.Ldpc.Scheduler = com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler();
        end
        function [numErrors,numBits,badCodeInfo,allCodeInfo] = run(obj,snrVal,codesPerIter)

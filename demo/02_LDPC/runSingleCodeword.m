@@ -34,7 +34,7 @@ for i = 1:numCheckEquations
 end
 
 %Create the message
-msg = randint(704,1);
+msg = randi(2,704,1)-1;
 
 %Encode
 code = FecEncoding.encode(msg);

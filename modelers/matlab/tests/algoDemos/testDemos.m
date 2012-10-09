@@ -42,5 +42,19 @@ function testDemos()
     run;
     assertElementsAlmostEqual(d.Belief,x);
 
+    
+    %% 02_LDPC
+    
+    %Single codeword
+    cd('../02_LDPC');
+    runSingleCodeword;
+    assertTrue(numMsgErrors == 0);    
+    
+    %BER plot
+    global Dimple_TESTING_DEMOS;
+    Dimple_TESTING_DEMOS = 1;
+    run;
+    close;
+    
     cd(my_current_directory);
 end
