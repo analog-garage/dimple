@@ -56,5 +56,11 @@ function testDemos()
     run;
     close;
     
+    %% 03_SudokuExample
+    cd('../03_SudokuExample');
+    run;
+    assertTrue(valid == 1);
+    close;
+    
     cd(my_current_directory);
 end
