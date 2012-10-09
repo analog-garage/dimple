@@ -2937,6 +2937,29 @@ fg.solve();
 assertEqual(a.Belief,[10*5; 1*5]);
 ----
 
+.Linear Factor
+
+Assuming you want to specify the following constraint:
+
+[latex]
+\[
+ \sum_i x_i c_i = total
+\]
+
+where c is a vector of constants and x is a vector of variables and total is a constant, you can use the Gaussian solver linear factor:
+
+----
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+
+    x1 = Real();
+    x2 = Real();
+    x3 = Real();
+    consts = [1 2 3];
+    total = 6;
+    fg.addFactor(@linear,x1,x2,x3,consts,total);
+----
+
 .General Factors
 
 The Gaussian Solver provides a mechanism to support general factors that cannot calculate messages analytically and require sampling methods instead. The user must provide several methods:

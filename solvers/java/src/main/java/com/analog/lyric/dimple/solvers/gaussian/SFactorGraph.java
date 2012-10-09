@@ -119,6 +119,8 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			return new Polynomial(factor);
 		}
+		else if (funcName.equals("linear"))
+			return new GaussianLinear(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
@@ -160,6 +162,8 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("multivariateadd"))
 			return true;
 		else if (funcName.equals("multivariateconstmult"))
+			return true;
+		else if (funcName.equals("linear"))
 			return true;
 		else
 			return false;	
