@@ -18,25 +18,29 @@ package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 
-
-public class ConstantProduct extends FactorFunction
+public class GreaterThan extends FactorFunction 
 {
-	protected double _beta;
-	protected double _constant;
-	public ConstantProduct() {this(1,1);}
-	public ConstantProduct(double constant) {this(constant,1);}
-	public ConstantProduct(double constant, double smoothing) {super("ConstantProduct"); _beta = 1/smoothing; _constant=constant;}
+	public GreaterThan()
+	{
+		super("GreaterThan");
+	}
 	
     @Override
     public double evalEnergy(Object ... input)
     {
+    	Object indicatorOut = input[0];
+    	boolean indicator;
+    	if (indicatorOut instanceof Double)
+    		indicator = (Math.round((Double)indicatorOut) != 0);
+    	else
+    		indicator = ((Integer)indicatorOut != 0);
+    	double firstVal = (Double)input[1];
+    	double secondVal = (Double)input[2];
     	
-    	double out = (Double)input[0];
-
-    	double product= _constant * (Double) input[1];
-    	double diff = product - out;
-    	double potential = diff*diff;
-    	
-    	return potential*_beta;
+    	if (indicator == (firstVal > secondVal))
+    		return 0;
+    	else
+    		return Double.POSITIVE_INFINITY;
     }
+
 }

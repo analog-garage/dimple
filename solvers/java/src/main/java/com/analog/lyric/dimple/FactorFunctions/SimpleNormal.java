@@ -24,7 +24,9 @@ public class SimpleNormal extends FactorFunction
 	protected double _mean = 0;
 	protected double _invSigmaSquared = 1;
 	public SimpleNormal(double mean, double sigma) {super("SimpleNormal"); _mean = mean; _invSigmaSquared = 1/(sigma*sigma);}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	int length = input.length;
     	double potential = 0;
@@ -33,6 +35,6 @@ public class SimpleNormal extends FactorFunction
     		double relInput = (Double)input[i] - _mean;
     		potential += relInput*relInput*_invSigmaSquared;
     	}
-    	return Math.exp(-potential);
+    	return potential/2;
     }
 }

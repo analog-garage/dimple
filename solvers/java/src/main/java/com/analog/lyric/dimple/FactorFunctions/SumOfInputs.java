@@ -29,13 +29,13 @@ public class SumOfInputs extends FactorFunction
 	}
 
 	@Override
-	public double eval(Object... input) 
+	public double evalEnergy(Object... input) 
 	{
 		double sum = 0;
 		for (int i = 0; i < input.length; i++)
 		{
 			sum += (Double)input[i];
 		}
-		return sum; 
+		return -Math.log(sum); 
 	}
 }

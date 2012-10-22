@@ -36,18 +36,16 @@ public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 	}
 
 	@Override
-	public double eval(Object... input)
+	public double evalEnergy(Object... input)
 	{
-		double value = _randomWeights ? 
-							_r.nextDouble() :
-							1.0;
+		double value = _randomWeights ? -Math.log(_r.nextDouble()) : 0;
 		if(_currRows < _maxRows)
 		{
 			_currRows++;
 		}
 		else
 		{
-			value = 0.0;			
+			value = Double.POSITIVE_INFINITY;			
 		}
 		return value;
 	}

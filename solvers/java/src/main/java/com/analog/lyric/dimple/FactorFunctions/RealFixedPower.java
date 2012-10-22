@@ -25,7 +25,9 @@ public class RealFixedPower extends FactorFunction
 	protected double _beta;
 	public RealFixedPower(double power) {this(power, 1);}
 	public RealFixedPower(double power, double smoothing) {super("RealFixedPower"); _power = power; _beta = 1/smoothing;}
-    public double eval(Object ... arguments)
+	
+    @Override
+    public double evalEnergy(Object ... arguments)
     {
     	Double result = (Double)arguments[0];
     	Double base = (Double)arguments[1];
@@ -35,6 +37,6 @@ public class RealFixedPower extends FactorFunction
     	double diff = computedResult - result;
     	double potential = diff*diff;
     	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
 }

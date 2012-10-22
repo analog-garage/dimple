@@ -28,21 +28,24 @@ public class EqualDelta extends FactorFunction
 	{
 		super("EqualDelta");
 	}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	if (input.length == 0)
-    		return 1;
+    		return 0;
     	
     	Object firstVal = input[0];
     	
     	for (int i = 1; i < input.length; i++)
     		if (input[i] != firstVal)
-    			return 0;
+    			return Double.POSITIVE_INFINITY;
     	
-    	return 1;
+    	return 0;
     }
     
     
+    @Override
     public FactorTable getFactorTable(Domain [] domainList)
     {
     	boolean allsame = true;

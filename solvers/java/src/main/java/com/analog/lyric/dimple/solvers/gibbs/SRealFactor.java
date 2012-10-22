@@ -59,7 +59,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    }
 	    values[outPortIndex] = value;	// Use the requested value on the associated output port
 	    
-	    try {return -Math.log(_realFactor.getFactorFunction().eval(values));}		// FIXME: Should do bounds checking
+	    try {return _realFactor.getFactorFunction().evalEnergy(values);}		// FIXME: Should do bounds checking
 	    catch (Exception e) {e.printStackTrace(); System.exit(1); return 0d;}
 	}
 	
@@ -131,7 +131,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	}
 	public double getPotential(Object[] inputs)
 	{
-	    try {return -Math.log(_realFactor.getFactorFunction().eval(inputs));}		// FIXME: Should do bounds checking
+	    try {return _realFactor.getFactorFunction().evalEnergy(inputs);}		// FIXME: Should do bounds checking
 	    catch (Exception e) {e.printStackTrace(); return 0d;}
 	}
 

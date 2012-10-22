@@ -50,7 +50,7 @@ public class JointFactorFunction extends FactorFunction
 	}
 
 	@Override
-	public double eval(Object... input) 
+	public double evalEnergy(Object... input) 
 	{
 		//Make sure length of inputs is correct
 		if (input.length != _newNumInputs)
@@ -65,10 +65,9 @@ public class JointFactorFunction extends FactorFunction
 		for (int i = 0; i < _inputsForFf2.size(); i++)
 			input2[i] = input[_inputsForFf2.get(i)];
 		
-		
-		double prod =  _factor1.eval(input1)*_factor2.eval(input2);
-		return prod;
+		return _factor1.evalEnergy(input1) + _factor2.evalEnergy(input2);
 	}
+
 	
 	//TODO: we should override the function that generates a combo table and build a combo table
 	//     more efficiently.

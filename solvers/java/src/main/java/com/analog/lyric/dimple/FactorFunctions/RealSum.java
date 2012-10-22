@@ -24,7 +24,9 @@ public class RealSum extends FactorFunction
 	protected double _beta;
 	public RealSum() {this(1);}
 	public RealSum(double smoothing) {super("RealSum"); _beta = 1/smoothing;}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	int length = input.length;
     	double out = (Double)input[0];
@@ -36,6 +38,6 @@ public class RealSum extends FactorFunction
     	double diff = sum - out;
     	double potential = diff*diff;
     	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
 }

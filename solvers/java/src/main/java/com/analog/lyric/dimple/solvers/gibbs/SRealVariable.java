@@ -155,7 +155,7 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 	{
 		if (_input != null)
 		{
-			try {return -Math.log(_input.eval(new Object[]{_sampleValue}));}
+			try {return _input.evalEnergy(new Object[]{_sampleValue});}
 			catch (Exception e) {e.printStackTrace(); return 0;}
 		}
 		else

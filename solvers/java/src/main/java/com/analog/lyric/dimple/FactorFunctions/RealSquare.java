@@ -24,7 +24,9 @@ public class RealSquare extends FactorFunction
 	protected double _beta;
 	public RealSquare() {this(1);}
 	public RealSquare(double smoothing) {super("RealFixedPower"); _beta = 1/smoothing;}
-    public double eval(Object ... arguments)
+	
+    @Override
+    public double evalEnergy(Object ... arguments)
     {
     	Double result = (Double)arguments[0];
     	Double input = (Double)arguments[1];
@@ -34,6 +36,6 @@ public class RealSquare extends FactorFunction
     	double diff = computedResult - result;
     	double potential = diff*diff;
     	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
 }

@@ -24,7 +24,9 @@ public class ComplexPoly extends FactorFunction
 	protected double _beta;
 	public ComplexPoly() {this(1);}
 	public ComplexPoly(double smoothing) {super("ComplexPoly"); _beta = 1/smoothing;}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	double outR = (Double)input[0];
     	double outI = (Double)input[1];
@@ -51,7 +53,7 @@ public class ComplexPoly extends FactorFunction
     	double diffI = outI - resultI;
     	double potential = diffR*diffR + diffI*diffI;
     	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
     
     protected Complex complexProduct(double aR, double aI, double bR, double bI)

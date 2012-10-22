@@ -37,7 +37,9 @@ public class MixedNormal extends FactorFunction
 		_invSigma1 = 1/sigma1;
 		_invSigmaSquared1 = 1/(sigma1*sigma1);
 	}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	double a = (Double)input[0];
     	Object bIn = input[1];
@@ -49,12 +51,12 @@ public class MixedNormal extends FactorFunction
     	if (b == 0)
     	{
     		double aRel = a - _mean0;
-    		return Math.exp(-aRel*aRel*_invSigmaSquared0)*_invSigma0;
+    		return aRel*aRel*_invSigmaSquared0/2 - Math.log(_invSigma0);
     	}
     	else
     	{
     		double aRel = a - _mean1;
-    		return Math.exp(-aRel*aRel*_invSigmaSquared1)*_invSigma1;
+    		return aRel*aRel*_invSigmaSquared1/2 - Math.log(_invSigma1);
     	}
     }
 }

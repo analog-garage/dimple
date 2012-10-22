@@ -167,8 +167,8 @@ public class RealVariableParticleBPTest
 		if (debugPrint) System.out.println("bExpectedMean: " + bExpectedMean);
 		
 		
-		assertTrue(nearlyEquals(aSolverMean,0.7999999999955645));
-		assertTrue(nearlyEquals(bSolverMean,-0.19998731911812306));
+		assertTrue(nearlyEquals(aSolverMean,0.7999989412684679));
+		assertTrue(nearlyEquals(bSolverMean,-0.19800348473801446));
 	}
 	
 	
@@ -219,7 +219,7 @@ public class RealVariableParticleBPTest
 		if (repeatable) solver.setSeed(1);					// Make this repeatable
 		graph.solve();
 
-		int aNumPoints = 500;
+		int aNumPoints = 100;
 		double aLower = -3;
 		double aUpper = 3;
 		double[] aUniformPointSet = new double[aNumPoints];
@@ -274,8 +274,8 @@ public class RealVariableParticleBPTest
 		if (debugPrint) System.out.println("bExpectedMean: " + bProb1);
 		
 		
-		assertTrue(nearlyEquals(aSolverMean,0.19556623183605462));
-		assertTrue(nearlyEquals(bSolverMean,0.5960391019069247));
+		assertTrue(nearlyEquals(aSolverMean,0.1929829696757485));
+		assertTrue(nearlyEquals(bSolverMean,0.5833220375555341));
 	}
 	
 	

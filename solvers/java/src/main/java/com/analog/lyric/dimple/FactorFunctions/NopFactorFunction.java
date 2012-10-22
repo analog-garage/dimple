@@ -25,11 +25,10 @@ public class NopFactorFunction extends FactorFunction
 	public NopFactorFunction(String name) 
 	{
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public double eval(Object ... input) 
+	public double evalEnergy(Object ... input) 
 	{
 		throw new DimpleException("not implemented");
 	}

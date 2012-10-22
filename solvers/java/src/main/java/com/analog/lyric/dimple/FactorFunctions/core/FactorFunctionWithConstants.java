@@ -56,7 +56,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public double eval(Object... input) 
+	public double evalEnergy(Object... input) 
 	{
 		Object [] realInputs = new Object[input.length + _constantIndices.length];
 		
@@ -82,8 +82,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 		}
 		
 		
-		// TODO Auto-generated method stub
-		return _factorFunction.eval(realInputs);
+		return _factorFunction.evalEnergy(realInputs);
 	}
 
 }

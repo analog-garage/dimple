@@ -25,7 +25,9 @@ public class LinearEquation extends FactorFunction
 	protected double[] _constant;
 	public LinearEquation(double[] constant) {this(constant,1);}
 	public LinearEquation(double[] constant, double smoothing) {super("LinearEquation"); _beta = 1/smoothing; _constant=constant;}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	int length = input.length;
     	double out = (Double)input[0];
@@ -38,6 +40,6 @@ public class LinearEquation extends FactorFunction
     	double diff = sum - out;
     	double potential = diff*diff;
     	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
 }

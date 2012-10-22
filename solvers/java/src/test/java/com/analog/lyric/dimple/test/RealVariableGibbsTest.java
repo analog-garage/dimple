@@ -66,7 +66,7 @@ public class RealVariableGibbsTest
 		double abMean = 0;
 		double abSigma = 1;
 		double abR = 1/(abSigma*abSigma);
-		graph.addFactor(new SimpleNormal(0,1), a, b);
+		graph.addFactor(new SimpleNormal(abMean,abSigma), a, b);
 		
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		SRealVariable sb = (SRealVariable)b.getSolver();
@@ -100,10 +100,10 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Double)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.7964189428291455));
-		assertTrue(nearlyEquals(bMean,-0.2035763225037135));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.800418664253919));
-		assertTrue(nearlyEquals((Double)sb.getBestSample(),-0.19842890611838168));
+		assertTrue(nearlyEquals(aMean,0.7953557433154559));
+		assertTrue(nearlyEquals(bMean,-0.2046715828017073));
+		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.7980557306813941));
+		assertTrue(nearlyEquals((Double)sb.getBestSample(),-0.19906292457564492));
 	}
 	
 	
@@ -180,9 +180,9 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Integer)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.21862681232341438));
-		assertTrue(nearlyEquals(bMean,0.6079));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.977907866169981));
+		assertTrue(nearlyEquals(aMean,0.21927649757051212));
+		assertTrue(nearlyEquals(bMean,0.611));
+		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.9776677996616783));
 		assertTrue((Integer)sb.getBestSample() == 1);
 	}	
 	

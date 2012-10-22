@@ -66,7 +66,7 @@ public class RealVariableTest
 		assertTrue(nearlyEquals(((FactorFunction)c.getInput()).eval(new Object[]{0d}), 1.0));
 		
 		if (debugPrint) System.out.println("d.Input(1): " + ((FactorFunction)d.getInput()).eval(new Object[]{1d}));
-		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-1)));
+		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-0.5)));
 
 		assertTrue(a.getInputObject() == null);
 		a.setInputObject(new SimpleNormal(0,1));

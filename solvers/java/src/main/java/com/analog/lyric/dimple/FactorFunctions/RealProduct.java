@@ -24,7 +24,9 @@ public class RealProduct extends FactorFunction
 	protected double _beta;
 	public RealProduct() {this(1);}
 	public RealProduct(double smoothing) {super("RealProduct"); _beta = 1/smoothing;}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	int length = input.length;
     	double out = (Double)input[0];
@@ -38,7 +40,6 @@ public class RealProduct extends FactorFunction
     	double diff = product - out;
     	double potential = diff*diff;
     	
-    	
-    	return Math.exp(-potential*_beta);
+    	return potential*_beta;
     }
 }

@@ -25,19 +25,15 @@ public class XorDelta extends FactorFunction
 	{
 		super("xorDelta");
 	}
-    public double eval(Object ... input)
+	
+    @Override
+    public double evalEnergy(Object ... input)
     {
     	double total = 0;
     	
     	for(int i = 0; i < input.length; ++i)
-    	{
     		total += (Double)input[i];
-    	}
 
-    	double ret = total % 2 == 0 ? 
-    				1.0 : 
-    				0.0;
-     
-    	return ret;
+    	return (total % 2 == 0) ? 0 : Double.POSITIVE_INFINITY;
     }
 }

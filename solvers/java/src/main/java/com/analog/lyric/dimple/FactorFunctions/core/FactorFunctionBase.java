@@ -32,8 +32,23 @@ public abstract class FactorFunctionBase
 		return _name;
 	}
 
-	public abstract double eval(Object ... input);
-
+	
+	// WARNING WARNING WARNING
+	// At least one or the other of these must be overridden in a derived class.
+	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
+	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
+	public double eval(Object ... input)
+	{
+		return Math.exp(-evalEnergy(input));
+	}
+	public double evalEnergy(Object ... input)
+	{
+		return -Math.log(eval(input));
+	}
+	
+	
 	public abstract FactorTable getFactorTable(Domain [] domainList);
+	
+
 
 }

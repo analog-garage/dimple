@@ -30,10 +30,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     public FactorFunction(String name) 
     {
 		super(name);
-		// TODO Auto-generated constructor stub
 	}
-
-	public abstract double eval(Object ... input);
 
 	public boolean factorTableExists(Domain [] domainList)
 	{
