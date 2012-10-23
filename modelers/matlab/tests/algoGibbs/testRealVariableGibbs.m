@@ -84,10 +84,10 @@ dtrace(debugPrint, ['bExpectedMean: ' num2str(bExpectedMean)]);
 dtrace(debugPrint, ['aBest: ' num2str(sa.getBestSample())]);
 dtrace(debugPrint, ['bBest: ' num2str(sb.getBestSample())]);
 
-assertElementsAlmostEqual(aMean, 0.7964189428291455);
-assertElementsAlmostEqual(bMean, -0.2035763225037135);
-assertElementsAlmostEqual(sa.getBestSample(), 0.800418664253919);
-assertElementsAlmostEqual(sb.getBestSample(), -0.19842890611838168);
+assertElementsAlmostEqual(aMean, 0.795355743315456);
+assertElementsAlmostEqual(bMean, -0.204671582801707);
+assertElementsAlmostEqual(sa.getBestSample(), 0.798055730681394);
+assertElementsAlmostEqual(sb.getBestSample(), -0.199062924575645);
 
 
 % Test 2 - real and discrete variables
@@ -155,9 +155,9 @@ dtrace(debugPrint, ['bExpectedMean: ' num2str(bProb1)]);
 dtrace(debugPrint, ['aBest: ' num2str(sa.getBestSample())]);
 dtrace(debugPrint, ['bBest: ' num2str(sb.getBestSample())]);
 
-assertElementsAlmostEqual(aMean, 0.21862681232341438);
-assertElementsAlmostEqual(bMean, 0.6079);
-assertElementsAlmostEqual(sa.getBestSample(), 0.977907866169981);
+assertElementsAlmostEqual(aMean, 0.219276497570512);
+assertElementsAlmostEqual(bMean, 0.611000000000000);
+assertElementsAlmostEqual(sa.getBestSample(), 0.977667799661678);
 assert(sb.getBestSample() == 1);
 
 dtrace(debugPrint, '--testRealVariableGibbs');

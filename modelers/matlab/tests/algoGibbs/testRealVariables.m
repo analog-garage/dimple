@@ -51,7 +51,7 @@ dtrace(debugPrint, ['c.Input.eval(0): ' num2str(c.Input.eval(0))]);
 assertElementsAlmostEqual(c.Input.eval(0), 1.0);
 
 dtrace(debugPrint, ['d.Input.eval(1): ' num2str(d.Input.eval(1))]);
-assertElementsAlmostEqual(d.Input.eval(1), exp(-1));
+assertElementsAlmostEqual(d.Input.eval(1), exp(-0.5));
 
 assert(isempty(a.Input));
 a.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1);
@@ -73,13 +73,13 @@ assert(d45.Domain.LB == -4);
 assert(d45.Domain.UB == 4);
 
 dtrace(debugPrint, ['d14.Input{1,4}.eval(1): ' num2str(d14.Input{1,4}.eval(1))]);
-assertElementsAlmostEqual(d14.Input{1,4}.eval(1), exp(-1));
-assertElementsAlmostEqual(d14.Input{4}.eval(1), exp(-1));
+assertElementsAlmostEqual(d14.Input{1,4}.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d14.Input{4}.eval(1), exp(-0.5));
 dtrace(debugPrint, ['d41.Input{4,1}.eval(1): ' num2str(d41.Input{4,1}.eval(1))]);
-assertElementsAlmostEqual(d41.Input{4,1}.eval(1), exp(-1));
-assertElementsAlmostEqual(d41.Input{4}.eval(1), exp(-1));
+assertElementsAlmostEqual(d41.Input{4,1}.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d41.Input{4}.eval(1), exp(-0.5));
 dtrace(debugPrint, ['d45.Input{4,5}.eval(1): ' num2str(d45.Input{4,5}.eval(1))]);
-assertElementsAlmostEqual(d45.Input{4,5}.eval(1), exp(-1));
+assertElementsAlmostEqual(d45.Input{4,5}.eval(1), exp(-0.5));
 
 
 d45.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(10,1);
