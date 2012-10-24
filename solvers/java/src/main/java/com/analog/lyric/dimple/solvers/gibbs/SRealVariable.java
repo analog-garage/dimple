@@ -57,9 +57,7 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 
 	public void updateEdge(int outPortNum)
 	{
-		// TODO: This should throw the exception, but that would propagate to
-		// the base class and all other derived classes, this is the quick and dirty way.
-		new DimpleException("Method not supported in Gibbs sampling solver.").printStackTrace();
+		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 
 	public void update()
@@ -81,18 +79,13 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 			// Sum up the potentials from the input and all connected factors
 			if (_input != null)
 			{
-				try
-				{
-					LPrevious = -Math.log(_input.eval(new Object[]{_sampleValue}));
-					LProposed = -Math.log(_input.eval(new Object[]{proposalValue}));
-				}
-				catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				LPrevious = _input.evalEnergy(new Object[]{_sampleValue});
+				LProposed = _input.evalEnergy(new Object[]{proposalValue});
 			}
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
 				INode factorNode = _var.getPorts().get(portIndex).getConnectedNode();
-				int factorPortNumber = 0;
-				try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				int factorPortNumber = factorNode.getPortNum(_var);
 				ISolverRealFactorGibbs factor = (ISolverRealFactorGibbs)(_var.getPorts().get(portIndex).getConnectedNode().getSolver());
 				LPrevious += factor.getConditionalPotential(_sampleValue, factorPortNumber);
 				LProposed += factor.getConditionalPotential(proposalValue, factorPortNumber);
@@ -128,13 +121,6 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 		_input = (FactorFunction)input;
 	}
 
-	/*
-	public void setDomain(RealDomain domain)
-	{
-		_domain = domain;
-	}
-	 */
-
 	public void saveAllSamples()
 	{
 		_sampleArray = new ArrayList<Double>();
@@ -154,10 +140,7 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 	public double getPotential()
 	{
 		if (_input != null)
-		{
-			try {return _input.evalEnergy(new Object[]{_sampleValue});}
-			catch (Exception e) {e.printStackTrace(); return 0;}
-		}
+			return _input.evalEnergy(new Object[]{_sampleValue});
 		else
 			return 0;
 	}

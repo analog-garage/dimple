@@ -20,5 +20,5 @@ import java.util.Random;
 
 public class GibbsSolverRandomGenerator
 {
-	public static Random rand = new Random();
+	public static final Random rand = new Random();
 }

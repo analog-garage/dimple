@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -31,7 +32,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 {
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
-	protected double [] _priors;
+	protected double[] _priors;
 	protected ArrayList<Integer> _sampleIndexArray;
 	protected int _bestSampleIndex;
 	protected double _beta = 1;
@@ -49,61 +50,57 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	public Object getDefaultMessage(Port port)
 	{
 		int domainLength = _varDiscrete.getDiscreteDomain().getElements().length;
-		double [] retVal = new double[domainLength];
-		double val = 1.0/domainLength;
-		for (int i = 0; i < domainLength; i++)
-			retVal[i] = val;
+		double[] retVal = new double[domainLength];
+		Arrays.fill(retVal, 0);
 		return retVal;
 	}
 
 
 	public void updateEdge(int outPortNum)
 	{
-		// TODO: This should throw the exception, but that would propagate to
-		// the base class and all other derived classes, this is the quick and dirty way.
-		new DimpleException("Method not supported in Gibbs sampling solver.").printStackTrace();
+		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 
 	public void update()
 	{
-		final double minLog = -100;
+		ArrayList<Port> ports = _var.getPorts();
 		double[] priors = (double[])_priors;
-		int M = priors.length;
-		int D = _var.getPorts().size();
-		double maxLog = Double.NEGATIVE_INFINITY;
+		int messageLength = priors.length;
+		int numPorts = _var.getPorts().size();
+		double minEnergy = Double.POSITIVE_INFINITY;
 
-		double[][] inPortMsgs = new double[D][];
-		for (int d = 0; d < D; d++) 
-			inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
+		double[][] inPortMsgs = new double[numPorts][];
+		for (int port = 0; port < numPorts; port++) 
+			inPortMsgs[port] = (double[])ports.get(port).getInputMsg();
 		
-		double[] conditionalProbability = new double[M];
+		double[] conditionalProbability = new double[messageLength];
 
-		for (int m = 0; m < M; m++)
+		// Compute the conditional probability (initially in energy representation before converting to probability)
+		for (int index = 0; index < messageLength; index++)
 		{
-			double prior = priors[m];
-			double out = (prior == 0) ? minLog : Math.log(prior);
+			double out = priors[index];						// Sum of the input prior...
+			for (int port = 0; port < numPorts; port++)
+				out += inPortMsgs[port][index];				// Plus each input message value
+			
+			if (out < minEnergy) minEnergy = out;			// For normalization
 
-			for (int d = 0; d < D; d++)
-			{
-				double tmp = inPortMsgs[d][m];
-				out += (tmp == 0) ? minLog : Math.log(tmp);
-			}
-			if (out > maxLog) maxLog = out;
-			conditionalProbability[m] = out;
+			conditionalProbability[index] = out;			// Initially in energy representation before converting to probability
 		}
 
-
-		for (int m = 0; m < M; m++)
+		// Convert to probability representation
+		for (int index = 0; index < messageLength; index++)
 		{
-			double temperedValue = (conditionalProbability[m] - maxLog) * _beta;
-			double out = Math.exp(temperedValue);
-			conditionalProbability[m] = out;
+			double temperedValue = (conditionalProbability[index] - minEnergy) * _beta;
+			double out = Math.exp(-temperedValue);
+			conditionalProbability[index] = out;
 		}
 
-		_sampleIndex = Utilities.sampleFromMultinomial(conditionalProbability,GibbsSolverRandomGenerator.rand);
+		// Sample from the conditional distribution
+		_sampleIndex = Utilities.sampleFromMultinomial(conditionalProbability, GibbsSolverRandomGenerator.rand);
 
-		for (int d = 0; d < D; d++) 
-			_var.getPorts().get(d).setOutputMsg(_sampleIndex);
+		// Send the sample value to all output ports
+		for (int port = 0; port < numPorts; port++) 
+			ports.get(port).setOutputMsg(_sampleIndex);
 	}
 
 	public void updateBelief()
@@ -115,12 +112,19 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	{
 		double[] outBelief = new double[_varDiscrete.getDiscreteDomain().getElements().length];
 		long sum = 0;
-		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) sum+= _beliefHistogram[i];
+		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+			sum+= _beliefHistogram[i];
 		if (sum != 0)
-			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) outBelief[i] = (double)_beliefHistogram[i]/(double)sum;
+		{
+			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+				outBelief[i] = (double)_beliefHistogram[i]/(double)sum;
+		}
 		else
-			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) outBelief[i] = ((double[])_priors)[i];		// Disconnected variable that has never been updated
-
+		{
+			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+				outBelief[i] = ((double[])_priors)[i];		// Disconnected variable that has never been updated
+		}
+		
 		return outBelief;
 	}
 
@@ -128,10 +132,12 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	{
 		double[] vals = (double[])priors;
 		if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
-		{
 			throw new DimpleException("Prior size must match domain length");
-		}
-		_priors = vals;
+		
+		// Convert to energy values
+		_priors = new double[vals.length];
+		for (int i = 0; i < vals.length; i++)
+			_priors[i] = -Math.log(vals[i]);
 	}
 	
     public void saveAllSamples()
@@ -152,7 +158,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
     
 	public double getPotential()
 	{
-		return -Math.log(_priors[_sampleIndex]);
+		return _priors[_sampleIndex];
 	}
 
     public Object[] AllSamples() {return getAllSamples();}

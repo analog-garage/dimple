@@ -59,8 +59,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    }
 	    values[outPortIndex] = value;	// Use the requested value on the associated output port
 	    
-	    try {return _realFactor.getFactorFunction().evalEnergy(values);}		// FIXME: Should do bounds checking
-	    catch (Exception e) {e.printStackTrace(); System.exit(1); return 0d;}
+	    return _realFactor.getFactorFunction().evalEnergy(values);
 	}
 	
 	
@@ -90,23 +89,15 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 			for (int i = 0; i < outputMsgLength; i++)
 			{
 				values[outPortNum] = outputVariableDomain[i];
-				try {outputMsgs[i] = factorFunction.eval(values);}
-				catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				outputMsgs[i] = factorFunction.evalEnergy(values);		// Messages to discrete variables are energy values
 			}
-//			for (int i = 0; i < outputMsgLength; i++)		// Commented out because eval is already in probability domain
-//				outputMsgs[i] = Math.exp(outputMsgs[i]);	// Because discrete Gibbs variables assumes probability domain messages
-
-			// NOTE: outputMsgs is not a normalized distribution, but this is fine
-			// since Variable doesn't require normalized input messages
 		}
 	}
 	
 	
 	public void update()
 	{
-		// TODO: This should throw the exception, but that would propagate to
-		// the base class and all other derived classes, this is the quick and dirty way.
-    	new DimpleException("Method not supported in Gibbs sampling solver.").printStackTrace();
+    	throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 	
 
@@ -125,14 +116,14 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 		ArrayList<Port> ports = _factor.getPorts();
 	    int numPorts = ports.size();
 	    Object[] inPortMsgs = new Object[numPorts];
-	    for (int port = 0; port < numPorts; port++) inPortMsgs[port] = ports.get(port).getInputMsg();
+	    for (int port = 0; port < numPorts; port++)
+	    	inPortMsgs[port] = ports.get(port).getInputMsg();
 	    
 	    return getPotential(inPortMsgs);
 	}
 	public double getPotential(Object[] inputs)
 	{
-	    try {return _realFactor.getFactorFunction().evalEnergy(inputs);}		// FIXME: Should do bounds checking
-	    catch (Exception e) {e.printStackTrace(); return 0d;}
+	    return _realFactor.getFactorFunction().evalEnergy(inputs);
 	}
 
 	public double getSomethingEnergy()  
