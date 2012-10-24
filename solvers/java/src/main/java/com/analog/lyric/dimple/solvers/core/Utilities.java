@@ -22,38 +22,35 @@ public class Utilities
 {
 
 	/*
-	 * This class expects a PMF and a random number generator and returns a sample from that
+	 * This method expects a PMF and a random number generator and returns a sample from that
 	 * distribution.  The PMF does not actually have to be normalized for this to work. 
 	 */
-	public static int sampleFromMultinomial(double [] unnormalizedPMF,Random rand)
+	public static final int sampleFromMultinomial(double[] unnormalizedPMF, Random rand)
 	{
 		int M = unnormalizedPMF.length;
-		
-		double sum = 0;
-        for (int m = 0; m < M; m++)
-        {
-        	sum += unnormalizedPMF[m];
-        }
         		
-	    //calculate cumulative conditional probability
+	    // Calculate cumulative conditional probability (unnormalized)
 	    int M2 = nextPow2(M);	// Round up array size to next power of two for subsequent binary search
-	    double[] cumulativeProbability = new double[M2];
-	    cumulativeProbability[0] = 0;
+	    double[] cumulative = new double[M2];
+	    double sum = 0;
+	    cumulative[0] = 0;
 	    for (int m = 1; m < M; m++)
-	    	cumulativeProbability[m] = cumulativeProbability[m-1] + unnormalizedPMF[m-1]/sum;
+	    {
+	    	sum += unnormalizedPMF[m-1];
+	    	cumulative[m] = sum;
+	    }
+    	sum += unnormalizedPMF[M-1];
 	    for (int m = M; m < M2; m++)
-	    	cumulativeProbability[m] = 1.0;
-	    
+	    	cumulative[m] = Double.POSITIVE_INFINITY;
 	 
-	    
-	    // Sample from the cumulative distribution using a binary search.
-	    double randomValue = rand.nextDouble();
+	    // Sample from the distribution using a binary search.
+	    double randomValue = sum * rand.nextDouble();
 	    int sampleIndex = 0;
 	    int half = M2 >> 1;
 		for (int bitValue = half; bitValue > 0; bitValue >>= 1)
 		{
 			int testIndex = sampleIndex | bitValue;
-			if (randomValue > cumulativeProbability[testIndex]) sampleIndex = testIndex;
+			if (randomValue > cumulative[testIndex]) sampleIndex = testIndex;
 		}
 		
 		return sampleIndex;
