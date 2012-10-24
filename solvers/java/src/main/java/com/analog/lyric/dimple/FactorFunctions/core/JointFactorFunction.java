@@ -50,6 +50,27 @@ public class JointFactorFunction extends FactorFunction
 	}
 
 	@Override
+	public double eval(Object... input) 
+	{
+		//Make sure length of inputs is correct
+		if (input.length != _newNumInputs)
+			throw new DimpleException("expected " + _newNumInputs + " args");
+		
+		//map inputs to input for factor function 1 and factor function 2
+		Object [] input1 = new Object[_inputsForFf1.size()];
+		for (int i = 0; i < _inputsForFf1.size(); i++)
+			input1[i] = input[_inputsForFf1.get(i)];
+		
+		Object [] input2 = new Object[_inputsForFf2.size()];
+		for (int i = 0; i < _inputsForFf2.size(); i++)
+			input2[i] = input[_inputsForFf2.get(i)];
+		
+		
+		double prod =  _factor1.eval(input1)*_factor2.eval(input2);
+		return prod;
+	}
+	
+	@Override
 	public double evalEnergy(Object... input) 
 	{
 		//Make sure length of inputs is correct
