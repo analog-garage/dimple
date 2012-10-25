@@ -209,7 +209,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public boolean isTemperingEnabled() {return _temper;}
 	
 	
+	@Override
+	public void setNumThreads(int numThreads)
+	{
+		if (numThreads != 1)
+			throw new DimpleException("Multithreading is not currently supported by this solver.");
+	}
+
 	// 'Iterations' are not defined for Gibbs since that term is ambiguous.  Instead, set the number of samples using setNumSamples().
+	@Override
 	public void setNumIterations(int numIter) 
 	{
 		throw new DimpleException("The length of a run in the Gibbs solver is not specified by a number of 'iterations', but by the number of 'samples'");
