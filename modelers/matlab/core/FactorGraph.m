@@ -202,12 +202,59 @@ classdef FactorGraph < handle
             retval = obj.addFactorWithCacheFlag(false,firstArg,varargin{:});
         end
         
+        function retval = addFactorVectorized(obj,firstArg,varargin)
+            
+           %Get variables 
+           firstvars = cell(size(varargin));
+           for i = 1:length(firstvars)
+              if isa(varargin{i},'VariableBase')
+                 firstvars{i} = varargin{i}(1); 
+              else
+                  firstvars{i} = varargin{i};
+              end
+           end
+           
+           %extract first variable
+           
+           %add factor
+           %retrieve the generated factor table
+           firstFactor = obj.addFactor(firstArg,firstvars{:});           
+           
+           %call addFactorVectorized down to Java with all remaining
+           %TODO: we should be checking there are some variables that have
+           %more than one 
+           finalvars = cell(size(varargin));
+           for i = 1:length(varargin)
+               if isa(varargin{i},'VariableBase')
+                   if length(varargin{i}) == 1
+                       finalvars{i} = varargin{i}.VarMat;
+                   else
+                       tmp = varargin{i};
+                       tmp = tmp(2:end);
+                       finalvars{i} = tmp.VarMat;
+                   end
+               else
+                  finalvars{i} = varargin{i}; 
+               end
+           end
+           
+           
+           itable = firstFactor.FactorTable.ITable;
+           otherFactors = obj.IGraph.addFactorVectorized(itable,finalvars);
+           retval = cell(length(otherFactors)+1,1);
+           retval{1} = firstFactor;
+           for i = 2:length(retval)
+               retval{i} = DiscreteFactor(otherFactors(i-1));
+           end
+           
+           %variables
+        end
+        
         function retval = addFactor(obj,firstArg,varargin)
             %Examples:
             % fg.addFactor(someFunction,var1,var2);
             retval = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
         end
-        
         
         function str = getAdjacencyString(obj)
             str = obj.IGraph.getAdjacencyString();

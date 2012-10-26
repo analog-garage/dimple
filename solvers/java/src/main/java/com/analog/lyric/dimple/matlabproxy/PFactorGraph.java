@@ -156,6 +156,56 @@ public class PFactorGraph extends PFactorBase
 		return retval;
 	}
 	
+	public PFactor [] addFactorVectorized(PFactorTable factorTable, Object [] vars)
+	{
+		Object [] inputs = vars;
+		//Object [] inputs = PHelpers.convertToMVariablesAndConstants(vars);
+		TableFactorFunction tff = new TableFactorFunction("table", factorTable.getModelerObject());
+		
+		int [] sizes = new int[inputs.length];
+		int maxSize = 0;
+		
+		for (int i = 0; i < inputs.length; i++)
+		{
+			if (inputs[i] instanceof PVariableVector)
+			{
+				PVariableVector vec = (PVariableVector)inputs[i];
+				sizes[i] = vec.size();
+				if (sizes[i] > maxSize)
+					maxSize = sizes[i];
+			}
+		}
+		
+		for (int i = 0; i < sizes.length; i++)
+			if (sizes[i] != maxSize && sizes[i] != 1 && sizes[i] != 0)
+				throw new DimpleException("all vectors must be same size");
+
+		PFactor [] result = new PFactor[maxSize];
+		
+		for (int i = 0; i < maxSize; i++)
+		{
+			Object [] actualInputs = new Object[inputs.length];
+			for (int j = 0; j < actualInputs.length; j++)
+			{
+				if (inputs[j] instanceof PVariableVector)
+				{
+					PVariableVector vec = (PVariableVector)inputs[j];
+					if (vec.size() == 1)
+						actualInputs[j] = vec;
+					else
+						actualInputs[j] = vec.getSlice(new int[]{i});
+				}
+				else
+				{
+					actualInputs[j] = inputs[j];
+				}
+			}
+			result[i] = createFactor(tff,actualInputs);
+		}
+		
+		return result;
+	}
+	
 	public PFactor createFactor(PFactorTable factorTable, Object [] vars) 
 	{
     	if (_graph.isSolverRunning()) 
