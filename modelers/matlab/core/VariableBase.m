@@ -362,7 +362,7 @@ classdef VariableBase < handle
             
             if numel(s) > 1
                 tmp = subsref(a,s(1));
-                subsasgn(tmp,s(2:end),b);
+                z = subsasgn(tmp,s(2:end),b);
             else
                 
                 switch s(1).type

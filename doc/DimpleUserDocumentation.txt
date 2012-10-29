@@ -344,6 +344,14 @@ HMM.addFactor(@observation_function_Tutorial,SundayWeather,'book');
 
 As we can see, though the functions itself depends on two variables, each factor only depends on one random variable (the other argument being set as a constant during the addFactor call). This in effect creates a factor connected only to one variable of the factor graph.
 
+There is a cost incurred everytime addFator is called.  For large Factor Graphs with many factors of the same type, it can be advantageous to use a vectorized version of addFactor.  The following code will create a transition factor between each pair of consecutive variables and will execute much more quickly than a for loop with addFactor.
+
+----
+N = 1000;
+Weather = Discrete(Domain,N,1);
+HMM.addFactorVectorized(@MC_transition_Tutorial,Weather(1:(end-1)),Weather(2:end));
+----
+
 Specifying Inputs
 ^^^^^^^^^^^^^^^^^
 

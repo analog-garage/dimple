@@ -29,6 +29,11 @@ public class FactorTable extends FactorTableBase
 {
 	private DiscreteDomain [] _domains;
 
+	//Used for converting indices into weights
+	int [] _indices2weightIndex;
+	int [] _offsets;
+
+
 	public FactorTable(double [][] table, DiscreteDomain domain1, DiscreteDomain domain2)
 	{
 		int [][] indices = new int[domain1.size()*domain2.size()][2];
@@ -47,6 +52,13 @@ public class FactorTable extends FactorTableBase
 		
 		_domains = new DiscreteDomain[]{domain1,domain2};
 		change(indices, weights);
+	}
+	
+	public void change(int [][] indices, double [] weights, boolean check)
+	{
+		super.change(indices,weights,check);
+		
+		_indices2weightIndex = null;
 	}
 	
 	public FactorTable(FactorTable copy)
@@ -417,6 +429,70 @@ public class FactorTable extends FactorTableBase
 		FactorTable mct = x.deserializeFactorTableFromXML(docName);		
 		
 		return mct;
+	}
+	
+	/*
+	 * This method sets up the data structures to make
+	 * getWeightIndex... possible.
+	 * This routine creates an array that is as long as the full
+	 * cartesian product of the variables connected to this factor
+	 * table.  
+	 */
+	private void initIndices2weightIndex()
+	{
+		_offsets = new int[_domains.length];
+		int prod = 1;
+		_offsets[0] = 1;
+		
+		//Create the indices into the array
+		for (int i = 1; i < _domains.length; i++)
+		{
+			prod = prod*_domains[i-1].size();
+			_offsets[i] = prod;
+		}
+		prod = prod*_domains[_domains.length-1].size();
+		_indices2weightIndex = new int[prod];
+		
+		//Initialize the array to -1.
+		for (int i = 0; i < _indices2weightIndex.length; i++)
+		{
+			_indices2weightIndex[i] = -1;
+		}
+		
+		//Now, go through the factor table and initialize
+		int [][] indices = getIndices();
+		for (int i = 0; i < indices.length; i++)
+		{
+			int tmp = 0;
+			for (int j = 0; j < indices[i].length ;j++)
+				tmp += indices[i][j] * _offsets[j];
+			_indices2weightIndex[tmp] = i;			
+
+		}
+		
+	}
+	
+	
+	
+	/*
+	 * This method provides the ability to get the weight index from the table
+	 * indices.  The weight index can be used to either retrieve the weight
+	 * or the potential.
+	 */
+	public int getWeightIndexFromTableIndices(int [] indices)
+	{
+		
+		if (_indices2weightIndex == null)
+			initIndices2weightIndex();
+
+		int tmp = 0;
+		for (int i = 0; i < indices.length ;i++)
+			tmp += indices[i] * _offsets[i];
+		
+		int weightIndex = _indices2weightIndex[tmp];
+		
+		return weightIndex;
+		
 	}
 
 	

@@ -59,9 +59,13 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
+		{
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
+		}
 		else
+		{
 			_kbestFactorEngine = new KBestFactorEngine(this);
+		}
 		
 		setK(Integer.MAX_VALUE);
 

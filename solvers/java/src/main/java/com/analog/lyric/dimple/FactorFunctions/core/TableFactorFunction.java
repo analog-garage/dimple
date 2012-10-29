@@ -24,17 +24,21 @@ import com.analog.lyric.dimple.model.Domain;
 public class TableFactorFunction extends FactorFunction 
 {
 	
-	//private HashMap<ArrayList<Object>,Double> _lookupTable = null;
 	private FactorTable _factorTable;
-	//private DiscreteDomain [] _domains;
+
+	public boolean factorTableExists(Domain [] domainList)
+	{
+    	if (domainList.length != _factorTable.getDomains().length)
+    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domainList.length + " factorTable's domain size: " + _factorTable.getDomains().length);
+    	    	
+    	return true;
+	}
 
 	public TableFactorFunction(String name,FactorTable factorTable) 
 	{		
-		super(name);
-		
+		super(name);		
 		_factorTable = factorTable;
-		//_domains = domains;
-		
+				
 	}
 	
 	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains) 
