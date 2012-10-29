@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.FactorFunctions.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -179,51 +178,15 @@ public class FactorTableBase
 		_indices = indices;
 		_weights = weights;
 		_potentials = null;
-		_indices2weightIndex = null;
 		
 	}
 
 	//Used for getWeightIndexFromTableIndices
-	private HashMap<ArrayList<Integer>,Integer> _indices2weightIndex = null;
+	//private HashMap<ArrayList<Integer>,Integer> _indices2weightIndex = null;
 
-	/*
-	 * This is called teh first time a user calls getWeightIndexFromTableIndices
-	 */
-	private void initIndices2Value()
-	{
-		_indices2weightIndex = new HashMap<ArrayList<Integer>, Integer>();
-    	for (int i = 0; i < _indices.length; i++)
-    	{
-    		ArrayList<Integer> key = new ArrayList<Integer>();
-    		for (int j : _indices[i])
-    			key.add(j);
-    		
-    		_indices2weightIndex.put(key,i);
-    	}
-
-	}
 	
-	/*
-	 * This method provides the ability to get the weight index from the table
-	 * indices.  The weight index can be used to either retrieve the weight
-	 * or the potential.
-	 */
-	public int getWeightIndexFromTableIndices(int [] indices)
-	{
-		if (_indices2weightIndex == null)
-			initIndices2Value();
+	
 
-		ArrayList<Integer> al = new ArrayList<Integer>();
-		
-		for (int i : indices)
-			al.add(i);
-		
-		if (!_indices2weightIndex.containsKey(al))
-			return -1;
-			
-		
-		return _indices2weightIndex.get(al);
-	}
 
 	
 	public double [] getPotentials()

@@ -29,7 +29,7 @@ function testAllVariants()
     K = 3;
     %Domain size to 10
     D = 10;
-    %Number of vars to 3
+    %Number of vars to 2    
     NumVars = 2;
 
 
@@ -37,6 +37,7 @@ function testAllVariants()
         factorFunction = factorFunctions{ffIndex};
 
         for solverIndex = 1:length(solvers)
+        
             solver = solvers{solverIndex};
             setSolver(solver);
 

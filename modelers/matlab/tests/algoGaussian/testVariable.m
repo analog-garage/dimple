@@ -19,7 +19,6 @@ function testVariable()
     %Test default inputs (sets mu to 0 and sigma to Inf
     %Test a sigma of infinity
     vars = Real(3,1);
-
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
 

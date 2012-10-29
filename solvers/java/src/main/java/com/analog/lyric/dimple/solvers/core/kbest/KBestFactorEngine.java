@@ -97,7 +97,7 @@ public class KBestFactorEngine
 		updateEdgeInternal(outPortNum);
 	}
 	
-	private void updateEdgeInternal(int outPortNum)
+	protected void updateEdgeInternal(int outPortNum)
 	{
 		
 		//Get the outputPort we're going to update.

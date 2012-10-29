@@ -18,17 +18,17 @@ package com.analog.lyric.dimple.solvers.core.kbest;
 
 public class KBestFactorTableEngine extends KBestFactorEngine 
 {
-
 	public KBestFactorTableEngine(IKBestFactor f) 
 	{
 		super(f);
 	}
-
+	
 	/*
 	 * retrieves weights from the factor table
 	 */
 	protected double getFactorFunctionValueForIndices(int [] inputIndices, Object [][] domains)
 	{
+
 		int index = getIKBestFactor().getFactorTable().getWeightIndexFromTableIndices(inputIndices);
 		if (index < 0)
 			return Double.POSITIVE_INFINITY;
