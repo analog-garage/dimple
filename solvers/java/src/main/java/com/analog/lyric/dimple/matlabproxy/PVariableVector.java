@@ -61,24 +61,6 @@ public class PVariableVector
 		}
 		return new PVariableVector(variables);
 
-//		if (varVectors[0] instanceof PRealVariableVector)			// Assumes all vectors are of the same class
-//		{
-//			VariableBase [] variables = new PRealVariable[varIndices.length];
-//			for (int i = 0; i < varIndices.length; i++)
-//			{
-//				variables[i] = varVectors[varVectorIndices[i]]._variables[varIndices[i]];
-//			}
-//			return new PRealVariableVector(variables);
-//		}
-//		else
-//		{
-//			VariableBase [] variables = new PDiscreteVariable[varIndices.length];
-//			for (int i = 0; i < varIndices.length; i++)
-//			{
-//				variables[i] = varVectors[varVectorIndices[i]]._variables[varIndices[i]];
-//			}
-//			return new PDiscreteVariableVector(variables);
-//		}
 	}
 	public PVariableVector concat(Object [] varVectors)
 	{

@@ -188,8 +188,13 @@ classdef VariableBase < handle
             x = obj.getValue();
         end
         
+        function var = repmat(a,varargin)
+            indices = a.Indices;
+            indices = repmat(indices,varargin{:});
+            var = a.createVariableFromReorderedIndices(indices);
+        end
+        
         function retval = eq(a,b)
-            %TODO: Behave like matrix equal
             retval = a.isequal(b);
         end
         
