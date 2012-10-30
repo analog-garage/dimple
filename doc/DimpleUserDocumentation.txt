@@ -496,6 +496,16 @@ SubArray2=VarArray2(1,2:3);
 SubArray3=[SubArray1;SubArray2];
 ----
 
+repmat works as well.  The following code snippet will set C to a 10x10 Bit matrix.  Rather than creating new
+variables, it simply replicates the existing variables.  
+
+----
+b = Bit(10,1);
+c = repmat(b,1,10);
+----
+
+
+
 Using the Variable methods Belief, Value or Domain on a random array returns the array of Beliefs (resp. ML values, domains, etc..) for these variables.
 
 
