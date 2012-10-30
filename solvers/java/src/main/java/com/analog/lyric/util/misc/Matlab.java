@@ -19,7 +19,8 @@ package com.analog.lyric.util.misc;
 /**
  * This annotation is used to mark public Java members that are expected to be invoked
  * directly from MATLAB. Such members cannot be removed or refactored without taking its
- * potential MATLAB use into account.
+ * potential MATLAB use into account. When applied to a class, the assumption should be that
+ * all or most of its public members may be accessed from MATLAB.
  */
 public @interface Matlab
 {
