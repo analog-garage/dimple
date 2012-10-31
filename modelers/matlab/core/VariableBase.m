@@ -127,7 +127,7 @@ classdef VariableBase < handle
         function set.Label(obj,name)
             obj.VarMat.setLabel(name);
         end
-
+        
         
         function names = get.Name(obj)
             names = obj.wrapNames(obj.VarMat.getNames());
@@ -188,8 +188,13 @@ classdef VariableBase < handle
             x = obj.getValue();
         end
         
+        function var = repmat(a,varargin)
+            indices = a.Indices;
+            indices = repmat(indices,varargin{:});
+            var = a.createVariableFromReorderedIndices(indices);
+        end
+        
         function retval = eq(a,b)
-            %TODO: Behave like matrix equal
             retval = a.isequal(b);
         end
         
@@ -212,7 +217,7 @@ classdef VariableBase < handle
         end
         
         function x = vertcat(varargin)
-
+            
             x = VariableBase.docat(@vertcat,varargin{:});
         end
         function x = reshape(obj,varargin)
@@ -275,9 +280,9 @@ classdef VariableBase < handle
                             b = a.getValue();
                         case 'VarMat'
                             b = a.VarMat;
-                        %case 'split'
-                        %    b = a.split(s(2).subs{:});
-                        %   dontdescend = 1;
+                            %case 'split'
+                            %    b = a.split(s(2).subs{:});
+                            %   dontdescend = 1;
                         case 'createVariable'
                             b = a.createVariable(s(2).subs{:});
                             dontdescend = 1;
@@ -389,6 +394,8 @@ classdef VariableBase < handle
             end
             
         end
+        
+        
         
     end
     
@@ -511,7 +518,7 @@ classdef VariableBase < handle
         function s = getSolver(obj)
             s = obj.Solver;
         end
-                
+        
         function factors = getFactors(obj,relativeNestingDepth)
             tmp = cell(obj.VarMat.getFactors(relativeNestingDepth));
             factors = cell(size(tmp));
@@ -555,11 +562,11 @@ classdef VariableBase < handle
         function x = docat(catmethod,varargin)
             
             for i = 1:length(varargin)
-               if ~isa(varargin{i},'VariableBase')
-                   error('horzcat only supported with Variables');
-               end
+                if ~isa(varargin{i},'VariableBase')
+                    error('horzcat only supported with Variables');
+                end
             end
-
+            
             
             indices_all = [];
             var_mat_indices_all = [];
