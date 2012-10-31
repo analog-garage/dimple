@@ -95,7 +95,10 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 			for (int iterNum = 0; iterNum < numIters; iterNum++)
 			{
 				update();
-				interruptCheck();	// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
+				
+				// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
+				try {interruptCheck();}
+				catch (InterruptedException e) {return;}
 			}
 		}
 		else					
@@ -261,13 +264,13 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 	}
 
 	// Allow interruption (if the solver is run as a thread)
-	protected void interruptCheck()
+	protected void interruptCheck() throws InterruptedException
 	{
 		try {Thread.sleep(0);}
 		catch (InterruptedException e)
 		{
 			Thread.currentThread().interrupt();
-			return;
+			throw e;
 		}
 	}
 
