@@ -156,7 +156,7 @@ public class PFactorGraph extends PFactorBase
 		return retval;
 	}
 
-	public PFactor [] addFactorVectorized(PFactorTable factorTable, Object [] vars, int [] numvarsperfactor, int [] numfactors)
+	public PFactor [] addFactorVectorized(PFactor factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
 	{
 		//Make sure there are no Variables.
 		//extract lengths and verify sizes are correct
@@ -173,7 +173,7 @@ public class PFactorGraph extends PFactorBase
 		
 		
 		//TODO: won't work with reals.
-		TableFactorFunction tff = new TableFactorFunction("table", factorTable.getModelerObject());
+		Factor f = factor.getModelerObject();
 		PFactor [] result = new PFactor[maxsize];
 
 		//loop through that size
@@ -203,7 +203,7 @@ public class PFactorGraph extends PFactorBase
 					actualInputs[j] = vars[j];
 				}
 			}
-			result[i] = createFactor(tff,actualInputs);
+			result[i] = createFactor(f.getFactorFunction(),actualInputs);
 
 		}
 		

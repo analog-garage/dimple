@@ -234,9 +234,9 @@ classdef FactorGraph < handle
 
                 %TODO: should we use firstFactor.IFactor instead?
                 %      will this work with continuous variables?
-                itable = firstFactor.FactorTable.ITable;
+                factor = firstFactor.IFactor;
 
-                otherFactors = obj.IGraph.addFactorVectorized(itable,finalvars,numvarsperfactor,numfactors);
+                otherFactors = obj.IGraph.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
 
                 %TODO: should call existing function.  Or should return
                 %      FactorVector

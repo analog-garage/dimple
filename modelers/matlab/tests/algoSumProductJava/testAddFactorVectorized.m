@@ -71,7 +71,16 @@ function testAddFactorVectorized()
     assertEqual(length(fg.Factors),1);
     
     %Test real variables
-    %fg = FactorGraph();
+    fg = FactorGraph();
+    fg.Solver = 'gaussian';
+    a = Real(N,1);
+    b = Real(N,1);
+    factors = fg.addFactorVectorized(@add,a,b);
+    for i = 1:N
+       assertTrue(a(i).Factors{1}==factors{i});
+       assertTrue(b(i).Factors{1}==factors{i});
+    end
+    
     %{
     b = Bit(3,1);
     nfg = FactorGraph(b);
