@@ -156,58 +156,112 @@ public class PFactorGraph extends PFactorBase
 		return retval;
 	}
 
-	public PFactor [] addFactorVectorized(PFactor factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
+	/*
+	 * This class is used by both addFactorVecotrized and addGraphVectorized.  It follows the template
+	 * pattern to provide re-usable code.
+	 */
+	public abstract class AddFactorVectorizedTemplate
 	{
-		//Make sure there are no Variables.
-		//extract lengths and verify sizes are correct
-		int maxsize = 1;
-		for (int i = 0; i < numfactors.length; i++)
-		{
-			if (numfactors[i] > 1)
-			{
-				if (maxsize > 1 && numfactors[i] != maxsize)
-					throw new DimpleException("Var sizes don't match");
-				maxsize = numfactors[i];
-			}
-		}
+		public abstract Object callAddFactor(Object factor, Object [] inputs);
 		
-		
-		//TODO: won't work with reals.
-		Factor f = factor.getModelerObject();
-		PFactor [] result = new PFactor[maxsize];
-
-		//loop through that size
-		for (int i = 0; i < maxsize; i++)
+		public Object [] addFactorVectorized(Object factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
 		{
-			Object [] actualInputs = new Object[vars.length];
-			
-			for (int j = 0; j < actualInputs.length; j++)
+			//Make sure there are no Variables.
+			//extract lengths and verify sizes are correct
+			int maxsize = 1;
+			for (int i = 0; i < numfactors.length; i++)
 			{
-				if (vars[j] instanceof PVariableVector)
+				if (numfactors[i] > 1)
 				{
-					PVariableVector vec = (PVariableVector)vars[j];
-					if (numfactors[j] > 1)
+					if (maxsize > 1 && numfactors[i] != maxsize)
+						throw new DimpleException("Var sizes don't match");
+					maxsize = numfactors[i];
+				}
+			}
+						
+			Object [] result = new Object[maxsize];
+
+			//loop through that size
+			for (int i = 0; i < maxsize; i++)
+			{
+				Object [] actualInputs = new Object[vars.length];
+				
+				for (int j = 0; j < actualInputs.length; j++)
+				{
+					if (vars[j] instanceof PVariableVector)
 					{
-						int [] indices = new int[numvarsperfactor[j]];
-						for (int k = 0; k < indices.length; k++)
-							indices[k] = i*numvarsperfactor[j] + k;
-						actualInputs[j]  = vec.getSlice(indices);
+						PVariableVector vec = (PVariableVector)vars[j];
+						if (numfactors[j] > 1)
+						{
+							int [] indices = new int[numvarsperfactor[j]];
+							for (int k = 0; k < indices.length; k++)
+								indices[k] = i*numvarsperfactor[j] + k;
+							actualInputs[j]  = vec.getSlice(indices);
+						}
+						else
+						{
+							actualInputs[j] = vec;
+						}
 					}
 					else
 					{
-						actualInputs[j] = vec;
+						actualInputs[j] = vars[j];
 					}
 				}
-				else
-				{
-					actualInputs[j] = vars[j];
-				}
-			}
-			result[i] = createFactor(f.getFactorFunction(),actualInputs);
+				Object tmp = callAddFactor(factor, actualInputs);
+				result[i] = tmp;
 
+			}
+			
+			return result;
 		}
 		
-		return result;
+	}
+	
+	/*
+	 * Provided for matlab speed reasons.
+	 */
+	public PFactorGraph [] addGraphVectorized(PFactorGraph graph, Object [] vars, int [] numvarsperfactor, int [] numfactors)
+	{
+		//Here we create an anonymous class that provides an override of the callAddFactor
+		//We then call the addFactorVectorized method and return the result
+		Object [] result = new AddFactorVectorizedTemplate() {
+			
+			@Override
+			public Object callAddFactor(Object factor, Object[] inputs) {
+				PFactorGraph pfg = (PFactorGraph)factor;
+				PVariableVector varVector = new PVariableVector();
+				varVector = varVector.concat(inputs);
+				return addGraph(pfg, varVector);
+			}
+		}.addFactorVectorized(graph, vars, numvarsperfactor, numfactors);
+		
+		//Convert the result into the correct types
+		PFactorGraph [] retval = new PFactorGraph [result.length];
+		for (int i = 0; i < result.length; i++)
+			retval[i] = (PFactorGraph)result[i];
+		return retval;
+	}
+	
+	/*
+	 * Provided for matlab speed reasons.
+	 */
+	public PFactor [] addFactorVectorized(PFactor factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
+	{
+		Object [] result = new AddFactorVectorizedTemplate() {
+			
+			@Override
+			public Object callAddFactor(Object factor, Object[] inputs) {
+				// TODO Auto-generated method stub
+				PFactor pf = (PFactor)factor;
+				return createFactor(pf.getModelerObject().getFactorFunction(),inputs);
+			}
+		}.addFactorVectorized(factor, vars, numvarsperfactor, numfactors);
+		
+		PFactor [] retval = new PFactor [result.length];
+		for (int i = 0; i < result.length; i++)
+			retval[i] = (PFactor)result[i];
+		return retval;		
 	}
 	
 	

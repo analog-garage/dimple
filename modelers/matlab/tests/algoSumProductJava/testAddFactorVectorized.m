@@ -81,13 +81,18 @@ function testAddFactorVectorized()
        assertTrue(b(i).Factors{1}==factors{i});
     end
     
-    %{
+    %Test nested graphs
     b = Bit(3,1);
     nfg = FactorGraph(b);
     nfg.addFactor(@xorDelta,b);
     fg = FactorGraph();
     b = Bit(N,3);
-    fg.addFactorVectorized(nfg,{b,1});
-    %}
+    graphs = fg.addFactorVectorized(nfg,{b,1});
+    for i = 1:N
+        for j = 1:3
+           assertTrue(b(i,j).Factors{1} == graphs{i}.Factors{1});
+        end
+    end
+    
 end
 

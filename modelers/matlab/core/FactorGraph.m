@@ -232,18 +232,18 @@ classdef FactorGraph < handle
             
             if max(numfactors) > 1
 
-                %TODO: should we use firstFactor.IFactor instead?
-                %      will this work with continuous variables?
-                factor = firstFactor.IFactor;
+                if isa(firstFactor,'FactorGraph')
+                    graph = firstFactor.IGraph;
+                    otherFactors = obj.IGraph.addGraphVectorized(graph,finalvars,numvarsperfactor,numfactors);
+                else
+                    factor = firstFactor.IFactor;
+                    otherFactors = obj.IGraph.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
+                end
 
-                otherFactors = obj.IGraph.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
-
-                %TODO: should call existing function.  Or should return
-                %      FactorVector
                 retval = cell(length(otherFactors)+1,1);
                 retval{1} = firstFactor;
                 for i = 2:length(retval)
-                    retval{i} = DiscreteFactor(otherFactors(i-1));
+                    retval{i} = wrapProxyObject(otherFactors(i-1));
                 end
             end
         end

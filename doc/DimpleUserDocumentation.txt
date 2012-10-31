@@ -352,6 +352,18 @@ Weather = Discrete(Domain,N,1);
 HMM.addFactorVectorized(@MC_transition_Tutorial,Weather(1:(end-1)),Weather(2:end));
 ----
 
+This works with continuous variables and Nested Graphs as well.  In addition, it's possible to specify which dimensions to vectorize over:
+
+----
+N = 20;
+b = Bit(3,N);
+fg = FactorGraph();
+fg.addFactorVectorized(@xorDelta,{b,2});
+----
+
+The previous code will create N xor factors across each of the N sets of 3 variables.
+
+
 Specifying Inputs
 ^^^^^^^^^^^^^^^^^
 
