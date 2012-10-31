@@ -208,8 +208,9 @@ classdef FactorGraph < handle
             %addFactorVectorized can be used to speed up the creation of
             %large graphs with many factors.  
             %
-            % The following code can be used in computer vision algorithms
-            % to create factors between all adjacent pixels:
+            % As an example, the following code can be used in computer 
+            % vision algorithms to create factors between all adjacent 
+            % pixels:
             %
             % a = Discrete(domain,M,N);
             % b = Discrete(domain,M,N);
@@ -222,6 +223,9 @@ classdef FactorGraph < handle
             %
             % x = Bit(N,3);
             % fg.addFactorVectorized(@xorDelta,{x,1});
+            %
+            % addFactorVectorized works with Discrete, Reals, and Nested
+            % Graphs.
             
             %Get variables
             firstvars = obj.extractFirstArgs(varargin{:});
