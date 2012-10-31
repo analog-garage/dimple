@@ -53,6 +53,7 @@ public class FactorGraph extends FactorBase
 	private VariableList _ownedVariables = new VariableList();
 	private VariableList _boundaryVariables = new VariableList();
 	private MapList<FactorBase> _ownedFactors = new MapList<FactorBase>();
+	private ArrayList<FactorGraph> _ownedSubGraphs = new ArrayList<FactorGraph>();
 	private ISchedule _schedule = null;
 	private IScheduler _associatedScheduler = null;
 	private IScheduler _solverSpecificDefaultScheduler = null;
@@ -715,7 +716,7 @@ public class FactorGraph extends FactorBase
 		//tell us about it
 		addNameAndUUID(subGraphCopy);
 		_ownedFactors.add(subGraphCopy);
-		//_nestedGraphs.add(subGraphCopy);
+		_ownedSubGraphs.add(subGraphCopy);
 
 		//tell us about it and it about us
 		//subGraphCopy._setParentGraph(this);
@@ -1102,6 +1103,7 @@ public class FactorGraph extends FactorBase
 		removeVariables(arr);
 		removeNode(factorGraph);
 		_ownedFactors.remove(factorGraph);
+		_ownedSubGraphs.remove(factorGraph);
 		
 		for (VariableBase v : boundary)
 		{
@@ -1650,15 +1652,7 @@ public class FactorGraph extends FactorBase
 
 	public ArrayList<FactorGraph> getNestedGraphs()
 	{
-		ArrayList<FactorGraph> retval = new ArrayList<FactorGraph>();
-		
-		for (FactorBase fb : _ownedFactors)
-		{
-			FactorGraph subgraph = fb.asFactorGraph();
-			if (subgraph != null)
-				retval.add(subgraph);
-		}
-		return retval;
+		return _ownedSubGraphs;
 	}
 
 	public long getVersionId()

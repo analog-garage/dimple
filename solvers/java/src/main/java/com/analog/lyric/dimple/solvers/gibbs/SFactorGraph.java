@@ -95,20 +95,31 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (initialize)
 			initialize();
 		
-		super.iterate(_burnInUpdates);
+		iterate(_burnInUpdates);
 		for (int iter = 0; iter < _numSamples; iter++) 
 			oneSample();
 	}   
 
 	// Note that the iterate() method for the Gibbs solver means do the
 	// specified number of single-variable updates, regardless of other parameter settings.
-	// The iterate() method in the parent class does not need to be overridden to do this,
-	// but behaves differently than for other solvers due to the fact that the
+	// The iterate() method behaves differently than for other solvers due to the fact that the
 	// update() method for Gibbs-specific schedules will update only a single variable.
+	// Also, multithreaded operation for Gibbs is not supported
+	@Override
+	public void iterate(int numIters) 
+	{
+		for (int iterNum = 0; iterNum < numIters; iterNum++)
+			update();
+		
+		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
+		try {interruptCheck();}
+		catch (InterruptedException e) {return;}
+	}
+
 	
 	protected void oneSample() 
 	{
-		super.iterate(_updatesPerSample);
+		iterate(_updatesPerSample);
 		for (VariableBase v : _factorGraph.getVariables())
 		{
 			ISolverVariableGibbs vs = (ISolverVariableGibbs)(v.getSolver());
