@@ -155,56 +155,61 @@ public class PFactorGraph extends PFactorBase
 		
 		return retval;
 	}
-	
-	public PFactor [] addFactorVectorized(PFactorTable factorTable, Object [] vars)
+
+	public PFactor [] addFactorVectorized(PFactorTable factorTable, Object [] vars, int [] numvarsperfactor, int [] numfactors)
 	{
-		Object [] inputs = vars;
-		//Object [] inputs = PHelpers.convertToMVariablesAndConstants(vars);
-		TableFactorFunction tff = new TableFactorFunction("table", factorTable.getModelerObject());
-		
-		int [] sizes = new int[inputs.length];
-		int maxSize = 0;
-		
-		for (int i = 0; i < inputs.length; i++)
+		//Make sure there are no Variables.
+		//extract lengths and verify sizes are correct
+		int maxsize = 1;
+		for (int i = 0; i < numfactors.length; i++)
 		{
-			if (inputs[i] instanceof PVariableVector)
+			if (numfactors[i] > 1)
 			{
-				PVariableVector vec = (PVariableVector)inputs[i];
-				sizes[i] = vec.size();
-				if (sizes[i] > maxSize)
-					maxSize = sizes[i];
+				if (maxsize > 1 && numfactors[i] != maxsize)
+					throw new DimpleException("Var sizes don't match");
+				maxsize = numfactors[i];
 			}
 		}
 		
-		for (int i = 0; i < sizes.length; i++)
-			if (sizes[i] != maxSize && sizes[i] != 1 && sizes[i] != 0)
-				throw new DimpleException("all vectors must be same size");
-
-		PFactor [] result = new PFactor[maxSize];
 		
-		for (int i = 0; i < maxSize; i++)
+		//TODO: won't work with reals.
+		TableFactorFunction tff = new TableFactorFunction("table", factorTable.getModelerObject());
+		PFactor [] result = new PFactor[maxsize];
+
+		//loop through that size
+		for (int i = 0; i < maxsize; i++)
 		{
-			Object [] actualInputs = new Object[inputs.length];
+			Object [] actualInputs = new Object[vars.length];
+			
 			for (int j = 0; j < actualInputs.length; j++)
 			{
-				if (inputs[j] instanceof PVariableVector)
+				if (vars[j] instanceof PVariableVector)
 				{
-					PVariableVector vec = (PVariableVector)inputs[j];
-					if (vec.size() == 1)
-						actualInputs[j] = vec;
+					PVariableVector vec = (PVariableVector)vars[j];
+					if (numfactors[j] > 1)
+					{
+						int [] indices = new int[numvarsperfactor[j]];
+						for (int k = 0; k < indices.length; k++)
+							indices[k] = i*numvarsperfactor[j] + k;
+						actualInputs[j]  = vec.getSlice(indices);
+					}
 					else
-						actualInputs[j] = vec.getSlice(new int[]{i});
+					{
+						actualInputs[j] = vec;
+					}
 				}
 				else
 				{
-					actualInputs[j] = inputs[j];
+					actualInputs[j] = vars[j];
 				}
 			}
 			result[i] = createFactor(tff,actualInputs);
+
 		}
 		
 		return result;
 	}
+	
 	
 	public PFactor createFactor(PFactorTable factorTable, Object [] vars) 
 	{

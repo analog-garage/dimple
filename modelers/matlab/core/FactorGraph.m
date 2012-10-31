@@ -1,43 +1,43 @@
 classdef FactorGraph < handle
-% The FactorGraph class represents a collection of variables and the
-% factors that relate these variables to one another.  Users create new
-% factors by calling addFactor, set inputs on the variables, and solve
-% using the FactorGraph.solve method.
-%
-% FactorGraph properties:
-%    Solver - Retrieves the underlying solver object.
-%    Name - Can be used to set/get the name of the FactorGraph.
-%    Label - Used when plotting the graph.
-%    NumIterations - Sets the nuber of iterations on the solver.  This 
-%                    property has a solver specific meaning.
-%    Factors - Returns the list of Factors associated with this graph.
-%    Variables - Returns the list of Variables associated with this graph.
-%
-% FactorGraph Methods
-%    solve - Calls the solve method on the underlying solver.
-%    plot - Plots the graph.
-%    addFactor - Associates one or more variables with a Factor.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
-%
-%   Licensed under the Apache License, Version 2.0 (the "License");
-%   you may not use this file except in compliance with the License.
-%   You may obtain a copy of the License at
-%
-%       http://www.apache.org/licenses/LICENSE-2.0
-%
-%   Unless required by applicable law or agreed to in writing, software
-%   distributed under the License is distributed on an "AS IS" BASIS,
-%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-%   See the License for the specific language governing permissions and
-%   limitations under the License.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    % The FactorGraph class represents a collection of variables and the
+    % factors that relate these variables to one another.  Users create new
+    % factors by calling addFactor, set inputs on the variables, and solve
+    % using the FactorGraph.solve method.
+    %
+    % FactorGraph properties:
+    %    Solver - Retrieves the underlying solver object.
+    %    Name - Can be used to set/get the name of the FactorGraph.
+    %    Label - Used when plotting the graph.
+    %    NumIterations - Sets the nuber of iterations on the solver.  This
+    %                    property has a solver specific meaning.
+    %    Factors - Returns the list of Factors associated with this graph.
+    %    Variables - Returns the list of Variables associated with this graph.
+    %
+    % FactorGraph Methods
+    %    solve - Calls the solve method on the underlying solver.
+    %    plot - Plots the graph.
+    %    addFactor - Associates one or more variables with a Factor.
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %   Copyright 2012 Analog Devices, Inc.
+    %
+    %   Licensed under the Apache License, Version 2.0 (the "License");
+    %   you may not use this file except in compliance with the License.
+    %   You may obtain a copy of the License at
+    %
+    %       http://www.apache.org/licenses/LICENSE-2.0
+    %
+    %   Unless required by applicable law or agreed to in writing, software
+    %   distributed under the License is distributed on an "AS IS" BASIS,
+    %   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    %   See the License for the specific language governing permissions and
+    %   limitations under the License.
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     
     properties(Access=public)
-        TableFactory;        
+        TableFactory;
         %Retrieves the Solver object.
         Solver;
         %Set/get the name for the FactorGraph
@@ -122,11 +122,11 @@ classdef FactorGraph < handle
         
         function streams = get.FactorGraphStreams(obj)
             %TODO: wrap them
-           streams = cell(obj.IGraph.getFactorGraphStreams()); 
-           
-           for i = 1:length(streams)
-              streams{i} = FactorGraphStream(streams{i});
-           end
+            streams = cell(obj.IGraph.getFactorGraphStreams());
+            
+            for i = 1:length(streams)
+                streams{i} = FactorGraphStream(streams{i});
+            end
         end
         
         function set.NumIterations(obj,iters)
@@ -136,9 +136,9 @@ classdef FactorGraph < handle
         function initialize(obj)
             obj.IGraph.initialize();
         end
-
+        
         function ie = get.InternalEnergy(obj)
-           ie = obj.IGraph.getInternalEnergy(); 
+            ie = obj.IGraph.getInternalEnergy();
         end
         
         function be = get.BetheEntropy(obj)
@@ -154,13 +154,13 @@ classdef FactorGraph < handle
         end
         
         %createTable is kept around for legacy.
-        function table = createTable(obj,indices,values,varargin)                                    
+        function table = createTable(obj,indices,values,varargin)
             table = FactorTable(indices,values,varargin{:});
         end
         
         
         function advance(obj)
-           obj.IGraph.advance(); 
+            obj.IGraph.advance();
         end
         
         function reset(obj)
@@ -168,8 +168,9 @@ classdef FactorGraph < handle
         end
         
         function ret = hasNext(obj)
-           ret = obj.IGraph.hasNext(); 
+            ret = obj.IGraph.hasNext();
         end
+        
         
         function factorStream = addRepeatedFactor(obj,factor,varargin)
             
@@ -177,16 +178,16 @@ classdef FactorGraph < handle
                 bufferSize = varargin{1};
                 varargin = varargin(2:end);
             else
-                bufferSize = 1; 
+                bufferSize = 1;
             end
-
+            
             
             args = cell(size(varargin));
             
             for i = 1:numel(varargin)
                 %is either variable or variable stream
                 if isa(varargin{i},'IVariableStreamSlice')
-                   args{i} = varargin{i}.IVariableStreamSlice; 
+                    args{i} = varargin{i}.IVariableStreamSlice;
                 elseif isa(varargin{i},'VariableBase')
                     args{i} = varargin{i}.VarMat;
                 else
@@ -202,52 +203,49 @@ classdef FactorGraph < handle
             retval = obj.addFactorWithCacheFlag(false,firstArg,varargin{:});
         end
         
+        
         function retval = addFactorVectorized(obj,firstArg,varargin)
+            %addFactorVectorized can be used to speed up the creation of
+            %large graphs with many factors.  
+            %
+            % The following code can be used in computer vision algorithms
+            % to create factors between all adjacent pixels:
+            %
+            % a = Discrete(domain,M,N);
+            % b = Discrete(domain,M,N);
+            % fg.addFactorVectorized(@myfactor,a(1:(end-1),:),b(2:end,:));
+            % fg.addFactorVectorized(@myfactor,a(:,1:end-1),b(:,2:end));
+            %
+            % addFactorVectorized also supports vectorizing over subsets of
+            % the dimensions.  The following code will create N 3 bit xor
+            % factors across the N sets of 3 variables.
+            %
+            % x = Bit(N,3);
+            % fg.addFactorVectorized(@xorDelta,{x,1});
             
-           %Get variables 
-           firstvars = cell(size(varargin));
-           for i = 1:length(firstvars)
-              if isa(varargin{i},'VariableBase')
-                 firstvars{i} = varargin{i}(1); 
-              else
-                  firstvars{i} = varargin{i};
-              end
-           end
-           
-           %extract first variable
-           
-           %add factor
-           %retrieve the generated factor table
-           firstFactor = obj.addFactor(firstArg,firstvars{:});           
-           
-           %call addFactorVectorized down to Java with all remaining
-           %TODO: we should be checking there are some variables that have
-           %more than one 
-           finalvars = cell(size(varargin));
-           for i = 1:length(varargin)
-               if isa(varargin{i},'VariableBase')
-                   if length(varargin{i}) == 1
-                       finalvars{i} = varargin{i}.VarMat;
-                   else
-                       tmp = varargin{i};
-                       tmp = tmp(2:end);
-                       finalvars{i} = tmp.VarMat;
-                   end
-               else
-                  finalvars{i} = varargin{i}; 
-               end
-           end
-           
-           
-           itable = firstFactor.FactorTable.ITable;
-           otherFactors = obj.IGraph.addFactorVectorized(itable,finalvars);
-           retval = cell(length(otherFactors)+1,1);
-           retval{1} = firstFactor;
-           for i = 2:length(retval)
-               retval{i} = DiscreteFactor(otherFactors(i-1));
-           end
-           
-           %variables
+            %Get variables
+            firstvars = obj.extractFirstArgs(varargin{:});
+            firstFactor = obj.addFactor(firstArg,firstvars{:});
+            
+            %TODO: Catch case where there is no actual vector.
+            [finalvars,numvarsperfactor,numfactors] = obj.extractFinalArgs(varargin{:});
+            
+            if max(numfactors) > 1
+
+                %TODO: should we use firstFactor.IFactor instead?
+                %      will this work with continuous variables?
+                itable = firstFactor.FactorTable.ITable;
+
+                otherFactors = obj.IGraph.addFactorVectorized(itable,finalvars,numvarsperfactor,numfactors);
+
+                %TODO: should call existing function.  Or should return
+                %      FactorVector
+                retval = cell(length(otherFactors)+1,1);
+                retval{1} = firstFactor;
+                for i = 2:length(retval)
+                    retval{i} = DiscreteFactor(otherFactors(i-1));
+                end
+            end
         end
         
         function retval = addFactor(obj,firstArg,varargin)
@@ -300,10 +298,10 @@ classdef FactorGraph < handle
                     ifandt{i} = factorsAndTables{i}.ITable;
                 else
                     error('Second argument should be an array of FactorTables and/or Factors');
-                end                
+                end
             end
             obj.IGraph.baumWelch(ifandt,numRestarts,numSteps);
-        end        
+        end
         
         function estimateParameters(obj,factorsAndTables,numRestarts,numSteps,stepScaleFactor)
             if ~ iscell(factorsAndTables)
@@ -317,7 +315,7 @@ classdef FactorGraph < handle
                     ifandt{i} = factorsAndTables{i}.ITable;
                 else
                     error('Second argument should be an array of FactorTables and/or Factors');
-                end                
+                end
             end
             obj.IGraph.estimateParameters(ifandt,numRestarts,numSteps,stepScaleFactor);
         end
@@ -979,26 +977,26 @@ function factors = get.Factors(obj)
     
     methods (Access = private)
         
-
+        
         function retval = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
             
             %scan arguments and, if any are streams, call addRepeatedFactor
             requiresRepeated = false;
             for i = 1:length(varargin)
-               if isa(varargin{i},'IVariableStreamSlice')
-                   requiresRepeated = true;
-                   break;
-               end                   
+                if isa(varargin{i},'IVariableStreamSlice')
+                    requiresRepeated = true;
+                    break;
+                end
             end
             
             if requiresRepeated
                 retval = obj.addRepeatedFactor(firstArg,varargin{:});
             else
-            
-
+                
+                
                 %Should return objects.  Eitehr a Factor or a Factor Graph
                 retval = [];
-
+                
                 if isa(firstArg,'function_handle')
                     retval = obj.addFunctionHandle(doCache,firstArg,varargin{:});
                 elseif isa(firstArg,'FactorGraph')
@@ -1018,7 +1016,7 @@ function factors = get.Factors(obj)
                     else
                         retval = obj.addTableFromValues(firstArg,varargin);
                         
-                    end                    
+                    end
                     
                     %TODO: replace with a function call isFactorFunction
                 elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
@@ -1028,7 +1026,7 @@ function factors = get.Factors(obj)
                 end
             end
         end
-                
+        
         
         %getAdjacencyMatrix(nodes)
         function [A,labels] = getAdjacencyMatrixNodes(obj,nodes)
@@ -1280,7 +1278,7 @@ function factors = get.Factors(obj)
                     table = obj.TableFactory.getTable(funcHandle,domains,constants);
                 else
                     table = FunctionEntry.createFactorTable(func2str(funcHandle),...
-                    domains,constants,funcHandle);
+                        domains,constants,funcHandle);
                 end
                 
                 retval = DiscreteFactor(obj.IGraph.createFactor(table{3},varMat));
@@ -1317,35 +1315,35 @@ function factors = get.Factors(obj)
             
         end
         
-
+        
         function retval = addTableFromIndicesAndValues(obj,indices,values,variables)
             domains = obj.getDomainsFromVariableList(variables);
             table = FactorTable(indices,values,domains{:});
-            retval = obj.addTable(table,variables{:});            
+            retval = obj.addTable(table,variables{:});
         end
         
         function retval = addTableFromValues(obj,values,variables)
             domains = obj.getDomainsFromVariableList(variables);
             table = FactorTable(values,domains{:});
-            retval = obj.addTable(table,variables{:});            
+            retval = obj.addTable(table,variables{:});
         end
         
         function domains  = getDomainsFromVariableList(obj,vars)
-
+            
             %TODO: make common code for this
             domains = {};
             index = 1;
             for i = 1:length(vars)
                 numVars = prod(size(vars{i}));
-
+                
                 for j = 1:numVars
                     domains{index} = vars{i}.Domain;
                     index = index+1;
                 end
             end
-
-
-        end        
+            
+            
+        end
         
         % This function is necessary because the solver runs in a separate
         % thread and so if the MATLAB is interrupted, the thread must be
@@ -1357,5 +1355,125 @@ function factors = get.Factors(obj)
                 obj.IGraph.getSolver().interruptSolver();
             end
         end
+        
+        % The following methods are used for addFactorVectorized
+        
+        %This method reorders the variable dimensions for addFactorVectorized
+        %dimensions specifies which dimensions we want to loop over in
+        %order to create multiple factors
+        %This method moves those dimensions to the right and all other
+        %dimensions to the left so that Java can simply loop over chunks
+        %of variables.
+        function [var,dimstokeep,numvarstokeep] = reorderArg(obj,arg,dimensions)
+            %first figure out how to permute
+            numdims = length(size(arg));
+            alldims = 1:numdims;
+            
+            %Get the dimensions we will not vectorize.  These get passed in
+            %bulk to the factor function
+            unvecdims = setxor(alldims,dimensions);
+            
+            %Determine the permutation order.
+            permuteorder = zeros(numdims,1);
+            index = 1;
+            for i = 1:length(alldims)
+                if ismember(alldims(i),unvecdims)
+                    permuteorder(index) = alldims(i);
+                    index = index + 1;
+                end
+            end
+            for i = 1:length(alldims)
+                if ismember(alldims(i),dimensions)
+                    permuteorder(index) = alldims(i);
+                end
+            end
+            
+            %Permute the variable
+            var = arg.createVariable(arg.Domain,arg.VarMat,permute(arg.Indices,permuteorder));
+            
+            %Record the number of dimensions we use in the addFactor
+            %function.
+            dimstokeep = length(unvecdims);
+            
+            %figure out the number of variables we pass to addFactor.
+            tmp = size(arg);
+            tmp(dimensions) = 1;
+            numvarstokeep = prod(tmp);            
+            
+
+        end
+
+        %used by addFactorVectorized.  For a single variable, re-order the
+        %dimensions of the variable, remove the first variable if there's
+        %more than one (since we've already called addFactor for that, and
+        %record the number of factors and numvarsperfactor.
+        %
+        %arg - The VarMat we will pass to the java addFactorVectorized
+        %numvarsperfactor - The number of variables in a row for a single
+        %factor.
+        %numfactors - The number of sets of variables.  This should be
+        %either the number of factors that will be created or 1 if the
+        %variable set is shared across factors.
+        function [arg,numvarsperfactor,numfactors] = extractFinalArg(obj,input)
+            if isa(input,'VariableBase')
+                if prod(size(input)) > 1
+                    input = input(2:end);
+                end
+                arg = input.VarMat;
+                numvarsperfactor = 1;
+                numfactors = prod(size(arg));
+            elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
+                [newarg,~,numvars] = obj.reorderArg(input{1},input{2});
+                if numvars < prod(size(newarg))
+                   newarg = newarg(numvars+1:end); 
+                end
+                arg = newarg.VarMat;
+                numvarsperfactor = numvars;
+                numfactors = prod(size(arg))/numvars;
+            else
+                arg = input;
+                numvarsperfactor = 0;
+                numfactors = 0;
+            end            
+        end
+        
+        %We extract the first variable of every variable vector in order to
+        %make the first addFactor call.
+        function arg = extractFirstArg(obj,input)
+            if isa(input,'VariableBase')
+                arg = input(1);
+            elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
+                [newarg,dimstokeep] = obj.reorderArg(input{1},input{2});
+                indices = num2cell(ones(1,length(size(newarg))),1);
+                for i = 1:dimstokeep
+                    indices{i} = ':';
+                end
+                arg = newarg(indices{:});
+            else
+                arg = input;
+            end
+        end
+        
+        %Extract all the first vars to call addFactor
+        function firstvars = extractFirstArgs(obj,varargin)
+            firstvars = cell(size(varargin));
+            for i = 1:length(firstvars)
+                firstvars{i} = obj.extractFirstArg(varargin{i});
+            end            
+        end
+        
+        %Extract the remaining variables (after the extarctFirstArgs) to
+        %call addFactorVectorized
+        function [finalvars,numvarsperfactor,numfactors] = extractFinalArgs(obj,varargin)
+            finalvars = cell(size(varargin));
+            numvarsperfactor = zeros(size(finalvars));
+            numfactors = zeros(size(finalvars));
+            
+            for i = 1:length(varargin)
+                [finalvars{i},numvarsperfactor(i),numfactors(i)] = obj.extractFinalArg(varargin{i});
+            end
+        end
+        
+        
     end
 end
