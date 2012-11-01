@@ -71,7 +71,7 @@ public class FactorTable extends FactorTableBase
 	public FactorTable(int [][] indices, double [] weights, Discrete... variables)
 	{
 		super(indices,weights,true);
-		
+	
 		DiscreteDomain[] domains = new DiscreteDomain[variables.length];
 		for(int i = 0; i < domains.length; ++i)
 		{

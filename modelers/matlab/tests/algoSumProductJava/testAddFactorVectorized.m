@@ -16,6 +16,7 @@
 
 function testAddFactorVectorized()
 
+
     %Test the basic case
     fg = FactorGraph();
     N = 20;
@@ -93,6 +94,41 @@ function testAddFactorVectorized()
            assertTrue(b(i,j).Factors{1} == graphs{i}.Factors{1});
         end
     end
+    
+    %Test multiple dimensions
+    b = Bit(3,4,5);
+    fs = fg.addFactorVectorized(@xorDelta,{b,[1 3]});
+    index = 1;
+    for i = 1:5
+        for j = 1:3
+            f = fs{index};
+            for k = 1:4
+                f2 = b(j,k,i).Factors{1};
+                assertTrue(f==f2);
+            end
+            index = index + 1;
+        end
+    end
+    
+    %Test multiple dimensions not vectorized
+    myfac = @(a) sum(a(:));
+    b = Bit(2,2,2,2);
+    fg = FactorGraph();
+    fs = fg.addFactorVectorized(myfac,{b,[1 3]});
+    index = 1;
+    for i = 1:2
+        for j = 1:2
+            f = fs{index};
+            index = index + 1;
+            for m = 1:2
+                for n = 1:2
+                    f2 = b(j,m,i,n).Factors{1};
+                    assertTrue(f==f2);
+                end            
+            end
+        end
+    end
+    
     
 end
 
