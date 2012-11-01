@@ -100,6 +100,8 @@ classdef FunctionEntry < handle
     methods (Static)
         
         function factorTable = createFactorTable(name,domainLists,constants,funcPointer)
+            %Generates the Factor Table by evaluating the factorFunction
+            %over the cartesian product of the variable domains.
             
             domains = {};
             domainElements = {};
@@ -148,7 +150,7 @@ classdef FunctionEntry < handle
             for j = 1:numIndices
                 lookup(j,:) = [curInputIndex,curArrayIndex];
                 
-                if isequal(dimensions{curInputIndex},1)
+                if prod(dimensions{curInputIndex}) == 1;
                     curInputIndex = curInputIndex + 1;
                     curArrayIndex = 1;
                     isVector(j) = 0;
