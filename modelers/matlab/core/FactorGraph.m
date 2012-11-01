@@ -1389,6 +1389,7 @@ function factors = get.Factors(obj)
             for i = 1:length(alldims)
                 if ismember(alldims(i),dimensions)
                     permuteorder(index) = alldims(i);
+                    index = index + 1;
                 end
             end
             
