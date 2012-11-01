@@ -113,8 +113,34 @@ public abstract class ParameterEstimator
 				table2factors.get(ft).add(f);
 			}
 			
+			//Verify directionality is consistent.
 			_table2factors = table2factors;
+			
+			for (FactorTable table : _table2factors.keySet())
+			{
+				ArrayList<Factor> factors = _table2factors.get(table);
+				int [] direction = null;
+				for (Factor f : factors)
+				{
+					/*
+					int [] tmp = f.getDirection();
+					if (tmp == null)
+						throw new Exception("Baum Welch only works with directed Factors");
+					if (direction == null)
+						direction = tmp;
+					else
+					{
+						
+					}
+					*/
+						
+				}
+				
+			}
+			
 		}
+		
+		
 
 		@Override
 		public void runStep(FactorGraph fg) 
@@ -136,8 +162,15 @@ public abstract class ParameterEstimator
 				{
 					double [] belief = (double[])f.getSolver().getBelief();
 					for (int i = 0; i < sum.length; i++)
-						sum[i] += belief[i];
-				}
+						sum[i] += belief[i];				
+					
+				}				
+				
+				//Get first directionality
+				
+				//for every combination of variables in the from
+				
+					//normalize over the variables in the to
 				
 				//Set the weights to that
 				ft.changeWeights(sum);

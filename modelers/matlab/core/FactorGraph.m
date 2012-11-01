@@ -213,16 +213,19 @@ classdef FactorGraph < handle
             % pixels:
             %
             % a = Discrete(domain,M,N);
-            % b = Discrete(domain,M,N);
-            % fg.addFactorVectorized(@myfactor,a(1:(end-1),:),b(2:end,:));
-            % fg.addFactorVectorized(@myfactor,a(:,1:end-1),b(:,2:end));
+            % fg.addFactorVectorized(@myfactor,a(1:(end-1),:),a(2:end,:));
+            % fg.addFactorVectorized(@myfactor,a(:,1:end-1),a(:,2:end));
             %
             % addFactorVectorized also supports vectorizing over subsets of
-            % the dimensions.  The following code will create N 3 bit xor
-            % factors across the N sets of 3 variables.
+            % the dimensions.  In such cases, the user must pass a cell
+            % array containing two elements.  The first is the variable and
+            % the second is an array of dimensions to vectorize.
             %
-            % x = Bit(N,3);
-            % fg.addFactorVectorized(@xorDelta,{x,1});
+            % The following code will vectorize over the MxN 3x2 chunks so
+            % that myweirdfactor gets called with 3x2 bits.
+            %
+            % x = Bit(M,3,N,2);
+            % fg.addFactorVectorized(@myweirdfactor,{x,[1,3]});
             %
             % addFactorVectorized works with Discrete, Reals, and Nested
             % Graphs.

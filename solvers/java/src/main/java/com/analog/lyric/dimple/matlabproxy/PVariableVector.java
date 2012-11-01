@@ -84,6 +84,14 @@ public class PVariableVector
 			return new PDiscreteVariableVector(retval);
 	}
 	
+	public void replace(PVariableVector vector, int [] indices)
+	{
+		for (int i = 0; i < indices.length; i++)
+		{
+			_variables[indices[i]] = vector._variables[i];
+		}
+	}
+	
 	public PVariableVector getSlice(int [] indices)
 	{
 		PVariableBase [] variables = new PVariableBase[indices.length];

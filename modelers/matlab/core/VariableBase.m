@@ -385,8 +385,17 @@ classdef VariableBase < handle
                                 error(['method: ' s.subs ' does not exist.']);
                         end
                     case '()'
-                        inds = a.Indices(s(1).subs{:});
-                        a.createVariable(a.Domain,a.VarMat,inds);
+                        if ~ isa(b,'VariableBase')
+                            error('must assign variables');
+                        end
+                        if ~isequal(b.Domain,a.Domain)
+                            error('domains must match');
+                        end
+                        indices = a.Indices(s(1).subs{:});
+                        a.VarMat.replace(b.VarMat,indices(:));
+                        %Make sure domains match
+                        %inds = a.Indices(s(1).subs{:});
+                        %a.createVariable(a.Domain,a.VarMat,inds);
                         
                     otherwise
                         error('subassign not handled');

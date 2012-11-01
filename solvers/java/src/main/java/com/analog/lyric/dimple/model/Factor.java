@@ -32,6 +32,33 @@ public class Factor extends FactorBase implements Cloneable
 	private FactorFunction _factorFunction;
 	private VariableList _variables = null;
 	
+	/*
+	int [][] _directedTo = null;
+	
+	public boolean isDirected()
+	{
+		if (_directedTo == null)
+			return false;
+		else
+			return true;
+	}
+	public void setDirectedTo(int [][] directedTo)
+	{
+		//Check these are valid
+		_directedTo = directedTo;
+	}
+	
+	public void addDirectedTo(int [] directedTo)
+	{
+		
+	}
+	
+	public void addDirectedTo(VariableBase ... vars)
+	{
+		
+	}
+	*/
+	
 	@Override
 	public final Factor asFactor()
 	{
