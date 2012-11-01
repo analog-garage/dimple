@@ -58,6 +58,7 @@ end
 dtrace(debugPrint,'Observation matrix:'); if(debugPrint); disp(obsMatrix); end;
 dtrace(debugPrint,'Transition matrix:'); if(debugPrint); disp(transMatrix); end;
 
+t = tic;
 fg = FactorGraph();
 fg.Solver = 'gibbs';
 fg.Solver.setNumSamples(numSamples);
@@ -74,14 +75,12 @@ A.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
 
 % Add transition factors
 transitionFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedHMMTransition(numStates);
-for i = 2:hmmLength
-    fg.addFactor(transitionFunction, state(i-1), state(i), A);
-end
+fg.addFactorVectorized(transitionFunction, state(1:end-1), state(2:end), {A,[]});
 
 % Add observation factors
-for i = 1:hmmLength
-    state(i).Input = obsMatrix(obsRealization(i),:);
-end
+state.Input = obsMatrix(obsRealization,:);
+ft = toc(t);
+if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 
 % Set proposal standard deviation for real variables
 % arrayfun(@(a)(a.Solver.setProposalStandardDeviation(proposalStandardDeviation)), A);
@@ -100,7 +99,8 @@ end
 dtrace(debugPrint,'Starting Gibbs solve');
 t = tic;
 fg.solve();
-if(debugPrint); toc(t); end;
+st = toc(t);
+if (debugPrint); fprintf('Solve time: %.2f seconds\n', st); end;
 
 
 output = arrayfun(@(a)(a.Solver.getBestSample()), A);
@@ -127,14 +127,10 @@ dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDive
 % 
 % % Add random transition factors
 % transitionFactor2 = FactorTable(randStochasticMatrix(numStates, numStates),state2.Domain,state2.Domain);
-% for i = 2:hmmLength
-%     fg2.addFactor(transitionFactor2,state2(i-1),state2(i));
-% end
+% fg2.addFactorVectorized(transitionFunction2, state2(1:end-1), state2(2:end));
 % 
 % % Add observation factors
-% for i = 1:hmmLength
-%     state2(i).Input = obsMatrix(obsRealization(i),:);
-% end
+% state2.Input = obsMatrix(obsRealization,:);
 % 
 % numReEstimations = 20;
 % numRestarts = 20;
