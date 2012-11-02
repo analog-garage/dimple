@@ -26,18 +26,30 @@ function testDirected
     %test error if not normalized
     message = '';
     try
-        f = fg.addFactorDirected(myfac,{b},{b(1),b(3)});
+        f = fg.addDirectedFactor(myfac,{b},{b(1),b(3)});
     catch e
-       message = e.message;
+        message = e.message;
     end
 
     assertTrue(~isempty(findstr(message,'weights must be normalized')));
 
     %test no error if normalized
-    f = fg.addFactorDirected(@xorDelta,{b},{b(1),b(3)});
+    f = fg.addDirectedFactor(@xorDelta,{b},{b(1),b(3)});
     tmp = f.DirectedTo;
     assertEqual(prod(size(tmp)),2);
     assertTrue(tmp(1)==b(1));
     assertTrue(tmp(2)==b(3));
+
+    %Also set with directedTo
+    fg = FactorGraph();
+    b = Bit(4,1);
+    f = fg.addFactor(@xorDelta,b);
+    f.DirectedTo = {b(1),b(3)};
+    tmp = f.DirectedTo;
+    assertEqual(prod(size(tmp)),2);
+    assertTrue(tmp(1)==b(1));
+    assertTrue(tmp(2)==b(3));
+
+
 end
 

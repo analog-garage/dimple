@@ -264,7 +264,6 @@ public class PFactorGraph extends PFactorBase
 		return retval;		
 	}
 	
-	
 	public PFactor createFactor(PFactorTable factorTable, Object [] vars) 
 	{
     	if (_graph.isSolverRunning()) 

@@ -203,15 +203,14 @@ classdef FactorGraph < handle
             retval = obj.addFactorWithCacheFlag(false,firstArg,varargin{:});
         end
         
-        function factor = addFactorDirected(obj,factor,variables,directedTo)
+        function factor = addDirectedFactor(obj,factor,variables,directedTo)
             if ~ iscell(factor)
                 factor = {factor};
             end
             factor = obj.addFactor(factor{:},variables{:}); 
             factor.DirectedTo = directedTo;
         end
-            
-        
+                    
         
         function retval = addFactorVectorized(obj,firstArg,varargin)
             %addFactorVectorized can be used to speed up the creation of
