@@ -107,9 +107,8 @@ classdef Factor < handle
            obj.IFactor.setDirectedTo(variables);
         end
         function variables = get.DirectedTo(obj)
-            error('call wrap proxy object or something like that.  Replace the Variables call with that too');
-            pvarvector = obj.IFactor.getDirectedTo();
-            
+            pvarvector = obj.IFactor.getDirectedToVariables();
+            variables = wrapProxyObject(pvarvector);
         end
         
         function name = get.QualifiedName(obj)

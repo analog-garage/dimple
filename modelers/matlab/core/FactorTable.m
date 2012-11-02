@@ -39,12 +39,12 @@ classdef FactorTable < handle
                     obj.constructFromNDimensionalArray(varargin{1},{varargin{2:end}});
                 end
             else
-            	try 
+                try
                     varargin{1}.isFactorTable();
                 catch exception
                     error('Must specify either domains or indices, values, and domains');
                 end
-
+                
                 obj.constructFromITable(varargin{1});
             end
         end
@@ -54,13 +54,13 @@ classdef FactorTable < handle
             value = obj.ITable.get(indices);
         end
         
-        function set(obj,varargin) 
+        function set(obj,varargin)
             
             if ~iscell(varargin{1});
                 obj.setSingle(varargin{:});
             else
                 for i = 1:length(varargin)
-                   obj.setSingle(varargin{i}{:}); 
+                    obj.setSingle(varargin{i}{:});
                 end
             end
             
@@ -71,14 +71,14 @@ classdef FactorTable < handle
                 pdomains = obj.ITable.getDomains();
                 domains = cell(numel(pdomains),1);
                 for i =1:length(domains)
-                   domains{i} = DiscreteDomain(pdomains(i).getElements()); 
+                    domains{i} = DiscreteDomain(pdomains(i).getElements());
                 end
                 obj.Domains = domains;
-               %obj.ITable.getDomains()); 
+                %obj.ITable.getDomains());
             end
             domains = obj.Domains;
         end
-
+        
         
         function indices = get.Indices(obj)
             if ~isempty(obj.ITable)
@@ -140,6 +140,11 @@ classdef FactorTable < handle
             end
         end
         
+        function normalize(obj,directedTo)
+            obj.ITable.normalize(directedTo);
+        end
+        
+        
     end
     
     
@@ -150,25 +155,24 @@ classdef FactorTable < handle
             %extract domains
             domains = {varargin{1:end-1}};
             %extract value
-            value = varargin{end};            
+            value = varargin{end};
             %extract indices from domains
             indices = obj.getIndicesFromDomainValues(domains);
             
             %call set given indices
             obj.ITable.set(indices,value);
- 
+            
         end
         
         function idomains = processDomains(obj,domains)
             for i = 1:length(domains)
-               if iscell(domains{i})
-                   domains{i} = DiscreteDomain(domains{i});
-               end
+                if iscell(domains{i})
+                    domains{i} = DiscreteDomain(domains{i});
+                end
             end
             obj.Domains = domains;
-            idomains = obj.domains2idomains(domains);            
+            idomains = obj.domains2idomains(domains);
         end
-        
         function indices = getIndicesFromDomainValues(obj,domains)
             
             if isempty(obj.Domains)
@@ -184,38 +188,38 @@ classdef FactorTable < handle
                 found = false;
                 
                 for j = 1:length(obj.Domains{i}.Elements)
-                   element = obj.Domains{i}.Elements{j};
-                   if isequal(element,di)
-                      found = true;
-                      indices(i) = j-1;
-                      break;
-                   end
+                    element = obj.Domains{i}.Elements{j};
+                    if isequal(element,di)
+                        found = true;
+                        indices(i) = j-1;
+                        break;
+                    end
                 end
                 
                 if ~found
                     error(['invalid domain element at index ' num2str(i)]);
                 end
-                   
-            end 
+                
+            end
         end
         
         function constructFromITable(obj,itable)
             obj.ITable  = itable;
         end
         function constructFromNDimensionalArray(obj,values,domains)
-            modeler = getModeler();            
+            modeler = getModeler();
             idomains = obj.processDomains(domains);
-            obj.ITable = modeler.createFactorTable(values,idomains);            
+            obj.ITable = modeler.createFactorTable(values,idomains);
         end
         function constructFromIndicesAndValues(obj,indices,values,domains)
-            modeler = getModeler();           
+            modeler = getModeler();
             idomains = obj.processDomains(domains);
             obj.ITable = modeler.createFactorTable(indices,values,idomains);
         end
-
+        
         
         function constructFromDomains(obj,domains)
-            modeler = getModeler();            
+            modeler = getModeler();
             idomains = obj.processDomains(domains);
             obj.ITable = modeler.createFactorTable(idomains);
         end
@@ -226,7 +230,7 @@ classdef FactorTable < handle
             for i = 1:length(domains)
                 idomains{i} = domains{i}.IDomain;
             end
-
-        end 
+            
+        end
     end
 end

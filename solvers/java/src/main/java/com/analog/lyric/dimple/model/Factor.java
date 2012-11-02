@@ -371,7 +371,7 @@ public class Factor extends FactorBase implements Cloneable
 		{
 			for (int i = 0; i < _directedTo.length; i++)
 			{
-				vl.add(getVariables().getByIndex(_directedTo[0]));
+				vl.add(getVariables().getByIndex(_directedTo[i]));
 			}
 		}
 		return vl;

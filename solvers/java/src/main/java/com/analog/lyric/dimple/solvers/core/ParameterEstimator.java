@@ -67,7 +67,11 @@ public abstract class ParameterEstimator
 			//if not first time, pick random weights
 			if (i != 0)
 				for (int j = 0; j < _tables.length; j++)
+				{
 					_tables[j].randomizeWeights(_r);
+					if (_tables[j].isDirected())
+						_tables[j].normalize();
+				}
 
 			//for numSteps
 			for (int j = 0; j < numSteps; j++)

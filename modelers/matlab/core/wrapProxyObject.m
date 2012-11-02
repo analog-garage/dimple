@@ -29,7 +29,7 @@ function result = wrapProxyObject(proxyObject)
         if proxyObject.isDiscrete()
             domain = cell(proxyObject.getDomain().getElements());
             indices = 0;
-            result = Discrete(domain,'existing',proxyObject,indices);
+            result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
         elseif proxyObject.isJoint()
             domain = RealJointDomain(proxyObject.getDomain().getNumVars());
             indices = 0;

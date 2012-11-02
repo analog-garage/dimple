@@ -188,7 +188,10 @@ public class FactorTable extends FactorTableBase
 		{
 			_directedTo = directedTo;
 			_directedFrom = directedFrom;
-			verifyValidForDirectionality(directedTo, directedFrom);
+			//normalize(directedTo, directedFrom);
+			boolean valid = verifyValidForDirectionality(directedTo, directedFrom);
+			if (!valid)
+				throw new DimpleException("weights must be normalized correcteldy for directed factors");
 		}
 	}
 	
@@ -210,6 +213,7 @@ public class FactorTable extends FactorTableBase
 			if (diff > epsilon)
 				return false;
 		}
+		
 		
 		return true;
 	}
@@ -244,6 +248,50 @@ public class FactorTable extends FactorTableBase
 			normalizers[index] += weights[i];
 		}
 		return new Object[] {normalizers,directedFromSizes};
+	}
+	
+	public void normalize()
+	{
+		if (_directedTo == null)
+		{
+			double [] weights = getWeights();
+			double sum = 0;
+			for (int i = 0; i < weights.length; i++)
+				sum += weights[i];
+			for (int i = 0; i < weights.length; i++)
+				weights[i] /= sum;
+			
+			changeWeights(weights);
+		}
+		else
+		{
+			normalize(_directedTo);
+		}
+	}
+	
+	public void normalize(int [] directedTo)
+	{
+		int [] directedFrom = new int[_domains.length-directedTo.length];
+		
+		int index = 0;
+		for (int i = 0; i < _domains.length; i++)
+		{
+			boolean found = false;
+			for (int j= 0; j < directedTo.length; j++)
+			{
+				if (directedTo[j] == i)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				directedFrom[index] = i;
+				index++;
+			}
+		}
+		normalize(directedTo,directedFrom);
 	}
 	
 	public void normalize(int [] directedTo, int [] directedFrom)

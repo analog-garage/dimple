@@ -205,7 +205,9 @@ public class PFactor extends PFactorBase
 		PVariableVector [] vec = PHelpers.convertObjectArrayToVariableVectorArray(vars);
 		VariableList vl = new VariableList();
 		for (int i = 0; i < vec.length; i++)
+		{
 			vl.add(vec[i].getVariableArray());
+		}
 		getModelerObject().setDirectedTo(vl);
 	}
 	

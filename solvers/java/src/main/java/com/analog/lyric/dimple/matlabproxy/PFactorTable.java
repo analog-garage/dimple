@@ -42,6 +42,11 @@ public class PFactorTable
 		_table = table;
 	}
 	
+	public void normalize(int [] directedTo)
+	{
+		getModelerObject().normalize(directedTo);
+	}
+	
 	public PDiscreteDomain [] getDomains()
 	{
 		PDiscreteDomain [] pdomains = new PDiscreteDomain[_table.getDomains().length];
