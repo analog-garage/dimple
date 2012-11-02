@@ -399,39 +399,13 @@ public class PFactorGraph extends PFactorBase
 	
 	public PVariableVector getVariableVector(int relativeNestingDepth,int forceIncludeBoundaryVariables) 
 	{
-		return getVariableVector(getModelerObject().getVariables(relativeNestingDepth,forceIncludeBoundaryVariables!=0));
-	}
-	
-	
-	private PVariableVector getVariableVector(VariableList vars) 
-	{
     	if (getModelerObject().isSolverRunning()) 
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-		PVariableBase [] ivars = new PVariableBase[vars.size()];
-		int i = 0;
-		for (VariableBase v : vars)
-		{
-			
-			if (v instanceof Real)
-				ivars[i] = new PRealVariable((Real)v);
-			else if (v instanceof RealJoint)
-				ivars[i] = new PRealJointVariable((RealJoint)v);
-			else
-				ivars[i] = new PDiscreteVariable((Discrete)v);
-			
-			i++;
-		}
-		
-		if (ivars.length > 0)
-			if (!ivars[0].isDiscrete())
-				return new PRealVariableVector(ivars);
-			else
-				return new PDiscreteVariableVector(ivars);
-		else
-			return new PVariableVector();
-		
+		return PHelpers.convertToVariableVector(getModelerObject().getVariables(relativeNestingDepth,forceIncludeBoundaryVariables!=0));
 	}
+	
+	
 	
 	public boolean isAncestorOf(Object o)
 	{

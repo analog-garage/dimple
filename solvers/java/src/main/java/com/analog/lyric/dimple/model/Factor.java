@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
@@ -31,33 +32,9 @@ public class Factor extends FactorBase implements Cloneable
 	protected ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
 	private VariableList _variables = null;
+	int [] _directedTo = null;
+	int [] _directedFrom = null;
 	
-	/*
-	int [][] _directedTo = null;
-	
-	public boolean isDirected()
-	{
-		if (_directedTo == null)
-			return false;
-		else
-			return true;
-	}
-	public void setDirectedTo(int [][] directedTo)
-	{
-		//Check these are valid
-		_directedTo = directedTo;
-	}
-	
-	public void addDirectedTo(int [] directedTo)
-	{
-		
-	}
-	
-	public void addDirectedTo(VariableBase ... vars)
-	{
-		
-	}
-	*/
 	
 	@Override
 	public final Factor asFactor()
@@ -370,4 +347,84 @@ public class Factor extends FactorBase implements Cloneable
 	}
 
 
+	public boolean isDirected()
+	{
+		if (_directedTo != null)
+			return true;
+		else
+			return false;
+	}
+
+	public int [] getDirectedTo()
+	{
+		return _directedTo;
+	}
+	public int [] getDirectedFrom()
+	{
+		return _directedFrom;
+	}
+	
+	public VariableList getDirectedToVariables()
+	{
+		VariableList vl = new VariableList();
+		if (isDirected())
+		{
+			for (int i = 0; i < _directedTo.length; i++)
+			{
+				vl.add(getVariables().getByIndex(_directedTo[0]));
+			}
+		}
+		return vl;
+
+	}
+
+	public void setDirectedTo(VariableList vl)
+	{
+		int [] directedTo = new int[vl.size()];
+		for (int i = 0; i < directedTo.length; i++)
+			directedTo[i] = getPortNum(vl.getByIndex(i));
+		
+		setDirectedTo(directedTo);
+
+	}
+
+	public void setDirectedTo(VariableBase ... variables)
+	{
+		VariableList vl = new VariableList();
+		vl.add(variables);
+		setDirectedTo(vl);
+	}
+	
+	public void setDirectedTo(int [] directedTo)
+	{
+		HashSet<Integer> hs = new HashSet<Integer>();
+		
+		_directedFrom = new int[_variables.size()-directedTo.length];
+		
+		for (int i = 0; i < directedTo.length; i++)
+		{
+			if (hs.contains(directedTo[i]) || directedTo[i] > _variables.size())
+				throw new DimpleException("invalid edge");
+			hs.add(directedTo[i]);
+		}
+		
+		int index = 0;
+		for (int i = 0; i < _variables.size(); i++)
+		{
+			if (! hs.contains(i))
+			{
+				_directedFrom[index] = i;
+				index++;
+			}
+		}
+		
+		_directedTo = directedTo;
+		
+		//TODO: is this a hack?
+		if (getFactorFunction().factorTableExists(getDomains()))
+		{
+			getFactorTable().setDirected(directedTo, _directedFrom);
+		}
+		
+	}
 }

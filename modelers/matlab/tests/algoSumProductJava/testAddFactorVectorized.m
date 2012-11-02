@@ -15,7 +15,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testAddFactorVectorized()
-
+    %test with factor table
+    indices = [0 1; 1 0];
+    weights = [1 2];
+    b = Bit(10,2);
+    fg = FactorGraph();
+    f = fg.addFactorVectorized(indices,weights,{b,1});
+    fg.solve()
+    for i = 1:10
+       assertTrue(b(i,1).Factors{1} == f{i});
+       assertTrue(b(i,2).Factors{1} == f{i});
+    end
 
     %Test the basic case
     fg = FactorGraph();

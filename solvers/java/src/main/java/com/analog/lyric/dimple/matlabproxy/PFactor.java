@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.matlabproxy.PVariableVector;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 
@@ -191,6 +192,21 @@ public class PFactor extends PFactorBase
 	public int getPortNum(PVariableBase var) 
 	{
 		return _factor.getPortNum(var.getModelerObject());
+	}
+	
+	public PVariableVector getDirectedToVariables()
+	{
+		VariableList vl = getModelerObject().getDirectedToVariables();
+		return PHelpers.convertToVariableVector(vl);
+	}
+	
+	public void setDirectedTo(Object [] vars)
+	{
+		PVariableVector [] vec = PHelpers.convertObjectArrayToVariableVectorArray(vars);
+		VariableList vl = new VariableList();
+		for (int i = 0; i < vec.length; i++)
+			vl.add(vec[i].getVariableArray());
+		getModelerObject().setDirectedTo(vl);
 	}
 	
 	public PFactorGraph getParentGraph() 

@@ -30,6 +30,7 @@ classdef Factor < handle
         Score;
         InternalEnergy;
         BetheEntropy;
+        DirectedTo;
     end
     
     methods
@@ -95,6 +96,22 @@ classdef Factor < handle
             name = char(obj.IFactor.getExplicitName());
         end
 
+        
+        function set.DirectedTo(obj,variables)
+           if ~iscell(variables)
+               variables = {variables};
+           end
+           for i = 1:length(variables)
+               variables{i} = variables{i}.VarMat;
+           end
+           obj.IFactor.setDirectedTo(variables);
+        end
+        function variables = get.DirectedTo(obj)
+            error('call wrap proxy object or something like that.  Replace the Variables call with that too');
+            pvarvector = obj.IFactor.getDirectedTo();
+            
+        end
+        
         function name = get.QualifiedName(obj)
             name = char(obj.IFactor.getQualifiedName());
         end

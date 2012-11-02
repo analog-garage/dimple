@@ -49,6 +49,10 @@ public abstract class FactorFunctionBase
 	
 	public abstract FactorTable getFactorTable(Domain [] domainList);
 	
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		return true;
+	}
 
 
 }

@@ -139,6 +139,141 @@ public class FactorTable extends FactorTableBase
 		
 	}
 	
+	int [] _directedTo = null;
+	int [] _directedFrom = null;
+	
+	public int [] getDirectedFrom()
+	{
+		return _directedFrom;
+	}
+	public int [] getDirectedTo()
+	{
+		return _directedTo;
+	}
+	public boolean isDirected()
+	{
+		if (_directedTo == null)
+			return false;
+		else
+			return true;
+	}
+	
+	public boolean isDirectionalityTheSame(int [] directedTo, int [] directedFrom)
+	{
+		boolean changing = false;
+		if (_directedTo == null)
+			changing = true;
+		else
+		{
+			if (directedTo.length != _directedTo.length)
+				changing = true;
+			else
+			{
+				for (int i = 0; i < directedTo.length; i++)
+					if (directedTo[i] != _directedTo[i])
+					{
+						changing = true;
+						break;
+					}
+			}
+		}
+		return !changing;
+	}
+	
+	public void setDirected(int [] directedTo, int [] directedFrom)
+	{
+		boolean changing = ! isDirectionalityTheSame(directedTo, directedFrom);
+		
+		if (changing)
+		{
+			_directedTo = directedTo;
+			_directedFrom = directedFrom;
+			verifyValidForDirectionality(directedTo, directedFrom);
+		}
+	}
+	
+	//TODO: this could be massive slow down if called from every factor.
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		Object [] tmp = getNormalizers(directedTo, directedFrom);
+		double [] normalizers = (double[])tmp[0];
+		double first = normalizers[0];
+		
+		if (first == 0)
+			return false;
+		
+		double epsilon = 1e-9;
+		for (int i = 1; i < normalizers.length; i++)
+		{
+			double ratio = normalizers[i]/first;
+			double diff = Math.abs(1-ratio);
+			if (diff > epsilon)
+				return false;
+		}
+		
+		return true;
+	}
+
+	private Object[] getNormalizers(int [] directedTo, int [] directedFrom)
+	{
+
+		int [] directedFromSizes = new int[directedFrom.length];
+		
+		int normalizerSize = 1;
+		for (int i = 0; i < directedFrom.length; i++)
+		{
+			directedFromSizes[i] = _domains[directedFrom[i]].size();
+			normalizerSize *= directedFromSizes[i];
+		}
+
+		double [] weights = getWeights();
+		int [][] indices = getIndices();
+		
+		//for every combination of variables in the from
+		double [] normalizers = new double[normalizerSize];
+		for (int i = 0; i < indices.length; i++)
+		{
+			int prod = 1;
+			int index = 0;
+			for (int j = 0; j < directedFrom.length; j++)
+			{
+				int value = indices[i][directedFrom[j]];
+				index += value*prod;
+				prod *= directedFromSizes[j];
+			}
+			normalizers[index] += weights[i];
+		}
+		return new Object[] {normalizers,directedFromSizes};
+	}
+	
+	public void normalize(int [] directedTo, int [] directedFrom)
+	{
+		
+		//Get first directionality
+		//int [] directedTo = factors.get(0).getDirectedTo();
+		//int [] directedFrom = factors.get(0).getDirectedFrom();
+		Object [] tmp = getNormalizers(directedTo, directedFrom);
+		double [] normalizers = (double[])tmp[0];
+		int [] directedFromSizes = (int[])tmp[1];
+		
+		double [] weights = getWeights();
+		int [][] indices = getIndices();
+
+		//normalize over the variables in the to
+		for (int i = 0; i < indices.length ;i++)
+		{
+			//figure out what the normalizing value is
+			int prod = 1;
+			int index = 0;
+			for (int j = 0; j < directedFrom.length; j++)
+			{
+				int value = indices[i][directedFrom[j]];
+				index += value*prod;
+				prod *= directedFromSizes[j];
+			}
+			weights[i] /= normalizers[index];
+		}
+	}
 	
 	
 	public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
