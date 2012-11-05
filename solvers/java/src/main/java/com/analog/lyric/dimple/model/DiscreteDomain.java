@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 public class DiscreteDomain extends Domain 
 {
-	private Object [] _elements;
+	private Object[] _elements;
 	
 	public DiscreteDomain(Object ... elements)
 	{
@@ -29,15 +29,14 @@ public class DiscreteDomain extends Domain
 		_elements = elements;
 	}
 	
-	public Object [] getElements()
+	public final Object[] getElements()
 	{
 		return _elements;
 	}
 
 	@Override
-	public boolean isDiscrete() 
+	public final boolean isDiscrete() 
 	{
-		// TODO Auto-generated method stub
 		return true;
 	}
 	
@@ -66,9 +65,9 @@ public class DiscreteDomain extends Domain
 		return true;
 	}
 
-	public int size()
+	public final int size()
 	{
-		return getElements().length;
+		return _elements.length;
 	}
 	
 	public String toString()
@@ -88,7 +87,7 @@ public class DiscreteDomain extends Domain
 		return sb.toString();
 	}
 	
-	public boolean isJoint()
+	public final boolean isJoint()
 	{
 		return false;
 	}

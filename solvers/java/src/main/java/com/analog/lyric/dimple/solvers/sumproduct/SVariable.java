@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -34,15 +36,14 @@ public class SVariable extends SVariableBase
     double [][] _outMsgArray;
     double [][] _savedOutMsgArray;    
     double [][] _outPortDerivativeMsgs;
-    
     double [] _dampingParams = new double[0];
-    boolean _initCalled = true;
     protected double [] _input;
     private int _guessIndex = 0;
     private boolean _guessWasSet = false;
-    private DiscreteDomain _domain;
     private boolean _calculateDerivative = false;
-    
+	protected boolean _dampingInUse = false;
+    boolean _initCalled = true;
+
 	public SVariable(VariableBase var)  
     {
 		super(var);
@@ -50,7 +51,6 @@ public class SVariable extends SVariableBase
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
 		
-		_domain = (DiscreteDomain)var.getDomain();		
 		_input = (double[])getDefaultMessage(null);
 	}
 	
@@ -66,12 +66,12 @@ public class SVariable extends SVariableBase
 
 	public Object getDefaultMessage(Port port) 
 	{
-		//TODO: both variable and factor do this.  Why doesn't factor jsut ask variable?
-    	double [] retVal = new double[_domain.getElements().length];
-    	double val = 1.0/retVal.length;
-    	for (int i = 0; i < retVal.length; i++)
-    		retVal[i] = val;
-    	return retVal;	
+		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+    	double[] retVal = new double[domainLength];
+    	double val = 1.0/domainLength;
+    	Arrays.fill(retVal, val);
+    	return retVal;
     }
 	
 	public int getValueIndex()
@@ -95,7 +95,7 @@ public class SVariable extends SVariableBase
 	public Object getValue()
 	{
 		int index = getValueIndex();
-		return _domain.getElements()[index];
+		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
 	}
 
 	public int getGuessIndex()
@@ -113,16 +113,18 @@ public class SVariable extends SVariableBase
 	{
 		//Discrete var = (Discrete)getVariable();
 		int index = getGuessIndex();
-		return _domain.getElements()[index];
+		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
 	}
 	
 	public void setGuess(Object guess) 
 	{
 		//Discrete var = (Discrete)getVariable();
+		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
+		int domainLength = domain.size();
 		int guessIndex = -1;
-		for (int i = 0; i < _domain.getElements().length; i++)
+		for (int i = 0; i < domainLength; i++)
 		{
-			if (_domain.getElements()[i].equals(guess))
+			if (domain.getElements()[i].equals(guess))
 			{
 				guessIndex = i;
 				break;
@@ -136,8 +138,7 @@ public class SVariable extends SVariableBase
 	
 	public void setGuessIndex(int index) 
 	{
-		//Discrete var = (Discrete)getVariable();
-		if (index < 0 || index >= _domain.getElements().length)
+		if (index < 0 || index >= ((DiscreteDomain)_var.getDomain()).size())
 			throw new DimpleException("illegal index");
 		
 		_guessWasSet = true;
@@ -161,8 +162,8 @@ public class SVariable extends SVariableBase
 	
     public void setInput(Object priors) 
     {
-    	double [] vals = (double[])priors;
-    	if (vals.length != _domain.getElements().length)
+    	double[] vals = (double[])priors;
+    	if (vals.length != ((DiscreteDomain)_var.getDomain()).size())
     		throw new DimpleException("length of priors does not match domain");
     	
     	_input = vals;
@@ -180,6 +181,9 @@ public class SVariable extends SVariableBase
 		}
 
 		_dampingParams[portIndex] = dampingVal;
+		
+		if (dampingVal != 0)
+			_dampingInUse = true;
 	}
 	
 	public double getDamping(int portIndex)
@@ -203,13 +207,16 @@ public class SVariable extends SVariableBase
 
         double[] outMsgs = _outMsgArray[outPortNum];
 
-        double [] saved = _savedOutMsgArray[outPortNum];
         double damping = _dampingParams[outPortNum];
         
         
+        double[] saved = null;
         if (damping != 0)
+        {
+        	saved = _savedOutMsgArray[outPortNum];
         	for (int i = 0; i < outMsgs.length; i++)
         		saved[i] = outMsgs[i];
+        }
 
         
         for (int m = 0; m < M; m++)
@@ -282,13 +289,16 @@ public class SVariable extends SVariableBase
 	    for (int out_d = 0; out_d < D; out_d++ )
 	    {
             double[] outMsgs = _outMsgArray[out_d];
-            double [] saved = _savedOutMsgArray[out_d];
             double damping = _dampingParams[out_d];
             
             
+            double[] saved = null;
             if (damping != 0)
+            {
+                saved = _savedOutMsgArray[out_d];
             	for (int i = 0; i < outMsgs.length; i++)
             		saved[i] = outMsgs[i];
+            }
             
             
             double maxLog = Double.NEGATIVE_INFINITY;
@@ -387,8 +397,9 @@ public class SVariable extends SVariableBase
 			_inPortMsgs = new double[D][];
 			_logInPortMsgs = new double[D][M];
 			_outMsgArray = new double[D][];
-		    _savedOutMsgArray = new double[D][];
-		    
+			if (_dampingInUse)
+				_savedOutMsgArray = new double[D][];
+
 		    if (_dampingParams.length != D)
 		    {
 		    	double [] tmp = new double[D];
@@ -407,7 +418,8 @@ public class SVariable extends SVariableBase
 		    for (int out_d = 0; out_d < D; out_d++ )
 		    {
 	            _outMsgArray[out_d] = (double[])_var.getPorts().get(out_d).getOutputMsg();
-	            _savedOutMsgArray[out_d] = new double[_outMsgArray[out_d].length];
+				if (_dampingInUse)
+					_savedOutMsgArray[out_d] = new double[_outMsgArray[out_d].length];
 		    }
 		    
     	}
@@ -436,9 +448,7 @@ public class SVariable extends SVariableBase
 	@Override
 	public void connectPort(Port p)  
 	{
-		// TODO Auto-generated method stub
 		_initCalled = true;
-		
 	}
 
 
@@ -481,6 +491,7 @@ public class SVariable extends SVariableBase
 	
 	public double getInternalEnergy()
 	{
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
 		double sum = 0;
 		
 		double [] belief = (double[])getBelief();
@@ -491,15 +502,14 @@ public class SVariable extends SVariableBase
 		for (int i = 0; i < input.length; i++)
 			norm += input[i];
 		
-		
-		for (int i = 0; i < _domain.size(); i++)
+		for (int i = 0; i < domainLength; i++)
 		{
 			double tmp = input[i]/norm;
 			if (tmp != 0)
 				sum += belief[i] * (- Math.log(tmp));
 		}
 		
-		return sum;		
+		return sum;
 	}
 
 	public double getBetheEntropy()

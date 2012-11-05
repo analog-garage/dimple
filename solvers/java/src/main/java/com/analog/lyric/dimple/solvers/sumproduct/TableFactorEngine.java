@@ -48,10 +48,11 @@ public class TableFactorEngine
         double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
         
     	double damping = _tableFactor._dampingParams[outPortNum];
-    	double [] saved = _tableFactor._savedOutMsgArray[outPortNum];
+    	double[] saved = null;
     	
     	if (damping != 0)
     	{
+    		saved = _tableFactor._savedOutMsgArray[outPortNum];
     		for (int i = 0; i < outputMsgs.length; i++)
     			saved[i] = outputMsgs[i];
     	}
@@ -118,10 +119,11 @@ public class TableFactorEngine
 	    	double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
 	    		    	
 	    	double damping = _tableFactor._dampingParams[outPortNum];	    	
-	    	double [] saved = _tableFactor._savedOutMsgArray[outPortNum];
+	    	double[] saved = null;
 	    	
 	    	if (damping != 0)
 	    	{
+	    		saved = _tableFactor._savedOutMsgArray[outPortNum];
 	    		for (int i = 0; i < outputMsgs.length; i++)
 	    			saved[i] = outputMsgs[i];
 	    	}
