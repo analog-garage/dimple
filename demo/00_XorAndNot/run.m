@@ -55,15 +55,3 @@ f2.Name = 'xor';
 
 g.plot('labels',1);
 
-% -------------------------------------------------------------------------
-
-% Do not modify. For automated testing purposes.
-global Dimple_DEMO_RESULT;
-if abs(w.Belief - 0.375) < 1e-10 && ...
-   abs(x.Belief - 0.625) < 1e-10 && ...
-   abs(y.Belief - 0.75)  < 1e-10 && ...
-   abs(z.Belief - 0.75)  < 1e-10
-    Dimple_DEMO_RESULT = 0;
-else
-    Dimple_DEMO_RESULT = 1;
-end

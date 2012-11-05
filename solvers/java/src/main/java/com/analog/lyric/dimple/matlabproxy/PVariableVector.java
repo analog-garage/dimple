@@ -105,7 +105,7 @@ public class PVariableVector
 			return new PDiscreteVariableVector(variables);
 	}
 	
-	public PVariableBase getVariable(int index)
+	public PVariableBase getNode(int index)
 	{
 		return _variables[index];
 	}

@@ -32,8 +32,8 @@ classdef FiniteFieldVariable < Discrete
             obj@Discrete(domain,varargin{:});
             
             
-            for i = 0:obj.VarMat.size()-1
-                var = obj.VarMat.getVariable(i);
+            for i = 0:obj.VectorObject.size()-1
+                var = obj.VectorObject.getNode(i);
                 var.setProperty('primitivePolynomial',poly);
             end
         end

@@ -205,7 +205,7 @@ public class PHelpers
     			
     			for (int j = 0; j < varVec.size(); j++)
     			{
-    				alVars.add(varVec.getVariable(j).getModelerObject());
+    				alVars.add(varVec.getNode(j).getModelerObject());
     			}
     		}
     		else

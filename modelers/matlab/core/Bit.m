@@ -15,29 +15,25 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef Bit < DiscreteVariableBase
-    properties 
+    properties
         Input;
         Belief;
+        Value;
     end
     methods
         function obj = Bit(varargin)
             obj@DiscreteVariableBase([0 1],varargin{:});
         end
-        function x = get.Input(obj)
-            x = obj.getInput();
-        end
-        function x = get.Belief(obj)
-            x = obj.getBelief();
-        end
-        function b = createVariable(obj,domain,varMat,indices)
-            b = Bit('existing',varMat,indices);            
-        end
-
-        
     end
-    methods (Access=protected)
-        function beliefs = getBelief(obj)
-            beliefs = getBelief@DiscreteVariableBase(obj);
+    
+    methods
+        
+        function value = get.Value(obj)
+            value = obj.getValue();
+        end
+       
+        function beliefs = get.Belief(obj)
+            beliefs = obj.getBelief();
             
             if size(obj.Indices,1) == numel(obj.Indices) && length(size(obj.Indices)) == 2
                 beliefs = beliefs(:,2);     % Column vector
@@ -49,8 +45,7 @@ classdef Bit < DiscreteVariableBase
                 beliefs = reshape(btmp,size(obj.Indices));
             end
         end
-        
-        function setInput(obj,priors)
+        function set.Input(obj,priors)
             
             if length(obj.Indices) == numel(obj.Indices)
                 priors = reshape(priors,numel(priors),1);
@@ -64,9 +59,17 @@ classdef Bit < DiscreteVariableBase
             end
             
             
-            setInput@DiscreteVariableBase(obj,priors);
+            obj.setInput(priors);
+        end 
+        function x = get.Input(obj)
+            x = obj.getInput();
         end
-        
+    end
+    
+    methods (Access=protected)
+        function retval = createObject(obj,vectorObject,indices)
+            retval = Bit('existing',vectorObject,indices);
+        end
     end
     
 end

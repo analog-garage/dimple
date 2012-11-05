@@ -117,7 +117,7 @@ public class PFactorGraph extends PFactorBase
 				PVariableVector tmp = (PVariableVector)objects[i];
 				for (int j= 0; j < tmp.size(); j++)
 				{
-					alNodes.add(tmp.getVariable(j).getModelerObject());
+					alNodes.add(tmp.getNode(j).getModelerObject());
 				}
 			}
 			else

@@ -14,38 +14,17 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Discrete < DiscreteVariableBase
+classdef MyObject < handle
+    %Used to test MatrixObject
     
     properties
-        Input;
-        Belief;
         Value;
-    end
+        ValueVector;
+    end    
     methods
-        function obj = Discrete(domain,varargin)
-            obj@DiscreteVariableBase(domain,varargin{:});
-        end
-        
-        function x = get.Input(obj)
-            x = obj.getInput();
-        end
-        function set.Input(obj,input)
-            obj.setInput(input);
-        end
-        function x = get.Belief(obj)
-            x = obj.getBelief();
-        end
-        function x = get.Value(obj)
-            x = obj.getValue();
+        function obj = MyObject(val,valVector)
+            obj.Value = val;
+            obj.ValueVector = valVector;
         end
     end
-    
-    methods (Access = protected)
-        function retval = createObject(obj,vectorObject,indices)
-            retval = Discrete(obj.Domain,'existing',vectorObject,indices);
-        end
-        
-        
-    end
-    
 end

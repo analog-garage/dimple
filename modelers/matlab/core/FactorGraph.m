@@ -100,19 +100,19 @@ classdef FactorGraph < handle
                 end
                 if length(varargin) > 1
                     %variables = VariableBase.docat(@vertcat,varargin{:});
-                    %varMat = variables.VarMat;
-                    varMat = cell(size(varargin));
+                    %VectorObject = variables.VectorObject;
+                    VectorObject = cell(size(varargin));
                     for i = 1:length(varargin)
-                        varMat{i} = varargin{i}.VarMat;
+                        VectorObject{i} = varargin{i}.VectorObject;
                     end
                     
                 elseif length(varargin) == 1
-                    varMat = varargin{1}.VarMat;
+                    VectorObject = varargin{1}.VectorObject;
                 else
-                    varMat = modeler.createVariableVector('',[],0);
+                    VectorObject = modeler.createVariableVector('',[],0);
                 end
                 
-                obj.IGraph = modeler.createGraph(varMat);
+                obj.IGraph = modeler.createGraph(VectorObject);
             end
         end
         
@@ -189,7 +189,7 @@ classdef FactorGraph < handle
                 if isa(varargin{i},'IVariableStreamSlice')
                     args{i} = varargin{i}.IVariableStreamSlice;
                 elseif isa(varargin{i},'VariableBase')
-                    args{i} = varargin{i}.VarMat;
+                    args{i} = varargin{i}.VectorObject;
                 else
                     error('not supported');
                 end
@@ -522,11 +522,11 @@ function factors = get.Factors(obj)
                 searchDepth = intmax;
             end
             if isa(node,'VariableBase')
-                varmat = node.VarMat;
-                if varmat.size() ~= 1
+                VectorObject = node.VectorObject;
+                if VectorObject.size() ~= 1
                     error('only support passing single variable for now');
                 end
-                inode = varmat.getVariable(0);
+                inode = VectorObject.getNode(0);
             elseif isa(node,'Factor')
                 inode = node.IFactor;
             else
@@ -597,13 +597,13 @@ function factors = get.Factors(obj)
         
         function varOrFactor = getVariableOrFactor(obj,tmp)
             if isa(tmp,'VariableBase')
-                varmat = tmp.VarMat;
-                %methods(varmat)
-                if varmat.size ~= 1
+                VectorObject = tmp.VectorObject;
+                %methods(VectorObject)
+                if VectorObject.size ~= 1
                     error('can only pass a single variable to a schedule for now');
                 end
                 
-                var = varmat.getVariable(0);
+                var = VectorObject.getNode(0);
                 varOrFactor = var;
             elseif isa(tmp,'Factor')
                 varOrFactor = tmp.IFactor;
@@ -654,11 +654,11 @@ function factors = get.Factors(obj)
         end
         
         function [newvar,equalsFactor] = split(obj,variable,varargin)
-            if (variable.VarMat.size() ~= 1)
+            if (variable.VectorObject.size() ~= 1)
                 error('only support with one variable for now');
             end
             
-            v = variable.VarMat.getVariable(0);
+            v = variable.VectorObject.getNode(0);
             ifactors = cell(size(varargin));
             
             for i = 1:numel(varargin)
@@ -666,9 +666,9 @@ function factors = get.Factors(obj)
                 ifactors{i} = tmp.IFactor;
             end
             
-            varmat = obj.IGraph.split(v,ifactors);
+            VectorObject = obj.IGraph.split(v,ifactors);
             
-            newvar = variable.createVariable(variable.Domain,varmat,0);
+            newvar = variable.createObject(VectorObject,0);
             equalsFactor = newvar.Factors{1};
         end
         
@@ -923,11 +923,11 @@ function factors = get.Factors(obj)
             elseif isa(node,'Factor')
                 pnode = IFactor;
             else
-                varmat = node.VarMat;
-                if varmat.size() ~= 1
+                VectorObject = node.VectorObject;
+                if VectorObject.size() ~= 1
                     error('not supported for variable vectors');
                 end
-                pnode = varmat.getVariable(0);
+                pnode = VectorObject.getNode(0);
             end
             
             ancestor = obj.IGraph.isAncestorOf(pnode);
@@ -1073,7 +1073,7 @@ function factors = get.Factors(obj)
                 elseif isa(nodes{i},'FactorGraph')
                     nodes{i} = nodes{i}.IGraph;
                 else
-                    nodes{i} = nodes{i}.VarMat;
+                    nodes{i} = nodes{i}.VectorObject;
                 end
             end
             
@@ -1087,7 +1087,7 @@ function factors = get.Factors(obj)
             num = 0;
             for i = 1:length(nodes)
                 if ~isa(nodes{i},'Factor') && ~isa(nodes{i},'FactorGraph');
-                    num = num+nodes{i}.VarMat.size();
+                    num = num+nodes{i}.VectorObject.size();
                 else
                     num = num+1;
                 end
@@ -1098,8 +1098,8 @@ function factors = get.Factors(obj)
             index = 1;
             for i = 1:length(nodes)
                 if ~isa(nodes{i},'Factor') && ~isa(nodes{i},'FactorGraph');
-                    for j = 1:nodes{i}.VarMat.size()
-                        flatCell{index} = wrapProxyObject(nodes{i}.VarMat.getSlice(j-1));
+                    for j = 1:nodes{i}.VectorObject.size()
+                        flatCell{index} = wrapProxyObject(nodes{i}.VectorObject.getSlice(j-1));
                         index = index+1;
                     end
                 else
@@ -1136,10 +1136,10 @@ function factors = get.Factors(obj)
             %convert oldvars to list of variables
             vars = cell(length(varargin),1);
             for i = 1:length(varargin)
-                if varargin{i}.VarMat.size() ~= 1
+                if varargin{i}.VectorObject.size() ~= 1
                     error('vectors not supported');
                 end
-                tmp = varargin{i}.VarMat.getVariable(0);
+                tmp = varargin{i}.VectorObject.getNode(0);
                 vars{i} = tmp;
             end
             
@@ -1148,7 +1148,7 @@ function factors = get.Factors(obj)
             
             %TODO: figure out domain differently
             if tmpVar.isDiscrete()
-                var = Discrete(cell(tmpVar.getVariable(0).getDomain().getElements()),'existing',tmpVar,0);
+                var = Discrete(cell(tmpVar.getNode(0).getDomain().getElements()),'existing',tmpVar,0);
             else
                 error('not yet supported');
                 %var = Real(tmpVar.getDomain(),'existing',tmpVar,1);
@@ -1158,13 +1158,13 @@ function factors = get.Factors(obj)
         
         function retval = addGraph(parentGraph,childGraph,varargin)
             
-            varMat = parentGraph.getVarVector(varargin{:});
-            retval = FactorGraph('nestedGraph',parentGraph.IGraph.addGraph(childGraph.IGraph,varMat));
+            VectorObject = parentGraph.getVarVector(varargin{:});
+            retval = FactorGraph('nestedGraph',parentGraph.IGraph.addGraph(childGraph.IGraph,VectorObject));
         end
         
         function retval = addTable(obj,table,varargin)
             
-            varMat = obj.getVarVector(varargin{:});
+            VectorObject = obj.getVarVector(varargin{:});
             
             %Wrap it in a factor function
             domains = {};
@@ -1185,7 +1185,7 @@ function factors = get.Factors(obj)
             end
             
             
-            func = obj.IGraph.createFactor(table.ITable,varMat);
+            func = obj.IGraph.createFactor(table.ITable,VectorObject);
             retval = DiscreteFactor(func);
         end
         
@@ -1207,7 +1207,7 @@ function factors = get.Factors(obj)
                 
                 for i = 1:length(varargin)
                     if isa(varargin{i},'VariableBase')
-                        varargin{i} = varargin{i}.VarMat;
+                        varargin{i} = varargin{i}.VectorObject;
                     end
                 end
                 
@@ -1216,7 +1216,7 @@ function factors = get.Factors(obj)
             else
                 
                 %make sure this is a discrete factor
-                varMat = [];
+                VectorObject = [];
                 domains = cell(length(varargin),1);
                 constants = zeros(length(varargin),1);
                 
@@ -1233,7 +1233,7 @@ function factors = get.Factors(obj)
                         constants(i) = 1;
                         
                         %i indexes the csl argument to addFactor
-                        %j indexes the entry into a VarMat.  Because this
+                        %j indexes the entry into a VectorObject.  Because this
                         %is a constant, we only have one variable
                         domains{i} = {DiscreteDomain({varargin{i}})};
                         
@@ -1241,7 +1241,7 @@ function factors = get.Factors(obj)
                         %if we get here, this is in fact a variable
                         
                         %allocate enough domains for each element in the
-                        %varmat
+                        %VectorObject
                         domains{i} = cell(size(varargin{i}.Indices));
                         
                         
@@ -1282,12 +1282,12 @@ function factors = get.Factors(obj)
                     curIndex = curIndex+1;
                     
                     if ~constants(i)
-                        if isempty(varMat)
-                            varMat = varargin{i}.VarMat;
+                        if isempty(VectorObject)
+                            VectorObject = varargin{i}.VectorObject;
                         else
-                            indices = [0:varMat.size()-1 0:varargin{i}.VarMat.size()-1];
-                            varMatIndices = [zeros(1,varMat.size()) ones(1,varargin{i}.VarMat.size())];
-                            varMat = varMat.concat({varMat varargin{i}.VarMat},varMatIndices,indices);
+                            indices = [0:VectorObject.size()-1 0:varargin{i}.VectorObject.size()-1];
+                            VectorObjectIndices = [zeros(1,VectorObject.size()) ones(1,varargin{i}.VectorObject.size())];
+                            VectorObject = VectorObject.concat({VectorObject varargin{i}.VectorObject},VectorObjectIndices,indices);
                         end
                     end
                     
@@ -1300,7 +1300,7 @@ function factors = get.Factors(obj)
                         domains,constants,funcHandle);
                 end
                 
-                retval = DiscreteFactor(obj.IGraph.createFactor(table{3},varMat));
+                retval = DiscreteFactor(obj.IGraph.createFactor(table{3},VectorObject));
             end
         end
         
@@ -1311,7 +1311,7 @@ function factors = get.Factors(obj)
             %vars = cell(length(varargin));
             for i = 1:length(varargin)
                 if isa(varargin{i},'VariableBase')
-                    varargin{i} = varargin{i}.VarMat;
+                    varargin{i} = varargin{i}.VectorObject;
                 end
             end
             
@@ -1320,15 +1320,15 @@ function factors = get.Factors(obj)
         end
         
         
-        function [varMat] = getVarVector(obj,varargin)
+        function [VectorObject] = getVarVector(obj,varargin)
             
-            varMat = [];
+            VectorObject = [];
             
             for i = 1:length(varargin)
                 if i == 1
-                    varMat = varargin{i}.VarMat;
+                    VectorObject = varargin{i}.VectorObject;
                 else
-                    varMat = varMat.concat({varMat varargin{i}.VarMat});
+                    VectorObject = VectorObject.concat({VectorObject varargin{i}.VectorObject});
                 end
             end
             
@@ -1409,7 +1409,7 @@ function factors = get.Factors(obj)
             end
             
             %Permute the variable
-            var = arg.createVariable(arg.Domain,arg.VarMat,permute(arg.Indices,permuteorder));
+            var = arg.createObject(arg.VectorObject,permute(arg.Indices,permuteorder));
             
             %Record the number of dimensions we use in the addFactor
             %function.
@@ -1428,7 +1428,7 @@ function factors = get.Factors(obj)
         %more than one (since we've already called addFactor for that, and
         %record the number of factors and numvarsperfactor.
         %
-        %arg - The VarMat we will pass to the java addFactorVectorized
+        %arg - The VectorObject we will pass to the java addFactorVectorized
         %numvarsperfactor - The number of variables in a row for a single
         %factor.
         %numfactors - The number of sets of variables.  This should be
@@ -1439,7 +1439,7 @@ function factors = get.Factors(obj)
                 if prod(size(input)) > 1
                     input = input(2:end);
                 end
-                arg = input.VarMat;
+                arg = input.VectorObject;
                 numvarsperfactor = 1;
                 numfactors = prod(size(arg));
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
@@ -1447,7 +1447,7 @@ function factors = get.Factors(obj)
                 if numvars < prod(size(newarg))
                    newarg = newarg(numvars+1:end); 
                 end
-                arg = newarg.VarMat;
+                arg = newarg.VectorObject;
                 numvarsperfactor = numvars;
                 numfactors = prod(size(arg))/numvars;
             else
