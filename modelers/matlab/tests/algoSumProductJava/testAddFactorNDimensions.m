@@ -13,32 +13,15 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function testAddFactorJava()
 
-
-    myxor = com.analog.lyric.dimple.FactorFunctions.XorDelta();
+function testAddFactorNDimensions()
 
     fg = FactorGraph();
-
-    b = Bit(3,1);
-
-    fg.addFactor(myxor,b(1),b(2),b(3));
-
-    b(1).Input = .8;
-    b(2).Input = .8;
-
-    fg.solve();
-
-
-    fg2 = FactorGraph();
-    b2 = Bit(3,1);
-
-    fg2.addFactor(@xorDelta,b2);
-
-    b2.Input = [.8 .8 .5];
-
-    fg2.solve();
-
-
-    assertElementsAlmostEqual(b(3).Belief,b2(3).Belief);
+    b = Bit(2,2,2);
+    myfac = @(a) sum(a(:));
+    f = fg.addFactor(myfac,b);
+    ft = f.FactorTable;
+    assertEqual(length(ft.Weights),2^8-1);
+    assertTrue(all(sum(ft.Indices,2)==ft.Weights));
+    
 end

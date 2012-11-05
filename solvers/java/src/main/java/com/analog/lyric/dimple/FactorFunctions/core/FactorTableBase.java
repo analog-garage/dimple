@@ -124,6 +124,7 @@ public class FactorTableBase
 		
 	}
 	
+	
 	private int findLocationFromIndices(int [] indices)
 	{
 		if (indices.length != _indices[0].length)

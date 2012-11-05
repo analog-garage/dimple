@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 
 public class PHelpers
 {
@@ -48,6 +49,35 @@ public class PHelpers
 	
 		
 		return retval;
+	}
+	
+
+	public static PVariableVector convertToVariableVector(VariableList vars) 
+	{
+
+		PVariableBase [] ivars = new PVariableBase[vars.size()];
+		int i = 0;
+		for (VariableBase v : vars)
+		{
+			
+			if (v instanceof Real)
+				ivars[i] = new PRealVariable((Real)v);
+			else if (v instanceof RealJoint)
+				ivars[i] = new PRealJointVariable((RealJoint)v);
+			else
+				ivars[i] = new PDiscreteVariable((Discrete)v);
+			
+			i++;
+		}
+		
+		if (ivars.length > 0)
+			if (!ivars[0].isDiscrete())
+				return new PRealVariableVector(ivars);
+			else
+				return new PDiscreteVariableVector(ivars);
+		else
+			return new PVariableVector();
+		
 	}
 	
 	static public PVariableVector convertToVariableVector(PVariableBase[] variables)

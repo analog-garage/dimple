@@ -203,6 +203,14 @@ classdef FactorGraph < handle
             retval = obj.addFactorWithCacheFlag(false,firstArg,varargin{:});
         end
         
+        function factor = addDirectedFactor(obj,factor,variables,directedTo)
+            if ~ iscell(factor)
+                factor = {factor};
+            end
+            factor = obj.addFactor(factor{:},variables{:}); 
+            factor.DirectedTo = directedTo;
+        end
+                    
         
         function retval = addFactorVectorized(obj,firstArg,varargin)
             %addFactorVectorized can be used to speed up the creation of
@@ -232,7 +240,10 @@ classdef FactorGraph < handle
             
             %Get variables
             firstvars = obj.extractFirstArgs(varargin{:});
-            firstFactor = obj.addFactor(firstArg,firstvars{:});
+            [firstFactor,isIndicesAndWeights] = obj.addFactor(firstArg,firstvars{:});
+            if isIndicesAndWeights
+                varargin = varargin(2:end);
+            end
             
             %TODO: Catch case where there is no actual vector.
             [finalvars,numvarsperfactor,numfactors] = obj.extractFinalArgs(varargin{:});
@@ -255,10 +266,10 @@ classdef FactorGraph < handle
             end
         end
         
-        function retval = addFactor(obj,firstArg,varargin)
+        function [retval,isIndicesAndWeights] = addFactor(obj,firstArg,varargin)
             %Examples:
             % fg.addFactor(someFunction,var1,var2);
-            retval = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
+            [retval, isIndicesAndWeights] = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
         end
         
         function str = getAdjacencyString(obj)
@@ -985,8 +996,8 @@ function factors = get.Factors(obj)
     methods (Access = private)
         
         
-        function retval = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
-            
+        function [retval, isIndicesAndWeights] = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
+            isIndicesAndWeights = 0;
             %scan arguments and, if any are streams, call addRepeatedFactor
             requiresRepeated = false;
             for i = 1:length(varargin)
@@ -1016,6 +1027,7 @@ function factors = get.Factors(obj)
                     end
                     
                     if isa(varargin{1},'double')
+                        isIndicesAndWeights = 1;
                         if numel(varargin) < 2
                             error('need at least one variable');
                         end

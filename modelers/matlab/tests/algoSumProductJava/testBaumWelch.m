@@ -40,14 +40,16 @@ function testBaumWelch()
     xv = Bit(N,1);
     yv = Bit(N,1);
     piFT = FactorTable([0; 1],[.5 .5]',xv(1).Domain);
-    fg.addFactor(piFT,xv(1));
+    fg.addDirectedFactor(piFT,{xv(1)},{xv(1)});
     tFT = FactorTable(rand(2),xv.Domain,xv.Domain);
+    tFT.normalize(0);
     for i = 2:N
-        fg.addFactor(tFT,xv(i-1),xv(i));
+        fg.addFactor(tFT,xv(i-1),xv(i)).DirectedTo = xv(i-1);
     end
     eFT = FactorTable(rand(H,O),xv.Domain,yv.Domain);
+    eFT.normalize(0);
     for i = 1:N
-        fg.addFactor(eFT,xv(i),yv(i));
+        fg.addFactor(eFT,xv(i),yv(i)).DirectedTo = xv(i);
     end
 
     %Set data
