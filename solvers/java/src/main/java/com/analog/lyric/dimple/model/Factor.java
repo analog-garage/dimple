@@ -179,11 +179,13 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public Domain [] getDomains()
 	{
-		Domain [] retval = new Domain[getVariables().size()];
+		VariableList variables = getVariables();
+		int numVariables = variables.size();
 		
-		for (int i = 0; i < getVariables().size(); i++)
+		Domain [] retval = new Domain[numVariables];
+		for (int i = 0; i < numVariables; i++)
 		{
-			retval[i] = getVariables().getByIndex(i).getDomain();
+			retval[i] = variables.getByIndex(i).getDomain();
 		}
 		
 		return retval;
@@ -256,14 +258,11 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		checkSolverNotNull();
 		_solverFactor.update();
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void updateEdge(int outPortNum) 
 	{
-		// TODO Auto-generated method stub
 		checkSolverNotNull();
 		_solverFactor.updateEdge(outPortNum);
 	}

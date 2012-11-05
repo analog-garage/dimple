@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
@@ -43,7 +44,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     TableFactorEngine _tableFactorEngine;
     KBestFactorEngine _kbestFactorEngine;
     boolean _kIsSmallerThanDomain;
-    
+	private boolean _dampingInUse = false;
+
     /*
      * We also save the values from the combo table.  This is necessary
      * since the minsum algorithm requires a modified list of values
@@ -129,12 +131,15 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     	int numPorts = _factor.getPorts().size();
 	    _inPortMsgs = new double[numPorts][];
 	    _outPortMsgs = new double[numPorts][];
-	    _savedOutMsgArray = new double[numPorts][];
+	    if (_dampingInUse)
+	    	_savedOutMsgArray = new double[numPorts][];
+	    
 	    for (int port = 0; port < numPorts; port++)
 	    {
 	    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
 	    	_outPortMsgs[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-	    	_savedOutMsgArray[port] = new double[_outPortMsgs[port].length];
+	    	if (_dampingInUse)
+	    		_savedOutMsgArray[port] = new double[_outPortMsgs[port].length];
 	    }
     }
     
@@ -142,6 +147,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public void setDamping(int index, double val)
 	{
 		_dampingParams[index] = val;
+		
+		if (val != 0)
+			_dampingInUse = true;
 	}
 	
 	public double getDamping(int index)
@@ -210,8 +218,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void initMsg(double[] msg) 
 	{
-		for (int i = 0; i < msg.length; i++)
-			msg[i] = Double.POSITIVE_INFINITY;
+		Arrays.fill(msg, Double.POSITIVE_INFINITY);
 	}
 
 	@Override

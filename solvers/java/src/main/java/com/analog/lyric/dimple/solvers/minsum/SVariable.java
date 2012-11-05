@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import com.analog.lyric.dimple.model.Discrete;
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -26,33 +28,33 @@ import com.analog.lyric.dimple.solvers.core.SVariableBase;
 
 public class SVariable extends SVariableBase
 {
-	protected Discrete _varDiscrete;
-
-	public SVariable(VariableBase var) 
-	{
-		super(var);
-		_varDiscrete = (Discrete)_var;
-		_input = MessageConverter.initialValue(_varDiscrete.getDiscreteDomain().getElements().length);
-	}
-
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
-	 */		
-	private boolean _initCalled = true;
+	 */	
 	protected double[][] _inPortMsgs = null;
 	protected double[][] _outMsgArray = null;
-	protected double [][] _savedOutMsgArray;
-	protected double [] _dampingParams = new double[0];
-	protected double [] _input;
+	protected double[][] _savedOutMsgArray;
+	protected double[] _dampingParams = new double[0];
+	protected double[] _input;
+	protected boolean _dampingInUse = false;
+	protected boolean _initCalled = true;
+
+	
+	public SVariable(VariableBase var) 
+	{
+		super(var);
+		_input = MessageConverter.initialValue(((DiscreteDomain)var.getDomain()).size());
+	}
 
 
 	public Object getInitialMsgValue()
 	{
-		double[] retVal = new double[_varDiscrete.getDiscreteDomain().getElements().length];
-		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) retVal[i] = 0;
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+		double[] retVal = new double[domainLength];
+		Arrays.fill(retVal, 0);
 		return retVal;
-	}    
+	}
 
 	public Object getDefaultMessage(Port port) 
 	{
@@ -72,7 +74,7 @@ public class SVariable extends SVariableBase
 		double[] outMsgs = _outMsgArray[outPortNum];
 
 		// Save previous output for damping
-		double[] saved;
+		double[] saved = null;
 		double damping = _dampingParams[outPortNum];
 		if (damping != 0)
 		{
@@ -95,7 +97,6 @@ public class SVariable extends SVariableBase
 		// Damping
 		if (damping != 0)
 		{
-			saved = _savedOutMsgArray[outPortNum];
 			for (int m = 0; m < numValue; m++)
 				outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
 		}
@@ -135,7 +136,7 @@ public class SVariable extends SVariableBase
 			double minPotential = Double.POSITIVE_INFINITY;
 			
 			// Save previous output for damping
-			double[] saved;
+			double[] saved = null;
 			double damping = _dampingParams[port];
 			if (damping != 0)
 			{
@@ -154,9 +155,8 @@ public class SVariable extends SVariableBase
 			}
 
 			// Damping
-			if (_dampingParams[port] != 0)
+			if (damping != 0)
 			{
-				saved = _savedOutMsgArray[port];
 				for (int m = 0; m < numValue; m++)
 					outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
 			}
@@ -218,7 +218,8 @@ public class SVariable extends SVariableBase
 			_initCalled = false;
 			_inPortMsgs = new double[numPorts][];
 			_outMsgArray = new double[numPorts][];
-			_savedOutMsgArray = new double[numPorts][];
+			if (_dampingInUse)
+				_savedOutMsgArray = new double[numPorts][];
 
 			if (_dampingParams.length != numPorts)
 			{
@@ -228,12 +229,13 @@ public class SVariable extends SVariableBase
 						tmp[i] = _dampingParams[i];
 				_dampingParams = tmp;
 			}
-
+			
 			for (int i = 0; i < numPorts; i++)
 			{
 				_inPortMsgs[i] = (double[])_var.getPorts().get(i).getInputMsg();
 				_outMsgArray[i] = (double[])_var.getPorts().get(i).getOutputMsg();
-				_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
+				if (_dampingInUse)
+					_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
 			}
 		}
 	}
@@ -255,6 +257,9 @@ public class SVariable extends SVariableBase
 		}
 
 		_dampingParams[portIndex] = dampingVal;
+		
+		if (dampingVal != 0)
+			_dampingInUse = true;
 	}
 
 	public double getDamping(int portIndex)
@@ -269,9 +274,7 @@ public class SVariable extends SVariableBase
 	@Override
 	public void connectPort(Port p)  
 	{
-		// TODO Auto-generated method stub
 		_initCalled = true;
-
 	}
 
 

@@ -60,8 +60,10 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		return new STableFactor(factor);
-
+		STableFactor tf = new STableFactor(factor);
+		if (_damping != 0)
+			setDampingForTableFunction(tf);
+		return tf;
 	}
 	
 	/*

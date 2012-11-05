@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
@@ -49,6 +50,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	private int _k;
 	private boolean _kIsSmallerThanDomain = false;
 	private boolean _updateDerivative = false;
+	private boolean _dampingInUse = false;
 	
 
 	public STableFactor(Factor factor)  
@@ -74,6 +76,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public void setDamping(int index, double val)
 	{
 		_dampingParams[index] = val;
+		
+		if (val != 0)
+			_dampingInUse = true;
 	}
 	
 	public double getDamping(int index)
@@ -185,9 +190,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void connectPort(Port p)  
 	{
-		// TODO Auto-generated method stub
 		_initCalled = true;
-		
 	}
 
 	private void updateCache()
@@ -203,11 +206,14 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
 		    
 		    _outMsgArray = new double[numPorts][];
-		    _savedOutMsgArray = new double[numPorts][];
+		    if (_dampingInUse)
+		    	_savedOutMsgArray = new double[numPorts][];
+		    
 		    for (int port = 0; port < numPorts; port++)
 		    {
 		    	_outMsgArray[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-		    	_savedOutMsgArray[port] = new double[_outMsgArray[port].length];
+		    	if (_dampingInUse)
+		    		_savedOutMsgArray[port] = new double[_outMsgArray[port].length];
 		    }
 		}
 	}
@@ -289,7 +295,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public double combine(double oldVal, double newVal) 
 	{
-		// TODO Auto-generated method stub
 		return oldVal+newVal;
 	}
 
@@ -318,8 +323,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void initMsg(double[] msg) 
 	{
-		for (int i = 0; i < msg.length;i++)
-			msg[i] = 0;
+		Arrays.fill(msg, 0);
 	}
 
 	@Override

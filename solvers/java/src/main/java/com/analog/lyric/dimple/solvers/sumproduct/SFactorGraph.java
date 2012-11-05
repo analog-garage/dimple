@@ -123,7 +123,8 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 	
 			STableFactor tf = new STableFactor(factor);
-			setDampingForTableFunction(tf);
+			if (_damping != 0)
+				setDampingForTableFunction(tf);
 			return tf;
 		}
 	}
@@ -189,7 +190,6 @@ public class SFactorGraph extends SFactorGraphBase
 		@Override
 		public void runStep(FactorGraph fg) 
 		{
-			// TODO Auto-generated method stub
 			//_factorGraph.solve();
 			for (FactorTable ft : getTables())
 			{
