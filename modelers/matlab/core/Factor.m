@@ -72,7 +72,7 @@ classdef Factor < handle
         
         function updateEdge(obj,portNumOrPort)
             if isa(portNumOrPort,'VariableBase')
-                var = portNumOrPort.getSingleVariable();
+                var = portNumOrPort.getSingleNode();
                 portNum = obj.IFactor.getPortNum(var);
                 obj.IFactor.updateEdge(portNum);
             else
@@ -102,7 +102,7 @@ classdef Factor < handle
                variables = {variables};
            end
            for i = 1:length(variables)
-               variables{i} = variables{i}.VarMat;
+               variables{i} = variables{i}.VectorObject;
            end
            obj.IFactor.setDirectedTo(variables);
         end
@@ -134,7 +134,7 @@ classdef Factor < handle
         
         
         function portNum = getPortNum(obj,var)
-            var = var.getSingleVariable();
+            var = var.getSingleNode();
             portNum = obj.IFactor.getPortNum(var)+1;
         end
         

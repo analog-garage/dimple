@@ -43,6 +43,6 @@ function testAssignVars()
     catch e
         message = e.message;
     end
-    assertEqual(message,'domains must match');
+    assertEqual(message,'Domains must match when concatenating');
     
 end

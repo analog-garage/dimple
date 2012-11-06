@@ -32,9 +32,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
@@ -70,7 +68,7 @@ public class PFactorGraph extends PFactorBase
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	//new FactorGraph(fg)
-    	return new PFactorGraph(_graph.addGraph(childGraph._graph, com.analog.lyric.dimple.matlabproxy.PHelpers.convertToMVariables(varVector.getVariables())));
+    	return new PFactorGraph(_graph.addGraph(childGraph._graph, com.analog.lyric.dimple.matlabproxy.PHelpers.convertToMVariables(varVector.getNodes())));
 		
 		
 	}
@@ -117,7 +115,7 @@ public class PFactorGraph extends PFactorBase
 				PVariableVector tmp = (PVariableVector)objects[i];
 				for (int j= 0; j < tmp.size(); j++)
 				{
-					alNodes.add(tmp.getVariable(j).getModelerObject());
+					alNodes.add(tmp.getNode(j).getModelerObject());
 				}
 			}
 			else
@@ -231,7 +229,7 @@ public class PFactorGraph extends PFactorBase
 			public Object callAddFactor(Object factor, Object[] inputs) {
 				PFactorGraph pfg = (PFactorGraph)factor;
 				PVariableVector varVector = new PVariableVector();
-				varVector = varVector.concat(inputs);
+				varVector = (PVariableVector)varVector.concat(inputs);
 				return addGraph(pfg, varVector);
 			}
 		}.addFactorVectorized(graph, vars, numvarsperfactor, numfactors);
@@ -401,7 +399,8 @@ public class PFactorGraph extends PFactorBase
     	if (getModelerObject().isSolverRunning()) 
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-		return PHelpers.convertToVariableVector(getModelerObject().getVariables(relativeNestingDepth,forceIncludeBoundaryVariables!=0));
+		PVariableVector tmp =  PHelpers.convertToVariableVector(getModelerObject().getVariables(relativeNestingDepth,forceIncludeBoundaryVariables!=0));
+		return tmp;
 	}
 	
 	

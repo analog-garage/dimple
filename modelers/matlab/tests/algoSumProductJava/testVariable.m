@@ -45,7 +45,7 @@ function testVariable()
     y = Bit();
     z = x+y;
     
-    b = x.Solver.setDamping(0,4);
+    x.Solver.setDamping(0,4);
     assertEqual(x.Solver.getDamping(0),4);
     
     %Test cannot concat domains that don't match
@@ -63,7 +63,7 @@ function testVariable()
         [a d];
     catch E
         failed = true;
-        assertTrue(isequal(E.message,'Cannot concatenate variables with domains that dont match'));
+        assertTrue(isequal(E.message,'Domains must match when concatenating'));
     end
     
     assertTrue(failed);
@@ -74,7 +74,7 @@ function testVariable()
         [a; d];
     catch E
         failed = true;
-        assertTrue(isequal(E.message,'Cannot concatenate variables with domains that dont match'));
+        assertTrue(isequal(E.message,'Domains must match when concatenating'));
     end
     
     assertTrue(failed);

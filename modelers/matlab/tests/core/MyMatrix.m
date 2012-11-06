@@ -14,38 +14,41 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Discrete < DiscreteVariableBase
+classdef MyMatrix < MatrixObject
+    %Used to test matrixobject.
     
     properties
-        Input;
-        Belief;
         Value;
     end
     methods
-        function obj = Discrete(domain,varargin)
-            obj@DiscreteVariableBase(domain,varargin{:});
+        function obj = MyMatrix(vectorObject,indices)
+            obj@MatrixObject(vectorObject,indices);
         end
         
-        function x = get.Input(obj)
-            x = obj.getInput();
+        function v = get.Value(obj)
+            v = obj.unpack(obj.VectorObject.getValues());            
         end
-        function set.Input(obj,input)
-            obj.setInput(input);
+        
+        function set.Value(obj,value)
+            obj.VectorObject.setValues(obj.pack(value));
         end
-        function x = get.Belief(obj)
-            x = obj.getBelief();
-        end
-        function x = get.Value(obj)
-            x = obj.getValue();
-        end
+        
+        
     end
-    
-    methods (Access = protected)
+    methods (Access=protected)
         function retval = createObject(obj,vectorObject,indices)
-            retval = Discrete(obj.Domain,'existing',vectorObject,indices);
+            retval = MyMatrix(vectorObject,indices);
         end
         
+        function verifyCanConcatenate(obj,otherObjects)
+            for i = 1:length(otherObjects)
+                
+                value = otherObjects{i}.Value;
+                if max(value(:)) > 1000
+                    error('for the sake of the test dont allow this');
+                end
+            end
+        end
         
     end
-    
 end

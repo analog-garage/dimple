@@ -73,4 +73,9 @@ public class TableFactorFunction extends FactorFunction
     	return _factorTable;
     }
 
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		return true;
+	}
+
 }

@@ -15,32 +15,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef DiscreteVariableBase < VariableBase
-    
     methods
         function obj = DiscreteVariableBase(domain,varargin)
-            %{
-            if ~iscell(domain)
-                newdomain = cell(1,numel(domain));
-                for i = 1:numel(domain);
-                    newdomain{i} = domain(i);
-                end
-                domain = newdomain;
-            end
-            %}
-            %obj.Domain = DiscreteDomain(domain);
+            obj = obj@VariableBase([],[]);
             
             if ~isa(domain,'Domain')
                 domain = DiscreteDomain(domain);
             end
             
-            obj.Domain = domain;
-
+            
             
             if length(varargin) == 3 && strcmp('existing',varargin{1})
                 
-                obj.Indices = varargin{3};
-                obj.VarMat = varargin{2};
-                    
+                indices = varargin{3};
+                varMat = varargin{2};
+                
                 
             else
                 modeler = getModeler();
@@ -52,31 +41,28 @@ classdef DiscreteVariableBase < VariableBase
                 
                 numEls = prod(dims);
                 
-                %try
-                    varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
-                %catch exception
-                %   newdomain = cell(size(domain));
-                %    for i = 1:numel(newdomain)
-                %        newdomain{i} = ['notvalidjava' num2str(i)];
-                %    end
-                %    varMat = modeler.createDiscreteVariableVector(class(obj),newdomain,numEls);
-                %end
-                    
-                obj.VarMat = varMat;
+                varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
                 
-                obj.Indices = 0:(numEls-1);
+                indices = 0:(numEls-1);
                 
                 if (length(varargin) > 1)
-                    obj.Indices = reshape(obj.Indices,varargin{:});
+                    indices = reshape(indices,varargin{:});
                 end
                 
+                
             end
+            
+            obj.Domain = domain;
+            obj.VectorObject = varMat;
+            obj.Indices = indices;
         end
         
-    end
-           
-    methods (Access = protected)
         
+    end
+    
+    methods(Access=protected)
+        %These methods are used instead of property accessors because
+        %property accessors can not be overriden.
         function setInput(obj,b)
             
             d = obj.Domain.Elements;
@@ -113,13 +99,13 @@ classdef DiscreteVariableBase < VariableBase
             
             varids = reshape(v,numel(v),1);
             
-            obj.VarMat.setInput(varids,b);
+            obj.VectorObject.setInput(varids,b);
             
         end
         
         function b = getInput(obj)
             varids = reshape(obj.Indices,numel(obj.Indices),1);
-            input = obj.VarMat.getInput(varids);
+            input = obj.VectorObject.getInput(varids);
             
             %TODO: reuse this code from getBeliefs
             b = zeros(numel(obj.Indices),length(obj.Domain.Elements));
@@ -132,7 +118,7 @@ classdef DiscreteVariableBase < VariableBase
             %1x1 - Leave priors as is
             %1xN - Transpose
             %Nx1 - Leave as is
-            %Anything else - Add extra dimension           
+            %Anything else - Add extra dimension
             sz = size(v);
             isvector = numel(v) == length(v) && numel(v) > 1;
             isrowvector = isvector && sz(1) == 1;
@@ -155,7 +141,7 @@ classdef DiscreteVariableBase < VariableBase
             v = obj.Indices;
             varids = reshape(v,numel(v),1);
             
-            tmp = obj.VarMat.getBeliefs(varids);
+            tmp = obj.VectorObject.getBeliefs(varids);
             b = zeros(numel(v),length(obj.Domain.Elements));
             for i = 1:size(tmp,1)
                 b(i,:) = tmp(i,:);
@@ -164,7 +150,7 @@ classdef DiscreteVariableBase < VariableBase
             %1x1 - Leave priors as is
             %1xN - Transpose
             %Nx1 - Leave as is
-            %Anything else - Add extra dimension           
+            %Anything else - Add extra dimension
             sz = size(v);
             isvector = numel(v) == length(v) && numel(v) > 1;
             isrowvector = isvector && sz(1) == 1;
@@ -187,7 +173,7 @@ classdef DiscreteVariableBase < VariableBase
             
             varIds = reshape(v,numel(v),1);
             
-            beliefs = obj.VarMat.getBeliefs(varIds);
+            beliefs = obj.VectorObject.getBeliefs(varIds);
             
             
             domainIsScalars = 1;
@@ -208,7 +194,7 @@ classdef DiscreteVariableBase < VariableBase
                 found = find(matches);
                 [xs,ys] = ind2sub(size(matches),found);
                 domain = repmat(domain,size(beliefs,1),1);
-                values = domain(found);                
+                values = domain(found);
                 %}
                 values = zeros(size(beliefs,1),1);
                 for i = 1:size(beliefs,1)
@@ -217,7 +203,7 @@ classdef DiscreteVariableBase < VariableBase
                     firstIndex = firstIndex(1);
                     values(i) = obj.Domain.Elements{firstIndex};
                 end
-            else            
+            else
                 values = cell(size(beliefs,1),1);
                 for i = 1:size(beliefs,1)
                     mx = max(beliefs(i,:));
@@ -241,7 +227,9 @@ classdef DiscreteVariableBase < VariableBase
             end
             
         end
-                
+        
+        
     end
+    
     
 end

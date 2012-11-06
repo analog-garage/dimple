@@ -19,9 +19,14 @@ package com.analog.lyric.dimple.matlabproxy;
 
 public class PRealJointVariableVector extends PVariableVector
 {
+	public PRealJointVariableVector(IPNode [] nodes)
+	{
+		super(nodes);
+	}
+	
 	public PRealJointVariableVector(String varType, PRealJointDomain domain, int numElements) 
 	{
-		_variables = new PRealJointVariable[numElements];
+		IPNode [] nodes = new IPNode[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
@@ -29,8 +34,9 @@ public class PRealJointVariableVector extends PVariableVector
 			//int id = NodeId.getNext();
 			
 			PRealJointVariable v = new PRealJointVariable(varType,domain);
-			_variables[i] = v;
+			nodes[i] = v;
 		}
+		setNodes(nodes);
 	}
 	
 	public PRealJointVariableVector(PVariableBase [] variables)
@@ -38,10 +44,15 @@ public class PRealJointVariableVector extends PVariableVector
 		super(variables);
 	}
 		
+	public PRealJointVariable getRealJointVariable(int index)
+	{
+		return (PRealJointVariable)getNode(index);
+	}
+	
 	public void setInput(int [] indices, Object input) 
 	{
 		for (int i = 0; i < indices.length; i++)
-			((PRealJointVariable)_variables[indices[i]]).setInput(input);
+			getRealJointVariable(indices[i]).setInput(input);
 	}
 
 	public Object [] getBeliefs(int [] indices) 
@@ -50,9 +61,15 @@ public class PRealJointVariableVector extends PVariableVector
 		
 		for (int i = 0; i < indices.length; i++)
 		{
-			beliefs[i] = ((PRealJointVariable)_variables[indices[i]]).getBelief();
+			beliefs[i] = getRealJointVariable(indices[i]).getBelief();
 		}
 		return beliefs;
+	}
+	
+	@Override
+	public PNodeVector createNodeVector(IPNode[] nodes) 
+	{
+		return new PRealJointVariableVector(nodes);
 	}
 
 }
