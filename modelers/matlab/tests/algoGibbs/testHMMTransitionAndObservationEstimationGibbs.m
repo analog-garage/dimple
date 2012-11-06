@@ -14,7 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testHMMParameterEstimationGibbs()
+function testHMMTransitionAndObservationEstimationGibbs()
 
 debugPrint = false;
 repeatable = true;
@@ -22,15 +22,15 @@ repeatable = true;
 dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
 
 numStates = 2;
-numObsValues = 2;
+numObsValues = 3;
 hmmLength = 1000;
 numSamples = 100;
 proposalStandardDeviation = 0.1;
-updatesPerSample = (hmmLength + numStates^2);
+updatesPerSample = (hmmLength*2 + numStates^2 + numStates*numObsValues);
 burnInUpdates = 1000;
 
 if (repeatable)
-    seed = 1;
+    seed = 2;
     rs=RandStream('mt19937ar');
     RandStream.setGlobalStream(rs);
     reset(rs,seed);
@@ -39,7 +39,6 @@ end
 
 
 % Sample from system to be estimated
-
 transMatrix = randStochasticStrongDiag(numStates, numStates, 2);
 obsMatrix = randStochasticStrongDiag(numObsValues, numStates, 10);
 
@@ -67,10 +66,13 @@ fg.Solver.setBurnInUpdates(burnInUpdates);
 
 % Variables
 A = Real(numStates, numStates);
+O = Real(numObsValues, numStates);
 state = Discrete(0:numStates-1,1,hmmLength);
+obs = Discrete(0:numObsValues-1,1,hmmLength);
 
-% Priors on A
+% Priors on A and O
 A.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
+O.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
 
 
 % Add transition factors
@@ -78,7 +80,16 @@ transitionFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedDiscre
 fg.addFactorVectorized(transitionFunction, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
-state.Input = obsMatrix(obsRealization,:);
+observationFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedDiscreteTransition(numObsValues, numStates);
+fg.addFactorVectorized(observationFunction, obs, state, {O,[]});
+
+% Add observations
+obsInputs = zeros(hmmLength, numObsValues);
+for obsVal = 1:numObsValues
+    obsInputs(obsVal==obsRealization,obsVal)=1;
+end;
+obs.Input = obsInputs;
+
 ft = toc(t);
 if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 
@@ -87,6 +98,11 @@ if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 for row=1:size(A,1)
     for col = 1:size(A,2)
         A(row,col).Solver.setProposalStandardDeviation(proposalStandardDeviation);
+    end
+end
+for row=1:size(A,1)
+    for col = 1:size(A,2)
+        O(row,col).Solver.setProposalStandardDeviation(proposalStandardDeviation);
     end
 end
 
@@ -103,20 +119,41 @@ st = toc(t);
 if (debugPrint); fprintf('Solve time: %.2f seconds\n', st); end;
 
 
-output = arrayfun(@(a)(a.Solver.getBestSample()), A);
-output = output - repmat(min(output,[],1),numStates,1);
-output = exp(-output);
-output = output./repmat(sum(output,1),numStates,1);
-dtrace(debugPrint,'Gibbs estimate:'); if(debugPrint); disp(output); end;
+% Get the output for O variables
+Ooutput = arrayfun(@(a)(a.Solver.getBestSample()), O);
+Ooutput = Ooutput - repmat(min(Ooutput,[],1),numObsValues,1);
+Ooutput = exp(-Ooutput);
+Ooutput = Ooutput./repmat(sum(Ooutput,1),numObsValues,1);
+dtrace(debugPrint,'Gibbs estimate for O:'); if(debugPrint); disp(Ooutput); end;
 
 
-% Compute the KL-divergence rate
-KLDivergenceRate = kLDivergenceRate(transMatrix, output);
-dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate));
+% Get the output for A variables
+Aoutput = arrayfun(@(a)(a.Solver.getBestSample()), A);
+Aoutput = Aoutput - repmat(min(Aoutput,[],1),numStates,1);
+Aoutput = exp(-Aoutput);
+Aoutput = Aoutput./repmat(sum(Aoutput,1),numStates,1);
+dtrace(debugPrint,'Gibbs estimate for A:'); if(debugPrint); disp(Aoutput); end;
 
+% Compute the KL-divergence rate of the estmate of A
+% KLDivergenceRateA = kLDivergenceRate(transMatrix, Aoutput);
+% dtrace(debugPrint,'Gibbs KL divergence rate for A:'); dtrace(debugPrint,num2str(KLDivergenceRateA));
+
+% Compare the expected distribution of the observations to the distribution
+% based on the estimated transition and observation matrices.  Because
+% there is ambiguity in the actual matrices, only this value should be
+% consistent with the values from the source model.
+expectedObsDistribution = obsMatrix * ((transMatrix^10000)*[1;0]);
+estimatedObsDistribution = Ooutput * ((Aoutput^10000)*[1;0]);
+dtrace(debugPrint,'Expected observation distribution:'); if(debugPrint); disp(expectedObsDistribution); end;
+dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(estimatedObsDistribution); end;
+KLDivergenceObsDistribution = kLDivergence(expectedObsDistribution, estimatedObsDistribution);
+dtrace(debugPrint,'Gibbs KL divergence of observation distribution:'); dtrace(debugPrint,num2str(KLDivergenceObsDistribution));
+
+assert(KLDivergenceObsDistribution < 0.01);
 
 
 % % COMMENTED OUT FOR NOW; BAUM-WELCH DOESN'T SEEM TO BE WORKING RELIABLY
+% % FIXME: WHEN ADDING BACK, ADD IN OBSERVATION ESTIMATION TO THIS VERSION
 % % Compare with Baum-Welch ============================================
 % fg2 = FactorGraph();
 % fg2.Solver = 'sumproduct';
@@ -149,9 +186,6 @@ dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDive
 % dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate2));
 
 
-assert(KLDivergenceRate < 0.001);
-
-
 dtrace(debugPrint, '--testHMMParameterEstimationGibbs');
 
 end
@@ -173,6 +207,12 @@ end
 
 end
 
+
+function KLDivergence = kLDivergence(baseDistribution, estimatedDistribution)
+P = baseDistribution;
+Q = estimatedDistribution;
+KLDivergence = sum(P .* log(P./Q));
+end
 
 
 function m = randStochasticStrongDiag(dOut, dIn, diagStrength)
