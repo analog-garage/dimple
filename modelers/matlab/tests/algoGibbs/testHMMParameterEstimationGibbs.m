@@ -41,7 +41,7 @@ end
 % Sample from system to be estimated
 
 transMatrix = randStochasticStrongDiag(numStates, numStates, 2);
-obsMatrix = randStochasticStrongDiag(numStates, numObsValues, 10);
+obsMatrix = randStochasticStrongDiag(numObsValues, numStates, 10);
 
 % Run HMM to produce an output sequence.  The factor graph produced after
 % will try to infer the state realizations.
@@ -74,8 +74,8 @@ A.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
 
 
 % Add transition factors
-transitionFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedHMMTransition(numStates);
-fg.addFactorVectorized(transitionFunction, state(1:end-1), state(2:end), {A,[]});
+transitionFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedDiscreteTransition(numStates);
+fg.addFactorVectorized(transitionFunction, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
 state.Input = obsMatrix(obsRealization,:);
@@ -175,14 +175,14 @@ end
 
 
 
-function m = randStochasticStrongDiag(dIn, dOut, diagStrength)
+function m = randStochasticStrongDiag(dOut, dIn, diagStrength)
 m = randStochasticMatrix(dOut,dIn);
 m = m + diagStrength * eye(dOut,dIn);
 m = m ./ repmat(sum(m,1), dOut, 1);
 end
 
 
-function m = randStochasticMatrix(dIn, dOut)
+function m = randStochasticMatrix(dOut, dIn)
 m = zeros(dOut,dIn);
 for i = 1:dIn
     m(:,i) = randSimplex(dOut);
@@ -190,7 +190,7 @@ end
 end
 
 
-function m = randSparseStochasticMatrix(dIn, dOut, sparsity)
+function m = randSparseStochasticMatrix(dOut, dIn, sparsity)
 m = zeros(dOut,dIn);
 for i = 1:dIn
     m(:,i) = randSkeletonSimplex(dOut, sparsity);
