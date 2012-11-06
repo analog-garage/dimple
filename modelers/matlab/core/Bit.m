@@ -15,60 +15,47 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef Bit < DiscreteVariableBase
-    properties
-        Input;
-        Belief;
-        Value;
-    end
     methods
         function obj = Bit(varargin)
             obj@DiscreteVariableBase([0 1],varargin{:});
         end
     end
     
-    methods
+    methods (Access=protected)
         
-        function value = get.Value(obj)
-            value = obj.getValue();
-        end
        
-        function beliefs = get.Belief(obj)
-            beliefs = obj.getBelief();
+        function beliefs = getBelief(obj)
+            beliefs = getBelief@DiscreteVariableBase(obj);
             
-            if size(obj.Indices,1) == numel(obj.Indices) && length(size(obj.Indices)) == 2
+            if size(obj.VectorIndices,1) == numel(obj.VectorIndices) && length(size(obj.VectorIndices)) == 2
                 beliefs = beliefs(:,2);     % Column vector
-            elseif size(obj.Indices,2) == numel(obj.Indices) && length(size(obj.Indices)) == 2
+            elseif size(obj.VectorIndices,2) == numel(obj.VectorIndices) && length(size(obj.VectorIndices)) == 2
                 beliefs = beliefs(2,:);     % Row vector
             else
                 btmp = reshape(beliefs,numel(beliefs),1);
                 btmp = btmp((numel(btmp)/2)+1:end);
-                beliefs = reshape(btmp,size(obj.Indices));
+                beliefs = reshape(btmp,size(obj.VectorIndices));
             end
         end
-        function set.Input(obj,priors)
+        function setInput(obj,priors)
             
-            if length(obj.Indices) == numel(obj.Indices)
+            if length(obj.VectorIndices) == numel(obj.VectorIndices)
                 priors = reshape(priors,numel(priors),1);
                 priors = [1-priors priors];
             elseif numel(priors) > 1
                 priors = reshape(priors,numel(priors),1);
                 priors = [1-priors; priors];
-                priors = reshape(priors,[size(obj.Indices) 2]);
+                priors = reshape(priors,[size(obj.VectorIndices) 2]);
             else
                 priors = [1-priors; priors];
             end
             
             
-            obj.setInput(priors);
+            setInput@DiscreteVariableBase(obj,priors);
         end 
-        function x = get.Input(obj)
-            x = obj.getInput();
-        end
-    end
-    
-    methods (Access=protected)
-        function retval = createObject(obj,vectorObject,indices)
-            retval = Bit('existing',vectorObject,indices);
+        
+        function retval = createObject(obj,vectorObject,VectorIndices)
+            retval = Bit('existing',vectorObject,VectorIndices);
         end
     end
     

@@ -25,6 +25,6 @@ function testNoCache()
         fg.addFactorNoCache(myfunc,b);
     end
 
-    assertTrue(fg.Factors{1}.IFactor.getModelerObject().getFactorFunction()~= ...
-        fg.Factors{2}.IFactor.getModelerObject().getFactorFunction());
+    assertTrue(fg.Factors{1}.VectorObject.getModelerNode(0).getFactorFunction()~= ...
+        fg.Factors{2}.VectorObject.getModelerNode(0).getFactorFunction());
 end

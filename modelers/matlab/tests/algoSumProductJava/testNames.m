@@ -141,7 +141,7 @@ function testNames()
     fMidC.Name   = 'fMid';
     fLeafC.Name  = 'fLeaf';
         
-    diffs = fgRoot.IGraph.getFactorGraphDiffsByName(fgRootC.IGraph);
+    diffs = fgRoot.getFactorGraphDiffsByName(fgRootC);
     if ~diffs.noDiffs()
         disp(fgRoot.getAdjacencyString());
         disp(fgRootC.getAdjacencyString());

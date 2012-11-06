@@ -46,7 +46,7 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	public PVariableVector get(int index) 
 	{
 		VariableBase var = _modelObject.get(index);
-		return PHelpers.convertToVariableVector(PHelpers.convertToVariables(new VariableBase[]{var}));
+		return PHelpers.convertToVariableVector(new VariableBase[]{var});
 	}
 	
 	public void setDataSource(IDataSource dataSource) 
@@ -61,12 +61,12 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	
 	public PVariableVector getFirstVar() 
 	{
-		return PHelpers.convertToVariableVector(PHelpers.convertToVariables(new VariableBase[]{_modelObject.getFirstVar()}));
+		return PHelpers.convertToVariableVector(new VariableBase[]{_modelObject.getFirstVar()});
 	}
 
 	public PVariableVector getLastVar() 
 	{
-		return PHelpers.convertToVariableVector(PHelpers.convertToVariables(new VariableBase[]{_modelObject.getLastVar()}));
+		return PHelpers.convertToVariableVector(new VariableBase[]{_modelObject.getLastVar()});
 	}
 
 	public double getFirstVarIndex()

@@ -18,7 +18,9 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.NodeId;
+import com.analog.lyric.dimple.model.VariableBase;
 
 
 
@@ -29,14 +31,19 @@ import com.analog.lyric.dimple.model.NodeId;
  */
 public class PDiscreteVariableVector extends PVariableVector
 {
-	public PDiscreteVariableVector(IPNode [] nodes)
+	public PDiscreteVariableVector(Node node)
+	{
+		super(new Node[] {node});
+	}
+	
+	public PDiscreteVariableVector(Node [] nodes)
 	{
 		super(nodes);
 	}
 	
 	public PDiscreteVariableVector(String varType, PDiscreteDomain domain, int numElements) 
 	{
-		IPNode [] nodes  = new IPNode[numElements];
+		Node [] nodes  = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
@@ -44,20 +51,20 @@ public class PDiscreteVariableVector extends PVariableVector
 			int id = NodeId.getNext();
 
 			Discrete v = new Discrete(id, (DiscreteDomain)domain.getModelerObject(),varType);
-			nodes[i] = new PDiscreteVariable(v);
+			nodes[i] = v;
 		}
 		
 		setNodes(nodes);
 	}
 	
-	public PDiscreteVariableVector(PVariableBase [] variables)
+	public PDiscreteVariableVector(VariableBase [] variables)
 	{
 		super(variables);
 	}
 	
-	PDiscreteVariable getDiscreteVariable(int index)
+	private Discrete getDiscreteVariable(int index)
 	{
-		return (PDiscreteVariable)getNode(index);
+		return (Discrete)getModelerNode(index);
 	}
 	
 	public void setInput(int [] indices,double [][] inputs) 
@@ -69,7 +76,19 @@ public class PDiscreteVariableVector extends PVariableVector
 		}
 	}
 	
-	
+	public double [][] getDiscreteBeliefs(int [] indices)
+	{
+		double [][] beliefs = new double[indices.length][];
+		
+		for (int i = 0; i < indices.length; i++)
+		{
+			Discrete df = getDiscreteVariable(indices[i]);
+			beliefs[i] = df.getBelief();
+		}
+		return beliefs;
+		
+	}
+
 	public Object [] getBeliefs(int [] indices) 
 	{
 		Object [] beliefs = new Object[indices.length];
@@ -91,9 +110,15 @@ public class PDiscreteVariableVector extends PVariableVector
 
 	
 	@Override
-	public PNodeVector createNodeVector(IPNode[] nodes) 
+	public PNodeVector createNodeVector(Node [] nodes) 
 	{
 		return new PDiscreteVariableVector(nodes);
 	}
 	
+	public PDomain getDomain()
+	{
+		return new PDiscreteDomain(getDiscreteVariable(0).getDiscreteDomain());
+	}
+	
+
 }

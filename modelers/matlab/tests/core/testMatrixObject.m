@@ -15,6 +15,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testMatrixObject
+    %Test chained method call and then assignment
+    m = MyMatrix(MyVectorObject({MyObject(1,[1 1])}),0);
+    m.getObject(1).getObject(1).Value = 123;
+    assertEqual(123,m(1).Value);
+
+    %Set up some values for tests
     N = 3;
     values = cell(3^2,1);
     for i = 1:N^2
@@ -156,5 +162,6 @@ function testMatrixObject
     a = mo2(1,:);
     b = mo2(2,:);
     assertEqual([a; b],mo2);
+    
 end
 

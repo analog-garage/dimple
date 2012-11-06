@@ -15,17 +15,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef VariableBase < Node
-    properties (Abstract = true)
-        Input;
-        Belief;
-        Value;
-    end
     properties
         Domain;
         Factors;
         FactorsTop;
         FactorsFlat;
         Guess;
+        
+        Input;
+        Belief;
+        Value;
     end
     
     methods
@@ -66,25 +65,6 @@ classdef VariableBase < Node
             z = addOperatorOverloadedFactor(a,b,@plus,@(z,x,y) z == (x+y));
         end
         
-        function disp(obj)
-            disp(obj.Label);
-        end
-        
-        function update(obj)
-            obj.VectorObject.update();
-        end
-        
-        function updateEdge(obj,portOrFactor)
-            var = obj.getSingleNode();
-            
-            if isa(portOrFactor,'Factor')
-                portNum = var.getPortNum(portOrFactor.IFactor);
-                var.updateEdge(portNum);
-            else
-                obj.VectorObject.updateEdge(portOrFactor-1);
-            end
-        end
-        
         function x = get.Domain(obj)
             x = obj.Domain;
         end
@@ -114,23 +94,39 @@ classdef VariableBase < Node
         end
         
         function factors = getFactors(obj,relativeNestingDepth)
-            tmp = cell(obj.VectorObject.getFactors(relativeNestingDepth));
-            factors = cell(size(tmp));
-            for i = 1:length(factors)
-                if tmp{i}.isGraph()
-                    factors{i} = FactorGraph('igraph',tmp{i});
-                elseif tmp{i}.isDiscrete()
-                    factors{i} = DiscreteFactor(tmp{i});
-                else
-                    factors{i} = Factor(tmp{i});
-                end
+            tmp = obj.VectorObject.getFactors(relativeNestingDepth);
+            factors = cell(tmp.size(),1);
+            for i = 1:tmp.size()
+                factors{i} = wrapProxyObject(tmp.getSlice(i-1));
             end
         end
         
+        
+        function set.Input(obj,value)
+            obj.setInput(value);
+        end
+        
+        function x = get.Input(obj)
+            x = obj.getInput();
+        end
+        
+        function x = get.Belief(obj)
+            x = obj.getBelief();
+        end
+                
+        function x = get.Value(obj)
+            x = obj.getValue();
+        end
+    end
+    
+    methods (Access=protected,Abstract=true)
+        setInput(obj,value);
+        x = getInput(obj);
+        x = getBelief(obj);
+        x = getValue(obj);
     end
     
     methods (Access = protected)
-        
         
         
         function z = addOperatorOverloadedFactor(a,b,operation,factor)
@@ -187,14 +183,7 @@ function varids = getVarIds(obj)
             b = obj.Domain;
         end
         
-    end
-    %{
-    methods (Abstract, Access = public)
-        createVariable(obj,domain,varMat,indices)
-    end
-    %}
-    
-    methods (Access=protected)
+        
         function verifyCanConcatenate(obj,otherObjects)
             for i = 1:length(otherObjects)
                 if ~isa(otherObjects{i},'VariableBase')
@@ -205,6 +194,12 @@ function varids = getVarIds(obj)
                 end
             end
         end
+        
     end
+    %{
+    methods (Abstract, Access = public)
+        createVariable(obj,domain,varMat,indices)
+    end
+    %}
     
 end

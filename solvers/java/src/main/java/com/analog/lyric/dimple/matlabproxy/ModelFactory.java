@@ -135,49 +135,6 @@ public class ModelFactory
 		return new PFactorTable(dds);
 	}
 
-//	public PTableFactorFunction createTableFactorFunction(String name, Object [] domains)
-//	{
-//		PDiscreteDomain [] dds = new PDiscreteDomain[domains.length];
-//
-//		for (int i = 0; i < domains.length; i++)
-//		{
-//			dds[i] = (PDiscreteDomain)domains[i];
-//		}
-//
-//		return new PTableFactorFunction(name, dds);
-//	}
-//
-//
-//	public PTableFactorFunction createTableFactorFunction(String name, Object probs, Object [] domains)
-//	{
-//		PDiscreteDomain [] dds = new PDiscreteDomain[domains.length];
-//
-//		for (int i = 0; i < domains.length; i++)
-//		{
-//			dds[i] = (PDiscreteDomain)domains[i];
-//		}
-//
-//		return new PTableFactorFunction(name, probs, dds);
-//	}
-//
-//	public PTableFactorFunction createTableFactorFunction(String name, int [][] indices, double [] probs, Object [] domains) 
-//	{
-//
-//		PDiscreteDomain [] dds = new PDiscreteDomain[domains.length];
-//
-//		for (int i = 0; i < domains.length; i++)
-//		{
-//			dds[i] = (PDiscreteDomain)domains[i];
-//		}
-//
-//		return new PTableFactorFunction(name, indices,probs, dds);
-//	}
-//
-	// Create real Variables
-//	public PRealVariableVector createRealVariableVector(String className, Object [] domain, FactorFunction input, int numEls) 
-//	{
-//		return new PRealVariableVector(className, domain, input, numEls);
-//	}
 
 
 	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, FactorFunction input, int numEls) 
@@ -187,7 +144,7 @@ public class ModelFactory
 
 
 	// Create graph
-	public PFactorGraph createGraph(Object [] vector) 
+	public PFactorGraphVector createGraph(Object [] vector) 
 	{
 		ArrayList<VariableBase> alVars = new ArrayList<VariableBase>();
 
@@ -203,7 +160,7 @@ public class ModelFactory
 		alVars.toArray(input);
 		FactorGraph f = new FactorGraph(input);
 
-		return new PFactorGraph(f);
+		return new PFactorGraphVector(f);
 	}
 
 

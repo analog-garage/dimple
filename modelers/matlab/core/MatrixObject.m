@@ -16,12 +16,12 @@
 
 classdef MatrixObject < handle
     properties (Access=public)
-        Indices;
+        VectorIndices;
         VectorObject;
     end
     methods
-        function obj = MatrixObject(vectorObject,indices)
-            obj.Indices = indices;
+        function obj = MatrixObject(vectorObject,VectorIndices)
+            obj.VectorIndices = VectorIndices;
             obj.VectorObject = vectorObject;
         end
         
@@ -31,8 +31,8 @@ classdef MatrixObject < handle
             switch S(1).type
                 case '()'
                     %TODO: put in subroutine?
-                    ind = obj.Indices(S(1).subs{:});
-                    newobj = obj.createObjectFromReorderedIndices(ind);
+                    ind = obj.VectorIndices(S(1).subs{:});
+                    newobj = obj.createObjectFromReorderedVectorIndices(ind);
                     
                     if (length(S) > 1)
                         [varargout{:}] = subsref(newobj,S(2:end));
@@ -62,8 +62,19 @@ classdef MatrixObject < handle
         function obj = subsasgn(obj,S,B)
             
             if numel(S) > 1
-                tmp = subsref(obj,S(1));
-                a = subsasgn(tmp,S(2:end),B);
+                
+                %This is needed to differentiate between properties and
+                %function calls.
+                if isequal(S(2).type,'()')
+                    firstArgs = S(1:2);                    
+                    secondArgs = S(3:end);
+                else
+                    firstArgs = S(1);
+                    secondArgs = S(2:end);
+                end
+                
+                tmp = subsref(obj,firstArgs);
+                a = subsasgn(tmp,secondArgs,B);
             else
                 switch S(1).type
                     case '.'
@@ -73,8 +84,8 @@ classdef MatrixObject < handle
                             error('must assign matrix objects');
                         end
                         obj.verifyCanConcatenate({B});
-                        indices = obj.Indices(S(1).subs{:});
-                        obj.VectorObject.replace(B.VectorObject,indices(:));
+                        VectorIndices = obj.VectorIndices(S(1).subs{:});
+                        obj.VectorObject.replace(B.VectorObject,VectorIndices(:));
                     case '{}'
                         error('{} not supported');
                 end
@@ -82,32 +93,32 @@ classdef MatrixObject < handle
         end
         
         function x = length(obj)
-            x = length(obj.Indices);
+            x = length(obj.VectorIndices);
         end
         
         function x = size(obj,varargin)
-            x = size(obj.Indices,varargin{:});
+            x = size(obj.VectorIndices,varargin{:});
         end
         
         %Cannot implement this as it messes up the builtin('subsref')
         %and builtin('subsasgn').  Would be nice to figure out a way to fix
         %this.
         %function x = numel(obj)
-        %    x = numel(obj.Indices);
+        %    x = numel(obj.VectorIndices);
         %end
         
         function x = end(obj,k,n)
             if n == 1
-                x = numel(obj.Indices);
+                x = numel(obj.VectorIndices);
             else
-                x = size(obj.Indices,k);
+                x = size(obj.VectorIndices,k);
             end
         end
         
         function var = repmat(a,varargin)
-            indices = a.Indices;
-            indices = repmat(indices,varargin{:});
-            var = a.createObjectFromReorderedIndices(indices);
+            VectorIndices = a.VectorIndices;
+            VectorIndices = repmat(VectorIndices,varargin{:});
+            var = a.createObjectFromReorderedVectorIndices(VectorIndices);
         end
         
         
@@ -115,7 +126,7 @@ classdef MatrixObject < handle
             if ~isa(b,'MatrixObject')
                 retval = false;
             else
-                retval = isequal(a.Indices,b.Indices) && ...
+                retval = isequal(a.VectorIndices,b.VectorIndices) && ...
                     isequal(a.VectorObject.getIds(),b.VectorObject.getIds());
             end
         end
@@ -128,22 +139,22 @@ classdef MatrixObject < handle
             x = a.transpose();
         end
         function x = transpose(a)
-            x = a.createObject(a.VectorObject,a.Indices');
+            x = a.createObject(a.VectorObject,a.VectorIndices');
         end
         
         function x = reshape(obj,varargin)
-            indices = reshape(obj.Indices,varargin{:});
-            x = obj.createObject(obj.VectorObject,indices);
+            VectorIndices = reshape(obj.VectorIndices,varargin{:});
+            x = obj.createObject(obj.VectorObject,VectorIndices);
         end
         
         function x = fliplr(obj)
-            indices = fliplr(obj.Indices);
-            x = obj.createObjectFromReorderedIndices(indices);
+            VectorIndices = fliplr(obj.VectorIndices);
+            x = obj.createObjectFromReorderedVectorIndices(VectorIndices);
         end
         
         function x = flipud(obj)
-            indices = flipud(obj.Indices);
-            x = obj.createObjectFromReorderedIndices(indices);
+            VectorIndices = flipud(obj.VectorIndices);
+            x = obj.createObjectFromReorderedVectorIndices(VectorIndices);
         end
         
         function x = horzcat(varargin)
@@ -159,69 +170,73 @@ classdef MatrixObject < handle
     methods(Access=private)
         
         %Private
-        function x = createObjectFromReorderedIndices(obj,indices)
-            varids = reshape(indices,numel(indices),1);
+        function x = createObjectFromReorderedVectorIndices(obj,VectorIndices)
+            varids = reshape(VectorIndices,numel(VectorIndices),1);
             vectorObject = obj.VectorObject.getSlice(varids);
-            indices = reshape(0:(numel(varids)-1),size(indices));
-            x = obj.createObject(vectorObject,indices);
+            VectorIndices = reshape(0:(numel(varids)-1),size(VectorIndices));
+            x = obj.createObject(vectorObject,VectorIndices);
         end
         
         function x = docat(obj,catmethod,varargin)
             
             obj.verifyCanConcatenate(varargin(2:end));
             
-            indices_all = [];
-            vector_object_indices_all = [];
+            VectorIndices_all = [];
+            vector_object_VectorIndices_all = [];
             
             vectorObjects = cell(size(varargin));
             
             
             for i = 1:length(varargin)
-                indices = varargin{i}.Indices;
+                VectorIndices = varargin{i}.VectorIndices;
                 vectorObjects{i} = varargin{i}.VectorObject;
-                vector_object_indices = ones(size(indices))*i-1;
-                indices_all = catmethod(indices_all,indices);
-                vector_object_indices_all = catmethod(...
-                    vector_object_indices_all,vector_object_indices);
+                vector_object_VectorIndices = ones(size(VectorIndices))*i-1;
+                VectorIndices_all = catmethod(VectorIndices_all,VectorIndices);
+                vector_object_VectorIndices_all = catmethod(...
+                    vector_object_VectorIndices_all,vector_object_VectorIndices);
             end
             
-            one_d_indices_all = reshape(indices_all,numel(indices_all),1);
-            one_d_vector_object_indices_all = ...
-                reshape(vector_object_indices_all,...
-                numel(vector_object_indices_all),1);
+            one_d_VectorIndices_all = reshape(VectorIndices_all,numel(VectorIndices_all),1);
+            one_d_vector_object_VectorIndices_all = ...
+                reshape(vector_object_VectorIndices_all,...
+                numel(vector_object_VectorIndices_all),1);
             
             vectorObject = varargin{1}.VectorObject.concat(...
-                vectorObjects,one_d_vector_object_indices_all,one_d_indices_all);
+                vectorObjects,one_d_vector_object_VectorIndices_all,one_d_VectorIndices_all);
             
-            indices = 0:numel(indices_all)-1;
-            indices = reshape(indices,size(indices_all));
+            VectorIndices = 0:numel(VectorIndices_all)-1;
+            VectorIndices = reshape(VectorIndices,size(VectorIndices_all));
             
-            x = obj.createObject(vectorObject,indices);
+            x = obj.createObject(vectorObject,VectorIndices);
         end
     end
     
     methods (Access=protected)
         function v = unpack(obj,stuff)
-            if size(stuff,1) ~= numel(obj.Indices)
-                error('mismatch of sizes');
+            if numel(obj.VectorIndices) == 1
+                v = reshape(stuff,numel(stuff),1);
+            else
+                if size(stuff,1) ~= numel(obj.VectorIndices)
+                    error('mismatch of sizes');
+                end
+                stuff = stuff(obj.VectorIndices(:)+1,:);
+                v = reshape(stuff,[size(obj.VectorIndices) size(stuff,2)]);
             end
-            stuff = stuff(obj.Indices(:)+1,:);
-            v = reshape(stuff,[size(obj.Indices) size(stuff,2)]);
         end
         
         function v = pack(obj,values)
-            numValsPerObj = numel(values) / numel(obj.Indices);
+            numValsPerObj = numel(values) / numel(obj.VectorIndices);
             if mod(numValsPerObj,1) ~= 0
                 error('invalid number of values');
             end
             
             v = reshape(values,numel(values)/numValsPerObj,numValsPerObj);
-            v = v(obj.Indices+1,:);
+            v = v(obj.VectorIndices+1,:);
         end
     end
     
     methods (Abstract, Access = protected)
-        retval = createObject(obj,vectorObject,indices);
+        retval = createObject(obj,vectorObject,VectorIndices);
         verifyCanConcatenate(obj,otherObjects);
     end
     

@@ -1761,7 +1761,7 @@ public class FactorGraph extends FactorBase
 		//try first as a simple name; qualified names won't be found
 		//	'.' is prevented from being part of a simple name
 		Object o = _name2object.get(string);
-
+		
 		//If not found, try as if string is a string version of a UUID
 		if(o == null)
 		{

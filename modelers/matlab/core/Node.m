@@ -28,17 +28,16 @@ classdef Node < MatrixObject
         Score;
         InternalEnergy;
         BetheEntropy;
-        
     end
     methods
-        function obj = Node(vectorObject,indices)
-            obj@MatrixObject(vectorObject,indices);
+        function obj = Node(vectorObject,VectorIndices)
+            obj@MatrixObject(vectorObject,VectorIndices);
         end
         
         function ports = get.Ports(obj)
             var = obj.getSingleNode();
             
-            ports = cell(var.getPorts());
+            ports = cell(var.getPorts(0));
             
             for i = 1:numel(ports)
                 ports{i} = Port(ports{i});
@@ -51,6 +50,23 @@ classdef Node < MatrixObject
         end
         function set.Label(obj,name)
             obj.VectorObject.setLabel(name);
+        end
+        
+        function update(obj)
+            obj.VectorObject.update();
+        end
+        
+        function updateEdge(obj,portOrNode)
+            var = obj.getSingleNode();
+            
+            if isa(portOrNode,'Node')
+                var.updateEdge(portOrNode.VectorObject);
+            else
+                obj.VectorObject.updateEdge(portOrNode-1);
+            end
+        end
+        function disp(obj)
+            disp(obj.Label);
         end
         
         
@@ -75,21 +91,15 @@ classdef Node < MatrixObject
         
         function portNum = getPortNum(obj,f)
             var = obj.getSingleNode();
-            portNum = var.getPortNum(f.IFactor)+1;
+            portNum = var.getPortNum(f.VectorObject)+1;
         end
         
-        
-        
         function s = get.Solver(obj)
-            solvers = cell(size(obj.Indices));
-            for i = 1:numel(obj.Indices)
-                node = obj.VectorObject.getNode(obj.Indices(i));
-                solvers{i} = node.getSolver();
-            end
-            s = solvers;
-            if numel(s) == 1
-                s = s{1};
-            end
+            s = obj.getSolver();
+        end
+        
+        function set.Solver(obj,solver)
+            obj.setSolverInternal(solver);
         end
         
         
@@ -112,12 +122,28 @@ classdef Node < MatrixObject
             if obj.VectorObject.size() ~= 1
                 error('Only one variable supported');
             end
-            node = obj.VectorObject.getNode(0);
+            node = obj.VectorObject;
         end
         
     end
     
     methods(Access=protected)
+        function setSolverInternal(obj,solver)
+            error('not supported');
+        end
+        
+        function s = getSolver(obj)
+            solvers = cell(size(obj.VectorIndices));
+            for i = 1:numel(obj.VectorIndices)
+                node = obj.VectorObject.getSolver(obj.VectorIndices(i));
+                solvers{i} = node;
+            end
+            s = solvers;
+            if numel(s) == 1
+                s = s{1};
+            end
+        end
+        
         
         function names = wrapNames(obj, namesArray)
             names = cell(namesArray);
@@ -126,7 +152,7 @@ classdef Node < MatrixObject
             if numel(names) == 1
                 names = names{1};
             else
-                names = reshape(names,size(obj.Indices));
+                names = reshape(names,size(obj.VectorIndices));
             end
         end
     end

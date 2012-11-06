@@ -148,5 +148,11 @@ public class DiscreteFactor extends Factor
 		String s = "TableFactor [" + getLabel() + "] " + getFactorTable().toString();
 		return s;
 	}
+	
+	public double [] getBelief() 
+	{
+		return (double[])_solverFactor.getBelief();
+	}
+
 
 }

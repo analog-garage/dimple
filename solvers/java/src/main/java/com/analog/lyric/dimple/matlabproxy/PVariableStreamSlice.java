@@ -36,7 +36,7 @@ public class PVariableStreamSlice implements IPVariableStreamSlice
 	public PVariableVector getNext() 
 	{
 		VariableBase var = _modelObject.getNext();
-		return PHelpers.convertToVariableVector(PHelpers.convertToVariables(new VariableBase[]{var}));
+		return PHelpers.convertToVariableVector(new VariableBase[]{var});
 
 	}
 	

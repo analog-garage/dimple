@@ -14,88 +14,20 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Factor < handle
+classdef Factor < Node
     
     properties
-        IFactor;
-        Name;
-        ExplicitName;
-        QualifiedName;
-        Label;
-        QualifiedLabel;
-        UUID;
         Variables;
-        Solver;
-        Ports;
-        Score;
-        InternalEnergy;
-        BetheEntropy;
         DirectedTo;
     end
     
     methods
-        function obj = Factor(ifactor)
-            obj.IFactor = ifactor;
-        end
-        
-        function ports = get.Ports(obj)
-            ports = cell(obj.IFactor.getPorts());
-            
-            for i = 1:length(ports)
-                ports{i} = Port(ports{i});
+        function obj = Factor(vectorObject,indices)
+            if nargin < 2
+                indices = 0:(vectorObject.size()-1);
             end
+            obj@Node(vectorObject,indices);
         end
-        
-        function disp(obj)
-           disp(obj.Label); 
-        end
-        
-        function solver = get.Solver(obj)
-            solver = obj.IFactor.getSolver();
-        end
-        
-        function update(obj)
-            obj.IFactor.update();
-        end
-        
-        function score = get.Score(obj)
-            score = obj.IFactor.getScore();
-        end
-        
-        function be = get.BetheEntropy(obj)
-            be = obj.IFactor.getBetheEntropy();
-        end
-        
-        function ie = get.InternalEnergy(obj)
-            ie = obj.IFactor.getInternalEnergy();
-        end
-        
-        function updateEdge(obj,portNumOrPort)
-            if isa(portNumOrPort,'VariableBase')
-                var = portNumOrPort.getSingleNode();
-                portNum = obj.IFactor.getPortNum(var);
-                obj.IFactor.updateEdge(portNum);
-            else
-                obj.IFactor.updateEdge(portNumOrPort-1);
-            end
-        end
-        
-        function retval = eq(a,b)
-            retval = a.equals(b);
-        end
-        
-        function retval = equals(a,b)
-            retval = a.IFactor.getId() == b.IFactor.getId();
-        end
-        
-        function name = get.Name(obj)
-            name = char(obj.IFactor.getName());
-        end
-        
-        function name = get.ExplicitName(obj)
-            name = char(obj.IFactor.getExplicitName());
-        end
-
         
         function set.DirectedTo(obj,variables)
            if ~iscell(variables)
@@ -104,44 +36,19 @@ classdef Factor < handle
            for i = 1:length(variables)
                variables{i} = variables{i}.VectorObject;
            end
-           obj.IFactor.setDirectedTo(variables);
+           obj.VectorObject.setDirectedTo(variables);
         end
+        
         function variables = get.DirectedTo(obj)
-            pvarvector = obj.IFactor.getDirectedToVariables();
+            pvarvector = obj.VectorObject.getDirectedToVariables();
             variables = wrapProxyObject(pvarvector);
-        end
-        
-        function name = get.QualifiedName(obj)
-            name = char(obj.IFactor.getQualifiedName());
-        end
-        
-        function name = get.Label(obj)
-            name = char(obj.IFactor.getLabel());
-        end
-        function name = get.QualifiedLabel(obj)
-            name = char(obj.IFactor.getQualifiedLabel());
-        end
-        function uuid = get.UUID(obj)
-            uuid = obj.IFactor.getUUID();
-        end
-        
-        function set.Name(obj,name)
-            obj.IFactor.setName(name);
-        end
-        function set.Label(obj,name)
-            obj.IFactor.setLabel(name);
-        end
-        
-        
-        function portNum = getPortNum(obj,var)
-            var = var.getSingleNode();
-            portNum = obj.IFactor.getPortNum(var)+1;
         end
         
         
         %get the combination table associated with this
+        
         function variables = get.Variables(obj)
-            vars = obj.IFactor.getConnectedVariableVector();
+            vars = obj.VectorObject.getVariables();
             
             variables = cell(vars.size(),1);
             
@@ -152,6 +59,19 @@ classdef Factor < handle
                 variables{i} = Variable(domain,'existing',var,indices);
             end
             
+            
+        end
+        
+    end
+    
+    
+    methods (Access = protected)
+        
+        function retval = createObject(obj,vectorObject,indices)
+            retval = Factor(vectorObject,indices);
+        end
+        
+        function verifyCanConcatenate(obj,otherObjects)
             
         end
     end

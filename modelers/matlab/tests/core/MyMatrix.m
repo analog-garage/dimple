@@ -33,6 +33,9 @@ classdef MyMatrix < MatrixObject
             obj.VectorObject.setValues(obj.pack(value));
         end
         
+        function retval = getObject(obj,index)
+            retval = obj(index);
+        end
         
     end
     methods (Access=protected)

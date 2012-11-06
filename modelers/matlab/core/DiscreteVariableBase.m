@@ -27,7 +27,7 @@ classdef DiscreteVariableBase < VariableBase
             
             if length(varargin) == 3 && strcmp('existing',varargin{1})
                 
-                indices = varargin{3};
+                VectorIndices = varargin{3};
                 varMat = varargin{2};
                 
                 
@@ -43,10 +43,10 @@ classdef DiscreteVariableBase < VariableBase
                 
                 varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
                 
-                indices = 0:(numEls-1);
+                VectorIndices = 0:(numEls-1);
                 
                 if (length(varargin) > 1)
-                    indices = reshape(indices,varargin{:});
+                    VectorIndices = reshape(VectorIndices,varargin{:});
                 end
                 
                 
@@ -54,7 +54,7 @@ classdef DiscreteVariableBase < VariableBase
             
             obj.Domain = domain;
             obj.VectorObject = varMat;
-            obj.Indices = indices;
+            obj.VectorIndices = VectorIndices;
         end
         
         
@@ -66,7 +66,7 @@ classdef DiscreteVariableBase < VariableBase
         function setInput(obj,b)
             
             d = obj.Domain.Elements;
-            v = obj.Indices;
+            v = obj.VectorIndices;
             
             
             if (numel(b) == numel(d))
@@ -104,16 +104,16 @@ classdef DiscreteVariableBase < VariableBase
         end
         
         function b = getInput(obj)
-            varids = reshape(obj.Indices,numel(obj.Indices),1);
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             input = obj.VectorObject.getInput(varids);
             
             %TODO: reuse this code from getBeliefs
-            b = zeros(numel(obj.Indices),length(obj.Domain.Elements));
+            b = zeros(numel(obj.VectorIndices),length(obj.Domain.Elements));
             
             for i = 1:size(input,1)
                 b(i,:) = input(i,:);
             end
-            v = obj.Indices;
+            v = obj.VectorIndices;
             
             %1x1 - Leave priors as is
             %1xN - Transpose
@@ -138,14 +138,10 @@ classdef DiscreteVariableBase < VariableBase
         
         function b = getBelief(obj)
             
-            v = obj.Indices;
+            v = obj.VectorIndices;
             varids = reshape(v,numel(v),1);
             
-            tmp = obj.VectorObject.getBeliefs(varids);
-            b = zeros(numel(v),length(obj.Domain.Elements));
-            for i = 1:size(tmp,1)
-                b(i,:) = tmp(i,:);
-            end
+            b = obj.VectorObject.getDiscreteBeliefs(varids);
             
             %1x1 - Leave priors as is
             %1xN - Transpose
@@ -169,7 +165,7 @@ classdef DiscreteVariableBase < VariableBase
         end
         
         function values = getValue(obj)
-            v = obj.Indices;
+            v = obj.VectorIndices;
             
             varIds = reshape(v,numel(v),1);
             

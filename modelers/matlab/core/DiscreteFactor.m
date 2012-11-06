@@ -17,52 +17,52 @@
 classdef DiscreteFactor < Factor
     
     properties
-        IDiscreteFactor;
         FactorTable;
         Belief;
-        Domain;
-        Indices;
         FullBelief;
+        Indices;
+        Domain;
     end
     
     methods
-        function obj = DiscreteFactor(discreteFactor)
-            obj@Factor(discreteFactor);
-            obj.IDiscreteFactor = discreteFactor;
+        function obj = DiscreteFactor(vectorObject,indices)
+            if nargin < 2
+                indices = 0:(vectorObject.size()-1);
+            end
+            obj@Factor(vectorObject,indices);
         end
-        
         
         function [retval] = get.FactorTable(obj)
-            table = obj.IDiscreteFactor.getFactorTable();
+            table = obj.VectorObject.getFactorTable();
             retval = FactorTable(table);
         end
-                
-        function belief = get.Belief(obj)
-            belief = obj.IFactor.getBelief();
-        end
         
+        function beliefs = get.Belief(obj)
+            beliefs = obj.VectorObject.getDiscreteBeliefs(obj.VectorIndices);
+            beliefs = obj.unpack(beliefs);
+        end
         function indices = get.Indices(obj)
-            indices = obj.IFactor.getPossibleBeliefIndices()+1;
+            var = obj.getSingleNode();
+            indices = var.getPossibleBeliefIndices(0)+1;
         end
-        
         function d = get.Domain(obj)
             indices = obj.Indices;
-            vars = cell(obj.IFactor.getConnectedVariables());
+            vars = obj.VectorObject.getVariables();
             
             d = cell(size(indices));
             
             for r = 1:size(indices,1)
                 for c = 1:size(indices,2)
-                    domain = cell(vars{c}.getDomain().getElements());
+                    domain = cell(vars.getSlice(c-1).getDomain().getElements());
                     d{r,c} = domain{indices(r,c)};
                 end
             end
             
-        end        
+        end
         
         function fullBelief = get.FullBelief(obj)
             
-            vars = cell(obj.IFactor.getConnectedVariables());
+            vars = cell(obj.VectorObject.getVariables());
             dims = zeros(1,numel(vars));
             for i = 1:length(vars)
                 v = vars{i};
@@ -88,6 +88,13 @@ classdef DiscreteFactor < Factor
             
             fullBelief=x;
             
+        end
+        
+    end
+    methods (Access = protected)
+        
+        function retval = createObject(obj,vectorObject,indices)
+            retval = DiscreteFactor(vectorObject,indices);
         end
     end
     

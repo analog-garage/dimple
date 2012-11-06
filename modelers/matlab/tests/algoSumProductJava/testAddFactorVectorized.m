@@ -21,10 +21,10 @@ function testAddFactorVectorized()
     b = Bit(10,2);
     fg = FactorGraph();
     f = fg.addFactorVectorized(indices,weights,{b,1});
-    fg.solve()
+    fg.solve();
     for i = 1:10
-       assertTrue(b(i,1).Factors{1} == f{i});
-       assertTrue(b(i,2).Factors{1} == f{i});
+       assertTrue(b(i,1).Factors{1} == f(i));
+       assertTrue(b(i,2).Factors{1} == f(i));
     end
 
     %Test the basic case
@@ -37,14 +37,14 @@ function testAddFactorVectorized()
 
     for i = 1:(N-1)
        f = b(i).Factors{end};
-       assertTrue(f==factors{i});
+       assertTrue(f==factors(i));
        next = f.Variables{end};
        assertTrue(next==b(i+1));
     end
     
-    factors{1}.FactorTable.Weights = [3 4 5];
+    factors(1).FactorTable.Weights = [3 4 5];
     for i = 2:(N-1)
-       assertEqual(factors{i}.FactorTable.Weights,[3 4 5]'); 
+       assertEqual(factors(i).FactorTable.Weights,[3 4 5]'); 
     end
 
     %Test the case where we're adding factors on one dimension
@@ -54,7 +54,7 @@ function testAddFactorVectorized()
 
     for i = 1:N
         for j = 1:3
-           assertTrue(b(i,j).Factors{1} == factors{i});
+           assertTrue(b(i,j).Factors{1} == factors(i));
         end
     end
     
@@ -65,7 +65,7 @@ function testAddFactorVectorized()
 
     for i = 1:N
         for j = 1:3
-           assertTrue(b(j,i).Factors{1} == factors{i});
+           assertTrue(b(j,i).Factors{1} == factors(i));
         end
     end
     
@@ -88,30 +88,20 @@ function testAddFactorVectorized()
     b = Real(N,1);
     factors = fg.addFactorVectorized(@add,a,b);
     for i = 1:N
-       assertTrue(a(i).Factors{1}==factors{i});
-       assertTrue(b(i).Factors{1}==factors{i});
+       assertTrue(a(i).Factors{1}==factors(i));
+       assertTrue(b(i).Factors{1}==factors(i));
     end
     
-    %Test nested graphs
-    b = Bit(3,1);
-    nfg = FactorGraph(b);
-    nfg.addFactor(@xorDelta,b);
-    fg = FactorGraph();
-    b = Bit(N,3);
-    graphs = fg.addFactorVectorized(nfg,{b,1});
-    for i = 1:N
-        for j = 1:3
-           assertTrue(b(i,j).Factors{1} == graphs{i}.Factors{1});
-        end
-    end
+
     
     %Test multiple dimensions
+    fg = FactorGraph();
     b = Bit(3,4,5);
     fs = fg.addFactorVectorized(@xorDelta,{b,[1 3]});
     index = 1;
     for i = 1:5
         for j = 1:3
-            f = fs{index};
+            f = fs(index);
             for k = 1:4
                 f2 = b(j,k,i).Factors{1};
                 assertTrue(f==f2);
@@ -121,6 +111,7 @@ function testAddFactorVectorized()
     end
     
     %Test multiple dimensions not vectorized
+    fg = FactorGraph();
     myfac = @(a) sum(a(:));
     b = Bit(2,2,2,2);
     fg = FactorGraph();
@@ -128,7 +119,7 @@ function testAddFactorVectorized()
     index = 1;
     for i = 1:2
         for j = 1:2
-            f = fs{index};
+            f = fs(index);
             index = index + 1;
             for m = 1:2
                 for n = 1:2
@@ -139,6 +130,19 @@ function testAddFactorVectorized()
         end
     end
     
+    
+        %Test nested graphs
+    b = Bit(3,1);
+    nfg = FactorGraph(b);
+    nfg.addFactor(@xorDelta,b);
+    fg = FactorGraph();
+    b = Bit(N,3);
+    graphs = fg.addFactorVectorized(nfg,{b,1});
+    for i = 1:N
+        for j = 1:3
+           assertTrue(b(i,j).Factors{1} == graphs(i).Factors{1});
+        end
+    end
     
 end
 

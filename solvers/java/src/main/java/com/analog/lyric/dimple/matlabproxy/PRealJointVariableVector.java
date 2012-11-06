@@ -16,43 +16,48 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.dimple.model.NodeId;
+import com.analog.lyric.dimple.model.RealJoint;
+import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.VariableBase;
+
 
 public class PRealJointVariableVector extends PVariableVector
 {
-	public PRealJointVariableVector(IPNode [] nodes)
+	public PRealJointVariableVector(Node [] nodes)
 	{
 		super(nodes);
 	}
 	
 	public PRealJointVariableVector(String varType, PRealJointDomain domain, int numElements) 
 	{
-		IPNode [] nodes = new IPNode[numElements];
+		Node [] nodes = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
 			//TODO: do we really want that here?
 			//int id = NodeId.getNext();
-			
-			PRealJointVariable v = new PRealJointVariable(varType,domain);
+			RealJoint v = new RealJoint(NodeId.getNext(),(RealJointDomain)domain.getModelerObject(),varType);
 			nodes[i] = v;
 		}
 		setNodes(nodes);
 	}
 	
-	public PRealJointVariableVector(PVariableBase [] variables)
+	public PRealJointVariableVector(VariableBase [] variables)
 	{
 		super(variables);
 	}
 		
-	public PRealJointVariable getRealJointVariable(int index)
+	private RealJoint getRealJointVariable(int index)
 	{
-		return (PRealJointVariable)getNode(index);
+		return (RealJoint)getModelerNode(index);
 	}
 	
 	public void setInput(int [] indices, Object input) 
 	{
 		for (int i = 0; i < indices.length; i++)
-			getRealJointVariable(indices[i]).setInput(input);
+			getRealJointVariable(indices[i]).setInputObject(input);
 	}
 
 	public Object [] getBeliefs(int [] indices) 
@@ -61,13 +66,13 @@ public class PRealJointVariableVector extends PVariableVector
 		
 		for (int i = 0; i < indices.length; i++)
 		{
-			beliefs[i] = getRealJointVariable(indices[i]).getBelief();
+			beliefs[i] = getRealJointVariable(indices[i]).getBeliefObject();
 		}
 		return beliefs;
 	}
 	
 	@Override
-	public PNodeVector createNodeVector(IPNode[] nodes) 
+	public PNodeVector createNodeVector(Node[] nodes) 
 	{
 		return new PRealJointVariableVector(nodes);
 	}

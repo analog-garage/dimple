@@ -1,4 +1,4 @@
-classdef FactorGraph < handle
+classdef FactorGraph < Node
     % The FactorGraph class represents a collection of variables and the
     % factors that relate these variables to one another.  Users create new
     % factors by calling addFactor, set inputs on the variables, and solve
@@ -39,28 +39,14 @@ classdef FactorGraph < handle
     properties(Access=public)
         TableFactory;
         %Retrieves the Solver object.
-        Solver;
-        %Set/get the name for the FactorGraph
-        Name;
-        ExplicitName;
-        QualifiedName;
-        %Set/get the label used for plotting the FactorGraph
-        Label;
-        QualifiedLabel;
-        UUID;
-        Score;
-        BetheFreeEnergy;
-        BetheEntropy;
-        InternalEnergy;
         %Set/get the number of iterations of the underlying solver.
         NumIterations;
         NestedGraphs;
-        IGraph;
-        Modeler;
         %Gets the Factors created by calling addFactor on the graph.
         Factors;
         FactorsFlat;
         FactorsTop;
+        Modeler;
         NonGraphFactors;
         NonGraphFactorsFlat;
         NonGraphFactorsTop;
@@ -75,18 +61,26 @@ classdef FactorGraph < handle
         Schedule;
         Scheduler;
         AdjacencyMatrix;
+        BetheFreeEnergy;
         FactorGraphStreams;
-        
     end
     methods
         function obj = FactorGraph(varargin)
+            obj@Node([],[]);
+            
             setFactorGraph(obj);
             if numel(varargin) == 2 && isequal(varargin{1},'nestedGraph')
-                obj.IGraph = varargin{2};
+                obj.VectorObject = varargin{2};
                 obj.TableFactory = FactorTableFactory();
-            elseif numel(varargin) == 2 && isequal(varargin{1},'igraph')
-                obj.IGraph = varargin{2};
+                obj.VectorIndices = 0:(obj.VectorObject.size()-1);
+            elseif numel(varargin) == 2 && isequal(varargin{1},'VectorObject')
+                obj.VectorObject = varargin{2};
                 obj.TableFactory = FactorTableFactory();
+                obj.VectorIndices = 0:(obj.VectorObject.size()-1);
+            elseif numel(varargin) == 3 && isequal(varargin{1},'VectorObject')
+                obj.VectorObject = varargin{2};
+                obj.TableFactory = FactorTableFactory();
+                obj.VectorIndices = varargin{3};
             else
                 
                 modeler = getModeler();
@@ -112,8 +106,13 @@ classdef FactorGraph < handle
                     VectorObject = modeler.createVariableVector('',[],0);
                 end
                 
-                obj.IGraph = modeler.createGraph(VectorObject);
+                obj.VectorObject = modeler.createGraph(VectorObject);
+                obj.VectorIndices = 0:(obj.VectorObject.size()-1);
             end
+        end
+        
+        function bfe = get.BetheFreeEnergy(obj)
+            bfe = obj.VectorObject.getBetheFreeEnergy();
         end
         
         function iters = get.NumIterations(obj)
@@ -122,7 +121,7 @@ classdef FactorGraph < handle
         
         function streams = get.FactorGraphStreams(obj)
             %TODO: wrap them
-            streams = cell(obj.IGraph.getFactorGraphStreams());
+            streams = cell(obj.VectorObject.getFactorGraphStreams());
             
             for i = 1:length(streams)
                 streams{i} = FactorGraphStream(streams{i});
@@ -134,41 +133,26 @@ classdef FactorGraph < handle
         end
         
         function initialize(obj)
-            obj.IGraph.initialize();
+            obj.VectorObject.initialize();
         end
         
-        function ie = get.InternalEnergy(obj)
-            ie = obj.IGraph.getInternalEnergy();
-        end
-        
-        function be = get.BetheEntropy(obj)
-            be = obj.IGraph.getBetheEntropy();
-        end
-        
-        function bfe = get.BetheFreeEnergy(obj)
-            bfe = obj.IGraph.getBetheFreeEnergy();
-        end
-        
-        function score = get.Score(obj)
-            score = obj.IGraph.getScore();
-        end
         
         %createTable is kept around for legacy.
-        function table = createTable(obj,indices,values,varargin)
-            table = FactorTable(indices,values,varargin{:});
+        function table = createTable(obj,VectorIndices,values,varargin)
+            table = FactorTable(VectorIndices,values,varargin{:});
         end
         
         
         function advance(obj)
-            obj.IGraph.advance();
+            obj.VectorObject.advance();
         end
         
         function reset(obj)
-            obj.IGraph.reset();
+            obj.VectorObject.reset();
         end
         
         function ret = hasNext(obj)
-            ret = obj.IGraph.hasNext();
+            ret = obj.VectorObject.hasNext();
         end
         
         
@@ -195,7 +179,7 @@ classdef FactorGraph < handle
                 end
             end
             
-            pfs = obj.IGraph.addRepeatedFactor(factor.IGraph,bufferSize,args);
+            pfs = obj.VectorObject.addRepeatedFactor(factor.VectorObject,bufferSize,args);
             factorStream = FactorGraphStream(pfs);
         end
         
@@ -207,17 +191,17 @@ classdef FactorGraph < handle
             if ~ iscell(factor)
                 factor = {factor};
             end
-            factor = obj.addFactor(factor{:},variables{:}); 
+            factor = obj.addFactor(factor{:},variables{:});
             factor.DirectedTo = directedTo;
         end
-                    
+        
         
         function retval = addFactorVectorized(obj,firstArg,varargin)
             %addFactorVectorized can be used to speed up the creation of
-            %large graphs with many factors.  
+            %large graphs with many factors.
             %
-            % As an example, the following code can be used in computer 
-            % vision algorithms to create factors between all adjacent 
+            % As an example, the following code can be used in computer
+            % vision algorithms to create factors between all adjacent
             % pixels:
             %
             % a = Discrete(domain,M,N);
@@ -240,8 +224,8 @@ classdef FactorGraph < handle
             
             %Get variables
             firstvars = obj.extractFirstArgs(varargin{:});
-            [firstFactor,isIndicesAndWeights] = obj.addFactor(firstArg,firstvars{:});
-            if isIndicesAndWeights
+            [firstFactor,isVectorIndicesAndWeights] = obj.addFactor(firstArg,firstvars{:});
+            if isVectorIndicesAndWeights
                 varargin = varargin(2:end);
             end
             
@@ -249,58 +233,43 @@ classdef FactorGraph < handle
             [finalvars,numvarsperfactor,numfactors] = obj.extractFinalArgs(varargin{:});
             
             if max(numfactors) > 1
-
+                
                 if isa(firstFactor,'FactorGraph')
-                    graph = firstFactor.IGraph;
-                    otherFactors = obj.IGraph.addGraphVectorized(graph,finalvars,numvarsperfactor,numfactors);
+                    graph = firstFactor.VectorObject;
+                    otherFactors = obj.VectorObject.addGraphVectorized(graph,finalvars,numvarsperfactor,numfactors);
                 else
-                    factor = firstFactor.IFactor;
-                    otherFactors = obj.IGraph.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
+                    factor = firstFactor.VectorObject;
+                    otherFactors = obj.VectorObject.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
                 end
-
-                retval = cell(length(otherFactors)+1,1);
-                retval{1} = firstFactor;
-                for i = 2:length(retval)
-                    retval{i} = wrapProxyObject(otherFactors(i-1));
-                end
+                
+                retval = wrapProxyObject(otherFactors);
+                retval = [firstFactor retval];
             end
         end
         
-        function [retval,isIndicesAndWeights] = addFactor(obj,firstArg,varargin)
+        function [retval,isVectorIndicesAndWeights] = addFactor(obj,firstArg,varargin)
             %Examples:
             % fg.addFactor(someFunction,var1,var2);
-            [retval, isIndicesAndWeights] = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
+            [retval, isVectorIndicesAndWeights] = obj.addFactorWithCacheFlag(true,firstArg,varargin{:});
         end
         
         function str = getAdjacencyString(obj)
-            str = obj.IGraph.getAdjacencyString();
+            str = obj.VectorObject.getAdjacencyString();
         end
         function str = getNodeString(obj)
-            str = obj.IGraph.getNodeString();
+            str = obj.VectorObject.getNodeString();
         end
         function str = getFullString(obj)
-            str = obj.IGraph.getFullString();
+            str = obj.VectorObject.getFullString();
         end
         
         function graphs = get.NestedGraphs(obj)
-            igraphs = cell(obj.IGraph.getNestedGraphs());
+            VectorObjects = cell(obj.VectorObject.getNestedGraphs());
             
-            graphs = cell(numel(igraphs),1);
+            graphs = cell(numel(VectorObjects),1);
             
-            for i = 1:numel(igraphs)
-                graphs{i} = FactorGraph('igraph',igraphs{i});
-            end
-        end
-        
-        function retval = eq(a,b)
-            retval = isequal(a,b);
-        end
-        
-        function retval = isequal(a,b)
-            if ~isa(b,'FactorGraph')
-                retval = false;
-            else
-                retval = isequal(a.IGraph.getId(),b.IGraph.getId());
+            for i = 1:numel(VectorObjects)
+                graphs{i} = FactorGraph('VectorObject',VectorObjects{i});
             end
         end
         
@@ -311,14 +280,14 @@ classdef FactorGraph < handle
             ifandt = cell(size(factorsAndTables));
             for i = 1:length(factorsAndTables)
                 if isa(factorsAndTables{i},'Factor')
-                    ifandt{i} = factorsAndTables{i}.IFactor;
+                    ifandt{i} = factorsAndTables{i}.VectorObject;
                 elseif isa(factorsAndTables{i},'FactorTable')
                     ifandt{i} = factorsAndTables{i}.ITable;
                 else
                     error('Second argument should be an array of FactorTables and/or Factors');
                 end
             end
-            obj.IGraph.baumWelch(ifandt,numRestarts,numSteps);
+            obj.VectorObject.baumWelch(ifandt,numRestarts,numSteps);
         end
         
         function estimateParameters(obj,factorsAndTables,numRestarts,numSteps,stepScaleFactor)
@@ -328,14 +297,14 @@ classdef FactorGraph < handle
             ifandt = cell(size(factorsAndTables));
             for i = 1:length(factorsAndTables)
                 if isa(factorsAndTables{i},'Factor')
-                    ifandt{i} = factorsAndTables{i}.IFactor;
+                    ifandt{i} = factorsAndTables{i}.VectorObject;
                 elseif isa(factorsAndTables{i},'FactorTable')
                     ifandt{i} = factorsAndTables{i}.ITable;
                 else
                     error('Second argument should be an array of FactorTables and/or Factors');
                 end
             end
-            obj.IGraph.estimateParameters(ifandt,numRestarts,numSteps,stepScaleFactor);
+            obj.VectorObject.estimateParameters(ifandt,numRestarts,numSteps,stepScaleFactor);
         end
         
         
@@ -367,7 +336,7 @@ classdef FactorGraph < handle
                 forceIncludeBoundaryVariables = false;
             end
             
-            tmp = obj.IGraph.getVariableVector(relativeNestingDepth,forceIncludeBoundaryVariables);
+            tmp = obj.VectorObject.getVariableVector(relativeNestingDepth,forceIncludeBoundaryVariables);
             variables = cell(tmp.size(),1);
             
             for i = 1:tmp.size()
@@ -390,7 +359,7 @@ classdef FactorGraph < handle
         end
         
         function factors = getNonGraphFactors(obj,relativeNestingDepth)
-            tmp = cell(obj.IGraph.getNonGraphFactors(relativeNestingDepth));
+            tmp = cell(obj.VectorObject.getNonGraphFactors(relativeNestingDepth));
             factors = cell(size(tmp));
             for i = 1:length(factors)
                 factors{i} = wrapProxyObject(tmp{i});
@@ -410,10 +379,10 @@ classdef FactorGraph < handle
         end
         
         function factors = getFactors(obj,relativeNestingDepth)
-            tmp = cell(obj.IGraph.getFactors(relativeNestingDepth));
-            factors = cell(size(tmp));
-            for i = 1:length(factors)
-                factors{i} = wrapProxyObject(tmp{i});
+            tmp = obj.VectorObject.getFactors(relativeNestingDepth);
+            factors = cell(tmp.size(),1);
+            for i = 1:tmp.size()
+                factors{i} = wrapProxyObject(tmp.getSlice(i-1));
             end
         end
         
@@ -429,24 +398,13 @@ classdef FactorGraph < handle
             factors = obj.getFactors(0);
         end
         
-        %{
-function factors = get.Factors(obj)
-            tmp = cell(obj.IGraph.getFactors());
-            factors = cell(size(tmp));
-            for i = 1:length(factors)
-                factors{i} = obj.wrapProxyObject(tmp{i});
-            end
-            
-        end
-        %}
-        
         function disp(obj)
             disp(obj.Label);
         end
         
         function ret = getFactorByName(obj, name)
             ret = [];
-            tmp = obj.IGraph.getFactorByName(name);
+            tmp = obj.VectorObject.getFactorByName(name);
             if tmp ~= 0
                 if tmp.isDiscrete()
                     ret = DiscreteFactor(tmp);
@@ -457,7 +415,7 @@ function factors = get.Factors(obj)
         end
         function ret = getFactorByUUID(obj, uuid)
             ret = [];
-            tmp = obj.IGraph.getFactorByUUID(uuid);
+            tmp = obj.VectorObject.getFactorByUUID(uuid);
             if tmp ~= 0
                 if tmp.isDiscrete()
                     ret = DiscreteFactor(tmp);
@@ -468,23 +426,15 @@ function factors = get.Factors(obj)
         end
         
         function ret = getVariableByName(obj, name)
-            ret = [];
-            tmp = obj.IGraph.getVariableVectorByName(name);
-            if tmp ~= 0
-                ret = Variable(tmp.getDomain().getElements(), 'existing', tmp, 0);
-            end
+            ret = wrapProxyObject(obj.VectorObject.getVariableByName(name));
         end
         function ret = getVariableByUUID(obj, uuid)
-            ret = [];
-            tmp = obj.IGraph.getVariableVectorByUUID(uuid);
-            if tmp ~= 0
-                ret = Variable(tmp.getDomain().getElements(), 'existing', tmp, 0);
-            end
+            ret = wrapProxyObject(obj.VectorObject.getVariableByUUID(uuid));
         end
         
         function ret = getGraphByName(obj, name)
             ret = [];
-            tmp = obj.IGraph.getGraphByName(name);
+            tmp = obj.VectorObject.getGraphByName(name);
             if tmp ~= 0
                 ret = FactorGraph('nestedGraph', tmp);
             end
@@ -492,7 +442,7 @@ function factors = get.Factors(obj)
         
         function ret = getGraphByUUID(obj, uuid)
             ret = [];
-            tmp = obj.IGraph.getGraphByUUID(uuid);
+            tmp = obj.VectorObject.getGraphByUUID(uuid);
             if tmp ~= 0
                 ret = FactorGraph('nestedGraph', tmp);
             end
@@ -503,7 +453,7 @@ function factors = get.Factors(obj)
                 relativeNestingDepth = intmax;
             end
             
-            istree = obj.IGraph.isTree(relativeNestingDepth);
+            istree = obj.VectorObject.isTree(relativeNestingDepth);
         end
         
         function istree = isTreeTop(obj)
@@ -521,19 +471,9 @@ function factors = get.Factors(obj)
             if nargin < 3
                 searchDepth = intmax;
             end
-            if isa(node,'VariableBase')
-                VectorObject = node.VectorObject;
-                if VectorObject.size() ~= 1
-                    error('only support passing single variable for now');
-                end
-                inode = VectorObject.getNode(0);
-            elseif isa(node,'Factor')
-                inode = node.IFactor;
-            else
-                error('Unrecognized type of first argument to depthFirstSearch.');
-            end
+            inode = node.VectorObject;
             
-            inodes = cell(obj.IGraph.depthFirstSearch(inode,searchDepth,relativeNestingDepth));
+            inodes = cell(obj.VectorObject.depthFirstSearch(inode,searchDepth,relativeNestingDepth));
             
             nodes = cell(size(inodes));
             for i = 1:numel(inodes)
@@ -563,10 +503,10 @@ function factors = get.Factors(obj)
                 % CTRL-C.  To account for the possibility of being
                 % interrupted, the onCleanup function terminateSolver makes
                 % sure the solver thread is terminated.
-                if (~obj.IGraph.getSolver().isSolverRunning())
+                if (~obj.VectorObject.isSolverRunning())
                     c = onCleanup(@() obj.terminateSolver());
-                    obj.IGraph.getSolver().startSolver(initialize);
-                    while obj.IGraph.getSolver().isSolverRunning();
+                    obj.VectorObject.startSolver(initialize);
+                    while obj.VectorObject.isSolverRunning();
                         pause(0.01);
                     end
                 else
@@ -576,7 +516,7 @@ function factors = get.Factors(obj)
                 % For backward compatability with solvers that don't
                 % support running in a separate thread
                 if (strcmp(Err.identifier,'MATLAB:noSuchMethodOrField'))
-                    obj.IGraph.solve(initialize);
+                    obj.VectorObject.solve(initialize);
                     %error('ack');
                 else
                     throw(Err);
@@ -588,30 +528,11 @@ function factors = get.Factors(obj)
         
         % Use the scheduler to create a schedule for this graph
         function setScheduler(obj, scheduler)
-            obj.IGraph.setScheduler(scheduler);
+            obj.VectorObject.setScheduler(scheduler);
         end
         
         function set.Scheduler(obj,scheduler)
             obj.setScheduler(scheduler);
-        end
-        
-        function varOrFactor = getVariableOrFactor(obj,tmp)
-            if isa(tmp,'VariableBase')
-                VectorObject = tmp.VectorObject;
-                %methods(VectorObject)
-                if VectorObject.size ~= 1
-                    error('can only pass a single variable to a schedule for now');
-                end
-                
-                var = VectorObject.getNode(0);
-                varOrFactor = var;
-            elseif isa(tmp,'Factor')
-                varOrFactor = tmp.IFactor;
-            elseif isa(tmp,'FactorGraph')
-                varOrFactor = tmp.IGraph;
-            else
-                error(['Unsupported type: ' class(tmp)]);
-            end
         end
         
         function set.Schedule(obj,schedule)
@@ -626,17 +547,20 @@ function factors = get.Factors(obj)
                     if length(tmp) ~= 2
                         error('expected a list of two elements if trying to specify an edge.');
                     end
-                    schedule{i} = {obj.getVariableOrFactor(tmp{1}),obj.getVariableOrFactor(tmp{2})};
+                    schedule{i} = {tmp{1}.VectorObject,tmp{2}.VectorObject};
                 else
-                    schedule{i} = obj.getVariableOrFactor(tmp);
+                    schedule{i} = tmp.VectorObject;
                 end
             end
             
-            obj.IGraph.setSchedule(schedule);
+            obj.VectorObject.setSchedule(schedule);
             
             %Pass down to FactorGraph
         end
         
+        function out = getFactorGraphDiffsByName(obj,input)
+           out = obj.VectorObject.getFactorGraphDiffsByName(input.VectorObject); 
+        end
         
         
         function result = join(obj,varargin)
@@ -654,19 +578,15 @@ function factors = get.Factors(obj)
         end
         
         function [newvar,equalsFactor] = split(obj,variable,varargin)
-            if (variable.VectorObject.size() ~= 1)
-                error('only support with one variable for now');
-            end
-            
-            v = variable.VectorObject.getNode(0);
+            v = variable.getSingleNode();
             ifactors = cell(size(varargin));
             
             for i = 1:numel(varargin)
                 tmp = varargin{i};
-                ifactors{i} = tmp.IFactor;
+                ifactors{i} = tmp.VectorObject;
             end
             
-            VectorObject = obj.IGraph.split(v,ifactors);
+            VectorObject = obj.VectorObject.split(v,ifactors);
             
             newvar = variable.createObject(VectorObject,0);
             equalsFactor = newvar.Factors{1};
@@ -919,7 +839,7 @@ function factors = get.Factors(obj)
         function ancestor = isAncestorOf(obj,node)
             pnode = [];
             if isa(node,'FactorGraph')
-                pnode = node.IGraph;
+                pnode = node.VectorObject;
             elseif isa(node,'Factor')
                 pnode = IFactor;
             else
@@ -930,8 +850,20 @@ function factors = get.Factors(obj)
                 pnode = VectorObject.getNode(0);
             end
             
-            ancestor = obj.IGraph.isAncestorOf(pnode);
+            ancestor = obj.VectorObject.isAncestorOf(pnode);
         end
+        
+        
+        
+        
+        function removeFactor(obj,factor)
+            obj.VectorObject.removeFactor(factor.VectorObject);
+        end
+        
+        function FileName = serializeToXML(obj, FileName, DirectoryName)
+            FileName = obj.VectorObject.serializeToXML(FileName, DirectoryName);
+        end
+        
         
         function setSolver(obj,solver,varargin)
             if ischar(solver)
@@ -940,64 +872,15 @@ function factors = get.Factors(obj)
                 solver = solver(varargin{:});
             end
             
-            obj.IGraph.setSolver(solver);
-        end
-        
-        function set.Solver(obj,solver)
-            %obj.IGraph.setSolver(solver);
-            obj.setSolver(solver);
-        end
-        
-        function ret = get.Solver(obj)
-            ret = obj.IGraph.getSolver();
-        end
-        
-        function removeFactor(obj,factor)
-            obj.IGraph.removeFactor(factor.IFactor);
-        end
-        
-        function FileName = serializeToXML(obj, FileName, DirectoryName)
-            FileName = obj.IGraph.serializeToXML(FileName, DirectoryName);
-        end
-        
-        function name = get.Name(obj)
-            %Gets the name for this Factor Graph.
-            name = char(obj.IGraph.getName());
-        end
-        
-        function name = get.ExplicitName(obj)
-            name = char(obj.IGraph.getExplicitName());
-        end
-        
-        function name = get.QualifiedName(obj)
-            name = char(obj.IGraph.getQualifiedName());
-        end
-        
-        function name = get.Label(obj)
-            name = char(obj.IGraph.getLabel());
-        end
-        function name = get.QualifiedLabel(obj)
-            name = char(obj.IGraph.getQualifiedLabel());
-        end
-        function uuid = get.UUID(obj)
-            uuid = obj.IGraph.getUUID();
-        end
-        
-        function set.Name(obj,name)
-            %Sets the name for this graph.
-            obj.IGraph.setName(name);
-        end
-        
-        function set.Label(obj,name)
-            obj.IGraph.setLabel(name);
+            obj.VectorObject.setSolver(solver);
         end
     end
     
     methods (Access = private)
         
         
-        function [retval, isIndicesAndWeights] = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
-            isIndicesAndWeights = 0;
+        function [retval, isVectorIndicesAndWeights] = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
+            isVectorIndicesAndWeights = 0;
             %scan arguments and, if any are streams, call addRepeatedFactor
             requiresRepeated = false;
             for i = 1:length(varargin)
@@ -1023,15 +906,15 @@ function factors = get.Factors(obj)
                     retval = obj.addTable(firstArg,varargin{:});
                 elseif isa(firstArg,'double')
                     if numel(varargin) < 1
-                        error('When adding a table with addFactor, user should specify both indices and values');
+                        error('When adding a table with addFactor, user should specify both VectorIndices and values');
                     end
                     
                     if isa(varargin{1},'double')
-                        isIndicesAndWeights = 1;
+                        isVectorIndicesAndWeights = 1;
                         if numel(varargin) < 2
                             error('need at least one variable');
                         end
-                        retval = obj.addTableFromIndicesAndValues(firstArg,varargin{1},{varargin{2:end}});
+                        retval = obj.addTableFromVectorIndicesAndValues(firstArg,varargin{1},{varargin{2:end}});
                     else
                         retval = obj.addTableFromValues(firstArg,varargin);
                         
@@ -1068,17 +951,11 @@ function factors = get.Factors(obj)
             
             
             for i = 1:length(nodes)
-                if isa(nodes{i},'Factor')
-                    nodes{i} = nodes{i}.IFactor;
-                elseif isa(nodes{i},'FactorGraph')
-                    nodes{i} = nodes{i}.IGraph;
-                else
-                    nodes{i} = nodes{i}.VectorObject;
-                end
+                nodes{i} = nodes{i}.VectorObject;
             end
             
             
-            A = double(obj.IGraph.getAdjacencyMatrix(nodes));
+            A = double(obj.VectorObject.getAdjacencyMatrix(nodes));
             
         end
         
@@ -1114,21 +991,13 @@ function factors = get.Factors(obj)
         
         function factor = joinFactors(obj,varargin)
             
-            
-            
             factors = cell(length(varargin),1);
             
             for i = 1:length(varargin)
-                factors{i} = varargin{i}.IFactor;
+                factors{i} = varargin{i}.VectorObject;
             end
             
-            
-            factor = obj.IGraph.joinFactors(factors);
-            if factor.isDiscrete()
-                factor = DiscreteFactor(factor);
-            else
-                factor = Factor(factor);
-            end
+            factor = wrapProxyObject(obj.VectorObject.joinFactors(factors));
         end
         
         function var = joinVariables(obj,varargin)
@@ -1139,16 +1008,16 @@ function factors = get.Factors(obj)
                 if varargin{i}.VectorObject.size() ~= 1
                     error('vectors not supported');
                 end
-                tmp = varargin{i}.VectorObject.getNode(0);
+                tmp = varargin{i}.VectorObject.getSlice(0);
                 vars{i} = tmp;
             end
             
-            %call join on igraph
-            tmpVar = obj.IGraph.joinVariables(vars);
+            %call join on VectorObject
+            tmpVar = obj.VectorObject.joinVariables(vars);
             
             %TODO: figure out domain differently
             if tmpVar.isDiscrete()
-                var = Discrete(cell(tmpVar.getNode(0).getDomain().getElements()),'existing',tmpVar,0);
+                var = Discrete(cell(tmpVar.getSlice(0).getDomain().getElements()),'existing',tmpVar,0);
             else
                 error('not yet supported');
                 %var = Real(tmpVar.getDomain(),'existing',tmpVar,1);
@@ -1159,7 +1028,7 @@ function factors = get.Factors(obj)
         function retval = addGraph(parentGraph,childGraph,varargin)
             
             VectorObject = parentGraph.getVarVector(varargin{:});
-            retval = FactorGraph('nestedGraph',parentGraph.IGraph.addGraph(childGraph.IGraph,VectorObject));
+            retval = FactorGraph('nestedGraph',parentGraph.VectorObject.addGraph(childGraph.VectorObject,VectorObject));
         end
         
         function retval = addTable(obj,table,varargin)
@@ -1185,8 +1054,8 @@ function factors = get.Factors(obj)
             end
             
             
-            func = obj.IGraph.createFactor(table.ITable,VectorObject);
-            retval = DiscreteFactor(func);
+            func = obj.VectorObject.createFactor(table.ITable,VectorObject);
+            retval = wrapProxyObject(func);
         end
         
         
@@ -1197,8 +1066,8 @@ function factors = get.Factors(obj)
             %FactorGraph
             retval = [];
             funcName = func2str(funcHandle);
-            customFuncExists = obj.IGraph.customFactorExists(funcName);
-            %customFuncExists = obj.IGraph.getSolver().customFactorExists(obj.IGraph,funcName);
+            customFuncExists = obj.VectorObject.customFactorExists(funcName);
+            %customFuncExists = obj.VectorObject.getSolver().customFactorExists(obj.VectorObject,funcName);
             
             if customFuncExists
                 
@@ -1211,7 +1080,7 @@ function factors = get.Factors(obj)
                     end
                 end
                 
-                retval = Factor(obj.IGraph.createCustomFactor(funcName,varargin));
+                retval = Factor(obj.VectorObject.createCustomFactor(funcName,varargin),0);
                 
             else
                 
@@ -1242,12 +1111,12 @@ function factors = get.Factors(obj)
                         
                         %allocate enough domains for each element in the
                         %VectorObject
-                        domains{i} = cell(size(varargin{i}.Indices));
+                        domains{i} = cell(size(varargin{i}.VectorIndices));
                         
                         
-                        ind = varargin{i}.Indices;
+                        ind = varargin{i}.VectorIndices;
                         
-                        %for each entry in the indices
+                        %for each entry in the VectorIndices
                         for j = 1:numel(ind)
                             
                             %retrieve the domain
@@ -1285,9 +1154,9 @@ function factors = get.Factors(obj)
                         if isempty(VectorObject)
                             VectorObject = varargin{i}.VectorObject;
                         else
-                            indices = [0:VectorObject.size()-1 0:varargin{i}.VectorObject.size()-1];
-                            VectorObjectIndices = [zeros(1,VectorObject.size()) ones(1,varargin{i}.VectorObject.size())];
-                            VectorObject = VectorObject.concat({VectorObject varargin{i}.VectorObject},VectorObjectIndices,indices);
+                            VectorIndices = [0:VectorObject.size()-1 0:varargin{i}.VectorObject.size()-1];
+                            VectorObjectVectorIndices = [zeros(1,VectorObject.size()) ones(1,varargin{i}.VectorObject.size())];
+                            VectorObject = VectorObject.concat({VectorObject varargin{i}.VectorObject},VectorObjectVectorIndices,VectorIndices);
                         end
                     end
                     
@@ -1300,7 +1169,7 @@ function factors = get.Factors(obj)
                         domains,constants,funcHandle);
                 end
                 
-                retval = DiscreteFactor(obj.IGraph.createFactor(table{3},VectorObject));
+                retval = DiscreteFactor(obj.VectorObject.createFactor(table{3},VectorObject),0);
             end
         end
         
@@ -1316,7 +1185,7 @@ function factors = get.Factors(obj)
             end
             
             
-            retval = Factor(obj.IGraph.createFactor(factorFunction,varargin));
+            retval = Factor(obj.VectorObject.createFactor(factorFunction,varargin));
         end
         
         
@@ -1335,9 +1204,9 @@ function factors = get.Factors(obj)
         end
         
         
-        function retval = addTableFromIndicesAndValues(obj,indices,values,variables)
+        function retval = addTableFromVectorIndicesAndValues(obj,VectorIndices,values,variables)
             domains = obj.getDomainsFromVariableList(variables);
-            table = FactorTable(indices,values,domains{:});
+            table = FactorTable(VectorIndices,values,domains{:});
             retval = obj.addTable(table,variables{:});
         end
         
@@ -1370,8 +1239,8 @@ function factors = get.Factors(obj)
         % terminates normally, so it only interrupts the solver if it is
         % still running.
         function terminateSolver(obj)
-            if obj.IGraph.getSolver().isSolverRunning();
-                obj.IGraph.getSolver().interruptSolver();
+            if obj.VectorObject.isSolverRunning();
+                obj.VectorObject.interruptSolver();
             end
         end
         
@@ -1409,7 +1278,7 @@ function factors = get.Factors(obj)
             end
             
             %Permute the variable
-            var = arg.createObject(arg.VectorObject,permute(arg.Indices,permuteorder));
+            var = arg.createObject(arg.VectorObject,permute(arg.VectorIndices,permuteorder));
             
             %Record the number of dimensions we use in the addFactor
             %function.
@@ -1418,11 +1287,11 @@ function factors = get.Factors(obj)
             %figure out the number of variables we pass to addFactor.
             tmp = size(arg);
             tmp(dimensions) = 1;
-            numvarstokeep = prod(tmp);            
+            numvarstokeep = prod(tmp);
             
-
+            
         end
-
+        
         %used by addFactorVectorized.  For a single variable, re-order the
         %dimensions of the variable, remove the first variable if there's
         %more than one (since we've already called addFactor for that, and
@@ -1445,7 +1314,7 @@ function factors = get.Factors(obj)
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
                 [newarg,~,numvars] = obj.reorderArg(input{1},input{2});
                 if numvars < prod(size(newarg))
-                   newarg = newarg(numvars+1:end); 
+                    newarg = newarg(numvars+1:end);
                 end
                 arg = newarg.VectorObject;
                 numvarsperfactor = numvars;
@@ -1454,7 +1323,7 @@ function factors = get.Factors(obj)
                 arg = input;
                 numvarsperfactor = 0;
                 numfactors = 0;
-            end            
+            end
         end
         
         %We extract the first variable of every variable vector in order to
@@ -1464,11 +1333,11 @@ function factors = get.Factors(obj)
                 arg = input(1);
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
                 [newarg,dimstokeep] = obj.reorderArg(input{1},input{2});
-                indices = num2cell(ones(1,length(size(newarg))),1);
+                VectorIndices = num2cell(ones(1,length(size(newarg))),1);
                 for i = 1:dimstokeep
-                    indices{i} = ':';
+                    VectorIndices{i} = ':';
                 end
-                arg = newarg(indices{:});
+                arg = newarg(VectorIndices{:});
             else
                 arg = input;
             end
@@ -1479,7 +1348,7 @@ function factors = get.Factors(obj)
             firstvars = cell(size(varargin));
             for i = 1:length(firstvars)
                 firstvars{i} = obj.extractFirstArg(varargin{i});
-            end            
+            end
         end
         
         %Extract the remaining variables (after the extarctFirstArgs) to
@@ -1494,6 +1363,20 @@ function factors = get.Factors(obj)
             end
         end
         
+        
+    end
+    
+    methods(Access=protected)
+        function setSolverInternal(obj,solver)
+            obj.setSolver(solver);
+        end
+        function retval = createObject(obj,vectorObject,VectorIndices)
+            retval = FactorGraph('VectorObject',vectorObject,VectorIndices);
+        end
+        
+        function verifyCanConcatenate(obj,otherObjects)
+            
+        end
         
     end
 end

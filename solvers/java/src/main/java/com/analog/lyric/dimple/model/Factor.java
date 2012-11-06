@@ -187,10 +187,6 @@ public class Factor extends FactorBase implements Cloneable
 		return f;
 	}
 
-	public double [] getBelief() 
-	{
-		return (double[])_solverFactor.getBelief();
-	}
 
 	/*
 	public int[][] getPossibleBeliefIndices() 

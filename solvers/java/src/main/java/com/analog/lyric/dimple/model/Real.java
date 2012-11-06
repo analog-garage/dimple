@@ -64,7 +64,7 @@ public class Real extends VariableBase
 		_input = input;
 
 	}
-
+	
 //	public Real(int id, RealDomain [] domains, Object input, String modelerClassName) 
 //	{
 //		super(id,modelerClassName,domains);

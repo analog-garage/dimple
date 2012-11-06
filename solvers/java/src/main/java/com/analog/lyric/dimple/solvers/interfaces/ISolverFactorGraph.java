@@ -29,7 +29,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void iterate(int numIters);
 	public boolean isSolverRunning();
 	public void interruptSolver();
-	public void startSolver();
+	public void startSolver(boolean initialize);
 	public void setNumIterations(int numIterations);
 	public int getNumIterations();
 	public double getScore();

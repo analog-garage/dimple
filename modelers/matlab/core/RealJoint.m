@@ -16,11 +16,6 @@
 
 classdef RealJoint < VariableBase
     
-    properties
-        Input;
-        Belief;
-        Value;
-    end
     
     methods
         function obj = RealJoint(varargin)
@@ -33,7 +28,7 @@ classdef RealJoint < VariableBase
             if length(varargin) == 4 && strcmp('existing',varargin{2})
                 obj.Domain = varargin{1};
                 obj.VectorObject = varargin{3};
-                obj.Indices = varargin{4};
+                obj.VectorIndices = varargin{4};
             else
                 
                 if numel(varargin) ~= 1
@@ -45,24 +40,33 @@ classdef RealJoint < VariableBase
                 modeler = getModeler();
                 varMat = modeler.createRealJointVariableVector(class(obj),domain.IDomain,numEls);
                 obj.VectorObject = varMat;
-                obj.Indices = 0;
+                obj.VectorIndices = 0;
             end
             
         end
         
-        function x = get.Value(obj)
+    end
+    
+    methods (Access=protected)
+        
+        function var = createObject(obj,varMat,VectorIndices)
+            var = RealJoint(obj.Domain,'existing',varMat,VectorIndices);
+        end
+        
+        
+        function x = getValue(obj)
             error('not implemented');
         end
         
-        function x = get.Input(obj)
+        function x = getInput(obj)
             error('not implemented');
         end
-        function b = get.Belief(obj)
+        function b = getBelief(obj)
             sz = size(obj);
             
             b = cell(sz);
             
-            a = cell(obj.VectorObject.getBeliefs(obj.Indices));
+            a = cell(obj.VectorObject.getBeliefs(obj.VectorIndices));
             
             if prod(sz) == 1
                 m = MultivariateMsg(0,0);
@@ -77,8 +81,8 @@ classdef RealJoint < VariableBase
             end
         end
         
-        function set.Input(obj,input)
-            v = obj.Indices;
+        function setInput(obj,input)
+            v = obj.VectorIndices;
             
             if isa(input,'Msg')
                 input = input.IMsg;
@@ -87,15 +91,6 @@ classdef RealJoint < VariableBase
             varids = reshape(v,numel(v),1);
             obj.VectorObject.setInput(varids,input);
         end
-    end
-    
-    methods (Access=protected)
-        
-        function var = createObject(obj,varMat,indices)
-            var = RealJoint(obj.Domain,'existing',varMat,indices);
-        end
-        
-        
         
     end
     

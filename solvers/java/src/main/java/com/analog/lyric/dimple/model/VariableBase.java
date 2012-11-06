@@ -63,6 +63,7 @@ public abstract class VariableBase extends Node implements Cloneable
 //		_domain = domains;
 //	}
 
+	
 	@Override
 	public final VariableBase asVariable()
 	{

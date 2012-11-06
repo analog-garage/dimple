@@ -15,11 +15,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef Real < VariableBase
-    properties
-        Input;
-        Belief;
-        Value;
-    end
     methods
         function obj = Real(varargin)
             obj@VariableBase([],[]);
@@ -29,7 +24,7 @@ classdef Real < VariableBase
             if length(varargin) == 4 && strcmp('existing',varargin{2})
                 obj.Domain = varargin{1};
                 obj.VectorObject = varargin{3};
-                obj.Indices = varargin{4};
+                obj.VectorIndices = varargin{4};
             else
                 
                 if (numArgs == 0)
@@ -82,10 +77,10 @@ classdef Real < VariableBase
                 
                 obj.VectorObject = VectorObject;
                 
-                obj.Indices = 0:(numEls-1);
+                obj.VectorIndices = 0:(numEls-1);
                 
                 if (length(dimArgs) > 1)
-                    obj.Indices = reshape(obj.Indices,dimArgs{:});
+                    obj.VectorIndices = reshape(obj.VectorIndices,dimArgs{:});
                 end
                 obj.Input = input;
                 
@@ -96,17 +91,26 @@ classdef Real < VariableBase
         
         
         
-        function set.Input(obj,factorFunction)
-            v = obj.Indices;
+        
+    end
+    
+    methods (Access=protected)
+        function var = createObject(obj,vectorObject,VectorIndices)
+            var = Real(obj.Domain,'existing',vectorObject,VectorIndices);
+        end
+        
+        
+        function setInput(obj,factorFunction)
+            v = obj.VectorIndices;
             varids = reshape(v,numel(v),1);
             obj.VectorObject.setInput(varids,factorFunction);
             
         end
-        function retval = get.Input(obj)
-            varids = reshape(obj.Indices,numel(obj.Indices),1);
+        function retval = getInput(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             b = cell(obj.VectorObject.getInput(varids));
             
-            v = obj.Indices;
+            v = obj.VectorIndices;
             
             %1x1 - Leave priors as is
             %1xN - Transpose
@@ -129,12 +133,12 @@ classdef Real < VariableBase
                 retval = reshape(b,sz);
             end
         end
-        function b = get.Belief(obj)
+        function b = getBelief(obj)
             sz = size(obj);
             
             b = cell(sz);
             
-            a = cell(obj.VectorObject.getBeliefs(obj.Indices));
+            a = cell(obj.VectorObject.getBeliefs(obj.VectorIndices));
             
             if prod(sz) == 1
                 b = a{1};
@@ -145,17 +149,9 @@ classdef Real < VariableBase
             end
         end
         
-        function v = get.Value(obj)
+        function v = getValue(obj)
             error('not implemented');
         end
-        
-    end
-    
-    methods (Access=protected)
-        function var = createObject(obj,vectorObject,indices)
-            var = Real(obj.Domain,'existing',vectorObject,indices);
-        end
-        
     end
     
     

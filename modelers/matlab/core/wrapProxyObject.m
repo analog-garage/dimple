@@ -15,14 +15,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function result = wrapProxyObject(proxyObject)
-    if proxyObject.isGraph()
-
-        result = FactorGraph('igraph',proxyObject);
+    if isempty(proxyObject)
+        result = [];
+    elseif proxyObject.isGraph()
+        result = FactorGraph('VectorObject',proxyObject);
     elseif proxyObject.isFactor()
         if proxyObject.isDiscrete()
-            result = DiscreteFactor(proxyObject);
+            result = DiscreteFactor(proxyObject,0:(proxyObject.size()-1));
         else
-            result = Factor(proxyObject);
+            result = Factor(proxyObject,0:(proxyObject.size()-1));
         end
 
     elseif proxyObject.isVariable()

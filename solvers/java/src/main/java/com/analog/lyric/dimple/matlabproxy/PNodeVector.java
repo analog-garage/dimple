@@ -19,20 +19,22 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class PNodeVector 
 {
-	private IPNode [] _nodes = new IPNode[0];
+	private Node [] _nodes = new Node[0];
 	
 	public PNodeVector() {}
 
-	public PNodeVector(IPNode [] nodes)
+	public PNodeVector(Node [] nodes)
 	{
 		_nodes = nodes.clone();
 	}
 
-	public void setNodes(IPNode [] nodes)
+	public void setNodes(Node [] nodes)
 	{
 		_nodes = nodes;
 	}
@@ -44,7 +46,7 @@ public abstract class PNodeVector
 
 	public PNodeVector concat(PNodeVector [] varVectors, int [] varVectorIndices, int [] varIndices)
 	{
-		IPNode [] nodes = new IPNode[varIndices.length];
+		Node [] nodes = new Node[varIndices.length];
 		for (int i = 0; i < varIndices.length; i++)
 		{
 			nodes[i] = varVectors[varVectorIndices[i]]._nodes[varIndices[i]];
@@ -53,7 +55,7 @@ public abstract class PNodeVector
 
 	}
 	
-	public abstract PNodeVector createNodeVector(IPNode [] nodes);
+	public abstract PNodeVector createNodeVector(Node [] nodes);
 	
 	public PNodeVector concat(Object [] varVectors)
 	{
@@ -62,7 +64,7 @@ public abstract class PNodeVector
 	
 	public PNodeVector concat(PNodeVector [] varVectors)
 	{
-		ArrayList<IPNode> variables = new ArrayList<IPNode>();
+		ArrayList<Node> variables = new ArrayList<Node>();
 		for (int i = 0; i < varVectors.length; i++)
 		{
 			for (int j =0; j < varVectors[i].size(); j++)
@@ -70,7 +72,7 @@ public abstract class PNodeVector
 				variables.add(varVectors[i]._nodes[j]);
 			}
 		}
-		IPNode [] retval = new IPNode[variables.size()];
+		Node [] retval = new Node[variables.size()];
 		variables.toArray(retval);
 		
 		return createNodeVector(retval);
@@ -86,7 +88,7 @@ public abstract class PNodeVector
 	
 	public PNodeVector getSlice(int [] indices)
 	{
-		IPNode [] variables = new IPNode[indices.length];
+		Node [] variables = new Node[indices.length];
 		for (int i = 0; i < indices.length; i++)
 		{
 			variables[i] = _nodes[indices[i]];
@@ -94,11 +96,11 @@ public abstract class PNodeVector
 		return createNodeVector(variables);
 	}
 	
-	public IPNode getNode(int index)
+	public Node getModelerNode(int index)
 	{
 		return _nodes[index];
 	}
-	public IPNode [] getNodes()
+	Node [] getModelerNodes()
 	{
 		return _nodes;
 	}
@@ -107,67 +109,6 @@ public abstract class PNodeVector
 	{
 		return _nodes.length;
 	}
-	
-	/*
-	//package-private
-	IPNode [] getNodeArray() 
-	{
-		IPNode[] vars = this.getNodes();
-		
-		VariableBase [] realVars;
-		
-		if (_nodes.length == 0)
-			realVars = new VariableBase[0];
-		else if (vars[0] instanceof PRealVariable)								// Assumes all variables are of the same class
-			realVars = new Real[vars.length];
-		else if (vars[0] instanceof PDiscreteVariable)
-			realVars = new Discrete[vars.length];
-		else if (vars[0] instanceof PRealJointVariable)
-			realVars = new RealJoint[vars.length];
-		else
-			throw new DimpleException("ack!");
-		
-		for (int i = 0; i < realVars.length; i++)
-		{
-			realVars[i] = vars[i].getModelerObject();
-		}
-		return realVars;
-	}
-	*/
-	
-	/*
-	public String getModelerClassName() 
-	{
-		VariableBase b;
-		b.getModelerClassName();
-		
-		if (_nodes.length > 0)
-			return _nodes[0].getModelerObject().getM
-		else
-			return "";
-	}
-	*/
-	
-	//TODO: support all getFactors variants
-	/*
-	public PFactorBase [] getFactors(int relativeNestingDepth) 
-	{
-		ArrayList<PFactorBase> retval = new ArrayList<PFactorBase>();
-		
-		for (VariableBase v : getVariableArray())
-		{
-			FactorBase [] funcs = v.getFactors(relativeNestingDepth);
-			PFactorBase [] tmp = PHelpers.convertToFactors(funcs);
-			for (PFactorBase f : tmp)
-				retval.add(f);
-		}
-		
-		PFactorBase [] realRetVal = new PFactorBase[retval.size()];
-		retval.toArray(realRetVal);
-		return realRetVal;
-		
-	}
-	*/
 	
 	public int [] getIds()
 	{
@@ -210,7 +151,7 @@ public abstract class PNodeVector
 	
 	public void setName(String name) 
 	{
-		for (IPNode variable : _nodes)
+		for (Node variable : _nodes)
 			variable.setName(name);
 	}
 	
@@ -221,10 +162,10 @@ public abstract class PNodeVector
 			_nodes[i].setName(String.format("%s_vv%d", baseName, i));
 		}
 	}
-
+	
 	public void setLabel(String name) 
 	{
-		for (IPNode variable : _nodes)
+		for (Node variable : _nodes)
 			variable.setLabel(name);		
 	}
 	
@@ -283,13 +224,35 @@ public abstract class PNodeVector
 		return retval;
 	}
 	
-	public Port [][] getPorts()
+	Port [][] getModelerPorts()
 	{
 		Port [][] ports = new Port[_nodes.length][];
+		
 		for (int i = 0; i < _nodes.length; i++)
 		{
-			ports[i] = _nodes[i].getPorts();
+			ArrayList<Port> tmp = _nodes[i].getPorts();
+			ports[i] = new Port[tmp.size()];
+			tmp.toArray(ports[i]);
 		}
+		return ports;
+	}
+
+	public int getPortNum(PNodeVector nodeVector)
+	{
+		Node thisNode = PHelpers.convertToNode(this);
+		Node n = PHelpers.convertToNode(nodeVector);
+		
+		int num = thisNode.getPortNum(n);
+		return num;
+
+	}
+	
+	public Port [] getPorts(int index)
+	{
+		Port [] ports;
+		ArrayList<Port> alports = getModelerNode(index).getPorts();
+		ports = new Port[alports.size()];
+		alports.toArray(ports);
 		return ports;
 	}
 	
@@ -299,13 +262,32 @@ public abstract class PNodeVector
 			_nodes[i].update();
 	}
 	
+	public void updateEdge(PNodeVector nodeVector)
+	{
+		updateEdge(getPortNum(nodeVector));
+	}
+	
 	public void updateEdge(int portNum) 
 	{
 		for (int i = 0; i < _nodes.length; i++)
 			_nodes[i].updateEdge(portNum);
 	}
 	
+	public ISolverNode getSolver(int index)
+	{
+		Node n = getModelerNode(index);
+		return n.getSolver();
+	}
 	
+	public ISolverNode [] getSolvers()
+	{
+		ISolverNode[] retval = new ISolverNode[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getSolver();
+		}
+		return retval;
+	}
 	
 	public abstract boolean isVariable();
 	public abstract boolean isFactor();
