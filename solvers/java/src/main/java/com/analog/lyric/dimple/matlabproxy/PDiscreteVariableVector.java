@@ -29,9 +29,14 @@ import com.analog.lyric.dimple.model.NodeId;
  */
 public class PDiscreteVariableVector extends PVariableVector
 {
+	public PDiscreteVariableVector(IPNode [] nodes)
+	{
+		super(nodes);
+	}
+	
 	public PDiscreteVariableVector(String varType, PDiscreteDomain domain, int numElements) 
 	{
-		_variables = new PDiscreteVariable[numElements];
+		IPNode [] nodes  = new IPNode[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
@@ -39,8 +44,10 @@ public class PDiscreteVariableVector extends PVariableVector
 			int id = NodeId.getNext();
 
 			Discrete v = new Discrete(id, (DiscreteDomain)domain.getModelerObject(),varType);
-			_variables[i] = new PDiscreteVariable(v);
+			nodes[i] = new PDiscreteVariable(v);
 		}
+		
+		setNodes(nodes);
 	}
 	
 	public PDiscreteVariableVector(PVariableBase [] variables)
@@ -48,12 +55,17 @@ public class PDiscreteVariableVector extends PVariableVector
 		super(variables);
 	}
 	
+	PDiscreteVariable getDiscreteVariable(int index)
+	{
+		return (PDiscreteVariable)getNode(index);
+	}
+	
 	public void setInput(int [] indices,double [][] inputs) 
 	{		
 		for (int i = 0; i < indices.length; i++)
 		{
 			int index = indices[i];
-			((PDiscreteVariable)_variables[index]).setInput(inputs[i]);
+			getDiscreteVariable(index).setInput(inputs[i]);
 		}
 	}
 	
@@ -63,20 +75,25 @@ public class PDiscreteVariableVector extends PVariableVector
 		Object [] beliefs = new Object[indices.length];
 		
 		for (int i = 0; i < indices.length; i++)
-		{
-			beliefs[i] = ((PDiscreteVariable)_variables[indices[i]]).getBelief();
-		}
+			beliefs[i] = getDiscreteVariable(indices[i]).getBelief();
 		return beliefs;
 	}
 
 	
 	public double [][] getInput(int [] indices) 
 	{
-		double [][] output = new double[_variables.length][];
+		double [][] output = new double[size()][];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = (double[])((PDiscreteVariable)_variables[indices[i]]).getInput();
+			output[i] = (double[])getDiscreteVariable(indices[i]).getInput();
 		
 		return output;
 	}
 
+	
+	@Override
+	public PNodeVector createNodeVector(IPNode[] nodes) 
+	{
+		return new PDiscreteVariableVector(nodes);
+	}
+	
 }

@@ -54,7 +54,7 @@ public class PHelpers
 
 	public static PVariableVector convertToVariableVector(VariableList vars) 
 	{
-
+		
 		PVariableBase [] ivars = new PVariableBase[vars.size()];
 		int i = 0;
 		for (VariableBase v : vars)
@@ -72,11 +72,17 @@ public class PHelpers
 		
 		if (ivars.length > 0)
 			if (!ivars[0].isDiscrete())
+			{
 				return new PRealVariableVector(ivars);
+			}
 			else
+			{
 				return new PDiscreteVariableVector(ivars);
+			}
 		else
+		{
 			return new PVariableVector();
+		}
 		
 	}
 	
@@ -139,6 +145,15 @@ public class PHelpers
 		return retval;
 	}
 
+	public static PNodeVector [] convertObjectArrayToNodeVectorArray(Object [] objects)
+	{
+		PNodeVector [] vars = new PNodeVector[objects.length];
+		for (int i = 0; i < objects.length; i++)
+			vars[i] = (PNodeVector)objects[i];
+		return vars;
+	}
+	
+	
 	public static PVariableVector [] convertObjectArrayToVariableVectorArray(Object [] objects)
 	{
 		PVariableVector [] vars = new PVariableVector[objects.length];
@@ -225,8 +240,8 @@ public class PHelpers
 		return newvars;
 
 	}
-	
-	public static VariableBase[] 		convertToMVariables(PVariableBase [] variables)
+
+	public static VariableBase[] convertToMVariables(IPNode [] variables)
 	{
 		VariableBase [] vbs = new VariableBase[variables.length];
 		for (int i = 0; i < variables.length; i++)
@@ -234,7 +249,9 @@ public class PHelpers
 			vbs[i] = (VariableBase) variables[i].getModelerObject();    		
 		}
 		return vbs;
+		
 	}
+	
 
 	public static PVariableBase convertToVariable(VariableBase v)
 	{

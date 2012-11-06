@@ -1,0 +1,314 @@
+/*******************************************************************************
+*   Copyright 2012 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
+package com.analog.lyric.dimple.matlabproxy;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+import com.analog.lyric.dimple.model.Port;
+
+public abstract class PNodeVector 
+{
+	private IPNode [] _nodes = new IPNode[0];
+	
+	public PNodeVector() {}
+
+	public PNodeVector(IPNode [] nodes)
+	{
+		_nodes = nodes.clone();
+	}
+
+	public void setNodes(IPNode [] nodes)
+	{
+		_nodes = nodes;
+	}
+	
+	public PNodeVector concat(Object [] varVectors, int [] varVectorIndices, int [] varIndices)
+	{
+		return concat(PHelpers.convertObjectArrayToNodeVectorArray(varVectors),varVectorIndices,varIndices);
+	}
+
+	public PNodeVector concat(PNodeVector [] varVectors, int [] varVectorIndices, int [] varIndices)
+	{
+		IPNode [] nodes = new IPNode[varIndices.length];
+		for (int i = 0; i < varIndices.length; i++)
+		{
+			nodes[i] = varVectors[varVectorIndices[i]]._nodes[varIndices[i]];
+		}
+		return createNodeVector(nodes);
+
+	}
+	
+	public abstract PNodeVector createNodeVector(IPNode [] nodes);
+	
+	public PNodeVector concat(Object [] varVectors)
+	{
+		return concat(PHelpers.convertObjectArrayToNodeVectorArray(varVectors));
+	}
+	
+	public PNodeVector concat(PNodeVector [] varVectors)
+	{
+		ArrayList<IPNode> variables = new ArrayList<IPNode>();
+		for (int i = 0; i < varVectors.length; i++)
+		{
+			for (int j =0; j < varVectors[i].size(); j++)
+			{
+				variables.add(varVectors[i]._nodes[j]);
+			}
+		}
+		IPNode [] retval = new IPNode[variables.size()];
+		variables.toArray(retval);
+		
+		return createNodeVector(retval);
+	}
+	
+	public void replace(PNodeVector vector, int [] indices)
+	{
+		for (int i = 0; i < indices.length; i++)
+		{
+			_nodes[indices[i]] = vector._nodes[i];
+		}
+	}
+	
+	public PNodeVector getSlice(int [] indices)
+	{
+		IPNode [] variables = new IPNode[indices.length];
+		for (int i = 0; i < indices.length; i++)
+		{
+			variables[i] = _nodes[indices[i]];
+		}
+		return createNodeVector(variables);
+	}
+	
+	public IPNode getNode(int index)
+	{
+		return _nodes[index];
+	}
+	public IPNode [] getNodes()
+	{
+		return _nodes;
+	}
+	
+	public int size()
+	{
+		return _nodes.length;
+	}
+	
+	/*
+	//package-private
+	IPNode [] getNodeArray() 
+	{
+		IPNode[] vars = this.getNodes();
+		
+		VariableBase [] realVars;
+		
+		if (_nodes.length == 0)
+			realVars = new VariableBase[0];
+		else if (vars[0] instanceof PRealVariable)								// Assumes all variables are of the same class
+			realVars = new Real[vars.length];
+		else if (vars[0] instanceof PDiscreteVariable)
+			realVars = new Discrete[vars.length];
+		else if (vars[0] instanceof PRealJointVariable)
+			realVars = new RealJoint[vars.length];
+		else
+			throw new DimpleException("ack!");
+		
+		for (int i = 0; i < realVars.length; i++)
+		{
+			realVars[i] = vars[i].getModelerObject();
+		}
+		return realVars;
+	}
+	*/
+	
+	/*
+	public String getModelerClassName() 
+	{
+		VariableBase b;
+		b.getModelerClassName();
+		
+		if (_nodes.length > 0)
+			return _nodes[0].getModelerObject().getM
+		else
+			return "";
+	}
+	*/
+	
+	//TODO: support all getFactors variants
+	/*
+	public PFactorBase [] getFactors(int relativeNestingDepth) 
+	{
+		ArrayList<PFactorBase> retval = new ArrayList<PFactorBase>();
+		
+		for (VariableBase v : getVariableArray())
+		{
+			FactorBase [] funcs = v.getFactors(relativeNestingDepth);
+			PFactorBase [] tmp = PHelpers.convertToFactors(funcs);
+			for (PFactorBase f : tmp)
+				retval.add(f);
+		}
+		
+		PFactorBase [] realRetVal = new PFactorBase[retval.size()];
+		retval.toArray(realRetVal);
+		return realRetVal;
+		
+	}
+	*/
+	
+	public int [] getIds()
+	{
+		int [] ids = new int[_nodes.length];
+		for (int i = 0; i < ids.length; i++)
+			ids[i] = _nodes[i].getId();
+		
+		return ids;
+	}
+	
+	public double getScore() 
+	{
+		double sum = 0;
+
+		for (int i = 0; i < _nodes.length; i++)
+			sum += _nodes[i].getScore();
+		
+		return sum;
+	}
+	
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		for (int i = 0; i < _nodes.length; i++)
+			sum += _nodes[i].getBetheEntropy();
+		
+		return sum;
+	}
+	
+	public double getInternalEnergy()
+	{
+		double sum = 0;
+		
+		for (int i = 0; i < _nodes.length; i++)
+			sum += _nodes[i].getInternalEnergy();
+		
+		return sum;
+	}
+	
+	public void setName(String name) 
+	{
+		for (IPNode variable : _nodes)
+			variable.setName(name);
+	}
+	
+	public void setNames(String baseName) 
+	{
+		for(int i = 0; i < _nodes.length; ++i)
+		{
+			_nodes[i].setName(String.format("%s_vv%d", baseName, i));
+		}
+	}
+
+	public void setLabel(String name) 
+	{
+		for (IPNode variable : _nodes)
+			variable.setLabel(name);		
+	}
+	
+	public String [] getNames()
+	{
+		String [] retval = new String[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getName();
+		}
+		return retval;
+	}
+	public String [] getQualifiedNames()
+	{
+		String [] retval = new String[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getQualifiedName();
+		}
+		return retval;
+	}
+	public String [] getExplicitNames()
+	{
+		String [] retval = new String[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getExplicitName();
+		}
+		return retval;
+	}
+	public String [] getNamesForPrint()
+	{
+		String [] retval = new String[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getLabel();
+		}
+		return retval;
+	}
+	public String [] getQualifiedNamesForPrint()
+	{
+		String [] retval = new String[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getQualifiedLabel();
+		}
+		return retval;
+	}
+	public UUID [] getUUIDs()
+	{
+		UUID [] retval = new UUID[_nodes.length];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			retval[i] = _nodes[i].getUUID();
+		}
+		return retval;
+	}
+	
+	public Port [][] getPorts()
+	{
+		Port [][] ports = new Port[_nodes.length][];
+		for (int i = 0; i < _nodes.length; i++)
+		{
+			ports[i] = _nodes[i].getPorts();
+		}
+		return ports;
+	}
+	
+	public void update() 
+	{
+		for (int i = 0; i < _nodes.length; i++)
+			_nodes[i].update();
+	}
+	
+	public void updateEdge(int portNum) 
+	{
+		for (int i = 0; i < _nodes.length; i++)
+			_nodes[i].updateEdge(portNum);
+	}
+	
+	
+	
+	public abstract boolean isVariable();
+	public abstract boolean isFactor();
+	public abstract boolean isGraph();
+
+}

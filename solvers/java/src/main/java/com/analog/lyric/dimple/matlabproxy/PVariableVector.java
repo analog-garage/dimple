@@ -17,12 +17,9 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
-import java.util.UUID;
-
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorBase;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -34,97 +31,37 @@ import com.analog.lyric.dimple.model.VariableBase;
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
-public class PVariableVector
+public class PVariableVector extends PNodeVector
 {
-	protected PVariableBase [] _variables = new PVariableBase[0];
 	
-	public PVariableVector() {}
-	
-	// Copy constructor; use of this constructor directly allows entries that are of mixed type
-	public PVariableVector(PVariableBase [] variables)
+	public PVariableVector() 
 	{
-		_variables = variables.clone();
+		
 	}
+	
+	public PVariableVector(IPNode [] nodes)
+	{
+		super(nodes);
+		
+		for (int i = 0; i < nodes.length; i++)
+		{
+			if (! (nodes[i] instanceof PVariableBase))
+				throw new DimpleException("expected VariableBases");
+		}
+	}
+	
 
-	
-	public PVariableVector concat(Object [] varVectors, int [] varVectorIndices, int [] varIndices)
+	PVariableBase getVariable(int index)
 	{
-		return concat(PHelpers.convertObjectArrayToVariableVectorArray(varVectors),varVectorIndices,varIndices);
-	}
-
-	public PVariableVector concat(PVariableVector [] varVectors, int [] varVectorIndices, int [] varIndices)
-	{
-		PVariableBase [] variables = new PVariableBase[varIndices.length];
-		for (int i = 0; i < varIndices.length; i++)
-		{
-			variables[i] = varVectors[varVectorIndices[i]]._variables[varIndices[i]];
-		}
-		return new PVariableVector(variables);
-
-	}
-	public PVariableVector concat(Object [] varVectors)
-	{
-		return concat(PHelpers.convertObjectArrayToVariableVectorArray(varVectors));
-	}
-	public PVariableVector concat(PVariableVector [] varVectors)
-	{
-		ArrayList<PVariableBase> variables = new ArrayList<PVariableBase>();
-		for (int i = 0; i < varVectors.length; i++)
-		{
-			for (int j =0; j < varVectors[i].size(); j++)
-			{
-				variables.add(varVectors[i]._variables[j]);
-			}
-		}
-		PVariableBase [] retval = new PVariableBase[variables.size()];
-		variables.toArray(retval);
-		if (varVectors[0] instanceof PRealVariableVector)			// Assumes all vectors are of the same class
-			return new PRealVariableVector(retval);
-		else
-			return new PDiscreteVariableVector(retval);
-	}
-	
-	public void replace(PVariableVector vector, int [] indices)
-	{
-		for (int i = 0; i < indices.length; i++)
-		{
-			_variables[indices[i]] = vector._variables[i];
-		}
-	}
-	
-	public PVariableVector getSlice(int [] indices)
-	{
-		PVariableBase [] variables = new PVariableBase[indices.length];
-		for (int i = 0; i < indices.length; i++)
-		{
-			variables[i] = _variables[indices[i]];
-		}
-		if (_variables[0] instanceof PRealVariable)					// Assumes all variables are of the same class
-			return new PRealVariableVector(variables);
-		else
-			return new PDiscreteVariableVector(variables);
-	}
-	
-	public PVariableBase getNode(int index)
-	{
-		return _variables[index];
-	}
-	public PVariableBase [] getVariables()
-	{
-		return _variables;
-	}
-	
-	public int size()
-	{
-		return _variables.length;
+		return (PVariableBase)getNode(index);
 	}
 	
 	//package-private
 	VariableBase [] getVariableArray() 
 	{
-		PVariableBase[] vars = this.getVariables();
+		IPNode[] vars = this.getNodes();
 		VariableBase [] realVars;
-		if (_variables.length == 0)
+		if (vars.length == 0)
 			realVars = new VariableBase[0];
 		else if (vars[0] instanceof PRealVariable)								// Assumes all variables are of the same class
 			realVars = new Real[vars.length];
@@ -137,15 +74,16 @@ public class PVariableVector
 		
 		for (int i = 0; i < realVars.length; i++)
 		{
-			realVars[i] = vars[i].getModelerObject();
+			realVars[i] = (VariableBase)vars[i].getModelerObject();
 		}
 		return realVars;
 	}
 	
+	
 	public String getModelerClassName() 
 	{
-		if (_variables.length > 0)
-			return getVariableArray()[0].getModelerClassName();
+		if (size() > 0)
+			return getVariable(0).getModelerClassName();
 		else
 			return "";
 	}
@@ -170,178 +108,43 @@ public class PVariableVector
 		
 	}
 	
-	public int [] getIds()
-	{
-		int [] ids = new int[_variables.length];
-		for (int i = 0; i < ids.length; i++)
-			ids[i] = _variables[i].getId();
-		
-		return ids;
-	}
-	
-	public double getScore() 
-	{
-		double sum = 0;
-
-		for (int i = 0; i < _variables.length; i++)
-			sum += _variables[i].getScore();
-		
-		return sum;
-	}
-	
-	public double getBetheEntropy()
-	{
-		double sum = 0;
-		
-		for (int i = 0; i < _variables.length; i++)
-			sum += _variables[i].getBetheEntropy();
-		
-		return sum;
-	}
-	
-	public double getInternalEnergy()
-	{
-		double sum = 0;
-		
-		for (int i = 0; i < _variables.length; i++)
-			sum += _variables[i].getInternalEnergy();
-		
-		return sum;
-	}
-	
-	public void setName(String name) 
-	{
-		for (PVariableBase variable : _variables)
-			variable.setName(name);
-	}
-	
-	public void setNames(String baseName) 
-	{
-		for(int i = 0; i < _variables.length; ++i)
-		{
-			_variables[i].setName(String.format("%s_vv%d", baseName, i));
-		}
-	}
-
-	public void setLabel(String name) 
-	{
-		for (PVariableBase variable : _variables)
-			variable.setLabel(name);		
-	}
-	
-	public String [] getNames()
-	{
-		String [] retval = new String[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getName();
-		}
-		return retval;
-	}
-	public String [] getQualifiedNames()
-	{
-		String [] retval = new String[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getQualifiedName();
-		}
-		return retval;
-	}
-	public String [] getExplicitNames()
-	{
-		String [] retval = new String[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getExplicitName();
-		}
-		return retval;
-	}
-	public String [] getNamesForPrint()
-	{
-		String [] retval = new String[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getLabel();
-		}
-		return retval;
-	}
-	public String [] getQualifiedNamesForPrint()
-	{
-		String [] retval = new String[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getQualifiedLabel();
-		}
-		return retval;
-	}
-	public UUID [] getUUIDs()
-	{
-		UUID [] retval = new UUID[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			retval[i] = _variables[i].getUUID();
-		}
-		return retval;
-	}
-	
-	public Port [][] getPorts()
-	{
-		Port [][] ports = new Port[_variables.length][];
-		for (int i = 0; i < _variables.length; i++)
-		{
-			ports[i] = _variables[i].getPorts();
-		}
-		return ports;
-	}
-	
-	public void update() 
-	{
-		for (int i = 0; i < _variables.length; i++)
-			_variables[i].update();
-	}
-	
-	public void updateEdge(int portNum) 
-	{
-		for (int i = 0; i < _variables.length; i++)
-			_variables[i].updateEdge(portNum);
-	}
-	
 	public void setGuess(Object [] guess) 
 	{
 		for (int i = 0; i < guess.length; i++)
 		{
-			_variables[i].setGuess(guess[i]);
+			((PVariableBase)getNodes()[i]).setGuess(guess[i]);
 		}
 	}
 	
 	public Object [] getGuess() 
 	{
-		Object [] retval = new Object[_variables.length];
-		for (int i = 0; i < _variables.length; i++)
+		Object [] retval = new Object[size()];
+		VariableBase [] vars = getVariableArray();
+		for (int i = 0; i < vars.length; i++)
 		{
-			retval[i] = _variables[i].getGuess();
+			retval[i] = vars[i].getGuess();
 		}
 		return retval;
 	}
 	
 	public boolean isDiscrete()
 	{
-		return _variables[0].isDiscrete();
+		return getVariable(0).isDiscrete();
 	}
 
 	public boolean isReal()
 	{
-		return _variables[0].isReal();
+		return getVariable(0).isReal();
 	}
 	
 	public PDomain getDomain()
 	{
-		return _variables[0].getDomain();
+		return getVariable(0).getDomain();
 	}
 	
 	public boolean isJoint()
 	{
-		return _variables[0].isJoint();
+		return getVariable(0).isJoint();
 	}
 	
 	public boolean isVariable()
@@ -356,6 +159,21 @@ public class PVariableVector
 	public boolean isGraph()
 	{
 		return false;
+	}
+
+	public PVariableBase [] getVariables()
+	{
+		IPNode [] nodes = getNodes();
+		PVariableBase [] retval = new PVariableBase[nodes.length];
+		for (int i = 0; i < retval.length; i++)
+			retval[i] = (PVariableBase)nodes[i];
+		return retval;
+	}
+
+	@Override
+	public PNodeVector createNodeVector(IPNode[] nodes) 
+	{
+		return new PVariableVector(nodes);
 	}
 
 }
