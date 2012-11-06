@@ -279,6 +279,14 @@ public abstract class PNodeVector
 		return n.getSolver();
 	}
 	
+	public ISolverNode [] getSolvers(int [] indices)
+	{
+		ISolverNode [] retval = new ISolverNode[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			retval[i] = getSolver(indices[i]);
+		return retval;
+	}
+	
 	public ISolverNode [] getSolvers()
 	{
 		ISolverNode[] retval = new ISolverNode[_nodes.length];

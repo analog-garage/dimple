@@ -133,15 +133,9 @@ classdef Node < MatrixObject
         end
         
         function s = getSolver(obj)
-            solvers = cell(size(obj.VectorIndices));
-            for i = 1:numel(obj.VectorIndices)
-                node = obj.VectorObject.getSolver(obj.VectorIndices(i));
-                solvers{i} = node;
-            end
-            s = solvers;
-            if numel(s) == 1
-                s = s{1};
-            end
+            indices = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            tmp = cell(obj.VectorObject.getSolvers(indices));
+            s = obj.unpack(tmp,true);
         end
         
         

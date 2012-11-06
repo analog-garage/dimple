@@ -212,15 +212,39 @@ classdef MatrixObject < handle
     end
     
     methods (Access=protected)
-        function v = unpack(obj,stuff)
-            if numel(obj.VectorIndices) == 1
-                v = reshape(stuff,numel(stuff),1);
-            else
-                if size(stuff,1) ~= numel(obj.VectorIndices)
-                    error('mismatch of sizes');
+        function v = unpack(obj,stuff,returnSingletonIfOnlyOne)
+            if nargin < 3
+                returnSingletonIfOnlyOne = false;
+            end
+            
+            if iscell(stuff)
+                if numel(obj.VectorIndices) == 1
+                    v = reshape(stuff,numel(stuff),1);
+                    if returnSingletonIfOnlyOne
+                        v = v{1};
+                    end
+                else
+                    if size(stuff,1) ~= numel(obj.VectorIndices)
+                        error('mismatch of sizes');
+                    end
+                    stuff = stuff(obj.VectorIndices(:)+1,:);
+                    v = reshape(stuff,size(obj.VectorIndices));
+                    if numel(v) == 1 && returnSingletonIfOnlyOne
+                        v = v{1};
+                    end
                 end
-                stuff = stuff(obj.VectorIndices(:)+1,:);
-                v = reshape(stuff,[size(obj.VectorIndices) size(stuff,2)]);
+                
+            else
+                
+                if numel(obj.VectorIndices) == 1
+                    v = reshape(stuff,numel(stuff),1);
+                else
+                    if size(stuff,1) ~= numel(obj.VectorIndices)
+                        error('mismatch of sizes');
+                    end
+                    stuff = stuff(obj.VectorIndices(:)+1,:);
+                    v = reshape(stuff,[size(obj.VectorIndices) size(stuff,2)]);
+                end
             end
         end
         
