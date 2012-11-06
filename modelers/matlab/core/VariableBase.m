@@ -156,28 +156,6 @@ classdef VariableBase < Node
             
         end
         
-        %{
-function x = checkMatchAndCreateVariable(obj,args,v_all)
-            v = args{1};
-            for i = 2:length(args)
-                if v.Solver ~= args{i}.Solver
-                    error('Solvers dont match');
-                end
-            end
-            x = v.createVariable(v_all);
-        end
-        %}
-        %{
-function varids = getVarIds(obj)
-            v = obj.V;
-            varids = zeros(numel(v),1);
-            for i = 1:numel(v)
-                varids(i) = v(i).VarId;
-            end
-        end
-        %}
-        
-        
         
         function b = getDomain(obj)
             b = obj.Domain;
@@ -196,10 +174,5 @@ function varids = getVarIds(obj)
         end
         
     end
-    %{
-    methods (Abstract, Access = public)
-        createVariable(obj,domain,varMat,indices)
-    end
-    %}
     
 end

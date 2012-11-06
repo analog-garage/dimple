@@ -76,11 +76,5 @@ classdef VariableStreamBase < IVariableStreamSlice
             ret = wrapProxyObject(ret);
         end
         
-        %{
-        function b = subsref(obj,s)
-            obj
-            s
-        end
-        %}
     end
 end
