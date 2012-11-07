@@ -234,7 +234,7 @@ public class PFactorGraphVector extends PFactorVector
 	}
 	
 
-
+	
 	public PFactorVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
 	{
 		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
@@ -431,13 +431,17 @@ public class PFactorGraphVector extends PFactorVector
 	}
 	
 	
-//	public boolean isAncestorOf(Object o)
-//	{
-//		if (! (o instanceof IPNode))
-//			return false;
-//		
-//		return getGraph().isAncestorOf(((IPNode)o).getModelerObject());
-//	}
+	public boolean isAncestorOf(Object o)
+	{
+		if (! (o instanceof PNodeVector))
+			return false;
+		
+		PNodeVector pn = (PNodeVector)o;
+		if (pn.size() != 1)
+			throw new DimpleException("only support variable of size 1");
+		
+		return getGraph().isAncestorOf(pn.getModelerNode(0));
+	}
 		
 	 /*
 	 * Let's the user specify a fixed schedule.  Expects a list of items

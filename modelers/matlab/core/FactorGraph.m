@@ -843,19 +843,8 @@ classdef FactorGraph < Node
         end
         
         function ancestor = isAncestorOf(obj,node)
-            pnode = [];
-            if isa(node,'FactorGraph')
-                pnode = node.VectorObject;
-            elseif isa(node,'Factor')
-                pnode = IFactor;
-            else
-                VectorObject = node.VectorObject;
-                if VectorObject.size() ~= 1
-                    error('not supported for variable vectors');
-                end
-                pnode = VectorObject.getNode(0);
-            end
-            
+            pnode = node.VectorObject;
+
             ancestor = obj.VectorObject.isAncestorOf(pnode);
         end
         
@@ -1318,7 +1307,9 @@ classdef FactorGraph < Node
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
                 %TODO: Figure
                 newarg = obj.reorderArg(input{1},input{2});
-                newarg = newarg(2:end,:);
+                if size(newarg,1) > 1
+                    newarg = newarg(2:end,:);
+                end
                 arg = newarg.VectorObject;
                 indices = newarg.VectorIndices;
             else
@@ -1398,8 +1389,8 @@ classdef FactorGraph < Node
                 elseif iscell(tmp)
                     dims = tmp{2};
                     if isempty(dims)
-                        tmpdimsizes = 1;
-                    else
+                        tmpdimsizes = [1 1];
+                    else 
                         tmpdimsizes = zeros(size(dims));
                         for j = 1:length(tmpdimsizes)
                             tmpdimsizes(j) = size(tmp{1},dims(j));
