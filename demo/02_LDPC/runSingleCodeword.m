@@ -25,8 +25,10 @@ setSolver('sumproduct');
 load A;
 blockLength = size(A,2);
 numCheckEquations = size(A,1);
+
 ldpc = FactorGraph();
 x = Bit(blockLength,1);
+
 for i = 1:numCheckEquations
     varIndices = find(A(i,:));
     gd = getNBitXorDef(length(varIndices));

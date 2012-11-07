@@ -233,101 +233,40 @@ public class PFactorGraphVector extends PFactorVector
 		getGraph().getSolver().interruptSolver();
 	}
 	
-	public abstract class AddFactorVectorizedTemplate
-	{
-		public abstract PNodeVector callAddFactor(Object factor, Object [] inputs);
-		
-		public PNodeVector [] addFactorVectorized(Object factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
-		{
-			//Make sure there are no Variables.
-			//extract lengths and verify sizes are correct
-			int maxsize = 1;
-			for (int i = 0; i < numfactors.length; i++)
-			{
-				if (numfactors[i] > 1)
-				{
-					if (maxsize > 1 && numfactors[i] != maxsize)
-						throw new DimpleException("Var sizes don't match");
-					maxsize = numfactors[i];
-				}
-			}
-						
-			PNodeVector [] result = new PNodeVector[maxsize];
 
-			//loop through that size
-			for (int i = 0; i < maxsize; i++)
-			{
-				Object [] actualInputs = new Object[vars.length];
-				
-				for (int j = 0; j < actualInputs.length; j++)
-				{
-					if (vars[j] instanceof PVariableVector)
-					{
-						PVariableVector vec = (PVariableVector)vars[j];
-						if (numfactors[j] > 1)
-						{
-							int [] indices = new int[numvarsperfactor[j]];
-							for (int k = 0; k < indices.length; k++)
-								indices[k] = i*numvarsperfactor[j] + k;
-							actualInputs[j]  = vec.getSlice(indices);
-						}
-						else
-						{
-							actualInputs[j] = vec;
-						}
-					}
-					else
-					{
-						actualInputs[j] = vars[j];
-					}
-				}
-				PNodeVector tmp = callAddFactor(factor, actualInputs);
-				result[i] = tmp;
 
-			}
-			
-			return result;
-		}
-		
-	}
-	
-	public PFactorGraphVector addGraphVectorized(PFactorGraphVector graph, Object [] vars, int [] numvarsperfactor, int [] numfactors)
+	public PFactorVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
 	{
-		//Here we create an anonymous class that provides an override of the callAddFactor
-		//We then call the addFactorVectorized method and return the result
-		PNodeVector [] result = new AddFactorVectorizedTemplate() {
-			
-			@Override
-			public PNodeVector callAddFactor(Object factor, Object[] inputs) {
-				PFactorGraphVector pfg = (PFactorGraphVector)factor;
-				PVariableVector varVector = new PVariableVector();
-				varVector = (PVariableVector)varVector.concat(inputs);
-				return addGraph(pfg, varVector);
-			}
-		}.addFactorVectorized(graph, vars, numvarsperfactor, numfactors);
+		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
+		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
 		
-		//Convert the result into the correct types
-		Node [] retval = new Node [result.length];
-		for (int i = 0; i < result.length; i++)
-			retval[i] = result[i].getModelerNode(0);
-		return new PFactorGraphVector(retval);
-	}
+		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
+		
+		Node [] retval = new Node[args.length];
+		for (int i = 0; i < args.length; i++)
+			retval[i] = createFactor(factor.getFactorFunction(),args[i]).getModelerNode(0);
 	
-	public PFactorVector addFactorVectorized(PFactorVector factor, Object [] vars, int [] numvarsperfactor, int [] numfactors)
-	{
-		PNodeVector [] result = new AddFactorVectorizedTemplate() {
-			
-			@Override
-			public PNodeVector callAddFactor(Object factor, Object[] inputs) {
-				// TODO Auto-generated method stub
-				return createFactor(((PFactorVector)factor).getFactorFunction(),inputs);
-			}
-		}.addFactorVectorized(factor, vars, numvarsperfactor, numfactors);
-		
-		Node [] retval = new Node [result.length];
-		for (int i = 0; i < result.length; i++)
-			retval[i] = (Node)result[i].getModelerNode(0);		
 		return PHelpers.convertToFactorVector(retval);
+	}
+	
+	public PFactorGraphVector addGraphVectorized(PFactorGraphVector graph, Object [] vars, Object [] indices)
+	{
+		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
+		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
+		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
+		
+		PVariableVector varVector = new PVariableVector();
+		
+		Node [] retval = new Node[args.length];
+		for (int i = 0; i < args.length; i++)
+		{
+			varVector = (PVariableVector)varVector.concat(args[i]);
+
+			retval[i] = addGraph(graph,varVector).getModelerNode(0);
+		}
+	
+		return new PFactorGraphVector(retval);
+
 	}
 	
 	public void setSolver(IFactorGraphFactory solver) 

@@ -109,15 +109,24 @@ public class PFactorVector extends PNodeVector
 		return PHelpers.convertToVariableVector(vl);
 	}
 	
-	public void setDirectedTo(Object [] vars)
+	public void setDirectedTo(Object [] vars, Object [] indices)
 	{
-		PVariableVector [] vec = PHelpers.convertObjectArrayToVariableVectorArray(vars);
-		VariableList vl = new VariableList();
-		for (int i = 0; i < vec.length; i++)
+		PNodeVector [] vec = PHelpers.convertObjectArrayToNodeVectorArray(vars);
+		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
+		PNodeVector [][] nodeVectors = PHelpers.extractVectorization(vec, intIndices);
+		
+		for (int i = 0; i < nodeVectors.length; i++)
 		{
-			vl.add(vec[i].getVariableArray());
+			Factor f = getFactor(i);
+			VariableList vl = new VariableList();
+			for (int j = 0; j < nodeVectors[i].length; j++)
+			{
+				VariableBase [] tmp = ((PVariableVector)nodeVectors[i][j]).getVariableArray();
+				vl.add(tmp);
+			}
+			f.setDirectedTo(vl);			
 		}
-		getFactor().setDirectedTo(vl);
+		
 	}
 	
 

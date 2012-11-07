@@ -79,7 +79,7 @@ public class PHelpers
 		else
 			return new PDomain(d);
 	}
-	
+		
 	public static PFactorVector convertToFactorVector(Node [] nodes)
 	{
 		if (nodes[0] instanceof DiscreteFactor)
@@ -309,5 +309,65 @@ public class PHelpers
 		else
 			throw new DimpleException("unrecognized type");
 
+	}
+	
+	public static PNodeVector [][] extractVectorization(PNodeVector [] nodeVectors, int [][][] indices)
+	{
+		int numNodeVectorsPerAddFactor = indices.length;
+		int numaddFactors = indices[0].length;
+		
+		PNodeVector [][] retval = new PNodeVector[numaddFactors][];
+		
+		for (int i = 0; i < indices.length; i++)
+			if (indices[i].length != numaddFactors)
+				throw new DimpleException("mismatch of variables sizes");
+		
+		for (int i = 0; i < numaddFactors; i++)
+		{
+			retval[i] = new PNodeVector[numNodeVectorsPerAddFactor];
+				
+			for (int j = 0; j < numNodeVectorsPerAddFactor; j++)
+			{
+				retval[i][j] = nodeVectors[j].getSlice(indices[j][i]);
+			}
+		}
+		
+		return retval;
+	}
+	
+	public static int [][][] extractIndicesFectorized(Object [] indices)
+	{
+		int [][][] retval = new int[indices.length][][];
+		for (int i = 0; i < indices.length; i++)
+		{
+			
+			if (indices[i] instanceof Double)
+			{
+				int index = (int)(double)(Double)indices[i];
+				retval[i] = new int[1][1];
+				retval[i][0][0] = index;
+			}
+			else if (indices[i] instanceof double[][])			
+			{
+				double [][] tmp = (double[][])indices[i];
+				retval[i] = new int[tmp.length][tmp[0].length];
+				for (int j = 0; j < tmp.length; j++)
+					for (int k = 0; k < tmp[0].length; k++)
+						retval[i][j][k] = (int)tmp[j][k];
+						
+			}
+			else if (indices[i] instanceof double[])
+			{
+				double [] tmp = (double[])indices[i];
+				retval[i] = new int[tmp.length][];
+				for (int j= 0; j < tmp.length; j++)
+					retval[i][j] = new int[]{(int)tmp[j]};
+			}				
+			else
+			{
+				throw new DimpleException("unsupported indices format: " + indices[i]);
+			}
+		}
+		return retval;
 	}
 }

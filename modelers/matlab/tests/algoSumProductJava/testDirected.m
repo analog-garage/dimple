@@ -14,6 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 function testDirected
 
 
@@ -25,15 +26,6 @@ function testDirected
     b(4).Name = 'b4';
     myfac = @(a) rand();
 
-    %test error if not normalized
-    message = '';
-    try
-        f = fg.addDirectedFactor(myfac,{b},{b(1),b(3)});
-    catch e
-        message = e.message;
-    end
-
-    assertTrue(~isempty(findstr(message,'weights must be normalized')));
 
     %test no error if normalized
     f = fg.addDirectedFactor(@xorDelta,{b},{b(1),b(3)});
@@ -52,6 +44,25 @@ function testDirected
     assertTrue(tmp(1)==b(1));
     assertTrue(tmp(2)==b(3));
 
+    %test error if not normalized
+    message = '';
+    try
+        f = fg.addDirectedFactor(myfac,{b},{b(1),b(3)});
+    catch e
+        message = e.message;
+    end
+
+    assertTrue(~isempty(findstr(message,'weights must be normalized')));    
+    
+    %Test vectorized version
+    b = Bit(10,5);
+    fg = FactorGraph();
+    f = fg.addFactorVectorized(@xorDelta,{b, 1});
+    f.DirectedTo = {b(:,1:2), b(:,3)};
+    for i = 1:size(b,1)
+        assertTrue(isequal(f(i).DirectedTo,b(i,1:3)));
+    end
 
 end
+
 

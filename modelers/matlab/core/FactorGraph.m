@@ -223,23 +223,25 @@ classdef FactorGraph < Node
             % Graphs.
             
             %Get variables
-            firstvars = obj.extractFirstArgs(varargin{:});
+            [firstvars,anythingLeft] = obj.extractFirstArgs(varargin{:});
             [firstFactor,isVectorIndicesAndWeights] = obj.addFactor(firstArg,firstvars{:});
             if isVectorIndicesAndWeights
                 varargin = varargin(2:end);
             end
             
-            %TODO: Catch case where there is no actual vector.
-            [finalvars,numvarsperfactor,numfactors] = obj.extractFinalArgs(varargin{:});
             
-            if max(numfactors) > 1
+            %TODO
+            if anythingLeft
+                
+                %TODO: Catch case where there is no actual vector.
+                [finalvars,indices] = obj.extractFinalArgs(varargin{:});
                 
                 if isa(firstFactor,'FactorGraph')
                     graph = firstFactor.VectorObject;
-                    otherFactors = obj.VectorObject.addGraphVectorized(graph,finalvars,numvarsperfactor,numfactors);
+                    otherFactors = obj.VectorObject.addGraphVectorized(graph,finalvars,indices);
                 else
                     factor = firstFactor.VectorObject;
-                    otherFactors = obj.VectorObject.addFactorVectorized(factor,finalvars,numvarsperfactor,numfactors);
+                    otherFactors = obj.VectorObject.addFactorVectorized(factor,finalvars,indices);
                 end
                 
                 retval = wrapProxyObject(otherFactors);
@@ -1256,7 +1258,7 @@ classdef FactorGraph < Node
         %This method moves those dimensions to the right and all other
         %dimensions to the left so that Java can simply loop over chunks
         %of variables.
-        function [var,dimstokeep,numvarstokeep] = reorderArg(obj,arg,dimensions)
+        function var = reorderArg(obj,arg,dimensions)
             %first figure out how to permute
             numdims = length(size(arg));
             alldims = 1:numdims;
@@ -1268,33 +1270,30 @@ classdef FactorGraph < Node
             %Determine the permutation order.
             permuteorder = zeros(numdims,1);
             index = 1;
-            for i = 1:length(alldims)
-                if ismember(alldims(i),unvecdims)
-                    permuteorder(index) = alldims(i);
-                    index = index + 1;
-                end
-            end
             
             %Find the dimensions that will be vectorized
+            vecsize = 1;
             for i = 1:length(alldims)
                 if ismember(alldims(i),dimensions)
                     permuteorder(index) = alldims(i);
                     index = index + 1;
+                    vecsize = vecsize * size(arg,i);
                 end
             end
             
+            %Then find the dimensions that will not be vectorized
+            unvecsize = 1;
+            for i = 1:length(alldims)
+                if ismember(alldims(i),unvecdims)
+                    permuteorder(index) = alldims(i);
+                    index = index + 1;
+                    unvecsize = unvecsize * size(arg,i);
+                end
+            end            
+            
             %Permute the variable
-            var = arg.createObject(arg.VectorObject,permute(arg.VectorIndices,permuteorder));
-            
-            %Record the number of dimensions we use in the addFactor
-            %function.
-            dimstokeep = length(unvecdims);
-            
-            %figure out the number of variables we pass to addFactor.
-            tmp = size(arg);
-            tmp(dimensions) = 1;
-            numvarstokeep = prod(tmp);
-            
+            var = arg.createObject(arg.VectorObject,permute(arg.VectorIndices,permuteorder));            
+            var = reshape(var,vecsize,unvecsize);
             
         end
         
@@ -1309,67 +1308,88 @@ classdef FactorGraph < Node
         %numfactors - The number of sets of variables.  This should be
         %either the number of factors that will be created or 1 if the
         %variable set is shared across factors.
-        function [arg,numvarsperfactor,numfactors] = extractFinalArg(obj,input)
+        function [arg,indices] = extractFinalArg(obj,input)
             if isa(input,'VariableBase')
                 if prod(size(input)) > 1
                     input = input(2:end);
                 end
                 arg = input.VectorObject;
-                numvarsperfactor = 1;
-                numfactors = prod(size(arg));
+                indices = input.VectorIndices(:);
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
-                [newarg,~,numvars] = obj.reorderArg(input{1},input{2});
-                if numvars < prod(size(newarg))
-                    newarg = newarg(numvars+1:end);
-                end
+                %TODO: Figure
+                newarg = obj.reorderArg(input{1},input{2});
+                newarg = newarg(2:end,:);
                 arg = newarg.VectorObject;
-                numvarsperfactor = numvars;
-                numfactors = prod(size(arg))/numvars;
+                indices = newarg.VectorIndices;
             else
-                arg = input;
-                numvarsperfactor = 0;
-                numfactors = 0;
+                arg = [];
+                indices = [];
             end
         end
         
         %We extract the first variable of every variable vector in order to
         %make the first addFactor call.
-        function arg = extractFirstArg(obj,input)
+        function [arg,anythingleft] = extractFirstArg(obj,input)
+            anythingleft = false;
             if isa(input,'VariableBase')
                 arg = input(1);
-            elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
-                [newarg,dimstokeep] = obj.reorderArg(input{1},input{2});
-                VectorIndices = num2cell(ones(1,length(size(newarg))),1);
-                for i = 1:dimstokeep
-                    VectorIndices{i} = ':';
+                if length(input) > 1
+                    anythingleft = true;
                 end
-                arg = newarg(VectorIndices{:});
+            elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
+                newarg = obj.reorderArg(input{1},input{2});
+                arg = newarg(1,:);
+                if size(newarg,1) > 1
+                    anythingleft = 1;
+                end
             else
                 arg = input;
             end
         end
         
         %Extract all the first vars to call addFactor
-        function firstvars = extractFirstArgs(obj,varargin)
+        function [firstvars,anythingLeft] = extractFirstArgs(obj,varargin)
             firstvars = cell(size(varargin));
+            anythingLeft = false;
             for i = 1:length(firstvars)
-                firstvars{i} = obj.extractFirstArg(varargin{i});
+                [firstvars{i},tmp] = obj.extractFirstArg(varargin{i});
+                if tmp
+                    anythingLeft = true;
+                end
             end
         end
         
         %Extract the remaining variables (after the extarctFirstArgs) to
         %call addFactorVectorized
-        function [finalvars,numvarsperfactor,numfactors] = extractFinalArgs(obj,varargin)
-            finalvars = cell(size(varargin));
-            numvarsperfactor = zeros(size(finalvars));
-            numfactors = zeros(size(finalvars));
+        function [finalvars,indices] = extractFinalArgs(obj,varargin)
+            finalvars = {};
+            indices = {};
+            
+            maxIndices = 0;
             
             for i = 1:length(varargin)
-                [finalvars{i},numvarsperfactor(i),numfactors(i)] = obj.extractFinalArg(varargin{i});
+                [var,ind] = obj.extractFinalArg(varargin{i});
+                if ~isempty(ind)
+                    finalvars{length(finalvars)+1} = var;
+                    indices{length(indices)+1} = ind;
+                    if size(ind,1) > maxIndices
+                        maxIndices = size(ind,1);
+                    end
+                end
+            end
+            
+            for i = 1:length(finalvars)
+               tmp = size(indices{i},1);
+               if tmp == 1
+                   indices{i} = repmat(indices{i},maxIndices,1);
+               elseif tmp ~= maxIndices
+                   error('mismatch of matrix dimensions');
+               end
             end
         end
         
         function dimsizes = extractFactorDimensions(obj,varargin)
+            
             dimsizes = 1;
             for i = 1:length(varargin)
                 tmp = varargin{i};
@@ -1386,10 +1406,10 @@ classdef FactorGraph < Node
                         end
                     end
                 else
-                    tmpdimsizes = 1;
+                    tmpdimsizes = [1 1];
                 end
                 
-                if ~isequal(tmpdimsizes,1)
+                if ~isequal(tmpdimsizes,[1 1])
                     if ~isequal(dimsizes,1) && ~isequal(dimsizes,tmpdimsizes)
                         error('variable sizes dont match');
                     end

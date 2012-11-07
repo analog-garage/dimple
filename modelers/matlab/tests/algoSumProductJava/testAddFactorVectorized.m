@@ -15,6 +15,37 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testAddFactorVectorized()
+
+    %Test constants work
+    b = Bit(10,1);
+    fg = FactorGraph();
+    fg.addFactorVectorized(@xorDelta,b,1);
+    fg.solve();
+    assertElementsAlmostEqual(b.Belief,ones(10,1));
+
+    %Test mismatched vector sizes;
+    a = Bit(9,1);
+    b = Bit(10,1);
+    fg = FactorGraph();
+    message = '';
+    try
+        f = fg.addFactorVectorized(@xorDelta,a,b);
+    catch e
+        message = e.message;
+    end
+    assertEqual(message,'mismatch of matrix dimensions');
+
+    %Test single var against multiple vars
+    a = Bit();
+    b = Bit(10,1);
+    fg = FactorGraph();
+    fs = fg.addFactorVectorized(@xorDelta,a,b);
+    for i = 1:length(fs)
+       assertTrue(fs(i) == b(i).Factors{1});
+       assertTrue(fs(i) == a.Factors{i});
+    end
+
+
     %test with factor table
     indices = [0 1; 1 0];
     weights = [1 2];
@@ -91,8 +122,6 @@ function testAddFactorVectorized()
        assertTrue(a(i).Factors{1}==factors(i));
        assertTrue(b(i).Factors{1}==factors(i));
     end
-    
-
     
     %Test multiple dimensions
     fg = FactorGraph();

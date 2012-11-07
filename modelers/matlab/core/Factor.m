@@ -33,10 +33,12 @@ classdef Factor < Node
            if ~iscell(variables)
                variables = {variables};
            end
+           indices = cell(size(variables));
            for i = 1:length(variables)
+               indices{i} = MatrixObject.pack(variables{i}.VectorIndices,obj.VectorIndices);
                variables{i} = variables{i}.VectorObject;
            end
-           obj.VectorObject.setDirectedTo(variables);
+           obj.VectorObject.setDirectedTo(variables,indices);
         end
         
         function variables = get.DirectedTo(obj)
