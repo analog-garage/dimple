@@ -46,7 +46,7 @@ classdef MatrixObject < handle
                     %elegantly.
                     try
                         [varargout{:}] = builtin('subsref',obj,S);
-                    catch e                        
+                    catch e
                         if isequal(e.identifier,'MATLAB:unassignedOutputs')
                         elseif isequal(e.identifier,'MATLAB:maxlhs')
                             builtin('subsref',obj,S);
@@ -66,7 +66,7 @@ classdef MatrixObject < handle
                 %This is needed to differentiate between properties and
                 %function calls.
                 if isequal(S(2).type,'()')
-                    firstArgs = S(1:2);                    
+                    firstArgs = S(1:2);
                     secondArgs = S(3:end);
                 else
                     firstArgs = S(1);
@@ -165,6 +165,7 @@ classdef MatrixObject < handle
             x = varargin{1}.docat(@vertcat,varargin{:});
         end
         
+        
     end
     
     methods(Access=private)
@@ -209,54 +210,12 @@ classdef MatrixObject < handle
             
             x = obj.createObject(vectorObject,VectorIndices);
         end
+        
+        
     end
     
     methods (Access=protected)
-        function v = unpack(obj,stuff,returnSingletonIfOnlyOne)
-            if nargin < 3
-                returnSingletonIfOnlyOne = false;
-            end
-            
-            if iscell(stuff)
-                if numel(obj.VectorIndices) == 1
-                    v = reshape(stuff,numel(stuff),1);
-                    if returnSingletonIfOnlyOne
-                        v = v{1};
-                    end
-                else
-                    if size(stuff,1) ~= numel(obj.VectorIndices)
-                        error('mismatch of sizes');
-                    end
-                    stuff = stuff(obj.VectorIndices(:)+1,:);
-                    v = reshape(stuff,size(obj.VectorIndices));
-                    if numel(v) == 1 && returnSingletonIfOnlyOne
-                        v = v{1};
-                    end
-                end
-                
-            else
-                
-                if numel(obj.VectorIndices) == 1
-                    v = reshape(stuff,numel(stuff),1);
-                else
-                    if size(stuff,1) ~= numel(obj.VectorIndices)
-                        error('mismatch of sizes');
-                    end
-                    stuff = stuff(obj.VectorIndices(:)+1,:);
-                    v = reshape(stuff,[size(obj.VectorIndices) size(stuff,2)]);
-                end
-            end
-        end
         
-        function v = pack(obj,values)
-            numValsPerObj = numel(values) / numel(obj.VectorIndices);
-            if mod(numValsPerObj,1) ~= 0
-                error('invalid number of values');
-            end
-            
-            v = reshape(values,numel(values)/numValsPerObj,numValsPerObj);
-            v = v(obj.VectorIndices+1,:);
-        end
     end
     
     methods (Abstract, Access = protected)
@@ -264,5 +223,52 @@ classdef MatrixObject < handle
         verifyCanConcatenate(obj,otherObjects);
     end
     
+    methods (Static)
+        function v = unpack(stuff,indices,returnSingletonIfOnlyOne)
+            if nargin < 3
+                returnSingletonIfOnlyOne = false;
+            end
+            
+            if iscell(stuff)
+                if numel(indices) == 1
+                    v = reshape(stuff,numel(stuff),1);
+                    if returnSingletonIfOnlyOne
+                        v = v{1};
+                    end
+                else
+                    if size(stuff,1) ~= numel(indices)
+                        error('mismatch of sizes');
+                    end
+                    stuff = stuff(indices(:)+1,:);
+                    v = reshape(stuff,size(indices));
+                    if numel(v) == 1 && returnSingletonIfOnlyOne
+                        v = v{1};
+                    end
+                end
+                
+            else
+                
+                if numel(indices) == 1
+                    v = reshape(stuff,numel(stuff),1);
+                else
+                    if size(stuff,1) ~= numel(indices)
+                        error('mismatch of sizes');
+                    end
+                    stuff = stuff(indices(:)+1,:);
+                    v = reshape(stuff,[size(indices) size(stuff,2)]);
+                end
+            end
+        end
+        
+        function v = pack(values,indices)
+            numValsPerObj = prod(size(values)) / numel(indices);
+            if mod(numValsPerObj,1) ~= 0
+                error('invalid number of values');
+            end
+            
+            v = reshape(values,prod(size(values))/numValsPerObj,numValsPerObj);
+            v = v(indices+1,:);
+        end
+    end
     
 end

@@ -98,15 +98,13 @@ function testAddFactorVectorized()
     fg = FactorGraph();
     b = Bit(3,4,5);
     fs = fg.addFactorVectorized(@xorDelta,{b,[1 3]});
-    index = 1;
     for i = 1:5
         for j = 1:3
-            f = fs(index);
+            f = fs(j,i);
             for k = 1:4
                 f2 = b(j,k,i).Factors{1};
                 assertTrue(f==f2);
             end
-            index = index + 1;
         end
     end
     
@@ -116,11 +114,9 @@ function testAddFactorVectorized()
     b = Bit(2,2,2,2);
     fg = FactorGraph();
     fs = fg.addFactorVectorized(myfac,{b,[1 3]});
-    index = 1;
     for i = 1:2
         for j = 1:2
-            f = fs(index);
-            index = index + 1;
+            f = fs(j,i);
             for m = 1:2
                 for n = 1:2
                     f2 = b(j,m,i,n).Factors{1};
@@ -131,7 +127,7 @@ function testAddFactorVectorized()
     end
     
     
-        %Test nested graphs
+    %Test nested graphs
     b = Bit(3,1);
     nfg = FactorGraph(b);
     nfg.addFactor(@xorDelta,b);

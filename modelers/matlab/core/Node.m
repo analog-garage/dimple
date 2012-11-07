@@ -135,7 +135,7 @@ classdef Node < MatrixObject
         function s = getSolver(obj)
             indices = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             tmp = cell(obj.VectorObject.getSolvers(indices));
-            s = obj.unpack(tmp,true);
+            s = MatrixObject.unpack(tmp,obj.VectorIndices,true);
         end
         
         

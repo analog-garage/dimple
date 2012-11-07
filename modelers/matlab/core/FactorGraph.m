@@ -244,6 +244,10 @@ classdef FactorGraph < Node
                 
                 retval = wrapProxyObject(otherFactors);
                 retval = [firstFactor retval];
+                
+                dimsizes = obj.extractFactorDimensions(varargin{:});
+               
+                retval = reshape(retval,dimsizes);
             end
         end
         
@@ -559,7 +563,7 @@ classdef FactorGraph < Node
         end
         
         function out = getFactorGraphDiffsByName(obj,input)
-           out = obj.VectorObject.getFactorGraphDiffsByName(input.VectorObject); 
+            out = obj.VectorObject.getFactorGraphDiffsByName(input.VectorObject);
         end
         
         
@@ -1270,6 +1274,8 @@ classdef FactorGraph < Node
                     index = index + 1;
                 end
             end
+            
+            %Find the dimensions that will be vectorized
             for i = 1:length(alldims)
                 if ismember(alldims(i),dimensions)
                     permuteorder(index) = alldims(i);
@@ -1363,6 +1369,37 @@ classdef FactorGraph < Node
             end
         end
         
+        function dimsizes = extractFactorDimensions(obj,varargin)
+            dimsizes = 1;
+            for i = 1:length(varargin)
+                tmp = varargin{i};
+                if isa(tmp,'VariableBase')
+                    tmpdimsizes = size(tmp);
+                elseif iscell(tmp)
+                    dims = tmp{2};
+                    if isempty(dims)
+                        tmpdimsizes = 1;
+                    else
+                        tmpdimsizes = zeros(size(dims));
+                        for j = 1:length(tmpdimsizes)
+                            tmpdimsizes(j) = size(tmp{1},dims(j));
+                        end
+                    end
+                else
+                    tmpdimsizes = 1;
+                end
+                
+                if ~isequal(tmpdimsizes,1)
+                    if ~isequal(dimsizes,1) && ~isequal(dimsizes,tmpdimsizes)
+                        error('variable sizes dont match');
+                    end
+                    dimsizes = tmpdimsizes;
+                end
+            end
+            if length(dimsizes) == 1
+                dimsizes = [dimsizes 1];
+            end
+        end
         
     end
     

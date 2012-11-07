@@ -26,11 +26,11 @@ classdef MyMatrix < MatrixObject
         end
         
         function v = get.Value(obj)
-            v = obj.unpack(obj.VectorObject.getValues());            
+            v = MatrixObject.unpack(obj.VectorObject.getValues(),obj.VectorIndices);            
         end
         
         function set.Value(obj,value)
-            obj.VectorObject.setValues(obj.pack(value));
+            obj.VectorObject.setValues(MatrixObject.pack(value,obj.VectorIndices));
         end
         
         function retval = getObject(obj,index)

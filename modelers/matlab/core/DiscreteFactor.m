@@ -39,7 +39,7 @@ classdef DiscreteFactor < Factor
         
         function beliefs = get.Belief(obj)
             beliefs = obj.VectorObject.getDiscreteBeliefs(obj.VectorIndices);
-            beliefs = obj.unpack(beliefs);
+            beliefs = MatrixObject.unpack(beliefs,obj.VectorIndices);
         end
         function indices = get.Indices(obj)
             var = obj.getSingleNode();
