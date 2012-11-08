@@ -1367,6 +1367,82 @@ end
 
 This is a somewhat contrived example but, in this case, replacing addFactorNoCache with addFactor will significantly slow down the code.
 
+addFactorVectorized
+^^^^^^^^^^^^^^^^^^^
+To get reasonable speed out of MATLAB, one needs to vectorize their code.  If a user wishes to build a FactorGraph with large numbers of factors, 
+they will want to avoid making many calls to addFactor.  The addFactorVectorized method can be called once to create many factors.
+
+.Vectorizing over all variables
+
+In this first example, we create three variable matrices and generate 12 factors connecting a(i,j), b(i,j), and c(i,j) for all i and j.
+
+----
+fg = FactorGraph();
+a = Bit(3,4);
+b = Bit(3,4);
+c = Bit(3,4);
+fg.addFactorVectorized(@xorDelta,a,b,c);
+----
+
+.Specify Vectorize Dimensions
+
+By default addFactorVectorized will add factors for every dimension.  However, if a user wants to only vectorize over a subset of dimensions, addFactorVectorize
+allows them to provide a cell array containing a variable matrix as the first argument and a list of dimensions to vectorize over as the second argument.  The following code will vectorize over the first two dimensions to create 12 xor factors.  Each xor factor is connected to 5 bits.
+
+----
+fg = FactorGraph();
+b = Bit(3,4,5);
+fg.addFactorVectorized(@xorDelta,{b,[1 2]});
+----
+
+.Connecting a single variable with addFactorVectorized
+
+The addFactorVectorized method will ensure that dimensions being vectorized match for all inputs.  However, the call allows single variables to be connected to many as follows:
+
+----
+fg = FactorGraph();
+a = Bit(10,1);
+b = Bit();
+fg.addFactorVectorized(@xorDelta,a,b);
+----
+
+This will create a graph such that b is connected to every element of a via a total of 10 factors.
+
+.repmat
+
+Similar things can be done with repmat.  Suppose you have a 10x1 vector of variables that you want connected to a 10x20 matrix of different variables.
+The following code will create 200 factors.  Each element of a will be connected to 20 elements of b via 20 factors.
+
+----
+fg = FactorGraph();
+a = Bit(10,1);
+b = Bit(10,20);
+fg.addFactorVectorized(@xorDelta,repmat(a,1,10),b);
+----
+
+.Constants
+
+Users can still pass constants to addFactor.  The following passes the constant 1 to the xorDelta factor function as the final argument.
+
+----
+fg = FactorGraph();
+b = Bit(10,3);
+fg.addFactorVectorized(@xorDelta,{b 1},1);
+----
+
+.Nested Graphs
+
+Nested Graphs are also supported
+
+----
+a = Bit(3,1);
+ng = FactorGraph(a);
+ng.addFactor(@xorDelta,a);
+fg = FactorGraph();
+b = Bit(10,3);
+fg.addFactorVectorized(ng,{b, 1});
+----
+
 Setting the Solver
 ^^^^^^^^^^^^^^^^^^
 
@@ -2469,6 +2545,50 @@ end
        expectedFullBelief(1,1,1) = val1;
        expectedFullBelief(2,2,2) = val0;
        assertElementsAlmostEqual(expectedFullBelief,f.FullBelief);
+----
+
+Setting Directionality of a Factor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Some solver features require knowledge of factor directionality.  Users can set directionality of a factor with the FactorTo property.
+This property expects a cell array containing a comma separated list of variables the factor is directed towards.  When directionality is set, if 
+a FactorTable exists, Dimple will check to ensure the factor is normalized properly.  
+
+----
+fg = FactorGraph();
+b = Bit(3,1);
+f = fg.addFactor(@xorDelta,b);
+f.DirectedTo = {b(1), b(2)};
+----
+
+Users can also specify variable matrices.  The above is equivalent to:
+
+----
+f.DirectedTo = {b};
+----
+
+Dimple provides the ability to pass a variable directly as well:
+
+----
+f.DirectedTo = b;
+----
+
+Also, DirectedTo works with addFactorVectorized.  Users must ensure the variable dimensions match the factor dimensions.  The following
+create a Markov Model.
+
+----
+fg = FactorGraph();
+s = Discrete(states,N);
+fg.addFactorVectorized(@transitionFunction,s(1:(end-1)),s(2:end)).DirectedTo = s(2:end);
+----
+
+More complicated vectorizations are possible.  The following creates 12 factors, each of which contains 10 variables (5 from a and 5 from b).
+The first 2 of the 5 from a and the first from b are what the factor is directed to.
+
+----
+fg = FactorGraph();
+a = Bit(3,4,5);
+b = Bit(3,4,5);
+fg.addFactorVectorized(@somefactor,{a, [1 2]}, {b, [1 2]}).DirectedTo = {a(:,:,1:2), b(:,:,1)};
 ----
 
 General Features
