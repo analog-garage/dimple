@@ -114,42 +114,42 @@ dtrace(debugPrint,'Gibbs estimate:'); if(debugPrint); disp(output); end;
 KLDivergenceRate = kLDivergenceRate(transMatrix, output);
 dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate));
 
-
-
-% % COMMENTED OUT FOR NOW; BAUM-WELCH DOESN'T SEEM TO BE WORKING RELIABLY
-% % Compare with Baum-Welch ============================================
-% fg2 = FactorGraph();
-% fg2.Solver = 'sumproduct';
-% fg2.Solver.setNumIterations(1);
-% 
-% % Variables
-% state2 = Discrete(0:numStates-1,1,hmmLength);
-% 
-% % Add random transition factors
-% transitionFactor2 = FactorTable(randStochasticMatrix(numStates, numStates),state2.Domain,state2.Domain);
-% fg2.addFactorVectorized(transitionFunction2, state2(1:end-1), state2(2:end));
-% 
-% % Add observation factors
-% state2.Input = obsMatrix(obsRealization,:);
-% 
-% numReEstimations = 20;
-% numRestarts = 20;
-% dtrace(debugPrint,'Starting Baum-Welch solve');
-% t2 = tic;
-% fg2.baumWelch({transitionFactor2},numRestarts,numReEstimations);
-% if (debugPrint); toc(t2); end;
-% output2 = zeros(numStates,numStates);
-% for i = 1:length(transitionFactor2.Weights)
-%     output2(transitionFactor2.Indices(i,2)+1, transitionFactor2.Indices(i,1)+1) = transitionFactor2.Weights(i);
-% end
-% output2 = output2./repmat(sum(output2,1),numStates,1);
-% dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;
-% 
-% KLDivergenceRate2 = kLDivergenceRate(transMatrix, output2);
-% dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate2));
-
-
 assert(KLDivergenceRate < 0.001);
+
+
+% Compare with Baum-Welch ============================================
+fg2 = FactorGraph();
+fg2.Solver = 'sumproduct';
+fg2.Solver.setNumIterations(1);
+
+% Variables
+state2 = Discrete(0:numStates-1,1,hmmLength);
+
+% Add random transition factors
+transitionFactor2 = FactorTable(randStochasticMatrix(numStates, numStates),state2.Domain,state2.Domain);
+fg2.addFactorVectorized(transitionFactor2, state2(2:end), state2(1:end-1)).DirectedTo = state2(2:end);
+
+% Add observation factors
+state2.Input = obsMatrix(obsRealization,:);
+
+numReEstimations = 20;
+numRestarts = 20;
+dtrace(debugPrint,'Starting Baum-Welch solve');
+t2 = tic;
+fg2.baumWelch({transitionFactor2},numRestarts,numReEstimations);
+if (debugPrint); toc(t2); end;
+output2 = zeros(numStates,numStates);
+for i = 1:length(transitionFactor2.Weights)
+    output2(transitionFactor2.Indices(i,2)+1, transitionFactor2.Indices(i,1)+1) = transitionFactor2.Weights(i);
+end
+output2 = output2./repmat(sum(output2,1),numStates,1);
+dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;
+
+KLDivergenceRate2 = kLDivergenceRate(transMatrix, output2);
+dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate2));
+
+% assert(KLDivergenceRate < 0.001);     % NOT WORKING FULLY YET
+
 
 
 dtrace(debugPrint, '--testHMMParameterEstimationGibbs');
