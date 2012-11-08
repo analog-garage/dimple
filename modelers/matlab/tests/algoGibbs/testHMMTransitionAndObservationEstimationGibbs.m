@@ -177,7 +177,7 @@ assert(KLDivergenceObsDistribution < 0.01);
 % if (debugPrint); toc(t2); end;
 % output2 = zeros(numStates,numStates);
 % for i = 1:length(transitionFactor2.Weights)
-%     output2(transitionFactor2.Indices(i,2)+1, transitionFactor2.Indices(i,1)+1) = transitionFactor2.Weights(i);
+%     output2(transitionFactor2.Indices(i,1)+1, transitionFactor2.Indices(i,2)+1) = transitionFactor2.Weights(i);
 % end
 % output2 = output2./repmat(sum(output2,1),numStates,1);
 % dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;

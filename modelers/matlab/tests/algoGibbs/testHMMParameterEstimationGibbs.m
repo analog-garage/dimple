@@ -16,7 +16,7 @@
 
 function testHMMParameterEstimationGibbs()
 
-debugPrint = false;
+debugPrint = true; % FIXME ****** false;
 repeatable = true;
 
 dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
@@ -58,6 +58,8 @@ end
 dtrace(debugPrint,'Observation matrix:'); if(debugPrint); disp(obsMatrix); end;
 dtrace(debugPrint,'Transition matrix:'); if(debugPrint); disp(transMatrix); end;
 
+
+
 t = tic;
 fg = FactorGraph();
 fg.Solver = 'gibbs';
@@ -95,7 +97,6 @@ if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
 end
 
-% graph1.Solver.saveAllSamples();
 dtrace(debugPrint,'Starting Gibbs solve');
 t = tic;
 fg.solve();
@@ -114,7 +115,6 @@ dtrace(debugPrint,'Gibbs estimate:'); if(debugPrint); disp(output); end;
 KLDivergenceRate = kLDivergenceRate(transMatrix, output);
 dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate));
 
-assert(KLDivergenceRate < 0.001);
 
 
 % Compare with Baum-Welch ============================================
@@ -140,7 +140,7 @@ fg2.baumWelch({transitionFactor2},numRestarts,numReEstimations);
 if (debugPrint); toc(t2); end;
 output2 = zeros(numStates,numStates);
 for i = 1:length(transitionFactor2.Weights)
-    output2(transitionFactor2.Indices(i,2)+1, transitionFactor2.Indices(i,1)+1) = transitionFactor2.Weights(i);
+    output2(transitionFactor2.Indices(i,1)+1, transitionFactor2.Indices(i,2)+1) = transitionFactor2.Weights(i);
 end
 output2 = output2./repmat(sum(output2,1),numStates,1);
 dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;
@@ -148,7 +148,10 @@ dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;
 KLDivergenceRate2 = kLDivergenceRate(transMatrix, output2);
 dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate2));
 
-% assert(KLDivergenceRate < 0.001);     % NOT WORKING FULLY YET
+
+% Assertions
+assert(KLDivergenceRate < 0.001);   % Gibbs accuracy
+assert(KLDivergenceRate < 0.001);   % Baum-Welch accuracy
 
 
 
