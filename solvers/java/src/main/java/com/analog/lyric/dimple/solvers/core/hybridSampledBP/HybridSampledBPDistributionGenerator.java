@@ -14,33 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian;
+package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 
-import java.util.Random;
+import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
-public class GaussianSampler extends HybridSampledBPSampler 
+public abstract class HybridSampledBPDistributionGenerator 
 {
-
-	public GaussianSampler(Port p, Random random) 
-	{
-		super(p, random);
-	}
-
-	private double [] _msg;
+	protected Port _p;
+	//protected Random _random;
 	
-	@Override
-	public void initialize() 
+	public HybridSampledBPDistributionGenerator(Port p)
 	{
-		_msg = (double[])_p.getInputMsg();
-	}
-
-	@Override
-	public Object generateSample() 
-	{
-		return _random.nextGaussian()*_msg[1]+_msg[0];
+		_p = p;
 	}
 	
+	public abstract void initialize() ;	
+	public abstract void generateDistributionInPlace(ArrayList<Object> input);
 }

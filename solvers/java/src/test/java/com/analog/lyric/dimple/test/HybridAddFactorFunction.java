@@ -14,38 +14,45 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.swedish;
+package com.analog.lyric.dimple.test;
 
-import java.util.Random;
+import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 
-import com.analog.lyric.dimple.model.Port;
-
-public abstract class SwedishSampler 
+public class HybridAddFactorFunction extends HybridSampledBPFactorFunction
 {
-	protected Random _random;
-	protected Port _p;
-	
-	public SwedishSampler(Port p,Random random)
+
+	public HybridAddFactorFunction() 
 	{
-		_p = p;
-		_random = random;
+		super("GaussianAdd");
 	}
-	/*
-	public void setRandom(Random random)
+
+	@Override
+	public double acceptanceRatio(int portIndex, Object... inputs) 
 	{
-		_random = random;
+		return 1;
 	}
-	*/
-	
-	/*
-	public void attach(Port p,Random random)
+
+	@Override
+	public Object generateSample(int portIndex, Object... inputs) 
 	{
-		_p = p;
-		_random = random;
+		if (portIndex == 0)
+		{
+			double sum = 0;
+			for (int i = 0; i < inputs.length; i++)
+			{
+				sum += (Double)inputs[i];
+			}
+			return sum;
+		}
+		else
+		{
+			double sum = (Double)inputs[0];
+			for (int i = 1; i < inputs.length; i++)
+			{
+				sum -= (Double)inputs[i];
+			}
+			return sum;
+		}
 	}
-	*/
-	
-	public abstract void initialize() ;
-	
-	public abstract Object generateSample();
+
 }

@@ -39,7 +39,7 @@ function testGeneralFactor()
         v(2).Input = tmpinputs(2,:);
         v(3).Input = tmpinputs(3,:);
 
-        f = fg.addFactor(com.analog.lyric.dimple.test.GaussianAddFactorFunction(),v(1),v(2),v(3));
+        f = fg.addFactor(com.analog.lyric.dimple.test.HybridAddFactorFunction(),v(1),v(2),v(3));
 
         fg.solve();
 
@@ -64,7 +64,7 @@ function testGeneralFactor()
     %Test square
     a = v(1);
     b = v(2);
-    f = fg.addFactor(com.analog.lyric.dimple.solvers.gaussian.factorfunctions.GaussianSquareFactorFunction(),a,b);
+    f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridRealSquare(),a,b);
 
     a.Input = [25 10];
     b.Input = [0 Inf];
@@ -82,11 +82,6 @@ function testGeneralFactor()
 
     expectedMu = [b.Input(1)^2 + b.Input(2)^2];
     assertTrue(abs(a.Belief(1)-expectedMu) < 1);
-
-
-    %%%%%%%%%%%%%
-    %Test swedish fish
-    assertEqual(char(f.Solver.getFactor.getFactorFunction().runSwedishFish()),'mmmmm');
 
 
     fg.Solver.setMaxNumTries(10);
@@ -114,7 +109,7 @@ function testGeneralFactor()
     a = Real();
     b = Real();
 
-    f = fg.addFactor(com.analog.lyric.dimple.solvers.gaussian.factorfunctions.GaussianPowerFactorFunction(3),a,b);
+    f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridRealFixedPower(3),a,b);
 
     a.Input = [27 10];
     b.Input = [0 Inf];

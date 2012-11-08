@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
-import com.analog.lyric.dimple.solvers.core.swedish.SwedishFactor;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -61,9 +61,9 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor s = f.getSolver();
 			
-			if (s instanceof SwedishFactor)
+			if (s instanceof HybridSampledBPFactor)
 			{
-				((SwedishFactor)s).setMaxNumTries(maxNumTries);
+				((HybridSampledBPFactor)s).setMaxNumTries(maxNumTries);
 			}
 		}
 		_maxNumTries = maxNumTries;
@@ -81,9 +81,9 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor s = f.getSolver();
 			
-			if (s instanceof SwedishFactor)
+			if (s instanceof HybridSampledBPFactor)
 			{
-				((SwedishFactor)s).setNumSamples(numSamples);
+				((HybridSampledBPFactor)s).setNumSamples(numSamples);
 			}
 		}
 		_numSamples = numSamples;
@@ -132,7 +132,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return createCustomFactor(factor);
 		else
 		{
-			SwedishFactor sf = new SwedishFactor(factor,_random);
+			HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
 			sf.setNumSamples(_numSamples);
 			sf.setMaxNumTries(_maxNumTries);
 			return sf;

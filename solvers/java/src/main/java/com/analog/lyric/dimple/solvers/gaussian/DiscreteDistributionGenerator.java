@@ -23,9 +23,9 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.swedish.SwedishDistributionGenerator;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 
-public class DiscreteDistributionGenerator extends SwedishDistributionGenerator
+public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGenerator
 {
 
 	public DiscreteDistributionGenerator(Port p) 

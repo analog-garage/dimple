@@ -14,52 +14,56 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.swedish;
+package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.analog.lyric.dimple.FactorFunctions.core.SwedishFactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
-public class SwedishFactor extends SFactorBase 
+public abstract class HybridSampledBPFactor extends SFactorBase 
 {
+	protected Random _random;
 
 	private int _numSamples;
 	private int _maxNumTries;
 	
-	private Random _random;
-
-	private SwedishDistributionGenerator [] _distGenerator;
-	private SwedishFactorFunction _factorFunction;
-	private SwedishSampler [] _samplers;
+	private HybridSampledBPDistributionGenerator [] _distGenerator;
+	private HybridSampledBPFactorFunction _factorFunction;
+	private HybridSampledBPSampler [] _samplers;
 	
-	public SwedishFactor(Factor factor, Random random)  
+	
+	public abstract HybridSampledBPSampler generateSampler(Port p);
+	public abstract HybridSampledBPDistributionGenerator generateDistributionGenerator(Port p);
+
+	
+	public HybridSampledBPFactor(Factor factor, Random random)  
 	{
 		super(factor);
 		
+		_random = random;
 		_numSamples = 1;
 		_maxNumTries = Integer.MAX_VALUE;
 		
-		if (! (factor.getFactorFunction() instanceof SwedishFactorFunction))
-			throw new DimpleException("only support general factors that have been provided SwedishFactorFunctions");
+		if (! (factor.getFactorFunction() instanceof HybridSampledBPFactorFunction))
+			throw new DimpleException("only support general factors that have been provided HybridSampledBPFactorFunctions");
 		
-		_factorFunction = (SwedishFactorFunction)factor.getFactorFunction();
+		_factorFunction = (HybridSampledBPFactorFunction)factor.getFactorFunction();
 		
 		_factorFunction.attachRandom(random);
 		
-		_distGenerator = new SwedishDistributionGenerator[factor.getPorts().size()];
-		_samplers = new SwedishSampler[factor.getPorts().size()];
+		_distGenerator = new HybridSampledBPDistributionGenerator[factor.getPorts().size()];
+		_samplers = new HybridSampledBPSampler[factor.getPorts().size()];
 		
 		for (int i = 0; i < factor.getPorts().size(); i++)
 		{
-			_samplers[i] = _factorFunction.generateSampler(factor.getPorts().get(i));
-			_distGenerator[i] = _factorFunction.generateDistributionGenerator(factor.getPorts().get(i));
+			_samplers[i] = generateSampler(factor.getPorts().get(i));
+			_distGenerator[i] = generateDistributionGenerator(factor.getPorts().get(i));
 		}
-		
-		_random = random;
 	}
 	
 	public void setMaxNumTries(int numTries)
@@ -153,9 +157,9 @@ public class SwedishFactor extends SFactorBase
 	@Override
 	public void initialize() 
 	{
-		for (SwedishSampler s : _samplers)
+		for (HybridSampledBPSampler s : _samplers)
 			s.initialize();
-		for (SwedishDistributionGenerator s : _distGenerator)
+		for (HybridSampledBPDistributionGenerator s : _distGenerator)
 			s.initialize();
 	}
 	

@@ -22,9 +22,9 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.swedish.SwedishSampler;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
-public class DiscreteSampler extends SwedishSampler 
+public class DiscreteSampler extends HybridSampledBPSampler 
 {
 
 	public DiscreteSampler(Port p, Random random) 

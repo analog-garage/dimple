@@ -16,34 +16,37 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import com.analog.lyric.dimple.FactorFunctions.core.SwedishFactorFunction;
+import java.util.Random;
+
+import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.swedish.SwedishDistributionGenerator;
-import com.analog.lyric.dimple.solvers.core.swedish.SwedishSampler;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
+import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
-public abstract class GaussianFactorFunction extends SwedishFactorFunction
+public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 {
 
-	public GaussianFactorFunction(String name) 
+	public HybridSampledGaussianFactor(Factor factor, Random random)
 	{
-		super(name);
+		super(factor, random);
 	}
 
 	@Override
-	public SwedishSampler generateSampler(Port p) 
+	public HybridSampledBPSampler generateSampler(Port p) 
 	{
 		boolean isDiscretePort = ((VariableBase)p.getConnectedNode()).getDomain().isDiscrete();
 		
 		if (isDiscretePort)
-			return new DiscreteSampler(p,_random);
+			return new DiscreteSampler(p, _random);
 		else
 			return new GaussianSampler(p, _random);
 		
 	}
 
 	@Override
-	public SwedishDistributionGenerator generateDistributionGenerator(Port p) 
+	public HybridSampledBPDistributionGenerator generateDistributionGenerator(Port p) 
 	{
 		boolean isDiscretePort = ((VariableBase)p.getConnectedNode()).getDomain().isDiscrete();
 		

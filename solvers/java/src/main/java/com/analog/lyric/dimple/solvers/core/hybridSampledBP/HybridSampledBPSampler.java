@@ -14,15 +14,38 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian.factorfunctions;
+package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 
-public class GaussianSquareFactorFunction extends GaussianPowerFactorFunction 
+import java.util.Random;
+
+import com.analog.lyric.dimple.model.Port;
+
+public abstract class HybridSampledBPSampler 
 {
-
-	public GaussianSquareFactorFunction() 
+	protected Random _random;
+	protected Port _p;
+	
+	public HybridSampledBPSampler(Port p,Random random)
 	{
-		super(2);
+		_p = p;
+		_random = random;
 	}
-
-
+	/*
+	public void setRandom(Random random)
+	{
+		_random = random;
+	}
+	*/
+	
+	/*
+	public void attach(Port p,Random random)
+	{
+		_p = p;
+		_random = random;
+	}
+	*/
+	
+	public abstract void initialize() ;
+	
+	public abstract Object generateSample();
 }

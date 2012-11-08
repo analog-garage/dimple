@@ -14,21 +14,30 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian.factorfunctions;
+package com.analog.lyric.dimple.FactorFunctions;
 
+import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorFunction;
 
-public class GaussianPowerFactorFunction extends GaussianFactorFunction 
+public class HybridRealFixedPower extends HybridSampledBPFactorFunction 
 {
 	private int _power;
 	
-	public GaussianPowerFactorFunction(int power) 
+	public HybridRealFixedPower(int power) 
 	{
-		super("GaussianPower" + power);
-		
+		super("HybridRealFixedPower" + power);
 		_power = power;
 	}
+
+    @Override
+    public double evalEnergy(Object ... arguments)
+    {
+    	Double result = (Double)arguments[0];
+    	Double base = (Double)arguments[1];
+    	
+    	double computedResult = Math.pow(base, _power);
+    	return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;	// This version is not smoothed
+    }
 
 	@Override
 	public double acceptanceRatio(int outPortIndex, Object... inputs) 
@@ -60,12 +69,10 @@ public class GaussianPowerFactorFunction extends GaussianFactorFunction
 			if (_power%2 == 0 && _random.nextBoolean())
 				tmp = -tmp;
 
-			
 			return tmp;
 		}
 		else
 		{
-			
 			double tmp = (Double)inputs[0];
 			
 			tmp =  Math.pow(tmp, _power);

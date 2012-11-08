@@ -14,22 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.swedish;
+package com.analog.lyric.dimple.FactorFunctions;
 
-import java.util.ArrayList;
-
-import com.analog.lyric.dimple.model.Port;
-
-public abstract class SwedishDistributionGenerator 
+public class HybridRealSquare extends HybridRealFixedPower 
 {
-	protected Port _p;
-	//protected Random _random;
-	
-	public SwedishDistributionGenerator(Port p)
+
+	public HybridRealSquare() 
 	{
-		_p = p;
+		super(2);
 	}
-	
-	public abstract void initialize() ;	
-	public abstract void generateDistributionInPlace(ArrayList<Object> input);
+
+
 }
