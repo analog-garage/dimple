@@ -16,6 +16,7 @@
 
 function testHMMTransitionAndObservationEstimationGibbs()
 
+
 debugPrint = false;
 repeatable = true;
 
@@ -154,9 +155,12 @@ dtrace(debugPrint,'Gibbs KL divergence of observation distribution:'); dtrace(de
 
 
 % Compare with Baum-Welch ============================================
+%setSolver('sumproduct');
+setSolver('sumproduct');
 fg2 = FactorGraph();
-fg2.Solver = 'sumproduct';
 fg2.Solver.setNumIterations(1);
+
+
 
 % Variables
 state2 = Discrete(0:numStates-1,1,hmmLength);
@@ -181,6 +185,7 @@ dtrace(debugPrint,'Starting Baum-Welch solve');
 t2 = tic;
 fg2.baumWelch({transitionFactor2, observationFactor2},numRestarts,numReEstimations);
 if (debugPrint); toc(t2); end;
+
 
 
 Ooutput2 = zeros(numObsValues,numStates);
@@ -214,9 +219,7 @@ dtrace(debugPrint,'Baum-Welch KL divergence of observation distribution:'); dtra
 
 % Assertions
 assert(KLDivergenceObsDistribution < 0.01);
-% ***** COMMENTED OUT BECAUSE IT FAILS ONLY WHEN RUNNING FROM testDimple
-% ***** BUT TEST PASSES WHEN RUNNING STAND-ALONE
-% assert(KLDivergenceObsDistribution2 < 0.01);
+assert(KLDivergenceObsDistribution2 < 0.01);
 
 
 

@@ -118,8 +118,8 @@ dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDive
 
 
 % Compare with Baum-Welch ============================================
+setSolver('sumproduct');
 fg2 = FactorGraph();
-fg2.Solver = 'sumproduct';
 fg2.Solver.setNumIterations(1);
 
 % Variables
@@ -151,7 +151,7 @@ dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(K
 
 % Assertions
 assertTrue(KLDivergenceRate < 0.001);   % Gibbs accuracy
-%assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
+assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
 
 
 

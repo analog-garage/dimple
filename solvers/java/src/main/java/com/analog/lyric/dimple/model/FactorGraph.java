@@ -180,15 +180,23 @@ public class FactorGraph extends FactorBase
 		_solverFactorGraph = factory.createFactorGraph(this);
 
 		for (VariableBase var : _boundaryVariables)
+		{
+			System.out.println("Here?");
 			var.attach(_solverFactorGraph);
+		}
 
 		//Create solvers for all the factors
 		for (VariableBase var : _ownedVariables)
+		{
+			System.out.println("Here?");
 			var.attach(_solverFactorGraph);
+		}
 
 		//Create solvers for all the variables
 		for (FactorBase f : _ownedFactors)
 		{
+			System.out.println("Here?");
+
 			FactorGraph subgraph = f.asFactorGraph();
 			if (subgraph != null)
 				subgraph.setSolverFactory(factory);

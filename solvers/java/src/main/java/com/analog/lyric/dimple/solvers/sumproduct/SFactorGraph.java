@@ -63,16 +63,6 @@ public class SFactorGraph extends SFactorGraphBase
 			throw new DimpleException("Not implemented");
 	}
 	
-	/*
-
-	public ISolverTableFactor createTableFactor(TableFactor factor) 
-	{
-		// TODO Auto-generated method stub
-		STableFactor tf = new STableFactor(factor);
-		setDampingForTableFunction(tf);
-		return tf;
-	}
-	 */
 	public ISolverVariable createVariable(VariableBase var)  
 	{
 		if (var.getModelerClassName().equals("FiniteFieldVariable"))

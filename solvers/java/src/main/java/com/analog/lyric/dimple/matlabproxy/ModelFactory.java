@@ -32,10 +32,6 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
  */
 public class ModelFactory
 {
-	private IFactorGraphFactory _factorGraphFactory;
-
-	// Create discrete variables
-
 
 	public MultivariateMsg createMultivariateMsg(double [] means, double [][] covar)
 	{
@@ -168,8 +164,7 @@ public class ModelFactory
 
 	public void setSolver(IFactorGraphFactory solver) 
 	{
-		_factorGraphFactory = solver;
-		Model.getInstance().setDefaultGraphFactory(_factorGraphFactory);
+		Model.getInstance().setDefaultGraphFactory(solver);
 	}
 
 }
