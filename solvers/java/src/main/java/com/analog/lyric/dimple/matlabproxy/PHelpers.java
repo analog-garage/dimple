@@ -82,6 +82,9 @@ public class PHelpers
 		
 	public static PFactorVector convertToFactorVector(Node [] nodes)
 	{
+		if (nodes.length == 0)
+			return new PFactorVector();
+		
 		if (nodes[0] instanceof DiscreteFactor)
 			return new PDiscreteFactorVector(nodes);
 		else if (nodes[0] instanceof FactorGraph)
@@ -108,6 +111,9 @@ public class PHelpers
 	{
 		boolean isDiscrete = false;
 		boolean allSame = true;
+		
+		if (variables.length == 0)
+			return new PVariableVector();
 
 		isDiscrete = (variables[0] instanceof Discrete);
 

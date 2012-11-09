@@ -27,6 +27,10 @@ import com.analog.lyric.dimple.model.VariableList;
 
 public class PFactorVector extends PNodeVector
 {
+	public PFactorVector()
+	{
+	}
+	
 	public PFactorVector(Factor f)
 	{
 		this(new Node[] {f});
