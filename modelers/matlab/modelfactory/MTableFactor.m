@@ -28,6 +28,18 @@ classdef MTableFactor < MFactor
             obj = obj@MFactor(graph,id);
         end
 
+        function retval = isGraph(obj)
+            retval = false;
+        end
+        function retval = isFactor(obj)
+           retval = true; 
+        end
+        function retval = isDiscrete(obj)
+            retval = true;
+        end
+        function retval = size(obj)
+            retval = 1;
+        end
     end
     
 end

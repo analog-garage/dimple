@@ -120,7 +120,8 @@ void nestgraph(int nlhs, mxArray *plhs[],
 	getVariables(nrhs,prhs,3,4,vars);
 	int parentId = getInt(nrhs,prhs,1);
 	int childId = getInt(nrhs,prhs,2);
-	_dimple.GetGraph(parentId)->AddGraph(_dimple.GetGraph(childId),vars);
+	FactorGraph * ng = _dimple.GetGraph(parentId)->AddGraph(_dimple.GetGraph(childId),vars);
+    
 }
 
 

@@ -46,7 +46,7 @@ classdef MVariableVector < handle
                 error('invalid constructor call');
             end
             
-
+            
         end
         
         function setInput(obj,varids,inputs)
@@ -56,7 +56,11 @@ classdef MVariableVector < handle
         
         function beliefs = getBeliefs(obj,varids)
             varIds = obj.VarIds(varids+1);
-            beliefs = obj.Solver.getMultipleVariableBelief(varIds);            
+            beliefs = obj.Solver.getMultipleVariableBelief(varIds);
+        end
+        
+        function beliefs = getDiscreteBeliefs(obj,varids)
+            beliefs = obj.getBeliefs(varids);
         end
         
         function output = getSlice(obj,varIds)
@@ -68,7 +72,7 @@ classdef MVariableVector < handle
             error('not supported');
         end
         
-        function output = concat(obj,varMats,varMatIndices,varIndices)            
+        function output = concat(obj,varMats,varMatIndices,varIndices)
             
             if nargin == 4
                 ids = zeros(numel(varIndices),1);
@@ -78,7 +82,7 @@ classdef MVariableVector < handle
             else
                 ids = [];
                 for i = 1:length(varMats)
-                   ids = [ids; reshape(varMats{i}.VarIds,numel(varMats{i}.VarIds),1)]; 
+                    ids = [ids; reshape(varMats{i}.VarIds,numel(varMats{i}.VarIds),1)];
                 end
             end
             output = MVariableVector(ids,obj.Solver);
@@ -89,15 +93,15 @@ classdef MVariableVector < handle
         end
         
         function setPrimitivePolynomial(obj,poly)
-           obj.Solver.setPrimitivePolynomial(obj.VarIds,poly); 
+            obj.Solver.setPrimitivePolynomial(obj.VarIds,poly);
         end
         
         function delete(obj)
-           obj.Solver.removeMultipleVariableRef(obj.VarIds); 
+            obj.Solver.removeMultipleVariableRef(obj.VarIds);
         end
         
         function variable = getVariable(obj,ind)
-           variable = MVariable(obj.Solver,obj.VarIds(ind+1)); 
+            variable = MVariable(obj.Solver,obj.VarIds(ind+1));
         end
     end
     

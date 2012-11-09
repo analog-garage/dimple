@@ -30,7 +30,7 @@ public:
 	FactorGraph(vector<Variable *> & args,bool isMaster);
 	~FactorGraph(void);
 	Variable * GetVariable(int id);
-	void AddGraph(FactorGraph * graph,vector<Variable*> & graphArgs);
+	FactorGraph * AddGraph(FactorGraph * graph,vector<Variable*> & graphArgs);
 	FactorGraph * NewInstance(vector<Variable*> & args);
 	vector<Variable*> * GetVariables();
 	vector<Function*> * GetFunctions();

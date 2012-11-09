@@ -23,24 +23,24 @@ classdef MFactorGraph < handle
     
     methods
         function obj = MFactorGraph(varVector,solver)
-           obj.Solver = solver;
-           
-           varids = [];
-           if ~isempty(varVector)
-               varids = varVector.VarIds;
-           end
-           
-           obj.GraphId = obj.Solver.createGraph(varids);
-
-        end
-       
-        function exists = customFactorExists(obj,funcName)
-            exists = obj.Solver.customFactorExists(obj.GraphId,funcName);
-
+            obj.Solver = solver;
+            
+            varids = [];
+            if ~isempty(varVector)
+                varids = varVector.VarIds;
+            end
+            
+            obj.GraphId = obj.Solver.createGraph(varids);
+            
         end
         
-
-    
+        function exists = customFactorExists(obj,funcName)
+            exists = obj.Solver.customFactorExists(obj.GraphId,funcName);
+            
+        end
+        
+        
+        
         function initialize(obj)
             obj.Solver.initialize(obj.GraphId);
         end
@@ -88,7 +88,7 @@ classdef MFactorGraph < handle
         end
         
         function delete(obj)
-           obj.Solver.removeGraphRef(obj.GraphId); 
+            obj.Solver.removeGraphRef(obj.GraphId);
         end
         
         function graph = getGraph(obj)
@@ -96,11 +96,11 @@ classdef MFactorGraph < handle
         end
         
         function output = createFactor(obj,factorFunction,vars)
-            id = obj.Solver.createTable(obj.GraphId,factorFunction.Table,factorFunction.Values);            
+            id = obj.Solver.createTable(obj.GraphId,factorFunction.Table,factorFunction.Values);
             output = obj.createTableFactor(id,vars,factorFunction.Name);
         end
-
-                
+        
+        
         function result = createTable(obj,table,value)
             id = obj.Solver.createTable(obj.GraphId,table,value);
             result = MComboTable(id);
@@ -109,10 +109,21 @@ classdef MFactorGraph < handle
         function output = createTableFactor(obj,tableId,varVector,funcName)
             output = MTableFactor(obj,tableId,varVector,funcName);
         end
-       
+        
+        function retval = size(obj)
+            retval = 1;
+        end
+        
         function func = createCustomFactor(obj,funcName,varVector)
             func = MCustomFactor(obj,funcName,varVector);
-        end        
+        end
+        
+        function solvers = getSolvers(obj,indices)
+            if length(indices) ~= 1 || indices(1) ~= 0
+                error('not supported');
+            end
+            solvers = {obj.getSolver()};
+        end
         
         function solver = getSolver(obj)
             solver = obj.Solver;
@@ -130,7 +141,7 @@ classdef MFactorGraph < handle
                 output{i} = MFactor(obj,funcIds(i));
             end
         end
-
+        
     end
     
     

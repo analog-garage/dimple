@@ -1023,7 +1023,12 @@ classdef FactorGraph < Node
         function retval = addGraph(parentGraph,childGraph,varargin)
             
             VectorObject = parentGraph.getVarVector(varargin{:});
-            retval = FactorGraph('nestedGraph',parentGraph.VectorObject.addGraph(childGraph.VectorObject,VectorObject));
+            newGraph = parentGraph.VectorObject.addGraph(childGraph.VectorObject,VectorObject);
+            if isempty(newGraph)
+                retval = [];
+            else
+                retval = FactorGraph('nestedGraph',newGraph);
+            end
         end
         
         function retval = addTable(obj,table,varargin)

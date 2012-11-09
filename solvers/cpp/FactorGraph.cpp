@@ -158,7 +158,7 @@ Function * FactorGraph::createTableFunc(int tableId, vector<Variable*>  & args)
 
 
 
-void FactorGraph::AddGraph(FactorGraph * graph, vector<Variable*> & graphArgs)
+FactorGraph * FactorGraph::AddGraph(FactorGraph * graph, vector<Variable*> & graphArgs)
 {
 	if (_isFrozen)
 		throw DimpleException("cannot call NewFunc on frozen graph");
@@ -188,7 +188,7 @@ void FactorGraph::AddGraph(FactorGraph * graph, vector<Variable*> & graphArgs)
 	{
 		_nestedVars.push_back(g->_nestedVars[i]);
 	}
-
+    return g;
 }
 
 FactorGraph * FactorGraph::NewInstance(vector<Variable*> & args)

@@ -150,8 +150,8 @@ dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(K
 
 
 % Assertions
-assert(KLDivergenceRate < 0.001);   % Gibbs accuracy
-assert(KLDivergenceRate < 0.001);   % Baum-Welch accuracy
+assertTrue(KLDivergenceRate < 0.001);   % Gibbs accuracy
+%assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
 
 
 
