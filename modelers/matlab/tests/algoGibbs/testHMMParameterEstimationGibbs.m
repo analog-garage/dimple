@@ -16,7 +16,7 @@
 
 function testHMMParameterEstimationGibbs()
 
-debugPrint = true; % FIXME ****** false;
+debugPrint = false;
 repeatable = true;
 
 dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
