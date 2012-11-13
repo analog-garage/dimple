@@ -51,8 +51,10 @@ PASSED in 6.460 seconds.
 What is {swname}
 ----------------
 {swname} is a tool for rapidly prototyping algorithms that can be described with Factor Graphs and solved with belief propagation algorithms or sampling based algorithms.
-Features
-* Runs the sum product, min sum, particle bp, or Gibbs algorithm on a factor graph.
+
+{swname} features:
+
+* Runs the sum-product, mi- sum, particle BP, or Gibbs algorithm on a factor graph.
 * Supports arbitrary discrete variables.
 * Some solvers (Particle BP and Gibbs) support continuous variables.
 * Supports arbitrary factor functions.
@@ -65,7 +67,7 @@ We introduce factor graphs, a powerful tool for statistical modeling.
 Factor graphs can be used to describe a number of commonly used 
 statistical models, such as hidden Markov models, Markov random 
 fields, Kalman filters, and Bayes nets. 
-.
+
 Suppose that we are given a set of n discrete random variables:
 [latex]
 $a_1,...,a_n$
@@ -397,11 +399,16 @@ HMM.NumIterations=20;
 HMM.solve;
 ----
 
-IMPORTANT: Currently the Sum-Product algorithm is implemented using a Flooding Schedule.  The schedule can be described as:
-. Compute all equals nodes
-. Compute all function nodes
-. Repeat for a specified number of iterations.
+[IMPORTANT]
+===============================
+By default, the solver will use either a Flooding Schedule or a Tree Schedule depending on whether the factor-graph contains cycles.  A loopy graph (one containing at least one cycle) will use a Flooding Schedule by default.  This schedule can be described as:
 
+* Compute all variable nodes
+* Compute all factor nodes
+* Repeat for a specified number of iterations.
+
+If the factor-graph is a tree (one that contains no cycles), the solver will automatically detect this and use a Tree Schedule by default.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  In this case, NumIterations should be 1, which is its default value.
+===============================
 
 
 Accessing Results
@@ -695,8 +702,8 @@ Some of these are standard MATLAB functions, and can be used with the addFactor 
 
 Some other functions return nestable graphs, and are used with the addGraph method to create factors. They are:
 
-*getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
-*getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+* getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
+* getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
 
 Rolled Up Factor Graphs
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1006,7 +1013,7 @@ For any single variable Var, the Belief method will return a vector whose length
 For an array of variables Var, the Belief method will return an array of vectors (i.e., an array one dimension larger) containing the beliefs of each variable.
 
 ----
-Disp(Var.Belief);
+disp(Var.Belief);
 ----
 
 The Belief method is only accessible after having run the solver.
