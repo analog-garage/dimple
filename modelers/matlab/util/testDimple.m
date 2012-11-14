@@ -122,15 +122,19 @@ function failed = testDimple(varargin)
     parser.addFlag('exit');
     parser.addFlag('core_only');
     parser.addFlag('log');
+    parser.addFlag('verbose');      % Synonymous with 'log'
     parser.addOption('one_algo');
 
     % Parse options and get struct.
     options = parser.parse(varargin);
-    bLog          = options.log;
+    bLog          = options.log || options.verbose;
     one_algo      = options.one_algo;
     core_only     = options.core_only;
     bStoreAndExit = options.exit;
     test_csolver  = options.csolver;
+    
+    global DIMPLE_TEST_VERBOSE;
+    DIMPLE_TEST_VERBOSE = bLog;
     
     if ~isempty(varargin)
         dtrace(1, '%u args:', length(varargin));
@@ -192,9 +196,15 @@ function failed = testDimple(varargin)
     
     cd(initial_dir);
     setSolver(initial_solver);
+    dtrace(1, '\n\n**********************************************************************');
+    if (failed == 0)
+        dtrace(1, 'PASSED ALL TESTS');
+    else
+        dtrace(1, 'FAILED TESTS');
+    end
+    dtrace(1, '%d of %d tests passed, %d failed', passed, ran, failed);
+    dtrace(1, '**********************************************************************');
 
-    dtrace(1, '%d/%d tests passed, %d failed\n', passed, ran, failed);
-    
     failureFileName = 'testDimple.failures.txt';
     if exist(fullfile(pwd, failureFileName), 'file')
         delete(failureFileName);
@@ -256,7 +266,7 @@ function [passed, failed, ran, faults] = test_solver(core_dir, algo_dir, solver,
     ran = ran + ran2;
     faults = [faults faults2];
 
-    dtrace(bLog, '%d%/%d tests passed, %d failed\n', passed, ran, failed);
+    dtrace(bLog, '%d of %d tests passed, %d failed\n', passed, ran, failed);
     dtrace(bLog, '------------------------------------------------\n');
 end
 
@@ -314,7 +324,7 @@ function [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir, test
             faults = [faults faults1];
         end
     end
-    dtrace(bLog, '%d%/%d tests passed, %d failed\n', passed, ran, failed);
+    dtrace(bLog, '%d of %d tests passed, %d failed\n', passed, ran, failed);
     dtrace(bLog, '--test_algorithm~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 end
 
@@ -348,7 +358,7 @@ function [passed, failed, ran, faults] = test_algorithms(parent_dirs, core_dir, 
         end
         cd(start_dir());
 
-        dtrace(bLog, '%d%/%d tests passed, %d failed\n', passed, ran, failed);
+        dtrace(bLog, '%d of %d tests passed, %d failed\n', passed, ran, failed);
         dtrace(bLog, '--test_algorithms');
     end
 end
@@ -388,7 +398,7 @@ end
 
 function writeFaultsToFile(passed, failed, ran, faults, failureFileName)
     failureFile = fopen(failureFileName, 'w');
-    fprintf(failureFile, 'testDimple had errors. %d/%d tests passed, %d failed\n', passed, ran, failed);
+    fprintf(failureFile, 'testDimple had errors. %d of %d tests passed, %d failed\n', passed, ran, failed);
     
     for k = 1:numel(faults)
         faultData = faults(k);

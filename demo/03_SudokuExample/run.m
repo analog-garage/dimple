@@ -13,6 +13,8 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global DIMPLE_TEST_VERBOSE;
+if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Create input for puzzle
@@ -85,23 +87,32 @@ end
 
 %Now let's iterate and, for each iteration, check if we have the right
 %answer.
-drawSudoku(vars);
-figure(gcf);
+if (~silent)
+    drawSudoku(vars);
+    figure(gcf);
+end;
 fg.initialize();
 
 
 for i = 1:25
-    disp(['iteration: ' num2str(i)]);
+    if (~silent)
+        disp(['iteration: ' num2str(i)]);
+    end
     
     fg.Solver.iterate(1);
     
-    drawSudoku(vars);
+    if (~silent)
+        drawSudoku(vars);
+    end
+    
     valid = CheckSolution(vars,solution);
     if valid
         break
     end
     pause(.01);
 end
-drawSudoku(vars);
 
-valid
+if (~silent)
+    drawSudoku(vars);
+    valid
+end

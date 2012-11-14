@@ -13,6 +13,8 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global DIMPLE_TEST_VERBOSE;
+if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,5 +46,8 @@ priors =  [.75 .6 .9 .1 .2 .9]';
 d.Input = priors;
 MyGraph.Solver.setNumIterations(20);
 MyGraph.solve();
-disp((d.Belief>.5)');
-d.Belief
+if (~silent)
+    disp((d.Belief>.5)');
+    d.Belief
+end
+

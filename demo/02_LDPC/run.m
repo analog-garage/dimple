@@ -15,12 +15,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % For use with automated testing
-global Dimple_TESTING_DEMOS;
-if Dimple_TESTING_DEMOS, 
+global Dimple_TESTING_DEMOS DIMPLE_TEST_VERBOSE;
+if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
+if Dimple_TESTING_DEMOS
     maxSnr = 0.5; 
 else
     maxSnr = 8;
 end
+
 
 % Check for required toolbox.
 if isempty(which('awgn'))
@@ -38,5 +40,5 @@ descriptions = {'Analytic','MinSum'};
 load A;
 cr = LdpcRunner(20,1,A);
 
-LyricBerTool.run(berName,description,cr,0:.5:maxSnr,200,1e8,20,1,names,descriptions);
+LyricBerTool.run(berName,description,cr,0:.5:maxSnr,200,1e8,20,1,names,descriptions,Inf,Inf,silent);
 

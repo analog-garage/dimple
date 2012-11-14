@@ -13,6 +13,9 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global DIMPLE_TEST_VERBOSE;
+if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
+
 
 %Pick an SNR value for this run
 snrVal = 3;
@@ -58,10 +61,14 @@ x.Input = input;
 ldpc.Solver.setNumIterations(100);
 tic
 ldpc.solve();
-toc
+if (~silent)
+    toc
+end
 
 %Retrieve guesses and set number of errors.
 guesses = x.Value;
 numMsgErrors = sum((guesses(1:704) > .5) ~= msg);
-disp(numMsgErrors);
+if (~silent)
+    disp(numMsgErrors);
+end
 
