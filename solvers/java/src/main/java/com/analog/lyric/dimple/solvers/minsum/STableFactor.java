@@ -40,11 +40,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     protected double[][] _outPortMsgs = null;
     protected double [][] _savedOutMsgArray;
     protected double [] _dampingParams;
-    private int _k;
-    TableFactorEngine _tableFactorEngine;
-    KBestFactorEngine _kbestFactorEngine;
-    boolean _kIsSmallerThanDomain;
-	private boolean _dampingInUse = false;
+    protected int _k;
+    protected TableFactorEngine _tableFactorEngine;
+    protected KBestFactorEngine _kbestFactorEngine;
+    protected boolean _kIsSmallerThanDomain;
+    protected boolean _dampingInUse = false;
 
     /*
      * We also save the values from the combo table.  This is necessary

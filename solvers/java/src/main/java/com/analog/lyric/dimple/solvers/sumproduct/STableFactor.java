@@ -39,18 +39,18 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	double [][] _inPortMsgs;
-	double [][] _outMsgArray;
-	double [][] _savedOutMsgArray;
-	double [][][] _outPortDerivativeMsgs;
-	double [] _dampingParams;
-	boolean _initCalled = true;
-	TableFactorEngine _tableFactorEngine;
-	KBestFactorEngine _kbestFactorEngine;
-	private int _k;
-	private boolean _kIsSmallerThanDomain = false;
-	private boolean _updateDerivative = false;
-	private boolean _dampingInUse = false;
+	protected double [][] _inPortMsgs;
+	protected double [][] _outMsgArray;
+	protected double [][] _savedOutMsgArray;
+	protected double [][][] _outPortDerivativeMsgs;
+	protected double [] _dampingParams;
+	protected boolean _initCalled = true;
+	protected TableFactorEngine _tableFactorEngine;
+	protected KBestFactorEngine _kbestFactorEngine;
+	protected int _k;
+	protected boolean _kIsSmallerThanDomain = false;
+	protected boolean _updateDerivative = false;
+	protected boolean _dampingInUse = false;
 	
 
 	public STableFactor(Factor factor)  

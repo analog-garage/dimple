@@ -207,15 +207,15 @@ public class SVariable extends SVariableBase
 
         double[] outMsgs = _outMsgArray[outPortNum];
 
-        double damping = _dampingParams[outPortNum];
-        
-        
-        double[] saved = null;
-        if (damping != 0)
+        if (_dampingInUse)
         {
-        	saved = _savedOutMsgArray[outPortNum];
-        	for (int i = 0; i < outMsgs.length; i++)
-        		saved[i] = outMsgs[i];
+        	double damping = _dampingParams[outPortNum];
+        	if (damping != 0)
+        	{
+        		double[] saved = _savedOutMsgArray[outPortNum];
+        		for (int i = 0; i < outMsgs.length; i++)
+        			saved[i] = outMsgs[i];
+        	}
         }
 
         
@@ -249,9 +249,16 @@ public class SVariable extends SVariableBase
         for (int m = 0; m < M; m++)
         	outMsgs[m] /= sum;
 
-        if (damping != 0)
-        	for (int m = 0; m < M; m++)
-        		outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+        if (_dampingInUse)
+        {
+        	double damping = _dampingParams[outPortNum];
+        	if (damping != 0)
+        	{
+        		double[] saved = _savedOutMsgArray[outPortNum];
+        		for (int m = 0; m < M; m++)
+        			outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+        	}
+        }
 	    
         if (_calculateDerivative)
         	updateDerivative(outPortNum);
@@ -289,15 +296,17 @@ public class SVariable extends SVariableBase
 	    for (int out_d = 0; out_d < D; out_d++ )
 	    {
             double[] outMsgs = _outMsgArray[out_d];
-            double damping = _dampingParams[out_d];
             
-            
-            double[] saved = null;
-            if (damping != 0)
+
+            if (_dampingInUse)
             {
-                saved = _savedOutMsgArray[out_d];
-            	for (int i = 0; i < outMsgs.length; i++)
-            		saved[i] = outMsgs[i];
+            	double damping = _dampingParams[out_d];
+            	if (damping != 0)
+            	{
+            		double[] saved = _savedOutMsgArray[out_d];
+            		for (int i = 0; i < outMsgs.length; i++)
+            			saved[i] = outMsgs[i];
+            	}
             }
             
             
@@ -329,9 +338,16 @@ public class SVariable extends SVariableBase
             }
             
             
-            if (damping != 0)
-            	for (int m = 0; m < M; m++)
-            		outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+            if (_dampingInUse)
+            {
+            	double damping = _dampingParams[out_d];
+            	if (damping != 0)
+            	{
+            		double[] saved = _savedOutMsgArray[out_d];
+            		for (int m = 0; m < M; m++)
+            			outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+            	}
+            }
             
 	    }
 	   

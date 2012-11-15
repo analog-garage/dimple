@@ -49,14 +49,16 @@ public class TableFactorEngine
         double[] outputMsgs = _tableFactor._outPortMsgs[outPortNum];
         int outputMsgLength = outputMsgs.length;
         
-    	double damping = _tableFactor._dampingParams[outPortNum];
-    	double[] saved = null;
-    	if (damping != 0)
-    	{
-    		saved = _tableFactor._savedOutMsgArray[outPortNum];
-    		for (int i = 0; i < outputMsgs.length; i++)
-    			saved[i] = outputMsgs[i];
-    	}
+        if (_tableFactor._dampingInUse)
+        {
+        	double damping = _tableFactor._dampingParams[outPortNum];
+        	if (damping != 0)
+        	{
+        		double[] saved = _tableFactor._savedOutMsgArray[outPortNum];
+        		for (int i = 0; i < outputMsgs.length; i++)
+        			saved[i] = outputMsgs[i];
+        	}
+        }
 
         
         for (int i = 0; i < outputMsgLength; i++) 
@@ -88,9 +90,16 @@ public class TableFactorEngine
         }
         
         // Damping
-    	if (damping != 0)
-    		for (int i = 0; i < outputMsgLength; i++)
-    			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+        if (_tableFactor._dampingInUse)
+        {
+        	double damping = _tableFactor._dampingParams[outPortNum];
+        	if (damping != 0)
+        	{
+        		double[] saved = _tableFactor._savedOutMsgArray[outPortNum];
+        		for (int i = 0; i < outputMsgLength; i++)
+        			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+        	}
+        }
         
 		// Normalize min value
         for (int i = 0; i < outputMsgLength; i++) 
@@ -111,11 +120,15 @@ public class TableFactorEngine
 	    	double[] outputMsgs = _tableFactor._outPortMsgs[port];
 	    	int outputMsgLength = outputMsgs.length;
 	    	
-	    	if (_tableFactor._dampingParams[port] != 0)
+	    	if (_tableFactor._dampingInUse)
 	    	{
-		    	double[] saved = _tableFactor._savedOutMsgArray[port];
-	    		for (int i = 0; i < outputMsgs.length; i++)
-	    			saved[i] = outputMsgs[i];
+	    		double damping = _tableFactor._dampingParams[port];
+	    		if (damping != 0)
+	    		{
+	    			double[] saved = _tableFactor._savedOutMsgArray[port];
+	    			for (int i = 0; i < outputMsgs.length; i++)
+	    				saved[i] = outputMsgs[i];
+	    		}
 	    	}
 
 	    	for (int i = 0; i < outputMsgLength; i++) 
@@ -145,18 +158,23 @@ public class TableFactorEngine
 	    }
 	   
 	    // Damping
-	    for (int port = 0; port < numPorts; port++)
+	    if (_tableFactor._dampingInUse)
 	    {
-	    	double damping = _tableFactor._dampingParams[port];	    	
-	    	if (damping != 0)
+	    	for (int port = 0; port < numPorts; port++)
 	    	{
-	    		double[] outputMsgs = _tableFactor._outPortMsgs[port];
-	    		double[] saved = _tableFactor._savedOutMsgArray[port];
-	    		int outputMsgLength = outputMsgs.length;
-	    		for (int i = 0; i < outputMsgLength; i++)
-	    			outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+	    		double damping = _tableFactor._dampingParams[port];
+	    		if (damping != 0)
+	    		{
+	    			double[] saved = _tableFactor._savedOutMsgArray[port];
+	    			double[] outputMsgs = _tableFactor._outPortMsgs[port];
+
+	    			int outputMsgLength = outputMsgs.length;
+	    			for (int i = 0; i < outputMsgLength; i++)
+	    				outputMsgs[i] = (1-damping)*outputMsgs[i] + damping*saved[i];
+	    		}
 	    	}
 	    }
+    	
 	    
     	
 	    // Normalize the outputs
