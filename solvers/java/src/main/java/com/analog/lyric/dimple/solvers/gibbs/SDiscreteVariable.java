@@ -30,6 +30,9 @@ import com.analog.lyric.dimple.solvers.core.Utilities;
 
 public class SDiscreteVariable extends SVariableBase implements ISolverVariableGibbs
 {
+    protected double[][] _inPortMsgs = null;
+    protected int[][] _outPortMsgs = null;
+    protected int _numPorts;
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
 	protected double[] _priors;
@@ -37,6 +40,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	protected int _bestSampleIndex;
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
+	protected boolean _initCalled = true;
 
 	public SDiscreteVariable(VariableBase var) 
 	{
@@ -63,16 +67,13 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 
 	public void update()
 	{
-		ArrayList<Port> ports = _var.getPorts();
+		updateCache();
+
 		double[] priors = (double[])_priors;
 		int messageLength = priors.length;
 		int numPorts = _var.getPorts().size();
 		double minEnergy = Double.POSITIVE_INFINITY;
 
-		double[][] inPortMsgs = new double[numPorts][];
-		for (int port = 0; port < numPorts; port++) 
-			inPortMsgs[port] = (double[])ports.get(port).getInputMsg();
-		
 		double[] conditionalProbability = new double[messageLength];
 
 		// Compute the conditional probability (initially in energy representation before converting to probability)
@@ -80,7 +81,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		{
 			double out = priors[index];						// Sum of the input prior...
 			for (int port = 0; port < numPorts; port++)
-				out += inPortMsgs[port][index];				// Plus each input message value
+				out += _inPortMsgs[port][index];			// Plus each input message value
 			
 			if (out < minEnergy) minEnergy = out;			// For normalization
 
@@ -100,7 +101,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 
 		// Send the sample value to all output ports
 		for (int port = 0; port < numPorts; port++) 
-			ports.get(port).setOutputMsg(_sampleIndex);
+			_outPortMsgs[port][0] = _sampleIndex;
 	}
 
 	public void updateBelief()
@@ -110,18 +111,20 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 
 	public Object getBelief() 
 	{
-		double[] outBelief = new double[_varDiscrete.getDiscreteDomain().getElements().length];
+		updateCache();
+		int domainLength = _priors.length;
+		double[] outBelief = new double[domainLength];
 		long sum = 0;
-		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+		for (int i = 0; i < domainLength; i++)
 			sum+= _beliefHistogram[i];
 		if (sum != 0)
 		{
-			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+			for (int i = 0; i < domainLength; i++)
 				outBelief[i] = (double)_beliefHistogram[i]/(double)sum;
 		}
 		else
 		{
-			for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++)
+			for (int i = 0; i < domainLength; i++)
 				outBelief[i] = ((double[])_priors)[i];		// Disconnected variable that has never been updated
 		}
 		
@@ -211,9 +214,37 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
     
 	public void initialize()
 	{
+		super.initialize();
+		
+		//Flag that init was called so that we can update the cache next time we need cached
+		//values.  We can't do the same thing as the tableFunction (update the cache here)
+		//because the function init gets called after variable init.  If we updated teh cache
+		//here, the table function init would replace the arrays for the outgoing message
+		//and our update functions would update stale messages.
+		//System.out.println("Variable init");
+		_initCalled = true;
+
 		_bestSampleIndex = -1;
 		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) 
 			_beliefHistogram[i] = 0;
+	}
+
+	private void updateCache()
+	{
+		if (_initCalled)
+		{
+			_initCalled = false;
+	    	ArrayList<Port> ports = _var.getPorts();
+	    	_numPorts= ports.size();
+		    _inPortMsgs = new double[_numPorts][];
+		    _outPortMsgs = new int[_numPorts][];
+		    
+		    for (int port = 0; port < _numPorts; port++)
+		    {
+		    	_inPortMsgs[port] = (double[])ports.get(port).getInputMsg();
+		    	_outPortMsgs[port] = (int[])ports.get(port).getOutputMsg();
+		    }
+		}
 	}
 	
 	public double getEnergy()  
