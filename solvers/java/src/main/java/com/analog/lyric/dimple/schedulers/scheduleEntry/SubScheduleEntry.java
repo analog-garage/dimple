@@ -74,10 +74,13 @@ public class SubScheduleEntry implements IScheduleEntry
 
 	public Iterable<Port> getPorts()
 	{
-		//This is a subraph.
+		//This is a subgraph.
 		ArrayList<Port> ports = new ArrayList<Port>();
 
 		FactorGraph subGraph = this.getSchedule().getFactorGraph();
+		
+		if (subGraph == null)	// If no sub-graph associated with this graph, don't return any ports
+			return null;
 		
 		//Get all the non boundary variables associated with this sub graph
 		//and add their ports.  subGraph getVariables does not return boundary variables.

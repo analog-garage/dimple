@@ -123,22 +123,31 @@ public class FixedSchedule extends ScheduleBase
 		//Go through schedule
 		for (IScheduleEntry entry : _schedule)
 		{
-			
-			for (Port p : entry.getPorts())
+			Iterable<Port> ports = entry.getPorts();
+
+			if (ports != null)
 			{
-
-				//Make sure the element is contained in the Factor Graph's ports.
-				if (!setOfAllPorts.contains(p))
+				for (Port p : ports)
 				{
-					throw new DimpleException("Schedule contains illegal port: " + p);
-				}
+					//Make sure the element is contained in the Factor Graph's ports.
+					if (!setOfAllPorts.contains(p))
+						throw new DimpleException("Schedule contains illegal port: " + p);
 
-				//Also remove it from whatsLeft to indicate the edge has been updated.
-				whatsLeft.remove(p);
-				
+					//Also remove it from whatsLeft to indicate the edge has been updated.
+					whatsLeft.remove(p);
+				}
 			}
-			
-				
+			else
+			{
+				// This is a hack needed for schedulers that use sub-schedules without there being sub-graphs.
+				// As a result, they can't return ports, because they would get ports from the variables and factors in the sub-graph.
+				// The GibbsSequentialScanScheudler is an example of a scheduler that uses sub-schedules without there being sub-graphs.
+				// So, for this case, we simply skip the check that all ports are covered, and trust the scheduler.
+				// Perhaps one day we can restructure this test so that it doesn't rely on sub-schedules being associated with sub-graphs.
+				if (whatsLeft.size() != 0)
+					whatsLeft.clear();
+				break;
+			}
 		}
 		
 		//Now, complain if we didn't update a port we should have updated.

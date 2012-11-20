@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverRandomGenerator;
 
 /**
@@ -73,6 +74,9 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 	{
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
 		
+		// Create a single sub-graph schedule entry so that it will be done all at once with a single update
+		FixedSchedule subSchedule = new FixedSchedule();
+
 		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
 		int variableIndex = GibbsSolverRandomGenerator.rand.nextInt(_numVariables);
 		VariableBase v = ((ArrayList<VariableBase>)_variables.values()).get(variableIndex);
@@ -80,9 +84,12 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 		{
 			INode f = p.getConnectedNode();
 			Port fPort = p.getSibling();
-			updateList.add(new EdgeScheduleEntry(f,fPort));
+			subSchedule.add(new EdgeScheduleEntry(f,fPort));
 		}
-		updateList.add(new NodeScheduleEntry(v));
+		subSchedule.add(new NodeScheduleEntry(v));
+		
+		// Create a single sub-schedule entry that includes all of the updates
+		updateList.add(new SubScheduleEntry(subSchedule));
 		
 		return updateList.iterator();
 	}
