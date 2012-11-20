@@ -71,13 +71,16 @@ classdef VariableBase < Node
         
         
         function guess = get.Guess(obj)
-            guess = wrapNames(obj.VectorObject.getGuess());
+            tmp = cell(obj.VectorObject.getGuess());
+            guess = obj.unpack(tmp,obj.VectorIndices);
         end
+        
         function set.Guess(obj,guess)
-            if obj.VectorObject.size() > 1
-                error('only support one variable right now');
+            input = obj.pack(guess,obj.VectorIndices);
+            if ~iscell(input)
+                input = num2cell(input);
             end
-            obj.VectorObject.setGuess(guess);
+            obj.VectorObject.setGuess(input);
         end
         
         
