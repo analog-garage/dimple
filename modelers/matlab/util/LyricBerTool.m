@@ -28,7 +28,7 @@ classdef LyricBerTool < handle
         descriptions;
         runformaxseconds;
         runformaxbits;
-
+        silent;
         cumnumbits;
     end
 
@@ -41,7 +41,7 @@ classdef LyricBerTool < handle
             m = floor(secs/60);
             s = secs-60*m;
         end
-        function run(name,description,CodeRunnerClass,snrValues,maxNumErrs,maxNumBits,maxCodesPerIter,overwriteFile,names,descriptions,runformaxseconds,runformaxbits)
+        function run(name,description,CodeRunnerClass,snrValues,maxNumErrs,maxNumBits,maxCodesPerIter,overwriteFile,names,descriptions,runformaxseconds,runformaxbits,silent)
             berobj = LyricBerTool();
             if nargin < 8
                 overwriteFile = 0;
@@ -62,6 +62,9 @@ classdef LyricBerTool < handle
                 %will never fail if no argument is added (run like normal)
                 runformaxbits = Inf;
             end
+            if nargin < 13
+                silent = false;
+            end
             berobj.name = name;
             berobj.description = description;
             berobj.CodeRunnerClass = CodeRunnerClass;
@@ -74,6 +77,7 @@ classdef LyricBerTool < handle
             berobj.descriptions = descriptions;
             berobj.runformaxseconds = runformaxseconds;
             berobj.runformaxbits = runformaxbits;
+            berobj.silent = silent;
             
             berobj.cumnumbits = 0;
             %Start timing how long we've run
@@ -192,7 +196,9 @@ classdef LyricBerTool < handle
 
             codesPerIter = 1;
 
-            berRecord.SnrRecord(snrIndex)
+            if (~berobj.silent)
+                berRecord.SnrRecord(snrIndex)
+            end
 
             N = 0;
             TotalBer = 0;
@@ -223,12 +229,14 @@ classdef LyricBerTool < handle
                 ber = totNumErrors/totNumBits;
                 berRecord.SnrRecord(snrIndex).Ber = totNumErrors/totNumBits;
 
-                fprintf('totNumErrors = %d\n',totNumErrors)
-                fprintf('totNumBits = %d\n',totNumBits)
-                fprintf('ber = %f\n',ber)
-                fprintf('Cumulative num bits = %d\n',berobj.cumnumbits)
                 [d h m s] = LyricBerTool.secs2dhms(toc);
-                fprintf('Total time run = %d:%d:%d:%f\n',d,h,m,s)
+                if (~berobj.silent)
+                    fprintf('totNumErrors = %d\n',totNumErrors)
+                    fprintf('totNumBits = %d\n',totNumBits)
+                    fprintf('ber = %f\n',ber)
+                    fprintf('Cumulative num bits = %d\n',berobj.cumnumbits)
+                    fprintf('Total time run = %d:%d:%d:%f\n',d,h,m,s)
+                end
 
                 save([berName],'berRecord');
                 for badCodeIndex = 1:length(badCodeInfo)
@@ -253,8 +261,10 @@ classdef LyricBerTool < handle
 
                 save([berRecord.TmpInfoName],'TmpCodeInfo');
 
-                plotBer(berobj.names,.99,berobj.descriptions);
-                pause(.1);
+                if (~berobj.silent)
+                    plotBer(berobj.names,.99,berobj.descriptions);
+                    pause(.1);
+                end
 
                 codesPerIter = codesPerIter * 2;
                 if (codesPerIter > berobj.maxCodesPerIter)
@@ -280,8 +290,10 @@ classdef LyricBerTool < handle
                         break;
                     end
 
-                    ratio
-                    thresh
+                    if (~berobj.silent)
+                        ratio
+                        thresh
+                    end
                 end
             end
         end

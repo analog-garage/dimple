@@ -27,7 +27,11 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 {	
-	
+    protected int[][] _inPortMsgs = null;
+    protected double[][] _outPortMsgs = null;
+    protected int _numPorts;
+
+    
 	public STableFactor(Factor factor) 
 	{
 		super(factor);
@@ -36,22 +40,20 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 	public void updateEdge(int outPortNum)
 	{
-		ArrayList<Port> ports = _factor.getPorts();
 		FactorTable factorTable = getFactorTable();
-	    double[] factorTableWeights = factorTable.getWeights();
-	    int numPorts = ports.size();
+	    double[] factorTableWeights = factorTable.getPotentials();
 	    
-	    int[] inPortMsgs = new int[numPorts];
-	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = (Integer)ports.get(port).getInputMsg();
+	    double[] outMessage = _outPortMsgs[outPortNum];
+	    int[] inPortMsgs = new int[_numPorts];
+	    for (int port = 0; port < _numPorts; port++)
+	    	inPortMsgs[port] = _inPortMsgs[port][0];
 	    
-        double[] outputMsgs = (double[])ports.get(outPortNum).getOutputMsg();
-    	int outputMsgLength = outputMsgs.length;
+    	int outputMsgLength = outMessage.length;
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 		{
 			inPortMsgs[outPortNum] = outIndex;
 			int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
-			outputMsgs[outIndex] = -Math.log(factorTableWeights[weightIndex]);
+			outMessage[outIndex] = factorTableWeights[weightIndex];
 		}
 	}
 	
@@ -66,16 +68,15 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 		// WARNING: This method of initialization doesn't ensure a valid joint
 		// value if the joint distribution has any zero-probability values
-		return Integer.valueOf(0);
+		return new int[]{0};
 	}
 
 	public double Potential() {return getPotential();}
 	public double getPotential()
 	{
-		ArrayList<Port> ports = _factor.getPorts();
-	    int numPorts = ports.size();
-	    int[] inPortMsgs = new int[numPorts];
-	    for (int port = 0; port < numPorts; port++) inPortMsgs[port] = (Integer)ports.get(port).getInputMsg();
+	    int[] inPortMsgs = new int[_numPorts];
+	    for (int port = 0; port < _numPorts; port++)
+	    	inPortMsgs[port] = _inPortMsgs[port][0];
 	    
 	    return getPotential(inPortMsgs);
 	}
@@ -83,7 +84,35 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 		FactorTable factorTable = getFactorTable();
 		int weightIndex = factorTable.getWeightIndexFromTableIndices(inputs);
-		return -Math.log(factorTable.getWeights()[weightIndex]);
+		return factorTable.getPotentials()[weightIndex];
 	}
+	
+	
+	@Override
+    public void initialize() 
+    {
+    	super.initialize();
+		//We update the cache here.  This works only because initialize() is called on the variables
+		//first.  Updating the cache saves msg in double arrays.  initialize replaces these double arrays
+		//with new double arrays.  If we didn't call updateCache on initialize, our cache would point
+		//to stale information.
+    	updateCache();
+    }
+    
+    private void updateCache()
+    {
+    	ArrayList<Port> ports = _factor.getPorts();
+    	_numPorts= ports.size();
+	    _inPortMsgs = new int[_numPorts][];
+	    _outPortMsgs = new double[_numPorts][];
+	    
+	    for (int port = 0; port < _numPorts; port++)
+	    {
+	    	_inPortMsgs[port] = (int[])ports.get(port).getInputMsg();
+	    	_outPortMsgs[port] = (double[])ports.get(port).getOutputMsg();
+	    }
+    }
+
+
 	
 }

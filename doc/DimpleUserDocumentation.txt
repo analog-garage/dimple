@@ -5,16 +5,239 @@ Dimple User Documentation
 :Date:      July 27, 
 :SW Name: Dimple
 
+Installing {swname}
+-----------------
+
+. MATLAB of at least version 2008a is required. 
+. Extract the {swname} zip file
+. Execute the startup.m script in the resulting {swname} directory to 
+load {swname} in MATLAB.
+. To avoid having to manually change to this directory and execute 
+this script every time you start MATLAB, you will need to add the line:
++ 
+run ‘<path-to-{swname}>/startup.m’ 
++
+to a startup.m file in MATLAB’s startup.  Google “MATLAB startup.m” for more details regarding startup.m files.
+
+. Verify the installation:
+.. Start MATLAB
+.. At the MATLAB command prompt type:
+test{swname}
+//ARG!  I wish I knew how to include ..... in a block literal
+.. Verify output is something like: 
++ 
+.................. 
+=================================================
+++test{swname}
+
+
+Starting test run with 1 test case.
+.
+
+PASSED in 0.198 seconds.
+Starting test run with 15 test cases.
+
+ ...............
+PASSED in 6.460 seconds.
 
 
 
+--test{swname}
+ ..................
 
+================================================= 
+..................
 
+What is {swname}
+----------------
+{swname} is a tool for rapidly prototyping algorithms that can be described with Factor Graphs and solved with belief propagation algorithms or sampling based algorithms.
 
+{swname} features:
+
+* Runs the sum-product, mi- sum, particle BP, or Gibbs algorithm on a factor graph.
+* Supports arbitrary discrete variables.
+* Some solvers (Particle BP and Gibbs) support continuous variables.
+* Supports arbitrary factor functions.
+* Allows rapid prototyping by describing connectivity with simple associations of factors with variables.
+* Supports nested graphs.
+
+A Short Introduction to Factor Graphs
+-------------------------------------
+We introduce factor graphs, a powerful tool for statistical modeling.  
+Factor graphs can be used to describe a number of commonly used 
+statistical models, such as hidden Markov models, Markov random 
+fields, Kalman filters, and Bayes nets. 
+
+Suppose that we are given a set of n discrete random variables:
+[latex]
+$a_1,...,a_n$
+
+The random variables have some joint probability distribution:
+[latex]
+\[
+p(a_1,a_2,...,a_n)
+\]
+
+Suppose that the joint probability distribution factors, in the following sense: there exist subsets 
+[latex]
+$ S_1,...,S_k \subseteq \lbrace 1,2,...,n\rbrace $
+
+where
+
+[latex]
+$ S_j = \lbrace S_1^j,s_2^j,...,s_{t(j)}^j \rbrace $
+
+and such that
+
+[latex]
+$ p(a_1,a_2,...,a_n) = \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,s_{t(j)}^j) $
+
+For example, if the ai form a Markov chain, then the joint probability can be factored as
+
+[latex]
+\begin{eqnarray}
+p(a_1,a_2,...,a_n) &=& p(a_1) \prod_{j=1}^{n-1}p(a_{j+1}|a_j) \\
+		   &=& f_0(a_1) \prod_{j=1}^{n-1} f_j(a_j,a_{j+1})
+\end{eqnarray}
+
+The factors above are normalized, in the sense that as the ai  vary, 
+the probabilities sum to one.  We will define our factors more 
+generally and ask only that they are proportional to the joint 
+probability.  So, we call the fi a collection of factors of p() if 
+
+[latex]
+\[
+p(a_1,a_2,...,a_n) \propto \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,s_{t(j)}^j) 
+\]
+
+The product of the factors then differs from the joint probability only by 
+multiplication by a normalizing constant.
+
+When a probability distribution can be expressed as a product of small factors 
+(i.e. |Sj| is small for all j), then if is possible to invoke a host of powerful 
+tools for modeling and inference, as we will soon see.
+
+Suppose that we are given a factored representation of a joint probability distribution.  
+It is possible to describe the structure of the factors as a graph.  We can represent 
+each variable ai  and each function fj  by a node in the graph, and place an (undirected) 
+edge between node ai  and node fj if and only if the variable ai  is an argument in the 
+function fj.  These two types of nodes are referred to as function nodes and variable nodes. 
+Because all edges lie between the two disjoint classes of nodes, the resulting graph is bipartite.  
+This graph is called a factor graph.
+
+In the remainder of this documentation, we slightly abuse notation and use fj  and ai  
+to refer both to the nodes of the factor graph and to the underlying factors and variables 
+(i.e. both the graphical representation of these entities and the mathematical entities underlying them).
+
+To understand what factor graphs look like, we will construct several examples.  
+First, let us continue with a Markov chain. Equation 1 expressed a Markov chain in factored form, where  
+
+[latex]
+\[
+f_j(a_j,a_{j+1})=p(a_{j+1}|a_j)
+\]
+
+We display the corresponding factor graph in the following figure:
+
+image:images/FactorGraphExample.png["alt text",height=100]
+
+Next, let us consider a hidden Markov model (HMM).  We can construct the 
+corresponding factor graph by extending the previous example.  An HMM 
+contains a Markov chain transiting from state a~i~ to a~i+1~ . There is also an 
+observation b~i~  made of each state; if we are given a~i~ , then b~i~  
+is conditionally independent of all other variables. We can incorporate 
+this probability by using a factor:
+
+[latex]
+$ g_i(a_i) = Pr(b_i|a_i) $
+
+The product of our factors is then
+
+[latex]
+\begin{eqnarray*}
+f_0 \left( \prod_{j=1}^{n-1} f_j(a_j,a_j+1) \right) \prod_{j=1}^n g_j(a_j)  &=& 
+    Pr(a_1) \left( \prod_{j=1}^{n-1} Pr(a_{j+1}|a_j)  \right) \prod_{j=1}^n Pr(b_j|a_j)  \\
+  &=& Pr(a_1,...,a_n,b_1,...,b_n)
+\end{eqnarray*}
+
+Since the b~i~ are observed, then Pr(b~1~,...,b~n~) is a constant.  Therefore
+
+[latex]
+\begin{eqnarray*}
+Pr(a_1,...,a_n,b_1,...,b_n) & \propto & \frac{a}{b} \\
+			    &=& Pr(a_1)
+\end{eqnarray*}
+
+Pr(a_1,...,a_n,b_1,...,b_n) & \propto & \frac{Pr(a_1,...,a_n,b_1,...,b_n}{Pr(b_1,...,b_n}
+			    &=& Pr(a_1,...,a_n|b_1,...,b_n)
+
+as desired.
+
+image:images/HMMExample.png["alt text",height=200]
+
+The resulting factor graph takes the following form illustrated in the figure above. Note 
+that the variables b~i~  need not appear explicitly in the factor graph; we have incorporated their effect in the g~i~  factors.
+
+Generalizing from a Markov chain to an HMM illustrates a very powerful feature of factor graphs.  Complicated mathematical models are often composed of simpler parts.  When these models are expressed as factor graphs, we can frequently reuse the simpler factor graphs to construct the more complicated ones.  This can be done simply in {swname} by using the nested graphs feature (see Nested Graph section).
+
+As a final example, we will construct a factor graph for error correction (for this
+ more advanced topic, we will assume the reader is familiar with LDPC codes).  Suppose
+ that we receive a codeword from a 4-bit LDPC error-correcting code that has been corrupted by noise.  
+The sender wishes to communicate a four-bit codeword (a1,a2,a3,a4)   (satisfying some parity check equations), 
+but the receiver only observes the corrupted values (b1,b2,b3,b4) . (The domain of the bi  is determined by the 
+communication channel.  For instance, if we have a discrete binary symmetric channel, then the bi  will be bits; 
+if we have a continuous additive white Gaussian noise channel and some modulation scheme, the bi  will be real-valued.) 
+Let H  be the parity check matrix of the LDPC code used, i.e. the codeword (a1,a2,a3,a4)  verifies the equation
+
+[latex]
+$ Ha=0(mod2) $
+
+For instance, suppose that H is the following parity check matrix:
+
+[latex]
+\[
+H = \left( \begin{array}{cccc}
+1 & 1 & 0 & 1 \\
+1 & 1 & 1 & 0 \\
+0 & 1 & 1 & 1 \end{array} \right) 
+\]
+
+Suppose that the error is independent, i.e., if we condition on a~i~, b~i~ is conditionally independent. 
+Then, the following factor graph represents the decoding task at hand.
+
+image:images/DecoderExample.png["stuff",height=100]
+
+The construction above applies to any linear binary ECC.  However, if every row and column of H is sparse (as would be the case with an LDPC code), then every factor is small, and every node in the factor graph will be of small degree.
+
+Given a factor graph, the objective is often to compute the marginal distribution of the random variables a~i~ of the graph (this also allows us to find the most likely value taken by each variable, by maximization of the marginal probability). {swname} provides an implementation of belief propagation (BP) (in its sum-product version), in order to approximately compute the marginal distribution of each random variable. 
+
+BP is an iterative message-passing algorithm where messages pass along the edges of the factor graph.  A “message” can be viewed as an un-normalized probability distribution.  The algorithm comes in a number of variants depending on the message update rule and the order of the message updates.  
+
+Sum-Product generalizes a number of algorithms, including the “forward-backward” algorithm of HMMs, and the BCJR algorithm of coding theory. It always gives the exact answer (upon convergence), when the underlying factor graph is a tree. Although it is not an exact algorithm for general graphs, BP has been found to give excellent results for a wide variety of factor graphs, and runs particularly fast on sparse factor graphs (i.e. factor graphs of low node and factor degree).
+
+{swname} User Tutorial
+----------------------
+This tutorial describes how to code using the MATLAB {swname} client. We provide four tutorials. The first example is a simple hidden Markov model. The second models a 4-bit XOR. The third tutorial explains how to use nested graphs. The final is an LDPC code.
+See /demo/12_Tutorial for the code. 
+
+Creating and Solving a Simple Factor Graph
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The HMM Model
+^^^^^^^^^^^^^
+We consider a very simple HMM, the Rainy/Sunny HMM illustrated in the Wikipedia article about HMMs. Two friends who live far apart, Alice and Bob, have a daily phone conversation during which Bob mentions what he has been doing during the day. Alice knows that Bob’s activity on a given day depends solely on the weather on that day, and knows some general trends about the evolution of weather in Bob’s area.
+
+Alice believes she can model the weather in Bob’s area as a Markov chain with two states ‘Sunny’ and ‘Rainy’. She remembers hearing that on the first day of last week it was quite likely (70% chance) that it was sunny in Bob’s town. She also knows that a sunny day follows another sunny day with 80% chance, while a sunny day succeeds a rainy day with 50% chance.
+
+She knows Bob pretty well, and knows that Bob only ever does one of three things: stay inside to read a book, go for a walk, or cook. She knows that if it is sunny, Bob will go for a walk with 70% probability, cook with 20% probability, and stay inside with 10% probability. Conversely, if it is rainy, Bob will go for a walk with 20% probability, cook with 40% probability, and stay inside with 40% probability. 
+
+Bob told Alice that he went for a walk on Monday, Tuesday, and Thursday, cooked on Wednesday and Friday, and read a book on Saturday and Sunday.
+
+Alice wants to know what the most likely weather is for every day of last week. The above naturally defines an HMM which can easily be modeled within {swname}
 
 Creating the Factor Graph
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-The first command in a Dimple program, is to create a factor graph. This is easily done with the FactorGraph() command. See /demo/12_Tutorial/DimpleTutorial_HMM.m
+The first command in a {swname} program, is to create a factor graph. This is easily done with the FactorGraph() command. See /demo/12_Tutorial/{swname}Tutorial_HMM.m
 
 
 ----
@@ -176,11 +399,16 @@ HMM.NumIterations=20;
 HMM.solve;
 ----
 
-IMPORTANT: Currently the Sum-Product algorithm is implemented using a Flooding Schedule.  The schedule can be described as:
-. Compute all equals nodes
-. Compute all function nodes
-. Repeat for a specified number of iterations.
+[IMPORTANT]
+===============================
+By default, the solver will use either a Flooding Schedule or a Tree Schedule depending on whether the factor-graph contains cycles.  A loopy graph (one containing at least one cycle) will use a Flooding Schedule by default.  This schedule can be described as:
 
+* Compute all variable nodes
+* Compute all factor nodes
+* Repeat for a specified number of iterations.
+
+If the factor-graph is a tree (one that contains no cycles), the solver will automatically detect this and use a Tree Schedule by default.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  In this case, NumIterations should be 1, which is its default value.
+===============================
 
 
 Accessing Results
@@ -209,7 +437,7 @@ A 4-bit XOR
 ~~~~~~~~~~~
 The following tutorial will consist in defining a simple factor graph with 4 variables tied through a 4-bit XOR, with ‘priors’ (we abuse language here and call ‘prior’ the probability distribution of each random variable if they were not tied through the 4-bit XOR).
 
-Through this tutorial, we will learn how to define arrays of random variables, see how to use MATLAB indexing within Dimple, see an example of a hard constraint in a factor graph, and see how to use the Bit type of random variable.
+Through this tutorial, we will learn how to define arrays of random variables, see how to use MATLAB indexing within {swname}, see an example of a hard constraint in a factor graph, and see how to use the Bit type of random variable.
 
 We consider a set of four random variables (B1,B2,B3,B4) taking values 0 or 1. The joint probability distribution is given by:
 
@@ -243,7 +471,7 @@ The first way of building the factor graph uses an inefficient N-bit XOR functio
 function [valid]=BadNBitXorDelta_Tutorial(variables) valid=mod(sum(variables),2)==0;end
 ----
 
-Using everything we have learned in the previous tutorial, the sequence of instructions we use is simply (from /demo/12_Tutorial/DimpleTutorial_BadNBitXor.m):
+Using everything we have learned in the previous tutorial, the sequence of instructions we use is simply (from /demo/12_Tutorial/{swname}Tutorial_BadNBitXor.m):
 
 
 
@@ -255,9 +483,9 @@ IMPORTANT: Note that the BadNBitXorDelta_Tutorial is a function which takes only
 
 IMPORTANT: We also introduce the Discrete method ‘Value’, which returns the most likely assignment of that random variable.
 
-The first remark above is rather important, as it highlights of the concept of arrays of random variables in Dimple.  Dimple handles arrays of random variables in a very natural manner, and most array indexing operations of MATLAB are supported in Dimple in a similar fashion.To create a multidimensional array of random variables in Dimple, we use the Variable command where every argument after the first is a dimension of an array: VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) creates an array of variables with domain ‘Domain’, and with dimensions [dimension1][dimension2]..[ dimensionk]. 
+The first remark above is rather important, as it highlights of the concept of arrays of random variables in {swname}.  {swname} handles arrays of random variables in a very natural manner, and most array indexing operations of MATLAB are supported in {swname} in a similar fashion.To create a multidimensional array of random variables in {swname}, we use the Variable command where every argument after the first is a dimension of an array: VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) creates an array of variables with domain ‘Domain’, and with dimensions [dimension1][dimension2]..[ dimensionk]. 
 
-IMPORTANT: If only one dimension is specified, Dimple creates a square array.
+IMPORTANT: If only one dimension is specified, {swname} creates a square array.
 
 
 ----
@@ -337,7 +565,7 @@ function valid = XorDeltaTutorial(x,y,z)
 end
 ----
 
-From demo/12_Tutorial/DimpleTutorial_4BitXor.m:
+From demo/12_Tutorial/{swname}Tutorial_4BitXor.m:
 
 
 ----
@@ -363,14 +591,14 @@ Suppose we wish to use two 4-bit XORs from the previous example to create a 6-bi
 
 image:images/NestedGraph.png["Nested Graph",height=100]
 
-Dimple provides a way to replicate multiple copies of a Factor Graph and nest these instances in a containing Factor Graph. A nested Factor Graph can be seen as a special factor function between a set of variables (‘connector variables’), which, when ‘zoomed in,’ is in fact another factor graph, with factors involving both the connector variables, and other ‘internal variables.’ In the second version of the XOR tutorial, we created a 4-bit XOR connected to 4 variables, by also creating an extra Bit C. What if we wanted to use that construction as a 4-bit XOR for potentially many different sets of 4 bits, overlapping or not, by replicating the factor graph as needed? Nested factor graphs provide an elegant solution to this problem.
+{swname} provides a way to replicate multiple copies of a Factor Graph and nest these instances in a containing Factor Graph. A nested Factor Graph can be seen as a special factor function between a set of variables (‘connector variables’), which, when ‘zoomed in,’ is in fact another factor graph, with factors involving both the connector variables, and other ‘internal variables.’ In the second version of the XOR tutorial, we created a 4-bit XOR connected to 4 variables, by also creating an extra Bit C. What if we wanted to use that construction as a 4-bit XOR for potentially many different sets of 4 bits, overlapping or not, by replicating the factor graph as needed? Nested factor graphs provide an elegant solution to this problem.
 
 A nestable factor graph is created by specifying first a set   of ‘connector’ random variables, and invoking the command FactorGraph(S).
 
 IMPORTANT: The factor graph defined this way is still a proper factor graph, and in principle, we can run BP on it. However, in practice, it is used as a ‘helper’ factor graph (and   are ‘helper’ random variables), which will mostly be replicated in the actual factor graph of interest.
 
 The following code creates a nestable factor graph, with connector variables (B~1~,B~2~,B~3~,B~4~) 
-(from /demo/12_Tutorial/DimpleTutorialNested.m):
+(from /demo/12_Tutorial/{swname}TutorialNested.m):
 
 
 ----
@@ -463,7 +691,7 @@ where the value after Xmx is the maximum amount of heap memory allocated to Java
 
 Prepackaged Factor Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If Dimple is installed correctly, the users will have Dimple/lib on their path and can use the Lyric Dimple prepackaged factor functions. 
+If {swname} is installed correctly, the users will have {swname}/lib on their path and can use the Lyric {swname} prepackaged factor functions. 
 
 Some of these are standard MATLAB functions, and can be used with the addFactor method to create factors. They are:
 
@@ -474,8 +702,8 @@ Some of these are standard MATLAB functions, and can be used with the addFactor 
 
 Some other functions return nestable graphs, and are used with the addGraph method to create factors. They are:
 
-*getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
-*getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+* getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
+* getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
 
 Rolled Up Factor Graphs
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -716,11 +944,11 @@ This produces the following output:
 
 API Documentation
 -----------------
-The following section describes several classes (Discrete, Real, Bit, Factor, and FactorGraph) and the methods associated with each that comprise the MATLAB Dimple API.
+The following section describes several classes (Discrete, Real, Bit, Factor, and FactorGraph) and the methods associated with each that comprise the MATLAB {swname} API.
 
 Discrete Variables
 ~~~~~~~~~~~~~~~~~~
-Dimple supports both Discrete and Real Variables.  Not all solvers support real variables.  Currently the MinSum and SumProduct solvers only support Discrete variables while the Gibbs and ParticleBP solvers do support Real Variables.
+{swname} supports both Discrete and Real Variables.  Not all solvers support real variables.  Currently the MinSum and SumProduct solvers only support Discrete variables while the Gibbs and ParticleBP solvers do support Real Variables.
 
 The Discrete class is either a single Discrete or a multidimensional array of Discrete variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
 
@@ -736,7 +964,7 @@ y = Discrete(domain,2,3)
 z = Discrete(domain,2,3,4)
 ----
 
-The Discrete constructor can be used to create an N-dimensional collection of Dimple Discretes.  It takes two arguments:
+The Discrete constructor can be used to create an N-dimensional collection of {swname} Discretes.  It takes two arguments:
 
 . Domain – All Variables are currently discrete variables with finite domains.
 . A Variable List of Dimensions – The user can specify 0 to N dimensions for the Variable matrix.
@@ -744,7 +972,7 @@ The Discrete constructor can be used to create an N-dimensional collection of Di
 Let’s examine each of these arguments in more detail in the following sections.
 
 .Domain
-A discrete random variable has a domain associated with it.  A domain is a set.  Dimple supports any object types as elements of the set.
+A discrete random variable has a domain associated with it.  A domain is a set.  {swname} supports any object types as elements of the set.
 
 The following are all valid domains:
 
@@ -757,7 +985,7 @@ d) d = Discrete({[1 0; 0 1],2,i+1})
 
 (a) creates a variable whose domain consists of three values: 1, 2, and 3.  (b) creates a variable whose domain consists of three complex numbers.  (c) creates a variable whose domain consists of two elements, each of which is a 2x2 complex matrix.  (d) creates a variable whose domain consists of three elements: a matrix, real scalar, and complex scalar.
 
-The domain elements have meaning when Dimple calls user-defined delta functions to generate its internal tables.  The user-defined delta functions will get called with the domain items of each variable.
+The domain elements have meaning when {swname} calls user-defined delta functions to generate its internal tables.  The user-defined delta functions will get called with the domain items of each variable.
 
 In the previous example we used cell arrays to specify the elements of a domain.  To allow for more concise definitions of domains, users can also use vectors to create a domain:
 
@@ -785,7 +1013,7 @@ For any single variable Var, the Belief method will return a vector whose length
 For an array of variables Var, the Belief method will return an array of vectors (i.e., an array one dimension larger) containing the beliefs of each variable.
 
 ----
-Disp(Var.Belief);
+disp(Var.Belief);
 ----
 
 The Belief method is only accessible after having run the solver.
@@ -914,7 +1142,7 @@ The FactorGraph “addFactor” method takes two arguments
 . A function handle. 
 . A variable length list of Variables or matrices.
 
-The following shows an example of mixing variables and constants as arguments to a Dimple function.
+The following shows an example of mixing variables and constants as arguments to a {swname} function.
 
 ----
 b = Bit(2,1);
@@ -933,9 +1161,9 @@ addFactor(nestedGraph,variables) - This is the same signature as addGraph and si
 
 .Specifying FactorTables
 
-For all discrete factors, Dimple can build FactorTables under the hood. A Factor Table consists of a two dimensional array of integers and a single dimensional array of doubles. Each row of the two dimensional table represents a combination of variables for which the Factor Function returns a non-zero value. Each column represents a variable connected to the factor. The values of the table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles and that entry contains the return value of the Factor Function.
+For all discrete factors, {swname} can build FactorTables under the hood. A Factor Table consists of a two dimensional array of integers and a single dimensional array of doubles. Each row of the two dimensional table represents a combination of variables for which the Factor Function returns a non-zero value. Each column represents a variable connected to the factor. The values of the table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles and that entry contains the return value of the Factor Function.
 
-In some situations, a user might be able to build a FactorTable much more efficiently than Dimple can. Dimple tries all combinations of variable values exhaustively and discards combinations for which the Factor Function returns zeros. If the user can avoid this exhaustive search, they can build the FactorTable more quickly.
+In some situations, a user might be able to build a FactorTable much more efficiently than {swname} can. {swname} tries all combinations of variable values exhaustively and discards combinations for which the Factor Function returns zeros. If the user can avoid this exhaustive search, they can build the FactorTable more quickly.
 
 Once the user has created the table, they can add a Factor using this table in one of two ways. The first is to provide the indices and values directly to the addFactor call:
 
@@ -1022,7 +1250,7 @@ ans =
 
 There are some cases in which it is desirable to add a factor function that is defined in Java rather than MATLAB. Specific cases where this is desirable are:
 
-* The user wants to use a sample-based solver. Dimple's sample based solvers must use java Factor Functions in order to be able to call the Factor Function at runtime. This is partly because MATLAB does not officially support callbacks from Java to MATLAB and also because calls from Java to Java will be faster than those that cross a language boundary.
+* The user wants to use a sample-based solver. {swname}'s sample based solvers must use java Factor Functions in order to be able to call the Factor Function at runtime. This is partly because MATLAB does not officially support callbacks from Java to MATLAB and also because calls from Java to Java will be faster than those that cross a language boundary.
 * The user wants their code to run faster. MATLAB function calls are very slow as compared to java function calls.
 The following sections provides the steps users must follow to add a Java Factor Function to their FactorGraph.
 
@@ -1133,7 +1361,7 @@ v2(1).Belief
 
 .AddFactorNoCache
 
-There are several cases where Dimple’s factor caching mechanism is undesirable.  As an example, if the user is calling addFactor with the same factor many times, but they know the arguments are unique, they can save time by skipping the code that searches for a match in the cache. 
+There are several cases where {swname}’s factor caching mechanism is undesirable.  As an example, if the user is calling addFactor with the same factor many times, but they know the arguments are unique, they can save time by skipping the code that searches for a match in the cache. 
 
 ----
 fg = FactorGraph(); 
@@ -1256,22 +1484,22 @@ Case 1:
 . The user switches to a Solver that does not provide that same custom factor.
 . The user tries to solve the graph using the new solver.
 
-In step 2, Dimple avoids creating a FactorTable to avoid the overhead of creating something it will not use.  If allowed to get to step 4, Dimple cannot successfully solve because it has neither a FactorTable or a custom factor for one of the nodes of the graph.  Dimple will throw an error at step 3, indicating the problem.
+In step 2, {swname} avoids creating a FactorTable to avoid the overhead of creating something it will not use.  If allowed to get to step 4, {swname} cannot successfully solve because it has neither a FactorTable or a custom factor for one of the nodes of the graph.  {swname} will throw an error at step 3, indicating the problem.
 
 Case 2:
 
 . The user sets a solver that provides no custom factors.
 . The user creates a graph
 . The user sets a new solver that defines a custom factor for one of the nodes in this graph.
-. The user tells Dimple to solve
+. The user tells {swname} to solve
 
-In this case, Dimple will not use the custom factor or combo table associated with the node, and will throw and error at step 4.
+In this case, {swname} will not use the custom factor or combo table associated with the node, and will throw and error at step 4.
 
  In the future we might fix some of these issues but, until then, users should only switch solvers in cases where custom factor nodes are not used.
 
 .Using a Name
 
-Dimple has been modified to allow users to register commonly used solvers so that they can be assigned using shorter names. Previously users had to do:
+{swname} has been modified to allow users to register commonly used solvers so that they can be assigned using shorter names. Previously users had to do:
 
 ----
 setSolver(com.lyricsemi.dimple.solvers.sumproduct.Solver());
@@ -1468,7 +1696,7 @@ And the following plot shows the graph after the factor is joined:
  
 image:images/NonLoopyGraph2.png["Non loopy graph 2",height=200]
 
-To join factors, Dimple does the following:
+To join factors, {swname} does the following:
 
 * Find the variables in common between two factors.
 * Take the cartesian product of the tables but discard rows where the common variable indices differ.
@@ -1478,7 +1706,7 @@ To join factors, Dimple does the following:
 Custom Schedules
 ^^^^^^^^^^^^^^^^
 
-Dimple supports user defined custom schedules created in MATLAB.
+{swname} supports user defined custom schedules created in MATLAB.
 The following code demonstrates that feature:
 
 ----
@@ -1520,7 +1748,7 @@ The following code demonstrates that feature:
    fg.solve();
 ----
 
-Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
+{swname} also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
 
 ----
    eq = @(x,y) x == y;
@@ -1583,7 +1811,7 @@ And finally we look at nesting a custom schedule:
 Explicit Scheduling and Retrieving Message Values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dimple supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
+{swname} supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
 
 ----
 %OK, first we create a simple Factor Graph with a single xor connecting two  
@@ -2311,7 +2539,7 @@ end
        %Bit stores values as 1,0.
        expectedIndices = int32([2,2,2;1,1,1]);
        assertEqual(expectedIndices,f.Indices);
-       %Let's calculate the belief by hand and compare to Dimple.
+       %Let's calculate the belief by hand and compare to {swname}.
        val0 = prod(1-input)*funkyFactor(0,0,0);
        val1 = prod(input)*funkyFactor(1,1,1);
        total = val0 + val1;
@@ -2589,7 +2817,7 @@ Note that when the second constructor is used, tempering is automatically enable
 
 .Methods
 
-All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
+All existing {swname} methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
 NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term "iteration" is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
@@ -2774,7 +3002,7 @@ The default scheduler when using the Gibbs solver is the GibbsSequentialScanSche
 
 .Notes on Implementation
 
-This is a message-based implementation that fits in the existing Dimple architecture, using nearly all the existing Dimple code unchanged. Messages from variables to factors are single values sampled from the domain of the variable. Messages from factors to discrete variables are (unnormalized) conditional distributions over the domain of the variable. Messages from factors to real variables are are indirect—making use of a call-back from the variable to the factor to allow the variable to evaluate the factor's potential for an arbitrary value.
+This is a message-based implementation that fits in the existing {swname} architecture, using nearly all the existing {swname} code unchanged. Messages from variables to factors are single values sampled from the domain of the variable. Messages from factors to discrete variables are (unnormalized) conditional distributions over the domain of the variable. Messages from factors to real variables are are indirect—making use of a call-back from the variable to the factor to allow the variable to evaluate the factor's potential for an arbitrary value.
 
 .Some Possible Extensions
 
@@ -2839,7 +3067,7 @@ f = fg.addFactor(@add,a,b,c);
 fg.solve();
 ----
 
-Note that the @add syntax in MATLAB implies that add is a method and @add is a function handle. Users do not have to define an add function or worry about an existing add function since Dimple matches the function name to its custom add factor.
+Note that the @add syntax in MATLAB implies that add is a method and @add is a function handle. Users do not have to define an add function or worry about an existing add function since {swname} matches the function name to its custom add factor.
 
 .Multiply by Constant
 
@@ -2899,7 +3127,7 @@ The Gaussian Solver provides a mechanism to support general factors that cannot 
 * A (second) function that is passed sample values of all of the *other* edges, and returns a sample from the conditional probability of the variable associated with this edge given a value for all other edges. It is up to the user to write the code to sample from this distribution.
 ** For example, if the factor is F(x,y,z), then for variable z, this would return Z ~ p(z|x,y) = F(x,y,z) / Hz(x,y), where Hz(x,y) is as defined above. In some cases, such as certain delta-factors that are single-valued in a given direction, p(z|x,y) may be deterministic in which case no sampling is required. In other cases, such as delta-factors that are multi-valued in a given direction, the sampling is uniform among a small set of values. In other cases, it may be more difficult, and at some point we might need to provide some additional utilities to facilitate generating samples.
 
-The Dimple Gaussian Solver uses those methods as follows:
+The {swname} Gaussian Solver uses those methods as follows:
 
 * For some number of samples
 ** Until a sample is accepted
@@ -2918,7 +3146,7 @@ The Dimple Gaussian Solver uses those methods as follows:
 
 .The Factor
 
-Users who wish to create their own FactorFunctions to be used with the Gaussian solver must create a class that extends the GaussianFactorFunction provided by Dimple. The user must provide implementations for the acceptanceRatio method and the generateSample method.
+Users who wish to create their own FactorFunctions to be used with the Gaussian solver must create a class that extends the GaussianFactorFunction provided by {swname}. The user must provide implementations for the acceptanceRatio method and the generateSample method.
 
 ----
 import com.lyricsemi.dimple.solvers.gaussian.GaussianFactorFunction;
@@ -3047,7 +3275,7 @@ fg.Solver.setMaxNumTries(1e6);
 
 .Multivariate Gaussians
 
-The Dimple Gaussian solver provides some support for multivariate Gaussian variables and factors.
+The {swname} Gaussian solver provides some support for multivariate Gaussian variables and factors.
 
 .Variables
 
@@ -3158,7 +3386,7 @@ Finite Fields
 Overview
 ^^^^^^^^^
 
-Dimple supports a special variable type called a FiniteFieldVariable and a few custom factors for these variables. They represent finite fields with N=2n elements. These fields find frequent use in error correcting codes. Because Dimple can describe any discrete distribution, it is possible to handle finite fields simply by describing their combo tables. However, the native FiniteFieldVariable type is much more efficient. In particular, variable addition and multiplication, which naively require O(N3) operations, are calculated in only O(Nlog(N)) operations. We feel the syntax is also simpler.
+{swname} supports a special variable type called a FiniteFieldVariable and a few custom factors for these variables. They represent finite fields with N=2n elements. These fields find frequent use in error correcting codes. Because {swname} can describe any discrete distribution, it is possible to handle finite fields simply by describing their combo tables. However, the native FiniteFieldVariable type is much more efficient. In particular, variable addition and multiplication, which naively require O(N3) operations, are calculated in only O(Nlog(N)) operations. We feel the syntax is also simpler.
 
 Finite Fields Without Optimizations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3226,7 +3454,7 @@ Rather than building finite field elements from scratch, a user can use a build-
 
 .FiniteFieldVariables
 
-Dimple supports a FiniteFieldVariable variable type, which takes a primitive polynomial (to be discussed later) and dimensions of the matrix as constructor arguments:
+{swname} supports a FiniteFieldVariable variable type, which takes a primitive polynomial (to be discussed later) and dimensions of the matrix as constructor arguments:
 
 ----
 v = FiniteFieldVariable(prim_poly,3,2);
@@ -3254,7 +3482,7 @@ Similarly, the following syntax can be used to create a factor node with three v
 myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
 ----
 
-Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
+Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows {swname} to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
 
 .NVarFiniteFieldPlus
 
@@ -3300,7 +3528,7 @@ See Wikipedia for a definition.
 Algorithmics
 ^^^^^^^^^^^^^
 
-Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e. an exponentiation operator).
+{swname} interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly {swname} FiniteFieldVariables provide a function to map the powers back to the original representation (i.e. an exponentiation operator).
 
 * The addition code computes x+y by performing a fast Hadamard transform of the distribution of both x and y, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
 * The generic multiplication code computes xy by performing a fast Fourier transform on the distribution of the non-zero elements of the distribution, pointwise multiplying the transforms, performing an inverse fast Fourier transform, and then accounting for the zero elements.

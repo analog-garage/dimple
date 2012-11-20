@@ -85,7 +85,7 @@ function testExplicitSchedule()
     
     %Update one factor
     b(2).Ports{1}.OutputMsg = [.6; .4];
-    f1.update()
+    f1.update();
     assertElementsAlmostEqual(f1.Ports{1}.OutputMsg,[.6; .4]);
     assertElementsAlmostEqual(f1.Ports{2}.OutputMsg,[.2; .8]);
     

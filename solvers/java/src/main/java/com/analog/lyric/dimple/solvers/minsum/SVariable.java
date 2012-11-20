@@ -74,13 +74,15 @@ public class SVariable extends SVariableBase
 		double[] outMsgs = _outMsgArray[outPortNum];
 
 		// Save previous output for damping
-		double[] saved = null;
-		double damping = _dampingParams[outPortNum];
-		if (damping != 0)
+		if (_dampingInUse)
 		{
-			saved = _savedOutMsgArray[outPortNum];
-			for (int i = 0; i < outMsgs.length; i++)
-				saved[i] = outMsgs[i];
+			double damping = _dampingParams[outPortNum];
+			if (damping != 0)
+			{
+				double[] saved = _savedOutMsgArray[outPortNum];
+				for (int i = 0; i < outMsgs.length; i++)
+					saved[i] = outMsgs[i];
+			}
 		}
 
 		for (int i = 0; i < numValue; i++)
@@ -95,10 +97,15 @@ public class SVariable extends SVariableBase
 		}
 
 		// Damping
-		if (damping != 0)
+		if (_dampingInUse)
 		{
-			for (int m = 0; m < numValue; m++)
-				outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+			double damping = _dampingParams[outPortNum];
+			if (damping != 0)
+			{
+				double[] saved = _savedOutMsgArray[outPortNum];
+				for (int m = 0; m < numValue; m++)
+					outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+			}
 		}
 
 		// Normalize the min
@@ -136,13 +143,15 @@ public class SVariable extends SVariableBase
 			double minPotential = Double.POSITIVE_INFINITY;
 			
 			// Save previous output for damping
-			double[] saved = null;
-			double damping = _dampingParams[port];
-			if (damping != 0)
+			if (_dampingInUse)
 			{
-				saved = _savedOutMsgArray[port];
-				for (int i = 0; i < outMsgs.length; i++)
-					saved[i] = outMsgs[i];
+				double damping = _dampingParams[port];
+				if (damping != 0)
+				{
+					double[] saved = _savedOutMsgArray[port];
+					for (int i = 0; i < outMsgs.length; i++)
+						saved[i] = outMsgs[i];
+				}
 			}
 
 			double[] inPortMsgsThisPort = _inPortMsgs[port];
@@ -155,10 +164,15 @@ public class SVariable extends SVariableBase
 			}
 
 			// Damping
-			if (damping != 0)
+			if (_dampingInUse)
 			{
-				for (int m = 0; m < numValue; m++)
-					outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+				double damping = _dampingParams[port];
+				if (damping != 0)
+				{
+					double[] saved = _savedOutMsgArray[port];
+					for (int m = 0; m < numValue; m++)
+						outMsgs[m] = outMsgs[m]*(1-damping) + saved[m]*damping;
+				}
 			}
 
 			// Normalize the min

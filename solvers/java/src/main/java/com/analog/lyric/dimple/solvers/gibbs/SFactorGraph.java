@@ -16,11 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Iterator;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -28,6 +32,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
 {
+	protected ISchedule _schedule;
+	protected Iterator<IScheduleEntry> _scheduleIterator;
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
@@ -85,6 +91,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void initialize() 
 	{
 		super.initialize();
+		_schedule = _factorGraph.getSchedule();
+		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.MAX_VALUE;
 		if (_temper) setTemperature(_initialTemperature);
 	}
@@ -109,7 +117,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void iterate(int numIters) 
 	{
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
-			update();
+		{
+			if (!_scheduleIterator.hasNext())
+				_scheduleIterator = _schedule.iterator();	// Wrap-around the schedule if reached the end
+
+			_scheduleIterator.next().update();
+		}
 		
 		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
 		try {interruptCheck();}

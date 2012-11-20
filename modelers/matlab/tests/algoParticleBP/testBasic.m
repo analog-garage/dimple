@@ -54,7 +54,7 @@ function testBasic()
     %Solve
     fg.initialize();
     for i = 1:3
-        fprintf('iteration: %d\n',i);
+%         fprintf('iteration: %d\n',i);
         fg.Solver.iterate();
     end
 

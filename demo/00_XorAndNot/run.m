@@ -13,6 +13,8 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global DIMPLE_TEST_VERBOSE;
+if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,10 +40,12 @@ g.solve();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Get results and display
-disp(w.Belief);
-disp(x.Belief);
-disp(y.Belief);
-disp(z.Belief);
+if (~silent)
+    disp(w.Belief);
+    disp(x.Belief);
+    disp(y.Belief);
+    disp(z.Belief);
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

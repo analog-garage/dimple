@@ -16,7 +16,9 @@
 
 function testDemos()
 
-    clear all;
+    global Dimple_TESTING_DEMOS;
+    Dimple_TESTING_DEMOS = 1;
+
     demo_dir = '../../../../demo';
     my_current_directory = pwd;
     cd(demo_dir);
@@ -51,8 +53,6 @@ function testDemos()
     assertTrue(numMsgErrors == 0);    
     
     %BER plot
-    global Dimple_TESTING_DEMOS;
-    Dimple_TESTING_DEMOS = 1;
     run;
     close;
     

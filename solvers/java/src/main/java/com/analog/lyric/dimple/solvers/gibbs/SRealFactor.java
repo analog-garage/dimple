@@ -53,7 +53,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    	INode neighbor = p.getConnectedNode();
 	    	
 	    	if (((VariableBase)neighbor).getDomain().isDiscrete())
-	    		values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[(Integer)message];
+	    		values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[((int[])message)[0]];
 	    	else
 	    		values[port] = message;
 	    }
@@ -79,7 +79,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 				Object message = p.getInputMsg();
 				INode neighbor = p.getConnectedNode();
 				if (neighbor instanceof Discrete)
-					values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[(Integer)message];
+					values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[((int[])message)[0]];
 				else
 					values[port] = message;
 			}
@@ -105,7 +105,7 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	{
 		INode neighbor = port.getConnectedNode();
 		if (neighbor instanceof Discrete)
-			return new Integer(0);		// Messages from discrete variables are domain indices
+			return new int[]{0};		// Messages from discrete variables are domain indices
 		else
 			return new Double(0);		// Messages from real variables are real values (doubles)
 	}
@@ -117,7 +117,15 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    int numPorts = ports.size();
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = ports.get(port).getInputMsg();
+	    {
+	    	Port p = ports.get(port);
+	    	Object message = p.getInputMsg();
+	    	INode neighbor = p.getConnectedNode();
+	    	if (((VariableBase)neighbor).getDomain().isDiscrete())
+	    		inPortMsgs[port] = new Integer(((int[])message)[0]);
+	    	else
+	    		inPortMsgs[port] = message;
+	    }
 	    
 	    return getPotential(inPortMsgs);
 	}

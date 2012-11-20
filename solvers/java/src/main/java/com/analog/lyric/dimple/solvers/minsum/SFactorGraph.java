@@ -60,11 +60,40 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		STableFactor tf = new STableFactor(factor);
-		if (_damping != 0)
-			setDampingForTableFunction(tf);
-		return tf;
+		if (customFactorExists(factor.getFactorFunction().getName()))
+		{
+			return createCustomFactor(factor);
+		}
+		else
+		{
+			STableFactor tf = new STableFactor(factor);
+			if (_damping != 0)
+				setDampingForTableFunction(tf);
+			return tf;
+		}
 	}
+	
+	
+	@Override
+	public boolean customFactorExists(String funcName) 
+	{
+		if (funcName.equals("customXor"))
+			return true;
+		else
+			return false;	
+	}
+
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
+	{
+		String funcName = factor.getFactorFunction().getName();
+		if (funcName.equals("customXor"))
+		{
+			return new CustomXor(factor);    		
+		}
+		else
+			throw new DimpleException("Not implemented");
+	}
+
 	
 	/*
 	 * Set the global solver damping parameter.  We have to go through all factor graphs

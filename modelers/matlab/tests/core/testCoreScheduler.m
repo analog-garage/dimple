@@ -19,13 +19,27 @@ function testCoreScheduler()
     d = com.analog.lyric.dimple.schedulers.DefaultScheduler();
     f = com.analog.lyric.dimple.schedulers.FloodingScheduler();
     s = com.analog.lyric.dimple.schedulers.SequentialScheduler();
-    t = com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler();
+    tf = com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler();
+    ts = com.analog.lyric.dimple.schedulers.TreeOrSequentialScheduler();
     if ~strcmp('CSolver', class(getSolver()))
         fg = FactorGraph();
         fg.setScheduler(d);
         fg.setScheduler(f);
         fg.setScheduler(s);
-        fg.setScheduler(t);    
+        fg.setScheduler(tf);
+        fg.setScheduler(ts);
+        fg.Scheduler = 'DefaultScheduler';
+        fg.Scheduler = 'FloodingScheduler';
+        fg.Scheduler = 'SequentialScheduler';
+        fg.Scheduler = 'TreeOrFloodingScheduler';
+        fg.Scheduler = 'TreeOrSequentialScheduler';
+        errorThrown = false;
+        try
+            fg.Scheduler = 'NonExistantScheduler';
+        catch e
+            errorThrown = true;
+        end
+        assert(errorThrown);
     end
     %disp('--testCoreScheduler')
 end
