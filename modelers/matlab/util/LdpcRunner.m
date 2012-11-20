@@ -31,7 +31,7 @@ classdef LdpcRunner
                A = load('matrixout.txt');
            end
            [obj.Ldpc,obj.X] = createLdpc(A,useNested,numIterations);
-           obj.Ldpc.Scheduler = com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler();
+           obj.Ldpc.Scheduler = 'TreeOrFloodingScheduler';
        end
        function [numErrors,numBits,badCodeInfo,allCodeInfo] = run(obj,snrVal,codesPerIter)
            randStates = cell(codesPerIter,1);

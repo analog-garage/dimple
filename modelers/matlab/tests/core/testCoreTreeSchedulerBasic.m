@@ -42,7 +42,7 @@ if strcmp(class(com.analog.lyric.dimple.solvers.sumproduct.Solver), class(getSol
         g.addFactor(@Not,bn(i),bnn(i));
     end
     
-    g.setScheduler(com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler());
+    g.Scheduler = 'TreeOrFloodingScheduler';
     
     u1 = 100;
     div1 = 10;

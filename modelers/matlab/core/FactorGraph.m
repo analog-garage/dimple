@@ -534,6 +534,12 @@ classdef FactorGraph < Node
         
         % Use the scheduler to create a schedule for this graph
         function setScheduler(obj, scheduler)
+            if ischar(scheduler)
+                registry = SchedulerRegistry();
+                scheduler = registry.get(scheduler);
+                scheduler = scheduler();
+            end
+                        
             obj.VectorObject.setScheduler(scheduler);
         end
         

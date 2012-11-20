@@ -36,7 +36,7 @@ function testNaNError()
 %     fg.addFactor(@(x,y) 1,a,b);   % Removed by jeffb and replaced by setting flooding scheduler
     
     % Force use of a flooding schedule to test update rather than update-edge
-    fg.setScheduler(com.analog.lyric.dimple.schedulers.FloodingScheduler());
+    fg.Scheduler = 'FloodingScheduler';
 
 
     %It is not sufficient just to set the variables priors to 1 and 0
