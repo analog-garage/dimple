@@ -16,9 +16,11 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
-
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -295,6 +297,28 @@ public abstract class PNodeVector
 			retval[i] = _nodes[i].getSolver();
 		}
 		return retval;
+	}
+	
+	public void invokeSolverMethod(String methodName,Object ... args)
+	{
+		ISolverNode sn = _nodes[0].getSolver();
+		
+		Method [] ms = sn.getClass().getMethods();
+		for (Method m : ms)
+		{
+			if (m.getName().equals(methodName))
+			{
+				for (int i = 0; i < _nodes.length; i++)
+					try {
+						m.invoke(_nodes[i].getSolver(),args);
+					} catch (Exception e) {
+						throw new DimpleException(e);
+					}
+				return;
+			}
+		}
+
+		throw new DimpleException("method not found");
 	}
 	
 	public abstract boolean isVariable();

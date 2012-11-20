@@ -200,16 +200,11 @@ public class FactorTable extends FactorTableBase
 	{
 		Object [] tmp = getNormalizers(directedTo, directedFrom);
 		double [] normalizers = (double[])tmp[0];
-		double first = normalizers[0];
-		
-		if (first == 0)
-			return false;
 		
 		double epsilon = 1e-9;
-		for (int i = 1; i < normalizers.length; i++)
+		for (int i = 0; i < normalizers.length; i++)
 		{
-			double ratio = normalizers[i]/first;
-			double diff = Math.abs(1-ratio);
+			double diff = Math.abs(1-normalizers[i]);
 			if (diff > epsilon)
 				return false;
 		}

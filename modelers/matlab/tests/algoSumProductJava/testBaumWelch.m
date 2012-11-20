@@ -1,5 +1,5 @@
 function testBaumWelch()
-
+    
     rand('state',0');
 
     %Hidden states

@@ -86,6 +86,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return _dampingParams[index];
 	}
 	
+	public int getK()
+	{
+		return _k;
+	}
+	
 	public void setK(int k)
 	{
 		updateCache();
@@ -350,7 +355,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		for (int i = 0; i < belief.length; i++)
 		{
 			double tmp = - Math.log(getFactorTable().getWeights()[i]);
-			if (tmp != 0)
+			if (tmp != 0 && belief[i] != 0)
 				sum += belief[i] * tmp;
 		}
 		

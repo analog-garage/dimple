@@ -134,8 +134,7 @@ classdef FactorGraph < Node
         
         function initialize(obj)
             obj.VectorObject.initialize();
-        end
-        
+        end               
         
         %createTable is kept around for legacy.
         function table = createTable(obj,VectorIndices,values,varargin)

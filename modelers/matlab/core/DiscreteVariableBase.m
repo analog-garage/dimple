@@ -173,10 +173,11 @@ classdef DiscreteVariableBase < VariableBase
             
             
             domainIsScalars = 1;
-            domain = zeros(1,length(obj.Domain));
+            domain = zeros(1,length(obj.Domain.Elements));
             for i = 1:length(obj.Domain.Elements)
                 if ~isscalar(obj.Domain.Elements{i})
                     domainIsScalars = 0;
+                    break;
                 end
                 domain(i) = obj.Domain.Elements{i};
             end

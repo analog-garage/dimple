@@ -69,6 +69,10 @@ classdef Node < MatrixObject
             disp(obj.Label);
         end
         
+        function invokeSolverMethod(obj,methodName,varargin)
+            obj.VectorObject.invokeSolverMethod(methodName,varargin);
+        end
+        
         
         function names = get.Name(obj)
             names = obj.wrapNames(obj.VectorObject.getNames());
