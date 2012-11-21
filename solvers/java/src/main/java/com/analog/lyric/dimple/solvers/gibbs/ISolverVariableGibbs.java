@@ -24,4 +24,5 @@ public interface ISolverVariableGibbs
 	public void updateBelief();
 	public void setBeta(double beta);
 	public double getPotential();
+	public void randomRestart();
 }

@@ -155,9 +155,9 @@ dtrace(debugPrint, ['bExpectedMean: ' num2str(bProb1)]);
 dtrace(debugPrint, ['aBest: ' num2str(sa.getBestSample())]);
 dtrace(debugPrint, ['bBest: ' num2str(sb.getBestSample())]);
 
-assertElementsAlmostEqual(aMean, 0.219276497570512);
-assertElementsAlmostEqual(bMean, 0.611000000000000);
-assertElementsAlmostEqual(sa.getBestSample(), 0.977667799661678);
+assertElementsAlmostEqual(aMean, 0.233977688770180);
+assertElementsAlmostEqual(bMean, 0.614900000000000);
+assertElementsAlmostEqual(sa.getBestSample(), 0.978095741579020);
 assert(sb.getBestSample() == 1);
 
 dtrace(debugPrint, '--testRealVariableGibbs');

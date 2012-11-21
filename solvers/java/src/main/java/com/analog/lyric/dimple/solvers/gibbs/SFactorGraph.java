@@ -37,6 +37,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
+	protected int _numRandomRestarts = 1;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
 	protected double _temperingDecayConstant;
@@ -103,9 +104,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (initialize)
 			initialize();
 		
-		iterate(_burnInUpdates);
-		for (int iter = 0; iter < _numSamples; iter++) 
-			oneSample();
+		for (int restartCount = 0; restartCount < _numRandomRestarts; restartCount++)
+		{
+			randomRestart();
+			iterate(_burnInUpdates);
+			for (int iter = 0; iter < _numSamples; iter++) 
+				oneSample();
+		}
 	}   
 
 	// Note that the iterate() method for the Gibbs solver means do the
@@ -155,6 +160,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			_temperature *= _temperingDecayConstant;
 			setTemperature(_temperature);
 		}
+	}
+	
+	public void randomRestart()
+	{
+		for (VariableBase v : _factorGraph.getVariables())
+			((ISolverVariableGibbs)v.getSolver()).randomRestart();
+		
+		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
 	}
 	
 	// Get the total potential over all factors of the graph (including input priors on variables)
@@ -210,6 +223,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
 	public void setBurnInUpdates(int burnInUpdates) {_burnInUpdates = burnInUpdates;}
 	public int getBurnInUpdates() {return _burnInUpdates;}
+	
+	// Set/get the number of random-restarts
+	public void setNumRestarts(int numRestarts) {_numRandomRestarts = numRestarts;}
+	public int getNumRestarts() {return _numRandomRestarts;}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
 	// Note that this is relative to the number of variables in the graph at the time of this call,

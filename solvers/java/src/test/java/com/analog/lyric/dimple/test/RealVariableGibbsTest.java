@@ -180,9 +180,9 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Integer)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.21927649757051212));
-		assertTrue(nearlyEquals(bMean,0.611));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.9776677996616783));
+		assertTrue(nearlyEquals(aMean,0.23397768877018008));
+		assertTrue(nearlyEquals(bMean,0.6149));
+		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.9780957415790205));
 		assertTrue((Integer)sb.getBestSample() == 1);
 	}	
 	
