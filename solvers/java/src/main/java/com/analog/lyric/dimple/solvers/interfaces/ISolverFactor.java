@@ -22,11 +22,10 @@ public interface ISolverFactor extends ISolverNode
 {
 	public Object getDefaultMessage(Port port);
 	public Object getBelief() ;
-	public double getSomethingEnergy() ;
 	public double getInternalEnergy();
 	public double getBetheEntropy();
 
 	//TODO: really expose this?
-	int [][] getPossibleBeliefIndices() ;
+	int [][] getPossibleBeliefIndices();
 
 }

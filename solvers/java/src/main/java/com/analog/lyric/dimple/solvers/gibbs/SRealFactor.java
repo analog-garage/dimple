@@ -134,11 +134,5 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    return _realFactor.getFactorFunction().evalEnergy(inputs);
 	}
 
-	public double getSomethingEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for gibbs");
-	}
-
-
 
 }

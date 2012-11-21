@@ -206,10 +206,4 @@ public class FiniteFieldProjection extends SFactorBase
 		
 	}
 
-	@Override
-	public double getSomethingEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for FiniteFieldProjection");
-	}
-
 }
