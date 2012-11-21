@@ -77,7 +77,7 @@ classdef VariableBase < Node
         
         function set.Guess(obj,guess)
             input = obj.pack(guess,obj.VectorIndices);
-            if ~iscell(input)
+            if ~iscell(input) && ~isfloat(input)
                 input = num2cell(input);
             end
             obj.VectorObject.setGuess(input);

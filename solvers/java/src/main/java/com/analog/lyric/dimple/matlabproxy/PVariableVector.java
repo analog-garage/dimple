@@ -109,6 +109,14 @@ public class PVariableVector extends PNodeVector
 		
 	}
 	
+	public void setGuess(double [] guess) 
+	{
+		for (int i = 0; i < guess.length; i++)
+		{
+			getVariable(i).setGuess(Double.valueOf(guess[i]));
+		}
+	}
+	
 	public void setGuess(Object [] guess) 
 	{
 		for (int i = 0; i < guess.length; i++)
