@@ -23,10 +23,10 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 
 
-public class SVariable extends SVariableBase
+public class SVariable extends SDiscreteVariableBase
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -210,6 +210,46 @@ public class SVariable extends SVariableBase
 		// Convert from probabilities since that's what the interface provides        
 		_input = MessageConverter.fromProb((double[])value);
 	}
+	
+	
+	public int getValueIndex()
+	{
+		int index = -1;
+		double [] belief = (double[])getBelief();		
+		double maxBelief = -1;
+		
+		for (int i = 0; i < belief.length; i++)
+		{
+			if (belief[i] > maxBelief)
+			{
+				index = i;
+				maxBelief = belief[i];
+			}
+		}
+		
+		return index;
+	}
+	
+	public Object getValue()
+	{
+		int index = getValueIndex();
+		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
+	}
+	
+	public double getScore()
+	{
+		int index = getGuessIndex();
+		
+		double minInput = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < _input.length; i++)
+		{
+			if (_input[i] < minInput)
+				minInput = _input[i];
+		}
+		
+		return _input[index] - minInput;
+	}
+	
 
 	public void initialize()
 	{
@@ -291,11 +331,6 @@ public class SVariable extends SVariableBase
 		_initCalled = true;
 	}
 
-
-	public double getEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for MinSum");
-	}
 
 	public Object getGuess() 
 	{

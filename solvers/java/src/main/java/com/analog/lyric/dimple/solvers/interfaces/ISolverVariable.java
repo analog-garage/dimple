@@ -25,7 +25,6 @@ public interface ISolverVariable extends ISolverNode
 	public Object getDefaultMessage(Port port);
 	public Object getBelief() ;
 	public void remove(Factor factor);
-	public double getEnergy() ;
     public void setGuess(Object guess) ;
     public Object getGuess() ;
 }

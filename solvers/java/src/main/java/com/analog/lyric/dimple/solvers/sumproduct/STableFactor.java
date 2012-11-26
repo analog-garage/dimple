@@ -109,26 +109,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	}
 
 
-	public double getScore()
-	{
-		ArrayList<Port> ports = _factor.getPorts();
-		int numPorts = ports.size();
-		int[] indices = new int[numPorts];
-		
-		for (int port = 0; port < numPorts; port++)
-			indices[port] = ((SVariable)((VariableBase)ports.get(port).getConnectedNode()).getSolver()).getGuessIndex();
-		
-		FactorTable factorTable = getFactorTable();
-		double[] potentials = factorTable.getPotentials();
-		int weightIndex = factorTable.getWeightIndexFromTableIndices(indices);
-		
-		if (weightIndex >= 0)
-			return potentials[weightIndex] - factorTable.getMinPotential();
-		else	// Indices not found
-			return Double.POSITIVE_INFINITY;
-	}
-	
-	
 	public void setUpdateDerivative(boolean updateDer)
 	{
 		_updateDerivative = updateDer;

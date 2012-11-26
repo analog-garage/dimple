@@ -77,20 +77,4 @@ public class DummyVariable extends SVariableBase
 		return _input;
 	}
 
-	@Override
-	public double getEnergy() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public Object getGuess() 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
-	public void setGuess(Object guess) 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
 }

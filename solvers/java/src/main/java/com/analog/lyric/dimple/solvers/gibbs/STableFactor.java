@@ -86,7 +86,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		int weightIndex = factorTable.getWeightIndexFromTableIndices(inputs);
 		return factorTable.getPotentials()[weightIndex];
 	}
-	
+		
 	
 	@Override
     public void initialize() 

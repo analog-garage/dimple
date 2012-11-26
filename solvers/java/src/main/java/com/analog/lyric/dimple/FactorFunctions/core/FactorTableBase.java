@@ -212,6 +212,7 @@ public class FactorTableBase
 	
 	public final double getMinPotential()
 	{
+		if (_potentials == null) getPotentials();
 		return _minPotential;
 	}
 	
