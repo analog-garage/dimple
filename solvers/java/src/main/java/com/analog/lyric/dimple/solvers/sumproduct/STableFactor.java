@@ -108,56 +108,26 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.analog.lyric.dimple.solvers.core.SFactorBase#getEnergy()
-	 * 
-	 * Calculates what kind of energy?
-	 */
+
 	public double getScore()
 	{
-		int [] indices = new int[_factor.getPorts().size()];
+		ArrayList<Port> ports = _factor.getPorts();
+		int numPorts = ports.size();
+		int[] indices = new int[numPorts];
 		
-		for (int i = 0; i < indices.length; i++)
-		{
-			SVariable tmp = (SVariable)((VariableBase)_factor.getPorts().get(i).getConnectedNode()).getSolver();
-			indices[i] = tmp.getGuessIndex();
-		}
+		for (int port = 0; port < numPorts; port++)
+			indices[port] = ((SVariable)((VariableBase)ports.get(port).getConnectedNode()).getSolver()).getGuessIndex();
 		
-		 int[][] table = getFactorTable().getIndices();
-	     double[] values = getFactorTable().getWeights();
-	     double maxValue = Double.NEGATIVE_INFINITY;
-	     double retVal = Double.POSITIVE_INFINITY;
-
-	     
-		 for (int i = 0; i < table.length; i++)
-		 {
-			 boolean match = true;
-			 
-			 for (int j = 0; j < indices.length; j++)
-			 {
-				 if (indices[j] != table[i][j])
-				 {
-					 match = false;
-					 break;
-				 }
-			 }
-			 
-			 if (match)
-			 {
-				 retVal = -Math.log(values[i]);
-			 }
-			 
-			 if (values[i] > maxValue)
-				 maxValue = values[i];
-		 }		
-		 
-		 if (maxValue > 0)
-			 retVal -= -Math.log(maxValue);
+		FactorTable factorTable = getFactorTable();
+		double[] potentials = factorTable.getPotentials();
+		int weightIndex = factorTable.getWeightIndexFromTableIndices(indices);
 		
-		return retVal;
-		
+		if (weightIndex >= 0)
+			return potentials[weightIndex] - factorTable.getMinPotential();
+		else	// Indices not found
+			return Double.POSITIVE_INFINITY;
 	}
+	
 	
 	public void setUpdateDerivative(boolean updateDer)
 	{

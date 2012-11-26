@@ -88,12 +88,6 @@ public abstract class SFactorBase implements ISolverFactor
 		throw new DimpleException("not implemented");
 	}
 	
-	@Override
-	public double getSomethingEnergy()  
-	{
-		throw new DimpleException("getSomethingEnergy not yet supported");
-	}
-
 	public double getInternalEnergy()
 	{
 		throw new DimpleException("getInternalEnergy not yet supported");

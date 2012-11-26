@@ -104,6 +104,15 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 		for (int d = 0; d < numPorts; d++) 
 			_var.getPorts().get(d).setOutputMsg((Double)_sampleValue);
 	}
+	
+	public void randomRestart()
+	{
+		// TODO -- sample from the prior if specified, not just the bounds
+		double hi = _domain.getUpperBound();
+		double lo = _domain.getLowerBound();
+		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+			_sampleValue = GibbsSolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo;
+	}
 
 	public void updateBelief()
 	{

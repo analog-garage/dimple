@@ -48,7 +48,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		_varDiscrete = (Discrete)_var;
 		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
 		initialize();
-		_priors = (double[]) getDefaultMessage(null);
+		_priors = (double[])getDefaultMessage(null);
 	}
 
 	public Object getDefaultMessage(Port port)
@@ -69,8 +69,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	{
 		updateCache();
 
-		double[] priors = (double[])_priors;
-		int messageLength = priors.length;
+		int messageLength = _priors.length;
 		int numPorts = _var.getPorts().size();
 		double minEnergy = Double.POSITIVE_INFINITY;
 
@@ -79,7 +78,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		// Compute the conditional probability (initially in energy representation before converting to probability)
 		for (int index = 0; index < messageLength; index++)
 		{
-			double out = priors[index];						// Sum of the input prior...
+			double out = _priors[index];						// Sum of the input prior...
 			for (int port = 0; port < numPorts; port++)
 				out += _inPortMsgs[port][index];			// Plus each input message value
 			
@@ -102,6 +101,21 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		// Send the sample value to all output ports
 		for (int port = 0; port < numPorts; port++) 
 			_outPortMsgs[port][0] = _sampleIndex;
+	}
+	
+	public void randomRestart()
+	{
+		// Convert the prior back to probabilities to sample from the prior
+		int messageLength = _priors.length;
+		double minEnergy = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < messageLength; i++)
+			if (_priors[i] < minEnergy)
+				minEnergy = _priors[i];
+		double[] probPriors = new double[messageLength];
+		for (int i = 0; i < messageLength; i++)
+			probPriors[i] = Math.exp(-(_priors[i] - minEnergy));
+		
+		_sampleIndex = Utilities.sampleFromMultinomial(probPriors, GibbsSolverRandomGenerator.rand);
 	}
 
 	public void updateBelief()
@@ -218,14 +232,15 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		
 		//Flag that init was called so that we can update the cache next time we need cached
 		//values.  We can't do the same thing as the tableFunction (update the cache here)
-		//because the function init gets called after variable init.  If we updated teh cache
+		//because the function init gets called after variable init.  If we updated the cache
 		//here, the table function init would replace the arrays for the outgoing message
 		//and our update functions would update stale messages.
 		//System.out.println("Variable init");
 		_initCalled = true;
 
 		_bestSampleIndex = -1;
-		for (int i = 0; i < _varDiscrete.getDiscreteDomain().getElements().length; i++) 
+		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
+		for (int i = 0; i < messageLength; i++) 
 			_beliefHistogram[i] = 0;
 	}
 

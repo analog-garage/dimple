@@ -230,9 +230,4 @@ public class FiniteFieldMult extends SFactorBase
 			throw new DimpleException("unexpected port num");
 	}
 	
-	@Override
-	public double getSomethingEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for FiniteFieldMult");
-	}
 }
