@@ -95,18 +95,8 @@ ft = toc(t);
 if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 
 % Set proposal standard deviation for real variables
-% arrayfun(@(a)(a.Solver.setProposalStandardDeviation(proposalStandardDeviation)), A);
-for row=1:size(A,1)
-    for col = 1:size(A,2)
-        A(row,col).Solver.setProposalStandardDeviation(proposalStandardDeviation);
-    end
-end
-for row=1:size(A,1)
-    for col = 1:size(A,2)
-        O(row,col).Solver.setProposalStandardDeviation(proposalStandardDeviation);
-    end
-end
-
+A.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
+O.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 
 if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
