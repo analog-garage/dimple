@@ -227,7 +227,7 @@ classdef FactorGraph < Node
             if isVectorIndicesAndWeights
                 varargin = varargin(2:end);
             end
-            
+            retval = firstFactor;
             
             %TODO
             if anythingLeft

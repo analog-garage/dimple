@@ -15,6 +15,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testAddFactorVectorized()
+    %Test return value for degenerate case
+    b = Bit(2,1);
+    fg = FactorGraph();
+    f = fg.addFactorVectorized(@xorDelta,b(1),b(2));
+    assertTrue(f==fg.Factors{1});
 
     %Test constants work
     b = Bit(10,1);
