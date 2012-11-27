@@ -44,6 +44,9 @@ def asciidochtml(fileName,outputDir,singlePage=False):
         os.system('asciidoc -b xhtml11 ' + fileName + '.txt')
     os.chdir(p)
 
+def producedoc2(fileName,option):
+    os.system('pdflatex ' + fileName)
+
 def producedoc(fileName,option):
     if option.html_doc:
         if option.pretty_doc:
@@ -84,6 +87,6 @@ if __name__ == "__main__":
                      
     #Create user doc
     if option.user_doc:
-        producedoc(option.user_doc_filename,option)
+        producedoc2(option.user_doc_filename,option)
     if option.devel_doc:
-        producedoc(option.devel_doc_filename,option)
+        producedoc2(option.devel_doc_filename,option)
