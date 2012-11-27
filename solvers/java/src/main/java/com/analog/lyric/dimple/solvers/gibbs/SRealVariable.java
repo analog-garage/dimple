@@ -36,7 +36,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	protected double _bestSampleValue;
 	protected double _beta = 1;
 	protected double _proposalStdDev = 1;
-	protected boolean _valueFixed = false;
+	protected boolean _holdSampleValue = false;
 
 
 	public SRealVariable(VariableBase var)  
@@ -52,7 +52,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public Object getDefaultMessage(Port port)
 	{
-		return 0d;
+		return _initialSampleValue;
 	}
 
 
@@ -63,8 +63,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public void update()
 	{
-		// If the value has been forced to a fixed value, don't bother to update
-		if (_valueFixed) return;
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
 
 		int numPorts = _var.getPorts().size();
 		double _lowerBound = _domain.getLowerBound();
@@ -102,20 +102,20 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			// Accept or reject
 			double rejectionThreshold = Math.exp(LPrevious - LProposed);	// Note, no Hastings factor if Gaussian proposal distribution
 			if (GibbsSolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
-				_sampleValue = proposalValue;
+				setCurrentSample(proposalValue);
 		}
-
-		for (int d = 0; d < numPorts; d++) 
-			_var.getPorts().get(d).setOutputMsg((Double)_sampleValue);
 	}
 	
 	public void randomRestart()
 	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+
 		// TODO -- sample from the prior if specified, not just the bounds
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
 		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-			_sampleValue = GibbsSolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo;
+			setCurrentSample(GibbsSolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 	}
 
 	public void updateBelief()
@@ -134,23 +134,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_input = (FactorFunction)input;
 	}
 	
-	public void setToFixedValue(Object value)
-	{
-		_valueFixed = true;
-		_sampleValue = (Double)value;
-		
-		// Send the sample value to all output ports
-		int numPorts = _var.getPorts().size();
-		for (int d = 0; d < numPorts; d++) 
-			_var.getPorts().get(d).setOutputMsg((Double)_sampleValue);
-	}
-	
-	public void removeFixedValue()
-	{
-		_valueFixed = false;
-	}
-	
-	public double getScore()
+	public final double getScore()
 	{
 		if (_guessWasSet)
 			return _input.evalEnergy(_guessValue);
@@ -158,23 +142,23 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
 	}
 
-	public void saveAllSamples()
+	public final void saveAllSamples()
 	{
 		_sampleArray = new ArrayList<Double>();
 	}
 
-	public void saveCurrentSample()
+	public final void saveCurrentSample()
 	{
 		if (_sampleArray != null)
 			_sampleArray.add(_sampleValue);
 	}
 
-	public void saveBestSample()
+	public final void saveBestSample()
 	{
 		_bestSampleValue = _sampleValue;
 	}
 
-	public double getPotential()
+	public final double getPotential()
 	{
 		if (_input != null)
 			return _input.evalEnergy(new Object[]{_sampleValue});
@@ -182,9 +166,27 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return 0;
 	}
 
+	public final void setCurrentSample(double value)
+	{
+		_sampleValue = value;
+		
+		ArrayList<Port> ports = _var.getPorts();
+		int numPorts = ports.size();
+		for (int port = 0; port < numPorts; port++) 
+			ports.get(port).setOutputMsg((Double)_sampleValue);
+	}
 
-	public double[] AllSamples() {return getAllSamples();}
-	public double[] getAllSamples()
+	public final double getCurrentSample()
+	{
+		return _sampleValue;
+	}
+
+	public final double getBestSample()
+	{
+		return _bestSampleValue;
+	}
+	
+	public final double[] getAllSamples()
 	{
 		int length = _sampleArray.size();
 		double[] retval = new double[length];
@@ -192,34 +194,40 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			retval[i] = _sampleArray.get(i);
 		return retval;
 	}
-
-	public double Sample() {return getCurrentSample();}
-	public double getCurrentSample()
+	
+	public final void setAndHoldSampleValue(Double value)
 	{
-		return _sampleValue;
+		setCurrentSample(value);
+		holdSampleValue();
+	}
+	
+	public final void holdSampleValue()
+	{
+		_holdSampleValue = true;
+	}
+	
+	public final void releaseSampleValue()
+	{
+		_holdSampleValue = false;
 	}
 
-	public double BestSample() {return getBestSample();}
-	public double getBestSample()
-	{
-		return _bestSampleValue;
-	}
 
-	public void setProposalStandardDeviation(double stdDev) {_proposalStdDev = stdDev;}
-	public double getProposalStandardDeviation() {return _proposalStdDev;}
+	public final void setProposalStandardDeviation(double stdDev) {_proposalStdDev = stdDev;}
+	public final double getProposalStandardDeviation() {return _proposalStdDev;}
 
-	public void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
-	public double getInitialSampleValue() {return _initialSampleValue;}
+	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
+	public final double getInitialSampleValue() {return _initialSampleValue;}
 
 
-	public void setBeta(double beta)	// beta = 1/temperature
+	public final void setBeta(double beta)	// beta = 1/temperature
 	{
 		_beta = beta;
 	}
 
 	public void initialize()
 	{
-		_sampleValue = _initialSampleValue;
+		if (!_holdSampleValue)
+			setCurrentSample(_initialSampleValue);
 		_bestSampleValue = _initialSampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
 	}

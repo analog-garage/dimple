@@ -36,13 +36,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     protected int _numPorts;
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
-	protected double[] _priors;
+	protected double[] _input;
 	protected ArrayList<Integer> _sampleIndexArray;
 	protected int _bestSampleIndex;
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _initCalled = true;
-	protected boolean _valueFixed = false;
+	protected boolean _holdSampleValue = false;
 
 	public SDiscreteVariable(VariableBase var) 
 	{
@@ -50,7 +50,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_varDiscrete = (Discrete)_var;
 		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
 		initialize();
-		_priors = (double[])getDefaultMessage(null);
+		_input = (double[])getDefaultMessage(null);
 	}
 
 	public Object getDefaultMessage(Port port)
@@ -71,11 +71,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		updateCache();
 
-		// If the value has been forced to a fixed value, don't bother to update
-		if (_valueFixed) return;
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
 		
-		int messageLength = _priors.length;
-		int numPorts = _var.getPorts().size();
+		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
 
 		double[] conditionalProbability = new double[messageLength];
@@ -83,8 +82,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Compute the conditional probability (initially in energy representation before converting to probability)
 		for (int index = 0; index < messageLength; index++)
 		{
-			double out = _priors[index];						// Sum of the input prior...
-			for (int port = 0; port < numPorts; port++)
+			double out = _input[index];						// Sum of the input prior...
+			for (int port = 0; port < _numPorts; port++)
 				out += _inPortMsgs[port][index];			// Plus each input message value
 			
 			if (out < minEnergy) minEnergy = out;			// For normalization
@@ -101,26 +100,25 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 
 		// Sample from the conditional distribution
-		_sampleIndex = Utilities.sampleFromMultinomial(conditionalProbability, GibbsSolverRandomGenerator.rand);
-
-		// Send the sample value to all output ports
-		for (int port = 0; port < numPorts; port++) 
-			_outPortMsgs[port][0] = _sampleIndex;
+		setCurrentSampleIndex(Utilities.sampleFromMultinomial(conditionalProbability, GibbsSolverRandomGenerator.rand));
 	}
 	
 	public void randomRestart()
 	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+
 		// Convert the prior back to probabilities to sample from the prior
-		int messageLength = _priors.length;
+		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
 		for (int i = 0; i < messageLength; i++)
-			if (_priors[i] < minEnergy)
-				minEnergy = _priors[i];
+			if (_input[i] < minEnergy)
+				minEnergy = _input[i];
 		double[] probPriors = new double[messageLength];
 		for (int i = 0; i < messageLength; i++)
-			probPriors[i] = Math.exp(-(_priors[i] - minEnergy));
+			probPriors[i] = Math.exp(-(_input[i] - minEnergy));
 		
-		_sampleIndex = Utilities.sampleFromMultinomial(probPriors, GibbsSolverRandomGenerator.rand);
+		setCurrentSampleIndex(Utilities.sampleFromMultinomial(probPriors, GibbsSolverRandomGenerator.rand));
 	}
 
 	public void updateBelief()
@@ -131,7 +129,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public Object getBelief() 
 	{
 		updateCache();
-		int domainLength = _priors.length;
+		int domainLength = _input.length;
 		double[] outBelief = new double[domainLength];
 		long sum = 0;
 		for (int i = 0; i < domainLength; i++)
@@ -144,25 +142,60 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else
 		{
 			for (int i = 0; i < domainLength; i++)
-				outBelief[i] = ((double[])_priors)[i];		// Disconnected variable that has never been updated
+				outBelief[i] = ((double[])_input)[i];		// Disconnected variable that has never been updated
 		}
 		
 		return outBelief;
 	}
 
-	public void setInput(Object priors) 
+	public void setInput(Object priors)
 	{
 		double[] vals = (double[])priors;
 		if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
 			throw new DimpleException("Prior size must match domain length");
 		
 		// Convert to energy values
-		_priors = new double[vals.length];
+		_input = new double[vals.length];
 		for (int i = 0; i < vals.length; i++)
-			_priors[i] = -Math.log(vals[i]);
+			_input[i] = -Math.log(vals[i]);
 	}
 	
-	public void setToFixedValue(Object value)
+    public final void saveAllSamples()
+    {
+    	_sampleIndexArray = new ArrayList<Integer>();
+    }
+    
+    public final void saveCurrentSample()
+    {
+    	if (_sampleIndexArray != null)
+    		_sampleIndexArray.add(_sampleIndex);
+    }
+    
+    public final void saveBestSample()
+    {
+    	_bestSampleIndex = _sampleIndex;
+    }
+    
+	public final double getPotential()
+	{
+		return _input[_sampleIndex];
+	}
+	
+	public final double getScore()
+	{
+		int index = getGuessIndex();
+		
+		double minInput = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < _input.length; i++)
+		{
+			if (_input[i] < minInput)
+				minInput = _input[i];
+		}
+		
+		return _input[index] - minInput;
+	}
+	
+	public final void setCurrentSample(Object value)
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
 		int domainLength = domain.size();
@@ -176,66 +209,42 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			}
 		}
 		if (valueIndex == -1)
-			throw new DimpleException("Guess is not a valid value");
+			throw new DimpleException("Value is not in the domain of this variable");
 		
-		setToFixedIndex(valueIndex);
+		setCurrentSampleIndex(valueIndex);
 	}
-	
-	public void setToFixedIndex(int index)
-	{
+	public final void setCurrentSampleIndex(int index)
+    {
 		updateCache();
-		
-		_valueFixed = true;
+
+		// Sample from the conditional distribution
 		_sampleIndex = index;
-		
+
 		// Send the sample value to all output ports
-		int numPorts = _var.getPorts().size();
+		int numPorts = _outPortMsgs.length;
 		for (int port = 0; port < numPorts; port++) 
 			_outPortMsgs[port][0] = _sampleIndex;
-	}
-	
-	public void removeFixedValue()
-	{
-		_valueFixed = false;
-	}
-	
-    public void saveAllSamples()
-    {
-    	_sampleIndexArray = new ArrayList<Integer>();
     }
     
-    public void saveCurrentSample()
+    public final Object getCurrentSample()
     {
-    	if (_sampleIndexArray != null)
-    		_sampleIndexArray.add(_sampleIndex);
+    	return _varDiscrete.getDiscreteDomain().getElements()[_sampleIndex];
+    }
+    public final int getCurrentSampleIndex()
+    {
+    	return _sampleIndex;
     }
     
-    public void saveBestSample()
+    public final Object getBestSample()
     {
-    	_bestSampleIndex = _sampleIndex;
+    	return _varDiscrete.getDiscreteDomain().getElements()[_bestSampleIndex];
     }
-    
-	public double getPotential()
-	{
-		return _priors[_sampleIndex];
-	}
-	
-	public double getScore()
-	{
-		int index = getGuessIndex();
-		
-		double minInput = Double.POSITIVE_INFINITY;
-		for (int i = 0; i < _priors.length; i++)
-		{
-			if (_priors[i] < minInput)
-				minInput = _priors[i];
-		}
-		
-		return _priors[index] - minInput;
-	}
-	
-    public Object[] AllSamples() {return getAllSamples();}
-    public Object[] getAllSamples()
+    public final int getBestSampleIndex()
+    {
+    	return _bestSampleIndex;
+    }
+
+    public final Object[] getAllSamples()
     {
     	int length = _sampleIndexArray.size();
     	Object[] domain = _varDiscrete.getDiscreteDomain().getElements();
@@ -244,8 +253,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     		retval[i] = domain[_sampleIndexArray.get(i)];
     	return retval;
     }
-    public int[] AllSampleIndices() {return getAllSampleIndices();}
-    public int[] getAllSampleIndices()
+    public final int[] getAllSampleIndices()
     {
     	int length = _sampleIndexArray.size();
     	int[] retval = new int[length];
@@ -254,29 +262,30 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	return retval;
     }
 
-    public Object Sample() {return getCurrentSample();}
-    public Object getCurrentSample()
-    {
-    	return _varDiscrete.getDiscreteDomain().getElements()[_sampleIndex];
-    }
-    public int SampleIndex() {return getCurrentSampleIndex();}
-    public int getCurrentSampleIndex()
-    {
-    	return _sampleIndex;
-    }
+	public final void setAndHoldSampleValue(Object value)
+	{
+		setCurrentSample(value);
+		holdSampleValue();
+	}
+	
+	public final void setAndHoldSampleIndex(int index)
+	{
+		setCurrentSampleIndex(index);
+		holdSampleValue();
+	}
+	
+	public final void holdSampleValue()
+	{
+		_holdSampleValue = true;
+	}
+	
+	public final void releaseSampleValue()
+	{
+		_holdSampleValue = false;
+	}
+	
     
-    public Object BestSample() {return getBestSample();}
-    public Object getBestSample()
-    {
-    	return _varDiscrete.getDiscreteDomain().getElements()[_bestSampleIndex];
-    }
-    public int BestSampleIndex() {return getBestSampleIndex();}
-    public int getBestSampleIndex()
-    {
-    	return _bestSampleIndex;
-    }
-    
-    public void setBeta(double beta)	// beta = 1/temperature
+    public final void setBeta(double beta)	// beta = 1/temperature
     {
     	_beta = beta;
     }

@@ -63,8 +63,8 @@ graph1.Solver.saveAllSamples();
 graph1.solve();
 
 
-aSamples = sa.AllSamples;
-bSamples = sb.AllSamples;
+aSamples = sa.getAllSamples;
+bSamples = sb.getAllSamples;
 aSum = 0;
 for i=1:length(aSamples); aSum = aSum + aSamples(i); end
 aMean = aSum/length(aSamples);
@@ -132,8 +132,8 @@ graph2.Solver.saveAllSamples();
 graph2.solve();
 
 
-aSamples = sa.AllSamples;
-bSamples = sb.AllSamples;
+aSamples = sa.getAllSamples;
+bSamples = sb.getAllSamples;
 aSum = 0;
 for i=1:length(aSamples); aSum = aSum + aSamples(i); end
 aMean = aSum/length(aSamples);
