@@ -59,7 +59,7 @@ def builddoc():
         print "building documentation"
         p = os.getcwd()
         os.chdir('../doc')
-        os.system('python builddoc.py -c -u -p')
+        os.system('python builddoc.py -c -u')
         os.chdir(p)
 
 class Builder:
@@ -73,7 +73,7 @@ class Builder:
         parser.add_option('-u', '--unzip', action = 'store_true', help = 'unzip', default=False)
         parser.add_option('-d', '--developer', action = 'store_true', help="developer", default=False)
 	parser.add_option('-r', '--reuse',action='store_true',help="reuse",default=False)
-        parser.add_option('-n', '--no_doc',action='store_false',default=True)
+        parser.add_option('-n', '--no_doc',action='store_true',default=False)
         (opt, args_left_after_parse) = parser.parse_args(args)
         
         exclude_file_name = 'files_to_exclude.txt'
@@ -112,6 +112,8 @@ class Builder:
              reuse,
              no_doc):
 
+            if not no_doc:
+                builddoc()
 
             self.build_java_solver(javaBuildDir,javaTargetDir,buildCommand,reuse)
             
@@ -144,8 +146,6 @@ class Builder:
             if test:
                 self.test_kit(dest)
 
-            if not no_doc:
-                builddoc()
     
 
     def usage(self,scriptName):

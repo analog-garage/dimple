@@ -36,6 +36,14 @@ if __name__ == "__main__":
     if option.clean:
         for n in glob.glob("*.pdf"):
             os.remove(n)
+        for n in glob.glob("*.aux"):
+            os.remove(n)
+        for n in glob.glob("*.dvi"):
+            os.remove(n)
+        for n in glob.glob("*.toc"):
+            os.remove(n)
+        for n in glob.glob("*.log"):
+            os.remove(n)
  
                      
     #Create user doc
