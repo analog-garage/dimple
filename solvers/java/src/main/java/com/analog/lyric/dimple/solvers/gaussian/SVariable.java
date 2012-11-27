@@ -22,11 +22,11 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 
 
 
-public class SVariable extends SVariableBase 
+public class SVariable extends SRealVariableBase 
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves

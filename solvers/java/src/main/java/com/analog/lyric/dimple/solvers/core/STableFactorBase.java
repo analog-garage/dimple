@@ -54,6 +54,34 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 	{
 		return getFactorTable().getIndices();
 	}
+	
+	
+	@Override
+    public double getScore()
+    {   
+		// For some reason, the score for table factors is normalized by the minimum value
+	    return super.getScore() - getFactorTable().getMinPotential();
+    }
+
+//	@Override
+//	public double getScore()
+//	{
+//		ArrayList<Port> ports = _factor.getPorts();
+//		int numPorts = ports.size();
+//		int[] indices = new int[numPorts];
+//		
+//		for (int port = 0; port < numPorts; port++)
+//			indices[port] = ((SDiscreteVariableBase)((VariableBase)ports.get(port).getConnectedNode()).getSolver()).getGuessIndex();
+//		
+//		FactorTable factorTable = getFactorTable();
+//		double[] potentials = factorTable.getPotentials();
+//		int weightIndex = factorTable.getWeightIndexFromTableIndices(indices);
+//		
+//		if (weightIndex >= 0)
+//			return potentials[weightIndex] - factorTable.getMinPotential();
+//		else	// Indices not found
+//			return Double.POSITIVE_INFINITY;
+//	}
 
 
 }

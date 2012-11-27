@@ -16,12 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.ArrayList;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorBase implements ISolverFactor 
 {
@@ -37,18 +41,32 @@ public abstract class SFactorBase implements ISolverFactor
 		return _factor;
 	}
 
+	@Override
 	public void initialize()  
 	{
 		
 	}
 
+	@Override
 	public void update()  
 	{
 		for (int i = 0; i < _factor.getPorts().size(); i++)
 			updateEdge(i);
+	}
+	
+	@Override
+	public double [] getBelief() 
+	{
+		throw new DimpleException("not supported");
+	}
+
+	@Override
+	public void connectPort(Port p) 
+	{
 		
 	}
 	
+	@Override
 	public Object getDefaultMessage(Port port) 
 	{
 		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
@@ -56,11 +74,7 @@ public abstract class SFactorBase implements ISolverFactor
 		return v.getDefaultMessage(port);
 	}
 
-	public double [] getBelief() 
-	{
-		throw new DimpleException("not supported");
-	}
-
+	@Override
 	public ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -71,6 +85,8 @@ public abstract class SFactorBase implements ISolverFactor
 		}
 		return graph;
 	}
+
+	@Override
 	public ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -83,28 +99,37 @@ public abstract class SFactorBase implements ISolverFactor
 	}
 
 	@Override
-	public int[][] getPossibleBeliefIndices()  {
-		// TODO Auto-generated method stub
+    public double getScore()
+    {    	
+		ArrayList<Port> ports = _factor.getPorts();
+		int numPorts = ports.size();
+	    Object[] values = new Object[numPorts];
+
+	    for (int port = 0; port < numPorts; port++)
+	    {
+	    	INode neighbor = ports.get(port).getConnectedNode();
+	    	values[port] = ((ISolverVariable)neighbor.getSolver()).getGuess();
+	    }
+	    
+	    return _factor.getFactorFunction().evalEnergy(values);
+    }
+
+	@Override
+	public int[][] getPossibleBeliefIndices() 
+	{
 		throw new DimpleException("not implemented");
 	}
 	
+	@Override
 	public double getInternalEnergy()
 	{
 		throw new DimpleException("getInternalEnergy not yet supported");
-		
 	}
+	
+	@Override
 	public double getBetheEntropy()
 	{
 		throw new DimpleException("getBetheEntropy not yet supported");		
 	}
 	
-    public double getScore()
-    {    	
-    	throw new DimpleException("not supported");    	
-    }
-
-	public void connectPort(Port p) 
-	{
-		
-	}
 }

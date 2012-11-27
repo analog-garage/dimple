@@ -25,9 +25,9 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 
-public class SRealVariable extends SVariableBase
+public class SRealVariable extends SRealVariableBase
 {
 	protected Double[] _particleValues;
 	protected int _numParticles = 1;
@@ -441,6 +441,14 @@ public class SRealVariable extends SVariableBase
 		_input = (FactorFunction)input;
 	}
 
+	public double getScore()
+	{
+		if (_guessWasSet)
+			return _input.evalEnergy(_guessValue);
+		else
+			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
+	}
+
 
 	public void initialize()
 	{
@@ -495,22 +503,6 @@ public class SRealVariable extends SVariableBase
 	public void remove(Factor factor)
 	{
 		_initCalled = true;
-	}
-
-	public double getEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for ParticleBP");
-	}
-
-
-	public Object getGuess() 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
-	public void setGuess(Object guess) 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
 	}
 
 }

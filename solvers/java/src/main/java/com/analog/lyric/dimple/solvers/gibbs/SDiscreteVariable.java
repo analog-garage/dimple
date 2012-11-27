@@ -19,16 +19,17 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
 
 
 
-public class SDiscreteVariable extends SVariableBase implements ISolverVariableGibbs
+public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs
 {
     protected double[][] _inPortMsgs = null;
     protected int[][] _outPortMsgs = null;
@@ -41,6 +42,7 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _initCalled = true;
+	protected boolean _valueFixed = false;
 
 	public SDiscreteVariable(VariableBase var) 
 	{
@@ -69,6 +71,9 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	{
 		updateCache();
 
+		// If the value has been forced to a fixed value, don't bother to update
+		if (_valueFixed) return;
+		
 		int messageLength = _priors.length;
 		int numPorts = _var.getPorts().size();
 		double minEnergy = Double.POSITIVE_INFINITY;
@@ -157,6 +162,43 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 			_priors[i] = -Math.log(vals[i]);
 	}
 	
+	public void setToFixedValue(Object value)
+	{
+		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
+		int domainLength = domain.size();
+		int valueIndex = -1;
+		for (int i = 0; i < domainLength; i++)
+		{
+			if (domain.getElements()[i].equals(value))
+			{
+				valueIndex = i;
+				break;
+			}
+		}
+		if (valueIndex == -1)
+			throw new DimpleException("Guess is not a valid value");
+		
+		setToFixedIndex(valueIndex);
+	}
+	
+	public void setToFixedIndex(int index)
+	{
+		updateCache();
+		
+		_valueFixed = true;
+		_sampleIndex = index;
+		
+		// Send the sample value to all output ports
+		int numPorts = _var.getPorts().size();
+		for (int port = 0; port < numPorts; port++) 
+			_outPortMsgs[port][0] = _sampleIndex;
+	}
+	
+	public void removeFixedValue()
+	{
+		_valueFixed = false;
+	}
+	
     public void saveAllSamples()
     {
     	_sampleIndexArray = new ArrayList<Integer>();
@@ -177,7 +219,21 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 	{
 		return _priors[_sampleIndex];
 	}
-
+	
+	public double getScore()
+	{
+		int index = getGuessIndex();
+		
+		double minInput = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < _priors.length; i++)
+		{
+			if (_priors[i] < minInput)
+				minInput = _priors[i];
+		}
+		
+		return _priors[index] - minInput;
+	}
+	
     public Object[] AllSamples() {return getAllSamples();}
     public Object[] getAllSamples()
     {
@@ -262,20 +318,4 @@ public class SDiscreteVariable extends SVariableBase implements ISolverVariableG
 		}
 	}
 	
-	public double getEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for gibbs");
-	}
-	
-	public Object getGuess() 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-	
-	public void setGuess(Object guess) 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
-
 }

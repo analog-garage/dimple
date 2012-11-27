@@ -18,14 +18,14 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 
-public class SVariable extends SVariableBase
+public class SVariable extends SDiscreteVariableBase
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -38,8 +38,6 @@ public class SVariable extends SVariableBase
     double [][] _outPortDerivativeMsgs;
     double [] _dampingParams = new double[0];
     protected double [] _input;
-    private int _guessIndex = 0;
-    private boolean _guessWasSet = false;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
     boolean _initCalled = true;
@@ -77,7 +75,7 @@ public class SVariable extends SVariableBase
 	public int getValueIndex()
 	{
 		int index = -1;
-		double [] belief = (double[]) getBelief();		
+		double [] belief = (double[])getBelief();		
 		double maxBelief = -1;
 		
 		for (int i = 0; i < belief.length; i++)
@@ -96,53 +94,6 @@ public class SVariable extends SVariableBase
 	{
 		int index = getValueIndex();
 		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
-	}
-
-	public int getGuessIndex()
-	{
-		int index = 0;
-		if (_guessWasSet)
-			index = _guessIndex;
-		else
-			index = getValueIndex();
-		
-		return index;
-	}
-	
-	public Object getGuess()
-	{
-		//Discrete var = (Discrete)getVariable();
-		int index = getGuessIndex();
-		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
-	}
-	
-	public void setGuess(Object guess) 
-	{
-		//Discrete var = (Discrete)getVariable();
-		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
-		int domainLength = domain.size();
-		int guessIndex = -1;
-		for (int i = 0; i < domainLength; i++)
-		{
-			if (domain.getElements()[i].equals(guess))
-			{
-				guessIndex = i;
-				break;
-			}
-		}
-		if (guessIndex == -1)
-			throw new DimpleException("guess not valid value");
-		
-		setGuessIndex(guessIndex);
-	}
-	
-	public void setGuessIndex(int index) 
-	{
-		if (index < 0 || index >= ((DiscreteDomain)_var.getDomain()).size())
-			throw new DimpleException("illegal index");
-		
-		_guessWasSet = true;
-		_guessIndex = index;
 	}
 	
 	public double getScore()
@@ -444,15 +395,14 @@ public class SVariable extends SVariableBase
 
 	public void initialize()
 	{
-		
+		super.initialize();
+
 		//Flag that init was called so that we can update the cache next time we need cached
 		//values.  We can't do the same thing as the tableFunction (update the cache here)
 		//because the function init gets called after variable init.  If we updated teh cache
 		//here, the table function init would replace the arrays for the outgoing message
 		//and our update functions would update stale messages.
 		_initCalled = true;
-		
-		_guessWasSet = false;
 	}
 
 

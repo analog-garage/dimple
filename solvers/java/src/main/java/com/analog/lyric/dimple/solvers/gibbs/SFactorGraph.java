@@ -37,7 +37,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
-	protected int _numRandomRestarts = 1;
+	protected int _numRandomRestarts = 0;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
 	protected double _temperingDecayConstant;
@@ -104,14 +104,31 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (initialize)
 			initialize();
 		
-		for (int restartCount = 0; restartCount < _numRandomRestarts; restartCount++)
+		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
 			randomRestart();
-			iterate(_burnInUpdates);
+			burnIn();
 			for (int iter = 0; iter < _numSamples; iter++) 
 				oneSample();
 		}
-	}   
+	}
+	
+	
+	public final void burnIn()
+	{
+		iterate(_burnInUpdates);
+	}
+	
+	// Run more samples without initializing, burn-in, or random-restarts
+	// This is like iterate, except that while iterate just updates runs a specified number of single-variable updates,
+	// this runs a specified number of entire samples, where the size of a sample has already been defined in terms of
+	// number of either updates or scans.
+	public void sample() {sample(1);}
+	public void sample(int numSamples)
+	{
+		for (int sample = 0; sample < numSamples; sample++) 
+			oneSample();
+	}
 
 	// Note that the iterate() method for the Gibbs solver means do the
 	// specified number of single-variable updates, regardless of other parameter settings.

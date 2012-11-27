@@ -33,23 +33,36 @@ public abstract class SVariableBase implements ISolverVariable
 		_var = var;
 	}
 	
+	@Override
 	public void connectPort(Port p) 
 	{
 		
 	}
 
 	
+	@Override
 	public void initialize() 
 	{
 		
 	}
 
+	@Override
 	public void remove(Factor factor)
 	{
 		
 	}
 	
+
+	@Override
+	public void update()  
+	{
+		for (int i = 0; i < _var.getPorts().size(); i++)
+		{
+			updateEdge(i);
+		}
+	}
 	
+	@Override
 	public ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -60,6 +73,8 @@ public abstract class SVariableBase implements ISolverVariable
 		}
 		return graph;
 	}
+	
+	@Override
 	public ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -70,14 +85,6 @@ public abstract class SVariableBase implements ISolverVariable
 		}
 		return graph;
 	}
-	
-
-	@Override
-	public double getEnergy()  
-	{
-		throw new DimpleException("not supported");
-	}
-
 
 	@Override
 	public void setGuess(Object guess)  
@@ -85,38 +92,28 @@ public abstract class SVariableBase implements ISolverVariable
 		throw new DimpleException("not supported");
 	}
 
-
 	@Override
 	public Object getGuess()  
 	{
 		throw new DimpleException("not supported");
 	}
 
-    public double getInternalEnergy()
-    {
-    	throw new DimpleException("not supported");
-    }
-    
-    public double getBetheEntropy() 
-    {
-    	throw new DimpleException("not supported");    	
-    }
-    
-    public double getScore()
-    {    	
-    	throw new DimpleException("not supported");    	
-    }
-	
-
 	@Override
-	public void update()  
-	{
-		for (int i = 0; i < _var.getPorts().size(); i++)
-		{
-			updateEdge(i);
-		}
-		
+	public double getScore()
+	{    	
+		throw new DimpleException("not supported");    	
 	}
 
+	@Override
+	public double getInternalEnergy()
+	{
+		throw new DimpleException("not supported");
+	}
+
+	@Override
+	public double getBetheEntropy() 
+	{
+		throw new DimpleException("not supported");    	
+	}
 	
 }

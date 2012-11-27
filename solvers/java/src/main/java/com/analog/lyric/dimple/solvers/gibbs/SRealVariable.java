@@ -24,9 +24,9 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 
-public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
+public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs
 {
 	protected double _sampleValue;
 	protected double _initialSampleValue = 0;
@@ -36,6 +36,7 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 	protected double _bestSampleValue;
 	protected double _beta = 1;
 	protected double _proposalStdDev = 1;
+	protected boolean _valueFixed = false;
 
 
 	public SRealVariable(VariableBase var)  
@@ -62,6 +63,9 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 
 	public void update()
 	{
+		// If the value has been forced to a fixed value, don't bother to update
+		if (_valueFixed) return;
+
 		int numPorts = _var.getPorts().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
@@ -129,6 +133,30 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 	{
 		_input = (FactorFunction)input;
 	}
+	
+	public void setToFixedValue(Object value)
+	{
+		_valueFixed = true;
+		_sampleValue = (Double)value;
+		
+		// Send the sample value to all output ports
+		int numPorts = _var.getPorts().size();
+		for (int d = 0; d < numPorts; d++) 
+			_var.getPorts().get(d).setOutputMsg((Double)_sampleValue);
+	}
+	
+	public void removeFixedValue()
+	{
+		_valueFixed = false;
+	}
+	
+	public double getScore()
+	{
+		if (_guessWasSet)
+			return _input.evalEnergy(_guessValue);
+		else
+			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
+	}
 
 	public void saveAllSamples()
 	{
@@ -194,21 +222,6 @@ public class SRealVariable extends SVariableBase implements ISolverVariableGibbs
 		_sampleValue = _initialSampleValue;
 		_bestSampleValue = _initialSampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
-	}
-
-	public double getEnergy()  
-	{
-		throw new DimpleException("getEnergy not yet supported for gibbs");
-	}
-
-	public Object getGuess() 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
-	public void setGuess(Object guess) 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
 	}
 
 }
