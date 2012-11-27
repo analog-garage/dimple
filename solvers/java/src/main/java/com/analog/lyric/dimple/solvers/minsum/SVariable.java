@@ -238,16 +238,7 @@ public class SVariable extends SDiscreteVariableBase
 	
 	public double getScore()
 	{
-		int index = getGuessIndex();
-		
-		double minInput = Double.POSITIVE_INFINITY;
-		for (int i = 0; i < _input.length; i++)
-		{
-			if (_input[i] < minInput)
-				minInput = _input[i];
-		}
-		
-		return _input[index] - minInput;
+		return _input[getGuessIndex()];
 	}
 	
 

@@ -44,11 +44,11 @@ function testScore()
     fg.solve();
 
     %Now guess the Score and compare
-    f1Score = -log(3/3);
-    f2Score = -log(3/3);
-    aScore = -log(2/4);
-    bScore = -log(2/4);
-    cScore = -log(3/3);
+    f1Score = -log(3);
+    f2Score = -log(3);
+    aScore = -log(2);
+    bScore = -log(2);
+    cScore = -log(3);
     guessScore = f1Score+f2Score+aScore+bScore+cScore;
     firstGuessScore = guessScore;
     assertElementsAlmostEqual(guessScore,fg.Score);
@@ -78,11 +78,11 @@ function testScore()
     b.Guess = 1;
     c.Guess = 1;
 
-    aScore = -log(4/4);
-    bScore = -log(4/4);
-    cScore = -log(1/3);
-    f1Score = -log(2/3);
-    f2Score = -log(2/3);
+    aScore = -log(4);
+    bScore = -log(4);
+    cScore = -log(1);
+    f1Score = -log(2);
+    f2Score = -log(2);
     guessScore = aScore+bScore+cScore+f1Score+f2Score;
     assertElementsAlmostEqual(fg.Score,guessScore);
 

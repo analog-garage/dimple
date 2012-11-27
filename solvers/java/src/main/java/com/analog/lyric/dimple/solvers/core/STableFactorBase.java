@@ -56,13 +56,6 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 	}
 	
 	
-	@Override
-    public double getScore()
-    {   
-		// For some reason, the score for table factors is normalized by the minimum value
-	    return super.getScore() - getFactorTable().getMinPotential();
-    }
-
 //	@Override
 //	public double getScore()
 //	{

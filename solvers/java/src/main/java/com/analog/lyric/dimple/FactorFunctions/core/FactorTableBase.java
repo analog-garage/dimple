@@ -32,7 +32,6 @@ public class FactorTableBase
 	 * recomputation.
 	 */
 	private double [] _potentials = null;
-	private double _minPotential = Double.POSITIVE_INFINITY;
 	
 	public FactorTableBase()
 	{
@@ -196,13 +195,10 @@ public class FactorTableBase
 		if (_potentials == null)
 		{
 			_potentials = new double[_weights.length];
-			_minPotential = Double.POSITIVE_INFINITY;
 			for (int i = 0; i < _weights.length; i++)
 			{
 				double potential = -Math.log(_weights[i]);
 				_potentials[i] = potential;
-				if (potential < _minPotential)
-					_minPotential = potential;
 			}
 		}
 		
@@ -210,15 +206,6 @@ public class FactorTableBase
 	}
 	
 	
-	public final double getMinPotential()
-	{
-		if (_potentials == null) getPotentials();
-		return _minPotential;
-	}
-	
-	
-	
-
 	protected void check(int[][] indices, double[] weights)
 	{
 		//Do some error checking
