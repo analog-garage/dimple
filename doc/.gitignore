@@ -1,3 +1,6 @@
 output
-DMPLUserDocumentation.pdf
-DMPLDeveloperDocumentation.pdf
+*.pdf
+*.aux
+*.dvi
+*.log
+*.toc

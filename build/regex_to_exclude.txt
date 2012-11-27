@@ -8,3 +8,8 @@
 testDimpleexitDone
 \.classpath$
 \.project$
+.*\.aux$
+.*\.dvi$
+.*\.toc$
+.*\.log$
+.*\.tex$
