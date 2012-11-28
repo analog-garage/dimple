@@ -110,7 +110,6 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 			return new Double(0);		// Messages from real variables are real values (doubles)
 	}
 
-	public double Potential() {return getPotential();}
 	public double getPotential()
 	{
 		ArrayList<Port> ports = _factor.getPorts();

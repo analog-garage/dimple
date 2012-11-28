@@ -71,7 +71,6 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		return new int[]{0};
 	}
 
-	public double Potential() {return getPotential();}
 	public double getPotential()
 	{
 	    int[] inPortMsgs = new int[_numPorts];
