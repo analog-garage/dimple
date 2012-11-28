@@ -20,7 +20,7 @@
   basicstyle=\footnotesize,           % the size of the fonts that are used for the code
   numbers=left,                   % where to put the line-numbers
   numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
-  stepnumber=2,                   % the step between two line-numbers. If it's 1, each line 
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
                                   % will be numbered
   numbersep=5pt,                  % how far the line-numbers are from the code
   backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
@@ -30,7 +30,7 @@
   frame=single,                   % adds a frame around the code
   rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
   tabsize=2,                      % sets default tabsize to 2 spaces
-  captionpos=b,                   % sets the caption-position to bottom
+  captionpos=t,                   % sets the caption-position to bottom
   breaklines=true,                % sets automatic line breaking
   breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
   title=\lstname,                   % show the filename of files included with \lstinputlisting;
@@ -494,7 +494,11 @@ The first way of building the factor graph uses an inefficient N-bit XOR functio
 
 
 \begin{lstlisting}
-function [valid]=BadNBitXorDelta_Tutorial(variables) valid=mod(sum(variables),2)==0;end
+function [valid]=BadNBitXorDelta_Tutorial(variables)
+ 
+valid=mod(sum(variables),2)==0;
+
+end
 \end{lstlisting}
 
 Using everything we have learned in the previous tutorial, the sequence of instructions we use is simply (from /demo/12\_Tutorial/DimpleTutorial\_BadNBitXor.m):
@@ -502,7 +506,20 @@ Using everything we have learned in the previous tutorial, the sequence of instr
 
 
 \begin{lstlisting}
-FourBitXor=FactorGraph();Domain=[0;1];B1=Discrete(Domain);B2=Discrete(Domain);B3=Discrete(Domain);B4=Discrete(Domain);FourBitXor.addFactor(@BadNBitXorDelta_Tutorial,[B1,B2,B3,B4]);B1.Input=[0.2 0.8];B2.Input=[0.2 0.8];B3.Input=[0.2 0.8];B4.Input=[0.5 0.5];FourBitXor.NumIterations=30;FourBitXor.solve;disp(B1.Value);
+FourBitXor=FactorGraph();
+Domain=[0;1];
+B1=Discrete(Domain);
+B2=Discrete(Domain);
+B3=Discrete(Domain);
+B4=Discrete(Domain);
+FourBitXor.addFactor(@BadNBitXorDelta_Tutorial,[B1,B2,B3,B4]);
+B1.Input=[0.2 0.8];
+B2.Input=[0.2 0.8];
+B3.Input=[0.2 0.8];
+B4.Input=[0.5 0.5];
+FourBitXor.NumIterations=30;
+FourBitXor.solve;
+disp(B1.Value);
 \end{lstlisting}
 
 IMPORTANT: Note that the BadNBitXorDelta\_Tutorial is a function which takes only ONE argument, but this argument is an array. This is reflected in the declaration FourBitXor.addFactor(@BadNBitXorDelta\_Tutorial,[B1,B2,B3,B4]), where we created an array of random variables using square brackets.
@@ -513,13 +530,16 @@ The first remark above is rather important, as it highlights of the concept of a
 most array indexing operations of MATLAB are supported in Dimple in a similar fashion.
 
 
-To create a multidimensional array of random variables in Dimple, we use the Variable command where every argument after the first is a dimension of an array: VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) creates an array of variables with domain ‘Domain’, and with dimensions [dimension1][dimension2]..[ dimensionk]. 
+
+To create a multidimensional array of random variables in Dimple, we use the Variable command where every argument after the first is a dimension of an array: VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) creates an array of variables with domain ‘Domain’, and with dimensions [dimension1][dimension2]..[ dimensionk]. 
 
 IMPORTANT: If only one dimension is specified, Dimple creates a square array.
 
 
 \begin{lstlisting}
-VarArray1=Discrete(Domain,3,1)VarArray2=Discrete(Domain,3)VarArray3=Discrete(Domain,3,3)
+VarArray1=Discrete(Domain,3,1)
+VarArray2=Discrete(Domain,3)
+VarArray3=Discrete(Domain,3,3)
 \end{lstlisting}
 
 
@@ -1535,7 +1555,7 @@ fg.addFactorVectorized(ng,{b, 1});
 It is possible to switch the solver of an existing model.  An Example:
 
 \begin{lstlisting}
-   setSolver(com.lyricsemi.dimple.solvers.sumproduct.Solver());
+   setSolver('SumProduct');
    fg = FactorGraph();
    b = Bit(3,1);
    fg.addFactor(@xorDelta,b);
@@ -1545,7 +1565,7 @@ It is possible to switch the solver of an existing model.  An Example:
    
    expected = [0.7586; 0.7586; 0.4138];
    assertTrue(all((b.Belief-expected)<.0001));
-   fg.Solver = com.lyricsemi.dimple.solvers.minsum.Solver();
+   fg.Solver = 'MinSum';
    fg.NumIterations = 1;
    fg.solve();
    expected = [0.7273; 0.7273; 0.2727];
@@ -1603,6 +1623,8 @@ or
 fg = FactorGraph();
 fg.Solver = 'SumProduct';
 \end{lstlisting}
+
+When setting the solver by name, the name is case insensitive.
 
 For solvers that take constructor arguments, users can use the setSolver command:
 
@@ -2752,10 +2774,15 @@ It can be useful to let users specify explicit names for variables, factors, and
 \subsection{Solvers}
 
 
-\subsubsection{Sum Product|}
+\subsubsection{Sum-Product Solver}
+
+Use of the sum-product solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'SumProduct';
+\end{lstlisting}
 
 
-The Sum Product solver only supports discrete variables.
+The sum-product solver only supports discrete variables.
 
 \paragraph{Damping}
 
@@ -2787,17 +2814,27 @@ on a factor node.
 IMPORTANT: k-best and damping are not yet compatible.
 
 
-\subsubsection{Min Sum}
+\subsubsection{Min-Sum Solver}
 
-The Min Sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping
+Use of the min-sum solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'MinSum';
+\end{lstlisting}
+
+
+The min-sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping
 and k-best.
 
 
-\subsubsection{Particle BP}
+\subsubsection{Particle BP Solver}
 
-\paragraph{API}
+Use of the particle BP solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'ParticleBP';
+\end{lstlisting}
 
-\paragraph{Basic Constructor}
+
+\paragraph{Constructor}
 
 The basic constructor for the Particle BP solver is:
 
@@ -2805,11 +2842,11 @@ The basic constructor for the Particle BP solver is:
 com.lyricsemi.dimple.solvers.particleBP.Solver()
 \end{lstlisting}
 
-\paragraph{Methods}
+\paragraph{Methods \\ \\}
 
 The following sections list the solver-specific methods for the Particle BP solver (MATLAB versions).
 
-\paragraph{Graph Methods}
+\subparagraph{Graph Methods \\}
 
 \begin{lstlisting}
 graph.Solver.setNumParticles(numParticles);
@@ -2865,22 +2902,34 @@ graph.Solver.setSeed(seed);
 
 Set the random seed used for re-sampling. Setting the seed allows repeatable execution of the solver.
 
-\paragraph{Variable Methods}
+\subparagraph{Variable Methods}
 
 The Particle BP solver supports both discrete and real variables. For discrete variables, the solver uses sum-product BP as normal, and all of the corresponding methods for the sum-product solver may be used for discrete variables. For real variables, several solver-specific methods are defined, as follows.
 
-\paragraph{Real-Variable-Specific Methods}
+\subparagraph{Real-Variable-Specific Methods \\}
 
 \begin{lstlisting}
 variable.Solver.setNumParticles(numParticles);
 variable.Solver.getNumParticles();
+\end{lstlisting}
+
 Set/get the number of particles to represent this variable.
+
+\begin{lstlisting}
 variable.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
 variable.Solver.getResamplingUpdatesPerParticle();
+\end{lstlisting}
+
 Set/get the number of updates per particle to perform each time the particle is resampled.
+
+\begin{lstlisting}
 variable.Solver.setProposalStandardDeviation(stdDev);
 variable.Solver.getProposalStandardDeviation();
+\end{lstlisting}
+
 Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+
+\begin{lstlisting}
 variable.Solver.setInitialParticleRange(min, max);
 \end{lstlisting}
 
@@ -2904,18 +2953,17 @@ NOTE: the generic variable method Belief (or getBeliefs() with no arguments) ope
 
 Since Particle BP is a form of BP, any of the schedulers for BP can be used for Particle BP.
 
-\paragraph{Some possible extensions}
 
-Can potentially speed performance by in the real factors, caching the dynamically generated combo-table until the particle values change on at least one edge. The resamplingVersionfield of the ParticleBPSolverVariableToFactorMessage is intended to be used to allow the factor to determine whether or not any particle values have changed since they were last used.
+\subsubsection{Gibbs Solver}
 
-
-\subsubsection{Gibbs}
-
-\paragraph{API}
+Use of the Gibbs solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gibbs';
+\end{lstlisting}
 
 \paragraph{Constructor}
 
-\paragraph{Basic Constructor}
+\subparagraph{Basic Constructor}
 
 The basic constructor for the Gibbs solver is:
 
@@ -2923,7 +2971,7 @@ The basic constructor for the Gibbs solver is:
 com.lyricsemi.dimple.solvers.gibbs.Solver()
 \end{lstlisting}
 
-.Optional Constructor Arguments
+\subparagraph{Optional Constructor Arguments}
 
 There are two optional constructors that allow specifying some of the solver configuration parameters up front. These are:
 
@@ -2948,7 +2996,7 @@ The arguments of these constructors are defined as follows:
 
 Note that when the second constructor is used, tempering is automatically enabled. It is otherwise disabled by default.
 
-\paragraph{Methods}
+\paragraph{Methods \\ \\}
 
 All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
@@ -2956,7 +3004,9 @@ NOTE: The setNumIterations() method is not supported by the Gibbs solver as the 
 
 The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
 
-\paragraph{Graph Methods}
+\subparagraph{Graph Methods}
+
+The following methods are available on a graph set to use the Gibbs solver:
 
 \begin{lstlisting}
 graph.Solver.setNumSamples(numSamples);
@@ -2990,6 +3040,13 @@ graph.Solver.setBurnInScans();
 \end{lstlisting}
 
 Set the number of scans for burn-in as an alternative means of specifying the burn-in period. Note that this is relative to the number of variables in the graph at the time of this call, which might be different from the number of variables in the graph when it is solved.
+
+\begin{lstlisting}
+graph.Solver.setNumRestarts(numRestarts)
+graph.Solver.getNumRestarts() 
+\end{lstlisting}
+
+Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of updates or scans, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
 
 \begin{lstlisting}
 graph.Solver.setInitialTemperature(initialTemperature);
@@ -3033,30 +3090,44 @@ graph.Solver.setSeed(seed);
 Set the random seed used for sampling (and used for random scan, if that schedule is used). Setting the seed allows repeatable execution of the Gibbs solver.
 
 \begin{lstlisting}
-graph.Solver.TotalPotential;
+graph.Solver.getTotalPotential();
 \end{lstlisting}
 
-Returns the total potential over all factors of the graph (including input priors on variables).
-
-\paragraph{Variable Methods}
+After running the solver, returns the total potential over all factors of the graph (including input priors on variables) given the most recent sample values.
 
 \begin{lstlisting}
-variable.Solver.Sample;
+graph.Solver.sample(numSamples)
+\end{lstlisting}
+
+This method runs a specified number of samples without re-initializing, burn-in, or random-restarts (this is distinct from iterate(), which runs a specified number of single-variable updates).  Before running this method for the first time, the graph must be initialized using the initialize() method.
+
+\begin{lstlisting}
+graph.Solver.burnIn()
+\end{lstlisting}
+
+Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
+
+
+
+\subparagraph{Variable Methods}
+
+\begin{lstlisting}
+variable.Solver.getCurrentSample();
 \end{lstlisting}
 
 Returns the current sample value for a variable.
 
 \begin{lstlisting}
-variable.Solver.AllSamples;
+variable.Solver.getAllSamples();
 \end{lstlisting}
 
 Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if .saveAllSamples() method had previously been called on the graph or for the variable.
 
 \begin{lstlisting}
-variable.Solver.BestSample;
+variable.Solver.getBestSample();
 \end{lstlisting}
 
-Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).
+Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).  When getting the best sample from multiple variables, they all correspond to the same sample in time, thus should be a valid sample from the joint distribution.
 
 \begin{lstlisting}
 variable.Solver.saveAllSamples();
@@ -3065,27 +3136,27 @@ variable.Solver.saveAllSamples();
 Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
 
 
-\paragraph{Discrete-Variable-Specific Methods}
+\subparagraph{Discrete-Variable-Specific Methods}
 
 \begin{lstlisting}
-variable.Solver.SampleIndex;
+variable.Solver.getSampleIndex;
 \end{lstlisting}
 
 Returns the index of the current sample for a variable, where the index refers to the index into the domain of the variable.
 
 \begin{lstlisting}
-variable.Solver.AllSampleIndices;
+variable.Solver.getAllSampleIndices;
 \end{lstlisting}
 
 Returns an array including the indices of all samples seen so far for a variable.
 
 \begin{lstlisting}
-variable.Solver.BestSampleIndex;
+variable.Solver.getBestSampleIndex;
 \end{lstlisting}
 
 Returns the index of the best sample seen so far.
 
-\paragraph{Real-Variable-Specific Methods}
+\subparagraph{Real-Variable-Specific Methods}
 
 \begin{lstlisting}
 variable.Solver.setProposalStandardDeviation(stdDev)
@@ -3101,10 +3172,10 @@ variable.Solver.getInitialSampleValue()
 
 Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).
 
-\paragraph{Factor Methods}
+\subparagraph{Factor Methods}
 
 \begin{lstlisting}
-factor.Solver.Potential;
+factor.Solver.getPotential();
 \end{lstlisting}
 
 Returns the potential value of a factor given the current values of its connected variables.
@@ -3115,7 +3186,7 @@ factor.Solver.getPotential(values);
 
 Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
 
-\paragraph{Schedulers}
+\subparagraph{Schedulers}
 
 There are two schedulers currently defined for the Gibbs solver:
 
@@ -3131,24 +3202,15 @@ com.lyricsemi.dimple.schedulers.GibbsRandomScanScheduler
 
 Randomly selects a variable for each update (with replacement).
 
-The default scheduler when using the Gibbs solver is the GibbsSequentialScanScheduler, which is used if no scheduler is explicitly specified. (Solvers can now define a solver-specific default scheduler, which overrides the overall default scheduler, but can be overridden by a user-specified scheduler.)
-
-\paragraph{Notes on Implementation}
-
-This is a message-based implementation that fits in the existing Dimple architecture, using nearly all the existing Dimple code unchanged. Messages from variables to factors are single values sampled from the domain of the variable. Messages from factors to discrete variables are (unnormalized) conditional distributions over the domain of the variable. Messages from factors to real variables are are indirect—making use of a call-back from the variable to the factor to allow the variable to evaluate the factor's potential for an arbitrary value.
-
-\paragraph{Some Possible Extensions}
-
-\begin{itemize}
-\item  Currently, the table-factor implementation is slow, since it uses the existing combo-tables and scans through the whole table on each run. This could be optimized by precomputing a different table representation that would be more efficient.
-\item  For real-variables, which require connected factors to be defined by custom FactorFunctions, the computation does not use a combo-table, but instead evaluates the factors on-the-fly. The same could be done for discrete-only factors, which in some cases could significantly improve performance and allow factors that would otherwise require a combo-table of impractical size.
-\item  Support adaptive sampling.
-\item  Support other Gibbs schedules.
-\item Support other annealing schedules, besides exponential decay.
-\end{itemize}
+The default scheduler when using the Gibbs solver is the GibbsSequentialScanScheduler, which is used if no scheduler is explicitly specified.
 
 
 \subsubsection{Gaussian Solver}
+
+Use of the Gaussian solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gaussian';
+\end{lstlisting}
 
 \paragraph{Univariate Gaussian}
 
@@ -3690,7 +3752,7 @@ myFactorGraph.addFactor(@finiteFieldProjection,v,args{:});
 
 See Wikipedia for a definition. 
 
-\subsubsection{Algorithmics|}
+\subsubsection{Algorithmics}
 
 
 Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e. an exponentiation operator).
