@@ -10,13 +10,15 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{hyperref}
+
  
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
  
 \lstset{ %
-  language=Octave,                % the language of the code
+  language=Matlab,                % the language of the code
   basicstyle=\footnotesize,           % the size of the fonts that are used for the code
   numbers=left,                   % where to put the line-numbers
   numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
@@ -65,37 +67,32 @@
 \item Execute the startup.m script in the resulting Dimple directory to 
 load Dimple in MATLAB.
 \item To avoid having to manually change to this directory and execute 
-this script every time you start MATLAB, you will need to add the line:  \\
-run ' <path-to-Dimple>/startup.m’ \\  FIXME
-to a startup.m file in MATLAB’s startup.  Google “MATLAB startup.m” for more details regarding startup.m files.
+this script every time you start MATLAB, you will need to add the following lines to MATLAB's startup.m file:
+\begin{lstlisting}
+cd <Path-to-Dimple>
+startup
+\end{lstlisting}
+Google ``MATLAB startup.m'' for more details regarding startup.m files.
 \item Verify the installation:
 \begin{enumerate}
 \item Start MATLAB
-\item  At the MATLAB command prompt type: \\
-testDimple
-\item Verify output is something like: FIXME
-+ 
-.................. 
-=================================================
-++testDimple
+\item  At the MATLAB command prompt type:
+\begin{lstlisting} 
+testDimple;
+\end{lstlisting}
+\item Verify the output ends with something like the following (showing that all tests passed):
+\begin{lstlisting} 
 
 
-Starting test run with 1 test case.
-.
-
-PASSED in 0.198 seconds.
-Starting test run with 15 test cases.
-
- ...............
-PASSED in 6.460 seconds.
-
-
+**********************************************************************
+PASSED ALL TESTS
+147 of 147 tests passed, 0 failed
+**********************************************************************
 
 --testDimple
- ..................
+======================================================================
+\end{lstlisting}
 
-================================================= 
-..................
 \end{enumerate}
 \end{enumerate}
 
@@ -105,7 +102,7 @@ Features
 \begin{itemize}
 \item Runs the sum product, min sum, particle bp, or Gibbs algorithm on a factor graph.
 \item Supports arbitrary discrete variables.
-\item Some solvers (Particle BP and Gibbs) support continuous variables.
+\item Some solvers (Particle BP, Gibbs, and Gaussian) support continuous variables.
 \item Supports arbitrary factor functions.
 \item Allows rapid prototyping by describing connectivity with simple associations of factors with variables.
 \item Supports nested graphs.
@@ -3000,7 +2997,7 @@ Note that when the second constructor is used, tempering is automatically enable
 
 All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
-NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term "iteration" is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
+NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
 The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
 
@@ -3758,9 +3755,10 @@ See Wikipedia for a definition.
 Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e. an exponentiation operator).
 
 \begin{itemize}
-\item The addition code computes x+y by performing a fast Hadamard transform of the distribution of both x and y, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
-\item The generic multiplication code computes xy by performing a fast Fourier transform on the distribution of the non-zero elements of the distribution, pointwise multiplying the transforms, performing an inverse fast Fourier transform, and then accounting for the zero elements.
-\item The constant multiplication code computes x by converting the distribution of the non-zero values of x to the discrete log domain (which corresponds to reshuffling the array), adding the discrete log of  modulo N?1 (cyclically shifting the array), and exponentiating (unshuffling the array back to the original representation).  
+\item The addition code computes $x+y$ by performing a fast Hadamard transform of the distribution of both $x$ and $y$, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
+\item The generic multiplication code computes $xy$ by performing a fast Fourier transform on the distribution of the non-zero elements of the distribution, pointwise multiplying the transforms, performing an inverse fast Fourier transform, and then accounting for the zero elements.
+% FIXME
+\item The constant multiplication code computes $x$ by converting the distribution of the non-zero values of $x$ to the discrete log domain (which corresponds to reshuffling the array), adding the discrete log of   modulo $N-1$ (cyclically shifting the array), and exponentiating (unshuffling the array back to the original representation).  
 \end{itemize}
 
 \end{document}  
