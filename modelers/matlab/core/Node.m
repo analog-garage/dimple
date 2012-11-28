@@ -73,6 +73,10 @@ classdef Node < MatrixObject
             obj.VectorObject.invokeSolverMethod(methodName,varargin);
         end
         
+        function retval = invokeSolverMethodWithReturnValue(obj,methodName,varargin)
+            retval = cell(obj.VectorObject.invokeSolverMethodWithReturnValue(methodName,varargin));
+            retval = MatrixObject.unpack(retval,obj.VectorIndices,true);
+        end
         
         function names = get.Name(obj)
             names = obj.wrapNames(obj.VectorObject.getNames());

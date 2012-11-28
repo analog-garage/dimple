@@ -2552,6 +2552,66 @@ Users provide four arguments:
 fg.estimateParameters({factorTable1,factorTable2,factor1,etc...},numRestarts,numSteps,stepScaleFactor);
 \end{lstlisting}
 
+\subsubsection{Invoking Methods on the Underlying Solver objects}
+
+Users sometimes need access to the underlying solver objects in order to set and get
+solver specific properties.  For instance K-best is implemented by minsum and sumproduct 
+solvers.  
+
+Let's use the following code to show examples of accessing underlying solver objects
+
+\begin{lstlisting}
+fg = FactorGraph();
+d = Discrete(1:10,10,1);
+ft = FactorTable(rand(10),d.Domain,d.Domain);
+ft.normalize(1);
+f = fg.addFactorVectorized(ft,d(1:(end-1)),d(2:end));
+f.DirectedTo = d(2:end);
+\end{lstlisting}
+
+This code constructs a Markov Model of 10 variables with domain 1 through 10 and a randomized transition matrix.  Suppose we want to use K-best for all the factors.  We could access the underlying solver object of each factor and call setK on that object:
+
+\begin{lstlisting}
+for i = 1:length(f)
+   f(i).Solver.setK(5);
+end
+\end{lstlisting}
+
+However, in the case of very large graphs, this can be very inefficient.  MATLAB has a fairly large penalty for invoking function calls in a large for loop.  Instead, variables, factors, and factor graphs all have an invokeSolverMethod that can be used to call a method on all objects in the vector.
+
+\begin{lstlisting}
+f.invokeSolverMethod('setK',uint32(5));
+\end{lstlisting}
+
+After this is invoked, all factors will have K set to 5.  There are two issues with the current implementation that should be fixed at some point.  The first is that it currently only supports providing the same values to all solver objects.  If you wanted to set a different K for all factors, you could not use this mechanism.  The second issue is that, users must be careful to correctly cast their arguments to the appropriate types.  This could and should be fixed.
+
+It's also possible to call methods with return values as follows:
+
+\begin{lstlisting}
+d.invokeSolverMethod('setDamping',uint32(0),2.0);
+damping = d.invokeSolverMethodWithReturnValue('getDamping',uint32(0));
+
+damping
+
+>> damping
+
+damping = 
+
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+
+\end{lstlisting}
+
+Here we set the damping value for the first edge of every variable.
+
 \subsection{Factor}
 
 It is possible to retrieve a Factor object in a number of ways:

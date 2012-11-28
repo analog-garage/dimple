@@ -318,6 +318,31 @@ public abstract class PNodeVector
 			}
 		}
 
+		
+		throw new DimpleException("method not found");
+	}
+	
+	public Object [] invokeSolverMethodWithReturnValue(String methodName,Object ... args)
+	{
+		ISolverNode sn = _nodes[0].getSolver();
+		
+		Method [] ms = sn.getClass().getMethods();
+		for (Method m : ms)
+		{
+			if (m.getName().equals(methodName))
+			{
+				Object [] retval = new Object[_nodes.length];
+				for (int i = 0; i < _nodes.length; i++)
+					try {
+						retval[i] = m.invoke(_nodes[i].getSolver(),args);
+					} catch (Exception e) {
+						throw new DimpleException(e);
+					}
+				return retval;
+			}
+		}
+
+		
 		throw new DimpleException("method not found");
 	}
 	
