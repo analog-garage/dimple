@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.DimpleException;
@@ -187,9 +188,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
 	}
 	
-	// Get the total potential over all factors of the graph (including input priors on variables)
-	// TODO: Other solvers should implement this too, and it should go in SSolverFactorGraph interface
-	public double TotalPotential() {return getTotalPotential();}
+	
+
+	// Get the total potential over all factors of the graph given the current sample values (including input priors on variables)
 	public double getTotalPotential()
 	{
 		double totalPotential = 0;
@@ -265,6 +266,75 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void enableTempering() {_temper = true;}
 	public void disableTempering() {_temper = false;}
 	public boolean isTemperingEnabled() {return _temper;}
+	
+	
+	
+	// Helpers for operating on pre-specified groups of variables in the graph
+	public double[] getVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		double[] result = new double[numVariables];
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				result[i] = (Double)((SDiscreteVariable)var).getCurrentSample();
+			else if (var instanceof SRealVariable)
+				result[i] = ((SRealVariable)var).getCurrentSample();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+		return result;
+	}
+	public void setAndHoldVariableSampleValues(int variableGroupID, Object[] values) {setAndHoldVariableSampleValues(variableGroupID, (double[])values[0]);}	// Due to the way MATLAB passes objects
+	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		if (numVariables != values.length) throw new DimpleException("Number of values must match the number of variables");
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).setAndHoldSampleValue((Double)values[i]);
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+	public void holdVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).holdSampleValue();
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).holdSampleValue();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+	public void releaseVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).releaseSampleValue();
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).releaseSampleValue();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+
 	
 	
 	@Override
