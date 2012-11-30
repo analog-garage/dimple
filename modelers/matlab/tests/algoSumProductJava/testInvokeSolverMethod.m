@@ -25,7 +25,12 @@ function testInvokeSolverMethod
     for i = 1:length(b)
        assert(b(i).Solver.getDamping(0)==.4);
     end
-
+    damping = b.invokeSolverMethodWithReturnValue('getDamping',uint32(0));
+    for i = 1:length(damping)
+        assert(damping{i}==.4);
+    end
+    
+    
     b.invokeSolverMethod('setInput',[.3 .7]);
     for i = 1:prod(size(b))
         assert(b(i).Belief == .7);
