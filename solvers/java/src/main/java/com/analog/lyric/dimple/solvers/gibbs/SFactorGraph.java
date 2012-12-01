@@ -44,6 +44,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected double _temperingDecayConstant;
 	protected double _temperature;
 	protected double _minPotential = Double.MAX_VALUE;
+	protected boolean _firstSample = true;
 	protected final double LOG2 = Math.log(2);
 	
 	
@@ -95,7 +96,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		super.initialize();
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
-		_minPotential = Double.MAX_VALUE;
+		_minPotential = Double.POSITIVE_INFINITY;
+		_firstSample = true;
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
@@ -165,11 +167,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		// Save the best sample value seen so far
 		double totalPotential = getTotalPotential();
-		if (totalPotential < _minPotential)
+		if (totalPotential < _minPotential || _firstSample)
 		{
 			for (VariableBase v : _factorGraph.getVariables())
 				((ISolverVariableGibbs)(v.getSolver())).saveBestSample();
 			_minPotential = totalPotential;
+			_firstSample = false;
 		}
 		
 		// If tempering, reduce the temperature

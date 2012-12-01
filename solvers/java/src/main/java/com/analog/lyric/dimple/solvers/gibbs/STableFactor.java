@@ -83,7 +83,10 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 		FactorTable factorTable = getFactorTable();
 		int weightIndex = factorTable.getWeightIndexFromTableIndices(inputs);
-		return factorTable.getPotentials()[weightIndex];
+		if (weightIndex >= 0)
+			return factorTable.getPotentials()[weightIndex];
+		else
+			return Double.POSITIVE_INFINITY;
 	}
 		
 	

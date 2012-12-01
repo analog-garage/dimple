@@ -287,11 +287,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		super.initialize();
 		
 		//Flag that init was called so that we can update the cache next time we need cached
-		//values.  We can't do the same thing as the tableFunction (update the cache here)
+		//values.  We can't do the same thing as the STableFactor (update the cache here)
 		//because the function init gets called after variable init.  If we updated the cache
 		//here, the table function init would replace the arrays for the outgoing message
 		//and our update functions would update stale messages.
-		//System.out.println("Variable init");
 		_initCalled = true;
 
 		_bestSampleIndex = -1;
