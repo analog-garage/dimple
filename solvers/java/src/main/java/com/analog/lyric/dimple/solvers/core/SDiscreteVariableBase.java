@@ -33,16 +33,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	public void setGuess(Object guess) 
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
-		int domainLength = domain.size();
-		int guessIndex = -1;
-		for (int i = 0; i < domainLength; i++)
-		{
-			if (domain.getElements()[i].equals(guess))
-			{
-				guessIndex = i;
-				break;
-			}
-		}
+		int guessIndex = domain.getIndex(guess);
 		if (guessIndex == -1)
 			throw new DimpleException("Guess is not a valid value");
 		

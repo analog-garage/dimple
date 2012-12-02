@@ -189,16 +189,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public final void setCurrentSample(Object value)
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
-		int domainLength = domain.size();
-		int valueIndex = -1;
-		for (int i = 0; i < domainLength; i++)
-		{
-			if (domain.getElements()[i].equals(value))
-			{
-				valueIndex = i;
-				break;
-			}
-		}
+		int valueIndex = domain.getIndex(value);
 		if (valueIndex == -1)
 			throw new DimpleException("Value is not in the domain of this variable");
 		
