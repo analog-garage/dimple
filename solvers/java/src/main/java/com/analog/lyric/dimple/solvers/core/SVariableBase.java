@@ -85,6 +85,12 @@ public abstract class SVariableBase implements ISolverVariable
 		}
 		return graph;
 	}
+	
+	@Override
+	public Object getValue()
+	{
+		throw new DimpleException("not supported");
+	}
 
 	@Override
 	public void setGuess(Object guess)  

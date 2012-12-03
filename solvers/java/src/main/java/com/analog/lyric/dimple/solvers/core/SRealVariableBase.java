@@ -29,7 +29,7 @@ public abstract class SRealVariableBase extends SVariableBase
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
 		else
-			return getValue();
+			return (Double)getValue();
 	}
 	
 	@Override
@@ -51,9 +51,4 @@ public abstract class SRealVariableBase extends SVariableBase
 		_guessWasSet = true;
 	}
 	
-	public double getValue()
-	{
-		throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
-	}
-
 }

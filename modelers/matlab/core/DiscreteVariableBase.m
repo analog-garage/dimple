@@ -169,46 +169,12 @@ classdef DiscreteVariableBase < VariableBase
             
             varIds = reshape(v,numel(v),1);
             
-            beliefs = obj.VectorObject.getBeliefs(varIds);
+            values = cell(obj.VectorObject.getValues(varIds));
             
-            
-            domainIsScalars = 1;
-            domain = zeros(1,length(obj.Domain.Elements));
-            for i = 1:length(obj.Domain.Elements)
-                if ~isscalar(obj.Domain.Elements{i})
-                    domainIsScalars = 0;
-                    break;
-                end
-                domain(i) = obj.Domain.Elements{i};
-            end
-            
+            domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
             if domainIsScalars
-                %{
-                TODO: this would almost work except for duplicate values.
-                mxs = max(beliefs,[],2);
-                mxs = repmat(mxs,1,length(domain));
-                matches = mxs == beliefs;
-                found = find(matches);
-                [xs,ys] = ind2sub(size(matches),found);
-                domain = repmat(domain,size(beliefs,1),1);
-                values = domain(found);
-                %}
-                values = zeros(size(beliefs,1),1);
-                for i = 1:size(beliefs,1)
-                    mx = max(beliefs(i,:));
-                    firstIndex = find(beliefs(i,:)==mx);
-                    firstIndex = firstIndex(1);
-                    values(i) = obj.Domain.Elements{firstIndex};
-                end
-            else
-                values = cell(size(beliefs,1),1);
-                for i = 1:size(beliefs,1)
-                    mx = max(beliefs(i,:));
-                    firstIndex = find(beliefs(i,:)==mx);
-                    firstIndex = firstIndex(1);
-                    values{i} = obj.Domain.Elements{firstIndex};
-                end
-            end
+                values = cell2mat(values);
+            end;
             
             if numel(values) == numel(v)
                 values = reshape(values,size(v));

@@ -70,6 +70,14 @@ public class Discrete extends VariableBase
     	else
     		return getInputObject();
     }
+    
+    public Object getValue()
+    {
+    	if (_solverVariable != null)
+    		return _solverVariable.getValue();
+    	else
+    		return null;
+    }
    
     
 	private double [] getDefaultPriors(Object [] domain)

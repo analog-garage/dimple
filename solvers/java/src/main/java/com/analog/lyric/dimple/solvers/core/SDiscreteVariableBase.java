@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 
@@ -20,6 +21,25 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	{
 		super.initialize();
 		_guessWasSet = false;
+	}
+	
+	@Override
+	public Object getValue()
+	{
+		double[] belief = ((Discrete)_var).getBelief();
+		int numValues = belief.length;
+		double maxBelief = Double.NEGATIVE_INFINITY;
+		int maxBeliefIndex = -1;
+		for (int i = 0; i < numValues; i++)
+		{
+			double b = belief[i];
+			if (b > maxBelief)
+			{
+				maxBelief = b;
+				maxBeliefIndex = i;
+			}
+		}
+		return ((Discrete)_var).getDiscreteDomain().getElements()[maxBeliefIndex];
 	}
 	
 	@Override

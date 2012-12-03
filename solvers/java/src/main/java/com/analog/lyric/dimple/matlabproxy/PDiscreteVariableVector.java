@@ -97,7 +97,15 @@ public class PDiscreteVariableVector extends PVariableVector
 			beliefs[i] = getDiscreteVariable(indices[i]).getBelief();
 		return beliefs;
 	}
-
+	
+	public Object[] getValues(int[] indices)
+	{
+		Object[] values = new Object[indices.length];
+		
+		for (int i = 0; i < indices.length; i++)
+			values[i] = getDiscreteVariable(indices[i]).getValue();
+		return values;
+	}
 	
 	public double [][] getInput(int [] indices) 
 	{

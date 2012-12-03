@@ -21,10 +21,11 @@ import com.analog.lyric.dimple.model.Port;
 
 public interface ISolverVariable extends ISolverNode
 {
-	public void setInput(Object input) ;
+	public void setInput(Object input);
 	public Object getDefaultMessage(Port port);
-	public Object getBelief() ;
+	public Object getBelief();
+	public Object getValue();
 	public void remove(Factor factor);
-    public void setGuess(Object guess) ;
-    public Object getGuess() ;
+    public void setGuess(Object guess);
+    public Object getGuess();
 }
