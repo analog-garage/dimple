@@ -109,7 +109,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
-			randomRestart();
 			burnIn();
 			for (int iter = 0; iter < _numSamples; iter++) 
 				oneSample();
@@ -119,6 +118,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	public final void burnIn()
 	{
+		randomRestart();
 		iterate(_burnInUpdates);
 	}
 	
