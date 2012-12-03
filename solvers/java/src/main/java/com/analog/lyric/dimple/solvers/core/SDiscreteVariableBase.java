@@ -26,7 +26,13 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	@Override
 	public Object getValue()
 	{
-		double[] belief = ((Discrete)_var).getBelief();
+		int index = getValueIndex();
+		return ((Discrete)_var).getDiscreteDomain().getElements()[index];
+	}
+	
+	public int getValueIndex()
+	{
+		double[] belief = (double[])getBelief();
 		int numValues = belief.length;
 		double maxBelief = Double.NEGATIVE_INFINITY;
 		int maxBeliefIndex = -1;
@@ -39,7 +45,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 				maxBeliefIndex = i;
 			}
 		}
-		return ((Discrete)_var).getDiscreteDomain().getElements()[maxBeliefIndex];
+		return maxBeliefIndex;
 	}
 	
 	@Override
@@ -81,9 +87,4 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		_guessIndex = index;
 	}
 	
-	public int getValueIndex()
-	{
-		throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
-	}
-
 }

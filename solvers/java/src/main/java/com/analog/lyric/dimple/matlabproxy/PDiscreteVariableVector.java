@@ -98,13 +98,14 @@ public class PDiscreteVariableVector extends PVariableVector
 		return beliefs;
 	}
 	
-	public Object[] getValues(int[] indices)
+	public int[] getValueIndices(int[] indices)
 	{
-		Object[] values = new Object[indices.length];
+		int[] valueIndices = new int[indices.length];
 		
+		// Since this is specifically for MATLAB, add one so indices are suitable for one-based addressing
 		for (int i = 0; i < indices.length; i++)
-			values[i] = getDiscreteVariable(indices[i]).getValue();
-		return values;
+			valueIndices[i] = getDiscreteVariable(indices[i]).getValueIndex() + 1;
+		return valueIndices;
 	}
 	
 	public double [][] getInput(int [] indices) 

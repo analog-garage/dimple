@@ -211,30 +211,6 @@ public class SVariable extends SDiscreteVariableBase
 	}
 	
 	
-	public int getValueIndex()
-	{
-		int index = -1;
-		double [] belief = (double[])getBelief();		
-		double maxBelief = -1;
-		
-		for (int i = 0; i < belief.length; i++)
-		{
-			if (belief[i] > maxBelief)
-			{
-				index = i;
-				maxBelief = belief[i];
-			}
-		}
-		
-		return index;
-	}
-	
-	public Object getValue()
-	{
-		int index = getValueIndex();
-		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
-	}
-	
 	public double getScore()
 	{
 		return _input[getGuessIndex()];

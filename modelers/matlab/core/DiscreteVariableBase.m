@@ -169,7 +169,8 @@ classdef DiscreteVariableBase < VariableBase
             
             varIds = reshape(v,numel(v),1);
             
-            values = cell(obj.VectorObject.getValues(varIds));
+            valueIndices = obj.VectorObject.getValueIndices(varIds);
+            values = obj.Domain.Elements(valueIndices);
             
             domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
             if domainIsScalars
