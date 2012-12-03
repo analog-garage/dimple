@@ -38,6 +38,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
+	protected int _scansPerSample = -1;
+	protected int _burnInScans = -1;
 	protected int _numRandomRestarts = 0;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
@@ -98,6 +100,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
+		if (_scansPerSample >= 0) _updatesPerSample = _scansPerSample * _factorGraph.getVariables().size();
+		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
@@ -232,27 +236,31 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public int getNumSamples() {return _numSamples;}
 	
 	// Set/get the number of single-variable updates between samples
-	public void setUpdatesPerSample(int updatesPerSample) {_updatesPerSample = updatesPerSample;}
 	public int getUpdatesPerSample() {return _updatesPerSample;}
+	public void setUpdatesPerSample(int updatesPerSample)
+	{
+		_updatesPerSample = updatesPerSample;
+		_scansPerSample = -1;	// Samples specified in updates rather than scans
+	}
 	
 	// Set the number of scans between samples as an alternative means of specifying the sample rate
 	// A scan is an update of the number of variables equal to the total number of variables in the graph
-	// Note that this is relative to the number of variables in the graph at the time of this call,
-	// which might be different from the number of variables in the graph when it is solved
-	public void setScansPerSample(int scansPerSample) {_updatesPerSample = scansPerSample * _factorGraph.getVariables().size();}
+	public void setScansPerSample(int scansPerSample) {_scansPerSample = scansPerSample;}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
-	public void setBurnInUpdates(int burnInUpdates) {_burnInUpdates = burnInUpdates;}
 	public int getBurnInUpdates() {return _burnInUpdates;}
+	public void setBurnInUpdates(int burnInUpdates)
+	{
+		_burnInUpdates = burnInUpdates;
+		_burnInScans = -1;		// Burn-in specified in updates rather than scans
+	}
 	
 	// Set/get the number of random-restarts
 	public void setNumRestarts(int numRestarts) {_numRandomRestarts = numRestarts;}
 	public int getNumRestarts() {return _numRandomRestarts;}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
-	// Note that this is relative to the number of variables in the graph at the time of this call,
-	// which might be different from the number of variables in the graph when it is solved
-	public void setBurnInScans(int burnInScans) {_burnInUpdates = burnInScans * _factorGraph.getVariables().size();}
+	public void setBurnInScans(int burnInScans) {_burnInScans = burnInScans;}
 
 	// Set/get the initial temperature when using tempering
 	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
