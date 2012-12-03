@@ -126,5 +126,12 @@ public class DiscreteDomain extends Domain
 		}
 		return index;
 	}
+	
+	
+	// Determine if the specified value is in the domain
+	public boolean isElementOf(Object value)
+	{
+		return (getIndex(value) >= 0);
+	}
 
 }
