@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test;
+package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 

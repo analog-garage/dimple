@@ -13,3 +13,5 @@ testDimpleexitDone
 .*\.toc$
 .*\.log$
 .*\.tex$
+.*\.out$
+.*~$

@@ -39,7 +39,7 @@ function testGeneralFactor()
         v(2).Input = tmpinputs(2,:);
         v(3).Input = tmpinputs(3,:);
 
-        f = fg.addFactor(com.analog.lyric.dimple.test.HybridAddFactorFunction(),v(1),v(2),v(3));
+        f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridAddFactorFunction(),v(1),v(2),v(3));
 
         fg.solve();
 
