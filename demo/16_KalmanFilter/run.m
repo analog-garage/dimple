@@ -71,7 +71,7 @@ F = [1  0   dt          0           dt^2/2  0       0       0;
 H = [1 0 0 0 0 0 0 0;
     0 1 0 0 0 0 0 0];
 
-setSolver('Gaussian');
+setSolver('gaussian');
 
 %Create the FactorGraph for a single time step
 fz = RealJoint(numel(p0));
@@ -224,3 +224,5 @@ plot(fgxs,fgys,'mo-');
 legend('Actual Positions','Noisy Measurements','Kalman Filter Guesses','Dimple guesses');
 xlabel('x position');
 ylabel('y position');
+
+setSolver('sumproduct');

@@ -23,3 +23,5 @@ testGP5out.txt
 *\.pyc
 doc/DimpleUserDocumentation.pdf
 DimpleEntry.mexa64
+demo/05_MultipleSudoku/sudo
+demo/05_MultipleSudoku/sudoA
