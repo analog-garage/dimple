@@ -53,7 +53,10 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		{
 			inPortMsgs[outPortNum] = outIndex;
 			int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
-			outMessage[outIndex] = factorTableWeights[weightIndex];
+			if (weightIndex >= 0)
+				outMessage[outIndex] = factorTableWeights[weightIndex];
+			else
+				outMessage[outIndex] = Double.POSITIVE_INFINITY;
 		}
 	}
 	
