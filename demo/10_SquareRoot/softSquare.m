@@ -65,7 +65,7 @@ function [xvals zvals] = softSquare(x,z,doplot)
             end
             %Create function node
             %funcNodeName = ['M_' num2str(zindex) '_' num2str(yindex)];
-            addFactor(g,@munitDelta,x(zindex),x(xindex), m_in(zindex,xindex),...
+            g.addFactor(@munitDelta,x(zindex),x(xindex), m_in(zindex,xindex),...
                 c_in(zindex,xindex), m_out, c_out_tmp);
         end
         numMPerRow = numMPerRow - 1;

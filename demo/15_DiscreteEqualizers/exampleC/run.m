@@ -63,22 +63,22 @@ fprintf('Initial L2 error:%d\n',error_init);
 % Factor Graph
 
 fg=FactorGraph();
-fg.Solver = com.lyricsemi.dimple.solvers.particleBP.Solver();
+fg.Solver = 'particleBP';
 tic;
-X=Real([-3*sigma_1 3*sigma_1],com.lyricsemi.dimple.FactorFunctions.SimpleNormal(0,sigma_1),1,N);
+X=Real([-3*sigma_1 3*sigma_1],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,sigma_1),1,N);
 Y=cell(1,N);
 for i=1:N
-Y{i}=Real([realY(i)-0.01 realY(i)+0.01],com.lyricsemi.dimple.FactorFunctions.SimpleNormal(realY(i),0.01),1,1);
+Y{i}=Real([realY(i)-0.01 realY(i)+0.01],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(realY(i),0.01),1,1);
 end
 
 
 %creating a boundary variable which always takes value 1
-Xboundary=Real([1-0.01 1+0.01],com.lyricsemi.dimple.FactorFunctions.SimpleNormal(1,0.01),1,1);
+Xboundary=Real([1-0.01 1+0.01],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(1,0.01),1,1);
 
 
 
 %boundary conditions
-func=com.lyricsemi.dimple.FactorFunctions.LinearEquation(mask,0.3);
+func=com.analog.lyric.dimple.FactorFunctions.LinearEquation(mask,0.3);
 fg.addFactor(func,Y{1}, Xboundary, X(1),  X(2));
 fg.addFactor(func,Y{N}, X(N-1),  X(N),  Xboundary);
 

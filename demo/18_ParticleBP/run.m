@@ -19,9 +19,6 @@
 %when a is a normal variable with mean = 3 and std = 1
 %     b is a normal variable with mean = 5 and std = 1
 
-%First we set the Solver
-setSolver('particlebp');
-
 %Create three real variables.
 a = Real();
 b = Real();
@@ -30,19 +27,22 @@ c = Real();
 %Create the factor graph.
 fg = FactorGraph();
 
+% Set the solver
+fg.Solver = 'ParticleBP'; 
+
 %specify the number of particles per message
 fg.Solver.setNumParticles(30);
 
-%specify the 
+%specify the number of resampling updates per particle
 fg.Solver.setResamplingUpdatesPerParticle(30);
 
 %Create the factor.
-realProduct = com.lyricsemi.dimple.FactorFunctions.RealProduct();
+realProduct = com.analog.lyric.dimple.FactorFunctions.RealProduct();
 fg.addFactor(realProduct,c,a,b);
 
 %Set the inputs for a and b.
-a.Input = com.lyricsemi.dimple.FactorFunctions.SimpleNormal(3,1);
-b.Input = com.lyricsemi.dimple.FactorFunctions.SimpleNormal(5,1);
+a.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,1);
+b.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(5,1);
 
 %Optionally use tempering
 fg.Solver.setInitialTemperature(1);

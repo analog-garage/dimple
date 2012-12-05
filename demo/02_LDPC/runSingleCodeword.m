@@ -14,7 +14,8 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 global DIMPLE_TEST_VERBOSE;
-if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
+silent = false;
+if (exist('DIMPLE_TEST_VERBOSE','var')); if (~DIMPLE_TEST_VERBOSE); silent = true; end; end;
 
 
 %Pick an SNR value for this run

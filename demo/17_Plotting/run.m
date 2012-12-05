@@ -92,7 +92,8 @@ end
 %The following shows how using the depth feature we might be able to find
 %out interesting information.  Here we increase the depth until we visually
 %see a loop.
-[ldpc,vars] = createLDPC();
+H = blockVandermonde();
+[ldpc,vars] = createLdpc(H);
 v = vars(1);
 
 for depth = 0:6

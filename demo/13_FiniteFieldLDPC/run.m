@@ -129,8 +129,8 @@ prior=cond_prob_1 ./(cond_prob_0 + cond_prob_1);
 %%%%%%%%%%%%
 %   * Build the corresponding factor graph
 
-setSolver(com.lyricsemi.dimple.solvers.sumproduct.Solver());
 fg = FactorGraph();
+fg.Solver = 'sumproduct';
 
 %     Build bits and set priors
 bits=Bit(N,1);
