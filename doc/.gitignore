@@ -4,3 +4,4 @@ output
 *.dvi
 *.log
 *.toc
+*.out

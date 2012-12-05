@@ -16,7 +16,13 @@
 
 % For use with automated testing
 global Dimple_TESTING_DEMOS DIMPLE_TEST_VERBOSE;
-if (~exist('DIMPLE_TEST_VERBOSE','var') || DIMPLE_TEST_VERBOSE); silent = false; else silent = true; end;
+if isempty(DIMPLE_TEST_VERBOSE)
+    silent = false; 
+elseif DIMPLE_TEST_VERBOSE
+    silent = true;
+else
+    silent = true; 
+end;
 if Dimple_TESTING_DEMOS
     maxSnr = 0.5; 
 else
