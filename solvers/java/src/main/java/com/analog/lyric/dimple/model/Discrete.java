@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+
 public class Discrete extends VariableBase
 {
 
@@ -70,7 +72,23 @@ public class Discrete extends VariableBase
     	else
     		return getInputObject();
     }
+    
+    public Object getValue()
+    {
+    	if (_solverVariable != null)
+    		return _solverVariable.getValue();
+    	else
+    		return null;
+    }
    
+    public int getValueIndex()
+    {
+    	if (_solverVariable != null)
+    		return ((SDiscreteVariableBase)_solverVariable).getValueIndex();
+    	else
+    		return 0;
+    }
+
     
 	private double [] getDefaultPriors(Object [] domain)
 	{

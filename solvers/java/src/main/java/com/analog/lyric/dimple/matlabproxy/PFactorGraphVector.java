@@ -696,4 +696,20 @@ public class PFactorGraphVector extends PFactorVector
 		
 		return true;
 	}	
+	
+	
+	// For operating collectively on groups of variables that are not already part of a variable vector
+	public int defineVariableGroup(Object[] variables)
+	{
+		ArrayList<VariableBase> variableList = new ArrayList<VariableBase>();
+		for (int i = 0; i < variables.length; i++)
+		{
+			VariableBase[] modelerVariables = ((PVariableVector)variables[i]).getModelerVariables();
+			for (int j = 0; j < modelerVariables.length; j++)
+				variableList.add(modelerVariables[j]);
+		}
+
+		return getGraph().defineVariableGroup(variableList);
+	}
+
 }

@@ -2365,6 +2365,24 @@ public class FactorGraph extends FactorBase
 	{
 		return getSolver().getBetheEntropy();
 	}
+	
+	
+	// For operating collectively on groups of variables that are not already part of a variable vector
+	protected HashMap<Integer, ArrayList<VariableBase>> _variableGroups;
+	protected int _variableGroupID = 0;
+	public int defineVariableGroup(ArrayList<VariableBase> variableList)
+	{
+		if (_variableGroups == null) _variableGroups = new HashMap<Integer, ArrayList<VariableBase>>();
+		_variableGroups.put(_variableGroupID, variableList);
+		return _variableGroupID++;
+	}
+	
+	public ArrayList<VariableBase> getVariableGroup(int variableGroupID)
+	{
+		return _variableGroups.get(variableGroupID);
+	}
+	
+	
 
 	/****************************
 	 * addFactor stuff

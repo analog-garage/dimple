@@ -784,7 +784,7 @@ classdef FactorGraph < Node
                         elseif isa(nodes{i},'FactorGraph')
                             shape='^';
                         else
-                            %figre out if this is a boundary variable
+                            %figure out if this is a boundary variable
                             if ~obj.isAncestorOf(nodes{i})
                                 shape='*';
                             else
@@ -874,6 +874,27 @@ classdef FactorGraph < Node
             
             obj.VectorObject.setSolver(solver);
         end
+        
+        % Define a group of variables to be used by other functions that
+        % operate directly on pre-defined variable groups (referred to by
+        % their variableGroupID). These variable groups are for variables
+        % that are not all part of a single variable vector or matrix.
+        % Each input argument can be a varilable or variable matrix.
+        function variableGroupID = defineVariableGroup(obj, varargin)
+            varargin = [varargin{:}];
+            variables = {};
+            if isa(varargin,'VariableBase')
+                variables = varargin.VectorObject;
+            elseif (iscell(varargin))
+                for i = 1:length(varargin)
+                    if isa(varargin{i},'VariableBase')
+                        variables = [variables varargin{i}.VectorObject];
+                    end
+                end
+            end
+            variableGroupID = obj.VectorObject.defineVariableGroup(variables);
+        end
+
     end
     
     methods (Access = private)

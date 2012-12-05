@@ -91,5 +91,47 @@ public class DiscreteDomain extends Domain
 	{
 		return false;
 	}
+	
+	// Find the list of elements corresponding to the value; return -1 if not a valid value
+	public int getIndex(Object value)
+	{
+		int domainLength = _elements.length;
+		int index = -1;
+		for (int i = 0; i < domainLength; i++)
+		{
+			Object element = _elements[i];
+			
+			if (element.equals(value))		// Easy case, objects are the same
+			{
+				index = i;
+				break;
+			}
+			else if (element instanceof double[] && value instanceof double[])
+			{
+				if (Arrays.equals((double[])element, (double[])value))
+				{
+					index = i;
+					break;
+				}
+			}
+			else if (element instanceof Object[] && value instanceof Object[])
+			{
+				if (Arrays.deepEquals((Object[])element, (Object[])value))
+				{
+					index = i;
+					break;
+				}
+			}
+
+		}
+		return index;
+	}
+	
+	
+	// Determine if the specified value is in the domain
+	public boolean isElementOf(Object value)
+	{
+		return (getIndex(value) >= 0);
+	}
 
 }

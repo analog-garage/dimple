@@ -3083,7 +3083,7 @@ Set/get the number of single-variable updates between samples.
 graph.Solver.setScansPerSample(scansPerSample);
 \end{lstlisting}
 
-Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph. Note that this is relative to the number of variables in the graph at the time of this call, which might be different from the number of variables in the graph when it is solved.
+Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
 
 \begin{lstlisting}
 graph.Solver.setBurnInUpdates(burnInUpdates);
@@ -3096,14 +3096,14 @@ Set/get the number of single-variable updates for the burn-in period prior to co
 graph.Solver.setBurnInScans();
 \end{lstlisting}
 
-Set the number of scans for burn-in as an alternative means of specifying the burn-in period. Note that this is relative to the number of variables in the graph at the time of this call, which might be different from the number of variables in the graph when it is solved.
+Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
 
 \begin{lstlisting}
 graph.Solver.setNumRestarts(numRestarts)
 graph.Solver.getNumRestarts() 
 \end{lstlisting}
 
-Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of updates or scans, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
+Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
 
 \begin{lstlisting}
 graph.Solver.setInitialTemperature(initialTemperature);

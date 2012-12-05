@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
@@ -212,30 +211,6 @@ public class SVariable extends SDiscreteVariableBase
 	}
 	
 	
-	public int getValueIndex()
-	{
-		int index = -1;
-		double [] belief = (double[])getBelief();		
-		double maxBelief = -1;
-		
-		for (int i = 0; i < belief.length; i++)
-		{
-			if (belief[i] > maxBelief)
-			{
-				index = i;
-				maxBelief = belief[i];
-			}
-		}
-		
-		return index;
-	}
-	
-	public Object getValue()
-	{
-		int index = getValueIndex();
-		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
-	}
-	
 	public double getScore()
 	{
 		return _input[getGuessIndex()];
@@ -320,17 +295,6 @@ public class SVariable extends SDiscreteVariableBase
 	public void connectPort(Port p)  
 	{
 		_initCalled = true;
-	}
-
-
-	public Object getGuess() 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
-	}
-
-	public void setGuess(Object guess) 
-	{
-		throw new DimpleException("get and set guess not supported for this solver");
 	}
 
 }

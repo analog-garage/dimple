@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 
@@ -23,6 +24,31 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	}
 	
 	@Override
+	public Object getValue()
+	{
+		int index = getValueIndex();
+		return ((Discrete)_var).getDiscreteDomain().getElements()[index];
+	}
+	
+	public int getValueIndex()
+	{
+		double[] belief = (double[])getBelief();
+		int numValues = belief.length;
+		double maxBelief = Double.NEGATIVE_INFINITY;
+		int maxBeliefIndex = -1;
+		for (int i = 0; i < numValues; i++)
+		{
+			double b = belief[i];
+			if (b > maxBelief)
+			{
+				maxBelief = b;
+				maxBeliefIndex = i;
+			}
+		}
+		return maxBeliefIndex;
+	}
+	
+	@Override
 	public Object getGuess()
 	{
 		int index = getGuessIndex();
@@ -33,16 +59,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	public void setGuess(Object guess) 
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
-		int domainLength = domain.size();
-		int guessIndex = -1;
-		for (int i = 0; i < domainLength; i++)
-		{
-			if (domain.getElements()[i].equals(guess))
-			{
-				guessIndex = i;
-				break;
-			}
-		}
+		int guessIndex = domain.getIndex(guess);
 		if (guessIndex == -1)
 			throw new DimpleException("Guess is not a valid value");
 		
@@ -70,9 +87,4 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		_guessIndex = index;
 	}
 	
-	public int getValueIndex()
-	{
-		throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
-	}
-
 }

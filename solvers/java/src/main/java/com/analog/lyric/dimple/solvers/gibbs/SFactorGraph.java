@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.DimpleException;
@@ -37,12 +38,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
+	protected int _scansPerSample = -1;
+	protected int _burnInScans = -1;
 	protected int _numRandomRestarts = 0;
 	protected boolean _temper = false;
 	protected double _initialTemperature;
 	protected double _temperingDecayConstant;
 	protected double _temperature;
 	protected double _minPotential = Double.MAX_VALUE;
+	protected boolean _firstSample = true;
 	protected final double LOG2 = Math.log(2);
 	
 	
@@ -94,7 +98,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		super.initialize();
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
-		_minPotential = Double.MAX_VALUE;
+		_minPotential = Double.POSITIVE_INFINITY;
+		_firstSample = true;
+		if (_scansPerSample >= 0) _updatesPerSample = _scansPerSample * _factorGraph.getVariables().size();
+		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
@@ -106,7 +113,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
-			randomRestart();
 			burnIn();
 			for (int iter = 0; iter < _numSamples; iter++) 
 				oneSample();
@@ -116,6 +122,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	public final void burnIn()
 	{
+		randomRestart();
 		iterate(_burnInUpdates);
 	}
 	
@@ -164,11 +171,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		// Save the best sample value seen so far
 		double totalPotential = getTotalPotential();
-		if (totalPotential < _minPotential)
+		if (totalPotential < _minPotential || _firstSample)
 		{
 			for (VariableBase v : _factorGraph.getVariables())
 				((ISolverVariableGibbs)(v.getSolver())).saveBestSample();
 			_minPotential = totalPotential;
+			_firstSample = false;
 		}
 		
 		// If tempering, reduce the temperature
@@ -187,9 +195,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
 	}
 	
-	// Get the total potential over all factors of the graph (including input priors on variables)
-	// TODO: Other solvers should implement this too, and it should go in SSolverFactorGraph interface
-	public double TotalPotential() {return getTotalPotential();}
+	
+
+	// Get the total potential over all factors of the graph given the current sample values (including input priors on variables)
 	public double getTotalPotential()
 	{
 		double totalPotential = 0;
@@ -228,27 +236,31 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public int getNumSamples() {return _numSamples;}
 	
 	// Set/get the number of single-variable updates between samples
-	public void setUpdatesPerSample(int updatesPerSample) {_updatesPerSample = updatesPerSample;}
 	public int getUpdatesPerSample() {return _updatesPerSample;}
+	public void setUpdatesPerSample(int updatesPerSample)
+	{
+		_updatesPerSample = updatesPerSample;
+		_scansPerSample = -1;	// Samples specified in updates rather than scans
+	}
 	
 	// Set the number of scans between samples as an alternative means of specifying the sample rate
 	// A scan is an update of the number of variables equal to the total number of variables in the graph
-	// Note that this is relative to the number of variables in the graph at the time of this call,
-	// which might be different from the number of variables in the graph when it is solved
-	public void setScansPerSample(int scansPerSample) {_updatesPerSample = scansPerSample * _factorGraph.getVariables().size();}
+	public void setScansPerSample(int scansPerSample) {_scansPerSample = scansPerSample;}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
-	public void setBurnInUpdates(int burnInUpdates) {_burnInUpdates = burnInUpdates;}
 	public int getBurnInUpdates() {return _burnInUpdates;}
+	public void setBurnInUpdates(int burnInUpdates)
+	{
+		_burnInUpdates = burnInUpdates;
+		_burnInScans = -1;		// Burn-in specified in updates rather than scans
+	}
 	
 	// Set/get the number of random-restarts
 	public void setNumRestarts(int numRestarts) {_numRandomRestarts = numRestarts;}
 	public int getNumRestarts() {return _numRandomRestarts;}
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
-	// Note that this is relative to the number of variables in the graph at the time of this call,
-	// which might be different from the number of variables in the graph when it is solved
-	public void setBurnInScans(int burnInScans) {_burnInUpdates = burnInScans * _factorGraph.getVariables().size();}
+	public void setBurnInScans(int burnInScans) {_burnInScans = burnInScans;}
 
 	// Set/get the initial temperature when using tempering
 	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
@@ -265,6 +277,75 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void enableTempering() {_temper = true;}
 	public void disableTempering() {_temper = false;}
 	public boolean isTemperingEnabled() {return _temper;}
+	
+	
+	
+	// Helpers for operating on pre-specified groups of variables in the graph
+	public double[] getVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		double[] result = new double[numVariables];
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				result[i] = (Double)((SDiscreteVariable)var).getCurrentSample();
+			else if (var instanceof SRealVariable)
+				result[i] = ((SRealVariable)var).getCurrentSample();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+		return result;
+	}
+	public void setAndHoldVariableSampleValues(int variableGroupID, Object[] values) {setAndHoldVariableSampleValues(variableGroupID, (double[])values[0]);}	// Due to the way MATLAB passes objects
+	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		if (numVariables != values.length) throw new DimpleException("Number of values must match the number of variables");
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).setAndHoldSampleValue((Double)values[i]);
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+	public void holdVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).holdSampleValue();
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).holdSampleValue();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+	public void releaseVariableSampleValues(int variableGroupID)
+	{
+		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		int numVariables = variableList.size();
+		for (int i = 0; i < numVariables; i++)
+		{
+			ISolverVariable var = variableList.get(i).getSolver();
+			if (var instanceof SDiscreteVariable)
+				((SDiscreteVariable)var).releaseSampleValue();
+			else if (var instanceof SRealVariable)
+				((SRealVariable)var).releaseSampleValue();
+			else
+				throw new DimpleException("Invalid variable class");
+		}
+	}
+
 	
 	
 	@Override
