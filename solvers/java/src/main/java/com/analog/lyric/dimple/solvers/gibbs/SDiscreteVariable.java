@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.commons.math.random.RandomGenerator;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
@@ -37,8 +39,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
 	protected double[] _input;
+	protected double[] _conditional;
+	protected double[] _samplerScratch;
 	protected ArrayList<Integer> _sampleIndexArray;
 	protected int _bestSampleIndex;
+	protected int _lengthRoundedUp;
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _initCalled = true;
@@ -77,30 +82,21 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
 
-		double[] conditionalProbability = new double[messageLength];
-
-		// Compute the conditional probability (initially in energy representation before converting to probability)
+		// Compute the conditional probability
 		for (int index = 0; index < messageLength; index++)
 		{
 			double out = _input[index];						// Sum of the input prior...
 			for (int port = 0; port < _numPorts; port++)
 				out += _inPortMsgs[port][index];			// Plus each input message value
+			out *= _beta;									// Apply tempering
 			
 			if (out < minEnergy) minEnergy = out;			// For normalization
 
-			conditionalProbability[index] = out;			// Initially in energy representation before converting to probability
-		}
-
-		// Convert to probability representation
-		for (int index = 0; index < messageLength; index++)
-		{
-			double temperedValue = (conditionalProbability[index] - minEnergy) * _beta;
-			double out = Math.exp(-temperedValue);
-			conditionalProbability[index] = out;
+			_conditional[index] = out;						// Save in log domain representation
 		}
 
 		// Sample from the conditional distribution
-		setCurrentSampleIndex(Utilities.sampleFromMultinomial(conditionalProbability, GibbsSolverRandomGenerator.rand));
+		setCurrentSampleIndex(generateSample(_conditional, minEnergy));
 	}
 	
 	public void randomRestart()
@@ -114,11 +110,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		for (int i = 0; i < messageLength; i++)
 			if (_input[i] < minEnergy)
 				minEnergy = _input[i];
-		double[] probPriors = new double[messageLength];
-		for (int i = 0; i < messageLength; i++)
-			probPriors[i] = Math.exp(-(_input[i] - minEnergy));
 		
-		setCurrentSampleIndex(Utilities.sampleFromMultinomial(probPriors, GibbsSolverRandomGenerator.rand));
+	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
+	    _samplerScratch = new double[_lengthRoundedUp];
+		setCurrentSampleIndex(generateSample(_input, minEnergy));
 	}
 
 	public void updateBelief()
@@ -305,7 +300,86 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		    	_inPortMsgs[port] = (double[])ports.get(port).getInputMsg();
 		    	_outPortMsgs[port] = (int[])ports.get(port).getOutputMsg();
 		    }
+		    
+		    _lengthRoundedUp = Utilities.nextPow2(_input.length);
+		    _samplerScratch = new double[_lengthRoundedUp];
+		    _conditional = new double[_input.length];
 		}
+	}
+	
+	private final int generateSample(double[] energy, double minEnergy)
+	{
+		RandomGenerator rand = GibbsSolverRandomGenerator.rand;
+		int length = energy.length;
+		int sampleIndex;
+
+		// Special-case lengths 2, 3, and 4 for speed
+		if (length == 2)
+		{
+			sampleIndex = (rand.nextDouble() * (1 + Math.exp(energy[1]-energy[0])) > 1) ? 0 : 1;
+		}
+		else if (length == 3)
+		{
+			double cumulative1 = Math.exp(minEnergy-energy[0]);
+			double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
+			double sum = cumulative2 + Math.exp(minEnergy-energy[2]);
+			double randomValue = sum * rand.nextDouble();
+			sampleIndex = (randomValue > cumulative2) ? 2 : (randomValue > cumulative1) ? 1 : 0;
+		}
+		else if (length == 4)
+		{
+			double cumulative1 = Math.exp(minEnergy-energy[0]);
+			double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
+			double cumulative3 = cumulative2 + Math.exp(minEnergy-energy[2]);
+			double sum = cumulative3 + Math.exp(minEnergy-energy[3]);
+			double randomValue = sum * rand.nextDouble();
+			sampleIndex = (randomValue > cumulative2) ? ((randomValue > cumulative3) ? 3 : 2) : ((randomValue > cumulative1) ? 1 : 0);
+		}
+		else	// For all other lengths
+		{
+			// Calculate cumulative conditional probability (unnormalized)
+			double sum = 0;
+			double[] samplerScratch = _samplerScratch;
+			samplerScratch[0] = 0;
+			for (int m = 1; m < length; m++)
+			{
+				sum += expApprox(minEnergy-energy[m-1]);
+				samplerScratch[m] = sum;
+			}
+			sum += expApprox(minEnergy-energy[length-1]);
+			for (int m = length; m < _lengthRoundedUp; m++)
+				samplerScratch[m] = Double.POSITIVE_INFINITY;
+
+			int half = _lengthRoundedUp >> 1;
+			while (true)
+			{
+				// Sample from the distribution using a binary search.
+				double randomValue = sum * rand.nextDouble();
+				sampleIndex = 0;
+				for (int bitValue = half; bitValue > 0; bitValue >>= 1)
+				{
+					int testIndex = sampleIndex | bitValue;
+					if (randomValue > samplerScratch[testIndex]) sampleIndex = testIndex;
+				}
+
+				// Rejection sampling, since the approximation of the exponential function is so coarse
+				double logp = minEnergy-energy[sampleIndex];
+				if (rand.nextDouble()*expApprox(logp) <= Math.exp(logp)) break;
+			}
+		}
+
+		return sampleIndex;
+	}
+
+	// This is an approximation to the exponential function; inputs must be non-positive
+	// To facilitate subsequent rejection sampling, the error versus the correct exponential function needs to be always positive
+	// This is true except for very large negative inputs, for values just as the output approaches zero
+	// To ensure rejection is never in an infinite loop, this must reach 0 for large negative inputs before the Math.exp function does
+	private final double expApprox(double value)
+	{
+		// Convert input to base2 log, then convert integer part into IEEE754 exponent
+		final long expValue = ((long)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
+		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
 	}
 	
 }

@@ -106,8 +106,8 @@ public class GibbsTest
 		assertTrue((Integer)sb.getBestSample() == 1);
 		assertTrue(nearlyEquals(a.getBelief()[0],aMean));
 		assertTrue(nearlyEquals(b.getBelief()[0],bMean));
-		assertTrue(nearlyEquals(a.getBelief()[0],0.1994));
-		assertTrue(nearlyEquals(b.getBelief()[0],0.6169));
+		assertTrue(nearlyEquals(a.getBelief()[0],0.2047));
+		assertTrue(nearlyEquals(b.getBelief()[0],0.6115));
 		assertTrue(nearlyEquals(Math.exp(-totalPotential),0.6));
 	}
 	

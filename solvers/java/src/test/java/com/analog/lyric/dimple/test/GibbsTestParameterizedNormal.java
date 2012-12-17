@@ -82,8 +82,8 @@ public class GibbsTestParameterizedNormal
 		if (debugPrint) System.out.println("vModelMeanBest: " + (Double)svModelMean.getBestSample());
 		if (debugPrint) System.out.println("vModelInverseVarianceBest: " + (Double)svModelInverseVariance.getBestSample());
 
-		assertTrue(nearlyEquals((Double)svModelMean.getBestSample(),27.01954721149211));
-		assertTrue(nearlyEquals((Double)svModelInverseVariance.getBestSample(),0.005332820470585945));
+		assertTrue(nearlyEquals((Double)svModelMean.getBestSample(),27.010518051502054));
+		assertTrue(nearlyEquals((Double)svModelInverseVariance.getBestSample(),0.005323175667979781));
 	}
 	
 	

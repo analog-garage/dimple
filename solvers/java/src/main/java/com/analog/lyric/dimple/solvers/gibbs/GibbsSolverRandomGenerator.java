@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import java.util.Random;
+import org.apache.commons.math.random.MersenneTwister;
+import org.apache.commons.math.random.RandomGenerator;
 
 public class GibbsSolverRandomGenerator
 {
-	public static final Random rand = new Random();
+	public static final RandomGenerator rand = new MersenneTwister();
 }

@@ -88,7 +88,7 @@ if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 A.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 
 if (repeatable)
-    fg.Solver.setSeed(1);					% Make this repeatable
+    fg.Solver.setSeed(2);					% Make this repeatable
 end
 
 dtrace(debugPrint,'Starting Gibbs solve');
