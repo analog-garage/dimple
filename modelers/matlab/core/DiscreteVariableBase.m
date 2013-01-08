@@ -15,6 +15,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef DiscreteVariableBase < VariableBase
+    properties
+       Value; 
+    end
     methods
         function obj = DiscreteVariableBase(domain,varargin)
             obj = obj@VariableBase([],[]);
@@ -57,7 +60,10 @@ classdef DiscreteVariableBase < VariableBase
             obj.VectorIndices = VectorIndices;
         end
         
-        
+         function x = get.Value(obj)
+            x = obj.getValue();
+        end
+       
     end
     
     methods(Access=protected)
