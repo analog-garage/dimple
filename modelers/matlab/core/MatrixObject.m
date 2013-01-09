@@ -1,3 +1,6 @@
+% The MatrixObject class provides an implementation of an object that can
+% be treated like a MATLAB matrix.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2012 Analog Devices, Inc.
 %
@@ -225,6 +228,19 @@ classdef MatrixObject < handle
     
     methods (Static)
         function v = unpack(stuff,indices,returnSingletonIfOnlyOne)
+            % Routine to convert two dimensional arrays returned by
+            % VectorObjects into multidimensional arrays that relate to the
+            % VectorIndices.
+            %
+            % Arguments:
+            % stuff - A one or two dimensional array of stuff to be
+            % unpacked.
+            % indices - The indices of the MatrixObject.  The indices
+            % determine how the stuff is unpacked.
+            % returnSingletonIfOnlyOne - In the case of cell arrays, this
+            % flag will return the object itself rather than an array of
+            % one object if there is only one object.
+
             if nargin < 3
                 returnSingletonIfOnlyOne = false;
             end
@@ -266,6 +282,23 @@ classdef MatrixObject < handle
         end
         
         function v = pack(values,indices)
+            % Routine to pack MATLAB arguments into a form that can be
+            % passed to the VectorObject
+            %
+            % Expects as input a multidimensional vector corresponding to
+            % the dimensions of a MatrixObject.  There can optionally be
+            % one extra dimension for an array of objects to be passed to
+            % the underlying object.
+            %
+            % This routine returns values as a one or two dimensional
+            % vector with dimensions: NumObjects x NumValuesPerObject
+            % It does not need to return indices because the routine itself
+            % reorders the two dimensional array according to linear
+            % indices of the underlying VectorObject.
+            %
+            % TODO: should deal with cell arrays if the values cannot be
+            % turned into a matrix
+
             numValsPerObj = prod(size(values)) / numel(indices);
             if mod(numValsPerObj,1) ~= 0
                 error('invalid number of values');
