@@ -16,7 +16,7 @@
 
 classdef DiscreteVariableBase < VariableBase
     properties
-       Value; 
+        Value;
     end
     methods
         function obj = DiscreteVariableBase(domain,varargin)
@@ -60,10 +60,15 @@ classdef DiscreteVariableBase < VariableBase
             obj.VectorIndices = VectorIndices;
         end
         
-         function x = get.Value(obj)
+        function x = get.Value(obj)
             x = obj.getValue();
         end
-       
+        
+        function set.Value(obj,value)
+            obj.setValue(value);
+        end
+        
+        
     end
     
     methods(Access=protected)
@@ -168,6 +173,22 @@ classdef DiscreteVariableBase < VariableBase
                 b = reshape(b,sz);
                 
             end
+        end
+        
+        function setValue(obj,value)
+            
+           domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
+           if ~ domainIsScalars
+               error('Only scalar domains currently supported');
+           end
+
+           values = MatrixObject.pack(value,obj.VectorIndices);
+            
+           values = repmat(values,1,numel(obj.Domain.Elements));
+           domains = repmat(cell2mat(obj.Domain.Elements),size(values,1),1);
+           inputs = values==domains;
+           uinputs = MatrixObject.unpack(inputs,obj.VectorIndices);
+           obj.Input = uinputs;
         end
         
         function values = getValue(obj)
