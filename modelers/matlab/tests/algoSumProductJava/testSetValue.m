@@ -1,5 +1,13 @@
 function testSetValue()
 
+    %setValue of single dimensional thing
+    d = Discrete({1,2,3},3,1);
+    fg = FactorGraph();
+    fg.addFactor(@(a) 1, d);
+    value = randi(3,3,1);
+    d.Value = value;
+    assertEqual(d.Value,value);
+    
     %setValue of doubles
     d = Discrete({1,2,3},3,2);
     fg = FactorGraph();
@@ -7,7 +15,6 @@ function testSetValue()
     value = randi(3,3,2);
     d.Value = value;
     assertEqual(d.Value,value);
-
 
     d = Discrete({'a','bb','ccc'},2,1);
     fg = FactorGraph();

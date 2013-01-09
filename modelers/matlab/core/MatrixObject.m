@@ -255,7 +255,12 @@ classdef MatrixObject < handle
                         error('mismatch of sizes');
                     end
                     stuff = stuff(indices(:)+1,:);
-                    v = reshape(stuff,[size(indices) size(stuff,2)]);
+                    sz = size(indices);
+                    if sz(length(sz)) == 1
+                        v = reshape(stuff,[sz(1:end-1) size(stuff,2)]);
+                    else
+                        v = reshape(stuff,[size(indices) size(stuff,2)]);
+                    end
                 end
             end
         end
