@@ -446,16 +446,15 @@ public class PFactorGraphVector extends PFactorVector
 	 /*
 	 * Let's the user specify a fixed schedule.  Expects a list of items
 	 * where each item is one of the following:
-	 * -A Variable
-	 * -A Factor
+	 * -A VariableVector
+	 * -A FactorVector
 	 * -An edge (specified with a list of two connected nodes)
 	 * 
 	 * TODO: Push this down
 	 */
 	public void setSchedule(Object [] schedule) 
 	{
-		
-		IScheduleEntry [] entries = new IScheduleEntry[schedule.length];
+		ArrayList<IScheduleEntry> alEntries = new ArrayList<IScheduleEntry>();
 		
 		//Convert schedule to a list of nodes and edges
 		for (int i = 0; i < schedule.length; i++)
@@ -474,21 +473,29 @@ public class PFactorGraphVector extends PFactorVector
 				INode node1 = PHelpers.convertToNode(objArray[0]);
 				INode node2 = PHelpers.convertToNode(objArray[1]);
 				int portNum = node1.getPortNum(node2);
-				entries[i] = new EdgeScheduleEntry(node1, portNum);
+				alEntries.add(new EdgeScheduleEntry(node1, portNum));
 			}
 			else
 			{
 				if (obj instanceof PFactorGraphVector)
 				{
-					FactorGraph graph = ((PFactorGraphVector)obj).getGraph();
+					Node [] nodes = PHelpers.convertToNodeArray(obj);
+					for (Node n : nodes)
+						alEntries.add(new SubScheduleEntry(((FactorGraph)n).getSchedule()));
 					
-					entries[i] = new SubScheduleEntry(graph.getSchedule());
 				}
 				else
-					entries[i] = new NodeScheduleEntry(PHelpers.convertToNode(obj));
+				{
+					Node [] nodes = PHelpers.convertToNodeArray(obj);
+					for (Node n : nodes)
+						alEntries.add(new NodeScheduleEntry(n));
+				}
 			}
 		}
 
+		IScheduleEntry [] entries = new IScheduleEntry[alEntries.size()];
+		alEntries.toArray(entries);
+		
 		getGraph().setSchedule(new FixedSchedule(entries));
 	}
 	
