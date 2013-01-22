@@ -38,6 +38,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
+import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -63,6 +65,7 @@ public class FactorGraph extends FactorBase
 	private IFactorGraphFactory _solverFactory;
 	private ISolverFactorGraph _solverFactorGraph;
 	private JointFactorCache _jointFactorCache = new JointFactorCache();
+	private HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
 
 
 	private ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
@@ -216,53 +219,52 @@ public class FactorGraph extends FactorBase
 		return true;
 	}
 
-	//TODO: is this the right name
-	public BlastFromThePastFactor addBlastFromPastFactor(Object inputMsg, VariableBase var) 
-	{
-				
-		setVariableSolver(var);
+    public BlastFromThePastFactor addBlastFromPastFactor(Object inputMsg, VariableBase var,Port factorPort) 
+    {
+                            
+            setVariableSolver(var);
 
-		BlastFromThePastFactor f;
-//		if (allDomainsAreDiscrete(vars))
-//			f = new DiscreteFactor(NodeId.getNext(),factorFunction,vars);
-//		else
-//			f = new Factor(NodeId.getNext(),factorFunction,vars);
-		f = new BlastFromThePastFactor(NodeId.getNext(),var,inputMsg);
+            BlastFromThePastFactor f;
+            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort,inputMsg);
 
-		addFactor(f,new VariableBase[]{var});
+            addFactor(f,new VariableBase[]{var});
+            
+            return f;
 
-		//if (_solverFactorGraph != null)
-		//	f.attach(_solverFactorGraph);
-
-		//f.getPorts().get(0).setOutputMsg(inputMsg);
-		
-		return f;
-
-	}
+    }
 	
 	public FactorGraphStream addRepeatedFactor(FactorGraph nestedGraph, Object ... vars) 
 	{
 		return addRepeatedFactor(nestedGraph,1, vars);
 	}
 	
-	public void reset() 
-	{
-		//for (VariableStreamBase vs : _Fac)
-		for (FactorGraphStream fgs : _factorGraphStreams)
-			fgs.reset();
-	}
 	
 	public FactorGraphStream addRepeatedFactor(FactorGraph nestedGraph, int bufferSize,Object ... vars) 
 	{
 		FactorGraphStream fgs = new FactorGraphStream(this, nestedGraph, bufferSize, vars);
 		_factorGraphStreams.add(fgs);
+		for (Object v : vars)
+		{
+			if (v instanceof IVariableStreamSlice)
+			{
+				_variableStreams.add(((IVariableStreamSlice) v).getStream());
+			}
+		}
 		return fgs;
 	}
 	
-	public void advance() 
+	public void advance()
 	{
+		advance(1);
+	}
+	
+	public void advance(int numSteps) 
+	{
+		
+		for (VariableStreamBase vs : _variableStreams)
+			vs.advanceInputs(numSteps);
 		for (FactorGraphStream s : _factorGraphStreams)
-			s.advance();
+			s.advance(numSteps,false);
 	}
 	
 	public boolean hasNext() 
@@ -855,7 +857,7 @@ public class FactorGraph extends FactorBase
 					if (templateGraph._boundaryVariables.contains(vTemplate))
 					{
 						var.connect(pCopy);		// Boundary variable in template graph: connect port to corresponding boundary variable in this graph
-						_ports.add(pCopy);									// Ports to boundary variables are external ports of the graph
+						//_ports.add(pCopy);									// Ports to boundary variables are external ports of the graph
 					}
 					else
 						var.connect(pCopy);			// Owned variable in template graph: connect port to new copy of template variable
@@ -920,11 +922,16 @@ public class FactorGraph extends FactorBase
 		return rootCopy;
 	}
 
+	
+	private long _portVersionId = -1;
+	
 	@Override
 	public ArrayList<Port> getPorts()
 	{
-		//TODO: should I just keep _ports up to date instead?
-		ArrayList<Port> ports = new ArrayList<Port>();
+		if (_portVersionId == _versionId && _ports != null)
+			return _ports;
+		
+		_ports = new ArrayList<Port>();
 
 		FactorList factors = getNonGraphFactorsFlat();
 		
@@ -939,13 +946,14 @@ public class FactorGraph extends FactorBase
 
 				if (n.isFactor() && factors.contains(n))
 				{
-					ports.add(v.getPorts().get(i).getSibling());
+					_ports.add(v.getPorts().get(i).getSibling());
 					break;
 				}
 			}
 
 		}
-		return ports;
+		_portVersionId = _versionId;
+		return _ports;
 	}
 
 
@@ -1045,6 +1053,31 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
+	//TODO: better name
+	public void initializeMessagesToAndFromBoundaryVariables()
+	{
+		ArrayList<Port> ports = getPorts();
+		for (Port p : ports)
+		{
+			VariableBase vb = (VariableBase)p.getConnectedNode();
+			vb.initializePortMsg(p.getSibling());
+			vb.getSolver().invalidateCache();
+		}
+	}
+	
+	//TODO: replace this with something better
+	public void temporaryInitialize()
+	{
+		for (FactorBase f : _ownedFactors)
+			f.initialize();
+		
+		for (VariableBase vb : _ownedVariables)
+			vb.initialize();
+		
+		for (FactorGraph fg : _ownedSubGraphs)
+			fg.temporaryInitialize();
+	}
+	
 	public void initialize() 
 	{
 		for (VariableBase v : _ownedVariables)
@@ -1067,7 +1100,22 @@ public class FactorGraph extends FactorBase
 			throw new DimpleException("solver needs to be set first");
 	}
 
+	//TODO: THink about multi threading
+	public void solveRepeated()
+	{		
+		solveRepeated(true, 1);
+	}
 
+	public void solveRepeated(boolean init)
+	{		
+		solveRepeated(init, 1);
+	}
+	
+	public void solveRepeated(boolean init, int stepsToAdvance)
+	{
+		checkSolverIsSet();
+		getSolver().solveRepeated(init, stepsToAdvance);
+	}
 	
 	public void solve() 
 	{

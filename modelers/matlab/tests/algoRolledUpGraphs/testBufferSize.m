@@ -27,7 +27,7 @@ function testBufferSize()
     fg.addFactor(ng,5,b,b.getSlice(2));
 
     assertEqual(length(fg.Variables),6);
-    assertEqual(length(fg.Factors),5);
+    assertEqual(length(fg.Factors),6);
     
     data = repmat([.4 .6],20,1);
     runMMtest(fg,b,data);
@@ -44,7 +44,7 @@ function testBufferSize()
     fgs.BufferSize = 10;
 
     assertEqual(length(fg.Variables),11);
-    assertEqual(length(fg.Factors),10);
+    assertEqual(length(fg.Factors),11);
 
     data = repmat([.4 .6],20,1);    
     runMMtest(fg,b,data);    
@@ -59,7 +59,7 @@ function testBufferSize()
     fgs.BufferSize = 3;
 
     assertEqual(length(fg.Variables),4);
-    assertEqual(length(fg.Factors),3);
+    assertEqual(length(fg.Factors),4);
 
     data = repmat([.4 .6],20,1);    
     
@@ -78,7 +78,7 @@ function testBufferSize()
     fgs.BufferSize = 3;
 
     assertEqual(length(fg.Variables),4);
-    assertEqual(length(fg.Factors),3);
+    assertEqual(length(fg.Factors),4);
 
     data = repmat([.4 .6],20,1);    
 

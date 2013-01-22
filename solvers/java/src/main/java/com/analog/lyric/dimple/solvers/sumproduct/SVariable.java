@@ -40,7 +40,6 @@ public class SVariable extends SDiscreteVariableBase
     protected double [] _input;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
-    boolean _initCalled = true;
 
 	public SVariable(VariableBase var)  
     {
@@ -49,7 +48,12 @@ public class SVariable extends SDiscreteVariableBase
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
 		
+	}
+	
+	public void initializeInputs()
+	{
 		_input = (double[])getDefaultMessage(null);
+		
 	}
 	
 	public VariableBase getVariable()
@@ -114,7 +118,7 @@ public class SVariable extends SDiscreteVariableBase
 
     public void updateEdge(int outPortNum) 
     {
-    	updateCache();
+    	ensureCacheUpdated();
     	
         final double minLog = -100;
         double[] priors = (double[])_input;
@@ -184,7 +188,7 @@ public class SVariable extends SDiscreteVariableBase
 
     public void update() 
     {
-    	updateCache();
+    	ensureCacheUpdated();
 
         final double minLog = -100;
         double[] priors = (double[])_input;
@@ -276,7 +280,7 @@ public class SVariable extends SDiscreteVariableBase
         
     public Object getBelief()
     {
-    	updateCache();
+    	ensureCacheUpdated();
 
         final double minLog = -100;
         double[] priors = (double[])_input;
@@ -319,70 +323,41 @@ public class SVariable extends SDiscreteVariableBase
     
 
     
-    protected void updateCache()
+    protected void updateMessageCache()
     {
-    	if (_initCalled)
-    	{
-    		_initCalled = false;
-	    	int D = _var.getPorts().size();    	
-			int M = ((double[])_input).length;
-						
-			_inPortMsgs = new double[D][];
-			_logInPortMsgs = new double[D][M];
-			_outMsgArray = new double[D][];
-			if (_dampingInUse)
-				_savedOutMsgArray = new double[D][];
+    	int D = _var.getPorts().size();    	
+		int M = ((double[])_input).length;
+					
+		_inPortMsgs = new double[D][];
+		_logInPortMsgs = new double[D][M];
+		_outMsgArray = new double[D][];
+		if (_dampingInUse)
+			_savedOutMsgArray = new double[D][];
 
-		    if (_dampingParams.length != D)
-		    {
-		    	double [] tmp = new double[D];
-		    	for (int i = 0; i < _dampingParams.length; i++)
-		    	{
-		    		if (i < tmp.length)
-		    			tmp[i] = _dampingParams[i];
-		    	}
-		    	_dampingParams = tmp;
-		    }
-		    		    
-		    for (int d = 0; d < D; d++) 
-		    	_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
-			
-	        //Now compute output messages for each outgoing edge
-		    for (int out_d = 0; out_d < D; out_d++ )
-		    {
-	            _outMsgArray[out_d] = (double[])_var.getPorts().get(out_d).getOutputMsg();
-				if (_dampingInUse)
-					_savedOutMsgArray[out_d] = new double[_outMsgArray[out_d].length];
-		    }
-		    
-    	}
+	    if (_dampingParams.length != D)
+	    {
+	    	double [] tmp = new double[D];
+	    	for (int i = 0; i < _dampingParams.length; i++)
+	    	{
+	    		if (i < tmp.length)
+	    			tmp[i] = _dampingParams[i];
+	    	}
+	    	_dampingParams = tmp;
+	    }
+	    		    
+	    for (int d = 0; d < D; d++) 
+	    	_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
+		
+        //Now compute output messages for each outgoing edge
+	    for (int out_d = 0; out_d < D; out_d++ )
+	    {
+            _outMsgArray[out_d] = (double[])_var.getPorts().get(out_d).getOutputMsg();
+			if (_dampingInUse)
+				_savedOutMsgArray[out_d] = new double[_outMsgArray[out_d].length];
+	    }
+	    
     }
     
-
-	public void initialize()
-	{
-		super.initialize();
-
-		//Flag that init was called so that we can update the cache next time we need cached
-		//values.  We can't do the same thing as the tableFunction (update the cache here)
-		//because the function init gets called after variable init.  If we updated teh cache
-		//here, the table function init would replace the arrays for the outgoing message
-		//and our update functions would update stale messages.
-		_initCalled = true;
-	}
-
-
-	public void remove(Factor factor)
-	{
-		_initCalled = true;
-	}
-	
-	@Override
-	public void connectPort(Port p)  
-	{
-		_initCalled = true;
-	}
-
 
 	public double [] getNormalizedInputs()
 	{

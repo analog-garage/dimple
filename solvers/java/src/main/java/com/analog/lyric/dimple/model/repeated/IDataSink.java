@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,30 +14,9 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
+public interface IDataSink {
 
-public class PVariableStreamSlice implements IPVariableStreamSlice
-{
-	private VariableStreamSlice _modelObject;
-	
-	public PVariableStreamSlice(VariableStreamSlice slice)
-	{
-		_modelObject = slice;
-	}
-	
-	public VariableStreamSlice getModelerObject()
-	{
-		return _modelObject;
-	}
-	
-	public PVariableVector get(int index) 
-	{
-		VariableBase var = _modelObject.get(index);
-		return PHelpers.convertToVariableVector(new VariableBase[]{var});
-	}
-
-	
+	public void push(Object data);
 }

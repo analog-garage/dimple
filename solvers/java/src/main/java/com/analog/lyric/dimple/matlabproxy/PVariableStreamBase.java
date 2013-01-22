@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.IDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
@@ -28,15 +29,10 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	{
 		_modelObject = varStream;
 	}
-	
-//	public PVariableStreamBase(PDomain domain) 
-//	{
-//		_modelObject = new VariableStreamBase(domain.getModelerObject());
-//	}
-	
-	public PVariableStreamSlice getSlice(double startVal, double increment,  double endVal)
+		
+	public PVariableStreamSlice getSlice(int startVal)
 	{
-		return new PVariableStreamSlice(_modelObject.getSlice(startVal,increment, endVal));
+		return new PVariableStreamSlice(_modelObject.getSlice(startVal));
 	}
 	public VariableStreamBase getModelerObject()
 	{
@@ -53,24 +49,19 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 	{
 		_modelObject.setDataSource(dataSource);
 	}
-	
-	public double getLastVarIndex()
+	public void setDataSink(IDataSink dataSink) 
 	{
-		return _modelObject.getLastVarIndex();
+		_modelObject.setDataSink(dataSink);
 	}
 	
-	public PVariableVector getFirstVar() 
+	public IDataSource getDataSource()
 	{
-		return PHelpers.convertToVariableVector(new VariableBase[]{_modelObject.getFirstVar()});
+		return _modelObject.getDataSource();
 	}
-
-	public PVariableVector getLastVar() 
+	public IDataSink getDataSink()
 	{
-		return PHelpers.convertToVariableVector(new VariableBase[]{_modelObject.getLastVar()});
+		return _modelObject.getDataSink();
 	}
-
-	public double getFirstVarIndex()
-	{
-		return _modelObject.getFirstVarIndex();
-	}
+	
+	
 }

@@ -16,38 +16,7 @@
 
 function testBlastFromPastCornerCases()
 
-    %Test blastFromPastFactors go away when we reset
-    a = Bit();
-    b = Bit();
-    c = Bit();
-    ng = FactorGraph(a,b,c);
-    ng.addFactor(@xorDelta,a,b,c);
-
-    fg = FactorGraph();
-    s = BitStream();
-    p = Bit();
-    p.Name = 'param';
-    fs = fg.addFactor(ng,s,s.getSlice(2),p);
-    fs.BufferSize = 5;
-
-
-    fg.advance();
-
-    expectedVars = 7;
-    expectedFactors = 7;
-
-    assertEqual(expectedVars,length(fg.Variables));
-    assertEqual(expectedFactors,length(fg.Factors));
-
-    fg.reset();
-
-    expectedVars = 7;
-    expectedFactors = 5;
-
-    assertEqual(expectedVars,length(fg.Variables));
-    assertEqual(expectedFactors,length(fg.Factors));
-
-
+  
     %What happens if twoFSs share a parameter.  Do we update blast from pasts correctly?
     const1 = [.6 .4];
     const2 = [.7 .3];
@@ -88,11 +57,4 @@ function testBlastFromPastCornerCases()
     assertEqual(4,length(fg.Factors));
     assertEqual(1,length(fg.Variables));
 
-    fg.reset();
-
-    assertEqual(2,length(fg.Factors));
-    assertEqual(1,length(fg.Variables));
-
-    %mix param with stream
-    %Fix memory leak
 end

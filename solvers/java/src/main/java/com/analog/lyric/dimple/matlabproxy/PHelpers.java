@@ -341,7 +341,7 @@ public class PHelpers
 		return retval;
 	}
 	
-	public static int [][][] extractIndicesFectorized(Object [] indices)
+	public static int [][][] extractIndicesVectorized(Object [] indices)
 	{
 		int [][][] retval = new int[indices.length][][];
 		for (int i = 0; i < indices.length; i++)

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,30 +14,42 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
+import java.util.LinkedList;
 
-public class PVariableStreamSlice implements IPVariableStreamSlice
+import com.analog.lyric.dimple.model.DimpleException;
+
+public class DoubleArrayDataSink implements IDataSink 
 {
-	private VariableStreamSlice _modelObject;
-	
-	public PVariableStreamSlice(VariableStreamSlice slice)
+	private LinkedList<double[]> _data = new LinkedList<double[]>();
+
+	public void push(Object data)
 	{
-		_modelObject = slice;
+		_data.add((double[])data);
 	}
-	
-	public VariableStreamSlice getModelerObject()
+	public double [] getNext()
 	{
-		return _modelObject;
-	}
-	
-	public PVariableVector get(int index) 
-	{
-		VariableBase var = _modelObject.get(index);
-		return PHelpers.convertToVariableVector(new VariableBase[]{var});
+		if (_data.size() <= 0)
+			throw new DimpleException("ACK!");
+		
+		return _data.pollFirst();
 	}
 
+	public boolean hasNext()
+	{
+		return _data.size() > 0;
+	}
 	
+	public double [][] getArray()
+	{
+		double [][] retval = new double[_data.size()][];
+		int i = 0;
+		for (double [] data : _data)
+		{
+			retval[i] = data;
+			i++;
+		}
+		return retval;
+	}
 }

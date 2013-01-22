@@ -27,25 +27,22 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SFactorBase implements ISolverFactor 
+public abstract class SFactorBase extends SNode implements ISolverFactor 
 {
 	protected Factor _factor;
 	
 	public SFactorBase(Factor factor)
 	{
+		super(factor);
+		
 		_factor = factor;
 	}
-	
+		
 	public Factor getFactor()
 	{
 		return _factor;
 	}
 
-	@Override
-	public void initialize()  
-	{
-		
-	}
 
 	@Override
 	public void update()  

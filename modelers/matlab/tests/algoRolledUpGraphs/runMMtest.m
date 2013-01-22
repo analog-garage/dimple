@@ -44,7 +44,7 @@ function runMMtest(fg,stream,data,dataSource)
         fg.solve(false);
         fg2.solve();
         
-        assertEqual(stream.FirstVar.Belief(2),b(i).Belief);
+        assertElementsAlmostEqual(stream.get(1).Belief(2),b(i).Belief);
         
         fg.advance();
         b(bufferSize+i+1).Input = data(bufferSize+i+1,2);

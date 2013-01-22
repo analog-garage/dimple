@@ -31,6 +31,7 @@ function testBasics()
     vs = DiscreteStream(DiscreteDomain({0,1}));
 
     vs.DataSource = dataSource;
+    vs.DataSink = DoubleArrayDataSink();
     
     %Create our nested graph
     in = Bit();
@@ -52,36 +53,25 @@ function testBasics()
     b = Bit(N,1);
     b.Input = repmat([.4],N,1);
 
-    %Chunk through the data
-    tic
+    %Solve all at once.
+    fg.solveRepeated();
+    
+    
     i = 1;
-    while 1
+    while vs.DataSink.hasNext();
 
         fg2.addFactor(@xorDelta,b(i),b(i+1));
-
-        %Solve the current time step
-        fg.solve(false);
-        fg2.solve();
-
+        fg2.solve();      
+        
         %Get the belief for the first variable
-        belief = vs.get(i).Belief;
+        belief = vs.DataSink.getNext();
         belief2 = b(i).Belief;
 
         assertElementsAlmostEqual(belief(1),belief2(1));
 
-
-        %If there's data, keep going.
-        %TODO: This should ask the graph rather than the graph stream
-        if fgs.hasNext
-            fgs.advance();
-        else
-            break;
-        end
-
+        
         i = i+1;
 
-        %Let's add more data to make this an infinite stream.
-        %dataSource.add([.2 .8]);
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,6 +105,10 @@ function testBasics()
     bufferSize = 2;
     fgs = fg.addFactor(ng, bufferSize, vs,slice2);
 
+    vs.get(1).Name = 'v1';
+    vs.get(2).Name = 'v2';
+    vs.get(3).Name = 'v3';
+    
     %Initialize our messages
     fg.initialize();
 
@@ -136,7 +130,7 @@ function testBasics()
         fg2.solve();
 
         %Get the belief for the first variable
-        belief = vs.get(i).Belief;
+        belief = vs.get(1).Belief;
         belief2 = b(i).Belief;
 
         assertElementsAlmostEqual(belief(1),belief2(1));
@@ -145,7 +139,7 @@ function testBasics()
         %If there's data, keep going.
         %TODO: This should ask the graph rather than the graph stream
         if fgs.hasNext
-            fgs.advance();
+            fg.advance();
         else
             break;
         end
@@ -162,6 +156,6 @@ function testBasics()
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %two FactorGraph streams?
-end
-			
+
+end			
 		

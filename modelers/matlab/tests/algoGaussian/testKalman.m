@@ -198,8 +198,8 @@ function testKalman()
     %Run the factor graph.
     for i = 1:timesteps
        fg.solve();
-       fgxs(i) = fxs.FirstVar.Belief.Means(1);
-       fgys(i) = fxs.FirstVar.Belief.Means(2);
+       fgxs(i) = fxs.get(1).Belief.Means(1);
+       fgys(i) = fxs.get(1).Belief.Means(2);
 
        if fg.hasNext()
            fg.advance();

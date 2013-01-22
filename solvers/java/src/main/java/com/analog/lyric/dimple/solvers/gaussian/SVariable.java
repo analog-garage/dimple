@@ -32,13 +32,18 @@ public class SVariable extends SRealVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */	
-	private double [] _input = (double[]) getDefaultMessage(null);
+	private double [] _input;
     
 	public SVariable(VariableBase var) 
     {
 		super(var);
+		initializeInputs();
 	}
 	
+	public void initializeInputs()
+	{
+		_input = (double[]) getDefaultMessage(null);
+	}
 
 	public Object getDefaultMessage(Port port) 
 	{

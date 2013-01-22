@@ -37,9 +37,9 @@ public class PFactorGraphStream
 		return _stream.hasNext();
 	}
 	
-	public void advance() 
+	public void advance(int numSteps) 
 	{
-		_stream.advance();
+		_stream.advance(numSteps);
 	}
 	
 	public void setBufferSize(int size) 

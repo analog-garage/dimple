@@ -55,12 +55,20 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_varDiscrete = (Discrete)_var;
 		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
 		initialize();
-		_input = (double[])getDefaultMessage(null);
+		initializeInputs();
 	}
 
+	public void initializeInputs()
+	{
+		_input = (double[])getDefaultMessage(null);
+
+	}
+	
 	public Object getDefaultMessage(Port port)
 	{
-		int domainLength = _varDiscrete.getDiscreteDomain().getElements().length;
+		DiscreteDomain dd = ((Discrete)_var).getDiscreteDomain();
+		Object [] elements = dd.getElements();
+		int domainLength = elements.length;
 		double[] retVal = new double[domainLength];
 		Arrays.fill(retVal, 0);
 		return retVal;

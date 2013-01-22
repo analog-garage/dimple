@@ -20,15 +20,21 @@ classdef VariableStreamSlice < IVariableStreamSlice
     end
     methods
         function obj = VariableStreamSlice(intf)
-            obj.IVariableStreamSlice = intf;            
-        end        
+            obj.IVariableStreamSlice = intf;
+        end
         
         function next = getNext(obj)
             next = wrapProxyObject(obj.IVariableStreamSlice.getNext());
         end
         
         function ret = hasNext(obj)
-           ret = obj.IVariableStreamSlice.hasNext();
+            ret = obj.IVariableStreamSlice.hasNext();
         end
+        
+        function var = get(obj,ind)
+            ivar = obj.IVariableStreamSlice.get(ind-1);
+            var = wrapProxyObject(ivar);
+        end
+        
     end
 end

@@ -146,10 +146,6 @@ classdef FactorGraph < Node
             obj.VectorObject.advance();
         end
         
-        function reset(obj)
-            obj.VectorObject.reset();
-        end
-        
         function ret = hasNext(obj)
             ret = obj.VectorObject.hasNext();
         end
@@ -493,6 +489,16 @@ classdef FactorGraph < Node
         
         function nodes = depthFirstSearchTop(obj,node,searchDepth)
             nodes = obj.depthFirstSearch(node,searchDepth,0);
+        end
+        
+        function solveRepeated(obj,initialize,numSteps)
+            if nargin < 3
+                numSteps = 1;
+            end
+            if nargin < 2
+                initialize = true;
+            end
+            obj.VectorObject.solveRepeated(initialize,numSteps);
         end
         
         function solve(obj,initialize)

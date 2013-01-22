@@ -18,10 +18,7 @@ classdef VariableStreamBase < IVariableStreamSlice
     properties
         IVariableStream;
         DataSource;
-        FirstVarIndex;
-        LastVarIndex;
-        FirstVar;
-        LastVar;
+        DataSink;
         IVariableStreamSlice;
     end
     
@@ -37,20 +34,27 @@ classdef VariableStreamBase < IVariableStreamSlice
             ret = obj.IVariableStream;
         end
         
+        function set.DataSink(obj,dataSink)
+            obj.IVariableStream.setDataSink(dataSink);
+        end
+        
         function set.DataSource(obj,dataSource)
            obj.IVariableStream.setDataSource(dataSource); 
         end
         
-        function slice = getSlice(obj,startIndex,increment,endIndex)
+        function sink = get.DataSink(obj)
+           sink = obj.IVariableStream.getDataSink(); 
+        end
+        function source = get.DataSource(obj)
+            source = boj.IVariableStream.getDataSource();
+        end
+        
+        function slice = getSlice(obj,startIndex)
             if nargin < 3
-                increment = 1;
                 endIndex = Inf;
-            elseif nargin < 4
-                endIndex = increment;
-                increment = 1;
             end
             
-            ISlice = obj.IVariableStream.getSlice(startIndex-1,increment,endIndex-1);
+            ISlice = obj.IVariableStream.getSlice(startIndex-1);
             
             slice = VariableStreamSlice(ISlice);
         end
@@ -58,22 +62,6 @@ classdef VariableStreamBase < IVariableStreamSlice
         function var = get(obj,ind)
             ivar = obj.IVariableStream.get(ind-1);
             var = wrapProxyObject(ivar);
-        end
-
-        function ret = get.FirstVarIndex(obj)
-            ret = obj.IVariableStream.getFirstVarIndex()+1;
-        end
-        function ret = get.LastVarIndex(obj)
-            ret = obj.IVariableStream.getLastVarIndex()+1;
-        end
-        function ret = get.FirstVar(obj)
-            ret = obj.IVariableStream.getFirstVar();
-            ret = wrapProxyObject(ret);
-        end
-        
-        function ret = get.LastVar(obj)
-            ret = obj.IVariableStream.getLastVar();
-            ret = wrapProxyObject(ret);
         end
         
     end

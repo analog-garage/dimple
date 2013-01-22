@@ -57,7 +57,7 @@ function testReal()
         fg2.solve();
 
 
-        assertElementsAlmostEqual(vars.FirstVar.Belief,r(i).Belief);
+        assertElementsAlmostEqual(vars.get(1).Belief,r(i).Belief);
 
         fg.advance();
         i = i + 1;

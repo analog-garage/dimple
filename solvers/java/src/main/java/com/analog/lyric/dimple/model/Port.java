@@ -42,6 +42,11 @@ public class Port
 		this(parent,null,id);
 	}
 	
+	public void moveMessage(Port other)
+	{
+		_inputMsg = other._inputMsg;
+	}
+	
 	public void setId(int id)
 	{
 		_portId = id;

@@ -22,11 +22,7 @@ import com.analog.lyric.dimple.model.VariableBase;
 
 public interface IVariableStreamSlice 
 {
-	//public void reset();
-	public VariableBase getNext() ;
-	public ArrayList<VariableBase> releaseFirst() ;
-	public boolean hasNext() ;
-	public void backup(double howmuch) ;
-	public IVariableStreamSlice copy();
+	public VariableBase get(int i);
+	public VariableBase get(int i,boolean createVariable);
 	public VariableStreamBase getStream();
 }

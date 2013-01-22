@@ -116,7 +116,7 @@ public class PFactorVector extends PNodeVector
 	public void setDirectedTo(Object [] vars, Object [] indices)
 	{
 		PNodeVector [] vec = PHelpers.convertObjectArrayToNodeVectorArray(vars);
-		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
+		int [][][] intIndices = PHelpers.extractIndicesVectorized(indices);
 		PNodeVector [][] nodeVectors = PHelpers.extractVectorization(vec, intIndices);
 		
 		for (int i = 0; i < nodeVectors.length; i++)

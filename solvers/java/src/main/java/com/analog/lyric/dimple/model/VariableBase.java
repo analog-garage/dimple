@@ -189,8 +189,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		 * must first call super.clone(), and then deep-copy those instance
 		 * variables to the clone.
 		 *******/
-		VariableBase v = (VariableBase)(super.clone());
-				
+		VariableBase v = (VariableBase)(super.clone());		
+		v._solverVariable = null;
 		return v;
 	}
 		

@@ -48,8 +48,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 		_domain = (RealDomain)var.getDomain();
 		initialize();
+		initializeInputs();
 	}
 
+	public void initializeInputs()
+	{
+		_input = null;
+	}
+	
 	public Object getDefaultMessage(Port port)
 	{
 		return _initialSampleValue;

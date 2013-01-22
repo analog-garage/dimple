@@ -59,6 +59,11 @@ public class SRealVariable extends SRealVariableBase
 		initialize();
 	}
 
+	public void initializeInputs()
+	{
+		_input = null;
+	}
+	
 	// Default factor-to-variable (input) message
 	public Object getDefaultMessage(Port port) {return getDefaultFactorToVariableMessage(port);}
 	public Object getDefaultFactorToVariableMessage(Port port)

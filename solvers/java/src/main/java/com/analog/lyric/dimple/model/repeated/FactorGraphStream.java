@@ -1,18 +1,18 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
 package com.analog.lyric.dimple.model.repeated;
 
@@ -22,316 +22,295 @@ import java.util.HashSet;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
 
+/*
+ * This class represents one stream of Nested Factor Graphs.
+ */
 public class FactorGraphStream
 {
+
+	ArrayList<ArrayList<BlastFromThePastFactor>> _blastFromThePastChains = new ArrayList<ArrayList<BlastFromThePastFactor>>();
+	ArrayList<FactorGraph> _nestedGraphs = new ArrayList<FactorGraph>();
+	ArrayList<VariableStreamBase> _variableStreams = new ArrayList<VariableStreamBase>();
+	private int _bufferSize = 0;
+	private Object [] _args;
 	private FactorGraph _graph;
 	private FactorGraph _repeatedGraph;
-	private int _bufferSize;
-	
-	private ArrayList<IVariableStreamSlice> _streamSlices = new ArrayList<IVariableStreamSlice>();
-	private ArrayList<FactorGraph> _factorGraphs = new ArrayList<FactorGraph>();
-	
-	private Object [] _args;
-	private HashSet<VariableBase> _parameterVariables = new HashSet<VariableBase>();
-	private HashMap<VariableBase,BlastFromThePastFactor> _var2blastFromPast = new HashMap<VariableBase, BlastFromThePastFactor>();
-	
-	private ArrayList<BlastFromThePastFactor> _blastFromPastsToRemove = new ArrayList<BlastFromThePastFactor>();
-	
-	//private HashSet<VariableBase> _parameter
-	//private Arraylist<>
-	
-	//contains graph that is to be repeated
-	public FactorGraphStream(FactorGraph fg, FactorGraph repeatedGraph,int bufferSize,Object ... args) 
+	private FactorGraph _parameterFactorGraph;
+
+	/*
+	 * The constructor adds Factors and Variables and BlastFromThePastFactors.
+	 */
+	public FactorGraphStream(FactorGraph fg, 
+			FactorGraph repeatedGraph,
+			int bufferSize,
+			Object ... args) 
 	{
+		//Save arguments so that we can increase buffer size later
+		_args = args;
 		_graph = fg;
 		_repeatedGraph = repeatedGraph;
-		_bufferSize = 0;
-		
-		//TODO: go through args and make sure they are variables and infinite
-		//variable streams
-		
-		//Make sure they match the number of args in the repeatedGraph
-		
-		VariableList boundaryVars = repeatedGraph.getBoundaryVariables();
-		
-		if (boundaryVars.size() != args.length)
-			throw new DimpleException("must specify correct number of variables");
-		
-		_args = checkArgs(args);
-		
+		_parameterFactorGraph = new FactorGraph();
+		_parameterFactorGraph.setSolverFactory(_graph.getFactorGraphFactory());
+
+		//The following few lines of code retrieve the unique variable streams
+		HashSet<VariableStreamBase> variableStreams = new HashSet<VariableStreamBase>();
+
+		//Find unique variable streams
+		for (int i = 0; i < args.length; i++)
+		{
+			if (args[i] instanceof IVariableStreamSlice)
+			{
+				VariableStreamBase vsb = ((IVariableStreamSlice)args[i]).getStream();
+				variableStreams.add(vsb);
+			}
+		}
+
+		for (VariableStreamBase vsb : variableStreams)
+			_variableStreams.add(vsb);
+
+		//Here we build up the nested graphs.
 		setBufferSize(bufferSize);
+
+
+		//Setup blast from past factors
 		
-	}
+		//Get first Factor Graph's ports
+		FactorGraph firstGraph = _nestedGraphs.get(0);
+
+		ArrayList<Port> ports = firstGraph.getPorts();
+
+		//For each port
+		for (Port p : ports)
+		{
+			
+			//figure out which variable stream this is connected to
+			VariableBase var = (VariableBase)p.getSibling().getParent();
+			VariableStreamBase vsb = getVariableStream(var);
+
+			if (vsb == null)
+			{
+				//This is a parameter
+				//Add BlastFrom the Past Factor and save it
+				
+				//Find out if we've encountered this parameter before
+				if (! _parameter2blastFromThePastHandler.containsKey(var))
+				{
+					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var.getSolver().getDefaultMessage(null), 
+							var, null);
+					ParameterBlastFromThePastHandler pbftph = new ParameterBlastFromThePastHandler(
+							var,_parameterFactorGraph, 
+							var.getSolver().getDefaultMessage(null),
+							f);
+					_parameter2blastFromThePastHandler.put(var,pbftph);
+				}
+				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p);
+
+				
+			}
+			else
+			{
+				//This is not a parameter
+				
+				//Retrieve the index of this variable within the stream
+				int index = vsb.indexOf(var);
+			
+				//Set next port to this port
+				Port nextPort = p;
+
+				if (index > 0 )
+				{
+					ArrayList<BlastFromThePastFactor> bfc = new ArrayList<BlastFromThePastFactor>();
+					_blastFromThePastChains.add(bfc);
+					
+					//For each variable before this one
+					for (int i = index-1; i >= 0; i--)
+					{					
+						//add blast from the past
+						VariableBase var2 = vsb.get(i);
 	
+						//Initalize the input msg
+						Object inputMsg = var2.getSolver().getDefaultMessage(null);
+						BlastFromThePastFactor f = fg.addBlastFromPastFactor(inputMsg,var2,nextPort);
+	
+						bfc.add(f);
+						
+						//Set the next port
+						nextPort = f.getPorts().get(0);
+					}
+				}
+
+			}
+		}
+
+	}
+
+
 	public int getBufferSize()
 	{
-		return _bufferSize;
+		return _nestedGraphs.size();
 	}
-	
+
 	public void setBufferSize(int size) 
 	{
-		if (size <= 0)
-			throw new DimpleException("buffer size must be > 0");
-		
 		if (size > _bufferSize)
 		{
 			for (int i = 0; i < size-_bufferSize; i++)
-				addFactorGraph();
+				addStep();
+
+			_bufferSize = size;
 		}
 		else if (size < _bufferSize)
 		{
-			double howmuch = _bufferSize - size;
-			//remove graphs
 			for (int i = _bufferSize-1; i >= size; i--)
 			{
-				FactorGraph graph = _factorGraphs.get(i);
-				_graph.remove(graph);
-				_factorGraphs.remove(i);
+				_graph.remove(_nestedGraphs.get(i));
+				_nestedGraphs.remove(i);
 			}
-			for (IVariableStreamSlice s : _streamSlices)
-			{
-				s.backup(howmuch);
-			}
+			for (VariableStreamBase v : _variableStreams)
+				v.cleanupUnusedVariables();
+		}
+	}
+
+	private HashMap<VariableBase, ParameterBlastFromThePastHandler> _parameter2blastFromThePastHandler = new HashMap<VariableBase, FactorGraphStream.ParameterBlastFromThePastHandler>();
+	
+	private class ParameterBlastFromThePastHandler
+	{
+		private VariableBase _otherVar;
+		private VariableBase _myVar;
+		private FactorGraph _fg;
+		private BlastFromThePastFactor _mainFlastFromThePast;
+		private ArrayList<BlastFromThePastFactor> _allBlastFromThePasts = new ArrayList<BlastFromThePastFactor>();
+		
+		public ParameterBlastFromThePastHandler(VariableBase var,FactorGraph fg, 
+				Object initialBlastFromPastMessage,
+				BlastFromThePastFactor originalPlastFromPast)
+		{
+			_otherVar = var;
+			_myVar = _otherVar.clone();
+			_myVar.setInputObject(null);
+			_fg = fg;
+			_mainFlastFromThePast = originalPlastFromPast;
+			Port factorPort = originalPlastFromPast.getPorts().get(0);
+			//   create a data structure to represent it
+			//   Add a blast from the past for this variable
+			//   Create a Factor Graph for this variable (maybe share with others)
+			//   Add a blast to the past to be paired with the blast from the past
+			_allBlastFromThePasts.add(_fg.addBlastFromPastFactor(initialBlastFromPastMessage, _myVar, factorPort));
+		}
+		
+		public void addBlastFromThePast(Port p)
+		{
+			_allBlastFromThePasts.add(_fg.addBlastFromPastFactor(null, _myVar, p));
+		}
+		
+		public void advance()
+		{
+			for (BlastFromThePastFactor f : _allBlastFromThePasts)
+				f.advance();
+			
+			_otherVar.getSolver().invalidateCache();
+			_myVar.getSolver().invalidateCache();
+			Object belief = _myVar.getBeliefObject();
+			_mainFlastFromThePast.setOutputMsg(belief);
 			
 		}
+	}
+
+	public void advance(int numSteps)
+	{
+		advance(numSteps,true);
+	}
+	
+	public void advance(int numSteps, boolean advanceInputs) 
+	{
+		//For each variable stream
+		if (advanceInputs)
+		{
+			for (VariableStreamBase variableStream : _variableStreams)
+			{
+				variableStream.advanceInputs(numSteps);
+			}
+		}
+		
+		//For each step
+		for (int i = 0; i < numSteps ;i++)
+		{
 			
-		_bufferSize = size;
-	}
-	
-	private Object [] checkArgs(Object [] args) 
-	{
-		Object [] retval = new Object[args.length];
-		
-		for (int j = 0; j < args.length; j++)
-		{
-			if (args[j] instanceof VariableBase)
+			//Deal with parameters
+			//for each parameter
+				//Get data structure associated with that parameter
+				//Tell that data structure to advance
+			for (ParameterBlastFromThePastHandler h : _parameter2blastFromThePastHandler.values())
 			{
-				retval[j] = args[j];
-				_parameterVariables.add((VariableBase)args[j]);
+				h.advance();
 			}
-			else if (args[j] instanceof IVariableStreamSlice)
+			
+			//For each blast from the past chain
+			for (ArrayList<BlastFromThePastFactor> al : _blastFromThePastChains)
 			{
-				IVariableStreamSlice vss = (IVariableStreamSlice)args[j];
-				vss = vss.copy();
-				retval[j] = vss;
-				
-				//TODO: make sure unique?
-				_streamSlices.add(vss);
-			}
-			else
-				throw new DimpleException("expected VariableBase or IVariableStreamSlice");
-		}
-		
-		return retval;
-	}
-	
-	private void addFactorGraph() 
-	{
-		//get the appropriate arguments.
-		VariableBase [] boundaryVariables = new VariableBase[_args.length];
-		
-		for (int j = 0; j < _args.length; j++)
-		{
-			if (_args[j] instanceof VariableBase)
-				boundaryVariables[j] = (VariableBase)_args[j];
-			else if (_args[j] instanceof IVariableStreamSlice)
-			{
-				IVariableStreamSlice vss = (IVariableStreamSlice)_args[j];
-				boundaryVariables[j] = vss.getNext();
-				
-				//TODO: make sure unique?
-				//_streamSlices.add(vss);
-			}
-			else
-				throw new DimpleException("expected VariableBase or IVariableStreamSlice");
-		}
-		
-		//add the factor graph
-		FactorGraph result = _graph.addFactor(_repeatedGraph, boundaryVariables);
-		
-
-		
-		_factorGraphs.add(result);
-	}
-	
-	public void reset() 
-	{
-		//reset variable stream bases
-		HashSet<VariableStreamBase> streams = new HashSet<VariableStreamBase>();
-		
-		for (IVariableStreamSlice slice :  _streamSlices)
-			streams.add(slice.getStream());
-		
-		for (VariableStreamBase stream : streams)
-			stream.reset();
-		
-		//remove blast from pasts
-		for (BlastFromThePastFactor f : _blastFromPastsToRemove)
-			_graph.remove(f);
-		
-		for (BlastFromThePastFactor f : _var2blastFromPast.values())
-			_graph.remove(f);
-		
-		_blastFromPastsToRemove.clear();
-		_var2blastFromPast.clear();
-	}
-	
-	private void updateBlastFromPastForParameter(VariableBase v,FactorGraph graphToRemove) 
-	{
-		//we have to know which edges are being deleted
-		ArrayList<Port> ports2delete = new ArrayList<Port>();
-		for (Port p : v.getPorts())
-		{
-			INode node = p.getConnectedNode(0);
-			FactorGraph parentGraph = node.asFactorGraph();
-			if (parentGraph == graphToRemove)
-			{
-				ports2delete.add(p);
-				//this is one of the edges we will be deleting
-			}
-		}
-		
-		//TODO: don't yet let override
-
-		//if not yet created, create FactorGraph to compute blastFromPast message
-		//set messages to the ports we're going to delete as well as the blast from past (if exists)
-		//calculate
-		//if necessary, create blast from past
-		//set message
-		
-		FactorGraph tmpFg = new FactorGraph();
-		tmpFg.setSolverFactory(tmpFg.getFactorGraphFactory());
-		VariableBase tmpVar = v.clone();
-		
-		//TODO: is this hacky?
-		v.setInputObject(v.getSolver().getDefaultMessage(null));
-		//v.setInputObject(v.getSolver().get)
-		
-		tmpFg.initialize();
-		
-		for (Port p : ports2delete)
-			tmpFg.addBlastFromPastFactor(p.getInputMsg(), tmpVar);
-		
-		BlastFromThePastFactor factor = null;
-		if (_var2blastFromPast.containsKey(v))
-		{
-			factor = _var2blastFromPast.get(v);
-			tmpFg.addBlastFromPastFactor(factor.getPorts().get(0).getOutputMsg(), tmpVar);
-		}
-		
-		//TODO: what about old blast for past var
-		
-		tmpFg.solve(false);
-		
-		Object msg = tmpVar.getBeliefObject();
-		
-		if (factor == null)
-		{
-			factor =  _graph.addBlastFromPastFactor(msg, v);
-			_var2blastFromPast.put(v,factor);
-		}
-		else
-			factor.setOutputMsg(msg);
-		
-	}
-	
-	
-	public void advance() 
-	{
-		//TODO: have to be able to find parameter variables so that we can
-		//      update blastfrompast factor for these
-		
-		
-		
-		//TODO: how do the various variable streams know when to release data?
-		if (!hasNext())
-			throw new DimpleException("don't yet have data to advance");
-		
-		for (BlastFromThePastFactor f : _blastFromPastsToRemove)
-			_graph.remove(f);
-		
-		_blastFromPastsToRemove.clear();
-		
-		//Add new variables as needed
-		//Add new Factor Graph
-		//TODO: Includes adding data. Separate this eventually.
-		addFactorGraph();
-		
-		HashSet<VariableBase> torelease = new HashSet<VariableBase>();
-		
-		//free unused variables
-		for (IVariableStreamSlice ss : _streamSlices)
-		{
-			ArrayList<VariableBase> tmp = ss.releaseFirst();
-			torelease.addAll(tmp);
-		}
-		
-		//Make sure constants are in place
-		//How do we know where we need to connect constants?
-		VariableList boundaryVariables = _factorGraphs.get(0).getBoundaryVariables();
-		
-		//for each boundary variables
-		for (VariableBase v : boundaryVariables)
-		{
-			if (_parameterVariables.contains(v))
-			{
-				//update the blastFromPast
-				updateBlastFromPastForParameter(v,_factorGraphs.get(0));
-
-			}
-			else
-			{
-				Port [] pa = new Port[v.getPorts().size()];
-				v.getPorts().toArray(pa);
-				
-				//for each edge
-				for (Port p : pa)
+				//For each blast from the past
+				for (BlastFromThePastFactor bfp : al)
 				{
-					//if factor belongs to the graph we're about to delete
-					if (p.getConnectedNode().getParentGraph() == _factorGraphs.get(0))
-					{
-						//if this variable is only connected to this factor
-						
-						//Create a constant factor
-						if (!torelease.contains(v))
-						{
-							Object o = p.getInputMsg();
-							BlastFromThePastFactor bpf = _graph.addBlastFromPastFactor(o,v);
-							_blastFromPastsToRemove.add(bpf);
-						}
-					}
+					//Get new message
+					bfp.advance();
 				}
 			}
-		}
-		
-		
-		
-		//remove connections to old Factor Graph
-		_graph.remove(_factorGraphs.get(0));
 
-		_factorGraphs.remove(0);
-		
-		//TODO: we haven't actually removed old variables - memory leak
-		
-		//TODO: the message from the constant factor is somehow uniform distribution.
-		
+			//For each graph in list of nested graphs
+			for (int j = 0; j < _nestedGraphs.size()-1; j++)
+			{
+				//Tell it to move all factor messages to left
+				_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
+			}
+
+			_nestedGraphs.get(_nestedGraphs.size()-1).temporaryInitialize();
+			_nestedGraphs.get(_nestedGraphs.size()-1).initializeMessagesToAndFromBoundaryVariables();
+			
+
+
+		}
+
 	}
-	
-	
-	
+
+
+
 	public boolean hasNext() 
 	{
-		for (IVariableStreamSlice s : _streamSlices)
-		{
-			if (!s.hasNext())
-				return false;
-		}
-		return true;
+        for (VariableStreamBase s : _variableStreams)
+        {
+                if (!s.hasNext())
+                        return false;
+        }
+        return true;	
+        
 	}
-	
+
+	private void addStep()
+	{
+		VariableBase [] boundaryVariables = new VariableBase[_args.length];
+		for (int j = 0; j < _args.length; j++)
+		{
+			if (_args[j] instanceof IVariableStreamSlice)
+				boundaryVariables[j] = ((IVariableStreamSlice)_args[j]).get(_nestedGraphs.size(),true);
+			else
+				boundaryVariables[j] = (VariableBase)_args[j];
+		}
+		//Add nested graph
+		FactorGraph ng = _graph.addFactor(_repeatedGraph, boundaryVariables);
+		_nestedGraphs.add(ng);
+	}
+
+	private VariableStreamBase getVariableStream(VariableBase var)
+	{
+		for (int i = 0; i < _variableStreams.size(); i++)
+		{
+			if (_variableStreams.get(i).contains(var))
+				return _variableStreams.get(i);
+		}
+		return null;
+	}
+
 }

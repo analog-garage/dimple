@@ -32,9 +32,14 @@ public class DummyVariable extends SVariableBase
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
-		_input = (double[])getDefaultMessage(null);
+		initializeInputs();
 	}
 
+	public void initializeInputs()
+	{		
+		_input = (double[])getDefaultMessage(null);
+	}
+	
 	public VariableBase getVariable()
 	{
 		return _var;

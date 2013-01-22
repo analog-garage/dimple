@@ -64,8 +64,8 @@ function testTwoStreams()
         nextbBit.Input = .2;
         nextcBit.Input = .4;
 
-        bbelief = b.FirstVar.Belief;
-        cbelief = c.FirstVar.Belief;
+        bbelief = b.get(1).Belief;
+        cbelief = c.get(1).Belief;
 
         fgb.solve();
         fgc.solve();
@@ -112,12 +112,12 @@ function testTwoStreams()
 
     fg.initialize();
 
-    s.FirstVar.Name = 'firstVar';
-    s.LastVar.Name = 'lastVar';
+    s.get(1).Name = 'firstVar';
+    %s.LastVar.Name = 'lastVar';
     
     while fg.hasNext()
         fg.solve(false);        
-        assertElementsAlmostEqual(s.FirstVar.Belief(2),b.Belief);        
+        assertElementsAlmostEqual(s.get(1).Belief(2),b.Belief);        
         fg.advance();
     end
 

@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class MultivariateVariable extends SVariableBase 
 {
@@ -32,15 +34,32 @@ public class MultivariateVariable extends SVariableBase
 		super(var);
 		
 		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
-		_input = (MultivariateMsg) getDefaultMessage(null);
+		initializeInputs();
 	}
 
+	public void initializeInputs()
+	{
+		_input = (MultivariateMsg) getDefaultMessage(null);
+
+	}
+	
 	@Override
 	public void setInput(Object input)  
 	{
 		_input = (MultivariateMsg)input;
+		if (_input == null)
+			throw new DimpleException("WERWERE");
 	}
 
+	
+	//TODO: remove this when I fix it for real.
+	public void moveInputs(ISolverVariable other)
+	{
+		_input = ((MultivariateVariable)other)._input;
+		
+	}
+	
+	
 	@Override
 	public Object getDefaultMessage(Port port) 
 	{
@@ -81,7 +100,6 @@ public class MultivariateVariable extends SVariableBase
 	private void doUpdate(MultivariateMsg outMsg,int outPortNum) 
 	{
 		// TODO Auto-generated method stub
-		
 		double [] vector = _input.getInformationVector();		
 		double [][] matrix = _input.getInformationMatrix();		
 		

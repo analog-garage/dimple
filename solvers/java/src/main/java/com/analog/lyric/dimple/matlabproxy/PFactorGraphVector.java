@@ -144,6 +144,14 @@ public class PFactorGraphVector extends PFactorVector
     	return createFactor(ff,vars);
 	}
 	
+	public void solveRepeated(boolean init, int numSteps)
+	{
+		if (getGraph().isSolverRunning())
+			throw new DimpleException("No changes allowed while the solver is running.");
+		
+		getGraph().solveRepeated(init,numSteps);
+	}
+	
     public void solve(boolean initialize) 
     {
     	if (getGraph().isSolverRunning()) 
@@ -238,7 +246,7 @@ public class PFactorGraphVector extends PFactorVector
 	public PFactorVector addFactorVectorized(PFactorVector factor, Object [] vars, Object [] indices)
 	{
 		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
-		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
+		int [][][] intIndices = PHelpers.extractIndicesVectorized(indices);
 		
 		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
 		
@@ -252,7 +260,7 @@ public class PFactorGraphVector extends PFactorVector
 	public PFactorGraphVector addGraphVectorized(PFactorGraphVector graph, Object [] vars, Object [] indices)
 	{
 		PNodeVector [] nodes = PHelpers.convertObjectArrayToNodeVectorArray(vars);
-		int [][][] intIndices = PHelpers.extractIndicesFectorized(indices);
+		int [][][] intIndices = PHelpers.extractIndicesVectorized(indices);
 		PNodeVector [][] args = PHelpers.extractVectorization(nodes, intIndices);
 		
 		PVariableVector varVector = new PVariableVector();
@@ -336,16 +344,6 @@ public class PFactorGraphVector extends PFactorVector
 		
 		return retval;
 	}
-
-
-
-	
-
-	public void reset() 
-	{
-		getGraph().reset();
-	}
-
 	
 	public PFactorGraphStream addRepeatedFactor(PFactorGraphVector nestedGraph, int bufferSize,Object ... vars) 
 	{
@@ -418,10 +416,15 @@ public class PFactorGraphVector extends PFactorVector
 		}
 		this.getGraph().estimateParameters(mfandt,numRestarts,numSteps,stepScaleFactor);
 	}
-	
+
 	public void advance() 
 	{
-		getGraph().advance();
+		getGraph().advance(1);
+	}
+
+	public void advance(int numSteps) 
+	{
+		getGraph().advance(numSteps);
 	}
 	
 	

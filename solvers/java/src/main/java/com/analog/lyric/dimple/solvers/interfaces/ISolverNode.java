@@ -19,6 +19,7 @@
  */
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 
 /**
@@ -36,5 +37,8 @@ public interface ISolverNode
 	public double getScore() ;
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
+    public INode getModelObject();
+    public void moveMessages(ISolverNode other,boolean includeSiblingMessages);
+	public void invalidateCache();
 
 }

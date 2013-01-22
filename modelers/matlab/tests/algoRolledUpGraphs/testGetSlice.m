@@ -24,45 +24,15 @@ function testGetSlice()
     s2 = s.getSlice(2);
     s3 = s.getSlice(3);
 
-    s1.getNext();
-    s1.getNext();
-    s1var = s1.getNext();
-    s2.getNext();
-    s2var = s2.getNext();
-    s3var = s3.getNext();
+    b = Bit();
+    c = Bit();
+    ng = FactorGraph(b,c);
+    ng.addFactor(@xorDelta,b,c);
+    fg = FactorGraph();
+    stream = fg.addFactor(ng,2,s,s2);
 
-    assertTrue(s1var == s2var);
-    assertTrue(s2var == s3var);
+    assertTrue(s1.get(1) == s.get(1));
+    assertTrue(s2.get(1) == s1.get(2));
+    assertTrue(s3.get(1) == s1.get(3));
 
-
-    %test getSlice with two args
-    ss = s.getSlice(1,3);
-    ss.getNext();
-    ss.getNext();
-
-    assertTrue(ss.hasNext());
-
-    ss.getNext();
-
-    assertFalse(ss.hasNext());
-
-    %test getSlice with three args
-    s1 = s.getSlice(2,2,5);
-    s2 = s.getSlice(3,2,6);
-
-    s1var = s1.getNext();
-    s2var = s2.getNext();
-
-
-    assertTrue(s1var == s.get(2));
-    assertTrue(s2var == s.get(3));
-
-    s1var = s1.getNext();
-    s2var = s2.getNext();
-
-    assertTrue(s1var == s.get(4));
-    assertTrue(s2var == s.get(5));
-    
-    assertFalse(s1.hasNext);
-    assertFalse(s2.hasNext);
 end

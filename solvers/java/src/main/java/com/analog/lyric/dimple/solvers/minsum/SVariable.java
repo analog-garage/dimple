@@ -43,10 +43,14 @@ public class SVariable extends SDiscreteVariableBase
 	public SVariable(VariableBase var) 
 	{
 		super(var);
-		_input = MessageConverter.initialValue(((DiscreteDomain)var.getDomain()).size());
 	}
 
 
+	public void initializeInputs()
+	{
+		_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());		
+	}
+	
 	public Object getInitialMsgValue()
 	{
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();

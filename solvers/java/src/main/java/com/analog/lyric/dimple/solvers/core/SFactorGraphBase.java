@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
@@ -23,23 +24,28 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.MapList;
 
-public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
+public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph, Runnable
 {
 	protected FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 
 	public SFactorGraphBase(FactorGraph fg)
 	{
+		super(fg);
 		_factorGraph = fg;
 	}
 
@@ -48,6 +54,30 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		return _factorGraph;
 	}
 
+	public void initializeMessages()
+	{
+		FactorList fl = _factorGraph.getFactorsFlat();
+		for (Factor f : fl)
+		{
+			f.getSolver().initialize();
+		}
+	}
+	
+	public void moveMessages(ISolverNode other,boolean moveSiblingMessages)
+	{
+		SFactorGraphBase sother = (SFactorGraphBase)other;
+		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
+		FactorList myFactors = _factorGraph.getFactorsFlat();
+		
+		if (otherFactors.size() != myFactors.size())
+			throw new DimpleException("Graphs dont' match");
+		
+		for (int i = 0; i < myFactors.size(); i++)
+		{
+			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),true);
+		}
+		
+	}
 
 
 	public boolean customFactorExists(String funcName) 
@@ -87,6 +117,21 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		iterate(1);
 	}
 
+	public void solveRepeated(boolean init, int numStepsToAdvance)
+	{
+		if (init)
+			initialize();
+		
+		while (getModel().hasNext())
+		{
+			for (int i = 0; i < _numIterations; i++)
+			{
+				update();
+			}
+			getModel().advance(numStepsToAdvance);
+		}
+	}
+		
 	public void iterate(int numIters) 
 	{
 		if (_numThreads == 1)	
@@ -107,11 +152,12 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 			iterateMultiThreaded(numIters);
 		}
 	}
-
+	
 	public void solve(boolean initialize) 
 	{
 		if (initialize)
 			_factorGraph.initialize();
+			
 		iterate(_numIterations);
 	}
 
@@ -139,8 +185,6 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 
 	public double getBetheFreeEnergy()
 	{
-		//return getInternalEnergy();
-		//return - getBetheEntropy();
 		return getInternalEnergy() - getBetheEntropy();
 	}
 	
@@ -454,4 +498,5 @@ public abstract class SFactorGraphBase implements ISolverFactorGraph, Runnable
 		}
 	}
 
+	
 }

@@ -33,8 +33,8 @@ function testDataSource
     fg = FactorGraph();
     fg.addFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.1 .9]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
 
     %ability to set data source after first graph built
     dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
@@ -48,13 +48,13 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.5 .5]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
 
     b.DataSource = dataSource;
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.1 .9]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
 
 
     %ability to set data source after we've already progressed
@@ -69,25 +69,22 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.5 .5]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
 
     fg.advance();
 
-    assertEqual(b.FirstVarIndex,2);
 
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.5 .5]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.5 .5]);
-
-    fg.reset();
+    %fg.reset();
     
     b.DataSource = dataSource;
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.1 .9]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
 
-    assertEqual(b.FirstVarIndex,1);
 
 
     %ability to reset data source after we've already progressed
@@ -103,24 +100,23 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.FirstVar.Input,[.1 .9]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
 
     fg.advance();
-    assertElementsAlmostEqual(b.FirstVar.Input,[.2 .8]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.3 .7]);
+    assertElementsAlmostEqual(b.get(1).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(2).Input,[.3 .7]);
 
     dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
-    fg.reset();
+    %fg.reset();
     b.DataSource = dataSource;
 
-    assertEqual(b.FirstVarIndex,1);
-    assertElementsAlmostEqual(b.FirstVar.Input,[.1 .9]);
-    assertElementsAlmostEqual(b.LastVar.Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
     
     
     %not enough data when set in advance    
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource([.8 .2]);
+    dataSource = DoubleArrayDataSource([.8 .2]);
     b = BitStream();
     b.DataSource = dataSource;
 

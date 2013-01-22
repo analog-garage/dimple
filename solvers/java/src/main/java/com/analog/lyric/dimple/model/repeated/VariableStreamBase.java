@@ -26,11 +26,9 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 {
 	private Domain _domain;
 	
-	private double _firstVarIndex = 0;
-	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();
-	
-	private ArrayList<Integer> _referenceCounts = new ArrayList<Integer>();
+	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();	
 	private IDataSource _dataSource = null;
+	private IDataSink _dataSink = null;
 	private ArrayList<VariableStreamSlice> _slices = new ArrayList<VariableStreamSlice>();
 	private VariableStreamSlice _slice;
 	
@@ -38,66 +36,66 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	public VariableStreamBase(Domain domain) 
 	{
 		_domain = domain;
-		//setDataSource(dataSource);
-		_slice = getSlice(0,Double.POSITIVE_INFINITY);
+		_slice = getSlice(0);
 		
 	}
 	
 	
-//	public void setName(String name)
-//	{
-//		_name = name;
-//	}
-
-	public double getLastVarIndex()
+	public boolean contains(VariableBase vb)
 	{
-		return _firstVarIndex + _variables.size()-1;
+		return _variables.contains(vb);
 	}
 	
-	public VariableBase getFirstVar() 
+	public void advanceInputs(int numSteps)
 	{
-		return get(getFirstVarIndex());
+		for (int j = 0; j < numSteps; j++)
+		{
+			if (_dataSink != null)
+			{
+				Object output = _variables.get(0).getBeliefObject();
+				_dataSink.push(output);
+			}
+			
+			for (int i = 0; i < _variables.size()-1; i++)
+				_variables.get(i).getSolver().moveInputs(_variables.get(i+1).getSolver());
+	
+			if (_dataSource != null)
+			{
+				Object input = _dataSource.getNext();
+				_variables.get(_variables.size()-1).setInputObject(input);
+			}
+			else
+			{
+				_variables.get(_variables.size()-1).getSolver().initializeInputs();
+			}
+		}
 	}
-
-	public VariableBase getLastVar() 
+	
+	
+	public VariableStreamSlice getSlice(int start)
 	{
-		return get(getLastVarIndex());
-	}
-
-	public double getFirstVarIndex()
-	{
-		return _firstVarIndex;
-	}
-
-	public VariableStreamSlice getSlice(double start)
-	{
-		return getSlice(start,Double.POSITIVE_INFINITY);
-	}
-
-	public VariableStreamSlice getSlice(double start, double end)
-	{
-		return getSlice(start,1,end);
-	}
-
-	public VariableStreamSlice getSlice(double start, double increment, double end)
-	{
-		VariableStreamSlice ss = new VariableStreamSlice(start,increment, end,this);
+		VariableStreamSlice ss = new VariableStreamSlice(start,this);
 		_slices.add(ss);
 		return ss;
 	}
 	
+	public IDataSink getDataSink()
+	{
+		return _dataSink;
+	}
+	public IDataSource getDataSource()
+	{
+		return _dataSource;
+	}
+	
+	public void setDataSink(IDataSink sink)
+	{
+		_dataSink = sink;
+	}
 	
 	public void setDataSource(IDataSource source) 
 	{
 		_dataSource = source;
-		
-		if (_firstVarIndex != 0)
-			throw new DimpleException("can't set data source after we've advanced.  Must reset first");
-		
-
-		//TODO: do I need this?
-//		for (VariableStreamSlice ss : _slices)
-//			ss.reset();
 		
 		//fill variables with data
 		for (VariableBase vb : _variables)
@@ -109,46 +107,13 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 	}
 	
-	public ArrayList<VariableBase> release(double index) 
-	{
-		//if (index != _firstVarIndex)
-		//  throw new DimpleException("for now can only release first guy");
-		
-		if (index < _firstVarIndex)
-			throw new DimpleException("The variable for the specified index has already been freed: " + index);
-		
-		int localIndex = (int)(index-_firstVarIndex);
-		
-		if (localIndex >= _variables.size())
-			throw new DimpleException("out of bounds");
-		
-		if (_variables.size() < 1)
-			throw new DimpleException("no variables to release");
-		
-		_referenceCounts.set(localIndex,_referenceCounts.get(localIndex)-1);
-		
-		ArrayList<VariableBase> retval = new ArrayList<VariableBase>();
-		
-		while (_variables.size() > 0 && _referenceCounts.get(0) == 0)
-		{
-			_firstVarIndex++;
-			retval.add(_variables.get(0));
-			_variables.remove(0);
-			_referenceCounts.remove(0);
-		}
-		
-		return retval;
-	}
-	
 	abstract protected VariableBase instantiateVariable(Domain domain) ;
 	
 	protected VariableBase createVariable() 
 	{
 		VariableBase tmp;
-		//TODO: better use of OOP
 		
 		tmp = instantiateVariable(_domain);
-		//tmp.setVariableStream(this);
 		
 		if (_dataSource != null)
 		{
@@ -165,12 +130,12 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	
 	public boolean variableAvailableFor(double index) 
 	{
-		if (index < _firstVarIndex)
+		if (index < 0)
 		{
 			return false;
 		}
 
-		double localIndex = index-_firstVarIndex;
+		double localIndex = index;
 		
 		
 		while (localIndex >= _variables.size() )
@@ -181,23 +146,23 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 			}
 			
 			_variables.add(createVariable());
-			_referenceCounts.add(0);
 		}
 		
 		return localIndex < _variables.size();
 	}
 	
-	public VariableBase get(double index) 
+	
+	public VariableBase get(int index) 
 	{
 		return get(index,false);
 	}
 	
-	public VariableBase get(double index,boolean createIfDoesntExist) 
+	public VariableBase get(int index,boolean createIfDoesntExist) 
 	{
-		if (index < _firstVarIndex)
-			throw new DimpleException("that guy is long gone");
+		if (index < 0)
+			throw new DimpleException("negative indexing not allowed");
 		
-		int localIndex = (int)(index-_firstVarIndex);
+		int localIndex = (int)(index);
 		
 		if (!createIfDoesntExist && localIndex >= _variables.size())
 			throw new DimpleException("A variable has not yet been instantiated for the specified index: " + index);
@@ -205,45 +170,19 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		while (localIndex >= _variables.size())
 		{
 			_variables.add(createVariable());
-			_referenceCounts.add(0);
 		}
 		
 		return _variables.get(localIndex);
 
 	}
-	
-	public VariableBase getAndAddReference(double index) 
-	{
-		VariableBase tmp = get(index,true);
-		int localIndex = (int)(index-_firstVarIndex);
-		_referenceCounts.set(localIndex,_referenceCounts.get(localIndex)+1);
-		return tmp;
-	}
 
-	@Override
-	public VariableBase getNext()  
-	{
-		// TODO Auto-generated method stub
-		return _slice.getNext();
-	}
-
-	@Override
-	public ArrayList<VariableBase> releaseFirst()  
-	{
-		// TODO Auto-generated method stub
-		return _slice.releaseFirst();
-	}
-
-	@Override
 	public boolean hasNext()  
 	{
-		// TODO Auto-generated method stub
-		return _slice.hasNext();
-	}
-	
-	public void backup(double howmuch) 
-	{
-		_slice.backup(howmuch);
+		if (_dataSource == null)
+			return true;
+		else
+			return _dataSource.hasNext();
+
 	}
 	
 	public IVariableStreamSlice copy()
@@ -256,11 +195,20 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		return this;
 	}
 	
-	public void reset()
+
+	int indexOf(VariableBase vb)
 	{
-		_firstVarIndex = 0;
-		for (VariableStreamSlice slice : _slices)
-			slice.reset();
+		return _variables.indexOf(vb);
+	}
+	
+	void cleanupUnusedVariables()
+	{
+
+		for(int i =  _variables.size()-1; i >= 0; i--)
+		{
+			if (_variables.get(i).getParentGraph()==null)
+				_variables.remove(i);
+		}
 	}
 
 }

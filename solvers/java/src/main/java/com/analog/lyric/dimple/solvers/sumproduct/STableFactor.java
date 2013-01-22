@@ -44,7 +44,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	protected double [][] _savedOutMsgArray;
 	protected double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams;
-	protected boolean _initCalled = true;
 	protected TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
 	protected int _k;
@@ -93,14 +92,14 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public void setK(int k)
 	{
-		updateCache();
+		ensureCacheUpdated();
 		
 		_k = k;
 		_kbestFactorEngine.setK(k);
 		_kIsSmallerThanDomain = false;
 		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
-			if (_k < _inPortMsgs[i].length)
+			if (_inPortMsgs[i] != null && _k < _inPortMsgs[i].length)
 			{
 				_kIsSmallerThanDomain = true;
 				break;
@@ -116,7 +115,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public void updateEdge(int outPortNum) 
 	{
-		updateCache();
+		ensureCacheUpdated();
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -130,7 +129,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void update() 
 	{		
-		updateCache();	
+		ensureCacheUpdated();	
 		if (_kIsSmallerThanDomain)
 			//TODO: damping
 			_kbestFactorEngine.update();
@@ -142,46 +141,29 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 				updateDerivative(i);
 	}
 	
-	@Override
-	public void connectPort(Port p)  
-	{
-		_initCalled = true;
-	}
 
-	private void updateCache()
+	@Override
+	protected void updateMessageCache()
 	{
-		if (_initCalled)
-		{
-			_initCalled = false;
-			int numPorts = _factor.getPorts().size();
-			
-		    _inPortMsgs = new double[numPorts][];
-		    
-		    for (int port = 0; port < numPorts; port++) 
-		    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
-		    
-		    _outMsgArray = new double[numPorts][];
-		    if (_dampingInUse)
-		    	_savedOutMsgArray = new double[numPorts][];
-		    
-		    for (int port = 0; port < numPorts; port++)
-		    {
-		    	_outMsgArray[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-		    	if (_dampingInUse)
-		    		_savedOutMsgArray[port] = new double[_outMsgArray[port].length];
-		    }
-		}
+		int numPorts = _factor.getPorts().size();
+		
+	    _inPortMsgs = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++) 
+	    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
+	    
+	    _outMsgArray = new double[numPorts][];
+	    if (_dampingInUse)
+	    	_savedOutMsgArray = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++)
+	    {
+	    	_outMsgArray[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
+	    	if (_dampingInUse)
+	    		_savedOutMsgArray[port] = new double[_outMsgArray[port].length];
+	    }
 	}
-	
-	public void initialize()
-	{
-		//We update the cache here.  This works only because initialize() is called on the variables
-		//first.  Updating the cache saves msg in double arrays.  initialize replaces these double arrays
-		//with new double arrays.  If we didn't call updateCache on initialize, our cache would point
-		//to stale information.
-		_initCalled = true;
-	}
-	
+		
 	/*
 	 * (non-Javadoc)
 	 * @see com.analog.lyric.dimple.solvers.core.SFactorBase#getBelief()
@@ -190,7 +172,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 */
 	public double [] getBelief() 
 	{
-		updateCache();
+		ensureCacheUpdated();
 		
 		double [] retval = getUnormalizedBelief();
 		double sum = 0; 
@@ -203,7 +185,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public double [] getUnormalizedBelief()
 	{
-		updateCache();
+		ensureCacheUpdated();
 		
 		int [][] table = getFactorTable().getIndices();
 		double [] values = getFactorTable().getWeights();

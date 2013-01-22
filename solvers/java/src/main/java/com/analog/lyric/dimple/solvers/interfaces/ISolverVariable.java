@@ -28,4 +28,6 @@ public interface ISolverVariable extends ISolverNode
 	public void remove(Factor factor);
     public void setGuess(Object guess);
     public Object getGuess();
+    public void moveInputs(ISolverVariable other);
+    public void initializeInputs();
 }

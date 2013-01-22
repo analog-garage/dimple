@@ -24,32 +24,30 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SVariableBase implements ISolverVariable
+public abstract class SVariableBase extends SNode implements ISolverVariable
 {
 	protected VariableBase _var;
 	
 	public SVariableBase(VariableBase var)
 	{
+		super(var);		
 		_var = var;
+		initializeInputs();
 	}
 	
-	@Override
-	public void connectPort(Port p) 
+	public void moveInputs(ISolverVariable other)
 	{
 		
-	}
-
-	
-	@Override
-	public void initialize() 
-	{
+		VariableBase vb = (VariableBase)other.getModelObject();
+		Object inputs = vb.getInputObject();
+		_var.setInputObject(inputs);
 		
 	}
 
 	@Override
 	public void remove(Factor factor)
 	{
-		
+		invalidateCache();
 	}
 	
 
