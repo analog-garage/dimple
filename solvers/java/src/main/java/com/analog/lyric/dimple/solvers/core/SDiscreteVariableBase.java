@@ -3,7 +3,6 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 
 public abstract class SDiscreteVariableBase extends SVariableBase

@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.model.VariableBase;
 
 public interface IVariableStreamSlice 
