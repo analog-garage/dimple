@@ -43,7 +43,20 @@ public class PHelpers
 	{
 		return convertToNode((PNodeVector)obj);
 	}
+
+	public static Node [] convertToNodeArray(Object nodeVector)
+	{
+		return convertToNodeArray((PNodeVector)nodeVector);
+	}
 	
+	public static Node [] convertToNodeArray(PNodeVector nodeVector)
+	{
+		Node [] retval = new Node [nodeVector.size()];
+		for (int i = 0; i < retval.length; i++)
+			retval[i] = nodeVector.getModelerNode(i);
+		return retval;
+	}
+
 	public static Node convertToNode(PNodeVector nodeVector)
 	{
 		if (nodeVector.size() != 1)
