@@ -31,7 +31,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		super(var);		
 		_var = var;
-		initializeInputs();
+		//initializeInputs();
 	}
 	
 	public void moveInputs(ISolverVariable other)

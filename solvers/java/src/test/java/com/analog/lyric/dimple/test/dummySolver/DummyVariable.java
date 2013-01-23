@@ -47,10 +47,15 @@ public class DummyVariable extends SVariableBase
 
 	public Object getDefaultMessage(Port port) 
 	{
-		double[] msg = new double[_input.length];
-		java.util.Arrays.fill(msg, java.lang.Math.PI);
-
-		return msg;
+		if (_input != null)
+		{
+			double[] msg = new double[_input.length];
+			java.util.Arrays.fill(msg, java.lang.Math.PI);
+	
+			return msg;
+		}
+		else
+			return null;
 	}
 
 

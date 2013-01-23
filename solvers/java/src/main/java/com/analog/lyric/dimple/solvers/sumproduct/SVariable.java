@@ -47,6 +47,7 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
+		initializeInputs();
 		
 	}
 	
