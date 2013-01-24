@@ -43,6 +43,7 @@ public class SVariable extends SDiscreteVariableBase
 	public SVariable(VariableBase var) 
 	{
 		super(var);
+		initializeInputs();
 	}
 
 
