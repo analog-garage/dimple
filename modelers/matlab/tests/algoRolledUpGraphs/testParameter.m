@@ -44,4 +44,24 @@ function testParameter
     assertEqual(1,length(fg.Variables));
     assertEqual(2,length(fg.Factors));
     
+    %Now test that we can have multiple factors connected to a parameter
+    %for each step
+    a = Bit();
+    b = Bit();
+    c = Bit();
+    ng = FactorGraph(a,b,c);
+    ng.addFactor(@xorDelta,a,b);
+    ng.addFactor(@xorDelta,a,c);
+    
+    a = Bit();
+    b = BitStream();
+    c = BitStream();
+    fg = FactorGraph();
+    fg.addFactor(ng,a,b,c);
+    b.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
+    c.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
+    disp('solving...');
+    fg.solve();
+    expectedBelief = .2^4 / (.8^4 + .2^4);
+    assertElementsAlmostEqual(a.Belief,expectedBelief);
 end

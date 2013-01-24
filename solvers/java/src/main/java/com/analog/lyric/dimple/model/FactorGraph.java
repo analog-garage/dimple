@@ -963,7 +963,7 @@ public class FactorGraph extends FactorBase
 				if (n.isFactor() && factors.contains(n))
 				{
 					_ports.add(v.getPorts().get(i).getSibling());
-					break;
+					//break;
 				}
 			}
 

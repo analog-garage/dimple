@@ -80,10 +80,11 @@ public class FactorGraphStream
 
 		ArrayList<Port> ports = firstGraph.getPorts();
 
+		
 		//For each port
 		for (Port p : ports)
 		{
-			
+		
 			//figure out which variable stream this is connected to
 			VariableBase var = (VariableBase)p.getSibling().getParent();
 			VariableStreamBase vsb = getVariableStream(var);
@@ -145,6 +146,11 @@ public class FactorGraphStream
 
 	}
 
+	public FactorGraph getParameterFactorGraph()
+	{
+		
+		return _parameterFactorGraph;
+	}
 
 	public int getBufferSize()
 	{
@@ -196,7 +202,7 @@ public class FactorGraphStream
 			//   Add a blast from the past for this variable
 			//   Create a Factor Graph for this variable (maybe share with others)
 			//   Add a blast to the past to be paired with the blast from the past
-			_allBlastFromThePasts.add(_fg.addBlastFromPastFactor(initialBlastFromPastMessage, _myVar, factorPort));
+			addBlastFromThePast(factorPort);
 		}
 		
 		public void addBlastFromThePast(Port p)
