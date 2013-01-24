@@ -31,16 +31,28 @@ classdef RealJoint < VariableBase
                 obj.VectorIndices = varargin{4};
             else
                 
-                if numel(varargin) ~= 1
-                    raise('only support one arg for now');
-                end
                 domain = RealJointDomain(varargin{1});
                 obj.Domain = domain;
-                numEls = 1;
+               
+               
+                if numel(varargin) == 1
+                    dims = 1;
+                else
+                    dims = length(varargin{2:end});
+                    for i = 1:length(dims)
+                        dims(i) = varargin{i+1};
+                    end
+                end
+                
+                numEls = prod(dims);
                 modeler = getModeler();
                 varMat = modeler.createRealJointVariableVector(class(obj),domain.IDomain,numEls);
                 obj.VectorObject = varMat;
-                obj.VectorIndices = 0;
+                obj.VectorIndices = 0:(numEls-1);
+                if length(dims)==1
+                    dims = [dims 1];
+                end
+                obj.VectorIndices = reshape(obj.VectorIndices,dims);
             end
             
         end

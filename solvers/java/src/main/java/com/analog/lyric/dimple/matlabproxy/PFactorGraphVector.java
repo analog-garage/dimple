@@ -88,7 +88,24 @@ public class PFactorGraphVector extends PFactorVector
 		return (FactorGraph)getModelerNode(0);
 	}
 	
+	public int getNumSteps()
+	{
+		return getGraph().getNumSteps();
+	}
 	
+	public void setNumSteps(int numSteps)
+	{
+		getGraph().setNumSteps(numSteps);
+	}
+	
+	public void setNumStepsInfinite(boolean val)
+	{
+		getGraph().setNumStepsInfinite(val);
+	}
+	public boolean getNumStepsInfinite()
+	{
+		return getGraph().getNumStepsInfinite();
+	}
 	
 	public PFactorGraphVector addGraph(PFactorGraphVector childGraph, PVariableVector varVector) 
 	{
@@ -144,13 +161,7 @@ public class PFactorGraphVector extends PFactorVector
     	return createFactor(ff,vars);
 	}
 	
-	public void solveRepeated(boolean init, int numSteps)
-	{
-		if (getGraph().isSolverRunning())
-			throw new DimpleException("No changes allowed while the solver is running.");
-		
-		getGraph().solveRepeated(init,numSteps);
-	}
+	
 	
     public void solve(boolean initialize) 
     {
@@ -164,6 +175,7 @@ public class PFactorGraphVector extends PFactorVector
     {
     	return getGraph().isSolverRunning();
     }
+  
     
     public void startSolver(boolean init)
     {
@@ -419,14 +431,9 @@ public class PFactorGraphVector extends PFactorVector
 
 	public void advance() 
 	{
-		getGraph().advance(1);
+		getGraph().advance();
 	}
 
-	public void advance(int numSteps) 
-	{
-		getGraph().advance(numSteps);
-	}
-	
 	
 	public boolean hasNext() 
 	{

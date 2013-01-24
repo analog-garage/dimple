@@ -52,6 +52,7 @@ function testTwoStreams()
 
 
     i = 1;
+    fg.NumSteps = 0;
     while fg.hasNext()
         fg.solve(false);
 
@@ -114,7 +115,7 @@ function testTwoStreams()
 
     s.get(1).Name = 'firstVar';
     %s.LastVar.Name = 'lastVar';
-    
+    fg.NumSteps = 0;
     while fg.hasNext()
         fg.solve(false);        
         assertElementsAlmostEqual(s.get(1).Belief(2),b.Belief);        

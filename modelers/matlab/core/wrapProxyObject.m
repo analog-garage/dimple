@@ -29,15 +29,15 @@ function result = wrapProxyObject(proxyObject)
     elseif proxyObject.isVariable()
         if proxyObject.isDiscrete()
             domain = cell(proxyObject.getDomain().getElements());
-            indices = 0;
+            indices = 0:(proxyObject.size()-1);
             result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
         elseif proxyObject.isJoint()
             domain = RealJointDomain(proxyObject.getDomain().getNumVars());
-            indices = 0;
+            indices = 0:(proxyObject.size()-1);
             result = RealJoint(domain,'existing',proxyObject,indices);
         else
             domain = RealDomain(proxyObject.getDomain().getLowerBound(),proxyObject.getDomain().getUpperBound);
-            indices = 0;
+            indices = 0:(proxyObject.size()-1);
             result = Real(domain,'existing',proxyObject,indices);
         end
 

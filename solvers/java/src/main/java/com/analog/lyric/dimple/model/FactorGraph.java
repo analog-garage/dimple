@@ -66,10 +66,9 @@ public class FactorGraph extends FactorBase
 	private ISolverFactorGraph _solverFactorGraph;
 	private JointFactorCache _jointFactorCache = new JointFactorCache();
 	private HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
-
-
 	private ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
-	
+	private int _numSteps = 1;
+	private boolean _numStepsInfinite = true;
 	//new identity related members
 	private HashMap<String, Object> _name2object = new HashMap<String, Object>();
 	private HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
@@ -253,22 +252,39 @@ public class FactorGraph extends FactorBase
 		return fgs;
 	}
 	
-	public void advance()
+	public void setNumStepsInfinite(boolean inf)
 	{
-		advance(1);
+		_numStepsInfinite = inf;
+	}
+	public boolean getNumStepsInfinite()
+	{
+		return _numStepsInfinite;
 	}
 	
-	public void advance(int numSteps) 
+	public void setNumSteps(int numSteps)
+	{
+		_numSteps = numSteps;
+	}
+	public int getNumSteps()
+	{
+		return _numSteps;
+	}
+	
+	
+	public void advance() 
 	{
 		
 		for (VariableStreamBase vs : _variableStreams)
-			vs.advanceInputs(numSteps);
+			vs.advanceInputs();
 		for (FactorGraphStream s : _factorGraphStreams)
-			s.advance(numSteps,false);
+			s.advance(false);
 	}
 	
 	public boolean hasNext() 
 	{
+		if (_factorGraphStreams.size() == 0)
+			return false;
+		
 		for (FactorGraphStream s : _factorGraphStreams)
 			if (!s.hasNext())
 				return false;
@@ -1068,18 +1084,8 @@ public class FactorGraph extends FactorBase
 	//TODO: replace this with something better
 	public void temporaryInitialize()
 	{
-		for (FactorBase f : _ownedFactors)
-			f.initialize();
-		
-		for (VariableBase vb : _ownedVariables)
-			vb.initialize();
-		
-		for (FactorGraph fg : _ownedSubGraphs)
-			fg.temporaryInitialize();
-	}
-	
-	public void initialize() 
-	{
+		initialize();
+		/*
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
@@ -1089,6 +1095,33 @@ public class FactorGraph extends FactorBase
 			f.initialize();
 		for (FactorGraph g : getNestedGraphs())
 			g.initialize();
+		/*
+		for (VariableBase vb : _ownedVariables)
+			vb.initialize();
+
+		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
+			for (VariableBase v : _boundaryVariables)
+				v.initialize();
+
+		for (FactorBase f : _ownedFactors)
+			f.initialize();
+			*/
+	}
+	
+	public void initialize() 
+	{
+		//temporaryInitialize();
+		
+		for (VariableBase v : _ownedVariables)
+			v.initialize();
+		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
+			for (VariableBase v : _boundaryVariables)
+				v.initialize();
+		for (Factor f : getNonGraphFactorsTop())
+			f.initialize();
+		for (FactorGraph g : getNestedGraphs())
+			g.initialize();
+			
 
 		if (_solverFactorGraph != null)
 			_solverFactorGraph.initialize();
@@ -1098,23 +1131,6 @@ public class FactorGraph extends FactorBase
 	{
 		if (_solverFactorGraph == null)
 			throw new DimpleException("solver needs to be set first");
-	}
-
-	//TODO: THink about multi threading
-	public void solveRepeated()
-	{		
-		solveRepeated(true, 1);
-	}
-
-	public void solveRepeated(boolean init)
-	{		
-		solveRepeated(init, 1);
-	}
-	
-	public void solveRepeated(boolean init, int stepsToAdvance)
-	{
-		checkSolverIsSet();
-		getSolver().solveRepeated(init, stepsToAdvance);
 	}
 	
 	public void solve() 

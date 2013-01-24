@@ -39,6 +39,17 @@ public abstract class PVariableStreamBase implements IPVariableStreamSlice
 		return _modelObject;
 	}
 	
+	public PVariableVector getVariables()
+	{
+		VariableBase [] vars = _modelObject.getVariables();
+		return PHelpers.convertToVariableVector(vars);
+	}
+	
+	public int size()
+	{
+		return _modelObject.size();
+	}
+	
 	public PVariableVector get(int index) 
 	{
 		VariableBase var = _modelObject.get(index);

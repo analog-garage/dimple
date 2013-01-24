@@ -21,7 +21,7 @@ function testDataSource
 
 
     %ability to set data source from beginning
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     b = BitStream();
     b.DataSource = dataSource;
 
@@ -37,7 +37,7 @@ function testDataSource
     assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
 
     %ability to set data source after first graph built
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     b = BitStream();
 
     x = Bit();
@@ -58,7 +58,7 @@ function testDataSource
 
 
     %ability to set data source after we've already progressed
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     b = BitStream();
 
     x = Bit();
@@ -88,7 +88,7 @@ function testDataSource
 
 
     %ability to reset data source after we've already progressed
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     b = BitStream();
     b.DataSource = dataSource;
 
@@ -107,7 +107,7 @@ function testDataSource
     assertElementsAlmostEqual(b.get(1).Input,[.2 .8]);
     assertElementsAlmostEqual(b.get(2).Input,[.3 .7]);
 
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     %fg.reset();
     b.DataSource = dataSource;
 
@@ -138,7 +138,7 @@ function testDataSource
     
     
     %not enough data when set later;
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource([.8 .2]);
+    dataSource = DoubleArrayDataSource([.8 .2]);
     b = BitStream();
 
     x = Bit();

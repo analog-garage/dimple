@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2013 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,28 +14,30 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef MultivariateMsg < Msg
+classdef MultivariateDataSink < DataSink
     properties
-        Means;
-        Covariance;
+        %IMultivariateDataSink;
+        Array;
     end
     methods
-        function obj = MultivariateMsg(means,covariance)
-            if ~isnumeric(means)
-                obj.IMsg = means;
-            else
-                modeler = getModeler();
-                obj.IMsg = modeler.createMultivariateMsg(means,covariance);
+        function obj = MultivariateDataSink()
+            obj@DataSink(com.analog.lyric.dimple.model.repeated.MultivariateDataSink());
+        end
+        
+        function retval = hasNext(obj)
+            retval = obj.IDataSink.hasNext();
+        end
+        function retval = getNext(obj)
+            retval = MultivariateMsg(obj.IDataSink.getNext());
+        end
+        
+        function retval = get.Array(obj)
+            tmp = obj.IDataSink.getArray();
+            retval = cell(size(tmp));
+            for i= 1:length(retval)
+                retval{i} = MultivariateMsg(tmp(i));
             end
         end
-        
-        function means = get.Means(obj)
-           means = obj.IMsg.getMeans(); 
-        end
-        
-        function covar = get.Covariance(obj)
-           covar = obj.IMsg.getCovariance(); 
-        end
-        
     end
+    
 end

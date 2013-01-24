@@ -16,30 +16,10 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import java.util.LinkedList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-
-public class DoubleArrayDataSink implements IDataSink 
+public class DoubleArrayDataSink extends GenericDataSink<double[]>
 {
-	private LinkedList<double[]> _data = new LinkedList<double[]>();
 
-	public void push(Object data)
-	{
-		_data.add((double[])data);
-	}
-	public double [] getNext()
-	{
-		if (_data.size() <= 0)
-			throw new DimpleException("ACK!");
-		
-		return _data.pollFirst();
-	}
-
-	public boolean hasNext()
-	{
-		return _data.size() > 0;
-	}
 	
 	public double [][] getArray()
 	{

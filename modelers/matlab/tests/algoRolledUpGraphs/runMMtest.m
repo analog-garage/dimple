@@ -40,6 +40,7 @@ function runMMtest(fg,stream,data,dataSource)
     end
     
     i = 1;
+    fg.NumSteps = 0;
     while dataSource.hasNext()
         fg.solve(false);
         fg2.solve();

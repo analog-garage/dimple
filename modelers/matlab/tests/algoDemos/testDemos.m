@@ -16,6 +16,8 @@
 
 function testDemos()
 
+    setSolver('sumproduct');
+
     global Dimple_TESTING_DEMOS;
     Dimple_TESTING_DEMOS = 1;
 
@@ -61,6 +63,16 @@ function testDemos()
     run;
     assertTrue(valid == 1);
     close;
-    
+
+    cd('../16_KalmanFilter');
+    run;
+    close;
+    assertTrue(norm(fgxs-gxs) < 6);
+    assertTrue(norm(fgys-gys) < 6);
+    runUnivariate;
+    close;
+    assertTrue(norm(results-realZ) < 70);
+
     cd(my_current_directory);
+    
 end

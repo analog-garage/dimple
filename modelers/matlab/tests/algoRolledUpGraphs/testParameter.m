@@ -30,7 +30,7 @@ function testParameter
     fg2 = FactorGraph();
     b = Bit();
     b.Input = .4;
-
+    fg.NumSteps = 0;
     for i = 1:10
         fg2.addFactor(@constFactor,b,[.6 .4]);
         fg2.solve();

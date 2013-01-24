@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2013 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,28 +14,13 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef MultivariateMsg < Msg
+classdef DataSink < handle
     properties
-        Means;
-        Covariance;
+        IDataSink;
     end
     methods
-        function obj = MultivariateMsg(means,covariance)
-            if ~isnumeric(means)
-                obj.IMsg = means;
-            else
-                modeler = getModeler();
-                obj.IMsg = modeler.createMultivariateMsg(means,covariance);
-            end
+        function obj = DataSink(dataSink)
+            obj.IDataSink = dataSink;
         end
-        
-        function means = get.Means(obj)
-           means = obj.IMsg.getMeans(); 
-        end
-        
-        function covar = get.Covariance(obj)
-           covar = obj.IMsg.getCovariance(); 
-        end
-        
     end
 end

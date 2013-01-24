@@ -49,6 +49,7 @@ function testReal()
     end
 
     i = 1;
+    fg.NumSteps = 0;
     while fg.hasNext()
         r(i).Input = [1 1];
         r(i+1).Input = [1 1];

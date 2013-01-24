@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,36 +14,23 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
-public class PFactorGraphStream 
+public class MultivariateDataSink extends GenericDataSink<MultivariateMsg> 
 {
-	private FactorGraphStream _stream;
+
 	
-	public PFactorGraphStream(FactorGraphStream stream)
+	public MultivariateMsg [] getArray()
 	{
-		_stream = stream;
-	}
-	
-	public FactorGraphStream getModelerObject()
-	{
-		return _stream;
-	}
-	
-	public boolean hasNext() 
-	{
-		return _stream.hasNext();
-	}
-	
-	public void setBufferSize(int size) 
-	{
-		_stream.setBufferSize(size);
-	}
-	
-	public int getBufferSize()
-	{
-		return _stream.getBufferSize();
+		MultivariateMsg [] retval = new MultivariateMsg[_data.size()];
+		int i = 0;
+		for (MultivariateMsg data : _data)
+		{
+			retval[i] = data;
+			i++;
+		}
+		return retval;
 	}
 }

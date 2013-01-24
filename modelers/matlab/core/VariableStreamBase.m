@@ -20,6 +20,8 @@ classdef VariableStreamBase < IVariableStreamSlice
         DataSource;
         DataSink;
         IVariableStreamSlice;
+        Size;
+        Variables;
     end
     
     
@@ -35,18 +37,26 @@ classdef VariableStreamBase < IVariableStreamSlice
         end
         
         function set.DataSink(obj,dataSink)
-            obj.IVariableStream.setDataSink(dataSink);
+            obj.setDataSink(dataSink);
+        end
+        
+        function ret = get.Size(obj)
+            obj.IVariableStream.size();
+        end
+        
+        function vars = get.Variables(obj)
+           vars = wrapProxyObject(obj.IVariableStream.getVariables());
         end
         
         function set.DataSource(obj,dataSource)
-           obj.IVariableStream.setDataSource(dataSource); 
+           obj.setDataSource(dataSource); 
         end
         
         function sink = get.DataSink(obj)
-           sink = obj.IVariableStream.getDataSink(); 
+           sink = obj.getDataSink(); 
         end
         function source = get.DataSource(obj)
-            source = boj.IVariableStream.getDataSource();
+            source = obj.getDataSource();
         end
         
         function slice = getSlice(obj,startIndex)
@@ -64,5 +74,27 @@ classdef VariableStreamBase < IVariableStreamSlice
             var = wrapProxyObject(ivar);
         end
         
+    end
+    
+    methods(Access=protected)
+        
+        function setDataSink(obj,dataSink)
+            if isa(dataSink,'DataSink')
+                obj.IVariableStream.setDataSink(dataSink.IDataSink);
+            else
+                obj.IVariableStream.setDataSink(dataSink);
+            end
+        end
+        
+        function setDataSource(obj,dataSource)
+           obj.IVariableStream.setDataSource(dataSource); 
+        end
+        
+        function sink = getDataSink(obj)
+           sink = obj.IVariableStream.getDataSink(); 
+        end
+        function source = getDataSource(obj)
+            source = boj.IVariableStream.getDataSource();
+        end
     end
 end

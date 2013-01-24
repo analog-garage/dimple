@@ -14,6 +14,8 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+rand('seed',1);
+
 %{
 Multivariate Kalman Filter
 %}
@@ -92,7 +94,7 @@ fvs = RealJointStream(numel(p0));
 fznonoise = RealJointStream(numel(p0));
 fxs = RealJointStream(numel(x00));
 fg = FactorGraph();
-rf = fg.addRepeatedFactor(nested,fxs.getSlice(1),fxs.getSlice(2),...
+rf = fg.addFactor(nested,fxs.getSlice(1),fxs.getSlice(2),...
                      fznonoise.getSlice(1),fvs.getSlice(1),fzs.getSlice(1));
                  
 %If we set the buffersize to something other than the default of 1, this
@@ -189,19 +191,28 @@ fvs.DataSource = vDataSource;
 fgxs = zeros(timesteps,1);
 fgys = zeros(timesteps,1);
 
-%Step through time and solve the Factor Graph.
-for i = 1:timesteps
-   fg.solve();
-   fgxs(i) = fxs.FirstVar.Belief.Means(1);
-   
-   fgys(i) = fxs.FirstVar.Belief.Means(2);
-         
-   if fg.hasNext()
-       fg.advance();
-   else
-       break;
-   end
+%Set the data sink
+ds = MultivariateDataSink();
+fxs.DataSink = ds;
+
+%Solve
+fg.solve();
+
+%retreive the results
+i = 0;
+while ds.hasNext()
+    i = i+1;
+    m = ds.getNext();
+    fgxs(i) = m.Means(1);
+    fgys(i) = m.Means(2);
 end
+
+for j = 1:(length(fxs.Variables)-1)
+    i = i+1;
+    fgxs(i) = fxs.Variables(j).Belief.Means(1);
+    fgys(i) = fxs.Variables(j).Belief.Means(2);
+end
+
 
 
 %Plot stuff

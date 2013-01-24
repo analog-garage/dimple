@@ -54,7 +54,7 @@ function testBasics()
     b.Input = repmat([.4],N,1);
 
     %Solve all at once.
-    fg.solveRepeated();
+    fg.solve();
     
     
     i = 1;
@@ -120,6 +120,7 @@ function testBasics()
     %Chunk through the data
     tic
     i = 1;
+    fg.NumSteps = 0;
     while 1
 
         %fg2.addFactor(@xorDelta,b(i),b(i+1));

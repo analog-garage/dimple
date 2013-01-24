@@ -196,6 +196,7 @@ function testKalman()
     fgys = zeros(timesteps,1);
 
     %Run the factor graph.
+    fg.NumSteps = 0;
     for i = 1:timesteps
        fg.solve();
        fgxs(i) = fxs.get(1).Belief.Means(1);

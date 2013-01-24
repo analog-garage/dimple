@@ -63,6 +63,7 @@ classdef FactorGraph < Node
         AdjacencyMatrix;
         BetheFreeEnergy;
         FactorGraphStreams;
+        NumSteps;
     end
     methods
         function obj = FactorGraph(varargin)
@@ -130,6 +131,20 @@ classdef FactorGraph < Node
         
         function set.NumIterations(obj,iters)
             obj.Solver.setNumIterations(iters);
+        end
+        
+        function set.NumSteps(obj,steps)
+            if isinf(steps)
+                obj.VectorObject.setNumStepsInfinite(true);
+            else
+                obj.VectorObject.setNumStepsInfinite(false);
+                obj.VectorObject.setNumSteps(steps);
+            end
+           
+        end
+        
+        function ret = get.NumSteps(obj)
+            ret = obj.VectorObject.getNumSteps();
         end
         
         function initialize(obj)
@@ -491,51 +506,16 @@ classdef FactorGraph < Node
             nodes = obj.depthFirstSearch(node,searchDepth,0);
         end
         
-        function solveRepeated(obj,initialize,numSteps)
-            if nargin < 3
-                numSteps = 1;
-            end
+        function solve(obj,initialize)
             if nargin < 2
                 initialize = true;
             end
-            obj.VectorObject.solveRepeated(initialize,numSteps);
+
+            obj.genericSolve(@() obj.VectorObject.startSolver(initialize),...
+                @() obj.VectorObject.solve(initialize));
+            
         end
         
-        function solve(obj,initialize)
-            %Calls solve on the underlying solver object.
-            
-            if nargin < 2
-                initialize = true;
-            end
-            try
-                % Rather than directly calling the solver, try to start the
-                % solver as a separate thread and then polls the solver to
-                % wait for it to either complete or be interrupted by
-                % CTRL-C.  To account for the possibility of being
-                % interrupted, the onCleanup function terminateSolver makes
-                % sure the solver thread is terminated.
-                if (~obj.VectorObject.isSolverRunning())
-                    c = onCleanup(@() obj.terminateSolver());
-                    obj.VectorObject.startSolver(initialize);
-                    while obj.VectorObject.isSolverRunning();
-                        pause(0.01);
-                    end
-                else
-                    error('Attempt to run solver while it is already running');
-                end
-            catch Err
-                % For backward compatability with solvers that don't
-                % support running in a separate thread
-                if (strcmp(Err.identifier,'MATLAB:noSuchMethodOrField'))
-                    obj.VectorObject.solve(initialize);
-                    %error('ack');
-                else
-                    throw(Err);
-                end
-                %TODO: keep the error being raised
-            end
-            
-        end
         
         % Use the scheduler to create a schedule for this graph
         function setScheduler(obj, scheduler)
@@ -905,6 +885,38 @@ classdef FactorGraph < Node
     
     methods (Access = private)
         
+        
+        function genericSolve(obj,threadedFunction,unthreadedFunction)
+                        %Calls solve on the underlying solver object.
+            if nargin < 3
+                unthreadedFunction = @() error('not supported');
+            end
+            try
+                % Rather than directly calling the solver, try to start the
+                % solver as a separate thread and then polls the solver to
+                % wait for it to either complete or be interrupted by
+                % CTRL-C.  To account for the possibility of being
+                % interrupted, the onCleanup function terminateSolver makes
+                % sure the solver thread is terminated.
+                if (~obj.VectorObject.isSolverRunning())
+                    c = onCleanup(@() obj.terminateSolver());
+                    threadedFunction();
+                    while obj.VectorObject.isSolverRunning();
+                        pause(0.01);
+                    end
+                else
+                    error('Attempt to run solver while it is already running');
+                end
+            catch Err
+                % For backward compatability with solvers that don't
+                % support running in a separate thread
+                if (strcmp(Err.identifier,'MATLAB:noSuchMethodOrField'))
+                    unthreadedFunction();
+                else
+                    throw(Err);
+                end
+            end
+        end
         
         function [retval, isVectorIndicesAndWeights] = addFactorWithCacheFlag(obj,doCache,firstArg,varargin)
             isVectorIndicesAndWeights = 0;

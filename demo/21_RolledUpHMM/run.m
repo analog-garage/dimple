@@ -87,32 +87,22 @@ rf = fg.addFactor(ng,weather.getSlice(2),weather.getSlice(1),grass);
 %day we observe wet grass.
 ds = DoubleArrayDataSource(repmat([1 0],3,1));
 grass.DataSource = ds;
+weather.DataSink = DoubleArrayDataSink();
 
 %Initialize the graph to set messages to uniform uncertainty.
-fg.initialize();
+fg.solveRepeated();
+disp('retrieve results');
+results = weather.DataSink.getArray();
 
-%Loop over the data
-while true
-    
-    %The "false" argument tells Dimple not to initialize the messages so that
-    %as the rolled up graph progresses we don't lose information from the
-    %past.
-    fg.solve(false);
-    
-    %We display our current belief of the weather.
-    weather.FirstVar.Belief
-    if ~fg.hasNext()
-        break;
-    end
-    fg.advance();
-end
+disp(results);
 
+disp('retrieve dynamic results');
 %Here we show that we can add additional data dynamically.
 for i = 1:3
     ds.add([1 0]);
     fg.advance();
     fg.solve(false);
-    weather.FirstVar.Belief
+    weather.get(1).Belief
 end
 
 

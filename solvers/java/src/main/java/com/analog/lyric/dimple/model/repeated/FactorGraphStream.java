@@ -217,59 +217,49 @@ public class FactorGraphStream
 		}
 	}
 
-	public void advance(int numSteps)
-	{
-		advance(numSteps,true);
-	}
-	
-	public void advance(int numSteps, boolean advanceInputs) 
+	public void advance(boolean advanceInputs) 
 	{
 		//For each variable stream
 		if (advanceInputs)
 		{
 			for (VariableStreamBase variableStream : _variableStreams)
 			{
-				variableStream.advanceInputs(numSteps);
+				variableStream.advanceInputs();
 			}
+		}
+	
+		//Deal with parameters
+		//for each parameter
+			//Get data structure associated with that parameter
+			//Tell that data structure to advance
+		for (ParameterBlastFromThePastHandler h : _parameter2blastFromThePastHandler.values())
+		{
+			h.advance();
 		}
 		
-		//For each step
-		for (int i = 0; i < numSteps ;i++)
+		//For each blast from the past chain
+		for (ArrayList<BlastFromThePastFactor> al : _blastFromThePastChains)
 		{
-			
-			//Deal with parameters
-			//for each parameter
-				//Get data structure associated with that parameter
-				//Tell that data structure to advance
-			for (ParameterBlastFromThePastHandler h : _parameter2blastFromThePastHandler.values())
+			//For each blast from the past
+			for (BlastFromThePastFactor bfp : al)
 			{
-				h.advance();
+				//Get new message
+				bfp.advance();
 			}
-			
-			//For each blast from the past chain
-			for (ArrayList<BlastFromThePastFactor> al : _blastFromThePastChains)
-			{
-				//For each blast from the past
-				for (BlastFromThePastFactor bfp : al)
-				{
-					//Get new message
-					bfp.advance();
-				}
-			}
-
-			//For each graph in list of nested graphs
-			for (int j = 0; j < _nestedGraphs.size()-1; j++)
-			{
-				//Tell it to move all factor messages to left
-				_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
-			}
-
-			_nestedGraphs.get(_nestedGraphs.size()-1).temporaryInitialize();
-			_nestedGraphs.get(_nestedGraphs.size()-1).initializeMessagesToAndFromBoundaryVariables();
-			
-
-
 		}
+
+		//For each graph in list of nested graphs
+		for (int j = 0; j < _nestedGraphs.size()-1; j++)
+		{
+			//Tell it to move all factor messages to left
+			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
+		}
+
+		_nestedGraphs.get(_nestedGraphs.size()-1).temporaryInitialize();
+		_nestedGraphs.get(_nestedGraphs.size()-1).initializeMessagesToAndFromBoundaryVariables();
+		
+
+
 
 	}
 

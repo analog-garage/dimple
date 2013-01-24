@@ -22,6 +22,8 @@
 %% Observation:
 %% y_k=z_k+N(0,sigma_3)
 
+rand('seed',1);
+randn('seed',1);
 
 sigma1=0.1;
 sigma2=0.1;
@@ -95,7 +97,7 @@ for k=2:sampling
 end
 
 
-fg.setScheduler(com.lyricsemi.dimple.schedulers.RandomWithoutReplacementScheduler());
+fg.setScheduler(com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler());
 fg.Solver.setNumIterations(200)
 fg.solve;
 

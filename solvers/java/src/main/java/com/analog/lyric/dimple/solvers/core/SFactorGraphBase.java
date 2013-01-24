@@ -113,21 +113,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		iterate(1);
 	}
 
-	public void solveRepeated(boolean init, int numStepsToAdvance)
-	{
-		if (init)
-			initialize();
-		
-		while (getModel().hasNext())
-		{
-			for (int i = 0; i < _numIterations; i++)
-			{
-				update();
-			}
-			getModel().advance(numStepsToAdvance);
-		}
-	}
-		
+
 	public void iterate(int numIters) 
 	{
 		if (_numThreads == 1)	
@@ -138,8 +124,10 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 				update();
 				
 				// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
-				try {interruptCheck();}
-				catch (InterruptedException e) {return;}
+				if (Thread.interrupted())
+					return;
+				//try {interruptCheck();}
+				//catch (InterruptedException e) {return;}
 			}
 		}
 		else					
@@ -155,6 +143,19 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			_factorGraph.initialize();
 			
 		iterate(_numIterations);
+		
+		int i = 0;
+		int maxSteps = _factorGraph.getNumSteps();
+		boolean infinite = _factorGraph.getNumStepsInfinite();
+		while (getModel().hasNext())
+		{		
+			if (!infinite && i >= maxSteps)
+				break;
+			getModel().advance();
+			iterate(_numIterations);
+			i++;
+		}
+
 	}
 
 

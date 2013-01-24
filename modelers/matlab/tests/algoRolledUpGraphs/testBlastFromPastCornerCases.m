@@ -41,7 +41,7 @@ function testBlastFromPastCornerCases()
     fg2 = FactorGraph();
     c = Bit();
     c.Input = input;
-
+    fg.NumSteps = 0;
     for i = 1:10
       fg.solve(false);
 

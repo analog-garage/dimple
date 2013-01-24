@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,36 +14,36 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import java.util.LinkedList;
 
-public class PFactorGraphStream 
+import com.analog.lyric.dimple.model.DimpleException;
+
+public class GenericDataSink<Type> implements IDataSink 
 {
-	private FactorGraphStream _stream;
+
+	protected LinkedList<Type> _data = new LinkedList<Type>();
 	
-	public PFactorGraphStream(FactorGraphStream stream)
+	@SuppressWarnings("unchecked")
+	@Override
+	public void push(Object data) 
 	{
-		_stream = stream;
+		_data.add((Type)data);
+	}
+
+	public Type getNext()
+	{
+		if (_data.size() <= 0)
+			throw new DimpleException("ACK!");
+		
+		return _data.pollFirst();
+	}
+
+	public boolean hasNext()
+	{
+		return _data.size() > 0;
 	}
 	
-	public FactorGraphStream getModelerObject()
-	{
-		return _stream;
-	}
-	
-	public boolean hasNext() 
-	{
-		return _stream.hasNext();
-	}
-	
-	public void setBufferSize(int size) 
-	{
-		_stream.setBufferSize(size);
-	}
-	
-	public int getBufferSize()
-	{
-		return _stream.getBufferSize();
-	}
+
 }
