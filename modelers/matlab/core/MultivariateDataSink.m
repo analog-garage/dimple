@@ -16,12 +16,14 @@
 
 classdef MultivariateDataSink < DataSink
     properties
-        %IMultivariateDataSink;
         Array;
     end
     methods
-        function obj = MultivariateDataSink()
-            obj@DataSink(com.analog.lyric.dimple.model.repeated.MultivariateDataSink());
+        function obj = MultivariateDataSink(dataSink)
+            if nargin == 0;
+                dataSink = com.analog.lyric.dimple.model.repeated.MultivariateDataSink();
+            end
+            obj@DataSink(dataSink);
         end
         
         function retval = hasNext(obj)
@@ -39,5 +41,4 @@ classdef MultivariateDataSink < DataSink
             end
         end
     end
-    
 end

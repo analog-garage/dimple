@@ -26,6 +26,7 @@ function testBufferSize()
     b = BitStream();
     fg.addFactor(ng,5,b,b.getSlice(2));
 
+    assertEqual(length(b.Variables),6);
     assertEqual(length(fg.Variables),6);
     assertEqual(length(fg.Factors),6);
     

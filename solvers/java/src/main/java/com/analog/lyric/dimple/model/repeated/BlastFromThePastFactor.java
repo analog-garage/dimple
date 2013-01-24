@@ -26,11 +26,13 @@ public class BlastFromThePastFactor extends Factor
 	
 	private Object _msg;
 	private Port _port;
+	private Object _initMsg;
 	
 	public BlastFromThePastFactor(int id, VariableBase var, Port factorPort, Object initialMsg) 
 	{
 		super(id,new NopFactorFunction("BlastFromThePast"),new VariableBase[]{var});		
 		setOutputMsg(initialMsg);
+		_initMsg = initialMsg;
 		_port = factorPort;
 	}
 
@@ -47,7 +49,7 @@ public class BlastFromThePastFactor extends Factor
 	
 	public void initializePortMsg(Port port)
 	{
-		
+		setOutputMsg(_initMsg);
 	}
 	
 	

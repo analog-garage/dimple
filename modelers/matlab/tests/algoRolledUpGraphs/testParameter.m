@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testParameter
-
+    
     v = Bit();
     ng = FactorGraph(v);
     ng.addFactor(@constFactor,v,[.6 .4]);

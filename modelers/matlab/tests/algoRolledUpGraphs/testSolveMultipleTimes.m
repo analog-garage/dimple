@@ -14,25 +14,26 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef RealJointStream < VariableStreamBase
-    methods
-        function obj = RealJointStream(numVars)
-            model = getModeler();
-            
-            domain = RealJointDomain(numVars);
-            
-            stream = model.createRealJointStream(domain.IDomain);
-            
-            obj@VariableStreamBase(stream);
-            
-        end
-    end
-    
-    methods(Access=protected)
-        function sink = getDataSink(obj)
-            sink = MultivariateDataSink(obj.IVariableStream.getDataSink());
-        end
-        
-    end
-    
+function testSolveMultipleTimes()
+
+    %solve for a while
+    b = Bit(2,1);
+    ng = FactorGraph(b);
+    ng.addFactor(@xorDelta,b);
+
+    fg = FactorGraph();
+    b = BitStream();
+    fg.addFactor(ng,b,b.getSlice(2));
+
+    b.DataSink = DoubleArrayDataSink();
+    b.Variables(1).Input = [.8 .2];
+
+    fg.NumSteps = 10;
+    fg.solve();
+    fg.solve(false);
+    fg.solve(false);
+    assertEqual(b.Variables(1).Belief,[.8 .2]);
+    fg.solve();
+    assertEqual(b.Variables(1).Belief,[.5 .5]);
+    %keep solving
 end

@@ -28,4 +28,10 @@ classdef DiscreteStream < VariableStreamBase
 
         end
     end
+    methods(Access=protected)
+        function sink = getDataSink(obj)
+           sink = DoubleArrayDataSink(obj.IVariableStream.getDataSink());
+        end
+
+    end
 end
