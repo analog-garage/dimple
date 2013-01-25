@@ -40,6 +40,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 	public void updateEdge(int outPortNum)
 	{
+		ensureCacheUpdated();
+		
 		FactorTable factorTable = getFactorTable();
 	    double[] factorTableWeights = factorTable.getPotentials();
 	    
