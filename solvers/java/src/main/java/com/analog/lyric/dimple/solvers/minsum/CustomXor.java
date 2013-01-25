@@ -22,6 +22,7 @@ public class CustomXor extends SFactorBase
 	@Override
 	public void updateEdge(int outPortNum)
 	{
+		ensureCacheUpdated();
 	    if (_dampingInUse)
 	    {
 	    	if (_dampingParams[outPortNum] != 0)
@@ -73,6 +74,7 @@ public class CustomXor extends SFactorBase
 	@Override
 	public void update()
 	{
+		ensureCacheUpdated();
 	    if (_dampingInUse)
 	    {
 	    	for (int port = 0; port < _numPorts; port++)
@@ -140,17 +142,8 @@ public class CustomXor extends SFactorBase
 	}
 	
 	
-    public void initialize() 
-    {
-    	super.initialize();
-		//We update the cache here.  This works only because initialize() is called on the variables
-		//first.  Updating the cache saves msg in double arrays.  initialize replaces these double arrays
-		//with new double arrays.  If we didn't call updateCache on initialize, our cache would point
-		//to stale information.
-    	updateCache();
-    }
     
-    private void updateCache()
+    protected void updateMessageCache()
     {
     	_numPorts = _factor.getPorts().size();
 	    _inPortMsgs = new double[_numPorts][];

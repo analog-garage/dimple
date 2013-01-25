@@ -57,7 +57,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     	
     	//_values = values;
 		_dampingParams = new double[_factor.getPorts().size()];
-		updateCache();
+		ensureCacheUpdated();
+		//updateMessageCache();
 		
 		_tableFactorEngine = new TableFactorEngine(this);
 		
@@ -98,6 +99,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 
 	public void updateEdge(int outPortNum) 
 	{
+		ensureCacheUpdated();
+		
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -109,23 +112,17 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void update() 
 	{
+		ensureCacheUpdated();
+		
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
 		else
 			_tableFactorEngine.update();
 	}
 	
-    public void initialize() 
-    {
-    	super.initialize();
-		//We update the cache here.  This works only because initialize() is called on the variables
-		//first.  Updating the cache saves msg in double arrays.  initialize replaces these double arrays
-		//with new double arrays.  If we didn't call updateCache on initialize, our cache would point
-		//to stale information.
-    	updateCache();
-    }
     
-    private void updateCache()
+	
+    protected void updateMessageCache()
     {
     	int numPorts = _factor.getPorts().size();
 	    _inPortMsgs = new double[numPorts][];

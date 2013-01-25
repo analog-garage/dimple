@@ -67,7 +67,7 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void updateEdge(int outPortNum)
 	{
-		updateCache();
+		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
 		int numPorts = _var.getPorts().size();
@@ -122,7 +122,7 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void update()
 	{
-		updateCache();
+		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
 		int numPorts = _var.getPorts().size();
@@ -189,7 +189,7 @@ public class SVariable extends SDiscreteVariableBase
 
 	public Object getBelief() 
 	{
-		updateCache();
+		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
 		double[] outBelief = new double[priors.length];
@@ -222,47 +222,33 @@ public class SVariable extends SDiscreteVariableBase
 	}
 	
 
-	public void initialize()
-	{
 
-		//Flag that init was called so that we can update the cache next time we need cached
-		//values.  We can't do the same thing as the tableFunction (update the cache here)
-		//because the function init gets called after variable init.  If we updated teh cache
-		//here, the table function init would replace the arrays for the outgoing message
-		//and our update functions would update stale messages.
-		super.initialize();
-		//System.out.println("Variable init");
-		_initCalled = true;
-	}
-
-	private void updateCache()
+	protected void updateMessageCache()
 	{
-		if (_initCalled)
+		int numPorts = _var.getPorts().size();
+		_initCalled = false;
+		_inPortMsgs = new double[numPorts][];
+		_outMsgArray = new double[numPorts][];
+		if (_dampingInUse)
+			_savedOutMsgArray = new double[numPorts][];
+
+		if (_dampingParams.length != numPorts)
 		{
-			int numPorts = _var.getPorts().size();
-			_initCalled = false;
-			_inPortMsgs = new double[numPorts][];
-			_outMsgArray = new double[numPorts][];
-			if (_dampingInUse)
-				_savedOutMsgArray = new double[numPorts][];
-
-			if (_dampingParams.length != numPorts)
-			{
-				double[] tmp = new double[numPorts];
-				for (int i = 0; i < _dampingParams.length; i++)
-					if (i < tmp.length)
-						tmp[i] = _dampingParams[i];
-				_dampingParams = tmp;
-			}
-			
-			for (int i = 0; i < numPorts; i++)
-			{
-				_inPortMsgs[i] = (double[])_var.getPorts().get(i).getInputMsg();
-				_outMsgArray[i] = (double[])_var.getPorts().get(i).getOutputMsg();
-				if (_dampingInUse)
-					_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
-			}
+			double[] tmp = new double[numPorts];
+			for (int i = 0; i < _dampingParams.length; i++)
+				if (i < tmp.length)
+					tmp[i] = _dampingParams[i];
+			_dampingParams = tmp;
 		}
+		
+		for (int i = 0; i < numPorts; i++)
+		{
+			_inPortMsgs[i] = (double[])_var.getPorts().get(i).getInputMsg();
+			_outMsgArray[i] = (double[])_var.getPorts().get(i).getOutputMsg();
+			if (_dampingInUse)
+				_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
+		}
+		
 	}
 
 	public void remove(Factor factor)

@@ -93,18 +93,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 		
 	
-	@Override
-    public void initialize() 
-    {
-    	super.initialize();
-		//We update the cache here.  This works only because initialize() is called on the variables
-		//first.  Updating the cache saves msg in double arrays.  initialize replaces these double arrays
-		//with new double arrays.  If we didn't call updateCache on initialize, our cache would point
-		//to stale information.
-    	updateCache();
-    }
-    
-    private void updateCache()
+
+    protected void updateMessageCache()
     {
     	ArrayList<Port> ports = _factor.getPorts();
     	_numPorts= ports.size();

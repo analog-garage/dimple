@@ -82,7 +82,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public void update()
 	{
-		updateCache();
+		ensureCacheUpdated();
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -131,7 +131,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public Object getBelief() 
 	{
-		updateCache();
+		ensureCacheUpdated();
 		int domainLength = _input.length;
 		double[] outBelief = new double[domainLength];
 		long sum = 0;
@@ -200,7 +200,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	public final void setCurrentSampleIndex(int index)
     {
-		updateCache();
+		ensureCacheUpdated();
 
 		// Sample from the conditional distribution
 		_sampleIndex = index;
@@ -293,7 +293,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			_beliefHistogram[i] = 0;
 	}
 
-	private void updateCache()
+	protected void updateMessageCache()
 	{
 		if (_initCalled)
 		{

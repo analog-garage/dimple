@@ -18,6 +18,7 @@ function testMinSum()
     bLog = false;
     dtrace(bLog, '++testMinSum');
     
+    setSolver('minsum');
     rs=resetRandStream('mt19937ar');
 
     rows = 8;

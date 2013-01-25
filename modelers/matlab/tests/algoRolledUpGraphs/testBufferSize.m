@@ -59,6 +59,7 @@ function testBufferSize()
     
     fgs.BufferSize = 3;
 
+    assertEqual(length(b.Variables),4);
     assertEqual(length(fg.Variables),4);
     assertEqual(length(fg.Factors),4);
 
