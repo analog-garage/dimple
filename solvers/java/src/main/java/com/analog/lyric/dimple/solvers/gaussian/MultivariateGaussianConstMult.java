@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
-public class MultivariateGaussianConstMult extends SFactorBase 
+public class MultivariateGaussianConstMult extends MultivariateFactorBase 
 {
 	private double [][] _constant;
 	
@@ -31,7 +31,7 @@ public class MultivariateGaussianConstMult extends SFactorBase
 		super(factor);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
-		if (factor.getPorts().size() != 2)
+		if (factor.getSiblings().size() != 2)
 			throw new DimpleException("factor must be of form a = b*c where b is a constant matrix");
 		
 		//TODO: alternatively, one of the ports could be a discrete variable with a single domain
@@ -55,8 +55,8 @@ public class MultivariateGaussianConstMult extends SFactorBase
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		
-		VariableBase a = (VariableBase)factor.getPorts().get(0).getConnectedNode();
-		VariableBase b = (VariableBase)factor.getPorts().get(1).getConnectedNode();
+		VariableBase a = (VariableBase)_factor.getSiblings().get(0);
+		VariableBase b = (VariableBase)_factor.getSiblings().get(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -76,8 +76,8 @@ public class MultivariateGaussianConstMult extends SFactorBase
 		else
 			direction = 'R';
 		
-		MultivariateMsg outMsg = (MultivariateMsg)_factor.getPorts().get(outPortNum).getOutputMsg();
-		MultivariateMsg inMsg = (MultivariateMsg)_factor.getPorts().get(1-outPortNum).getInputMsg();
+		MultivariateMsg outMsg = _outputMsgs[outPortNum]; 
+		MultivariateMsg inMsg = _inputMsgs[1-outPortNum];
 		
 		matMult.ComputeMsg(inMsg, outMsg, direction);
 	}

@@ -16,39 +16,38 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.sun.tools.javac.code.Attribute.Array;
 
 public class MultivariateVariable extends SVariableBase 
 {
 
 	private int _numVars;
 	private MultivariateMsg _input;
+	private MultivariateMsg [] _outputMsgs;
+	private MultivariateMsg [] _inputMsgs;
 	
 	public MultivariateVariable(VariableBase var) 
 	{
 		super(var);
 		
 		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
-		//initializeInputs();
-		_input = (MultivariateMsg) getDefaultMessage(null);
-	}
-
-	public void initializeInputs()
-	{
-
+		_input = (MultivariateMsg) createDefaultMessage();
 	}
 	
 	@Override
 	public void setInput(Object input)  
 	{
 		_input = (MultivariateMsg)input;
-		if (_input == null)
-			throw new DimpleException("WERWERE");
 	}
 
 	
@@ -59,27 +58,6 @@ public class MultivariateVariable extends SVariableBase
 		
 	}
 	
-	
-	@Override
-	public Object getDefaultMessage(Port port) 
-	{
-		
-		double [] means = new double[_numVars];
-		double [][] covariance = new double[_numVars][];
-		
-		
-		for (int i = 0; i < covariance.length; i++)
-		{
-			covariance[i] = new double[_numVars];
-			covariance[i][i] = Double.POSITIVE_INFINITY;
-		}
-
-		//multiGaBPMatrixMult.printMatrix(covariance);
-		
-		MultivariateMsg mm = new MultivariateMsg(means,covariance);
-		
-		return mm;
-	}
 
 	@Override
 	public Object getBelief()  
@@ -93,7 +71,7 @@ public class MultivariateVariable extends SVariableBase
 	@Override
 	public void updateEdge(int outPortNum)  
 	{
-		MultivariateMsg outMsg = (MultivariateMsg)_var.getPorts().get(outPortNum).getOutputMsg();
+		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		doUpdate(outMsg,outPortNum);
 	}
 
@@ -105,12 +83,12 @@ public class MultivariateVariable extends SVariableBase
 		
 		//MultivariateMsg outMsg = (MultivariateMsg)_var.getPorts().get(outPortNum).getOutputMsg();
 		
-		for (int i = 0; i < _var.getPorts().size(); i++ )
+		for (int i = 0; i < _outputMsgs.length; i++ )
 		{
 			if (i != outPortNum)
 			{				
 				//_var.getInputObject();
-				MultivariateMsg inMsg = (MultivariateMsg)_var.getPorts().get(i).getInputMsg();
+				MultivariateMsg inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
@@ -133,4 +111,57 @@ public class MultivariateVariable extends SVariableBase
 		
 		outMsg.setInformation(vector,matrix);
 	}
+
+	@Override
+	public void remove(Factor factor) 
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	{
+		int portNum = getModelObject().getPortNum(factor.getModelObject());
+		int arrayLength = Math.max(_inputMsgs.length, portNum-1);
+		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
+		_inputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
+		_outputMsgs = Arrays.copyOf(_outputMsgs,portNum-1);
+		_outputMsgs[portNum] = (MultivariateMsg)factorInputMsg;
+		return _inputMsgs[portNum];
+	}
+
+	//TODO: create parent method that does these two things?
+	@Override
+	public Object createDefaultMessage() 
+	{
+		MultivariateMsg mm = new MultivariateMsg(null,null);
+		return resetMessage(mm);
+	}
+
+	@Override
+	public Object resetMessage(Object message) 
+	{
+		double [] means = new double[_numVars];
+		double [][] covariance = new double[_numVars][];
+		
+		
+		for (int i = 0; i < covariance.length; i++)
+		{
+			covariance[i] = new double[_numVars];
+			covariance[i][i] = Double.POSITIVE_INFINITY;
+		}
+		((MultivariateMsg)message).setMeanAndCovariance(means, covariance);
+		return message;
+	}
+
+	@Override
+	public void initialize() 
+	{
+		for (int i = 0; i < _inputMsgs.length; i++)
+			_inputMsgs[i] = (MultivariateMsg)resetMessage(_inputMsgs[i]);
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

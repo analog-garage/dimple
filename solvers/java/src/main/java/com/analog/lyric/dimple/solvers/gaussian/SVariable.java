@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -67,7 +68,7 @@ public class SVariable extends SRealVariableBase
     
     public void updateEdge(int outPortNum) 
     {
-    	ArrayList<Port> ports = _var.getPorts();
+    	ArrayList<INode> ports = _var.getSiblings();
     	
     	double R = 1/(_input[1]*_input[1]);
     	double Mu = _input[0]*R;
