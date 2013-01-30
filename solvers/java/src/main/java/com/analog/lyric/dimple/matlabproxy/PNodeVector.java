@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class PNodeVector 
@@ -226,18 +225,18 @@ public abstract class PNodeVector
 		return retval;
 	}
 	
-	Port [][] getModelerPorts()
-	{
-		Port [][] ports = new Port[_nodes.length][];
-		
-		for (int i = 0; i < _nodes.length; i++)
-		{
-			ArrayList<Port> tmp = _nodes[i].getPorts();
-			ports[i] = new Port[tmp.size()];
-			tmp.toArray(ports[i]);
-		}
-		return ports;
-	}
+//	Port [][] getModelerPorts()
+//	{
+//		Port [][] ports = new Port[_nodes.length][];
+//		
+//		for (int i = 0; i < _nodes.length; i++)
+//		{
+//			ArrayList<Port> tmp = _nodes[i].getPorts();
+//			ports[i] = new Port[tmp.size()];
+//			tmp.toArray(ports[i]);
+//		}
+//		return ports;
+//	}
 
 	public int getPortNum(PNodeVector nodeVector)
 	{
@@ -249,14 +248,14 @@ public abstract class PNodeVector
 
 	}
 	
-	public Port [] getPorts(int index)
-	{
-		Port [] ports;
-		ArrayList<Port> alports = getModelerNode(index).getPorts();
-		ports = new Port[alports.size()];
-		alports.toArray(ports);
-		return ports;
-	}
+//	public Port [] getPorts(int index)
+//	{
+//		Port [] ports;
+//		ArrayList<Port> alports = getModelerNode(index).getPorts();
+//		ports = new Port[alports.size()];
+//		alports.toArray(ports);
+//		return ports;
+//	}
 	
 	public void update() 
 	{

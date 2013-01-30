@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -55,11 +54,9 @@ public class GibbsSequentialScanScheduler implements IScheduler
 			// For each variable, update factor edges connecting to that variable, then update the variable
 			// Do this as a single sub-graph schedule entry so that it will be done all at once
 			FixedSchedule subSchedule = new FixedSchedule();
-			for (Port p : v.getPorts())
+			for (INode p : v.getSiblings())
 			{
-				INode factor = p.getConnectedNode();
-				Port factorPortPort = p.getSibling();
-				subSchedule.add(new EdgeScheduleEntry(factor,factorPortPort));
+				subSchedule.add(new EdgeScheduleEntry(p,p.getPortNum(v)));
 			}
 
 			// Then update the variable

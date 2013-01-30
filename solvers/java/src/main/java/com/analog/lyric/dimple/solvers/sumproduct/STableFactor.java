@@ -16,20 +16,18 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 
 
@@ -55,9 +53,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public STableFactor(Factor factor)  
 	{
 		super(factor);
-		_dampingParams = new double[_factor.getPorts().size()];
+		
+		_dampingParams = new double[_factor.getSiblings().size()];
 		_tableFactorEngine = new TableFactorEngine(this);
-			
+		
+		
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
 		{
@@ -69,6 +69,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 		
 		setK(Integer.MAX_VALUE);
+		
 
 	}
 	
@@ -92,7 +93,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public void setK(int k)
 	{
-		ensureCacheUpdated();
 		
 		_k = k;
 		_kbestFactorEngine.setK(k);
@@ -115,7 +115,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public void updateEdge(int outPortNum) 
 	{
-		ensureCacheUpdated();
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -129,7 +128,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void update() 
 	{		
-		ensureCacheUpdated();	
 		if (_kIsSmallerThanDomain)
 			//TODO: damping
 			_kbestFactorEngine.update();
@@ -143,14 +141,15 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 
 	@Override
-	protected void updateMessageCache()
+	protected void createMessages()
 	{
-		int numPorts = _factor.getPorts().size();
+
+		int numPorts = _factor.getSiblings().size();
 		
 	    _inPortMsgs = new double[numPorts][];
 	    
 	    for (int port = 0; port < numPorts; port++) 
-	    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
+	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
 	    
 	    _outMsgArray = new double[numPorts][];
 	    if (_dampingInUse)
@@ -158,9 +157,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	_outMsgArray[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
 	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_outMsgArray[port].length];
+	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }
 	}
 		
@@ -171,9 +169,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 * Calculates a piece of the beta free energy
 	 */
 	public double [] getBelief() 
-	{
-		ensureCacheUpdated();
-		
+	{		
 		double [] retval = getUnormalizedBelief();
 		double sum = 0; 
 		for (int i = 0; i < retval.length; i++)
@@ -185,7 +181,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 	public double [] getUnormalizedBelief()
 	{
-		ensureCacheUpdated();
 		
 		int [][] table = getFactorTable().getIndices();
 		double [] values = getFactorTable().getWeights();
@@ -205,11 +200,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	}
 	
 
-	@Override
-	public ArrayList<Port> getPorts() 
-	{
-		return getFactor().getPorts();
-	}
+//	@Override
+//	public ArrayList<Port> getPorts() 
+//	{
+//		return getFactor().getPorts();
+//	}
 
 	@Override
 	public FactorFunction getFactorFunction() 
@@ -361,7 +356,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		//for each variable
 		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
-			SVariable var = (SVariable)getFactor().getPorts().get(i).getConnectedNode().getSolver();
+			SVariable var = (SVariable)getFactor().getConnectedNodesFlat().getByIndex(i).getSolver();
 			
 			//divide out contribution
 			sum += prod / _inPortMsgs[i][indices[index][i]] * var.getMessageDerivative(weightIndex,getFactor())[indices[index][i]];
@@ -465,7 +460,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 					
 					if (j != outPortNum)
 					{
-						SVariable sv = (SVariable)getFactor().getPorts().get(j).getConnectedNode().getSolver();
+						SVariable sv = (SVariable)getFactor().getConnectedNodesFlat().getByIndex(j).getSolver();
 						double [] dvar = sv.getMessageDerivative(wn,getFactor());
 								
 						sum += (prod / _inPortMsgs[j][indices[i][j]]) * dvar[indices[i][j]];
@@ -555,6 +550,42 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 		return sum;
 	}
-	
+
+	@Override
+	public void connectToVariables() 
+	{
+		//messages were created in constructor
+		int index = 0;
+		for (VariableBase vb : _factor.getVariables())
+		{
+			ISolverVariable sv = vb.getSolver();
+			_outMsgArray[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
+			index++;
+		}
+	}
+
+	@Override
+	public double[][] getInPortMsgs() 
+	{
+		// TODO Auto-generated method stub
+		return _inPortMsgs;
+	}
+
+	@Override
+	public double[][] getOutPortMsgs() 
+	{
+		// TODO Auto-generated method stub
+		return _outMsgArray;
+	}
+
+	public void initialize()
+	{
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		}
+	}
+
 
 }

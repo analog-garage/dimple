@@ -20,7 +20,6 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -58,11 +57,9 @@ public class SequentialScheduler implements IScheduler
 		for (Factor f : g.getNonGraphFactorsTop())
 		{
 			// For each function, update variable edges connecting to that function
-			for (Port p : f.getPorts())
+			for (INode n : f.getSiblings())
 			{
-				INode var = p.getConnectedNode();
-				Port varPort = p.getSibling();
-				schedule.add(new EdgeScheduleEntry(var,varPort));
+				schedule.add(new EdgeScheduleEntry(n,n.getPortNum(f)));
 			}
 
 			// Then update the function
@@ -73,11 +70,9 @@ public class SequentialScheduler implements IScheduler
 		for (FactorGraph sg : g.getNestedGraphs())
 		{
 			// For each sub-graph, update the variable edges connecting to that sub-graph
-			for (Port p : sg.getPorts())
+			for (INode p : sg.getSiblings())
 			{
-				INode var = p.getConnectedNode();
-				Port varPort = p.getSibling();
-				schedule.add(new EdgeScheduleEntry(var,varPort));
+				schedule.add(new EdgeScheduleEntry(p,p.getPortNum(sg)));
 			}
 
 			// Then update the sub-graph

@@ -42,25 +42,26 @@ public class SFactorGraph extends SFactorGraphBase
 	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
 	{
 		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("finiteFieldMult"))
-		{
-			//VariableList variables = factor.getVariables();
-			
-			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
-				return new FiniteFieldConstMult(factor);
-			else
-				return new FiniteFieldMult(factor);
-		}
-		else if (funcName.equals("finiteFieldAdd"))
-		{
-			return new FiniteFieldAdd(factor);    		
-		}
-		else if (funcName.equals("finiteFieldProjection"))
-		{
-			return new FiniteFieldProjection(factor);
-		}
-		else
-			throw new DimpleException("Not implemented");
+//		if (funcName.equals("finiteFieldMult"))
+//		{
+//			//VariableList variables = factor.getVariables();
+//			
+//			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
+//				return new FiniteFieldConstMult(factor);
+//			else
+//				return new FiniteFieldMult(factor);
+//		}
+//		else if (funcName.equals("finiteFieldAdd"))
+//		{
+//			return new FiniteFieldAdd(factor);    		
+//		}
+//		else if (funcName.equals("finiteFieldProjection"))
+//		{
+//			return new FiniteFieldProjection(factor);
+//		}
+//		else
+//			throw new DimpleException("Not implemented");
+		return null;
 	}
 	
 	public ISolverVariable createVariable(VariableBase var)  
@@ -147,11 +148,11 @@ public class SFactorGraph extends SFactorGraphBase
 	protected void setDampingForTableFunction(STableFactor tf)
 	{
 		
-		for (int i = 0; i < tf.getFactor().getPorts().size(); i++)
+		for (int i = 0; i < tf.getFactor().getSiblings().size(); i++)
 		{
 			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)tf.getFactor().getPorts().get(i).getConnectedNode();
-			for (int j = 0; j < var.getPorts().size(); j++)
+			VariableBase var = (VariableBase)tf.getFactor().getConnectedNodesFlat().getByIndex(i);
+			for (int j = 0; j < var.getSiblings().size(); j++)
 			{
 				SVariable svar = (SVariable)var.getSolver();
 				svar.setDamping(j,_damping);

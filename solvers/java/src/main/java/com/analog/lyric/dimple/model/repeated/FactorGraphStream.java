@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 
 /*
@@ -78,71 +77,71 @@ public class FactorGraphStream
 		//Get first Factor Graph's ports
 		FactorGraph firstGraph = _nestedGraphs.get(0);
 
-		ArrayList<Port> ports = firstGraph.getPorts();
-
-		
-		//For each port
-		for (Port p : ports)
-		{
-		
-			//figure out which variable stream this is connected to
-			VariableBase var = (VariableBase)p.getSibling().getParent();
-			VariableStreamBase vsb = getVariableStream(var);
-
-			if (vsb == null)
-			{
-				//This is a parameter
-				//Add BlastFrom the Past Factor and save it
-				
-				//Find out if we've encountered this parameter before
-				if (! _parameter2blastFromThePastHandler.containsKey(var))
-				{
-					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var.getSolver().getDefaultMessage(null), 
-							var, null);
-					ParameterBlastFromThePastHandler pbftph = new ParameterBlastFromThePastHandler(
-							var,_parameterFactorGraph, 
-							var.getSolver().getDefaultMessage(null),
-							f);
-					_parameter2blastFromThePastHandler.put(var,pbftph);
-				}
-				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p);
-
-				
-			}
-			else
-			{
-				//This is not a parameter
-				
-				//Retrieve the index of this variable within the stream
-				int index = vsb.indexOf(var);
-			
-				//Set next port to this port
-				Port nextPort = p;
-
-				if (index > 0 )
-				{
-					ArrayList<BlastFromThePastFactor> bfc = new ArrayList<BlastFromThePastFactor>();
-					_blastFromThePastChains.add(bfc);
-					
-					//For each variable before this one
-					for (int i = index-1; i >= 0; i--)
-					{					
-						//add blast from the past
-						VariableBase var2 = vsb.get(i);
-	
-						//Initalize the input msg
-						Object inputMsg = var2.getSolver().getDefaultMessage(null);
-						BlastFromThePastFactor f = fg.addBlastFromPastFactor(inputMsg,var2,nextPort);
-	
-						bfc.add(f);
-						
-						//Set the next port
-						nextPort = f.getPorts().get(0);
-					}
-				}
-
-			}
-		}
+//		ArrayList<Port> ports = firstGraph.getPorts();
+//
+//		
+//		//For each port
+//		for (Port p : ports)
+//		{
+//		
+//			//figure out which variable stream this is connected to
+//			VariableBase var = (VariableBase)p.getSibling().getParent();
+//			VariableStreamBase vsb = getVariableStream(var);
+//
+//			if (vsb == null)
+//			{
+//				//This is a parameter
+//				//Add BlastFrom the Past Factor and save it
+//				
+//				//Find out if we've encountered this parameter before
+//				if (! _parameter2blastFromThePastHandler.containsKey(var))
+//				{
+//					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var.getSolver().getDefaultMessage(null), 
+//							var, null);
+//					ParameterBlastFromThePastHandler pbftph = new ParameterBlastFromThePastHandler(
+//							var,_parameterFactorGraph, 
+//							var.getSolver().getDefaultMessage(null),
+//							f);
+//					_parameter2blastFromThePastHandler.put(var,pbftph);
+//				}
+//				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p);
+//
+//				
+//			}
+//			else
+//			{
+//				//This is not a parameter
+//				
+//				//Retrieve the index of this variable within the stream
+//				int index = vsb.indexOf(var);
+//			
+//				//Set next port to this port
+//				Port nextPort = p;
+//
+//				if (index > 0 )
+//				{
+//					ArrayList<BlastFromThePastFactor> bfc = new ArrayList<BlastFromThePastFactor>();
+//					_blastFromThePastChains.add(bfc);
+//					
+//					//For each variable before this one
+//					for (int i = index-1; i >= 0; i--)
+//					{					
+//						//add blast from the past
+//						VariableBase var2 = vsb.get(i);
+//	
+//						//Initalize the input msg
+//						Object inputMsg = var2.getSolver().getDefaultMessage(null);
+//						BlastFromThePastFactor f = fg.addBlastFromPastFactor(inputMsg,var2,nextPort);
+//	
+//						bfc.add(f);
+//						
+//						//Set the next port
+//						nextPort = f.getPorts().get(0);
+//					}
+//				}
+//
+//			}
+//		}
 
 	}
 
@@ -197,28 +196,28 @@ public class FactorGraphStream
 			_myVar.setInputObject(null);
 			_fg = fg;
 			_mainFlastFromThePast = originalPlastFromPast;
-			Port factorPort = originalPlastFromPast.getPorts().get(0);
-			//   create a data structure to represent it
-			//   Add a blast from the past for this variable
-			//   Create a Factor Graph for this variable (maybe share with others)
-			//   Add a blast to the past to be paired with the blast from the past
-			addBlastFromThePast(factorPort);
+//			Port factorPort = originalPlastFromPast.getPorts().get(0);
+//			//   create a data structure to represent it
+//			//   Add a blast from the past for this variable
+//			//   Create a Factor Graph for this variable (maybe share with others)
+//			//   Add a blast to the past to be paired with the blast from the past
+//			addBlastFromThePast(factorPort);
 		}
 		
-		public void addBlastFromThePast(Port p)
-		{
-			_allBlastFromThePasts.add(_fg.addBlastFromPastFactor(null, _myVar, p));
-		}
+//		public void addBlastFromThePast(Port p)
+//		{
+//			_allBlastFromThePasts.add(_fg.addBlastFromPastFactor(null, _myVar, p));
+//		}
 		
 		public void advance()
 		{
-			for (BlastFromThePastFactor f : _allBlastFromThePasts)
-				f.advance();
-			
-			_otherVar.getSolver().invalidateCache();
-			_myVar.getSolver().invalidateCache();
-			Object belief = _myVar.getBeliefObject();
-			_mainFlastFromThePast.setOutputMsg(belief);
+//			for (BlastFromThePastFactor f : _allBlastFromThePasts)
+//				f.advance();
+//			
+//			_otherVar.getSolver().invalidateCache();
+//			_myVar.getSolver().invalidateCache();
+//			Object belief = _myVar.getBeliefObject();
+//			_mainFlastFromThePast.setOutputMsg(belief);
 			
 		}
 	}
@@ -250,7 +249,7 @@ public class FactorGraphStream
 			for (BlastFromThePastFactor bfp : al)
 			{
 				//Get new message
-				bfp.advance();
+				//bfp.advance();
 			}
 		}
 
@@ -258,7 +257,7 @@ public class FactorGraphStream
 		for (int j = 0; j < _nestedGraphs.size()-1; j++)
 		{
 			//Tell it to move all factor messages to left
-			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
+			//_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
 		}
 
 		_nestedGraphs.get(_nestedGraphs.size()-1).temporaryInitialize();

@@ -34,12 +34,12 @@ public class MultivariateVariable extends SVariableBase
 		super(var);
 		
 		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
-		initializeInputs();
+		//initializeInputs();
+		_input = (MultivariateMsg) getDefaultMessage(null);
 	}
 
 	public void initializeInputs()
 	{
-		_input = (MultivariateMsg) getDefaultMessage(null);
 
 	}
 	

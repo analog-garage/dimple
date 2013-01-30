@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.xmlSerializer;
 
@@ -124,7 +125,7 @@ public class Serializer
 		e.setAttribute("explicitName", explicitName);
 		e.setAttribute("class", f.getModelerFunctionName());
 			
-		ArrayList<com.analog.lyric.dimple.model.Port> ports = f.getPorts();
+		ArrayList<INode> ports = f.getSiblings();
 		e.setAttribute("numEdges", Integer.toString(ports.size()));			
 
 		// * TODO TableFactor?
@@ -151,7 +152,7 @@ public class Serializer
 		for (int i = 0; i < ports.size(); i++)
 		{			
 			Element edgeElement = Doc.createElement("edge");
-			VariableBase targetV = ((VariableBase)ports.get(i).getConnectedNodeFlat());
+			VariableBase targetV = (VariableBase)(f.getConnectedNodeFlat(i));
 
 			edgeElement.setAttribute("source", f.getUUID().toString());
 			edgeElement.setAttribute("target", targetV.getUUID().toString());

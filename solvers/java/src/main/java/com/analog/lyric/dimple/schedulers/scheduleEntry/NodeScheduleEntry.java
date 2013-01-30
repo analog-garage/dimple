@@ -89,14 +89,15 @@ public class NodeScheduleEntry implements IScheduleEntry
 		return null;
 	}
 
+	@Override
 	public Iterable<Port> getPorts() 
 	{
 		ArrayList<Port> ports = new ArrayList<Port>();
 		
 		//Add each port of this node to the list.
-		for (Port p : this.getNode().getPorts())
+		for (int index = 0; index < _node.getSiblings().size(); index++)
 		{
-			ports.add(p);
+			ports.add(new Port(_node,index));
 		}
 		return ports;
 	}

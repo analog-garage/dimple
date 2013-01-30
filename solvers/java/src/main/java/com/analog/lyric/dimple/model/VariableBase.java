@@ -64,6 +64,7 @@ public abstract class VariableBase extends Node implements Cloneable
 //	}
 
 	
+	
 	@Override
 	public final VariableBase asVariable()
 	{
@@ -151,15 +152,17 @@ public abstract class VariableBase extends Node implements Cloneable
 			// Also, in the case of "rolled up" graphs, apparently this can be called more than
 			// once without it being a solver-switch, so check to see if the solver has really changed
 			// (which we do by checking the class of the _solverVariable since that's really the issue
-			ISolverVariable oldSolverVariable = _solverVariable;
+			//ISolverVariable oldSolverVariable = _solverVariable;
 			_solverVariable = factorGraph.createVariable(this);
-			if (oldSolverVariable != null && !oldSolverVariable.getClass().equals(_solverVariable.getClass())) {
-				for (int i = 0; i < _ports.size(); i++)
-				{
-					initializePortMsg(_ports.get(i));
-					initializePortMsg(_ports.get(i).getSibling());
-				}
-			}
+			
+			//TODO: when to initialize 
+//			if (oldSolverVariable != null && !oldSolverVariable.getClass().equals(_solverVariable.getClass())) {
+//				for (int i = 0; i < _ports.size(); i++)
+//				{
+//					initializePortMsg(_ports.get(i));
+//					initializePortMsg(_ports.get(i).getSibling());
+//				}
+//			}
 			if (_input!=null)
 				_solverVariable.setInput(_input);
 			//initialize();
@@ -224,37 +227,13 @@ public abstract class VariableBase extends Node implements Cloneable
     }
    
     
-    public void connect(Port port) 
-    {
-    	Port thisPort = new Port(this,port,_ports.size());
-    	_ports.add(thisPort);
-    	
-    	initializePortMsg(thisPort);
-    	initializePortMsg(port);
-    	
-    	if (_solverVariable != null)
-    		_solverVariable.connectPort(port);
-    }
-    
     public void initialize() 
     {
 
-    	for (int i = 0; i < _ports.size(); i++)
-    	{
-    		initializePortMsg(_ports.get(i));
-    	}
     	if (_solverVariable != null)
     		_solverVariable.initialize();
     }
     
-    public void initializePortMsg(Port port) 
-    {
-    	if (_solverVariable == null)
-    		port.setInputMsg(null);
-    	else
-    		port.setInputMsg(_solverVariable.getDefaultMessage(port));
-    }
-    	
     public Factor [] getFactors()
     {
     	return getFactorsFlat();
@@ -262,11 +241,11 @@ public abstract class VariableBase extends Node implements Cloneable
     
 	public FactorBase [] getFactors(int relativeNestingDepth)
 	{
-		FactorBase [] retval = new FactorBase[_ports.size()];
+		FactorBase [] retval = new FactorBase[_siblings.size()];
 		
-		for (int i = 0; i < _ports.size(); i++)
+		for (int i = 0; i < _siblings.size(); i++)
 		{
-			retval[i] = (FactorBase)_ports.get(i).getConnectedNode(relativeNestingDepth);
+			retval[i] = (FactorBase)getConnectedNode(relativeNestingDepth,i);
 		}
 		return retval;
 	}
@@ -278,10 +257,10 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public Factor [] getFactorsFlat()
 	{
-		Factor [] retval = new Factor[_ports.size()];
-		for (int i = 0; i < _ports.size(); i++)
+		Factor [] retval = new Factor[_siblings.size()];
+		for (int i = 0; i < _siblings.size(); i++)
 		{
-			retval[i] = (Factor)_ports.get(i).getConnectedNodeFlat();
+			retval[i] = (Factor)getConnectedNodeFlat(i);
 		}
 		return retval;
 		
@@ -289,16 +268,16 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public void remove(Factor factor) 
 	{
-		ArrayList<Port> ports = getPorts();
+		ArrayList<INode> siblings = getSiblings();
 		
 		boolean found=false;
 		
-		for (int i = 0; i < ports.size(); i++)
+		for (int i = 0; i < siblings.size(); i++)
 		{
-			if (ports.get(i).getConnectedNodeFlat() == factor)
+			if (getConnectedNodeFlat(i) == factor)
 			{
 				found = true;
-				ports.remove(i);
+				siblings.remove(i);
 				break;
 			}
 		}
@@ -306,8 +285,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		if (!found)
 			throw new DimpleException("Tried to delete factor from variable that does not reference that factor");
 		
-		for (int i = 0; i < getPorts().size(); i++)
-			getPorts().get(i).setId(i);
+//		for (int i = 0; i < getSiblings().size(); i++)
+//			getPorts().get(i).setId(i);
 		
 		if (_solverVariable != null)
 			_solverVariable.remove(factor);
@@ -353,13 +332,13 @@ public abstract class VariableBase extends Node implements Cloneable
     	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
     	{
     		//Replace the connection from this variable to the copy in the factor
-    		ArrayList<Port> ports = factorsToBeMovedToCopy[i].getPorts();
-    		for (int j = 0; j < ports.size(); j++)
+    		//ArrayList<INode> ports = factorsToBeMovedToCopy[i].getSiblings();
+    		for (int j = 0; j < factorsToBeMovedToCopy[i].getSiblings().size(); j++)
     		{
-    			if (ports.get(j).getConnectedNodeFlat() == this)
+    			if (factorsToBeMovedToCopy[i].getConnectedNodeFlat(j) == this)
     			{
-    				getPorts().remove(ports.get(j).getSibling());
-    				mycopy.connect(ports.get(j));
+    				getSiblings().remove(factorsToBeMovedToCopy[i].getSiblings().get(j));
+    				mycopy.connect((Factor)factorsToBeMovedToCopy[i].getSiblings().get(j));
     			}
     		}
     		

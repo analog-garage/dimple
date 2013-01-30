@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+//import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
 {
@@ -60,25 +60,25 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	
 	public void advanceInputs()
 	{
-		if (_dataSink != null)
-		{
-			Object output = _variables.get(0).getBeliefObject();
-			_dataSink.push(output);
-		}
-		
-		for (int i = 0; i < _variables.size()-1; i++)
-			_variables.get(i).getSolver().moveInputs(_variables.get(i+1).getSolver());
-
-		if (_dataSource != null)
-		{
-			Object input = _dataSource.getNext();
-			_variables.get(_variables.size()-1).setInputObject(input);
-		}
-		else
-		{
-			_variables.get(_variables.size()-1).getSolver().initializeInputs();
-		}
-	
+//		if (_dataSink != null)
+//		{
+//			Object output = _variables.get(0).getBeliefObject();
+//			_dataSink.push(output);
+//		}
+//		
+//		for (int i = 0; i < _variables.size()-1; i++)
+//			_variables.get(i).getSolver().moveInputs(_variables.get(i+1).getSolver());
+//
+//		if (_dataSource != null)
+//		{
+//			Object input = _dataSource.getNext();
+//			_variables.get(_variables.size()-1).setInputObject(input);
+//		}
+//		else
+//		{
+//			_variables.get(_variables.size()-1).getSolver().initializeInputs();
+//		}
+//	
 	}
 	
 	

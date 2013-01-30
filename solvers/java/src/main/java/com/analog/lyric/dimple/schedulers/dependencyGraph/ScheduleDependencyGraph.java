@@ -1,20 +1,22 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
+
 
 package com.analog.lyric.dimple.schedulers.dependencyGraph;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +24,7 @@ import java.util.List;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -41,12 +44,12 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 	{
 		HashMap<Port, List<Integer>> portToScheduleMap = new HashMap<Port, List<Integer>>();
 		HashMap<IScheduleEntry, DependencyGraphNode<IScheduleEntry>> scheduleEntryMap = new HashMap<IScheduleEntry, DependencyGraphNode<IScheduleEntry>>();
-		
+
 		for (int iteration = 0; iteration < numIterations; iteration++)
 			createOneIterationOfScheduleDependencyGraph(factorGraph.getSchedule(), portToScheduleMap, scheduleEntryMap);
 	}
-	
-	
+
+
 	// Add one-iterations worth of schedule entries to the schedule dependency graph
 	protected void createOneIterationOfScheduleDependencyGraph(ISchedule schedule, HashMap<Port, List<Integer>> portToScheduleMap, HashMap<IScheduleEntry, DependencyGraphNode<IScheduleEntry>> scheduleEntryMap) 
 	{
@@ -59,18 +62,21 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 				add(node);						// Add this schedule entry to the dependency graph
 				int nodeIndex = size()-1;		// Get the index of the node just added (this will be used in the portUpdateList)
 
-				for (Port inputPort : ((NodeScheduleEntry)entry).getNode().getPorts())
+				INode n = ((NodeScheduleEntry)entry).getNode();
+				for (int index = 0; index < n.getSiblings().size(); index++)
 				{
 					// See what schedule entries have updated this port already, if any
-					List<Integer> portUpdateList = (List<Integer>)portToScheduleMap.get(inputPort);
+					List<Integer> portUpdateList = (List<Integer>)portToScheduleMap.get(new Port(n,index));
 					if ((portUpdateList != null) && !portUpdateList.isEmpty())
 					{
 						int lastUpdate = portUpdateList.get(portUpdateList.size()-1);
 						addDependency(node, get(lastUpdate));	// Assumes entries are not removed from the graph, otherwise this will get the wrong item
 					}
-					
+
 					// Add to the list of schedule entries that have updated the corresponding output port (all output ports update)
-					Port outputPort = inputPort.getSibling();
+					INode n2 = n.getSiblings().get(index);
+					int ind2 = n2.getPortNum(n);
+					Port outputPort = new Port(n2,ind2);
 					if (portToScheduleMap.containsKey(outputPort))
 						portToScheduleMap.get(outputPort).add(nodeIndex);
 					else
@@ -80,7 +86,7 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 						portToScheduleMap.put(outputPort, newList);
 					}
 				}
-				
+
 				// Entry also depends on the same entry in the last iteration and its dependents
 				// This is needed for damping so that a single-edge node doesn't get updated again before the value from the previous iteration was created and used
 				DependencyGraphNode<IScheduleEntry> thisNodeLastIteration = scheduleEntryMap.get(entry);
@@ -97,14 +103,17 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 				DependencyGraphNode<IScheduleEntry> node = new DependencyGraphNode<IScheduleEntry>(entry);
 				add(node);						// Add this schedule entry to the dependency graph
 				int nodeIndex = size()-1;		// Get the index of the node just added (this will be used in the portUpdateList)
-				
+
 				int outPortNum = ((EdgeScheduleEntry)entry).getPortNum();
-				for (Port inputPort : ((EdgeScheduleEntry)entry).getNode().getPorts())
+
+				INode n = ((EdgeScheduleEntry)entry).getNode();
+				for (int index = 0; index < n.getSiblings().size(); index++)
+					//				for (Port inputPort : ((EdgeScheduleEntry)entry).getNode().getPorts())
 				{
-					if (inputPort.getId() != outPortNum)		// Only look at input ports that are used to create the output
+					if (index != outPortNum)		// Only look at input ports that are used to create the output
 					{
 						// See what schedule entries have updated this port already, if any
-						List<Integer> portUpdateList = (List<Integer>)portToScheduleMap.get(inputPort);
+						List<Integer> portUpdateList = (List<Integer>)portToScheduleMap.get(new Port(n,index));
 						if ((portUpdateList != null) && !portUpdateList.isEmpty())
 						{
 							int lastUpdate = portUpdateList.get(portUpdateList.size()-1);
@@ -112,9 +121,11 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 						}
 					}
 				}
-				
+
 				// Add to the list of schedule entries that have updated the corresponding output port (just one output port update)
-				Port outPort = ((ArrayList<Port>)((EdgeScheduleEntry)entry).getNode().getPorts()).get(outPortNum).getSibling();
+				INode n2 = n.getSiblings().get(outPortNum);
+				int ind2 = n2.getPortNum(n);
+				Port outPort = new Port(n2,ind2);
 				if (portToScheduleMap.containsKey(outPort))
 					portToScheduleMap.get(outPort).add(nodeIndex);
 				else
@@ -123,7 +134,7 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 					newList.add(nodeIndex);
 					portToScheduleMap.put(outPort, newList);
 				}
-				
+
 				// Entry also depends on the same entry in the last iteration and its dependents
 				// This is needed for damping so that a single-edge node doesn't get updated again before the value from the previous iteration was created and used
 				DependencyGraphNode<IScheduleEntry> thisNodeLastIteration = scheduleEntryMap.get(entry);
@@ -146,13 +157,13 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 				createOneIterationOfScheduleDependencyGraph(((SubScheduleEntry)entry).getSchedule(), portToScheduleMap, scheduleEntryMap);	// Recurse to the sub-graph
 			else
 				throw new DimpleException("Unhandled schedule entry class: " + entry.getClass().getName());
-			
+
 			interruptCheck();
 		}
 
 	}
-	
-	
+
+
 	// Allow interruption (if the solver is run as a thread)
 	protected void interruptCheck()
 	{

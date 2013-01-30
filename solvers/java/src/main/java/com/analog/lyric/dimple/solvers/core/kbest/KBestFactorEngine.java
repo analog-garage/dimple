@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.core.kbest;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.util.misc.IndexCounter;
 
 /*
@@ -48,7 +47,6 @@ import com.analog.lyric.util.misc.IndexCounter;
  */
 public class KBestFactorEngine 
 {
-	private ArrayList<Port> _ports;
 	private int _k;
 	private IKBestFactor _kbestFactor;
 	private double [][] _outPortMsgs;
@@ -56,17 +54,10 @@ public class KBestFactorEngine
 	
 	private void updateCache()
 	{
-		_ports = _kbestFactor.getPorts();
 		
-		_inPortMsgs = new double[_ports.size()][];
-		_outPortMsgs = new double[_ports.size()][];
-		
-		for (int i = 0; i < _ports.size(); i++)
-		{
-			_inPortMsgs[i] = (double[])_ports.get(i).getInputMsg();
-			_outPortMsgs[i] = (double[])_ports.get(i).getOutputMsg();
-		}
-	
+		_inPortMsgs = _kbestFactor.getInPortMsgs();
+		_outPortMsgs = _kbestFactor.getOutPortMsgs();
+			
 	}
 	
 	public KBestFactorEngine(IKBestFactor f)
@@ -78,7 +69,7 @@ public class KBestFactorEngine
 	{
 		updateCache();
 
-		for (int i = 0; i < _ports.size(); i++)
+		for (int i = 0; i < _outPortMsgs.length; i++)
 			updateEdgeInternal(i);
 	}
 	
@@ -100,33 +91,28 @@ public class KBestFactorEngine
 	protected void updateEdgeInternal(int outPortNum)
 	{
 		
-		//Get the outputPort we're going to update.
-		Port outPort = _ports.get(outPortNum);
 		
 		//Initialize the outputMsg to Infinite potentials.
-		double [] outputMsg = (double[])outPort.getOutputMsg();
+		double [] outputMsg = _outPortMsgs[outPortNum];
 		_kbestFactor.initMsg(outputMsg);
 
 		//Cache the input messages.
-		double [][] inputMsgs = new double[_ports.size()][];
-		for (int i = 0; i < _ports.size(); i++)
-			inputMsgs[i] = (double[])_ports.get(i).getInputMsg();
-		
 		//Cache the domains
-		Object [][] domains = new Object[_ports.size()][];
-		for (int i = 0; i < _ports.size(); i++)
-			domains[i] = ((Discrete)_ports.get(i).getConnectedNode()).getDiscreteDomain().getElements();
+		Object [][] domains = new Object[_inPortMsgs.length][];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			
+			domains[i] = ((Discrete)_kbestFactor.getFactor().getConnectedNodeFlat(i)).getDiscreteDomain().getElements();
 		
 		//We will store the kbest indices in this array
-		int [][] domainIndices = new int[_ports.size()][];
+		int [][] domainIndices = new int[_inPortMsgs.length][];
 		
 		//We will store the truncated domainlengths here.
-		int [] domainLengths = new int[_ports.size()];
+		int [] domainLengths = new int[_inPortMsgs.length];
 		
 		//For each port
-		for (int i = 0; i < _ports.size(); i++)
+		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
-			double [] inPortMsg = inputMsgs[i];
+			double [] inPortMsg = _inPortMsgs[i];
 
 			//If this is the output port, we only store one value at a time.
 			if (i == outPortNum)
@@ -155,7 +141,7 @@ public class KBestFactorEngine
 		//Used to iterate all combinations of truncated domains.
 		IndexCounter ic = new IndexCounter(domainLengths);
 
-		int [] inputIndices = new int[_ports.size()];
+		int [] inputIndices = new int[_inPortMsgs.length];
 		
 		//We fill out a value for every value for the output message (no truncating to k)
 		for (int outputIndex = 0; outputIndex < outputMsg.length; outputIndex++)
@@ -176,7 +162,7 @@ public class KBestFactorEngine
 					if (i != outPortNum)
 						//i == port index, indices[i] == which of the truncated domain indices to retrieve
 						//domainIndices[i][indices[i]] == the actual index of the input msg.
-						sum = _kbestFactor.accumulate(sum, inputMsgs[i][domainIndices[i][indices[i]]]);
+						sum = _kbestFactor.accumulate(sum, _inPortMsgs[i][domainIndices[i][indices[i]]]);
 
 					//Here we set the input value for this port
 					inputIndices[i] = domainIndices[i][indices[i]];

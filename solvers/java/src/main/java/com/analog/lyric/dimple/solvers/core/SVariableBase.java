@@ -43,17 +43,17 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		
 	}
 
-	@Override
-	public void remove(Factor factor)
-	{
-		invalidateCache();
-	}
+//	@Override
+//	public void remove(Factor factor)
+//	{
+//		//invalidateCache();
+//	}
 	
 
 	@Override
 	public void update()  
 	{
-		for (int i = 0; i < _var.getPorts().size(); i++)
+		for (int i = 0; i < _var.getSiblings().size(); i++)
 		{
 			updateEdge(i);
 		}

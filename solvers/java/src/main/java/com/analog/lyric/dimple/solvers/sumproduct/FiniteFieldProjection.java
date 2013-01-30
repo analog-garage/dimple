@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
@@ -43,7 +44,7 @@ public class FiniteFieldProjection extends SFactorBase
 	
 		VariableList variables = factor.getVariables();
 		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.

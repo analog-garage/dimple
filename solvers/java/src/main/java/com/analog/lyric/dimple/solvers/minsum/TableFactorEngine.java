@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 
 /*
@@ -33,17 +34,16 @@ public class TableFactorEngine
 	{
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();
-		//_factorTable = _tableFactor.getFactorTable();
 	}
 	
 	public void updateEdge(int outPortNum) 
 	{
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> siblings = _factor.getSiblings();
 		
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getPotentials();
 	    int tableLength = table.length;
-	    int numPorts = ports.size();
+	    int numPorts = siblings.size();
 
 
         double[] outputMsgs = _tableFactor._outPortMsgs[outPortNum];
@@ -112,7 +112,7 @@ public class TableFactorEngine
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getPotentials();
 	    int tableLength = table.length;
-	    int numPorts = _factor.getPorts().size();
+	    int numPorts = _factor.getSiblings().size();
 	    
 
 	    for (int port = 0; port < numPorts; port++)

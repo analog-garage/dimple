@@ -22,7 +22,6 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -34,9 +33,14 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	public SFactorBase(Factor factor)
 	{
 		super(factor);
-		
 		_factor = factor;
+		createMessages();
+		connectToVariables();
+		
 	}
+	
+	protected abstract void createMessages();
+	protected abstract void connectToVariables();
 		
 	public Factor getFactor()
 	{
@@ -47,7 +51,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public void update()  
 	{
-		for (int i = 0; i < _factor.getPorts().size(); i++)
+		for (int i = 0; i < _factor.getSiblings().size(); i++)
 			updateEdge(i);
 	}
 	
@@ -57,19 +61,19 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		throw new DimpleException("not supported");
 	}
 
-	@Override
-	public void connectPort(Port p) 
-	{
-		
-	}
-	
-	@Override
-	public Object getDefaultMessage(Port port) 
-	{
-		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
-		SVariableBase v = (SVariableBase)var.getSolver();
-		return v.getDefaultMessage(port);
-	}
+//	@Override
+//	public void connectPort(Port p) 
+//	{
+//		
+//	}
+//	
+//	@Override
+//	public Object getDefaultMessage(Port port) 
+//	{
+//		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
+//		SVariableBase v = (SVariableBase)var.getSolver();
+//		return v.getDefaultMessage(port);
+//	}
 
 	@Override
 	public ISolverFactorGraph getParentGraph()
@@ -98,24 +102,24 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
     public double getScore()
     {    	
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 		int numPorts = ports.size();
 	    Object[] values = new Object[numPorts];
 
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	INode neighbor = ports.get(port).getConnectedNode();
+	    	INode neighbor = _factor.getConnectedNodeFlat(port);
 	    	values[port] = ((ISolverVariable)neighbor.getSolver()).getGuess();
 	    }
 	    
 	    return _factor.getFactorFunction().evalEnergy(values);
     }
 
-	@Override
-	public int[][] getPossibleBeliefIndices() 
-	{
-		throw new DimpleException("not implemented");
-	}
+//	@Override
+//	public int[][] getPossibleBeliefIndices() 
+//	{
+//		throw new DimpleException("not implemented");
+//	}
 	
 	@Override
 	public double getInternalEnergy()

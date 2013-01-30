@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -82,11 +82,9 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 		{
 			int factorIndex = _rand.nextInt(_numFactors);
 			Factor f = ((ArrayList<Factor>)_factors.values()).get(factorIndex);
-			for (Port p : f.getPorts())
+			for (INode v : f.getSiblings())
 			{
-				INode v = p.getConnectedNode();
-				Port vPort = p.getSibling();
-				updateList.add(new EdgeScheduleEntry(v,vPort));
+				updateList.add(new EdgeScheduleEntry(v,f));
 			}
 			updateList.add(new NodeScheduleEntry(f));
 		}

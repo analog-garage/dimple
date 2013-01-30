@@ -70,9 +70,8 @@ public class Factor extends FactorBase implements Cloneable
 		_modelerFunctionName = modelerFunctionName;
 		for (int i = 0; i < variables.length; i++)
 		{
-			Port p = new Port(this,_ports.size());
-			_ports.add(p);
-			variables[i].connect(p);
+			connect(variables[i]);
+			variables[i].connect(this);
 		}
 	}
 
@@ -83,9 +82,9 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public boolean isDiscrete()
 	{
-		for (Port p : getPorts())
+		for (INode p : getSiblings())
 		{
-			VariableBase vb = (VariableBase)p.getConnectedNodeFlat();
+			VariableBase vb = (VariableBase)p;
 			if (! vb.getDomain().isDiscrete())
 			{
 				return false;
@@ -94,6 +93,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		return true;
 	}
+	
 	
 	public FactorFunction getFactorFunction()
 	{
@@ -108,10 +108,8 @@ public class Factor extends FactorBase implements Cloneable
 	protected void addVariable(VariableBase variable) 
 	{
 		_variables = null;
-		
-		Port p = new Port(this,_ports.size());
-		_ports.add(p);
-		variable.connect(p);
+		connect(variable);
+		variable.connect(this);
 	}
 	
 	
@@ -148,10 +146,8 @@ public class Factor extends FactorBase implements Cloneable
 	public void attach(ISolverFactorGraph factorGraph) 
 	{
 		_variables = null;
-		//_solverFactor = factorGraph.createCustomFactor(this);
 		_solverFactor = factorGraph.createFactor(this);
-		initialize();
-		//TODO: do stuff
+		
 	}
 	
 	public Domain [] getDomains()
@@ -160,6 +156,7 @@ public class Factor extends FactorBase implements Cloneable
 		int numVariables = variables.size();
 		
 		Domain [] retval = new Domain[numVariables];
+		
 		for (int i = 0; i < numVariables; i++)
 		{
 			retval[i] = variables.getByIndex(i).getDomain();
@@ -197,21 +194,17 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void initialize() 
 	{
-		for (int i = 0; i < _ports.size(); i++)
-		{
-			initializePortMsg(_ports.get(i));
-		}
 		if (_solverFactor != null)
 			_solverFactor.initialize();
 	}
 	
-	public void initializePortMsg(Port port)
-	{
-		if (_solverFactor == null)
-			port.setInputMsg(null);
-		else
-			port.setInputMsg(_solverFactor.getDefaultMessage(port));
-	}
+//	public void initializePortMsg(Port port)
+//	{
+//		if (_solverFactor == null)
+//			port.setInputMsg(null);
+//		else
+//			port.setInputMsg(_solverFactor.getDefaultMessage(port));
+//	}
 		
 	public VariableList getVariables()
 	{
@@ -219,8 +212,8 @@ public class Factor extends FactorBase implements Cloneable
 		if (_variables == null)
 		{
 			_variables = new VariableList();
-			for (int i = 0; i < _ports.size(); i++)
-				_variables.add((VariableBase)_ports.get(i).getConnectedNodeFlat());			
+			for (int i = 0; i < _siblings.size(); i++)
+				_variables.add((VariableBase)_siblings.get(i));			
 		}
 		
 		return _variables;
@@ -261,10 +254,10 @@ public class Factor extends FactorBase implements Cloneable
 		
 		
 		//First get a list of variables in common.
-		for (int i = 0; i < getPorts().size(); i++)
+		for (int i = 0; i < getSiblings().size(); i++)
 		{
 			map1.add(i);
-			varList.add((VariableBase)getPorts().get(i).getConnectedNodeFlat());
+			varList.add((VariableBase)getConnectedNodeFlat(i));
 			
 		}
 		
@@ -272,14 +265,14 @@ public class Factor extends FactorBase implements Cloneable
 		
 		int newnuminputs = map1.size();
 		
-		for (int i = 0; i < other.getPorts().size(); i++)
+		for (int i = 0; i < other.getSiblings().size(); i++)
 		{
 			boolean found = false;
 			
-			for (int j = 0; j < getPorts().size(); j++)
+			for (int j = 0; j < getSiblings().size(); j++)
 			{
 				
-				if (getPorts().get(j).getConnectedNodeFlat() == other.getPorts().get(i).getConnectedNodeFlat())
+				if (getConnectedNodeFlat(j) == other.getConnectedNodeFlat(i))
 				{
 					found = true;
 					map2.add(j);
@@ -291,7 +284,7 @@ public class Factor extends FactorBase implements Cloneable
 			{
 				map2.add(varList.size());
 				newnuminputs++;
-				varList.add((VariableBase)other.getPorts().get(i).getConnectedNodeFlat());
+				varList.add((VariableBase)other.getConnectedNodeFlat(i));
 			}
 		}
 		

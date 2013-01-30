@@ -1,7 +1,10 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
 
 public class CustomXor extends SFactorBase
 {
@@ -22,7 +25,6 @@ public class CustomXor extends SFactorBase
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		ensureCacheUpdated();
 	    if (_dampingInUse)
 	    {
 	    	if (_dampingParams[outPortNum] != 0)
@@ -74,7 +76,6 @@ public class CustomXor extends SFactorBase
 	@Override
 	public void update()
 	{
-		ensureCacheUpdated();
 	    if (_dampingInUse)
 	    {
 	    	for (int port = 0; port < _numPorts; port++)
@@ -143,22 +144,7 @@ public class CustomXor extends SFactorBase
 	
 	
     
-    protected void updateMessageCache()
-    {
-    	_numPorts = _factor.getPorts().size();
-	    _inPortMsgs = new double[_numPorts][];
-	    _outPortMsgs = new double[_numPorts][];
-	    if (_dampingInUse)
-	    	_savedOutMsgsLLR = new double[_numPorts];
-	    
-	    for (int port = 0; port < _numPorts; port++)
-	    {
-	    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
-	    	_outPortMsgs[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-	    }
-    }
-
-	
+ 
 	
 	public void setDamping(int index, double val)
 	{
@@ -173,6 +159,66 @@ public class CustomXor extends SFactorBase
 		return _dampingParams[index];
 	}
 
+
+	@Override
+	public void initialize() 
+	{
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		}
+
+	}
+
+
+	@Override
+	protected void createMessages() 
+	{
+		int numPorts = _factor.getSiblings().size();
+		
+	    _inPortMsgs = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++) 
+	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
+	    
+	    _outPortMsgs = new double[numPorts][];
+	    if (_dampingInUse)
+	    	_savedOutMsgsLLR = new double[numPorts];
+	    
+	}
+
+
+	@Override
+	protected void connectToVariables() 
+	{
+		// TODO Auto-generated method stub
+		//messages were created in constructor
+		int index = 0;
+		for (VariableBase vb : _factor.getVariables())
+		{
+			ISolverVariable sv = vb.getSolver();
+			_outPortMsgs[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
+			index++;
+		}	
+	}
+
+//	   protected void updateMessageCache()
+//	    {
+//	    	_numPorts = _factor.getPorts().size();
+//		    _inPortMsgs = new double[_numPorts][];
+//		    _outPortMsgs = new double[_numPorts][];
+//		    if (_dampingInUse)
+//		    	_savedOutMsgsLLR = new double[_numPorts];
+//		    
+//		    for (int port = 0; port < _numPorts; port++)
+//		    {
+//		    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
+//		    	_outPortMsgs[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
+//		    }
+//	    }
+//
+//		
 
 
 

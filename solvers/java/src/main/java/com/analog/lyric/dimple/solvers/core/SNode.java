@@ -16,18 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.ArrayList;
-
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class SNode implements ISolverNode 
 {
 	private Node _model;
-	private boolean _cacheIsValid = false;
 	
 	public SNode(Node n)
 	{
@@ -39,55 +34,61 @@ public abstract class SNode implements ISolverNode
     	return _model;
     }
 
+    
+	public void moveMessages(int portIndex, ISolverNode other, boolean moveSiblingMessages)
+	{
+		
+	}
+    
 	public void moveMessages(ISolverNode other, boolean moveSiblingMessages)
 	{
-		ArrayList<Port> otherPorts = other.getModelObject().getPorts();
-		ArrayList<Port> thisPorts = getModelObject().getPorts();
-		
-		if (thisPorts.size() != otherPorts.size())
-			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
-		
-		for (int i = 0; i < thisPorts.size(); i++)
-		{
-			thisPorts.get(i).moveMessage(otherPorts.get(i));
-			if (moveSiblingMessages)
-			{
-				thisPorts.get(i).getSibling().moveMessage(otherPorts.get(i).getSibling());
-				thisPorts.get(i).getSibling().getParent().getSolver().invalidateCache();
-			}
-		}
-		invalidateCache();
+//		ArrayList<Port> otherPorts = other.getModelObject().getPorts();
+//		ArrayList<Port> thisPorts = getModelObject().getPorts();
+//		
+//		if (thisPorts.size() != otherPorts.size())
+//			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
+//		
+//		for (int i = 0; i < thisPorts.size(); i++)
+//		{
+//			thisPorts.get(i).moveMessage(otherPorts.get(i));
+//			if (moveSiblingMessages)
+//			{
+//				thisPorts.get(i).getSibling().moveMessage(otherPorts.get(i).getSibling());
+//				thisPorts.get(i).getSibling().getParent().getSolver().invalidateCache();
+//			}
+//		}
+//		invalidateCache();
 	}
 	
-	@Override
-	public void initialize() 
-	{
-		invalidateCache();
-	}
+//	@Override
+//	public void initialize() 
+//	{
+//		invalidateCache();
+//	}
+//	
+//	@Override
+//	public void invalidateCache()
+//	{
+//		_cacheIsValid = false;
+//	}
+//	protected void ensureCacheUpdated()
+//	{
+//		if (!_cacheIsValid)
+//		{
+//			updateMessageCache();
+//			_cacheIsValid = true;
+//		}
+//	}
+//	protected void updateMessageCache()
+//	{
+//		
+//	}
 	
-	@Override
-	public void invalidateCache()
-	{
-		_cacheIsValid = false;
-	}
-	protected void ensureCacheUpdated()
-	{
-		if (!_cacheIsValid)
-		{
-			updateMessageCache();
-			_cacheIsValid = true;
-		}
-	}
-	protected void updateMessageCache()
-	{
-		
-	}
 	
-	
-	@Override
-	public void connectPort(Port p)  
-	{
-		invalidateCache();
-	}
+//	@Override
+//	public void connectSibling(INode node)  
+//	{
+//		invalidateCache();
+//	}
 
 }

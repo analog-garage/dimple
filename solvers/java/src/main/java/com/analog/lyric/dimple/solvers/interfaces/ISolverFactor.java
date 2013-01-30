@@ -16,16 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.Port;
 
 public interface ISolverFactor extends ISolverNode
 {
-	public Object getDefaultMessage(Port port);
+	//public Object getDefaultMessage(Port port);
 	public Object getBelief() ;
 	public double getInternalEnergy();
 	public double getBetheEntropy();
-
+	//public void addFactorIsComplete();
 	//TODO: really expose this?
-	int [][] getPossibleBeliefIndices();
+	//int [][] getPossibleBeliefIndices();
 
 }

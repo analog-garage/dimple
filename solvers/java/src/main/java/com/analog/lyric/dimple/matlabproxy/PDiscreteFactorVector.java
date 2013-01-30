@@ -76,9 +76,9 @@ public class PDiscreteFactorVector extends PFactorVector
 		return beliefs;
 	}
 
-	public int[][] getPossibleBeliefIndices(int index) 
-	{
-		return getDiscreteFactor(index).getPossibleBeliefIndices();
-	}
+//	public int[][] getPossibleBeliefIndices(int index) 
+//	{
+//		return getDiscreteFactor(index).getPossibleBeliefIndices();
+//	}
 
 }

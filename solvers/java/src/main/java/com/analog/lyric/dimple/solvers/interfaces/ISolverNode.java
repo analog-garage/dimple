@@ -20,7 +20,6 @@
 package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 
 /**
  * @author schweitz
@@ -31,14 +30,14 @@ public interface ISolverNode
 	public void update() ;
 	public void updateEdge(int outPortNum) ;
 	public void initialize() ;
-	public void connectPort(Port p) ;
+	//public void connectSibling(INode p) ;
 	public ISolverFactorGraph getParentGraph();
 	public ISolverFactorGraph getRootGraph();
 	public double getScore() ;
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
     public INode getModelObject();
-    public void moveMessages(ISolverNode other,boolean includeSiblingMessages);
-	public void invalidateCache();
+    //public void moveMessages(ISolverNode other,boolean includeSiblingMessages);
+	//public void invalidateCache();
 
 }

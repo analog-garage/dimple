@@ -24,7 +24,6 @@ import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
@@ -50,29 +49,29 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
-	public void initializeMessages()
-	{
-		FactorList fl = _factorGraph.getFactorsFlat();
-		for (Factor f : fl)
-		{
-			f.getSolver().initialize();
-		}
-	}
+//	public void initializeMessages()
+//	{
+//		FactorList fl = _factorGraph.getFactorsFlat();
+//		for (Factor f : fl)
+//		{
+//			f.getSolver().initialize();
+//		}
+//	}
 	
 	public void moveMessages(ISolverNode other,boolean moveSiblingMessages)
 	{
-		SFactorGraphBase sother = (SFactorGraphBase)other;
-		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
-		FactorList myFactors = _factorGraph.getFactorsFlat();
-		
-		if (otherFactors.size() != myFactors.size())
-			throw new DimpleException("Graphs dont' match");
-		
-		for (int i = 0; i < myFactors.size(); i++)
-		{
-			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),true);
-		}
-		
+//		SFactorGraphBase sother = (SFactorGraphBase)other;
+//		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
+//		FactorList myFactors = _factorGraph.getFactorsFlat();
+//		
+//		if (otherFactors.size() != myFactors.size())
+//			throw new DimpleException("Graphs dont' match");
+//		
+//		for (int i = 0; i < myFactors.size(); i++)
+//		{
+//			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),true);
+//		}
+//		
 	}
 
 
@@ -175,10 +174,10 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph.getRootGraph().getSolver();
 	}
 
-	@Override
-	public void connectPort(Port p) 
-	{
-	}
+//	@Override
+//	public void connectPort(Port p) 
+//	{
+//	}
 
 	public double getBetheFreeEnergy()
 	{

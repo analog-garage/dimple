@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.INode;
 
 /*
  * Provides the update and updateEdge logic for sumproduct
@@ -38,12 +38,11 @@ public class TableFactorEngine
 	
 	public void updateEdge(int outPortNum) 
 	{
-		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> siblings = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getWeights();
 	    int tableLength = table.length;
-	    int numPorts = ports.size();
+	    int numPorts = siblings.size();
 	    
         double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
         
@@ -107,7 +106,7 @@ public class TableFactorEngine
 	{				
 
 		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getWeights();
 	    int tableLength = table.length;

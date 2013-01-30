@@ -21,7 +21,6 @@ import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -80,11 +79,9 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
 		int variableIndex = GibbsSolverRandomGenerator.rand.nextInt(_numVariables);
 		VariableBase v = ((ArrayList<VariableBase>)_variables.values()).get(variableIndex);
-		for (Port p : v.getPorts())
+		for (INode p : v.getSiblings())
 		{
-			INode f = p.getConnectedNode();
-			Port fPort = p.getSibling();
-			subSchedule.add(new EdgeScheduleEntry(f,fPort));
+			subSchedule.add(new EdgeScheduleEntry(p,v));
 		}
 		subSchedule.add(new NodeScheduleEntry(v));
 		

@@ -21,9 +21,9 @@ import java.util.Arrays;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 public class SVariable extends SDiscreteVariableBase
 {
@@ -31,11 +31,11 @@ public class SVariable extends SDiscreteVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */	
-    double [][] _inPortMsgs;
-    double [][] _logInPortMsgs;
-    double [][] _outMsgArray;
-    double [][] _savedOutMsgArray;    
-    double [][] _outPortDerivativeMsgs;
+    double [][] _inPortMsgs = new double[0][];
+    double [][] _logInPortMsgs = new double[0][];
+    double [][] _outMsgArray = new double[0][];
+    double [][] _savedOutMsgArray = new double[0][];    
+    double [][] _outPortDerivativeMsgs = new double[0][];
     double [] _dampingParams = new double[0];
     protected double [] _input;
     private boolean _calculateDerivative = false;
@@ -47,16 +47,9 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
-		initializeInputs();
-		
+		_input = (double[])createDefaultMessage();
 	}
-	
-	public void initializeInputs()
-	{
-		_input = (double[])getDefaultMessage(null);
 		
-	}
-	
 	public VariableBase getVariable()
 	{
 		return _var;
@@ -67,14 +60,32 @@ public class SVariable extends SDiscreteVariableBase
 		_calculateDerivative = val;
 	}
 
-	public Object getDefaultMessage(Port port) 
+	@Override
+	public void initialize()
+	{
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			_inPortMsgs[i] = (double[])resetMessage(_inPortMsgs[i]);
+	}
+
+	
+	@Override
+	public Object resetMessage(Object message)
+	{
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+    	double val = 1.0/domainLength;
+    	double [] retval = (double[])message;
+    	Arrays.fill(retval, val);
+    	return retval;
+
+	}
+	
+	@Override
+	public Object createDefaultMessage() 
 	{
 		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
     	double[] retVal = new double[domainLength];
-    	double val = 1.0/domainLength;
-    	Arrays.fill(retVal, val);
-    	return retVal;
+    	return resetMessage(retVal);
     }
 	
 	public double getScore()
@@ -119,12 +130,11 @@ public class SVariable extends SDiscreteVariableBase
 
     public void updateEdge(int outPortNum) 
     {
-    	ensureCacheUpdated();
     	
         final double minLog = -100;
         double[] priors = (double[])_input;
         int M = priors.length;
-        int D = _var.getPorts().size();
+        int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         double[] outMsgs = _outMsgArray[outPortNum];
@@ -189,12 +199,11 @@ public class SVariable extends SDiscreteVariableBase
 
     public void update() 
     {
-    	ensureCacheUpdated();
 
         final double minLog = -100;
         double[] priors = (double[])_input;
         int M = priors.length;
-        int D = _var.getPorts().size();
+        int D = _var.getSiblings().size();
         
         
         //Compute alphas
@@ -281,12 +290,11 @@ public class SVariable extends SDiscreteVariableBase
         
     public Object getBelief()
     {
-    	ensureCacheUpdated();
 
         final double minLog = -100;
         double[] priors = (double[])_input;
         int M = priors.length;
-        int D = _var.getPorts().size();
+        int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         double[] outBelief = new double[M];
@@ -321,45 +329,6 @@ public class SVariable extends SDiscreteVariableBase
         return outBelief;
     }
     
-    
-
-    
-    protected void updateMessageCache()
-    {
-    	int D = _var.getPorts().size();    	
-		int M = ((double[])_input).length;
-					
-		_inPortMsgs = new double[D][];
-		_logInPortMsgs = new double[D][M];
-		_outMsgArray = new double[D][];
-		if (_dampingInUse)
-			_savedOutMsgArray = new double[D][];
-
-	    if (_dampingParams.length != D)
-	    {
-	    	double [] tmp = new double[D];
-	    	for (int i = 0; i < _dampingParams.length; i++)
-	    	{
-	    		if (i < tmp.length)
-	    			tmp[i] = _dampingParams[i];
-	    	}
-	    	_dampingParams = tmp;
-	    }
-	    		    
-	    for (int d = 0; d < D; d++) 
-	    	_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
-		
-        //Now compute output messages for each outgoing edge
-	    for (int out_d = 0; out_d < D; out_d++ )
-	    {
-            _outMsgArray[out_d] = (double[])_var.getPorts().get(out_d).getOutputMsg();
-			if (_dampingInUse)
-				_savedOutMsgArray[out_d] = new double[_outMsgArray[out_d].length];
-	    }
-	    
-    }
-    
-
 	public double [] getNormalizedInputs()
 	{
 		double [] tmp = new double [_input.length];
@@ -439,7 +408,7 @@ public class SVariable extends SDiscreteVariableBase
 		double sum = 0;
 		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
-			STableFactor sft = (STableFactor)getVariable().getPorts().get(i).getConnectedNode().getSolver();
+			STableFactor sft = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 			double inputMsg = _inPortMsgs[i][domain];
 			double tmp = f / inputMsg;
 			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
@@ -585,7 +554,7 @@ public class SVariable extends SDiscreteVariableBase
 			if (i != outPortNum)
 			{
 				double thisMsg = _inPortMsgs[i][d];
-				STableFactor stf = (STableFactor)getVariable().getPorts().get(j).getConnectedNode().getSolver();
+				STableFactor stf = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
 				
 				df += f/thisMsg * dfactor[d]; 
@@ -613,5 +582,40 @@ public class SVariable extends SDiscreteVariableBase
     		updateDerivativeForWeightNum(outPortNum, wn);
     	}
     }
+
+	@Override
+	public void remove(Factor factor) 
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	{
+		// TODO Auto-generated method stub
+		int portNum = _var.getPortNum(factor.getModelObject());
+		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
+		_inPortMsgs = Arrays.copyOf(_inPortMsgs,newArraySize);
+		_inPortMsgs[portNum] = (double[])createDefaultMessage();
+		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
+		_logInPortMsgs[portNum] = new double[_inPortMsgs[portNum].length];
+		_outMsgArray = Arrays.copyOf(_outMsgArray, newArraySize);
+		
+		if (_dampingInUse)
+		{
+			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
+			_savedOutMsgArray[portNum] = new double[_inPortMsgs[portNum].length];
+		}
+
+		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
+		
+		portNum = _var.getPortNum(factor.getModelObject());
+		_outMsgArray[portNum] = (double[])factorInputMsg;
+		return _inPortMsgs[portNum];
+	}
 	
+		
 }

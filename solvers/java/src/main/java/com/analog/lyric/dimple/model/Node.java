@@ -28,7 +28,7 @@ public abstract class Node implements INode, Cloneable
 	protected String _name;
 	protected String _label;
 	private FactorGraph _parentGraph;
-	protected ArrayList<Port> _ports;
+	protected ArrayList<INode> _siblings;
 
 	public Node()
 	{
@@ -37,7 +37,7 @@ public abstract class Node implements INode, Cloneable
 			 null,
 			 null,
 			 null,
-			 new ArrayList<Port>());
+			 new ArrayList<INode>());
 	}
 	public Node(int id)
 	{
@@ -46,7 +46,7 @@ public abstract class Node implements INode, Cloneable
 			 null,
 			 null,
 			 null,
-			 new ArrayList<Port>());
+			 new ArrayList<INode>());
 	}
 	public Node(int id,
 				 UUID UUID,
@@ -57,21 +57,21 @@ public abstract class Node implements INode, Cloneable
 			 name,
 			 null,
 			 null,
-			 new ArrayList<Port>());
+			 new ArrayList<INode>());
 	}
 	public Node(int id,
 			 UUID UUID,
 			 String name,
 			 String label,
 			 FactorGraph parentGraph,
-			 ArrayList<Port> ports)
+			 ArrayList<INode> nodes)
 	{
 		init(id,
 			 UUID,
 			 name,
 			 label,
 			 parentGraph,
-			 ports);
+			 nodes);
 	}
 		
 	public void init(int id,
@@ -79,13 +79,13 @@ public abstract class Node implements INode, Cloneable
 					 String name,
 					 String label,
 					 FactorGraph parentGraph,
-					 ArrayList<Port> ports)
+					 ArrayList<INode> siblings)
 	{
 		_id = id;
 		_UUID = UUID;
 		_name = name;
 		_label = label;
-		_ports = ports;
+		_siblings = siblings;
 		_parentGraph = parentGraph;
 	}
 
@@ -102,7 +102,7 @@ public abstract class Node implements INode, Cloneable
 		try {n = (Node)(super.clone());}
 		catch (CloneNotSupportedException e) {e.printStackTrace();}
 		
-		n._ports = new ArrayList<Port>();	// Clear the ports in the clone
+		n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
 		n._id = NodeId.getNext();
 		n._UUID = NodeId.getNextUUID();
 		n._parentGraph = null;
@@ -138,10 +138,16 @@ public abstract class Node implements INode, Cloneable
 		return ancestor;
 	}
 	
-	@Override
-public ArrayList<Port> getPorts()
+	public INode getConnectedNodeFlat(int portNum)
 	{
-		return _ports;
+		return _siblings.get(portNum);
+	}
+
+	
+	@Override
+	public ArrayList<INode> getSiblings()
+	{
+		return _siblings;
 	}
 
 	@Override
@@ -149,15 +155,61 @@ public ArrayList<Port> getPorts()
 	{
 		return getConnectedNodesFlat();
 	}
+	
+	public INode getConnectedNode(int relativeDepth, int portNum)
+	{
+		if (relativeDepth < 0)
+			relativeDepth = 0;
+		
+		int myDepth = getDepth();
+		
+		//int desiredDepth = siblingDepth - relativeDepth;
+		
+		int desiredDepth = myDepth+relativeDepth;
+		
+		//Avoid overflow
+		if (desiredDepth < 0)
+			desiredDepth = Integer.MAX_VALUE;
+		
+		INode node = _siblings.get(portNum);
+		
+		// TODO: Instead of computing depths, which is O(depth), could we instead
+		// just look for matching parent. For example, if relativedDepth is zero
+		// can we just walk through the sibling node's parents until we find a match
+		// for the parent of the node for this side of the connection?
+		
+		for (int depth = node.getDepth(); depth > desiredDepth; --depth)
+		{
+			node = node.getParentGraph();
+		}
 
+		return node;
+	}
+
+	public ArrayList<INode> getConnectedNodeAndParents(int index)
+	{
+		ArrayList<INode> retval = new ArrayList<INode>();
+		
+		INode n = _siblings.get(index);
+		
+		while (n != null)
+		{
+			retval.add(n);
+			n = n.getParentGraph();
+		}
+		
+		return retval;
+	}
+
+	
 	@Override
 	public MapList<INode> getConnectedNodes(int relativeNestingDepth)
 	{
     	MapList<INode> list = new MapList<INode>();
 
-		for (int i = 0; i < getPorts().size(); i++)
+		for (int i = 0; i < getSiblings().size(); i++)
 		{
-	    	list.add(getPorts().get(i).getConnectedNode(relativeNestingDepth));
+			list.add(getConnectedNode(relativeNestingDepth,i));
 		}
     	
 		return list;
@@ -204,7 +256,12 @@ public ArrayList<Port> getPorts()
 	{
 		return getConnectedNodes(0);
 	}
-	
+
+	@Override
+	public void connect(INode node)
+	{
+		_siblings.add(node);
+	}
 
 	@Override
 	public void setParentGraph(FactorGraph parentGraph) 
@@ -352,11 +409,42 @@ public ArrayList<Port> getPorts()
 	@Override
 	public int getPortNum(INode node) 
 	{
-		for (int i = 0; i < _ports.size(); i++)
+		for (int i = 0; i < _siblings.size(); i++)
 		{
-			if (_ports.get(i).isConnected(node))
+			if (isConnected(node,i))
 				return i;
 		}
 		throw new DimpleException("Nodes are not connected: " + this + " and " + node);
 	}
+	
+	public boolean isConnected(INode node)
+	{
+		for (int i = 0; i < _siblings.size(); i++)
+		{
+			if (isConnected(node,i))
+				return true;
+		}
+		return false;
+		
+	}
+	
+	@Override
+	public boolean isConnected(INode node, int portIndex)
+	{
+		INode other = _siblings.get(portIndex);
+		
+		if (other == node)
+			return true;
+		
+		while (other.getParentGraph() != null)
+		{
+			other = other.getParentGraph();
+			
+			if (other == node)
+				return true;
+		}
+		
+		return false;
+	}
+
 }

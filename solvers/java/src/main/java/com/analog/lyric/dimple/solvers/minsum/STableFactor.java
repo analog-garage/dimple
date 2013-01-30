@@ -24,10 +24,12 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class STableFactor extends STableFactorBase implements IKBestFactor
 {	
@@ -35,8 +37,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double[][] _inPortMsgs = null;
-    protected double[][] _outPortMsgs = null;
+    protected double[][] _inPortMsgs;
+    protected double[][] _outPortMsgs;
     protected double [][] _savedOutMsgArray;
     protected double [] _dampingParams;
     protected int _k;
@@ -56,8 +58,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     	super(factor);
     	
     	//_values = values;
-		_dampingParams = new double[_factor.getPorts().size()];
-		ensureCacheUpdated();
+		_dampingParams = new double[_factor.getSiblings().size()];
+		//ensureCacheUpdated();
 		//updateMessageCache();
 		
 		_tableFactorEngine = new TableFactorEngine(this);
@@ -89,18 +91,16 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 	}
     
-	public Object getInitialMsgValue(Port port)
-	{
-		int domainLength = ((Discrete)port.getConnectedNode()).getDiscreteDomain().getElements().length;
-		double[] retVal = new double[domainLength];
-		for (int i = 0; i < domainLength; i++) retVal[i] = 0;
-		return retVal;
-	}
+//	public Object getInitialMsgValue(Port port)
+//	{
+//		int domainLength = ((Discrete)port.getConnectedNode()).getDiscreteDomain().getElements().length;
+//		double[] retVal = new double[domainLength];
+//		for (int i = 0; i < domainLength; i++) retVal[i] = 0;
+//		return retVal;
+//	}
 
 	public void updateEdge(int outPortNum) 
-	{
-		ensureCacheUpdated();
-		
+	{		
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -112,8 +112,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void update() 
 	{
-		ensureCacheUpdated();
-		
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
 		else
@@ -122,22 +120,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
     
 	
-    protected void updateMessageCache()
-    {
-    	int numPorts = _factor.getPorts().size();
-	    _inPortMsgs = new double[numPorts][];
-	    _outPortMsgs = new double[numPorts][];
-	    if (_dampingInUse)
-	    	_savedOutMsgArray = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
-	    	_outPortMsgs[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_outPortMsgs[port].length];
-	    }
-    }
     
     
 	public void setDamping(int index, double val)
@@ -151,13 +133,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public double getDamping(int index)
 	{
 		return _dampingParams[index];
-	}
-
-
-	@Override
-	public ArrayList<Port> getPorts() 
-	{
-		return getFactor().getPorts();
 	}
 
 	@Override
@@ -223,5 +198,90 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	{
 		return Sort.quickfindFirstKindices(msg, k);
 	}
+
+
+	@Override
+	public double[][] getInPortMsgs() 
+	{
+		// TODO Auto-generated method stub
+		return _inPortMsgs;
+	}
+
+
+	@Override
+	public double[][] getOutPortMsgs() 
+	{
+		// TODO Auto-generated method stub
+		return _outPortMsgs;
+	}
+
+
+
+
+
+	@Override
+	protected void createMessages() 
+	{
+
+		int numPorts = _factor.getSiblings().size();
+	    _inPortMsgs = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++) 
+	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
+	    
+	    _outPortMsgs = new double[numPorts][];
+	    if (_dampingInUse)
+	    	_savedOutMsgArray = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++)
+	    {
+	    	if (_dampingInUse)
+	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+	    }		
+	}
+
+	@Override
+	public void initialize() 
+	{
+		for (int i = 0; i < _inPortMsgs.length; i++)
+		{
+			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		}
+		
+	}
+
+
+	//TODO: make generic double [] message object
+	@Override
+	protected void connectToVariables() 
+	{
+		//messages were created in constructor
+		int index = 0;
+		for (VariableBase vb : _factor.getVariables())
+		{
+			ISolverVariable sv = vb.getSolver();
+			_outPortMsgs[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
+			index++;
+		}		
+	}
+	
+
+//    protected void updateMessageCache()
+//    {
+//    	int numPorts = _factor.getSiblings().size();
+//	    _inPortMsgs = new double[numPorts][];
+//	    _outPortMsgs = new double[numPorts][];
+//	    if (_dampingInUse)
+//	    	_savedOutMsgArray = new double[numPorts][];
+//	    
+//	    for (int port = 0; port < numPorts; port++)
+//	    {
+//	    	_inPortMsgs[port] = (double[])_factor.getSiblings().get(port).getInputMsg();
+//	    	_outPortMsgs[port] = (double[])_factor.getSiblings().get(port).getOutputMsg();
+//	    	if (_dampingInUse)
+//	    		_savedOutMsgArray[port] = new double[_outPortMsgs[port].length];
+//	    }
+//    }
 }
 
