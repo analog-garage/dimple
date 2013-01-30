@@ -12,14 +12,16 @@
 \usepackage{listings}
 \usepackage{hyperref}
 
- 
+\parskip = 0.15in
+\parindent = 0.0in
+
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
  
 \lstset{ %
   language=Matlab,                % the language of the code
-  basicstyle=\footnotesize,           % the size of the fonts that are used for the code
+  basicstyle=\footnotesize\ttfamily,           % the size of the fonts that are used for the code
   numbers=left,                   % where to put the line-numbers
   numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
   stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
@@ -100,7 +102,7 @@ PASSED ALL TESTS
 Dimple is a tool for rapidly prototyping algorithms that can be described with Factor Graphs and solved with belief propagation algorithms or sampling based algorithms.
 Features
 \begin{itemize}
-\item Runs the sum product, min sum, particle bp, or Gibbs algorithm on a factor graph.
+\item Runs the sum product, min sum, particle BP, or Gibbs algorithm on a factor graph.
 \item Supports arbitrary discrete variables.
 \item Some solvers (Particle BP, Gibbs, and Gaussian) support continuous variables.
 \item Supports arbitrary factor functions.
@@ -115,11 +117,12 @@ Factor graphs can be used to describe a number of commonly used
 statistical models, such as hidden Markov models, Markov random 
 fields, Kalman filters, and Bayes nets. 
 
-Suppose that we are given a set of n discrete random variables: $a_1,...,a_n$.  The random variables have some joint probability distribution:  $ p(a_1,a_2,...,a_n) $.  Suppose that the joint probability distribution factors, in the following sense: there exist subsets  $ S_1,...,S_k \subseteq \lbrace 1,2,...,n\rbrace $ where $ S_j = \lbrace S_1^j,s_2^j,...,s_{t(j)}^j \rbrace $ and such that $ p(a_1,a_2,...,a_n) = \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,s_{t(j)}^j) $
+Suppose that we are given a set of n discrete random variables: $a_1,...,a_n$.  The random variables have some joint probability distribution:  $ p(a_1,a_2,...,a_n) $.  Suppose that the joint probability distribution factors, in the following sense: there exist subsets  $ S_1,...,S_k \subseteq \lbrace 1,2,...,n\rbrace $ where $ S_j = \lbrace S_1^j,s_2^j,...,s_{t(j)}^j \rbrace $ and such that $p(a_1,a_2,...,a_n) = \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,a_{s_{t(j)}^j})$.
 
 For example, if the $a_i$ form a Markov chain, then the joint probability can be factored as
-
+%
 \begin{eqnarray}
+\label{eqn:markovChain}
 p(a_1,a_2,...,a_n) &=& p(a_1) \prod_{j=1}^{n-1}p(a_{j+1}|a_j) \\
 		   &=& f_0(a_1) \prod_{j=1}^{n-1} f_j(a_j,a_{j+1})
 \end{eqnarray}
@@ -127,35 +130,34 @@ p(a_1,a_2,...,a_n) &=& p(a_1) \prod_{j=1}^{n-1}p(a_{j+1}|a_j) \\
 The factors above are normalized, in the sense that as the $a_i$  vary, 
 the probabilities sum to one.  We will define our factors more 
 generally and ask only that they are proportional to the joint 
-probability.  So, we call the fi a collection of factors of $p()$ if 
-
-
+probability.  So, we call the $f_{j}$ a collection of factors of $p$ if 
+%
 \[
-p(a_1,a_2,...,a_n) \propto \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,s_{t(j)}^j) 
+p(a_1,a_2,...,a_n) \propto \prod_{j=1}^k f_j(a_{s_1^j},a_{s_2^j},...,a_{s_{t(j)}^j}) 
 \]
 
 The product of the factors then differs from the joint probability only by 
 multiplication by a normalizing constant.
 
 When a probability distribution can be expressed as a product of small factors 
-(i.e. $|S_j|$ is small for all j), then if is possible to invoke a host of powerful 
+(i.e., $|S_j|$ is small for all j), then if is possible to invoke a host of powerful 
 tools for modeling and inference, as we will soon see.
 
 Suppose that we are given a factored representation of a joint probability distribution.  
 It is possible to describe the structure of the factors as a graph.  We can represent 
 each variable $a_i$  and each function $f_j$  by a node in the graph, and place an (undirected) 
 edge between node $a_i$  and node $f_j$ if and only if the variable $a_i$  is an argument in the 
-function $f_j$.  These two types of nodes are referred to as function nodes and variable nodes. 
+function $f_j$.  These two types of nodes are referred to as factor nodes and variable nodes. 
 Because all edges lie between the two disjoint classes of nodes, the resulting graph is bipartite.  
 This graph is called a factor graph.
 
 In the remainder of this documentation, we slightly abuse notation and use $f_j$  and $a_i$  
 to refer both to the nodes of the factor graph and to the underlying factors and variables 
-(i.e. both the graphical representation of these entities and the mathematical entities underlying them).
+(i.e., both the graphical representation of these entities and the mathematical entities underlying them).
 
 To understand what factor graphs look like, we will construct several examples.  
-First, let us continue with a Markov chain. Equation 1 expressed a Markov chain in factored form, where  
-
+First, let us continue with a Markov chain. Equation~\ref{eqn:markovChain} expressed a Markov chain in factored form, where  
+%
 \[
 f_j(a_j,a_{j+1})=p(a_{j+1}|a_j)
 \]
@@ -166,15 +168,17 @@ We display the corresponding factor graph in the following figure:
 
 Next, let us consider a hidden Markov model (HMM).  We can construct the 
 corresponding factor graph by extending the previous example.  An HMM 
-contains a Markov chain transiting from state a~i~ to a~i+1~ . There is also an 
-observation b~i~  made of each state; if we are given a~i~ , then b~i~  
+contains a Markov chain transiting from state $a_{i}$ to $a_{i+1}$. There is also an 
+observation $b_{i}$ made of each state; if we are given $a_{i}$, then $b_{i}$
 is conditionally independent of all other variables. We can incorporate 
 this probability by using a factor:
-
-$ g_i(a_i) = Pr(b_i|a_i) $
+%
+\[
+g_i(a_i) = Pr(b_i|a_i)
+\]
 
 The product of our factors is then
-
+%
 \begin{eqnarray*}
 f_0 \left( \prod_{j=1}^{n-1} f_j(a_j,a_j+1) \right) \prod_{j=1}^n g_j(a_j)  &=& 
     Pr(a_1) \left( \prod_{j=1}^{n-1} Pr(a_{j+1}|a_j)  \right) \prod_{j=1}^n Pr(b_j|a_j)  \\
@@ -182,17 +186,11 @@ f_0 \left( \prod_{j=1}^{n-1} f_j(a_j,a_j+1) \right) \prod_{j=1}^n g_j(a_j)  &=&
 \end{eqnarray*}
 
 Since the $b_i$ observed, then $Pr(b_1,...,b_n)$ is a constant.  Therefore
-
-\begin{eqnarray*}
-Pr(a_1,...,a_n,b_1,...,b_n) & \propto & \frac{a}{b} \\
-			    &=& Pr(a_1)
-\end{eqnarray*}
-
+%
 \begin{eqnarray*}
 Pr(a_1,...,a_n,b_1,...,b_n) & \propto & \frac{Pr(a_1,...,a_n,b_1,...,b_n)}{Pr(b_1,...,b_n)} \\
 			    &=& Pr(a_1,...,a_n|b_1,...,b_n)
 \end{eqnarray*}
-
 
 as desired.
 
@@ -201,20 +199,19 @@ as desired.
 The resulting factor graph takes the following form illustrated in the figure above. Note 
 that the variables $b_i$  need not appear explicitly in the factor graph; we have incorporated their effect in the $g_i$  factors.
 
-Generalizing from a Markov chain to an HMM illustrates a very powerful feature of factor graphs.  Complicated mathematical models are often composed of simpler parts.  When these models are expressed as factor graphs, we can frequently reuse the simpler factor graphs to construct the more complicated ones.  This can be done simply in Dimple by using the nested graphs feature (see Nested Graph section).
+Generalizing from a Markov chain to an HMM illustrates a very powerful feature of factor graphs.  Complicated mathematical models are often composed of simpler parts.  When these models are expressed as factor graphs, we can frequently reuse the simpler factor graphs to construct the more complicated ones.  This can be done simply in Dimple by using the nested graphs feature (see section~\ref{sec:nestedGraphs} on Nested Graphs).
 
 As a final example, we will construct a factor graph for error correction (for this
  more advanced topic, we will assume the reader is familiar with LDPC codes).  Suppose
  that we receive a codeword from a 4-bit LDPC error-correcting code that has been corrupted by noise.  
-The sender wishes to communicate a four-bit codeword (a1,a2,a3,a4)   (satisfying some parity check equations), 
-but the receiver only observes the corrupted values (b1,b2,b3,b4) . (The domain of the bi  is determined by the 
-communication channel.  For instance, if we have a discrete binary symmetric channel, then the bi  will be bits; 
-if we have a continuous additive white Gaussian noise channel and some modulation scheme, the bi  will be real-valued.) 
-Let H  be the parity check matrix of the LDPC code used, i.e. the codeword (a1,a2,a3,a4)  verifies the equation $Ha=0(mod2) $
+The sender wishes to communicate a four-bit codeword $(a_{1},a_{2},a_{3},a_{4})$ satisfying some parity check equations, 
+but the receiver only observes the corrupted values $(b_{1},b_{2},b_{3},b_{4})$. (The domain of the $b_{i}$ is determined by the 
+communication channel.  For instance, if we have a discrete binary symmetric channel, then the $b_{i}$ will be bits; 
+if we have a continuous additive white Gaussian noise channel and some modulation scheme, the $b_{i}$  will be real-valued.) 
+Let $H$ be the parity check matrix of the LDPC code used, i.e., the codeword $(a_{1},a_{2},a_{3},a_{4})$ verifies the equation $Ha=0 \textrm{ mod } 2$.
 
-For instance, suppose that H is the following parity check matrix:
-
-
+For instance, suppose that $H$ is the following parity check matrix:
+%
 \[
 H = \left( \begin{array}{cccc}
 1 & 1 & 0 & 1 \\
@@ -222,7 +219,7 @@ H = \left( \begin{array}{cccc}
 0 & 1 & 1 & 1 \end{array} \right) 
 \]
 
-Suppose that the error is independent, i.e., if we condition on $a_i$, $b_i$ is conditionally independent.   Then, the following factor graph represents the decoding task at hand.
+Suppose that the error is independent, i.e., if we condition on $a_i$, $b_i$ is conditionally independent of the other variables.   Then, the following factor graph represents the decoding task at hand.
 
 \includegraphics{images/DecoderExample.png}
 
@@ -235,12 +232,15 @@ Given a factor graph, the objective is often to compute the marginal distributio
 
 BP is an iterative message-passing algorithm where messages pass along the edges of the factor graph.  A “message” can be viewed as an un-normalized probability distribution.  The algorithm comes in a number of variants depending on the message update rule and the order of the message updates.  
 
-Sum-Product generalizes a number of algorithms, including the “forward-backward” algorithm of HMMs, and the BCJR algorithm of coding theory. It always gives the exact answer (upon convergence), when the underlying factor graph is a tree. Although it is not an exact algorithm for general graphs, BP has been found to give excellent results for a wide variety of factor graphs, and runs particularly fast on sparse factor graphs (i.e. factor graphs of low node and factor degree).
+The sum-product form of BP generalizes a number of algorithms, including the “forward-backward” algorithm of HMMs, and the BCJR algorithm of coding theory. It always gives the exact answer when the underlying factor graph is a tree (if the graph contains no cycles). Although it is not an exact algorithm for general graphs, BP has been found to give excellent results for a wide variety of factor graphs, and runs particularly fast on sparse factor graphs (i.e., factor graphs of low node degree).
+
+
+
+
 
 \section{Dimple User Tutorial}
 
-This tutorial describes how to code using the MATLAB Dimple client. We provide four tutorials. The first example is a simple hidden Markov model. The second models a 4-bit XOR. The third tutorial explains how to use nested graphs. The final is an LDPC code.
-See /demo/12\_Tutorial for the code. 
+This tutorial describes how to code using the MATLAB Dimple client. We provide four tutorials. The first example is a simple hidden Markov model. The second models a 4-bit XOR. The third tutorial explains how to use nested graphs. The final is an LDPC code.  See /demo/12\_Tutorial for the code. 
 
 \subsection{Creating and Solving a Simple Factor Graph}
 
@@ -280,7 +280,7 @@ SaturdayWeather=Discrete(Domain);
 SundayWeather=Discrete(Domain);
 \end{lstlisting}
 
-IMPORTANT: In the above, had we used the declaration Domain=[‘sunny','rainy'] instead (square brackets instead of curly brackets), the domain would have consisted of 10 letters instead of 2 strings (i.e. the variables would have been 10-ary instead of).
+IMPORTANT: In the above, had we used the declaration Domain=['sunny','rainy'] instead (square brackets instead of curly brackets), the domain would have consisted of 10 letters instead of 2 strings (i.e., the variables would have been 10-ary instead of binary).
 
 
 \subsubsection{Adding Factors}
@@ -319,7 +319,7 @@ HMM.addFactor(@MC_transition_Tutorial,FridayWeather,SaturdayWeather);
 HMM.addFactor(@MC_transition_Tutorial,SaturdayWeather,SundayWeather);
 \end{lstlisting}
 
-We now need to add factors corresponding to the observations of each day. As it happens, when using an addFactor command, the arguments need not be all random variables – some can be declared as constants. We see now how to use this fact to easily add the observations to each day. We first declare an observation function (see /demo/12\_Tutorial/observation\_function\_Tutorial.m):
+We now need to add factors corresponding to the observations of each day. As it happens, when using an addFactor command, the arguments need not be all random variables---some can be declared as constants. We see now how to use this fact to easily add the observations to each day. We first declare an observation function (see /demo/12\_Tutorial/observation\_function\_Tutorial.m):
 
 
 \begin{lstlisting}
@@ -364,7 +364,7 @@ HMM.addFactor(@observation_function_Tutorial,SaturdayWeather,'book');
 HMM.addFactor(@observation_function_Tutorial,SundayWeather,'book');
 \end{lstlisting}
 
-As we can see, though the functions itself depends on two variables, each factor only depends on one random variable (the other argument being set as a constant during the addFactor call). This in effect creates a factor connected only to one variable of the factor graph.
+As we can see, though the function itself depends on two variables, each factor only depends on one random variable (the other argument being set as a constant during the addFactor call). This in effect creates a factor connected only to one variable of the factor graph.
 
 There is a cost incurred everytime addFator is called.  For large Factor Graphs with many factors of the same type, it can be advantageous to use a vectorized version of addFactor.  The following code will create a transition factor between each pair of consecutive variables and will execute much more quickly than a for loop with addFactor.
 
@@ -389,9 +389,9 @@ The previous code will create N xor factors across each of the N sets of 3 varia
 \subsubsection{Specifying Inputs}
 
 
-The last step consists in adding the prior for the MondayWeather variable. We could, as above, use a factor with a single variable. Let us introduce a new command to easily add a single variable factor – the input method (on variables).
+The last step consists in adding the prior for the MondayWeather variable. We could, as above, use a factor with a single variable. Let us introduce a new command to easily add a single variable factor---the input method (on variables).
 
-For a vector of probabilities (i.e. nonnegative numbers which sums up to one), the method Variable.Input adds a single factor which depends on this variable only, with values equal to those given by the vector.
+For a vector of probabilities (i.e., nonnegative numbers which sums up to one), the method Variable.Input adds a single factor which depends on this variable only, with values equal to those given by the vector.
 
 In our case, we do:
 
@@ -405,7 +405,7 @@ The Input command can be used in several different ways. Some notes of interest 
 \begin{itemize}
 \item The Input command can typically be used for prior probabilities of the root variables in a Bayes Net, or for the initial node of a Markov Chain or HMM.
 \item The Input command can also be used for any factors with only one variable, for instance, for observation factors (see the introduction to factor graphs on how to remove observations and turn them into single node factors).
-\item The observation\_function\_Tutorial in the above example was not entirely (see below) required – as we could have used the input command instead.
+\item The observation\_function\_Tutorial in the above example was not entirely required (see below)---we could have used the input command instead.
 \item IMPORTANT: Unlike the addFactor command, the Input command can be used only once for each variable. That is, once you have specified an input for a variable, re-specifying this input will destroy the previous factor and create a new one. In the example above, using only the Input command, it would not have been possible to separately incorporate both the prior on Monday’s weather and the factor corresponding to Monday’s observation. However, this feature is very useful when Input is used to specify external information, and when the user wants to see the effect of external information. Say for instance that Bob mentions to Alice that it rained on Wednesday. Alice can simply use the command WednesdayWeather.Input=[0 1]. If Bob corrects himself and says he misremembered, and that it actually was sunny that day, Alice can correct the information using again the command WednesdayWeather.Input=[1 0].
 \end{itemize}
 
@@ -428,7 +428,7 @@ By default, the solver will use either a Flooding Schedule or a Tree Schedule de
 \begin{itemize}
 \item Compute all variable nodes
 \item Compute all factor nodes
-\item Repeat for a specified number of iterations.
+\item Repeat for a specified number of iterations
 \end{itemize}
 
 If the factor-graph is a tree (one that contains no cycles), the solver will automatically detect this and use a Tree Schedule by default.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  In this case, NumIterations should be 1, which is its default value.
@@ -441,7 +441,7 @@ Once the solver has finished running, we can access the marginal distribution of
 TuesdayWeather.Belief
 \end{lstlisting}
 
-This returns a vector of probability of the same length as the domain total size (i.e. the product of its dimensions), with the probability of each domain variable.
+This returns a vector of probability of the same length as the domain total size (i.e., the product of its dimensions), with the probability of each domain variable.
 Another way to solve the factor graph is to use the Solver.iterate(n) command, which runs the factor graph for n iterations (without arguments, it runs for 1 iteration).
 
 
@@ -485,7 +485,7 @@ $B_i$ being equally likely. }
 For our example, we will choose  $P(B_1 =1)=P(B_2=1)=P(B_3=1)=.8$ and  
 $P(B_4=1)$ = 0.5.
 
-We will build our factor graph in two different ways. The first directly uses a 4-bit XOR, and uses mostly tools seen in the previous tutorial, while the second introduces the Bit kind of random variable, and how to use an intermediate variable to reduce the degree of a factor graph with parity checks (i.e. XOR function).
+We will build our factor graph in two different ways. The first directly uses a 4-bit XOR, and uses mostly tools seen in the previous tutorial, while the second introduces the Bit kind of random variable, and how to use an intermediate variable to reduce the degree of a factor graph with parity checks (i.e., XOR function).
 
 The first way of building the factor graph uses an inefficient N-bit XOR function defined as follows (from /demo/12\_Tutorial/BadNBitXorDelta\_Tutorial.m):
 
@@ -625,8 +625,8 @@ The following figure represents the Factor Graph that is created and solved in t
 
 \includegraphics{images/FactorGraphTemplate.png}
 
-
 \subsection{Nested Graphs}
+\label{sec:nestedGraphs}
 Suppose we wish to use two 4-bit XORs from the previous example to create a 6-bit code.  The following diagram shows our desired Factor Graph.
 
 \includegraphics{images/NestedGraph.png}
@@ -659,7 +659,7 @@ Consider a nestable factor graph NestableFactorGraph(connectvar1, connectvar2,..
 
 In essence, the nestable factor graph represents a factor between the dummy connector variables, and the addGraph command is adding the factor to the desired actual variables.
 
-IMPORTANT: Nested factor graphs support arbitrary levels of nesting – that is, a nested factor graph can be composed of nested factor graphs.
+IMPORTANT: Nested factor graphs support arbitrary levels of nesting.  That is, a nested factor graph can be composed of nested factor graphs.
 
 Armed with this tool, we can very simply use our custom 4-bit XOR to implement the factor graph described at the beginning of the section:
 
@@ -687,7 +687,7 @@ disp(d.Value');
 
 
 
-IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) command above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addGraph call requires a single argument – an array of four random 
+IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) command above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addGraph call requires a single argument---an array of four random 
 
 
 \subsection{LDPC Example}
@@ -734,7 +734,7 @@ where the value after Xmx is the maximum amount of heap memory allocated to Java
 
 \subsection{Prepackaged Factor Functions}
 
-If Dimple is installed correctly, the users will have Dimple/lib on their path and can use the Lyric Dimple prepackaged factor functions. 
+If Dimple is installed correctly, the users will have Dimple/lib on their path and can use the Dimple prepackaged factor functions. 
 
 Some of these are standard MATLAB functions, and can be used with the addFactor method to create factors. They are:
 
@@ -847,8 +847,8 @@ Variable Streams represent infinite streams of variables.  When instantiating a 
 When adding a repeated FactorGraph, users need to be able to specify how a nested graph connects to the variable streams.  Slices can be used to indicate where in the stream a nested graph should connect.  Slices are essentially references to a Variable Stream with a specified offset and increment.  Slices have two main methods:
 
 \begin{itemize}
-\item hasNext() – Returns true if the next variable referenced by the slice can be retrieved.
-\item getNext() – Returns the next variable in the  slice if it can be referenced.  Otherwise throws an error.
+\item hasNext() -- Returns true if the next variable referenced by the slice can be retrieved.
+\item getNext() -- Returns the next variable in the  slice if it can be referenced.  Otherwise throws an error.
 \end{itemize}
 
 Users typically shouldn’t use these methods.  Slices should primarily be used as arguments to addFactor.
@@ -866,12 +866,12 @@ Now we can get slices in various ways:
 \begin{itemize}
 \item S.getSlice(start,increment,end); 
 \begin{itemize}
-\item Start – Specifies this slices starting point as an index into the variable stream.
-\item Increment – When users call getNext() on a slice, this increment parameter describes how to increment the index into the variable stream.
-\item End – Indicates at what point hasNext() should return false regardless of whether there is data or not.
+\item Start -- Specifies this slices starting point as an index into the variable stream.
+\item Increment -- When users call getNext() on a slice, this increment parameter describes how to increment the index into the variable stream.
+\item End -- Indicates at what point hasNext() should return false regardless of whether there is data or not.
 \end{itemize}
-\item S.getSlice(start,end) – equivalent to S.getSlice(start,1,end);
-\item S.getSlice(start) – equivalent to S.getSlice(start,1,Inf);
+\item S.getSlice(start,end) -- equivalent to S.getSlice(start,1,end);
+\item S.getSlice(start) -- equivalent to S.getSlice(start,1,Inf);
 \end{itemize}
 
 
@@ -905,9 +905,9 @@ Users can create data sources and attach them to VariableStreams.  As variables 
 DataSources must implement the hasNext and getNext methods.  The only DataSource type currently implemented is DoubleArrayDataSource.  Methods include:
 
 \begin{itemize}
-\item DoubleArrayDataSource(); - Constructor that creates an empty data source
-\item DoubleArrayDataSource(data); - Constructor that expects a matrix as input.  The first dimension is the list of data, the second dimension is a double array that gets applied to a variable’s input.
-\item Add(data); - Users can add  more data to the end of the data source.
+\item DoubleArrayDataSource() -- Constructor that creates an empty data source
+\item DoubleArrayDataSource(data) -- Constructor that expects a matrix as input.  The first dimension is the list of data, the second dimension is a double array that gets applied to a variable’s input.
+\item Add(data) -- Users can add  more data to the end of the data source.
 \end{itemize}
 
 \paragraph{Solving}
@@ -915,11 +915,11 @@ DataSources must implement the hasNext and getNext methods.  The only DataSource
 Eventually we may implement data sinks to that rolled up graphs can stream without function calls.  Currently, users must write code to advance the streams, solve, retrieve data, and poll for ending conditions.  You can see in the code example how the following methods are used:
 
 \begin{itemize}
-\item Fg.hasNext() – Returns true only if all of the Variable Streams have more data (or have no data source set)
-\item Fg.advance() – Deletes the first nested graph in the buffer for each FactorGraphStream, adds a new Nested Graph at the end, deletes obsolete variables, and adds data to newly created variables.
-\item Fg.initialize() – This method can be used even without rolled up graphs.  It initializes all the messages in the graph.  We need to use this in rolled up graphs because we tell solve not to initialize so as not to lose old information.
-\item Fg.solve(false) – Solve is usually called without an argument (default argument is true).  Setting the argument to false avoids initialization.
-\item Fg.reset() – Once users have created a graph, they may want to use the same graph to run multiple times.  Setting reset on the FactorGraph will remove BlastFromThePast factors end set stream and slice indices back to their starting points.
+\item Fg.hasNext() -- Returns true only if all of the Variable Streams have more data (or have no data source set)
+\item Fg.advance() -- Deletes the first nested graph in the buffer for each FactorGraphStream, adds a new Nested Graph at the end, deletes obsolete variables, and adds data to newly created variables.
+\item Fg.initialize() -- This method can be used even without rolled up graphs.  It initializes all the messages in the graph.  We need to use this in rolled up graphs because we tell solve not to initialize so as not to lose old information.
+\item Fg.solve(false) -- Solve is usually called without an argument (default argument is true).  Setting the argument to false avoids initialization.
+\item Fg.reset() -- Once users have created a graph, they may want to use the same graph to run multiple times.  Setting reset on the FactorGraph will remove BlastFromThePast factors end set stream and slice indices back to their starting points.
 \end{itemize}
 
 \paragraph{Accessing Variables}
@@ -930,11 +930,11 @@ Vs = BitStream();
 \end{lstlisting}
 
 \begin{itemize}
-\item Vs.FirstVar – Returns the first variable in the buffer.
-\item Vs.LastVar – Returns the last variable in the buffer.
-\item Vs.FirstVarIndex – Returns the index of the first variable in the buffer (used with get method)
-\item Vs.LastVarIndex – Returns the index of the last variable in the buffer (used with get method)
-\item Vs.get(index) – Retrieves a variable of the specified index.  This is a 1-based value.
+\item Vs.FirstVar -- Returns the first variable in the buffer.
+\item Vs.LastVar -- Returns the last variable in the buffer.
+\item Vs.FirstVarIndex -- Returns the index of the first variable in the buffer (used with get method)
+\item Vs.LastVarIndex -- Returns the index of the last variable in the buffer (used with get method)
+\item Vs.get(index) -- Retrieves a variable of the specified index.  This is a 1-based value.
 \end{itemize}
 
 
@@ -1046,8 +1046,8 @@ z = Discrete(domain,2,3,4)
 The Discrete constructor can be used to create an N-dimensional collection of Dimple Discretes.  It takes two arguments:
 
 \begin{itemize}
-\item Domain – All Variables are currently discrete variables with finite domains.
-\item A Variable List of Dimensions – The user can specify 0 to N dimensions for the Variable matrix.
+\item Domain -- All Variables are currently discrete variables with finite domains.
+\item A Variable List of Dimensions -- The user can specify 0 to N dimensions for the Variable matrix.
 \end{itemize}
 
 Let’s examine each of these arguments in more detail in the following sections.
@@ -1059,10 +1059,10 @@ A discrete random variable has a domain associated with it.  A domain is a set. 
 The following are all valid domains:
 
 \begin{lstlisting}
-a) a = Discrete({1,2,3})
-b) b = Discrete({1+i, i, 2*i})
-c) c = Discrete({[1 0; 0 1],[i 1, 2*i 1]})
-d) d = Discrete({[1 0; 0 1],2,i+1})
+a = Discrete({1,2,3})
+b = Discrete({1+i, i, 2*i})
+c = Discrete({[1 0; 0 1],[i 1, 2*i 1]})
+d = Discrete({[1 0; 0 1],2,i+1})
 \end{lstlisting}
 
 (a) creates a variable whose domain consists of three values: 1, 2, and 3.  (b) creates a variable whose domain consists of three complex numbers.  (c) creates a variable whose domain consists of two elements, each of which is a 2x2 complex matrix.  (d) creates a variable whose domain consists of three elements: a matrix, real scalar, and complex scalar.
@@ -1211,8 +1211,8 @@ Examples:
 \item Real(4,1) specifies a 4x1 vector of real variables with unbounded domain and with no input distribution.
 \item Real([-1 1]) specifies a scalar real variable with domain from -1 to 1.
 \item Real([-Inf 0],4,10,2) specifies a 4x10x2 array of real variables, each with the domain from negative infinity to zero.
-\item Real(com.lyricsemi.dimple.client.FactorFunctions.ExampleFactor()) specifies a scalar real variable with a prior distribution specified by the Java FactorFunction called ExampleFactor.
-\item Real([0 1], com.lyricsemi.dimple.client.FactorFunctions.ExampleFactor(), 1,6) specifies a vector of real variables, each with a domain from 0 to 1, and with a prior distribution specified by the Java FactorFunction called ExampleFactor.
+\item Real(com.analog.lyric.dimple.FactorFunctions.ExampleFactor()) specifies a scalar real variable with a prior distribution specified by the Java FactorFunction called ExampleFactor.
+\item Real([0 1], com.analog.lyric.dimple.FactorFunctions.ExampleFactor(), 1,6) specifies a vector of real variables, each with a domain from 0 to 1, and with a prior distribution specified by the Java FactorFunction called ExampleFactor.
 \end{itemize}
 
 NOTE: the discrete variable constructor is now called Discrete. For backwards compatibility, the Variable constructor is still supported and can also be used to create a discrete variable.
@@ -1265,7 +1265,7 @@ ConnectVar=Discrete(Domain,1,5);
 NestableGraph=FactorGraph(ConnectVar);
 \end{lstlisting}
 
-The command above creates a nestable factor graph with connector variable ConnectVar (which is an array). Once the nestable factor graph is fully defined (i.e. all the factors have been added), knowing what the connector variables are is not useful anymore, as they only serve as dummy variables.
+The command above creates a nestable factor graph with connector variable ConnectVar (which is an array). Once the nestable factor graph is fully defined (i.e., all the factors have been added), knowing what the connector variables are is not useful anymore, as they only serve as dummy variables.
 
 
 \subsubsection{addFactor}
@@ -1404,7 +1404,7 @@ Users must extend the FactorFunction class. They have to provide two methods:
 \end{itemize}
 
 \begin{lstlisting}
-import com.lyricsemi.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 
 /*
  * This factor enforces equality between all variables and weights
@@ -1592,6 +1592,20 @@ b = Bit(10,3);
 fg.addFactorVectorized(ng,{b, 1});
 \end{lstlisting}
 
+
+
+
+\subsubsection{addGraph}
+
+\begin{lstlisting}
+MyGraph.addGraph(NestableGraph,Vars);	
+\end{lstlisting}
+
+The addGraph method creates a copy of the nestable factor graph, and connects the connector variables to the input variables of the addGraph method.
+
+
+
+
 \subsubsection{Setting the Solver}
 
 
@@ -1648,7 +1662,7 @@ In this case, Dimple will not use the custom factor or combo table associated wi
 Dimple has been modified to allow users to register commonly used solvers so that they can be assigned using shorter names. Previously users had to do:
 
 \begin{lstlisting}
-setSolver(com.lyricsemi.dimple.solvers.sumproduct.Solver());
+setSolver(com.analog.lyric.dimple.solvers.sumproduct.Solver());
 fg = FactorGraph();
 \end{lstlisting}
 
@@ -1656,7 +1670,7 @@ or
 
 \begin{lstlisting}
 fg = FactorGraph();
-fg.Solver = com.lyricsemi.dimple.solvers.sumproduct.Solver();
+fg.Solver = com.analog.lyric.dimple.solvers.sumproduct.Solver();
 Users can now do:
 setSolver('SumProduct'); 
 fg = FactorGraph();
@@ -1703,28 +1717,203 @@ unregisterSolver(solverName);
 \end{lstlisting}
 
 
-\subsubsection{addGraph}
+\subsubsection{Setting the Scheduler}
 
+The scheduler determines the schedule to apply when solving the graph, which is the order of updates of variables and factors.  The user may choose among one of several pre-defined schedulers using the Scheduler method.  Each scheduler examines the structure of the graph and applies a rule to determine the schedule that will be used.  Alternatively, the user may supply a custom schedule using the Schedule method (see section~\ref{sec:customSchedules}).
+
+If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
+
+A scheduler is specified as follows:
 \begin{lstlisting}
-MyGraph.addGraph(NestableGraph,Vars);	
+MyGraph.Scheduler = 'ExampleScheduler';	
 \end{lstlisting}
 
-The addGraph method creates a copy of the nestable factor graph, and connects the connector variables to the input variables of the addGraph method.
+When setting the scheduler for a graph, the name of the scheduler is case sensitive.
+
+For all solvers except for the Gibbs solver (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available:
+
+\begin{tabular}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{DefaultScheduler} & Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified. \\ \hline
+%
+\textsf{TreeOrFloodingScheduler} & The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  If the entire graph is a tree, NumIterations should be set to 1, which is its default value.  If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below). \\ \hline
+%
+\textsf{TreeOrSequentialScheduler} & The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  \\ \hline
+%
+\textsf{FloodingScheduler} & The solver will apply a Flooding Schedule.  For each iteration, all variable nodes are updated, followed by all factor nodes.  Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result. \\ \hline
+%
+\textsf{SequentialScheduler} & The solver will apply a Sequential Schedule.  For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated.  The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph. \\ \hline
+%
+\textsf{RandomWithoutReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement.  On each subsequent iteration, a new random order is chosen.  Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once. \\ \hline
+%
+\textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
+%
+\end{tabular}
+
+
+In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
+
+It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
+%
+\begin{lstlisting}
+SubGraph.Scheduler = 'SequentialScheduler';
+ParentGraph.addFactor(SubGraph, boundaryVariables);
+ParentGraph.Scheduler = 'FloodingScheduler';
+\end{lstlisting}
+
+For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
+
+For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
+
+
+Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
+
+\begin{tabular}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{GibbsDefaultScheduler} & Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver. \\ \hline
+%
+\textsf{GibbsSequentialScanScheduler} & The solver will apply a Sequential Scan Schedule.  For each scan, each variable is resampled in a fixed order.  The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph. \\ \hline
+%
+\textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
+%
+\end{tabular}
+
+Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.
+
+
+\subsubsection{Custom Schedules}
+\label{sec:customSchedules}
+
+
+Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
+
+The following code demonstrates this feature:
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   fg = FactorGraph();
+   a = Bit();
+   b = Bit();
+   c = Bit();
+   eq1 = fg.addFactor(eq,a,b);
+   eq2 = fg.addFactor(eq,b,c);
+   
+   %define schedule
+   % update b
+   % update eq1->a
+   % update eq2->c
+   % update a->eq1
+   % update c->eq2
+   % update eq1->b
+   % update eq2->b
+   schedule = {
+       b,
+       {eq1,a},
+       {eq2,c},
+       {a,eq1},
+       {c,eq2},
+       {eq1,b},
+       {eq2,b}
+       };
+   
+   fg.Schedule = schedule;
+   
+   %Set priors
+   a.Input = .6;
+   b.Input = .7;
+   c.Input = .8;
+   
+   %Solve
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   b = Bit(2,1);
+   nfg = FactorGraph(b);
+   nfg.addFactor(eq,b(1),b(2));
+   b = Bit(3,1);
+   fg = FactorGraph();
+   nf1 = fg.addFactor(nfg,b(1),b(2));
+   nf2 = fg.addFactor(nfg,b(2),b(3));
+   
+   
+   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
+   b(1).Input = .7;
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+And finally we look at nesting a custom schedule:
+
+
+\begin{lstlisting}
+   %Now let's try nesting with a custom schedule on the nested graph.
+   
+   %Create a graph to nest and give it a funny schedule    
+   % nfg: eb(1) - f1 - ib - f2 - eb(2)
+   eb = Bit(2,1);
+   ib = Bit();
+   nfg = FactorGraph(eb);
+   f1 = nfg.addFactor(eq,eb(1),ib);
+   f2 = nfg.addFactor(eq,ib,eb(2));
+   %Set an input and solve
+   eb(1).Input = .8;
+   
+   nfg.NumIterations = 1;
+   nfg.solve();
+   
+   %We expect the output to be equal to the input since the tree
+   %scheduler passes the info along.
+   assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
+   
+   %Now we create a schedule that will not propagate the info.
+   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
+   nfg.solve();
+   
+   assertElementsAlmostEqual(eb(2).Belief,.5);
+
+   %Nest it and see if the schedule is preserved
+   b = Bit(2,1);
+   fg = FactorGraph();
+   g = fg.addFactor(nfg,b);
+   
+   fg.Schedule = {b(1),b(2),g};
+   
+   b(1).Input = .8;
+   fg.NumIterations = 1;
+   fg.solve();
+   assertElementsAlmostEqual(b(2).Belief,.5);
+\end{lstlisting}
+
+
 
 \subsubsection{NumIterations}
 
 \begin{lstlisting}
-MyGraph.NumIterations=30;
+MyGraph.NumIterations = 30;
 \end{lstlisting}
 
-The NumIterations method sets the number of iterations BP is going to run for. It is desirable to set a positive value before running solve, as the default value is 0.
+The NumIterations method sets the number of iterations BP is going to run for.  This only applies to solvers that use BP, which are the SumProduct, MinSum, Gaussian, and ParticleBP solvers.
+
+The default value is 1.  For a factor graph with a tree-structure, when using the default scheduler, one iteration is appropriate.  Otherwise, would normally be appropriate to set the number of iterations to a larger value.
 
 
 \subsubsection{Solve}
 
-The solve command calls the java solver and runs BP on the factor graph for the desired number of iterations, using a flooding schedule.
+\begin{lstlisting}
+MyGraph.solve();
+\end{lstlisting}
 
-\subsubsection{Modifying an existing graph}
+The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
+
+
+\subsubsection{Modifying an Existing Graph}
 
 
 \paragraph{Removing a Factor}
@@ -1855,113 +2044,6 @@ To join factors, Dimple does the following:
 \item Multiply the values for each row.
 \end{itemize}
 
-
-\subsubsection{Custom Schedules}
-
-
-
-Dimple supports user defined custom schedules created in MATLAB.
-The following code demonstrates that feature:
-
-\begin{lstlisting}
-   eq = @(x,y) x == y;
-   fg = FactorGraph();
-   a = Bit();
-   b = Bit();
-   c = Bit();
-   eq1 = fg.addFactor(eq,a,b);
-   eq2 = fg.addFactor(eq,b,c);
-   
-   %define schedule
-   % update b
-   % update eq1->a
-   % update eq2->c
-   % update a->eq1
-   % update c->eq2
-   % update eq1->b
-   % update eq2->b
-   schedule = {
-       b,
-       {eq1,a},
-       {eq2,c},
-       {a,eq1},
-       {c,eq2},
-       {eq1,b},
-       {eq2,b}
-       };
-   
-   fg.Schedule = schedule;
-   
-   %Set priors
-   a.Input = .6;
-   b.Input = .7;
-   c.Input = .8;
-   
-   %Solve
-   fg.NumIterations = 1;
-   fg.solve();
-\end{lstlisting}
-
-Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
-
-\begin{lstlisting}
-   eq = @(x,y) x == y;
-   b = Bit(2,1);
-   nfg = FactorGraph(b);
-   nfg.addFactor(eq,b(1),b(2));
-   b = Bit(3,1);
-   fg = FactorGraph();
-   nf1 = fg.addFactor(nfg,b(1),b(2));
-   nf2 = fg.addFactor(nfg,b(2),b(3));
-   
-   
-   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
-   b(1).Input = .7;
-   fg.NumIterations = 1;
-   fg.solve();
-\end{lstlisting}
-
-And finally we look at nesting a custom schedule:
-
-
-\begin{lstlisting}
-   %Now let's try nesting with a custom schedule on the nested graph.
-   
-   %Create a graph to nest and give it a funny schedule    
-   % nfg: eb(1) - f1 - ib - f2 - eb(2)
-   eb = Bit(2,1);
-   ib = Bit();
-   nfg = FactorGraph(eb);
-   f1 = nfg.addFactor(eq,eb(1),ib);
-   f2 = nfg.addFactor(eq,ib,eb(2));
-   %Set an input and solve
-   eb(1).Input = .8;
-   
-   nfg.NumIterations = 1;
-   nfg.solve();
-   
-   %We expect the output to be equal to the input since the tree
-   %scheduler passes the info along.
-   assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
-   
-   %Now we create a schedule that will not propagate the info.
-   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
-   nfg.solve();
-   
-   assertElementsAlmostEqual(eb(2).Belief,.5);
-
-   %Nest it and see if the schedule is preserved
-   b = Bit(2,1);
-   fg = FactorGraph();
-   g = fg.addFactor(nfg,b);
-   
-   fg.Schedule = {b(1),b(2),g};
-   
-   b(1).Input = .8;
-   fg.NumIterations = 1;
-   fg.solve();
-   assertElementsAlmostEqual(b(2).Belief,.5);
-\end{lstlisting}
 
 
 \subsubsection{Explicit Scheduling and Retrieving Message Values}
@@ -2431,10 +2513,10 @@ score(fg) = \sum_{v \in V} score(v) + \sum_{f \in F} score(f)
 The FactorGraph class provides several feature for inspecting aspects of the graph.  The ability to nest graphs complicates things a bit.  Nested FactorGraphs can be considered Factors.  All of the introspection features allow the user to view nested graphs as leaf factors or to descend into them and operate on the children of the nested graphs.  Each feature provides several methods:
 
 \begin{itemize}
-\item <FeatureName>(int relativeNestingDepth) – The relativeNestingDepth specifies how deep to descend into the nested FactorGraphs before treating deeper NestedGraphs as Factors.  Specifying 0 will treat the top level nested Graphs as factors.  Specifying a large enough number will descend all the way to the leaf factors.  Specifying something inbetween 0 and the FactorGraph’s maximum depth will descend as far as this parameter specifies before considering NestedGraphs to be factors.  The parameter contains the word “relative” because users can retrieve nested graphs.  They can call one of the feature’s methods on that nested graph.  
-\item <FeatureName>Flat() – equivalent of <FeatureName>(max int)
-\item <FeatureName>Top() – equivalent of <FeatureName>(0)
-\item <FeatureName() – equivalent of <FeatureName>Flat().  It was thought that users will most often want to operate on the FactorGraph in its flattened form.
+\item $<$FeatureName$>$(int relativeNestingDepth) -- The relativeNestingDepth specifies how deep to descend into the nested FactorGraphs before treating deeper NestedGraphs as Factors.  Specifying 0 will treat the top level nested Graphs as factors.  Specifying a large enough number will descend all the way to the leaf factors.  Specifying something between 0 and the FactorGraph’s maximum depth will descend as far as this parameter specifies before considering NestedGraphs to be factors.  The parameter contains the word “relative” because users can retrieve nested graphs.  They can call one of the feature’s methods on that nested graph.  
+\item $<$FeatureName$>$Flat() -- equivalent of $<$FeatureName$>$(max int)
+\item $<$FeatureName$>$Top() -- equivalent of $<$FeatureName$>$(0)
+\item $<$FeatureName$>$() -- equivalent of $<$FeatureName$>$Flat().  It was thought that users will most often want to operate on the FactorGraph in its flattened form.
 \end{itemize}
 
 Now, on to the specific features.
@@ -2470,10 +2552,10 @@ As the name implies, this will behave similar to the Factors properties and meth
 The FactorGraph class provides the following:
 
 \begin{itemize}
-\item Variables – calls VariablesFlat
-\item VariablesFlat – Returns a list of all the Variables in the graph, including those contained by nested graphs.
-\item VariablesTop – Returns only those variables contained in the top level of the graph.
-\item getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) – Returns all variables contained in the FactorGraph from which the method is called as Variables that are as deep as the specified relativeNestingDepth.  The second parameter is optional and defaults to false.  When false, boundary variables are only included by the root graph.  When true, boundary variables are included regardless of whether a graph is a root or nested graph.
+\item Variables -- calls VariablesFlat
+\item VariablesFlat -- Returns a list of all the Variables in the graph, including those contained by nested graphs.
+\item VariablesTop -- Returns only those variables contained in the top level of the graph.
+\item getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) -- Returns all variables contained in the FactorGraph from which the method is called as Variables that are as deep as the specified relativeNestingDepth.  The second parameter is optional and defaults to false.  When false, boundary variables are only included by the root graph.  When true, boundary variables are included regardless of whether a graph is a root or nested graph.
 \end{itemize}
 
 \paragraph{Retrieving all Nodes}
@@ -2500,23 +2582,23 @@ The FactorGraph class provides the following:
 \end{itemize}
 
 
-isTree – Users can call <factor graph name>.isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf cells.  
+isTree -- Users can call <factor graph name>.isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf cells.  
 
 \paragraph{Retrieving an Adjacency Matrix}
 
 All of the following methods return a pair: [A, labels] where A is a square connectivity matrix and labels is a cell array of strings specifying the names of the nodes in A. 
 
 \begin{itemize}
-\item getAdjacencyMatrix(relativeNestingDepth,forceIncludeBoundaryVariables) – relativeNestingDepth behaves the same as in other methods that take this parameter.  So does forceIncludeBoundaryVariables. forceIncludeBoundaryVariables has a default value of false.
-\item getAdjacencyMatrix(nodes,forceIncludeBoundaryVariables) – Users can specify a specific subset of nodes in which they’re interested.  This method will return an adjacency matrix with only those nodes.  Nodes are considered connected only if there is an edge directly connecting them.
-\item getAdjacencyMatrixTop() – equivalent to getAdjacencyMatrix(0,false)
-\item getAdjacencyMatrixFlat() – equivalent to getAdjacencyMatrix(intmax,false)
+\item getAdjacencyMatrix(relativeNestingDepth,forceIncludeBoundaryVariables) -- relativeNestingDepth behaves the same as in other methods that take this parameter.  So does forceIncludeBoundaryVariables. forceIncludeBoundaryVariables has a default value of false.
+\item getAdjacencyMatrix(nodes,forceIncludeBoundaryVariables) -- Users can specify a specific subset of nodes in which they’re interested.  This method will return an adjacency matrix with only those nodes.  Nodes are considered connected only if there is an edge directly connecting them.
+\item getAdjacencyMatrixTop() -- equivalent to getAdjacencyMatrix(0,false)
+\item getAdjacencyMatrixFlat() -- equivalent to getAdjacencyMatrix(intmax,false)
 \end{itemize}
 
 FactorGraph also provides an AdjacencyMatrix Property:
 
 \begin{itemize}
-\item AdjacencyMatrix – equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  MATLAB properties can only return one object.
+\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  MATLAB properties can only return one object.
 \end{itemize}
 
 An example of getAdjacencyMatrix:
@@ -2546,14 +2628,14 @@ labels =
 \paragraph{Depth first search}
 
 \begin{itemize}
-\item depthFirstSearch(node, searchDepth, relativeNestingDepth) – 
+\item depthFirstSearch(node, searchDepth, relativeNestingDepth) -- 
 \begin{itemize}
-\item node – Specifies the node from which to initiate the search
-\item searchDepth – specifies how far from “node” the search should go.
-\item relativeNestingDepth – determines how deep to go down the NestedGraphs before considering NestedGraphs to be leaf cells. 
+\item node -- Specifies the node from which to initiate the search
+\item searchDepth -- specifies how far from “node” the search should go.
+\item relativeNestingDepth -- determines how deep to go down the NestedGraphs before considering NestedGraphs to be leaf cells. 
 \end{itemize}
-\item depthFirstSearchFlat(node, searchDepth) – equivalent of depthFirstSearch(node,searchDepth,maxint)
-\item depthFirstSearchThop(node, searchDepth) – equivalent of depthFirstSearch(node,searchDepth,0)
+\item depthFirstSearchFlat(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,maxint)
+\item depthFirstSearchThop(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,0)
 \end{itemize}
 
 An example:
@@ -2597,7 +2679,7 @@ Users provide four arguments:
 fg.estimateParameters({factorTable1,factorTable2,factor1,etc...},numRestarts,numSteps,stepScaleFactor);
 \end{lstlisting}
 
-\subsubsection{Invoking Methods on the Underlying Solver objects}
+\subsubsection{Invoking Methods on the Underlying Solver Objects}
 
 Users sometimes need access to the underlying solver objects in order to set and get
 solver specific properties.  For instance K-best is implemented by minsum and sumproduct 
@@ -2944,7 +3026,7 @@ fg.Solver = 'ParticleBP';
 The basic constructor for the Particle BP solver is:
 
 \begin{lstlisting}
-com.lyricsemi.dimple.solvers.particleBP.Solver()
+com.analog.lyric.dimple.solvers.particleBP.Solver()
 \end{lstlisting}
 
 \paragraph{Methods \\ \\}
@@ -3073,7 +3155,7 @@ fg.Solver = 'Gibbs';
 The basic constructor for the Gibbs solver is:
 
 \begin{lstlisting}
-com.lyricsemi.dimple.solvers.gibbs.Solver()
+com.analog.lyric.dimple.solvers.gibbs.Solver()
 \end{lstlisting}
 
 \subparagraph{Optional Constructor Arguments}
@@ -3081,13 +3163,13 @@ com.lyricsemi.dimple.solvers.gibbs.Solver()
 There are two optional constructors that allow specifying some of the solver configuration parameters up front. These are:
 
 \begin{lstlisting}
-com.lyricsemi.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample)
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample)
 \end{lstlisting}
 
 and
 
 \begin{lstlisting}
-com.lyricsemi.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample, initialTemperature, temperingHalfLifeInSamples)
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample, initialTemperature, temperingHalfLifeInSamples)
 \end{lstlisting}
 
 The arguments of these constructors are defined as follows:
@@ -3296,13 +3378,13 @@ Get the potential value of a factor given the variable values specified by the a
 There are two schedulers currently defined for the Gibbs solver:
 
 \begin{lstlisting}
-com.lyricsemi.dimple.schedulers.GibbsSequentialScanScheduler
+com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler
 \end{lstlisting}
 
 Sequentially chooses the next variable for updating in a fixed order. It updates all variables in the graph, completing an entire scan, before repeating the same fixed order. (In Gibbs literature this seems to be known as a sequential-scan, systematic-scan, or fixed-scan schedule.)
 
 \begin{lstlisting}
-com.lyricsemi.dimple.schedulers.GibbsRandomScanScheduler
+com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler
 \end{lstlisting}
 
 Randomly selects a variable for each update (with replacement).
@@ -3474,7 +3556,7 @@ Users who wish to create their own FactorFunctions to be used with the Gaussian 
 
 \begin{lstlisting}
 
-import com.lyricsemi.dimple.solvers.gaussian.GaussianFactorFunction;
+import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorFunction;
 
 public class GaussianAddFactorFunction extends GaussianFactorFunction
 {
@@ -3860,7 +3942,7 @@ See Wikipedia for a definition.
 \subsubsection{Algorithmics}
 
 
-Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e. an exponentiation operator).
+Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e., an exponentiation operator).
 
 \begin{itemize}
 \item The addition code computes $x+y$ by performing a fast Hadamard transform of the distribution of both $x$ and $y$, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
