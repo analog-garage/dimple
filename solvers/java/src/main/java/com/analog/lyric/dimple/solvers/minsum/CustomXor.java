@@ -173,7 +173,7 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	protected void createMessages() 
+	public void createMessages() 
 	{
 		int numPorts = _factor.getSiblings().size();
 		
@@ -190,7 +190,7 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	protected void connectToVariables() 
+	public void connectToVariables() 
 	{
 		// TODO Auto-generated method stub
 		//messages were created in constructor

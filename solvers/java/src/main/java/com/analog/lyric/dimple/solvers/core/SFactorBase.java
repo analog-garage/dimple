@@ -34,13 +34,10 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	{
 		super(factor);
 		_factor = factor;
-		createMessages();
-		connectToVariables();
+		
 		
 	}
-	
-	protected abstract void createMessages();
-	protected abstract void connectToVariables();
+		
 		
 	public Factor getFactor()
 	{
@@ -61,19 +58,6 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		throw new DimpleException("not supported");
 	}
 
-//	@Override
-//	public void connectPort(Port p) 
-//	{
-//		
-//	}
-//	
-//	@Override
-//	public Object getDefaultMessage(Port port) 
-//	{
-//		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
-//		SVariableBase v = (SVariableBase)var.getSolver();
-//		return v.getDefaultMessage(port);
-//	}
 
 	@Override
 	public ISolverFactorGraph getParentGraph()

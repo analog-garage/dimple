@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGenerator
 {
@@ -31,16 +32,7 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	public DiscreteDistributionGenerator(Port p) 
 	{
 		super(p);
-		// TODO Auto-generated constructor stub
-	}
-
-	private double [] _msg;
-	private HashMap<Object,Integer> _domain2index;
 	
-	@Override
-	public void initialize()  
-	{
-		// TODO Auto-generated method stub
 		INode n = _p.getConnectedNode();
 		
 		if (!(n instanceof Discrete))
@@ -55,9 +47,12 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		{
 			_domain2index.put(domain[i],i);
 		}
-		
-		_msg = (double[])_p.getOutputMsg();
+
 	}
+
+	private double [] _msg;
+	private HashMap<Object,Integer> _domain2index;
+	
 
 	@Override
 	public void generateDistributionInPlace(ArrayList<Object> input) 
@@ -77,6 +72,31 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		for (int i = 0; i < _msg.length; i++ )
 			_msg[i] /= input.size();
 		
+	}
+
+	@Override
+	public void initialize()  
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetMessage(_msg);
+
+	}
+
+	@Override
+	public void createMessage() 
+	{
+		ISolverVariable var = (ISolverVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.createDefaultMessage();		
+	}
+	
+
+
+
+	@Override
+	public void setOutputMsg(Object message) 
+	{
+		// TODO Auto-generated method stub
+		_msg = (double[])message;
 	}
 
 }

@@ -37,6 +37,8 @@ public interface ISolverNode
     public double getInternalEnergy() ;
     public double getBetheEntropy() ;
     public INode getModelObject();
+    public Object getInputMsg(int portIndex);
+    public Object getOutputMsg(int portIndex);
     //public void moveMessages(ISolverNode other,boolean includeSiblingMessages);
 	//public void invalidateCache();
 

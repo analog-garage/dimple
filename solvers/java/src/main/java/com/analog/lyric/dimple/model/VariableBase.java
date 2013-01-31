@@ -138,35 +138,13 @@ public abstract class VariableBase extends Node implements Cloneable
 		
 	}
 	
-	public void attach(ISolverFactorGraph factorGraph)
+	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
-		{
-			//TODO: do I really want to do this?
-			//argh
-			//if (_solverVariable == null || this.getParentGraph() == null || factorGraph != this.getParentGraph().getSolver() )
-			//{
-			// Attempting to allow changing the solver after the graph is made.
-			// The initializePortMsg (both directions) must happen after the _solverVariable is made
-			// because that routine looks at the Variable end of the port to decide what to do.
-			// Also, in the case of "rolled up" graphs, apparently this can be called more than
-			// once without it being a solver-switch, so check to see if the solver has really changed
-			// (which we do by checking the class of the _solverVariable since that's really the issue
-			//ISolverVariable oldSolverVariable = _solverVariable;
+		{		
 			_solverVariable = factorGraph.createVariable(this);
-			
-			//TODO: when to initialize 
-//			if (oldSolverVariable != null && !oldSolverVariable.getClass().equals(_solverVariable.getClass())) {
-//				for (int i = 0; i < _ports.size(); i++)
-//				{
-//					initializePortMsg(_ports.get(i));
-//					initializePortMsg(_ports.get(i).getSibling());
-//				}
-//			}
 			if (_input!=null)
 				_solverVariable.setInput(_input);
-			//initialize();
-			//}
 		}
 		else
 		{
@@ -322,7 +300,7 @@ public abstract class VariableBase extends Node implements Cloneable
     {
     	//create a copy of this variable
     	VariableBase mycopy = clone();
-    	mycopy.attach(null);
+    	mycopy.createSolverObject(null);
     	mycopy.setInputObject(null);
     	mycopy.setName(null);
     	
@@ -343,14 +321,14 @@ public abstract class VariableBase extends Node implements Cloneable
     		}
     		
     		if (factorsToBeMovedToCopy[i].getSolver() != null)
-    			factorsToBeMovedToCopy[i].attach(fg.getSolver());
+    			factorsToBeMovedToCopy[i].createSolverObject(fg.getSolver());
     	}
     	
     	//set the solvers to null for this variable, the copied variable, and all the factors that were moved.
     	if (getSolver() != null)
-    		attach(fg.getSolver());
+    		createSolverObject(fg.getSolver());
     	if (mycopy.getSolver() != null)
-    		mycopy.attach(fg.getSolver());
+    		mycopy.createSolverObject(fg.getSolver());
     	
     	//attach(null);
     	

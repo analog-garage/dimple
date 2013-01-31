@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Model;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
-//import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 /*
@@ -33,10 +33,10 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 public class ModelFactory
 {
 
-//	public MultivariateMsg createMultivariateMsg(double [] means, double [][] covar)
-//	{
-//		return new MultivariateMsg(means, covar);
-//	}
+	public MultivariateMsg createMultivariateMsg(double [] means, double [][] covar)
+	{
+		return new MultivariateMsg(means, covar);
+	}
 
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls) 
 	{

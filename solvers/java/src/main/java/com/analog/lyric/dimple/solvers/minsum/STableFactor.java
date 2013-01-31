@@ -220,7 +220,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 
 
 	@Override
-	protected void createMessages() 
+	public void createMessages() 
 	{
 
 		int numPorts = _factor.getSiblings().size();
@@ -254,7 +254,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 
 	//TODO: make generic double [] message object
 	@Override
-	protected void connectToVariables() 
+	public void connectToVariables() 
 	{
 		//messages were created in constructor
 		int index = 0;

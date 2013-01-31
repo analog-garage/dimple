@@ -32,5 +32,18 @@ public class Port
 	{
 		return node.toString() + " index: " + index;
 	}
+	
+	public INode getConnectedNode()
+	{
+		return node.getSiblings().get(index);
+	}
 
+	public Object getInputMsg()
+	{
+		return node.getSolver().getInputMsg(index);			
+	}
+	public Object getOutputMsg()
+	{
+		return node.getSolver().getOutputMsg(index);
+	}
 }

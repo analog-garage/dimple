@@ -68,26 +68,6 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 	
-	@Override
-	public Object resetMessage(Object message)
-	{
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-    	double val = 1.0/domainLength;
-    	double [] retval = (double[])message;
-    	Arrays.fill(retval, val);
-    	return retval;
-
-	}
-	
-	@Override
-	public Object createDefaultMessage() 
-	{
-		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-    	double[] retVal = new double[domainLength];
-    	return resetMessage(retVal);
-    }
-	
 	public double getScore()
 	{
 		return -Math.log(_input[getGuessIndex()]);
@@ -617,5 +597,25 @@ public class SVariable extends SDiscreteVariableBase
 		return _inPortMsgs[portNum];
 	}
 	
-		
+
+	
+	@Override
+	public Object resetMessage(Object message)
+	{
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+    	double val = 1.0/domainLength;
+    	double [] retval = (double[])message;
+    	Arrays.fill(retval, val);
+    	return retval;
+
+	}
+	
+	@Override
+	public Object createDefaultMessage() 
+	{
+		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+    	double[] retVal = new double[domainLength];
+    	return resetMessage(retVal);
+    }		
 }

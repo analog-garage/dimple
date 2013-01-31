@@ -143,11 +143,13 @@ public class Factor extends FactorBase implements Cloneable
     	return "Factor";
     }
 	
-	public void attach(ISolverFactorGraph factorGraph) 
+	public void createSolverObject(ISolverFactorGraph factorGraph) 
 	{
 		_variables = null;
 		_solverFactor = factorGraph.createFactor(this);
-		
+		_solverFactor.createMessages();
+		_solverFactor.connectToVariables();
+
 	}
 	
 	public Domain [] getDomains()

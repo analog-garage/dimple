@@ -56,13 +56,13 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 		
 		_factorFunction.attachRandom(random);
 		
-		_distGenerator = new HybridSampledBPDistributionGenerator[factor.getPorts().size()];
-		_samplers = new HybridSampledBPSampler[factor.getPorts().size()];
+		_distGenerator = new HybridSampledBPDistributionGenerator[factor.getSiblings().size()];
+		_samplers = new HybridSampledBPSampler[factor.getSiblings().size()];
 		
-		for (int i = 0; i < factor.getPorts().size(); i++)
+		for (int i = 0; i < factor.getSiblings().size(); i++)
 		{
-			_samplers[i] = generateSampler(factor.getPorts().get(i));
-			_distGenerator[i] = generateDistributionGenerator(factor.getPorts().get(i));
+			_samplers[i] = generateSampler(new Port(factor,i));
+			_distGenerator[i] = generateDistributionGenerator(new Port(factor,i));
 		}
 	}
 	
@@ -103,11 +103,11 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 			//Until a sample is accepted
 			while (!sampleAccepted)
 			{
-				inputs = new Object [_factor.getPorts().size()-1];
+				inputs = new Object [_factor.getSiblings().size()-1];
 				
 				int index = 0;
 				//For each input message (mean/variance)
-				for (int j = 0; j < _factor.getPorts().size(); j++)
+				for (int j = 0; j < _factor.getSiblings().size(); j++)
 				{					
 					//Generate a new sample using the specified mean/variance
 					if (outPortNum != j)
@@ -162,5 +162,25 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 		for (HybridSampledBPDistributionGenerator s : _distGenerator)
 			s.initialize();
 	}
+	
+	@Override
+	public void createMessages() 
+	{
+		for (HybridSampledBPSampler s : _samplers)
+			s.createMessage();
+		for (HybridSampledBPDistributionGenerator s : _distGenerator)
+			s.createMessage();
+	}
+
+	@Override
+	public void connectToVariables() 
+	{
+		for (int i = 0; i < _factor.getSiblings().size(); i++)
+		{
+			
+			_distGenerator[i].setOutputMsg(_factor.getVariables().getByIndex(i).getSolver().createMessages(this, _samplers[i].getInputMsg()));
+		}
+	}
+
 	
 }

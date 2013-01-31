@@ -24,16 +24,16 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
-public class GaussianAdd extends SFactorBase
+public class GaussianAdd extends GaussianFactorBase
 {
 	
 	public GaussianAdd(com.analog.lyric.dimple.model.Factor factor) 
 	{
 		super(factor);
 		
-		for (int i = 0; i < factor.getPorts().size(); i++)
+		for (int i = 0; i < factor.getSiblings().size(); i++)
 		{
-			VariableBase v = (VariableBase)factor.getPorts().get(i).getConnectedNode();
+			VariableBase v = (VariableBase)factor.getSiblings().get(i);
 			
 			if (v.getDomain().isDiscrete())
 				throw new DimpleException("cannot connect discrete variable to the Gaussian add factor");
@@ -44,16 +44,15 @@ public class GaussianAdd extends SFactorBase
 	public void updateEdge(int outPortNum) 
 	{
 		//TODO: express this as different functions if doing input or output
-		ArrayList<Port> ports = _factor.getPorts();
 		
 		double mu = 0;
 		double sigmaSquared = 0;
 		
-		for (int i = 0; i < ports.size(); i++)
+		for (int i = 0; i < _inputMsgs.length; i++)
 		{
 			if (i != outPortNum)
 			{
-				double [] msg = (double[])ports.get(i).getInputMsg();
+				double [] msg = _inputMsgs[i];
 				if (outPortNum == 0)
 				{
 					mu += msg[0];
@@ -70,7 +69,7 @@ public class GaussianAdd extends SFactorBase
 			}
 		}
 
-		double [] outMsg = (double[])ports.get(outPortNum).getOutputMsg();
+		double [] outMsg = _outputMsgs[outPortNum];
 		outMsg[0] = mu;
 		outMsg[1] = Math.sqrt(sigmaSquared);
 		
@@ -79,17 +78,17 @@ public class GaussianAdd extends SFactorBase
 		//sigma^2 = othersigma^2 + theothersigma^2 ...
 	}
 
-	//MAGIC!!!!
-	public void updateOutput()
-	{
-		
-	}
-	
-	//ALSO MAGIC!!!!
-	public void updateInput(int portNum)
-	{
-		
-	}
+//	//MAGIC!!!!
+//	public void updateOutput()
+//	{
+//		
+//	}
+//	
+//	//ALSO MAGIC!!!!
+//	public void updateInput(int portNum)
+//	{
+//		
+//	}
 
 
 	@Override

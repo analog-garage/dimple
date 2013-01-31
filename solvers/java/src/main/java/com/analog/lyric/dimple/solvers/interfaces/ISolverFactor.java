@@ -23,8 +23,7 @@ public interface ISolverFactor extends ISolverNode
 	public Object getBelief() ;
 	public double getInternalEnergy();
 	public double getBetheEntropy();
-	//public void addFactorIsComplete();
-	//TODO: really expose this?
-	//int [][] getPossibleBeliefIndices();
+	public abstract void createMessages();
+	public abstract void connectToVariables();
 
 }

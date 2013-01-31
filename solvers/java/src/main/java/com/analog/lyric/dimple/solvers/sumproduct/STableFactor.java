@@ -141,7 +141,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	
 
 	@Override
-	protected void createMessages()
+	public void createMessages()
 	{
 
 		int numPorts = _factor.getSiblings().size();

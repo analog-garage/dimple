@@ -33,8 +33,8 @@ public class MultivariateVariable extends SVariableBase
 
 	private int _numVars;
 	private MultivariateMsg _input;
-	private MultivariateMsg [] _outputMsgs;
-	private MultivariateMsg [] _inputMsgs;
+	private MultivariateMsg [] _outputMsgs = new MultivariateMsg[0];
+	private MultivariateMsg [] _inputMsgs = new MultivariateMsg[0];
 	
 	public MultivariateVariable(VariableBase var) 
 	{
@@ -123,10 +123,10 @@ public class MultivariateVariable extends SVariableBase
 	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
 	{
 		int portNum = getModelObject().getPortNum(factor.getModelObject());
-		int arrayLength = Math.max(_inputMsgs.length, portNum-1);
+		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
 		_inputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
-		_outputMsgs = Arrays.copyOf(_outputMsgs,portNum-1);
+		_outputMsgs = Arrays.copyOf(_outputMsgs,portNum+1);
 		_outputMsgs[portNum] = (MultivariateMsg)factorInputMsg;
 		return _inputMsgs[portNum];
 	}
@@ -135,7 +135,7 @@ public class MultivariateVariable extends SVariableBase
 	@Override
 	public Object createDefaultMessage() 
 	{
-		MultivariateMsg mm = new MultivariateMsg(null,null);
+		MultivariateMsg mm = new MultivariateMsg();
 		return resetMessage(mm);
 	}
 

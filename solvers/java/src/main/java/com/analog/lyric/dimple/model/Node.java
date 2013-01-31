@@ -294,6 +294,15 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
+	public ArrayList<Port> getPorts()
+	{
+		ArrayList<Port> ports = new ArrayList<Port>();
+		for (int i = 0; i < _siblings.size(); i++ )
+			ports.add(new Port(this,i));
+		return ports;
+	}
+	
+	@Override
 	public boolean hasParentGraph()
 	{
 		return _parentGraph != null;

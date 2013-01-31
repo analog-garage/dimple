@@ -36,7 +36,7 @@ public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 	@Override
 	public HybridSampledBPSampler generateSampler(Port p) 
 	{
-		boolean isDiscretePort = ((VariableBase)p.getConnectedNode()).getDomain().isDiscrete();
+		boolean isDiscretePort = ((VariableBase)p.node.getSiblings().get(p.index)).getDomain().isDiscrete();
 		
 		if (isDiscretePort)
 			return new DiscreteSampler(p, _random);
@@ -48,12 +48,14 @@ public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 	@Override
 	public HybridSampledBPDistributionGenerator generateDistributionGenerator(Port p) 
 	{
-		boolean isDiscretePort = ((VariableBase)p.getConnectedNode()).getDomain().isDiscrete();
+		boolean isDiscretePort = ((VariableBase)p.node.getSiblings().get(p.index)).getDomain().isDiscrete();
 		
 		if (isDiscretePort)
 			return new DiscreteDistributionGenerator(p);
 		else
 			return new GaussianDistributionGenerator(p);
 	}
+
+
 
 }

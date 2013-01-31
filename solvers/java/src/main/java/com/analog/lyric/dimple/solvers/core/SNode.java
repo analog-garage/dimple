@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -34,11 +35,25 @@ public abstract class SNode implements ISolverNode
     	return _model;
     }
 
+    @Override
+    public Object getInputMsg(int portIndex)
+    {
+    	throw new DimpleException("Not supported for: " + this);
+    }
+    
+    @Override
+    public Object getOutputMsg(int portIndex)
+    {
+    	throw new DimpleException("Not supported for: " + this);
+    }
+    
     
 	public void moveMessages(int portIndex, ISolverNode other, boolean moveSiblingMessages)
 	{
 		
 	}
+	
+	
     
 	public void moveMessages(ISolverNode other, boolean moveSiblingMessages)
 	{

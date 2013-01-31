@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -18,18 +18,18 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.*;
+import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class MultivariateFactorBase extends SFactorBase
+public abstract class GaussianFactorBase extends SFactorBase 
 {
-
-	protected MultivariateMsg [] _inputMsgs;
-	protected MultivariateMsg [] _outputMsgs;
+	protected double [][] _inputMsgs;
+	protected double [][] _outputMsgs;
 	
-	public MultivariateFactorBase(Factor factor) 
+	public GaussianFactorBase(Factor factor) 
 	{
 		super(factor);
+		// TODO Auto-generated constructor stub
 	}
 
 
@@ -38,24 +38,26 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	{
 		for (int i = 0; i < _inputMsgs.length; i++)
 		{
-			MultivariateVariable sv = (MultivariateVariable)_factor.getSiblings().get(i).getSolver();
-			_inputMsgs[i] = (MultivariateMsg)sv.resetMessage(_inputMsgs[i]);
+			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+			_inputMsgs[i] = (double[])sv.resetMessage(_inputMsgs[i]);
 		}
+		
 	}
 
 	@Override
 	public void createMessages() 
 	{
+
 		int numPorts = _factor.getSiblings().size();
-	    _inputMsgs = new MultivariateMsg[numPorts];
-	    _outputMsgs = new MultivariateMsg[numPorts];
+		
+	    _inputMsgs = new double[numPorts][];
 	    
 	    for (int port = 0; port < numPorts; port++) 
-	    	_inputMsgs[port] = (MultivariateMsg)((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-
+	    	_inputMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
+	    
+	    _outputMsgs = new double[numPorts][];
 	}
 
-	//TODO: genericize this?
 	@Override
 	public void connectToVariables() 
 	{
@@ -64,10 +66,21 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		for (VariableBase vb : _factor.getVariables())
 		{
 			ISolverVariable sv = vb.getSolver();
-			_outputMsgs[index] = (MultivariateMsg) sv.createMessages(this, _inputMsgs[index]);
+			_outputMsgs[index] = (double[]) sv.createMessages(this, _inputMsgs[index]);
 			index++;
-		}		
+		}
 		
 	}
 
+	@Override 
+	public Object getInputMsg(int portIndex)
+	{
+		return _inputMsgs[portIndex];
+	}
+
+	@Override 
+	public Object getOutputMsg(int portIndex)
+	{
+		return _outputMsgs[portIndex];
+	}
 }

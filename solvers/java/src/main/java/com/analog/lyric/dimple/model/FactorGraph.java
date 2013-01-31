@@ -188,13 +188,13 @@ public class FactorGraph extends FactorBase
 		setSolverFactorySubGraph(factory);
 		
 		for (VariableBase var : getVariablesFlat())
-			var.attach(_solverFactorGraph);
+			var.createSolverObject(_solverFactorGraph);
 		
 		for (FactorGraph fg : getNestedGraphs())
 			fg.setSolverFactorySubGraph(factory);
 		
 		for (Factor f : getNonGraphFactorsFlat())
-			f.attach(_solverFactorGraph);
+			f.createSolverObject(_solverFactorGraph);
 
 
 	}
@@ -392,7 +392,7 @@ public class FactorGraph extends FactorBase
 		addFactor(f,vars);
 
 		if (_solverFactorGraph != null)
-			f.attach(_solverFactorGraph);
+			f.createSolverObject(_solverFactorGraph);
 
 		//f.addFactorIsComplete();
 		
@@ -411,7 +411,7 @@ public class FactorGraph extends FactorBase
 				if (v.getSiblings().size() > 0)
 					throw new DimpleException("Can't connect a variable to multiple graphs");
 
-				v.attach(_solverFactorGraph);
+				v.createSolverObject(_solverFactorGraph);
 			}
 		}
 	}
@@ -449,7 +449,7 @@ public class FactorGraph extends FactorBase
 		_ownedVariables.remove(v);
 		if (_ownedVariables.contains(v))
 			throw new DimpleException("eh?");
-		v.attach(null);
+		v.createSolverObject(null);
 		v.setParentGraph(null);
 		removeNode(v);
 		//v.getPorts().clear();
@@ -469,7 +469,7 @@ public class FactorGraph extends FactorBase
 				throw new DimpleException("Variable [" + v.getLabel() + "] already owned by graph [" + v.getParentGraph().getLabel() + "]");
 			}
 			addOwnedVariable(v);
-			v.attach(_solverFactorGraph);
+			v.createSolverObject(_solverFactorGraph);
 
 		}
 	}
@@ -589,11 +589,11 @@ public class FactorGraph extends FactorBase
 			f.replaceVariablesWithJoint(variables, currentJoint);
 
 			//reattach to the solver now that the factor graph has changed
-			f.attach(_solverFactorGraph);
+			f.createSolverObject(_solverFactorGraph);
 		}
 
 		//Reattach the variable too, just in case.
-		currentJoint.attach(_solverFactorGraph);
+		currentJoint.createSolverObject(_solverFactorGraph);
 
 		//Remove the original variables
 		removeVariables(variables);

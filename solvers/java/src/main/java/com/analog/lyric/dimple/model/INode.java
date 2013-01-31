@@ -83,6 +83,7 @@ public interface INode  extends INameable
 	public boolean hasParentGraph();
 	public int getPortNum(INode node) ;
 	public ArrayList<INode> getConnectedNodeAndParents(int index);
+	public ArrayList<Port> getPorts();
 	
 	/**
 	 * Returns the ancestor of this node at the specified height, where height zero

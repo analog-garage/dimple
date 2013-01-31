@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class GaussianDistributionGenerator extends HybridSampledBPDistributionGenerator 
 {
@@ -32,12 +33,7 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 
 	private double [] _msg;
 	
-	@Override
-	public void initialize() 
-	{
-		// TODO Auto-generated method stub
-		_msg = (double[])_p.getOutputMsg();
-	}
+
 
 	@Override
 	public void generateDistributionInPlace(ArrayList<Object> input) 
@@ -74,6 +70,29 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 		
 		_msg[0] = mean;
 		_msg[1] = Math.sqrt(sigmasquared);
+	}
+
+	
+	@Override
+	public void initialize() 
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetMessage(_msg);
+	}
+
+	@Override
+	public void createMessage() 
+	{
+		ISolverVariable var = (ISolverVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.createDefaultMessage();
+	}
+
+
+	@Override
+	public void setOutputMsg(Object message) 
+	{
+		_msg = (double[])message;
+		
 	}
 
 
