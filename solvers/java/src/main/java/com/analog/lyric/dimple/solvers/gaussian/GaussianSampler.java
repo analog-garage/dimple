@@ -58,5 +58,11 @@ public class GaussianSampler extends HybridSampledBPSampler
 	{
 		return _msg;
 	}
+
+	@Override
+	public void moveMessages(HybridSampledBPSampler other) 
+	{
+		_msg = ((GaussianSampler)other)._msg;		
+	}
 	
 }

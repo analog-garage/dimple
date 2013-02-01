@@ -96,4 +96,11 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 	}
 
 
+	@Override
+	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	{
+		_msg = ((GaussianDistributionGenerator)other)._msg;
+	}
+
+
 }

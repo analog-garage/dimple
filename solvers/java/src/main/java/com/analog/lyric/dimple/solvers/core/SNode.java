@@ -47,32 +47,32 @@ public abstract class SNode implements ISolverNode
     	throw new DimpleException("Not supported for: " + this);
     }
     
+    @Override
+    public void setInputMsg(int portIndex,Object obj)
+    {
+    	throw new DimpleException("Not supported for: " + this);
+    }
     
-	public void moveMessages(int portIndex, ISolverNode other, boolean moveSiblingMessages)
-	{
-		
-	}
-	
-	
+    @Override
+    public void setOutputMsg(int portIndex,Object obj)
+    {
+    	throw new DimpleException("Not supported for: " + this);
+    }
+    
     
 	public void moveMessages(ISolverNode other, boolean moveSiblingMessages)
 	{
-//		ArrayList<Port> otherPorts = other.getModelObject().getPorts();
-//		ArrayList<Port> thisPorts = getModelObject().getPorts();
-//		
-//		if (thisPorts.size() != otherPorts.size())
-//			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
-//		
-//		for (int i = 0; i < thisPorts.size(); i++)
-//		{
-//			thisPorts.get(i).moveMessage(otherPorts.get(i));
-//			if (moveSiblingMessages)
-//			{
-//				thisPorts.get(i).getSibling().moveMessage(otherPorts.get(i).getSibling());
-//				thisPorts.get(i).getSibling().getParent().getSolver().invalidateCache();
-//			}
-//		}
-//		invalidateCache();
+		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
+			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
+		
+		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		{
+			moveMessages(other, i);
+			
+			INode thisVariable = getModelObject().getSiblings().get(i);
+			INode otherVariable = other.getModelObject().getSiblings().get(i);
+			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), getModelObject().getSiblingPortIndex(i));
+		}
 	}
 	
 //	@Override

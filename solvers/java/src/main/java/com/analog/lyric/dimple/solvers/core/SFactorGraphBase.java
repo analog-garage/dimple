@@ -60,18 +60,18 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	
 	public void moveMessages(ISolverNode other,boolean moveSiblingMessages)
 	{
-//		SFactorGraphBase sother = (SFactorGraphBase)other;
-//		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
-//		FactorList myFactors = _factorGraph.getFactorsFlat();
-//		
-//		if (otherFactors.size() != myFactors.size())
-//			throw new DimpleException("Graphs dont' match");
-//		
-//		for (int i = 0; i < myFactors.size(); i++)
-//		{
-//			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),true);
-//		}
-//		
+		SFactorGraphBase sother = (SFactorGraphBase)other;
+		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
+		FactorList myFactors = _factorGraph.getFactorsFlat();
+		
+		if (otherFactors.size() != myFactors.size())
+			throw new DimpleException("Graphs dont' match");
+		
+		for (int i = 0; i < myFactors.size(); i++)
+		{
+			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),moveSiblingMessages);
+		}
+		
 	}
 
 
@@ -494,5 +494,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 
-	
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		throw new DimpleException("Not supported");
+		
+	}
+
 }

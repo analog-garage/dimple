@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.*;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class MultivariateFactorBase extends SFactorBase
@@ -69,5 +70,13 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		}		
 		
 	}
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		MultivariateFactorBase s = (MultivariateFactorBase)other;
+	
+		_inputMsgs[portNum] = s._inputMsgs[portNum];
+		_outputMsgs[portNum] = s._outputMsgs[portNum];
 
+	}
 }

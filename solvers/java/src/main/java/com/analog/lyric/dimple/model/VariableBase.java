@@ -138,13 +138,19 @@ public abstract class VariableBase extends Node implements Cloneable
 		
 	}
 	
+	public void moveInputs(VariableBase other)
+	{
+		_input = other._input;
+		_solverVariable.setInput(_input);
+	}
+
+	
 	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{		
 			_solverVariable = factorGraph.createVariable(this);
-			if (_input!=null)
-				_solverVariable.setInput(_input);
+			_solverVariable.setInput(_input);
 		}
 		else
 		{

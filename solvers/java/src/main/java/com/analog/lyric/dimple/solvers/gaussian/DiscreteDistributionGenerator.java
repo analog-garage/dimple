@@ -99,4 +99,11 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		_msg = (double[])message;
 	}
 
+	@Override
+	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	{
+		_msg = ((DiscreteDistributionGenerator)other)._msg;
+		
+	}
+
 }

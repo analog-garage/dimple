@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public abstract class HybridSampledBPFactor extends SFactorBase 
 {
@@ -182,5 +183,12 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 		}
 	}
 
-	
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		HybridSampledBPFactor s = (HybridSampledBPFactor)other;
+		_samplers[portNum].moveMessages(s._samplers[portNum]);
+		_distGenerator[portNum].moveMessages(s._distGenerator[portNum]);
+	}
+
 }

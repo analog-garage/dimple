@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 
 import com.analog.lyric.util.misc.MapList;
@@ -29,6 +30,7 @@ public abstract class Node implements INode, Cloneable
 	protected String _label;
 	private FactorGraph _parentGraph;
 	protected ArrayList<INode> _siblings;
+	private int [] _siblingIndices = new int[0];
 
 	public Node()
 	{
@@ -109,6 +111,17 @@ public abstract class Node implements INode, Cloneable
 		n._name = _name;
 		
 		return n;
+	}
+	
+	public int getSiblingPortIndex(int index)
+	{
+		if (_siblingIndices.length <= index)
+		{		
+			_siblingIndices = Arrays.copyOf(_siblingIndices, index+1);
+			_siblingIndices[index] = _siblings.get(index).getPortNum(this);
+		}
+		
+		return _siblingIndices[index];
 	}
 	
 	@Override

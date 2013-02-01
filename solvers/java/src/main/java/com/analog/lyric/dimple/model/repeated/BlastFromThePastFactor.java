@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.repeated;
 import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 
 public class BlastFromThePastFactor extends Factor 
@@ -31,47 +32,40 @@ public class BlastFromThePastFactor extends Factor
 	}
 
 	private Object _msg;
-	//private Port _port;
-	private Object _initMsg;
+	//private Port _factorPort;
+	private Port _variablePort;
+	//private Object _initMsg;
+	private Port _newVarPort;
 	
-//	public BlastFromThePastFactor(int id, VariableBase var, Port factorPort, 
-//			Object initialMsg) 
-//	{
-//		super(id,new NopFactorFunction("BlastFromThePast"),new VariableBase[]{var});		
-//		setOutputMsg(initialMsg);
-//		_initMsg = initialMsg;
-//		_port = factorPort;
-//	}
-//
-//	public void advance()
-//	{
-//		setOutputMsg(_port.getOutputMsg());
-//	}
-//	
-//	public void setOutputMsg(Object msg) 
-//	{
-//		_msg = msg;
-//		_ports.get(0).setOutputMsg(_msg);
-//	}
-//	
-//	public void initializePortMsg(Port port)
-//	{
-//		setOutputMsg(_initMsg);
-//	}
+	public BlastFromThePastFactor(int id, VariableBase var, Port oldVariablePort) 
+	{
+		super(id,new NopFactorFunction("BlastFromThePast"),new VariableBase[]{var});
+		_variablePort = oldVariablePort;
+		_newVarPort = new Port(var,-1);
+	}
+
+	public void advance()
+	{
+		setOutputMsg(_variablePort.getInputMsg());
+	}
 	
-	
+	public void setOutputMsg(Object msg) 
+	{
+		if (_newVarPort.index == -1)
+			_newVarPort.index = _newVarPort.node.getPortNum(this);
+		_msg = msg;
+		getSiblings().get(0).getSolver().setInputMsg(_newVarPort.index, _msg);
+	}
+		
 	
 	@Override
 	public void update()  
-	{
-//		setOutputMsg(_msg);		
+	{		
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)  
-	{
-		//setOutputMsg(_msg);
-		
+	{	
 	}
 	
 	

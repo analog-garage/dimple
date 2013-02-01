@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class SVariable extends SDiscreteVariableBase
@@ -38,13 +39,11 @@ public class SVariable extends SDiscreteVariableBase
 	protected double[] _dampingParams = new double[0];
 	protected double[] _input;
 	protected boolean _dampingInUse = false;
-	protected boolean _initCalled = true;
 
 	
 	public SVariable(VariableBase var) 
 	{
 		super(var);
-		_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
 	}
 
 
@@ -205,8 +204,11 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void setInput(Object value) 
 	{
-		// Convert from probabilities since that's what the interface provides        
-		_input = MessageConverter.fromProb((double[])value);
+		if (value == null)
+			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
+		else
+			// Convert from probabilities since that's what the interface provides        
+			_input = MessageConverter.fromProb((double[])value);
 	}
 	
 	
@@ -214,41 +216,7 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		return _input[getGuessIndex()];
 	}
-	
-//
-//
-//	protected void updateMessageCache()
-//	{
-//		int numPorts = _var.getPorts().size();
-//		_initCalled = false;
-//		_inPortMsgs = new double[numPorts][];
-//		_outMsgArray = new double[numPorts][];
-//		if (_dampingInUse)
-//			_savedOutMsgArray = new double[numPorts][];
-//
-//		if (_dampingParams.length != numPorts)
-//		{
-//			double[] tmp = new double[numPorts];
-//			for (int i = 0; i < _dampingParams.length; i++)
-//				if (i < tmp.length)
-//					tmp[i] = _dampingParams[i];
-//			_dampingParams = tmp;
-//		}
-//		
-//		for (int i = 0; i < numPorts; i++)
-//		{
-//			_inPortMsgs[i] = (double[])_var.getPorts().get(i).getInputMsg();
-//			_outMsgArray[i] = (double[])_var.getPorts().get(i).getOutputMsg();
-//			if (_dampingInUse)
-//				_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
-//		}
-//		
-//	}
 
-	public void remove(Factor factor)
-	{
-		_initCalled = true;
-	}
 
 	public void setDamping(int portIndex, double dampingVal)
 	{
@@ -283,7 +251,6 @@ public class SVariable extends SDiscreteVariableBase
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
 		
 		
-		_initCalled = false;
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs, newArraySize);
 		_outMsgArray = Arrays.copyOf(_outMsgArray,newArraySize);
 		if (_dampingInUse)
@@ -330,11 +297,25 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		SVariable sother = (SVariable)other;
+		_inPortMsgs[portNum] = sother._inPortMsgs[portNum];
+		_outMsgArray[portNum]  = sother._outMsgArray[portNum];
+		if (_dampingInUse)
+			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[portNum];
 
-//	@Override
-//	public void connectPort(Port p)  
-//	{
-//		_initCalled = true;
-//	}
+		_dampingParams[portNum] = sother._dampingParams[portNum];
+		
+	}
+
+
+	@Override
+	public void remove(Factor factor) 
+	{
+		
+	}
+
 
 }

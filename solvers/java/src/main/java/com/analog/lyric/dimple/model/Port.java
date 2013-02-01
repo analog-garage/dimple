@@ -46,4 +46,8 @@ public class Port
 	{
 		return node.getSolver().getOutputMsg(index);
 	}
+	public INode getSibling()
+	{
+		return node.getSiblings().get(index);
+	}
 }

@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class STableFactor extends STableFactorBase implements IKBestFactor
@@ -47,30 +48,19 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
     protected boolean _kIsSmallerThanDomain;
     protected boolean _dampingInUse = false;
 
-    /*
-     * We also save the values from the combo table.  This is necessary
-     * since the minsum algorithm requires a modified list of values
-     */
-    //double [] _values = null;
-
     public STableFactor(Factor factor) 
 	{
     	super(factor);
     	
-    	//_values = values;
-		_dampingParams = new double[_factor.getSiblings().size()];
-		//ensureCacheUpdated();
-		//updateMessageCache();
-		
+		_dampingParams = new double[_factor.getSiblings().size()];		
 		_tableFactorEngine = new TableFactorEngine(this);
 		
-		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
 		else
 			_kbestFactorEngine = new KBestFactorEngine(this);
 		
-		setK(Integer.MAX_VALUE);
+		//setK(Integer.MAX_VALUE);
 		
 	}
 
@@ -91,14 +81,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		}
 	}
     
-//	public Object getInitialMsgValue(Port port)
-//	{
-//		int domainLength = ((Discrete)port.getConnectedNode()).getDiscreteDomain().getElements().length;
-//		double[] retVal = new double[domainLength];
-//		for (int i = 0; i < domainLength; i++) retVal[i] = 0;
-//		return retVal;
-//	}
-
 	public void updateEdge(int outPortNum) 
 	{		
 		if (_kIsSmallerThanDomain)
@@ -238,6 +220,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    	if (_dampingInUse)
 	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }		
+	    
+	    setK(Integer.MAX_VALUE);
 	}
 
 	@Override
@@ -265,23 +249,18 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			index++;
 		}		
 	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		STableFactor tf = (STableFactor)other;
+		_inPortMsgs[portNum] = tf._inPortMsgs[portNum];	    
+	    _outPortMsgs[portNum] = tf._outPortMsgs[portNum];
+    	_savedOutMsgArray[portNum] = tf._savedOutMsgArray[portNum];
+	    
+	}
 	
 
-//    protected void updateMessageCache()
-//    {
-//    	int numPorts = _factor.getSiblings().size();
-//	    _inPortMsgs = new double[numPorts][];
-//	    _outPortMsgs = new double[numPorts][];
-//	    if (_dampingInUse)
-//	    	_savedOutMsgArray = new double[numPorts][];
-//	    
-//	    for (int port = 0; port < numPorts; port++)
-//	    {
-//	    	_inPortMsgs[port] = (double[])_factor.getSiblings().get(port).getInputMsg();
-//	    	_outPortMsgs[port] = (double[])_factor.getSiblings().get(port).getOutputMsg();
-//	    	if (_dampingInUse)
-//	    		_savedOutMsgArray[port] = new double[_outPortMsgs[port].length];
-//	    }
-//    }
 }
 

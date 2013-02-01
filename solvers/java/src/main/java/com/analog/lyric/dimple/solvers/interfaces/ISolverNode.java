@@ -19,6 +19,7 @@
  */
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 
 /**
@@ -39,7 +40,8 @@ public interface ISolverNode
     public INode getModelObject();
     public Object getInputMsg(int portIndex);
     public Object getOutputMsg(int portIndex);
-    //public void moveMessages(ISolverNode other,boolean includeSiblingMessages);
-	//public void invalidateCache();
-
+    public void setInputMsg(int portIndex,Object obj);
+    public void setOutputMsg(int portIndex,Object obj);
+    public void moveMessages(ISolverNode other, boolean moveSiblingMessages);
+    public void moveMessages(ISolverNode other, int portNum);
 }

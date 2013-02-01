@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 
@@ -42,26 +43,24 @@ public class SVariable extends SRealVariableBase
 	public SVariable(VariableBase var) 
     {
 		super(var);
-		_input = (double[]) createDefaultMessage();
 	}
 
-//	public Object getDefaultMessage(Port port) 
-//	{
-//		return new double []{0,Double.POSITIVE_INFINITY};
-//		//return new double[]{0,1};
-//    }
-	
 
     public void setInput(Object priors) 
     {
-    	double [] vals = (double[])priors;
-    	if (vals.length != 2)
-    		throw new DimpleException("expect priors to be a vector of mean and sigma");
-    	
-    	if (vals[1] < 0)
-    		throw new DimpleException("expect sigma to be >= 0");
-    	
-    	_input = vals.clone();
+    	if (priors == null)
+    		_input = (double[]) createDefaultMessage();
+    	else
+    	{
+	    	double [] vals = (double[])priors;
+	    	if (vals.length != 2)
+	    		throw new DimpleException("expect priors to be a vector of mean and sigma");
+	    	
+	    	if (vals[1] < 0)
+	    		throw new DimpleException("expect sigma to be >= 0");
+	    	
+	    	_input = vals.clone();
+    	}
     	
     }
     
@@ -233,10 +232,6 @@ public class SVariable extends SRealVariableBase
 	public Object createDefaultMessage() 
 	{
 		double [] message = new double[2];
-//		return new double []{0,Double.POSITIVE_INFINITY};
-//		//return new double[]{0,1};
-
-		// TODO Auto-generated method stub
 		return resetMessage(message);
 	}
 
@@ -268,6 +263,17 @@ public class SVariable extends SRealVariableBase
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		SVariable s = (SVariable)other;
+	
+		_inputMsgs[portNum] = s._inputMsgs[portNum];
+		_outputMsgs[portNum] = s._outputMsgs[portNum];
+
 	}
 
 

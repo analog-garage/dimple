@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SVariable extends SDiscreteVariableBase
 {
@@ -47,7 +48,6 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only discrete variables supported");
-		_input = (double[])createDefaultMessage();
 	}
 		
 	public VariableBase getVariable()
@@ -73,14 +73,22 @@ public class SVariable extends SDiscreteVariableBase
 		return -Math.log(_input[getGuessIndex()]);
 	}
 	
+	//TODO: null means something special here.  Should I modify this to have speical messages
+	//      to indicate when inputs should be initialized?
     public void setInput(Object priors) 
     {
-    	double[] vals = (double[])priors;
-    	if (vals.length != ((DiscreteDomain)_var.getDomain()).size())
-    		throw new DimpleException("length of priors does not match domain");
-    	
-    	_input = vals;
-    	
+    	if (priors == null)
+    	{
+    		_input = (double[])createDefaultMessage();
+    	}
+    	else
+    	{
+	    	double[] vals = (double[])priors;
+	    	if (vals.length != ((DiscreteDomain)_var.getDomain()).size())
+	    		throw new DimpleException("length of priors does not match domain");
+	    	
+	    	_input = vals;
+    	}
     }
 	public void setDamping(int portIndex,double dampingVal)
 	{
@@ -617,5 +625,19 @@ public class SVariable extends SDiscreteVariableBase
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
     	double[] retVal = new double[domainLength];
     	return resetMessage(retVal);
-    }		
+    }
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		SVariable sother = (SVariable)other;
+		_inPortMsgs[portNum] = sother._inPortMsgs[portNum];
+		_logInPortMsgs[portNum] = sother._inPortMsgs[portNum];
+		_outMsgArray[portNum] = sother._outMsgArray[portNum];
+		
+		if (_dampingInUse)
+		{
+			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[portNum];
+		}
+	}		
 }

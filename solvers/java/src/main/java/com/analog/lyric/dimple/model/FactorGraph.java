@@ -238,22 +238,21 @@ public class FactorGraph extends FactorBase
 
 		return true;
 	}
-//
-//    public BlastFromThePastFactor addBlastFromPastFactor(Object inputMsg, 
-//    		VariableBase var,Port factorPort) 
-//    {
-//                            
-//            setVariableSolver(var);
-//
-//            BlastFromThePastFactor f;
-//            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort,inputMsg);
-//
-//            addFactor(f,new VariableBase[]{var});
-//            
-//            return f;
-//
-//    }
-//	
+
+    public BlastFromThePastFactor addBlastFromPastFactor(VariableBase var,Port factorPort) 
+    {
+                            
+            setVariableSolver(var);
+
+            BlastFromThePastFactor f;
+            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort);
+
+            addFactor(f,new VariableBase[]{var});
+            
+            return f;
+
+    }
+	
 	public FactorGraphStream addRepeatedFactor(FactorGraph nestedGraph, Object ... vars) 
 	{
 		return addRepeatedFactor(nestedGraph,1, vars);
@@ -964,36 +963,42 @@ public class FactorGraph extends FactorBase
 
 	
 	private long _portVersionId = -1;
+	private ArrayList<Port> _ports;
 	
 	@Override
-	public ArrayList<INode> getSiblings()
+	public ArrayList<Port> getPorts()
 	{
 		if (_portVersionId == _versionId && _siblings != null)
-			return _siblings;
+			return _ports;
 		
-		_siblings = new ArrayList<INode>();
+		ArrayList<Port> _ports = new ArrayList<Port>();
 
 		FactorList factors = getNonGraphFactorsFlat();
 		
 		//for each boundary variable
-		for (VariableBase v : _boundaryVariables)
+		for (FactorBase f : factors)
 		{
-			MapList<INode> connectedNodes = v.getConnectedNodesFlat();
-
-			for (int i = 0; i < connectedNodes.size(); i++)
+			for (int i = 0; i < f.getSiblings().size(); i++)
 			{
-				INode n = connectedNodes.getByIndex(i);
-
-				if (n.isFactor() && factors.contains(n))
+				if (_boundaryVariables.contains(f.getSiblings().get(i)))
 				{
-					_siblings.add(v);
-					//break;
+					_ports.add(new Port(f,i));
 				}
 			}
-
 		}
 		_portVersionId = _versionId;
+		return _ports;
+	}
+	
+	@Override
+	public ArrayList<INode> getSiblings()
+	{
+		ArrayList<Port> ports = getPorts();
+		_siblings = new ArrayList<INode>();
+		for (Port p : ports)
+			_siblings.add(p.node.getSiblings().get(p.index));
 		return _siblings;
+		
 	}
 
 

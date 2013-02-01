@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="com/analog/lyric/dimple/solvers/particleBP/|com/analog/lyric/dimple/solvers/gibbs/|com/analog/lyric/dimple/model/repeated/MultivariateDataSink.java|com/analog/lyric/dimple/model/repeated/MultivariateDataSource.java|com/analog/lyric/dimple/schedulers/schedule/GibbsRandomScanSchedule.java|com/analog/lyric/dimple/schedulers/GibbsRandomScanScheduler.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldAdd.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldConstMult.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldMult.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldProjection.java" kind="src" path="src/main/java"/>
+	<classpathentry excluding="com/analog/lyric/dimple/solvers/particleBP/|com/analog/lyric/dimple/solvers/gibbs/|com/analog/lyric/dimple/schedulers/schedule/GibbsRandomScanSchedule.java|com/analog/lyric/dimple/schedulers/GibbsRandomScanScheduler.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldAdd.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldConstMult.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldMult.java|com/analog/lyric/dimple/solvers/sumproduct/FiniteFieldProjection.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="com/analog/lyric/" kind="src" output="build/classes/test" path="src/test/java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="build/external-libs/jama-1.0.2.jar">

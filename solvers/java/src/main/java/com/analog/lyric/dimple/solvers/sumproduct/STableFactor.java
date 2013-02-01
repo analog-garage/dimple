@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 
@@ -68,7 +69,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			_kbestFactorEngine = new KBestFactorEngine(this);
 		}
 		
-		setK(Integer.MAX_VALUE);
 		
 
 	}
@@ -160,6 +160,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    	if (_dampingInUse)
 	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }
+	    
+		setK(Integer.MAX_VALUE);
+
 	}
 		
 	/*
@@ -585,6 +588,18 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
 			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
 		}
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+
+		STableFactor sother = (STableFactor)other;
+	    _inPortMsgs[portNum] = sother._inPortMsgs[portNum];
+	    _outMsgArray[portNum] = sother._outMsgArray[portNum];
+	    if (_dampingInUse)
+	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[portNum];
+	    
 	}
 
 

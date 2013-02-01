@@ -3,6 +3,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
 
@@ -203,22 +204,16 @@ public class CustomXor extends SFactorBase
 		}	
 	}
 
-//	   protected void updateMessageCache()
-//	    {
-//	    	_numPorts = _factor.getPorts().size();
-//		    _inPortMsgs = new double[_numPorts][];
-//		    _outPortMsgs = new double[_numPorts][];
-//		    if (_dampingInUse)
-//		    	_savedOutMsgsLLR = new double[_numPorts];
-//		    
-//		    for (int port = 0; port < _numPorts; port++)
-//		    {
-//		    	_inPortMsgs[port] = (double[])_factor.getPorts().get(port).getInputMsg();
-//		    	_outPortMsgs[port] = (double[])_factor.getPorts().get(port).getOutputMsg();
-//		    }
-//	    }
-//
-//		
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		CustomXor x = (CustomXor)other;
+		_inPortMsgs[portNum] = x._inPortMsgs[portNum];
+		_outPortMsgs[portNum] = x._outPortMsgs[portNum];
+		_savedOutMsgsLLR[portNum] = x._savedOutMsgsLLR[portNum];
+		
+	}
 
 
 

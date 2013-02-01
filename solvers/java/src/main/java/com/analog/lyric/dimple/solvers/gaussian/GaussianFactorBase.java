@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class GaussianFactorBase extends SFactorBase 
@@ -82,5 +83,16 @@ public abstract class GaussianFactorBase extends SFactorBase
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
+	}
+	
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		GaussianFactorBase s = (GaussianFactorBase)other;
+	
+		_inputMsgs[portNum] = s._inputMsgs[portNum];
+		_outputMsgs[portNum] = s._outputMsgs[portNum];
+
 	}
 }

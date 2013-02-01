@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.sun.tools.javac.code.Attribute.Array;
 
@@ -41,13 +42,15 @@ public class MultivariateVariable extends SVariableBase
 		super(var);
 		
 		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
-		_input = (MultivariateMsg) createDefaultMessage();
 	}
 	
 	@Override
 	public void setInput(Object input)  
 	{
-		_input = (MultivariateMsg)input;
+		if (input == null)
+			_input = (MultivariateMsg) createDefaultMessage();
+		else
+			_input = (MultivariateMsg)input;
 	}
 
 	
@@ -163,5 +166,13 @@ public class MultivariateVariable extends SVariableBase
 		// TODO Auto-generated method stub
 		
 	}
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		MultivariateVariable s = (MultivariateVariable)other;
 	
+		_inputMsgs[portNum] = s._inputMsgs[portNum];
+		_outputMsgs[portNum] = s._outputMsgs[portNum];
+
+	}
 }

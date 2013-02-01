@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 {
@@ -54,6 +55,12 @@ public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 			return new DiscreteDistributionGenerator(p);
 		else
 			return new GaussianDistributionGenerator(p);
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum) 
+	{
+		
 	}
 
 

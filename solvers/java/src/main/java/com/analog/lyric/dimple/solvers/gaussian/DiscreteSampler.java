@@ -97,4 +97,10 @@ public class DiscreteSampler extends HybridSampledBPSampler
 		return _msg;
 	}
 
+	@Override
+	public void moveMessages(HybridSampledBPSampler other) 
+	{
+		_msg = ((DiscreteSampler)other)._msg;
+	}
+
 }
