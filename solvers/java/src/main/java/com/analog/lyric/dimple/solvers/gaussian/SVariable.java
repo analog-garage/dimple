@@ -275,5 +275,9 @@ public class SVariable extends SRealVariableBase
 
 	}
 
-
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		_inputMsgs[portIndex] = (double[])obj;
+	}
+	
 }

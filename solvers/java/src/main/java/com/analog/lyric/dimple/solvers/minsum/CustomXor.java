@@ -212,6 +212,16 @@ public class CustomXor extends SFactorBase
 		
 	}
 
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inPortMsgs[portIndex];
+	}
 
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outPortMsgs[portIndex];
+	}
 
 }

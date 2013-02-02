@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -50,15 +51,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
-//	public void initializeMessages()
-//	{
-//		FactorList fl = _factorGraph.getFactorsFlat();
-//		for (Factor f : fl)
-//		{
-//			f.getSolver().initialize();
-//		}
-//	}
-	
 	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase sother = (SFactorGraphBase)other;
@@ -246,6 +238,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return sum;
 	}
 
+	public ISolverFactor createFactor(Factor factor)  
+	{
+		if (factor.getFactorFunction().getName() == BlastFromThePastFactor.BLAST_FROM_THE_PAST_FACTOR_NAME)
+			return new SBlastFromThePast(factor);
+		else
+			return null;
+	}
 
 	/***********************************************
 	 * 
@@ -509,4 +508,19 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		throw new DimpleException("Not supported");
 	}
 
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		throw new DimpleException("Not supported by " + this);
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		throw new DimpleException("Not supported by " + this);
+	}
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
+	
 }

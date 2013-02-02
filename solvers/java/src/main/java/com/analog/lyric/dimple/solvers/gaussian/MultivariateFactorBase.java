@@ -75,4 +75,15 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
 	}
+	
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inputMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		return _outputMsgs[portIndex];
+	}
 }

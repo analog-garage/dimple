@@ -128,15 +128,20 @@ public class SFactorGraph extends SFactorGraphBase
 
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		if (customFactorExists(factor.getFactorFunction().getName()))
-			return createCustomFactor(factor);
-		else
+		ISolverFactor retval = super.createFactor(factor);
+		if (retval == null)
 		{
-			HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
-			sf.setNumSamples(_numSamples);
-			sf.setMaxNumTries(_maxNumTries);
-			return sf;
+			if (customFactorExists(factor.getFactorFunction().getName()))
+				return createCustomFactor(factor);
+			else
+			{
+				HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
+				sf.setNumSamples(_numSamples);
+				sf.setMaxNumTries(_maxNumTries);
+				return sf;
+			}
 		}
+		return retval;
 	}
 
 	public ISolverVariable createVariable(VariableBase var)  

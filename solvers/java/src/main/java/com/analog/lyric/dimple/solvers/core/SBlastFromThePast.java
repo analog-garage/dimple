@@ -17,29 +17,54 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public abstract class SNode implements ISolverNode 
+public class SBlastFromThePast extends SFactorBase
 {
-	private Node _model;
+
+	Object _msg;
 	
-	public SNode(Node n)
-	{
-		_model = n;
+	public SBlastFromThePast(Factor factor) {
+		super(factor);
+		// TODO Auto-generated constructor stub
 	}
-	
-    public INode getModelObject()
-    {
-    	return _model;
-    }
-	
+
+	@Override
+	public void createMessages() 
+	{
+		_msg = getFactor().getVariables().getByIndex(0).getSolver().createDefaultMessage();
+		getFactor().getVariables().getByIndex(0).getSolver().createMessages(this, _msg);
+	}
+
+	@Override
+	public void updateEdge(int outPortNum) 
+	{
+	}
+
+	@Override
+	public void initialize(int portNum) 
+	{
+		
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		//TODO: implement this and replace blastFromThePast implementation
+	}
 	
 	@Override
-	public void initialize()
+	public Object getInputMsg(int portIndex) 
 	{
-		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
-			initialize(i);
+		throw new DimpleException("Not supported by " + this);
 	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		throw new DimpleException("Not supported by " + this);
+	}
+
+
 }

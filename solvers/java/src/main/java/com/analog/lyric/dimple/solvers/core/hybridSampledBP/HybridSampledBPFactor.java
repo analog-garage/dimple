@@ -183,4 +183,14 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 		_distGenerator[portNum].moveMessages(s._distGenerator[otherPortNum]);
 	}
 
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _samplers[portIndex].getInputMsg();
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		return _distGenerator[portIndex].getOutputMsg();
+	}
 }

@@ -159,7 +159,7 @@ public class MultivariateVariable extends SVariableBase
 	}
 
 	@Override
-	public void initialize(int i ) 
+	public void initialize( int i ) 
 	{
 		_inputMsgs[i] = (MultivariateMsg)resetMessage(_inputMsgs[i]);
 		
@@ -172,5 +172,20 @@ public class MultivariateVariable extends SVariableBase
 		_inputMsgs[portNum] = s._inputMsgs[otherPort];
 		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
+	}
+	
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inputMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		return _outputMsgs[portIndex];
+	}
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		_inputMsgs[portIndex] = (MultivariateMsg)obj;
 	}
 }

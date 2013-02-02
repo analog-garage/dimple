@@ -24,10 +24,22 @@ import com.analog.lyric.dimple.model.VariableBase;
 
 public class BlastFromThePastFactor extends Factor 
 {
+	public static final String BLAST_FROM_THE_PAST_FACTOR_NAME = "BlastFromThePast";
+	private static final BlastFromThePastFactorFunction _factorFunction = new BlastFromThePastFactorFunction();
 	
-	public BlastFromThePastFactor(int id, FactorFunction factorFunc,
-			VariableBase[] variables) {
-		super(id, factorFunc, variables);
+	private static class BlastFromThePastFactorFunction extends FactorFunction
+	{
+
+		public BlastFromThePastFactorFunction() 
+		{
+			super(BLAST_FROM_THE_PAST_FACTOR_NAME);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	public BlastFromThePastFactor(int id, VariableBase[] variables) {
+		super(id, _factorFunction, variables);
 		// TODO Auto-generated constructor stub
 	}
 

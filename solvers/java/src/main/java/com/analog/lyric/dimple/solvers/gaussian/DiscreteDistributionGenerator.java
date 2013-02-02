@@ -89,7 +89,11 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		_msg = (double[])var.createDefaultMessage();		
 	}
 	
-
+	@Override 
+	public Object getOutputMsg()
+	{
+		return _msg;
+	}
 
 
 	@Override
