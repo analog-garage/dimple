@@ -124,5 +124,7 @@ public interface INode  extends INameable
 	public double getInternalEnergy() ;
 	public double getBetheEntropy() ;
 	public int getSiblingPortIndex(int index);
+	public void initialize();
+	public void initialize(int portNum);
 
 }

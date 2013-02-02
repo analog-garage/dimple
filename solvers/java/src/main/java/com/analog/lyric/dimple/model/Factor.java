@@ -148,7 +148,6 @@ public class Factor extends FactorBase implements Cloneable
 		_variables = null;
 		_solverFactor = factorGraph.createFactor(this);
 		_solverFactor.createMessages();
-		_solverFactor.connectToVariables();
 
 	}
 	
@@ -193,6 +192,13 @@ public class Factor extends FactorBase implements Cloneable
 		return _solverFactor.getPossibleBeliefIndices();
 	}
 	*/
+	
+	public void initialize(int portNum)
+	{
+		if (_solverFactor != null)
+			_solverFactor.initialize(portNum);
+	}
+    
 	
 	public void initialize() 
 	{

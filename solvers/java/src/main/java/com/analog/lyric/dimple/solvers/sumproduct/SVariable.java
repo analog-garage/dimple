@@ -60,13 +60,13 @@ public class SVariable extends SDiscreteVariableBase
 		_calculateDerivative = val;
 	}
 
-	@Override
-	public void initialize()
-	{
-		for (int i = 0; i < _inPortMsgs.length; i++)
-			_inPortMsgs[i] = (double[])resetMessage(_inPortMsgs[i]);
-	}
 
+	@Override
+	public void initialize(int portNum) 
+	{
+		_inPortMsgs[portNum] = (double[])resetMessage(_inPortMsgs[portNum]);
+	}
+	
 	
 	public double getScore()
 	{
@@ -628,16 +628,38 @@ public class SVariable extends SDiscreteVariableBase
     }
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
 	{
 		SVariable sother = (SVariable)other;
-		_inPortMsgs[portNum] = sother._inPortMsgs[portNum];
-		_logInPortMsgs[portNum] = sother._inPortMsgs[portNum];
-		_outMsgArray[portNum] = sother._outMsgArray[portNum];
+		_inPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
+		_logInPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
+		_outMsgArray[portNum] = sother._outMsgArray[otherPortNum];
 		
 		if (_dampingInUse)
 		{
-			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[portNum];
+			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPortNum];
 		}
-	}		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outMsgArray[portIndex];
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) 
+	{
+		_inPortMsgs[portIndex] = (double[])obj;
+		
+	}
+
+
+	
 }

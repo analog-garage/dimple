@@ -18,6 +18,7 @@ function testBasics()
 
     solvers = {'minsum','sumproduct'};
     
+    
     for sindex = 1:length(solvers)
     
         setSolver(solvers{sindex});

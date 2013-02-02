@@ -97,14 +97,14 @@ public class FactorGraphStream
 				//Find out if we've encountered this parameter before
 				if (! _parameter2blastFromThePastHandler.containsKey(var))
 				{
-					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var, p);
+					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var, p.getSiblingPort());
 					ParameterBlastFromThePastHandler pbftph = new ParameterBlastFromThePastHandler(
 							var,_parameterFactorGraph, 
 							var.getSolver().createDefaultMessage(),
 							f);
 					_parameter2blastFromThePastHandler.put(var,pbftph);
 				}
-				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p);
+				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());
 
 				
 			}
@@ -131,7 +131,7 @@ public class FactorGraphStream
 	
 						//Initalize the input msg
 						Object inputMsg = var2.getSolver().createDefaultMessage();
-						BlastFromThePastFactor f = fg.addBlastFromPastFactor(var2,nextPort);
+						BlastFromThePastFactor f = fg.addBlastFromPastFactor(var2,nextPort.getSiblingPort());
 	
 						bfc.add(f);
 						
@@ -259,14 +259,10 @@ public class FactorGraphStream
 		for (int j = 0; j < _nestedGraphs.size()-1; j++)
 		{
 			//Tell it to move all factor messages to left
-			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver(),true);
+			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver());
 		}
 
-		_nestedGraphs.get(_nestedGraphs.size()-1).temporaryInitialize();
-		_nestedGraphs.get(_nestedGraphs.size()-1).initializeMessagesToAndFromBoundaryVariables();
-		
-
-
+		_nestedGraphs.get(_nestedGraphs.size()-1).recreateMessages();
 
 	}
 

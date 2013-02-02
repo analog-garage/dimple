@@ -162,13 +162,10 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	public void initialize() 
+	public void initialize(int i ) 
 	{
-		for (int i = 0; i < _inPortMsgs.length; i++)
-		{
-			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
-		}
+		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
 
 	}
 
@@ -187,11 +184,11 @@ public class CustomXor extends SFactorBase
 	    if (_dampingInUse)
 	    	_savedOutMsgsLLR = new double[numPorts];
 	    
+	    connectToVariables();
 	}
 
 
-	@Override
-	public void connectToVariables() 
+	private void connectToVariables() 
 	{
 		// TODO Auto-generated method stub
 		//messages were created in constructor
@@ -206,12 +203,12 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		CustomXor x = (CustomXor)other;
-		_inPortMsgs[portNum] = x._inPortMsgs[portNum];
-		_outPortMsgs[portNum] = x._outPortMsgs[portNum];
-		_savedOutMsgsLLR[portNum] = x._savedOutMsgsLLR[portNum];
+		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];
+		_outPortMsgs[portNum] = x._outPortMsgs[otherPort];
+		_savedOutMsgsLLR[portNum] = x._savedOutMsgsLLR[otherPort];
 		
 	}
 

@@ -140,30 +140,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	}
 	
 
-	@Override
-	public void createMessages()
-	{
-
-		int numPorts = _factor.getSiblings().size();
-		
-	    _inPortMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
-	    _outMsgArray = new double[numPorts][];
-	    if (_dampingInUse)
-	    	_savedOutMsgArray = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
-	    }
-	    
-		setK(Integer.MAX_VALUE);
-
-	}
 		
 	/*
 	 * (non-Javadoc)
@@ -554,18 +530,36 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return sum;
 	}
 
+
 	@Override
-	public void connectToVariables() 
+	public void createMessages()
 	{
-		//messages were created in constructor
-		int index = 0;
-		for (VariableBase vb : _factor.getVariables())
-		{
-			ISolverVariable sv = vb.getSolver();
-			_outMsgArray[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
-			index++;
-		}
-	}
+
+		int numPorts = _factor.getSiblings().size();
+		
+	    _inPortMsgs = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++) 
+	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
+	    
+	    _outMsgArray = new double[numPorts][];
+	    
+	    for (int index = 0; index < _factor.getVariables().size(); index++)
+	    	_outMsgArray[index] = (double[]) _factor.getVariables()
+	    			.getByIndex(index).getSolver().createMessages(this, _inPortMsgs[index]);
+	    
+	    if (_dampingInUse)
+	    	_savedOutMsgArray = new double[numPorts][];
+	    
+	    for (int port = 0; port < numPorts; port++)
+	    {
+	    	if (_dampingInUse)
+	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+	    }
+	    
+		setK(Integer.MAX_VALUE);
+
+	}	
 
 	@Override
 	public double[][] getInPortMsgs() 
@@ -581,25 +575,36 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return _outMsgArray;
 	}
 
-	public void initialize()
+	@Override
+	public void initialize(int i)
 	{
-		for (int i = 0; i < _inPortMsgs.length; i++)
-		{
-			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
-		}
+		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 
 		STableFactor sother = (STableFactor)other;
-	    _inPortMsgs[portNum] = sother._inPortMsgs[portNum];
-	    _outMsgArray[portNum] = sother._outMsgArray[portNum];
+	    _inPortMsgs[portNum] = sother._inPortMsgs[otherPort];
+	    _outMsgArray[portNum] = sother._outMsgArray[otherPort];
 	    if (_dampingInUse)
-	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[portNum];
+	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 	    
+	}
+
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outMsgArray[portIndex];
 	}
 
 

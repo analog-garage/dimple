@@ -34,76 +34,28 @@ public abstract class SNode implements ISolverNode
     {
     	return _model;
     }
-
-    @Override
-    public Object getInputMsg(int portIndex)
-    {
-    	throw new DimpleException("Not supported for: " + this);
-    }
-    
-    @Override
-    public Object getOutputMsg(int portIndex)
-    {
-    	throw new DimpleException("Not supported for: " + this);
-    }
-    
-    @Override
-    public void setInputMsg(int portIndex,Object obj)
-    {
-    	throw new DimpleException("Not supported for: " + this);
-    }
-    
-    @Override
-    public void setOutputMsg(int portIndex,Object obj)
-    {
-    	throw new DimpleException("Not supported for: " + this);
-    }
-    
-    
-	public void moveMessages(ISolverNode other, boolean moveSiblingMessages)
+	
+	
+	@Override
+	public Object getInputMsg(int portIndex) 
 	{
-		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
-			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
-		
-		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
-		{
-			moveMessages(other, i);
-			
-			INode thisVariable = getModelObject().getSiblings().get(i);
-			INode otherVariable = other.getModelObject().getSiblings().get(i);
-			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), getModelObject().getSiblingPortIndex(i));
-		}
+		throw new DimpleException("Not supported by " + this);
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		throw new DimpleException("Not supported by " + this);
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
 	}
 	
-//	@Override
-//	public void initialize() 
-//	{
-//		invalidateCache();
-//	}
-//	
-//	@Override
-//	public void invalidateCache()
-//	{
-//		_cacheIsValid = false;
-//	}
-//	protected void ensureCacheUpdated()
-//	{
-//		if (!_cacheIsValid)
-//		{
-//			updateMessageCache();
-//			_cacheIsValid = true;
-//		}
-//	}
-//	protected void updateMessageCache()
-//	{
-//		
-//	}
-	
-	
-//	@Override
-//	public void connectSibling(INode node)  
-//	{
-//		invalidateCache();
-//	}
-
+	@Override
+	public void initialize()
+	{
+		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+			initialize(i);
+	}
 }

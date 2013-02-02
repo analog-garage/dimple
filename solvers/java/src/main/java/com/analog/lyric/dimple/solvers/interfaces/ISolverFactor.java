@@ -24,6 +24,6 @@ public interface ISolverFactor extends ISolverNode
 	public double getInternalEnergy();
 	public double getBetheEntropy();
 	public abstract void createMessages();
-	public abstract void connectToVariables();
-
+	//public abstract void connectToVariables();
+	public void moveMessages(ISolverNode other);
 }

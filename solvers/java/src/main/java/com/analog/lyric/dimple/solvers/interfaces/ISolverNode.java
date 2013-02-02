@@ -31,6 +31,7 @@ public interface ISolverNode
 	public void update() ;
 	public void updateEdge(int outPortNum) ;
 	public void initialize() ;
+	public void initialize(int portNum);
 	//public void connectSibling(INode p) ;
 	public ISolverFactorGraph getParentGraph();
 	public ISolverFactorGraph getRootGraph();
@@ -41,7 +42,8 @@ public interface ISolverNode
     public Object getInputMsg(int portIndex);
     public Object getOutputMsg(int portIndex);
     public void setInputMsg(int portIndex,Object obj);
-    public void setOutputMsg(int portIndex,Object obj);
-    public void moveMessages(ISolverNode other, boolean moveSiblingMessages);
-    public void moveMessages(ISolverNode other, int portNum);
+    //public void setOutputMsg(int portIndex,Object obj);
+    //public void moveMessages(ISolverNode other, boolean moveSiblingMessages);
+    public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum);
+    
 }

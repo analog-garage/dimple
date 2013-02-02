@@ -221,24 +221,22 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }		
 	    
+	    connectToVariables();
+	    
 	    setK(Integer.MAX_VALUE);
 	}
 
+	
 	@Override
-	public void initialize() 
+	public void initialize(int i)
 	{
-		for (int i = 0; i < _inPortMsgs.length; i++)
-		{
-			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-			_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
-		}
+		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
 		
 	}
 
 
-	//TODO: make generic double [] message object
-	@Override
-	public void connectToVariables() 
+	private void connectToVariables() 
 	{
 		//messages were created in constructor
 		int index = 0;
@@ -252,15 +250,27 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		STableFactor tf = (STableFactor)other;
-		_inPortMsgs[portNum] = tf._inPortMsgs[portNum];	    
-	    _outPortMsgs[portNum] = tf._outPortMsgs[portNum];
-    	_savedOutMsgArray[portNum] = tf._savedOutMsgArray[portNum];
+		_inPortMsgs[portNum] = tf._inPortMsgs[otherPort];	    
+	    _outPortMsgs[portNum] = tf._outPortMsgs[otherPort];
+	    if (_dampingInUse)
+	    	_savedOutMsgArray[portNum] = tf._savedOutMsgArray[otherPort];
 	    
 	}
 	
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outPortMsgs[portIndex];
+	}
 
 }
 

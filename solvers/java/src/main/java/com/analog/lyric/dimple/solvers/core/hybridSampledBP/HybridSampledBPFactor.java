@@ -171,24 +171,18 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 			s.createMessage();
 		for (HybridSampledBPDistributionGenerator s : _distGenerator)
 			s.createMessage();
-	}
-
-	@Override
-	public void connectToVariables() 
-	{
+		
 		for (int i = 0; i < _factor.getSiblings().size(); i++)
-		{
-			
 			_distGenerator[i].setOutputMsg(_factor.getVariables().getByIndex(i).getSolver().createMessages(this, _samplers[i].getInputMsg()));
-		}
 	}
 
+
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
 	{
 		HybridSampledBPFactor s = (HybridSampledBPFactor)other;
-		_samplers[portNum].moveMessages(s._samplers[portNum]);
-		_distGenerator[portNum].moveMessages(s._distGenerator[portNum]);
+		_samplers[portNum].moveMessages(s._samplers[otherPortNum]);
+		_distGenerator[portNum].moveMessages(s._distGenerator[otherPortNum]);
 	}
 
 }

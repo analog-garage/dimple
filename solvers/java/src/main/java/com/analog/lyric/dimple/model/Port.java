@@ -50,4 +50,8 @@ public class Port
 	{
 		return node.getSiblings().get(index);
 	}
+	public Port getSiblingPort()
+	{
+		return new Port(getSibling(),node.getSiblingPortIndex(index));
+	}
 }

@@ -118,5 +118,20 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		throw new DimpleException("getBetheEntropy not yet supported");		
 	}
 	
-	
+	public void moveMessages(ISolverNode other)
+	{
+		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
+			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
+		
+		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		{
+			moveMessages(other, i,i);
+			
+			INode thisVariable = getModelObject().getSiblings().get(i);
+			INode otherVariable = other.getModelObject().getSiblings().get(i);
+			int thisIndex = getModelObject().getSiblingPortIndex(i);
+			int otherIndex = other.getModelObject().getSiblingPortIndex(i);
+			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
+		}
+	}
 }

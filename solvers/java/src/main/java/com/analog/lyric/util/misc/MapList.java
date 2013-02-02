@@ -77,7 +77,7 @@ public class MapList<T extends IGetId>  implements Collection<T>
 
 	public boolean contains(IGetId node)
 	{
-		return _hashMap.containsKey(node.getId());
+		return  _hashMap.containsKey(node.getId());
 	}
 	
 	@Override

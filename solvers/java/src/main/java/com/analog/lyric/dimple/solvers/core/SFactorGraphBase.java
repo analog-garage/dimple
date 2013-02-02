@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGrap
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -58,7 +59,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 //		}
 //	}
 	
-	public void moveMessages(ISolverNode other,boolean moveSiblingMessages)
+	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase sother = (SFactorGraphBase)other;
 		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
@@ -69,7 +70,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myFactors.size(); i++)
 		{
-			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),moveSiblingMessages);
+			ISolverFactor sf = (ISolverFactor)myFactors.getByIndex(i).getSolver();
+			sf.moveMessages(otherFactors.getByIndex(i).getSolver());
 		}
 		
 	}
@@ -495,10 +497,16 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
 	{
 		throw new DimpleException("Not supported");
 		
+	}
+	
+	@Override
+	public void initialize(int portNum) {
+		// TODO Auto-generated method stub
+		throw new DimpleException("Not supported");
 	}
 
 }

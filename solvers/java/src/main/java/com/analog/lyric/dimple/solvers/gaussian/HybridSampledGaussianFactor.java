@@ -57,11 +57,6 @@ public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 			return new GaussianDistributionGenerator(p);
 	}
 
-	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
-	{
-		
-	}
 
 
 
