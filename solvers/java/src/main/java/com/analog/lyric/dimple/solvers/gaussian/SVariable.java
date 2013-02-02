@@ -246,10 +246,9 @@ public class SVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize(int i) 
 	{
-		for (int i = 0; i < _inputMsgs.length; i++)
-			_inputMsgs[i] = (double[])resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (double[])resetMessage(_inputMsgs[i]);
 	}
     
     
@@ -267,12 +266,12 @@ public class SVariable extends SRealVariableBase
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		SVariable s = (SVariable)other;
 	
-		_inputMsgs[portNum] = s._inputMsgs[portNum];
-		_outputMsgs[portNum] = s._outputMsgs[portNum];
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
 	}
 

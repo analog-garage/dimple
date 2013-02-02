@@ -35,13 +35,10 @@ public abstract class MultivariateFactorBase extends SFactorBase
 
 
 	@Override
-	public void initialize() 
+	public void initialize(int i) 
 	{
-		for (int i = 0; i < _inputMsgs.length; i++)
-		{
-			MultivariateVariable sv = (MultivariateVariable)_factor.getSiblings().get(i).getSolver();
-			_inputMsgs[i] = (MultivariateMsg)sv.resetMessage(_inputMsgs[i]);
-		}
+		MultivariateVariable sv = (MultivariateVariable)_factor.getSiblings().get(i).getSolver();
+		_inputMsgs[i] = (MultivariateMsg)sv.resetMessage(_inputMsgs[i]);
 	}
 
 	@Override
@@ -54,11 +51,10 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	    for (int port = 0; port < numPorts; port++) 
 	    	_inputMsgs[port] = (MultivariateMsg)((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
 
+	    connectToVariables();
 	}
 
-	//TODO: genericize this?
-	@Override
-	public void connectToVariables() 
+	private void connectToVariables() 
 	{
 		//messages were created in constructor
 		int index = 0;
@@ -71,12 +67,12 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		
 	}
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		MultivariateFactorBase s = (MultivariateFactorBase)other;
 	
-		_inputMsgs[portNum] = s._inputMsgs[portNum];
-		_outputMsgs[portNum] = s._outputMsgs[portNum];
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
 	}
 }

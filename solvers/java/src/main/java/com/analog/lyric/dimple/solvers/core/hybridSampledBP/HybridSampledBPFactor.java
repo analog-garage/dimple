@@ -156,12 +156,10 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 	}
 	
 	@Override
-	public void initialize() 
+	public void initialize(int i) 
 	{
-		for (HybridSampledBPSampler s : _samplers)
-			s.initialize();
-		for (HybridSampledBPDistributionGenerator s : _distGenerator)
-			s.initialize();
+		_samplers[i].initialize();
+		_distGenerator[i].initialize();
 	}
 	
 	@Override

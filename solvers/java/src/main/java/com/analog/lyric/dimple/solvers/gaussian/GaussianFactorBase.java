@@ -35,13 +35,10 @@ public abstract class GaussianFactorBase extends SFactorBase
 
 
 	@Override
-	public void initialize() 
+	public void initialize(int i ) 
 	{
-		for (int i = 0; i < _inputMsgs.length; i++)
-		{
-			SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-			_inputMsgs[i] = (double[])sv.resetMessage(_inputMsgs[i]);
-		}
+		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+		_inputMsgs[i] = (double[])sv.resetMessage(_inputMsgs[i]);
 		
 	}
 
@@ -57,10 +54,11 @@ public abstract class GaussianFactorBase extends SFactorBase
 	    	_inputMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
 	    
 	    _outputMsgs = new double[numPorts][];
+	    
+	    connectToVariables();
 	}
 
-	@Override
-	public void connectToVariables() 
+	private void connectToVariables() 
 	{
 		//messages were created in constructor
 		int index = 0;
@@ -87,12 +85,12 @@ public abstract class GaussianFactorBase extends SFactorBase
 	
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		GaussianFactorBase s = (GaussianFactorBase)other;
 	
-		_inputMsgs[portNum] = s._inputMsgs[portNum];
-		_outputMsgs[portNum] = s._outputMsgs[portNum];
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
 	}
 }

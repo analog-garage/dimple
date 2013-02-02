@@ -159,20 +159,18 @@ public class MultivariateVariable extends SVariableBase
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize(int i ) 
 	{
-		for (int i = 0; i < _inputMsgs.length; i++)
-			_inputMsgs[i] = (MultivariateMsg)resetMessage(_inputMsgs[i]);
-		// TODO Auto-generated method stub
+		_inputMsgs[i] = (MultivariateMsg)resetMessage(_inputMsgs[i]);
 		
 	}
 	@Override
-	public void moveMessages(ISolverNode other, int portNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
 		MultivariateVariable s = (MultivariateVariable)other;
 	
-		_inputMsgs[portNum] = s._inputMsgs[portNum];
-		_outputMsgs[portNum] = s._outputMsgs[portNum];
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
 	}
 }
