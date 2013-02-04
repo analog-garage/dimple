@@ -114,7 +114,6 @@ public class SVariable extends SDiscreteVariableBase
 		else
 			return _dampingParams[portIndex];
 	}
-	
 
     public void updateEdge(int outPortNum) 
     {
@@ -182,12 +181,12 @@ public class SVariable extends SDiscreteVariableBase
 	    
         if (_calculateDerivative)
         	updateDerivative(outPortNum);
+        
     }
     
 
     public void update() 
     {
-
         final double minLog = -100;
         double[] priors = (double[])_input;
         int M = priors.length;
@@ -210,6 +209,7 @@ public class SVariable extends SDiscreteVariableBase
 	        }
 	        alphas[m] = alpha;
         }
+        
         
         //Now compute output messages for each outgoing edge
 	    for (int out_d = 0; out_d < D; out_d++ )
@@ -273,6 +273,7 @@ public class SVariable extends SDiscreteVariableBase
 	    if (_calculateDerivative)
 		    for (int i = 0; i < _inPortMsgs.length; i++)
 		    	updateDerivative(i);
+	    
     }
     
         
@@ -285,6 +286,7 @@ public class SVariable extends SDiscreteVariableBase
         int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
 
+        
         double[] outBelief = new double[M];
 
         for (int m = 0; m < M; m++)
@@ -312,7 +314,10 @@ public class SVariable extends SDiscreteVariableBase
         
         //calculate belief by dividing by sum
         for (int m = 0; m < M; m++)
+        {
         	outBelief[m] /= sum;
+        }
+        
         
         return outBelief;
     }
@@ -632,7 +637,7 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		SVariable sother = (SVariable)other;
 		_inPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
-		_logInPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
+		_logInPortMsgs[portNum] = sother._logInPortMsgs[otherPortNum];
 		_outMsgArray[portNum] = sother._outMsgArray[otherPortNum];
 		
 		if (_dampingInUse)

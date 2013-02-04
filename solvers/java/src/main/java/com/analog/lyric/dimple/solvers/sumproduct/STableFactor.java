@@ -113,8 +113,10 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		_updateDerivative = updateDer;
 	}
 	
+	
 	public void updateEdge(int outPortNum) 
 	{
+		
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -122,12 +124,14 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 
 		if (_updateDerivative)
 			updateDerivative(outPortNum);
+		
 	}
 	
 	
 	@Override
 	public void update() 
 	{		
+		
 		if (_kIsSmallerThanDomain)
 			//TODO: damping
 			_kbestFactorEngine.update();
@@ -137,6 +141,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		if (_updateDerivative)
 			for (int i = 0; i < _inPortMsgs.length ;i++)
 				updateDerivative(i);
+		
 	}
 	
 

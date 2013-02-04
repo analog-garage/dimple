@@ -60,7 +60,6 @@ function testParameter
     fg.addFactor(ng,a,b,c);
     b.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
     c.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
-    disp('solving...');
     fg.solve();
     expectedBelief = .2^4 / (.8^4 + .2^4);
     assertElementsAlmostEqual(a.Belief,expectedBelief);

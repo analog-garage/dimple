@@ -104,8 +104,10 @@ public class FactorGraphStream
 							f);
 					_parameter2blastFromThePastHandler.put(var,pbftph);
 				}
+				
 				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());
 
+				
 				
 			}
 			else
@@ -201,7 +203,7 @@ public class FactorGraphStream
 			//   Add a blast from the past for this variable
 			//   Create a Factor Graph for this variable (maybe share with others)
 			//   Add a blast to the past to be paired with the blast from the past
-			addBlastFromThePast(factorPort);
+			addBlastFromThePast(factorPort.getSiblingPort());
 		}
 		
 		public void addBlastFromThePast(Port p)

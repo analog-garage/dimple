@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -66,6 +67,7 @@ public class BlastFromThePastFactor extends Factor
 		if (_newVarPort.index == -1)
 			_newVarPort.index = _newVarPort.node.getPortNum(this);
 		_msg = msg;
+		
 		getSiblings().get(0).getSolver().setInputMsg(_newVarPort.index, _msg);
 	}
 		
