@@ -43,26 +43,25 @@ public class SFactorGraph extends SFactorGraphBase
 	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
 	{
 		String funcName = factor.getFactorFunction().getName();
-//		if (funcName.equals("finiteFieldMult"))
-//		{
-//			//VariableList variables = factor.getVariables();
-//			
-//			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
-//				return new FiniteFieldConstMult(factor);
-//			else
-//				return new FiniteFieldMult(factor);
-//		}
-//		else if (funcName.equals("finiteFieldAdd"))
-//		{
-//			return new FiniteFieldAdd(factor);    		
-//		}
-//		else if (funcName.equals("finiteFieldProjection"))
-//		{
-//			return new FiniteFieldProjection(factor);
-//		}
-//		else
-//			throw new DimpleException("Not implemented");
-		return null;
+		if (funcName.equals("finiteFieldMult"))
+		{
+			//VariableList variables = factor.getVariables();
+			
+			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
+				return new FiniteFieldConstMult(factor);
+			else
+				return new FiniteFieldMult(factor);
+		}
+		else if (funcName.equals("finiteFieldAdd"))
+		{
+			return new FiniteFieldAdd(factor);    		
+		}
+		else if (funcName.equals("finiteFieldProjection"))
+		{
+			return new FiniteFieldProjection(factor);
+		}
+		else
+			throw new DimpleException("Not implemented");
 	}
 	
 	public ISolverVariable createVariable(VariableBase var)  

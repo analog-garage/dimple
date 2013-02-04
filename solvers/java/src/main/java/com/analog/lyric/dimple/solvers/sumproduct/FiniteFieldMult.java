@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 
-public class FiniteFieldMult extends SFactorBase
+public class FiniteFieldMult extends FiniteFieldFactor
 {
 	//TODO: store this here or cache somewhere else?
 	//      Maybe create a multition for this?
@@ -37,7 +37,7 @@ public class FiniteFieldMult extends SFactorBase
 	public FiniteFieldMult(Factor factor)  
 	{
 		super(factor);
-		if (factor.getPorts().size() != 3)
+		if (factor.getSiblings().size() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 		
 		//TODO: check all have same prim poly
@@ -70,18 +70,18 @@ public class FiniteFieldMult extends SFactorBase
 	public void updateToX()
 	{
 
-		double [] xOutput = (double[])_factor.getPorts().get(0).getOutputMsg();
-		double [] yInput = (double[])_factor.getPorts().get(1).getInputMsg();		
-		double [] zInput = (double[])_factor.getPorts().get(2).getInputMsg();
+		double [] xOutput = _outputMsgs[0];
+		double [] yInput = _inputMsgs[1];		
+		double [] zInput = _inputMsgs[2];
 		
 		updateBackward(yInput,zInput,xOutput);
 	}
 	
 	public void updateToY()
 	{
-		double [] yOutput = (double[])_factor.getPorts().get(1).getOutputMsg();
-		double [] xInput = (double[])_factor.getPorts().get(0).getInputMsg();		
-		double [] zInput = (double[])_factor.getPorts().get(2).getInputMsg();
+		double [] yOutput = _outputMsgs[1];
+		double [] xInput = _inputMsgs[0];		
+		double [] zInput = _inputMsgs[2];
 		
 		updateBackward(xInput,zInput,yOutput);
 		
@@ -152,9 +152,9 @@ public class FiniteFieldMult extends SFactorBase
 		//       = SUM (over i) p(dlog(x) == i) * p(dlog(y) == dlog(a) - i)
 
 		
-		double [] xInput = (double[])_factor.getPorts().get(0).getInputMsg();
-		double [] yInput = (double[])_factor.getPorts().get(1).getInputMsg();		
-		double [] zOutput = (double[])_factor.getPorts().get(2).getOutputMsg();
+		double [] xInput = _inputMsgs[0];
+		double [] yInput = _inputMsgs[1];		
+		double [] zOutput = _outputMsgs[2];
 
 		
 		
