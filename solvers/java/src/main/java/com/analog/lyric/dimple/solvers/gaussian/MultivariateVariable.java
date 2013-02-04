@@ -129,7 +129,7 @@ public class MultivariateVariable extends SVariableBase
 		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
 		_inputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
-		_outputMsgs = Arrays.copyOf(_outputMsgs,portNum+1);
+		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
 		_outputMsgs[portNum] = (MultivariateMsg)factorInputMsg;
 		return _inputMsgs[portNum];
 	}
