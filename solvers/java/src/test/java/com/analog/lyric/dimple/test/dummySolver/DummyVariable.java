@@ -18,9 +18,12 @@ package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class DummyVariable extends SVariableBase
@@ -85,6 +88,55 @@ public class DummyVariable extends SVariableBase
 	public Object getBelief()
 	{
 		return _input;
+	}
+
+	@Override
+	public void remove(Factor factor) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object[] createMessages(ISolverFactor factor) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void initialize(int portNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="com/analog/lyric/dimple/solvers/particleBP/|com/analog/lyric/dimple/schedulers/schedule/GibbsRandomScanSchedule.java|com/analog/lyric/dimple/schedulers/GibbsRandomScanScheduler.java" kind="src" path="src/main/java"/>
-	<classpathentry excluding="com/analog/lyric/dimple/test/dummySolver/|com/analog/lyric/dimple/test/TableFactorTest.java|com/analog/lyric/dimple/test/RealVariableParticleBPTest.java" kind="src" output="build/classes/test" path="src/test/java"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" output="build/classes/test" path="src/test/java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="build/external-libs/jama-1.0.2.jar">
 		<attributes>

@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyCustomFactor extends SFactorBase
 {
@@ -32,7 +33,6 @@ public class DummyCustomFactor extends SFactorBase
 		
 	}
 
-	@Override
 	public Object getDefaultMessage(Port port) 
 	{
 		com.analog.lyric.dimple.model.Discrete var = (com.analog.lyric.dimple.model.Discrete)port.getConnectedNode();
@@ -43,6 +43,37 @@ public class DummyCustomFactor extends SFactorBase
 	@Override
 	public void initialize() 
 	{
+		
+	}
+
+	@Override
+	public void createMessages() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void initialize(int portNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) {
+		// TODO Auto-generated method stub
 		
 	}
 

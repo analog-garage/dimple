@@ -16,17 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import java.util.ArrayList;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class SRealFactor extends SFactorBase
@@ -144,63 +143,25 @@ public class SRealFactor extends SFactorBase
 		}
 	}
 	
-
-	public Object getDefaultMessage(Port port)
-	{
-		INode neighbor = port.getConnectedNode();
-		if (neighbor instanceof Discrete)
-			return ((SVariableBase)(((VariableBase)port.getConnectedNode()).getSolver())).getDefaultMessage(port);
-		else
-		{
-			// For real variables, the variable sets up the input message, so use it if it's already there
-			Object inMessage = port.getInputMsg();
-			if (inMessage instanceof ParticleBPSolverVariableToFactorMessage)
-				return inMessage;
-			else
-				return ((SRealVariable)port.getConnectedNode().getSolver()).getDefaultVariableToFactorMessage(port);
-		}
-	}
+//
+//	public Object getDefaultMessage(Port port)
+//	{
+//		INode neighbor = port.getConnectedNode();
+//		if (neighbor instanceof Discrete)
+//			return ((SVariableBase)(((VariableBase)port.getConnectedNode()).getSolver())).getDefaultMessage(port);
+//		else
+//		{
+//			// For real variables, the variable sets up the input message, so use it if it's already there
+//			Object inMessage = port.getInputMsg();
+//			if (inMessage instanceof ParticleBPSolverVariableToFactorMessage)
+//				return inMessage;
+//			else
+//				return ((SRealVariable)port.getConnectedNode().getSolver()).getDefaultVariableToFactorMessage(port);
+//		}
+//	}
 	
 	
-	public void initialize()  
-	{
-		super.initialize();
-		
-		ArrayList<Port> ports = _factor.getPorts();
-	    _numPorts = ports.size();
-	    
-    	_inPortMsgs = new double[_numPorts][];
-    	_outMsgArray = new double[_numPorts][];
-		_variableDomains = new Object[_numPorts][];
-		_variableValues = new Object[_numPorts];
-		_variableIndices = new int[_numPorts];
-		_variableDomainLengths = new int[_numPorts];
-		_realVariable = new boolean[_numPorts];
-
-		
-		for (int iPort = 0; iPort < _numPorts; iPort++)
-	    {
-	    	VariableBase var = (VariableBase)(ports.get(iPort).getConnectedNode());
-	    	Object inMessage = ports.get(iPort).getInputMsg();
-
-	    	// Is the variable connected to the port real or discrete
-	    	if (var instanceof Real)
-	    	{
-	    		_realVariable[iPort] = true;
-	    		_variableDomains[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).particleValues;
-	    		_inPortMsgs[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).messageValues;
-	    	}
-	    	else
-	    	{
-	    		_realVariable[iPort] = true;
-	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
-	    		_inPortMsgs[iPort] = (double[])inMessage;
-	    	}
-	    	
-    		_outMsgArray[iPort] = (double[])ports.get(iPort).getOutputMsg();
-	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
-	    }
-	}
+	
 	
 	
 	protected void initializeVariableCombinations()
@@ -281,6 +242,113 @@ public class SRealFactor extends SFactorBase
     {
     	_beta = beta;
     }
+
+    public void initialize()  
+	{
+		super.initialize();
+		
+//		//ArrayList<Port> ports = _factor.getPorts();
+//	    
+//	    
+//
+//		
+//		for (int iPort = 0; iPort < _numPorts; iPort++)
+//	    {
+//	    	VariableBase var = (VariableBase)(ports.get(iPort).getConnectedNode());
+//	    	Object inMessage = ports.get(iPort).getInputMsg();
+//
+//	    	// Is the variable connected to the port real or discrete
+//	    	if (var instanceof Real)
+//	    	{
+//	    		_realVariable[iPort] = true;
+//	    		_variableDomains[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).particleValues;
+//	    		_inPortMsgs[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).messageValues;
+//	    	}
+//	    	else
+//	    	{
+//	    		_realVariable[iPort] = true;
+//	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
+//	    		_inPortMsgs[iPort] = (double[])inMessage;
+//	    	}
+//	    	
+//    		_outMsgArray[iPort] = (double[])ports.get(iPort).getOutputMsg();
+//	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
+//	    }
+	}
+
+	@Override
+	public void createMessages() 
+	{
+		_numPorts = _factor.getSiblings().size();
+    	_inPortMsgs = new double[_numPorts][];
+    	_outMsgArray = new double[_numPorts][];
+		_variableDomains = new Object[_numPorts][];
+		_variableValues = new Object[_numPorts];
+		_variableIndices = new int[_numPorts];
+		_variableDomainLengths = new int[_numPorts];
+		_realVariable = new boolean[_numPorts];
+
+		
+		for (int iPort = 0; iPort < _numPorts; iPort++)
+	    {
+	    	VariableBase var = _factor.getVariables().getByIndex(iPort);
+	    	Object [] messages = var.getSolver().createMessages(this);
+
+	    	// Is the variable connected to the port real or discrete
+	    	if (var instanceof Real)
+	    	{
+	    		ParticleBPSolverVariableToFactorMessage tmp = (ParticleBPSolverVariableToFactorMessage)messages[1];
+	    		_realVariable[iPort] = true;
+	    		_variableDomains[iPort] = tmp.particleValues;
+	    		_inPortMsgs[iPort] = tmp.messageValues;
+	    	}
+	    	else
+	    	{
+	    		_realVariable[iPort] = true;
+	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
+	    		_inPortMsgs[iPort] = (double[])messages[1];
+	    	}
+	    	
+    		_outMsgArray[iPort] = (double[])messages[0];
+	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
+	    }
+	}
+
+
+	@Override
+	public void initialize(int portNum) 
+	{
+		VariableBase var = _factor.getVariables().getByIndex(portNum);
+		if (var instanceof Discrete)
+		{
+			_inPortMsgs[portNum]  = (double[])var.getSolver().resetOutputMessage(_inPortMsgs[portNum]);
+		}
+	}
+
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _inPortMsgs[portIndex];
+	}
+
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _outMsgArray[portIndex];
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		throw new DimpleException("Not supported by this: " + this);
+		
+	}
 
 
 }

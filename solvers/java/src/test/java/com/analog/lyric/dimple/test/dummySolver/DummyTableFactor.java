@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyTableFactor extends STableFactorBase
 {	
@@ -33,6 +34,37 @@ public class DummyTableFactor extends STableFactorBase
 	@Override
 	public void update()
 	{		
+	}
+
+	@Override
+	public void createMessages() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void initialize(int portNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

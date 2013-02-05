@@ -61,7 +61,7 @@ function testBasic()
     %Retrieve the beliefs
     x = 0:.1:30;
     y = c.Solver.getBelief(x);
-
+    
     %Plot the result and display the mean of c
     %plot(x,y,'*');
     mn = x*y;
