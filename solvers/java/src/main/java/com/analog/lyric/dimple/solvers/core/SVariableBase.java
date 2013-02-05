@@ -119,4 +119,9 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		throw new DimpleException("not supported");    	
 	}
 	
+	@Override
+	public Object resetOutputMessage(Object message)
+	{
+		return resetInputMessage(message);
+	}
 }

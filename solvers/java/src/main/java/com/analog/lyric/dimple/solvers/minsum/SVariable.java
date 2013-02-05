@@ -245,7 +245,7 @@ public class SVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	public Object [] createMessages(ISolverFactor factor) 
 	{
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
@@ -261,27 +261,26 @@ public class SVariable extends SDiscreteVariableBase
 		_dampingParams = Arrays.copyOf(_dampingParams,newArraySize);
 		
 		
-		_inPortMsgs[portNum] = (double[])createDefaultMessage();
-		_outMsgArray[portNum] = (double[])factorInputMsg;
+		_inPortMsgs[portNum] = createDefaultMessage();
+		_outMsgArray[portNum] = createDefaultMessage();
 		
 		if (_dampingInUse)
 			_savedOutMsgArray[portNum] = new double[_outMsgArray[portNum].length];
 		
-		return _inPortMsgs[portNum];
+		return new Object [] {_inPortMsgs[portNum], _outMsgArray[portNum]};
 	}
 
 
-	@Override
-	public Object createDefaultMessage() 
+	public double [] createDefaultMessage() 
 	{
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
 		double[] retVal = new double[domainLength];
-		return resetMessage(retVal);
+		return (double[])resetInputMessage(retVal);
 	}
 
 
 	@Override
-	public Object resetMessage(Object message) 
+	public Object resetInputMessage(Object message) 
 	{
 		Arrays.fill((double[])message, 0);
 		return message;
@@ -292,7 +291,7 @@ public class SVariable extends SDiscreteVariableBase
 	public void initialize(int portNum) 
 	{
 		// TODO Auto-generated method stub
-		_inPortMsgs[portNum] = (double[])resetMessage(_inPortMsgs[portNum]);
+		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		
 	}
 

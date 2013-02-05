@@ -33,8 +33,8 @@ public class SBlastFromThePast extends SFactorBase
 	@Override
 	public void createMessages() 
 	{
-		_msg = getFactor().getVariables().getByIndex(0).getSolver().createDefaultMessage();
-		getFactor().getVariables().getByIndex(0).getSolver().createMessages(this, _msg);
+		Object [] messages = getFactor().getVariables().getByIndex(0).getSolver().createMessages(this);
+		_msg = messages[0];
 	}
 
 	@Override
@@ -62,8 +62,9 @@ public class SBlastFromThePast extends SFactorBase
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
-		throw new DimpleException("Not supported by " + this);
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _msg;
 	}
 
 

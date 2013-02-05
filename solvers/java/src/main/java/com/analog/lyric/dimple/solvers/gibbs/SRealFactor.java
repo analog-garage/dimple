@@ -23,15 +23,15 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, ISolverFactorGibbs
 {	
 	protected Factor _realFactor;
-	
+	protected ObjectSample [] _inputMsgs;
 	
 	public SRealFactor(Factor factor)
 	{
@@ -43,20 +43,12 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	public double getConditionalPotential(double value, int outPortIndex)
 	{
 		
-		ArrayList<Port> ports = _factor.getPorts();
-	    int numPorts = ports.size();
+		
+	    int numPorts = _factor.getSiblings().size();
 	    Object[] values = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	Port p = ports.get(port);
-	    	Object message = p.getInputMsg();
-	    	INode neighbor = p.getConnectedNode();
-	    	
-	    	if (((VariableBase)neighbor).getDomain().isDiscrete())
-	    		values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[((int[])message)[0]];
-	    	else
-	    		values[port] = message;
-	    }
+	    	values[port] = _inputMsgs[port].value;
+	    
 	    values[outPortIndex] = value;	// Use the requested value on the associated output port
 	    
 	    return _realFactor.getFactorFunction().evalEnergy(values);
@@ -65,26 +57,23 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	
 	public void updateEdge(int outPortNum)
 	{
-		ArrayList<Port> ports = _factor.getPorts();
-		INode outVariable = ports.get(outPortNum).getConnectedNode();
-		if (outVariable instanceof Discrete)						// Then this edge connects to a discrete variable, so send an output message
-		{
-			Object[] outputVariableDomain = ((Discrete)outVariable).getDiscreteDomain().getElements();
-			FactorFunction factorFunction = _realFactor.getFactorFunction();
-			int numPorts = ports.size();
-			Object[] values = new Object[numPorts];
-			for (int port = 0; port < numPorts; port++)
-			{
-				Port p = ports.get(port);
-				Object message = p.getInputMsg();
-				INode neighbor = p.getConnectedNode();
-				if (neighbor instanceof Discrete)
-					values[port] = ((Discrete)neighbor).getDiscreteDomain().getElements()[((int[])message)[0]];
-				else
-					values[port] = message;
-			}
+		INode var = _factor.getSiblings().get(outPortNum);
+		
 
-			double[] outputMsgs = (double[])ports.get(outPortNum).getOutputMsg();
+		if (var instanceof Discrete)						// Then this edge connects to a discrete variable, so send an output message
+		{
+			Object[] outputVariableDomain = ((Discrete)var).getDiscreteDomain().getElements();
+			FactorFunction factorFunction = _realFactor.getFactorFunction();
+			int numPorts = _factor.getSiblings().size();
+			
+			Object[] values = new Object[numPorts];
+			
+			for (int port = 0; port < numPorts; port++)
+				values[port] = _inputMsgs[port].value;
+
+			//TODO: these could be cached instead.
+			double[] outputMsgs = (double[])var.getSolver().getInputMsg(_factor.getSiblingPortIndex(outPortNum)); 
+			
 			int outputMsgLength = outputMsgs.length;
 			for (int i = 0; i < outputMsgLength; i++)
 			{
@@ -101,36 +90,66 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	}
 	
 
-	public Object getDefaultMessage(Port port) 
-	{
-		INode neighbor = port.getConnectedNode();
-		if (neighbor instanceof Discrete)
-			return new int[]{0};		// Messages from discrete variables are domain indices
-		else
-			return new Double(0);		// Messages from real variables are real values (doubles)
-	}
-
 	public double getPotential()
 	{
-		ArrayList<Port> ports = _factor.getPorts();
-	    int numPorts = ports.size();
+	    int numPorts = _factor.getSiblings().size();
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	Port p = ports.get(port);
-	    	Object message = p.getInputMsg();
-	    	INode neighbor = p.getConnectedNode();
-	    	if (((VariableBase)neighbor).getDomain().isDiscrete())
-	    		inPortMsgs[port] = new Integer(((int[])message)[0]);
-	    	else
-	    		inPortMsgs[port] = message;
-	    }
+	    	inPortMsgs[port] = _inputMsgs[port].value;
 	    
 	    return getPotential(inPortMsgs);
+		
 	}
 	public double getPotential(Object[] inputs)
 	{
 	    return _realFactor.getFactorFunction().evalEnergy(inputs);
+	}
+
+
+	@Override
+	public void createMessages() 
+	{
+		_inputMsgs = new ObjectSample[_factor.getSiblings().size()];
+		for (int i = 0; i < _factor.getSiblings().size(); i++)
+		{
+			Object [] messages = _factor.getVariables().getByIndex(i).getSolver().createMessages(this);
+			_inputMsgs[i] = (ObjectSample)messages[1];
+		}
+		
+	}
+
+
+	@Override
+	public void initialize(int portNum) 
+	{
+		_inputMsgs[portNum] = (ObjectSample)_factor.getVariables().getByIndex(portNum).getSolver().resetOutputMessage(_inputMsgs[portNum]);
+		
+	}
+
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _inputMsgs[portIndex];
+	}
+
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		throw new DimpleException("not supported");
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		// TODO Auto-generated method stub
+		throw new DimpleException("not supported");
+
 	}
 
 

@@ -206,12 +206,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	{
 
 		int numPorts = _factor.getSiblings().size();
-	    _inPortMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
+	    _inPortMsgs = new double[numPorts][];	    
 	    _outPortMsgs = new double[numPorts][];
+	    
 	    if (_dampingInUse)
 	    	_savedOutMsgArray = new double[numPorts][];
 	    
@@ -221,7 +218,13 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }		
 	    
-	    connectToVariables();
+		for (int i = 0; i < _factor.getVariables().size(); i++)
+		{
+			ISolverVariable sv = _factor.getVariables().getByIndex(i).getSolver();
+			Object [] messages = sv.createMessages(this);
+			_outPortMsgs[i] = (double[])messages[0];
+			_inPortMsgs[i] = (double[])messages[1];
+		}		
 	    
 	    setK(Integer.MAX_VALUE);
 	}
@@ -231,22 +234,10 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public void initialize(int i)
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		_inPortMsgs[i] = (double[])sv.resetInputMessage(_inPortMsgs[i]);
 		
 	}
 
-
-	private void connectToVariables() 
-	{
-		//messages were created in constructor
-		int index = 0;
-		for (VariableBase vb : _factor.getVariables())
-		{
-			ISolverVariable sv = vb.getSolver();
-			_outPortMsgs[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
-			index++;
-		}		
-	}
 
 
 	@Override

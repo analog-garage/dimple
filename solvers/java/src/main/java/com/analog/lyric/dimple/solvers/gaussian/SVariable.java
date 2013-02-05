@@ -216,27 +216,26 @@ public class SVariable extends SRealVariableBase
 	}
 
 	@Override
-	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	public Object [] createMessages(ISolverFactor factor) 
 	{
 		// TODO Auto-generated method stub
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
-		_inputMsgs[portNum] = (double[])createDefaultMessage();
+		_inputMsgs[portNum] = createDefaultMessage();
 		_outputMsgs = Arrays.copyOf(_outputMsgs, newArraySize);
-		_outputMsgs[portNum] = (double[])factorInputMsg;
-		return _inputMsgs[portNum];
+		_outputMsgs[portNum] = createDefaultMessage();
+		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	@Override
-	public Object createDefaultMessage() 
+	public double [] createDefaultMessage() 
 	{
 		double [] message = new double[2];
-		return resetMessage(message);
+		return (double[])resetInputMessage(message);
 	}
 
 	@Override
-	public Object resetMessage(Object message) 
+	public Object resetInputMessage(Object message) 
 	{
 		double [] m = (double[])message;
 		m[0] = 0;
@@ -248,7 +247,7 @@ public class SVariable extends SRealVariableBase
 	@Override
 	public void initialize(int i) 
 	{
-		_inputMsgs[i] = (double[])resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (double[])resetInputMessage(_inputMsgs[i]);
 	}
     
     

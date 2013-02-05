@@ -123,27 +123,25 @@ public class MultivariateVariable extends SVariableBase
 	}
 
 	@Override
-	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	public Object [] createMessages(ISolverFactor factor) 
 	{
 		int portNum = getModelObject().getPortNum(factor.getModelObject());
 		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
 		_inputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
 		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
-		_outputMsgs[portNum] = (MultivariateMsg)factorInputMsg;
-		return _inputMsgs[portNum];
+		_outputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
+		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	//TODO: create parent method that does these two things?
-	@Override
-	public Object createDefaultMessage() 
+	public MultivariateMsg createDefaultMessage() 
 	{
 		MultivariateMsg mm = new MultivariateMsg();
-		return resetMessage(mm);
+		return (MultivariateMsg)resetInputMessage(mm);
 	}
 
 	@Override
-	public Object resetMessage(Object message) 
+	public Object resetInputMessage(Object message) 
 	{
 		double [] means = new double[_numVars];
 		double [][] covariance = new double[_numVars][];
@@ -161,7 +159,7 @@ public class MultivariateVariable extends SVariableBase
 	@Override
 	public void initialize( int i ) 
 	{
-		_inputMsgs[i] = (MultivariateMsg)resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (MultivariateMsg)resetInputMessage(_inputMsgs[i]);
 		
 	}
 	@Override

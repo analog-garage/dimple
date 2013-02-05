@@ -165,7 +165,7 @@ public class CustomXor extends SFactorBase
 	public void initialize(int i ) 
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		_inPortMsgs[i] = (double[])sv.resetInputMessage(_inPortMsgs[i]);
 
 	}
 
@@ -176,30 +176,20 @@ public class CustomXor extends SFactorBase
 		int numPorts = _factor.getSiblings().size();
 		
 	    _inPortMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
 	    _outPortMsgs = new double[numPorts][];
+	    
 	    if (_dampingInUse)
 	    	_savedOutMsgsLLR = new double[numPorts];
 	    
-	    connectToVariables();
-	}
-
-
-	private void connectToVariables() 
-	{
-		// TODO Auto-generated method stub
-		//messages were created in constructor
-		int index = 0;
-		for (VariableBase vb : _factor.getVariables())
+		for (int i = 0; i < numPorts; i++)
 		{
-			ISolverVariable sv = vb.getSolver();
-			_outPortMsgs[index] = (double[]) sv.createMessages(this, _inPortMsgs[index]);
-			index++;
+			ISolverVariable sv = _factor.getVariables().getByIndex(i).getSolver();
+			Object [] messages = sv.createMessages(this);
+			_outPortMsgs[i] = (double[])messages[0];
+			_inPortMsgs[i] = (double[])messages[1];
 		}	
 	}
+
 
 
 	@Override

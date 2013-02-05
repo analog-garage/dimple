@@ -79,15 +79,14 @@ public class DiscreteSampler extends HybridSampledBPSampler
 	public void initialize()  
 	{
 		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
-		_msg = (double[])var.resetMessage(_msg);
+		_msg = (double[])var.resetInputMessage(_msg);
 		
 	}
 
 	@Override
-	public void createMessage() 
+	public void createMessage(Object msg) 
 	{
-		ISolverVariable var = (ISolverVariable)_p.node.getSiblings().get(_p.index).getSolver();
-		_msg = (double[])var.createDefaultMessage();		
+		_msg = (double[])msg;		
 	}
 
 	@Override

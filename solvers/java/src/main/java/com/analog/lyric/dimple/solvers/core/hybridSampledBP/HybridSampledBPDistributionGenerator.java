@@ -31,7 +31,7 @@ public abstract class HybridSampledBPDistributionGenerator
 	}
 	
 	public abstract void initialize();
-	public abstract void createMessage();
+	public abstract void createMessage(Object msg);
 	public abstract void generateDistributionInPlace(ArrayList<Object> input);
 	public abstract void setOutputMsg(Object message);
 	public abstract Object getOutputMsg();

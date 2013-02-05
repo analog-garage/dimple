@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 {	
-    protected int[][] _inPortMsgs = null;
+    protected DiscreteSample[] _inPortMsgs = null;
     protected double[][] _outPortMsgs = null;
     protected int _numPorts;
 
@@ -46,7 +47,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	    double[] outMessage = _outPortMsgs[outPortNum];
 	    int[] inPortMsgs = new int[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
-	    	inPortMsgs[port] = _inPortMsgs[port][0];
+	    	inPortMsgs[port] = _inPortMsgs[port].index;
 	    
     	int outputMsgLength = outMessage.length;
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
@@ -67,18 +68,12 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	
 
-	public Object getDefaultMessage(Port port) 
-	{
-		// WARNING: This method of initialization doesn't ensure a valid joint
-		// value if the joint distribution has any zero-probability values
-		return new int[]{0};
-	}
 
 	public double getPotential()
 	{
 	    int[] inPortMsgs = new int[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
-	    	inPortMsgs[port] = _inPortMsgs[port][0];
+	    	inPortMsgs[port] = _inPortMsgs[port].index;
 	    
 	    return getPotential(inPortMsgs);
 	}
@@ -94,19 +89,59 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		
 	
 
-    protected void updateMessageCache()
-    {
-    	ArrayList<Port> ports = _factor.getPorts();
-    	_numPorts= ports.size();
-	    _inPortMsgs = new int[_numPorts][];
+
+
+	@Override
+	public void createMessages() 
+	{
+    	int size = _factor.getSiblings().size();
+    	_numPorts= size;
+    	
+	    _inPortMsgs = new DiscreteSample[_numPorts];
 	    _outPortMsgs = new double[_numPorts][];
 	    
 	    for (int port = 0; port < _numPorts; port++)
 	    {
-	    	_inPortMsgs[port] = (int[])ports.get(port).getInputMsg();
-	    	_outPortMsgs[port] = (double[])ports.get(port).getOutputMsg();
+	    	ISolverVariable svar = _factor.getVariables().getByIndex(port).getSolver();
+	    	Object [] messages = svar.createMessages(this);
+	    	_inPortMsgs[port] = (DiscreteSample)messages[1];
+	    	_outPortMsgs[port] = (double[])messages[0];
 	    }
-    }
+	}
+
+
+	@Override
+	public void initialize(int portNum) 
+	{
+		_inPortMsgs[portNum].index = 0;
+	}
+
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _inPortMsgs[portIndex];
+	}
+
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _outPortMsgs[portIndex];
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		STableFactor tf = (STableFactor)other;
+		this._inPortMsgs[thisPortNum] = tf._inPortMsgs[otherPortNum];
+		this._outPortMsgs[thisPortNum] = tf._outPortMsgs[otherPortNum];
+		
+	}
 
 
 	

@@ -64,7 +64,7 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public void initialize(int portNum) 
 	{
-		_inPortMsgs[portNum] = (double[])resetMessage(_inPortMsgs[portNum]);
+		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 	}
 	
 	
@@ -586,16 +586,17 @@ public class SVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public Object createMessages(ISolverFactor factor, Object factorInputMsg) 
+	public Object [] createMessages(ISolverFactor factor) 
 	{
 		// TODO Auto-generated method stub
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs,newArraySize);
-		_inPortMsgs[portNum] = (double[])createDefaultMessage();
+		_inPortMsgs[portNum] = createDefaultMessage();
 		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
 		_logInPortMsgs[portNum] = new double[_inPortMsgs[portNum].length];
 		_outMsgArray = Arrays.copyOf(_outMsgArray, newArraySize);
+		_outMsgArray[portNum] = createDefaultMessage();
 		
 		if (_dampingInUse)
 		{
@@ -605,15 +606,14 @@ public class SVariable extends SDiscreteVariableBase
 
 		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
 		
-		portNum = _var.getPortNum(factor.getModelObject());
-		_outMsgArray[portNum] = (double[])factorInputMsg;
-		return _inPortMsgs[portNum];
+		return new Object [] {_inPortMsgs[portNum],_outMsgArray[portNum]};
+		
 	}
 	
 
 	
 	@Override
-	public Object resetMessage(Object message)
+	public Object resetInputMessage(Object message)
 	{
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
     	double val = 1.0/domainLength;
@@ -623,13 +623,12 @@ public class SVariable extends SDiscreteVariableBase
 
 	}
 	
-	@Override
-	public Object createDefaultMessage() 
+	public double [] createDefaultMessage() 
 	{
 		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
     	double[] retVal = new double[domainLength];
-    	return resetMessage(retVal);
+    	return (double[])resetInputMessage(retVal);
     }
 
 	@Override

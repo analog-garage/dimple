@@ -38,7 +38,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	public void initialize(int i ) 
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inputMsgs[i] = (double[])sv.resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
 		
 	}
 
@@ -49,23 +49,15 @@ public abstract class GaussianFactorBase extends SFactorBase
 		int numPorts = _factor.getSiblings().size();
 		
 	    _inputMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inputMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
 	    _outputMsgs = new double[numPorts][];
-	    
-	    connectToVariables();
-	}
-
-	private void connectToVariables() 
-	{
 		//messages were created in constructor
 		int index = 0;
 		for (VariableBase vb : _factor.getVariables())
 		{
 			ISolverVariable sv = vb.getSolver();
-			_outputMsgs[index] = (double[]) sv.createMessages(this, _inputMsgs[index]);
+			Object [] messages = sv.createMessages(this);
+			_outputMsgs[index] = (double[]) messages[0];
+			_inputMsgs[index] = (double[]) messages[1];
 			index++;
 		}
 		

@@ -543,15 +543,15 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		int numPorts = _factor.getSiblings().size();
 		
 	    _inPortMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inPortMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
 	    _outMsgArray = new double[numPorts][];
 	    
 	    for (int index = 0; index < _factor.getVariables().size(); index++)
-	    	_outMsgArray[index] = (double[]) _factor.getVariables()
-	    			.getByIndex(index).getSolver().createMessages(this, _inPortMsgs[index]);
+	    {
+	    	ISolverVariable is = _factor.getVariables().getByIndex(index).getSolver();
+	    	Object [] messages = is.createMessages(this);	    	
+	    	_outMsgArray[index] = (double[])messages[0]; 
+	    	_inPortMsgs[index] = (double[])messages[1];
+	    }
 	    
 	    if (_dampingInUse)
 	    	_savedOutMsgArray = new double[numPorts][];
@@ -584,7 +584,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public void initialize(int i)
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inPortMsgs[i] = (double[])sv.resetMessage(_inPortMsgs[i]);
+		_inPortMsgs[i] = (double[])sv.resetInputMessage(_inPortMsgs[i]);
 	}
 
 	@Override

@@ -99,9 +99,7 @@ public class FactorGraphStream
 				{
 					BlastFromThePastFactor f = _graph.addBlastFromPastFactor(var, p.getSiblingPort());
 					ParameterBlastFromThePastHandler pbftph = new ParameterBlastFromThePastHandler(
-							var,_parameterFactorGraph, 
-							var.getSolver().createDefaultMessage(),
-							f);
+							var,_parameterFactorGraph,f);
 					_parameter2blastFromThePastHandler.put(var,pbftph);
 				}
 				
@@ -132,7 +130,6 @@ public class FactorGraphStream
 						VariableBase var2 = vsb.get(i);
 	
 						//Initalize the input msg
-						Object inputMsg = var2.getSolver().createDefaultMessage();
 						BlastFromThePastFactor f = fg.addBlastFromPastFactor(var2,nextPort.getSiblingPort());
 	
 						bfc.add(f);
@@ -190,7 +187,6 @@ public class FactorGraphStream
 		private ArrayList<BlastFromThePastFactor> _allBlastFromThePasts = new ArrayList<BlastFromThePastFactor>();
 		
 		public ParameterBlastFromThePastHandler(VariableBase var,FactorGraph fg, 
-				Object initialBlastFromPastMessage,
 				BlastFromThePastFactor originalPlastFromPast)
 		{
 			_otherVar = var;

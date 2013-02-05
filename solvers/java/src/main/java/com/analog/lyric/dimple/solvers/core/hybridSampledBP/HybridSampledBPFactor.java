@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class HybridSampledBPFactor extends SFactorBase 
 {
@@ -165,13 +166,16 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 	@Override
 	public void createMessages() 
 	{
-		for (HybridSampledBPSampler s : _samplers)
-			s.createMessage();
-		for (HybridSampledBPDistributionGenerator s : _distGenerator)
-			s.createMessage();
 		
-		for (int i = 0; i < _factor.getSiblings().size(); i++)
-			_distGenerator[i].setOutputMsg(_factor.getVariables().getByIndex(i).getSolver().createMessages(this, _samplers[i].getInputMsg()));
+		for (int i = 0; i < _factor.getVariables().size(); i++)
+		{
+		
+			ISolverVariable var = _factor.getVariables().getByIndex(i).getSolver();
+			Object [] messages = var.createMessages(this);
+			_samplers[i].createMessage(messages[1]);
+			_distGenerator[i].createMessage(messages[0]);
+		
+		}
 	}
 
 

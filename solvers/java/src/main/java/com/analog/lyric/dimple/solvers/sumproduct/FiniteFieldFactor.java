@@ -40,15 +40,15 @@ public abstract class FiniteFieldFactor extends SFactorBase
 		int numPorts = _factor.getSiblings().size();
 		
 	    _inputMsgs = new double[numPorts][];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inputMsgs[port] = (double[])((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
-	    
 	    _outputMsgs = new double[numPorts][];
 	    
 	    for (int index = 0; index < _factor.getVariables().size(); index++)
-	    	_outputMsgs[index] = (double[]) _factor.getVariables()
-	    			.getByIndex(index).getSolver().createMessages(this, _inputMsgs[index]);
+	    {
+	    	ISolverVariable svar =  _factor.getVariables().getByIndex(index).getSolver();
+	    	Object [] messages = svar.createMessages(this);
+	    	_outputMsgs[index] = (double[])messages[0];
+	    	_inputMsgs[index] = (double[])messages[1];
+	    }
 	    
 	}
 
@@ -57,7 +57,7 @@ public abstract class FiniteFieldFactor extends SFactorBase
 	public void initialize(int i) 
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inputMsgs[i] = (double[])sv.resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override

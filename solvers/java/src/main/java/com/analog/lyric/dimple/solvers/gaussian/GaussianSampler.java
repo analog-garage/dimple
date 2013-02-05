@@ -46,10 +46,9 @@ public class GaussianSampler extends HybridSampledBPSampler
 	}
 
 	@Override
-	public void createMessage() 
+	public void createMessage(Object msg) 
 	{
-		ISolverVariable var = (ISolverVariable)_p.node.getSiblings().get(_p.index).getSolver();
-		_msg = (double[])var.createDefaultMessage();
+		_msg = (double[])msg;
 	}
 
 

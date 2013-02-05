@@ -45,9 +45,7 @@ public class BlastFromThePastFactor extends Factor
 	}
 
 	private Object _msg;
-	//private Port _factorPort;
 	private Port _variablePort;
-	//private Object _initMsg;
 	private Port _newVarPort;
 	
 	public BlastFromThePastFactor(int id, VariableBase var, Port oldVariablePort) 

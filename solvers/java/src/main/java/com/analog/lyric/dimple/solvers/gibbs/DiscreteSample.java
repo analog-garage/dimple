@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,19 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.interfaces;
+package com.analog.lyric.dimple.solvers.gibbs;
 
-import com.analog.lyric.dimple.model.Factor;
-
-public interface ISolverVariable extends ISolverNode
+public class DiscreteSample extends ObjectSample
 {
-	public void setInput(Object input);
-	public Object getBelief();
-	public Object getValue();
-	public void remove(Factor factor);
-    public void setGuess(Object guess);
-    public Object getGuess();
-    public Object [] createMessages(ISolverFactor factor);
-	public Object resetInputMessage(Object message);
-	public Object resetOutputMessage(Object message);
+	public DiscreteSample(int index, Object value)
+	{
+		super(value);
+		this.index = index;
+	}
+	
+	public int index;
 }

@@ -38,7 +38,7 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	public void initialize(int i) 
 	{
 		MultivariateVariable sv = (MultivariateVariable)_factor.getSiblings().get(i).getSolver();
-		_inputMsgs[i] = (MultivariateMsg)sv.resetMessage(_inputMsgs[i]);
+		_inputMsgs[i] = (MultivariateMsg)sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override
@@ -47,21 +47,15 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		int numPorts = _factor.getSiblings().size();
 	    _inputMsgs = new MultivariateMsg[numPorts];
 	    _outputMsgs = new MultivariateMsg[numPorts];
-	    
-	    for (int port = 0; port < numPorts; port++) 
-	    	_inputMsgs[port] = (MultivariateMsg)((ISolverVariable)(_factor.getSiblings().get(port).getSolver())).createDefaultMessage();
 
-	    connectToVariables();
-	}
-
-	private void connectToVariables() 
-	{
 		//messages were created in constructor
 		int index = 0;
 		for (VariableBase vb : _factor.getVariables())
 		{
 			ISolverVariable sv = vb.getSolver();
-			_outputMsgs[index] = (MultivariateMsg) sv.createMessages(this, _inputMsgs[index]);
+			Object [] messages = sv.createMessages(this);
+			_outputMsgs[index] = (MultivariateMsg)messages[0]; 
+			_inputMsgs[index] = (MultivariateMsg)messages[1];
 			index++;
 		}		
 		
