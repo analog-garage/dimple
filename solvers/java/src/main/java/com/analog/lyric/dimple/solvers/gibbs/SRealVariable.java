@@ -71,7 +71,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 
@@ -93,9 +93,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			}
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = _var.getPorts().get(portIndex).getConnectedNode();
+				INode factorNode = _var.getSiblings().get(portIndex);
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ISolverRealFactorGibbs factor = (ISolverRealFactorGibbs)(_var.getPorts().get(portIndex).getConnectedNode().getSolver());
+				ISolverRealFactorGibbs factor = (ISolverRealFactorGibbs)(_var.getSiblings().get(portIndex).getSolver());
 				LPrevious += factor.getConditionalPotential(_sampleValue, factorPortNumber);
 				LProposed += factor.getConditionalPotential(proposalValue, factorPortNumber);
 			}
