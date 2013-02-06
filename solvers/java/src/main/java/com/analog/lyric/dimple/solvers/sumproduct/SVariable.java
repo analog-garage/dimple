@@ -597,6 +597,7 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public Object [] createMessages(ISolverFactor factor) 
 	{
+		
 		// TODO Auto-generated method stub
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);

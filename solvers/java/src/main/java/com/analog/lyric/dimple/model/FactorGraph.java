@@ -734,8 +734,10 @@ public class FactorGraph extends FactorBase
 		//copy the graph
 		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraph,this);
 
-		if (_solverFactory != null && getParentGraph() == null)
+		if (_solverFactory != null)
+		{
 			subGraphCopy.setSolverFactory(_solverFactory);
+		}
 
 		//tell us about it
 		addNameAndUUID(subGraphCopy);
