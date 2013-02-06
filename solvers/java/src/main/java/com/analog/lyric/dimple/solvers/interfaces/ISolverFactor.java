@@ -19,11 +19,10 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 public interface ISolverFactor extends ISolverNode
 {
-	//public Object getDefaultMessage(Port port);
 	public Object getBelief() ;
 	public double getInternalEnergy();
 	public double getBetheEntropy();
 	public abstract void createMessages();
-	//public abstract void connectToVariables();
 	public void moveMessages(ISolverNode other);
+	public int[][] getPossibleBeliefIndices() ;
 }

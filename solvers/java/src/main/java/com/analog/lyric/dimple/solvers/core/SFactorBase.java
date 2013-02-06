@@ -100,11 +100,11 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	    return _factor.getFactorFunction().evalEnergy(values);
     }
 
-//	@Override
-//	public int[][] getPossibleBeliefIndices() 
-//	{
-//		throw new DimpleException("not implemented");
-//	}
+	@Override
+	public int[][] getPossibleBeliefIndices() 
+	{
+		throw new DimpleException("not implemented");
+	}
 	
 	@Override
 	public double getInternalEnergy()

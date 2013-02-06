@@ -39,10 +39,10 @@ public class DiscreteFactor extends Factor
 	}
 
 	
-//	public int[][] getPossibleBeliefIndices() 
-//	{
-//		return _solverFactor.getPossibleBeliefIndices();
-//	}
+	public int[][] getPossibleBeliefIndices() 
+	{
+		return _solverFactor.getPossibleBeliefIndices();
+	}
 	
 
 	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint) 

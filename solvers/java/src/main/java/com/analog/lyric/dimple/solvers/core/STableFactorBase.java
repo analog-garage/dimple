@@ -41,5 +41,9 @@ public abstract class STableFactorBase extends SFactorBase implements ISolverTab
 		return this._factorTable;
 	}
 
-
+    @Override
+    public int [][] getPossibleBeliefIndices() 
+    {
+            return getFactorTable().getIndices();
+    }
 }
