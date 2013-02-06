@@ -564,6 +564,9 @@ public class FactorGraph extends FactorBase
 		//Variables must first be part of the graph before the factor can join them.
 		addVariables(currentJoint);
 
+		//Reattach the variable too, just in case.
+		currentJoint.createSolverObject(_solverFactorGraph);
+
 		//go through each factor that was connected to any of the variables and tell it to join those variables
 		for (Factor f : factors)
 		{
@@ -573,8 +576,6 @@ public class FactorGraph extends FactorBase
 			f.createSolverObject(_solverFactorGraph);
 		}
 
-		//Reattach the variable too, just in case.
-		currentJoint.createSolverObject(_solverFactorGraph);
 
 		//Remove the original variables
 		removeVariables(variables);
