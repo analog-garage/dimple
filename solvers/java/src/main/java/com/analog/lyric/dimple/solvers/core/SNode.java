@@ -42,4 +42,23 @@ public abstract class SNode implements ISolverNode
 		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
 			initialize(i);
 	}
+	
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
+	@Override
+	public void setOutputMsg(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
+
 }

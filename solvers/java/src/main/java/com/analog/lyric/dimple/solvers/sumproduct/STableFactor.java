@@ -617,5 +617,19 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		return _outMsgArray[portIndex];
 	}
 
-
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj) 
+	{
+		double [] tmp = (double[])obj;
+		for (int i = 0; i <tmp.length; i++)
+			_inPortMsgs[portIndex][i] = tmp[i];
+	}
+	
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj) 
+	{
+		double [] tmp = (double[])obj;
+		for (int i = 0; i <tmp.length; i++)
+			_outMsgArray[portIndex][i] = tmp[i];
+	}
 }

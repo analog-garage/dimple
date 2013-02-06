@@ -135,9 +135,5 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		}
 	}
 	
-	@Override
-	public void setInputMsg(int portIndex, Object obj) {
-		throw new DimpleException("Not supported by " + this);
-	}
 	
 }

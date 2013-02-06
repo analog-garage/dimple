@@ -64,14 +64,21 @@ public class DummyVariable extends SVariableBase
 
 	public void setInput(Object input) 
 	{
-		double [] vals = (double[])input;
-
-		int len = _varDiscrete.getDiscreteDomain().getElements().length;
-		
-		if (vals.length != len)
-			throw new DimpleException("length of priors does not match domain");
-
-		_input = vals;
+		if (input == null)
+		{
+			_input = null;
+		}
+		else
+		{
+			double [] vals = (double[])input;
+	
+			int len = _varDiscrete.getDiscreteDomain().getElements().length;
+			
+			if (vals.length != len)
+				throw new DimpleException("length of priors does not match domain");
+	
+			_input = vals;
+		}
 
 	}	
 

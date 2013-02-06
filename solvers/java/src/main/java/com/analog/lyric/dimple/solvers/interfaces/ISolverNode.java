@@ -42,7 +42,10 @@ public interface ISolverNode
     public Object getInputMsg(int portIndex);
     public Object getOutputMsg(int portIndex);
     public void setInputMsg(int portIndex,Object obj);
-    //public void setOutputMsg(int portIndex,Object obj);
+    public void setOutputMsg(int portIndex,Object obj);
+    public void setInputMsgValues(int portIndex,Object obj);
+    public void setOutputMsgValues(int portIndex,Object obj);
+
     //public void moveMessages(ISolverNode other, boolean moveSiblingMessages);
     public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum);
     

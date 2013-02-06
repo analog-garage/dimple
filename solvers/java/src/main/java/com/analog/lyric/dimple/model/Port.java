@@ -38,6 +38,16 @@ public class Port
 		return node.getSiblings().get(index);
 	}
 
+	public void setInputMsgValues(Object obj)
+	{
+		node.getSolver().setInputMsgValues(index, obj);
+	}
+
+	public void setOutputMsgValues(Object obj)
+	{
+		node.getSolver().setOutputMsgValues(index,obj);
+	}
+	
 	public Object getInputMsg()
 	{
 		return node.getSolver().getInputMsg(index);			

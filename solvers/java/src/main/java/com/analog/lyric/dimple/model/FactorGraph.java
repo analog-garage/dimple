@@ -2087,72 +2087,72 @@ public class FactorGraph extends FactorBase
 
 	public String getAdjacencyString()
 	{
-		throw new DimpleException("Not supported yet.  Fixme");
-//		StringBuilder sb = new StringBuilder("------Adjacency------\n");
-//		FactorList allFunctions = getNonGraphFactorsFlat();
-//		sb.append(String.format("\n--Functions (%d)--\n", allFunctions.size()));
-//		for(Factor fn : allFunctions)
-//		{
-//			String fnName = fn.getLabel();
-//			if(fn.getParentGraph().getParentGraph() != null)
-//			{
-//				fnName = fn.getQualifiedLabel();
-//			}
-//			if(fnName == null)
-//			{
-//				fnName = Integer.toString(fn.getId());
-//			}
-//			sb.append(String.format("fn  [%s]\n", fnName));
-//			ArrayList<Port> ports = fn.getPorts();
-//			for(Port p : ports)
-//			{
-//				VariableBase v = (VariableBase)p.getConnectedNodeFlat();
-//				String vName = v.getLabel();
-//				if(v.getParentGraph() != null && // can happen with boundary variables
-//						v.getParentGraph().getParentGraph() != null)
-//				{
-//					vName = v.getQualifiedLabel();
-//				}
-//				if(vName == null)
-//				{
-//					vName = Integer.toString(v.getId());
-//				}
-//				sb.append(String.format("\t-> [%s]\n", vName));
-//			}
-//		}
-//		VariableList allVariables = getVariablesFlat();
-//		sb.append(String.format("--Variables (%d)--\n", allVariables.size()));
-//		for(VariableBase v : allVariables)
-//		{
-//			String vName = v.getLabel();
-//			if(v.getParentGraph() != null && //can happen with boundary variables
-//					v.getParentGraph().getParentGraph() != null)
-//			{
-//				vName = v.getQualifiedLabel();
-//			}
-//			if(vName == null)
-//			{
-//				vName = Integer.toString(v.getId());
-//			}
-//			sb.append(String.format("var [%s]\n", vName));
-//			ArrayList<Port> ports = v.getPorts();
-//			for(Port p : ports)
-//			{
-//				Factor fn = (Factor)p.getConnectedNodeFlat();
-//				String fnName = fn.getLabel();
-//				if(fn.getParentGraph().getParentGraph() != null)
-//				{
-//					fnName = fn.getQualifiedLabel();
-//				}
-//				if(fnName == null)
-//				{
-//					fnName = Integer.toString(fn.getId());
-//				}
-//				sb.append(String.format("\t-> [%s]\n", fnName));
-//			}
-//		}
-//
-//		return sb.toString();
+		StringBuilder sb = new StringBuilder("------Adjacency------\n");
+		FactorList allFunctions = getNonGraphFactorsFlat();
+		sb.append(String.format("\n--Functions (%d)--\n", allFunctions.size()));
+		for(Factor fn : allFunctions)
+		{
+			String fnName = fn.getLabel();
+			if(fn.getParentGraph().getParentGraph() != null)
+			{
+				fnName = fn.getQualifiedLabel();
+			}
+			if(fnName == null)
+			{
+				fnName = Integer.toString(fn.getId());
+			}
+			sb.append(String.format("fn  [%s]\n", fnName));
+			
+			for(int i = 0; i < fn.getSiblings().size(); i++)
+			{
+				VariableBase v = (VariableBase)fn.getSiblings().get(i);
+				
+				String vName = v.getLabel();
+				if(v.getParentGraph() != null && // can happen with boundary variables
+						v.getParentGraph().getParentGraph() != null)
+				{
+					vName = v.getQualifiedLabel();
+				}
+				if(vName == null)
+				{
+					vName = Integer.toString(v.getId());
+				}
+				sb.append(String.format("\t-> [%s]\n", vName));
+			}
+		}
+		VariableList allVariables = getVariablesFlat();
+		sb.append(String.format("--Variables (%d)--\n", allVariables.size()));
+		for(VariableBase v : allVariables)
+		{
+			String vName = v.getLabel();
+			if(v.getParentGraph() != null && //can happen with boundary variables
+					v.getParentGraph().getParentGraph() != null)
+			{
+				vName = v.getQualifiedLabel();
+			}
+			if(vName == null)
+			{
+				vName = Integer.toString(v.getId());
+			}
+			sb.append(String.format("var [%s]\n", vName));
+			
+			for(int i = 0; i < v.getSiblings().size(); i++)
+			{
+				Factor fn = v.getFactors()[i];
+				String fnName = fn.getLabel();
+				if(fn.getParentGraph().getParentGraph() != null)
+				{
+					fnName = fn.getQualifiedLabel();
+				}
+				if(fnName == null)
+				{
+					fnName = Integer.toString(fn.getId());
+				}
+				sb.append(String.format("\t-> [%s]\n", fnName));
+			}
+		}
+
+		return sb.toString();
 	}
 
 	public String getDegreeString()

@@ -30,7 +30,7 @@ classdef Port < handle
         end
         
         function set.InputMsg(obj,msg)
-            obj.IPort.setInputMsg(msg);
+            obj.IPort.setInputMsgValues(msg);
         end
         
         function msg = get.OutputMsg(obj)
@@ -38,7 +38,7 @@ classdef Port < handle
         end
         
         function set.OutputMsg(obj,msg)
-            obj.IPort.setOutputMsg(msg);
+            obj.IPort.setOutputMsgValues(msg);
         end
         
         function retval = eq(a,b)
