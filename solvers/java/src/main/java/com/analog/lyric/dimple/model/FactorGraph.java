@@ -185,11 +185,12 @@ public class FactorGraph extends FactorBase
 
 	public void setSolverFactory(IFactorGraphFactory factory) 
 	{
+		
 		setSolverFactorySubGraph(factory);
 		
 		for (VariableBase var : getVariablesFlat())	
 			var.createSolverObject(_solverFactorGraph);
-			
+		
 		for (FactorGraph fg : getNestedGraphs())
 			fg.setSolverFactorySubGraph(factory);
 		
@@ -199,26 +200,6 @@ public class FactorGraph extends FactorBase
 
 	}
 
-//	public void attachIsDone()
-//	{
-//		for (VariableBase var : _boundaryVariables)
-//			var.attachIsDone();
-//
-//		//Create solvers for all the factors
-//		for (VariableBase var : _ownedVariables)
-//			var.attachIsDone();
-//
-//		//Create solvers for all the variables
-//		for (FactorBase f : _ownedFactors)
-//		{
-//			FactorGraph subgraph = f.asFactorGraph();
-//			if (subgraph != null)
-//				subgraph.setSolverFactory(factory);
-//			else
-//				f.asFactor().attach(_solverFactorGraph);
-//		}
-//		
-//	}
 	
 
 	/***************************************************************
@@ -752,7 +733,7 @@ public class FactorGraph extends FactorBase
 		//copy the graph
 		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraph,this);
 
-		if (_solverFactory != null)
+		if (_solverFactory != null && getParentGraph() == null)
 			subGraphCopy.setSolverFactory(_solverFactory);
 
 		//tell us about it
@@ -801,6 +782,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
+	
 	private FactorGraph(VariableBase[] boundaryVariables,
 			FactorGraph templateGraph,
 			FactorGraph parentGraph) 
@@ -821,10 +803,7 @@ public class FactorGraph extends FactorBase
 			{
 		this(boundaryVariables,
 				templateGraph.getExplicitName(),
-				null
-				/*copyToRoot ?
-						null :
-							templateGraph.getFactorGraphFactory()*/);
+				null);
 
 		// Copy owned variables
 		for (VariableBase vTemplate : templateGraph._ownedVariables)
@@ -923,7 +902,7 @@ public class FactorGraph extends FactorBase
 					setSchedule(scheduleCopy);
 		}
 
-		setSolverFactory(templateGraph.getFactorGraphFactory());
+		//setSolverFactory(templateGraph.getFactorGraphFactory());
 	}
 
 	public FactorGraph copyRoot() 
@@ -952,6 +931,7 @@ public class FactorGraph extends FactorBase
 
 		return rootCopy;
 	}
+	
 
 	
 	private long _portVersionId = -1;
