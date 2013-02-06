@@ -550,7 +550,6 @@ public class SVariable extends SDiscreteVariableBase
     {
     	double df = 0;
 		
-		int j = 0;
 		for (int i = 0; i < _inPortMsgs.length; i++)
 		{
 			if (i != outPortNum)
@@ -561,7 +560,6 @@ public class SVariable extends SDiscreteVariableBase
 				
 				df += f/thisMsg * dfactor[d]; 
 			}
-			j++;
 		}
 		return df;
     }

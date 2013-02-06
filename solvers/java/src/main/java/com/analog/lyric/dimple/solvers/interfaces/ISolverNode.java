@@ -19,7 +19,6 @@
  */
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 
 /**

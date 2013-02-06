@@ -16,12 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
 public class GaussianAdd extends GaussianFactorBase
@@ -77,18 +73,6 @@ public class GaussianAdd extends GaussianFactorBase
 		//ub = uout-ua-uc
 		//sigma^2 = othersigma^2 + theothersigma^2 ...
 	}
-
-//	//MAGIC!!!!
-//	public void updateOutput()
-//	{
-//		
-//	}
-//	
-//	//ALSO MAGIC!!!!
-//	public void updateInput(int portNum)
-//	{
-//		
-//	}
 
 
 	@Override

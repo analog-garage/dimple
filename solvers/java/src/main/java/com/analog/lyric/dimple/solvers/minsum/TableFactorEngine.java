@@ -20,7 +20,6 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 
 /*
  * Provides the update and updateEdge logic for minsum

@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.kbest;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.util.misc.IndexCounter;
 

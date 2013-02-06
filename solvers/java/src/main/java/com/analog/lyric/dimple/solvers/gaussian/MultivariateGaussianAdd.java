@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 public class MultivariateGaussianAdd extends MultivariateFactorBase
 {

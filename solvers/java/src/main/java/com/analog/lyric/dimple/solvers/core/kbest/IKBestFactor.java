@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.kbest;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.Factor;

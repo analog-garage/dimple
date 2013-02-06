@@ -24,7 +24,6 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class HybridSampledGaussianFactor extends HybridSampledBPFactor
 {

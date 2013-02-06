@@ -24,7 +24,6 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 

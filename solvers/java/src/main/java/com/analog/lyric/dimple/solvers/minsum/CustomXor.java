@@ -1,7 +1,6 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;

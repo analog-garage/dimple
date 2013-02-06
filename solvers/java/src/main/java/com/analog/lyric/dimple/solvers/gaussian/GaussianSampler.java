@@ -20,7 +20,6 @@ import java.util.Random;
 
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class GaussianSampler extends HybridSampledBPSampler 
 {
@@ -43,6 +42,7 @@ public class GaussianSampler extends HybridSampledBPSampler
 	public void initialize() 
 	{
 		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetOutputMessage(_msg);
 	}
 
 	@Override

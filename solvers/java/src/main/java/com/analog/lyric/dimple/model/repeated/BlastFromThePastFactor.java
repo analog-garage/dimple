@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;

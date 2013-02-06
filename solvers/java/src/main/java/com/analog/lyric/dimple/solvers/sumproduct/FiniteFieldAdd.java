@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.model.DimpleException;
 
 

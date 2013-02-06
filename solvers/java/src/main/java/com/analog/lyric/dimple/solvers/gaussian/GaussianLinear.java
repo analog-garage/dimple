@@ -16,13 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 public class GaussianLinear extends GaussianFactorBase
 {

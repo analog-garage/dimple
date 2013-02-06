@@ -1073,25 +1073,10 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	private void initializeMessagesToAndFromBoundaryVariables()
-	{
-		ArrayList<Port> ports = getPorts();
-		for (Port p : ports )
-		{
-			Port p2 = p.getSiblingPort();
-			p2.node.initialize(p2.index);
-		}
-	}
-	
 	public void initialize(int portNum)
 	{
 		throw new DimpleException("not supported");
 	}
-//	
-//	public void initialize()
-//	{
-//		initialize(false);
-//	}
 
 	public void recreateMessages()
 	{
@@ -1100,18 +1085,13 @@ public class FactorGraph extends FactorBase
 			
 	}
 	
-	//TODO: init nested graphs
 	public void initialize() 
 	{
-		//temporaryInitialize();
-		
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
 				v.initialize();
-		//else if (initBoundaryVariableEdges)
-		//	initializeMessagesToAndFromBoundaryVariables();
 		
 		for (Factor f : getNonGraphFactorsTop())
 			f.initialize();

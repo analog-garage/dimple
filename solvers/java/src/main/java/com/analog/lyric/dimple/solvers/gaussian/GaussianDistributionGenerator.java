@@ -20,7 +20,6 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class GaussianDistributionGenerator extends HybridSampledBPDistributionGenerator 
 {

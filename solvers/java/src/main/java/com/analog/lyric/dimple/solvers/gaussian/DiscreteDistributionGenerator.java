@@ -24,7 +24,6 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGenerator
 {
