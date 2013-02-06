@@ -38,7 +38,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	protected double [][] _inPortMsgs;
+	protected double [][] _inPortMsgs = new double[0][];
 	protected double [][] _outMsgArray;
 	protected double [][] _savedOutMsgArray;
 	protected double [][][] _outPortDerivativeMsgs;
@@ -79,6 +79,12 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		
 		if (val != 0)
 			_dampingInUse = true;
+		
+    	_savedOutMsgArray = new double[_dampingParams.length][];
+	    
+		for (int port = 0; port < _inPortMsgs.length; port++)	    
+				_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+
 	}
 	
 	public double getDamping(int index)
@@ -554,12 +560,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    }
 	    
 	    if (_dampingInUse)
+	    {
 	    	_savedOutMsgArray = new double[numPorts][];
 	    
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+    		for (int port = 0; port < numPorts; port++)	    
+    				_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
 	    }
 	    
 		setK(Integer.MAX_VALUE);

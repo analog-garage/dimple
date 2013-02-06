@@ -233,6 +233,11 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (dampingVal != 0)
 			_dampingInUse = true;
+		
+		_savedOutMsgArray = new double[_dampingParams.length][];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			_savedOutMsgArray[i] = new double[_inPortMsgs[i].length];
+
 	}
 
 	public double getDamping(int portIndex)
@@ -302,6 +307,7 @@ public class SVariable extends SDiscreteVariableBase
 		SVariable sother = (SVariable)other;
 		_inPortMsgs[portNum] = sother._inPortMsgs[otherPort];
 		_outMsgArray[portNum]  = sother._outMsgArray[otherPort];
+		
 		if (_dampingInUse)
 			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 

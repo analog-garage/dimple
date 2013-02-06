@@ -16,15 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
@@ -38,7 +33,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double[][] _inPortMsgs;
+    protected double[][] _inPortMsgs = new double[0][];
     protected double[][] _outPortMsgs;
     protected double [][] _savedOutMsgArray;
     protected double [] _dampingParams;
@@ -110,6 +105,11 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		
 		if (val != 0)
 			_dampingInUse = true;
+		
+		_savedOutMsgArray = new double[_dampingParams.length][];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			_savedOutMsgArray[i] = new double[_inPortMsgs[i].length];
+
 	}
 	
 	public double getDamping(int index)
@@ -212,11 +212,6 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	    if (_dampingInUse)
 	    	_savedOutMsgArray = new double[numPorts][];
 	    
-	    for (int port = 0; port < numPorts; port++)
-	    {
-	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
-	    }		
 	    
 		for (int i = 0; i < _factor.getVariables().size(); i++)
 		{
@@ -225,6 +220,12 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			_outPortMsgs[i] = (double[])messages[0];
 			_inPortMsgs[i] = (double[])messages[1];
 		}		
+
+		for (int port = 0; port < numPorts; port++)
+	    {
+	    	if (_dampingInUse)
+	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+	    }		
 	    
 	    setK(Integer.MAX_VALUE);
 	}

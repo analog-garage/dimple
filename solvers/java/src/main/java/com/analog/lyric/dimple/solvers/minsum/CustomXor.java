@@ -9,7 +9,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
 
 public class CustomXor extends SFactorBase
 {
-    protected double[][] _inPortMsgs = null;
+    protected double[][] _inPortMsgs = new double[0][];
     protected double[][] _outPortMsgs = null;
     protected double [] _savedOutMsgsLLR;
     protected double [] _dampingParams;
@@ -153,6 +153,9 @@ public class CustomXor extends SFactorBase
 		
 		if (val != 0)
 			_dampingInUse = true;
+		
+		_savedOutMsgsLLR = new double[_dampingParams.length];
+
 	}
 	
 	public double getDamping(int index)
