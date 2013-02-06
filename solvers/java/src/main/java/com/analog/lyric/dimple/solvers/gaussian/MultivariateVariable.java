@@ -17,8 +17,6 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Arrays;
-
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
@@ -110,13 +108,6 @@ public class MultivariateVariable extends SVariableBase
 		}
 		
 		outMsg.setInformation(vector,matrix);
-	}
-
-	@Override
-	public void remove(Factor factor) 
-	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

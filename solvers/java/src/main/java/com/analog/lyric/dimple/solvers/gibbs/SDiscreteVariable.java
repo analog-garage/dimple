@@ -24,7 +24,6 @@ import org.apache.commons.math.random.RandomGenerator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
@@ -339,13 +338,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Convert input to base2 log, then convert integer part into IEEE754 exponent
 		final long expValue = ((long)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
 		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
-	}
-
-	@Override
-	public void remove(Factor factor) 
-	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

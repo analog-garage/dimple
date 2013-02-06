@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -206,13 +205,6 @@ public class SVariable extends SRealVariableBase
     	return new double []{Mu,sigma};
     
     }
-
-	@Override
-	public void remove(Factor factor) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public Object [] createMessages(ISolverFactor factor) 

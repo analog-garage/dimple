@@ -97,11 +97,6 @@ public class DummyVariable extends SVariableBase
 		return _input;
 	}
 
-	@Override
-	public void remove(Factor factor) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public Object[] createMessages(ISolverFactor factor) {

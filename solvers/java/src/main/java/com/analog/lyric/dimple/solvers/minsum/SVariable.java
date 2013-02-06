@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -44,21 +43,6 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		super(var);
 	}
-
-
-//	
-//	public Object getInitialMsgValue()
-//	{
-//		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-//		double[] retVal = new double[domainLength];
-//		Arrays.fill(retVal, 0);
-//		return retVal;
-//	}
-
-//	public Object getDefaultMessage(Port port) 
-//	{
-//		return getInitialMsgValue();
-//	}
 
 	public void updateEdge(int outPortNum)
 	{
@@ -314,12 +298,6 @@ public class SVariable extends SDiscreteVariableBase
 		
 	}
 
-
-	@Override
-	public void remove(Factor factor) 
-	{
-		
-	}
 
 	@Override
 	public Object getInputMsg(int portIndex) 

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -236,12 +235,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			setCurrentSample(_initialSampleValue);
 		_bestSampleValue = _initialSampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
-	}
-
-	@Override
-	public void remove(Factor factor) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

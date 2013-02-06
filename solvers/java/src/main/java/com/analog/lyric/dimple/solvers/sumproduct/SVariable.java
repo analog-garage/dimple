@@ -584,15 +584,6 @@ public class SVariable extends SDiscreteVariableBase
     }
 
 	@Override
-	public void remove(Factor factor) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-
-
-	@Override
 	public Object [] createMessages(ISolverFactor factor) 
 	{
 		
@@ -623,9 +614,10 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-    	double val = 1.0/domainLength;
     	double [] retval = (double[])message;
+    	int domainLength = retval.length;
+    	double val = 1.0/domainLength;
+    	
     	Arrays.fill(retval, val);
     	return retval;
 

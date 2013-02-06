@@ -275,11 +275,14 @@ public abstract class VariableBase extends Node implements Cloneable
 		if (!found)
 			throw new DimpleException("Tried to delete factor from variable that does not reference that factor");
 		
-//		for (int i = 0; i < getSiblings().size(); i++)
-//			getPorts().get(i).setId(i);
 		
 		if (_solverVariable != null)
-			_solverVariable.remove(factor);
+		{
+			createSolverObject(getParentGraph().getSolver());
+			
+			for (Factor f : getFactors())
+				f.createSolverObject(getParentGraph().getSolver());
+		}
 	}
 	
 	@Override
