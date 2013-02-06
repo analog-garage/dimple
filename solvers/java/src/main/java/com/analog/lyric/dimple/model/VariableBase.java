@@ -322,28 +322,29 @@ public abstract class VariableBase extends Node implements Cloneable
     	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
     	{
     		//Replace the connection from this variable to the copy in the factor
-    		//ArrayList<INode> ports = factorsToBeMovedToCopy[i].getSiblings();
     		for (int j = 0; j < factorsToBeMovedToCopy[i].getSiblings().size(); j++)
     		{
     			if (factorsToBeMovedToCopy[i].getConnectedNodeFlat(j) == this)
     			{
-    				getSiblings().remove(factorsToBeMovedToCopy[i].getSiblings().get(j));
-    				mycopy.connect((Factor)factorsToBeMovedToCopy[i].getSiblings().get(j));
+    				remove(factorsToBeMovedToCopy[i]);
+    				mycopy.connect(factorsToBeMovedToCopy[i]);
+    				factorsToBeMovedToCopy[i].replace(this,mycopy);
     			}
     		}
     		
-    		if (factorsToBeMovedToCopy[i].getSolver() != null)
-    			factorsToBeMovedToCopy[i].createSolverObject(fg.getSolver());
     	}
     	
     	//set the solvers to null for this variable, the copied variable, and all the factors that were moved.
-    	if (getSolver() != null)
-    		createSolverObject(fg.getSolver());
-    	if (mycopy.getSolver() != null)
-    		mycopy.createSolverObject(fg.getSolver());
-    	
-    	//attach(null);
-    	
+    	ISolverFactorGraph sfg = fg.getSolver();
+    		
+    	if (sfg != null)
+    	{
+			createSolverObject(fg.getSolver());
+			mycopy.createSolverObject(fg.getSolver());
+	    	
+	    	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
+	    		factorsToBeMovedToCopy[i].createSolverObject(fg.getSolver());
+    	}    	
     	return mycopy;
     }
     
@@ -353,10 +354,5 @@ public abstract class VariableBase extends Node implements Cloneable
     	throw new DimpleException("not implemented");
     }
     
-
-//    public boolean isJoint()
-//    {
-//    	return _domains.length > 1;
-//    }
 
 }

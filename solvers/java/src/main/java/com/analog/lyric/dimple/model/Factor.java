@@ -151,6 +151,13 @@ public class Factor extends FactorBase implements Cloneable
 
 	}
 	
+	public void replace(VariableBase oldVariable, VariableBase newVariable)
+	{
+		_variables = null;
+		int index = _siblings.indexOf(oldVariable);
+		_siblings.set(index, newVariable);
+	}
+	
 	public Domain [] getDomains()
 	{
 		VariableList variables = getVariables();
