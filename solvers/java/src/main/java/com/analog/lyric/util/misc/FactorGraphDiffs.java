@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INameable;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Port;
 
 
 
@@ -305,105 +306,105 @@ public class FactorGraphDiffs
 		
 		return bEquals;
 	}
-//	static private boolean CompareTwoPorts(Port a, Port b, boolean byName)
-//	{
-//		INode aParent = a.getParent();
-//		INode aConnected = a.getConnectedNode();
-//		INode bParent = b.getParent();
-//		INode bConnected = b.getConnectedNode();
-//		
-//		boolean equal = CompareTwoNameables(aParent, bParent, byName) &&
-//		CompareTwoNameables(aConnected, bConnected, byName);
-//		
-//		return equal;
-//	}
-//	
-//	static private FactorGraphDiffs comparePorts(
-//			INameable a,
-//			INameable b,
-//			boolean quickExit,
-//			boolean byName) 
-//	{
-//		INode ndA = (INode) a;
-//		INode ndB = (INode) b;
-//		ArrayList<Port> aPorts = ndA.getPorts();
-//		ArrayList<Port> bPorts = ndB.getPorts();
-//
-//		FactorGraphDiffs diffs = new FactorGraphDiffs(a, b);
-//		
-//		//variables don't have an ordered set of ports like
-//		//factors, as they can 'accumulate' connections
-//		//whereas factors have all their connections added
-//		//exactly in addFactor
-//		//So for variables we must 'go looking'
-//		HashSet<Integer> bPortIndices = new HashSet<Integer>();
-//		for(int i = 0; i < bPorts.size(); ++i)
-//		{
-//			bPortIndices.add(i);
-//		}
-//		
-//		//a against b
-//		boolean exit = false;
-//		for(int i = 0; i < aPorts.size() && !exit; ++i)
-//		{
-//			boolean same = true;
-//			if(i < bPorts.size())
-//			{
-//				//For Factors, just go pairwise
-//				if(ndA instanceof Factor ||
-//				   ndB instanceof Factor)
-//				{
-//					same = CompareTwoPorts(aPorts.get(i), bPorts.get(i), byName);
-//					if(!same)
-//					{
-//						diffs.addANotB(aPorts.get(i).getConnectedNode());
-//						diffs.addBNotA(bPorts.get(i).getConnectedNode());
-//					}
-//				}
-//				else
-//				{
-//					//For variables, go 'looking'
-//					int match = -1;
-//					for(Integer bIdx : bPortIndices)
-//					{
-//						if(CompareTwoPorts(aPorts.get(i), bPorts.get(bIdx), byName))
-//						{
-//							match = bIdx;
-//							break;
-//						}
-//					}
-//					if(match == -1)
-//					{
-//						diffs.addANotB(aPorts.get(i).getConnectedNode());
-//						//Not strictly complete; if there's a mismatch, a
-//						//and b have same number of ports, there must also
-//						//be a port in B but not in A
-//						//But we don't bother to go look for that.
-//					}
-//					else
-//					{
-//						bPortIndices.remove(match);
-//					}
-//				}
-//			}
-//			else
-//			{
-//				same = false;
-//				diffs.addANotB(aPorts.get(i).getConnectedNode());
-//			}
-//			exit = quickExit && !same;
-//		}
-//		if(!exit && bPorts.size() > aPorts.size())
-//		{
-//			for(int i = aPorts.size(); i < bPorts.size() && !exit; ++i)
-//			{
-//				diffs.addBNotA(bPorts.get(i).getConnectedNode());
-//				exit = quickExit;
-//			}
-//		}
-//
-//		return diffs;
-//	}
+	static private boolean CompareTwoPorts(Port a, Port b, boolean byName)
+	{
+		INode aParent = a.node;
+		INode aConnected = a.getConnectedNode();
+		INode bParent = b.node;
+		INode bConnected = b.getConnectedNode();
+		
+		boolean equal = CompareTwoNameables(aParent, bParent, byName) &&
+		CompareTwoNameables(aConnected, bConnected, byName);
+		
+		return equal;
+	}
+	
+	static private FactorGraphDiffs comparePorts(
+			INameable a,
+			INameable b,
+			boolean quickExit,
+			boolean byName) 
+	{
+		INode ndA = (INode) a;
+		INode ndB = (INode) b;
+		ArrayList<Port> aPorts = ndA.getPorts();
+		ArrayList<Port> bPorts = ndB.getPorts();
+
+		FactorGraphDiffs diffs = new FactorGraphDiffs(a, b);
+		
+		//variables don't have an ordered set of ports like
+		//factors, as they can 'accumulate' connections
+		//whereas factors have all their connections added
+		//exactly in addFactor
+		//So for variables we must 'go looking'
+		HashSet<Integer> bPortIndices = new HashSet<Integer>();
+		for(int i = 0; i < bPorts.size(); ++i)
+		{
+			bPortIndices.add(i);
+		}
+		
+		//a against b
+		boolean exit = false;
+		for(int i = 0; i < aPorts.size() && !exit; ++i)
+		{
+			boolean same = true;
+			if(i < bPorts.size())
+			{
+				//For Factors, just go pairwise
+				if(ndA instanceof Factor ||
+				   ndB instanceof Factor)
+				{
+					same = CompareTwoPorts(aPorts.get(i), bPorts.get(i), byName);
+					if(!same)
+					{
+						diffs.addANotB(aPorts.get(i).getConnectedNode());
+						diffs.addBNotA(bPorts.get(i).getConnectedNode());
+					}
+				}
+				else
+				{
+					//For variables, go 'looking'
+					int match = -1;
+					for(Integer bIdx : bPortIndices)
+					{
+						if(CompareTwoPorts(aPorts.get(i), bPorts.get(bIdx), byName))
+						{
+							match = bIdx;
+							break;
+						}
+					}
+					if(match == -1)
+					{
+						diffs.addANotB(aPorts.get(i).getConnectedNode());
+						//Not strictly complete; if there's a mismatch, a
+						//and b have same number of ports, there must also
+						//be a port in B but not in A
+						//But we don't bother to go look for that.
+					}
+					else
+					{
+						bPortIndices.remove(match);
+					}
+				}
+			}
+			else
+			{
+				same = false;
+				diffs.addANotB(aPorts.get(i).getConnectedNode());
+			}
+			exit = quickExit && !same;
+		}
+		if(!exit && bPorts.size() > aPorts.size())
+		{
+			for(int i = aPorts.size(); i < bPorts.size() && !exit; ++i)
+			{
+				diffs.addBNotA(bPorts.get(i).getConnectedNode());
+				exit = quickExit;
+			}
+		}
+
+		return diffs;
+	}
 
 	static private void compareNameableMaps(FactorGraphDiffs diffs,
 										 NameableMap aMap,
@@ -452,11 +453,11 @@ public class FactorGraphDiffs
 				}
 				else
 				{
-//					oneDiff = comparePorts(
-//							nA,
-//							nB,
-//							quickExit,
-//							byName);
+					oneDiff = comparePorts(
+							nA,
+							nB,
+							quickExit,
+							byName);
 				}
 				if(oneDiff != null &&
 				   !oneDiff.noDiffs())
