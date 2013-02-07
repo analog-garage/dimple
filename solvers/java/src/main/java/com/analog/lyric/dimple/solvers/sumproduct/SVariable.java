@@ -32,9 +32,9 @@ public class SVariable extends SDiscreteVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */	
-    double [][] _inPortMsgs = new double[0][];
+    protected double [][] _inPortMsgs = new double[0][];
     double [][] _logInPortMsgs = new double[0][];
-    double [][] _outMsgArray = new double[0][];
+    protected double [][] _outMsgArray = new double[0][];
     double [][] _savedOutMsgArray = new double[0][];    
     double [][] _outPortDerivativeMsgs = new double[0][];
     double [] _dampingParams = new double[0];
