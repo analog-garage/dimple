@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;

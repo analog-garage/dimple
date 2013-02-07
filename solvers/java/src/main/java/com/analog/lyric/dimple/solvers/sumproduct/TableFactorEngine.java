@@ -44,7 +44,8 @@ public class TableFactorEngine
 	    int tableLength = table.length;
 	    int numPorts = siblings.size();
 	    
-        double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
+        double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
+        double [][] inputMsgs = _tableFactor.getInPortMsgs();
         
         if (_tableFactor._dampingInUse)
         {
@@ -70,7 +71,7 @@ public class TableFactorEngine
     		
         	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
         		if (inPortNum != outPortNum)
-        			prob *= _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+        			prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
         	
         	outputMsgs[outputIndex] += prob;
         }
@@ -113,9 +114,12 @@ public class TableFactorEngine
 	    int numPorts = ports.size();
 	    
 	    
+	    double [][] outMsgs = _tableFactor.getOutPortMsgs();
+	    double [][] inMsgs = _tableFactor.getInPortMsgs();
+	    
 	    for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
 	    {
-	    	double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
+	    	double[] outputMsgs = outMsgs[outPortNum];
 	    		    	
 	    	if (_tableFactor._dampingInUse)
 	    	{
@@ -140,7 +144,7 @@ public class TableFactorEngine
 	    		for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
 	    			if (inPortNum != outPortNum)
 	    			{	    				
-	    				prob *= _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
 	    			}
 	    		outputMsgs[outputIndex] += prob;
 	    	}
