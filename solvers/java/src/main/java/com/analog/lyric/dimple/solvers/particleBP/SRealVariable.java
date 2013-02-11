@@ -423,15 +423,7 @@ public class SRealVariable extends SRealVariableBase
 	public void remove(Factor factor)
 	{
 	}
-//	
-//	@Override
-//	public void initialize()
-//	{
-//		super.initialize();
-//		
-//
-//	}
-
+	
 	@Override
 	public Object[] createMessages(ISolverFactor factor) 
 	{

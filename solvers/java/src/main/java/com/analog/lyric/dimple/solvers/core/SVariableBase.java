@@ -30,7 +30,6 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		super(var);		
 		_var = var;
-		//initializeInputs();
 	}
 	
 	public void moveInputs(ISolverVariable other)
@@ -41,13 +40,6 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		_var.setInputObject(inputs);
 		
 	}
-
-//	@Override
-//	public void remove(Factor factor)
-//	{
-//		//invalidateCache();
-//	}
-	
 
 	@Override
 	public void update()  

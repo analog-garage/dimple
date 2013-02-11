@@ -192,14 +192,6 @@ public class Factor extends FactorBase implements Cloneable
 		return f;
 	}
 
-
-	/*
-	public int[][] getPossibleBeliefIndices() 
-	{
-		return _solverFactor.getPossibleBeliefIndices();
-	}
-	*/
-	
 	public void initialize(int portNum)
 	{
 		if (_solverFactor != null)
@@ -213,14 +205,6 @@ public class Factor extends FactorBase implements Cloneable
 			_solverFactor.initialize();
 	}
 	
-//	public void initializePortMsg(Port port)
-//	{
-//		if (_solverFactor == null)
-//			port.setInputMsg(null);
-//		else
-//			port.setInputMsg(_solverFactor.getDefaultMessage(port));
-//	}
-		
 	public VariableList getVariables()
 	{
 		//Cache the variables for performance reasons
@@ -305,9 +289,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		FactorFunctionBase ff1 = this.getFactorFunction();
 		FactorFunctionBase ff2 = other.getFactorFunction();
-		//String newname = ff1.getName() + "_" + ff2.getName();
 		JointFactorFunction jff = getParentGraph().getJointFactorFunction(ff1,ff2,map1,map2);
-		//JointFactorFunction jff = new JointFactorFunction(newname, ff1, ff2, newnuminputs,map1,map2);
 		
 		//Remove the two old factors.
 		getParentGraph().remove(this);

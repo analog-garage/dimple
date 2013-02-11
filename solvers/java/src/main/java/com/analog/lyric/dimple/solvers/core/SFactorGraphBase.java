@@ -119,8 +119,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 				// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
 				if (Thread.interrupted())
 					return;
-				//try {interruptCheck();}
-				//catch (InterruptedException e) {return;}
 			}
 		}
 		else					
@@ -167,11 +165,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		return _factorGraph.getRootGraph().getSolver();
 	}
-
-//	@Override
-//	public void connectPort(Port p) 
-//	{
-//	}
 
 	public double getBetheFreeEnergy()
 	{

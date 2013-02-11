@@ -69,11 +69,10 @@ public class FactorGraph extends FactorBase
 	private ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
 	private int _numSteps = 1;
 	private boolean _numStepsInfinite = true;
+	
 	//new identity related members
 	private HashMap<String, Object> _name2object = new HashMap<String, Object>();
 	private HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
-
-	//protected CombinationTableFactory _tableFactory;
 
 
 
@@ -433,7 +432,6 @@ public class FactorGraph extends FactorBase
 		v.createSolverObject(null);
 		v.setParentGraph(null);
 		removeNode(v);
-		//v.getPorts().clear();
 		
 	}
 
@@ -872,10 +870,7 @@ public class FactorGraph extends FactorBase
 				_ownedFactors.add(fCopy);
 				for (INode n : fTemplate.getSiblings())
 				{
-					//Port pCopy = new Port(fCopy,pTemplate.getId());
-					//fCopy.getPorts().add(pCopy);
 					VariableBase vTemplate = (VariableBase)n;
-					//int vNewId = old2newIds.get(vTemplate.getId());
 					VariableBase var = (VariableBase)old2newObjs.get(vTemplate);
 					fCopy.getSiblings().add(var);
 					if (templateGraph._boundaryVariables.contains(vTemplate))
@@ -1736,15 +1731,7 @@ public class FactorGraph extends FactorBase
 
 			_UUID2object.put(uuid, nameable);
 		}
-		//Do consistency check?
-		//else
-		//{
-		//	//id should be present, should name, if explicit
-		//	if(explicitName != null && _name2object.get(explicitName) == null)
-		//	{
-		//		throw new DimpleException("ERROR UUID present, but name is not");
-		//	}
-		//}
+
 		return added;
 	}
 
@@ -2381,17 +2368,6 @@ public class FactorGraph extends FactorBase
 	public double getScore() 
 	{
 		return getSolver().getScore();
-		/*
-		double energy = 0;
-
-		for (VariableBase v : getVariablesTop())
-			energy += v.getEnergy();
-
-		for (FactorBase f : getFactorsTop())
-			energy += f.getEnergy();
-
-		return energy;
-		*/
 	}
 	
 	public double getBetheFreeEnergy()

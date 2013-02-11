@@ -212,9 +212,6 @@ public class FactorGraphStream
 			for (BlastFromThePastFactor f : _allBlastFromThePasts)
 				f.advance();
 			
-			//TODO: what's the equivalent of invalidate cache.  Do I need to do this?
-			//_otherVar.getSolver().invalidateCache();
-			//_myVar.getSolver().invalidateCache();
 			Object belief = _myVar.getBeliefObject();
 			_mainFlastFromThePast.setOutputMsg(belief);
 			

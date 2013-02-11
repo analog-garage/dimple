@@ -54,8 +54,6 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void initialize(int i)
 	{
-//		ISolverVariable sv = (ISolverVariable)_factor.getSiblings().get(i).getSolver();
-//		_inputMsgs[i] = (int[])sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override

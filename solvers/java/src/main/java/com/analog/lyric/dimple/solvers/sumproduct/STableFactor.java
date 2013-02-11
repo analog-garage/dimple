@@ -186,12 +186,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 	
 
-//	@Override
-//	public ArrayList<Port> getPorts() 
-//	{
-//		return getFactor().getPorts();
-//	}
-
 	@Override
 	public FactorFunction getFactorFunction() 
 	{

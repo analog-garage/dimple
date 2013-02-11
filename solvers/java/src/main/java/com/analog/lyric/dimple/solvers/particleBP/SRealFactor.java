@@ -142,25 +142,6 @@ public class SRealFactor extends SFactorBase
 		}
 	}
 	
-//
-//	public Object getDefaultMessage(Port port)
-//	{
-//		INode neighbor = port.getConnectedNode();
-//		if (neighbor instanceof Discrete)
-//			return ((SVariableBase)(((VariableBase)port.getConnectedNode()).getSolver())).getDefaultMessage(port);
-//		else
-//		{
-//			// For real variables, the variable sets up the input message, so use it if it's already there
-//			Object inMessage = port.getInputMsg();
-//			if (inMessage instanceof ParticleBPSolverVariableToFactorMessage)
-//				return inMessage;
-//			else
-//				return ((SRealVariable)port.getConnectedNode().getSolver()).getDefaultVariableToFactorMessage(port);
-//		}
-//	}
-	
-	
-	
 	
 	
 	protected void initializeVariableCombinations()
@@ -245,34 +226,7 @@ public class SRealFactor extends SFactorBase
     public void initialize()  
 	{
 		super.initialize();
-		
-//		//ArrayList<Port> ports = _factor.getPorts();
-//	    
-//	    
-//
-//		
-//		for (int iPort = 0; iPort < _numPorts; iPort++)
-//	    {
-//	    	VariableBase var = (VariableBase)(ports.get(iPort).getConnectedNode());
-//	    	Object inMessage = ports.get(iPort).getInputMsg();
-//
-//	    	// Is the variable connected to the port real or discrete
-//	    	if (var instanceof Real)
-//	    	{
-//	    		_realVariable[iPort] = true;
-//	    		_variableDomains[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).particleValues;
-//	    		_inPortMsgs[iPort] = ((ParticleBPSolverVariableToFactorMessage)inMessage).messageValues;
-//	    	}
-//	    	else
-//	    	{
-//	    		_realVariable[iPort] = true;
-//	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
-//	    		_inPortMsgs[iPort] = (double[])inMessage;
-//	    	}
-//	    	
-//    		_outMsgArray[iPort] = (double[])ports.get(iPort).getOutputMsg();
-//	    	_variableDomainLengths[iPort] = _variableDomains[iPort].length;
-//	    }
+
 	}
 
 	@Override

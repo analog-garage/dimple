@@ -126,13 +126,6 @@ public class DiscreteFactor extends Factor
 			ports.remove(index);
 		}
 		
-		//reset the ids of the Factor's ports
-//		for (int i = 0; i < ports.size(); i++)
-//		{
-//			ports.get(i).setId(i);
-//		}
-		
-		
 		//Add the new joint variable
 		addVariable(newJoint);
 

@@ -44,24 +44,12 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public VariableBase(int id, String modelerClassName, Domain domain) 
 	{
-		//this(id,modelerClassName,new Domain[]{domain});
 		super(id);
 		
 		
 		_modelerClassName = modelerClassName;
 		_domain = domain;
 	}
-
-//	public VariableBase(int id, String modelerClassName, Domain [] domains) 
-//	{
-//		super(id);
-//
-//		if (domains.length < 1)
-//			throw new DimpleException("expect one or more domains");
-//
-//		_modelerClassName = modelerClassName;
-//		_domain = domains;
-//	}
 
 	
 	
@@ -182,13 +170,6 @@ public abstract class VariableBase extends Node implements Cloneable
 	}
 		
 
-	/*
-	public void setInput(double ... value) 
-	{
-		setInputObject((Object)value);
-	}
-	*/
-	
     public void setInputObject(Object value) 
     {
     	_input = value;
