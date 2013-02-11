@@ -387,7 +387,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);

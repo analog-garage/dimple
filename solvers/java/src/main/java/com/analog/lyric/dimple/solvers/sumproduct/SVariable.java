@@ -62,9 +62,10 @@ public class SVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
+		_outMsgArray[portNum] = (double[])resetOutputMessage(_outMsgArray[portNum]);
 	}
 	
 	

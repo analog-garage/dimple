@@ -43,7 +43,7 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
-	public void initialize(int portNum) {
+	public void initializeEdge(int portNum) {
 		// TODO Auto-generated method stub
 		
 	}

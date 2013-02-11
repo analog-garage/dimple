@@ -269,13 +269,8 @@ public class SRealFactor extends SFactorBase
 
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
-		VariableBase var = _factor.getVariables().getByIndex(portNum);
-		if (var instanceof Discrete)
-		{
-			_inPortMsgs[portNum]  = (double[])var.getSolver().resetOutputMessage(_inPortMsgs[portNum]);
-		}
 	}
 
 

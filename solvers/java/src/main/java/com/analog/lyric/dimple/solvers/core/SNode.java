@@ -40,7 +40,7 @@ public abstract class SNode implements ISolverNode
 	public void initialize()
 	{
 		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
-			initialize(i);
+			initializeEdge(i);
 	}
 	
 	@Override

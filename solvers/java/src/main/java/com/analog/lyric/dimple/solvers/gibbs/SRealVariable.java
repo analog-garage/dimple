@@ -39,7 +39,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	protected double _beta = 1;
 	protected double _proposalStdDev = 1;
 	protected boolean _holdSampleValue = false;
-	//protected ObjectSample _currentSample = null;
 
 
 	public SRealVariable(VariableBase var)  
@@ -50,14 +49,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			throw new DimpleException("expected real domain");
 
 		_domain = (RealDomain)var.getDomain();
-		//initialize();
-		//initializeInputs();
 	}
-
-	//	public Object getDefaultMessage(Port port)
-	//	{
-	//		return _initialSampleValue;
-	//	}
 
 
 	public void updateEdge(int outPortNum)
@@ -258,9 +250,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
-		initialize();
 	}
 
 	@Override

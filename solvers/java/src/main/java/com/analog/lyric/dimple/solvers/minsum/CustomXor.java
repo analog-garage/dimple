@@ -4,7 +4,6 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
 
 public class CustomXor extends SFactorBase
 {
@@ -164,10 +163,8 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	public void initialize(int i ) 
+	public void initializeEdge(int i ) 
 	{
-		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inPortMsgs[i] = (double[])sv.resetInputMessage(_inPortMsgs[i]);
 
 	}
 

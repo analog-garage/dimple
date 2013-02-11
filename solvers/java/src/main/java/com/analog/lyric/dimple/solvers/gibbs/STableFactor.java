@@ -109,9 +109,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
-		_inPortMsgs[portNum].index = 0;
 	}
 
 

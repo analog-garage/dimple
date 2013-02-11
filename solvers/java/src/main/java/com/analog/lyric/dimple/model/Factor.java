@@ -195,7 +195,7 @@ public class Factor extends FactorBase implements Cloneable
 	public void initialize(int portNum)
 	{
 		if (_solverFactor != null)
-			_solverFactor.initialize(portNum);
+			_solverFactor.initializeEdge(portNum);
 	}
     
 	

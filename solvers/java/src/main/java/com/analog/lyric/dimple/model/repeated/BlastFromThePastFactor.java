@@ -43,7 +43,6 @@ public class BlastFromThePastFactor extends Factor
 		// TODO Auto-generated constructor stub
 	}
 
-	private Object _msg;
 	private Port _variablePort;
 	private Port _newVarPort;
 	
@@ -56,18 +55,18 @@ public class BlastFromThePastFactor extends Factor
 
 	public void advance()
 	{
-		setOutputMsg(_variablePort.getInputMsg());
+		if (_newVarPort.index == -1)
+			_newVarPort.index = _newVarPort.node.getPortNum(this);
+		_newVarPort.node.getSolver().moveMessages(_variablePort.node.getSolver(), _newVarPort.index,_variablePort.index);
 	}
 	
-	public void setOutputMsg(Object msg) 
+	public void setOutputMsg(Object message)
 	{
 		if (_newVarPort.index == -1)
 			_newVarPort.index = _newVarPort.node.getPortNum(this);
-		_msg = msg;
-		
-		getSiblings().get(0).getSolver().setInputMsg(_newVarPort.index, _msg);
+		_newVarPort.node.getSolver().setInputMsg(_newVarPort.index,message);
 	}
-		
+	
 	
 	@Override
 	public void update()  

@@ -195,7 +195,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	public void initialize(int portNum)
 	{
 		if (_solverVariable != null)
-			_solverVariable.initialize(portNum);
+			_solverVariable.initializeEdge(portNum);
 	}
     
     public void initialize() 

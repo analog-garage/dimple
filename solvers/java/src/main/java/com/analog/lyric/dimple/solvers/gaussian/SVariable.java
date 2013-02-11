@@ -236,9 +236,11 @@ public class SVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void initialize(int i) 
+	public void initializeEdge(int i) 
 	{
 		_inputMsgs[i] = (double[])resetInputMessage(_inputMsgs[i]);
+		_outputMsgs[i] = (double[])resetOutputMessage(_outputMsgs[i]);
+
 	}
     
     

@@ -145,11 +145,12 @@ public class MultivariateVariable extends SVariableBase
 	}
 
 	@Override
-	public void initialize( int i ) 
+	public void initializeEdge( int i ) 
 	{
 		_inputMsgs[i] = (MultivariateMsg)resetInputMessage(_inputMsgs[i]);
-		
+		_outputMsgs[i] = (MultivariateMsg)resetOutputMessage(_outputMsgs[i]);		
 	}
+	
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{

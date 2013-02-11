@@ -53,7 +53,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void initialize(int portNum) {
+	public void initializeEdge(int portNum) {
 		// TODO Auto-generated method stub
 		
 	}

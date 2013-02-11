@@ -103,9 +103,7 @@ public class FactorGraphStream
 					_parameter2blastFromThePastHandler.put(var,pbftph);
 				}
 				
-				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());
-
-				
+				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());				
 				
 			}
 			else

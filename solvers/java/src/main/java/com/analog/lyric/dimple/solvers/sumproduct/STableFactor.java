@@ -555,21 +555,19 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double[][] getInPortMsgs() 
 	{
-		// TODO Auto-generated method stub
 		return _inputMsgs;
 	}
 
 	@Override
 	public double[][] getOutPortMsgs() 
 	{
-		// TODO Auto-generated method stub
 		return _outputMsgs;
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
-		super.moveMessages(other,portNum,otherPort);
+		super.moveMessages(other,portNum,otherPort);		
 		STableFactor sother = (STableFactor)other;
 	    if (_dampingInUse)
 	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];

@@ -52,7 +52,7 @@ public abstract class STableFactorIntArray extends STableFactorBase
 
 
 	@Override
-	public void initialize(int i)
+	public void initializeEdge(int i)
 	{
 	}
 

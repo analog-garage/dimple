@@ -35,10 +35,8 @@ public abstract class GaussianFactorBase extends SFactorBase
 
 
 	@Override
-	public void initialize(int i ) 
+	public void initializeEdge(int i ) 
 	{
-		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
 		
 	}
 

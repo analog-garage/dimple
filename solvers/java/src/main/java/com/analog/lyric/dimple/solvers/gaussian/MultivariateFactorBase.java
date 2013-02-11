@@ -35,10 +35,8 @@ public abstract class MultivariateFactorBase extends SFactorBase
 
 
 	@Override
-	public void initialize(int i) 
+	public void initializeEdge(int i) 
 	{
-		MultivariateVariable sv = (MultivariateVariable)_factor.getSiblings().get(i).getSolver();
-		_inputMsgs[i] = (MultivariateMsg)sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override

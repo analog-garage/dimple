@@ -20,21 +20,18 @@ import java.util.Arrays;
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class STableFactor extends STableFactorBase implements IKBestFactor
+public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
 {	
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double[][] _inPortMsgs = new double[0][];
-    protected double[][] _outPortMsgs;
     protected double [][] _savedOutMsgArray;
     protected double [] _dampingParams;
     protected int _k;
@@ -66,9 +63,9 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 		_k = k;
 		_kbestFactorEngine.setK(k);
 		_kIsSmallerThanDomain = false;
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMsgs.length; i++)
 		{
-			if (_k < _inPortMsgs[i].length)
+			if (_k < _inputMsgs[i].length)
 			{
 				_kIsSmallerThanDomain = true;
 				break;
@@ -107,8 +104,8 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 			_dampingInUse = true;
 		
 		_savedOutMsgArray = new double[_dampingParams.length][];
-		for (int i = 0; i < _inPortMsgs.length; i++)
-			_savedOutMsgArray[i] = new double[_inPortMsgs[i].length];
+		for (int i = 0; i < _inputMsgs.length; i++)
+			_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
 
 	}
 	
@@ -186,7 +183,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public double[][] getInPortMsgs() 
 	{
 		// TODO Auto-generated method stub
-		return _inPortMsgs;
+		return _inputMsgs;
 	}
 
 
@@ -194,7 +191,7 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	public double[][] getOutPortMsgs() 
 	{
 		// TODO Auto-generated method stub
-		return _outPortMsgs;
+		return _outputMsgs;
 	}
 
 
@@ -204,65 +201,32 @@ public class STableFactor extends STableFactorBase implements IKBestFactor
 	@Override
 	public void createMessages() 
 	{
-
+		super.createMessages();
+		
 		int numPorts = _factor.getSiblings().size();
-	    _inPortMsgs = new double[numPorts][];	    
-	    _outPortMsgs = new double[numPorts][];
-	    
 	    if (_dampingInUse)
 	    	_savedOutMsgArray = new double[numPorts][];
 	    
-	    
-		for (int i = 0; i < _factor.getVariables().size(); i++)
-		{
-			ISolverVariable sv = _factor.getVariables().getByIndex(i).getSolver();
-			Object [] messages = sv.createMessages(this);
-			_outPortMsgs[i] = (double[])messages[0];
-			_inPortMsgs[i] = (double[])messages[1];
-		}		
-
 		for (int port = 0; port < numPorts; port++)
 	    {
 	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_inPortMsgs[port].length];
+	    		_savedOutMsgArray[port] = new double[_inputMsgs[port].length];
 	    }		
 	    
 	    setK(Integer.MAX_VALUE);
 	}
 
 	
-	@Override
-	public void initialize(int i)
-	{
-		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
-		_inPortMsgs[i] = (double[])sv.resetInputMessage(_inPortMsgs[i]);
-		
-	}
-
-
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
 	{
-		STableFactor tf = (STableFactor)other;
-		_inPortMsgs[portNum] = tf._inPortMsgs[otherPort];	    
-	    _outPortMsgs[portNum] = tf._outPortMsgs[otherPort];
+		super.moveMessages(other,portNum,otherPort);
 	    if (_dampingInUse)
-	    	_savedOutMsgArray[portNum] = tf._savedOutMsgArray[otherPort];
+	    	_savedOutMsgArray[portNum] = ((STableFactor)other)._savedOutMsgArray[otherPort];
 	    
 	}
 	
-	@Override
-	public Object getInputMsg(int portIndex) 
-	{
-		return _inPortMsgs[portIndex];
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex) 
-	{
-		return _outPortMsgs[portIndex];
-	}
 
 }
 

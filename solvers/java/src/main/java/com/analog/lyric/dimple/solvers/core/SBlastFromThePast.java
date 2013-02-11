@@ -43,7 +43,7 @@ public class SBlastFromThePast extends SFactorBase
 	}
 
 	@Override
-	public void initialize(int portNum) 
+	public void initializeEdge(int portNum) 
 	{
 		
 	}
