@@ -45,7 +45,7 @@ classdef VariableStreamBase < IVariableStreamSlice
         end
         
         function ret = get.Size(obj)
-            obj.IVariableStream.size();
+            ret = obj.IVariableStream.size();
         end
         
         function vars = get.Variables(obj)
