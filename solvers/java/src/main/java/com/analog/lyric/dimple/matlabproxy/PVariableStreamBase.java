@@ -16,63 +16,95 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.IDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
 
 public abstract class PVariableStreamBase implements IPVariableStreamSlice
 {
-	private VariableStreamBase _modelObject;
+	private VariableStreamBase [] _modelObjects;
 	
-	public PVariableStreamBase(VariableStreamBase varStream)
+	public PVariableStreamBase(Domain domain, int numVars)
 	{
-		_modelObject = varStream;
+		_modelObjects = new VariableStreamBase[numVars];
+		for (int i = 0; i < numVars; i++)
+			_modelObjects[i] = createVariable(domain);
 	}
-		
+	
+	protected abstract VariableStreamBase createVariable(Domain domain);
+	
 	public PVariableStreamSlice getSlice(int startVal)
 	{
-		return new PVariableStreamSlice(_modelObject.getSlice(startVal));
+		VariableStreamSlice [] vars = new VariableStreamSlice[_modelObjects.length];
+		for (int i = 0; i < vars.length; i++)
+			vars[i] = _modelObjects[i].getSlice(startVal);
+
+		return new PVariableStreamSlice(vars);
 	}
-	public VariableStreamBase getModelerObject()
+	
+	public VariableStreamBase [] getModelerObjects()
 	{
-		return _modelObject;
+		return _modelObjects;
 	}
 	
 	public PVariableVector getVariables()
 	{
-		VariableBase [] vars = _modelObject.getVariables();
-		return PHelpers.convertToVariableVector(vars);
+		PVariableVector retval = new PVariableVector();
+		
+		for (int i = 0; i < _modelObjects.length; i++)
+		{
+			PVariableVector pvarvector = PHelpers.convertToVariableVector(_modelObjects[i].getVariables());
+			retval = (PVariableVector)retval.concat(new PNodeVector[]{pvarvector});
+		}
+		
+		//This will ensure that it is cast to the right type
+		return PHelpers.convertToVariableVector(retval.getVariableArray());
 	}
 	
 	public int size()
 	{
-		return _modelObject.size();
+		return _modelObjects[0].size();
 	}
 	
 	public PVariableVector get(int index) 
 	{
-		VariableBase var = _modelObject.get(index);
-		return PHelpers.convertToVariableVector(new VariableBase[]{var});
+		VariableBase [] vars = new VariableBase[_modelObjects.length];
+		for (int i = 0; i < vars.length; i++)
+			vars[i] = _modelObjects[i].get(index);
+		return PHelpers.convertToVariableVector(vars);
 	}
 	
-	public void setDataSource(IDataSource dataSource) 
+	public void setDataSource(IPDataSource dataSource) 
 	{
-		_modelObject.setDataSource(dataSource);
+		IDataSource [] ds = dataSource.getModelObjects();
+		if (ds.length != _modelObjects.length)
+			throw new DimpleException("DataSource size does not match");
+		
+		for (int i = 0; i < ds.length; i++)
+			_modelObjects[i].setDataSource(ds[i]);
 	}
-	public void setDataSink(IDataSink dataSink) 
+	public void setDataSink(IPDataSink dataSink) 
 	{
-		_modelObject.setDataSink(dataSink);
+		IDataSink [] ds = dataSink.getModelObjects();
+		if (ds.length != _modelObjects.length)
+			throw new DimpleException("DataSource size does not match");
+		
+		for (int i = 0; i < ds.length; i++)
+			_modelObjects[i].setDataSink(ds[i]);
 	}
 	
-	public IDataSource getDataSource()
+
+	public IPDataSource getDataSource() 
 	{
-		return _modelObject.getDataSource();
+		return PHelpers.getDataSources(getModelerObjects());
 	}
-	public IDataSink getDataSink()
+
+	public IPDataSink getDataSink() 
 	{
-		return _modelObject.getDataSink();
-	}
-	
-	
+		return PHelpers.getDataSinks(getModelerObjects());
+	}	
 }

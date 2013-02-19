@@ -16,23 +16,9 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.repeated.RealJointStream;
-import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.model.repeated.IDataSink;
 
-
-public class PRealJointStream extends PVariableStreamBase 
+public interface IPDataSink 
 {
-	public PRealJointStream(PRealJointDomain domain, int numVars)  
-	{
-		super(domain.getModelerObject(),numVars);
-	}
-
-	@Override
-	protected VariableStreamBase createVariable(Domain domain) 
-	{
-		return new RealJointStream((RealJointDomain)domain);
-	}
-
+	public IDataSink [] getModelObjects();
 }

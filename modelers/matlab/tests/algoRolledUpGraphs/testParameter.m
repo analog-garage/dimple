@@ -58,8 +58,8 @@ function testParameter
     c = BitStream();
     fg = FactorGraph();
     fg.addFactor(ng,a,b,c);
-    b.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
-    c.DataSource = DoubleArrayDataSource(repmat([.8 .2],2,1));
+    b.DataSource = DoubleArrayDataSource(repmat([.8 .2]',1,2));
+    c.DataSource = DoubleArrayDataSource(repmat([.8 .2]',1,2));
     fg.solve();
     expectedBelief = .2^4 / (.8^4 + .2^4);
     assertElementsAlmostEqual(a.Belief,expectedBelief);

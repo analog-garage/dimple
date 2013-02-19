@@ -298,7 +298,7 @@ classdef MatrixObject < handle
             %
             % TODO: should deal with cell arrays if the values cannot be
             % turned into a matrix
-
+            
             numValsPerObj = prod(size(values)) / numel(indices);
             if mod(numValsPerObj,1) ~= 0
                 error('invalid number of values');
@@ -306,6 +306,21 @@ classdef MatrixObject < handle
             
             v = reshape(values,prod(size(values))/numValsPerObj,numValsPerObj);
             v = v(indices+1,:);
+            
+            %figure out hte dimensions of the remaining values
+            vsz = size(values);
+            tmp = numValsPerObj;
+            i = length(vsz)+1;
+            while tmp > 1
+                i = i-1;
+                tmp =  tmp/vsz(i);
+            end
+            
+            if i <= length(vsz)
+                newsize = vsz(i:end);
+                v = reshape(v, [size(v,1) newsize]);
+            end
+
         end
     end
     

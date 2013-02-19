@@ -16,6 +16,8 @@
 
 function testSolveMultipleTimes()
 
+    setSolver('sumproduct');
+    
     %solve for a while
     b = Bit(2,1);
     ng = FactorGraph(b);

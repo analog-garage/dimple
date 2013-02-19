@@ -14,32 +14,31 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef RealJointStream < VariableStreamBase
+classdef DataSource < handle
+    properties
+        Dimensions;
+        Indices;
+        IDataSource;
+    end
     methods
-        function obj = RealJointStream(numVars,varargin)
+        function obj = DataSource(dimensions)
             
-            dims = cell2mat(varargin);
-            if isempty(dims)
-                dims = [1 1];
-            end
-              
-            
-            model = getModeler();
-            
-            domain = RealJointDomain(numVars);
-            
-            stream = model.createRealJointStream(domain.IDomain,prod(dims));
-            
-            obj@VariableStreamBase(stream,varargin{:});
+            obj.Dimensions = dimensions;
+            obj.Indices = reshape(1:prod(dimensions),dimensions)-1;
+            tmp = obj.getIDataSourceFromModeler(prod(dimensions));
+            obj.IDataSource = tmp;
             
         end
-    end
-    
-    methods(Access=protected)
-        function sink = getDataSink(obj)
-            sink = MultivariateDataSink(obj.IVariableStream.getDataSink());
+        
+        
+        
+        function retval = hasNext(obj)
+            retval = obj.IDataSource.hasNext();
         end
         
     end
     
+    methods(Abstract=true)
+        dataSource = getIDataSourceFromModeler(obj,dimensions);
+    end
 end

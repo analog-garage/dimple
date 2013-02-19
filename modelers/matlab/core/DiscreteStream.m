@@ -16,21 +16,24 @@
 
 classdef DiscreteStream < VariableStreamBase 
     methods
-        function obj = DiscreteStream(domain)
+        function obj = DiscreteStream(domain,varargin)
+            
             if ~isa(domain,'Domain')
                 domain = DiscreteDomain(domain);
             end
             
             model = getModeler();            
-            IDiscreteStream = model.createDiscreteStream(domain.IDomain);
+            numStreams = prod(cell2mat(varargin));
+            IDiscreteStream = model.createDiscreteStream(domain.IDomain,...
+                numStreams);
             
-            obj@VariableStreamBase(IDiscreteStream);
+            obj@VariableStreamBase(IDiscreteStream,varargin{:});
 
         end
     end
     methods(Access=protected)
         function sink = getDataSink(obj)
-           sink = DoubleArrayDataSink(obj.IVariableStream.getDataSink());
+           sink = DoubleArrayDataSink(obj.Dimensions,obj.IVariableStream.getDataSink());
         end
 
     end

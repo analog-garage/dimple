@@ -14,6 +14,26 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function out = MultivariateDataSource()
-    out = com.analog.lyric.dimple.model.repeated.MultivariateDataSource();
+classdef MultivariateDataSource < DataSource
+    methods
+        function obj = MultivariateDataSource(dimensions)
+            if nargin < 1
+                dimensions = size(1);
+            end
+            
+            obj@DataSource(dimensions);
+        end
+        
+        function dataSource = getIDataSourceFromModeler(obj,sz)
+            modeler = getModeler();
+            dataSource = modeler.getMultivariateDataSource(sz);            
+        end
+        
+        function add(obj,means,covariance)
+            packedMeans = MatrixObject.pack(means,obj.Indices);
+            packedCovariance = MatrixObject.pack(covariance,obj.Indices);            
+            obj.IDataSource.add(packedMeans,packedCovariance);
+        end
+    end
+    
 end

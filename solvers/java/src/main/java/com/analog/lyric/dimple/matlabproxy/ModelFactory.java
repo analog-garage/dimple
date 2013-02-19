@@ -68,19 +68,19 @@ public class ModelFactory
 		return new PRealDomain(new RealDomain(lowerBound,upperBound));
 	}
 
-	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain) 
+	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain, double numVars) 
 	{
-		return new PDiscreteStream(domain);
+		return new PDiscreteStream(domain,(int)numVars);
 	}
 
-	public PVariableStreamBase createRealStream(PRealDomain domain) 
+	public PVariableStreamBase createRealStream(PRealDomain domain, int numVars) 
 	{
-		return new PRealStream(domain);
+		return new PRealStream(domain,numVars);
 	}
 
-	public PVariableStreamBase createRealJointStream(PRealJointDomain domain) 
+	public PVariableStreamBase createRealJointStream(PRealJointDomain domain, int numVars) 
 	{
-		return new PRealJointStream(domain);
+		return new PRealJointStream(domain, numVars);
 	}
 
 	public PTableFactorFunction createTableFactorFunction(String name, int [][] indices, double [] values, Object [] domains)
@@ -165,6 +165,26 @@ public class ModelFactory
 	public void setSolver(IFactorGraphFactory solver) 
 	{
 		Model.getInstance().setDefaultGraphFactory(solver);
+	}
+
+	public PDoubleArrayDataSource getDoubleArrayDataSource(double numVars)
+	{
+		return new PDoubleArrayDataSource((int)numVars);
+	}
+	
+	public PDoubleArrayDataSink getDoubleArrayDataSink(double numVars)
+	{
+		return new PDoubleArrayDataSink((int)numVars);
+	}
+
+	public PMultivariateDataSource getMultivariateDataSource(double numVars)
+	{
+		return new PMultivariateDataSource((int)numVars);
+	}
+	
+	public PMultivariateDataSink getMultivariateDataSink(double numVars)
+	{
+		return new PMultivariateDataSink((int)numVars);
 	}
 
 }

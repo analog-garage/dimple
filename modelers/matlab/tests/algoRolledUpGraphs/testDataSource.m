@@ -17,7 +17,7 @@
 function testDataSource
 
     data = .1:.1:1;
-    data = [data; 1-data]';
+    data = [data; 1-data];
 
 
     %ability to set data source from beginning
@@ -116,7 +116,7 @@ function testDataSource
     
     
     %not enough data when set in advance    
-    dataSource = DoubleArrayDataSource([.8 .2]);
+    dataSource = DoubleArrayDataSource([.8 .2]');
     b = BitStream();
     b.DataSource = dataSource;
 
@@ -138,7 +138,7 @@ function testDataSource
     
     
     %not enough data when set later;
-    dataSource = DoubleArrayDataSource([.8 .2]);
+    dataSource = DoubleArrayDataSource([.8 .2]');
     b = BitStream();
 
     x = Bit();

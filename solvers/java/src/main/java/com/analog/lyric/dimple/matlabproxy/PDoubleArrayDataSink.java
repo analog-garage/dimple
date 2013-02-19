@@ -16,23 +16,47 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.repeated.RealJointStream;
-import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
+import com.analog.lyric.dimple.model.repeated.IDataSink;
 
-
-public class PRealJointStream extends PVariableStreamBase 
+public class PDoubleArrayDataSink implements IPDataSink 
 {
-	public PRealJointStream(PRealJointDomain domain, int numVars)  
+
+	private DoubleArrayDataSink [] _dataSinks;
+	
+	public PDoubleArrayDataSink(DoubleArrayDataSink [] dataSinks)
 	{
-		super(domain.getModelerObject(),numVars);
+		_dataSinks=dataSinks;
+	}
+	
+
+	public PDoubleArrayDataSink(int numVars)
+	{
+		_dataSinks = new DoubleArrayDataSink[numVars];
+		
+		for (int i = 0; i < numVars; i++)
+			_dataSinks[i] = new DoubleArrayDataSink();
+	}
+		
+	public double [][] getNext()
+	{
+		double [][] retval = new double[_dataSinks.length][];
+		for (int i = 0; i < retval.length; i++)
+			retval[i] = _dataSinks[i].getNext();
+		
+		return retval;
 	}
 
-	@Override
-	protected VariableStreamBase createVariable(Domain domain) 
+	public boolean hasNext()
 	{
-		return new RealJointStream((RealJointDomain)domain);
+		return _dataSinks[0].hasNext();
+	}
+	
+
+	@Override
+	public IDataSink[] getModelObjects() 
+	{
+		return _dataSinks;
 	}
 
 }

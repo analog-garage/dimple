@@ -31,6 +31,8 @@ This demo shows several ways to create factors that are convenient when
 building HMMs.  Additionaly it uses rolled up Factor Graphs.
 %}
 
+setSolver('sumproduct');
+
 %First we define our domains.
 weatherDomain = {'rain','no rain'};
 grassDomain = {'wet','not wet'};
@@ -85,16 +87,17 @@ rf = fg.addFactor(ng,weather.getSlice(2),weather.getSlice(1),grass);
 
 %We set out data source to assume we will look at three days and that each
 %day we observe wet grass.
-ds = DoubleArrayDataSource(repmat([1 0],3,1));
+ds = DoubleArrayDataSource(repmat([1 0]',1,3));
 grass.DataSource = ds;
 weather.DataSink = DoubleArrayDataSink();
 
 %Initialize the graph to set messages to uniform uncertainty.
-fg.solveRepeated();
+fg.solve();
 disp('retrieve results');
-results = weather.DataSink.getArray();
-
-disp(results);
+while weather.DataSink.hasNext()
+    result = weather.DataSink.getNext();
+    disp(result);
+end
 
 disp('retrieve dynamic results');
 %Here we show that we can add additional data dynamically.

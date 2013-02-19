@@ -16,14 +16,20 @@
 
 classdef RealStream < VariableStreamBase 
     methods
-        function obj = RealStream()
+        function obj = RealStream(varargin)
+            
+            dims = cell2mat(varargin);
+            if isempty(dims)
+                dims = [1 1];
+            end
+            
             model = getModeler();            
             
             domain = RealDomain(-Inf,Inf);
                         
-            IDiscreteStream = model.createRealStream(domain.IDomain);
+            IDiscreteStream = model.createRealStream(domain.IDomain,prod(dims));
             
-            obj@VariableStreamBase(IDiscreteStream);
+            obj@VariableStreamBase(IDiscreteStream,dims);
 
         end
     end

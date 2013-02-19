@@ -47,7 +47,7 @@ function testTiming
     fg2 = FactorGraph();
     b3 = BitStream();
     fg2.addFactor(ng,b3,b3.getSlice(2));
-    b3.DataSource = DoubleArrayDataSource(repmat([1 - P P],N,1));
+    b3.DataSource = DoubleArrayDataSource(repmat([1 - P P]',1,N));
     b3.DataSink = DoubleArrayDataSink();
     disp('rolled up graphs...');
     tic

@@ -36,6 +36,11 @@ import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
+import com.analog.lyric.dimple.model.repeated.MultivariateDataSink;
+import com.analog.lyric.dimple.model.repeated.MultivariateDataSource;
+import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
 public class PHelpers
 {
@@ -209,24 +214,7 @@ public class PHelpers
 			factors[i] = (PFactorVector)wrapObject(functions[i]);
 		return factors;
 	}
-	
-//	public static Factor[] convertToFactors(PFactor [] functions)
-//	{
-//		Factor[] factors = new Factor[functions.length];
-//		for (int i = 0; i < functions.length; i++)
-//		{
-//			factors[i] = functions[i].getModelerObject();
-//		}
-//
-//		return factors;
-//	}	
 
-//	public static PFactorBase [] convertFactorBaseListToFactors(Collection<FactorBase> vbs) 
-//	{
-//		return convertToFactors(vbs.toArray(new FactorBase[0]));
-//	}
-	
-//	
 	public static PFactorVector [] convertFactorListToFactors(Collection<Factor> vbs) 
 	{
 		return convertToFactors(vbs.toArray(new FactorBase[0]));
@@ -266,43 +254,7 @@ public class PHelpers
 		return newvars;
 
 	}
-//
-//	public static VariableBase[] convertToMVariables(IPNode [] variables)
-//	{
-//		VariableBase [] vbs = new VariableBase[variables.length];
-//		for (int i = 0; i < variables.length; i++)
-//		{
-//			vbs[i] = (VariableBase) variables[i].getModelerObject();    		
-//		}
-//		return vbs;
-//		
-//	}
-//	
-//
-//	public static PVariableBase convertToVariable(VariableBase v)
-//	{
-//		if (v instanceof Real)
-//			return new PRealVariable((Real)v);
-//		else if (v instanceof RealJoint)
-//			return new PRealJointVariable((RealJoint)v);
-//		else
-//			return new PDiscreteVariable((Discrete)v);
-//	}
-//
-//	public static PVariableBase[] 		convertToVariables(VariableBase [] vbs)
-//	{
-//		PVariableBase [] variables = new PVariableBase[vbs.length];
-//		for (int i = 0; i < variables.length; i++)
-//		{
-//			variables[i] = convertToVariable(vbs[i]);
-//		}
-//		return variables;
-//	}
-//	public static PVariableBase[] 		convertToVariables(Collection<VariableBase> vbs)
-//	{
-//		return convertToVariables(vbs.toArray(new VariableBase[0]));
-//	}	
-//
+
 	public static PNodeVector wrapObject(INode node) 
 	{
 		if (node instanceof DiscreteFactor)
@@ -389,4 +341,45 @@ public class PHelpers
 		}
 		return retval;
 	}
+	
+	public static IPDataSource getDataSources(VariableStreamBase [] streams)
+	{
+		if (streams[0].getDataSource() instanceof DoubleArrayDataSource)
+		{
+			DoubleArrayDataSource [] dads = new DoubleArrayDataSource[streams.length];
+			for (int i = 0; i < dads.length; i++)
+					dads[i] = (DoubleArrayDataSource)streams[i].getDataSource();
+			return new PDoubleArrayDataSource(dads);
+		}
+		else if (streams[0].getDataSource() instanceof MultivariateDataSource)
+		{
+			throw new DimpleException("not currently supported");
+			
+		}
+		else
+			throw new DimpleException("not currently supported");
+		
+		
+	}
+
+	public static IPDataSink getDataSinks(VariableStreamBase [] streams)
+	{
+		if (streams[0].getDataSink() instanceof DoubleArrayDataSink)
+		{
+			DoubleArrayDataSink [] dads = new DoubleArrayDataSink[streams.length];
+			for (int i = 0; i < dads.length; i++)
+					dads[i] = (DoubleArrayDataSink)streams[i].getDataSink();
+			return new PDoubleArrayDataSink(dads);
+		}
+		else if (streams[0].getDataSink() instanceof MultivariateDataSink)
+		{
+			throw new DimpleException("Multivariate not currently supported");
+			
+		}
+		else
+			throw new DimpleException("other not currently supported " + streams[0].getDataSource() + " end");
+		
+		
+	}
+
 }
