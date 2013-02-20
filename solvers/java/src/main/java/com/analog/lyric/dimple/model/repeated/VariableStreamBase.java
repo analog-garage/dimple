@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.VariableBase;
-//import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
 {
