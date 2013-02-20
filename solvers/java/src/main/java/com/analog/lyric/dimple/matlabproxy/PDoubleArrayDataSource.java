@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.matlabproxy;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
+import com.analog.lyric.math.Functions;
 
 public class PDoubleArrayDataSource implements IPDataSource 
 {
@@ -53,15 +54,7 @@ public class PDoubleArrayDataSource implements IPDataSource
 			throw new DimpleException("variable size mismatch: " + data.length + " " + _dataSources.length);
 		
 		for (int i = 0; i < data.length; i++)
-		{
-			for (int j = 0; j < data[0][0].length; j++)
-			{
-				double [] tmp = new double[data[0].length];
-				for (int k = 0; k < data[0].length; k++)
-					tmp[k] = data[i][k][j];
-				_dataSources[i].add(tmp);
-			}
-		}
+			_dataSources[i].add(Functions.transpose(data[i]));
 		
 	}
 	
