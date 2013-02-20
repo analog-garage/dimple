@@ -1,4 +1,7 @@
 classdef DoubleArrayDataSink < DataSink
+    properties
+        Array;
+    end
     methods
         function obj = DoubleArrayDataSink(dimensions,dataSink)
             
@@ -12,7 +15,11 @@ classdef DoubleArrayDataSink < DataSink
             end
             obj@DataSink(dimensions,dataSink);
         end
-        
+       
+        function array = get.Array(obj)
+           array = obj.IDataSink.getArray(); 
+           array = MatrixObject.unpack(array,obj.Indices,1);
+        end
     end
     
 end

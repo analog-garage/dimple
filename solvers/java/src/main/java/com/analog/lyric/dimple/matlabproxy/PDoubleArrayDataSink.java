@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSink;
+import com.analog.lyric.math.Functions;
 
 public class PDoubleArrayDataSink implements IPDataSink 
 {
@@ -57,6 +58,17 @@ public class PDoubleArrayDataSink implements IPDataSink
 	public IDataSink[] getModelObjects() 
 	{
 		return _dataSinks;
+	}
+	
+	public double [][][] getArray()
+	{
+		double [][][] retval = new double[_dataSinks.length][][];
+		for (int i = 0; i < _dataSinks.length; i++)
+		{			
+			retval[i] = Functions.transpose(_dataSinks[i].getArray());
+		}
+		
+		return retval;
 	}
 
 }

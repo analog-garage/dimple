@@ -63,4 +63,16 @@ public class Functions
 		
 		return _factorialHelper.run(n);
 	}
+	
+	public static double [][] transpose(double [][] mat)
+	{
+		double [][] retval = new double[mat[0].length][];
+		for (int i = 0; i < retval.length; i++)
+		{
+			retval[i] = new double[mat.length];
+			for (int j = 0; j < retval[i].length; j++)
+				retval[i][j] = mat[j][i];
+		}
+		return retval;
+	}
 }

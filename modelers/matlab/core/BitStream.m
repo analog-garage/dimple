@@ -17,8 +17,8 @@
 classdef BitStream < DiscreteStream
     
    methods
-       function obj = BitStream()
-           obj@DiscreteStream({0,1});
+       function obj = BitStream(varargin)
+           obj@DiscreteStream({0,1},varargin{:});
        end
    end
 end

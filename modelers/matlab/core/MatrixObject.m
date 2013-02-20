@@ -270,12 +270,13 @@ classdef MatrixObject < handle
                     if size(stuff,1) ~= numel(indices)
                         error('mismatch of sizes');
                     end
+                    stuffsz = size(stuff);
                     stuff = stuff(indices(:)+1,:);
                     sz = size(indices);
                     if sz(length(sz)) == 1
-                        v = reshape(stuff,[sz(1:end-1) size(stuff,2)]);
+                        v = reshape(stuff,[sz(1:end-1) stuffsz(2:end)]);
                     else
-                        v = reshape(stuff,[size(indices) size(stuff,2)]);
+                        v = reshape(stuff,[size(indices) stuffsz(2:end)]);
                     end
                 end
             end

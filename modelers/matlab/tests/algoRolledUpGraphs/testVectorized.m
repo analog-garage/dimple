@@ -82,16 +82,24 @@ function testVectorized()
         %Solve the graph
         fg.solve();
 
+        %Test array;
+        expected = sinput1 > 0.5;
+        array = dsink.Array;        
+        diff = expected-array(:,:,2,end);
+        assertTrue(norm(diff) < 1e-50);
+        
         %Get all the results
         while dsink.hasNext()
            tmp = dsink.getNext();
         end
 
         %Look at the last result
-        expected = sinput1 > 0.5;
         diff = expected-tmp(:,:,2);
         assertTrue(norm(diff) < 1e-50);
     end
+    
+    %% Test Aray
+    
 end
 
 
