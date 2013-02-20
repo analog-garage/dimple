@@ -133,12 +133,19 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			if (customFactorExists(factor.getFactorFunction().getName()))
 				return createCustomFactor(factor);
+			else if (factor.isDiscrete())
+				return new com.analog.lyric.dimple.solvers.sumproduct.STableFactor(factor);
 			else
 			{
-				HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
-				sf.setNumSamples(_numSamples);
-				sf.setMaxNumTries(_maxNumTries);
-				return sf;
+				if (customFactorExists(factor.getFactorFunction().getName()))
+					return createCustomFactor(factor);
+				else
+				{
+					HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
+					sf.setNumSamples(_numSamples);
+					sf.setMaxNumTries(_maxNumTries);
+					return sf;
+				}
 			}
 		}
 		return retval;

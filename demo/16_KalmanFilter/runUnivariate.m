@@ -98,7 +98,7 @@ end
 
 
 fg.setScheduler(com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler());
-fg.Solver.setNumIterations(200)
+fg.Solver.setNumIterations(200);
 fg.solve;
 
 results=zeros(sampling,1);
