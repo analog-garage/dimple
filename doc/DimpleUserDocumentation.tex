@@ -1023,6 +1023,61 @@ This produces the following output:
     2.1436    0.2144
 \end{lstlisting}
 
+\subsubsection{Manually Advancing}
+
+By default, rolled up graphs will advance until there is no data left in a DataSource.  Users may override this behavior by setting the FactorGraph.NumSteps parameter.  By default this is set to Inf.  By setting this to zero, users can examine the graph at every step of the rolled up graph.  This allows the user to pull Beliefs off of any portion of the graph.
+
+\begin{lstlisting}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%simple Markov Model with larger buffer size
+
+%Create the data
+N = 10;
+data = repmat([.4 .6]',1,N);
+
+%Create a data source
+dataSource = DoubleArrayDataSource(data);
+
+%Create a variable stream.
+vs = DiscreteStream({0,1});
+vs.DataSource = dataSource;
+
+%Create our nested graph
+in = Bit();
+out = Bit();
+ng = FactorGraph(in,out);
+ng.addFactor(@(a,b) a==b,in,out);
+
+%Create our main factor graph
+fg = FactorGraph();
+
+%Build the repeated graph
+bufferSize = 2;
+fgs = fg.addFactor(ng, bufferSize, vs,vs.getSlice(2));
+
+%Initialize our messages
+fg.initialize();
+
+%Set the number of steps to automatically advance
+fg.NumSteps = 0;
+
+while 1
+    %Solve the current time step
+    fg.solve(false);
+    %Get the belief for the first variable
+    belief = vs.get(3).Belief;
+    disp(belief)
+
+    if fgs.hasNext
+        fg.advance();
+    else
+        break;
+    end
+end
+\end{lstlisting}
+
+In this code snippet, the user initializes the graph, sets NumSteps to 0, and calls advance until there is no data left.  At each step, the user retrieves the beliefs from the third instance of the variable in the variable stream.
+
 
 \section{API Documentation}
 
