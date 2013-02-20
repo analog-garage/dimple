@@ -22,9 +22,9 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorBase extends SNode implements ISolverFactor 
@@ -34,9 +34,11 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	public SFactorBase(Factor factor)
 	{
 		super(factor);
-		
 		_factor = factor;
+		
+		
 	}
+		
 		
 	public Factor getFactor()
 	{
@@ -47,7 +49,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public void update()  
 	{
-		for (int i = 0; i < _factor.getPorts().size(); i++)
+		for (int i = 0; i < _factor.getSiblings().size(); i++)
 			updateEdge(i);
 	}
 	
@@ -57,19 +59,6 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		throw new DimpleException("not supported");
 	}
 
-	@Override
-	public void connectPort(Port p) 
-	{
-		
-	}
-	
-	@Override
-	public Object getDefaultMessage(Port port) 
-	{
-		com.analog.lyric.dimple.model.VariableBase var = (com.analog.lyric.dimple.model.VariableBase)port.getConnectedNode();
-		SVariableBase v = (SVariableBase)var.getSolver();
-		return v.getDefaultMessage(port);
-	}
 
 	@Override
 	public ISolverFactorGraph getParentGraph()
@@ -98,13 +87,13 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
     public double getScore()
     {    	
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 		int numPorts = ports.size();
 	    Object[] values = new Object[numPorts];
 
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	INode neighbor = ports.get(port).getConnectedNode();
+	    	INode neighbor = _factor.getConnectedNodeFlat(port);
 	    	values[port] = ((ISolverVariable)neighbor.getSolver()).getGuess();
 	    }
 	    
@@ -128,5 +117,23 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	{
 		throw new DimpleException("getBetheEntropy not yet supported");		
 	}
+	
+	public void moveMessages(ISolverNode other)
+	{
+		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
+			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
+		
+		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		{
+			moveMessages(other, i,i);
+			
+			INode thisVariable = getModelObject().getSiblings().get(i);
+			INode otherVariable = other.getModelObject().getSiblings().get(i);
+			int thisIndex = getModelObject().getSiblingPortIndex(i);
+			int otherIndex = other.getModelObject().getSiblingPortIndex(i);
+			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
+		}
+	}
+	
 	
 }

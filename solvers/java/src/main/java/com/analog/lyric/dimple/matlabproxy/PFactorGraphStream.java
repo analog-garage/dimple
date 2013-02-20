@@ -27,7 +27,7 @@ public class PFactorGraphStream
 		_stream = stream;
 	}
 	
-	public FactorGraphStream getModelerObject()
+	public FactorGraphStream getModelerObjects()
 	{
 		return _stream;
 	}

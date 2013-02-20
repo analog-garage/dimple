@@ -15,30 +15,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef MultivariateDataSink < DataSink
-    properties
-        Array;
-    end
     methods
-        function obj = MultivariateDataSink(dataSink)
-            if nargin == 0;
-                dataSink = com.analog.lyric.dimple.model.repeated.MultivariateDataSink();
+        function obj = MultivariateDataSink(dimensions,dataSink)
+            
+            if nargin < 1
+                dimensions = size(1);
             end
-            obj@DataSink(dataSink);
+            
+            if nargin < 2
+                modeler = getModeler();
+                dataSink = modeler.getMultivariateDataSink(prod(dimensions));
+            end
+            
+            obj@DataSink(dimensions,dataSink);
         end
         
-        function retval = hasNext(obj)
-            retval = obj.IDataSink.hasNext();
-        end
         function retval = getNext(obj)
-            retval = MultivariateMsg(obj.IDataSink.getNext());
-        end
-        
-        function retval = get.Array(obj)
-            tmp = obj.IDataSink.getArray();
-            retval = cell(size(tmp));
-            for i= 1:length(retval)
-                retval{i} = MultivariateMsg(tmp(i));
+            retval = getNext@DataSink(obj);
+            if iscell(retval)
+                for i = 1:numel(retval)
+                   retval{i} = MultivariateMsg(retval{i}); 
+                end
+            else
+                retval = MultivariateMsg(retval);
             end
         end
+        
     end
 end

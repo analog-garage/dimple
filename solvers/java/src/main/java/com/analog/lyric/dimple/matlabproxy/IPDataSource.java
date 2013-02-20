@@ -14,9 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.interfaces;
+package com.analog.lyric.dimple.matlabproxy;
 
-public interface ISolverTableFactor //extends ISolverFactor 
+import com.analog.lyric.dimple.model.repeated.IDataSource;
+
+public interface IPDataSource 
 {
-
+	public IDataSource [] getModelObjects();
 }

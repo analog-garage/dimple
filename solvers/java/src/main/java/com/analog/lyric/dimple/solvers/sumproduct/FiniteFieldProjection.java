@@ -22,19 +22,17 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableList;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
 
-public class FiniteFieldProjection extends SFactorBase
+public class FiniteFieldProjection extends FiniteFieldFactor
 {
 
-	private Port [] _bitPorts;
 	private FiniteFieldVariable _ffVar;
-	private Port _ffVarPort;
-	private int [] _portIndex2bitIndex;	
+	private int [] _portIndex2bitIndex;
+	private int [] _bit2port; 
 	
 	public FiniteFieldProjection(Factor factor)  
 	{
@@ -43,19 +41,15 @@ public class FiniteFieldProjection extends SFactorBase
 	
 		VariableList variables = factor.getVariables();
 		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
-		//TODO: check this is valid
 		_ffVar = (FiniteFieldVariable)variables.getByIndex(0).getSolver();
-		_ffVarPort = ports.get(0);
-		_bitPorts = new Port [_ffVar.getNumBits()];
 		_portIndex2bitIndex = new int[ports.size()];
 		
 		for (int i = 0; i < ports.size(); i++)
 			_portIndex2bitIndex[i] = -1;
-		//_bitIndices = new int[_ffVar.getNumBits()]
 		
 		if (variables.size() <= 1)
 			throw new DimpleException("need to specify at least one bit for projection");
@@ -74,14 +68,16 @@ public class FiniteFieldProjection extends SFactorBase
 			throw new DimpleException("expect finite field variable, bit positions, and bits");
 
 		
+		_bit2port = new int[ports.size()-1];
+		
 		for (int i = 1; i < variables.size(); i++)
 		{
 			//TODO: error check
 			int index = (int)domain[i-1];
 			
-			if (index < 0 || index >= _bitPorts.length)
+			if (index < 0 || index >= ports.size()-1)
 				throw new DimpleException("index out of range");
-			if (_bitPorts[index] != null)
+			if (_bit2port[index] != 0)
 				throw new DimpleException("Tried to set index twice");
 			
 			//get Variable and make sure it's a bit.
@@ -91,7 +87,7 @@ public class FiniteFieldProjection extends SFactorBase
 			if (bitDomain.length != 2 || (Double)bitDomain[0] != 0 || (Double)bitDomain[1] != 1)
 				throw new DimpleException("expected bit");
 			
-			_bitPorts[index] = ports.get(i);
+			_bit2port[index] = i;
 			_portIndex2bitIndex[i] = index;
 		}
 	}
@@ -113,33 +109,32 @@ public class FiniteFieldProjection extends SFactorBase
 	{
 		//for every value of the finite field
 		//TODO: cast shouldn't be necessary
-		double [] outputs = (double[])_ffVarPort.getOutputMsg();
+		double [] outputs = _outputMsgs[0];
 		int numBits = _ffVar.getNumBits();
-		Port p;
+
 		double prod;
 		double [][] inputMsgs = new double[numBits][];
-		for (int i = 0; i < _bitPorts.length; i++)
+		for (int i = 0; i < _inputMsgs.length-1; i++)
 		{
-			if (_bitPorts[i] != null)
-				inputMsgs[i] = (double[])_bitPorts[i].getInputMsg();
+			if (_inputMsgs[i+1] != null)
+				inputMsgs[i] = _inputMsgs[i+1];
 		}
 		
 		//Multiply bit probabilities
 		double sum = 0;
-		//TODO: is there something inside the solver object that knows the domain length?
+		
 		for (int i = 0; i < ((Discrete)_ffVar.getVariable()).getDiscreteDomain().getElements().length; i++)
 		{
 			prod = 1;
 			for (int j = 0; j < numBits; j++)
 			{
-				p = _bitPorts[j];
+				int p = _bit2port[j];
 				
-				if (p != null)
+				if (p != 0)
 				{
 					if (((i >> j) & 1) == 1)
 					{
 						//is one
-						//p.getInputMsg();
 						prod *= inputMsgs[j][1];
 					}
 					else
@@ -163,7 +158,7 @@ public class FiniteFieldProjection extends SFactorBase
 	{	
 		
 		//get output msg for bit
-		double [] outputs = (double[])_factor.getPorts().get(portNum).getOutputMsg();
+		double [] outputs = (double[])_outputMsgs[portNum];
 		
 		//init to 1 for each
 		outputs[0] = 0;
@@ -172,7 +167,7 @@ public class FiniteFieldProjection extends SFactorBase
 		int bit = _portIndex2bitIndex[portNum];
 		
 		//Iterate each value of finite field
-		double [] inputs = (double[])_factor.getPorts().get(0).getInputMsg();
+		double [] inputs = (double[])_inputMsgs[0];
 		
 		for (int i = 0; i < inputs.length; i++)
 		{
@@ -198,12 +193,4 @@ public class FiniteFieldProjection extends SFactorBase
 		
 		
 	}
-
-
-	@Override
-	public void initialize() 
-	{
-		
-	}
-
 }

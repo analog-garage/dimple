@@ -16,26 +16,22 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableList;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
 
-public class FiniteFieldConstMult extends SFactorBase
+public class FiniteFieldConstMult extends FiniteFieldFactor
 {
 	
 	private int _constant;
 	private int _dlogConstant;
 	private FiniteFieldVariable _varInput;
 	private FiniteFieldVariable _varOutput;
-	private Port _varInputPort;
-	private Port _varOutputPort;
+	//private Port _varInputPort;
+	//private Port _varOutputPort;
 	
 	public FiniteFieldConstMult(Factor factor)  
 	{
@@ -55,14 +51,14 @@ public class FiniteFieldConstMult extends SFactorBase
 			throw new DimpleException("finiteFieldMult expects two variable arguments");
 		
 		
-		ArrayList<Port> ports = _factor.getPorts();
+		//ArrayList<Port> ports = _factor.getPorts();
 
 		_varInput = (FiniteFieldVariable)variables.getByIndex(0).getSolver();
-		_varInputPort = ports.get(0);
+		//_varInputPort = ports.get(0);
 
 		_varOutput = (FiniteFieldVariable)variables.getByIndex(1).getSolver();
 		
-		_varOutputPort = ports.get(1);
+		//_varOutputPort = ports.get(1);
 		assignConstant((int)(double)(Double)constants[0]);
 
 		
@@ -115,8 +111,8 @@ public class FiniteFieldConstMult extends SFactorBase
 	private void updateMultInputEdge()
 	{
 		//TODO: can I get rid of cast?
-		double [] inputMsg = (double[])_varInputPort.getOutputMsg();
-		double [] outputMsg = (double[])_varOutputPort.getInputMsg();
+		double [] inputMsg = (double[])_outputMsgs[0];
+		double [] outputMsg = (double[])_inputMsgs[1];
 		
 		int [] outputDlogTable = _varOutput.getTables().getDlogTable();
 		int [] inputPowerTable = _varInput.getTables().getPowerTable();
@@ -143,8 +139,8 @@ public class FiniteFieldConstMult extends SFactorBase
 	private void updateMultOutputEdge()
 	{
 		//TODO: can I get rid of cast?
-		double [] inputMsg = (double[])_varInputPort.getInputMsg();
-		double [] outputMsg = (double[])_varOutputPort.getOutputMsg();
+		double [] inputMsg = (double[])_inputMsgs[0];
+		double [] outputMsg = (double[])_outputMsgs[1];
 		int [] inputDlogTable = _varInput.getTables().getDlogTable();
 		int [] outputPowerTable = _varOutput.getTables().getPowerTable();
 		

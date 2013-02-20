@@ -16,11 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.core.kbest;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.Factor;
 
 /*
  * Solver Factors that need to support kbest can implement this interface 
@@ -28,7 +26,10 @@ import com.analog.lyric.dimple.model.Port;
  */
 public interface IKBestFactor
 {
-	ArrayList<Port> getPorts();
+	//ArrayList<Port> getPorts();
+	public double [][] getInPortMsgs();
+	public double [][] getOutPortMsgs();
+	public Factor getFactor();
 	FactorFunction getFactorFunction();
 	double initAccumulator();
 	double accumulate(double oldVal,double newVal);

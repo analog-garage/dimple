@@ -18,6 +18,7 @@ function testDamping()
 
 
     %Test damping from variable
+    setSolver('sumproduct');
 
     for i = 1:2
 

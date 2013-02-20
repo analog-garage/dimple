@@ -16,14 +16,21 @@
 
 classdef RealJointStream < VariableStreamBase
     methods
-        function obj = RealJointStream(numVars)
+        function obj = RealJointStream(numVars,varargin)
+            
+            dims = cell2mat(varargin);
+            if isempty(dims)
+                dims = [1 1];
+            end
+              
+            
             model = getModeler();
             
             domain = RealJointDomain(numVars);
             
-            stream = model.createRealJointStream(domain.IDomain);
+            stream = model.createRealJointStream(domain.IDomain,prod(dims));
             
-            obj@VariableStreamBase(stream);
+            obj@VariableStreamBase(stream,varargin{:});
             
         end
     end

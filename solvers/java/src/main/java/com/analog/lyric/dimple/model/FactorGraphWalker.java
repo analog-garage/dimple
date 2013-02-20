@@ -20,7 +20,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
-
 import com.analog.lyric.util.misc.MapList;
 
 /**
@@ -59,12 +58,6 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * State
 	 */
 	
-	/**
-	 * Sentinel value that is inserted in {@link #_portDeque} between values that
-	 * are at different search depths with respect to the first node that was visited.
-	 */
-	private static final Port _depthChangeSentinel = new Port(null, -42);
-	
 	private FactorGraph _rootGraph;
 	private INode _firstNode;
 	private Order _searchOrder = Order.BREADTH_FIRST;
@@ -78,7 +71,9 @@ public class FactorGraphWalker implements Iterator<INode>
 	private int _maxDepthSeen;
 	private INode _nextNode;
 	private int _cycleCount;
+	private Port _depthChangeSentinel = new Port(null,-42); 
 	
+
 	/*
 	 * Construction/initialization
 	 */
@@ -136,7 +131,7 @@ public class FactorGraphWalker implements Iterator<INode>
 			INode node = this._firstNode != null ? this._firstNode : root.getFirstNode();
 			if (node != null)
 			{
-				this._portDeque.add(new Port(node, -1));
+				this._portDeque.add(new Port(node,-1));
 			}
 		}
 		
@@ -382,13 +377,13 @@ public class FactorGraphWalker implements Iterator<INode>
 		while (!queue.isEmpty())
 		{
 			Port portIn = queue.removeFirst();
-			if (portIn == FactorGraphWalker._depthChangeSentinel)
+			if (portIn == _depthChangeSentinel)
 			{
 				++this._currentDepth;
 				continue;
 			}
 			
-			node = portIn.getParent();
+			node = portIn.node;
 			int relativeDepth = node.getDepthBelowAncestor(this._rootGraph);
 			
 			if (relativeDepth < 0)
@@ -410,9 +405,9 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			ArrayList<Port> portsOut = node.getPorts();
-			int nPortsOut = portsOut.size();
-			if (nPortsOut > 0)
+			ArrayList<INode> siblingNodes = node.getSiblings();
+			int nSiblings = siblingNodes.size();
+			if (nSiblings > 0)
 			{
 				int newDepth = this._currentDepth + 1;
 				if (newDepth <= this._maxSearchDepth)
@@ -420,14 +415,14 @@ public class FactorGraphWalker implements Iterator<INode>
 					if (newDepth > this._maxDepthSeen)
 					{
 						this._maxDepthSeen = newDepth;
-						queue.add(FactorGraphWalker._depthChangeSentinel);
+						queue.add(_depthChangeSentinel);
 					}
-					for (int i = 0, size = nPortsOut; i < size; ++i)
+					for (int i = 0, size = nSiblings; i < size; ++i)
 					{
-						Port portOut = portsOut.get(i);
-						if (portOut != portIn)
+						INode siblingNode = siblingNodes.get(i);
+						if (i != portIn.index)
 						{
-							queue.add(portOut.getSibling());
+							queue.add(new Port(siblingNode,siblingNode.getPortNum(node)));
 						}
 					}
 				}
@@ -448,13 +443,13 @@ public class FactorGraphWalker implements Iterator<INode>
 		while (!stack.isEmpty())
 		{
 			Port portIn = stack.pop();
-			if (portIn == FactorGraphWalker._depthChangeSentinel)
+			if (portIn == _depthChangeSentinel)
 			{
 				--this._currentDepth;
 				continue;
 			}
 			
-			node = portIn.getParent();
+			node = portIn.node;
 			int relativeDepth = node.getDepthBelowAncestor(this._rootGraph);
 			
 			if (relativeDepth < 0)
@@ -476,24 +471,24 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			ArrayList<Port> portsOut = node.getPorts();
+			ArrayList<INode> portsOut = node.getSiblings();
 			int nPortsOut = portsOut.size();
 			if (nPortsOut > 0)
 			{
 				int newDepth = this._currentDepth + 1;
 				if (newDepth <= this._maxSearchDepth)
 				{
-					stack.push(FactorGraphWalker._depthChangeSentinel);
+					stack.push(_depthChangeSentinel);
 					this._currentDepth = newDepth;
 					this._maxDepthSeen = Math.max(this._maxDepthSeen, this._currentDepth);
 					int nPushed = 0;
 					for (int i = 0, size = nPortsOut; i < size; ++i)
 					{
-						Port portOut = portsOut.get(i);
-						if (portOut != portIn)
+						INode portOut = portsOut.get(i);
+						if (i != portIn.index)
 						{
 							++nPushed;
-							stack.push(portOut.getSibling());
+							stack.push(new Port(portOut,portOut.getPortNum(node)));
 						}
 					}
 					if (nPushed == 0)

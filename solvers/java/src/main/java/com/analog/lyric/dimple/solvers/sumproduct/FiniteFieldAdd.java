@@ -16,20 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
 
-public class FiniteFieldAdd extends SFactorBase
+public class FiniteFieldAdd extends FiniteFieldFactor
 {
 	
 	public FiniteFieldAdd(com.analog.lyric.dimple.model.Factor factor) 
 	{
 		super(factor);
+		
 		if (factor.getPorts().size() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 
@@ -41,22 +38,19 @@ public class FiniteFieldAdd extends SFactorBase
 		double [] inputs2 = null;
 		double [] outputs = null;
 				
-		ArrayList<Port> ports = _factor.getPorts();
-		Port port;
 
 		for (int i = 0; i < 3; i++)
 		{
-			port = ports.get(i);
 			if (outPortNum == i)
 			{
-				outputs = (double[])port.getOutputMsg();
+				outputs = (double[])_outputMsgs[i];
 			}
 			else
 			{
 				if (inputs1 == null)
-					inputs1 = (double[])port.getInputMsg();
+					inputs1 = (double[])_inputMsgs[i];
 				else
-					inputs2 = (double[])port.getInputMsg();
+					inputs2 = (double[])_inputMsgs[i];
 			}
 		}
 
@@ -134,10 +128,5 @@ public class FiniteFieldAdd extends SFactorBase
 
 	}
 
-	@Override
-	public void initialize() 
-	{
-		
-	}
 
 }

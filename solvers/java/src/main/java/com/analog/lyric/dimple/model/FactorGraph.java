@@ -69,11 +69,10 @@ public class FactorGraph extends FactorBase
 	private ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
 	private int _numSteps = 1;
 	private boolean _numStepsInfinite = true;
+	
 	//new identity related members
 	private HashMap<String, Object> _name2object = new HashMap<String, Object>();
 	private HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
-
-	//protected CombinationTableFactory _tableFactory;
 
 
 
@@ -176,29 +175,31 @@ public class FactorGraph extends FactorBase
 	 * 
 	 ******************************************************************/
 
-	public void setSolverFactory(IFactorGraphFactory factory) 
+	private void setSolverFactorySubGraph(IFactorGraphFactory factory)
 	{
 		_solverFactory = factory;
 		_solverFactorGraph = factory.createFactorGraph(this);
 
-		for (VariableBase var : _boundaryVariables)
-			var.attach(_solverFactorGraph);
-
-		//Create solvers for all the factors
-		for (VariableBase var : _ownedVariables)
-			var.attach(_solverFactorGraph);
-
-		//Create solvers for all the variables
-		for (FactorBase f : _ownedFactors)
-		{
-			FactorGraph subgraph = f.asFactorGraph();
-			if (subgraph != null)
-				subgraph.setSolverFactory(factory);
-			else
-				f.asFactor().attach(_solverFactorGraph);
-		}
 	}
 
+	public void setSolverFactory(IFactorGraphFactory factory) 
+	{
+		
+		setSolverFactorySubGraph(factory);
+		
+		for (VariableBase var : getVariablesFlat())	
+			var.createSolverObject(_solverFactorGraph);
+		
+		for (FactorGraph fg : getNestedGraphs())
+			fg.setSolverFactorySubGraph(factory);
+		
+		for (Factor f : getNonGraphFactorsFlat())
+			f.createSolverObject(_solverFactorGraph);
+
+
+	}
+
+	
 
 	/***************************************************************
 	 * 
@@ -218,16 +219,19 @@ public class FactorGraph extends FactorBase
 		return true;
 	}
 
-    public BlastFromThePastFactor addBlastFromPastFactor(Object inputMsg, VariableBase var,Port factorPort) 
+    public BlastFromThePastFactor addBlastFromPastFactor(VariableBase var,Port factorPort) 
     {
                             
             setVariableSolver(var);
 
             BlastFromThePastFactor f;
-            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort,inputMsg);
+            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort);
 
             addFactor(f,new VariableBase[]{var});
             
+    		if (_solverFactorGraph != null)
+    			f.createSolverObject(_solverFactorGraph);
+
             return f;
 
     }
@@ -370,8 +374,8 @@ public class FactorGraph extends FactorBase
 		addFactor(f,vars);
 
 		if (_solverFactorGraph != null)
-			f.attach(_solverFactorGraph);
-
+			f.createSolverObject(_solverFactorGraph);
+		
 		return f;
 
 	}
@@ -384,10 +388,10 @@ public class FactorGraph extends FactorBase
 			//check to see if variable belongs to this graph
 			if (!variableBelongs(v))
 			{
-				if (v.getPorts().size() > 0)
+				if (v.getSiblings().size() > 0)
 					throw new DimpleException("Can't connect a variable to multiple graphs");
 
-				v.attach(_solverFactorGraph);
+				v.createSolverObject(_solverFactorGraph);
 			}
 		}
 	}
@@ -417,7 +421,7 @@ public class FactorGraph extends FactorBase
 	
 	public void remove(VariableBase v) 
 	{
-		if (v.getPorts().size() != 0)
+		if (v.getSiblings().size() != 0)
 			throw new DimpleException("can only remove a variable if it is no longer connected to a factor");
 
 		if (!_ownedVariables.contains(v))
@@ -425,10 +429,9 @@ public class FactorGraph extends FactorBase
 		_ownedVariables.remove(v);
 		if (_ownedVariables.contains(v))
 			throw new DimpleException("eh?");
-		v.attach(null);
+		v.createSolverObject(null);
 		v.setParentGraph(null);
 		removeNode(v);
-		//v.getPorts().clear();
 		
 	}
 
@@ -445,7 +448,7 @@ public class FactorGraph extends FactorBase
 				throw new DimpleException("Variable [" + v.getLabel() + "] already owned by graph [" + v.getParentGraph().getLabel() + "]");
 			}
 			addOwnedVariable(v);
-			v.attach(_solverFactorGraph);
+			v.createSolverObject(_solverFactorGraph);
 
 		}
 	}
@@ -542,9 +545,9 @@ public class FactorGraph extends FactorBase
 		//Go through variables and find affected factors.
 		for (VariableBase v : variables)
 		{
-			for (Port p : v.getPorts())
+			for (int i = 0; i < v.getSiblings().size(); i++)
 			{
-				Factor f = (Factor)p.getConnectedNodeFlat();
+				Factor f = (Factor)v.getConnectedNodeFlat(i);
 				factors.add(f);
 			}
 		}
@@ -559,17 +562,18 @@ public class FactorGraph extends FactorBase
 		//Variables must first be part of the graph before the factor can join them.
 		addVariables(currentJoint);
 
+		//Reattach the variable too, just in case.
+		currentJoint.createSolverObject(_solverFactorGraph);
+
 		//go through each factor that was connected to any of the variables and tell it to join those variables
 		for (Factor f : factors)
 		{
 			f.replaceVariablesWithJoint(variables, currentJoint);
 
 			//reattach to the solver now that the factor graph has changed
-			f.attach(_solverFactorGraph);
+			f.createSolverObject(_solverFactorGraph);
 		}
 
-		//Reattach the variable too, just in case.
-		currentJoint.attach(_solverFactorGraph);
 
 		//Remove the original variables
 		removeVariables(variables);
@@ -729,7 +733,9 @@ public class FactorGraph extends FactorBase
 		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraph,this);
 
 		if (_solverFactory != null)
+		{
 			subGraphCopy.setSolverFactory(_solverFactory);
+		}
 
 		//tell us about it
 		addNameAndUUID(subGraphCopy);
@@ -777,6 +783,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
+	
 	private FactorGraph(VariableBase[] boundaryVariables,
 			FactorGraph templateGraph,
 			FactorGraph parentGraph) 
@@ -797,9 +804,7 @@ public class FactorGraph extends FactorBase
 			{
 		this(boundaryVariables,
 				templateGraph.getExplicitName(),
-				copyToRoot ?
-						null :
-							templateGraph.getFactorGraphFactory());
+				null);
 
 		// Copy owned variables
 		for (VariableBase vTemplate : templateGraph._ownedVariables)
@@ -863,20 +868,17 @@ public class FactorGraph extends FactorBase
 				addNameAndUUID(fCopy);
 				fCopy.setParentGraph(this);
 				_ownedFactors.add(fCopy);
-				for (Port pTemplate : fTemplate.getPorts())
+				for (INode n : fTemplate.getSiblings())
 				{
-					Port pCopy = new Port(fCopy,pTemplate.getId());
-					fCopy.getPorts().add(pCopy);
-					VariableBase vTemplate = (VariableBase)pTemplate.getConnectedNodeFlat();
-					//int vNewId = old2newIds.get(vTemplate.getId());
+					VariableBase vTemplate = (VariableBase)n;
 					VariableBase var = (VariableBase)old2newObjs.get(vTemplate);
+					fCopy.getSiblings().add(var);
 					if (templateGraph._boundaryVariables.contains(vTemplate))
 					{
-						var.connect(pCopy);		// Boundary variable in template graph: connect port to corresponding boundary variable in this graph
-						//_ports.add(pCopy);									// Ports to boundary variables are external ports of the graph
+						var.connect(fCopy);		// Boundary variable in template graph: connect port to corresponding boundary variable in this graph
 					}
 					else
-						var.connect(pCopy);			// Owned variable in template graph: connect port to new copy of template variable
+						var.connect(fCopy);			// Owned variable in template graph: connect port to new copy of template variable
 				}
 			}
 		}
@@ -898,17 +900,7 @@ public class FactorGraph extends FactorBase
 					setSchedule(scheduleCopy);
 		}
 
-		//TODO: initialize method
-		//_tableFactory = templateGraph._tableFactory;
-		if(copyToRoot)
-		{
-			setSolverFactory(templateGraph.getFactorGraphFactory());
-		}
-		else
-		{
-			setSolverFactory(templateGraph.getFactorGraphFactory());
-		}
-
+		//setSolverFactory(templateGraph.getFactorGraphFactory());
 	}
 
 	public FactorGraph copyRoot() 
@@ -937,9 +929,11 @@ public class FactorGraph extends FactorBase
 
 		return rootCopy;
 	}
+	
 
 	
 	private long _portVersionId = -1;
+	private ArrayList<Port> _ports;
 	
 	@Override
 	public ArrayList<Port> getPorts()
@@ -947,29 +941,34 @@ public class FactorGraph extends FactorBase
 		if (_portVersionId == _versionId && _ports != null)
 			return _ports;
 		
-		_ports = new ArrayList<Port>();
+		ArrayList<Port> _ports = new ArrayList<Port>();
 
 		FactorList factors = getNonGraphFactorsFlat();
 		
 		//for each boundary variable
-		for (VariableBase v : _boundaryVariables)
+		for (FactorBase f : factors)
 		{
-			MapList<INode> connectedNodes = v.getConnectedNodesFlat();
-
-			for (int i = 0; i < connectedNodes.size(); i++)
+			for (int i = 0; i < f.getSiblings().size(); i++)
 			{
-				INode n = connectedNodes.getByIndex(i);
-
-				if (n.isFactor() && factors.contains(n))
+				if (_boundaryVariables.contains(f.getSiblings().get(i)))
 				{
-					_ports.add(v.getPorts().get(i).getSibling());
-					//break;
+					_ports.add(new Port(f,i));
 				}
 			}
-
 		}
 		_portVersionId = _versionId;
 		return _ports;
+	}
+	
+	@Override
+	public ArrayList<INode> getSiblings()
+	{
+		ArrayList<Port> ports = getPorts();
+		_siblings = new ArrayList<INode>();
+		for (Port p : ports)
+			_siblings.add(p.node.getSiblings().get(p.index));
+		return _siblings;
+		
 	}
 
 
@@ -1069,54 +1068,26 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	//TODO: better name
-	public void initializeMessagesToAndFromBoundaryVariables()
+	public void initialize(int portNum)
 	{
-		ArrayList<Port> ports = getPorts();
-		for (Port p : ports)
-		{
-			VariableBase vb = (VariableBase)p.getConnectedNode();
-			vb.initializePortMsg(p.getSibling());
-			vb.getSolver().invalidateCache();
-		}
+		throw new DimpleException("not supported");
 	}
-	
-	//TODO: replace this with something better
-	public void temporaryInitialize()
+
+	public void recreateMessages()
 	{
-		initialize();
-		/*
-		for (VariableBase v : _ownedVariables)
-			v.initialize();
-		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
-			for (VariableBase v : _boundaryVariables)
-				v.initialize();
-		for (Factor f : getNonGraphFactorsTop())
-			f.initialize();
-		for (FactorGraph g : getNestedGraphs())
-			g.initialize();
-		/*
-		for (VariableBase vb : _ownedVariables)
-			vb.initialize();
-
-		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
-			for (VariableBase v : _boundaryVariables)
-				v.initialize();
-
-		for (FactorBase f : _ownedFactors)
-			f.initialize();
-			*/
+		for (Factor f : getNonGraphFactorsFlat() )
+			f.getSolver().createMessages();
+			
 	}
 	
 	public void initialize() 
 	{
-		//temporaryInitialize();
-		
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
 				v.initialize();
+		
 		for (Factor f : getNonGraphFactorsTop())
 			f.initialize();
 		for (FactorGraph g : getNestedGraphs())
@@ -1171,7 +1142,7 @@ public class FactorGraph extends FactorBase
 		
 		for (VariableBase v : boundary)
 		{
-			if (v.getPorts().size() == 0)
+			if (v.getSiblings().size() == 0)
 				remove(v);
 		}
 		
@@ -1241,7 +1212,7 @@ public class FactorGraph extends FactorBase
 		// all ports associated with the variables in the graph
 		int numEdges = 0;
 		for (VariableBase v : allIncludedVariables)
-			numEdges += v.getPorts().size();
+			numEdges += v.getSiblings().size();
 
 
 		// Determine the total number of vertices (variable and function nodes)
@@ -1330,10 +1301,9 @@ public class FactorGraph extends FactorBase
 
 		for (int i = 0; i < nodes.length; i++)
 		{
-			ArrayList<Port> ports = nodes[i].getPorts();
-			for (Port p : ports)
+			for (int k = 0; k < nodes[i].getSiblings().size(); k++)
 			{
-				ArrayList<INode> connectedNodes = p.getConnectedNodes();
+				ArrayList<INode> connectedNodes = nodes[i].getConnectedNodeAndParents(k);
 				
 				for (INode n : connectedNodes)
 				{
@@ -1348,6 +1318,7 @@ public class FactorGraph extends FactorBase
 		}
 
 		return retval;
+		
 	}
 	
 	
@@ -1366,12 +1337,13 @@ public class FactorGraph extends FactorBase
 
 		if (currentDepth < maxDepth)
 		{
-			Collection<Port> ports = node.getPorts();	// Get all the edges from this node
+			//Collection<Port> ports = node.getPorts();	// Get all the edges from this node
 
 
-			for (Port p : ports)
+			
+			for (int i = 0; i < node.getSiblings().size(); i++)
 			{
-				INode nextNode = p.getConnectedNode(relativeNestingDepth);
+				INode nextNode = node.getConnectedNode(relativeNestingDepth,i);
 				
 				int nextNodeNestingDepth = nextNode.getDepth();
 				int thisNodeNestingDepth = node.getDepth();
@@ -1759,15 +1731,7 @@ public class FactorGraph extends FactorBase
 
 			_UUID2object.put(uuid, nameable);
 		}
-		//Do consistency check?
-		//else
-		//{
-		//	//id should be present, should name, if explicit
-		//	if(explicitName != null && _name2object.get(explicitName) == null)
-		//	{
-		//		throw new DimpleException("ERROR UUID present, but name is not");
-		//	}
-		//}
+
 		return added;
 	}
 
@@ -2107,10 +2071,11 @@ public class FactorGraph extends FactorBase
 				fnName = Integer.toString(fn.getId());
 			}
 			sb.append(String.format("fn  [%s]\n", fnName));
-			ArrayList<Port> ports = fn.getPorts();
-			for(Port p : ports)
+			
+			for(int i = 0; i < fn.getSiblings().size(); i++)
 			{
-				VariableBase v = (VariableBase)p.getConnectedNodeFlat();
+				VariableBase v = (VariableBase)fn.getSiblings().get(i);
+				
 				String vName = v.getLabel();
 				if(v.getParentGraph() != null && // can happen with boundary variables
 						v.getParentGraph().getParentGraph() != null)
@@ -2139,10 +2104,10 @@ public class FactorGraph extends FactorBase
 				vName = Integer.toString(v.getId());
 			}
 			sb.append(String.format("var [%s]\n", vName));
-			ArrayList<Port> ports = v.getPorts();
-			for(Port p : ports)
+			
+			for(int i = 0; i < v.getSiblings().size(); i++)
 			{
-				Factor fn = (Factor)p.getConnectedNodeFlat();
+				Factor fn = v.getFactors()[i];
 				String fnName = fn.getLabel();
 				if(fn.getParentGraph().getParentGraph() != null)
 				{
@@ -2326,7 +2291,7 @@ public class FactorGraph extends FactorBase
 		HashMap<Integer, ArrayList<INode>> nodesByDegree = new HashMap<Integer, ArrayList<INode>>();
 		for(INode node : nodes)
 		{
-			int degree = node.getPorts().size();
+			int degree = node.getSiblings().size();
 			if(!nodesByDegree.containsKey(degree))
 			{
 				ArrayList<INode> degreeNNodes = new ArrayList<INode>();
@@ -2388,10 +2353,11 @@ public class FactorGraph extends FactorBase
 		FactorList factors = getNonGraphFactorsFlat();
 		for(Factor factor : factors)
 		{
-			ArrayList<Port> ports = factor.getPorts();
-			for(Port port : ports)
+			//ArrayList<Port> ports = factor.getPorts();
+			for (int i = 0; i < factor.getSiblings().size(); i++)
+			//for(Port port : ports)
 			{
-				INode variable = port.getConnectedNodeFlat();
+				INode variable = factor.getConnectedNodeFlat(i);
 				edges.add(new Edge(factor, variable));
 				edges.add(new Edge(variable, factor));
 			}
@@ -2402,17 +2368,6 @@ public class FactorGraph extends FactorBase
 	public double getScore() 
 	{
 		return getSolver().getScore();
-		/*
-		double energy = 0;
-
-		for (VariableBase v : getVariablesTop())
-			energy += v.getEnergy();
-
-		for (FactorBase f : getFactorsTop())
-			energy += f.getEnergy();
-
-		return energy;
-		*/
 	}
 	
 	public double getBetheFreeEnergy()

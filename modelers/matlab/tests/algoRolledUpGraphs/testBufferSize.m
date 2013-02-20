@@ -30,7 +30,7 @@ function testBufferSize()
     assertEqual(length(fg.Variables),6);
     assertEqual(length(fg.Factors),6);
     
-    data = repmat([.4 .6],20,1);
+    data = repmat([.4 .6]',1,20);
     runMMtest(fg,b,data);
 
     %test specifying buffer size later
@@ -47,7 +47,7 @@ function testBufferSize()
     assertEqual(length(fg.Variables),11);
     assertEqual(length(fg.Factors),11);
 
-    data = repmat([.4 .6],20,1);    
+    data = repmat([.4 .6]',1,20);    
     runMMtest(fg,b,data);    
     
     %Test changing buffer size on fly
@@ -63,7 +63,7 @@ function testBufferSize()
     assertEqual(length(fg.Variables),4);
     assertEqual(length(fg.Factors),4);
 
-    data = repmat([.4 .6],20,1);    
+    data = repmat([.4 .6]',1,20);
     
     runMMtest(fg,b,data);
 
@@ -72,7 +72,7 @@ function testBufferSize()
     b = BitStream();
     fg.addFactor(ng,10,b,b.getSlice(2));
     
-    dataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    dataSource = DoubleArrayDataSource(data);
     b.DataSource = dataSource;
 
     fgs = fg.FactorGraphStreams{1};
@@ -82,7 +82,7 @@ function testBufferSize()
     assertEqual(length(fg.Variables),4);
     assertEqual(length(fg.Factors),4);
 
-    data = repmat([.4 .6],20,1);    
+    data = repmat([.4 .6]',1,20);
 
     runMMtest(fg,b,data,dataSource);
     

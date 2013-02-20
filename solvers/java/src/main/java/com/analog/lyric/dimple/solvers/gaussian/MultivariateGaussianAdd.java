@@ -17,9 +17,8 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
-public class MultivariateGaussianAdd extends SFactorBase
+public class MultivariateGaussianAdd extends MultivariateFactorBase
 {
 
 	public MultivariateGaussianAdd(Factor factor) 
@@ -29,7 +28,7 @@ public class MultivariateGaussianAdd extends SFactorBase
 
 	public void updateEdge(int outPortNum)  
 	{
-		MultivariateMsg outMsg = (MultivariateMsg)_factor.getPorts().get(outPortNum).getOutputMsg();
+		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		
 		// TODO Auto-generated method stub
 		//double [] vector = _input.getInformationVector();
@@ -44,12 +43,12 @@ public class MultivariateGaussianAdd extends SFactorBase
 		for (int i = 0; i < matrix.length; i++)
 			matrix[i] = new double[size];
 		
-		for (int i = 0; i < _factor.getPorts().size(); i++ )
+		for (int i = 0; i < _factor.getSiblings().size(); i++ )
 		{
 			if (i != outPortNum)
 			{				
 				//_var.getInputObject();
-				MultivariateMsg inMsg = (MultivariateMsg)_factor.getPorts().get(i).getInputMsg();
+				MultivariateMsg inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getMeans();
 				

@@ -24,17 +24,18 @@ import org.apache.commons.math.random.RandomGenerator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 
 public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs
 {
-    protected double[][] _inPortMsgs = null;
-    protected int[][] _outPortMsgs = null;
+    protected double[][] _inPortMsgs = new double[0][];
+    protected DiscreteSample _outputMsg;
     protected int _numPorts;
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
@@ -46,7 +47,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected int _lengthRoundedUp;
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
-	protected boolean _initCalled = true;
 	protected boolean _holdSampleValue = false;
 
 	public SDiscreteVariable(VariableBase var) 
@@ -54,24 +54,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		super(var);
 		_varDiscrete = (Discrete)_var;
 		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
-		initialize();
-		initializeInputs();
-	}
-
-	public void initializeInputs()
-	{
-		_input = (double[])getDefaultMessage(null);
-
-	}
-	
-	public Object getDefaultMessage(Port port)
-	{
-		DiscreteDomain dd = ((Discrete)_var).getDiscreteDomain();
-		Object [] elements = dd.getElements();
-		int domainLength = elements.length;
-		double[] retVal = new double[domainLength];
-		Arrays.fill(retVal, 0);
-		return retVal;
+		//initialize();
+		//initializeInputs();
 	}
 
 
@@ -82,7 +66,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public void update()
 	{
-		ensureCacheUpdated();
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -131,7 +114,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public Object getBelief() 
 	{
-		ensureCacheUpdated();
 		int domainLength = _input.length;
 		double[] outBelief = new double[domainLength];
 		long sum = 0;
@@ -153,14 +135,22 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public void setInput(Object priors)
 	{
-		double[] vals = (double[])priors;
-		if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
-			throw new DimpleException("Prior size must match domain length");
-		
-		// Convert to energy values
-		_input = new double[vals.length];
-		for (int i = 0; i < vals.length; i++)
-			_input[i] = -Math.log(vals[i]);
+		if (priors == null)
+		{
+			_input = createDefaultMessage();
+
+		}
+		else
+		{
+			double[] vals = (double[])priors;
+			if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
+				throw new DimpleException("Prior size must match domain length");
+			
+			// Convert to energy values
+			_input = new double[vals.length];
+			for (int i = 0; i < vals.length; i++)
+				_input[i] = -Math.log(vals[i]);
+		}
 	}
 	
     public final void saveAllSamples()
@@ -200,15 +190,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	public final void setCurrentSampleIndex(int index)
     {
-		ensureCacheUpdated();
 
 		// Sample from the conditional distribution
 		_sampleIndex = index;
 
 		// Send the sample value to all output ports
-		int numPorts = _outPortMsgs.length;
-		for (int port = 0; port < numPorts; port++) 
-			_outPortMsgs[port][0] = _sampleIndex;
+		_outputMsg.index = index;
+		_outputMsg.value = _varDiscrete.getDiscreteDomain().getElements()[index];
+				
     }
     
     public final Object getCurrentSample()
@@ -276,45 +265,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     }
 	
     
-	public void initialize()
-	{
-		super.initialize();
-		
-		//Flag that init was called so that we can update the cache next time we need cached
-		//values.  We can't do the same thing as the STableFactor (update the cache here)
-		//because the function init gets called after variable init.  If we updated the cache
-		//here, the table function init would replace the arrays for the outgoing message
-		//and our update functions would update stale messages.
-		_initCalled = true;
-
-		_bestSampleIndex = -1;
-		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
-		for (int i = 0; i < messageLength; i++) 
-			_beliefHistogram[i] = 0;
-	}
-
-	protected void updateMessageCache()
-	{
-		if (_initCalled)
-		{
-			_initCalled = false;
-	    	ArrayList<Port> ports = _var.getPorts();
-	    	_numPorts= ports.size();
-		    _inPortMsgs = new double[_numPorts][];
-		    _outPortMsgs = new int[_numPorts][];
-		    
-		    for (int port = 0; port < _numPorts; port++)
-		    {
-		    	_inPortMsgs[port] = (double[])ports.get(port).getInputMsg();
-		    	_outPortMsgs[port] = (int[])ports.get(port).getOutputMsg();
-		    }
-		    
-		    _lengthRoundedUp = Utilities.nextPow2(_input.length);
-		    _samplerScratch = new double[_lengthRoundedUp];
-		    _conditional = new double[_input.length];
-		}
-	}
-	
 	private final int generateSample(double[] energy, double minEnergy)
 	{
 		RandomGenerator rand = GibbsSolverRandomGenerator.rand;
@@ -389,5 +339,105 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		final long expValue = ((long)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
 		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
 	}
+
+	@Override
+	public Object []  createMessages(ISolverFactor factor) 
+	{
+		int portNum = _var.getPortNum(factor.getModelObject());
+    	_numPorts= Math.max(portNum+1, _numPorts);
+    	
+	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, _numPorts);
+	    
+    	_inPortMsgs[portNum] = createDefaultMessage();
+    	if (_outputMsg == null)
+    	{
+    		_outputMsg = new DiscreteSample(0, 0);
+    		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+    	}
+    	
+	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
+	    _samplerScratch = new double[_lengthRoundedUp];
+	    _conditional = new double[_input.length];
+		
+		// TODO Auto-generated method stub
+		return new Object []{_inPortMsgs[portNum],_outputMsg};
+	}
+
+	public double [] createDefaultMessage() 
+	{
+		double[] retVal = new double[((Discrete)_var).getDiscreteDomain().getElements().length];
+		return (double[])resetInputMessage(retVal);
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) 
+	{
+		double [] retval = (double[])message;
+		Arrays.fill(retval, 0);
+		return retval;
+	}
+	
+	@Override
+	public Object resetOutputMessage(Object message)
+	{
+		DiscreteSample ds = (DiscreteSample)message;
+		ds.index = 0;
+		ds.value = _varDiscrete.getDiscreteDomain().getElements()[ds.index];
+		return ds;
+	}
+
+	@Override
+	public void initializeEdge(int portNum) 
+	{
+		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
+		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _outputMsg;
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) 
+	{
+		_inPortMsgs[portIndex] = (double[])obj;
+		
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		_inPortMsgs[thisPortNum] = ((SDiscreteVariable)other)._inPortMsgs[otherPortNum];
+		_outputMsg= ((SDiscreteVariable)other)._outputMsg;
+	}
+	
+
+	public void initialize()
+	{
+		super.initialize();
+		
+		//Flag that init was called so that we can update the cache next time we need cached
+		//values.  We can't do the same thing as the STableFactor (update the cache here)
+		//because the function init gets called after variable init.  If we updated the cache
+		//here, the table function init would replace the arrays for the outgoing message
+		//and our update functions would update stale messages.
+
+		_bestSampleIndex = -1;
+		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
+		for (int i = 0; i < messageLength; i++) 
+			_beliefHistogram[i] = 0;
+	}
+
 	
 }

@@ -31,16 +31,37 @@ public class GaussianSampler extends HybridSampledBPSampler
 
 	private double [] _msg;
 	
-	@Override
-	public void initialize() 
-	{
-		_msg = (double[])_p.getInputMsg();
-	}
 
 	@Override
 	public Object generateSample() 
 	{
 		return _random.nextGaussian()*_msg[1]+_msg[0];
+	}
+
+	@Override
+	public void initialize() 
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetOutputMessage(_msg);
+	}
+
+	@Override
+	public void createMessage(Object msg) 
+	{
+		_msg = (double[])msg;
+	}
+
+
+	@Override
+	public Object getInputMsg() 
+	{
+		return _msg;
+	}
+
+	@Override
+	public void moveMessages(HybridSampledBPSampler other) 
+	{
+		_msg = ((GaussianSampler)other)._msg;		
 	}
 	
 }

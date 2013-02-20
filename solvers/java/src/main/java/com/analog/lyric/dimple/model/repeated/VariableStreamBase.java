@@ -66,7 +66,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 		
 		for (int i = 0; i < _variables.size()-1; i++)
-			_variables.get(i).getSolver().moveInputs(_variables.get(i+1).getSolver());
+			_variables.get(i).moveInputs(_variables.get(i+1));
 
 		if (_dataSource != null)
 		{
@@ -75,7 +75,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 		else
 		{
-			_variables.get(_variables.size()-1).getSolver().initializeInputs();
+			_variables.get(_variables.size()-1).setInputObject(null);
 		}
 	
 	}

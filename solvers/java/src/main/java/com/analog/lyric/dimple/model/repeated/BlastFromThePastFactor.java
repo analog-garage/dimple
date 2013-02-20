@@ -17,54 +17,65 @@
 package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 
 public class BlastFromThePastFactor extends Factor 
 {
+	public static final String BLAST_FROM_THE_PAST_FACTOR_NAME = "BlastFromThePast";
+	private static final BlastFromThePastFactorFunction _factorFunction = new BlastFromThePastFactorFunction();
 	
-	private Object _msg;
-	private Port _port;
-	private Object _initMsg;
-	
-	public BlastFromThePastFactor(int id, VariableBase var, Port factorPort, Object initialMsg) 
+	private static class BlastFromThePastFactorFunction extends FactorFunction
 	{
-		super(id,new NopFactorFunction("BlastFromThePast"),new VariableBase[]{var});		
-		setOutputMsg(initialMsg);
-		_initMsg = initialMsg;
-		_port = factorPort;
+
+		public BlastFromThePastFactorFunction() 
+		{
+			super(BLAST_FROM_THE_PAST_FACTOR_NAME);
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	public BlastFromThePastFactor(int id, VariableBase[] variables) {
+		super(id, _factorFunction, variables);
+		// TODO Auto-generated constructor stub
+	}
+
+	private Port _variablePort;
+	private Port _newVarPort;
+	
+	public BlastFromThePastFactor(int id, VariableBase var, Port oldVariablePort) 
+	{
+		super(id,new NopFactorFunction("BlastFromThePast"),new VariableBase[]{var});
+		_variablePort = oldVariablePort;
+		_newVarPort = new Port(var,-1);
 	}
 
 	public void advance()
 	{
-		setOutputMsg(_port.getOutputMsg());
+		if (_newVarPort.index == -1)
+			_newVarPort.index = _newVarPort.node.getPortNum(this);
+		_newVarPort.node.getSolver().moveMessages(_variablePort.node.getSolver(), _newVarPort.index,_variablePort.index);
 	}
 	
-	public void setOutputMsg(Object msg) 
+	public void setOutputMsg(Object message)
 	{
-		_msg = msg;
-		_ports.get(0).setOutputMsg(_msg);
+		if (_newVarPort.index == -1)
+			_newVarPort.index = _newVarPort.node.getPortNum(this);
+		_newVarPort.node.getSolver().setInputMsg(_newVarPort.index,message);
 	}
-	
-	public void initializePortMsg(Port port)
-	{
-		setOutputMsg(_initMsg);
-	}
-	
 	
 	
 	@Override
 	public void update()  
-	{
-		setOutputMsg(_msg);		
+	{		
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)  
-	{
-		setOutputMsg(_msg);
-		
+	{	
 	}
 	
 	

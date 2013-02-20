@@ -44,7 +44,11 @@ public class MultivariateMsg implements Cloneable
 	{
 		return _isInInformationForm;
 	}
-
+	public MultivariateMsg()
+	{
+		
+	}
+	
 	public MultivariateMsg(double [] means, double [][] covariance)
 	{
 		setMeanAndCovariance(means.clone(), cloneMatrix(covariance));

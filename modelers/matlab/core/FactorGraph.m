@@ -888,6 +888,7 @@ classdef FactorGraph < Node
         
         function genericSolve(obj,threadedFunction,unthreadedFunction)
                         %Calls solve on the underlying solver object.
+            
             if nargin < 3
                 unthreadedFunction = @() error('not supported');
             end
@@ -898,6 +899,7 @@ classdef FactorGraph < Node
                 % CTRL-C.  To account for the possibility of being
                 % interrupted, the onCleanup function terminateSolver makes
                 % sure the solver thread is terminated.
+                
                 if (~obj.VectorObject.isSolverRunning())
                     c = onCleanup(@() obj.terminateSolver());
                     threadedFunction();

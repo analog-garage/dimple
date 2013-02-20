@@ -24,13 +24,14 @@ import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -50,16 +51,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
-	public void initializeMessages()
-	{
-		FactorList fl = _factorGraph.getFactorsFlat();
-		for (Factor f : fl)
-		{
-			f.getSolver().initialize();
-		}
-	}
-	
-	public void moveMessages(ISolverNode other,boolean moveSiblingMessages)
+	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase sother = (SFactorGraphBase)other;
 		FactorList otherFactors = sother._factorGraph.getFactorsFlat();
@@ -70,7 +62,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myFactors.size(); i++)
 		{
-			myFactors.getByIndex(i).getSolver().moveMessages(otherFactors.getByIndex(i).getSolver(),true);
+			ISolverFactor sf = (ISolverFactor)myFactors.getByIndex(i).getSolver();
+			sf.moveMessages(otherFactors.getByIndex(i).getSolver());
 		}
 		
 	}
@@ -126,8 +119,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 				// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
 				if (Thread.interrupted())
 					return;
-				//try {interruptCheck();}
-				//catch (InterruptedException e) {return;}
 			}
 		}
 		else					
@@ -173,11 +164,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public ISolverFactorGraph getRootGraph()
 	{
 		return _factorGraph.getRootGraph().getSolver();
-	}
-
-	@Override
-	public void connectPort(Port p) 
-	{
 	}
 
 	public double getBetheFreeEnergy()
@@ -245,6 +231,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return sum;
 	}
 
+	public ISolverFactor createFactor(Factor factor)  
+	{
+		if (factor.getFactorFunction().getName() == BlastFromThePastFactor.BLAST_FROM_THE_PAST_FACTOR_NAME)
+			return new SBlastFromThePast(factor);
+		else
+			return null;
+	}
 
 	/***********************************************
 	 * 
@@ -495,5 +488,32 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
+	{
+		throw new DimpleException("Not supported");
+		
+	}
+	
+	@Override
+	public void initializeEdge(int portNum) {
+		// TODO Auto-generated method stub
+		throw new DimpleException("Not supported");
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		throw new DimpleException("Not supported by " + this);
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		throw new DimpleException("Not supported by " + this);
+	}
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		throw new DimpleException("Not supported by " + this);
+	}
 	
 }

@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.INode;
 
 /*
  * Provides the update and updateEdge logic for minsum
@@ -33,20 +33,19 @@ public class TableFactorEngine
 	{
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();
-		//_factorTable = _tableFactor.getFactorTable();
 	}
 	
 	public void updateEdge(int outPortNum) 
 	{
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> siblings = _factor.getSiblings();
 		
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getPotentials();
 	    int tableLength = table.length;
-	    int numPorts = ports.size();
+	    int numPorts = siblings.size();
 
 
-        double[] outputMsgs = _tableFactor._outPortMsgs[outPortNum];
+        double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
         int outputMsgLength = outputMsgs.length;
         
         if (_tableFactor._dampingInUse)
@@ -64,6 +63,8 @@ public class TableFactorEngine
         for (int i = 0; i < outputMsgLength; i++) 
         	outputMsgs[i] = Double.POSITIVE_INFINITY;
 
+        double [][] inPortMsgs = _tableFactor.getInPortMsgs();
+        
 	    // Run through each row of the function table
         for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
         {
@@ -73,7 +74,7 @@ public class TableFactorEngine
 
         	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
         		if (inPortNum != outPortNum)
-        			L += _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+        			L += inPortMsgs[inPortNum][tableRow[inPortNum]];
         	
         	if (L < outputMsgs[outputIndex]) 
         		outputMsgs[outputIndex] = L;				// Use the minimum value
@@ -112,12 +113,12 @@ public class TableFactorEngine
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getPotentials();
 	    int tableLength = table.length;
-	    int numPorts = _factor.getPorts().size();
-	    
+	    int numPorts = _factor.getSiblings().size();
+	    double [][] outPortMsgs = _tableFactor.getOutPortMsgs();
 
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	double[] outputMsgs = _tableFactor._outPortMsgs[port];
+	    	double[] outputMsgs = outPortMsgs[port];
 	    	int outputMsgLength = outputMsgs.length;
 	    	
 	    	if (_tableFactor._dampingInUse)
@@ -135,6 +136,7 @@ public class TableFactorEngine
 	    		outputMsgs[i] = Double.POSITIVE_INFINITY;
 	    }
 	    
+	    double [][] inPortMsgs = _tableFactor.getInPortMsgs();
 
 	    // Run through each row of the function table
 	    for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
@@ -144,14 +146,14 @@ public class TableFactorEngine
 	    	// Sum up the function value plus the messages on all ports
 	    	double L = values[tableIndex]; 
 	    	for (int port = 0; port < numPorts; port++)
-	    		L += _tableFactor._inPortMsgs[port][tableRow[port]];
+	    		L += inPortMsgs[port][tableRow[port]];
 
 			// Run through each output port
 	    	for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
 	    	{
-	    		double[] outputMsgs = _tableFactor._outPortMsgs[outPortNum];
+	    		double[] outputMsgs = outPortMsgs[outPortNum];
 	    		int outputIndex = tableRow[outPortNum];											// Index for the output value
-	    		double LThisPort = L - _tableFactor._inPortMsgs[outPortNum][tableRow[outPortNum]];			// Subtract out the message from this output port
+	    		double LThisPort = L - inPortMsgs[outPortNum][tableRow[outPortNum]];			// Subtract out the message from this output port
 	    		if (LThisPort < outputMsgs[outputIndex]) 
 	    			outputMsgs[outputIndex] = LThisPort;	// Use the minimum value
 	    	}
@@ -166,7 +168,7 @@ public class TableFactorEngine
 	    		if (damping != 0)
 	    		{
 	    			double[] saved = _tableFactor._savedOutMsgArray[port];
-	    			double[] outputMsgs = _tableFactor._outPortMsgs[port];
+	    			double[] outputMsgs = outPortMsgs[port];
 
 	    			int outputMsgLength = outputMsgs.length;
 	    			for (int i = 0; i < outputMsgLength; i++)
@@ -180,7 +182,7 @@ public class TableFactorEngine
 	    // Normalize the outputs
 	    for (int port = 0; port < numPorts; port++)
 	    {
-    		double[] outputMsgs = _tableFactor._outPortMsgs[port];
+    		double[] outputMsgs = outPortMsgs[port];
     		int outputMsgLength = outputMsgs.length;
 	    	double minPotential = Double.POSITIVE_INFINITY; 
 	    	for (int i = 0; i < outputMsgLength; i++)

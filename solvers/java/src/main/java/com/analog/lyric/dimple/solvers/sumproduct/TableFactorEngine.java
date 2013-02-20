@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.INode;
 
 /*
  * Provides the update and updateEdge logic for sumproduct
@@ -38,14 +38,14 @@ public class TableFactorEngine
 	
 	public void updateEdge(int outPortNum) 
 	{
-		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> siblings = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getWeights();
 	    int tableLength = table.length;
-	    int numPorts = ports.size();
+	    int numPorts = siblings.size();
 	    
-        double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
+        double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
+        double [][] inputMsgs = _tableFactor.getInPortMsgs();
         
         if (_tableFactor._dampingInUse)
         {
@@ -71,7 +71,7 @@ public class TableFactorEngine
     		
         	for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
         		if (inPortNum != outPortNum)
-        			prob *= _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+        			prob *= inputMsgs[inPortNum][tableRow[inPortNum]];
         	
         	outputMsgs[outputIndex] += prob;
         }
@@ -107,16 +107,19 @@ public class TableFactorEngine
 	{				
 
 		
-		ArrayList<Port> ports = _factor.getPorts();
+		ArrayList<INode> ports = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndices();
 	    double[] values = _tableFactor.getFactorTable().getWeights();
 	    int tableLength = table.length;
 	    int numPorts = ports.size();
 	    
 	    
+	    double [][] outMsgs = _tableFactor.getOutPortMsgs();
+	    double [][] inMsgs = _tableFactor.getInPortMsgs();
+	    
 	    for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
 	    {
-	    	double[] outputMsgs = _tableFactor._outMsgArray[outPortNum];
+	    	double[] outputMsgs = outMsgs[outPortNum];
 	    		    	
 	    	if (_tableFactor._dampingInUse)
 	    	{
@@ -141,7 +144,7 @@ public class TableFactorEngine
 	    		for (int inPortNum = 0; inPortNum < numPorts; inPortNum++)
 	    			if (inPortNum != outPortNum)
 	    			{	    				
-	    				prob *= _tableFactor._inPortMsgs[inPortNum][tableRow[inPortNum]];
+	    				prob *= inMsgs[inPortNum][tableRow[inPortNum]];
 	    			}
 	    		outputMsgs[outputIndex] += prob;
 	    	}

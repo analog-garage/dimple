@@ -40,6 +40,6 @@ public abstract class FactorBase extends Node
 	@Override
 	public FactorGraph asFactorGraph() { return null; }
 
-	public abstract void initialize();
+	//public abstract void initialize();
 }
 

@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import com.analog.lyric.dimple.model.Port;
 
+
 public class BatchScheduleEntry implements IScheduleEntry 
 {
 	private ArrayList<IScheduleEntry> _entries;

@@ -21,6 +21,8 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class DummyVariable extends SVariableBase
@@ -61,14 +63,21 @@ public class DummyVariable extends SVariableBase
 
 	public void setInput(Object input) 
 	{
-		double [] vals = (double[])input;
-
-		int len = _varDiscrete.getDiscreteDomain().getElements().length;
-		
-		if (vals.length != len)
-			throw new DimpleException("length of priors does not match domain");
-
-		_input = vals;
+		if (input == null)
+		{
+			_input = null;
+		}
+		else
+		{
+			double [] vals = (double[])input;
+	
+			int len = _varDiscrete.getDiscreteDomain().getElements().length;
+			
+			if (vals.length != len)
+				throw new DimpleException("length of priors does not match domain");
+	
+			_input = vals;
+		}
 
 	}	
 
@@ -85,6 +94,50 @@ public class DummyVariable extends SVariableBase
 	public Object getBelief()
 	{
 		return _input;
+	}
+
+
+	@Override
+	public Object[] createMessages(ISolverFactor factor) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void initializeEdge(int portNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

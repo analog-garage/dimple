@@ -16,18 +16,23 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
-
 public interface ISolverVariable extends ISolverNode
 {
 	public void setInput(Object input);
-	public Object getDefaultMessage(Port port);
 	public Object getBelief();
 	public Object getValue();
-	public void remove(Factor factor);
     public void setGuess(Object guess);
     public Object getGuess();
-    public void moveInputs(ISolverVariable other);
-    public void initializeInputs();
+    
+    //Create messages that will be passed to and from the specified factor.
+    //This method should return an Object array with two elements, the first
+    //being the newly created input message and the second being the newly created
+    //output message.
+    public Object [] createMessages(ISolverFactor factor);
+    
+    //Method to reset an input message's values
+	public Object resetInputMessage(Object message);
+	
+	//Method to reset an output message's values
+	public Object resetOutputMessage(Object message);
 }

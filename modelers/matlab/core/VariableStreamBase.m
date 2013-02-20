@@ -22,13 +22,17 @@ classdef VariableStreamBase < IVariableStreamSlice
         IVariableStreamSlice;
         Size;
         Variables;
+        Dimensions;
     end
-    
-    
     
     methods
         
-        function obj = VariableStreamBase(IVariableStream)
+        function obj = VariableStreamBase(IVariableStream,varargin)
+            
+            obj.Dimensions = cell2mat(varargin);
+            if isempty(obj.Dimensions)
+                obj.Dimensions = [1 1];
+            end
             obj.IVariableStream = IVariableStream;
         end
 
@@ -41,7 +45,7 @@ classdef VariableStreamBase < IVariableStreamSlice
         end
         
         function ret = get.Size(obj)
-            obj.IVariableStream.size();
+            ret = obj.IVariableStream.size();
         end
         
         function vars = get.Variables(obj)
@@ -87,7 +91,7 @@ classdef VariableStreamBase < IVariableStreamSlice
         end
         
         function setDataSource(obj,dataSource)
-           obj.IVariableStream.setDataSource(dataSource); 
+           obj.IVariableStream.setDataSource(dataSource.IDataSource); 
         end
         
         function sink = getDataSink(obj)

@@ -16,16 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SRealVariable extends SRealVariableBase
 {
@@ -38,11 +39,10 @@ public class SRealVariable extends SRealVariableBase
 	protected boolean _initialParticleRangeSet = false;
 	protected FactorFunction _input;
 	protected RealDomain _domain;
-	double[][] _inPortMsgs;
-	double[][] _logInPortMsgs;
-	ParticleBPSolverVariableToFactorMessage[] _outMsgArray;
+	double[][] _inPortMsgs = new double[0][];
+	double[][] _logInPortMsgs = new double[0][];
+	ParticleBPSolverVariableToFactorMessage[] _outMsgArray = new ParticleBPSolverVariableToFactorMessage[0];
 	double [] _logWeight;
-	boolean _initCalled = true;
 	protected double _beta = 1;
 
 
@@ -56,45 +56,17 @@ public class SRealVariable extends SRealVariableBase
 
 		_domain = (RealDomain)var.getDomain();
 
-		initialize();
-	}
-
-	public void initializeInputs()
-	{
-		_input = null;
-	}
-	
-	// Default factor-to-variable (input) message
-	public Object getDefaultMessage(Port port) {return getDefaultFactorToVariableMessage(port);}
-	public Object getDefaultFactorToVariableMessage(Port port)
-	{
-		double[] retVal = new double[_numParticles];
-		double val = 1.0/retVal.length;
-		for (int i = 0; i < retVal.length; i++)
-			retVal[i] = val;
-		return retVal;
-	}
-
-	// Default variable-to-factor (output) message (this function is used by the factor)
-	public Object getDefaultVariableToFactorMessage(Port port)
-	{
-		ParticleBPSolverVariableToFactorMessage message = new ParticleBPSolverVariableToFactorMessage(_numParticles);
-		message.particleValues = _particleValues;		// All the output particle values are the same
-		return message;
 	}
 
 	public void updateEdge(int outPortNum)
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getPorts().size();
+		int D = _var.getSiblings().size();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
-		for (int d = 0; d < D; d++) 
-			_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
 
-		//        double[] outMsgs = _outMsgArray[outPortNum].messageValues;
-		double[] outMsgs = ((ParticleBPSolverVariableToFactorMessage)(_var.getPorts().get(outPortNum).getOutputMsg())).messageValues;
+		double[] outMsgs = _outMsgArray[outPortNum].messageValues;
 
 		for (int m = 0; m < M; m++)
 		{
@@ -138,13 +110,8 @@ public class SRealVariable extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getPorts().size();
+		int D = _var.getSiblings().size();
 
-		for (int d = 0; d < D; d++) 
-		{
-			_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
-			_outMsgArray[d] = (ParticleBPSolverVariableToFactorMessage)(_var.getPorts().get(d).getOutputMsg());
-		}
 
 		//Compute alphas
 		double[] alphas = new double[M];
@@ -207,7 +174,7 @@ public class SRealVariable extends SRealVariableBase
 
 	public void resample()
 	{
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
@@ -233,7 +200,7 @@ public class SRealVariable extends SRealVariableBase
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = _var.getPorts().get(portIndex).getConnectedNode();
+				INode factorNode = _var.getSiblings().get(portIndex);
 				int factorPortNumber = 0;
 				try {
 					factorPortNumber = factorNode.getPortNum(_var);
@@ -243,7 +210,7 @@ public class SRealVariable extends SRealVariableBase
 					e.printStackTrace(); System.exit(1);
 				}
 				
-				SRealFactor factor = (SRealFactor)(_var.getPorts().get(portIndex).getConnectedNode().getSolver());
+				SRealFactor factor = (SRealFactor)(_var.getSiblings().get(portIndex).getSolver());
 				potential += factor.getMarginalPotential(sampleValue, factorPortNumber);
 			}
 
@@ -265,10 +232,10 @@ public class SRealVariable extends SRealVariableBase
 
 					for (int portIndex = 0; portIndex < numPorts; portIndex++)
 					{
-						INode factorNode = _var.getPorts().get(portIndex).getConnectedNode();
+						INode factorNode = _var.getSiblings().get(portIndex);
 						int factorPortNumber = 0;
 						try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
-						SRealFactor factor = (SRealFactor)(_var.getPorts().get(portIndex).getConnectedNode().getSolver());
+						SRealFactor factor = (SRealFactor)(_var.getSiblings().get(portIndex).getSolver());
 						potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
 					}
 
@@ -289,10 +256,10 @@ public class SRealVariable extends SRealVariableBase
 			// Update the incoming messages for the new particle value
 			for (int d = 0; d < numPorts; d++)
 			{
-				INode factorNode = _var.getPorts().get(d).getConnectedNode();
+				INode factorNode = _var.getSiblings().get(d);
 				int factorPortNumber = 0;
 				try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
-				SRealFactor factor = (SRealFactor)(_var.getPorts().get(d).getConnectedNode().getSolver());
+				SRealFactor factor = (SRealFactor)(_var.getSiblings().get(d).getSolver());
 				_inPortMsgs[d][m] = Math.exp(factor.getMarginalPotential(sampleValue, factorPortNumber));
 			}
 
@@ -312,11 +279,9 @@ public class SRealVariable extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = _numParticles;
-		int D = _var.getPorts().size();
+		int D = _var.getSiblings().size();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
-		for (int d = 0; d < D; d++) 
-			_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
 
 		double[] outBelief = new double[M];
 
@@ -361,11 +326,9 @@ public class SRealVariable extends SRealVariableBase
 	{
 		final double minLog = -100;
 		int M = valueSet.length;
-		int D = _var.getPorts().size();
+		int D = _var.getSiblings().size();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
-		for (int d = 0; d < D; d++) 
-			_inPortMsgs[d] = (double[])_var.getPorts().get(d).getInputMsg();
 
 		double[] outBelief = new double[M];
 
@@ -379,9 +342,9 @@ public class SRealVariable extends SRealVariableBase
 
 			for (int d = 0; d < D; d++)
 			{
-				INode factorNode = _var.getPorts().get(d).getConnectedNode();
+				INode factorNode = _var.getSiblings().get(d);
 				int factorPortNumber = factorNode.getPortNum(_var);
-				SRealFactor factor = (SRealFactor)(_var.getPorts().get(d).getConnectedNode().getSolver());
+				SRealFactor factor = (SRealFactor)(_var.getSiblings().get(d).getSolver());
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}
 
@@ -415,9 +378,8 @@ public class SRealVariable extends SRealVariableBase
 	public void setNumParticles(int numParticles)
 	{
 		_numParticles = numParticles;
-
-		// Re-initialize
-		initialize();
+		for (int i = 0; i < _var.getSiblings().size(); i++)
+			_var.getFactors()[i].getSolver().createMessages();
 	}
 	public int getNumParticles() {return _numParticles;}
 
@@ -443,7 +405,10 @@ public class SRealVariable extends SRealVariableBase
 
 	public void setInput(Object input) 
 	{
-		_input = (FactorFunction)input;
+		if (input == null)
+			_input = null;
+		else
+			_input = (FactorFunction)input;
 	}
 
 	public double getScore()
@@ -455,14 +420,77 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 
-	public void initialize()
+	public void remove(Factor factor)
 	{
-		_initCalled = true;
-
+	}
+	
+	@Override
+	public Object[] createMessages(ISolverFactor factor) 
+	{
 		_particleValues = new Double[_numParticles];
+		for (int i = 0; i < _particleValues.length; i++)
+			_particleValues[i] = 0.0;
 		_logWeight = new double[_numParticles];
+
+		int portNum = _var.getPortNum(factor.getModelObject());
+		int numPorts = Math.max(_inPortMsgs.length, portNum+1);
+		
+		_inPortMsgs = Arrays.copyOf(_inPortMsgs,numPorts);
+		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs,numPorts);
+		_outMsgArray = Arrays.copyOf(_outMsgArray,numPorts); 
+		
+
+		_inPortMsgs[portNum] = getDefaultFactorToVariableMessage();
+		_logInPortMsgs[portNum] = new double[_numParticles];
+
+			// Overwrite the output message so that it can be created in the correct form
+		_outMsgArray[portNum] = getDefaultVariableToFactorMessage();
+	
+
+		// TODO Auto-generated method stub
+		return new Object [] {_inPortMsgs[portNum],_outMsgArray[portNum]};
+	}
+
+
+	@Override
+	public void initializeEdge(int portNum) 
+	{
+		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
+		_outMsgArray[portNum] = (ParticleBPSolverVariableToFactorMessage)resetOutputMessage(_outMsgArray[portNum]);
+	}
+
+	
+	public ParticleBPSolverVariableToFactorMessage getDefaultVariableToFactorMessage()
+	{
+		ParticleBPSolverVariableToFactorMessage message = new ParticleBPSolverVariableToFactorMessage(_numParticles);
+		return (ParticleBPSolverVariableToFactorMessage)resetOutputMessage(message);
+	}
+
+	public double [] getDefaultFactorToVariableMessage()
+	{
+		double[] retVal = new double[_numParticles];
+		retVal = (double[])resetInputMessage(retVal);
+		return retVal;
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) {
+		// TODO Auto-generated method stub
+		double[] tmp = (double[])message;
+		double val = 1.0/tmp.length;
+		for (int i = 0; i < tmp.length; i++)
+			tmp[i] = val;
+
+		return tmp;
+	}
+
+	@Override
+	public Object resetOutputMessage(Object message) 
+	{
+		
 		double particleMin = 0;
 		double particleMax = 0;
+		
 		if (_initialParticleRangeSet)
 		{
 			particleMin = _initialParticleMin;
@@ -476,38 +504,52 @@ public class SRealVariable extends SRealVariableBase
 				particleMax = _domain.getUpperBound();
 			}
 		}
-		double particleIncrement = (_numParticles > 1) ? (particleMax - particleMin) / (_numParticles - 1) : 0;
-		double particleValue = particleMin;
-		for (int i = 0; i < _numParticles; i++)
-		{
-			_logWeight[i] = 0;
-			_particleValues[i] = particleValue;
-			particleValue += particleIncrement;
-		}
 
-		int numPorts = _var.getPorts().size();
-		_inPortMsgs = new double[numPorts][];
-		_logInPortMsgs = new double[numPorts][];
-		_outMsgArray = new ParticleBPSolverVariableToFactorMessage[numPorts];
-		ArrayList<Port> ports = _var.getPorts();
-		for (int iPort = 0; iPort < numPorts; iPort++)
-		{
-			Port port = ports.get(iPort);
-			_inPortMsgs[iPort] = (double[])port.getInputMsg();
-			_logInPortMsgs[iPort] = new double[_numParticles];
+		int length = _particleValues.length;
+    	double particleIncrement = (length > 1) ? (particleMax - particleMin) / (length - 1) : 0;
+    	double particleValue = particleMin;
+    	
+    	for (int i = 0; i < length; i++)
+    	{
+    		_particleValues[i] = particleValue;
+    		particleValue += particleIncrement;
+    	}
 
-			// Overwrite the output message so that it can be created in the correct form
-			ParticleBPSolverVariableToFactorMessage outMessage = new ParticleBPSolverVariableToFactorMessage(_numParticles, particleMin, particleMax);
-			outMessage.particleValues = _particleValues;		// All the output particle values are the same, so overwrite the particle array
-			_outMsgArray[iPort] = outMessage;
-			port.setOutputMsg(outMessage);
-		}
-
+		ParticleBPSolverVariableToFactorMessage m = (ParticleBPSolverVariableToFactorMessage)message;
+		
+		m.particleValues = _particleValues;
+		
+		return m;
 	}
 
-	public void remove(Factor factor)
+	
+	@Override
+	public Object getInputMsg(int portIndex) 
 	{
-		_initCalled = true;
+		// TODO Auto-generated method stub
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		// TODO Auto-generated method stub
+		return _outMsgArray[portIndex];
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) 
+	{
+		_inPortMsgs[portIndex] = (double[])obj;
+		
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		throw new DimpleException("not supported");
+		
 	}
 
 }

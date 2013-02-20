@@ -1,18 +1,18 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
@@ -21,13 +21,15 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs
 {
+	protected ObjectSample _outputMsg;
 	protected double _sampleValue;
 	protected double _initialSampleValue = 0;
 	protected FactorFunction _input;
@@ -47,18 +49,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			throw new DimpleException("expected real domain");
 
 		_domain = (RealDomain)var.getDomain();
-		initialize();
-		initializeInputs();
-	}
-
-	public void initializeInputs()
-	{
-		_input = null;
-	}
-	
-	public Object getDefaultMessage(Port port)
-	{
-		return _initialSampleValue;
 	}
 
 
@@ -72,7 +62,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 
@@ -94,9 +84,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			}
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = _var.getPorts().get(portIndex).getConnectedNode();
+				INode factorNode = _var.getSiblings().get(portIndex);
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ISolverRealFactorGibbs factor = (ISolverRealFactorGibbs)(_var.getPorts().get(portIndex).getConnectedNode().getSolver());
+				ISolverRealFactorGibbs factor = (ISolverRealFactorGibbs)(_var.getSiblings().get(portIndex).getSolver());
 				LPrevious += factor.getConditionalPotential(_sampleValue, factorPortNumber);
 				LProposed += factor.getConditionalPotential(proposalValue, factorPortNumber);
 			}
@@ -111,7 +101,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 				setCurrentSample(proposalValue);
 		}
 	}
-	
+
 	public void randomRestart()
 	{
 		// If the sample value is being held, don't modify the value
@@ -137,9 +127,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public void setInput(Object input) 
 	{
-		_input = (FactorFunction)input;
+		if (input == null)
+			_input = null;
+		else
+			_input = (FactorFunction)input;
 	}
-	
+
 	public final double getScore()
 	{
 		if (_guessWasSet)
@@ -175,11 +168,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public final void setCurrentSample(double value)
 	{
 		_sampleValue = value;
-		
-		ArrayList<Port> ports = _var.getPorts();
-		int numPorts = ports.size();
-		for (int port = 0; port < numPorts; port++) 
-			ports.get(port).setOutputMsg((Double)_sampleValue);
+		_outputMsg.value = _sampleValue;
 	}
 
 	public final double getCurrentSample()
@@ -191,7 +180,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		return _bestSampleValue;
 	}
-	
+
 	public final double[] getAllSamples()
 	{
 		int length = _sampleArray.size();
@@ -200,18 +189,18 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			retval[i] = _sampleArray.get(i);
 		return retval;
 	}
-	
+
 	public final void setAndHoldSampleValue(Double value)
 	{
 		setCurrentSample(value);
 		holdSampleValue();
 	}
-	
+
 	public final void holdSampleValue()
 	{
 		_holdSampleValue = true;
 	}
-	
+
 	public final void releaseSampleValue()
 	{
 		_holdSampleValue = false;
@@ -232,10 +221,64 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public void initialize()
 	{
+		super.initialize();
+
 		if (!_holdSampleValue)
 			setCurrentSample(_initialSampleValue);
 		_bestSampleValue = _initialSampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
+	}
+
+	@Override
+	public Object [] createMessages(ISolverFactor factor) 
+	{
+		if (_outputMsg == null)
+			_outputMsg = createDefaultMessage();
+		return new Object [] {null,_outputMsg};
+	}
+
+	public ObjectSample createDefaultMessage() 
+	{
+		return new ObjectSample(_initialSampleValue);
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) 
+	{
+		((ObjectSample)message).value = _initialSampleValue;
+		return message;
+	}
+
+	@Override
+	public void initializeEdge(int portNum) 
+	{
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		throw new DimpleException("Not supported by: " + this);	
+
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outputMsg;	
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) 
+	{
+				
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) 
+	{
+		throw new DimpleException("Not supported by: " + this);
+
 	}
 
 }

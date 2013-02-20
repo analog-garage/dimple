@@ -34,8 +34,8 @@ function testTwoStreams()
     csrc = DoubleArrayDataSource();
 
 
-    bsrc.add(repmat([.8 .2],5,1));
-    csrc.add(repmat([.6 .4],5,1));
+    bsrc.add(repmat([.8 .2]',1,5));
+    csrc.add(repmat([.6 .4]',1,5));
 
     b.DataSource = bsrc;
     c.DataSource = csrc;
@@ -96,7 +96,7 @@ function testTwoStreams()
     ng2.addFactor(@constFactor,v,in2);
 
     s = BitStream();
-    data = repmat([.6 .4],20,1);
+    data = repmat([.6 .4]',1,20);
     s.DataSource = DoubleArrayDataSource(data);
 
     fg = FactorGraph();

@@ -19,11 +19,10 @@ package com.analog.lyric.dimple.solvers.gaussian;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
 
 
-public class GaussianConstMult extends SFactorBase
+public class GaussianConstMult extends GaussianFactorBase
 {
 
 	private double _constant;
@@ -34,7 +33,7 @@ public class GaussianConstMult extends SFactorBase
 		super(factor);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
-		if (factor.getPorts().size() != 2)
+		if (factor.getSiblings().size() != 2)
 			throw new DimpleException("factor must be of form a = b*c where b or c is a constant");
 		
 		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
@@ -43,8 +42,8 @@ public class GaussianConstMult extends SFactorBase
 		double constant = (Double)ff.getConstants()[0];
 		
 		
-		VariableBase a = (VariableBase)factor.getPorts().get(0).getConnectedNode();
-		VariableBase b = (VariableBase)factor.getPorts().get(1).getConnectedNode();
+		VariableBase a = (VariableBase)factor.getSiblings().get(0);
+		VariableBase b = (VariableBase)factor.getSiblings().get(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -73,8 +72,8 @@ public class GaussianConstMult extends SFactorBase
 
 	public void updateProduct()
 	{
-		double [] outMsg = (double[])_factor.getPorts().get(0).getOutputMsg();
-		double [] inMsg = (double[])_factor.getPorts().get(_varIndex).getInputMsg();
+		double [] outMsg = _outputMsgs[0];
+		double [] inMsg = _inputMsgs[_varIndex];
 		
 		//Up = C*Uv
 		outMsg[0] = inMsg[0]*_constant;
@@ -86,8 +85,8 @@ public class GaussianConstMult extends SFactorBase
 
 	public void updateVariable()
 	{
-		double [] outMsg = (double[])_factor.getPorts().get(_varIndex).getOutputMsg();
-		double [] inMsg = (double[])_factor.getPorts().get(0).getInputMsg();
+		double [] outMsg = _outputMsgs[_varIndex];
+		double [] inMsg = _inputMsgs[0];
 		
 		//Uv = Up/C
 		outMsg[0] = inMsg[0]/_constant;

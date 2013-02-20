@@ -31,17 +31,8 @@ public class DiscreteSampler extends HybridSampledBPSampler
 	{
 		super(p, random);
 		// TODO Auto-generated constructor stub
-	}
-
-	private double [] _msg;
-	private Object [] _domain;
-	
-	@Override
-	public void initialize()  
-	{
-		// TODO Auto-generated method stub
-		_msg = (double[])_p.getInputMsg();
-		INode n = _p.getConnectedNode();
+		
+		INode n = _p.node.getSiblings().get(_p.index);
 		
 		if (! (n instanceof Discrete))
 			throw new DimpleException("expected Discrete");
@@ -49,7 +40,13 @@ public class DiscreteSampler extends HybridSampledBPSampler
 		Discrete d = (Discrete)n;
 		
 		_domain = d.getDiscreteDomain().getElements();
+
 	}
+
+	private double [] _msg;
+	private Object [] _domain;
+	
+
 
 	@Override
 	public Object generateSample() 
@@ -75,6 +72,33 @@ public class DiscreteSampler extends HybridSampledBPSampler
 		
 		
 		return _domain[_domain.length-1];
+	}
+	
+	@Override
+	public void initialize()  
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetInputMessage(_msg);
+		
+	}
+
+	@Override
+	public void createMessage(Object msg) 
+	{
+		_msg = (double[])msg;		
+	}
+
+	@Override
+	public Object getInputMsg() 
+	{
+		// TODO Auto-generated method stub
+		return _msg;
+	}
+
+	@Override
+	public void moveMessages(HybridSampledBPSampler other) 
+	{
+		_msg = ((DiscreteSampler)other)._msg;
 	}
 
 }

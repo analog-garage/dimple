@@ -16,16 +16,23 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.repeated.RealJointStream;
+import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
 
 public class PRealJointStream extends PVariableStreamBase 
 {
-	public PRealJointStream(PRealJointDomain domain)  
+	public PRealJointStream(PRealJointDomain domain, int numVars)  
 	{
-		super(new RealJointStream((RealJointDomain)domain.getModelerObject()));
-		// TODO Auto-generated constructor stub
+		super(domain.getModelerObject(),numVars);
+	}
+
+	@Override
+	protected VariableStreamBase createVariable(Domain domain) 
+	{
+		return new RealJointStream((RealJointDomain)domain);
 	}
 
 }

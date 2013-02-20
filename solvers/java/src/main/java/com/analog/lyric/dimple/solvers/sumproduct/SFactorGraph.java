@@ -147,11 +147,11 @@ public class SFactorGraph extends SFactorGraphBase
 	protected void setDampingForTableFunction(STableFactor tf)
 	{
 		
-		for (int i = 0; i < tf.getFactor().getPorts().size(); i++)
+		for (int i = 0; i < tf.getFactor().getSiblings().size(); i++)
 		{
 			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)tf.getFactor().getPorts().get(i).getConnectedNode();
-			for (int j = 0; j < var.getPorts().size(); j++)
+			VariableBase var = (VariableBase)tf.getFactor().getConnectedNodesFlat().getByIndex(i);
+			for (int j = 0; j < var.getSiblings().size(); j++)
 			{
 				SVariable svar = (SVariable)var.getSolver();
 				svar.setDamping(j,_damping);
@@ -275,6 +275,9 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		return _currentFactorTable;
 	}
+
+
+
 	
 
 }

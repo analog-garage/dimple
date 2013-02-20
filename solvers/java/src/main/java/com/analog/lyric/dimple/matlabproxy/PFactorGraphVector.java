@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
@@ -359,20 +360,23 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public PFactorGraphStream addRepeatedFactor(PFactorGraphVector nestedGraph, int bufferSize,Object ... vars) 
 	{
-		Object [] arr = new Object[vars.length];
-		for (int i = 0; i < arr.length; i++)
+		//Object [] arr = new Object[vars.length];
+		ArrayList<Object> al = new ArrayList<Object>(); 
+				
+		for (int i = 0; i < vars.length; i++)
 		{
 			if (vars[i] instanceof PVariableVector)
 			{
 				PVariableVector pvv = (PVariableVector)vars[i];
 				if (pvv.size() != 1)
 					throw new DimpleException("only support one var for now");
-				
-				arr[i] = pvv.getModelerNode(0);
+				al.add(pvv.getModelerNode(0));
 			}
 			else if (vars[i] instanceof IPVariableStreamSlice)
 			{
-				arr[i] = ((IPVariableStreamSlice)vars[i]).getModelerObject();
+				IVariableStreamSlice [] slices = ((IPVariableStreamSlice)vars[i]).getModelerObjects();
+				for (int j = 0; j < slices.length; j++)
+					al.add(slices[j]);
 			}
 			else
 			{
@@ -381,8 +385,9 @@ public class PFactorGraphVector extends PFactorVector
 			}
 		}
 		
-		FactorGraphStream rfg = getGraph().addRepeatedFactor(nestedGraph.getGraph(), bufferSize, arr);
-		
+		Object [] newarray = al.toArray();
+	
+		FactorGraphStream rfg = getGraph().addRepeatedFactor(nestedGraph.getGraph(), bufferSize, newarray);
 		return new PFactorGraphStream(rfg);
 	}
 
@@ -637,7 +642,8 @@ public class PFactorGraphVector extends PFactorVector
 		
 		for (int i = 0; i < retval.length; i++)
 		{
-			retval[i] = new PFactorGraphStream(getGraph().getFactorGraphStreams().get(i));
+			FactorGraphStream fgs = getGraph().getFactorGraphStreams().get(i);
+			retval[i] = new PFactorGraphStream(fgs);
 		}
 		
 		return retval;

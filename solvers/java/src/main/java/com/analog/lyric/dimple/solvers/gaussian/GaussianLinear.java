@@ -16,15 +16,11 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
-public class GaussianLinear extends SFactorBase
+public class GaussianLinear extends GaussianFactorBase
 {
 	private double [] _constants;
 	private double _total;
@@ -55,7 +51,7 @@ public class GaussianLinear extends SFactorBase
 			_total = (Double)constants[1];
 		}
 		
-		if (factor.getPorts().size() != _constants.length)
+		if (factor.getSiblings().size() != _constants.length)
 			throw new DimpleException("Length of constants must equal the size of the number of variables");
 		
 	}
@@ -65,7 +61,6 @@ public class GaussianLinear extends SFactorBase
 	@Override
 	public void updateEdge(int outPortNum) 
 	{
-		ArrayList<Port> ports = _factor.getPorts();
 
 		double mu;
 		double sigma;
@@ -82,11 +77,11 @@ public class GaussianLinear extends SFactorBase
 			mu = _total;
 			double sigma2 = 0;
 			
-			for (int i = 0; i < ports.size(); i++)
+			for (int i = 0; i < _inputMsgs.length; i++)
 			{
 				if (i != outPortNum)
 				{
-					double [] msg = (double[])ports.get(i).getInputMsg();
+					double [] msg = _inputMsgs[i];
 					mu -= msg[0] * _constants[i];
 					sigma2 += _constants[i]*_constants[i]*msg[1]*msg[1];
 				}
@@ -99,7 +94,7 @@ public class GaussianLinear extends SFactorBase
 			sigma = Math.sqrt(sigma2);
 		}
 		 
-		double [] msg = (double[])ports.get(outPortNum).getOutputMsg();
+		double [] msg = _outputMsgs[outPortNum];
 		msg[0] = mu;
 		msg[1] = sigma;
 	}

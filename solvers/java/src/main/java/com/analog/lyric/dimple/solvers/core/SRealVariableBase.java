@@ -15,13 +15,6 @@ public abstract class SRealVariableBase extends SVariableBase
 		super(var);
 	}
 
-	@Override
-	public void initialize()
-	{
-		super.initialize();
-		_guessWasSet = false;
-	}
-
 	
 	@Override
 	public Object getGuess()

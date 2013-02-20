@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 public class SVariable extends SDiscreteVariableBase
@@ -31,46 +31,24 @@ public class SVariable extends SDiscreteVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */	
-	protected double[][] _inPortMsgs = null;
-	protected double[][] _outMsgArray = null;
-	protected double[][] _savedOutMsgArray;
+	protected double[][] _inPortMsgs = new double[0][];
+	protected double[][] _outMsgArray = new double[0][];
+	protected double[][] _savedOutMsgArray = new double[0][];
 	protected double[] _dampingParams = new double[0];
 	protected double[] _input;
 	protected boolean _dampingInUse = false;
-	protected boolean _initCalled = true;
 
 	
 	public SVariable(VariableBase var) 
 	{
 		super(var);
-		initializeInputs();
-	}
-
-
-	public void initializeInputs()
-	{
-		_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());		
-	}
-	
-	public Object getInitialMsgValue()
-	{
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-		double[] retVal = new double[domainLength];
-		Arrays.fill(retVal, 0);
-		return retVal;
-	}
-
-	public Object getDefaultMessage(Port port) 
-	{
-		return getInitialMsgValue();
 	}
 
 	public void updateEdge(int outPortNum)
 	{
-		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages   
@@ -122,10 +100,9 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void update()
 	{
-		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages   
@@ -189,12 +166,11 @@ public class SVariable extends SDiscreteVariableBase
 
 	public Object getBelief() 
 	{
-		ensureCacheUpdated();
 
 		double[] priors = (double[])_input;
 		double[] outBelief = new double[priors.length];
 		int numValue = priors.length;
-		int numPorts = _var.getPorts().size();
+		int numPorts = _var.getSiblings().size();
 
 
 		for (int i = 0; i < numValue; i++)
@@ -211,8 +187,11 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void setInput(Object value) 
 	{
-		// Convert from probabilities since that's what the interface provides        
-		_input = MessageConverter.fromProb((double[])value);
+		if (value == null)
+			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
+		else
+			// Convert from probabilities since that's what the interface provides        
+			_input = MessageConverter.fromProb((double[])value);
 	}
 	
 	
@@ -220,41 +199,7 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		return _input[getGuessIndex()];
 	}
-	
 
-
-	protected void updateMessageCache()
-	{
-		int numPorts = _var.getPorts().size();
-		_initCalled = false;
-		_inPortMsgs = new double[numPorts][];
-		_outMsgArray = new double[numPorts][];
-		if (_dampingInUse)
-			_savedOutMsgArray = new double[numPorts][];
-
-		if (_dampingParams.length != numPorts)
-		{
-			double[] tmp = new double[numPorts];
-			for (int i = 0; i < _dampingParams.length; i++)
-				if (i < tmp.length)
-					tmp[i] = _dampingParams[i];
-			_dampingParams = tmp;
-		}
-		
-		for (int i = 0; i < numPorts; i++)
-		{
-			_inPortMsgs[i] = (double[])_var.getPorts().get(i).getInputMsg();
-			_outMsgArray[i] = (double[])_var.getPorts().get(i).getOutputMsg();
-			if (_dampingInUse)
-				_savedOutMsgArray[i] = new double[_outMsgArray[i].length];
-		}
-		
-	}
-
-	public void remove(Factor factor)
-	{
-		_initCalled = true;
-	}
 
 	public void setDamping(int portIndex, double dampingVal)
 	{
@@ -271,6 +216,11 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (dampingVal != 0)
 			_dampingInUse = true;
+		
+		_savedOutMsgArray = new double[_dampingParams.length][];
+		for (int i = 0; i < _inPortMsgs.length; i++)
+			_savedOutMsgArray[i] = new double[_inPortMsgs[i].length];
+
 	}
 
 	public double getDamping(int portIndex)
@@ -283,9 +233,89 @@ public class SVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public void connectPort(Port p)  
+	public Object [] createMessages(ISolverFactor factor) 
 	{
-		_initCalled = true;
+		int portNum = _var.getPortNum(factor.getModelObject());
+		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
+		
+		
+		_inPortMsgs = Arrays.copyOf(_inPortMsgs, newArraySize);
+		_outMsgArray = Arrays.copyOf(_outMsgArray,newArraySize);
+		if (_dampingInUse)
+		{
+			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
+		}
+
+		_dampingParams = Arrays.copyOf(_dampingParams,newArraySize);
+		
+		
+		_inPortMsgs[portNum] = createDefaultMessage();
+		_outMsgArray[portNum] = createDefaultMessage();
+		
+		if (_dampingInUse)
+			_savedOutMsgArray[portNum] = new double[_outMsgArray[portNum].length];
+		
+		return new Object [] {_inPortMsgs[portNum], _outMsgArray[portNum]};
 	}
+
+
+	public double [] createDefaultMessage() 
+	{
+		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
+		double[] retVal = new double[domainLength];
+		return (double[])resetInputMessage(retVal);
+	}
+
+
+	@Override
+	public Object resetInputMessage(Object message) 
+	{
+		Arrays.fill((double[])message, 0);
+		return message;
+	}
+
+
+	@Override
+	public void initializeEdge(int portNum) 
+	{
+		// TODO Auto-generated method stub
+		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
+		_outMsgArray[portNum] = (double[])resetOutputMessage(_outMsgArray[portNum]);
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	{
+		SVariable sother = (SVariable)other;
+		_inPortMsgs[portNum] = sother._inPortMsgs[otherPort];
+		_outMsgArray[portNum]  = sother._outMsgArray[otherPort];
+		
+		if (_dampingInUse)
+			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
+
+		_dampingParams[portNum] = sother._dampingParams[otherPort];
+		
+	}
+
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inPortMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outMsgArray[portIndex];
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object msg)
+	{
+		_inPortMsgs[portIndex] = (double[])msg;
+	}
+
 
 }

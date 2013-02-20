@@ -60,8 +60,13 @@ public interface INode  extends INameable
 	 */
 	public boolean isVariable();
 
-    public ArrayList<Port> getPorts();
+    public ArrayList<INode> getSiblings();
+    public void connect(INode node);
+    public boolean isConnected(INode node);
+    public boolean isConnected(INode node, int portIndex);
     public MapList<INode> getConnectedNodes();
+	public INode getConnectedNodeFlat(int portNum);
+    public INode getConnectedNode(int relativeNestingDepth, int portNum);
     public MapList<INode> getConnectedNodes(int relativeNestingDepth);
     public MapList<INode> getConnectedNodesFlat();
     public MapList<INode> getConnectedNodesTop();
@@ -77,6 +82,8 @@ public interface INode  extends INameable
 	public FactorGraph getRootGraph();
 	public boolean hasParentGraph();
 	public int getPortNum(INode node) ;
+	public ArrayList<INode> getConnectedNodeAndParents(int index);
+	public ArrayList<Port> getPorts();
 	
 	/**
 	 * Returns the ancestor of this node at the specified height, where height zero
@@ -116,5 +123,8 @@ public interface INode  extends INameable
 	public double getScore() ;
 	public double getInternalEnergy() ;
 	public double getBetheEntropy() ;
+	public int getSiblingPortIndex(int index);
+	public void initialize();
+	public void initialize(int portNum);
 
 }

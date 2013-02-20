@@ -31,16 +31,7 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	public DiscreteDistributionGenerator(Port p) 
 	{
 		super(p);
-		// TODO Auto-generated constructor stub
-	}
-
-	private double [] _msg;
-	private HashMap<Object,Integer> _domain2index;
 	
-	@Override
-	public void initialize()  
-	{
-		// TODO Auto-generated method stub
 		INode n = _p.getConnectedNode();
 		
 		if (!(n instanceof Discrete))
@@ -55,9 +46,12 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		{
 			_domain2index.put(domain[i],i);
 		}
-		
-		_msg = (double[])_p.getOutputMsg();
+
 	}
+
+	private double [] _msg;
+	private HashMap<Object,Integer> _domain2index;
+	
 
 	@Override
 	public void generateDistributionInPlace(ArrayList<Object> input) 
@@ -76,6 +70,41 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		//normalize
 		for (int i = 0; i < _msg.length; i++ )
 			_msg[i] /= input.size();
+		
+	}
+
+	@Override
+	public void initialize()  
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetInputMessage(_msg);
+
+	}
+
+	@Override
+	public void createMessage(Object msg) 
+	{
+		_msg = (double[])msg;		
+	}
+	
+	@Override 
+	public Object getOutputMsg()
+	{
+		return _msg;
+	}
+
+
+	@Override
+	public void setOutputMsg(Object message) 
+	{
+		// TODO Auto-generated method stub
+		_msg = (double[])message;
+	}
+
+	@Override
+	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	{
+		_msg = ((DiscreteDistributionGenerator)other)._msg;
 		
 	}
 

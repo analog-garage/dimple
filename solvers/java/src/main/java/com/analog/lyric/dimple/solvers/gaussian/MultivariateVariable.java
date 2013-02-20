@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Port;
+import java.util.Arrays;
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class MultivariateVariable extends SVariableBase 
@@ -28,27 +29,23 @@ public class MultivariateVariable extends SVariableBase
 
 	private int _numVars;
 	private MultivariateMsg _input;
+	private MultivariateMsg [] _outputMsgs = new MultivariateMsg[0];
+	private MultivariateMsg [] _inputMsgs = new MultivariateMsg[0];
 	
 	public MultivariateVariable(VariableBase var) 
 	{
 		super(var);
 		
 		_numVars = ((RealJointDomain)_var.getDomain()).getNumVars();
-		initializeInputs();
-	}
-
-	public void initializeInputs()
-	{
-		_input = (MultivariateMsg) getDefaultMessage(null);
-
 	}
 	
 	@Override
 	public void setInput(Object input)  
 	{
-		_input = (MultivariateMsg)input;
-		if (_input == null)
-			throw new DimpleException("WERWERE");
+		if (input == null)
+			_input = (MultivariateMsg) createDefaultMessage();
+		else
+			_input = (MultivariateMsg)input;
 	}
 
 	
@@ -59,27 +56,6 @@ public class MultivariateVariable extends SVariableBase
 		
 	}
 	
-	
-	@Override
-	public Object getDefaultMessage(Port port) 
-	{
-		
-		double [] means = new double[_numVars];
-		double [][] covariance = new double[_numVars][];
-		
-		
-		for (int i = 0; i < covariance.length; i++)
-		{
-			covariance[i] = new double[_numVars];
-			covariance[i][i] = Double.POSITIVE_INFINITY;
-		}
-
-		//multiGaBPMatrixMult.printMatrix(covariance);
-		
-		MultivariateMsg mm = new MultivariateMsg(means,covariance);
-		
-		return mm;
-	}
 
 	@Override
 	public Object getBelief()  
@@ -93,7 +69,7 @@ public class MultivariateVariable extends SVariableBase
 	@Override
 	public void updateEdge(int outPortNum)  
 	{
-		MultivariateMsg outMsg = (MultivariateMsg)_var.getPorts().get(outPortNum).getOutputMsg();
+		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		doUpdate(outMsg,outPortNum);
 	}
 
@@ -105,12 +81,12 @@ public class MultivariateVariable extends SVariableBase
 		
 		//MultivariateMsg outMsg = (MultivariateMsg)_var.getPorts().get(outPortNum).getOutputMsg();
 		
-		for (int i = 0; i < _var.getPorts().size(); i++ )
+		for (int i = 0; i < _outputMsgs.length; i++ )
 		{
 			if (i != outPortNum)
 			{				
 				//_var.getInputObject();
-				MultivariateMsg inMsg = (MultivariateMsg)_var.getPorts().get(i).getInputMsg();
+				MultivariateMsg inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
@@ -132,5 +108,71 @@ public class MultivariateVariable extends SVariableBase
 		}
 		
 		outMsg.setInformation(vector,matrix);
+	}
+
+	@Override
+	public Object [] createMessages(ISolverFactor factor) 
+	{
+		int portNum = getModelObject().getPortNum(factor.getModelObject());
+		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
+		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
+		_inputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
+		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
+		_outputMsgs[portNum] = (MultivariateMsg)createDefaultMessage();
+		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
+	}
+
+	public MultivariateMsg createDefaultMessage() 
+	{
+		MultivariateMsg mm = new MultivariateMsg();
+		return (MultivariateMsg)resetInputMessage(mm);
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) 
+	{
+		double [] means = new double[_numVars];
+		double [][] covariance = new double[_numVars][];
+		
+		
+		for (int i = 0; i < covariance.length; i++)
+		{
+			covariance[i] = new double[_numVars];
+			covariance[i][i] = Double.POSITIVE_INFINITY;
+		}
+		((MultivariateMsg)message).setMeanAndCovariance(means, covariance);
+		return message;
+	}
+
+	@Override
+	public void initializeEdge( int i ) 
+	{
+		_inputMsgs[i] = (MultivariateMsg)resetInputMessage(_inputMsgs[i]);
+		_outputMsgs[i] = (MultivariateMsg)resetOutputMessage(_outputMsgs[i]);		
+	}
+	
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	{
+		MultivariateVariable s = (MultivariateVariable)other;
+	
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
+
+	}
+	
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _inputMsgs[portIndex];
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		return _outputMsgs[portIndex];
+	}
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		_inputMsgs[portIndex] = (MultivariateMsg)obj;
 	}
 }

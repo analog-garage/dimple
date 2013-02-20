@@ -18,6 +18,7 @@ function testBasics()
 
     solvers = {'minsum','sumproduct'};
     
+    
     for sindex = 1:length(solvers)
     
         setSolver(solvers{sindex});
@@ -27,7 +28,7 @@ function testBasics()
 
 
         N = 10;
-        data = repmat([.4 .6],N,1);
+        data = repmat([.4 .6]',1,N);
 
         %Create a data source
         dataSource = DoubleArrayDataSource(data);
@@ -84,7 +85,7 @@ function testBasics()
         %simple HMM with larger buffer size
 
         N = 10;
-        data = repmat([.4 .6],N,1);
+        data = repmat([.4 .6]',1,N);
 
         %Create a data source
         dataSource = DoubleArrayDataSource(data);

@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -31,7 +30,6 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		super(var);		
 		_var = var;
-		//initializeInputs();
 	}
 	
 	public void moveInputs(ISolverVariable other)
@@ -44,16 +42,9 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 
 	@Override
-	public void remove(Factor factor)
-	{
-		invalidateCache();
-	}
-	
-
-	@Override
 	public void update()  
 	{
-		for (int i = 0; i < _var.getPorts().size(); i++)
+		for (int i = 0; i < _var.getSiblings().size(); i++)
 		{
 			updateEdge(i);
 		}
@@ -119,4 +110,9 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		throw new DimpleException("not supported");    	
 	}
 	
+	@Override
+	public Object resetOutputMessage(Object message)
+	{
+		return resetInputMessage(message);
+	}
 }

@@ -13,12 +13,48 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+classdef DoubleArrayDataSource < DataSource
+    methods
+        function obj = DoubleArrayDataSource(dimensions,initialData)
+            
+            if nargin < 1
+                dimensions = [1 1];
+            end
+            
+            hasData = nargin > 1;
+                        
+            if nargin == 1 && ~isrow(dimensions)
+                initialData = dimensions;
+                dimensions = size(1);
+                hasData = 1;
+            end
+            
+            obj@DataSource(dimensions);
 
-function out = DoubleArrayDataSource(data)
-    if nargin < 1
-        out = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource();
-    else
-        out = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
-    end       
+            
+            if hasData
+                obj.add(initialData);
+            end
+        end
+        
+        function dataSource = getIDataSourceFromModeler(obj,sz)
+            modeler = getModeler();
+            dataSource = modeler.getDoubleArrayDataSource(sz);
+            
+        end
 
+        function add(obj,data)
+            % stuff
+            
+            packedData = MatrixObject.pack(data,obj.Indices);
+            if length(size(packedData)) == 3
+                obj.IDataSource.addMultiple(packedData);
+            else
+                obj.IDataSource.add(packedData);
+            end
+        end
+        
+        
+    end
+    
 end

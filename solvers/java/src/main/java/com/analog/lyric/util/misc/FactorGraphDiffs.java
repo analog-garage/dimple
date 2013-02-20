@@ -308,9 +308,9 @@ public class FactorGraphDiffs
 	}
 	static private boolean CompareTwoPorts(Port a, Port b, boolean byName)
 	{
-		INode aParent = a.getParent();
+		INode aParent = a.node;
 		INode aConnected = a.getConnectedNode();
-		INode bParent = b.getParent();
+		INode bParent = b.node;
 		INode bConnected = b.getConnectedNode();
 		
 		boolean equal = CompareTwoNameables(aParent, bParent, byName) &&

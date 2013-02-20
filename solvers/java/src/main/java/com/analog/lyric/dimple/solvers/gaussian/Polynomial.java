@@ -24,9 +24,8 @@ import Jama.Matrix;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 
-public class Polynomial extends SFactorBase 
+public class Polynomial extends MultivariateFactorBase 
 {
 	private double [] _powers;
 	private Complex [] _coeffs;	
@@ -43,7 +42,7 @@ public class Polynomial extends SFactorBase
 	{
 		super(factor);
 
-		if (factor.getPorts().size() != 2)
+		if (factor.getSiblings().size() != 2)
 			throw new DimpleException("expected two complex numbers");
 
 		//TODO: throw error message if htis cast fails
@@ -121,89 +120,56 @@ public class Polynomial extends SFactorBase
 	{
 		
 		//get mu and sigma for complex numbers
-		MultivariateMsg y = (MultivariateMsg)_factor.getPorts().get(0).getInputMsg();
-		MultivariateMsg x = (MultivariateMsg)_factor.getPorts().get(1).getOutputMsg();
+		MultivariateMsg y = _inputMsgs[0];
+		MultivariateMsg x = _outputMsgs[1];
 
-//		if (Double.isInfinite(real[1]) || Double.isInfinite(imag[1]))
-//		{
-//			double [] tmp = newtonRaphson(new double[]{real[0], imag[0]}, 
-//					_iterations, _powers, _coeffs);
-//			
-//			realout[0] = tmp[0];
-//			realout[1] = Double.POSITIVE_INFINITY;
-//			imagout[0] = tmp[1];
-//			imagout[1] = Double.POSITIVE_INFINITY;
-//	
-//		}
-//		else
-//		{			
-		
-			Complex means = new Complex(y.getMeans()[0],y.getMeans()[1]);
-		
-			//get samples
-			Complex [] samples = getSamples(means,y.getCovariance());
-			Complex [] results = new Complex[samples.length];
-
-			for (int i = 0; i < samples.length; i++)
-			{
-				results[i] = newtonRaphson(samples[i],_iterations,_powers,_coeffs);
-			}
+		Complex means = new Complex(y.getMeans()[0],y.getMeans()[1]);
 	
-			Object [] sums = calculateWeightedSums(results);
-	
-			means = (Complex)sums[0];
-			double [][] covar = (double[][])sums[1];
-			
-			x.setMeanAndCovariance(new double []{means.getReal(),means.getImaginary()}, covar);
+		//get samples
+		Complex [] samples = getSamples(means,y.getCovariance());
+		Complex [] results = new Complex[samples.length];
 
-		//}
+		for (int i = 0; i < samples.length; i++)
+		{
+			results[i] = newtonRaphson(samples[i],_iterations,_powers,_coeffs);
+		}
+
+		Object [] sums = calculateWeightedSums(results);
+
+		means = (Complex)sums[0];
+		double [][] covar = (double[][])sums[1];
+		
+		x.setMeanAndCovariance(new double []{means.getReal(),means.getImaginary()}, covar);
 
 	}
 
 	public void updateToY() 
 	{
 		//get mu and sigma for complex numbers
-		MultivariateMsg y = (MultivariateMsg)_factor.getPorts().get(0).getOutputMsg();
-		MultivariateMsg x = (MultivariateMsg)_factor.getPorts().get(1).getInputMsg();
+		MultivariateMsg y = _outputMsgs[0];
+		MultivariateMsg x = _inputMsgs[1];
 		
 		double [] xmeans = x.getMeans();
 		double [][] xcovar = x.getCovariance();
-		//double [] ymeans = y.getMeans();
-		//double [][] ycovar = y.getCovariance();
-		
-//		if (Double.isInfinite(real[1]) || Double.isInfinite(imag[1]))
-//		{
-//			double [] tmp = P(new double[]{real[0], imag[0]}, 
-//					 _powers, _coeffs);
-//
-//			realout[0] = tmp[0];
-//			realout[1] = Double.POSITIVE_INFINITY;
-//			imagout[0] = tmp[1];
-//			imagout[1] = Double.POSITIVE_INFINITY;
-//	
-//		}
-//		else
-//		{
-			
-			//get samples
-			Complex [] samples = getSamples(new Complex(xmeans[0],xmeans[1]),xcovar);
-			Complex [] results = new Complex[samples.length];
-			
-			//for each sample
-			for (int i = 0; i < samples.length; i++)
-			{
-				results[i] = P(samples[i],_powers,_coeffs);
 	
-			}
-	
-			Object [] sums = calculateWeightedSums(results);
-			Complex means = (Complex)sums[0];
-			double [][] covar = (double[][])sums[1];
-	
-			y.setMeanAndCovariance(new double[]{means.getReal(),means.getImaginary()}, covar);
-		//}
 
-		//calculate weighted some for mu/sigma for real/imaginary
+		
+		//get samples
+		Complex [] samples = getSamples(new Complex(xmeans[0],xmeans[1]),xcovar);
+		Complex [] results = new Complex[samples.length];
+		
+		//for each sample
+		for (int i = 0; i < samples.length; i++)
+		{
+			results[i] = P(samples[i],_powers,_coeffs);
+
+		}
+
+		Object [] sums = calculateWeightedSums(results);
+		Complex means = (Complex)sums[0];
+		double [][] covar = (double[][])sums[1];
+
+		y.setMeanAndCovariance(new double[]{means.getReal(),means.getImaginary()}, covar);
 	}
 	
 	private Complex [] getSamples(Complex mean, double [][] covar)
@@ -239,9 +205,6 @@ public class Polynomial extends SFactorBase
 
 	private Object [] calculateWeightedSums(Complex [] in)
 	{
-
-		//double real = in.getReal();
-		//double imag = in.getImaginary();
 		
 		double [] means = new double[]{0,0};
 
@@ -267,23 +230,12 @@ public class Polynomial extends SFactorBase
 		cm = cm.times(1.0/in.length);
 		
 		return new Object[]{new Complex(means[0],means[1]),cm.getArray()};
-//		return new Object[]{new Complex(means[0],means[1]),new double [][] {
-//			new double [] {1e-9,0},
-//			new double [] {0,1e-9}
-//			}
-//		};
 		
 	}
 	
-//	private static double [] complex_multiply(double [] c1, double [] c2)
-//	{
-//		return new double [] {c1[0]*c2[0]-c1[1]*c2[1],c1[0]*c2[1],c1[1]*c2[0]};
-//	}
 	
 	private static Complex P(Complex input, double [] powers, Complex [] coeffs)
 	{
-		//double c = 0;
-		//double d = 0;
 
 		double a = input.getReal();
 		double b = input.getImaginary();
@@ -457,9 +409,6 @@ public class Polynomial extends SFactorBase
 		double a2pb2 = a*a+b*b;
 		
 		
-		//double [] dyda = new double [] {rcoeffs[0], icoeffs[0]};
-		//double [] dydb = new double [] {-icoeffs[0], rcoeffs[0]};
-		
 		Complex dyda = new Complex(0,0);
 		Complex dydb = new Complex(0,0);
 		
@@ -500,10 +449,7 @@ public class Polynomial extends SFactorBase
 		//initialize x to y;
 		Complex output = new Complex(input.getReal(),input.getImaginary());
 				
-		//TODO:
-//		if (Double.isNaN(output[0]) || Double.isNaN(output[1]))
-//			throw new DimpleException("newton-raphson input is NaN");
-
+	
 		for (int i = 0; i < numIterations; i++)
 		{
 			double [][] J = buildJacobian(coeffs,powers,output);
@@ -517,67 +463,6 @@ public class Polynomial extends SFactorBase
 			output = output.add(new Complex(tmp[0],tmp[1]));
 		}
 
-		/*
-		double [][] M = new double[2][];
-		
-		M[0] = new double[2];
-		M[1] = new double[2];
-				
-		for (int i = 0; i < numIterations; i++)
-		{
-			//a) Form square matrix using derivatives equations
-			double a = output[0];
-			double b = output[1];
-			
-			
-			M[0][0] = derivativeOfP1OverA(a, b, powers,coeffs);
-			M[0][1] = derivativeOfP1OverB(a, b, powers,coeffs);
-			M[1][0] = derivativeOfP2OverA(a, b, powers,coeffs);
-			M[1][1] = derivativeOfP2OverB(a, b, powers,coeffs);
-			
-			//b) solve for u given M u = (y-P(x))			
-			double [] u = P(output,powers,coeffs);
-			
-			if (Double.isNaN(u[0]) || Double.isNaN(u[1]))
-				throw new DimpleException("newton-raphson u is NaN after iteration: " + i);
-			
-			u[0] = input[0]-u[0];
-			u[1] = input[1]-u[1];
-
-			if (Double.isNaN(u[0]) || Double.isNaN(u[1]))
-				throw new DimpleException("newton-raphson input-u is NaN after iteration: " + i);
-			
-			for (int k = 0; k < M.length; k++)
-				for (int j = 0; j < M[k].length; j++)
-					if (Double.isNaN(M[k][j]))
-						throw new DimpleException("M has NaN");
-			
-			M = invertMatrix(M);
-			
-			for (int k = 0; k < M.length; k++)
-				for (int j = 0; j < M[k].length; j++)
-					if (Double.isNaN(M[k][j]))
-						throw new DimpleException("Minverse has NaN");
-			
-			u = matrixMultiply(M,u);			
-
-			if (Double.isNaN(u[0]) || Double.isNaN(u[1]))
-				throw new DimpleException("newton-raphson Minverse*u is NaN after iteration: " + i);
-			
-			//c) update x to x + u;
-			output[0] = output[0]+u[0];
-			output[1] = output[1]+u[1];
-			
-			if (Double.isNaN(output[0]) || Double.isNaN(output[1]))
-				throw new DimpleException("newton-raphson generated NaN after iteration: " + i);
-
-		}
-		
-		if (Double.isNaN(output[0]) || Double.isNaN(output[1]))
-			throw new DimpleException("newton-raphson generated NaN");
-		
-		*/
-		
 		return output;
 	}
 	

@@ -46,6 +46,8 @@ public abstract class HybridSampledBPSampler
 	*/
 	
 	public abstract void initialize() ;
-	
+	public abstract void createMessage(Object msg);
 	public abstract Object generateSample();
+	public abstract Object getInputMsg();
+	public abstract void moveMessages(HybridSampledBPSampler other);
 }

@@ -17,12 +17,14 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 
@@ -33,41 +35,36 @@ public class SVariable extends SRealVariableBase
 	 * time when performing the update.
 	 */	
 	private double [] _input;
+	private double [][] _inputMsgs = new double[0][];
+	private double [][] _outputMsgs = new double[0][];
     
 	public SVariable(VariableBase var) 
     {
 		super(var);
-		initializeInputs();
-	}
-	
-	public void initializeInputs()
-	{
-		_input = (double[]) getDefaultMessage(null);
 	}
 
-	public Object getDefaultMessage(Port port) 
-	{
-		return new double []{0,Double.POSITIVE_INFINITY};
-		//return new double[]{0,1};
-    }
-	
 
     public void setInput(Object priors) 
     {
-    	double [] vals = (double[])priors;
-    	if (vals.length != 2)
-    		throw new DimpleException("expect priors to be a vector of mean and sigma");
-    	
-    	if (vals[1] < 0)
-    		throw new DimpleException("expect sigma to be >= 0");
-    	
-    	_input = vals.clone();
+    	if (priors == null)
+    		_input = (double[]) createDefaultMessage();
+    	else
+    	{
+	    	double [] vals = (double[])priors;
+	    	if (vals.length != 2)
+	    		throw new DimpleException("expect priors to be a vector of mean and sigma");
+	    	
+	    	if (vals[1] < 0)
+	    		throw new DimpleException("expect sigma to be >= 0");
+	    	
+	    	_input = vals.clone();
+    	}
     	
     }
     
     public void updateEdge(int outPortNum) 
     {
-    	ArrayList<Port> ports = _var.getPorts();
+    	ArrayList<INode> ports = _var.getSiblings();
     	
     	double R = 1/(_input[1]*_input[1]);
     	double Mu = _input[0]*R;
@@ -86,7 +83,7 @@ public class SVariable extends SRealVariableBase
     	{
     		if (i != outPortNum)
     		{
-    			double [] msg = (double[])ports.get(i).getInputMsg();
+    			double [] msg = _inputMsgs[i];
     			double tmpR = 1/(msg[1]*msg[1]);
     			
     			if (tmpR == Double.POSITIVE_INFINITY)
@@ -130,7 +127,7 @@ public class SVariable extends SRealVariableBase
 	    		Mu = 0;
     	}
     	
-    	double [] outMsg = (double[])ports.get(outPortNum).getOutputMsg();
+    	double [] outMsg = _outputMsgs[outPortNum];
     	outMsg[0] = Mu;
     	outMsg[1] = sigma;
     }
@@ -139,7 +136,6 @@ public class SVariable extends SRealVariableBase
     
     public Object getBelief() 
     {
-    	ArrayList<Port> ports = _var.getPorts();
     	
     	double R = 1/(_input[1]*_input[1]);
     	double Mu = _input[0]*R;
@@ -154,9 +150,9 @@ public class SVariable extends SRealVariableBase
     	}
 
     	
-    	for (int i = 0; i < ports.size(); i++)
+    	for (int i = 0; i < _inputMsgs.length; i++)
     	{
-			double [] msg = (double[])ports.get(i).getInputMsg();
+			double [] msg = _inputMsgs[i];
 			double tmpR = 1/(msg[1]*msg[1]);
 			
 			
@@ -209,37 +205,71 @@ public class SVariable extends SRealVariableBase
     	return new double []{Mu,sigma};
     
     }
-    
-    
 
-	public void initialize()
-	{
-		
-	}
-
-
-	public void remove(Factor factor)
-	{
-	}
-
-
-
-	/*
 	@Override
-	public void setDomain(RealDomain domain)  
+	public Object [] createMessages(ISolverFactor factor) 
 	{
-		if (domain.getLowerBound() != Double.NEGATIVE_INFINITY)
-			throw new DimpleException("bounds not supported for gaussian solver");
-		if (domain.getUpperBound() != Double.POSITIVE_INFINITY)
-			throw new DimpleException("bounds not supported for gaussain solver");
 		// TODO Auto-generated method stub
-		
+		int portNum = _var.getPortNum(factor.getModelObject());
+		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
+		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
+		_inputMsgs[portNum] = createDefaultMessage();
+		_outputMsgs = Arrays.copyOf(_outputMsgs, newArraySize);
+		_outputMsgs[portNum] = createDefaultMessage();
+		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	 */
+	public double [] createDefaultMessage() 
+	{
+		double [] message = new double[2];
+		return (double[])resetInputMessage(message);
+	}
+
+	@Override
+	public Object resetInputMessage(Object message) 
+	{
+		double [] m = (double[])message;
+		m[0] = 0;
+		m[1] = Double.POSITIVE_INFINITY;
+		// TODO Auto-generated method stub
+		return m;
+	}
+
+	@Override
+	public void initializeEdge(int i) 
+	{
+		_inputMsgs[i] = (double[])resetInputMessage(_inputMsgs[i]);
+		_outputMsgs[i] = (double[])resetOutputMessage(_outputMsgs[i]);
+
+	}
+    
+    
+	@Override 
+	public Object getInputMsg(int portIndex)
+	{
+		return _inputMsgs[portIndex];
+	}
+
+	@Override 
+	public Object getOutputMsg(int portIndex)
+	{
+		return _outputMsgs[portIndex];
+	}
 
 
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	{
+		SVariable s = (SVariable)other;
+	
+		_inputMsgs[portNum] = s._inputMsgs[otherPort];
+		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 
+	}
 
-
+	@Override
+	public void setInputMsg(int portIndex, Object obj) {
+		_inputMsgs[portIndex] = (double[])obj;
+	}
+	
 }

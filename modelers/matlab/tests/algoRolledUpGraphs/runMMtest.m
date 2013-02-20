@@ -24,7 +24,7 @@ function runMMtest(fg,stream,data,dataSource)
     end
     
     
-    dataSize = size(data,1);
+    dataSize = size(data,2);
 
     fg.initialize();
     
@@ -36,7 +36,7 @@ function runMMtest(fg,stream,data,dataSource)
     end
     
     for i = 1:(bufferSize+1)
-        b(i).Input = data(i,2);
+        b(i).Input = data(2,i)';
     end
     
     i = 1;
@@ -48,7 +48,7 @@ function runMMtest(fg,stream,data,dataSource)
         assertElementsAlmostEqual(stream.get(1).Belief(2),b(i).Belief);
         
         fg.advance();
-        b(bufferSize+i+1).Input = data(bufferSize+i+1,2);
+        b(bufferSize+i+1).Input = data(2,bufferSize+i+1);
         i = i + 1;
     end
 end

@@ -17,10 +17,35 @@
 classdef DataSink < handle
     properties
         IDataSink;
+        Dimensions;
+        Indices;
     end
+    
     methods
-        function obj = DataSink(dataSink)
+        function obj = DataSink(dimensions,dataSink)
+            
+            if nargin < 1
+                dimensions = size(1);
+            end
             obj.IDataSink = dataSink;
+            obj.Dimensions = dimensions;
+            indices = reshape(1:prod(dimensions),dimensions)-1;
+            obj.Indices = indices;
         end
+        
+        function retval = hasNext(obj)
+            retval = obj.IDataSink.hasNext();
+        end
+        
+        function retval = getNext(obj)
+            retval = obj.IDataSink.getNext();
+            if ~isa(retval,'double')
+                retval = cell(retval);
+            end
+            retval = MatrixObject.unpack(retval,obj.Indices,true);
+        end
+        
     end
+    
+    
 end

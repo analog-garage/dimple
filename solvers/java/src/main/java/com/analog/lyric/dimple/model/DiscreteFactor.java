@@ -48,7 +48,7 @@ public class DiscreteFactor extends Factor
 	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint) 
 	{
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
-		ArrayList<Port> ports = getPorts();
+		ArrayList<INode> ports = getSiblings();
 		ArrayList<VariableBase> newVariables = new ArrayList<VariableBase>();
 		
 
@@ -57,7 +57,7 @@ public class DiscreteFactor extends Factor
 		{
 			boolean exists = false;
 			for (int j = 0; j < ports.size(); j++)
-				if (ports.get(j).getConnectedNodeFlat().equals(variablesToJoin[i]))
+				if (getConnectedNodeFlat(j).equals(variablesToJoin[i]))
 				{
 					exists = true;
 					break;
@@ -95,7 +95,7 @@ public class DiscreteFactor extends Factor
 		{
 			for (int j = 0; j < variablesToJoin.length; j++)
 			{
-				if (ports.get(i).getConnectedNodeFlat().equals(variablesToJoin[j]))
+				if (getConnectedNodeFlat(i).equals(variablesToJoin[j]))
 				{
 					factorVarIndices[index] = i;
 					indexToJointIndex[j] = index;
@@ -109,7 +109,7 @@ public class DiscreteFactor extends Factor
 		//Get all the domain lengths
 		DiscreteDomain [] allDomains = new DiscreteDomain[ports.size()];
 		for (int i = 0; i < allDomains.length; i++)
-			allDomains[i] = ((Discrete)ports.get(i).getConnectedNodeFlat()).getDiscreteDomain();
+			allDomains[i] = ((Discrete)getConnectedNodeFlat(i)).getDiscreteDomain();
 		
 		//Create the new combo table
 		FactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable( 
@@ -125,13 +125,6 @@ public class DiscreteFactor extends Factor
 			index = factorVarIndices[factorVarIndices.length-1-i];
 			ports.remove(index);
 		}
-		
-		//reset the ids of the Factor's ports
-		for (int i = 0; i < ports.size(); i++)
-		{
-			ports.get(i).setId(i);
-		}
-		
 		
 		//Add the new joint variable
 		addVariable(newJoint);

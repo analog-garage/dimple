@@ -32,12 +32,7 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 
 	private double [] _msg;
 	
-	@Override
-	public void initialize() 
-	{
-		// TODO Auto-generated method stub
-		_msg = (double[])_p.getOutputMsg();
-	}
+
 
 	@Override
 	public void generateDistributionInPlace(ArrayList<Object> input) 
@@ -76,5 +71,38 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 		_msg[1] = Math.sqrt(sigmasquared);
 	}
 
+	
+	@Override
+	public void initialize() 
+	{
+		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		_msg = (double[])var.resetInputMessage(_msg);
+	}
 
+	@Override
+	public void createMessage(Object msg) 
+	{
+		_msg = (double[])msg;
+	}
+
+
+	@Override
+	public void setOutputMsg(Object message) 
+	{
+		_msg = (double[])message;
+		
+	}
+
+
+	@Override
+	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	{
+		_msg = ((GaussianDistributionGenerator)other)._msg;
+	}
+
+	@Override 
+	public Object getOutputMsg()
+	{
+		return _msg;
+	}
 }

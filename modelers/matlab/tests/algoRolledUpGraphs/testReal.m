@@ -34,17 +34,17 @@ function testReal()
 
     fg.addFactor(ng,vars,vars.getSlice(2));
 
-    data = ones(10,2);
+    data = ones(2,10);
 
-    vars.DataSource = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource(data);
+    vars.DataSource = DoubleArrayDataSource(data);
 
 
     fg.initialize();
 
     fg2 = FactorGraph();
-    r = Real(size(data,1),1);
+    r = Real(size(data,2),1);
 
-    for i = 1:(size(data,1)-1)
+    for i = 1:(size(data,2)-1)
        fg2.addFactor(@constmult,r(i+1),r(i),1.1); 
     end
 

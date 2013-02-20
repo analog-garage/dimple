@@ -1,25 +1,18 @@
 classdef DoubleArrayDataSink < DataSink
-    properties
-        Array;
-    end
     methods
-        function obj = DoubleArrayDataSink(dataSink)
-            if nargin == 0;
-                dataSink = com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink();
+        function obj = DoubleArrayDataSink(dimensions,dataSink)
+            
+            if nargin < 1
+                dimensions = size(1);
             end
-            obj@DataSink(dataSink);
+            
+            if nargin < 2                
+                modeler = getModeler();
+                dataSink = modeler.getDoubleArrayDataSink(prod(dimensions));
+            end
+            obj@DataSink(dimensions,dataSink);
         end
         
-        function retval = hasNext(obj)
-            retval = obj.IDataSink.hasNext();
-        end
-        function retval = getNext(obj)
-            retval = obj.IDataSink.getNext();
-        end
-        
-        function retval = get.Array(obj)
-            retval = obj.IDataSink.getArray();
-        end
     end
     
 end

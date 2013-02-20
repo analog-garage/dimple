@@ -25,7 +25,6 @@ import java.util.Iterator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
@@ -60,6 +59,8 @@ public class FixedSchedule extends ScheduleBase
 		return _schedule;
 	}
 	
+
+	
 	/*
 	 * (non-Javadoc)
 	 * @see com.lyricsemi.dimple.schedulers.schedule.ISchedule#verify(com.lyricsemi.dimple.model.MFactorGraph)
@@ -86,10 +87,10 @@ public class FixedSchedule extends ScheduleBase
 		//Add all factor's ports to the list of things that must be updated.
 		for (Factor f : factorGraph.getNonGraphFactors().values())
 		{
-			for (Port p : f.getPorts())
+			for (int index = 0; index < f.getSiblings().size(); index++)
 			{
-				setOfAllPorts.add(p);
-				whatsLeft.add(p);
+				setOfAllPorts.add(new Port(f,index));
+				whatsLeft.add(new Port(f,index));
 			}
 		}
 		
@@ -101,10 +102,10 @@ public class FixedSchedule extends ScheduleBase
 		//Add all variable's ports to things that can/must be updated.
 		for (VariableBase v : vl.values())
 		{
-			for (Port p : v.getPorts())
+			for (int index = 0; index < v.getSiblings().size(); index++)
 			{
-				whatsLeft.add(p);
-				setOfAllPorts.add(p);
+				whatsLeft.add(new Port(v,index));
+				setOfAllPorts.add(new Port(v,index));
 			}
 		}
 		
@@ -154,10 +155,6 @@ public class FixedSchedule extends ScheduleBase
 		if (whatsLeft.size() != 0)
 		{
 			Port p = whatsLeft.iterator().next();
-			@SuppressWarnings("all")
-			INode from = p.getParent();
-			@SuppressWarnings("all")
-			INode to = p.getConnectedNode();
 			
 			throw new DimpleException("Schedule didn't update all ports.  First missing port: " + p);
 		}

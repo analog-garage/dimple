@@ -24,6 +24,8 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class HybridSampledBPFactor extends SFactorBase 
 {
@@ -56,13 +58,13 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 		
 		_factorFunction.attachRandom(random);
 		
-		_distGenerator = new HybridSampledBPDistributionGenerator[factor.getPorts().size()];
-		_samplers = new HybridSampledBPSampler[factor.getPorts().size()];
+		_distGenerator = new HybridSampledBPDistributionGenerator[factor.getSiblings().size()];
+		_samplers = new HybridSampledBPSampler[factor.getSiblings().size()];
 		
-		for (int i = 0; i < factor.getPorts().size(); i++)
+		for (int i = 0; i < factor.getSiblings().size(); i++)
 		{
-			_samplers[i] = generateSampler(factor.getPorts().get(i));
-			_distGenerator[i] = generateDistributionGenerator(factor.getPorts().get(i));
+			_samplers[i] = generateSampler(new Port(factor,i));
+			_distGenerator[i] = generateDistributionGenerator(new Port(factor,i));
 		}
 	}
 	
@@ -103,11 +105,11 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 			//Until a sample is accepted
 			while (!sampleAccepted)
 			{
-				inputs = new Object [_factor.getPorts().size()-1];
+				inputs = new Object [_factor.getSiblings().size()-1];
 				
 				int index = 0;
 				//For each input message (mean/variance)
-				for (int j = 0; j < _factor.getPorts().size(); j++)
+				for (int j = 0; j < _factor.getSiblings().size(); j++)
 				{					
 					//Generate a new sample using the specified mean/variance
 					if (outPortNum != j)
@@ -155,12 +157,44 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 	}
 	
 	@Override
-	public void initialize() 
+	public void initializeEdge(int i) 
 	{
-		for (HybridSampledBPSampler s : _samplers)
-			s.initialize();
-		for (HybridSampledBPDistributionGenerator s : _distGenerator)
-			s.initialize();
+		_samplers[i].initialize();
+		_distGenerator[i].initialize();
 	}
 	
+	@Override
+	public void createMessages() 
+	{
+		
+		for (int i = 0; i < _factor.getVariables().size(); i++)
+		{
+		
+			ISolverVariable var = _factor.getVariables().getByIndex(i).getSolver();
+			Object [] messages = var.createMessages(this);
+			_samplers[i].createMessage(messages[1]);
+			_distGenerator[i].createMessage(messages[0]);
+		
+		}
+	}
+
+
+	@Override
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
+	{
+		HybridSampledBPFactor s = (HybridSampledBPFactor)other;
+		_samplers[portNum].moveMessages(s._samplers[otherPortNum]);
+		_distGenerator[portNum].moveMessages(s._distGenerator[otherPortNum]);
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		return _samplers[portIndex].getInputMsg();
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		return _distGenerator[portIndex].getOutputMsg();
+	}
 }

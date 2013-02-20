@@ -86,17 +86,18 @@ public class SubScheduleEntry implements IScheduleEntry
 		//and add their ports.  subGraph getVariables does not return boundary variables.
 		for (VariableBase v : subGraph.getVariables())
 		{
-			for (Port p : v.getPorts())
+			for (int index = 0; index < v.getSiblings().size(); index++)
+			
 				//whatsLeft.remove(p);
-				ports.add(p);
+				ports.add(new Port(v,index));
 		}
 		
 		//Get all the factors associated with this subgraph and add the ports
 		for (Factor f : subGraph.getNonGraphFactors())
 		{
-			for (Port p : f.getPorts())
+			for (int index = 0; index < f.getSiblings().size(); index++)
 				//whatsLeft.remove(p);
-				ports.add(p);
+				ports.add(new Port(f,index));
 		}	
 		return ports;
 		

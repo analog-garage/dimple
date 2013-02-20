@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,163 +16,68 @@
 
 package com.analog.lyric.dimple.model;
 
-import java.util.ArrayList;
-
-
-public class Port
+public class Port 
 {
-	private INode _parent;
-	private Port _sibling;
-	private Object _inputMsg;
-	private int _portId;
-	
-	public Port(INode parent,Port sibling, int id)
+	public INode node;
+	public int index;
+	public Port(INode node, int index)
 	{
-		_parent = parent;
-		_sibling = sibling;
-		if (_sibling != null)
-		{
-			sibling._sibling = this;
-		}
-		_inputMsg = null;
-		_portId = id;
-	}
-	public Port(INode parent, int id)
-	{
-		this(parent,null,id);
-	}
-	
-	public void moveMessage(Port other)
-	{
-		_inputMsg = other._inputMsg;
-	}
-	
-	public void setId(int id)
-	{
-		_portId = id;
-	}
-
-	public void setInputMsg(Object value)
-	{
-		_inputMsg = value;
-	}
-	public Object getInputMsg()
-	{
-		return _inputMsg;
-	}
-	public void setOutputMsg(Object value)
-	{
-		_sibling.setInputMsg(value);
-	}
-	public Object getOutputMsg()
-	{
-		return _sibling.getInputMsg();
-	}
-	
-	public boolean isConnected(INode node)
-	{
-		INode other = _sibling.getParent();
-		
-		if (other == node)
-			return true;
-		
-		while (other.getParentGraph() != null)
-		{
-			other = other.getParentGraph();
-			
-			if (other == node)
-				return true;
-		}
-		
-		return false;
-	}
-	
-	public ArrayList<INode> getConnectedNodes()
-	{
-		ArrayList<INode> retval = new ArrayList<INode>();
-		
-		INode n = _sibling.getParent();
-		
-		while (n != null)
-		{
-			retval.add(n);
-			n = n.getParentGraph();
-		}
-		
-		return retval;
-	}
-
-	public INode getConnectedNode()
-	{
-		return getConnectedNodeFlat();
-	}
-
-	public INode getConnectedNode(int relativeDepth)
-	{
-		if (relativeDepth < 0)
-			relativeDepth = 0;
-		
-		int myDepth = _parent.getDepth();
-		
-		//int desiredDepth = siblingDepth - relativeDepth;
-		
-		int desiredDepth = myDepth+relativeDepth;
-		
-		//Avoid overflow
-		if (desiredDepth < 0)
-			desiredDepth = Integer.MAX_VALUE;
-		
-		INode node = _sibling.getParent();
-		
-		// TODO: Instead of computing depths, which is O(depth), could we instead
-		// just look for matching parent. For example, if relativedDepth is zero
-		// can we just walk through the sibling node's parents until we find a match
-		// for the parent of the node for this side of the connection?
-		
-		for (int depth = node.getDepth(); depth > desiredDepth; --depth)
-		{
-			node = node.getParentGraph();
-		}
-
-		return node;
-	}
-	
-	public INode getConnectedNodeFlat()
-	{
-		return _sibling.getParent();
-	}
-	
-	public INode getConnectedNodeTop()
-	{
-		return getConnectedNode(0);
-	}
-	
-	public INode getParent()
-	{
-		return _parent;
-	}
-	public Port getSibling()
-	{
-		return _sibling;
-	}
-	public int getId()
-	{
-		return _portId;
-	}
-	
-	public String getName()
-	{
-		return getParent().getLabel() + "_to_" + getConnectedNodeFlat().getLabel();
+		this.node = node;
+		this.index = index;
 	}
 	
 	@Override
-	public String toString()
+	public int hashCode()
 	{
-		return getName();
+		return node.hashCode()+index;
 	}
 	
-	public void setSibling(Port sibling)
+	@Override
+	public boolean equals(Object obj)
 	{
-		_sibling = sibling;
+		if (obj instanceof Port)
+		{
+			Port p = (Port)obj;
+			return p.node == this.node && p.index == this.index;
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() 
+	{
+		return node.toString() + " index: " + index;
+	}
+	
+	public INode getConnectedNode()
+	{
+		return node.getSiblings().get(index);
+	}
+
+	public void setInputMsgValues(Object obj)
+	{
+		node.getSolver().setInputMsgValues(index, obj);
+	}
+
+	public void setOutputMsgValues(Object obj)
+	{
+		node.getSolver().setOutputMsgValues(index,obj);
+	}
+	
+	public Object getInputMsg()
+	{
+		return node.getSolver().getInputMsg(index);			
+	}
+	public Object getOutputMsg()
+	{
+		return node.getSolver().getOutputMsg(index);
+	}
+	public INode getSibling()
+	{
+		return node.getSiblings().get(index);
+	}
+	public Port getSiblingPort()
+	{
+		return new Port(getSibling(),node.getSiblingPortIndex(index));
 	}
 }
