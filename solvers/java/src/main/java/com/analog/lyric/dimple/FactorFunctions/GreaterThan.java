@@ -52,6 +52,6 @@ public class GreaterThan extends FactorFunction
     	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
     	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);
     	
-    	arguments[0] = (firstVal > secondVal);		// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.toDouble(firstVal > secondVal);		// Replace the output value
     }
 }

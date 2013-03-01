@@ -50,6 +50,6 @@ public class Not extends FactorFunction
     	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
     	boolean notValue = !inValue;
     	
-    	arguments[0] = notValue;		// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.toDouble(notValue);		// Replace the output value
     }
 }

@@ -53,6 +53,6 @@ public class Or extends FactorFunction
     	for(int i = 1; i < arguments.length; ++i)
     		orValue |= FactorFunctionUtilities.toBoolean(arguments[i]);
     	
-    	arguments[0] = orValue;		// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.toDouble(orValue);		// Replace the output value
     }
 }

@@ -37,13 +37,13 @@ public abstract class FactorFunctionBase
 	// At least one or the other of these must be overridden in a derived class.
 	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
 	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
-	public double eval(Object ... input)
+	public double eval(Object... arguments)
 	{
-		return Math.exp(-evalEnergy(input));
+		return Math.exp(-evalEnergy(arguments));
 	}
-	public double evalEnergy(Object ... input)
+	public double evalEnergy(Object... arguments)
 	{
-		return -Math.log(eval(input));
+		return -Math.log(eval(arguments));
 	}
 	
 	
@@ -70,6 +70,17 @@ public abstract class FactorFunctionBase
 	
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
-	public void evalDeterministicFunction(Object ... input){ }
+	public void evalDeterministicFunction(Object... arguments){ }
+	
+	// For deterministic factors that have exactly one return argument (the first argument), this provides
+	// an alternative access method that returns the result instead of modifying the argument
+	// This is necessary when calling from MATLAB
+	public Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Object[] fullArgumentList = new Object[arguments.length + 1];
+		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
+		evalDeterministicFunction(fullArgumentList);
+		return fullArgumentList[0];
+	}
 
 }

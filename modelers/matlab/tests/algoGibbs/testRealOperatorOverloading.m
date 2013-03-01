@@ -22,14 +22,14 @@ repeatable = true;
 dtrace(debugPrint, '++testRealOperatorOverloading');
 
 numSamples = 1000;
-updatesPerSample = 100;
-burnInUpdates = 1000;
+scansPerSample = 50;
+burnInScans = 10;
 
 graph1 = FactorGraph();
-graph1.Solver = com.analog.lyric.dimple.solvers.gibbs.Solver();
+graph1.Solver = 'Gibbs';
 graph1.Solver.setNumSamples(numSamples);
-graph1.Solver.setUpdatesPerSample(updatesPerSample);
-graph1.Solver.setBurnInUpdates(burnInUpdates);
+graph1.Solver.setScansPerSample(scansPerSample);
+graph1.Solver.setBurnInScans(burnInScans);
 
 a1 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,12));
 b1 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(7,17));
@@ -44,10 +44,10 @@ graph1.solve();
 
 
 graph2 = FactorGraph();
-graph2.Solver = com.analog.lyric.dimple.solvers.gibbs.Solver();
+graph2.Solver = 'Gibbs';
 graph2.Solver.setNumSamples(numSamples);
-graph2.Solver.setUpdatesPerSample(updatesPerSample);
-graph2.Solver.setBurnInUpdates(burnInUpdates);
+graph2.Solver.setScansPerSample(scansPerSample);
+graph2.Solver.setBurnInScans(burnInScans);
 
 a2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,12));
 b2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(7,17));

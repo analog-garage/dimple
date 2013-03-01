@@ -71,7 +71,23 @@ classdef VariableBase < Node
         end
         
         function z = not(a)
-            z = addUnaryOperatorOverloadedFactor(a,@not,com.analog.lyric.dimple.FactorFunctions.Not);
+            z = addUnaryToBitOperatorOverloadedFactor(a,com.analog.lyric.dimple.FactorFunctions.Not);
+        end
+        
+        function z = lt(a,b)
+            z = addBinaryToBitOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.LessThan);
+        end
+        
+        function z = gt(a,b)
+            z = addBinaryToBitOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.GreaterThan);
+        end
+        
+        function z = le(a,b)
+            z = addBinaryToBitOperatorOverloadedFactor(b,a,com.analog.lyric.dimple.FactorFunctions.GreaterThan);
+        end
+        
+        function z = ge(a,b)
+            z = addBinaryToBitOperatorOverloadedFactor(b,a,com.analog.lyric.dimple.FactorFunctions.LessThan);
         end
         
         function x = get.Domain(obj)
@@ -149,7 +165,7 @@ classdef VariableBase < Node
                 if (isa(factor, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
                     for i = 1:length(domaina)
                         for j = 1:length(domainb)
-                            zdomain(curIndex) = factor.eval({domaina{i} domainb{j}});
+                            zdomain(curIndex) = factor.getDeterministicFunctionValue({domaina{i} domainb{j}});
                             curIndex = curIndex+1;
                         end
                     end
@@ -200,7 +216,7 @@ classdef VariableBase < Node
                 
                 if (isa(factor, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
                     for i = 1:length(domaina)
-                        zdomain(curIndex) = factor.eval(domaina{i});
+                        zdomain(curIndex) = factor.getDeterministicFunctionValue(domaina{i});
                         curIndex = curIndex+1;
                     end
                 else
@@ -236,6 +252,25 @@ classdef VariableBase < Node
             end
         end
         
+        function z = addBinaryToBitOperatorOverloadedFactor(a,b,factor)
+
+            %znested = Bit();
+            z = Bit();
+                
+            %Eventually can build combo table, right now, this will do
+            fg = getFactorGraph();
+            fg.addFactor(factor,z,a,b);
+        end
+        
+        function z = addUnaryToBitOperatorOverloadedFactor(a,factor)
+
+            %znested = Bit();
+            z = Bit();
+                
+            %Eventually can build combo table, right now, this will do
+            fg = getFactorGraph();
+            fg.addFactor(factor,z,a);
+        end
         
         function b = getDomain(obj)
             b = obj.Domain;

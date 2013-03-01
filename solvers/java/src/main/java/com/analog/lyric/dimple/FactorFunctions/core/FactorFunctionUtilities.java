@@ -11,6 +11,8 @@ public class FactorFunctionUtilities
     		out = (Double)value;
     	else if (value instanceof Integer)
     		out = (Integer)value;
+    	else if (value instanceof Boolean)
+    		out = (Boolean)value ? 1 : 0;
     	else
     		throw new DimpleException("Invalid value type");
     	return out;
@@ -23,6 +25,8 @@ public class FactorFunctionUtilities
     		out = (int)Math.round((Double)value);
     	else if (value instanceof Integer)
     		out = (Integer)value;
+    	else if (value instanceof Boolean)
+    		out = (Boolean)value ? 1 : 0;
     	else
     		throw new DimpleException("Invalid value type");
     	return out;
