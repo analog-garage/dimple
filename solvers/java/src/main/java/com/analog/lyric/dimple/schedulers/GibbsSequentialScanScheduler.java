@@ -44,7 +44,6 @@ public class GibbsSequentialScanScheduler implements IScheduler
 	{
 		FixedSchedule schedule = new FixedSchedule(false);
 
-		// FIXME: ONLY VARIABLES, SKIP DEPENDENT VARIABLES
 		// Update all owned variables
 		for (VariableBase v : g.getVariablesFlat())
 			schedule.add(new NodeScheduleEntry(v));

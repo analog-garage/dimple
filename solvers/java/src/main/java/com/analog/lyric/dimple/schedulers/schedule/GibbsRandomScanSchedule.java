@@ -70,7 +70,6 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 	{
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
 		
-		// FIXME: ONLY VARIABLES, SKIP DEPENDENT VARIABLES
 		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
 		int variableIndex = GibbsSolverRandomGenerator.rand.nextInt(_numVariables);
 		
