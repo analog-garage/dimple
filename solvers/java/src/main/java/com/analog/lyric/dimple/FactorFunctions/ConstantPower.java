@@ -20,14 +20,16 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealMinus extends FactorFunction
+public class ConstantPower extends FactorFunction
 {
+	protected double _power;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealMinus() {this(0);}
-	public RealMinus(double smoothing)
+	public ConstantPower(double power) {this(power, 0);}
+	public ConstantPower(double power, double smoothing)
 	{
-		super("RealMinus");
+		super("ConstantPower");
+		_power = power;
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -36,25 +38,22 @@ public class RealMinus extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public double evalEnergy(Object... arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
-
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	
+    	double computedResult = Math.pow(base, _power);
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = sum - out;
-    		double potential = diff*diff;
+        	double diff = computedResult - result;
+        	double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
+    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -68,13 +67,7 @@ public class RealMinus extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = arguments.length;
-
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
-    	
-    	arguments[0] = sum;		// Replace the output value
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	arguments[0] = Math.pow(base, _power);		// Replace the output value
     }
 }

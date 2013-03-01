@@ -52,7 +52,7 @@ graph2.Solver.setBurnInUpdates(burnInUpdates);
 a2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,12));
 b2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(7,17));
 z2 = Real();
-graph2.addFactor(com.analog.lyric.dimple.FactorFunctions.RealSum,z2,a2,b2);
+graph2.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum,z2,a2,b2);
 
 if (repeatable)
     graph2.Solver.setSeed(1);					% Make this repeatable

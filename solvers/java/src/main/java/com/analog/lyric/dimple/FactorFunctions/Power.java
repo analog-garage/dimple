@@ -20,14 +20,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealProduct extends FactorFunction
+public class Power extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealProduct() {this(0);}
-	public RealProduct(double smoothing)
+	public Power() {this(0);}
+	public Power(double smoothing)
 	{
-		super("RealProduct");
+		super("Power");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -38,22 +38,21 @@ public class RealProduct extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
+    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	Double power = FactorFunctionUtilities.toDouble(arguments[2]);
+    	
+    	double computedResult = Math.pow(base, power);
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = product - out;
-    		double potential = diff*diff;
+        	double diff = computedResult - result;
+        	double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (product == out) ? 0 : Double.POSITIVE_INFINITY;
+    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -65,14 +64,10 @@ public class RealProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object ... arguments)
     {
-    	int length = arguments.length;
-
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
-    	
-    	arguments[0] = product;		// Replace the output value
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	Double power = FactorFunctionUtilities.toDouble(arguments[2]);
+    	arguments[0] = Math.pow(base, power);		// Replace the output value
     }
 }

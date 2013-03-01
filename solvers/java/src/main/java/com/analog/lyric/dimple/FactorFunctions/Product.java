@@ -20,14 +20,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealSum extends FactorFunction
+public class Product extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealSum() {this(0);}
-	public RealSum(double smoothing)
+	public Product() {this(0);}
+	public Product(double smoothing)
 	{
-		super("RealSum");
+		super("Product");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -41,19 +41,19 @@ public class RealSum extends FactorFunction
     	int length = arguments.length;
     	double out = FactorFunctionUtilities.toDouble(arguments[0]);
 
-    	double sum = 0;
+    	double product = 1;
     	for (int i = 1; i < length; i++)
-    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
+    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = sum - out;
+    		double diff = product - out;
     		double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
+    		return (product == out) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -69,10 +69,10 @@ public class RealSum extends FactorFunction
     {
     	int length = arguments.length;
 
-    	double sum = 0;
+    	double product = 1;
     	for (int i = 1; i < length; i++)
-    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
+    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
     	
-    	arguments[0] = sum;		// Replace the output value
+    	arguments[0] = product;		// Replace the output value
     }
 }

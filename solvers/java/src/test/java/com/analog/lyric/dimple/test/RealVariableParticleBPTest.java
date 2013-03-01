@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.FactorFunctions.MixedNormal;
-import com.analog.lyric.dimple.FactorFunctions.RealSum;
+import com.analog.lyric.dimple.FactorFunctions.Sum;
 import com.analog.lyric.dimple.FactorFunctions.SimpleNormal;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -380,7 +380,7 @@ public class RealVariableParticleBPTest
 		b.setName("b");
 		c.setName("c");
 		
-		graph.addFactor(new RealSum(1.0),c,b,a);
+		graph.addFactor(new Sum(1.0),c,b,a);
 				
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		SRealVariable sb = (SRealVariable)b.getSolver();

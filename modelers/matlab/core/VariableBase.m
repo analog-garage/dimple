@@ -32,36 +32,38 @@ classdef VariableBase < Node
             obj@Node(vectorObject,indices);
         end
         
+        % FIXME: Mod should use a java function too, but need version that
+        % works like MATLAB for negative numbers (or vice versa)
         function z= mod(a,b)
             z = addBinaryOperatorOverloadedFactor(a,b,@mod,@(z,x,y) z == mod(x,y));
         end
         
         function z = minus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.RealMinus);
+            z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Minus);
         end
         
         function z = mpower(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.RealPower);
+            z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.Power);
         end
         
         function z = and(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@and,@(z,x,y) z == (x&y));
+            z = addBinaryOperatorOverloadedFactor(a,b,@and,com.analog.lyric.dimple.FactorFunctions.And);
         end
         
         function z = or(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@or,@(z,x,y) z==(x|y));
+            z = addBinaryOperatorOverloadedFactor(a,b,@or,com.analog.lyric.dimple.FactorFunctions.Or);
         end
         
         function z = mtimes(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.RealProduct);
+            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
         end
         
         function z = xor(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@xor,@(z,x,y) z == xor(x,y));
+            z = addBinaryOperatorOverloadedFactor(a,b,@xor,com.analog.lyric.dimple.FactorFunctions.Xor);
         end
         
         function z = plus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.RealSum);
+            z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
         end
         
         function z = uminus(a)

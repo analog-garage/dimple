@@ -20,14 +20,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealSquare extends FactorFunction
+public class Minus extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealSquare() {this(0);}
-	public RealSquare(double smoothing)
+	public Minus() {this(0);}
+	public Minus(double smoothing)
 	{
-		super("RealSquare");
+		super("Minus");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -38,20 +38,23 @@ public class RealSquare extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
-    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
-    	
-    	double computedResult = input*input;
+    	int length = arguments.length;
+    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
+    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
+
+    	double sum = posIn;
+    	for (int i = 2; i < length; i++)
+    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
     	
     	if (_smoothingSpecified)
     	{
-        	double diff = computedResult - result;
-        	double potential = diff*diff;
+    		double diff = sum - out;
+    		double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
+    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -63,9 +66,15 @@ public class RealSquare extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... arguments)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
-    	arguments[0] = input*input;		// Replace the output value
+    	int length = arguments.length;
+
+    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double sum = posIn;
+    	for (int i = 2; i < length; i++)
+    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    	
+    	arguments[0] = sum;		// Replace the output value
     }
 }

@@ -17,7 +17,7 @@
 function testAddFactorJava()
 
 
-    myxor = com.analog.lyric.dimple.FactorFunctions.XorDelta();
+    myxor = com.analog.lyric.dimple.FactorFunctions.Xor();
 
     fg = FactorGraph();
 

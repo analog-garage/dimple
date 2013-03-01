@@ -20,16 +20,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealFixedPower extends FactorFunction
+public class Square extends FactorFunction
 {
-	protected double _power;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealFixedPower(double power) {this(power, 0);}
-	public RealFixedPower(double power, double smoothing)
+	public Square() {this(0);}
+	public Square(double smoothing)
 	{
-		super("RealFixedPower");
-		_power = power;
+		super("Square");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -41,9 +39,9 @@ public class RealFixedPower extends FactorFunction
     public double evalEnergy(Object ... arguments)
     {
     	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
-    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
     	
-    	double computedResult = Math.pow(base, _power);
+    	double computedResult = input*input;
     	
     	if (_smoothingSpecified)
     	{
@@ -65,9 +63,9 @@ public class RealFixedPower extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object ... arguments)
     {
-    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
-    	arguments[0] = Math.pow(base, _power);		// Replace the output value
+    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
+    	arguments[0] = input*input;		// Replace the output value
     }
 }
