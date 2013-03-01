@@ -54,6 +54,7 @@ graph1.solve();
 
 graph2 = FactorGraph();
 graph2.Solver ='SumProduct';
+graph2.Scheduler = 'DefaultScheduler';
 
 a2 = Discrete(aDomain);
 b2 = Discrete(bDomain);
