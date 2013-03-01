@@ -68,14 +68,14 @@ public class LinearEquation extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... input)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = input.length;
+    	int length = arguments.length;
 
     	double sum= 1;
     	for (int i = 1; i < length; i++)
-    		sum += _constant[i-1]*(Double)input[i];
+    		sum += _constant[i-1] * FactorFunctionUtilities.toDouble(arguments[i]);
     	
-    	input[0] = sum;		// Replace the output value
+    	arguments[0] = sum;		// Replace the output value
     }
 }

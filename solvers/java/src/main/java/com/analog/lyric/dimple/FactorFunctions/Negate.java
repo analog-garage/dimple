@@ -20,14 +20,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealMinus extends FactorFunction
+public class Negate extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public RealMinus() {this(0);}
-	public RealMinus(double smoothing)
+	public Negate() {this(0);}
+	public Negate(double smoothing)
 	{
-		super("RealMinus");
+		super("Negate");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -38,23 +38,19 @@ public class RealMinus extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	int length = arguments.length;
     	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double in = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double negation = -in;
 
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
-    	
     	if (_smoothingSpecified)
     	{
-    		double diff = sum - out;
+    		double diff = negation - out;
     		double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
+    		return (negation == out) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -68,13 +64,6 @@ public class RealMinus extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = arguments.length;
-
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
-    	
-    	arguments[0] = sum;		// Replace the output value
+    	arguments[0] = -FactorFunctionUtilities.toDouble(arguments[1]);		// Replace the output value
     }
 }

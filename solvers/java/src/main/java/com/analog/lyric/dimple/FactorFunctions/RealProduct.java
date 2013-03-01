@@ -43,9 +43,7 @@ public class RealProduct extends FactorFunction
 
     	double product = 1;
     	for (int i = 1; i < length; i++)
-    	{
     		product *= FactorFunctionUtilities.toDouble(arguments[i]);
-    	}
     	
     	if (_smoothingSpecified)
     	{
@@ -67,14 +65,14 @@ public class RealProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... input)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = input.length;
+    	int length = arguments.length;
 
     	double product = 1;
     	for (int i = 1; i < length; i++)
-    		product *= (Double)input[i];
+    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
     	
-    	input[0] = product;		// Replace the output value
+    	arguments[0] = product;		// Replace the output value
     }
 }

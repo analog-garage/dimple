@@ -66,8 +66,8 @@ public class RealPower extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object ... arguments)
     {
-    	Double base = (Double)arguments[1];
-    	Double power = (Double)arguments[2];
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
+    	Double power = FactorFunctionUtilities.toDouble(arguments[2]);
     	arguments[0] = Math.pow(base, power);		// Replace the output value
     }
 }

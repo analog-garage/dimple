@@ -20,42 +20,21 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealMinus extends FactorFunction
+public class Not extends FactorFunction 
 {
-	protected double _beta = 0;
-	protected boolean _smoothingSpecified = false;
-	public RealMinus() {this(0);}
-	public RealMinus(double smoothing)
+	public Not()
 	{
-		super("RealMinus");
-		if (smoothing > 0)
-		{
-			_beta = 1 / smoothing;
-			_smoothingSpecified = true;
-		}
+		super("Not");
 	}
 	
     @Override
-    public double evalEnergy(Object ... arguments)
+    public double evalEnergy(Object... arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
-
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    	boolean outValue = FactorFunctionUtilities.toBoolean(arguments[0]);
+    	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
+    	boolean notValue = !inValue;
     	
-    	if (_smoothingSpecified)
-    	{
-    		double diff = sum - out;
-    		double potential = diff*diff;
-    		return potential*_beta;
-    	}
-    	else
-    	{
-    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
-    	}
+    	return (notValue == outValue) ? 0 : Double.POSITIVE_INFINITY;
     }
     
     
@@ -64,17 +43,13 @@ public class RealMinus extends FactorFunction
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
-	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+	public final boolean isDeterministicDirected() {return true;}
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = arguments.length;
-
-    	double posIn = FactorFunctionUtilities.toDouble(arguments[1]);
-    	double sum = posIn;
-    	for (int i = 2; i < length; i++)
-    		sum -= FactorFunctionUtilities.toDouble(arguments[i]);
+    	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
+    	boolean notValue = !inValue;
     	
-    	arguments[0] = sum;		// Replace the output value
+    	arguments[0] = notValue;		// Replace the output value
     }
 }

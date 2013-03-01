@@ -65,9 +65,9 @@ public class RealFixedPower extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... arguments)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	Double base = (Double)arguments[1];
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	arguments[0] = Math.pow(base, _power);		// Replace the output value
     }
 }

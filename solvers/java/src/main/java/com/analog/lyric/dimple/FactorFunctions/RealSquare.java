@@ -65,7 +65,7 @@ public class RealSquare extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object ... arguments)
     {
-    	Double input = (Double)arguments[1];
+    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
     	arguments[0] = input*input;		// Replace the output value
     }
 }

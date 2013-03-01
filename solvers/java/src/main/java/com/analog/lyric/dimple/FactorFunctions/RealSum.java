@@ -65,14 +65,14 @@ public class RealSum extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... input)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = input.length;
+    	int length = arguments.length;
 
     	double sum = 0;
     	for (int i = 1; i < length; i++)
-    		sum += (Double)input[i];
+    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
     	
-    	input[0] = sum;		// Replace the output value
+    	arguments[0] = sum;		// Replace the output value
     }
 }
