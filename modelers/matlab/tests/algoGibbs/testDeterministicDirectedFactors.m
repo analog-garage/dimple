@@ -31,9 +31,13 @@ graph1.Solver.setNumSamples(numSamples);
 graph1.Solver.setScansPerSample(scansPerSample);
 graph1.Solver.setBurnInScans(burnInScans);
 
-a1 = Discrete(0:5);
-b1 = Discrete(1:4);
-c1 = Discrete(0:10);
+aDomain = 0:5;
+bDomain = 1:4;
+cDomain = 0:10;
+
+a1 = Discrete(aDomain);
+b1 = Discrete(bDomain);
+c1 = Discrete(cDomain);
 d1 = Bit();
 w1 = b1^a1;
 x1 = w1 > c1;
@@ -51,9 +55,9 @@ graph1.solve();
 graph2 = FactorGraph();
 graph2.Solver ='SumProduct';
 
-a2 = Discrete(0:5);
-b2 = Discrete(1:4);
-c2 = Discrete(0:10);
+a2 = Discrete(aDomain);
+b2 = Discrete(bDomain);
+c2 = Discrete(cDomain);
 d2 = Bit();
 w2 = b2^a2;
 x2 = w2 > c2;
@@ -63,8 +67,14 @@ z2.Input = 0.7;
 
 graph2.solve();
 
+a1Samples = a1.Solver.getAllSampleIndices();
+b1Samples = b1.Solver.getAllSampleIndices();
+c1Samples = c1.Solver.getAllSampleIndices();
 z1Samples = z1.Solver.getAllSampleIndices();
 
+assert(abs(mean(aDomain(a1Samples+1)) - a2.Belief*(aDomain')) < 0.05);
+assert(abs(mean(bDomain(b1Samples+1)) - b2.Belief*(bDomain')) < 0.05);
+assert(abs(mean(cDomain(c1Samples+1)) - c2.Belief*(cDomain')) < 0.05);
 assert(abs(mean(z1Samples) - z2.Belief) < 0.01);
 
 dtrace(debugPrint, '--testDeterministicDirectedFactors');
