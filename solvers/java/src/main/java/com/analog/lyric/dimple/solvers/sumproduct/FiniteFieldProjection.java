@@ -94,7 +94,6 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 
 	public void updateEdge(int outPortNum) 
 	{
-		// TODO Auto-generated method stub
 		if (outPortNum == 0)
 			updateFiniteField();
 		else
@@ -102,7 +101,6 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 			if (outPortNum >= 1)
 				updateBit(outPortNum);
 		}
-		
 	}
 	
 	public void updateFiniteField()

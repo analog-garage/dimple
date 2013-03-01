@@ -30,7 +30,6 @@ public class MultivariateGaussianAdd extends MultivariateFactorBase
 	{
 		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		
-		// TODO Auto-generated method stub
 		//double [] vector = _input.getInformationVector();
 		//double [][] matrix = _input.getInformationMatrix();
 		

@@ -496,8 +496,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 	
 	@Override
-	public void initializeEdge(int portNum) {
-		// TODO Auto-generated method stub
+	public void initializeEdge(int portNum)
+	{
 		throw new DimpleException("Not supported");
 	}
 

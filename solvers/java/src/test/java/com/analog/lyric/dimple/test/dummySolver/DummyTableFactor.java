@@ -37,34 +37,30 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
-	public void createMessages() {
-		// TODO Auto-generated method stub
-		
+	public void createMessages()
+	{
 	}
 
 	@Override
-	public void initializeEdge(int portNum) {
-		// TODO Auto-generated method stub
-		
+	public void initializeEdge(int portNum)
+	{
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) {
-		// TODO Auto-generated method stub
+	public Object getInputMsg(int portIndex)
+	{
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
-		// TODO Auto-generated method stub
+	public Object getOutputMsg(int portIndex)
+	{
 		return null;
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) {
-		// TODO Auto-generated method stub
-		
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
 	}
 
 }

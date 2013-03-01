@@ -182,7 +182,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double[][] getInPortMsgs() 
 	{
-		// TODO Auto-generated method stub
 		return _inputMsgs;
 	}
 
@@ -190,7 +189,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double[][] getOutPortMsgs() 
 	{
-		// TODO Auto-generated method stub
 		return _outputMsgs;
 	}
 

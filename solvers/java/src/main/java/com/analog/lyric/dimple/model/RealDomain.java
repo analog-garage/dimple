@@ -34,7 +34,6 @@ public class RealDomain extends Domain
 	@Override
 	public boolean isDiscrete() 
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 	

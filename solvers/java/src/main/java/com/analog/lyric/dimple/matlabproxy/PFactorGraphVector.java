@@ -60,25 +60,21 @@ public class PFactorGraphVector extends PFactorVector
 
 	@Override
 	public PNodeVector createNodeVector(Node[] nodes) {
-		// TODO Auto-generated method stub
 		return new PFactorGraphVector(nodes);
 	}
 
 	@Override
 	public boolean isVariable() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isFactor() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isGraph() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 

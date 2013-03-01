@@ -43,13 +43,11 @@ public class IndexCounter implements Iterator<int[]>, Iterable<int[]>
 	@Override
 	public boolean hasNext() 
 	{
-		
 		for (int i = 0; i < _domainLengths.length; i++)
 		{
 			if (_currentLocation[i] < (_domainLengths[i]-1))
 				return true;
 		}
-		// TODO Auto-generated method stub
 		return false;
 	}
 

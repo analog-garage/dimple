@@ -277,7 +277,6 @@ public class SRealFactor extends SFactorBase
 	@Override
 	public Object getInputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _inPortMsgs[portIndex];
 	}
 
@@ -285,7 +284,6 @@ public class SRealFactor extends SFactorBase
 	@Override
 	public Object getOutputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _outMsgArray[portIndex];
 	}
 

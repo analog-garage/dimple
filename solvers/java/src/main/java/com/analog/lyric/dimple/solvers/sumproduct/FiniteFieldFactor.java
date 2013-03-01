@@ -63,14 +63,12 @@ public abstract class FiniteFieldFactor extends SFactorBase
 	@Override
 	public Object getInputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _inputMsgs[portIndex];
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _outputMsgs[portIndex];
 	}
 

@@ -271,14 +271,11 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		checkSolverNotNull();
 		_solverVariable.update();
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void updateEdge(int outPortNum) 
 	{
-		// TODO Auto-generated method stub
 		checkSolverNotNull();
 		_solverVariable.updateEdge(outPortNum);
 	}

@@ -92,12 +92,4 @@ public class FloodingScheduler implements IScheduler
 		_subGraphSchedulerClass = schedulerClass;
 	}
 
-
-//	@Override
-//	public ISchedule createSchedule(com.lyricsemi.dimple.schedulers.FactorGraph g)
-//			 {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-
 }

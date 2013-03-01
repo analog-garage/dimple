@@ -98,46 +98,41 @@ public class DummyVariable extends SVariableBase
 
 
 	@Override
-	public Object[] createMessages(ISolverFactor factor) {
-		// TODO Auto-generated method stub
+	public Object[] createMessages(ISolverFactor factor)
+	{
 		return null;
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) {
-		// TODO Auto-generated method stub
+	public Object resetInputMessage(Object message)
+	{
 		return null;
 	}
 
 	@Override
-	public void initializeEdge(int portNum) {
-		// TODO Auto-generated method stub
-		
+	public void initializeEdge(int portNum)
+	{
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) {
-		// TODO Auto-generated method stub
+	public Object getInputMsg(int portIndex)
+	{
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
-		// TODO Auto-generated method stub
+	public Object getOutputMsg(int portIndex)
+	{
 		return null;
 	}
 
 	@Override
 	public void setInputMsg(int portIndex, Object obj) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) {
-		// TODO Auto-generated method stub
-		
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
 	}
 
 }

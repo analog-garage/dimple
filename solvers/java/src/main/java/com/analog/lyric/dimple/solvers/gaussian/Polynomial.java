@@ -109,7 +109,6 @@ public class Polynomial extends MultivariateFactorBase
 		//TODO: somehow avoid double computation.
 		//Maybe this is avoided when we have multivariate gaussian
 
-		// TODO Auto-generated method stub
 		if (outPortNum == 0)
 			updateToY();
 		else

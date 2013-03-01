@@ -587,8 +587,6 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public Object [] createMessages(ISolverFactor factor) 
 	{
-		
-		// TODO Auto-generated method stub
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs,newArraySize);
@@ -607,7 +605,6 @@ public class SVariable extends SDiscreteVariableBase
 		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
 		
 		return new Object [] {_inPortMsgs[portNum],_outMsgArray[portNum]};
-		
 	}
 	
 

@@ -97,7 +97,6 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	@Override
 	public void setOutputMsg(Object message) 
 	{
-		// TODO Auto-generated method stub
 		_msg = (double[])message;
 	}
 

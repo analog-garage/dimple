@@ -91,7 +91,6 @@ public class DiscreteSampler extends HybridSampledBPSampler
 	@Override
 	public Object getInputMsg() 
 	{
-		// TODO Auto-generated method stub
 		return _msg;
 	}
 

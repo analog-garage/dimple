@@ -60,7 +60,6 @@ public class MultivariateVariable extends SVariableBase
 	@Override
 	public Object getBelief()  
 	{
-		// TODO Auto-generated method stub
 		MultivariateMsg m = new MultivariateMsg(_input.getMeans(), _input.getCovariance());		
 		doUpdate(m,-1);
 		return m;
@@ -75,7 +74,6 @@ public class MultivariateVariable extends SVariableBase
 
 	private void doUpdate(MultivariateMsg outMsg,int outPortNum) 
 	{
-		// TODO Auto-generated method stub
 		double [] vector = _input.getInformationVector();		
 		double [][] matrix = _input.getInformationMatrix();		
 		

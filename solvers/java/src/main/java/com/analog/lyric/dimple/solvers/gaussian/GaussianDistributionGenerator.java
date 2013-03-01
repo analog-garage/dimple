@@ -37,7 +37,6 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 	@Override
 	public void generateDistributionInPlace(ArrayList<Object> input) 
 	{
-		// TODO Auto-generated method stub
 		double mean = 0;
 		
 		for (int i = 0; i < input.size(); i++)

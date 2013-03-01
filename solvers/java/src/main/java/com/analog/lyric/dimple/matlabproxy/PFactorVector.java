@@ -49,21 +49,18 @@ public class PFactorVector extends PNodeVector
 	@Override
 	public boolean isVariable() 
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isFactor() 
 	{
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public boolean isGraph() 
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 

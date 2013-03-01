@@ -38,7 +38,6 @@ public class RealJointDomain extends Domain
 	@Override
 	public boolean isDiscrete() 
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 	

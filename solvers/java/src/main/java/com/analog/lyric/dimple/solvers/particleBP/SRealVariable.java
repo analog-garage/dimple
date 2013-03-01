@@ -446,8 +446,6 @@ public class SRealVariable extends SRealVariableBase
 			// Overwrite the output message so that it can be created in the correct form
 		_outMsgArray[portNum] = getDefaultVariableToFactorMessage();
 	
-
-		// TODO Auto-generated method stub
 		return new Object [] {_inPortMsgs[portNum],_outMsgArray[portNum]};
 	}
 
@@ -474,8 +472,8 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) {
-		// TODO Auto-generated method stub
+	public Object resetInputMessage(Object message)
+	{
 		double[] tmp = (double[])message;
 		double val = 1.0/tmp.length;
 		for (int i = 0; i < tmp.length; i++)
@@ -526,14 +524,12 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	public Object getInputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _inPortMsgs[portIndex];
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _outMsgArray[portIndex];
 	}
 

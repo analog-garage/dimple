@@ -209,7 +209,6 @@ public class SVariable extends SRealVariableBase
 	@Override
 	public Object [] createMessages(ISolverFactor factor) 
 	{
-		// TODO Auto-generated method stub
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
@@ -231,7 +230,6 @@ public class SVariable extends SRealVariableBase
 		double [] m = (double[])message;
 		m[0] = 0;
 		m[1] = Double.POSITIVE_INFINITY;
-		// TODO Auto-generated method stub
 		return m;
 	}
 
