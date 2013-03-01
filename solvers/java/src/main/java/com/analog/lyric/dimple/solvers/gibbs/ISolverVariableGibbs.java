@@ -21,8 +21,10 @@ public interface ISolverVariableGibbs
 	public void saveAllSamples();
 	public void saveCurrentSample();
     public void saveBestSample();
+    public void setCurrentSample(Object value);
 	public void updateBelief();
 	public void setBeta(double beta);
 	public double getPotential();
+	public double getConditionalPotential(int portIndex);
 	public void randomRestart();
 }

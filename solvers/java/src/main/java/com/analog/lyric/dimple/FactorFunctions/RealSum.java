@@ -17,27 +17,62 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class RealSum extends FactorFunction
 {
-	protected double _beta;
-	public RealSum() {this(1);}
-	public RealSum(double smoothing) {super("RealSum"); _beta = 1/smoothing;}
+	protected double _beta = 0;
+	protected boolean _smoothingSpecified = false;
+	public RealSum() {this(0);}
+	public RealSum(double smoothing)
+	{
+		super("RealSum");
+		if (smoothing > 0)
+		{
+			_beta = 1 / smoothing;
+			_smoothingSpecified = true;
+		}
+	}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object ... arguments)
+    {
+    	int length = arguments.length;
+    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
+
+    	double sum = 0;
+    	for (int i = 1; i < length; i++)
+    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
+    	
+    	if (_smoothingSpecified)
+    	{
+    		double diff = sum - out;
+    		double potential = diff*diff;
+    		return potential*_beta;
+    	}
+    	else
+    	{
+    		return (sum == out) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
+    
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+    @Override
+	public final void evalDeterministicFunction(Object ... input)
     {
     	int length = input.length;
-    	double out = (Double)input[0];
 
     	double sum = 0;
     	for (int i = 1; i < length; i++)
     		sum += (Double)input[i];
     	
-    	double diff = sum - out;
-    	double potential = diff*diff;
-    	
-    	return potential*_beta;
+    	input[0] = sum;		// Replace the output value
     }
 }

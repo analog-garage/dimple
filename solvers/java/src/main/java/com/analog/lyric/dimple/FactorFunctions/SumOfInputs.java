@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 /*
  * Function for testing kbestminsum works
@@ -24,17 +25,18 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 public class SumOfInputs extends FactorFunction 
 {
 
-	public SumOfInputs() {
+	public SumOfInputs()
+	{
 		super("FactorFunctionForTesting");
 	}
 
 	@Override
-	public double evalEnergy(Object... input) 
+	public double evalEnergy(Object... arguments) 
 	{
 		double sum = 0;
-		for (int i = 0; i < input.length; i++)
+		for (int i = 0; i < arguments.length; i++)
 		{
-			sum += (Double)input[i];
+			sum += FactorFunctionUtilities.toDouble(arguments[i]);
 		}
 		return -Math.log(sum); 
 	}

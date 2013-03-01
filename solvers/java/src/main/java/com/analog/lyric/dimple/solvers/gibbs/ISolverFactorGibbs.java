@@ -19,4 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs;
 public interface ISolverFactorGibbs
 {
 	public double getPotential();
+	public void updateNeighborVariableValue(int portIndex);
+	public double getConditionalPotential(int portIndex);
 }

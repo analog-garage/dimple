@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class AdditiveNoise extends FactorFunction
@@ -25,10 +26,10 @@ public class AdditiveNoise extends FactorFunction
 	public AdditiveNoise(double sigma) {super("AdditiveNoise"); _invSigmaSquared = 1/(sigma*sigma);}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object... arguments)
     {
-    	double var1 = (Double)input[0];
-    	double var2 = (Double)input[1];
+    	double var1 = FactorFunctionUtilities.toDouble(arguments[0]);
+    	double var2 = FactorFunctionUtilities.toDouble(arguments[1]);
     	
     	double diff = var2 - var1;
     	double potential = diff*diff*_invSigmaSquared/2;

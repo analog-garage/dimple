@@ -17,26 +17,54 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class ConstantProduct extends FactorFunction
 {
-	protected double _beta;
 	protected double _constant;
-	public ConstantProduct() {this(1,1);}
-	public ConstantProduct(double constant) {this(constant,1);}
-	public ConstantProduct(double constant, double smoothing) {super("ConstantProduct"); _beta = 1/smoothing; _constant=constant;}
+	protected double _beta = 0;
+	protected boolean _smoothingSpecified = false;
+	public ConstantProduct(double constant) {this(constant, 0);}
+	public ConstantProduct(double constant, double smoothing)
+	{
+		super("ConstantProduct");
+		_constant = constant;
+		if (smoothing > 0)
+		{
+			_beta = 1 / smoothing;
+			_smoothingSpecified = true;
+		}
+	}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object... arguments)
     {
+    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
+    	double product = _constant * FactorFunctionUtilities.toDouble(arguments[1]);
     	
-    	double out = (Double)input[0];
-
-    	double product= _constant * (Double) input[1];
-    	double diff = product - out;
-    	double potential = diff*diff;
-    	
-    	return potential*_beta;
+    	if (_smoothingSpecified)
+    	{
+    		double diff = product - out;
+    		double potential = diff*diff;
+    		return potential*_beta;
+    	}
+    	else
+    	{
+    		return (product == out) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
+    
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+    @Override
+	public final void evalDeterministicFunction(Object ... input)
+    {
+    	input[0] = _constant * (Double)input[1];		// Replace the output value
     }
 }

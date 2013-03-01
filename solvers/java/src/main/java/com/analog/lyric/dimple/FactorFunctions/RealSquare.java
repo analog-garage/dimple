@@ -17,25 +17,55 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class RealSquare extends FactorFunction
 {
-	protected double _beta;
-	public RealSquare() {this(1);}
-	public RealSquare(double smoothing) {super("RealFixedPower"); _beta = 1/smoothing;}
+	protected double _beta = 0;
+	protected boolean _smoothingSpecified = false;
+	public RealSquare() {this(0);}
+	public RealSquare(double smoothing)
+	{
+		super("RealSquare");
+		if (smoothing > 0)
+		{
+			_beta = 1 / smoothing;
+			_smoothingSpecified = true;
+		}
+	}
 	
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	Double result = (Double)arguments[0];
-    	Double input = (Double)arguments[1];
+    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
+    	Double input = FactorFunctionUtilities.toDouble(arguments[1]);
     	
     	double computedResult = input*input;
     	
-    	double diff = computedResult - result;
-    	double potential = diff*diff;
-    	
-    	return potential*_beta;
+    	if (_smoothingSpecified)
+    	{
+        	double diff = computedResult - result;
+        	double potential = diff*diff;
+    		return potential*_beta;
+    	}
+    	else
+    	{
+    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
+    
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+    @Override
+	public final void evalDeterministicFunction(Object ... arguments)
+    {
+    	Double input = (Double)arguments[1];
+    	arguments[0] = input*input;		// Replace the output value
     }
 }

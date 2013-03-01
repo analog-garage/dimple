@@ -49,10 +49,27 @@ public abstract class FactorFunctionBase
 	
 	public abstract FactorTable getFactorTable(Domain [] domainList);
 	
+	
+	// For directed factors...
+	// Inherently directed factor functions should override this and return true
+	public boolean isDirected() {return false;}
+	
+	// Inherently directed factor functions should override this and return the output index (or indices)
+	public int[] getDirectedToIndices() {return null;}
+	
+	// TODO: This doesn't appear to be used
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{
 		return true;
 	}
-
+	
+	// For deterministic directed factors...
+	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)
+	// Inherently deterministic directed factors should override this and return true
+	public boolean isDeterministicDirected() {return false;}
+	
+	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
+	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
+	public void evalDeterministicFunction(Object ... input){ }
 
 }

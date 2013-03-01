@@ -41,8 +41,10 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 public class FixedSchedule extends ScheduleBase
 {
 	protected ArrayList<IScheduleEntry> _schedule = new ArrayList<IScheduleEntry>();
+	protected boolean _checkAllEdgesAreIncluded = true;
 	
 	public FixedSchedule(){}
+	public FixedSchedule(boolean checkAllEdgesAreIncluded){_checkAllEdgesAreIncluded = checkAllEdgesAreIncluded;}
 	public FixedSchedule(IScheduleEntry[] entries)
 	{
 		add(entries);
@@ -50,8 +52,6 @@ public class FixedSchedule extends ScheduleBase
 	public FixedSchedule(Collection<IScheduleEntry> entries)
 	{
 		add(entries);
-		
-
 	}
 	
 	public ArrayList<IScheduleEntry> getSchedule()
@@ -65,7 +65,7 @@ public class FixedSchedule extends ScheduleBase
 	 * (non-Javadoc)
 	 * @see com.lyricsemi.dimple.schedulers.schedule.ISchedule#verify(com.lyricsemi.dimple.model.MFactorGraph)
 	 * 
-	 * This method is called when setSchedule is called on MFactorGraph.  The FixedSchedule makes sure
+	 * This method is called when setSchedule is called on MFactorGraph.  By default, FixedSchedule makes sure
 	 * all edges of the FactorGraph are updated at least once.  It also makes sure all nodes are valid
 	 * members of the FactorGraph whos schedule is being set.
 	 */
@@ -74,89 +74,92 @@ public class FixedSchedule extends ScheduleBase
 		super.attach(factorGraph);
 		
 		
-		//A graph consists of owned variables, owned factors and sub graphs
-		//Users should be able to update any of the edges or nodes in the graph or its subgraphs
-		//Users should be able to specify an update of the sub graph.  If they do this, the schedule
-		//of that sub graph should be used.
-		
-		//Both of these will be filled in with all the ports of the Factor Graph of interest.
-		HashSet<Port> setOfAllPorts = new HashSet<Port>();
-		HashSet<Port> whatsLeft = new HashSet<Port>();
-		
+		if (_checkAllEdgesAreIncluded)
+		{
+			//A graph consists of owned variables, owned factors and sub graphs
+			//Users should be able to update any of the edges or nodes in the graph or its subgraphs
+			//Users should be able to specify an update of the sub graph.  If they do this, the schedule
+			//of that sub graph should be used.
 
-		//Add all factor's ports to the list of things that must be updated.
-		for (Factor f : factorGraph.getNonGraphFactors().values())
-		{
-			for (int index = 0; index < f.getSiblings().size(); index++)
-			{
-				setOfAllPorts.add(new Port(f,index));
-				whatsLeft.add(new Port(f,index));
-			}
-		}
-		
-		//If this is a nested graph, we shouldn't be updating the boundary variables.  otherwise
-		//include them.  getVariables only includes boundary variables if this is the parent graph.
-		VariableList vl = null;
-		vl = factorGraph.getVariables();
-		
-		//Add all variable's ports to things that can/must be updated.
-		for (VariableBase v : vl.values())
-		{
-			for (int index = 0; index < v.getSiblings().size(); index++)
-			{
-				whatsLeft.add(new Port(v,index));
-				setOfAllPorts.add(new Port(v,index));
-			}
-		}
-		
-		
-		//Create our set of all sub graphs.
-		HashSet<FactorGraph> subGraphs = new HashSet<FactorGraph>();
-		for (FactorGraph graph : factorGraph.getNestedGraphs())
-		{
-			subGraphs.add(graph);
-		}
+			//Both of these will be filled in with all the ports of the Factor Graph of interest.
+			HashSet<Port> setOfAllPorts = new HashSet<Port>();
+			HashSet<Port> whatsLeft = new HashSet<Port>();
 
-		//Next we're going to go through the schedule and make sure each item is a member of the
-		//set of all ports for this Factor Graph.  We'll also remove each port in the schedule from
-		//whatsLeft to ensure everything is updated at least once.
-		
-		//Go through schedule
-		for (IScheduleEntry entry : _schedule)
-		{
-			Iterable<Port> ports = entry.getPorts();
 
-			if (ports != null)
+			//Add all factor's ports to the list of things that must be updated.
+			for (Factor f : factorGraph.getNonGraphFactors().values())
 			{
-				for (Port p : ports)
+				for (int index = 0; index < f.getSiblings().size(); index++)
 				{
-					//Make sure the element is contained in the Factor Graph's ports.
-					if (!setOfAllPorts.contains(p))
-						throw new DimpleException("Schedule contains illegal port: " + p);
-
-					//Also remove it from whatsLeft to indicate the edge has been updated.
-					whatsLeft.remove(p);
+					setOfAllPorts.add(new Port(f,index));
+					whatsLeft.add(new Port(f,index));
 				}
 			}
-			else
+
+			//If this is a nested graph, we shouldn't be updating the boundary variables.  otherwise
+			//include them.  getVariables only includes boundary variables if this is the parent graph.
+			VariableList vl = null;
+			vl = factorGraph.getVariables();
+
+			//Add all variable's ports to things that can/must be updated.
+			for (VariableBase v : vl.values())
 			{
-				// This is a hack needed for schedulers that use sub-schedules without there being sub-graphs.
-				// As a result, they can't return ports, because they would get ports from the variables and factors in the sub-graph.
-				// The GibbsSequentialScanScheudler is an example of a scheduler that uses sub-schedules without there being sub-graphs.
-				// So, for this case, we simply skip the check that all ports are covered, and trust the scheduler.
-				// Perhaps one day we can restructure this test so that it doesn't rely on sub-schedules being associated with sub-graphs.
-				if (whatsLeft.size() != 0)
-					whatsLeft.clear();
-				break;
+				for (int index = 0; index < v.getSiblings().size(); index++)
+				{
+					whatsLeft.add(new Port(v,index));
+					setOfAllPorts.add(new Port(v,index));
+				}
 			}
-		}
-		
-		//Now, complain if we didn't update a port we should have updated.
-		if (whatsLeft.size() != 0)
-		{
-			Port p = whatsLeft.iterator().next();
-			
-			throw new DimpleException("Schedule didn't update all ports.  First missing port: " + p);
+
+
+			//Create our set of all sub graphs.
+			HashSet<FactorGraph> subGraphs = new HashSet<FactorGraph>();
+			for (FactorGraph graph : factorGraph.getNestedGraphs())
+			{
+				subGraphs.add(graph);
+			}
+
+			//Next we're going to go through the schedule and make sure each item is a member of the
+			//set of all ports for this Factor Graph.  We'll also remove each port in the schedule from
+			//whatsLeft to ensure everything is updated at least once.
+
+			//Go through schedule
+			for (IScheduleEntry entry : _schedule)
+			{
+				Iterable<Port> ports = entry.getPorts();
+
+				if (ports != null)
+				{
+					for (Port p : ports)
+					{
+						//Make sure the element is contained in the Factor Graph's ports.
+						if (!setOfAllPorts.contains(p))
+							throw new DimpleException("Schedule contains illegal port: " + p);
+
+						//Also remove it from whatsLeft to indicate the edge has been updated.
+						whatsLeft.remove(p);
+					}
+				}
+				else
+				{
+					// This is a hack needed for schedulers that use sub-schedules without there being sub-graphs.
+					// As a result, they can't return ports, because they would get ports from the variables and factors in the sub-graph.
+					// The GibbsSequentialScanScheudler is an example of a scheduler that uses sub-schedules without there being sub-graphs.
+					// So, for this case, we simply skip the check that all ports are covered, and trust the scheduler.
+					// Perhaps one day we can restructure this test so that it doesn't rely on sub-schedules being associated with sub-graphs.
+					if (whatsLeft.size() != 0)
+						whatsLeft.clear();
+					break;
+				}
+			}
+
+			//Now, complain if we didn't update a port we should have updated.
+			if (whatsLeft.size() != 0)
+			{
+				Port p = whatsLeft.iterator().next();
+
+				throw new DimpleException("Schedule didn't update all ports.  First missing port: " + p);
+			}
 		}
 	}
 	

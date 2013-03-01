@@ -20,43 +20,23 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class RealProduct extends FactorFunction
+public class And extends FactorFunction 
 {
-	protected double _beta = 0;
-	protected boolean _smoothingSpecified = false;
-	public RealProduct() {this(0);}
-	public RealProduct(double smoothing)
+	public And()
 	{
-		super("RealProduct");
-		if (smoothing > 0)
-		{
-			_beta = 1 / smoothing;
-			_smoothingSpecified = true;
-		}
+		super("And");
 	}
 	
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    	{
-    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
-    	}
+    	boolean outValue = FactorFunctionUtilities.toBoolean(arguments[0]);
     	
-    	if (_smoothingSpecified)
-    	{
-    		double diff = product - out;
-    		double potential = diff*diff;
-    		return potential*_beta;
-    	}
-    	else
-    	{
-    		return (product == out) ? 0 : Double.POSITIVE_INFINITY;
-    	}
+    	boolean andValue = true;
+    	for(int i = 1; i < arguments.length; ++i)
+    		andValue &= FactorFunctionUtilities.toBoolean(arguments[i]);
+
+    	return (andValue == outValue) ? 0 : Double.POSITIVE_INFINITY;
     }
     
     
@@ -65,16 +45,14 @@ public class RealProduct extends FactorFunction
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override
-	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object ... input)
+	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = input.length;
-
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    		product *= (Double)input[i];
+    	boolean andValue = true;
+    	for(int i = 1; i < arguments.length; ++i)
+    		andValue &= FactorFunctionUtilities.toBoolean(arguments[i]);
     	
-    	input[0] = product;		// Replace the output value
+    	arguments[0] = andValue;		// Replace the output value
     }
 }

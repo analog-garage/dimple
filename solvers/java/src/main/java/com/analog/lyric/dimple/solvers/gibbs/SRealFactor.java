@@ -16,41 +16,54 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.ArrayList;
+
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
-public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, ISolverFactorGibbs
+public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {	
 	protected Factor _realFactor;
 	protected ObjectSample [] _inputMsgs;
+	protected int _numPorts;
+	protected boolean _isDeterministicDirected;
 	
 	public SRealFactor(Factor factor)
 	{
 		super(factor);
 		_realFactor = factor;
+		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
 	}
 	
 
-	public double getConditionalPotential(double value, int outPortIndex)
+	@Override
+	public double getConditionalPotential(int portIndex)
 	{
+		double result = getPotential();
 		
-		
-	    int numPorts = _factor.getSiblings().size();
-	    Object[] values = new Object[numPorts];
-	    for (int port = 0; port < numPorts; port++)
-	    	values[port] = _inputMsgs[port].value;
-	    
-	    values[outPortIndex] = value;	// Use the requested value on the associated output port
-	    
-	    return _realFactor.getFactorFunction().evalEnergy(values);
+		// If this is a deterministic directed factor, and the request is from a directed-from variable,
+		// Then propagate the request through the directed-to variables and sum up the results
+		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
+		{
+			ArrayList<INode> siblings = _factor.getSiblings();
+		    for (int port = 0; port < _numPorts; port++)
+		    {
+		    	VariableBase v = (VariableBase)siblings.get(port);
+		    	if (_factor.isDirectedTo(v))
+		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
+		    }
+		}
+
+		return result;
 	}
-	
+
 	
 	public void updateEdge(int outPortNum)
 	{
@@ -95,24 +108,51 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	    	inPortMsgs[port] = _inputMsgs[port].value;
 	    
 	    return getPotential(inPortMsgs);
-		
 	}
 	public double getPotential(Object[] inputs)
 	{
 	    return _realFactor.getFactorFunction().evalEnergy(inputs);
 	}
 
+	
+	
+	// Set the value of a neighboring variable
+	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
+	// then re-compute the directed outputs and propagate the result to the directed-to variables
+	public void updateNeighborVariableValue(int portIndex)
+	{
+		if (!_isDeterministicDirected) return;
+		if (_factor.isDirectedTo(portIndex)) return;
+		
+		// Compute the output values of the deterministic factor function from the input values
+	    Object[] values = new Object[_numPorts];
+	    for (int port = 0; port < _numPorts; port++)
+	    	values[port] = _inputMsgs[port].value;
+		_factor.getFactorFunction().evalDeterministicFunction(values);
+		
+		// Update the directed-to variables with the computed values
+		ArrayList<INode> siblings = _factor.getSiblings();
+	    for (int port = 0; port < _numPorts; port++)
+	    {
+	    	VariableBase v = (VariableBase)siblings.get(port);
+	    	if (_factor.isDirectedTo(v))
+	    		((ISolverVariableGibbs)v.getSolver()).setCurrentSample(values[port]);
+	    }
+	}
+
+
+
 
 	@Override
 	public void createMessages() 
 	{
-		_inputMsgs = new ObjectSample[_factor.getSiblings().size()];
-		for (int i = 0; i < _factor.getSiblings().size(); i++)
+		_numPorts = _factor.getSiblings().size();
+		_inputMsgs = new ObjectSample[_numPorts];
+		for (int i = 0; i < _numPorts; i++)
 		{
 			Object [] messages = _factor.getVariables().getByIndex(i).getSolver().createMessages(this);
 			_inputMsgs[i] = (ObjectSample)messages[1];
 		}
-		
 	}
 
 
@@ -120,14 +160,12 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	public void initializeEdge(int portNum) 
 	{
 		_inputMsgs[portNum] = (ObjectSample)_factor.getVariables().getByIndex(portNum).getSolver().resetOutputMessage(_inputMsgs[portNum]);
-		
 	}
 
 
 	@Override
 	public Object getInputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _inputMsgs[portIndex];
 	}
 
@@ -135,18 +173,14 @@ public class SRealFactor extends SFactorBase implements ISolverRealFactorGibbs, 
 	@Override
 	public Object getOutputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		throw new DimpleException("not supported");
 	}
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
 	{
-		// TODO Auto-generated method stub
 		throw new DimpleException("not supported");
-
 	}
 
 

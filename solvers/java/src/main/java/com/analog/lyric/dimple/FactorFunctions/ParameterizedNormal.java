@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 
 
@@ -37,18 +38,18 @@ public class ParameterizedNormal extends FactorFunction
 	public ParameterizedNormal() {super("ParameterizedNormal");}
 	
     @Override
-	public double evalEnergy(Object ... input)
+	public double evalEnergy(Object ... arguments)
 	{
     	int index = 0;
-    	double mean = (Double)input[index++];				// First variable is mean parameter
-    	double inverseVariance = (Double)input[index++];	// Second variable is inverse variance (must be non-negative)
+    	double mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
+    	double inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
     	if (inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
-    	int length = input.length;
+    	int length = arguments.length;
     	int N = length - 2;									// Number of Normal variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double relInput = (Double)input[index] - mean;	// Remaining inputs are Normal variables
+    		double relInput = FactorFunctionUtilities.toDouble(arguments[index]) - mean;	// Remaining inputs are Normal variables
     		sum += relInput*relInput*inverseVariance;
     	}
 

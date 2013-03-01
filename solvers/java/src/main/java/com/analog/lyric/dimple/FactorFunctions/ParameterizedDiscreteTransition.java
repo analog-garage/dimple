@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 
 
@@ -59,22 +60,19 @@ public class ParameterizedDiscreteTransition extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object ... input)
+	public double evalEnergy(Object... arguments)
     {
-    	if (input.length != _xDimension*_yDimension + 2)
+    	if (arguments.length != _xDimension*_yDimension + 2)
     		throw new DimpleException("Incorrect number of arguments.");
     	
     	int index = 0;
     	
-    	Object yIn = input[index++];					// First argument is y (output variable)
-    	int y = (yIn instanceof Double) ? (int)Math.round((Double)yIn) : (Integer)yIn;
-    	
-    	Object xIn = input[index++];					// Second argument is x (input variable)
-    	int x = (xIn instanceof Double) ? (int)Math.round((Double)xIn) : (Integer)xIn;
+    	int y = FactorFunctionUtilities.toInteger(arguments[index++]);			// First argument is y (output variable)
+    	int x = FactorFunctionUtilities.toInteger(arguments[index++]);			// Second argument is x (input variable)
 
     	for (int col = 0; col < _xDimension; col++)		// Matrix is scanned by columns
     		for (int row = 0; row < _yDimension; row++)
-    			_A[row][col] = (Double)input[index++];
+    			_A[row][col] = FactorFunctionUtilities.toDouble(arguments[index++]);
     	
     	double sum = 0;									// Normalize over column selected by conditioning value
     	for (int row = 0; row < _yDimension; row++)

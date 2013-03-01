@@ -109,7 +109,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void solve(boolean initialize) 
 	{
 		if (initialize)
-			initialize();
+			_factorGraph.initialize();
 		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{

@@ -40,7 +40,7 @@ function testBasic()
     fg.Solver.setResamplingUpdatesPerParticle(30);
 
     %Create the factor.
-    realProduct = com.analog.lyric.dimple.FactorFunctions.RealProduct();
+    realProduct = com.analog.lyric.dimple.FactorFunctions.RealProduct(1.0);
     fg.addFactor(realProduct,c,a,b);
 
     %Set the inputs for a and b.

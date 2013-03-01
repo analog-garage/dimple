@@ -17,26 +17,57 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class RealFixedPower extends FactorFunction
 {
 	protected double _power;
-	protected double _beta;
-	public RealFixedPower(double power) {this(power, 1);}
-	public RealFixedPower(double power, double smoothing) {super("RealFixedPower"); _power = power; _beta = 1/smoothing;}
+	protected double _beta = 0;
+	protected boolean _smoothingSpecified = false;
+	public RealFixedPower(double power) {this(power, 0);}
+	public RealFixedPower(double power, double smoothing)
+	{
+		super("RealFixedPower");
+		_power = power;
+		if (smoothing > 0)
+		{
+			_beta = 1 / smoothing;
+			_smoothingSpecified = true;
+		}
+	}
 	
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	Double result = (Double)arguments[0];
-    	Double base = (Double)arguments[1];
+    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	
     	double computedResult = Math.pow(base, _power);
     	
-    	double diff = computedResult - result;
-    	double potential = diff*diff;
-    	
-    	return potential*_beta;
+    	if (_smoothingSpecified)
+    	{
+        	double diff = computedResult - result;
+        	double potential = diff*diff;
+    		return potential*_beta;
+    	}
+    	else
+    	{
+    		return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
+    
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
+    @Override
+	public final void evalDeterministicFunction(Object ... arguments)
+    {
+    	Double base = (Double)arguments[1];
+    	arguments[0] = Math.pow(base, _power);		// Replace the output value
     }
 }

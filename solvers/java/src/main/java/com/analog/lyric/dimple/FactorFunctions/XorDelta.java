@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class XorDelta extends FactorFunction 
@@ -27,13 +28,29 @@ public class XorDelta extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object ... arguments)
     {
-    	double total = 0;
-    	
-    	for(int i = 0; i < input.length; ++i)
-    		total += (Double)input[i];
+    	boolean total = false;
+    	for(int i = 0; i < arguments.length; ++i)
+    		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
 
-    	return (total % 2 == 0) ? 0 : Double.POSITIVE_INFINITY;
+    	return !total ? 0 : Double.POSITIVE_INFINITY;
+    }
+    
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return true;}
+    @Override
+	public final void evalDeterministicFunction(Object... arguments)
+    {
+    	boolean total = false;
+    	for(int i = 1; i < arguments.length; ++i)
+    		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
+    	
+    	arguments[0] = total;		// Replace the output value
     }
 }

@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 public class LessThan extends FactorFunction 
 {
@@ -26,16 +27,11 @@ public class LessThan extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object... arguments)
     {
-    	Object indicatorOut = input[0];
-    	boolean indicator;
-    	if (indicatorOut instanceof Double)
-    		indicator = (Math.round((Double)indicatorOut) != 0);
-    	else
-    		indicator = ((Integer)indicatorOut != 0);
-    	double firstVal = (Double)input[1];
-    	double secondVal = (Double)input[2];
+    	boolean indicator = FactorFunctionUtilities.toBoolean(arguments[0]);
+    	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);
     	
     	if (indicator == (firstVal < secondVal))
     		return 0;
@@ -43,4 +39,19 @@ public class LessThan extends FactorFunction
     		return Double.POSITIVE_INFINITY;
     }
 
+    
+    @Override
+    public final boolean isDirected()	{return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{0};}
+    @Override
+	public final boolean isDeterministicDirected() {return true;}
+    @Override
+	public final void evalDeterministicFunction(Object... arguments)
+    {
+    	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);
+    	
+    	arguments[0] = (firstVal < secondVal);		// Replace the output value
+    }
 }

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.FactorFunctions;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 
@@ -30,39 +31,39 @@ public class HybridRealFixedPower extends HybridSampledBPFactorFunction
 	}
 
     @Override
-    public double evalEnergy(Object ... arguments)
+    public double evalEnergy(Object... arguments)
     {
-    	Double result = (Double)arguments[0];
-    	Double base = (Double)arguments[1];
+    	Double result = FactorFunctionUtilities.toDouble(arguments[0]);
+    	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	
     	double computedResult = Math.pow(base, _power);
     	return (computedResult == result) ? 0 : Double.POSITIVE_INFINITY;	// This version is not smoothed
     }
 
 	@Override
-	public double acceptanceRatio(int outPortIndex, Object... inputs) 
+	public double acceptanceRatio(int outPortIndex, Object... arguments) 
 	{
-		if (inputs.length != 1)
+		if (arguments.length != 1)
 			throw new DimpleException("expect two edges");
 		
 		if (outPortIndex == 0)
 			return 1;
 		else
-			if ((Double)inputs[0] < 0 && _power%2 == 0)
+			if (FactorFunctionUtilities.toDouble(arguments[0]) < 0 && _power%2 == 0)
 				return 0;
 			else
 				return 1;
 	}
 
 	@Override
-	public Object generateSample(int outPortIndex, Object... inputs) 
+	public Object generateSample(int outPortIndex, Object... arguments) 
 	{
-		if (inputs.length != 1)
+		if (arguments.length != 1)
 			throw new DimpleException("expect two edges");
 
 		if (outPortIndex == 1)
 		{
-			double input = (Double)inputs[0];
+			double input = FactorFunctionUtilities.toDouble(arguments[0]);
 			double tmp = Math.pow(Math.abs(input),1.0/_power);
 			tmp = Math.signum(input)*tmp;
 			
@@ -73,7 +74,7 @@ public class HybridRealFixedPower extends HybridSampledBPFactorFunction
 		}
 		else
 		{
-			double tmp = (Double)inputs[0];
+			double tmp = FactorFunctionUtilities.toDouble(arguments[0]);
 			
 			tmp =  Math.pow(tmp, _power);
 			return tmp;

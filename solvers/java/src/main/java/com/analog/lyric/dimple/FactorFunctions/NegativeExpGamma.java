@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.FactorFunctions;
 import org.apache.commons.math.special.Gamma;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 
 
@@ -53,14 +54,14 @@ public class NegativeExpGamma extends FactorFunction
 	}
 	
     @Override
-	public double evalEnergy(Object ... input)
+	public double evalEnergy(Object... arguments)
     {
     	int index = 0;
     	if (!_alphaSpecified)
-    		_alpha = (Double)input[index++];		// First input is alpha parameter (must be non-negative)
+    		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
     	if (!_betaSpecified)
-    		_beta = (Double)input[index++];			// Second input is beta parameter (must be non-negative)
-    	double x = (Double)input[index++];			// Third input is the NegativeExpGamma distributed variable
+    		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the NegativeExpGamma distributed variable
     	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
     	if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
     	

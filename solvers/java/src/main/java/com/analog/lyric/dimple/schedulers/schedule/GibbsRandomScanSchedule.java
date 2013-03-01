@@ -20,29 +20,26 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverRandomGenerator;
 
 /**
  * @author jeffb
  * 
  *         This is a dynamic schedule, which updates only one variable that is
- *         randomly chosen. Prior to doing so, it updates the corresponding
- *         edges of the connected factors. This allows one iteration to
- *         correspond to exactly one variable update.
+ *         randomly chosen. This allows one iteration to correspond to exactly
+ *         one variable update. In the Gibbs solver, factors do not need to be
+ *         explicitly updated in the schedule.
  * 
  *         WARNING: This schedule DOES NOT respect any existing sub-graph
  *         scheduler associations. That is, if any sub-graph already has an
  *         associated scheduler, that scheduler is ignored in creating this
  *         schedule. I believe this is a necessary limitation for Gibbs sampling
  *         to operate properly.
- *         
+ * 
  */
 public class GibbsRandomScanSchedule extends ScheduleBase
 {
@@ -73,20 +70,13 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 	{
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
 		
-		// Create a single sub-graph schedule entry so that it will be done all at once with a single update
-		FixedSchedule subSchedule = new FixedSchedule();
-
+		// FIXME: ONLY VARIABLES, SKIP DEPENDENT VARIABLES
 		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
 		int variableIndex = GibbsSolverRandomGenerator.rand.nextInt(_numVariables);
-		VariableBase v = ((ArrayList<VariableBase>)_variables.values()).get(variableIndex);
-		for (INode p : v.getSiblings())
-		{
-			subSchedule.add(new EdgeScheduleEntry(p,v));
-		}
-		subSchedule.add(new NodeScheduleEntry(v));
 		
-		// Create a single sub-schedule entry that includes all of the updates
-		updateList.add(new SubScheduleEntry(subSchedule));
+		// Create a single schedule entry that includes all of the selected variable
+		VariableBase v = ((ArrayList<VariableBase>)_variables.values()).get(variableIndex);
+		updateList.add(new NodeScheduleEntry(v));
 		
 		return updateList.iterator();
 	}

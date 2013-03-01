@@ -17,13 +17,10 @@
 package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 
 
 /**
@@ -31,8 +28,8 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
  * 
  *         This class generates a sequential schedule on a graph specifically
  *         suited for the Gibbs solver. This schedule updates each variable
- *         sequentially. Prior to updating each variable, the edge from each
- *         neighboring factor to that variable is updated.
+ *         sequentially.  In the Gibbs solver, factors do not need to be explicitly
+ *         updated in the schedule.
  * 
  *         WARNING: This schedule DOES NOT respect any existing sub-graph
  *         scheduler associations. That is, if any sub-graph already has an
@@ -45,26 +42,12 @@ public class GibbsSequentialScanScheduler implements IScheduler
 
 	public ISchedule createSchedule(FactorGraph g) 
 	{
-		FixedSchedule schedule = new FixedSchedule();
+		FixedSchedule schedule = new FixedSchedule(false);
 
-
+		// FIXME: ONLY VARIABLES, SKIP DEPENDENT VARIABLES
 		// Update all owned variables
 		for (VariableBase v : g.getVariablesFlat())
-		{
-			// For each variable, update factor edges connecting to that variable, then update the variable
-			// Do this as a single sub-graph schedule entry so that it will be done all at once
-			FixedSchedule subSchedule = new FixedSchedule();
-			for (INode p : v.getSiblings())
-			{
-				subSchedule.add(new EdgeScheduleEntry(p,p.getPortNum(v)));
-			}
-
-			// Then update the variable
-			subSchedule.add(new NodeScheduleEntry(v));
-			
-			// Add the sub-schedule to the outer schedule
-			schedule.add(new SubScheduleEntry(subSchedule));
-		}
+			schedule.add(new NodeScheduleEntry(v));
 
 		return schedule;
 	}

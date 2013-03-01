@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 public class SimpleNormal extends FactorFunction
@@ -26,13 +27,13 @@ public class SimpleNormal extends FactorFunction
 	public SimpleNormal(double mean, double sigma) {super("SimpleNormal"); _mean = mean; _invSigmaSquared = 1/(sigma*sigma);}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object ... arguments)
     {
-    	int length = input.length;
+    	int length = arguments.length;
     	double potential = 0;
     	for (int i = 0; i < length; i++)
     	{
-    		double relInput = (Double)input[i] - _mean;
+    		double relInput = FactorFunctionUtilities.toDouble(arguments[i]) - _mean;
     		potential += relInput*relInput*_invSigmaSquared;
     	}
     	return potential/2;

@@ -24,6 +24,8 @@ import org.apache.commons.math.random.RandomGenerator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
@@ -48,14 +50,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
+	protected boolean _isDeterministicDependent = false;
+	protected boolean _hasDeterministicDependents = false;
 
 	public SDiscreteVariable(VariableBase var) 
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
 		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
-		//initialize();
-		//initializeInputs();
 	}
 
 
@@ -66,26 +68,57 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public void update()
 	{
+		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
+		if (_isDeterministicDependent) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 		
+		// FIXME: ALSO RETURN IF VARIABLE VALUE IS CURRENTLY FIXED
+
 		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
 
 		// Compute the conditional probability
-		for (int index = 0; index < messageLength; index++)
+		if (!_hasDeterministicDependents)
 		{
-			double out = _input[index];						// Sum of the input prior...
+			// Update all the neighboring factors
+			// FIXME SPEED UP
+			ArrayList<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)
-				out += _inPortMsgs[port][index];			// Plus each input message value
-			out *= _beta;									// Apply tempering
+				siblings.get(port).updateEdge(_var.getSiblingPortIndex(port));
 			
-			if (out < minEnergy) minEnergy = out;			// For normalization
+			// Sum up the messages to get the conditional distribution
+			for (int index = 0; index < messageLength; index++)
+			{
+				double out = _input[index];						// Sum of the input prior...
+				for (int port = 0; port < _numPorts; port++)
+					out += _inPortMsgs[port][index];			// Plus each input message value
+				out *= _beta;									// Apply tempering
 
-			_conditional[index] = out;						// Save in log domain representation
+				if (out < minEnergy) minEnergy = out;			// For normalization
+
+				_conditional[index] = out;						// Save in log domain representation
+			}
 		}
+		else	// There are deterministic dependents, so must account for these
+		{
+			// FIXME: SPEED UP
+			ArrayList<INode> siblings = _var.getSiblings();
+			for (int index = 0; index < messageLength; index++)
+			{
+				setCurrentSampleIndex(index);
+				double out = _input[index];						// Sum of the input prior...
+				for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+					out += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+				out *= _beta;									// Apply tempering
 
+				if (out < minEnergy) minEnergy = out;			// For normalization
+
+				_conditional[index] = out;						// Save in log domain representation
+			}
+		}
+		
 		// Sample from the conditional distribution
 		setCurrentSampleIndex(generateSample(_conditional, minEnergy));
 	}
@@ -169,6 +202,19 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	_bestSampleIndex = _sampleIndex;
     }
     
+	public double getConditionalPotential(int portIndex)
+	{
+		double result = getPotential();		// Start with the local potential
+		
+		// Propagate the request through the other neighboring factors and sum up the results
+		ArrayList<INode> siblings = _var.getSiblings();
+		for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+			if (port != portIndex)
+				result += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+
+		    return result;
+	}
+	
 	public final double getPotential()
 	{
 		return _input[_sampleIndex];
@@ -190,14 +236,24 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	public final void setCurrentSampleIndex(int index)
     {
-
 		// Sample from the conditional distribution
 		_sampleIndex = index;
 
 		// Send the sample value to all output ports
 		_outputMsg.index = index;
 		_outputMsg.value = _varDiscrete.getDiscreteDomain().getElements()[index];
-				
+		
+		// If this variable has deterministic dependents, then set their values
+		if (_hasDeterministicDependents)
+		{
+			ArrayList<INode> siblings = _var.getSiblings();
+			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+			{
+				Factor f = (Factor)siblings.get(port);
+				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
+					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+			}
+		}
     }
     
     public final Object getCurrentSample()
@@ -340,6 +396,33 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
 	}
 
+	
+	// Determine whether or not this variable is a deterministic dependent variable; that is, one that corresponds
+	// to the output of a directed deterministic factor
+	public boolean isDeterministicDependent()
+	{
+		for (INode f : _var.getSiblings())
+		{
+			Factor factor = (Factor)f;
+			if (factor.getFactorFunction().isDeterministicDirected() && factor.isDirectedTo(_var))
+				return true;
+		}
+		return false;
+	}
+	
+	// Determine whether or not this variable has variables that are deterministic dependents of this variable
+	public boolean hasDeterministicDependents()
+	{
+		for (INode f : _var.getSiblings())
+		{
+			Factor factor = (Factor)f;
+			if (factor.getFactorFunction().isDeterministicDirected() && !factor.isDirectedTo(_var))
+				return true;
+		}
+		return false;
+	}
+
+	
 	@Override
 	public Object []  createMessages(ISolverFactor factor) 
 	{
@@ -359,7 +442,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	    _samplerScratch = new double[_lengthRoundedUp];
 	    _conditional = new double[_input.length];
 		
-		// TODO Auto-generated method stub
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
 	}
 
@@ -396,14 +478,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public Object getInputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _inPortMsgs[portIndex];
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex) 
 	{
-		// TODO Auto-generated method stub
 		return _outputMsg;
 	}
 
@@ -437,6 +517,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
 		for (int i = 0; i < messageLength; i++) 
 			_beliefHistogram[i] = 0;
+		
+		_isDeterministicDependent = isDeterministicDependent();
+		_hasDeterministicDependents = hasDeterministicDependents();
 	}
 
 	
