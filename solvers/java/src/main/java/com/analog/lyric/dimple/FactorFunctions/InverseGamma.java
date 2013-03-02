@@ -24,9 +24,9 @@ import com.analog.lyric.dimple.model.DimpleException;
 /**
  * Inverse Gamma distribution. The variables in the argument list are ordered as follows:
  * 
- * Alpha: Alpha parameter of the iInverse Gamma distribution (non-negative)
- * Beta: Beta parameter of the Inverse Gamma distribution (non-negative)
- * x: Inverse Gamma distributed variable
+ * 1) Alpha: Alpha parameter of the iInverse Gamma distribution (non-negative)
+ * 2) Beta: Beta parameter of the Inverse Gamma distribution (non-negative)
+ * 3) Inverse Gamma distributed real variable
  * 
  * Alpha and Beta parameters may optionally be specified as constants in the constructor.
  * In this case, they are not included in the list of arguments.
@@ -36,30 +36,36 @@ public class InverseGamma extends FactorFunction
 {
 	double _alpha;
 	double _beta;
-	boolean _alphaSpecified = false;
-	boolean _betaSpecified = false;
+	boolean _alphaConstant = false;
+	boolean _betaConstant = false;
 	
 	public InverseGamma() {super("InverseGamma");}
 	public InverseGamma(double alpha, double beta)
 	{
 		this();
 		_alpha = alpha;
-		_alphaSpecified = true;
+		_alphaConstant = true;
 		_beta = beta;
-		_betaSpecified = true;
+		_betaConstant = true;
+    	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
+    	if (_beta < 0) throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
 	
     @Override
 	public double evalEnergy(Object... arguments)
     {
     	int index = 0;
-    	if (!_alphaSpecified)
+    	if (!_alphaConstant)
+    	{
     		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
-    	if (!_betaSpecified)
+    		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
+    	}
+    	if (!_betaConstant)
+    	{
     		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+    		if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
+    	}
     	double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Inverse Gamma distributed variable
-    	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
-    	if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
     	
     	return _beta/x - _alpha * Math.log(_beta) + (_alpha + 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
 	}

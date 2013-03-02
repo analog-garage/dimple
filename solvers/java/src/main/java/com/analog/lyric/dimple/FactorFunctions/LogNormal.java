@@ -22,42 +22,41 @@ import com.analog.lyric.dimple.model.DimpleException;
 
 
 /**
- * Factor for an exchangeable set of Normally distributed variables associated
- * with a variable representing the mean parameter and a second parameter
- * representing the inverse variance. The variables are ordered as follows in
- * the argument list:
+ * Log-normal distribution. The variables in the argument list are ordered as follows:
  * 
- * 1) Mean parameter (real variable)
- * 2) Inverse variance parameter (real variable; domain must be non-negative)
- * 3...) An arbitrary number of real variables.
+ * 1) Mean parameter
+ * 2) Inverse variance parameter (non-negative)
+ * 3) Log-normal distributed real variable
  * 
  * Mean and *standard-deviation* parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and inverse-variance are not included in the list of arguments.
  * 
  */
-public class Normal extends FactorFunction
+public class LogNormal extends FactorFunction
 {
 	double _mean;
 	double _inverseVariance;
 	double _logInverseVarianceOverTwo;
+	double _inverseVarianceOverTwo;
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
-
-	public Normal() {super("Normal");}
-	public Normal(double mean, double standardDeviation)
+	
+	public LogNormal() {super("LogNormal");}
+	public LogNormal(double mean, double standardDeviation)
 	{
 		this();
 		_mean = mean;
 		_meanConstant = true;
 		_inverseVariance = 1/(standardDeviation*standardDeviation);
 		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
+		_inverseVarianceOverTwo = _inverseVariance*0.5;
 		_inverseVarianceConstant = true;
     	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
 	}
-
+	
     @Override
-	public double evalEnergy(Object ... arguments)
-	{
+	public double evalEnergy(Object... arguments)
+    {
     	int index = 0;
     	if (!_meanConstant)
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
@@ -65,17 +64,15 @@ public class Normal extends FactorFunction
     	{
     		_inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
     		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
+    		_inverseVarianceOverTwo = _inverseVariance*0.5;
     		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
     	}
-    	int length = arguments.length;
-    	int N = length - index;			// Number of Normal variables
-    	double sum = 0;
-    	for (; index < length; index++)
-    	{
-    		double relInput = FactorFunctionUtilities.toDouble(arguments[index]) - _mean;	// Remaining inputs are Normal variables
-    		sum += relInput*relInput*_inverseVariance;
-    	}
-
-    	return sum*0.5 - N * _logInverseVarianceOverTwo;
+    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the Gamma distributed variable
+    	
+    	double logX = Math.log(x);
+    	double relLogX = logX - _mean;
+    	return logX - _logInverseVarianceOverTwo + _inverseVarianceOverTwo*relLogX*relLogX;
 	}
+    
+    
 }
