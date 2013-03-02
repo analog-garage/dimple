@@ -39,7 +39,7 @@ classdef VariableBase < Node
         end
         
         function z = minus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Minus);
+            z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
         end
         
         function z = mpower(a,b)

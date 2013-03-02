@@ -65,15 +65,15 @@ fprintf('Initial L2 error:%d\n',error_init);
 fg=FactorGraph();
 fg.Solver = 'particleBP';
 tic;
-X=Real([-3*sigma_1 3*sigma_1],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,sigma_1),1,N);
+X=Real([-3*sigma_1 3*sigma_1],com.analog.lyric.dimple.FactorFunctions.Normal(0,sigma_1),1,N);
 Y=cell(1,N);
 for i=1:N
-Y{i}=Real([realY(i)-0.01 realY(i)+0.01],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(realY(i),0.01),1,1);
+Y{i}=Real([realY(i)-0.01 realY(i)+0.01],com.analog.lyric.dimple.FactorFunctions.Normal(realY(i),0.01),1,1);
 end
 
 
 %creating a boundary variable which always takes value 1
-Xboundary=Real([1-0.01 1+0.01],com.analog.lyric.dimple.FactorFunctions.SimpleNormal(1,0.01),1,1);
+Xboundary=Real([1-0.01 1+0.01],com.analog.lyric.dimple.FactorFunctions.Normal(1,0.01),1,1);
 
 
 

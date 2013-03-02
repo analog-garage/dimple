@@ -39,14 +39,14 @@ aPriorR = 1/(aPriorSigma*aPriorSigma);
 bPriorMean = -1;
 bPriorSigma = 2.;
 bPriorR = 1/(bPriorSigma*bPriorSigma);
-a = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(aPriorMean,aPriorSigma));
+a = Real(com.analog.lyric.dimple.FactorFunctions.Normal(aPriorMean,aPriorSigma));
 b = Real();
-b.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(bPriorMean, bPriorSigma);	% Try setting the input differently, just to test a different path
+b.Input = com.analog.lyric.dimple.FactorFunctions.Normal(bPriorMean, bPriorSigma);	% Try setting the input differently, just to test a different path
 
 abMean = 0;
 abSigma = 1;
 abR = 1/(abSigma*abSigma);
-f = graph1.addFactor(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1), a, b);
+f = graph1.addFactor(com.analog.lyric.dimple.FactorFunctions.Normal(0,1), a, b);
 
 sa = a.Solver;
 sb = b.Solver;
@@ -107,7 +107,7 @@ aPriorSigma = 5;
 aPriorR = 1/(aPriorSigma*aPriorSigma);
 bProb1 = 0.6;
 bProb0 = 1 - bProb1;
-a = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(aPriorMean,aPriorSigma));
+a = Real(com.analog.lyric.dimple.FactorFunctions.Normal(aPriorMean,aPriorSigma));
 b = Variable([0 1]);
 b.Input = [bProb0 bProb1];
 

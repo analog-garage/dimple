@@ -77,11 +77,11 @@ O.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
 
 
 % Add transition factors
-transitionFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedDiscreteTransition(numStates);
+transitionFunction = com.analog.lyric.dimple.FactorFunctions.DiscreteTransition(numStates);
 fg.addFactorVectorized(transitionFunction, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
-observationFunction = com.analog.lyric.dimple.FactorFunctions.ParameterizedDiscreteTransition(numObsValues, numStates);
+observationFunction = com.analog.lyric.dimple.FactorFunctions.DiscreteTransition(numObsValues, numStates);
 fg.addFactorVectorized(observationFunction, obs, state, {O,[]});
 
 % Add observations

@@ -20,6 +20,15 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ * Deterministic logical OR. This is a deterministic directed factor.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (Logical OR of inputs)
+ * 2...) An arbitrary number of inputs (inputs may be boolean, double 0.0/1.0 or integer 0/1)
+ * 
+ */
 public class Or extends FactorFunction 
 {
 	public Or()

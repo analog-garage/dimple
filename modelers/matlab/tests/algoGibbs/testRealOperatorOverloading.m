@@ -31,8 +31,8 @@ graph1.Solver.setNumSamples(numSamples);
 graph1.Solver.setScansPerSample(scansPerSample);
 graph1.Solver.setBurnInScans(burnInScans);
 
-a1 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,12));
-b1 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(7,17));
+a1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(3,12));
+b1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(7,17));
 
 z1 = a1 + b1;
 
@@ -49,8 +49,8 @@ graph2.Solver.setNumSamples(numSamples);
 graph2.Solver.setScansPerSample(scansPerSample);
 graph2.Solver.setBurnInScans(burnInScans);
 
-a2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,12));
-b2 = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(7,17));
+a2 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(3,12));
+b2 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(7,17));
 z2 = Real();
 graph2.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum,z2,a2,b2);
 

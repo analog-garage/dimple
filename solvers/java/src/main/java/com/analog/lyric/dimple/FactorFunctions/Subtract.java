@@ -20,14 +20,30 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
-public class Minus extends FactorFunction
+/**
+ * Deterministic subtraction. This is a deterministic directed factor (if
+ * smoothing is not enabled).
+ * 
+ * Optional smoothing may be applied, by providing a smoothing value in the
+ * constructor. If smoothing is enabled, the distribution is smoothed by
+ * exp(-difference^2/smoothing), where difference is the distance between the
+ * output value and the deterministic output value for the corresponding inputs.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (difference = positive input - sum of subtracted inputs)
+ * 2) Positive input (double or integer)
+ * 3...) An arbitrary number of subtracted inputs (double or integer)
+ * 
+ */
+public class Subtract extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public Minus() {this(0);}
-	public Minus(double smoothing)
+	public Subtract() {this(0);}
+	public Subtract(double smoothing)
 	{
-		super("Minus");
+		super("Subtract");
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;

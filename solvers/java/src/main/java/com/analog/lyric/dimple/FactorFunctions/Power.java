@@ -20,6 +20,25 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ * Deterministic power function. This is a deterministic directed factor (if
+ * smoothing is not enabled).
+ * 
+ * Optional smoothing may be applied, by providing a smoothing value in the
+ * constructor. If smoothing is enabled, the distribution is smoothed by
+ * exp(-difference^2/smoothing), where difference is the distance between the
+ * output value and the deterministic output value for the corresponding inputs.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (Output = Base^Power)
+ * 2) Base (double or integer)
+ * 3) Power (double or integer)
+ * 
+ * Note: This factor is not compatible with negative values of Base with
+ * fractional values of Power, which would result in a complex output.
+ * 
+ */
 public class Power extends FactorFunction
 {
 	protected double _beta = 0;

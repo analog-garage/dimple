@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.SimpleNormal;
+import com.analog.lyric.dimple.FactorFunctions.Normal;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;
@@ -41,8 +41,8 @@ public class RealVariableTest
 		
 		Real a = new Real();
 		Real b = new Real(new RealDomain(-1,1));
-		Real c = new Real(new SimpleNormal(0,1));
-		Real d = new Real(new RealDomain(-1,1), new SimpleNormal(0,1));
+		Real c = new Real(new Normal(0,1));
+		Real d = new Real(new RealDomain(-1,1), new Normal(0,1));
 		Real e = new Real(new RealDomain(0,Double.POSITIVE_INFINITY));
 
 		a.setName("a");
@@ -69,7 +69,7 @@ public class RealVariableTest
 		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-0.5)));
 
 		assertTrue(a.getInputObject() == null);
-		a.setInputObject(new SimpleNormal(0,1));
+		a.setInputObject(new Normal(0,1));
 		if (debugPrint) System.out.println("a.Input(0): " + ((FactorFunction)a.getInput()).eval(new Object[]{0d}));
 		assertTrue(nearlyEquals(((FactorFunction)a.getInput()).eval(new Object[]{0d}), 1.0));
 	}

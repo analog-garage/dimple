@@ -19,6 +19,17 @@ package com.analog.lyric.dimple.FactorFunctions;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
+
+/**
+ * Deterministic greater-than function. This is a deterministic directed factor.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (Logical output = FirstValue > SecondValue)
+ * 2) FirstValue (double or integer)
+ * 3) SecondValue (double or integer)
+ * 
+ */
 public class GreaterThan extends FactorFunction 
 {
 	public GreaterThan()

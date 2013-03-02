@@ -20,6 +20,23 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ * Deterministic linear equation, multiplying an input vector by a constant vector.
+ * The constant vector is specified in the constructor.
+ * This is a deterministic directed factor (if smoothing is not enabled).
+ * 
+ * Optional smoothing may be applied, by providing a smoothing value in
+ * the constructor. If smoothing is enabled, the distribution is
+ * smoothed by exp(-difference^2/smoothing), where difference is the
+ * distance between the output value and the deterministic output value
+ * for the corresponding inputs.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (product = inner product of Input vector with Constant vector)
+ * 2...) Input vector (double or integer array; length must be identical to Constant vector length)
+ * 
+ */
 public class LinearEquation extends FactorFunction
 {
 	protected double[] _constant;

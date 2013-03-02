@@ -16,25 +16,25 @@
 
 package com.analog.lyric.dimple.FactorFunctions;
 
-import org.apache.commons.math.special.Gamma;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 
 
 /**
- * @author jeffb
+ * NegativeExpGamma distribution, which is a distribution over a
+ * variable whose negative exponential is Gamma distributed. That is,
+ * this is the negative log of a Gamma distributed variable.
  * 
- *         NegativeExpGamma distribution, which is a distribution over a
- *         variable whose negative exponential is Gamma distributed. That is,
- *         this is the negative log of a Gamma distributed variable.
- *         
- *         The variables in the argument list are ordered as follows:
- *         
- *         alpha: Alpha parameter of the underlying Gamma distribution (non-negative)
- *         beta: Beta parameter of the underlying Gamma distribution (non-negative)
- *         x: NegativeExpGamma distributed variable
+ * The variables in the argument list are ordered as follows:
+ * 
+ * Alpha: Alpha parameter of the underlying Gamma distribution (non-negative)
+ * Beta: Beta parameter of the underlying Gamma distribution (non-negative)
+ * x: NegativeExpGamma distributed variable
+ * 
+ * Alpha and Beta parameters may optionally be specified as constants in the constructor.
+ * In this case, they are not included in the list of arguments.
+ * 
  */
 public class NegativeExpGamma extends FactorFunction
 {
@@ -65,7 +65,7 @@ public class NegativeExpGamma extends FactorFunction
     	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
     	if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
     	
-    	return x * (_alpha - 1) + _beta * Math.exp(-x) - _alpha * Math.log(_beta) + Gamma.logGamma(_alpha);
+    	return x * (_alpha - 1) + _beta * Math.exp(-x) - _alpha * Math.log(_beta) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
 	}
     
     

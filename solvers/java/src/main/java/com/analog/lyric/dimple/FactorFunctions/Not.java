@@ -20,6 +20,15 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ *  Deterministic logical NOT. This is a deterministic directed factor.
+ * 
+ *  The variables are ordered as follows in the argument list:
+ * 
+ *  1) Output (Logical NOT of input)
+ *  2) Input (inputs may be boolean, double 0.0/1.0 or integer 0/1)
+ *  
+ */
 public class Not extends FactorFunction 
 {
 	public Not()

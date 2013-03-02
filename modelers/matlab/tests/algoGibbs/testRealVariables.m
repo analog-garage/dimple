@@ -31,8 +31,8 @@ graph = FactorGraph();
 
 a = Real();
 b = Real([-1,1]);
-c = Real(com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1));
-d = Real([-1.1,1.1], com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1));
+c = Real(com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
+d = Real([-1.1,1.1], com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
 e = Real([0,Inf]);
 
 assert(a.Domain.LB == -Inf);
@@ -54,16 +54,16 @@ dtrace(debugPrint, ['d.Input.eval(1): ' num2str(d.Input.eval(1))]);
 assertElementsAlmostEqual(d.Input.eval(1), exp(-0.5));
 
 assert(isempty(a.Input));
-a.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1);
+a.Input = com.analog.lyric.dimple.FactorFunctions.Normal(0,1);
 dtrace(debugPrint, ['a.Input.eval(0): ' num2str(a.Input.eval(0))]);
 assertElementsAlmostEqual(a.Input.eval(0), 1.0);
 
 
 % Arrays
 
-d14 = Real([-2,2], com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1),1,4);
-d41 = Real([-3,3], com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1),4,1);
-d45 = Real([-4,4], com.analog.lyric.dimple.FactorFunctions.SimpleNormal(0,1),4,5);
+d14 = Real([-2,2], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),1,4);
+d41 = Real([-3,3], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),4,1);
+d45 = Real([-4,4], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),4,5);
 
 assert(d14.Domain.LB == -2);
 assert(d14.Domain.UB == 2);
@@ -82,7 +82,7 @@ dtrace(debugPrint, ['d45.Input{4,5}.eval(1): ' num2str(d45.Input{4,5}.eval(1))])
 assertElementsAlmostEqual(d45.Input{4,5}.eval(1), exp(-0.5));
 
 
-d45.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(10,1);
+d45.Input = com.analog.lyric.dimple.FactorFunctions.Normal(10,1);
 dtrace(debugPrint, ['d45.Input{4,5}.eval(10) (mean 10): ' num2str(d45.Input{4,5}.eval(10))]);
 assertElementsAlmostEqual(d45.Input{4,5}.eval(10), 1);
 

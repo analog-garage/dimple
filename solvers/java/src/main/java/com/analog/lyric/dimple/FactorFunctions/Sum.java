@@ -20,6 +20,21 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ * Deterministic sum. This is a deterministic directed factor (if smoothing is
+ * not enabled).
+ * 
+ * Optional smoothing may be applied, by providing a smoothing value in the
+ * constructor. If smoothing is enabled, the distribution is smoothed by
+ * exp(-difference^2/smoothing), where difference is the distance between the
+ * output value and the deterministic output value for the corresponding inputs.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (sum of inputs)
+ * 2...) An arbitrary number of inputs (double or integer)
+ * 
+ */
 public class Sum extends FactorFunction
 {
 	protected double _beta = 0;

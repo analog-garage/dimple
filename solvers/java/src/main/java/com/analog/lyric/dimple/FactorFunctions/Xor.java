@@ -20,11 +20,23 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
+/**
+ * Deterministic logical XOR. This is a deterministic directed factor.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (Logical XOR of inputs)
+ * 2...) An arbitrary number of inputs (inputs may be boolean, double 0.0/1.0 or integer 0/1)
+ * 
+ * Note that while an XOR is symmetric in directivity, only the first argument
+ * is treated as the directed output.
+ * 
+ */
 public class Xor extends FactorFunction 
 {
 	public Xor()
 	{
-		super("xorDelta");
+		super("Xor");
 	}
 	
     @Override

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.FactorFunctions.MixedNormal;
-import com.analog.lyric.dimple.FactorFunctions.SimpleNormal;
+import com.analog.lyric.dimple.FactorFunctions.Normal;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;
@@ -57,16 +57,16 @@ public class RealVariableGibbsTest
 		double bPriorMean = -1;
 		double bPriorSigma = 2.;
 		double bPriorR = 1/(bPriorSigma*bPriorSigma);
-		Real a = new Real(new SimpleNormal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
 		Real b = new Real();
-		b.setInputObject(new SimpleNormal(bPriorMean, bPriorSigma));	// Try setting the input differently, just to test a different path
+		b.setInputObject(new Normal(bPriorMean, bPriorSigma));	// Try setting the input differently, just to test a different path
 		a.setName("a");
 		b.setName("b");
 		
 		double abMean = 0;
 		double abSigma = 1;
 		double abR = 1/(abSigma*abSigma);
-		graph.addFactor(new SimpleNormal(abMean,abSigma), a, b);
+		graph.addFactor(new Normal(abMean,abSigma), a, b);
 		
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		SRealVariable sb = (SRealVariable)b.getSolver();
@@ -128,7 +128,7 @@ public class RealVariableGibbsTest
 		double aPriorR = 1/(aPriorSigma*aPriorSigma);
 		double bProb1 = 0.6;
 		double bProb0 = 1 - bProb1;
-		Real a = new Real(new SimpleNormal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
 //		Real a = new Real();
 		Discrete b = new Discrete(0,1);
 		b.setInput(bProb0, bProb1);

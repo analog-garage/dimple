@@ -41,8 +41,8 @@ realProduct = com.analog.lyric.dimple.FactorFunctions.Product();
 fg.addFactor(realProduct,c,a,b);
 
 %Set the inputs for a and b.
-a.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(3,1);
-b.Input = com.analog.lyric.dimple.FactorFunctions.SimpleNormal(5,1);
+a.Input = com.analog.lyric.dimple.FactorFunctions.Normal(3,1);
+b.Input = com.analog.lyric.dimple.FactorFunctions.Normal(5,1);
 
 %Optionally use tempering
 fg.Solver.setInitialTemperature(1);

@@ -6,7 +6,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.ParameterizedNormal;
+import com.analog.lyric.dimple.FactorFunctions.Normal;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
@@ -64,7 +64,7 @@ public class GibbsTestParameterizedNormal
 		for (int i = 0; i < numNormalVariables; i++)
 			vars[index++] = (Double)normalValues[i];
 			
-		graph.addFactor(new ParameterizedNormal(), vars);
+		graph.addFactor(new Normal(), vars);
 
 
 		SRealVariable svModelMean = (SRealVariable)vModelMean.getSolver();
