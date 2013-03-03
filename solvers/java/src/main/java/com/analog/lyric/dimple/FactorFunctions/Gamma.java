@@ -67,7 +67,7 @@ public class Gamma extends FactorFunction
     	}
     	double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Gamma distributed variable
     	
-    	return x/_beta + _alpha * Math.log(_beta) - (_alpha - 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
+    	return _beta*x - _alpha * Math.log(_beta) - (_alpha - 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
 	}
     
     
