@@ -74,7 +74,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 		
-		// FIXME: ALSO RETURN IF VARIABLE VALUE IS CURRENTLY FIXED
+		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
 
 		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
@@ -104,7 +104,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 		else	// There are deterministic dependents, so must account for these
 		{
-			// FIXME: SPEED UP
+			// TODO: SPEED UP
 			ArrayList<INode> siblings = _var.getSiblings();
 			for (int index = 0; index < messageLength; index++)
 			{

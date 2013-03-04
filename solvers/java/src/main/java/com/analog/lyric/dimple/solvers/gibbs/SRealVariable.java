@@ -70,7 +70,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 		
-		// FIXME: ALSO RETURN IF VARIABLE VALUE IS CURRENTLY FIXED
+		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
 
 		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
