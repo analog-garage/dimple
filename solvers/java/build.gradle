@@ -36,7 +36,8 @@ configurations {
 project.ext.myjars = [
     "org.apache.commons:commons-math:2.2",
     "edu.emory.mathcs:jtransforms:2.3",
-    "jama:jama:1.0.2"
+    "jama:jama:1.0.2",
+    "colt:colt:1.2.0"
   ]
 
 dependencies

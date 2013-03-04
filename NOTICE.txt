@@ -31,3 +31,8 @@ Used for graph plotting.
 License file: modelers/matlab/lib/GraphViz2Mat1.2/license.txt
 Copyright (c) 2009, Leonid Peshkin
 
+=======================================================
+colt-1.2.0
+License file: solvers/licenses/colt-1.2.0-license.html
+Copyright (c) 1999 CERN - European Organization for Nuclear Research.
+
