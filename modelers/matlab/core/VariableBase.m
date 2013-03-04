@@ -42,7 +42,12 @@ classdef VariableBase < Node
             z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
         end
         
+        function z = power(a,b)
+            z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.Power);
+        end
+        
         function z = mpower(a,b)
+            if (~isscalar(a) || ~isscalar(b)); error('Overloaded matrix power not currently supported. Use ".^" for pointwise power'); end;
             z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.Power);
         end
         
@@ -54,7 +59,12 @@ classdef VariableBase < Node
             z = addBinaryOperatorOverloadedFactor(a,b,@or,com.analog.lyric.dimple.FactorFunctions.Or);
         end
         
+        function z = times(a,b)
+            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+        end
+        
         function z = mtimes(a,b)
+            if (~isscalar(a) || ~isscalar(b)); error('Overloaded matrix product not currently supported. Use ".*" for pointwise product'); end;
             z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
         end
         
@@ -154,6 +164,11 @@ classdef VariableBase < Node
         
         
         function z = addBinaryOperatorOverloadedFactor(a,b,operation,factor)
+            vectorSize = size(a);
+            if (size(b) ~= vectorSize)
+                    error('Vector arguments to overloaded operators must have the same dimensions');
+            end
+            
             if (~isa(a.Domain, 'RealDomain') && ~isa(b.Domain, 'RealDomain'))
                 
                 domaina = a.Domain.Elements;
@@ -182,11 +197,12 @@ classdef VariableBase < Node
                 zdomain = sort(zdomain);
                 
                 %znested = Variable(zdomain);
-                z = Variable(zdomain);
+                vs = num2cell(vectorSize);
+                z = Variable(zdomain, vs{:});
                 
                 %Eventually can build combo table, right now, this will do
                 fg = getFactorGraph();
-                fg.addFactor(factor,z,a,b);
+                fg.addFactorVectorized(factor,z,a,b);
             
             else
                 
@@ -197,9 +213,10 @@ classdef VariableBase < Node
                     error('Can only override faction functions for real-valued operators');
                 end
                 
-                z = Real();
+                vs = num2cell(vectorSize);
+                z = Real(vs{:});
                 fg = getFactorGraph();
-                fg.addFactor(factor,z,a,b);
+                fg.addFactorVectorized(factor,z,a,b);
                 
             end
         end
@@ -207,6 +224,7 @@ classdef VariableBase < Node
         
         
         function z = addUnaryOperatorOverloadedFactor(a,operation,factor)
+            vectorSize = size(a);
             if (~isa(a.Domain, 'RealDomain'))
                 
                 domaina = a.Domain.Elements;
@@ -230,11 +248,12 @@ classdef VariableBase < Node
                 zdomain = sort(zdomain);
                 
                 %znested = Variable(zdomain);
-                z = Variable(zdomain);
+                vs = num2cell(vectorSize);
+                z = Variable(zdomain, vs{:});
                 
                 %Eventually can build combo table, right now, this will do
                 fg = getFactorGraph();
-                fg.addFactor(factor,z,a);
+                fg.addFactorVectorized(factor,z,a);
             
             else
                 
@@ -245,31 +264,39 @@ classdef VariableBase < Node
                     error('Can only override faction functions for real-valued operators');
                 end
                 
-                z = Real();
+                vs = num2cell(vectorSize);
+                z = Real(vs{:});
                 fg = getFactorGraph();
-                fg.addFactor(factor,z,a);
+                fg.addFactorVectorized(factor,z,a);
                 
             end
         end
         
         function z = addBinaryToBitOperatorOverloadedFactor(a,b,factor)
+            vectorSize = size(a);
+            if (size(b) ~= vectorSize)
+                    error('Vector arguments to overloaded operators must have the same dimensions');
+            end
 
             %znested = Bit();
-            z = Bit();
+            vs = num2cell(vectorSize);
+            z = Bit(vs{:});
                 
             %Eventually can build combo table, right now, this will do
             fg = getFactorGraph();
-            fg.addFactor(factor,z,a,b);
+            fg.addFactorVectorized(factor,z,a,b);
         end
         
         function z = addUnaryToBitOperatorOverloadedFactor(a,factor)
+            vectorSize = size(a);
 
             %znested = Bit();
-            z = Bit();
+            vs = num2cell(vectorSize);
+            z = Bit(vs{:});
                 
             %Eventually can build combo table, right now, this will do
             fg = getFactorGraph();
-            fg.addFactor(factor,z,a);
+            fg.addFactorVectorized(factor,z,a);
         end
         
         function b = getDomain(obj)

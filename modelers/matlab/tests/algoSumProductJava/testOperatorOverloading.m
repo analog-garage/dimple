@@ -28,7 +28,8 @@ function testOperatorOverloading()
     testCase1();
     testCase2();
     testCase3();
-    
+    testCase4();
+
 end
 
 function testCase1()
@@ -209,6 +210,95 @@ function testCase3()
     fg2.addFactor(myprod,x2,nacd2,b2);
     fg2.addFactor(mylt,y2,x2,c2);
     fg2.addFactor(mygt,z2,x2,c2);
+    
+    a2.Input = aInput;
+    b2.Input = bInput;
+    c2.Input = cInput;
+    d2.Input = dInput;
+
+    fg2.solve();
+        
+    %check domains match    
+    assertTrue(isequal(x.Domain,x2.Domain));
+    assertTrue(isequal(y.Domain,y2.Domain));
+    assertTrue(isequal(z.Domain,z2.Domain));
+    
+    %check beliefs match
+    assertElementsAlmostEqual(x.Belief,x2.Belief);
+    assertElementsAlmostEqual(y.Belief,y2.Belief);
+    assertElementsAlmostEqual(z.Belief,z2.Belief);
+    
+end
+
+
+
+function testCase4()
+
+    seed = 0;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+
+    fg = FactorGraph();
+    
+    N = 5;
+    aDomain = 0:2:10;
+    bDomain = -1:1;
+    cDomain = [37 18 26];
+    dDomain = 0:2;    
+    
+    aInput = rand(N,length(aDomain));
+    bInput = rand(N,length(bDomain));
+    cInput = rand(N,length(cDomain));
+    dInput = rand(N,length(dDomain));
+    
+    a = Discrete(aDomain,1,N);
+    b = Discrete(bDomain,1,N);
+    c = Discrete(cDomain,1,N);
+    d = Discrete(dDomain,1,N);
+    
+    x = (-(a + c)).^d .* b;
+    y = x < c;
+    z = x > c;
+    
+    a.Input = aInput;
+    b.Input = bInput;
+    c.Input = cInput;
+    d.Input = dInput;
+    
+    fg.solve();
+    
+    
+    [aX,cX]=ndgrid(aDomain,cDomain); acDomain = sort(unique(aX + cX));
+    nacDomain = -acDomain;
+    [nacX,dX]=ndgrid(nacDomain,dDomain); nacdDomain = sort(unique(nacX.^dX));
+    [nacdX,bX]=ndgrid(nacdDomain,bDomain); xDomain = sort(unique(nacdX .* bX));
+   
+    fg2 = FactorGraph();
+    
+    a2 = Discrete(aDomain,1,N);
+    b2 = Discrete(bDomain,1,N);
+    c2 = Discrete(cDomain,1,N);
+    d2 = Discrete(dDomain,1,N);
+    ac2 = Discrete(acDomain,1,N);
+    nac2 = Discrete(nacDomain,1,N);
+    nacd2 = Discrete(nacdDomain,1,N);
+    x2 = Discrete(xDomain,1,N);
+    y2 = Bit(1,N);
+    z2 = Bit(1,N);
+    
+    mysum = @(z,x,y) z == (x+y);
+    myneg = @(z,x) z == (-x);
+    mypow = @(z,x,y) z == (x^y);
+    myprod = @(z,x,y) z == (x*y);
+    mylt = @(z,x,y) z == (x<y);
+    mygt = @(z,x,y) z == (x>y);
+    fg2.addFactorVectorized(mysum,ac2,a2,c2);
+    fg2.addFactorVectorized(myneg,nac2,ac2);
+    fg2.addFactorVectorized(mypow,nacd2,nac2,d2);
+    fg2.addFactorVectorized(myprod,x2,nacd2,b2);
+    fg2.addFactorVectorized(mylt,y2,x2,c2);
+    fg2.addFactorVectorized(mygt,z2,x2,c2);
     
     a2.Input = aInput;
     b2.Input = bInput;
