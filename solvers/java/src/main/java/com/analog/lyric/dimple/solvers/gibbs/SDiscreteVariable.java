@@ -83,10 +83,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (!_hasDeterministicDependents)
 		{
 			// Update all the neighboring factors
-			// FIXME SPEED UP
+			// If there are no deterministic dependents, then it should be faster to have
+			// each neighboring factor update its entire message to this variable than the alternative, below
 			ArrayList<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)
-				siblings.get(port).updateEdge(_var.getSiblingPortIndex(port));
+				((ISolverFactorGibbs)siblings.get(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
 			
 			// Sum up the messages to get the conditional distribution
 			for (int index = 0; index < messageLength; index++)

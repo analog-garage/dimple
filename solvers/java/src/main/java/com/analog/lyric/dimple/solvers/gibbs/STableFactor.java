@@ -42,8 +42,46 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
 	}
 	
-
+	
+	@Override
 	public void updateEdge(int outPortNum)
+	{
+		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
+		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
+	}
+	@Override
+	public void update()
+	{
+		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
+		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
+	}
+	
+
+	@Override
+	public double getConditionalPotential(int portIndex)
+	{
+		double result = getPotential();
+		
+		// If this is a deterministic directed factor, and the request is from a directed-from variable,
+		// Then propagate the request through the directed-to variables and sum up the results
+		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
+		{
+			ArrayList<INode> siblings = _factor.getSiblings();
+		    for (int port = 0; port < _numPorts; port++)
+		    {
+		    	VariableBase v = (VariableBase)siblings.get(port);
+		    	if (_factor.isDirectedTo(v))
+		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
+		    }
+		}
+
+		return result;
+	}
+	
+
+
+	@Override
+	public void updateEdgeMessage(int outPortNum)
 	{
 		// Generate message representing conditional distribution of selected edge variable
 		// This should be called only for a table factor that is not a deterministic directed factor
@@ -72,35 +110,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	
 	
-	public void update()
-	{
-    	throw new DimpleException("Method not supported in Gibbs sampling solver.");
-	}
 	
-	
-	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();
-		
-		// If this is a deterministic directed factor, and the request is from a directed-from variable,
-		// Then propagate the request through the directed-to variables and sum up the results
-		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
-		{
-			ArrayList<INode> siblings = _factor.getSiblings();
-		    for (int port = 0; port < _numPorts; port++)
-		    {
-		    	VariableBase v = (VariableBase)siblings.get(port);
-		    	if (_factor.isDirectedTo(v))
-		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
-		    }
-		}
-
-		return result;
-	}
-	
-
-
 
 	public double getPotential()
 	{

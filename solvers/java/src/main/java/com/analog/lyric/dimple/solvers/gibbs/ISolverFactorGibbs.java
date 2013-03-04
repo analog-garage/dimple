@@ -21,4 +21,5 @@ public interface ISolverFactorGibbs
 	public double getPotential();
 	public void updateNeighborVariableValue(int portIndex);
 	public double getConditionalPotential(int portIndex);
+	public void updateEdgeMessage(int portIndex);
 }

@@ -44,6 +44,20 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	
 
 	@Override
+	public void updateEdge(int outPortNum)
+	{
+		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
+		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
+	}
+	@Override
+	public void update()
+	{
+		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
+		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
+	}
+	
+
+	@Override
 	public double getConditionalPotential(int portIndex)
 	{
 		double result = getPotential();
@@ -65,13 +79,17 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	}
 
 	
-	public void updateEdge(int outPortNum)
+	@Override
+	public void updateEdgeMessage(int outPortNum)
 	{
 		INode var = _factor.getSiblings().get(outPortNum);
-		
 
-		if (var instanceof Discrete)						// Then this edge connects to a discrete variable, so send an output message
+		if (var instanceof Discrete)
 		{
+			// This edge connects to a discrete variable, so send an output message
+			// This method only considers the current conditional values, and does propagate
+			// to any other variables (unlike get ConditionalPotential)
+			// This should only be called if this factor is not a deterministic directed factor
 			Object[] outputVariableDomain = ((Discrete)var).getDiscreteDomain().getElements();
 			FactorFunction factorFunction = _realFactor.getFactorFunction();
 			int numPorts = _factor.getSiblings().size();
@@ -94,12 +112,6 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	}
 	
 	
-	public void update()
-	{
-    	throw new DimpleException("Method not supported in Gibbs sampling solver.");
-	}
-	
-
 	public double getPotential()
 	{
 	    int numPorts = _factor.getSiblings().size();
