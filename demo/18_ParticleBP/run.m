@@ -37,7 +37,7 @@ fg.Solver.setNumParticles(30);
 fg.Solver.setResamplingUpdatesPerParticle(30);
 
 %Create the factor.
-realProduct = com.analog.lyric.dimple.FactorFunctions.Product();
+realProduct = com.analog.lyric.dimple.FactorFunctions.Product(1.0);
 fg.addFactor(realProduct,c,a,b);
 
 %Set the inputs for a and b.
