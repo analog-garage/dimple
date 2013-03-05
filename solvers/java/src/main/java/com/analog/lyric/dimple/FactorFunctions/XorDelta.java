@@ -19,4 +19,5 @@ package com.analog.lyric.dimple.FactorFunctions;
 // This is for backwards compatibility with test and demo code
 public class XorDelta extends Xor 
 {
+	public XorDelta() {super("xorDelta");}
 }

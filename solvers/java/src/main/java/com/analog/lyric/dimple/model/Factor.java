@@ -386,6 +386,8 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void setDirectedTo(int [] directedTo)
 	{
+		if (_variables == null) return;
+		
 		HashSet<Integer> hs = new HashSet<Integer>();
 		
 		_directedFrom = new int[_variables.size()-directedTo.length];
