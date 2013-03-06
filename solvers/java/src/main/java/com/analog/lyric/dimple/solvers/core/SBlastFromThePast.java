@@ -17,24 +17,88 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class SBlastFromThePast extends SFactorBase
+public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 {
-
-	Object _msg;
+	private BlastFromThePastFactor _factor;
+	protected Port _variablePort;
+	protected Port _newVarPort;
 	
-	public SBlastFromThePast(Factor factor) {
-		super(factor);
-		// TODO Auto-generated constructor stub
+	public SBlastFromThePast(BlastFromThePastFactor f)
+	{
+		_factor = f;
+	}
+	
+	public BlastFromThePastFactor getFactor()
+	{
+		return _factor;
+	}
+	
+	public Port getVariablePort()
+	{
+		return _variablePort;
+	}
+	
+	@Override
+	public Object getBelief() 
+	{
+		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void createMessages() 
+	public double getInternalEnergy() 
 	{
-		Object [] messages = getFactor().getVariables().getByIndex(0).getSolver().createMessages(this);
-		_msg = messages[0];
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public double getBetheEntropy() 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public void createMessages()
+	{
+		throw new DimpleException("not supported");
+	}
+
+	public void createMessages(VariableBase var, Port oldVarPort)
+	{
+		
+	    for (int index = 0; index < _factor.getVariables().size(); index++)
+	    {
+	    	ISolverVariable is = _factor.getVariables().getByIndex(index).getSolver();
+	    	is.createMessages(this);	    	
+	    }
+	    
+	    _variablePort = oldVarPort;
+	    _newVarPort = new Port(var,var.getPortNum(getModelObject()));
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other) 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public int[][] getPossibleBeliefIndices() 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public void update() 
+	{
 	}
 
 	@Override
@@ -43,29 +107,91 @@ public class SBlastFromThePast extends SFactorBase
 	}
 
 	@Override
+	public void initialize() 
+	{
+	}
+
+	@Override
 	public void initializeEdge(int portNum) 
 	{
-		
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public ISolverFactorGraph getParentGraph() 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public ISolverFactorGraph getRootGraph() 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public double getScore() 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public INode getModelObject() 
+	{
+		return _factor;
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj) 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public void setOutputMsg(int portIndex, Object obj) 
+	{
+		VariableBase var = _factor.getVariables().getByIndex(portIndex);
+		int index = var.getPortNum(getModelObject());
+		var.getSolver().setInputMsg(index,obj);
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj) 
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj) 
+	{
+		throw new DimpleException("Not implemented");
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum) 
 	{
-		//TODO: implement this and replace blastFromThePast implementation
+		throw new DimpleException("Not implemented");
 	}
+
+	@Override
+	public void advance() 
+	{
+		_newVarPort.node.getSolver().moveMessages(_variablePort.node.getSolver(), _newVarPort.index,_variablePort.index);
+	}
+
 	
-	@Override
-	public Object getInputMsg(int portIndex) 
-	{
-		throw new DimpleException("Not supported by " + this);
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex) 
-	{
-		return _msg;
-	}
-
 
 }

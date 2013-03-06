@@ -19,10 +19,12 @@ package com.analog.lyric.dimple.solvers.interfaces;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 
 public interface ISolverFactorGraph extends ISolverNode
 {
 	public ISolverVariable createVariable(VariableBase var);
+	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
 	public boolean customFactorExists(String funcName);
 	public void solve(boolean initialize);

@@ -128,27 +128,22 @@ public class SFactorGraph extends SFactorGraphBase
 
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		ISolverFactor retval = super.createFactor(factor);
-		if (retval == null)
+		if (customFactorExists(factor.getFactorFunction().getName()))
+			return createCustomFactor(factor);
+		else if (factor.isDiscrete())
+			return new com.analog.lyric.dimple.solvers.sumproduct.STableFactor(factor);
+		else
 		{
 			if (customFactorExists(factor.getFactorFunction().getName()))
 				return createCustomFactor(factor);
-			else if (factor.isDiscrete())
-				return new com.analog.lyric.dimple.solvers.sumproduct.STableFactor(factor);
 			else
 			{
-				if (customFactorExists(factor.getFactorFunction().getName()))
-					return createCustomFactor(factor);
-				else
-				{
-					HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
-					sf.setNumSamples(_numSamples);
-					sf.setMaxNumTries(_maxNumTries);
-					return sf;
-				}
+				HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
+				sf.setNumSamples(_numSamples);
+				sf.setMaxNumTries(_maxNumTries);
+				return sf;
 			}
 		}
-		return retval;
 	}
 
 	public ISolverVariable createVariable(VariableBase var)  

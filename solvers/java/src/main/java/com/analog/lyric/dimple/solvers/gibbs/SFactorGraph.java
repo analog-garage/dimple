@@ -23,10 +23,12 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -73,10 +75,28 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_factorGraph.setSolverSpecificDefaultScheduler(new GibbsDefaultScheduler());	// Override the common default scheduler
 	}
 
-
+	@Override
+	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
+	{
+		if (factor.isDiscrete())
+			return new TableFactorBlastFromThePast(factor);
+		else
+			throw new DimpleException("Not supported yet");
+	}
+	
 	@Override
 	public ISolverFactor createFactor(Factor factor)  
 	{
+		//TODO: is this the smoothest way to create the blast from the past?
+		//      Should we instead
+		//      Wait, this won't work, because we have to receive and ignore updateEdgeMessage
+		// So,
+		//   Solvers should have to create solver objects for blast from the past factors
+		//   They should be given pointers to the solver factor they're mimicking
+		//   In gibbs discrete they can ignore that info
+		//   In gibbs continuous, they can copy the samples
+		//   For sum product, should they copy guess? 
+	
 		if (factor.isDiscrete())
 			return new STableFactor(factor);
 		else
@@ -106,11 +126,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	@Override
-	public void solve(boolean initialize) 
-	{
-		if (initialize)
-			_factorGraph.initialize();
-		
+	public void solveOneTimeStep() 
+	{		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
 			burnIn();

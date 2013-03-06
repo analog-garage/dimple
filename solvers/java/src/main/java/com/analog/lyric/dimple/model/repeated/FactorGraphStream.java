@@ -211,7 +211,7 @@ public class FactorGraphStream
 				f.advance();
 			
 			Object belief = _myVar.getBeliefObject();
-			_mainFlastFromThePast.setOutputMsg(belief);
+			_mainFlastFromThePast.getSolver().setOutputMsg(0,belief);
 			
 		}
 	}
@@ -255,6 +255,7 @@ public class FactorGraphStream
 			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver());
 		}
 
+		//Newest nested graph should initialiaze its messages
 		_nestedGraphs.get(_nestedGraphs.size()-1).recreateMessages();
 
 	}

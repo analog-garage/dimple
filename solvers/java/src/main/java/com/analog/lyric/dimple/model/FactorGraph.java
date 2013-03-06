@@ -225,7 +225,7 @@ public class FactorGraph extends FactorBase
             setVariableSolver(var);
 
             BlastFromThePastFactor f;
-            f = new BlastFromThePastFactor(NodeId.getNext(),var,factorPort);
+            f = new BlastFromThePastFactor(NodeId.getNext(), var,factorPort);
 
             addFactor(f,new VariableBase[]{var});
             

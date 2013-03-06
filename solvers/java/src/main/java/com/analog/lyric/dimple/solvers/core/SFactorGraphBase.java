@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGrap
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -128,22 +129,29 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 	
+	public void solveOneTimeStep()
+	{
+		iterate(_numIterations);
+	}
+	
 	public void solve(boolean initialize) 
 	{
 		if (initialize)
 			_factorGraph.initialize();
 			
-		iterate(_numIterations);
+		solveOneTimeStep();
 		
 		int i = 0;
 		int maxSteps = _factorGraph.getNumSteps();
 		boolean infinite = _factorGraph.getNumStepsInfinite();
 		while (getModel().hasNext())
-		{		
+		{
 			if (!infinite && i >= maxSteps)
 				break;
 			getModel().advance();
-			iterate(_numIterations);
+			
+			solveOneTimeStep();
+			
 			i++;
 		}
 
@@ -231,14 +239,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return sum;
 	}
 
-	public ISolverFactor createFactor(Factor factor)  
-	{
-		if (factor.getFactorFunction().getName() == BlastFromThePastFactor.BLAST_FROM_THE_PAST_FACTOR_NAME)
-			return new SBlastFromThePast(factor);
-		else
-			return null;
-	}
 
+	@Override
+	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor f)
+	{
+		return new SBlastFromThePast(f);
+	}
+	
 	/***********************************************
 	 * 
 	 * Threading for Ctrl+C

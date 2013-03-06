@@ -265,7 +265,13 @@ classdef MatrixObject < handle
             else
                 
                 if numel(indices) == 1
-                    v = reshape(stuff,numel(stuff),1);
+                    %v = reshape(stuff,numel(stuff),1);
+                    sz = size(stuff);                    
+                    sz = sz(2:end);
+                    if length(sz) < 2
+                        sz = [sz 1];
+                    end
+                    v = reshape(stuff,sz);
                 else
                     if size(stuff,1) ~= numel(indices)
                         error('mismatch of sizes');

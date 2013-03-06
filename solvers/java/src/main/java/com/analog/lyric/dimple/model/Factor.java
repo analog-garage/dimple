@@ -31,7 +31,7 @@ public class Factor extends FactorBase implements Cloneable
 	private String _modelerFunctionName = "";
 	protected ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
-	private VariableList _variables = null;
+	protected VariableList _variables = null;
 	int [] _directedTo = null;
 	int [] _directedFrom = null;
 	
