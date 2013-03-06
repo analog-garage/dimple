@@ -63,15 +63,20 @@ public class LogNormal extends FactorFunction
     	if (!_inverseVarianceConstant)
     	{
     		_inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
+    		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
     		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
     		_inverseVarianceOverTwo = _inverseVariance*0.5;
-    		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
     	}
     	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the Gamma distributed variable
     	
-    	double logX = Math.log(x);
-    	double relLogX = logX - _mean;
-    	return logX - _logInverseVarianceOverTwo + _inverseVarianceOverTwo*relLogX*relLogX;
+    	if (x <= 0)
+    		return Double.POSITIVE_INFINITY;
+    	else
+    	{
+    		double logX = Math.log(x);
+    		double relLogX = logX - _mean;
+    		return logX - _logInverseVarianceOverTwo + _inverseVarianceOverTwo*relLogX*relLogX;
+    	}
 	}
     
     

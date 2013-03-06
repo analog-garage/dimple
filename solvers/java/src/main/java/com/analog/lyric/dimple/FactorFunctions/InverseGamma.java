@@ -67,7 +67,10 @@ public class InverseGamma extends FactorFunction
     	}
     	double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Inverse Gamma distributed variable
     	
-    	return _beta/x - _alpha * Math.log(_beta) + (_alpha + 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
+    	if (x < 0)
+    		return Double.POSITIVE_INFINITY;
+    	else
+    		return _beta/x - _alpha * Math.log(_beta) + (_alpha + 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
 	}
     
     

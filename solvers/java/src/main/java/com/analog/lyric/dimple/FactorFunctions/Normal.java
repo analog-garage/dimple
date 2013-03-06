@@ -64,8 +64,8 @@ public class Normal extends FactorFunction
     	if (!_inverseVarianceConstant)
     	{
     		_inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
-    		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
     		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
+    		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
     	}
     	int length = arguments.length;
     	int N = length - index;			// Number of Normal variables
