@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -27,7 +26,6 @@ public class TableFactorBlastFromThePast extends SBlastFromThePast implements IS
 {
     protected DiscreteSample[] _inPortMsgs = null;
     protected int _numPorts;
-	private FactorTable _factorTable = null;
 	private double [] _outputMsg;
 	private DiscreteSample _inputMsg;
 
