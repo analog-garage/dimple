@@ -24,6 +24,9 @@ public interface ISolverVariable extends ISolverNode
     public void setGuess(Object guess);
     public Object getGuess();
     
+    
+    public void createNonEdgeSpecificState();
+    
     //Create messages that will be passed to and from the specified factor.
     //This method should return an Object array with two elements, the first
     //being the newly created input message and the second being the newly created

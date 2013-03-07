@@ -139,6 +139,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		{		
 			_solverVariable = factorGraph.createVariable(this);
 			_solverVariable.setInput(_input);
+			_solverVariable.createNonEdgeSpecificState();
 		}
 		else
 		{

@@ -117,9 +117,16 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		return resetInputMessage(message);
 	}
 	
+	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
     	
     }
+	
+	@Override
+	public void createNonEdgeSpecificState()
+	{
+		
+	}
 
 }

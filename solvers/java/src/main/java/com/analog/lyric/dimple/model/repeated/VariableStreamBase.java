@@ -70,6 +70,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 			_variables.get(i).moveInputs(_variables.get(i+1));
 			_variables.get(i).getSolver().moveNonEdgeSpecificState(_variables.get(i+1).getSolver());
 		}
+		_variables.get(_variables.size()-1).getSolver().createNonEdgeSpecificState();
 
 		if (_dataSource != null)
 		{

@@ -1076,9 +1076,11 @@ public class FactorGraph extends FactorBase
 
 	public void recreateMessages()
 	{
+		for (VariableBase v : getVariablesFlat())
+			v.getSolver().createNonEdgeSpecificState();
+		
 		for (Factor f : getNonGraphFactorsFlat() )
 			f.getSolver().createMessages();
-			
 	}
 	
 	public void initialize() 

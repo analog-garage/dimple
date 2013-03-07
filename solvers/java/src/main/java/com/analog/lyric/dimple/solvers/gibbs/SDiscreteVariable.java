@@ -423,6 +423,20 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return false;
 	}
 
+	public void createNonEdgeSpecificState()
+	{
+		_outputMsg = new DiscreteSample(0, 0);
+		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+
+		//TODO: Is this the right thing to do?
+	    if (_sampleIndexArray != null)
+			saveAllSamples();
+
+		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
+		_sampleIndex = 0;
+		_bestSampleIndex = -1;
+
+	}
 	
 	@Override
 	public Object []  createMessages(ISolverFactor factor) 
@@ -434,21 +448,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	    
     	_inPortMsgs[portNum] = createDefaultMessage();
     	
-    	//TODO: recreateMessages by the Factor will create this multiple times.
-    	//      Is there a way to avoid this?
-    	if (_outputMsg == null)
-    	{
-			_outputMsg = new DiscreteSample(0, 0);
-			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
-
-			//TODO: Is this the right thing to do?
-		    if (_sampleIndexArray != null)
-				saveAllSamples();
-
-			_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
-			_sampleIndex = 0;
-			_bestSampleIndex = -1;
-    	}
     	
 	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
 	    _samplerScratch = new double[_lengthRoundedUp];
@@ -523,7 +522,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     {
 		SDiscreteVariable ovar = ((SDiscreteVariable)other);
 		_outputMsg = ovar._outputMsg;
-		ovar._outputMsg = null;    	
 		_sampleIndexArray = ovar._sampleIndexArray;
 		_beliefHistogram = ovar._beliefHistogram;
 		_sampleIndex = ovar._sampleIndex;
