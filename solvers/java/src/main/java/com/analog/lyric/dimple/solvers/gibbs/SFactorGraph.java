@@ -87,15 +87,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		//TODO: is this the smoothest way to create the blast from the past?
-		//      Should we instead
-		//      Wait, this won't work, because we have to receive and ignore updateEdgeMessage
-		// So,
-		//   Solvers should have to create solver objects for blast from the past factors
-		//   They should be given pointers to the solver factor they're mimicking
-		//   In gibbs discrete they can ignore that info
-		//   In gibbs continuous, they can copy the samples
-		//   For sum product, should they copy guess? 
 	
 		if (factor.isDiscrete())
 			return new STableFactor(factor);
@@ -125,6 +116,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
+
 	@Override
 	public void solveOneTimeStep() 
 	{		

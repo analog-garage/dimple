@@ -279,9 +279,10 @@ public class FactorGraph extends FactorBase
 	{
 		
 		for (VariableStreamBase vs : _variableStreams)
-			vs.advanceInputs();
+			vs.advanceState();
 		for (FactorGraphStream s : _factorGraphStreams)
 			s.advance(false);
+		
 	}
 	
 	public boolean hasNext() 

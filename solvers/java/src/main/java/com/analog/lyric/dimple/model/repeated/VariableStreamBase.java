@@ -57,7 +57,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		return _variables.contains(vb);
 	}
 	
-	public void advanceInputs()
+	public void advanceState()
 	{
 		if (_dataSink != null)
 		{
@@ -66,7 +66,10 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 		
 		for (int i = 0; i < _variables.size()-1; i++)
+		{
 			_variables.get(i).moveInputs(_variables.get(i+1));
+			_variables.get(i).getSolver().moveNonEdgeSpecificState(_variables.get(i+1).getSolver());
+		}
 
 		if (_dataSource != null)
 		{
@@ -77,6 +80,8 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		{
 			_variables.get(_variables.size()-1).setInputObject(null);
 		}
+		
+		
 	
 	}
 	

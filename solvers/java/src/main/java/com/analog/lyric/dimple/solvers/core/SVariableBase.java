@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SVariableBase extends SNode implements ISolverVariable
@@ -115,4 +116,10 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		return resetInputMessage(message);
 	}
+	
+    public void moveNonEdgeSpecificState(ISolverNode other)
+    {
+    	
+    }
+
 }

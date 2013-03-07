@@ -26,7 +26,8 @@ reset(rs,seed);
 actual_input = zeros(1,N);
 actual_input(1) = randi(2)-1;
 for i = 2:N
-    t = [0.1, 0.9; 0.8, 0.2];
+    %t = [0.1, 0.9; 0.8, 0.2];
+    t = [0, 1; 1, 0];
     if rand() > t(actual_input(i-1)+1,1)
         actual_input(i) = 1;
     else
@@ -34,10 +35,11 @@ for i = 2:N
     end
 end
 
-sigma = 1;
-input = actual_input + randn(size(actual_input))*sigma;
-input(input<0) = 0;
-input(input>1) = 1;
+%sigma = 1;
+%input = actual_input + randn(size(actual_input))*sigma;
+%input(input<0) = 0;
+%input(input>1) = 1;
+input = actual_input;
 
 
 source1 = DoubleArrayDataSource([input; 1-input]);
@@ -52,9 +54,15 @@ sink2 = DoubleArrayDataSink();
 [fg2, x2] = createGraph(source2, sink2, bufferSize);
 fg2.Solver = 'Gibbs';
 fg2.solve();
+
+
+
 b2 = sink2.Array;
 
-sum(abs(b1(1,:)>0.5 - b2(1,:)>0.5))
+diff = b2(:,(end-10):end) - b1(:,(end-10):end);
+ndiff = norm(diff);
+assertTrue(ndiff < 1e-100);
+
 
 end
 
@@ -75,7 +83,7 @@ end
 
 function v = myFactor(in,out)
 
-t = [0.1, 0.9; 0.8, 0.2];
+t = [0, 1; 1, 0];
 v = t(in+1,out+1);
 
 end

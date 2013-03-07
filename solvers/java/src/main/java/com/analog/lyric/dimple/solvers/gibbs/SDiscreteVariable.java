@@ -57,7 +57,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
-		_beliefHistogram = new long[((Discrete)var).getDiscreteDomain().getElements().length];
+		
 	}
 
 
@@ -433,15 +433,29 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, _numPorts);
 	    
     	_inPortMsgs[portNum] = createDefaultMessage();
+    	
+    	//TODO: recreateMessages by the Factor will create this multiple times.
+    	//      Is there a way to avoid this?
     	if (_outputMsg == null)
     	{
-    		_outputMsg = new DiscreteSample(0, 0);
-    		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+			_outputMsg = new DiscreteSample(0, 0);
+			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+
+			//TODO: Is this the right thing to do?
+		    if (_sampleIndexArray != null)
+				saveAllSamples();
+
+			_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
+			_sampleIndex = 0;
+			_bestSampleIndex = -1;
     	}
     	
 	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
 	    _samplerScratch = new double[_lengthRoundedUp];
 	    _conditional = new double[_input.length];
+	    
+		
+		
 		
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
 	}
@@ -499,9 +513,26 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum) 
 	{
-		_inPortMsgs[thisPortNum] = ((SDiscreteVariable)other)._inPortMsgs[otherPortNum];
-		_outputMsg= ((SDiscreteVariable)other)._outputMsg;
+		SDiscreteVariable ovar = ((SDiscreteVariable)other);
+		_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
+				
 	}
+	
+	@Override
+    public void moveNonEdgeSpecificState(ISolverNode other)
+    {
+		SDiscreteVariable ovar = ((SDiscreteVariable)other);
+		_outputMsg = ovar._outputMsg;
+		ovar._outputMsg = null;    	
+		_sampleIndexArray = ovar._sampleIndexArray;
+		_beliefHistogram = ovar._beliefHistogram;
+		_sampleIndex = ovar._sampleIndex;
+		_conditional = ovar._conditional;
+		_samplerScratch = ovar._samplerScratch;
+		_bestSampleIndex = ovar._bestSampleIndex;
+		_lengthRoundedUp = ovar._lengthRoundedUp;
+    }
+
 	
 
 	public void initialize()

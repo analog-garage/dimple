@@ -35,4 +35,8 @@ public interface ISolverVariable extends ISolverNode
 	
 	//Method to reset an output message's values
 	public Object resetOutputMessage(Object message);
+	
+    //Move global state from other node to this one
+    public void moveNonEdgeSpecificState(ISolverNode other);
+
 }

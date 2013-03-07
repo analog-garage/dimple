@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
@@ -35,6 +36,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph, Runnable
 {
@@ -65,6 +67,15 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		{
 			ISolverFactor sf = (ISolverFactor)myFactors.getByIndex(i).getSolver();
 			sf.moveMessages(otherFactors.getByIndex(i).getSolver());
+		}
+		
+		VariableList myVars = _factorGraph.getVariablesFlat();
+		VariableList otherVars = sother._factorGraph.getVariablesFlat();
+		
+		for (int i = 0; i < myVars.size(); i++)
+		{
+			ISolverVariable sv = (ISolverVariable)myVars.getByIndex(i).getSolver();
+			sv.moveNonEdgeSpecificState(otherVars.getByIndex(i).getSolver());
 		}
 		
 	}
@@ -134,11 +145,17 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		iterate(_numIterations);
 	}
 	
-	public void solve(boolean initialize) 
+	public void prepareForFirstSolve(boolean initialize)
 	{
 		if (initialize)
 			_factorGraph.initialize();
+	}
+	
+	
+	public void solve(boolean initialize) 
+	{
 			
+		prepareForFirstSolve(initialize);
 		solveOneTimeStep();
 		
 		int i = 0;

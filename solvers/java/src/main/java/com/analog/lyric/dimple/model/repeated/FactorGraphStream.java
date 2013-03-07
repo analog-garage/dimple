@@ -224,7 +224,7 @@ public class FactorGraphStream
 			for (VariableStreamBase variableStream : _variableStreams)
 			{
 				//TODO: get this working
-				variableStream.advanceInputs();
+				variableStream.advanceState();
 			}
 		}
 	

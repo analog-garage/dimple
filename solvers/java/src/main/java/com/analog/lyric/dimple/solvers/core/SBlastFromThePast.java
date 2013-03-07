@@ -164,7 +164,7 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	{
 		VariableBase var = _factor.getVariables().getByIndex(portIndex);
 		int index = var.getPortNum(getModelObject());
-		var.getSolver().setInputMsg(index,obj);
+		var.getSolver().setInputMsg(index,obj);		
 	}
 
 	@Override
