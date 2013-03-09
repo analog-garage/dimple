@@ -257,6 +257,7 @@ public class FactorGraphStream
 
 		//Newest nested graph should initialiaze its messages
 		_nestedGraphs.get(_nestedGraphs.size()-1).recreateMessages();
+		
 
 	}
 
