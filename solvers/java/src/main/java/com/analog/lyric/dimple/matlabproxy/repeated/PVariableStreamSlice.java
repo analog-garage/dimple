@@ -14,36 +14,35 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.matlabproxy.PHelpers;
+import com.analog.lyric.dimple.matlabproxy.PVariableVector;
+import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
 
-public class PFactorGraphStream 
+public class PVariableStreamSlice implements IPVariableStreamSlice
 {
-	private FactorGraphStream _stream;
+	private VariableStreamSlice [] _modelObjects;
 	
-	public PFactorGraphStream(FactorGraphStream stream)
+	public PVariableStreamSlice(VariableStreamSlice [] slices)
 	{
-		_stream = stream;
+		_modelObjects = slices;
 	}
 	
-	public FactorGraphStream getModelerObjects()
+	public VariableStreamSlice [] getModelerObjects()
 	{
-		return _stream;
+		return _modelObjects;
 	}
 	
-	public boolean hasNext() 
+	public PVariableVector get(int index) 
 	{
-		return _stream.hasNext();
+		VariableBase [] vars = new VariableBase[_modelObjects.length];
+		for (int i = 0; i < vars.length; i++)
+			vars[i] = _modelObjects[i].get(index);
+		return PHelpers.convertToVariableVector(vars);
 	}
+
+
 	
-	public void setBufferSize(int size) 
-	{
-		_stream.setBufferSize(size);
-	}
-	
-	public int getBufferSize()
-	{
-		return _stream.getBufferSize();
-	}
 }

@@ -192,7 +192,10 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
 	{
-		throw new DimpleException("not supported");
+		//protected ObjectSample [] _inputMsgs;
+		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
+
+		//throw new DimpleException("not supported");
 	}
 
 

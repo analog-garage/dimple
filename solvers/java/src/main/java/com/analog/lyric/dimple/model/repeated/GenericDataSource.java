@@ -14,11 +14,39 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.repeated.IDataSource;
+import java.util.LinkedList;
 
-public interface IPDataSource 
+import com.analog.lyric.dimple.model.DimpleException;
+
+public class GenericDataSource<Type> implements IDataSource 
 {
-	public IDataSource [] getModelObjects();
+	protected LinkedList<Type> _data = new LinkedList<Type>();
+	
+	public void add(Type data) 
+	{
+		_data.add(data);
+	}
+
+	public void add(Type [] data)
+	{
+		for (int i = 0; i < data.length; i++)
+			_data.add(data[i]);
+	}
+	
+	public Type getNext()
+	{
+		if (_data.size() <= 0)
+			throw new DimpleException("ACK!");
+		
+		return _data.pollFirst();
+	}
+
+	public boolean hasNext()
+	{
+		return _data.size() > 0;
+	}
+	
+	
 }

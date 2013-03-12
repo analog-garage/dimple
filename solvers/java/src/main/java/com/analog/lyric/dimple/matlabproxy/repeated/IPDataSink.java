@@ -14,25 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model.repeated;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.model.repeated.IDataSink;
 
-import java.util.LinkedList;
-
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
-
-public class MultivariateDataSource extends GenericDataSource<MultivariateMsg> 
+public interface IPDataSink 
 {
-	
-	public MultivariateDataSource()
-	{
-		_data = new LinkedList<MultivariateMsg>();
-	}
-	
-	public void add(double [] means, double [][] covar)
-	{
-		_data.add(new MultivariateMsg(means, covar));
-	}
-	
-	
+	public IDataSink [] getModelObjects();
 }

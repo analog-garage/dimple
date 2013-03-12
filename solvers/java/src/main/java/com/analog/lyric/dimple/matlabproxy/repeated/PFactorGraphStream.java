@@ -14,25 +14,36 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.repeated.DiscreteStream;
-import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 
-public class PDiscreteStream extends PVariableStreamBase
+public class PFactorGraphStream 
 {
- 
-	public PDiscreteStream(PDiscreteDomain domain, int numVars)  
+	private FactorGraphStream _stream;
+	
+	public PFactorGraphStream(FactorGraphStream stream)
 	{
-		super(domain.getModelerObject(),numVars);
+		_stream = stream;
 	}
-
-	@Override
-	protected VariableStreamBase createVariable(Domain domain) 
+	
+	public FactorGraphStream getModelerObjects()
 	{
-		return new DiscreteStream((DiscreteDomain)domain);
+		return _stream;
 	}
-
+	
+	public boolean hasNext() 
+	{
+		return _stream.hasNext();
+	}
+	
+	public void setBufferSize(int size) 
+	{
+		_stream.setBufferSize(size);
+	}
+	
+	public int getBufferSize()
+	{
+		return _stream.getBufferSize();
+	}
 }

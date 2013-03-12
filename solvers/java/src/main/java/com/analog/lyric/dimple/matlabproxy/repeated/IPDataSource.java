@@ -14,11 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
+import com.analog.lyric.dimple.model.repeated.IDataSource;
 
-public interface IPVariableStreamSlice 
+public interface IPDataSource 
 {
-	IVariableStreamSlice [] getModelerObjects();
+	public IDataSource [] getModelObjects();
 }

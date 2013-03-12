@@ -14,47 +14,51 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
+
+import java.lang.reflect.Array;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
+import com.analog.lyric.dimple.model.repeated.GenericDataSource;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
-import com.analog.lyric.math.Functions;
 
-public class PDoubleArrayDataSource implements IPDataSource 
+public class PGenericDataSource<Type extends GenericDataSource<Type2>,Type2> implements IPDataSource
 {
 
-	private DoubleArrayDataSource [] _dataSources;
+	private Type [] _dataSources;
 	
-	public PDoubleArrayDataSource(DoubleArrayDataSource [] dads)
+	public PGenericDataSource(Type [] dads)
 	{
 		_dataSources = dads;
 	}
 
-	public PDoubleArrayDataSource(int numVars)
+	public PGenericDataSource(Class<Type> c, int numVars)
 	{
-		_dataSources = new DoubleArrayDataSource[numVars];
+		
+		_dataSources = (Type[])Array.newInstance(c,numVars);
 		
 		for (int i = 0; i < numVars; i++)
-			_dataSources[i] = new DoubleArrayDataSource();
-	}
+			try {
+				_dataSources[i] = (Type)c.newInstance();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new DimpleException("ack");
+			}	
+		}
 		
-	public void add(double [][] data)
+	public void add(Type2 [] data)
 	{
-		if (data.length != _dataSources.length)
-			throw new DimpleException("variable size mismatch"  + data.length + " " + _dataSources.length);
-		
 		for (int i = 0; i < data.length; i++)
 			_dataSources[i].add(data[i]);
 	}
 	
-	public void addMultiple(double [][][] data)
+	public void addMultiple(Type2 [][] data)
 	{
 		if (data.length != _dataSources.length)
 			throw new DimpleException("variable size mismatch: " + data.length + " " + _dataSources.length);
 		
 		for (int i = 0; i < data.length; i++)
-			_dataSources[i].add(Functions.transpose(data[i]));
+			_dataSources[i].add(data[i]);
 		
 	}
 	
@@ -68,6 +72,5 @@ public class PDoubleArrayDataSource implements IPDataSource
 	{
 		return _dataSources[0].hasNext();
 	}
-
 
 }

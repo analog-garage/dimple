@@ -17,14 +17,15 @@
 %function simpleRealHMMTest()
 
 % Graph parameters
-hmmLength = 200;                    % Length of the HMM
+hmmLength = 50;                    % Length of the HMM
 repeatable = false;                  % Make this run repeat all the same random values
 
 % Gibbs solver parameters
-numSamples = 100;                   % Total number of Gibbs samples to run
+numSamples = 10000;                   % Total number of Gibbs samples to run
 proposalStandardDeviation = 0.5;      % Proposal standard deviation for parameter variables
 scansPerSample = 1;                 % Number of scans (one update of all variables) per sample
 burnInScans = 100;                  % Number of burn-in scans before sampling
+bufferSize = 10;
 
 if (repeatable)
     seed = 1;
@@ -80,13 +81,14 @@ sg = FactorGraph(Xi,Xo,Ob);
 % sub-graph since Xo is already defined as a boundary variable
 %sg.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum, Xo, Xi, N);
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
-
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
 
 fg = FactorGraph();
-X = Real(1,hmmLength);
-O = Real(1,hmmLength-1);
-fg.addFactorVectorized(sg, X(1:end-1),X(2:end),  O);
+X = RealStream();
+O = RealStream();
+
+
+fg.addFactor(sg,bufferSize, X,X.getSlice(2),  O);
 
 % Add observation data
 % This is a hacky way to do it; better when we can set fixed input values
@@ -95,12 +97,18 @@ fg.addFactorVectorized(sg, X(1:end-1),X(2:end),  O);
 %    O(i).Domain = [o(i) o(i)];
 %    O(i).Solver.setInitialSampleValue(o(i));
 %end
+ffds = FactorFunctionDataSource();
+
 for i = 1:hmmLength-1
-    O(i).Input = com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e-5);
+    ffds.add(com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e-5));
 end
+O.DataSource = ffds;
 
 % Set proposal standard deviation for real variables
-X.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
+for i = 1:X.Size
+    X.get(i).Solver.setProposalStandardDeviation(proposalStandardDeviation);
+end
+
 
 if (repeatable)
     fg.Solver.setSeed(1);		% Make the Gibbs solver repeatable
@@ -108,12 +116,26 @@ end
 
 % Solve
 disp('Starting Gibbs solver');
-fg.Solver.setNumRestarts(1)
-fg.Solver.setNumSamples(10000);
-fg.solve();
+fg.NumSteps = 0;
+fg.initialize();
+
+i = 1;
+output = [];
+while 1
+    fg.solve(false);
+    sample = X.get(1).Solver.getBestSample();
+    output(i) = sample;
+    i = i + 1;
+    
+    if fg.hasNext()
+        fg.advance();
+    else
+        break;
+    end
+end
 
 % Get the estimated transition matrix
-output = cell2mat(X.invokeSolverMethodWithReturnValue('getBestSample'));
+%output = cell2mat(X.invokeSolverMethodWithReturnValue('getBestSample'));
 disp('Gibbs estimate:'); disp(output);
 
 hold off;

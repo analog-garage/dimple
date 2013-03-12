@@ -296,26 +296,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 
-	public void initialize()
-	{
-		super.initialize();
-
-		if (!_holdSampleValue)
-			setCurrentSample(_initialSampleValue);
-		_bestSampleValue = _initialSampleValue;
-		if (_sampleArray != null) _sampleArray.clear();
-		
-		_isDeterministicDepdentent = isDeterministicDependent();
-		_hasDeterministicDependents = hasDeterministicDependents();
-	}
-
-	@Override
-	public Object [] createMessages(ISolverFactor factor) 
-	{
-		if (_outputMsg == null)
-			_outputMsg = createDefaultMessage();
-		return new Object [] {null,_outputMsg};
-	}
 
 	public ObjectSample createDefaultMessage() 
 	{
@@ -357,8 +337,77 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void moveMessages(ISolverNode other, int thisPortNum,
 			int otherPortNum) 
 	{
-		throw new DimpleException("Not supported by: " + this);
+		//SDiscreteVariable ovar = ((SDiscreteVariable)other);
+		//_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
+			
+		
+	}
+	
+
+	public void initialize()
+	{
+		super.initialize();
+
+		if (!_holdSampleValue)
+			setCurrentSample(_initialSampleValue);
+		_bestSampleValue = _initialSampleValue;
+		if (_sampleArray != null) _sampleArray.clear();
+		
+		_isDeterministicDepdentent = isDeterministicDependent();
+		_hasDeterministicDependents = hasDeterministicDependents();
+	}
+
+	@Override
+	public Object [] createMessages(ISolverFactor factor) 
+	{
+		return new Object [] {null,_outputMsg};
+	}
+	
+	public void createNonEdgeSpecificState()
+	{
+		_outputMsg = createDefaultMessage();
+		
+		/*
+		protected ObjectSample _outputMsg;
+		protected double _sampleValue;
+		protected double _initialSampleValue = 0;
+		protected FactorFunction _input;
+		protected RealDomain _domain;
+		protected ArrayList<Double> _sampleArray;
+		protected double _bestSampleValue;
+		protected double _beta = 1;
+		protected double _proposalStdDev = 1;
+		protected boolean _holdSampleValue = false;
+		protected boolean _isDeterministicDepdentent = false;
+		protected boolean _hasDeterministicDependents = false;
+*/
+		
+//		_outputMsg = new DiscreteSample(0, 0);
+//		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+//
+//		//TODO: Is this the right thing to do?
+//	    if (_sampleIndexArray != null)
+//			saveAllSamples();
+//
+//		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
+//		_sampleIndex = 0;
+//		_bestSampleIndex = -1;
 
 	}
+	
+	@Override
+    public void moveNonEdgeSpecificState(ISolverNode other)
+    {
+		SRealVariable ovar = ((SRealVariable)other);
+		_outputMsg = ovar._outputMsg;
+		_sampleValue = ovar._sampleValue;
+		_initialSampleValue = ovar._initialSampleValue;
+		_sampleArray = ovar._sampleArray;
+		_bestSampleValue = ovar._bestSampleValue;
+		_beta = ovar._beta;
+		_proposalStdDev = ovar._proposalStdDev;
+		_holdSampleValue = ovar._holdSampleValue;
+    }
+
 
 }

@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.dimple.model.repeated.MultivariateDataSource;

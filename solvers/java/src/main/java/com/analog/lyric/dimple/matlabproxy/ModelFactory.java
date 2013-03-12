@@ -19,6 +19,15 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
+import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
+import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
+import com.analog.lyric.dimple.matlabproxy.repeated.PFactorFunctionDataSource;
+import com.analog.lyric.dimple.matlabproxy.repeated.PMultivariateDataSink;
+import com.analog.lyric.dimple.matlabproxy.repeated.PMultivariateDataSource;
+import com.analog.lyric.dimple.matlabproxy.repeated.PRealJointStream;
+import com.analog.lyric.dimple.matlabproxy.repeated.PRealStream;
+import com.analog.lyric.dimple.matlabproxy.repeated.PVariableStreamBase;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Model;
@@ -167,6 +176,11 @@ public class ModelFactory
 		Model.getInstance().setDefaultGraphFactory(solver);
 	}
 
+	public PFactorFunctionDataSource getFactorFunctionDataSource(double numVars)
+	{
+		return new PFactorFunctionDataSource((int)numVars);
+	}
+	
 	public PDoubleArrayDataSource getDoubleArrayDataSource(double numVars)
 	{
 		return new PDoubleArrayDataSource((int)numVars);

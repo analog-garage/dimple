@@ -13,18 +13,17 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-classdef DoubleArrayDataSource < GenericDataSource
+
+classdef FactorFunctionDataSource < GenericDataSource
     methods
-        function obj = DoubleArrayDataSource(varargin)
+        function obj = FactorFunctionDataSource(varargin)
+            
             obj@GenericDataSource(varargin{:});
         end
-        
         function dataSource = getIDataSourceFromModeler(obj,sz)
             modeler = getModeler();
-            dataSource = modeler.getDoubleArrayDataSource(sz);
-            
+            dataSource = modeler.getFactorFunctionDataSource(sz);
         end
-
         
     end
     

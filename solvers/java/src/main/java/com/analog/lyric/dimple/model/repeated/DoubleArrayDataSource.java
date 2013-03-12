@@ -19,11 +19,8 @@ package com.analog.lyric.dimple.model.repeated;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-
-public class DoubleArrayDataSource implements IDataSource 
+public class DoubleArrayDataSource extends GenericDataSource<double[]> 
 {
-	private LinkedList<double[]> _data;
 
 	public DoubleArrayDataSource()
 	{
@@ -54,20 +51,6 @@ public class DoubleArrayDataSource implements IDataSource
 	public  void add(double[] data)
 	{
 		_data.add(data);
-	}
-	
-	public boolean hasNext()
-	{
-		return _data.size() > 0;
-			
-	}
-	
-	public Object getNext() 
-	{
-		if (_data.size() <= 0)
-			throw new DimpleException("ACK!");
-		
-		return _data.pollFirst();
 	}
 	
 	double [] peek()

@@ -14,33 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
+import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;
 
-public class PVariableStreamSlice implements IPVariableStreamSlice
+public interface IPVariableStreamSlice 
 {
-	private VariableStreamSlice [] _modelObjects;
-	
-	public PVariableStreamSlice(VariableStreamSlice [] slices)
-	{
-		_modelObjects = slices;
-	}
-	
-	public VariableStreamSlice [] getModelerObjects()
-	{
-		return _modelObjects;
-	}
-	
-	public PVariableVector get(int index) 
-	{
-		VariableBase [] vars = new VariableBase[_modelObjects.length];
-		for (int i = 0; i < vars.length; i++)
-			vars[i] = _modelObjects[i].get(index);
-		return PHelpers.convertToVariableVector(vars);
-	}
-
-
-	
+	IVariableStreamSlice [] getModelerObjects();
 }

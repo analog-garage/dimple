@@ -14,17 +14,18 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.matlabproxy.PDiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.repeated.RealJointStream;
+import com.analog.lyric.dimple.model.repeated.DiscreteStream;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
-
-public class PRealJointStream extends PVariableStreamBase 
+public class PDiscreteStream extends PVariableStreamBase
 {
-	public PRealJointStream(PRealJointDomain domain, int numVars)  
+ 
+	public PDiscreteStream(PDiscreteDomain domain, int numVars)  
 	{
 		super(domain.getModelerObject(),numVars);
 	}
@@ -32,7 +33,7 @@ public class PRealJointStream extends PVariableStreamBase
 	@Override
 	protected VariableStreamBase createVariable(Domain domain) 
 	{
-		return new RealJointStream((RealJointDomain)domain);
+		return new DiscreteStream((DiscreteDomain)domain);
 	}
 
 }

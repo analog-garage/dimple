@@ -14,25 +14,20 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model.repeated;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.repeated.FactorFunctionDataSource;
 
-import java.util.LinkedList;
-
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
-
-public class MultivariateDataSource extends GenericDataSource<MultivariateMsg> 
+public class PFactorFunctionDataSource extends PGenericDataSource<FactorFunctionDataSource,FactorFunction> 
 {
-	
-	public MultivariateDataSource()
+	public PFactorFunctionDataSource(FactorFunctionDataSource [] sources)
 	{
-		_data = new LinkedList<MultivariateMsg>();
+		super(sources);
 	}
 	
-	public void add(double [] means, double [][] covar)
+	public PFactorFunctionDataSource(int numVars)
 	{
-		_data.add(new MultivariateMsg(means, covar));
+		super(FactorFunctionDataSource.class,numVars);
 	}
-	
-	
 }

@@ -19,6 +19,10 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.analog.lyric.dimple.matlabproxy.repeated.IPDataSink;
+import com.analog.lyric.dimple.matlabproxy.repeated.IPDataSource;
+import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
+import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;

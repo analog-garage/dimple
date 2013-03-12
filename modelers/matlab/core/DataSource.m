@@ -30,8 +30,6 @@ classdef DataSource < handle
             
         end
         
-        
-        
         function retval = hasNext(obj)
             retval = obj.IDataSource.hasNext();
         end

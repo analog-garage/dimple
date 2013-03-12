@@ -78,10 +78,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
 	{
+		//TODO: catch case where the factor is directed
+		if (factor.isDirected() || factor.getFactorFunction().isDeterministicDirected())
+			throw new DimpleException("not yet supported");
+		
 		if (factor.isDiscrete())
 			return new TableFactorBlastFromThePast(factor);
 		else
-			throw new DimpleException("Not supported yet");
+			return new RealFactorBlastFromThePast(factor);
 	}
 	
 	@Override

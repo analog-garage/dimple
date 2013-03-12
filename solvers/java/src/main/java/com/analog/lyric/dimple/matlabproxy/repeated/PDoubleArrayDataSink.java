@@ -14,35 +14,34 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSink;
-import com.analog.lyric.dimple.model.repeated.MultivariateDataSink;
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.math.Functions;
 
-public class PMultivariateDataSink implements IPDataSink 
+public class PDoubleArrayDataSink implements IPDataSink 
 {
+
+	private DoubleArrayDataSink [] _dataSinks;
 	
-	private MultivariateDataSink [] _dataSinks;
-	
-	public PMultivariateDataSink(MultivariateDataSink [] dataSinks)
+	public PDoubleArrayDataSink(DoubleArrayDataSink [] dataSinks)
 	{
 		_dataSinks=dataSinks;
 	}
 	
 
-	public PMultivariateDataSink(int numVars)
+	public PDoubleArrayDataSink(int numVars)
 	{
-		_dataSinks = new MultivariateDataSink[numVars];
+		_dataSinks = new DoubleArrayDataSink[numVars];
 		
 		for (int i = 0; i < numVars; i++)
-			_dataSinks[i] = new MultivariateDataSink();
+			_dataSinks[i] = new DoubleArrayDataSink();
 	}
 		
-	public MultivariateMsg [] getNext()
+	public double [][] getNext()
 	{
-		MultivariateMsg [] retval = new MultivariateMsg[_dataSinks.length];
-		
+		double [][] retval = new double[_dataSinks.length][];
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = _dataSinks[i].getNext();
 		
@@ -60,4 +59,16 @@ public class PMultivariateDataSink implements IPDataSink
 	{
 		return _dataSinks;
 	}
+	
+	public double [][][] getArray()
+	{
+		double [][][] retval = new double[_dataSinks.length][][];
+		for (int i = 0; i < _dataSinks.length; i++)
+		{			
+			retval[i] = Functions.transpose(_dataSinks[i].getArray());
+		}
+		
+		return retval;
+	}
+
 }

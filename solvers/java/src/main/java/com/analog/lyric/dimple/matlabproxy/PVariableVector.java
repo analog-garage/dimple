@@ -57,8 +57,7 @@ public class PVariableVector extends PNodeVector
 		return (VariableBase)getModelerNode(index);
 	}
 	
-	//package-private
-	VariableBase [] getVariableArray() 
+	public VariableBase [] getVariableArray() 
 	{
 		Node [] vars = this.getModelerNodes();
 		VariableBase [] realVars;
@@ -79,7 +78,6 @@ public class PVariableVector extends PNodeVector
 		}
 		return realVars;
 	}
-	
 	
 	public String getModelerClassName() 
 	{

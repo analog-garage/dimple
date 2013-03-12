@@ -305,6 +305,9 @@ classdef MatrixObject < handle
             %
             % TODO: should deal with cell arrays if the values cannot be
             % turned into a matrix
+            if ~isnumeric(values) && ~iscell(values)
+                values = {values};
+            end
             
             numValsPerObj = prod(size(values)) / numel(indices);
             if mod(numValsPerObj,1) ~= 0

@@ -14,11 +14,27 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.repeated.IDataSink;
+import com.analog.lyric.dimple.matlabproxy.PRealDomain;
+import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.repeated.RealStream;
+import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
-public interface IPDataSink 
+
+public class PRealStream extends PVariableStreamBase 
 {
-	public IDataSink [] getModelObjects();
+	public PRealStream(PRealDomain domain, int numVars)  
+	{
+		super(domain.getModelerObject(),numVars);
+	}
+
+	@Override
+	protected VariableStreamBase createVariable(Domain domain) 
+	{
+		return new RealStream((RealDomain)domain);		
+	}
+
+
 }

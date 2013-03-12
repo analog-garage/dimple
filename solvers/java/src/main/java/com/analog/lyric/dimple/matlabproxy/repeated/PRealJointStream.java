@@ -14,25 +14,26 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model.repeated;
+package com.analog.lyric.dimple.matlabproxy.repeated;
+
+import com.analog.lyric.dimple.matlabproxy.PRealJointDomain;
+import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.repeated.RealJointStream;
+import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
 
-import java.util.LinkedList;
-
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
-
-public class MultivariateDataSource extends GenericDataSource<MultivariateMsg> 
+public class PRealJointStream extends PVariableStreamBase 
 {
-	
-	public MultivariateDataSource()
+	public PRealJointStream(PRealJointDomain domain, int numVars)  
 	{
-		_data = new LinkedList<MultivariateMsg>();
+		super(domain.getModelerObject(),numVars);
 	}
-	
-	public void add(double [] means, double [][] covar)
+
+	@Override
+	protected VariableStreamBase createVariable(Domain domain) 
 	{
-		_data.add(new MultivariateMsg(means, covar));
+		return new RealJointStream((RealJointDomain)domain);
 	}
-	
-	
+
 }

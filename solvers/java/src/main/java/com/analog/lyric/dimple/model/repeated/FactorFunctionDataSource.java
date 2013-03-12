@@ -14,26 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.repeated.RealStream;
-import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 
-
-public class PRealStream extends PVariableStreamBase 
+public class FactorFunctionDataSource extends GenericDataSource<FactorFunction>
 {
-	public PRealStream(PRealDomain domain, int numVars)  
+	public void add(FactorFunction ff)
 	{
-		super(domain.getModelerObject(),numVars);
+		_data.add(ff);
 	}
-
-	@Override
-	protected VariableStreamBase createVariable(Domain domain) 
-	{
-		return new RealStream((RealDomain)domain);		
-	}
-
 
 }

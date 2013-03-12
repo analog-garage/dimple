@@ -14,8 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.matlabproxy;
+package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.matlabproxy.PHelpers;
+import com.analog.lyric.dimple.matlabproxy.PNodeVector;
+import com.analog.lyric.dimple.matlabproxy.PVariableVector;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.VariableBase;
