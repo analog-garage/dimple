@@ -4,6 +4,17 @@ import com.analog.lyric.dimple.model.DimpleException;
 
 public class FactorFunctionUtilities
 {
+	public static final double [][] toDouble2DArray(Object value)
+	{
+		return (double[][])value;
+	}
+
+	public static final double [] toDoubleArray(Object value)
+	{
+		return (double[])value;
+	}
+	
+	
 	public static final double toDouble(Object value)
 	{
 		double out = 0;

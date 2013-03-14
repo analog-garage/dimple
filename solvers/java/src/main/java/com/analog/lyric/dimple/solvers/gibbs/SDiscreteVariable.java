@@ -72,7 +72,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (_isDeterministicDependent) return;
 
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
+		if (_holdSampleValue)
+		{
+			return;
+		}
 		
 		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
 
@@ -87,7 +90,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			// each neighboring factor update its entire message to this variable than the alternative, below
 			ArrayList<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)
+			{
 				((ISolverFactorGibbs)siblings.get(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
+			}
 			
 			// Sum up the messages to get the conditional distribution
 			for (int index = 0; index < messageLength; index++)
@@ -120,14 +125,19 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			}
 		}
 		
+		
 		// Sample from the conditional distribution
 		setCurrentSampleIndex(generateSample(_conditional, minEnergy));
+		
 	}
 	
 	public void randomRestart()
 	{
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
+		if (_holdSampleValue)
+		{
+			return;
+		}
 
 		// Convert the prior back to probabilities to sample from the prior
 		int messageLength = _input.length;
@@ -243,7 +253,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Send the sample value to all output ports
 		_outputMsg.index = index;
 		_outputMsg.value = _varDiscrete.getDiscreteDomain().getElements()[index];
-		
+				
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
 		{
@@ -427,13 +437,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		_outputMsg = new DiscreteSample(0, 0);
 		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
-
+		_sampleIndex = 0;
+	
+		
 		//TODO: Is this the right thing to do?
 	    if (_sampleIndexArray != null)
 			saveAllSamples();
 
 		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
-		_sampleIndex = 0;
 		_bestSampleIndex = -1;
 
 	}
@@ -486,7 +497,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void initializeEdge(int portNum) 
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
-		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+		if (!_holdSampleValue)
+			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
 	}
 
 	@Override

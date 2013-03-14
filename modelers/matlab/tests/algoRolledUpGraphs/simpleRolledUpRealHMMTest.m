@@ -14,6 +14,10 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%TODO:
+%Add support for discrete variables
+%Add directed support
+
 %function simpleRealHMMTest()
 
 % Graph parameters

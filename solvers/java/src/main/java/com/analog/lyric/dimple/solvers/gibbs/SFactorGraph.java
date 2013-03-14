@@ -93,9 +93,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 	
 		if (factor.isDiscrete())
+		{
 			return new STableFactor(factor);
+		}
 		else
+		{
 			return new SRealFactor(factor);
+		}
 	}
 
 	@Override
@@ -111,6 +115,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void initialize() 
 	{
 		super.initialize();
+		
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
@@ -127,8 +132,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
 			burnIn();
-			for (int iter = 0; iter < _numSamples; iter++) 
+			for (int iter = 0; iter < _numSamples; iter++)
+			{
 				oneSample();
+			}
 		}
 	}
 	

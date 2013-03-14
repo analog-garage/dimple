@@ -101,11 +101,13 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 		{
 			inPortMsgs[outPortNum] = outIndex;
+		
 			int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
 			if (weightIndex >= 0)
 				outMessage[outIndex] = factorTableWeights[weightIndex];
 			else
 				outMessage[outIndex] = Double.POSITIVE_INFINITY;
+			
 		}
 	}
 	
@@ -179,7 +181,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public void initializeEdge(int portNum) 
 	{
-		_inPortMsgs[portNum].index = 0;
+
 	}
 
 

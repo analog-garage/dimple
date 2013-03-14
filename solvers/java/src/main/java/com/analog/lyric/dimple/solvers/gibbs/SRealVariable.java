@@ -68,7 +68,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_isDeterministicDepdentent) return;
 
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) return;
+		if (_holdSampleValue) 
+		{
+			return;
+		}
 		
 		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
 
@@ -241,7 +244,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return retval;
 	}
 
-	public final void setAndHoldSampleValue(Double value)
+	public final void setAndHoldSampleValue(double value)
 	{
 		setCurrentSample(value);
 		holdSampleValue();
@@ -366,33 +369,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void createNonEdgeSpecificState()
 	{
 		_outputMsg = createDefaultMessage();
-		
-		/*
-		protected ObjectSample _outputMsg;
-		protected double _sampleValue;
-		protected double _initialSampleValue = 0;
-		protected FactorFunction _input;
-		protected RealDomain _domain;
-		protected ArrayList<Double> _sampleArray;
-		protected double _bestSampleValue;
-		protected double _beta = 1;
-		protected double _proposalStdDev = 1;
-		protected boolean _holdSampleValue = false;
-		protected boolean _isDeterministicDepdentent = false;
-		protected boolean _hasDeterministicDependents = false;
-*/
-		
-//		_outputMsg = new DiscreteSample(0, 0);
-//		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
-//
-//		//TODO: Is this the right thing to do?
-//	    if (_sampleIndexArray != null)
-//			saveAllSamples();
-//
-//		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
-//		_sampleIndex = 0;
-//		_bestSampleIndex = -1;
-
 	}
 	
 	@Override
