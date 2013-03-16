@@ -389,6 +389,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 				// Rejection sampling, since the approximation of the exponential function is so coarse
 				double logp = minEnergy-energy[sampleIndex];
+				if (Double.isNaN(logp)) throw new DimpleException("Energy value is NaN");
 				if (rand.nextDouble()*expApprox(logp) <= Math.exp(logp)) break;
 			}
 		}
@@ -400,10 +401,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	// To facilitate subsequent rejection sampling, the error versus the correct exponential function needs to be always positive
 	// This is true except for very large negative inputs, for values just as the output approaches zero
 	// To ensure rejection is never in an infinite loop, this must reach 0 for large negative inputs before the Math.exp function does
-	private final double expApprox(double value)
+	public final static double expApprox(double value)
 	{
 		// Convert input to base2 log, then convert integer part into IEEE754 exponent
-		final long expValue = ((long)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
+		final long expValue = (long)((int)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
 		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
 	}
 
