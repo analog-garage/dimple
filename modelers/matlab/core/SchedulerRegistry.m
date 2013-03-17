@@ -29,12 +29,12 @@ classdef SchedulerRegistry < handle
             names = obj.Map.keys;
         end
         
-        function register(obj,name,solver)
+        function register(obj,name,scheduler)
             name = lower(name);
             if obj.Map.isKey(name)
                 error('Name has already been registered: %s\n',name);
             end
-            obj.Map(name) = solver;
+            obj.Map(name) = scheduler;
         end
         
         function unregister(obj,name)
