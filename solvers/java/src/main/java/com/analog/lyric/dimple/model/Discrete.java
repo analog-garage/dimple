@@ -171,5 +171,12 @@ public class Discrete extends VariableBase
 		setFixedValueIndex(index);
 	}
 
+	@Override
+	public void moveInputs(VariableBase other)
+	{
+		super.moveInputs(other);
+		_fixedValueIndex = ((Discrete)other)._fixedValueIndex;
+	}
+
     
 }

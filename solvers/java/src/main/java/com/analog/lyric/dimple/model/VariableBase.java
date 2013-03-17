@@ -132,6 +132,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		_input = other._input;
 		_solverVariable.setInput(_input);
+		_hasFixedValue = other._hasFixedValue;
 	}
 
 	

@@ -92,6 +92,13 @@ public class Real extends VariableBase
 		_fixedValue = fixedValue;
 		fixValue();
 	}
+	
+	@Override
+	public void moveInputs(VariableBase other)
+	{
+		super.moveInputs(other);
+		_fixedValue = ((Real)other)._fixedValue;
+	}
 
 
 }
