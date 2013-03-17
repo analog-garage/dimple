@@ -15,9 +15,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef DiscreteVariableBase < VariableBase
-    properties
-        Value;
-    end
     methods
         function obj = DiscreteVariableBase(domain,varargin)
             obj = obj@VariableBase([],[]);
@@ -59,16 +56,7 @@ classdef DiscreteVariableBase < VariableBase
             obj.VectorObject = varMat;
             obj.VectorIndices = VectorIndices;
         end
-        
-        function x = get.Value(obj)
-            x = obj.getValue();
-        end
-        
-        function set.Value(obj,value)
-            obj.setValue(value);
-        end
-        
-        
+            
     end
     
     methods(Access=protected)
@@ -183,12 +171,13 @@ classdef DiscreteVariableBase < VariableBase
            end
 
            values = MatrixObject.pack(value,obj.VectorIndices);
-            
+           
            values = repmat(values,1,numel(obj.Domain.Elements));
            domains = repmat(cell2mat(obj.Domain.Elements),size(values,1),1);
-           inputs = values==domains;
-           uinputs = MatrixObject.unpack(inputs,obj.VectorIndices);
-           obj.Input = uinputs;
+           [~,i] = max(values==domains, [], 2); % i will be the matching domain index
+           fixedValueIndices = i - 1;           % Zero-based indices for Java
+           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+           obj.VectorObject.setFixedValueIndices(varids, fixedValueIndices);
         end
         
         function values = getValue(obj)

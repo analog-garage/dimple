@@ -76,6 +76,28 @@ public class PDiscreteVariableVector extends PVariableVector
 		}
 	}
 	
+	public void setFixedValueIndices(int[] indices, int[] fixedValueIndices) 
+	{		
+		for (int i = 0; i < indices.length; i++)
+			getDiscreteVariable(indices[i]).setFixedValueIndex(fixedValueIndices[i]);
+	}
+	public int[] getFixedValueIndices(int[] indices)
+	{
+		int[] output = new int[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getDiscreteVariable(indices[i]).getFixedValueIndex();
+		
+		return output;
+	}
+	public boolean[] hasFixedValue(int[] indices)
+	{
+		boolean[] output = new boolean[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getDiscreteVariable(indices[i]).hasFixedValue();
+		
+		return output;
+	}
+	
 	public double [][] getDiscreteBeliefs(int [] indices)
 	{
 		double [][] beliefs = new double[indices.length][];

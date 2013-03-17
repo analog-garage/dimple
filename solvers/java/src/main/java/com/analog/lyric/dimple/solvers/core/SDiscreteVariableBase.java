@@ -48,6 +48,9 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	
 	public int getValueIndex()
 	{
+		if (_var.hasFixedValue())	// If there's a fixed value set, use that instead of the belief
+			return ((Discrete)_var).getFixedValueIndex();
+					
 		double[] belief = (double[])getBelief();
 		int numValues = belief.length;
 		double maxBelief = Double.NEGATIVE_INFINITY;

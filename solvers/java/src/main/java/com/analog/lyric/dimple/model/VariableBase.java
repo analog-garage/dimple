@@ -32,6 +32,8 @@ public abstract class VariableBase extends Node implements Cloneable
 	protected ISolverVariable _solverVariable = null;
 	protected HashMap<String,Object> _properties = new HashMap<String,Object>();
 	private Domain _domain;
+    private boolean _hasFixedValue = false;
+
 	
 	public VariableBase(Domain domain) 
 	{
@@ -173,11 +175,28 @@ public abstract class VariableBase extends Node implements Cloneable
 
     public void setInputObject(Object value) 
     {
+    	_hasFixedValue = false;		// In case the value had previously been fixed, then un-fix it
     	_input = value;
     	if (_solverVariable != null)
     		_solverVariable.setInput(value);
     }
     
+    
+    // For setting the variable to a fixed value in lieu of an input
+	public final boolean hasFixedValue()
+	{
+		return _hasFixedValue;
+	}
+	public final void fixValue()
+	{
+		_hasFixedValue = true;
+	}
+	public final void unfixValue()
+	{
+		_hasFixedValue = false;
+	}
+
+
     
     public String getModelerClassName()
     {
@@ -336,5 +355,4 @@ public abstract class VariableBase extends Node implements Cloneable
     	throw new DimpleException("not implemented");
     }
     
-
 }

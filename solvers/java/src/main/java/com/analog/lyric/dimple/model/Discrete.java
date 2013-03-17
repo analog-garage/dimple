@@ -16,15 +16,18 @@
 
 package com.analog.lyric.dimple.model;
 
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 
 public class Discrete extends VariableBase
 {
+	protected int _fixedValueIndex = 0;
+	
 
 	public Discrete(int id,DiscreteDomain domain, String modelerClassName)
-			 {
+	{
 		super(id, modelerClassName, domain);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public Discrete(DiscreteDomain domain) 
@@ -136,6 +139,36 @@ public class Discrete extends VariableBase
 	public void setInput(double ... value) 
 	{
 		setInputObject((Object)value);
+	}
+	
+	
+	// Fix the variable to a specific value
+	public final int getFixedValueIndex()
+	{
+		return _fixedValueIndex;
+	}
+	public final Object getFixedValue()
+	{
+		return ((DiscreteDomain)getDomain()).getElements()[_fixedValueIndex];
+	}
+	public void setFixedValueIndex(int fixedValueIndex) 
+	{
+		// In case the solver doesn't directly support fixed-values, convert the fixed-value to an input
+		double[] input = new double[getDiscreteDomain().size()];
+		Arrays.fill(input, 0);
+		input[fixedValueIndex] = 1;
+		setInput(input);
+		
+		// Fix the value
+		_fixedValueIndex = fixedValueIndex;
+		fixValue();
+	}
+	public void setFixedValue(Object fixedValue)
+	{
+		int index = ((DiscreteDomain)getDomain()).getIndex(fixedValue);
+		if (index < 0)
+			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
+		setFixedValueIndex(index);
 	}
 
     

@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -31,6 +32,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs
 {
+	protected Real _varReal;
 	protected ObjectSample _outputMsg;
 	protected double _sampleValue;
 	protected double _initialSampleValue = 0;
@@ -53,6 +55,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (!(var.getDomain() instanceof RealDomain))
 			throw new DimpleException("expected real domain");
 
+		_varReal = (Real)_var;
 		_domain = (RealDomain)var.getDomain();
 	}
 
@@ -68,13 +71,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_isDeterministicDepdentent) return;
 
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue) 
-		{
-			return;
-		}
+		if (_holdSampleValue) return;
 		
-		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
 
+		
 		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
@@ -133,6 +135,13 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 
+		// If the variable has a fixed value, then set the current sample to that value and return
+		if (_var.hasFixedValue())
+		{
+			setCurrentSample(_varReal.getFixedValue());
+			return;
+		}
+
 		// TODO -- sample from the prior if specified, not just the bounds
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
@@ -158,10 +167,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		else
 			_input = (FactorFunction)input;
 	}
-
+	
 	public final double getScore()
 	{
-		if (_guessWasSet)
+		if (_var.hasFixedValue())
+			return 0;
+		else if (_guessWasSet)
 			return _input.evalEnergy(_guessValue);
 		else
 			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
@@ -199,10 +210,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public final double getPotential()
 	{
-		if (_input != null)
-			return _input.evalEnergy(new Object[]{_sampleValue});
-		else
+		if (_var.hasFixedValue())
 			return 0;
+		else if (_input == null)
+			return 0;
+		else
+			return _input.evalEnergy(new Object[]{_sampleValue});
 	}
 
     public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
@@ -384,6 +397,5 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_proposalStdDev = ovar._proposalStdDev;
 		_holdSampleValue = ovar._holdSampleValue;
     }
-
 
 }

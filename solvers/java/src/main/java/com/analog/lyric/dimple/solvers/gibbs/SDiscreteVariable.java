@@ -72,13 +72,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (_isDeterministicDependent) return;
 
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue)
-		{
-			return;
-		}
+		if (_holdSampleValue) return;
 		
-		// TODO: Also return if the variable is set to a fixed value (once this is implemented in Java)
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
 
+		
 		int messageLength = _input.length;
 		double minEnergy = Double.POSITIVE_INFINITY;
 
@@ -134,8 +133,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void randomRestart()
 	{
 		// If the sample value is being held, don't modify the value
-		if (_holdSampleValue)
+		if (_holdSampleValue) return;
+		
+		// If the variable has a fixed value, then set the current sample to that value and return
+		if (_var.hasFixedValue())
 		{
+			setCurrentSampleIndex(_varDiscrete.getFixedValueIndex());
 			return;
 		}
 
@@ -160,6 +163,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		int domainLength = _input.length;
 		double[] outBelief = new double[domainLength];
+
+		if (_var.hasFixedValue())	// If there's a fixed value set, use that to generate the belief
+		{
+			Arrays.fill(outBelief, 0);
+			outBelief[_varDiscrete.getFixedValueIndex()] = 1;
+			return outBelief;
+		}
+		
+		// Otherwise, compute the belief
 		long sum = 0;
 		for (int i = 0; i < domainLength; i++)
 			sum+= _beliefHistogram[i];
@@ -182,7 +194,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (priors == null)
 		{
 			_input = createDefaultMessage();
-
 		}
 		else
 		{
@@ -228,12 +239,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public final double getPotential()
 	{
-		return _input[_sampleIndex];
+		if (!_var.hasFixedValue())
+			return _input[_sampleIndex];
+		else
+			return 0;
 	}
 	
 	public final double getScore()
 	{
-		return _input[getGuessIndex()];
+		if (!_var.hasFixedValue())
+			return _input[getGuessIndex()];
+		else
+			return 0;	// If the value is fixed, ignore the guess
 	}
 	
 	public final void setCurrentSample(Object value)
@@ -433,7 +450,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 		return false;
 	}
-
+	
 	public void createNonEdgeSpecificState()
 	{
 		_outputMsg = new DiscreteSample(0, 0);

@@ -24,6 +24,7 @@ classdef VariableBase < Node
         
         Input;
         Belief;
+        Value;
     end
     
     methods
@@ -151,13 +152,23 @@ classdef VariableBase < Node
         function x = get.Belief(obj)
             x = obj.getBelief();
         end
-                
+        
+        function x = get.Value(obj)
+            x = obj.getValue();
+        end
+        
+        function set.Value(obj,value)
+            obj.setValue(value);
+        end
+
     end
     
     methods (Access=protected,Abstract=true)
         setInput(obj,value);
         x = getInput(obj);
         x = getBelief(obj);
+        setValue(obj,value);
+        x = getValue(obj);
     end
     
     methods (Access = protected)

@@ -17,22 +17,29 @@
 function testSetValue()
 
     %setValue of single dimensional thing
-    d = Discrete({1,2,3},3,1);
+    domain = {1,2,3};
+    d = Discrete(domain,3,1);
     fg = FactorGraph();
     fg.addFactor(@(a) 1, d);
     value = randi(3,3,1);
     d.Value = value;
     assertEqual(d.Value,value);
+    expectedBelief = double(repmat(value,1,length(domain)) == repmat(cell2mat(domain),length(value),1));
+    assertElementsAlmostEqual(d.Belief, expectedBelief);
     
     %setValue of doubles
-    d = Discrete({1,2,3},3,2);
+    domain = {1,2,3};
+    d = Discrete(domain,3,2);
     fg = FactorGraph();
     fg.addFactor(@(a) 1, d);
     value = randi(3,3,2);
     d.Value = value;
     assertEqual(d.Value,value);
+    expectedBelief = double(repmat(value,[1,1,length(domain)]) == repmat(reshape(cell2mat(domain),1,1,length(domain)),[size(value,1),size(value,2),1]));
+    assertElementsAlmostEqual(d.Belief, expectedBelief);
 
-    d = Discrete({'a','bb','ccc'},2,1);
+    domain = {'a','bb','ccc'};
+    d = Discrete(domain,2,1);
     fg = FactorGraph();
     fg.addFactor(@(a,b) 1, d(1),d(2));
     value = {'a'; 'bb'};
@@ -56,4 +63,6 @@ function testSetValue()
     %TODO: setValue when domainElements are arrays
 
     %TODO: setValue when domain is lost?
+    
+    %TODO: test that inputs can be restored after setting value
 end

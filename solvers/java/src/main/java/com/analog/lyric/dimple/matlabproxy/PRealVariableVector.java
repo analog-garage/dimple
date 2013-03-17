@@ -85,6 +85,29 @@ public class PRealVariableVector extends PVariableVector
 	}
 
 	
+	public void setFixedValues(int[] indices, double[] fixedValues) 
+	{		
+		for (int i = 0; i < indices.length; i++)
+			getRealVariable(indices[i]).setFixedValue(fixedValues[i]);
+	}
+	public double[] getFixedValues(int[] indices)
+	{
+		double[] output = new double[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealVariable(indices[i]).getFixedValue();
+		
+		return output;
+	}
+	public boolean[] hasFixedValue(int[] indices)
+	{
+		boolean[] output = new boolean[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealVariable(indices[i]).hasFixedValue();
+		
+		return output;
+	}
+
+	
 	
 	public Object[] getInput(int[] indices) 
 	{

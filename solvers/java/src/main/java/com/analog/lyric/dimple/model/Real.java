@@ -19,21 +19,20 @@ package com.analog.lyric.dimple.model;
 
 public class Real extends VariableBase
 {
+    protected double _fixedValue = 0;
 
-	
-	public Real(int id, String modelerClassName, RealDomain domain)
-	 {
-		super(id, modelerClassName, domain);
-		// TODO Auto-generated constructor stub
-	}
 
-	//TODO: do I want to do that?
-	public Real(int id, String modelerClassName, RealDomain domain,Object input)
-	 {
-		super(id, modelerClassName, domain);
-		// TODO Auto-generated constructor stub
-		setInputObject(input);
-	}
+    public Real(int id, String modelerClassName, RealDomain domain)
+    {
+    	super(id, modelerClassName, domain);
+    }
+
+    //TODO: do I want to do that?
+    public Real(int id, String modelerClassName, RealDomain domain,Object input)
+    {
+    	super(id, modelerClassName, domain);
+    	setInputObject(input);
+    }
 	
 	
 	public Real()  
@@ -81,5 +80,18 @@ public class Real extends VariableBase
 	{
 		return getInputObject();
 	}
+	
+	
+	// Fix the variable to a specific value
+	public final double getFixedValue()
+	{
+		return _fixedValue;
+	}
+	public void setFixedValue(double fixedValue) 
+	{
+		_fixedValue = fixedValue;
+		fixValue();
+	}
+
 
 }
