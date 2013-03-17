@@ -961,9 +961,38 @@ classdef FactorGraph < Node
                         
                     end
                     
-                    %TODO: replace with a function call isFactorFunction
-                elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                elseif ischar(firstArg)
+                    % First argument is a string
+                    % Either a custom factor or a Java FactorFunction
+                    % Custom factor takes precidence
+                    
+                    customFuncExists = obj.VectorObject.customFactorExists(firstArg);
+            
+                    if customFuncExists
+                        % It is a custom factor
+                        
+                        %TODO: this should be shared with non custom func code?
+                        for i = 1:length(varargin)
+                            if isa(varargin{i},'VariableBase')
+                                varargin{i} = varargin{i}.VectorObject;
+                            end
+                        end
+                        retval = Factor(obj.VectorObject.createCustomFactor(firstArg,varargin),0);
+                    else
+                        % Must be a Java FactorFunction
+                        
+                        % TODO: avoid creating the same factor-function
+                        % over and over if it's already created
+                        registry = FactorFunctionRegistry();
+                        factorFunction = registry.get(firstArg);
+                        factorFunction = factorFunction();  % Assume no constructor arguments
+                        retval = obj.addJavaFactorFunction(factorFunction,varargin{:});
+                    end
+                    
+                     % TODO: replace with a function call isFactorFunction
+               elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
                     retval = obj.addJavaFactorFunction(firstArg,varargin{:});
+                    
                 else
                     error(['Unsupported type: ' class(firstArg)]);
                 end
