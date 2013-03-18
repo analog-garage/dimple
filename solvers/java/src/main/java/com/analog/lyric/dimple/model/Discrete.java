@@ -162,6 +162,9 @@ public class Discrete extends VariableBase
 		// Fix the value
 		_fixedValueIndex = fixedValueIndex;
 		fixValue();
+		
+    	if (_solverVariable != null)
+    		_solverVariable.initialize();
 	}
 	public void setFixedValue(Object fixedValue)
 	{

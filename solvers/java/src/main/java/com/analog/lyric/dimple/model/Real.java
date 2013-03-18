@@ -91,6 +91,9 @@ public class Real extends VariableBase
 	{
 		_fixedValue = fixedValue;
 		fixValue();
+		
+    	if (_solverVariable != null)
+    		_solverVariable.initialize();
 	}
 	
 	@Override

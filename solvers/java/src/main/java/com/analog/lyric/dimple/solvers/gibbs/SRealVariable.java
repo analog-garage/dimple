@@ -315,13 +315,16 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public ObjectSample createDefaultMessage() 
 	{
-		return new ObjectSample(_initialSampleValue);
+		if (_var.hasFixedValue())
+			return new ObjectSample(_varReal.getFixedValue());
+		else
+			return new ObjectSample(_initialSampleValue);
 	}
 
 	@Override
 	public Object resetInputMessage(Object message) 
 	{
-		((ObjectSample)message).value = _initialSampleValue;
+		((ObjectSample)message).value = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 		return message;
 	}
 
@@ -334,7 +337,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public Object getInputMsg(int portIndex) 
 	{
 		throw new DimpleException("Not supported by: " + this);	
-
 	}
 
 	@Override
@@ -350,13 +352,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
 	{
+		// TODO: Why is this commented out?
 		//SDiscreteVariable ovar = ((SDiscreteVariable)other);
 		//_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
-			
-		
 	}
 	
 
@@ -364,9 +364,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		super.initialize();
 
+		double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 		if (!_holdSampleValue)
-			setCurrentSample(_initialSampleValue);
-		_bestSampleValue = _initialSampleValue;
+			setCurrentSample(initialSampleValue);
+		_bestSampleValue = _sampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
 		
 		_isDeterministicDepdentent = isDeterministicDependent();

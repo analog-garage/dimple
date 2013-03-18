@@ -453,10 +453,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public void createNonEdgeSpecificState()
 	{
-		_outputMsg = new DiscreteSample(0, 0);
-		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
-		_sampleIndex = 0;
-	
+			_outputMsg = new DiscreteSample(0, 0);
+			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+			_sampleIndex = 0;
 		
 		//TODO: Is this the right thing to do?
 	    if (_sampleIndexArray != null)
@@ -506,7 +505,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public Object resetOutputMessage(Object message)
 	{
 		DiscreteSample ds = (DiscreteSample)message;
-		ds.index = 0;
+		ds.index = _var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0;	// Normally zero, but use fixed value if one has been set
 		ds.value = _varDiscrete.getDiscreteDomain().getElements()[ds.index];
 		return ds;
 	}
@@ -539,12 +538,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
 	{
 		SDiscreteVariable ovar = ((SDiscreteVariable)other);
 		_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
-				
 	}
 	
 	@Override
@@ -567,12 +564,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		super.initialize();
 		
-		//Flag that init was called so that we can update the cache next time we need cached
-		//values.  We can't do the same thing as the STableFactor (update the cache here)
-		//because the function init gets called after variable init.  If we updated the cache
-		//here, the table function init would replace the arrays for the outgoing message
-		//and our update functions would update stale messages.
-
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
 		for (int i = 0; i < messageLength; i++) 
