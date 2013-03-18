@@ -31,11 +31,6 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  */
 public class And extends FactorFunction 
 {
-	public And()
-	{
-		super("And");
-	}
-	
     @Override
     public double evalEnergy(Object ... arguments)
     {

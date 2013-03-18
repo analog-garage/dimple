@@ -43,7 +43,7 @@ public class NegativeExpGamma extends FactorFunction
 	boolean _alphaConstant = false;
 	boolean _betaConstant = false;
 	
-	public NegativeExpGamma() {super("NegativeExpGamma");}
+	public NegativeExpGamma() {super();}
 	public NegativeExpGamma(double alpha, double beta)
 	{
 		this();

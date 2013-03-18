@@ -32,11 +32,6 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  */
 public class GreaterThan extends FactorFunction 
 {
-	public GreaterThan()
-	{
-		super("GreaterThan");
-	}
-	
     @Override
     public double evalEnergy(Object... arguments)
     {

@@ -39,7 +39,7 @@ public class Gamma extends FactorFunction
 	boolean _alphaConstant = false;
 	boolean _betaConstant = false;
 	
-	public Gamma() {super("Gamma");}
+	public Gamma() {super();}
 	public Gamma(double alpha, double beta)
 	{
 		this();

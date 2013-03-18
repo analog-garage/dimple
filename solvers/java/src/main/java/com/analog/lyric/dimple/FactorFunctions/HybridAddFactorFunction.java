@@ -21,12 +21,6 @@ import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunctio
 
 public class HybridAddFactorFunction extends HybridSampledBPFactorFunction
 {
-
-	public HybridAddFactorFunction() 
-	{
-		super("GaussianAdd");
-	}
-
 	@Override
 	public double acceptanceRatio(int portIndex, Object... arguments) 
 	{

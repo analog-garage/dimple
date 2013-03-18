@@ -52,7 +52,7 @@ public class DiscreteTransition extends FactorFunction
 	public DiscreteTransition(int dimension) {this(dimension, dimension);}	// Square transition matrix
 	public DiscreteTransition(int yDimension, int xDimension)
 	{
-		super("DiscreteTransition");
+		super();
 		_yDimension = yDimension;
 		_xDimension = xDimension;
 		_A = new double[yDimension][xDimension];

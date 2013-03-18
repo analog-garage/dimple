@@ -41,7 +41,7 @@ public class VonMises extends FactorFunction
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
 	
-	public VonMises() {super("VonMises");}
+	public VonMises() {super();}
 	public VonMises(double mean, double standardDeviation)
 	{
 		this();

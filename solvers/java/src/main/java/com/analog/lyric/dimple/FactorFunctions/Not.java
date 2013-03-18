@@ -31,11 +31,6 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  */
 public class Not extends FactorFunction 
 {
-	public Not()
-	{
-		super("Not");
-	}
-	
     @Override
     public double evalEnergy(Object... arguments)
     {

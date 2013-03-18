@@ -22,6 +22,10 @@ public abstract class FactorFunctionBase
 {
 	private String _name;
 
+	public FactorFunctionBase()
+	{
+		_name = this.getClass().getSimpleName();
+	}
 	public FactorFunctionBase(String name)
 	{
 		_name = name;

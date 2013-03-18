@@ -22,6 +22,10 @@ import com.analog.lyric.dimple.model.DimpleException;
 public class NopFactorFunction extends FactorFunction 
 {
 
+	public NopFactorFunction()
+	{
+		super();
+	}
 	public NopFactorFunction(String name) 
 	{
 		super(name);
