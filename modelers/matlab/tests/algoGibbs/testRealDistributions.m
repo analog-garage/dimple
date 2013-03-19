@@ -17,7 +17,11 @@
 function testRealDistributions()
 
 % Skip this test if the Statistics Toolbox is unavailable.
-if isempty(which('randg')), return; end
+try
+    y = randg;
+catch e
+    return;
+end
 
 debugPrint = true;
 repeatable = true;
