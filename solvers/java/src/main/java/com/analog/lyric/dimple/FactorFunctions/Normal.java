@@ -43,7 +43,7 @@ public class Normal extends FactorFunction
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
 
-	public Normal() {super("Normal");}
+	public Normal() {super();}
 	public Normal(double mean, double standardDeviation)
 	{
 		this();

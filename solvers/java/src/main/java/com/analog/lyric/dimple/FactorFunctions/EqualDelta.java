@@ -24,11 +24,6 @@ import com.analog.lyric.dimple.model.Domain;
 
 public class EqualDelta extends FactorFunction 
 {
-	public EqualDelta()
-	{
-		super("EqualDelta");
-	}
-	
     @Override
     public double evalEnergy(Object ... input)
     {

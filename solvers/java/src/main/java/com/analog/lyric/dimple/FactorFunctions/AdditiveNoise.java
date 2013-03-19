@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 public class AdditiveNoise extends FactorFunction
 {
 	protected double _invSigmaSquared = 1;
-	public AdditiveNoise(double sigma) {super("AdditiveNoise"); _invSigmaSquared = 1/(sigma*sigma);}
+	public AdditiveNoise(double sigma) {super(); _invSigmaSquared = 1/(sigma*sigma);}
 	
     @Override
     public double evalEnergy(Object... arguments)

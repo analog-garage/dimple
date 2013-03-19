@@ -27,6 +27,10 @@ public abstract class FactorFunction extends FactorFunctionBase
 {	
 	private FactorTableFactory _factory;
     
+	public FactorFunction()
+	{
+		super();
+	}
     public FactorFunction(String name) 
     {
 		super(name);

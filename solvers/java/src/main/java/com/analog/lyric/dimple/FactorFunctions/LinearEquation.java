@@ -45,7 +45,7 @@ public class LinearEquation extends FactorFunction
 	public LinearEquation(double[] constant) {this(constant, 0);}
 	public LinearEquation(double[] constant, double smoothing)
 	{
-		super("LinearEquation");
+		super();
 		_constant = constant;
 		if (smoothing > 0)
 		{

@@ -39,7 +39,7 @@ public class InverseGamma extends FactorFunction
 	boolean _alphaConstant = false;
 	boolean _betaConstant = false;
 	
-	public InverseGamma() {super("InverseGamma");}
+	public InverseGamma() {super();}
 	public InverseGamma(double alpha, double beta)
 	{
 		this();

@@ -45,7 +45,7 @@ public class Categorical extends FactorFunction
 	
 	public Categorical(int dimension)
 	{
-		super("Categorical");
+		super();
 		_dimension = dimension;
 		_alpha = new double[dimension];
 	}

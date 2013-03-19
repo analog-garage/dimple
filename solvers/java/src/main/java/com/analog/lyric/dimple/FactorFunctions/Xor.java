@@ -34,11 +34,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  */
 public class Xor extends FactorFunction 
 {
-	public Xor() {this("Xor");}
-	public Xor(String name)
-	{
-		super(name);
-	}
+	public Xor() {super();}
+	public Xor(String name)	{super(name);}
 	
     @Override
     public double evalEnergy(Object ... arguments)

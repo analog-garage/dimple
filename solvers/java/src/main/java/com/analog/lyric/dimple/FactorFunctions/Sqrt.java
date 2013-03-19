@@ -16,16 +16,29 @@
 
 package com.analog.lyric.dimple.FactorFunctions;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.DeterministicRealUnaryFactorFunction;
 
-public class PriorFactor extends FactorFunction
+
+/**
+ * Deterministic square root function. This is a deterministic directed factor
+ * (if smoothing is not enabled).
+ * 
+ * Optional smoothing may be applied, by providing a smoothing value in
+ * the constructor. If smoothing is enabled, the distribution is
+ * smoothed by exp(-difference^2/smoothing), where difference is the
+ * distance between the output value and the deterministic output value
+ * for the corresponding inputs.
+ * 
+ * The variables are ordered as follows in the argument list:
+ * 
+ * 1) Output (square root of input)
+ * 2) Input (double or integer)
+ * 
+ */
+public class Sqrt extends DeterministicRealUnaryFactorFunction
 {
-	@Override
-	public double evalEnergy(Object... input) 
+	protected final double myFunction(double in)
 	{
-		double [] prior = (double[])input[1];
-		int index = (int)(double)(Double)input[0];
-		return -Math.log(prior[index]);
+		return Math.sqrt(in);
 	}
-
 }

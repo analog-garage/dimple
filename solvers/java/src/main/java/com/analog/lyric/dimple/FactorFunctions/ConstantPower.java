@@ -48,7 +48,7 @@ public class ConstantPower extends FactorFunction
 	public ConstantPower(double power) {this(power, 0);}
 	public ConstantPower(double power, double smoothing)
 	{
-		super("ConstantPower");
+		super();
 		_power = power;
 		if (smoothing > 0)
 		{

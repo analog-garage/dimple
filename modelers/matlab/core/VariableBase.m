@@ -101,6 +101,58 @@ classdef VariableBase < Node
             z = addBinaryToBitOperatorOverloadedFactor(b,a,com.analog.lyric.dimple.FactorFunctions.LessThan);
         end
         
+        function z = abs(a)
+            z = addUnaryOperatorOverloadedFactor(a,@abs,com.analog.lyric.dimple.FactorFunctions.Abs);
+        end
+
+        function z = log(a)
+            z = addUnaryOperatorOverloadedFactor(a,@log,com.analog.lyric.dimple.FactorFunctions.Log);
+        end
+
+        function z = exp(a)
+            z = addUnaryOperatorOverloadedFactor(a,@exp,com.analog.lyric.dimple.FactorFunctions.Exp);
+        end
+
+        function z = sqrt(a)
+            z = addUnaryOperatorOverloadedFactor(a,@sqrt,com.analog.lyric.dimple.FactorFunctions.Sqrt);
+        end
+
+        function z = sin(a)
+            z = addUnaryOperatorOverloadedFactor(a,@sin,com.analog.lyric.dimple.FactorFunctions.Sin);
+        end
+
+        function z = cos(a)
+            z = addUnaryOperatorOverloadedFactor(a,@cos,com.analog.lyric.dimple.FactorFunctions.Cos);
+        end
+
+        function z = tan(a)
+            z = addUnaryOperatorOverloadedFactor(a,@tan,com.analog.lyric.dimple.FactorFunctions.Tan);
+        end
+
+        function z = asin(a)
+            z = addUnaryOperatorOverloadedFactor(a,@asin,com.analog.lyric.dimple.FactorFunctions.ASin);
+        end
+
+        function z = acos(a)
+            z = addUnaryOperatorOverloadedFactor(a,@acos,com.analog.lyric.dimple.FactorFunctions.ACos);
+        end
+
+        function z = atan(a)
+            z = addUnaryOperatorOverloadedFactor(a,@atan,com.analog.lyric.dimple.FactorFunctions.ATan);
+        end
+
+        function z = sinh(a)
+            z = addUnaryOperatorOverloadedFactor(a,@sinh,com.analog.lyric.dimple.FactorFunctions.Sinh);
+        end
+
+        function z = cosh(a)
+            z = addUnaryOperatorOverloadedFactor(a,@cosh,com.analog.lyric.dimple.FactorFunctions.Cosh);
+        end
+
+        function z = tanh(a)
+            z = addUnaryOperatorOverloadedFactor(a,@tanh,com.analog.lyric.dimple.FactorFunctions.Tanh);
+        end
+
         function x = get.Domain(obj)
             x = obj.Domain;
         end

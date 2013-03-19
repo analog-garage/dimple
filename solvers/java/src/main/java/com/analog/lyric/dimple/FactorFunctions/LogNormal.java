@@ -41,7 +41,7 @@ public class LogNormal extends FactorFunction
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
 	
-	public LogNormal() {super("LogNormal");}
+	public LogNormal() {super();}
 	public LogNormal(double mean, double standardDeviation)
 	{
 		this();

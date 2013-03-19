@@ -44,7 +44,7 @@ public class ConstantProduct extends FactorFunction
 	public ConstantProduct(double constant) {this(constant, 0);}
 	public ConstantProduct(double constant, double smoothing)
 	{
-		super("ConstantProduct");
+		super();
 		_constant = constant;
 		if (smoothing > 0)
 		{

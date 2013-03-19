@@ -42,7 +42,7 @@ public class Sum extends FactorFunction
 	public Sum() {this(0);}
 	public Sum(double smoothing)
 	{
-		super("Sum");
+		super();
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;

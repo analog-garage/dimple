@@ -30,7 +30,7 @@ public class MixedNormal extends FactorFunction
 	protected double _invSigma1 = 1;
 	public MixedNormal(double mean0, double sigma0, double mean1, double sigma1)
 	{
-		super("MixedNormal");
+		super();
 		_mean0 = mean0;
 		_invSigma0 = 1/sigma0;
 		_invSigmaSquared0 = 1/(sigma0*sigma0);
