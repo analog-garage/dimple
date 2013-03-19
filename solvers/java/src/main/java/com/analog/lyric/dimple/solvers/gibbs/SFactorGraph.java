@@ -40,7 +40,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected int _numSamples;
 	protected int _updatesPerSample;
 	protected int _burnInUpdates;
-	protected int _scansPerSample = -1;
+	protected int _scansPerSample = 1;
 	protected int _burnInScans = -1;
 	protected int _numRandomRestarts = 0;
 	protected boolean _temper = false;
@@ -56,7 +56,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public static class Arguments
 	{
 		public int numSamples = 1;
-		public int updatesPerSample = 1;
+		public int updatesPerSample = -1;
+		public int scansPerSample = 1;
 		public int burnInUpdates = 0;
 		public boolean temper = false;
 		public double initialTemperature = 1;
@@ -67,7 +68,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		super(factorGraph);
 		setNumSamples(arguments.numSamples);
-		setUpdatesPerSample(arguments.updatesPerSample);
+		if (arguments.updatesPerSample >=0)
+			setUpdatesPerSample(arguments.updatesPerSample);
+		if (arguments.scansPerSample >= 0)
+			setScansPerSample(arguments.scansPerSample);
 		setBurnInUpdates(arguments.burnInUpdates);
 		setTempering(arguments.temper);
 		configureInitialTemperature(arguments.initialTemperature);
@@ -120,7 +124,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
-		if (_scansPerSample >= 0) _updatesPerSample = _scansPerSample * _factorGraph.getVariables().size();
+		
+		if (_scansPerSample >= 0)
+			setScansPerSample(_scansPerSample);
+		
 		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 	}
@@ -265,7 +272,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	// Set the number of scans between samples as an alternative means of specifying the sample rate
 	// A scan is an update of the number of variables equal to the total number of variables in the graph
-	public void setScansPerSample(int scansPerSample) {_scansPerSample = scansPerSample;}
+	public void setScansPerSample(int scansPerSample) 
+	{
+		if (scansPerSample < 1)
+			throw new DimpleException("Scans per sample must be greater than 0.");
+		
+		_scansPerSample = scansPerSample;
+		_updatesPerSample = _scansPerSample * _factorGraph.getVariables().size();
+	}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
 	public int getBurnInUpdates() {return _burnInUpdates;}

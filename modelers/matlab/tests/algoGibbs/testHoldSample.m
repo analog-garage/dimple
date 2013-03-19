@@ -16,14 +16,6 @@
 
 function testHoldSample()
 
-    repeatable = true;
-
-    if (repeatable)
-        seed = 1;
-        rs=RandStream('mt19937ar');
-        RandStream.setGlobalStream(rs);
-        reset(rs,seed);
-    end
 
     fg = FactorGraph();
     fg.Solver = 'gibbs';
@@ -59,7 +51,7 @@ function testHoldSample()
     b = Real();
     fg = FactorGraph();
     fg.Solver = 'gibbs';
-    fg.Solver.setSeed(0);
+    %fg.Solver.setSeed(0);
     ff = com.analog.lyric.dimple.FactorFunctions.Normal();
     fg.addFactor(ff,a,0.1,b);
     a.Solver.setAndHoldSampleValue(10);

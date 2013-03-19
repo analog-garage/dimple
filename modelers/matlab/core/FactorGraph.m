@@ -1466,7 +1466,7 @@ classdef FactorGraph < Node
                 tmp = varargin{i};
                 if isa(tmp,'VariableBase')
                     tmpdimsizes = size(tmp);
-                elseif iscell(tmp)
+                elseif iscell(tmp) && ~isempty(tmp) && isa(tmp{1},'VariableBase')
                     dims = tmp{2};
                     if isempty(dims)
                         tmpdimsizes = [1 1];

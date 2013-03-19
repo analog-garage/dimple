@@ -56,6 +56,7 @@ public class Factor extends FactorBase implements Cloneable
 	public Factor(int id,FactorFunction factorFunc, VariableBase [] variables) 
 	{
 		super(id);
+
 		
 		_factorFunction = factorFunc;
 		_modelerFunctionName = factorFunc.getName();
@@ -67,6 +68,7 @@ public class Factor extends FactorBase implements Cloneable
 	public Factor(int id,VariableBase [] variables, String modelerFunctionName) 
 	{
 		super(id);
+				
 		_modelerFunctionName = modelerFunctionName;
 		for (int i = 0; i < variables.length; i++)
 		{
@@ -114,8 +116,7 @@ public class Factor extends FactorBase implements Cloneable
 		variable.connect(this);
 	}
 	
-	
-	
+
 	
 	@Override
 	public String getLabel()
@@ -344,17 +345,27 @@ public class Factor extends FactorBase implements Cloneable
 			return false;
 	}
 
+	private void ensureDirectedToSet()
+	{
+		if(_directedTo==null)
+			setFactorFunction(getFactorFunction());
+	}
+	
 	public int [] getDirectedTo()
 	{
+		ensureDirectedToSet();
 		return _directedTo;
 	}
 	public int [] getDirectedFrom()
 	{
+		ensureDirectedToSet();
 		return _directedFrom;
 	}
 	
 	public VariableList getDirectedToVariables()
 	{
+		ensureDirectedToSet();
+		
 		VariableList vl = new VariableList();
 		if (isDirected())
 		{
@@ -369,6 +380,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	public void setDirectedTo(VariableList vl)
 	{
+		
 		int [] directedTo = new int[vl.size()];
 		for (int i = 0; i < directedTo.length; i++)
 			directedTo[i] = getPortNum(vl.getByIndex(i));
@@ -386,7 +398,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void setDirectedTo(int [] directedTo)
 	{
-		if (_variables == null) return;
+		getVariables();
 		
 		HashSet<Integer> hs = new HashSet<Integer>();
 		
@@ -421,11 +433,21 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public boolean isDirectedTo(VariableBase variable)
 	{
+		ensureDirectedToSet();
+
+		if (_directedTo == null)
+			return false;
+		
 		return getDirectedToVariables().contains(variable);
 	}
 	
 	public boolean isDirectedTo(int edge)
 	{
+		ensureDirectedToSet();
+		
+		if (_directedTo == null)
+			return false;
+
 		for (int i = 0; i < _directedTo.length; i++)
 			if (_directedTo[i] == edge)
 				return true;

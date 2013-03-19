@@ -17,7 +17,7 @@
 %function simpleRealHMMTest()
 
 % Graph parameters
-hmmLength = 200;                    % Length of the HMM
+hmmLength = 100;                    % Length of the HMM
 repeatable = false;                  % Make this run repeat all the same random values
 
 % Gibbs solver parameters
@@ -38,7 +38,7 @@ end
 % Model perameters
 %**************************************************************************
 initialMean = 0;
-initialSigma = 0;
+initialSigma = 20;
 transitionMean = 0;
 transitionSigma = 0.1;
 obsMean = 0;
@@ -62,10 +62,8 @@ o = x + obsNoise;
 % Solve using Gibbs sampling solver
 %**************************************************************************
 setSolver('Gibbs');
+
 fg = FactorGraph();
-fg.Solver.setNumSamples(numSamples);
-fg.Solver.setScansPerSample(scansPerSample);
-fg.Solver.setBurnInScans(burnInScans);
 
 Xo = Real();
 Xi = Real();
@@ -74,12 +72,12 @@ sg = FactorGraph(Xi,Xo,Ob);
 
 % Could have done this using AdditiveNoise factor, but this exersizes some
 % and deterministic factors
-%N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
+N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
 
 % Would have liked to write "Xo = Xi + N" but that doesn't work in a
 % sub-graph since Xo is already defined as a boundary variable
-%sg.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum, Xo, Xi, N);
-sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
+sg.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum, Xo, Xi, N);
+%sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
 
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
 
@@ -96,7 +94,7 @@ fg.addFactorVectorized(sg, X(1:end-1),X(2:end),  O);
 %    O(i).Solver.setInitialSampleValue(o(i));
 %end
 for i = 1:hmmLength-1
-    O(i).Input = com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e-5);
+    O(i).Solver.setAndHoldSampleValue(o(i));
 end
 
 % Set proposal standard deviation for real variables
@@ -109,12 +107,14 @@ end
 % Solve
 disp('Starting Gibbs solver');
 fg.Solver.setNumRestarts(1)
-fg.Solver.setNumSamples(10000);
+fg.Solver.setNumSamples(200);
+fg.Solver.setBurnInUpdates(0);
+%fg.Solver.setScansPerSample(scansPerSample);
 fg.solve();
 
 % Get the estimated transition matrix
 output = cell2mat(X.invokeSolverMethodWithReturnValue('getBestSample'));
-disp('Gibbs estimate:'); disp(output);
+%disp('Gibbs estimate:'); disp(output);
 
 hold off;
 plot(x,'r');

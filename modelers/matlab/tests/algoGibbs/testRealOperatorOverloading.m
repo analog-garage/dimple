@@ -31,6 +31,7 @@ graph1.Solver.setNumSamples(numSamples);
 graph1.Solver.setScansPerSample(scansPerSample);
 graph1.Solver.setBurnInScans(burnInScans);
 
+
 a1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(3,12));
 b1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(7,17));
 
@@ -39,6 +40,7 @@ z1 = a1 + b1;
 if (repeatable)
     graph1.Solver.setSeed(1);					% Make this repeatable
 end
+
 graph1.Solver.saveAllSamples();
 graph1.solve();
 
