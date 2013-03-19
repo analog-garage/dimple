@@ -3,10 +3,11 @@ function testRealDistributions()
 % Skip this test if the Statistics Toolbox is unavailable.
 if isempty(which('randg')), return; end
 
-debugPrint = false;
+debugPrint = true;
 repeatable = true;
 
 test1(debugPrint, repeatable);
+test2(debugPrint, repeatable);
 
 end
 
@@ -82,6 +83,75 @@ assertElementsAlmostEqual(invVarianceValue, invVarianceEst, 'relative', 0.01, 0.
 if (debugPrint)
     fprintf('Mean: actual = %f, estimated = %f\n', meanValue, meanEst);
     fprintf('Sigma: actual = %f, estimated = %f\n', sigmaValue, sigmaEst);
+end
+    
+end
+
+
+
+function test2(debugPrint, repeatable)
+
+numDataPoints = 1000;
+numSamples = 1000;
+scansPerSample = 10;
+burnInScans = 100;
+
+seed = 3;
+if (repeatable);
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end;
+
+% Test with a variable mean and constant inverse variance
+
+% Model parameters
+meanPriorMean = 10;
+meanPriorSigma = 20;
+
+% Generate data
+meanValue = randn()*meanPriorSigma + meanPriorMean;
+sigmaValue = 5;
+invVarianceValue = 1/sigmaValue^2;
+data = randn(1,numDataPoints)*sigmaValue + meanValue;
+
+% Build the factor graph...
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setScansPerSample(scansPerSample);
+fg.Solver.setBurnInScans(burnInScans);
+if (repeatable)
+    fg.Solver.setSeed(seed);				% Make this repeatable
+end
+
+% Factor functions
+meanPrior = com.analog.lyric.dimple.FactorFunctions.Normal(meanPriorMean,meanPriorSigma);
+
+% Variables
+meanVar = Real(meanPrior);
+X = Real(1,numDataPoints);
+
+% Factors
+f = fg.addFactor('Normal', meanVar, invVarianceValue, X);
+
+% Set inputs to data values
+X.Value = data;
+
+% Solve
+meanVar.invokeSolverMethod('saveAllSamples');
+fg.solve();
+
+% Get the samples
+meanSamples = meanVar.Solver.getAllSamples();
+
+% Get the value estimates
+meanEst = meanVar.Solver.getBestSample();
+
+assertElementsAlmostEqual(meanValue, meanEst, 'relative', 0.01, 0.1);
+
+if (debugPrint)
+    fprintf('Mean: actual = %f, estimated = %f\n', meanValue, meanEst);
 end
     
 end

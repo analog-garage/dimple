@@ -40,7 +40,8 @@ public class LogNormal extends FactorFunction
 	double _inverseVarianceOverTwo;
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
-	
+	int _directedToIndex = 2;
+
 	public LogNormal() {super();}
 	public LogNormal(double mean, double standardDeviation)
 	{
@@ -51,6 +52,7 @@ public class LogNormal extends FactorFunction
 		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
 		_inverseVarianceOverTwo = _inverseVariance*0.5;
 		_inverseVarianceConstant = true;
+		_directedToIndex = 0;
     	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
 	}
 	
@@ -79,5 +81,8 @@ public class LogNormal extends FactorFunction
     	}
 	}
     
-    
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
 }

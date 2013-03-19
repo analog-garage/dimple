@@ -37,6 +37,7 @@ public class Beta extends FactorFunction
 	double _beta;
 	boolean _alphaConstant = false;
 	boolean _betaConstant = false;
+	int _directedToIndex = 2;
 
 	public Beta() {super();}
 	public Beta(double alpha, double beta)
@@ -46,6 +47,7 @@ public class Beta extends FactorFunction
 		_alphaConstant = true;
 		_beta = beta;
 		_betaConstant = true;
+		_directedToIndex = 0;
 		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
 		if (_beta < 0) throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
@@ -78,4 +80,8 @@ public class Beta extends FactorFunction
 			return org.apache.commons.math.special.Beta.logBeta(_alpha, _beta) - (_alpha - 1) * Math.log(x) - (_beta - 1) * Math.log(1 - x);
 	}
 
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
 }

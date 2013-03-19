@@ -38,7 +38,8 @@ public class Gamma extends FactorFunction
 	double _beta;
 	boolean _alphaConstant = false;
 	boolean _betaConstant = false;
-	
+	int _directedToIndex = 2;
+
 	public Gamma() {super();}
 	public Gamma(double alpha, double beta)
 	{
@@ -47,6 +48,7 @@ public class Gamma extends FactorFunction
 		_alphaConstant = true;
 		_beta = beta;
 		_betaConstant = true;
+		_directedToIndex = 0;
     	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
     	if (_beta < 0) throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
@@ -75,5 +77,8 @@ public class Gamma extends FactorFunction
     		return _beta*x - _alpha * Math.log(_beta) - (_alpha - 1) * Math.log(x) + org.apache.commons.math.special.Gamma.logGamma(_alpha);
 	}
     
-    
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
 }
