@@ -40,8 +40,9 @@ public class VonMises extends FactorFunction
 	double _inverseVariance;
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
-	
-	public VonMises() {super("VonMises");}
+	int _directedToIndex = 2;
+
+	public VonMises() {super();}
 	public VonMises(double mean, double standardDeviation)
 	{
 		this();
@@ -49,6 +50,7 @@ public class VonMises extends FactorFunction
 		_meanConstant = true;
 		_inverseVariance = 1/(standardDeviation*standardDeviation);
 		_inverseVarianceConstant = true;
+		_directedToIndex = 0;
     	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
 	}
 	
@@ -68,5 +70,8 @@ public class VonMises extends FactorFunction
     	return Math.log(Bessel.i0(_inverseVariance)) - _inverseVariance * Math.cos(x - _mean);
 	}
     
-    
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
 }

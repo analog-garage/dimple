@@ -43,7 +43,7 @@ public class Subtract extends FactorFunction
 	public Subtract() {this(0);}
 	public Subtract(double smoothing)
 	{
-		super("Subtract");
+		super();
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;

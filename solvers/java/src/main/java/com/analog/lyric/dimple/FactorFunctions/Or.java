@@ -31,11 +31,6 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  */
 public class Or extends FactorFunction 
 {
-	public Or()
-	{
-		super("Or");
-	}
-	
     @Override
     public double evalEnergy(Object ... arguments)
     {

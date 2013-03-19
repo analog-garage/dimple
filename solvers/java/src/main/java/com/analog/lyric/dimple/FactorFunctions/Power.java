@@ -46,7 +46,7 @@ public class Power extends FactorFunction
 	public Power() {this(0);}
 	public Power(double smoothing)
 	{
-		super("Power");
+		super();
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;

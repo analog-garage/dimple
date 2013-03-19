@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.FactorFunctions.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.DimpleException;
 
 
@@ -55,20 +58,66 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return _constantIndices;
 	}
 	
+	
+
+	// Wrap the methods of the actual factor function...
+
 	@Override
 	public double evalEnergy(Object... input) 
+	{		
+		return _factorFunction.evalEnergy(expandInputList(input));
+	}
+	
+	@Override
+	public boolean isDirected()
 	{
-		Object [] realInputs = new Object[input.length + _constantIndices.length];
+		return _factorFunction.isDirected();
+	}
+	
+	@Override
+	public int[] getDirectedToIndices(int numEdges)
+	{
+		// Add the constants to the total number of edges
+		int[] directedToIndices = _factorFunction.getDirectedToIndices(numEdges + _constantIndices.length);
+		return contractIndexList(directedToIndices);	// Remove the constant indices
+	}
+	
+	@Override
+	public int[] getDirectedToIndices()
+	{
+		int[] directedToIndices = _factorFunction.getDirectedToIndices();
+		return contractIndexList(directedToIndices);	// Remove the constant indices
+	}
+
+	@Override
+	public boolean isDeterministicDirected()
+	{
+		return _factorFunction.isDeterministicDirected();
+	}
+	
+	@Override
+	public void evalDeterministicFunction(Object... arguments)
+	{
+		_factorFunction.evalDeterministicFunction(expandInputList());
+	}
+	
+	
+	
+	
+	// Expand list of inputs to include the constants
+	protected Object[] expandInputList(Object... input)
+	{
+		Object [] expandedInputs = new Object[input.length + _constantIndices.length];
 		
 		int curConstantIndexIndex = 0;
 		int curInputIndex = 0;
 		
-		for (int i = 0; i < realInputs.length; i++)
+		for (int i = 0; i < expandedInputs.length; i++)
 		{
 			if (curConstantIndexIndex < _constantIndices.length && _constantIndices[curConstantIndexIndex] == i)
 			{
 				//insert constant
-				realInputs[i] = _constants[curConstantIndexIndex];
+				expandedInputs[i] = _constants[curConstantIndexIndex];
 				curConstantIndexIndex++;
 			}
 			else
@@ -76,13 +125,60 @@ public class FactorFunctionWithConstants extends FactorFunction
 				if (curInputIndex >= input.length)
 					throw new DimpleException("incorrect number of arguments");
 				
-				realInputs[i] = input[curInputIndex];
+				expandedInputs[i] = input[curInputIndex];
 				curInputIndex++;
 			}
 		}
 		
-		
-		return _factorFunction.evalEnergy(realInputs);
+		return expandedInputs;
 	}
+	
+
+	// Contract a list of indices to exclude the constant indices and renumber the others accordingly
+	protected int[] contractIndexList(int[] indexList)
+	{
+		int originalLength = indexList.length;
+		int numConstantIndices = _constantIndices.length;
+		Arrays.sort(indexList);		// Side effect of sorting indexList, but ok in this context
+		
+		// For each constant index, scan the list (probably a more efficient way to do this)
+		// Assumes constant index list is already sorted
+		ArrayList<Integer> contractedList = new ArrayList<Integer>();
+		int iConst = 0;
+		int iList = 0;
+		int listIndex;
+		int constantIndex = _constantIndices[iConst];
+		while (iList < originalLength)
+		{
+			listIndex = indexList[iList];
+			if (iConst < numConstantIndices)
+				constantIndex = _constantIndices[iConst];
+			if (listIndex == constantIndex)
+			{
+				// Skip this list index entry
+				iList++;
+			}
+			else if (listIndex < constantIndex || iConst >= numConstantIndices)
+			{
+				// Add this entry
+				contractedList.add(listIndex - iConst);
+				iList++;
+			}
+			else if (listIndex > constantIndex)
+			{
+				// Move to the next constant if there is one
+				iConst++;
+			}
+		}
+		
+		// Convert contracted list back to an int[]
+		int contractListSize = contractedList.size();
+		int[] result = new int[contractListSize];
+		for (int i = 0; i < contractListSize; i++)
+			result[i] = contractedList.get(i);
+		return result;
+	}
+	
+	
 
 }

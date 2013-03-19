@@ -26,7 +26,7 @@ public class HybridRealFixedPower extends HybridSampledBPFactorFunction
 	
 	public HybridRealFixedPower(int power) 
 	{
-		super("HybridRealFixedPower" + power);
+		super();
 		_power = power;
 	}
 

@@ -77,7 +77,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_var.hasFixedValue()) return;
 
 		
-		int numPorts = _var.getSiblings().size();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 
@@ -88,34 +87,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If outside the bounds, then reject
 		if ((proposalValue >= _lowerBound) && (proposalValue <= _upperBound))
 		{
-
-			double LPrevious = 0;
-			double LProposed = 0;
-
-			// Sum up the potentials from the input and all connected factors
-			if (_input != null)
-			{
-				LPrevious = _input.evalEnergy(new Object[]{_sampleValue});
-				LProposed = _input.evalEnergy(new Object[]{proposalValue});
-			}
-			// Get the potential over all the factors given the previous sample value
-			for (int portIndex = 0; portIndex < numPorts; portIndex++)
-			{
-				INode factorNode = _var.getSiblings().get(portIndex);
-				ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
-				int factorPortNumber = factorNode.getPortNum(_var);
-				LPrevious += factor.getConditionalPotential(factorPortNumber);
-			}
-			// Get the potential over all the factors given the proposed sample value
+			// Get the potential for the current sample value
+			double LPrevious = getSamplePotential();
+			
+			// Get the potential for the proposed sample value
 			setCurrentSample(proposalValue);
-			for (int portIndex = 0; portIndex < numPorts; portIndex++)
-			{
-				INode factorNode = _var.getSiblings().get(portIndex);
-				ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
-				int factorPortNumber = factorNode.getPortNum(_var);
-				LProposed += factor.getConditionalPotential(factorPortNumber);
-			}
-
+			double LProposed = getSamplePotential();
 
 			// Temper
 			LPrevious *= _beta;
@@ -128,6 +105,27 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			else
 				setCurrentSample(previousSampleValue);	// Reject
 		}
+	}
+	
+	// For sampling, get the potential for the neighboring factors given the current sample value
+	protected final double getSamplePotential()
+	{
+		int numPorts = _var.getSiblings().size();
+		double potential = 0;
+
+		// Sum up the potentials from the input and all connected factors
+		if (_input != null)
+			potential = _input.evalEnergy(new Object[]{_sampleValue});
+
+		for (int portIndex = 0; portIndex < numPorts; portIndex++)
+		{
+			INode factorNode = _var.getSiblings().get(portIndex);
+			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
+			int factorPortNumber = factorNode.getPortNum(_var);
+			potential += factor.getConditionalPotential(factorPortNumber);
+		}
+		
+		return potential;
 	}
 
 	public void randomRestart()

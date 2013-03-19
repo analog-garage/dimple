@@ -42,8 +42,9 @@ public class Normal extends FactorFunction
 	double _logInverseVarianceOverTwo;
 	boolean _meanConstant = false;
 	boolean _inverseVarianceConstant = false;
+	int _firstDirectedToIndex = 2;
 
-	public Normal() {super("Normal");}
+	public Normal() {super();}
 	public Normal(double mean, double standardDeviation)
 	{
 		this();
@@ -52,6 +53,7 @@ public class Normal extends FactorFunction
 		_inverseVariance = 1/(standardDeviation*standardDeviation);
 		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
 		_inverseVarianceConstant = true;
+		_firstDirectedToIndex = 0;
     	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
 	}
 
@@ -77,5 +79,21 @@ public class Normal extends FactorFunction
     	}
 
     	return sum*0.5 - N * _logInverseVarianceOverTwo;
+	}
+    
+    
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices(int numEdges)
+	{
+    	// All edges except the parameter edges (if present) are directed-to edges
+    	if (numEdges <= _firstDirectedToIndex)
+    		throw new DimpleException("Insufficient number of edges");
+    	int numDirectedToEdges = numEdges - _firstDirectedToIndex;
+    	int[] directedToEdges = new int[numDirectedToEdges];
+    	for (int i = 0, edgeIndex = _firstDirectedToIndex; i < numDirectedToEdges; i++, edgeIndex++)
+    		directedToEdges[i] = edgeIndex;
+		return directedToEdges;
 	}
 }

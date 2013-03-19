@@ -106,7 +106,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		_factorFunction = function;
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
-			setDirectedTo(_factorFunction.getDirectedToIndices());
+			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}
 	
 	protected void addVariable(VariableBase variable) 
@@ -207,7 +207,7 @@ public class Factor extends FactorBase implements Cloneable
 		if (_solverFactor != null)
 			_solverFactor.initialize();
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
-			setDirectedTo(_factorFunction.getDirectedToIndices());
+			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}
 	
 	public VariableList getVariables()

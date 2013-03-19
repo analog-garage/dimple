@@ -22,6 +22,10 @@ public abstract class HybridSampledBPFactorFunction extends FactorFunction
 {
 	protected Random _random;
 	
+	public HybridSampledBPFactorFunction() 
+	{
+		super();
+	}
 	public HybridSampledBPFactorFunction(String name) 
 	{
 		super(name);
