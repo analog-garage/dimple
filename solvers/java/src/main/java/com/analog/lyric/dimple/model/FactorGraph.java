@@ -1974,7 +1974,7 @@ public class FactorGraph extends FactorBase
 		int ownedFunctions = getNonGraphFactorsTop().size();
 		int childFunctions = getNonGraphFactorsFlat().size() - ownedFunctions;
 		int subGraphs = getNestedGraphs().size();
-		String s = String.format("FactorGraph [%s] Variables-(o:%d  b:%d  ch:%d)  Functions-(o:%d ch:%d) Graphs-%d"
+		String s = String.format("FactorGraph [%s] Variables:(o:%d  b:%d  ch:%d)  Functions:(o:%d ch:%d) Graphs:%d"
 				,getQualifiedLabel()
 				,ownedVariables
 				,boundaryVariables
