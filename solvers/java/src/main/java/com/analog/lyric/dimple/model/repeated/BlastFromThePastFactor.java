@@ -47,18 +47,7 @@ public class BlastFromThePastFactor extends Factor
 	public void advance()
 	{
 		((ISolverBlastFromThePastFactor)_solverFactor).advance();
-//		if (_newVarPort.index == -1)
-//			_newVarPort.index = _newVarPort.node.getPortNum(this);
-//		_newVarPort.node.getSolver().moveMessages(_variablePort.node.getSolver(), _newVarPort.index,_variablePort.index);
 	}
-	
-//	public void setOutputMsg(Object message)
-//	{
-//		if (_newVarPort.index == -1)
-//			_newVarPort.index = _newVarPort.node.getPortNum(this);
-//		_newVarPort.node.getSolver().setInputMsg(_newVarPort.index,message);
-//	}
-	
-	
+		
 	
 }
