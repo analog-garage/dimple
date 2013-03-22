@@ -63,9 +63,9 @@ public class FactorFunctionWithConstants extends FactorFunction
 	// Wrap the methods of the actual factor function...
 
 	@Override
-	public double evalEnergy(Object... input) 
+	public double evalEnergy(Object... arguments)
 	{		
-		return _factorFunction.evalEnergy(expandInputList(input));
+		return _factorFunction.evalEnergy(expandInputList(arguments));
 	}
 	
 	@Override
@@ -98,7 +98,19 @@ public class FactorFunctionWithConstants extends FactorFunction
 	@Override
 	public void evalDeterministicFunction(Object... arguments)
 	{
-		_factorFunction.evalDeterministicFunction(expandInputList());
+		Object[] expandedArgumentList = expandInputList(arguments);
+		_factorFunction.evalDeterministicFunction(expandedArgumentList);
+		
+		// Replace the original argument list entries, leaving out constant indices
+		int numExpandedArguments = expandedArgumentList.length;
+		int numConsts = _constantIndices.length;
+		for (int iExp = 0, iOrig = 0, iConst = 0; iExp < numExpandedArguments; iExp++)
+		{
+			if (iExp != ((iConst >= numConsts) ? -1 : _constantIndices[iConst]))
+				arguments[iOrig++] = expandedArgumentList[iExp];
+			else
+				iConst++;
+		}
 	}
 	
 	

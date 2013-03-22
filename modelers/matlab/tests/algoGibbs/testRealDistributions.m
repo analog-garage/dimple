@@ -23,7 +23,7 @@ catch e
     return;
 end
 
-debugPrint = true;
+debugPrint = false;
 repeatable = true;
 
 test1(debugPrint, repeatable);
