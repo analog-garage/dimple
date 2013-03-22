@@ -1497,7 +1497,7 @@ ans =
 \para{Built-in Factors}
 \label{sec:builtInFactors}
 
-Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, a fully-qualified Java path must be used instead (see below).
+Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, in which case a fully-qualified Java path must be used instead (see below).
 
 As an example,
 
@@ -1519,7 +1519,7 @@ Abs & out(D,R) \newline in(D,R) & [smoothing] & Deterministic absolute value fun
 %
 ACos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-cosine function, where out = acos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-AdditiveNoise & out(R) \newline in & $\sigma$ & Add Gaussian noise with a known standard deviation, $\sigma$, specified in constructor. \\
+AdditiveNoise & out(R) \newline in(B,D,R) & $\sigma$ & Add Gaussian noise with a known standard deviation, $\sigma$, specified in constructor. \\
 %
 And & out(B) \newline in...(B) & - & Deterministic logical AND function, where out = AND(in...). \\
 %
@@ -1552,13 +1552,13 @@ Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation fun
 %
 Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
-GreaterThan & out(B) \newline in1 \newline in2 & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
+GreaterThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
 %
 InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Inverse Gamma distribution. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
-LessThan & out(B) \newline in1 \newline in2 & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
+LessThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
 %
-LinearEquation & out(D,R) \newline in & constants \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant vector. The constant vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the constant vector. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant vector. The constant vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the constant vector. An optional smoothing value may be specified as a constructor argument\textsuperscript{\ref{ftn:smoothing}}. \\
 %
 Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -1578,7 +1578,7 @@ Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out
 %
 Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out = base$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Product & out(D,R) \newline in... & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Sin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic sine function, where out = sin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -1588,9 +1588,9 @@ Sqrt & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square root funct
 %
 Square & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square function, where out = in$^{2}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Subtract & out(D,R) \newline posIn \newline negIn... & [smoothing] & Deterministic summation function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Subtract & out(D,R) \newline posIn(B,D,R) \newline negIn...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Sum & out(D,R) \newline in... & [smoothing] & Deterministic summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Sum & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, where out = tan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -1644,10 +1644,17 @@ c = a + b;
 
 The last line of this example will create a new variable, c, and a 'Sum' factor with variables c, a, and b.  The domain of c will be define appropriately given the domains of the input variables.  In this example, the domain of c would automatically be set to the range [2:14].
 
-These operations can be compounded in a single line of code, and variables and constants can be intermingled.  In this case, intermediate anonymous variables will be created in the graph associated with intermediate results of the operation.  For example,
+These operations can be compounded in a single line of code, and variables of different data types as well as constants can be intermingled (as long as the type is supported by the specific operator).  In this case, intermediate anonymous variables will be created in the graph associated with intermediate results of the operation.  For example,
 
 \begin{lstlisting}
 z = (a + b) * c^d - sqrt(-e);
+\end{lstlisting}
+
+Like using the addFactor method, adding factors implicitly can include constants.  Specifically, for binary operators, one of the inputs may be a constant instead of a variable.  For example:
+
+\begin{lstlisting}
+x = a^2;
+y = (a + b + 2) * 3;
 \end{lstlisting}
 
 Since adding a factor implicitly does not specifically refer to the factor graph, the graph to which these factors are added is also implicit.  In particular, these implicitly defined factors are added to the last factor graph that was created.  So, in the first example above, the factor would be added to fg, regardless of whether other factor graphs had previously been created.
@@ -1757,7 +1764,7 @@ ans =
 \end{lstlisting}
 
 \subpara{Re-using the Factor Function}
-We can re-use the BigEquals() FactorFunction multiple times within a single graph or across graphs. This will result in caching of FactorTables when the arguments to the addFactor function have identiical domains.
+We can re-use the BigEquals() FactorFunction multiple times within a single graph or across graphs. This will result in caching of FactorTables when the arguments to the addFactor function have identical domains.
 
 \begin{lstlisting}
 be = BigEquals();
@@ -1878,6 +1885,14 @@ In some cases, to be consistent with MATLAB notation, there is a distinction mad
 z = (a .* b) + c.^d - sqrt(-e);
 \end{lstlisting}
 
+For binary operators, one of the inputs may be a scalar variable or a scalar constant instead of a variable vector.  For a scalar variable, the result is that scalar variable connecting to each instance of the factors that are created.  For a constant, each instance of the factor uses the same constant for that input (vectors of distinct constants are not currently supported).  As an example:
+
+\begin{lstlisting}
+a = Real();
+b = Discrete(domain, 1, 10);
+z = a + b;					
+\end
+
 The specific set of operators supported is given in section~\ref{sec:overloaded}.
 
 
@@ -1892,45 +1907,45 @@ The addGraph method creates a copy of the nestable factor graph, and connects th
 
 
 
-\para{Overloaded MATLAB Operators and Functions}
+\para{List of Overloaded MATLAB Operators and Functions}
 \label{sec:overloaded}
 
 The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding factor, the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.
 
-\begin{longtable} {l l p{2cm} p{2cm} l p{4cm}}
-Operator & Factor & Out & In & Vectorized & Description \\
+\begin{longtable} {l l p{1cm} p{1cm} p{1cm} l p{4cm}}
+Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
 \hline
 \endhead
 %
-$\&$ & And & B & B, B & \checkmark & Logical AND \\
-$|$ & Or & B & B, B & \checkmark & Logical OR \\
-xor() & Xor & B & B, B & \checkmark & Logical XOR \\
-$\sim$ & Not & B & B & \checkmark & Logical NOT \\
-$+$ & Sum & D \newline R & D, D \newline R, R & \checkmark & Plus \\
-$-$ & Subtract & D \newline R & D, D \newline R, R & \checkmark & Minus \\
-$-$ & Negate & D \newline R & D \newline R & \checkmark & Unary minus \\
-$*$ & Product & D \newline R & D, D \newline R, R & - & Scalar multiple \\
-$.*$ & Product & D \newline R & D, D \newline R, R & \checkmark & Point-wise multiple \\
-$\wedge$ & Power & D \newline R & D, D \newline R, R & - & Scalar power \\
-$.\wedge$ & Power & D \newline R & D, D \newline R, R & \checkmark & Point-wise power \\
-$<$ & LessThan & B & D, D \newline R, R & \checkmark & Less than \\
-$>$ & GreaterThan & B & D, D \newline R, R & \checkmark & Greater than \\
-$<=$ & GreaterThan & B & D, D \newline R, R & \checkmark & Less than or equal to (uses GreaterThan factor, reversing the order) \\
-$>=$ & LessThan & B & D, D \newline R, R & \checkmark & Greater than or equal to (uses LessThan factor, reversing the order) \\
-mod() & - & D  & D, D & \checkmark & Modulo function\footnote{Currently uses the MATLAB definition of mod on negative numbers, but this may be subject to change in future versions.} (discrete only) \\
-abs() & Abs & D \newline R & D \newline R & \checkmark & Absolute value \\
-sqrt() & Sqrt & R & R & \checkmark & Square root \\
-log() & Log & R & R & \checkmark & Natural log \\
-exp() & Exp & R & R & \checkmark & Exponential function \\
-sin() & Sin & R & R & \checkmark & Sine \\
-cos() & Cos & R & R & \checkmark & Cosine \\
-tan() & Tan & R & R & \checkmark & Tangent \\
-asin() & ASin & R & R & \checkmark & Arc-sine \\
-acos() & ACos & R & R & \checkmark & Arc-cosine \\
-atan() & ATan & R & R & \checkmark & Arc-tangent \\
-sinh() & Sinh & R & R & \checkmark & Hyperbolic sine \\
-cosh() & Cosh & R & R & \checkmark & Hyperbolic cosine \\
-tanh() & Tanh & R & R & \checkmark & Hyperbolic tangent \\
+$\&$ & And & B & B & B & \checkmark & Logical AND \\
+$|$ & Or & B & B & B & \checkmark & Logical OR \\
+xor() & Xor & B & B & B & \checkmark & Logical XOR \\
+$\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
+$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\
+$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\
+$-$ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\
+$*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & - & Scalar multiple \\
+$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiple \\
+$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & - & Scalar power \\
+$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
+$>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
+$<=$ & GreaterThan & B & D,R & D,R & \checkmark & Less than or equal to (uses GreaterThan factor, reversing the order) \\
+$>=$ & LessThan & B & D,R & D,R & \checkmark & Greater than or equal to (uses LessThan factor, reversing the order) \\
+mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
+abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
+sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
+log() & Log & R & R & - & \checkmark & Natural log \\
+exp() & Exp & R & R & - & \checkmark & Exponential function \\
+sin() & Sin & R & R & - & \checkmark & Sine \\
+cos() & Cos & R & R & - & \checkmark & Cosine \\
+tan() & Tan & R & R & - & \checkmark & Tangent \\
+asin() & ASin & R & R & - & \checkmark & Arc-sine \\
+acos() & ACos & R & R & - & \checkmark & Arc-cosine \\
+atan() & ATan & R & R & - & \checkmark & Arc-tangent \\
+sinh() & Sinh & R & R & - & \checkmark & Hyperbolic sine \\
+cosh() & Cosh & R & R & - & \checkmark & Hyperbolic cosine \\
+tanh() & Tanh & R & R & - & \checkmark & Hyperbolic tangent \\
 \end{longtable}
 
 \subsubsection{Setting the Solver}
