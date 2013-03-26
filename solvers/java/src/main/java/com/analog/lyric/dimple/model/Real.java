@@ -89,6 +89,14 @@ public class Real extends VariableBase
 	}
 	public void setFixedValue(double fixedValue) 
 	{
+		// Verify that the fixed value is in the domain of the variable
+		if (!((RealDomain)getDomain()).inDomain(fixedValue))
+			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
+		
+		// Remove any existing input
+		_input = null;
+		
+		// Set the fixed value
 		_fixedValue = fixedValue;
 		fixValue();
 		

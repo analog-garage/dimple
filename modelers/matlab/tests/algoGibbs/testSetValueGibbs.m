@@ -54,8 +54,38 @@ function testSetValueGibbs()
     catch E
         msg = E.message;
     end
-
     assertEqual(msg,'Only scalar domains currently supported');
+    
+    % Test real variables
+    domain = [-10, 10];
+    a = Real(domain);
+    fg = FactorGraph();
+    fg.Solver = 'Gibbs';
+    b = -a; % Add implicit factor
+    a.Input = com.analog.lyric.dimple.FactorFunctions.Normal(1,1);
+    assert(isa(a.Input, 'com.analog.lyric.dimple.FactorFunctions.Normal'));
+    value = rand();
+    a.Value = value;
+    assert(isempty(a.Input));
+    b.Value = -value;
+    assertEqual(fg.Solver.getTotalPotential(), 0);
+    b.Value = value + 1;
+    assertEqual(fg.Solver.getTotalPotential(), Inf);
+    try
+        a.Value = 20;   % Out of domain bounds
+    catch E
+        msg1 = E.message;
+    end
+    assert(~isempty(strfind(msg1,'Attempt to set fixed value outside of variable domain.')));
+    try
+        a.Value = -20;   % Out of domain bounds
+    catch E
+        msg2 = E.message;
+    end
+    assert(~isempty(strfind(msg2,'Attempt to set fixed value outside of variable domain.')));
+
+    % No beliefs or values for reals at this point
+
 
     %TODO: getValue when sovler not set
 

@@ -48,7 +48,7 @@ classdef VariableBase < Node
         end
         
         function z = mpower(a,b)
-            if (~isscalar(a) || ~isscalar(b)); error('Overloaded matrix power not currently supported. Use ".^" for pointwise power'); end;
+            if (~isscalar(b)); error('Overloaded matrix power not currently supported. Use ".^" for pointwise power'); end;
             z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.Power);
         end
         
@@ -65,7 +65,7 @@ classdef VariableBase < Node
         end
         
         function z = mtimes(a,b)
-            if (~isscalar(a) || ~isscalar(b)); error('Overloaded matrix product not currently supported. Use ".*" for pointwise product'); end;
+            if (~isscalar(a) && ~isscalar(b)); error('Overloaded matrix product not currently supported. Use ".*" for pointwise product'); end;
             z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
         end
         
@@ -227,15 +227,38 @@ classdef VariableBase < Node
         
         
         function z = addBinaryOperatorOverloadedFactor(a,b,operation,factor)
-            vectorSize = size(a);
-            if (size(b) ~= vectorSize)
-                    error('Vector arguments to overloaded operators must have the same dimensions');
+            % Sizes should be the same, or one of them should be length 1
+            if (~((length(a) == length(b)) || (length(a) == 1) || (length(b) == 1)))
+                error('Mismatch in dimension of input arguments');
             end
             
-            if (~isa(a.Domain, 'RealDomain') && ~isa(b.Domain, 'RealDomain'))
+            % Use the largest size (one of them could be length 1)
+            if (length(a) > length(b))
+                vectorSize = size(a);
+            else
+                vectorSize = size(b);
+            end
+
+            % Check for constant inputs
+            aConstant = false;
+            bConstant = false;
+            if (~isa(a, 'VariableBase')); aConstant = true; end;
+            if (~isa(b, 'VariableBase')); bConstant = true; end;
+
+            
+            if ((aConstant || ~isa(a.Domain, 'RealDomain')) && (bConstant || ~isa(b.Domain, 'RealDomain')))
                 
-                domaina = a.Domain.Elements;
-                domainb = b.Domain.Elements;
+                % Determine the output domain from the inputs; account for constant inputs
+                if (~aConstant)
+                    domaina = a.Domain.Elements;
+                else
+                    domaina = num2cell(sort(unique(a)));
+                end
+                if (~bConstant)
+                    domainb = b.Domain.Elements;
+                else
+                    domainb = num2cell(sort(unique(b)));
+                end
                 zdomain = zeros(length(domaina)*length(domainb),1);
                 
                 curIndex = 1;
@@ -261,7 +284,7 @@ classdef VariableBase < Node
                 
                 %znested = Variable(zdomain);
                 vs = num2cell(vectorSize);
-                z = Variable(zdomain, vs{:});
+                z = Discrete(zdomain, vs{:});
                 
                 %Eventually can build combo table, right now, this will do
                 fg = getFactorGraph();
@@ -312,7 +335,7 @@ classdef VariableBase < Node
                 
                 %znested = Variable(zdomain);
                 vs = num2cell(vectorSize);
-                z = Variable(zdomain, vs{:});
+                z = Discrete(zdomain, vs{:});
                 
                 %Eventually can build combo table, right now, this will do
                 fg = getFactorGraph();
@@ -336,9 +359,16 @@ classdef VariableBase < Node
         end
         
         function z = addBinaryToBitOperatorOverloadedFactor(a,b,factor)
-            vectorSize = size(a);
-            if (size(b) ~= vectorSize)
-                    error('Vector arguments to overloaded operators must have the same dimensions');
+            % Sizes should be the same, or one of them should be length 1
+            if (~((length(a) == length(b)) || (length(a) == 1) || (length(b) == 1)))
+                error('Mismatch in dimension of input arguments');
+            end
+            
+            % Use the largest size (one of them could be length 1)
+            if (length(a) > length(b))
+                vectorSize = size(a);
+            else
+                vectorSize = size(b);
             end
 
             %znested = Bit();

@@ -31,6 +31,13 @@ public class RealDomain extends Domain
 	}
 	public double getLowerBound() {return _lowerBound;}
 	public double getUpperBound() {return _upperBound;}
+	
+	// Utility to check if a value is in the domain or not
+	public boolean inDomain(double value)
+	{
+		return (value >= _lowerBound) && (value <= _upperBound);
+	}
+	
 	@Override
 	public boolean isDiscrete() 
 	{
