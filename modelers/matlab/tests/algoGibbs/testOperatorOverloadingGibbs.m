@@ -44,8 +44,8 @@ graph1.Solver.setScansPerSample(scansPerSample);
 graph1.Solver.setBurnInScans(burnInScans);
 
 
-a1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(3,12));
-b1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(7,17));
+a1 = Real(FactorFunction('Normal',3,12));       % Use FactorFunction
+b1 = Real({'Normal',7,17});                     % Use cell notation
 
 z1 = a1 + b1;
 
@@ -63,10 +63,10 @@ graph2.Solver.setNumSamples(numSamples);
 graph2.Solver.setScansPerSample(scansPerSample);
 graph2.Solver.setBurnInScans(burnInScans);
 
-a2 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(3,12));
-b2 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(7,17));
+a2 = Real(FactorFunction('Normal',3,12));       % Use FactorFunction
+b2 = Real({'Normal',7,17});                     % Use cell notation
 z2 = Real();
-graph2.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum,z2,a2,b2);
+graph2.addFactor('Sum',z2,a2,b2);
 
 if (repeatable)
     graph2.Solver.setSeed(1);					% Make this repeatable
@@ -100,9 +100,9 @@ fg.Solver.setNumSamples(numSamples);
 fg.Solver.setScansPerSample(scansPerSample);
 fg.Solver.setBurnInScans(burnInScans);
 
-w1 = Real(com.analog.lyric.dimple.FactorFunctions.Gamma(1,1));
+w1 = Real(FactorFunction('Gamma',1,1));
 x1 = Real([-pi pi]);
-y1 = Real(com.analog.lyric.dimple.FactorFunctions.Normal(0,10));
+y1 = Real({'Normal',0,10});
 z1 = Real([-.99 .99]);
 
 a1 = abs(z1);

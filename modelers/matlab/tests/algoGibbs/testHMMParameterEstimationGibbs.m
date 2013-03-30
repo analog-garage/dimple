@@ -72,12 +72,11 @@ A = Real(numStates, numStates);
 state = Discrete(0:numStates-1,1,hmmLength);
 
 % Priors on A
-A.Input = com.analog.lyric.dimple.FactorFunctions.NegativeExpGamma(1,1);
+A.Input = FactorFunction('NegativeExpGamma',1,1);
 
 
 % Add transition factors
-transitionFunction = com.analog.lyric.dimple.FactorFunctions.DiscreteTransition(numStates);
-fg.addFactorVectorized(transitionFunction, state(2:end), state(1:end-1), {A,[]});
+fg.addFactorVectorized({'DiscreteTransition',numStates}, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
 state.Input = obsMatrix(obsRealization,:);

@@ -989,10 +989,17 @@ classdef FactorGraph < Node
                         retval = obj.addJavaFactorFunction(factorFunction,varargin{:});
                     end
                     
+                elseif (isa(firstArg,'FactorFunction'))
+                    retval = obj.addJavaFactorFunction(firstArg.get(),varargin{:});
+                    
                      % TODO: replace with a function call isFactorFunction
-               elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
                     retval = obj.addJavaFactorFunction(firstArg,varargin{:});
                     
+                elseif iscell(firstArg)
+                    factorFunction = FactorFunction(firstArg{:});
+                    retval = obj.addJavaFactorFunction(factorFunction.get(),varargin{:});
+
                 else
                     error(['Unsupported type: ' class(firstArg)]);
                 end

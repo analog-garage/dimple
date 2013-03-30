@@ -27,8 +27,8 @@ numSamples = 100000;
 updatesPerSample = 10;
 burnInUpdates = 1000;
 
-setSolver(com.analog.lyric.dimple.solvers.gibbs.Solver());
 graph1 = FactorGraph();
+graph1.Solver = 'Gibbs';
 graph1.Solver.setNumSamples(numSamples);
 graph1.Solver.setUpdatesPerSample(updatesPerSample);
 graph1.Solver.setBurnInUpdates(burnInUpdates);
@@ -39,14 +39,14 @@ aPriorR = 1/(aPriorSigma*aPriorSigma);
 bPriorMean = -1;
 bPriorSigma = 2.;
 bPriorR = 1/(bPriorSigma*bPriorSigma);
-a = Real(com.analog.lyric.dimple.FactorFunctions.Normal(aPriorMean,aPriorSigma));
+a = Real(FactorFunction('Normal',aPriorMean,aPriorSigma));
 b = Real();
-b.Input = com.analog.lyric.dimple.FactorFunctions.Normal(bPriorMean, bPriorSigma);	% Try setting the input differently, just to test a different path
+b.Input = {'Normal',bPriorMean, bPriorSigma};	% Try setting the input differently, just to test a different path
 
 abMean = 0;
 abSigma = 1;
 abR = 1/(abSigma*abSigma);
-f = graph1.addFactor(com.analog.lyric.dimple.FactorFunctions.Normal(0,1), a, b);
+f = graph1.addFactor(FactorFunction('Normal',0,1), a, b);
 
 sa = a.Solver;
 sb = b.Solver;
@@ -96,8 +96,8 @@ numSamples = 10000;
 updatesPerSample = 10;
 burnInUpdates = 1000;
 
-setSolver(com.analog.lyric.dimple.solvers.gibbs.Solver());
 graph2 = FactorGraph();
+graph2.Solver = 'Gibbs';
 graph2.Solver.setNumSamples(numSamples);
 graph2.Solver.setUpdatesPerSample(updatesPerSample);
 graph2.Solver.setBurnInUpdates(burnInUpdates);
@@ -107,7 +107,7 @@ aPriorSigma = 5;
 aPriorR = 1/(aPriorSigma*aPriorSigma);
 bProb1 = 0.6;
 bProb0 = 1 - bProb1;
-a = Real(com.analog.lyric.dimple.FactorFunctions.Normal(aPriorMean,aPriorSigma));
+a = Real(FactorFunction('Normal',aPriorMean,aPriorSigma));
 b = Variable([0 1]);
 b.Input = [bProb0 bProb1];
 
@@ -117,7 +117,7 @@ fMean1 = 1;
 fSigma1 = 0.75;
 fR0 = 1/(fSigma0*fSigma0);
 fR1 = 1/(fSigma1*fSigma1);
-f = graph2.addFactor(com.analog.lyric.dimple.FactorFunctions.MixedNormal(fMean0, fSigma0, fMean1, fSigma1), a, b);
+f = graph2.addFactor(FactorFunction('MixedNormal',fMean0, fSigma0, fMean1, fSigma1), a, b);
 
 sa = a.Solver;
 sb = b.Solver;
