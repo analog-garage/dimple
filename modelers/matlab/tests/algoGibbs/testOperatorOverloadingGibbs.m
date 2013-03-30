@@ -14,18 +14,19 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testRealOperatorOverloading()
+function testOperatorOverloadingGibbs()
 
 debugPrint = false;
 repeatable = true;
 
-dtrace(debugPrint, '++testRealOperatorOverloading');
+dtrace(debugPrint, '++testOperatorOverloadingGibbs');
 
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
-dtrace(debugPrint, '--testRealOperatorOverloading');
+dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
 end
 
@@ -330,5 +331,53 @@ assertElementsAlmostEqual(aasx, bsx .^ asx, 'absolute');
 assertElementsAlmostEqual(bbsx, dsx .^ csx, 'absolute');
 assertElementsAlmostEqual(ccsx, csx .^ dsx, 'absolute');
 
+end
+
+
+% Test a discrete MATLAB deterministic directed factor
+function test4(debugPrint, repeatable)
+
+numSamples = 100;
+scansPerSample = 1;
+burnInScans = 0;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setScansPerSample(scansPerSample);
+fg.Solver.setBurnInScans(burnInScans);
+
+inDomain = 1:10;
+[inx,iny] = ndgrid(inDomain,inDomain);
+outDomain = sort(unique(reshape(inx + iny,1,length(inDomain)^2)));
+a = Discrete(inDomain);
+b = Discrete(inDomain);
+c = Discrete(outDomain);
+fg.addFactor(@myPlusFactor, c, a, b).DirectedTo = c;
+
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+fg.Solver.saveAllSamples();
+fg.solve();
+
+as = a.Solver.getAllSamples();
+bs = b.Solver.getAllSamples();
+cs = c.Solver.getAllSamples();
+
+asx = arrayfun(@(x)x, as);
+bsx = arrayfun(@(x)x, bs);
+csx = arrayfun(@(x)x, cs);
+assertElementsAlmostEqual(asx + bsx, csx, 'absolute');
+
+end
+
+function value = myPlusFactor(out,in1,in2)
+    if (out == in1 + in2)
+        value = 2;  % Verify that any constant will do
+    else
+        value = 0;
+    end
 end
 

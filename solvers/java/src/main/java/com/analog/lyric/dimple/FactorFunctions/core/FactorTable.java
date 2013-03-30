@@ -29,44 +29,23 @@ public class FactorTable extends FactorTableBase
 {
 	private DiscreteDomain [] _domains;
 
-	//Used for converting indices into weights
-	int [] _indices2weightIndex;
-	int [] _offsets;
+	// Used for converting indices into weights
+	private int [] _indices2weightIndex;
+	private int [] _offsets;
 
-
-	public FactorTable(double [][] table, DiscreteDomain domain1, DiscreteDomain domain2)
-	{
-		int [][] indices = new int[domain1.size()*domain2.size()][2];
-		double [] weights = new double[indices.length];
-		
-		IndexCounter ic = new IndexCounter(new int [] {domain1.size(),domain2.size()});
-
-		int i = 0;
-		for (int [] tmp : ic)
-		{
-			indices[i][0] = tmp[0];
-			indices[i][1] = tmp[1];
-			weights[i] = table[tmp[0]][tmp[1]];
-			i++;
-		}
-		
-		_domains = new DiscreteDomain[]{domain1,domain2};
-		change(indices, weights);
-	}
+	// Used for evaluating as FactorFunction
+	private ArrayList<HashSet<Object>> _domainSets = null;
+	private HashMap<ArrayList<Object>,Double> _lookupTable = null;
 	
-	public void change(int [][] indices, double [] weights, boolean check)
-	{
-		super.change(indices,weights,check);
-		
-		_indices2weightIndex = null;
-	}
+	// For directed factor tables
+	private int[] _directedTo = null;
+	private int[] _directedFrom = null;
 	
-	public FactorTable(FactorTable copy)
-	{
-		super(copy);
-		
-		_domains = copy._domains;
-	}
+	// For deterministic-directed factor tables
+	private boolean _checkedIfDeterministicDirected = false;
+	private boolean _isDeterministicDirected = false;
+	private HashMap<ArrayList<Object>,ArrayList<Object>> _deterministicDirectedLookupTable = null;
+	
 	
 	public FactorTable(int [][] indices, double [] weights, Discrete... variables)
 	{
@@ -78,17 +57,6 @@ public class FactorTable extends FactorTableBase
 			domains[i] = variables[i].getDiscreteDomain();
 		}
 		_domains = domains;
-	}
-	
-	public void copy(FactorTable copy)
-	{
-		super.copy(copy);
-		_domains = copy._domains;
-	}
-	
-	public FactorTable copy()
-	{
-		return new FactorTable(this);
 	}
 	
 	public FactorTable(Object table, DiscreteDomain [] domains)
@@ -139,9 +107,92 @@ public class FactorTable extends FactorTableBase
 		
 	}
 	
-	int [] _directedTo = null;
-	int [] _directedFrom = null;
+	public FactorTable(FactorTable copy)
+	{
+		super(copy);
+		_domains = copy._domains;
+		if (copy._directedTo != null) _directedTo = copy._directedTo.clone();
+		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
+	}
 	
+//	// TODO: This doesn't appear to be used and should probably be removed
+//	public FactorTable(double [][] table, DiscreteDomain domain1, DiscreteDomain domain2)
+//	{
+//		int [][] indices = new int[domain1.size()*domain2.size()][2];
+//		double [] weights = new double[indices.length];
+//		
+//		IndexCounter ic = new IndexCounter(new int [] {domain1.size(),domain2.size()});
+//
+//		int i = 0;
+//		for (int [] tmp : ic)
+//		{
+//			indices[i][0] = tmp[0];
+//			indices[i][1] = tmp[1];
+//			weights[i] = table[tmp[0]][tmp[1]];
+//			i++;
+//		}
+//		
+//		_domains = new DiscreteDomain[]{domain1,domain2};
+//		change(indices, weights);
+//	}
+
+	public void copy(FactorTable copy)
+	{
+		super.copy(copy);
+		_domains = copy._domains;
+		if (copy._directedTo != null) _directedTo = copy._directedTo.clone();
+		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
+	}
+	
+	public FactorTable copy()
+	{
+		return new FactorTable(this);
+	}
+	
+
+
+	@Override
+	public void change(int [][] indices, double [] weights, boolean check)
+	{
+		super.change(indices,weights,check);
+		_indices2weightIndex = null;
+		_checkedIfDeterministicDirected = false;
+	}
+	@Override
+	public void change(int [][] indices, double [] weights)
+	{
+		super.change(indices, weights);
+		_indices2weightIndex = null;
+		_checkedIfDeterministicDirected = false;
+	}
+	@Override
+	public void changeIndices(int [][] indices) 
+	{
+		super.changeIndices(indices);
+		_indices2weightIndex = null;
+		_checkedIfDeterministicDirected = false;
+	}
+	@Override
+	public void changeWeights(double [] probs) 
+	{
+		super.changeWeights(probs);
+		_checkedIfDeterministicDirected = false;
+	}
+	@Override
+	public void changeWeight(int index, double weight)
+	{
+		super.changeWeight(index, weight);
+		_checkedIfDeterministicDirected = false;
+	}
+	@Override
+	public void set(int [] indices, double value)
+	{
+		super.set(indices, value);
+		_checkedIfDeterministicDirected = false;
+	}
+	
+
+
 	public int [] getDirectedFrom()
 	{
 		return _directedFrom;
@@ -191,7 +242,8 @@ public class FactorTable extends FactorTableBase
 			//normalize(directedTo, directedFrom);
 			boolean valid = verifyValidForDirectionality(directedTo, directedFrom);
 			if (!valid)
-				throw new DimpleException("weights must be normalized correcteldy for directed factors");
+				throw new DimpleException("weights must be normalized correctly for directed factors");
+			_checkedIfDeterministicDirected = false;
 		}
 	}
 	
@@ -202,9 +254,10 @@ public class FactorTable extends FactorTableBase
 		double [] normalizers = (double[])tmp[0];
 		
 		double epsilon = 1e-9;
-		for (int i = 0; i < normalizers.length; i++)
+		double firstNormalizer = normalizers[0];
+		for (int i = 1; i < normalizers.length; i++)
 		{
-			double diff = Math.abs(1-normalizers[i]);
+			double diff = Math.abs(firstNormalizer - normalizers[i]);	// Normalizer values must all be the same
 			if (diff > epsilon)
 				return false;
 		}
@@ -212,6 +265,50 @@ public class FactorTable extends FactorTableBase
 		
 		return true;
 	}
+	
+	
+	public boolean isDeterministicDirected()
+	{
+		if (_checkedIfDeterministicDirected)
+			return _isDeterministicDirected;	// If already determined
+		else if (!isDirected())
+		{
+			_isDeterministicDirected = false;
+			_checkedIfDeterministicDirected = true;
+			return false;						// Not directed
+		}
+		else
+		{
+			int[][] indices = getIndices();
+			double[] weights = getWeights();
+			int numRows = indices.length;
+			int numDirectedInputs = _directedFrom.length;
+			HashSet<int[]> hash = new HashSet<int[]>();
+			double firstWeight = weights[0];
+			double epsilon = 1e-12;		// Arbitrary small maximum difference between weights
+			for (int row = 0; row < numRows; row++)
+			{
+				int[] indexRow = indices[row];
+				int[] rowInputs = new int[numDirectedInputs];
+				for (int i = 0; i < numDirectedInputs; i++)
+					rowInputs[i] = indexRow[_directedFrom[i]];
+				if (hash.contains(rowInputs) || (Math.abs(weights[row] - firstWeight) > epsilon))
+				{
+					_isDeterministicDirected = false;
+					_checkedIfDeterministicDirected = true;
+					return false;						// Not deterministic (input appears more than once or weights not all the same)
+				}
+				else
+				{
+					hash.add(rowInputs);
+				}
+			}
+			_isDeterministicDirected = true;
+			_checkedIfDeterministicDirected = true;
+			return true;								// Is deterministic (no input indices appear more than once)
+		}
+	}
+	
 
 	private Object[] getNormalizers(int [] directedTo, int [] directedFrom)
 	{
@@ -515,14 +612,92 @@ public class FactorTable extends FactorTableBase
 		return newIndex;
 	}
 	
+	//////////////////////////////////////////////////////////////////
+	// Evaluate the factor table from a set of indices
+	//////////////////////////////////////////////////////////////////
+	
+	// This method provides the ability to get the weight index from the table
+	// indices.  The weight index can be used to either retrieve the weight
+	// or the potential.
+	public int getWeightIndexFromTableIndices(int [] indices)
+	{
+		
+		if (_indices2weightIndex == null)
+			initIndices2weightIndex();
+
+		int tmp = 0;
+		for (int i = 0; i < indices.length ;i++)
+			tmp += indices[i] * _offsets[i];
+		
+		int weightIndex = _indices2weightIndex[tmp];
+		
+		return weightIndex;
+		
+	}
+	
+	 // This method sets up the data structures to make
+	 // getWeightIndex... possible.
+	 // This routine creates an array that is as long as the full
+	 // Cartesian product of the variables connected to this factor
+	 // table.  
+	private void initIndices2weightIndex()
+	{
+		_offsets = new int[_domains.length];
+		int prod = 1;
+		_offsets[0] = 1;
+		
+		//Create the indices into the array
+		for (int i = 1; i < _domains.length; i++)
+		{
+			prod = prod*_domains[i-1].size();
+			_offsets[i] = prod;
+		}
+		prod = prod*_domains[_domains.length-1].size();
+		_indices2weightIndex = new int[prod];
+		
+		//Initialize the array to -1.
+		for (int i = 0; i < _indices2weightIndex.length; i++)
+		{
+			_indices2weightIndex[i] = -1;
+		}
+		
+		//Now, go through the factor table and initialize
+		int [][] indices = getIndices();
+		for (int i = 0; i < indices.length; i++)
+		{
+			int tmp = 0;
+			for (int j = 0; j < indices[i].length ;j++)
+				tmp += indices[i][j] * _offsets[j];
+			_indices2weightIndex[tmp] = i;			
+		}
+	}
+	
 	
 	//////////////////////////////////////////////////////////////////
-	// Code for evaluating as FactorFunction
+	// Evaluate the factor table as if it were a FactorFunction
 	//////////////////////////////////////////////////////////////////
 
+	public double evalAsFactorFunction(Object ... arguments)
+	{
+		if (_lookupTable == null)
+			initLookupTable(_domains);
+				
+		ArrayList<Object> key = new ArrayList<Object>();
+		
+		int numArguments = arguments.length;
+		for (int i = 0; i < numArguments; i++)
+		{
+			if (!_domainSets.get(i).contains(arguments[i]))
+				throw new RuntimeException("input["+i+"] = " + arguments[i].toString() + " is not element of domain");
 
-	private HashMap<ArrayList<Object>,Double> _lookupTable = null;
-	private ArrayList<HashSet<Object>> _domainSets = null;
+			key.add(arguments[i]);
+		}
+		
+		if (_lookupTable.containsKey(key))
+			return _lookupTable.get(key);
+		else
+			return 0;	
+	}
 	
 	
 	private void initLookupTable(DiscreteDomain [] domains)
@@ -556,33 +731,74 @@ public class FactorTable extends FactorTableBase
 		}
 	}
 	
-	public double evalAsFactorFunction(Object ... input)
+
+	//////////////////////////////////////////////////////////////////
+	// For directed-deterministic factors, evaluate the deterministic function
+	//////////////////////////////////////////////////////////////////
+
+	public void evalDeterministicFunction(Object... arguments)
 	{
-		if (_lookupTable == null)
-			initLookupTable(_domains);
-				
-		ArrayList<Object> key = new ArrayList<Object>();
+		int numDirectedInputs = _directedFrom.length;
+		int numDirectedOutputs = _directedTo.length;
+
+		if (_deterministicDirectedLookupTable == null)
+			initDeterministicDirectedLookupTable(_domains);
 		
-		for (int i = 0; i < input.length; i++)
+		// Fill in the array of input arguments
+		ArrayList<Object> key = new ArrayList<Object>();
+		for (int i = 0; i < numDirectedInputs; i++)
+			key.add(arguments[_directedFrom[i]]);
+		
+		// Look-up the result
+		ArrayList<Object> result;
+		if (_deterministicDirectedLookupTable.containsKey(key))
+			result = _deterministicDirectedLookupTable.get(key);
+		else
+			throw new RuntimeException("Invalid argument values");
+		
+		// Overwrite the result arguments
+		for (int i = 0; i < numDirectedOutputs; i++)
+			arguments[_directedTo[i]] = result.get(i);
+	}
+
+	private void initDeterministicDirectedLookupTable(DiscreteDomain[] domains)
+	{
+		int numDirectedInputs = _directedFrom.length;
+		int numDirectedOutputs = _directedTo.length;
+		_deterministicDirectedLookupTable = new HashMap<ArrayList<Object>, ArrayList<Object>>();
+		
+		// For each row of the factor table
+		int[][] indices = getIndices();
+		int numRows = indices.length;
+		for (int row = 0; row < numRows; row++)
 		{
-			if (!_domainSets.get(i).contains(input[i]))
+			// Fill in the array of input arguments
+			ArrayList<Object> inputs = new ArrayList<Object>();
+			for (int i = 0; i < numDirectedInputs; i++)
 			{
-				throw new RuntimeException("input["+i+"] = " + input[i].toString() + " is not element of domain");
+				int edgeIndex = _directedFrom[i];
+				inputs.add(domains[edgeIndex].getElements()[indices[row][edgeIndex]]);
+			}
+			
+			// Fill in the array of output values
+			ArrayList<Object> outputs = new ArrayList<Object>();
+			for (int i = 0; i < numDirectedOutputs; i++)
+			{
+				int edgeIndex = _directedTo[i];
+				outputs.add(domains[edgeIndex].getElements()[indices[row][edgeIndex]]);
 			}
 
-			key.add(input[i]);
+			_deterministicDirectedLookupTable.put(inputs, outputs);
 		}
-		
-		if (_lookupTable.containsKey(key))
-			return _lookupTable.get(key);
-		else
-			return 0;	
 	}
+
+	
+
+	
 	
 	//////////////////////////////////////////////////////////////////
 	// Serialization code
 	//////////////////////////////////////////////////////////////////
-
 	
 	public void serializeToXML(String serializeName, String targetDirectory) 
 	{
@@ -608,70 +824,5 @@ public class FactorTable extends FactorTableBase
 		
 		return mct;
 	}
-	
-	/*
-	 * This method sets up the data structures to make
-	 * getWeightIndex... possible.
-	 * This routine creates an array that is as long as the full
-	 * cartesian product of the variables connected to this factor
-	 * table.  
-	 */
-	private void initIndices2weightIndex()
-	{
-		_offsets = new int[_domains.length];
-		int prod = 1;
-		_offsets[0] = 1;
 		
-		//Create the indices into the array
-		for (int i = 1; i < _domains.length; i++)
-		{
-			prod = prod*_domains[i-1].size();
-			_offsets[i] = prod;
-		}
-		prod = prod*_domains[_domains.length-1].size();
-		_indices2weightIndex = new int[prod];
-		
-		//Initialize the array to -1.
-		for (int i = 0; i < _indices2weightIndex.length; i++)
-		{
-			_indices2weightIndex[i] = -1;
-		}
-		
-		//Now, go through the factor table and initialize
-		int [][] indices = getIndices();
-		for (int i = 0; i < indices.length; i++)
-		{
-			int tmp = 0;
-			for (int j = 0; j < indices[i].length ;j++)
-				tmp += indices[i][j] * _offsets[j];
-			_indices2weightIndex[tmp] = i;			
-
-		}
-		
-	}
-	
-	
-	
-	/*
-	 * This method provides the ability to get the weight index from the table
-	 * indices.  The weight index can be used to either retrieve the weight
-	 * or the potential.
-	 */
-	public int getWeightIndexFromTableIndices(int [] indices)
-	{
-		
-		if (_indices2weightIndex == null)
-			initIndices2weightIndex();
-
-		int tmp = 0;
-		for (int i = 0; i < indices.length ;i++)
-			tmp += indices[i] * _offsets[i];
-		
-		int weightIndex = _indices2weightIndex[tmp];
-		
-		return weightIndex;
-		
-	}
-
-	
 }
