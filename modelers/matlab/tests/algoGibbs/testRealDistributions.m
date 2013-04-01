@@ -69,8 +69,8 @@ if (repeatable)
 end
 
 % Factor functions
-meanPrior = com.analog.lyric.dimple.FactorFunctions.Normal(meanPriorMean,meanPriorSigma);
-invVariancePrior = com.analog.lyric.dimple.FactorFunctions.Gamma(invVariancePriorAlpha,invVariancePriorBeta);
+meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorSigma);
+invVariancePrior = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
 
 % Variables
 invVarianceVar = Real([0 Inf], invVariancePrior);
@@ -145,11 +145,8 @@ if (repeatable)
     fg.Solver.setSeed(seed);				% Make this repeatable
 end
 
-% Factor functions
-meanPrior = com.analog.lyric.dimple.FactorFunctions.Normal(meanPriorMean,meanPriorSigma);
-
 % Variables
-meanVar = Real(meanPrior);
+meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorSigma));
 X = Real(1,numDataPoints);
 
 % Factors

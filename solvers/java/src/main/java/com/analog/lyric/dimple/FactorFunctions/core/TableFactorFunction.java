@@ -72,7 +72,20 @@ public class TableFactorFunction extends FactorFunction
     	    	
     	return _factorTable;
     }
-
+    
+    
+	// For directed factors...
+	public boolean isDirected() {return _factorTable.isDirected();}
+	protected int[] getDirectedToIndices() {return _factorTable.getDirectedTo();}
+	
+	// For deterministic directed factors...
+	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)
+	public boolean isDeterministicDirected() {return _factorTable.isDeterministicDirected();}
+	
+	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
+	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
+	public void evalDeterministicFunction(Object... arguments){_factorTable.evalDeterministicFunction(arguments);}
+	
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{
 		return true;

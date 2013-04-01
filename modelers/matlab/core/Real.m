@@ -49,11 +49,17 @@ classdef Real < VariableBase
                 if (isa(arg, 'function_handle'))
                     input = func2str(arg);
                     varargIndex = varargIndex + 1;
+                elseif (ischar(arg))
+                    input = arg;
+                    varargIndex = varargIndex + 1;
                 elseif (isa(arg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
                     input = arg;
                     varargIndex = varargIndex + 1;
-                elseif (ischar(arg))
-                    input = arg;
+                elseif (isa(arg, 'FactorFunction'))
+                    input = arg.get();
+                    varargIndex = varargIndex + 1;
+                elseif (iscell(arg))
+                    input = FactorFunction(arg{:}).get();
                     varargIndex = varargIndex + 1;
                 else
                     input = [];
@@ -101,6 +107,12 @@ classdef Real < VariableBase
         
         
         function setInput(obj,factorFunction)
+            if (isa(factorFunction, 'FactorFunction'))
+                factorFunction = factorFunction.get();
+            elseif (iscell(factorFunction))
+                factorFunction = FactorFunction(factorFunction{:}).get();
+            end
+            
             v = obj.VectorIndices;
             varids = reshape(v,numel(v),1);
             obj.VectorObject.setInput(varids,factorFunction);

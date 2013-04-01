@@ -1310,19 +1310,13 @@ The following methods are supported:
 
 \subsubsection{Factors for Real Variables}
 
-Factors can be added to a graph that are connected to real variables, discrete variables, or a combination of the two. Any factor that is connected to one or more real variables currently is constrained to use a factor function specified in Java. It cannot use a factor function specified in MATLAB and cannot use a factor table. Specifically, the factor function must be an instance of a Java class derived from the base class FactorFunction, and must have the eval() method implemented so that the factor can be evaluated in Java.
+Factors can be added to a graph that are connected to real variables, discrete variables, or a combination of the two. Any factor that is connected to one or more real variables currently is constrained to use a built-in factor function (see section~\ref{sec:builtInFactors} or a user-provided Java factor function (see section~\ref{sec:createJavaFactorFunction}). It cannot use a factor function specified in MATLAB and cannot use a factor table.
 
 Example:
 
 \begin{lstlisting}
-f = graph.addFactor(package.for.example.ExampleFactor(), realVar1, realVar2, discreteVar1, discreteVar2);
+f = graph.addFactor('ExampleFactor', realVar1, realVar2, discreteVar1, discreteVar2);
 \end{lstlisting}
-
-The FactorFunction includes an eval() method that is evaluated at run-time when the graph is being solved. The eval function must accept inputs that correspond to the number and type of variables associated with a factor. The function may allow a variable number of arguments, which allows a variable number of variables to be used in the addFactor call.
-
-Because the eval() method in Java must evaluate values in the domain of all variables, all discrete variables used in conjunction with such a factor must have a domain that can be represented in Java (for example, a numeric domain).
-
-Note that the FactorFunction constructor can have arguments so that a single FactorFunction derived class can be represent a parametrized family of distributions.
 
 \subsubsection{Solvers}
 Currently, real variables are supported by several solvers including the Gibbs solver, Particle BP solver, and Gaussian solver.
@@ -1395,7 +1389,7 @@ MyGraph.addFactor(@XorDeltaTutorial,b(1),1, b(2));
 
 The constants can be any n-dimensional real or complex matrix.  
 
-Adding a Factor in this way involves creating an array known as a factor table, which contains all assignments of the variables resulting in a positive value of the function, along with a value vector, containing all the corresponding values of the function. This table is then passed to the solver. Creating that table takes time (and typically space) proportional to the product of the size of the domains of all variables connected to that factor, thus requiring an exponential time in the degree of the factor.  The addFactor method attempts to save memory and time by re-using existing factors when addFactor is called with the same FactorFunction.  The caching mechanism uses the name of the function (using MATLABÕs func2str) as well as the domain values for all of the arguments to addFactor when deciding if a FactorTable can be re-used.  If this behavior is undesirable, the addFactorNoCache method can be used instead of addFactor (see below).
+Adding a Factor in this way involves creating an array known as a factor table, which contains all assignments of the variables resulting in a positive value of the function, along with a value vector, containing all the corresponding values of the function. This table is then passed to the solver. Creating that table takes time (and typically space) proportional to the product of the size of the domains of all variables connected to that factor, thus requiring an exponential time in the degree of the factor.  The addFactor method attempts to save memory and time by re-using existing factors when addFactor is called with the same factor function.  The caching mechanism uses the name of the function (using MATLABÕs func2str) as well as the domain values for all of the arguments to addFactor when deciding if a FactorTable can be re-used.  If this behavior is undesirable, the addFactorNoCache method can be used instead of addFactor (see below).
 
 \para{Nested Graphs}
 
@@ -1497,7 +1491,7 @@ ans =
 \para{Built-in Factors}
 \label{sec:builtInFactors}
 
-Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, in which case a fully-qualified Java path must be used instead (see below).
+Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, in which case an alternative syntax must be used (see below).
 
 As an example,
 
@@ -1602,19 +1596,26 @@ Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where o
 %
 \end{longtable}
 
-The above factors may be specified by name, or alternatively using a fully-qualified Java path name.  To use a constructor argument for a built-in factor requires the latter.  The path name always begins with ``com.analog.lyric.dimple.FactorFunctions''.  For example,
+The above factors may be specified by name if no constructor arguments are needed.  If constructor arguments are needed, then there are two ways to specify the factor.  The preferred way is to create a FactorFunction object, which takes the name of the factor followed by the constructor arguments for that factor.  For example:
 
 \begin{lstlisting}
-MyGraph.addFactor(com.analog.lyric.dimple.FactorFunctions.Normal(0,0.1), Out, In);
+MyGraph.addFactor(FactorFunction('Gamma', 1, 1), X);
 \end{lstlisting}
 
-Note that if the factor function is assigned to a MATLAB value, it can be used multiple times.
+The same FactorFunction can be used more than once, which avoids creating additional copies of the FactorFunction object.  For example:
 
 \begin{lstlisting}
-myFixedNormal = com.analog.lyric.dimple.FactorFunctions.Normal(0,0.1);
-MyGraph.addFactor(myFixedNormal, Out1, In1);
-MyGraph.addFactor(myFixedNormal, Out2, In2);
+myFactorFunction = FactorFunction('Gamma', 1, 1);
+MyGraph.addFactor(myFactorFunction, X1);
+MyGraph.addFactor(myFactorFunction, X2);
 \end{lstlisting}
+
+A short-hand notation may alternatively be used, in which the name of the factor function and its constructor arguments are contained in a cell array.  For example:
+
+\begin{lstlisting}
+MyGraph.addFactor({'Gamma', 1, 1}, X);
+\end{lstlisting}
+
 
 In addition to the built-in factors listed above, there are a set of solver-specific built-in factors, also referred to as ``custom factors.''  These factors may also be specified by name in the addFactor call (using either a quoted string or as a function handle).  These are summarized in the following table:
 
@@ -1675,9 +1676,10 @@ The following sections provides the steps users must follow to add a Java Factor
 \end{itemize}
 
 
-\subpara{Create a Class That Inherits from JavaFactorFunction}
+\subpara{Create a Class That Inherits from Java FactorFunction}
+\label{sec:createJavaFactorFunction}
 
-Users must extend the FactorFunction class. They have to provide two methods:
+Users must extend the Java FactorFunction class. They have to provide two methods:
 
 \begin{itemize}
 \item A constructor that call's the parent constructor.
@@ -3238,6 +3240,7 @@ end
 \end{lstlisting}
 
 \subsubsection{Setting Directionality of a Factor}
+\label{sec:setDirected}
 
 
 Some solver features require knowledge of factor directionality.  Users can set directionality of a factor with the FactorTo property.
@@ -3493,7 +3496,7 @@ The Gibbs solver performs Gibbs sampling on a factor graph.  It supports both di
 
 In the current implementation, sampling of real variables makes use of the Metropolis-Hastings algorithm.  In future versions of Dimple, additional sampling methods will be provided.
 
-The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  This is currently limited to deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  Future versions will allow more general deterministic functions to be specified.
+The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:setDirected}.
  
 
 \para{Constructor}

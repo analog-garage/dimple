@@ -52,8 +52,7 @@ function testHoldSample()
     fg = FactorGraph();
     fg.Solver = 'gibbs';
     %fg.Solver.setSeed(0);
-    ff = com.analog.lyric.dimple.FactorFunctions.Normal();
-    fg.addFactor(ff,a,0.1,b);
+    fg.addFactor('Normal',a,0.1,b);
     a.Solver.setAndHoldSampleValue(10);
     fg.Solver.setNumSamples(10000);
     fg.Solver.setBurnInUpdates(0);
