@@ -115,27 +115,6 @@ public class FactorTable extends FactorTableBase
 		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
 	}
 	
-//	// TODO: This doesn't appear to be used and should probably be removed
-//	public FactorTable(double [][] table, DiscreteDomain domain1, DiscreteDomain domain2)
-//	{
-//		int [][] indices = new int[domain1.size()*domain2.size()][2];
-//		double [] weights = new double[indices.length];
-//		
-//		IndexCounter ic = new IndexCounter(new int [] {domain1.size(),domain2.size()});
-//
-//		int i = 0;
-//		for (int [] tmp : ic)
-//		{
-//			indices[i][0] = tmp[0];
-//			indices[i][1] = tmp[1];
-//			weights[i] = table[tmp[0]][tmp[1]];
-//			i++;
-//		}
-//		
-//		_domains = new DiscreteDomain[]{domain1,domain2};
-//		change(indices, weights);
-//	}
-
 	public void copy(FactorTable copy)
 	{
 		super.copy(copy);
