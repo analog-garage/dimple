@@ -1193,42 +1193,6 @@ ans =
 
 \end{lstlisting}
 
-Users might also wish to set inputs to variables to domain values with 100\% certainty.  The Value property also allows this.
-
-\begin{lstlisting}
-
-d = Discrete({0,1},3,1);
-fg = FactorGraph();
-fg.addFactor(@xorDelta,d);
-d.Value = [1 1 0];
-d.Input
-
-\end{lstlisting}
-
-This code displays the following:
-
-\begin{lstlisting}
-
-ans =
-
-     0     1
-     0     1
-     1     0
-
-\end{lstlisting}
-
-
-The Value property can also be used to set the variable to a fixed value.  This can be useful, for example, when a variable is measured and its value becomes known.  Setting the value allows conditioning on the known value without modifying the graph.
-
-Though the Value property is used for this, this operation is more related to the Input property.  When a fixed value is set, the Input is ignored, unless it is subsequently set again.  If the Input is set, the any fixed value that had been set is ignored, unless the Value is subsequently set again.
-
-Setting a fixed value involves setting the value property to an element of the variable's domain.  For example:
-
-\begin{lstlisting}
-a = Discrete(1:10);
-a.Value = 3;
-\end{lstlisting}
-
 \subsubsection{Name}
 
 Users can both set and retrieve the name of Discrete Variables.  This is useful for debugging or plotting a graph.
@@ -1245,6 +1209,49 @@ For any variable, the Input method can be used to set and return the current ÔIn
 Var.Input=[0.3 0.7];
 disp(Var.Input);
 \end{lstlisting}
+
+
+\subsubsection{FixedValue}
+
+Users may wish to set inputs to variables to domain values with 100\% certainty.  The FixedValue property also allows this.  This can be useful, for example, when a variable is measured and its value becomes known.  Setting a fixed value allows conditioning on the known value without modifying the graph.
+
+\begin{lstlisting}
+
+d = Discrete({0,1},3,1);
+fg = FactorGraph();
+fg.addFactor(@xorDelta,d);
+d.FixedValue= [1 1 0];
+d.Input
+
+\end{lstlisting}
+
+This code displays the following:
+
+\begin{lstlisting}
+
+ans =
+
+     0     1
+     0     1
+     1     0
+
+\end{lstlisting}
+
+The FixedValue property is related to the Input property in that only the most-recently set of these properties is used.  When FixedValue is set, the Input is ignored, unless it is subsequently set again.  If the Input is set, a FixedValue that had been set is ignored, unless the FixedValue is subsequently set again.
+
+When setting a FixedValue, the value being set must be a valid element of the Variable's domain.  For example:
+
+\begin{lstlisting}
+a = Discrete(1:10);
+a.FixedValue = 3;
+\end{lstlisting}
+
+Setting this value to ``11'' would not be valid.
+
+The fixed value, once set, may be read via getting the FixedValue property.  In the above example, ``a.FixedValue'' would display ``3''.
+
+To determine if a variable (or array of variables) has a fixed value or not, the method hasFixedValue may be used.
+
 
 
 \subsection{Bit}
@@ -1305,7 +1312,9 @@ The following methods are supported:
 \item .Domain (get) returns the two-element vector specifying the bound on the domain specified during construction. If no domain had been set, the value is [-Inf Inf]. For an array of variables, .Domain returns the domain common to all of the variables in the array. Domain is not a settable parameter--it can only be set on construction.
 \item .Input (get) returns the Java object associated with the input. For an array of variables, .Input returns a cell-array of these Java objects with the same dimension as the variable. Some solvers that support real variables expect FactorFunctions as inputs.  Note that for each FactorFunction object, the eval method will return the value of the factor evaluated at the specified input value (example: v.Input.eval(1.75) for a scalar variable or vArr.Input{2,3}.eval(1.75) for an array of real-valued variables).
 \item .Input = (set) assigns the specified input to the variable. Input is a Java factor function.  It may be selected from the set of built-in factor functions (see~\ref{sec:builtInFactors}) or a user defined Java factor functions (see~\ref{sec:userJava})
-\item .Value = (set) assigns a fixed value to the variable, which effectively replaces the Input.  This method operates the same as for a discrete variable.
+\item .FixedValue = (set) assigns a fixed value to the variable, which effectively replaces the Input.  This method operates the same as for a discrete variable.
+\item .FixedValue (get) returns the fixed-value that had been set by .FixedValue method, if one had been set.
+\item .hasFixedValue indicates whether or not a fixed value had been set.
 \end{itemize}
 
 \subsubsection{Factors for Real Variables}

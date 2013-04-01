@@ -161,16 +161,23 @@ classdef Real < VariableBase
             end
         end
         
-        function setValue(obj,value)
-           fixedValues = MatrixObject.pack(value,obj.VectorIndices);
-           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
-           obj.VectorObject.setFixedValues(varids, fixedValues);
-        end
-
         function v = getValue(obj)
             error('not implemented');
         end
+
+        function setFixedValue(obj,value)
+           fixedValues = MatrixObject.pack(value,obj.VectorIndices);
+           fixedValues = reshape(fixedValues,numel(fixedValues),1);
+           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+           obj.VectorObject.setFixedValues(varids, fixedValues);
+        end
         
+        function x = getFixedValue(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            fixedValues = obj.VectorObject.getFixedValues(varids);
+            x = MatrixObject.unpack(fixedValues,obj.VectorIndices);
+        end        
+
     end
     
     

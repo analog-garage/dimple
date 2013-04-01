@@ -23,6 +23,7 @@ classdef VariableBase < Node
         Guess;
         
         Input;
+        FixedValue;
         Belief;
         Value;
     end
@@ -205,12 +206,30 @@ classdef VariableBase < Node
             x = obj.getBelief();
         end
         
+        function set.Belief(obj,value)
+            error('Cannot set the Belief property');
+        end
+        
         function x = get.Value(obj)
             x = obj.getValue();
         end
         
         function set.Value(obj,value)
-            obj.setValue(value);
+            error('Cannot set the Value property (to set a fixed value for a variable, use .FixedValue)');
+        end
+        
+        function set.FixedValue(obj,value)
+            obj.setFixedValue(value);
+        end
+
+        function x = get.FixedValue(obj)
+            x = obj.getFixedValue();
+        end
+        
+        function x = hasFixedValue(obj)
+           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+           hasFixedValue = obj.VectorObject.hasFixedValue(varids);
+           x = MatrixObject.unpack(hasFixedValue,obj.VectorIndices);
         end
 
     end
@@ -218,8 +237,11 @@ classdef VariableBase < Node
     methods (Access=protected,Abstract=true)
         setInput(obj,value);
         x = getInput(obj);
+        
+        setFixedValue(obj,value);
+        x = getFixedValue(obj);
+
         x = getBelief(obj);
-        setValue(obj,value);
         x = getValue(obj);
     end
     

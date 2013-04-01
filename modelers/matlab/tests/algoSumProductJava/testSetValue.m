@@ -22,7 +22,9 @@ function testSetValue()
     fg = FactorGraph();
     fg.addFactor(@(a) 1, d);
     value = randi(3,3,1);
-    d.Value = value;
+    d.FixedValue = value;
+    assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
+    assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
     expectedBelief = double(repmat(value,1,length(domain)) == repmat(cell2mat(domain),length(value),1));
     assertElementsAlmostEqual(d.Belief, expectedBelief);
@@ -33,7 +35,9 @@ function testSetValue()
     fg = FactorGraph();
     fg.addFactor(@(a) 1, d);
     value = randi(3,3,2);
-    d.Value = value;
+    d.FixedValue = value;
+    assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
+    assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
     expectedBelief = double(repmat(value,[1,1,length(domain)]) == repmat(reshape(cell2mat(domain),1,1,length(domain)),[size(value,1),size(value,2),1]));
     assertElementsAlmostEqual(d.Belief, expectedBelief);
@@ -45,7 +49,7 @@ function testSetValue()
     value = {'a'; 'bb'};
     msg = '';
     try
-        d.Value = value;
+        d.FixedValue = value;
     catch E
         msg = E.message;
     end

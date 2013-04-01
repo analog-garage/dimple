@@ -81,7 +81,7 @@ X = Real(1,numDataPoints);
 fg.addFactor('Normal', meanVar, invVarianceVar, X);
 
 % Set inputs to data values
-X.Value = data;
+X.FixedValue = data;
 
 % Solve
 meanVar.invokeSolverMethod('saveAllSamples');
@@ -153,7 +153,7 @@ X = Real(1,numDataPoints);
 f = fg.addFactor('Normal', meanVar, invVarianceValue, X);
 
 % Set inputs to data values
-X.Value = data;
+X.FixedValue = data;
 
 % Solve
 meanVar.invokeSolverMethod('saveAllSamples');
