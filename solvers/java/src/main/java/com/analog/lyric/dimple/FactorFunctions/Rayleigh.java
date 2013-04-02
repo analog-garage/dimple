@@ -56,7 +56,7 @@ public class Rayleigh extends FactorFunction
     		_sigma = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is sigma
     		if (_sigma < 0) throw new DimpleException("Negative sigma value. Domain must be restricted to non-negative values.");
     	}
-    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the Gamma distributed variable
+    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Second input is the Rayleigh distributed variable
     	
     	if (x <= 0)
     		return Double.POSITIVE_INFINITY;

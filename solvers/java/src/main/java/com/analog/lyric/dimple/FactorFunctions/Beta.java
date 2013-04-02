@@ -66,7 +66,7 @@ public class Beta extends FactorFunction
 			_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
 			if (_beta < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
 		}
-		double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Gamma distributed variable
+		double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Beta distributed variable
 
 		if (x < 0 || x > 1)
 			return Double.POSITIVE_INFINITY;

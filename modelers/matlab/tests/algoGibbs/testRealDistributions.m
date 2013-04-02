@@ -49,6 +49,7 @@ end;
 % Model parameters
 meanPriorMean = 10;
 meanPriorSigma = 20;
+meanPriorPrecision = 1/meanPriorSigma^2;
 invVariancePriorAlpha = 1;
 invVariancePriorBeta = 1;
 
@@ -69,7 +70,7 @@ if (repeatable)
 end
 
 % Factor functions
-meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorSigma);
+meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
 invVariancePrior = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
 
 % Variables
@@ -133,6 +134,7 @@ end;
 % Model parameters
 meanPriorMean = 10;
 meanPriorSigma = 20;
+meanPriorPrecision = 1/meanPriorSigma^2;
 
 % Generate data
 meanValue = randn()*meanPriorSigma + meanPriorMean;
@@ -151,7 +153,7 @@ if (repeatable)
 end
 
 % Variables
-meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorSigma));
+meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorPrecision));
 X = Real(1,numDataPoints);
 
 % Factors

@@ -1565,15 +1565,15 @@ LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & 
 %
 Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\sigma$] & Log-normal distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
-MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \sigma_{0} \newline \mu_{1} \newline \sigma_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
 %
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
 %
-Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\sigma$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
 Not & out(B) \newline in(B) & - & Deterministic logical NOT of function, where out = ~in. \\
 %
@@ -1601,7 +1601,7 @@ Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, 
 %
 Tanh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-tangent function, where out = tanh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\sigma$] & Von Mises distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\tau$] & Von Mises distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
 Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where out = XOR(in...). \\
 %

@@ -23,20 +23,16 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 public class MixedNormal extends FactorFunction
 {
 	protected double _mean0 = 0;
-	protected double _invSigmaSquared0 = 1;
-	protected double _invSigma0 = 1;
+	protected double _precision0 = 1;
 	protected double _mean1 = 0;
-	protected double _invSigmaSquared1 = 1;
-	protected double _invSigma1 = 1;
-	public MixedNormal(double mean0, double sigma0, double mean1, double sigma1)
+	protected double _precision1 = 1;
+	public MixedNormal(double mean0, double precision0, double mean1, double precision1)
 	{
 		super();
 		_mean0 = mean0;
-		_invSigma0 = 1/sigma0;
-		_invSigmaSquared0 = 1/(sigma0*sigma0);
+		_precision0 = precision0;
 		_mean1 = mean1;
-		_invSigma1 = 1/sigma1;
-		_invSigmaSquared1 = 1/(sigma1*sigma1);
+		_precision1 = precision1;
 	}
 	
     @Override
@@ -47,12 +43,12 @@ public class MixedNormal extends FactorFunction
     	if (b == 0)
     	{
     		double aRel = a - _mean0;
-    		return aRel*aRel*_invSigmaSquared0/2 - Math.log(_invSigma0);
+    		return (aRel*aRel*_precision0 - Math.log(_precision0) ) * 0.5;
     	}
     	else
     	{
     		double aRel = a - _mean1;
-    		return aRel*aRel*_invSigmaSquared1/2 - Math.log(_invSigma1);
+    		return (aRel*aRel*_precision1 - Math.log(_precision1) ) * 0.5;
     	}
     }
 }

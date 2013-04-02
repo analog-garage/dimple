@@ -25,35 +25,35 @@ import com.analog.lyric.dimple.model.DimpleException;
  * Log-normal distribution. The variables in the argument list are ordered as follows:
  * 
  * 1) Mean parameter
- * 2) Inverse variance parameter (non-negative)
+ * 2) Precision parameter (inverse variance) (non-negative)
  * 3) Log-normal distributed real variable
  * 
- * Mean and *standard-deviation* parameters may optionally be specified as constants in the constructor.
- * In this case, the mean and inverse-variance are not included in the list of arguments.
+ * Mean and precision parameters may optionally be specified as constants in the constructor.
+ * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
 public class LogNormal extends FactorFunction
 {
 	double _mean;
-	double _inverseVariance;
-	double _logInverseVarianceOverTwo;
-	double _inverseVarianceOverTwo;
+	double _precision;
+	double _logPrecisionOverTwo;
+	double _precisionOverTwo;
 	boolean _meanConstant = false;
-	boolean _inverseVarianceConstant = false;
+	boolean _precisionConstant = false;
 	int _directedToIndex = 2;
 
 	public LogNormal() {super();}
-	public LogNormal(double mean, double standardDeviation)
+	public LogNormal(double mean, double precision)
 	{
 		this();
 		_mean = mean;
 		_meanConstant = true;
-		_inverseVariance = 1/(standardDeviation*standardDeviation);
-		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
-		_inverseVarianceOverTwo = _inverseVariance*0.5;
-		_inverseVarianceConstant = true;
+		_precision = precision;
+		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+		_precisionOverTwo = _precision*0.5;
+		_precisionConstant = true;
 		_directedToIndex = 0;
-    	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
+    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 	
     @Override
@@ -62,14 +62,14 @@ public class LogNormal extends FactorFunction
     	int index = 0;
     	if (!_meanConstant)
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    	if (!_inverseVarianceConstant)
+    	if (!_precisionConstant)
     	{
-    		_inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
-    		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
-    		_logInverseVarianceOverTwo = Math.log(_inverseVariance)*0.5;
-    		_inverseVarianceOverTwo = _inverseVariance*0.5;
+    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
+    		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+    		_precisionOverTwo = _precision*0.5;
     	}
-    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the Gamma distributed variable
+    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the LogNormal distributed variable
     	
     	if (x <= 0)
     		return Double.POSITIVE_INFINITY;
@@ -77,7 +77,7 @@ public class LogNormal extends FactorFunction
     	{
     		double logX = Math.log(x);
     		double relLogX = logX - _mean;
-    		return logX - _logInverseVarianceOverTwo + _inverseVarianceOverTwo*relLogX*relLogX;
+    		return logX - _logPrecisionOverTwo + _precisionOverTwo*relLogX*relLogX;
     	}
 	}
     

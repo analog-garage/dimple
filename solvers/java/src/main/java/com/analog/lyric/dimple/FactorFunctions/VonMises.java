@@ -27,31 +27,31 @@ import com.analog.lyric.dimple.model.DimpleException;
  * von Mises distribution. The variables in the argument list are ordered as follows:
  * 
  * 1) Mean parameter
- * 2) Inverse variance parameter (non-negative)
+ * 2) Precision parameter (inverse variance) (non-negative)
  * 3) von Mises distributed real variable
  * 
- * Mean and *standard-deviation* parameters may optionally be specified as constants in the constructor.
- * In this case, the mean and inverse-variance are not included in the list of arguments.
+ * Mean and precision parameters may optionally be specified as constants in the constructor.
+ * In this case, the mean and precision are not included in the list of arguments.
  * 
  */
 public class VonMises extends FactorFunction
 {
 	double _mean;
-	double _inverseVariance;
+	double _precision;
 	boolean _meanConstant = false;
-	boolean _inverseVarianceConstant = false;
+	boolean _precisionConstant = false;
 	int _directedToIndex = 2;
 
 	public VonMises() {super();}
-	public VonMises(double mean, double standardDeviation)
+	public VonMises(double mean, double precision)
 	{
 		this();
 		_mean = mean;
 		_meanConstant = true;
-		_inverseVariance = 1/(standardDeviation*standardDeviation);
-		_inverseVarianceConstant = true;
+		_precision = precision;
+		_precisionConstant = true;
 		_directedToIndex = 0;
-    	if (_inverseVariance < 0) throw new DimpleException("Negative standard-deviation value. This must be a non-negative value.");
+    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 	
     @Override
@@ -60,14 +60,14 @@ public class VonMises extends FactorFunction
     	int index = 0;
     	if (!_meanConstant)
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    	if (!_inverseVarianceConstant)
+    	if (!_precisionConstant)
     	{
-    		_inverseVariance = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second variable is inverse variance (must be non-negative)
-    		if (_inverseVariance < 0) throw new DimpleException("Negative inverse variance value. Domain must be restricted to non-negative values.");
+    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
-    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the Gamma distributed variable
+    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the VonMises distributed variable
     	
-    	return Math.log(Bessel.i0(_inverseVariance)) - _inverseVariance * Math.cos(x - _mean);
+    	return Math.log(Bessel.i0(_precision)) - _precision * Math.cos(x - _mean);
 	}
     
     @Override

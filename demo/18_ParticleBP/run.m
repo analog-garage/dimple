@@ -16,8 +16,8 @@
 
 %We use a particle BP solver to find the distribution over c given
 %c = a*b
-%when a is a normal variable with mean = 3 and std = 1
-%     b is a normal variable with mean = 5 and std = 1
+%when a is a normal variable with mean = 3 and precision = 1
+%     b is a normal variable with mean = 5 and precision = 1
 
 %Create three real variables.
 a = Real();
