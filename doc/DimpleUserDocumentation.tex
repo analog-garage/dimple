@@ -2820,6 +2820,7 @@ b = f.Belief;
 \end{lstlisting}
 
 \para{Score}
+\label{sec:score}
 
 Users can retrieve the Energy of a Factor Graph, Variable Vector, or Factor. This feature is currently only supported with the SumProduct algorithm.
 
@@ -3630,7 +3631,19 @@ Set/get the current temperature. Setting the current temperature overrides the c
 graph.Solver.saveAllSamples();
 \end{lstlisting}
 
-Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of iterations.
+Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
+
+\begin{lstlisting}
+graph.Solver.saveAllScores();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:score}) of the graph for each sample.
+
+\begin{lstlisting}
+graph.Solver.getAllScores();
+\end{lstlisting}
+
+Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
 
 \begin{lstlisting}
 graph.Solver.setSeed(seed);
@@ -3642,7 +3655,7 @@ Set the random seed used for sampling (and used for random scan, if that schedul
 graph.Solver.getTotalPotential();
 \end{lstlisting}
 
-After running the solver, returns the total potential over all factors of the graph (including input priors on variables) given the most recent sample values.
+After running the solver, returns the total potential (score) over all factors of the graph (including input priors on variables) given the most recent sample values.
 
 \begin{lstlisting}
 graph.Solver.sample(numSamples)
