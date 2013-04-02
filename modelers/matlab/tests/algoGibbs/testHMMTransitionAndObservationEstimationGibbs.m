@@ -17,7 +17,7 @@
 function testHMMTransitionAndObservationEstimationGibbs()
 
 
-debugPrint = false;
+debugPrint = true; %% false;
 repeatable = true;
 
 dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
@@ -96,6 +96,9 @@ if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 A.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 O.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 
+% Save the score for each sample
+fg.Solver.saveAllScores();
+
 if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
 end
@@ -138,6 +141,9 @@ dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(e
 KLDivergenceObsDistribution = kLDivergence(expectedObsDistribution, estimatedObsDistribution);
 dtrace(debugPrint,'Gibbs KL divergence of observation distribution:'); dtrace(debugPrint,num2str(KLDivergenceObsDistribution));
 
+% Get the score as a function of sample
+score = fg.Solver.getAllScores;
+if (debugPrint); figure; plot(score); end;
 
 
 

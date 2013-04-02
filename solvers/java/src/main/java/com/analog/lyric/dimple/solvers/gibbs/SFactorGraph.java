@@ -49,6 +49,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	protected double _temperature;
 	protected double _minPotential = Double.MAX_VALUE;
 	protected boolean _firstSample = true;
+	protected boolean _saveAllScores = false;
+	protected ArrayList<Double> _scoreArray;
 	protected final double LOG2 = Math.log(2);
 	
 	
@@ -206,6 +208,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			_firstSample = false;
 		}
 		
+		// If requested save score value for each sample
+		if (_saveAllScores)
+			_scoreArray.add(totalPotential);
+		
 		// If tempering, reduce the temperature
 		if (_temper)
 		{
@@ -240,6 +246,28 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		for (VariableBase v : _factorGraph.getVariables())
 			((ISolverVariableGibbs)(v.getSolver())).saveAllSamples();		
+	}
+	
+	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
+	public void saveAllScores()
+	{
+		_saveAllScores = true;
+		_scoreArray = new ArrayList<Double>();
+	}
+	
+	// If the score had been saved, return the array of score values
+	public final double[] getAllScores()
+	{
+		if (_saveAllScores)
+		{
+			int length = _scoreArray.size();
+			double[] retval = new double[length];
+			for (int i = 0; i < length; i++)
+				retval[i] = _scoreArray.get(i);
+			return retval;
+		}
+		else
+			return null;
 	}
 	
 	// Set/get the current temperature for all variables in the graph (for tempering)
