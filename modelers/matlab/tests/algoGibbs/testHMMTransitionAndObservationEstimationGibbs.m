@@ -17,7 +17,7 @@
 function testHMMTransitionAndObservationEstimationGibbs()
 
 
-debugPrint = true; %% false;
+debugPrint = false;
 repeatable = true;
 
 dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
