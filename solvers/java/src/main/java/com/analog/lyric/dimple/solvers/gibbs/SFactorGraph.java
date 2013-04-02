@@ -132,6 +132,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
+		
+		if (_scoreArray != null)
+			_scoreArray.clear();
 	}
 	
 
