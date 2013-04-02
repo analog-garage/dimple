@@ -51,7 +51,7 @@ public class FactorFunctionWithConstantTest
 		Factor f5 = fg.addFactor(new FF1(), b[0], b[1], b[2], 0, 0, b[5], b[6], b[7], b[8], b[9]);
 		Factor f6 = fg.addFactor(new FF1(), b[0], b[1], b[2], 0, 0, b[5], b[6], b[7], b[8], 0);
 		
-		fg.initialize();
+		fg.resetMessages();
 		
 		int[] d1 = f1.getDirectedTo();
 		int[] d2 = f2.getDirectedTo();

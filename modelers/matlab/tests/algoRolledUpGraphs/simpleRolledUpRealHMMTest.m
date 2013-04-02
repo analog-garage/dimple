@@ -14,22 +14,19 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%TODO:
-%Add support for discrete variables
-%Add directed support
-
 %function simpleRealHMMTest()
 
 % Graph parameters
-hmmLength = 50;                    % Length of the HMM
+hmmLength = 200;                    % Length of the HMM
 repeatable = false;                  % Make this run repeat all the same random values
+bufferSize = 10;
 
 % Gibbs solver parameters
 numSamples = 10000;                   % Total number of Gibbs samples to run
 proposalStandardDeviation = 0.5;      % Proposal standard deviation for parameter variables
 scansPerSample = 1;                 % Number of scans (one update of all variables) per sample
 burnInScans = 100;                  % Number of burn-in scans before sampling
-bufferSize = 10;
+numRestarts = 0;
 
 if (repeatable)
     seed = 1;
@@ -43,7 +40,7 @@ end
 % Model perameters
 %**************************************************************************
 initialMean = 0;
-initialSigma = 0;
+initialSigma = 20;
 transitionMean = 0;
 transitionSigma = 0.1;
 obsMean = 0;
@@ -67,10 +64,8 @@ o = x + obsNoise;
 % Solve using Gibbs sampling solver
 %**************************************************************************
 setSolver('Gibbs');
+
 fg = FactorGraph();
-fg.Solver.setNumSamples(numSamples);
-fg.Solver.setScansPerSample(scansPerSample);
-fg.Solver.setBurnInScans(burnInScans);
 
 Xo = Real();
 Xi = Real();
@@ -83,16 +78,16 @@ sg = FactorGraph(Xi,Xo,Ob);
 
 % Would have liked to write "Xo = Xi + N" but that doesn't work in a
 % sub-graph since Xo is already defined as a boundary variable
-%sg.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum, Xo, Xi, N);
+%sg.addFactor('Sum', Xo, Xi, N);
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
+
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
 
 fg = FactorGraph();
-X = RealStream();
-O = RealStream();
-
-
-fg.addFactor(sg,bufferSize, X,X.getSlice(2),  O);
+X = RealStream;
+O = RealStream;
+f = fg.addFactor(sg, X,X.getSlice(2),  O);
+f.BufferSize = bufferSize;
 
 % Add observation data
 % This is a hacky way to do it; better when we can set fixed input values
@@ -101,17 +96,9 @@ fg.addFactor(sg,bufferSize, X,X.getSlice(2),  O);
 %    O(i).Domain = [o(i) o(i)];
 %    O(i).Solver.setInitialSampleValue(o(i));
 %end
-ffds = FactorFunctionDataSource();
 
-for i = 1:hmmLength-1
-    ffds.add(com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e-5));
-end
-O.DataSource = ffds;
-
-% Set proposal standard deviation for real variables
-for i = 1:X.Size
-    X.get(i).Solver.setProposalStandardDeviation(proposalStandardDeviation);
-end
+fg.initialize();
+fg.NumSteps = 0;
 
 
 if (repeatable)
@@ -120,33 +107,47 @@ end
 
 % Solve
 disp('Starting Gibbs solver');
-fg.NumSteps = 0;
-fg.initialize();
+fg.Solver.setNumRestarts(numRestarts)
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(burnInScans);
 
-i = 1;
-output = [];
-while 1
-    fg.solve(false);
-    sample = X.get(1).Solver.getBestSample();
-    output(i) = sample;
-    i = i + 1;
-    
-    if fg.hasNext()
-        fg.advance();
-    else
-        break;
-    end
+
+inputIndex = 1;
+outputIndex = 1;
+output = zeros(hmmLength,1);
+
+for j = 1:O.Size
+  O.get(j).Solver.setAndHoldSampleValue(o(inputIndex)); 
+  inputIndex = inputIndex+1;
 end
 
-% Get the estimated transition matrix
-%output = cell2mat(X.invokeSolverMethodWithReturnValue('getBestSample'));
-disp('Gibbs estimate:'); disp(output);
+for i = 1:hmmLength-bufferSize
+    i
+    for j = 1:X.Size
+        %TODO: Need tis?
+       X.get(j).Solver.setProposalStandardDeviation(proposalStandardDeviation);
+ 
+    end
+   fg.solve(false);
+  output(outputIndex) = X.get(1).Solver.getBestSample();
+  outputIndex = outputIndex + 1;
+   
+   fg.advance();
+   O.get(O.Size).Solver.setAndHoldSampleValue(o(inputIndex));
+   inputIndex = inputIndex + 1;
 
-hold off;
-plot(x,'r');
-hold on;
-plot(output,'g');
-plot(o,'b');
+    hold off;
+    plot(x,'r');
+    hold on;
+    plot(output,'g');
+    plot(o,'b');
+    drawnow();
+end
+
+
+
+
+
 
 
 %end

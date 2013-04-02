@@ -25,22 +25,25 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 public class BlastFromThePastFactor extends Factor 
 {
 	
-	private Port _oldVariablePort;
-	private VariableBase _variable;
+	private Port _portForOtherVariable;
+	private VariableBase _variableConnectedToBlast;
 	
-	public BlastFromThePastFactor(int id, VariableBase var, Port oldVariablePort) 
+	public BlastFromThePastFactor(int id, VariableBase varConnectedToBlast, 
+			Port portForOtherVar) 
 	{
-		super(id,((Factor)oldVariablePort.getSibling()).getFactorFunction(),new VariableBase[]{var});
+		super(id,((Factor)portForOtherVar.getSibling()).getFactorFunction(),new VariableBase[]{varConnectedToBlast});
 		
-		_oldVariablePort = oldVariablePort;
-		_variable = var;
+		_portForOtherVariable = portForOtherVar;
+		_variableConnectedToBlast = varConnectedToBlast;
 	}
 
 	public void createSolverObject(ISolverFactorGraph factorGraph) 
 	{
 		_variables = null;
 		_solverFactor = factorGraph.createBlastFromThePast(this);
-		((ISolverBlastFromThePastFactor)_solverFactor).createMessages(_variable,_oldVariablePort);
+		((ISolverBlastFromThePastFactor)_solverFactor).createMessages(
+				_variableConnectedToBlast,
+				_portForOtherVariable);
 	}
 	
 	

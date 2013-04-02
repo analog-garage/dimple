@@ -110,7 +110,7 @@ public class DummyVariable extends SVariableBase
 	}
 
 	@Override
-	public void initializeEdge(int portNum)
+	public void resetEdgeMessages(int portNum)
 	{
 	}
 

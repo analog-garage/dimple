@@ -17,14 +17,15 @@
 %function simpleRealHMMTest()
 
 % Graph parameters
-hmmLength = 100;                    % Length of the HMM
+hmmLength = 50;                    % Length of the HMM
 repeatable = false;                  % Make this run repeat all the same random values
 
 % Gibbs solver parameters
-numSamples = 100;                   % Total number of Gibbs samples to run
+numSamples = 20000;                   % Total number of Gibbs samples to run
 proposalStandardDeviation = 0.5;      % Proposal standard deviation for parameter variables
 scansPerSample = 1;                 % Number of scans (one update of all variables) per sample
 burnInScans = 100;                  % Number of burn-in scans before sampling
+numRestarts = 0;
 
 if (repeatable)
     seed = 1;
@@ -72,11 +73,11 @@ sg = FactorGraph(Xi,Xo,Ob);
 
 % Could have done this using AdditiveNoise factor, but this exersizes some
 % and deterministic factors
-N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
+%N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
 
 % Would have liked to write "Xo = Xi + N" but that doesn't work in a
 % sub-graph since Xo is already defined as a boundary variable
-sg.addFactor(com.analog.lyric.dimple.FactorFunctions.Sum, Xo, Xi, N);
+%sg.addFactor('Sum', Xo, Xi, N);
 %sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
 
 sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
@@ -106,9 +107,9 @@ end
 
 % Solve
 disp('Starting Gibbs solver');
-fg.Solver.setNumRestarts(1)
-fg.Solver.setNumSamples(200);
-fg.Solver.setBurnInUpdates(0);
+fg.Solver.setNumRestarts(numRestarts)
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(burnInScans);
 %fg.Solver.setScansPerSample(scansPerSample);
 fg.solve();
 

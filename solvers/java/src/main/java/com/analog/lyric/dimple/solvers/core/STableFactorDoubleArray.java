@@ -52,7 +52,7 @@ public abstract class STableFactorDoubleArray extends STableFactorBase
 
 
 	@Override
-	public void initializeEdge(int i)
+	public void resetEdgeMessages(int i)
 	{
 		
 	}

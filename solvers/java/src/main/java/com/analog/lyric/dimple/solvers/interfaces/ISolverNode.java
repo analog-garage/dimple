@@ -34,10 +34,10 @@ public interface ISolverNode
 	public void updateEdge(int outPortNum) ;
 	
 	//This method is called before solve.  It can be used to reset messages.
-	public void initialize() ;
+	public void resetMessages() ;
 	
 	//This method is called for every edge during initialize.
-	public void initializeEdge(int portNum);
+	public void resetEdgeMessages(int portNum);
 	
 	//Returns the Factor Graph to which this node belongs.
 	public ISolverFactorGraph getParentGraph();

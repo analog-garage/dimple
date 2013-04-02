@@ -531,7 +531,7 @@ public class PFactorGraphVector extends PFactorVector
     	if (getGraph().isSolverRunning()) 
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-    	getGraph().initialize();
+    	getGraph().resetMessages();
     }
     
 

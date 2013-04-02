@@ -30,7 +30,6 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 	public RealFactorBlastFromThePast(BlastFromThePastFactor f) 
 	{
 		super(f);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
@@ -42,8 +41,8 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 	
 	private void getMessages()
 	{
-		VariableBase vb = (VariableBase)_variablePort.node;
-		int index = _variablePort.index;
+		VariableBase vb = (VariableBase)_portForOtherVar.node;
+		int index = _portForOtherVar.index;
 		Factor f = (Factor)vb.getSiblings().get(index);
 		int numEdges = f.getSiblings().size();
 		_inputMsgs = new ObjectSample[numEdges];
@@ -87,7 +86,7 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 	@Override
 	public double getConditionalPotential(int portIndex)
 	{
-		double result = getPotential();		
+		double result = getPotential();
 		return result;
 	}
 

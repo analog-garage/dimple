@@ -43,8 +43,8 @@ public class TableFactorBlastFromThePast extends SBlastFromThePast implements IS
 	
 	private void getMessages()
 	{
-		_outputMsg = (double[])getVariablePort().node.getSolver().getInputMsg(getVariablePort().index);
-		_inputMsg = (DiscreteSample)getVariablePort().node.getSolver().getOutputMsg(getVariablePort().index);
+		_outputMsg = (double[])getOtherVariablePort().node.getSolver().getInputMsg(getOtherVariablePort().index);
+		_inputMsg = (DiscreteSample)getOtherVariablePort().node.getSolver().getOutputMsg(getOtherVariablePort().index);
 		
 	}
 	

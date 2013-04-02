@@ -54,7 +54,7 @@ public abstract class FiniteFieldFactor extends SFactorBase
 
 
 	@Override
-	public void initializeEdge(int i) 
+	public void resetEdgeMessages(int i) 
 	{
 		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
 		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);

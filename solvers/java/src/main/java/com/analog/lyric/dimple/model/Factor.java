@@ -198,14 +198,14 @@ public class Factor extends FactorBase implements Cloneable
 	public void initialize(int portNum)
 	{
 		if (_solverFactor != null)
-			_solverFactor.initializeEdge(portNum);
+			_solverFactor.resetEdgeMessages(portNum);
 	}
     
 	
-	public void initialize() 
+	public void resetMessages() 
 	{
 		if (_solverFactor != null)
-			_solverFactor.initialize();
+			_solverFactor.resetMessages();
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
 			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}

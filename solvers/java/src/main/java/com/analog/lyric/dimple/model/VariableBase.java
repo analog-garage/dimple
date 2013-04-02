@@ -141,8 +141,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		if (factorGraph != null)
 		{		
 			_solverVariable = factorGraph.createVariable(this);
-			_solverVariable.setInput(_input);
 			_solverVariable.createNonEdgeSpecificState();
+			_solverVariable.setInput(_input);
 		}
 		else
 		{
@@ -188,11 +188,12 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		return _hasFixedValue;
 	}
-	public final void fixValue()
+	
+	protected final void fixValue()
 	{
 		_hasFixedValue = true;
 	}
-	public final void unfixValue()
+	protected final void unfixValue()
 	{
 		_hasFixedValue = false;
 	}
@@ -216,14 +217,14 @@ public abstract class VariableBase extends Node implements Cloneable
 	public void initialize(int portNum)
 	{
 		if (_solverVariable != null)
-			_solverVariable.initializeEdge(portNum);
+			_solverVariable.resetEdgeMessages(portNum);
 	}
     
-    public void initialize() 
+    public void resetMessages() 
     {
 
     	if (_solverVariable != null)
-    		_solverVariable.initialize();
+    		_solverVariable.resetMessages();
     }
     
     public Factor [] getFactors()

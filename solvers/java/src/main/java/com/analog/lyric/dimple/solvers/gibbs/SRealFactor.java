@@ -169,7 +169,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 		//_inputMsgs[portNum] = (ObjectSample)_factor.getVariables().getByIndex(portNum).getSolver().resetOutputMessage(_inputMsgs[portNum]);
 	}

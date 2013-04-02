@@ -157,7 +157,7 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 	}
 	
 	@Override
-	public void initializeEdge(int i) 
+	public void resetEdgeMessages(int i) 
 	{
 		_samplers[i].initialize();
 		_distGenerator[i].initialize();

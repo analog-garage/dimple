@@ -53,7 +53,7 @@ public class SFactorGraph extends SFactorGraphBase
 
 
 	@Override
-	public void initialize() 
+	public void resetMessages() 
 	{
 	}
 

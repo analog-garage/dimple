@@ -84,11 +84,6 @@ public class SFactorGraph extends SFactorGraphBase
 			return false;	
 	}
 
-	@Override
-	public void initialize() 
-	{
-
-	}
 
 	private static Random _rand = new Random();
 

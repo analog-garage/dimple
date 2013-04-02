@@ -35,7 +35,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 
 
 	@Override
-	public void initializeEdge(int i ) 
+	public void resetEdgeMessages(int i ) 
 	{
 		
 	}

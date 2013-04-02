@@ -116,9 +116,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public void initialize() 
+	public void resetMessages() 
 	{
-		super.initialize();
+		super.resetMessages();
 		
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
@@ -132,10 +132,18 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_temper) setTemperature(_initialTemperature);
 	}
 	
+	public void advance()
+	{
+		_minPotential = Double.POSITIVE_INFINITY;
+		_firstSample = true;
+		
+	}
+
 
 	@Override
 	public void solveOneTimeStep() 
 	{		
+		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
 			burnIn();

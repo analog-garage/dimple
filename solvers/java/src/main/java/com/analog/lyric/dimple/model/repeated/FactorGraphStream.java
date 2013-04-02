@@ -216,17 +216,8 @@ public class FactorGraphStream
 		}
 	}
 
-	public void advance(boolean advanceInputs) 
+	public void advance() 
 	{
-		//For each variable stream
-		if (advanceInputs)
-		{
-			for (VariableStreamBase variableStream : _variableStreams)
-			{
-				//TODO: get this working
-				variableStream.advanceState();
-			}
-		}
 	
 		//Deal with parameters
 		//for each parameter

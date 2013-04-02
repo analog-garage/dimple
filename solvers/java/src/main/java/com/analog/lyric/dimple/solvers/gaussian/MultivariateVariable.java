@@ -143,7 +143,7 @@ public class MultivariateVariable extends SVariableBase
 	}
 
 	@Override
-	public void initializeEdge( int i ) 
+	public void resetEdgeMessages( int i ) 
 	{
 		_inputMsgs[i] = (MultivariateMsg)resetInputMessage(_inputMsgs[i]);
 		_outputMsgs[i] = (MultivariateMsg)resetOutputMessage(_outputMsgs[i]);		

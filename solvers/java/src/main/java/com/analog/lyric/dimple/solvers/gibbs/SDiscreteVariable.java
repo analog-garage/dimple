@@ -511,7 +511,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		if (!_holdSampleValue)
@@ -560,9 +560,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	
 
-	public void initialize()
+	public void resetMessages()
 	{
-		super.initialize();
+		super.resetMessages();
 		
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;

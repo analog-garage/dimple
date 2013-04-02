@@ -223,9 +223,9 @@ public class SRealFactor extends SFactorBase
     	_beta = beta;
     }
 
-    public void initialize()  
+    public void resetMessages()  
 	{
-		super.initialize();
+		super.resetMessages();
 
 	}
 
@@ -269,7 +269,7 @@ public class SRealFactor extends SFactorBase
 
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 	}
 

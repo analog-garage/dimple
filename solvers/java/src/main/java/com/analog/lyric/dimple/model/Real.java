@@ -27,7 +27,6 @@ public class Real extends VariableBase
     	super(id, modelerClassName, domain);
     }
 
-    //TODO: do I want to do that?
     public Real(int id, String modelerClassName, RealDomain domain,Object input)
     {
     	super(id, modelerClassName, domain);
@@ -101,7 +100,7 @@ public class Real extends VariableBase
 		fixValue();
 		
     	if (_solverVariable != null)
-    		_solverVariable.initialize();
+    		_solverVariable.resetMessages();
 	}
 	
 	@Override

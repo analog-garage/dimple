@@ -29,8 +29,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
-	protected Port _variablePort;
-	protected Port _newVarPort;
+	protected Port _portForOtherVar;
+	protected Port _portForBlastVar;
 	
 	public SBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -42,9 +42,9 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 		return _factor;
 	}
 	
-	public Port getVariablePort()
+	public Port getOtherVariablePort()
 	{
-		return _variablePort;
+		return _portForOtherVar;
 	}
 	
 	@Override
@@ -71,7 +71,8 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 		throw new DimpleException("not supported");
 	}
 
-	public void createMessages(VariableBase var, Port oldVarPort)
+	@Override
+	public void createMessages(VariableBase varConnectedToBlast, Port portForOtherVar)
 	{
 		
 	    for (int index = 0; index < _factor.getVariables().size(); index++)
@@ -80,8 +81,8 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	    	is.createMessages(this);	    	
 	    }
 	    
-	    _variablePort = oldVarPort;
-	    _newVarPort = new Port(var,var.getPortNum(getModelObject()));
+	    _portForOtherVar = portForOtherVar;
+	    _portForBlastVar = new Port(varConnectedToBlast,varConnectedToBlast.getPortNum(getModelObject()));
 	}
 
 	@Override
@@ -107,12 +108,12 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	}
 
 	@Override
-	public void initialize() 
+	public void resetMessages() 
 	{
 	}
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 		throw new DimpleException("Not implemented");
 	}
@@ -189,7 +190,8 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	@Override
 	public void advance() 
 	{
-		_newVarPort.node.getSolver().moveMessages(_variablePort.node.getSolver(), _newVarPort.index,_variablePort.index);
+		_portForBlastVar.node.getSolver().moveMessages(_portForOtherVar.node.getSolver(), 
+				_portForBlastVar.index,_portForOtherVar.index);
 	}
 
 	

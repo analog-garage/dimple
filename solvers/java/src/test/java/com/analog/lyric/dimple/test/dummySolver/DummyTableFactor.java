@@ -42,7 +42,7 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
-	public void initializeEdge(int portNum)
+	public void resetEdgeMessages(int portNum)
 	{
 	}
 

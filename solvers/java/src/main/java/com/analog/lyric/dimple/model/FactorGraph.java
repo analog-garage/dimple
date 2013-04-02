@@ -181,6 +181,13 @@ public class FactorGraph extends FactorBase
 		_solverFactorGraph = factory.createFactorGraph(this);
 
 	}
+	private void setSolverFactorySubGraphRecursive(IFactorGraphFactory factory)
+	{
+		setSolverFactorySubGraph(factory);
+		for (FactorGraph fg : getNestedGraphs())
+			fg.setSolverFactorySubGraphRecursive(factory);
+
+	}
 
 	public void setSolverFactory(IFactorGraphFactory factory) 
 	{
@@ -191,7 +198,7 @@ public class FactorGraph extends FactorBase
 			var.createSolverObject(_solverFactorGraph);
 		
 		for (FactorGraph fg : getNestedGraphs())
-			fg.setSolverFactorySubGraph(factory);
+			fg.setSolverFactorySubGraphRecursive(factory);
 		
 		for (Factor f : getNonGraphFactorsFlat())
 			f.createSolverObject(_solverFactorGraph);
@@ -281,7 +288,9 @@ public class FactorGraph extends FactorBase
 		for (VariableStreamBase vs : _variableStreams)
 			vs.advanceState();
 		for (FactorGraphStream s : _factorGraphStreams)
-			s.advance(false);
+			s.advance();
+		
+		getSolver().advance();
 		
 	}
 	
@@ -1083,22 +1092,22 @@ public class FactorGraph extends FactorBase
 			f.getSolver().createMessages();
 	}
 	
-	public void initialize() 
+	public void resetMessages() 
 	{
 		for (VariableBase v : _ownedVariables)
-			v.initialize();
+			v.resetMessages();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
-				v.initialize();
+				v.resetMessages();
 		
 		for (Factor f : getNonGraphFactorsTop())
-			f.initialize();
+			f.resetMessages();
 		for (FactorGraph g : getNestedGraphs())
-			g.initialize();
+			g.resetMessages();
 			
 
 		if (_solverFactorGraph != null)
-			_solverFactorGraph.initialize();
+			_solverFactorGraph.resetMessages();
 	}
 
 	private void checkSolverIsSet() 

@@ -101,9 +101,13 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			// Accept or reject
 			double rejectionThreshold = Math.exp(LPrevious - LProposed);	// Note, no Hastings factor if Gaussian proposal distribution
 			if (GibbsSolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+			{
 				setCurrentSample(proposalValue);		// Accept
+			}
 			else
+			{
 				setCurrentSample(previousSampleValue);	// Reject
+			}
 		}
 	}
 	
@@ -327,7 +331,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 	}
 
@@ -352,22 +356,22 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
 	{
-		// TODO: Why is this commented out?
-		//SDiscreteVariable ovar = ((SDiscreteVariable)other);
-		//_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
+		
 	}
 	
 
-	public void initialize()
+	public void resetMessages()
 	{
-		super.initialize();
+		super.resetMessages();
+
 
 		double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 		if (!_holdSampleValue)
 			setCurrentSample(initialSampleValue);
 		_bestSampleValue = _sampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
-		
+
+
 		_isDeterministicDepdentent = isDeterministicDependent();
 		_hasDeterministicDependents = hasDeterministicDependents();
 	}
@@ -380,6 +384,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	
 	public void createNonEdgeSpecificState()
 	{
+
 		_outputMsg = createDefaultMessage();
 	}
 	

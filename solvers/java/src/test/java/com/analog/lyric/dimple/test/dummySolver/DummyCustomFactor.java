@@ -41,7 +41,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void initialize() 
+	public void resetMessages() 
 	{
 	}
 
@@ -51,7 +51,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void initializeEdge(int portNum)
+	public void resetEdgeMessages(int portNum)
 	{
 	}
 

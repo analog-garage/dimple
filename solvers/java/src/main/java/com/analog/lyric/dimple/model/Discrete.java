@@ -164,7 +164,7 @@ public class Discrete extends VariableBase
 		fixValue();
 		
     	if (_solverVariable != null)
-    		_solverVariable.initialize();
+    		_solverVariable.resetMessages();
 	}
 	public void setFixedValue(Object fixedValue)
 	{
@@ -181,5 +181,4 @@ public class Discrete extends VariableBase
 		_fixedValueIndex = ((Discrete)other)._fixedValueIndex;
 	}
 
-    
 }

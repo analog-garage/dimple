@@ -64,7 +64,7 @@ public class DummyFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public void initialize() 
+	public void resetMessages() 
 	{
 
 	}

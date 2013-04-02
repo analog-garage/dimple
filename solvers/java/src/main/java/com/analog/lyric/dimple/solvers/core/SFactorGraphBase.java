@@ -86,7 +86,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return false;
 	}
 
-	public void initialize() 
+	public void resetMessages() 
 	{
 
 	}
@@ -148,7 +148,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void prepareForFirstSolve(boolean initialize)
 	{
 		if (initialize)
-			_factorGraph.initialize();
+			_factorGraph.resetMessages();
 	}
 	
 	
@@ -520,7 +520,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 	
 	@Override
-	public void initializeEdge(int portNum)
+	public void resetEdgeMessages(int portNum)
 	{
 		throw new DimpleException("Not supported");
 	}
@@ -538,6 +538,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void setInputMsg(int portIndex, Object obj) {
 		throw new DimpleException("Not supported by " + this);
+	}
+	
+	public void advance()
+	{
+		
 	}
 	
 }

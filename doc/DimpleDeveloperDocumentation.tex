@@ -475,6 +475,257 @@ The previous section talks a bit about the scheduler.  The following is a class 
 
 \includegraphics{images/Scheduler.png}
 
+\subsubsection{Initializing solver state}
+
+To understand how solver state is initialized and maintained, we look at several use cases.
+
+\paragraph{User Sets Solver}
+
+When the user sets the solver on the Factor Graph.  The factor graph creates solver objects and does a two way attachment from model to solver and vice versa.  When the variable solver objects are created, model properties are sent down to the variable solver objects.  
+
+Factor solver objects are created after all variable solver objects have been created.  As each factor solver object is created, it is told to create any needed messages.
+
+The following is pseudo code describing this process:
+
+\begin{lstlisting}
+fg.setSolverFactory(IFactorGraphFactory factory)
+	setSolverFactorySubGraph(factory)
+		_solverFactory = facotry;
+		_solverFactorGraph = factory.createFactorGraph(this)
+			Instantiates the Solver Factor Graph
+	for each variable
+		var.createSolverObject(_solverFactorGraph)
+			_solverVariable = factorGraph.createVariable(this);
+				Decide what type of variable to create
+				SomeVariableConstructor(var)
+					_model = var;
+					_var = var
+			_solverVariable.createNonEdgeSpecificState()
+				Create any state that is not specific to edges
+			_solverVariable.setInput(_input)
+				Tell the solver what the input is at this point in time
+	for each nested graph
+		ng.setSolverFactorySubGraphRecursive(factory)
+			setSolverFactorySubGraph
+			for each nested graph
+				setSolverFactorySubGraphRecursive(factory)
+	for each non graph factor
+		f.createSolverObject(_solverFactorGraph)
+			_solverFactor = factorGraph.createFactor(this)
+				decide what kind of factor to create
+				SomeFactorContructor()
+					_factor = factor
+					_model = factor
+			_solverFactor.createMessages()
+				//The following is for the sum product solver
+				//more generally, make sure any messages needed are created
+				initialize pointers to messages
+				for each variable connected to the factor
+					messages = varaibleSolver.createMessages(this);
+						for the given factor, create the appropriate messages
+						pass back the input and output messages
+					cache the messages
+		
+\end{lstlisting}
+
+\paragraph{User calls addFactor}
+
+During this use case, the factor model object is creates.  Variables are added to the graph if they're not already part of the graph.  Variable solver objects are created and their non edge specific state is created.  Factor solver objects are created and they are told to create messages for each edge.
+
+\begin{lstlisting}
+fg.addFactor(factorFunction, Object ... vars)
+	//For simplicity, let's assume there are no constants
+	addFactorNoConstants
+		for each variable
+			setVariableSolver(v)
+				if the solver has been set on this graph
+					if the variable does not belong to this graph
+						v.createSolverObject(_solverFactorGraph)
+							This is documented in the previous use case
+							In summary
+								the solver object is created
+								the object is told to create non edge specific state
+								inputs and other model properties are passed down							
+		if allDomainsAreDiscrete
+			create new Factor
+				assign factor function
+				for each variable
+					addVariable
+						connects the variable to the factor and vice versa
+		addFactor(factor,vars)
+			for each variable
+				make sure the variable is added to the list of variables of the graph
+			set the factor's parent graph to this
+			add the factor to this graphs list of factors.
+			increment the versionId so that scheduling knows to recompute
+		if the solver has been set on this graph
+			f.createSolverObject(_solverFactorGraph)
+				This is documented in the previous use case
+				In Summary
+					creates the solver object
+					tells the solver object to create new messages
+	
+\end{lstlisting}
+
+
+\paragraph{User changes inputs or other model property}
+
+When the user sets a property on the model, the model saves that value but also passes it down tho the solver if the solver object exists.  If the solver is changed later, the model object will set that property on the solver after the new solver object is created.
+
+TODO: How do we deal with FixedInput?  When new factors are added?  When the solver changes?
+
+\begin{lstlisting}
+var.setInputObject(value)
+	_input = value
+	if solver is set
+		solver.setInput
+			solver should do what it needs to do with inputs
+\end{lstlisting}
+
+\paragraph{User calls initialize}
+
+Initialize is used to reset the messages in the solver.  This is usually invoked when solve is called so that the solver's original state is identical for each solve.
+
+\begin{lstlisting}
+fg.initialize()
+	for each owned variable
+		v.resetMessages()
+			if solver exists, solver.resetMessages()
+				for each edge
+					resetEdgeMessages(edgeIndex)
+						resetInputMessage 
+						resetOutputMessage									
+		if this is the root graph
+			for each boundary variable
+				v.resetMessages()
+					same as before
+		for each non graph factor at this level (don't descend)
+			f.resetMessages()
+				for each edge
+					resetEdgeMessages
+						NOP // for sum product
+		for each nested graph
+			g.initialize()
+				//recursively initialize
+			
+		_solverFactorGraph.resetMessages()
+	
+\end{lstlisting}
+
+\paragraph{User calls solve}
+
+Solving ensures the solver is set, resets the messages if the user requests this, and runs through the schedule to update nodes in the sequence specified by the scheduler.  In addition, if this is a rolled up graph, it will advance messages, inputs,  save outputs, and recreate messages for the newest variables and factors (see the advance use case).
+
+\begin{lstlisting}
+fg.solve(init)
+	checkSolverIsSet
+		throw an error if it isn't
+	_solverFactorGraph.solve(init)
+		prepareForFirstSolve(init)
+			if initialize
+				_factorGraph.initialize()
+					See initialize use case
+					Resets all messages
+		solveOneTimeStep
+			iterate(numIterations)
+				//ignore multithreading for now
+				for each iteration
+					update()
+						for each entry in the schedule
+							entry.update()
+								This will result in updating edges or nodes
+								for variables, factors and nested graphs				
+		while the model has more data (assuming rolled up graphs)
+			if the number of steps has been reached
+				break
+			getModel().advance()
+				See advance use case
+			solveOneTimeStep
+				Same as before
+					
+		
+
+\end{lstlisting}
+
+\paragraph{advance}
+
+Advance attempts to move all messages down the chain.  New state is recreated for the new variables and factors.  BlastFromThePast factors store messages from factors that disappear.  Input streams are applied.  Output streams get data from variables that fall off the ends.
+
+\begin{lstlisting}
+
+fg.advance()
+	for each variable stream
+		vs.advanceState()
+			if there is a data sink
+				//TODO: make this generic for other properties
+				retrieve the belief from the first variable
+				store it in the sink
+			for each variable (not including the last)
+				moveInputs on the modeler(from the next guy)
+				//TODO Fixed input on the modeler?
+				solver.moveNonEdgeSpecificState(from the next guy)
+			for the last variable
+				svar.createNonEdgeSpecificState()
+					This is also called whenever a new solver object is created
+					This gives the solver a chance to create any non edge specific
+					stuff.
+			if there is a data source
+				on the last variable
+					var.setInputObject(dataSource.next())
+			else
+				on the last var
+					var.setInputObject(null)
+			//TODO: what about Fixed input?			
+	for each factor graph stream
+		fgs.advance()
+			for each parameter blast from the past handler
+				handler.advance()
+					for each blast from the past
+						bfp.advance()
+							for the var connected to the blast from the past
+								var.moveMessages(otherPort)
+									Move messages is responsible for moving
+									messages from one node to this one.
+			for each blast from the past chain
+				for each blast from the past
+					bfp.advance()
+						same as above
+			for each graph in the list of nested graphs
+				nestedGraph.solver.moveMessages(next graph in the chain)
+					for each factor
+						sfactor.moveMesages(corresponding factor in other graph)
+							for each edge
+								moveMessages(other,edgeIndex,edgeIndex)
+									Responsible for moving factor messages
+								get connected variable
+									svar.moveMessages(other var)
+										responsible for moving var messages
+					for each variable
+						svar.moveNonEdgeSpecificState(corresponding var)			
+							Responsible for moving all non edge specific state
+			for the last nested graph
+				graph.recreateMessages()
+					for each variable
+						svar.createNonEdgeSpecificState
+							already documented
+							Responsible for creating initial state
+					for each factor
+						sfactor.createMessages()
+							//The following is for the sum product solver
+							//more generally, 
+							    make sure any messages needed are created
+							initialize pointers to messages
+							for each variable connected to the factor
+								messages = varaibleSolver.createMessages(this);
+								for the given factor, create the appropriate messages
+								pass back the input and output messages
+							cache the messages
+			
+	_solver.advance()
+		Give the solver the opportunity to update any state when advance occurs.
+		The gibbs solver uses this opportunity to reset its best sample index
+
+\end{lstlisting}
 
 \subsubsection{C++ Wrapper}
 

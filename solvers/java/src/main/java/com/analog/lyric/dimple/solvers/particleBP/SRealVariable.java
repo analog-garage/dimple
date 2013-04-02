@@ -451,7 +451,7 @@ public class SRealVariable extends SRealVariableBase
 
 
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		_outMsgArray[portNum] = (ParticleBPSolverVariableToFactorMessage)resetOutputMessage(_outMsgArray[portNum]);

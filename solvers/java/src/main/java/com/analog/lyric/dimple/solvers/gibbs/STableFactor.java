@@ -179,14 +179,14 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 
 	@Override
-	public void initialize()
+	public void resetMessages()
 	{
-		super.initialize();
+		super.resetMessages();
 		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
 	}
 	
 	@Override
-	public void initializeEdge(int portNum) 
+	public void resetEdgeMessages(int portNum) 
 	{
 
 	}
