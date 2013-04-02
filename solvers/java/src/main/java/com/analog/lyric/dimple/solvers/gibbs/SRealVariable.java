@@ -34,7 +34,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 {
 	protected Real _varReal;
 	protected ObjectSample _outputMsg;
-	protected double _sampleValue;
+	protected double _sampleValue = 0;
 	protected double _initialSampleValue = 0;
 	protected FactorFunction _input;
 	protected RealDomain _domain;
@@ -166,15 +166,30 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			_input = (FactorFunction)input;
 	}
 	
+	@Override
 	public final double getScore()
 	{
 		if (_var.hasFixedValue())
 			return 0;
+		else if (_input == null)
+			return 0;
 		else if (_guessWasSet)
 			return _input.evalEnergy(_guessValue);
 		else
-			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
+			return _input.evalEnergy(_sampleValue);
 	}
+	
+	@Override
+	public Object getGuess()
+	{
+		if (_guessWasSet)
+			return Double.valueOf(_guessValue);
+		else if (_var.hasFixedValue())
+			return Double.valueOf(_varReal.getFixedValue());
+		else
+			return Double.valueOf(_sampleValue);
+	}
+
 
 	public final void saveAllSamples()
 	{
