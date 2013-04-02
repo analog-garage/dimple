@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * Rayleigh distribution. The variables in the argument list are ordered as follows:
  * 
  * 1) Sigma parameter (non-negative)
- * 3) Rayleigh distributed real variable
+ * 2) Rayleigh distributed real variable
  * 
  * The sigma parameter may optionally be specified as constant in the constructor.
  * In this case, it is not included in the list of arguments.
