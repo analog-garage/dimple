@@ -100,7 +100,7 @@ public class Real extends VariableBase
 		fixValue();
 		
     	if (_solverVariable != null)
-    		_solverVariable.resetMessages();
+    		_solverVariable.initialize();
 	}
 	
 	@Override

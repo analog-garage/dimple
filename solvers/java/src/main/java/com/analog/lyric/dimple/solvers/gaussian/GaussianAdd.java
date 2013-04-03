@@ -76,7 +76,7 @@ public class GaussianAdd extends GaussianFactorBase
 
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
 		
 	}

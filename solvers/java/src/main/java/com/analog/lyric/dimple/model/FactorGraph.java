@@ -1092,22 +1092,22 @@ public class FactorGraph extends FactorBase
 			f.getSolver().createMessages();
 	}
 	
-	public void resetMessages() 
+	public void initialize() 
 	{
 		for (VariableBase v : _ownedVariables)
-			v.resetMessages();
+			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
-				v.resetMessages();
+				v.initialize();
 		
 		for (Factor f : getNonGraphFactorsTop())
-			f.resetMessages();
+			f.initialize();
 		for (FactorGraph g : getNestedGraphs())
-			g.resetMessages();
+			g.initialize();
 			
 
 		if (_solverFactorGraph != null)
-			_solverFactorGraph.resetMessages();
+			_solverFactorGraph.initialize();
 	}
 
 	private void checkSolverIsSet() 

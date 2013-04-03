@@ -360,9 +360,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 
-	public void resetMessages()
+	public void initialize()
 	{
-		super.resetMessages();
+		super.initialize();
 
 
 		double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;

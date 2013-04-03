@@ -220,11 +220,11 @@ public abstract class VariableBase extends Node implements Cloneable
 			_solverVariable.resetEdgeMessages(portNum);
 	}
     
-    public void resetMessages() 
+    public void initialize() 
     {
 
     	if (_solverVariable != null)
-    		_solverVariable.resetMessages();
+    		_solverVariable.initialize();
     }
     
     public Factor [] getFactors()

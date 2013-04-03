@@ -34,7 +34,7 @@ public interface ISolverNode
 	public void updateEdge(int outPortNum) ;
 	
 	//This method is called before solve.  It can be used to reset messages.
-	public void resetMessages() ;
+	public void initialize() ;
 	
 	//This method is called for every edge during initialize.
 	public void resetEdgeMessages(int portNum);

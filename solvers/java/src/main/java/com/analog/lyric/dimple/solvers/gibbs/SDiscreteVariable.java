@@ -560,9 +560,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	
 
-	public void resetMessages()
+	public void initialize()
 	{
-		super.resetMessages();
+		super.initialize();
 		
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;

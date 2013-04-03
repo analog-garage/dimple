@@ -202,10 +202,10 @@ public class Factor extends FactorBase implements Cloneable
 	}
     
 	
-	public void resetMessages() 
+	public void initialize() 
 	{
 		if (_solverFactor != null)
-			_solverFactor.resetMessages();
+			_solverFactor.initialize();
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
 			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}

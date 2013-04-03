@@ -108,7 +108,7 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	}
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
 	}
 

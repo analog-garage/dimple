@@ -90,9 +90,9 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
-		super.resetMessages();
+		super.initialize();
 //		_minPotential = Double.MAX_VALUE;
 		if (_temper) setTemperature(_initialTemperature);
 	}

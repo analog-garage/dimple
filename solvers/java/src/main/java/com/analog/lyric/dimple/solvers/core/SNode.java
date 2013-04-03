@@ -37,7 +37,7 @@ public abstract class SNode implements ISolverNode
 	
 	
 	@Override
-	public void resetMessages()
+	public void initialize()
 	{
 		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
 			resetEdgeMessages(i);

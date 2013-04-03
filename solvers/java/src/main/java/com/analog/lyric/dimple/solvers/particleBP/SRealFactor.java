@@ -223,9 +223,9 @@ public class SRealFactor extends SFactorBase
     	_beta = beta;
     }
 
-    public void resetMessages()  
+    public void initialize()  
 	{
-		super.resetMessages();
+		super.initialize();
 
 	}
 

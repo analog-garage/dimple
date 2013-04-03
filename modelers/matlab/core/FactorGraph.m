@@ -121,7 +121,6 @@ classdef FactorGraph < Node
         end
         
         function streams = get.FactorGraphStreams(obj)
-            %TODO: wrap them
             streams = cell(obj.VectorObject.getFactorGraphStreams());
             
             for i = 1:length(streams)

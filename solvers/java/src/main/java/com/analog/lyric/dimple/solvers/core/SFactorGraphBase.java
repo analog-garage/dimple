@@ -86,7 +86,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return false;
 	}
 
-	public void resetMessages() 
+	public void initialize() 
 	{
 
 	}
@@ -148,7 +148,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void prepareForFirstSolve(boolean initialize)
 	{
 		if (initialize)
-			_factorGraph.resetMessages();
+			_factorGraph.initialize();
 	}
 	
 	

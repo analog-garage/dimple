@@ -313,7 +313,7 @@ public class RealVariableParticleBPTest
 		sb.setInitialParticleRange(0, 7);
 		
 		
-		graph.resetMessages();
+		graph.initialize();
 				
 		double[] aParticles = sa.getParticleValues();
 		double[] bParticles = sb.getParticleValues();

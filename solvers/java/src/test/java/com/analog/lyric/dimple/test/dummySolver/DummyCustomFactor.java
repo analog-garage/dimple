@@ -41,7 +41,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
 	}
 

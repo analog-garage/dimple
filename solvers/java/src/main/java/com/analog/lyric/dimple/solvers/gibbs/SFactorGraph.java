@@ -116,9 +116,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
-		super.resetMessages();
+		super.initialize();
 		
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();

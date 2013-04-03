@@ -16,7 +16,7 @@
 
 classdef Bit < DiscreteVariableBase
     methods
-        function obj = Bit(varargin)
+        function obj = Bit(varargin)            
             obj@DiscreteVariableBase([0 1],varargin{:});
         end
     end

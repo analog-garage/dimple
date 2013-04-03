@@ -164,7 +164,7 @@ public class FiniteFieldConstMult extends FiniteFieldFactor
 	
 
 	@Override
-	public void resetMessages() 
+	public void initialize() 
 	{
 		
 	}

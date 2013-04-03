@@ -33,9 +33,9 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	}
 
 	@Override
-	public void resetMessages()
+	public void initialize()
 	{
-		super.resetMessages();
+		super.initialize();
 		_guessWasSet = false;
 	}
 	
