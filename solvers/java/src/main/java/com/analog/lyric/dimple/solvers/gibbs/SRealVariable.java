@@ -27,6 +27,9 @@ import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -38,10 +41,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	protected double _initialSampleValue = 0;
 	protected FactorFunction _input;
 	protected RealDomain _domain;
+	protected double _proposalStdDev = 1;
+	protected IProposalKernel _proposalKernel = new DefaultProposalKernel();
 	protected ArrayList<Double> _sampleArray;
 	protected double _bestSampleValue;
 	protected double _beta = 1;
-	protected double _proposalStdDev = 1;
 	protected boolean _holdSampleValue = false;
 	protected boolean _isDeterministicDepdentent = false;
 	protected boolean _hasDeterministicDependents = false;
@@ -80,8 +84,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 
-		double proposalDelta = _proposalStdDev * GibbsSolverRandomGenerator.rand.nextGaussian();
-		double proposalValue = _sampleValue + proposalDelta;
+		double proposalValue = (Double)_proposalKernel.next(_sampleValue);
 		double previousSampleValue = _sampleValue;
 
 		// If outside the bounds, then reject
@@ -100,7 +103,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 			// Accept or reject
 			double rejectionThreshold = Math.exp(LPrevious - LProposed);	// Note, no Hastings factor if Gaussian proposal distribution
-			if (GibbsSolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+			if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 			{
 				setCurrentSample(proposalValue);		// Accept
 			}
@@ -148,7 +151,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
 		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-			setCurrentSample(GibbsSolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+			setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 	}
 
 	public void updateBelief()
@@ -321,8 +324,35 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 
-	public final void setProposalStandardDeviation(double stdDev) {_proposalStdDev = stdDev;}
-	public final double getProposalStandardDeviation() {return _proposalStdDev;}
+	// FIXME: Generalize to proposal kernels that take different parameters
+	public final void setProposalStandardDeviation(double stdDev)
+	{
+		_proposalStdDev = stdDev;
+		_proposalKernel.setParameters(stdDev);
+	}
+	public final double getProposalStandardDeviation()
+	{
+		return _proposalStdDev;
+	}
+	
+	// Set the proposal kernel parameters more generally
+	public final void setProposalKernelParameters(Object... parameters)
+	{
+		_proposalKernel.setParameters(parameters);
+	}
+	
+	// Override the default proposal kernel
+	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
+	{
+		_proposalKernel = proposalKernel;
+	}
+	public final void setProposalKernel(String proposalKernelName) throws Exception		// Name of proposal kernel
+	{
+		String fullQualifiedName = "com.analog.lyric.dimple.solvers.core.proposalKernels." + proposalKernelName; 
+		_proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+	}
+
+	
 
 	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
 	public final double getInitialSampleValue() {return _initialSampleValue;}

@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -383,7 +384,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     
 	private final int generateSample(double[] energy, double minEnergy)
 	{
-		RandomGenerator rand = GibbsSolverRandomGenerator.rand;
+		RandomGenerator rand = SolverRandomGenerator.rand;
 		int length = energy.length;
 		int sampleIndex;
 

@@ -31,7 +31,7 @@ function testBasic()
 
     %Create the factor graph.
     fg = FactorGraph();
-    fg.Solver.setSeed(0);
+    fg.Solver.setSeed(6);
     
     %specify the number of particles per message
     fg.Solver.setNumParticles(30);

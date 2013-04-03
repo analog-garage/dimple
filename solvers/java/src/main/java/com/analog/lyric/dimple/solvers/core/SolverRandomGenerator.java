@@ -14,11 +14,12 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.particleBP;
+package com.analog.lyric.dimple.solvers.core;
 
-import java.util.Random;
+import org.apache.commons.math.random.MersenneTwister;
+import org.apache.commons.math.random.RandomGenerator;
 
-public class ParticleBPSolverRandomGenerator
+public class SolverRandomGenerator
 {
-	public static Random rand = new Random();
+	public static final RandomGenerator rand = new MersenneTwister();
 }
