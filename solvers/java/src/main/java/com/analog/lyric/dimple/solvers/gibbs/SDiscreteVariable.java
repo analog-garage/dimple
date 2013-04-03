@@ -57,7 +57,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
-		
 	}
 
 
@@ -209,16 +208,27 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			for (int i = 0; i < vals.length; i++)
 				_input[i] = -Math.log(vals[i]);
 		}
+		
+		if (hasFixed)
+		{
+			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
+		}
 	}
 	
 	@Override
 	public void postAddFactor(Factor f)
 	{
-		
-//		if (_var.hasFixedValue())
-//		{
-//			setCurrentSample((Double)_var.getFixedValueObject());
-//		}
+		_isDeterministicDependent = isDeterministicDependent();
+		_hasDeterministicDependents = hasDeterministicDependents();
+
+		if (_var.hasFixedValue())
+		{
+			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
+		}
+		else
+		{
+			setCurrentSampleIndex(_sampleIndex);
+		}
 		
 	}
 
@@ -584,8 +594,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		for (int i = 0; i < messageLength; i++) 
 			_beliefHistogram[i] = 0;
 		
-		_isDeterministicDependent = isDeterministicDependent();
-		_hasDeterministicDependents = hasDeterministicDependents();
 	}
 
 	

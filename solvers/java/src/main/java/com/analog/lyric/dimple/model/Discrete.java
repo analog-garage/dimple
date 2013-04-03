@@ -168,12 +168,8 @@ public class Discrete extends VariableBase
 		input[fixedValueIndex] = 1;
 		setInput(input);
 		
-		// Fix the value
-		_fixedValue = fixedValueIndex;
-		fixValue();
+		setFixedValueObject(fixedValueIndex,true);
 		
-    	if (_solverVariable != null)
-    		_solverVariable.initialize();
 	}
 	public void setFixedValue(Object fixedValue)
 	{

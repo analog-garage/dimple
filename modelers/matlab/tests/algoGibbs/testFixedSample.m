@@ -15,68 +15,75 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testFixedSample()
+    const1 = @Real;
+    const2 = @() Discrete(1:10);
+    consts = {const2,const1};
 
-    b = Real();
-    c = Real();
-    fg = FactorGraph();
-    fg.Solver = 'gibbs';
-    a = b+c;
-    b.FixedValue = 2;
-    c.FixedValue = 3;
-    assertEqual(a.Solver.getCurrentSample(),5);
+    for i = 1:2
+        const = consts{i};
+        
+        b = const();
+        c = const();
+        fg = FactorGraph();
+        fg.Solver = 'gibbs';
+        a = b+c;
+        b.FixedValue = 2;
+        c.FixedValue = 3;
+        assertEqual(a.Solver.getCurrentSample(),5);
 
 
-    b = Real();
-    c = Real();
-    fg = FactorGraph();
-    fg.Solver = 'gibbs';
-    b.FixedValue = 2;
-    c.FixedValue = 3;
-    a = b+c;
-    assertEqual(a.Solver.getCurrentSample(),5);
+        b = const();
+        c = const();
+        fg = FactorGraph();
+        fg.Solver = 'gibbs';
+        b.FixedValue = 2;
+        c.FixedValue = 3;
+        a = b+c;
+        assertEqual(a.Solver.getCurrentSample(),5);
+
+
+
+        b = const();
+        c = const();
+        fg = FactorGraph();
+        fg.Solver = 'gibbs';
+        a = b+c;
+        b.FixedValue = 2;
+        c.FixedValue = 3;
+        fg.Solver = 'gibbs';
+        assertEqual(a.Solver.getCurrentSample(),5);
+
+        
+        a = const();
+        b = const();
+        fg = FactorGraph();
+        fg.Solver = 'gibbs';
+        c = a+b;
+        a.FixedValue = 2;
+        b.FixedValue = 3;
+        g = const();
+        g.FixedValue = 3;
+        h = const();
+        h.FixedValue = 3;
+        d = g+h;
+        e = c+d;
+        assertEqual(e.Solver.getCurrentSample(),11);
+        
+        a = const();
+        b = const();
+        fg = FactorGraph();
+        fg.Solver = 'gibbs';
+        c = a+b;
+        a.FixedValue = 2;
+        b.FixedValue = 3;
+        g = const();
+        g.FixedValue = 3;
+        h = const();
+        h.FixedValue = 3;
+        d = g+h;
+        e = c+d;
+        fg.Solver = 'gibbs';
+        assertEqual(e.Solver.getCurrentSample(),11);
+    end
     
-
-    a = Real();
-    b = Real();
-    fg = FactorGraph();
-    fg.Solver = 'gibbs';
-    c = a+b;
-    a.FixedValue = 2;
-    b.FixedValue = 3;
-    g = Real();
-    g.FixedValue = 3;
-    h = Real();
-    h.FixedValue = 3;
-    d = g+h;
-    e = c+d;
-    assertEqual(e.Solver.getCurrentSample(),11);
-    
-    b = Real();
-    c = Real();
-    fg = FactorGraph();
-    fg.Solver = 'gibbs';
-    a = b+c;
-    b.FixedValue = 2;
-    c.FixedValue = 3;
-    fg.Solver = 'gibbs';
-    assertEqual(a.Solver.getCurrentSample(),5);
-    
-    a = Real();
-    b = Real();
-    fg = FactorGraph();
-    fg.Solver = 'gibbs';
-    c = a+b;
-    a.FixedValue = 2;
-    b.FixedValue = 3;
-    g = Real();
-    g.FixedValue = 3;
-    h = Real();
-    h.FixedValue = 3;
-    d = g+h;
-    e = c+d;
-    fg.Solver = 'gibbs';
-    assertEqual(e.Solver.getCurrentSample(),11);
-    
-
-    %TODO: test for discrete
 end

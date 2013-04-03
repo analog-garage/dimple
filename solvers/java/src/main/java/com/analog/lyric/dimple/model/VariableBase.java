@@ -187,8 +187,13 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		return _fixedValue;
 	}
-	
+
 	public void setFixedValueObject(Object value)
+	{
+		setFixedValueObject(value,false);
+	}
+	
+	protected void setFixedValueObject(Object value,boolean leaveInput)
 	{
 		_hasFixedValue = true;
 		_input = null;
@@ -219,7 +224,6 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		_hasFixedValue = false;
 	}
-
 
     
     public String getModelerClassName()
