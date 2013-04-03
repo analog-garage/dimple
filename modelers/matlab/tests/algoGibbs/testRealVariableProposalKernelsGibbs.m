@@ -32,7 +32,7 @@ function test1(debugPrint,repeatable)
 
 % Test 1 - replace kernel with circular kernel
 
-numSamples = 100000;
+numSamples = 10000;
 updatesPerSample = 10;
 burnInUpdates = 1000;
 
@@ -60,8 +60,7 @@ assert(min(as) < -pi);
 
 % Try with circular kernel, values should never stray past +/-pi
 
-kernel = com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
-a.Solver.setProposalKernel(kernel);
+a.Solver.setProposalKernel('CircularNormalProposalKernel');
 a.Solver.setProposalKernelParameters(1);
 
 fg.Solver.saveAllSamples();
@@ -75,8 +74,7 @@ assert(min(as) >= -pi);
 
 % Try with circular kernel with different bounds, values should never stray past +/-pi
 
-kernel = com.analog.lyric.dimple.solvers.core.proposalKernels.CircularNormalProposalKernel;
-a.Solver.setProposalKernel(kernel);
+a.Solver.setProposalKernel('CircularNormalProposalKernel');
 a.Solver.setProposalKernelParameters({1, -14, -2});
 
 fg.Solver.saveAllSamples();

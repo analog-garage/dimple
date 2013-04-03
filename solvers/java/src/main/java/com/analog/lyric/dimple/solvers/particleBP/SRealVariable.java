@@ -406,9 +406,14 @@ public class SRealVariable extends SRealVariableBase
 	}
 	
 	// Override the default proposal kernel
-	public final void setProposalKernel(IProposalKernel proposalKernel)
+	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		_proposalKernel = proposalKernel;
+	}
+	public final void setProposalKernel(String proposalKernelName) throws Exception		// Name of proposal kernel
+	{
+		String fullQualifiedName = "com.analog.lyric.dimple.solvers.core.proposalKernels." + proposalKernelName; 
+		_proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
 	}
 
 

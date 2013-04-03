@@ -26,8 +26,8 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -308,10 +308,16 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 	// Override the default proposal kernel
-	public final void setProposalKernel(IProposalKernel proposalKernel)
+	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		_proposalKernel = proposalKernel;
 	}
+	public final void setProposalKernel(String proposalKernelName) throws Exception		// Name of proposal kernel
+	{
+		String fullQualifiedName = "com.analog.lyric.dimple.solvers.core.proposalKernels." + proposalKernelName; 
+		_proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+	}
+
 	
 
 	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
