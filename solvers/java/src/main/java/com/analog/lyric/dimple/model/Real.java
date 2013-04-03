@@ -19,9 +19,6 @@ package com.analog.lyric.dimple.model;
 
 public class Real extends VariableBase
 {
-    protected double _fixedValue = 0;
-
-
     public Real(int id, String modelerClassName, RealDomain domain)
     {
     	super(id, modelerClassName, domain);
@@ -59,7 +56,7 @@ public class Real extends VariableBase
 		super(id,modelerClassName,domain);
 		//super(id, modelerClassName);
 		//_domain = domain;
-		_input = input;
+		setInputObject(input);
 
 	}
 	
@@ -84,30 +81,20 @@ public class Real extends VariableBase
 	// Fix the variable to a specific value
 	public final double getFixedValue()
 	{
-		return _fixedValue;
+		Object tmp = getFixedValueObject();
+		if (tmp == null)
+			throw new DimpleException("Fixed Value is not set");
+		else
+			return (Double)tmp;
 	}
+	
 	public void setFixedValue(double fixedValue) 
 	{
 		// Verify that the fixed value is in the domain of the variable
 		if (!((RealDomain)getDomain()).inDomain(fixedValue))
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
-		
-		// Remove any existing input
-		_input = null;
-		
-		// Set the fixed value
-		_fixedValue = fixedValue;
-		fixValue();
-		
-    	if (_solverVariable != null)
-    		_solverVariable.initialize();
-	}
 	
-	@Override
-	public void moveInputs(VariableBase other)
-	{
-		super.moveInputs(other);
-		_fixedValue = ((Real)other)._fixedValue;
+		setFixedValueObject(fixedValue);
 	}
 
 

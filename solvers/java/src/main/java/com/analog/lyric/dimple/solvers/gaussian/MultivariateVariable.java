@@ -40,7 +40,7 @@ public class MultivariateVariable extends SVariableBase
 	}
 	
 	@Override
-	public void setInput(Object input)  
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 			_input = (MultivariateMsg) createDefaultMessage();

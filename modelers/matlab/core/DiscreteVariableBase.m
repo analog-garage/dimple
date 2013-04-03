@@ -163,23 +163,6 @@ classdef DiscreteVariableBase < VariableBase
             end
         end
         
-        function setValue(obj,value)
-            
-           domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
-           if ~ domainIsScalars
-               error('Only scalar domains currently supported');
-           end
-
-           values = MatrixObject.pack(value,obj.VectorIndices);
-           
-           values = repmat(values,1,numel(obj.Domain.Elements));
-           domains = repmat(cell2mat(obj.Domain.Elements),size(values,1),1);
-           [~,i] = max(values==domains, [], 2); % i will be the matching domain index
-           fixedValueIndices = i - 1;           % Zero-based indices for Java
-           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
-           obj.VectorObject.setFixedValueIndices(varids, fixedValueIndices);
-        end
-        
         function values = getValue(obj)
             v = obj.VectorIndices;
             
@@ -208,6 +191,35 @@ classdef DiscreteVariableBase < VariableBase
             
         end
         
+        function setFixedValue(obj,value)
+            domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
+            if ~ domainIsScalars
+                error('Only scalar domains currently supported');
+            end
+            
+            values = MatrixObject.pack(value,obj.VectorIndices);
+            
+            values = repmat(values,1,numel(obj.Domain.Elements));
+            domains = repmat(cell2mat(obj.Domain.Elements),size(values,1),1);
+            [~,i] = max(values==domains, [], 2); % i will be the matching domain index
+            fixedValueIndices = i - 1;           % Zero-based indices for Java
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            obj.VectorObject.setFixedValueIndices(varids, fixedValueIndices);
+        end
+        
+        function x = getFixedValue(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            fixedValueIndices = obj.VectorObject.getFixedValueIndices(varids);
+            fixedValues = obj.Domain.Elements(fixedValueIndices + 1);   % One-based indices
+            fixedValues = reshape(fixedValues,numel(fixedValues),1);
+            
+            domainIsScalars = all(cellfun(@isscalar,obj.Domain.Elements));
+            if domainIsScalars
+                fixedValues = cell2mat(fixedValues);
+            end;
+
+            x = MatrixObject.unpack(fixedValues,obj.VectorIndices);
+        end        
         
     end
     

@@ -22,8 +22,6 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 
 public class Discrete extends VariableBase
 {
-	protected int _fixedValueIndex = 0;
-	
 
 	public Discrete(int id,DiscreteDomain domain, String modelerClassName)
 	{
@@ -54,13 +52,15 @@ public class Discrete extends VariableBase
     	return (DiscreteDomain)getDomain();
     }
     
-    
+    @Override
     public Object getInputObject()
     {
-    	if (_input == null)
+    	Object tmp = super.getInputObject();
+    	
+    	if (tmp == null)
     		return getDefaultPriors(getDiscreteDomain().getElements());
     	else
-    		return _input;
+    		return tmp;
     }
     
     public double [] getBelief() 
@@ -145,11 +145,20 @@ public class Discrete extends VariableBase
 	// Fix the variable to a specific value
 	public final int getFixedValueIndex()
 	{
-		return _fixedValueIndex;
+		Object tmp = getFixedValueObject();
+		if (tmp == null)
+			throw new DimpleException("Fixed value not set");
+		
+		return (Integer)tmp;
 	}
+	
 	public final Object getFixedValue()
 	{
-		return ((DiscreteDomain)getDomain()).getElements()[_fixedValueIndex];
+		Object tmp = getFixedValueObject();
+		if (tmp == null)
+			throw new DimpleException("Fixed value not set");
+		
+		return ((DiscreteDomain)getDomain()).getElements()[(Integer)tmp];
 	}
 	public void setFixedValueIndex(int fixedValueIndex) 
 	{
@@ -160,7 +169,7 @@ public class Discrete extends VariableBase
 		setInput(input);
 		
 		// Fix the value
-		_fixedValueIndex = fixedValueIndex;
+		_fixedValue = fixedValueIndex;
 		fixValue();
 		
     	if (_solverVariable != null)
@@ -172,13 +181,6 @@ public class Discrete extends VariableBase
 		if (index < 0)
 			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
 		setFixedValueIndex(index);
-	}
-
-	@Override
-	public void moveInputs(VariableBase other)
-	{
-		super.moveInputs(other);
-		_fixedValueIndex = ((Discrete)other)._fixedValueIndex;
 	}
 
 }

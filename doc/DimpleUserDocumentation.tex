@@ -1193,42 +1193,6 @@ ans =
 
 \end{lstlisting}
 
-Users might also wish to set inputs to variables to domain values with 100\% certainty.  The Value property also allows this.
-
-\begin{lstlisting}
-
-d = Discrete({0,1},3,1);
-fg = FactorGraph();
-fg.addFactor(@xorDelta,d);
-d.Value = [1 1 0];
-d.Input
-
-\end{lstlisting}
-
-This code displays the following:
-
-\begin{lstlisting}
-
-ans =
-
-     0     1
-     0     1
-     1     0
-
-\end{lstlisting}
-
-
-The Value property can also be used to set the variable to a fixed value.  This can be useful, for example, when a variable is measured and its value becomes known.  Setting the value allows conditioning on the known value without modifying the graph.
-
-Though the Value property is used for this, this operation is more related to the Input property.  When a fixed value is set, the Input is ignored, unless it is subsequently set again.  If the Input is set, the any fixed value that had been set is ignored, unless the Value is subsequently set again.
-
-Setting a fixed value involves setting the value property to an element of the variable's domain.  For example:
-
-\begin{lstlisting}
-a = Discrete(1:10);
-a.Value = 3;
-\end{lstlisting}
-
 \subsubsection{Name}
 
 Users can both set and retrieve the name of Discrete Variables.  This is useful for debugging or plotting a graph.
@@ -1245,6 +1209,49 @@ For any variable, the Input method can be used to set and return the current ÔIn
 Var.Input=[0.3 0.7];
 disp(Var.Input);
 \end{lstlisting}
+
+
+\subsubsection{FixedValue}
+
+Users may wish to set inputs to variables to domain values with 100\% certainty.  The FixedValue property also allows this.  This can be useful, for example, when a variable is measured and its value becomes known.  Setting a fixed value allows conditioning on the known value without modifying the graph.
+
+\begin{lstlisting}
+
+d = Discrete({0,1},3,1);
+fg = FactorGraph();
+fg.addFactor(@xorDelta,d);
+d.FixedValue= [1 1 0];
+d.Input
+
+\end{lstlisting}
+
+This code displays the following:
+
+\begin{lstlisting}
+
+ans =
+
+     0     1
+     0     1
+     1     0
+
+\end{lstlisting}
+
+The FixedValue property is related to the Input property in that only the most-recently set of these properties is used.  When FixedValue is set, the Input is ignored, unless it is subsequently set again.  If the Input is set, a FixedValue that had been set is ignored, unless the FixedValue is subsequently set again.
+
+When setting a FixedValue, the value being set must be a valid element of the Variable's domain.  For example:
+
+\begin{lstlisting}
+a = Discrete(1:10);
+a.FixedValue = 3;
+\end{lstlisting}
+
+Setting this value to ``11'' would not be valid.
+
+The fixed value, once set, may be read via getting the FixedValue property.  In the above example, ``a.FixedValue'' would display ``3''.
+
+To determine if a variable (or array of variables) has a fixed value or not, the method hasFixedValue may be used.
+
 
 
 \subsection{Bit}
@@ -1305,7 +1312,9 @@ The following methods are supported:
 \item .Domain (get) returns the two-element vector specifying the bound on the domain specified during construction. If no domain had been set, the value is [-Inf Inf]. For an array of variables, .Domain returns the domain common to all of the variables in the array. Domain is not a settable parameter--it can only be set on construction.
 \item .Input (get) returns the Java object associated with the input. For an array of variables, .Input returns a cell-array of these Java objects with the same dimension as the variable. Some solvers that support real variables expect FactorFunctions as inputs.  Note that for each FactorFunction object, the eval method will return the value of the factor evaluated at the specified input value (example: v.Input.eval(1.75) for a scalar variable or vArr.Input{2,3}.eval(1.75) for an array of real-valued variables).
 \item .Input = (set) assigns the specified input to the variable. Input is a Java factor function.  It may be selected from the set of built-in factor functions (see~\ref{sec:builtInFactors}) or a user defined Java factor functions (see~\ref{sec:userJava})
-\item .Value = (set) assigns a fixed value to the variable, which effectively replaces the Input.  This method operates the same as for a discrete variable.
+\item .FixedValue = (set) assigns a fixed value to the variable, which effectively replaces the Input.  This method operates the same as for a discrete variable.
+\item .FixedValue (get) returns the fixed-value that had been set by .FixedValue method, if one had been set.
+\item .hasFixedValue indicates whether or not a fixed value had been set.
 \end{itemize}
 
 \subsubsection{Factors for Real Variables}
@@ -1521,9 +1530,9 @@ ASin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-sine function
 %
 ATan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-tangent function, where out = atan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Beta distribution. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Beta distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
-Categorical & x(D) \newline $\alpha$...(R) & N & Categorical distribution, $p(x | \alpha)$, where x is a discrete variable and $\alpha$ is a vector of parameter variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  \newline
+Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
 The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
 %
@@ -1544,11 +1553,11 @@ EqualDelta & values...(B,D) & - & Deterministic equality constraint. \\
 %
 Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
 GreaterThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
 %
-InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Inverse Gamma distribution. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Inverse Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
 LessThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
 %
@@ -1556,15 +1565,15 @@ LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & 
 %
 Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\sigma$] & Log-normal distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
-MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \sigma_{0} \newline \mu_{1} \newline \sigma_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
 %
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
+NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
 %
-Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\sigma$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
 Not & out(B) \newline in(B) & - & Deterministic logical NOT of function, where out = ~in. \\
 %
@@ -1573,6 +1582,8 @@ Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out
 Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out = base$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Rayleigh & [$\sigma$](R) \newline value...(R) & [$\sigma$] & Rayleigh distribution. There can be any number of value variables, all associated with the same parameter value.  Parameter $\sigma$ can be a variable, or if constant, can be specified in the constructor. \\
 %
 Sin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic sine function, where out = sin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -1590,7 +1601,7 @@ Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, 
 %
 Tanh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-tangent function, where out = tanh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value(R) & [$\mu$] \newline [$\sigma$] & Von Mises distribution. Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters $\mu$ and $\sigma$ can be specified in the constructor. \\
+VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Von Mises distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (inverse variance) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
 Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where out = XOR(in...). \\
 %
@@ -2809,6 +2820,7 @@ b = f.Belief;
 \end{lstlisting}
 
 \para{Score}
+\label{sec:score}
 
 Users can retrieve the Energy of a Factor Graph, Variable Vector, or Factor. This feature is currently only supported with the SumProduct algorithm.
 
@@ -3619,7 +3631,19 @@ Set/get the current temperature. Setting the current temperature overrides the c
 graph.Solver.saveAllSamples();
 \end{lstlisting}
 
-Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of iterations.
+Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
+
+\begin{lstlisting}
+graph.Solver.saveAllScores();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:score}) of the graph for each sample.
+
+\begin{lstlisting}
+graph.Solver.getAllScores();
+\end{lstlisting}
+
+Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
 
 \begin{lstlisting}
 graph.Solver.setSeed(seed);
@@ -3631,7 +3655,7 @@ Set the random seed used for sampling (and used for random scan, if that schedul
 graph.Solver.getTotalPotential();
 \end{lstlisting}
 
-After running the solver, returns the total potential over all factors of the graph (including input priors on variables) given the most recent sample values.
+After running the solver, returns the total potential (score) over all factors of the graph (including input priors on variables) given the most recent sample values.
 
 \begin{lstlisting}
 graph.Solver.sample(numSamples)

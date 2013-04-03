@@ -44,8 +44,8 @@ graph1.Solver.setScansPerSample(scansPerSample);
 graph1.Solver.setBurnInScans(burnInScans);
 
 
-a1 = Real(FactorFunction('Normal',3,12));       % Use FactorFunction
-b1 = Real({'Normal',7,17});                     % Use cell notation
+a1 = Real(FactorFunction('Normal',3,1/12^2));       % Use FactorFunction
+b1 = Real({'Normal',7,1/17^2});                     % Use cell notation
 
 z1 = a1 + b1;
 
@@ -63,8 +63,8 @@ graph2.Solver.setNumSamples(numSamples);
 graph2.Solver.setScansPerSample(scansPerSample);
 graph2.Solver.setBurnInScans(burnInScans);
 
-a2 = Real(FactorFunction('Normal',3,12));       % Use FactorFunction
-b2 = Real({'Normal',7,17});                     % Use cell notation
+a2 = Real(FactorFunction('Normal',3,1/12^2));       % Use FactorFunction
+b2 = Real({'Normal',7,1/17^2});                     % Use cell notation
 z2 = Real();
 graph2.addFactor('Sum',z2,a2,b2);
 
@@ -102,7 +102,7 @@ fg.Solver.setBurnInScans(burnInScans);
 
 w1 = Real(FactorFunction('Gamma',1,1));
 x1 = Real([-pi pi]);
-y1 = Real({'Normal',0,10});
+y1 = Real({'Normal',0,1/10^2});
 z1 = Real([-.99 .99]);
 
 a1 = abs(z1);

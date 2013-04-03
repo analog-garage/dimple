@@ -86,6 +86,9 @@ if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
 % Set proposal standard deviation for real variables
 A.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 
+% Save the score for each sample
+fg.Solver.saveAllScores();
+
 if (repeatable)
     fg.Solver.setSeed(2);					% Make this repeatable
 end
@@ -108,6 +111,8 @@ dtrace(debugPrint,'Gibbs estimate:'); if(debugPrint); disp(output); end;
 KLDivergenceRate = kLDivergenceRate(transMatrix, output);
 dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate));
 
+score = fg.Solver.getAllScores;
+if (debugPrint); figure; plot(score); end;
 
 
 % Compare with Baum-Welch ============================================

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import com.analog.lyric.dimple.model.Factor;
+
 public interface ISolverVariableGibbs
 {
 	public void saveAllSamples();
@@ -27,4 +29,5 @@ public interface ISolverVariableGibbs
 	public double getPotential();
 	public double getConditionalPotential(int portIndex);
 	public void randomRestart();
+	public void postAddFactor(Factor f);
 }

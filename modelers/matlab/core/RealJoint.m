@@ -70,11 +70,15 @@ classdef RealJoint < VariableBase
             error('not implemented');
         end
         
-        function setValue(obj,value)
+        function x = getInput(obj)
             error('not implemented');
         end
-                
-        function x = getInput(obj)
+        
+        function setFixedValue(obj,value)
+            error('not implemented');
+        end
+        
+        function x = getFixedValue(obj)
             error('not implemented');
         end
         

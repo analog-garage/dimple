@@ -33,14 +33,14 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		_var = var;
 	}
 	
-	public void moveInputs(ISolverVariable other)
-	{
-		
-		VariableBase vb = (VariableBase)other.getModelObject();
-		Object inputs = vb.getInputObject();
-		_var.setInputObject(inputs);
-		
-	}
+//	public void moveInputs(ISolverVariable other)
+//	{
+//		
+//		VariableBase vb = (VariableBase)other.getModelObject();
+//		Object inputs = vb.getInputObject();
+//		_var.setInputObject(inputs);
+//		
+//	}
 
 	@Override
 	public void update()  

@@ -59,9 +59,9 @@ public class RealVariableParticleBPTest
 		double bPriorMean = -1;
 		double bPriorSigma = 2.;
 		double bPriorR = 1/(bPriorSigma*bPriorSigma);
-		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorR));
 		Real b = new Real();
-		b.setInputObject(new Normal(bPriorMean, bPriorSigma));	// Try setting the input differently, just to test a different path
+		b.setInputObject(new Normal(bPriorMean, bPriorR));	// Try setting the input differently, just to test a different path
 		a.setName("a");
 		b.setName("b");
 		
@@ -195,7 +195,7 @@ public class RealVariableParticleBPTest
 		double aPriorR = 1/(aPriorSigma*aPriorSigma);
 		double bProb1 = 0.6;
 		double bProb0 = 1 - bProb1;
-		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorR));
 //		Real a = new Real();
 		Discrete b = new Discrete(0,1);
 		b.setInput(bProb0, bProb1);
@@ -208,7 +208,7 @@ public class RealVariableParticleBPTest
 		double fSigma1 = 0.75;
 		double fR0 = 1/(fSigma0*fSigma0);
 		double fR1 = 1/(fSigma1*fSigma1);
-		graph.addFactor(new MixedNormal(fMean0, fSigma0, fMean1, fSigma1), a, b);
+		graph.addFactor(new MixedNormal(fMean0, fR0, fMean1, fR1), a, b);
 		
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		//SVariable sb = (SVariable)b.getSolver();
@@ -371,10 +371,12 @@ public class RealVariableParticleBPTest
 
 		double aPriorMean = 1;
 		double aPriorSigma = 0.1;
+		double aPriorR = 1/(aPriorSigma*aPriorSigma);
 		double bPriorMean = 2;
 		double bPriorSigma = 0.1;
-		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
-		Real b = new Real(new Normal(bPriorMean,bPriorSigma));
+		double bPriorR = 1/(bPriorSigma*bPriorSigma);
+		Real a = new Real(new Normal(aPriorMean,aPriorR));
+		Real b = new Real(new Normal(bPriorMean,bPriorR));
 		Real c = new Real();
 		a.setName("a");
 		b.setName("b");

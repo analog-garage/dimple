@@ -49,6 +49,7 @@ end;
 % Model parameters
 meanPriorMean = 10;
 meanPriorSigma = 20;
+meanPriorPrecision = 1/meanPriorSigma^2;
 invVariancePriorAlpha = 1;
 invVariancePriorBeta = 1;
 
@@ -69,7 +70,7 @@ if (repeatable)
 end
 
 % Factor functions
-meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorSigma);
+meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
 invVariancePrior = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
 
 % Variables
@@ -81,16 +82,20 @@ X = Real(1,numDataPoints);
 fg.addFactor('Normal', meanVar, invVarianceVar, X);
 
 % Set inputs to data values
-X.Value = data;
+X.FixedValue = data;
 
 % Solve
 meanVar.invokeSolverMethod('saveAllSamples');
 invVarianceVar.invokeSolverMethod('saveAllSamples');
+fg.Solver.saveAllScores();
 fg.solve();
 
 % Get the samples
 meanSamples = meanVar.Solver.getAllSamples();
 invVarianceSamples = invVarianceVar.Solver.getAllSamples();
+
+% Get all the scores
+scores = fg.Solver.getAllScores;
 
 % Get the value estimates
 meanEst = meanVar.Solver.getBestSample();
@@ -103,6 +108,7 @@ assertElementsAlmostEqual(invVarianceValue, invVarianceEst, 'relative', 0.01, 0.
 if (debugPrint)
     fprintf('Mean: actual = %f, estimated = %f\n', meanValue, meanEst);
     fprintf('Sigma: actual = %f, estimated = %f\n', sigmaValue, sigmaEst);
+    figure; plot(scores);
 end
     
 end
@@ -128,6 +134,7 @@ end;
 % Model parameters
 meanPriorMean = 10;
 meanPriorSigma = 20;
+meanPriorPrecision = 1/meanPriorSigma^2;
 
 % Generate data
 meanValue = randn()*meanPriorSigma + meanPriorMean;
@@ -146,17 +153,18 @@ if (repeatable)
 end
 
 % Variables
-meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorSigma));
+meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorPrecision));
 X = Real(1,numDataPoints);
 
 % Factors
 f = fg.addFactor('Normal', meanVar, invVarianceValue, X);
 
 % Set inputs to data values
-X.Value = data;
+X.FixedValue = data;
 
 % Solve
 meanVar.invokeSolverMethod('saveAllSamples');
+fg.Solver.saveAllScores();
 fg.solve();
 
 % Get the samples
@@ -165,10 +173,14 @@ meanSamples = meanVar.Solver.getAllSamples();
 % Get the value estimates
 meanEst = meanVar.Solver.getBestSample();
 
+% Get all the scores
+scores = fg.Solver.getAllScores;
+
 assertElementsAlmostEqual(meanValue, meanEst, 'relative', 0.01, 0.1);
 
 if (debugPrint)
     fprintf('Mean: actual = %f, estimated = %f\n', meanValue, meanEst);
+    figure; plot(scores);
 end
     
 end

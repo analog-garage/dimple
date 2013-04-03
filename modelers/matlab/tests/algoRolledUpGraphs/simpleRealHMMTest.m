@@ -42,6 +42,7 @@ initialMean = 0;
 initialSigma = 20;
 transitionMean = 0;
 transitionSigma = 0.1;
+transitionPrecision = 1/transitionSigma^2;
 obsMean = 0;
 obsSigma = 1;
 
@@ -73,7 +74,11 @@ sg = FactorGraph(Xi,Xo,Ob);
 
 % Could have done this using AdditiveNoise factor, but this exersizes some
 % and deterministic factors
+<<<<<<< HEAD
 %N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
+=======
+N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionPrecision));
+>>>>>>> dfd86036ea580086f701dab42d7b2be903578b04
 
 % Would have liked to write "Xo = Xi + N" but that doesn't work in a
 % sub-graph since Xo is already defined as a boundary variable
@@ -107,9 +112,15 @@ end
 
 % Solve
 disp('Starting Gibbs solver');
+<<<<<<< HEAD
 fg.Solver.setNumRestarts(numRestarts)
 fg.Solver.setNumSamples(numSamples);
 fg.Solver.setBurnInScans(burnInScans);
+=======
+fg.Solver.setNumRestarts(1);
+fg.Solver.setNumSamples(200);
+fg.Solver.setBurnInUpdates(0);
+>>>>>>> dfd86036ea580086f701dab42d7b2be903578b04
 %fg.Solver.setScansPerSample(scansPerSample);
 fg.solve();
 

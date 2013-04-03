@@ -42,4 +42,6 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps);
 	public void moveMessages(ISolverNode other);
 	public void advance();
+	public void postAddFactor(Factor f);
+	public void postSetSolverFactory();
 }

@@ -185,13 +185,14 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 
-	public void setInput(Object value) 
+	@Override
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue) 
 	{
-		if (value == null)
+		if (input == null)
 			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
 		else
 			// Convert from probabilities since that's what the interface provides        
-			_input = MessageConverter.fromProb((double[])value);
+			_input = MessageConverter.fromProb((double[])input);
 	}
 	
 	

@@ -403,7 +403,8 @@ public class SRealVariable extends SRealVariableBase
 		_beta = beta;
 	}
 
-	public void setInput(Object input) 
+	@Override
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue) 
 	{
 		if (input == null)
 			_input = null;

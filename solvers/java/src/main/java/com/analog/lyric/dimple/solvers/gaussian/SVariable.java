@@ -44,8 +44,9 @@ public class SVariable extends SRealVariableBase
 	}
 
 
-    public void setInput(Object priors) 
-    {
+	@Override
+	public void setInputOrFixedValue(Object priors,Object fixedValue, boolean hasFixedValue)
+	{
     	if (priors == null)
     		_input = (double[]) createDefaultMessage();
     	else

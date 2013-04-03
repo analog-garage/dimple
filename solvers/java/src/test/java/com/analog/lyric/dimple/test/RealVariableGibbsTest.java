@@ -57,16 +57,16 @@ public class RealVariableGibbsTest
 		double bPriorMean = -1;
 		double bPriorSigma = 2.;
 		double bPriorR = 1/(bPriorSigma*bPriorSigma);
-		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorR));
 		Real b = new Real();
-		b.setInputObject(new Normal(bPriorMean, bPriorSigma));	// Try setting the input differently, just to test a different path
+		b.setInputObject(new Normal(bPriorMean, bPriorR));	// Try setting the input differently, just to test a different path
 		a.setName("a");
 		b.setName("b");
 		
 		double abMean = 0;
 		double abSigma = 1;
 		double abR = 1/(abSigma*abSigma);
-		graph.addFactor(new Normal(abMean,abSigma), a, b);
+		graph.addFactor(new Normal(abMean,abR), a, b);
 		
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		SRealVariable sb = (SRealVariable)b.getSolver();
@@ -128,7 +128,7 @@ public class RealVariableGibbsTest
 		double aPriorR = 1/(aPriorSigma*aPriorSigma);
 		double bProb1 = 0.6;
 		double bProb0 = 1 - bProb1;
-		Real a = new Real(new Normal(aPriorMean,aPriorSigma));
+		Real a = new Real(new Normal(aPriorMean,aPriorR));
 //		Real a = new Real();
 		Discrete b = new Discrete(0,1);
 		b.setInput(bProb0, bProb1);
@@ -141,7 +141,7 @@ public class RealVariableGibbsTest
 		double fSigma1 = 0.75;
 		double fR0 = 1/(fSigma0*fSigma0);
 		double fR1 = 1/(fSigma1*fSigma1);
-		graph.addFactor(new MixedNormal(fMean0, fSigma0, fMean1, fSigma1), a, b);
+		graph.addFactor(new MixedNormal(fMean0, fR0, fMean1, fR1), a, b);
 		
 		SRealVariable sa = (SRealVariable)a.getSolver();
 		SDiscreteVariable sb = (SDiscreteVariable)b.getSolver();

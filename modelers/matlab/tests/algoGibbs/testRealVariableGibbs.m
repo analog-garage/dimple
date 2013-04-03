@@ -39,9 +39,9 @@ aPriorR = 1/(aPriorSigma*aPriorSigma);
 bPriorMean = -1;
 bPriorSigma = 2.;
 bPriorR = 1/(bPriorSigma*bPriorSigma);
-a = Real(FactorFunction('Normal',aPriorMean,aPriorSigma));
+a = Real(FactorFunction('Normal',aPriorMean,aPriorR));
 b = Real();
-b.Input = {'Normal',bPriorMean, bPriorSigma};	% Try setting the input differently, just to test a different path
+b.Input = {'Normal',bPriorMean, bPriorR};	% Try setting the input differently, just to test a different path
 
 abMean = 0;
 abSigma = 1;
@@ -107,17 +107,19 @@ aPriorSigma = 5;
 aPriorR = 1/(aPriorSigma*aPriorSigma);
 bProb1 = 0.6;
 bProb0 = 1 - bProb1;
-a = Real(FactorFunction('Normal',aPriorMean,aPriorSigma));
+a = Real(FactorFunction('Normal',aPriorMean,aPriorR));
 b = Variable([0 1]);
 b.Input = [bProb0 bProb1];
 
 fMean0 = -1;
 fSigma0 = 0.75;
+fR0 = 1/fSigma0^2;
 fMean1 = 1;
 fSigma1 = 0.75;
+fR1 = 1/fSigma1^2;
 fR0 = 1/(fSigma0*fSigma0);
 fR1 = 1/(fSigma1*fSigma1);
-f = graph2.addFactor(FactorFunction('MixedNormal',fMean0, fSigma0, fMean1, fSigma1), a, b);
+f = graph2.addFactor(FactorFunction('MixedNormal',fMean0, fR0, fMean1, fR1), a, b);
 
 sa = a.Solver;
 sb = b.Solver;

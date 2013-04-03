@@ -540,9 +540,21 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		throw new DimpleException("Not supported by " + this);
 	}
 	
+	@Override
 	public void advance()
 	{
 		
 	}
+	@Override
+	public void postAddFactor(Factor f)
+	{
+		
+	}
 	
+	@Override
+	public void postSetSolverFactory()
+	{
+		
+	}
+
 }

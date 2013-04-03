@@ -204,6 +204,7 @@ public class FactorGraph extends FactorBase
 			f.createSolverObject(_solverFactorGraph);
 
 
+		_solverFactorGraph.postSetSolverFactory();
 	}
 
 	
@@ -384,7 +385,12 @@ public class FactorGraph extends FactorBase
 		addFactor(f,vars);
 
 		if (_solverFactorGraph != null)
+		{
 			f.createSolverObject(_solverFactorGraph);
+			_solverFactorGraph.postAddFactor(f);
+		}
+		
+		
 		
 		return f;
 

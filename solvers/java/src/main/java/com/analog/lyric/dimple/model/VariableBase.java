@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public abstract class VariableBase extends Node implements Cloneable
 {
 	protected Object _input = null;
+	protected Object _fixedValue = null;
 	protected String _modelerClassName;
 	protected ISolverVariable _solverVariable = null;
 	protected HashMap<String,Object> _properties = new HashMap<String,Object>();
@@ -131,8 +132,9 @@ public abstract class VariableBase extends Node implements Cloneable
 	public void moveInputs(VariableBase other)
 	{
 		_input = other._input;
-		_solverVariable.setInput(_input);
+		_fixedValue = other._fixedValue;
 		_hasFixedValue = other._hasFixedValue;
+		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
 	}
 
 	
@@ -142,7 +144,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		{		
 			_solverVariable = factorGraph.createVariable(this);
 			_solverVariable.createNonEdgeSpecificState();
-			_solverVariable.setInput(_input);
+			_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
 		}
 		else
 		{
@@ -172,14 +174,34 @@ public abstract class VariableBase extends Node implements Cloneable
 		v._solverVariable = null;
 		return v;
 	}
+
+	private void inputOrFixedValueChanged()
+	{
+		if (_solverVariable != null)
+    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
 		
+	}
+	
+	
+	public Object getFixedValueObject()
+	{
+		return _fixedValue;
+	}
+	
+	public void setFixedValueObject(Object value)
+	{
+		_hasFixedValue = true;
+		_input = null;
+		_fixedValue = value;
+		inputOrFixedValueChanged();
+	}
 
     public void setInputObject(Object value) 
     {
     	_hasFixedValue = false;		// In case the value had previously been fixed, then un-fix it
     	_input = value;
-    	if (_solverVariable != null)
-    		_solverVariable.setInput(value);
+    	_fixedValue = null;
+    	inputOrFixedValueChanged();
     }
     
     
@@ -210,7 +232,7 @@ public abstract class VariableBase extends Node implements Cloneable
     	if (_solverVariable != null)
     		return _solverVariable.getBelief();
     	else
-    		return _input;
+    		return getInputObject();
     }
    
     

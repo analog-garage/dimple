@@ -74,9 +74,8 @@ public class SVariable extends SDiscreteVariableBase
 		return -Math.log(_input[getGuessIndex()]);
 	}
 	
-	//TODO: null means something special here.  Should I modify this to have speical messages
-	//      to indicate when inputs should be initialized?
-    public void setInput(Object priors) 
+	@Override
+    public void setInputOrFixedValue(Object priors,Object fixed, boolean hasFixedValue) 
     {
     	if (priors == null)
     	{

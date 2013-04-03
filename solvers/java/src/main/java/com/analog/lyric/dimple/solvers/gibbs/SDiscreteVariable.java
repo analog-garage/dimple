@@ -189,15 +189,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return outBelief;
 	}
 
-	public void setInput(Object priors)
+	
+	
+	@Override
+	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixed)
 	{
-		if (priors == null)
+		if (input == null)
 		{
 			_input = createDefaultMessage();
 		}
 		else
 		{
-			double[] vals = (double[])priors;
+			double[] vals = (double[])input;
 			if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
 				throw new DimpleException("Prior size must match domain length");
 			
@@ -207,6 +210,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 				_input[i] = -Math.log(vals[i]);
 		}
 	}
+	
+	@Override
+	public void postAddFactor(Factor f)
+	{
+		
+//		if (_var.hasFixedValue())
+//		{
+//			setCurrentSample((Double)_var.getFixedValueObject());
+//		}
+		
+	}
+
 	
     public final void saveAllSamples()
     {

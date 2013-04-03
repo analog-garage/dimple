@@ -22,36 +22,33 @@ import com.analog.lyric.dimple.model.DimpleException;
 
 
 /**
- * Log-normal distribution. The variables in the argument list are ordered as follows:
+ * Rayleigh distribution. The variables in the argument list are ordered as follows:
  * 
- * 1) Mean parameter
- * 2) Precision parameter (inverse variance) (non-negative)
- * 3...) An arbitrary number of real variables
+ * 1) Sigma parameter (non-negative)
+ * 2...) An arbitrary number of real variables
  * 
- * Mean and precision parameters may optionally be specified as constants in the constructor.
- * In this case, the mean and precision are not included in the list of arguments.
+ * The sigma parameter may optionally be specified as constant in the constructor.
+ * In this case, it is not included in the list of arguments.
  * 
  */
-public class LogNormal extends FactorFunction
+public class Rayleigh extends FactorFunction
 {
-	double _mean;
-	double _precision;
-	double _logPrecisionOverTwo;
-	double _precisionOverTwo;
+	double _sigma;
+	double _inverseSigmaSquared;
+	double _halfInverseSigmaSquared;
 	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	int _firstDirectedToIndex = 1;
 
-	public LogNormal() {super();}
-	public LogNormal(double mean, double precision)
+	public Rayleigh() {super();}
+	public Rayleigh(double sigma)
 	{
 		this();
-		_mean = mean;
-		_precision = precision;
-		_logPrecisionOverTwo = Math.log(_precision)*0.5;
-		_precisionOverTwo = _precision*0.5;
+		_sigma = sigma;
+		_inverseSigmaSquared = 1/(_sigma*_sigma);
+		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
+    	if (_sigma < 0) throw new DimpleException("Negative sigma value. This must be a non-negative value.");
 	}
 	
     @Override
@@ -60,28 +57,22 @@ public class LogNormal extends FactorFunction
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
-    		_logPrecisionOverTwo = Math.log(_precision)*0.5;
-    		_precisionOverTwo = _precision*0.5;
-    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
+    		_sigma = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is sigma
+    		_inverseSigmaSquared = 1/(_sigma*_sigma);
+    		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
+    		if (_sigma < 0) throw new DimpleException("Negative sigma value. Domain must be restricted to non-negative values.");
     	}
     	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are LogNormal variables
-        	if (x <= 0)
+    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Rayleigh variables
+        	if (x < 0)
         		return Double.POSITIVE_INFINITY;
         	else
-        	{
-        		double logX = Math.log(x);
-        		double relLogX = logX - _mean;
-        		sum += logX + relLogX*relLogX*_precisionOverTwo;
-        	}
+        		sum += x*x*_halfInverseSigmaSquared - Math.log(x*_inverseSigmaSquared);
     	}
-    	return sum - N * _logPrecisionOverTwo;
+    	return sum;
 	}
     
     @Override

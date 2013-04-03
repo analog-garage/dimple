@@ -31,7 +31,7 @@ function testInvokeSolverMethod
     end
     
     
-    b.invokeSolverMethod('setInput',[.3 .7]);
+    b.invokeSolverMethod('setInputOrFixedValue',[.3 .7],[],false);
     for i = 1:prod(size(b))
         assert(b(i).Belief == .7);
     end

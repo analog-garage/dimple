@@ -56,5 +56,16 @@ public class FactorFunctionUtilities
     		throw new DimpleException("Invalid value type");
     	return out;
 	}
+	
+	
+	public static final int[] getListOfIndices(int startingIndex, int endingIndex)
+	{
+    	if (startingIndex > endingIndex)
+    		throw new DimpleException("Insufficient number of indices");
+    	int[] indices = new int[endingIndex - startingIndex + 1];
+    	for (int i = 0, index = startingIndex; index <= endingIndex; i++, index++)
+    		indices[i] = index;
+		return indices;
+	}
 
 }

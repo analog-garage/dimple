@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * 1) Alpha: Alpha parameter of the Gamma distribution (non-negative)
  * 2) Beta: Beta parameter of the Gamma distribution (non-negative)
- * 3) Gamma distributed real variable
+ * 3...) An arbitrary number of real variables
  * 
  * Alpha and Beta parameters may optionally be specified as constants in the constructor.
  * In this case, they are not included in the list of arguments.
@@ -35,19 +35,23 @@ public class Beta extends FactorFunction
 {
 	double _alpha;
 	double _beta;
-	boolean _alphaConstant = false;
-	boolean _betaConstant = false;
-	int _directedToIndex = 2;
+	double _alphaMinusOne;
+	double _betaMinusOne;
+	double _logBetaAlphaBeta;
+	boolean _parametersConstant = false;
+	int _firstDirectedToIndex = 2;
 
 	public Beta() {super();}
 	public Beta(double alpha, double beta)
 	{
 		this();
 		_alpha = alpha;
-		_alphaConstant = true;
 		_beta = beta;
-		_betaConstant = true;
-		_directedToIndex = 0;
+		_alphaMinusOne = _alpha - 1;
+		_betaMinusOne = _beta - 1;
+		_logBetaAlphaBeta = org.apache.commons.math.special.Beta.logBeta(_alpha, _beta);
+		_parametersConstant = true;
+		_firstDirectedToIndex = 0;
 		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
 		if (_beta < 0) throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
 	}
@@ -56,32 +60,64 @@ public class Beta extends FactorFunction
 	public double evalEnergy(Object... arguments)
 	{
 		int index = 0;
-		if (!_alphaConstant)
+		if (!_parametersConstant)
 		{
 			_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
-			if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
-		}
-		if (!_betaConstant)
-		{
 			_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+			_alphaMinusOne = _alpha - 1;
+			_betaMinusOne = _beta - 1;
+			_logBetaAlphaBeta = org.apache.commons.math.special.Beta.logBeta(_alpha, _beta);
+			if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
 			if (_beta < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
 		}
-		double x = FactorFunctionUtilities.toDouble(arguments[index++]);	// Third input is the Gamma distributed variable
-
-		if (x < 0 || x > 1)
-			return Double.POSITIVE_INFINITY;
-		else if (_alpha == 1 && _beta == 1)
-			return 0;
-		else if (_alpha == 1)
-			return org.apache.commons.math.special.Beta.logBeta(_alpha, _beta) - (_beta - 1) * Math.log(1 - x);
+    	int length = arguments.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	double sum = 0;
+    	if (_alpha == 1 && _beta == 1)
+    	{
+    		for (; index < length; index++)
+    		{
+    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+        		if (x < 0 || x > 1)
+        			return Double.POSITIVE_INFINITY;
+    		}
+    		return 0;	// Uniform within 0 <= x <= 1
+    	}
+    	else if (_alpha == 1)
+    	{
+    		for (; index < length; index++)
+    		{
+    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			sum += Math.log(1 - x);
+    		}
+    		return N * _logBetaAlphaBeta - sum * _betaMinusOne;
+    	}
 		else if (_beta == 1)
-			return org.apache.commons.math.special.Beta.logBeta(_alpha, _beta) - (_alpha - 1) * Math.log(x);
+		{
+    		for (; index < length; index++)
+    		{
+    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			sum += Math.log(x);
+    		}
+    		return N * _logBetaAlphaBeta - sum * _alphaMinusOne;
+		}
 		else
-			return org.apache.commons.math.special.Beta.logBeta(_alpha, _beta) - (_alpha - 1) * Math.log(x) - (_beta - 1) * Math.log(1 - x);
+		{
+    		for (; index < length; index++)
+    		{
+    			double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Beta variables
+    			sum += _alphaMinusOne * Math.log(x) + _betaMinusOne * Math.log(1 - x);
+    		}
+    		return N * _logBetaAlphaBeta - sum;
+		}
 	}
 
     @Override
     public final boolean isDirected() {return true;}
     @Override
-	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
+	public final int[] getDirectedToIndices(int numEdges)
+	{
+    	// All edges except the parameter edges (if present) are directed-to edges
+		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
+	}
 }

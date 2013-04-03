@@ -74,7 +74,7 @@ sg = FactorGraph(Xi,Xo,Ob);
 
 % Could have done this using AdditiveNoise factor, but this exersizes some
 % and deterministic factors
-%N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,transitionSigma));
+%N = Real(com.analog.lyric.dimple.FactorFunctions.Normal(transitionMean,1/transitionSigma^2));
 
 % Would have liked to write "Xo = Xi + N" but that doesn't work in a
 % sub-graph since Xo is already defined as a boundary variable
@@ -96,6 +96,15 @@ f.BufferSize = bufferSize;
 %    O(i).Domain = [o(i) o(i)];
 %    O(i).Solver.setInitialSampleValue(o(i));
 %end
+<<<<<<< HEAD
+=======
+ffds = FactorFunctionDataSource();
+
+for i = 1:hmmLength-1
+    ffds.add(com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e10));
+end
+O.DataSource = ffds;
+>>>>>>> dfd86036ea580086f701dab42d7b2be903578b04
 
 fg.initialize();
 fg.NumSteps = 0;

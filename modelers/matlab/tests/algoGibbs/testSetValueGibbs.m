@@ -23,7 +23,9 @@ function testSetValueGibbs()
     fg.Solver = 'Gibbs';
     fg.addFactor(@(a) sum(a), d);
     value = randi(3,3,1);
-    d.Value = value;
+    d.FixedValue = value;
+    assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
+    assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
     expectedBelief = double(repmat(value,1,length(domain)) == repmat(cell2mat(domain),length(value),1));
     assertElementsAlmostEqual(d.Belief, expectedBelief);
@@ -36,7 +38,9 @@ function testSetValueGibbs()
     fg.Solver = 'Gibbs';
     fg.addFactor(@(a) sum(a(:)), d);
     value = randi(3,3,2);
-    d.Value = value;
+    d.FixedValue = value;
+    assert(all(reshape(d.hasFixedValue,numel(value),1) == true(numel(value),1)));
+    assertEqual(d.FixedValue,value);
     assertEqual(d.Value,value);
     expectedBelief = double(repmat(value,[1,1,length(domain)]) == repmat(reshape(cell2mat(domain),1,1,length(domain)),[size(value,1),size(value,2),1]));
     assertElementsAlmostEqual(d.Belief, expectedBelief);
@@ -50,7 +54,7 @@ function testSetValueGibbs()
     value = {'a'; 'bb'};
     msg = '';
     try
-        d.Value = value;
+        d.FixedValue = value;
     catch E
         msg = E.message;
     end
@@ -62,28 +66,39 @@ function testSetValueGibbs()
     fg = FactorGraph();
     fg.Solver = 'Gibbs';
     b = -a; % Add implicit factor
-    a.Input = com.analog.lyric.dimple.FactorFunctions.Normal(1,1);
+    a.Input = {'Normal',1,1};
     assert(isa(a.Input, 'com.analog.lyric.dimple.FactorFunctions.Normal'));
     value = rand();
-    a.Value = value;
+    assert(~a.hasFixedValue);
+    a.FixedValue = value;
     assert(isempty(a.Input));
-    b.Value = -value;
+    assert(a.hasFixedValue);
+    assertEqual(a.FixedValue,value);
+    assert(~b.hasFixedValue);
+    b.FixedValue = -value;
+    assert(b.hasFixedValue);
+    assertEqual(b.FixedValue,-value);
     assertEqual(fg.Solver.getTotalPotential(), 0);
-    b.Value = value + 1;
+    b.FixedValue = value + 1;
+    assert(b.hasFixedValue);
+    assertEqual(b.FixedValue,value+1);
     assertEqual(fg.Solver.getTotalPotential(), Inf);
+    a.Input = {'Normal',1,1};
+    assert(~a.hasFixedValue);
     try
-        a.Value = 20;   % Out of domain bounds
+        a.FixedValue = 20;   % Out of domain bounds
     catch E
         msg1 = E.message;
     end
     assert(~isempty(strfind(msg1,'Attempt to set fixed value outside of variable domain.')));
     try
-        a.Value = -20;   % Out of domain bounds
+        a.FixedValue = -20;   % Out of domain bounds
     catch E
         msg2 = E.message;
     end
     assert(~isempty(strfind(msg2,'Attempt to set fixed value outside of variable domain.')));
 
+    
     % No beliefs or values for reals at this point
 
 

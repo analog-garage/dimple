@@ -61,7 +61,8 @@ public class DummyVariable extends SVariableBase
 	}
 
 
-	public void setInput(Object input) 
+	@Override
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 		{

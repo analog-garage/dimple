@@ -34,7 +34,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 {
 	protected Real _varReal;
 	protected ObjectSample _outputMsg;
-	protected double _sampleValue;
+	protected double _sampleValue = 0;
 	protected double _initialSampleValue = 0;
 	protected FactorFunction _input;
 	protected RealDomain _domain;
@@ -158,27 +158,65 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public Object getBelief() 
 	{
-		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 		return 0d;
 	}
 
-	public void setInput(Object input) 
+	@Override
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue) 
 	{
 		if (input == null)
 			_input = null;
 		else
 			_input = (FactorFunction)input;
+
+		if (hasFixedValue)
+		{
+			setCurrentSample((Double)fixedValue);
+		}
 	}
 	
+	@Override
+	public void postAddFactor(Factor f)
+	{
+		_hasDeterministicDependents = hasDeterministicDependents();
+		_isDeterministicDepdentent = isDeterministicDependent();
+		
+		if (_var.hasFixedValue())
+		{
+			setCurrentSample((Double)_var.getFixedValueObject());
+		}
+		else
+		{
+			setCurrentSample(_sampleValue);
+		}
+		
+	}
+
+	
+	@Override
 	public final double getScore()
 	{
 		if (_var.hasFixedValue())
 			return 0;
+		else if (_input == null)
+			return 0;
 		else if (_guessWasSet)
 			return _input.evalEnergy(_guessValue);
 		else
-			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
+			return _input.evalEnergy(_sampleValue);
 	}
+	
+	@Override
+	public Object getGuess()
+	{
+		if (_guessWasSet)
+			return Double.valueOf(_guessValue);
+		else if (_var.hasFixedValue())
+			return Double.valueOf(_varReal.getFixedValue());
+		else
+			return Double.valueOf(_sampleValue);
+	}
+
 
 	public final void saveAllSamples()
 	{
@@ -364,16 +402,15 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		super.initialize();
 
-
-		double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
-		if (!_holdSampleValue)
-			setCurrentSample(initialSampleValue);
+		if (!_isDeterministicDepdentent)
+		{
+			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
+			if (!_holdSampleValue)
+				setCurrentSample(initialSampleValue);
+		}
+		
 		_bestSampleValue = _sampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
-
-
-		_isDeterministicDepdentent = isDeterministicDependent();
-		_hasDeterministicDependents = hasDeterministicDependents();
 	}
 
 	@Override
@@ -401,5 +438,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_proposalStdDev = ovar._proposalStdDev;
 		_holdSampleValue = ovar._holdSampleValue;
     }
+
 
 }

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 public interface ISolverVariable extends ISolverNode
 {
-	public void setInput(Object input);
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue);
 	public Object getBelief();
 	public Object getValue();
     public void setGuess(Object guess);
