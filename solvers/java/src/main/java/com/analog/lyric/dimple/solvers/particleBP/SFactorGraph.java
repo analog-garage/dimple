@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
@@ -166,7 +167,7 @@ public class SFactorGraph extends SFactorGraphBase
 	// Sets the random seed for the Particle BP solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		ParticleBPSolverRandomGenerator.rand.setSeed(seed);
+		SolverRandomGenerator.rand.setSeed(seed);
 	}
 	
 

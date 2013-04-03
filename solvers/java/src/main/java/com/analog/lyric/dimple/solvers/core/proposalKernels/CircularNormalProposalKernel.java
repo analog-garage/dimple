@@ -1,6 +1,6 @@
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
-import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class CircularNormalProposalKernel implements IProposalKernel
 {
@@ -11,7 +11,7 @@ public class CircularNormalProposalKernel implements IProposalKernel
 
 	public Object next(Object currentValue)
 	{
-		double value = (Double)currentValue + _standardDeviation * GibbsSolverRandomGenerator.rand.nextGaussian();
+		double value = (Double)currentValue + _standardDeviation * SolverRandomGenerator.rand.nextGaussian();
 		value = ((((value - _min) % _range) + _range) % _range) + _min;		// Wrap from -pi to pi
 		return value;
 	}

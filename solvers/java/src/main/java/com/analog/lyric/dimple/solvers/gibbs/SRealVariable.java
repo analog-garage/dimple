@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -102,7 +103,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 			// Accept or reject
 			double rejectionThreshold = Math.exp(LPrevious - LProposed);	// Note, no Hastings factor if Gaussian proposal distribution
-			if (GibbsSolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+			if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 				setCurrentSample(proposalValue);		// Accept
 			else
 				setCurrentSample(previousSampleValue);	// Reject
@@ -146,7 +147,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
 		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-			setCurrentSample(GibbsSolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+			setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 	}
 
 	public void updateBelief()

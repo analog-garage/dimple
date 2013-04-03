@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -286,7 +287,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// Sets the random seed for the Gibbs solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		GibbsSolverRandomGenerator.rand.setSeed(seed);
+		SolverRandomGenerator.rand.setSeed(seed);
 	}
 	
 	// Set/get the number of samples to be run when solving the graph (post burn-in)

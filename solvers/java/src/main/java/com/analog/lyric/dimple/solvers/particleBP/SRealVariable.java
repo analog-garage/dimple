@@ -25,6 +25,9 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -33,6 +36,7 @@ public class SRealVariable extends SRealVariableBase
 	protected Double[] _particleValues;
 	protected int _numParticles = 1;
 	protected int _resamplingUpdatesPerSample = 1;
+	protected IProposalKernel _proposalKernel = new DefaultProposalKernel();
 	protected double _resamplingProposalStdDev = 1;
 	protected double _initialParticleMin = 0;
 	protected double _initialParticleMax = 0;
@@ -218,8 +222,7 @@ public class SRealVariable extends SRealVariableBase
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				double proposalDelta = _resamplingProposalStdDev * ParticleBPSolverRandomGenerator.rand.nextGaussian();
-				double proposalValue = sampleValue + proposalDelta;
+				double proposalValue = (Double)_proposalKernel.next(sampleValue);
 
 				// If outside the bounds, then reject
 				if (proposalValue < _lowerBound) continue;
@@ -242,7 +245,7 @@ public class SRealVariable extends SRealVariableBase
 
 					// Accept or reject
 					double rejectionThreshold = Math.exp(potential - potentialProposed);	// Note, no Hastings factor if Gaussian proposal distribution
-					if (ParticleBPSolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+					if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 					{
 						sampleValue = proposalValue;
 						potential = potentialProposed;
@@ -386,8 +389,28 @@ public class SRealVariable extends SRealVariableBase
 	public void setResamplingUpdatesPerParticle(int updatesPerParticle) {_resamplingUpdatesPerSample = updatesPerParticle;}
 	public int getResamplingUpdatesPerParticle() {return _resamplingUpdatesPerSample;}
 
-	public void setProposalStandardDeviation(double stdDev) {_resamplingProposalStdDev = stdDev;}
-	public double getProposalStandardDeviation() {return _resamplingProposalStdDev;}
+	// FIXME: Generalize to proposal kernels that take different parameters
+	public void setProposalStandardDeviation(double stdDev)
+	{
+		_resamplingProposalStdDev = stdDev;
+	}
+	public double getProposalStandardDeviation()
+	{
+		return _resamplingProposalStdDev;
+	}
+	
+	// Set the proposal kernel parameters more generally
+	public final void setProposalKernelParameters(Object... parameters)
+	{
+		_proposalKernel.setParameters(parameters);
+	}
+	
+	// Override the default proposal kernel
+	public final void setProposalKernel(IProposalKernel proposalKernel)
+	{
+		_proposalKernel = proposalKernel;
+	}
+
 
 	// Sets the range of initial particle values
 	// Overrides the domain (if one is specified) in determining the initial particle values

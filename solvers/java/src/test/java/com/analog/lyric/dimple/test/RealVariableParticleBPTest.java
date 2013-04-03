@@ -275,7 +275,7 @@ public class RealVariableParticleBPTest
 		
 		
 		assertTrue(nearlyEquals(aSolverMean,0.1929829696757485));
-		assertTrue(nearlyEquals(bSolverMean,0.5833220375555341));
+		assertTrue(nearlyEquals(bSolverMean,0.5809732764581331));
 	}
 	
 	
