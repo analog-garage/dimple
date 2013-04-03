@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * 1) Mean parameter (real variable)
  * 2) Precision parameter (inverse variance) (real variable; domain must be non-negative)
- * 3...) An arbitrary number of real variables.
+ * 3...) An arbitrary number of real variables
  * 
  * Mean and precision parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and precision are not included in the list of arguments.
@@ -38,10 +38,10 @@ import com.analog.lyric.dimple.model.DimpleException;
 public class Normal extends FactorFunction
 {
 	double _mean;
-	double _precisions;
+	double _precision;
 	double _logPrecisionOverTwo;
-	boolean _meanConstant = false;
-	boolean _precisionConstant = false;
+	double _precisionOverTwo;
+	boolean _parametersConstant = false;
 	int _firstDirectedToIndex = 2;
 
 	public Normal() {super();}
@@ -49,36 +49,35 @@ public class Normal extends FactorFunction
 	{
 		this();
 		_mean = mean;
-		_meanConstant = true;
-		_precisions = precision;
-		_logPrecisionOverTwo = Math.log(_precisions)*0.5;
-		_precisionConstant = true;
+		_precision = precision;
+		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+		_precisionOverTwo = _precision*0.5;
+		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	if (_precisions < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
+    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 
     @Override
 	public double evalEnergy(Object ... arguments)
 	{
     	int index = 0;
-    	if (!_meanConstant)
-    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    	if (!_precisionConstant)
+    	if (!_parametersConstant)
     	{
-    		_precisions = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
-    		if (_precisions < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
-    		_logPrecisionOverTwo = Math.log(_precisions)*0.5;
+    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
+    		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+    		_precisionOverTwo = _precision*0.5;
+    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
     	int length = arguments.length;
-    	int N = length - index;			// Number of Normal variables
+    	int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
     		double relInput = FactorFunctionUtilities.toDouble(arguments[index]) - _mean;	// Remaining inputs are Normal variables
-    		sum += relInput*relInput*_precisions;
+    		sum += relInput*relInput;
     	}
-
-    	return sum*0.5 - N * _logPrecisionOverTwo;
+    	return sum * _precisionOverTwo - N * _logPrecisionOverTwo;
 	}
     
     
@@ -88,12 +87,6 @@ public class Normal extends FactorFunction
 	public final int[] getDirectedToIndices(int numEdges)
 	{
     	// All edges except the parameter edges (if present) are directed-to edges
-    	if (numEdges <= _firstDirectedToIndex)
-    		throw new DimpleException("Insufficient number of edges");
-    	int numDirectedToEdges = numEdges - _firstDirectedToIndex;
-    	int[] directedToEdges = new int[numDirectedToEdges];
-    	for (int i = 0, edgeIndex = _firstDirectedToIndex; i < numDirectedToEdges; i++, edgeIndex++)
-    		directedToEdges[i] = edgeIndex;
-		return directedToEdges;
+		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
 }

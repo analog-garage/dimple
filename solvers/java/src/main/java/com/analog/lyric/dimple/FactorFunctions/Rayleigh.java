@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * Rayleigh distribution. The variables in the argument list are ordered as follows:
  * 
  * 1) Sigma parameter (non-negative)
- * 2) Rayleigh distributed real variable
+ * 2...) An arbitrary number of real variables
  * 
  * The sigma parameter may optionally be specified as constant in the constructor.
  * In this case, it is not included in the list of arguments.
@@ -34,16 +34,20 @@ import com.analog.lyric.dimple.model.DimpleException;
 public class Rayleigh extends FactorFunction
 {
 	double _sigma;
-	boolean _sigmaConstant = false;
-	int _directedToIndex = 1;
+	double _inverseSigmaSquared;
+	double _halfInverseSigmaSquared;
+	boolean _parametersConstant = false;
+	int _firstDirectedToIndex = 1;
 
 	public Rayleigh() {super();}
 	public Rayleigh(double sigma)
 	{
 		this();
 		_sigma = sigma;
-		_sigmaConstant = true;
-		_directedToIndex = 0;
+		_inverseSigmaSquared = 1/(_sigma*_sigma);
+		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
+		_parametersConstant = true;
+		_firstDirectedToIndex = 0;
     	if (_sigma < 0) throw new DimpleException("Negative sigma value. This must be a non-negative value.");
 	}
 	
@@ -51,21 +55,32 @@ public class Rayleigh extends FactorFunction
 	public double evalEnergy(Object... arguments)
     {
     	int index = 0;
-    	if (!_sigmaConstant)
+    	if (!_parametersConstant)
     	{
     		_sigma = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is sigma
+    		_inverseSigmaSquared = 1/(_sigma*_sigma);
+    		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
     		if (_sigma < 0) throw new DimpleException("Negative sigma value. Domain must be restricted to non-negative values.");
     	}
-    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Second input is the Rayleigh distributed variable
-    	
-    	if (x <= 0)
-    		return Double.POSITIVE_INFINITY;
-    	else
-    		return (x*x)/(2.0*_sigma*_sigma) - Math.log(x/(_sigma*_sigma));
+    	int length = arguments.length;
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are Rayleigh variables
+        	if (x < 0)
+        		return Double.POSITIVE_INFINITY;
+        	else
+        		sum += x*x*_halfInverseSigmaSquared - Math.log(x*_inverseSigmaSquared);
+    	}
+    	return sum;
 	}
     
     @Override
     public final boolean isDirected() {return true;}
     @Override
-	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
+	public final int[] getDirectedToIndices(int numEdges)
+	{
+    	// All edges except the parameter edges (if present) are directed-to edges
+		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
+	}
 }

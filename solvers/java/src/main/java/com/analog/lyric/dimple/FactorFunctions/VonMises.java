@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * 1) Mean parameter
  * 2) Precision parameter (inverse variance) (non-negative)
- * 3) von Mises distributed real variable
+ * 3...) An arbitrary number of real variables
  * 
  * Mean and precision parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and precision are not included in the list of arguments.
@@ -38,19 +38,19 @@ public class VonMises extends FactorFunction
 {
 	double _mean;
 	double _precision;
-	boolean _meanConstant = false;
-	boolean _precisionConstant = false;
-	int _directedToIndex = 2;
+	double _logBesseli0Precision;
+	boolean _parametersConstant = false;
+	int _firstDirectedToIndex = 2;
 
 	public VonMises() {super();}
 	public VonMises(double mean, double precision)
 	{
 		this();
 		_mean = mean;
-		_meanConstant = true;
 		_precision = precision;
-		_precisionConstant = true;
-		_directedToIndex = 0;
+		_logBesseli0Precision = Math.log(Bessel.i0(_precision));
+		_parametersConstant = true;
+		_firstDirectedToIndex = 0;
     	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 	
@@ -58,20 +58,30 @@ public class VonMises extends FactorFunction
 	public double evalEnergy(Object... arguments)
     {
     	int index = 0;
-    	if (!_meanConstant)
-    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
-    	if (!_precisionConstant)
+    	if (!_parametersConstant)
     	{
+    		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
     		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
+    		_logBesseli0Precision = Math.log(Bessel.i0(_precision));
     		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
-    	double x = FactorFunctionUtilities.toDouble(arguments[index++]);				// Third input is the VonMises distributed variable
-    	
-    	return Math.log(Bessel.i0(_precision)) - _precision * Math.cos(x - _mean);
+    	int length = arguments.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are VonMises variables
+        	sum -= Math.cos(x - _mean);
+    	}
+    	return sum * _precision + N * _logBesseli0Precision;
 	}
     
     @Override
     public final boolean isDirected() {return true;}
     @Override
-	public final int[] getDirectedToIndices() {return new int[]{_directedToIndex};}
+	public final int[] getDirectedToIndices(int numEdges)
+	{
+    	// All edges except the parameter edges (if present) are directed-to edges
+		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
+	}
 }

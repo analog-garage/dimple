@@ -34,40 +34,56 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * The variables in the argument list are ordered as follows:
  * 
- * x: Discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * alpha: Vector of energy values (-log of unnormalized probabilities)
+ * 1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
+ * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
  */
 public class Categorical extends FactorFunction
 {
 	protected int _dimension;
 	protected double[] _alpha;
-	
+	int _firstDirectedToIndex;
+
 	public Categorical(int dimension)
 	{
 		super();
 		_dimension = dimension;
+		_firstDirectedToIndex = dimension;
 		_alpha = new double[dimension];
 	}
 	
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length != _dimension + 1)
-    		throw new DimpleException("Incorrect number of arguments.");
+    	if (arguments.length <= _dimension)
+    		throw new DimpleException("Insufficient number of arguments.");
     	
     	int index = 0;
-    	
-    	int x = FactorFunctionUtilities.toInteger(arguments[index++]);			// First argument is y (output variable)
-
     	for (int i = 0; i < _dimension; i++)
-    		_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);
+    		_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
     	
-    	double sum = 0;															// Normalize
+    	// Get the normalization value
+    	double normalizationValue = 0;
     	for (int i = 0; i < _dimension; i++)
-    		sum += Math.exp(-_alpha[i]);
+    		normalizationValue += Math.exp(-_alpha[i]);
     	
-    	return _alpha[x] + Math.log(sum);
+    	int length = arguments.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining inputs are Categorical variables
+    		sum += _alpha[x];
+    	}    	
+    	return sum + N * Math.log(normalizationValue);
 	}
     
+    @Override
+    public final boolean isDirected() {return true;}
+    @Override
+	public final int[] getDirectedToIndices(int numEdges)
+	{
+    	// All edges except the parameter edges (if present) are directed-to edges
+		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
+	}
 }
