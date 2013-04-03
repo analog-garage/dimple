@@ -216,11 +216,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public void postAddFactor(Factor f)
+	public void updateDirectedCache()
 	{
 		_isDeterministicDependent = isDeterministicDependent();
 		_hasDeterministicDependents = hasDeterministicDependents();
-
+		
+	}
+	
+	@Override
+	public void postAddFactor(Factor f)
+	{
+		updateDirectedCache();
+		
 		if (_var.hasFixedValue())
 		{
 			setCurrentSampleIndex((Integer)_var.getFixedValueObject());

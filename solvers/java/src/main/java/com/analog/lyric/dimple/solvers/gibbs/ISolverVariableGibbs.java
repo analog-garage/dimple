@@ -30,4 +30,5 @@ public interface ISolverVariableGibbs
 	public double getConditionalPotential(int portIndex);
 	public void randomRestart();
 	public void postAddFactor(Factor f);
+	public void updateDirectedCache();
 }

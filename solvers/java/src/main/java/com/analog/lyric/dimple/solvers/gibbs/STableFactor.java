@@ -214,5 +214,13 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		this._outPortMsgs[thisPortNum] = tf._outPortMsgs[otherPortNum];
 	}
 
-	
+	@Override
+	public void setDirectedTo(int [] indices)
+	{
+		for (VariableBase vb : _factor.getVariables())
+		{
+			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();
+		}
+	}
+
 }

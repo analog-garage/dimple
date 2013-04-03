@@ -194,6 +194,12 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 				_portForBlastVar.index,_portForOtherVar.index);
 	}
 
+	@Override
+	public void setDirectedTo(int[] indices) 
+	{
+		//NOP
+	}
+
 	
 
 }

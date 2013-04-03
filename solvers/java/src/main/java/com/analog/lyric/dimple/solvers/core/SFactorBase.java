@@ -135,5 +135,11 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		}
 	}
 	
-	
+	@Override
+	public void setDirectedTo(int [] indices)
+	{
+		
+	}
+
+
 }

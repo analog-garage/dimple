@@ -380,7 +380,6 @@ public class Factor extends FactorBase implements Cloneable
 
 	public void setDirectedTo(VariableList vl)
 	{
-		
 		int [] directedTo = new int[vl.size()];
 		for (int i = 0; i < directedTo.length; i++)
 			directedTo[i] = getPortNum(vl.getByIndex(i));
@@ -423,10 +422,14 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_directedTo = directedTo;
 		
-		//TODO: is this a hack?
 		if (getFactorFunction().factorTableExists(getDomains()))
 		{
 			getFactorTable().setDirected(directedTo, _directedFrom);
+		}
+		
+		if (_solverFactor != null)
+		{
+			_solverFactor.setDirectedTo(directedTo);
 		}
 		
 	}

@@ -174,13 +174,20 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			setCurrentSample((Double)fixedValue);
 		}
 	}
+
 	
-	@Override
-	public void postAddFactor(Factor f)
+	@Override 
+	public void updateDirectedCache()
 	{
 		_hasDeterministicDependents = hasDeterministicDependents();
 		_isDeterministicDepdentent = isDeterministicDependent();
 		
+	}
+	
+	@Override
+	public void postAddFactor(Factor f)
+	{
+		updateDirectedCache();
 		if (_var.hasFixedValue())
 		{
 			setCurrentSample((Double)_var.getFixedValueObject());

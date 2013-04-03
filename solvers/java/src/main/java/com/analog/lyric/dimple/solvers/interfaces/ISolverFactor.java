@@ -33,4 +33,6 @@ public interface ISolverFactor extends ISolverNode
 	public void moveMessages(ISolverNode other);
 	
 	public int[][] getPossibleBeliefIndices() ;
+	
+	public void setDirectedTo(int [] indices);
 }
