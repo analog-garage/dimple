@@ -166,9 +166,9 @@ public class Discrete extends VariableBase
 		double[] input = new double[getDiscreteDomain().size()];
 		Arrays.fill(input, 0);
 		input[fixedValueIndex] = 1;
-		setInput(input);
-		
+		_input = input;
 		setFixedValueObject(fixedValueIndex,true);
+		_input = input;
 		
 	}
 	public void setFixedValue(Object fixedValue)

@@ -175,12 +175,6 @@ public abstract class VariableBase extends Node implements Cloneable
 		return v;
 	}
 
-	private void inputOrFixedValueChanged()
-	{
-		if (_solverVariable != null)
-    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
-		
-	}
 	
 	
 	public Object getFixedValueObject()
@@ -193,10 +187,18 @@ public abstract class VariableBase extends Node implements Cloneable
 		setFixedValueObject(value,false);
 	}
 	
+	private void inputOrFixedValueChanged()
+	{
+		if (_solverVariable != null)
+    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+		
+	}
+	
 	protected void setFixedValueObject(Object value,boolean leaveInput)
 	{
 		_hasFixedValue = true;
-		_input = null;
+		if (!leaveInput)
+			_input = null;
 		_fixedValue = value;
 		inputOrFixedValueChanged();
 	}
