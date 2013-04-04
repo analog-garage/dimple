@@ -140,7 +140,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		randomRestart();
 	}	
-
+	
 	@Override
 	public void solveOneStep() 
 	{		
@@ -241,9 +241,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	
+	
 	@Override
-	public void advance()
+	public void postAdvance()
 	{
+		//In the case of rolled up graphs, we make sure we randomly restart
+		//the variables that are added to the end of the chain.
 		for (FactorGraphStream fgs : getModel().getFactorGraphStreams())
 		{
 			

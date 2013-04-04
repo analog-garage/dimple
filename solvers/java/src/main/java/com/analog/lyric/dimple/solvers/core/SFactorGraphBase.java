@@ -591,7 +591,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 	
 	@Override
-	public void advance()
+	public void postAdvance()
 	{
 		
 	}

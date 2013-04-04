@@ -291,7 +291,7 @@ public class FactorGraph extends FactorBase
 		for (FactorGraphStream s : _factorGraphStreams)
 			s.advance();
 		
-		getSolver().advance();
+		getSolver().postAdvance();
 		
 	}
 	
