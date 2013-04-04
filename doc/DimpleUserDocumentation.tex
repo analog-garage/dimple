@@ -1034,7 +1034,7 @@ This produces the following output:
 
 \subsubsection{Manually Advancing}
 
-By default, rolled up graphs will advance until there is no data left in a DataSource.  Users may override this behavior by setting the FactorGraph.NumSteps parameter.  By default this is set to Inf.  By setting this to zero, users can examine the graph at every step of the rolled up graph.  This allows the user to pull Beliefs off of any portion of the graph.
+By default, rolled up graphs will advance until there is no data left in a DataSource.  Users may override this behavior by either using FactorGraph.solveOneStep or setting the FactorGraph.NumSteps parameter.  By default, NumSteps is set to Inf.  By setting this to a finite number, N, users can examine the graph at every N steps of the rolled up graph.  This allows the user to pull Beliefs off of any portion of the graph.
 
 \begin{lstlisting}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1066,10 +1066,13 @@ fgs = fg.addFactor(ng, bufferSize, vs,vs.getSlice(2));
 
 %Initialize our messages
 fg.initialize();
+%fg.NumSteps = 2;
 
 while 1
     %Solve the current time step
+    %fg.continueSolve(); %This method is need to avoid initialization
     fg.solveOneStep();
+    
     %Get the belief for the first variable
     belief = vs.get(3).Belief;
     disp(belief)
@@ -1082,8 +1085,30 @@ while 1
 end
 \end{lstlisting}
 
-In this code snippet, the user initializes the graph, sets NumSteps to 0, and calls advance until there is no data left.  At each step, the user retrieves the beliefs from the third instance of the variable in the variable stream.
+In this code snippet, the user initializes the graph and calls advance until there is no data left.  At each step, the user retrieves the beliefs from the third instance of the variable in the variable stream.
 
+The user can also progress N steps:
+
+\begin{lstlisting}
+%Initialize our messages
+fg.initialize();
+fg.NumSteps = 2;
+
+while 1
+    %Solve the current time step
+    fg.continueSolve(); %This method is need to avoid initialization
+    
+    %Get the belief for the first variable
+    belief = vs.get(3).Belief;
+    disp(belief)
+
+    if fg.hasNext
+        fg.advance();
+    else
+        break;
+    end
+end
+\end{lstlisting}
 
 \section{API Documentation}
 

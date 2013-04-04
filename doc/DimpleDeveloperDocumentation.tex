@@ -525,6 +525,9 @@ fg.setSolverFactory(IFactorGraphFactory factory)
 						for the given factor, create the appropriate messages
 						pass back the input and output messages
 					cache the messages
+	_solverFactorGraph.postSetSolverFactory()
+		This gives the solver the opportunity to do any cleanup needed after the solver is set.
+		The gibbs solver uses this opportunity to propagate fixedValues through the graph
 		
 \end{lstlisting}
 
@@ -564,6 +567,11 @@ fg.addFactor(factorFunction, Object ... vars)
 				In Summary
 					creates the solver object
 					tells the solver object to create new messages
+			_solverFactorGraph.postAddFactor(f);
+				The solver can use this opportunity to do any cleanup once both the variable
+					and factor solver objects have been created
+				The Gibbs solver uses this opportunity to propagate the fixedValue
+
 	
 \end{lstlisting}
 
@@ -589,18 +597,18 @@ Initialize is used to reset the messages in the solver.  This is usually invoked
 \begin{lstlisting}
 fg.initialize()
 	for each owned variable
-		v.resetMessages()
-			if solver exists, solver.resetMessages()
+		v.initialize()
+			if solver exists, solver.initialize()
 				for each edge
 					resetEdgeMessages(edgeIndex)
 						resetInputMessage 
 						resetOutputMessage									
 		if this is the root graph
 			for each boundary variable
-				v.resetMessages()
+				v.initialize()
 					same as before
 		for each non graph factor at this level (don't descend)
-			f.resetMessages()
+			f.initialize()
 				for each edge
 					resetEdgeMessages
 						NOP // for sum product
@@ -621,11 +629,9 @@ fg.solve(init)
 	checkSolverIsSet
 		throw an error if it isn't
 	_solverFactorGraph.solve(init)
-		prepareForFirstSolve(init)
-			if initialize
-				_factorGraph.initialize()
-					See initialize use case
-					Resets all messages
+		_factorGraph.initialize()
+			See initialize use case
+			Resets all messages
 		solveOneTimeStep
 			iterate(numIterations)
 				//ignore multithreading for now
@@ -635,13 +641,14 @@ fg.solve(init)
 							entry.update()
 								This will result in updating edges or nodes
 								for variables, factors and nested graphs				
-		while the model has more data (assuming rolled up graphs)
-			if the number of steps has been reached
-				break
-			getModel().advance()
-				See advance use case
-			solveOneTimeStep
-				Same as before
+		continueSolve
+			while the model has more data (assuming rolled up graphs)
+				if the number of steps has been reached
+					break
+				getModel().advance()
+					See advance use case
+				solveOneTimeStep
+					Same as before
 					
 		
 
@@ -721,7 +728,7 @@ fg.advance()
 								pass back the input and output messages
 							cache the messages
 			
-	_solver.advance()
+	_solver.postAdvance()
 		Give the solver the opportunity to update any state when advance occurs.
 		The gibbs solver uses this opportunity to reset its best sample index
 
