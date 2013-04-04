@@ -43,7 +43,7 @@ function testBlastFromPastCornerCases()
     c.Input = input;
     fg.NumSteps = 0;
     for i = 1:10
-      fg.solve(false);
+      fg.solveOneStep();
 
       fg2.addFactor(@constFactor,c,const1);
       fg2.addFactor(@constFactor,c,const2);

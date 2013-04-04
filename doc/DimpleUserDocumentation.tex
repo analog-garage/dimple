@@ -1067,12 +1067,9 @@ fgs = fg.addFactor(ng, bufferSize, vs,vs.getSlice(2));
 %Initialize our messages
 fg.initialize();
 
-%Set the number of steps to automatically advance
-fg.NumSteps = 0;
-
 while 1
     %Solve the current time step
-    fg.solve(false);
+    fg.solveOneStep();
     %Get the belief for the first variable
     belief = vs.get(3).Belief;
     disp(belief)

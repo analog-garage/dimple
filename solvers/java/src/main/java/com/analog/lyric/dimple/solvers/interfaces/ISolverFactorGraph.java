@@ -27,11 +27,15 @@ public interface ISolverFactorGraph extends ISolverNode
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
 	public boolean customFactorExists(String funcName);
-	public void solve(boolean initialize);
+	public void solve();
+	public void solveOneStep();
+	public void continueSolve();
+	public void startSolveOneStep();
+	public void startContinueSolve();
 	public void iterate(int numIters);
 	public boolean isSolverRunning();
 	public void interruptSolver();
-	public void startSolver(boolean initialize);
+	public void startSolver();
 	public void setNumIterations(int numIterations);
 	public int getNumIterations();
 	public double getScore();

@@ -505,13 +505,20 @@ classdef FactorGraph < Node
             nodes = obj.depthFirstSearch(node,searchDepth,0);
         end
         
-        function solve(obj,initialize)
-            if nargin < 2
-                initialize = true;
-            end
+        function solveOneStep(obj)
+           obj.genericSolve(@() obj.VectorObject.startSolveOneStep(), ...
+                            @() obj.VectorObject.solveOneStep());
+        end
 
-            obj.genericSolve(@() obj.VectorObject.startSolver(initialize),...
-                @() obj.VectorObject.solve(initialize));
+        function continueSolve(obj)
+           obj.genericSolve(@() obj.VectorObject.startContinueSolve(), ...
+                            @() obj.VectorObject.continueSolve());
+        end
+
+        function solve(obj)
+
+            obj.genericSolve(@() obj.VectorObject.startSolver(),...
+                @() obj.VectorObject.solve());
             
         end
         

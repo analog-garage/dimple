@@ -134,7 +134,7 @@ function testBasics()
             fg2.addFactor(@xorDelta,b(i+1),b(i+2));
 
             %Solve the current time step
-            fg.solve(false);
+            fg.solveOneStep();
             fg2.solve();
 
             %Get the belief for the first variable

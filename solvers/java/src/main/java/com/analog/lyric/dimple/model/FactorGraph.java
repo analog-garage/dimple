@@ -1124,15 +1124,23 @@ public class FactorGraph extends FactorBase
 	
 	public void solve() 
 	{
-		solve(true);
+		checkSolverIsSet();
+		_solverFactorGraph.solve();
 	}
 	
-	public void solve(boolean initialize) 
+	public void solveOneStep()
 	{
 		checkSolverIsSet();
-		_solverFactorGraph.solve(initialize);
+		_solverFactorGraph.solveOneStep();
 	}
 
+	
+	public void continueSolve()
+	{
+		checkSolverIsSet();
+		_solverFactorGraph.continueSolve();
+	}
+	
 	public void remove(FactorGraph factorGraph) 
 	{
 		VariableList varList = factorGraph.getVariablesFlat();

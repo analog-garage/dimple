@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph, Runnable
+public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
 	protected FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
@@ -140,40 +140,42 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 	
-	public void solveOneTimeStep()
+	public void solveOneStep()
 	{
 		iterate(_numIterations);
 	}
 	
-	public void prepareForFirstSolve(boolean initialize)
-	{
-		if (initialize)
-			_factorGraph.initialize();
-	}
 	
-	
-	public void solve(boolean initialize) 
+	@Override
+	public void solve() 
 	{
 			
-		prepareForFirstSolve(initialize);
-		solveOneTimeStep();
+		_factorGraph.initialize();
+		
+		solveOneStep();
+		continueSolve();
+
+	}
+
+	@Override
+	public void continueSolve()
+	{
 		
 		int i = 0;
 		int maxSteps = _factorGraph.getNumSteps();
 		boolean infinite = _factorGraph.getNumStepsInfinite();
+		
 		while (getModel().hasNext())
 		{
 			if (!infinite && i >= maxSteps)
 				break;
-			getModel().advance();
 			
-			solveOneTimeStep();
+			getModel().advance();			
+			solveOneStep();
 			
 			i++;
 		}
-
 	}
-
 
 
 	public ISolverFactorGraph getParentGraph()
@@ -272,25 +274,73 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	// For running as a thread, which allows the solver to be interrupted.
 	// This is backward compatible with versions of the modeler that call solve() directly.
 	private Thread _thread;
-	private boolean _initialize = true;		// Indicates whether to initialize when calling solve via startSolver
 	private Exception _exception = null;	// For throwing exceptions back up to client when solve is running in a thread
 
-	public void run()
+	@Override
+	public void startContinueSolve()
 	{
-		try 
+		_thread = new Thread(new Runnable()
 		{
-			solve(_initialize);
+
+			@Override
+			public void run() {
+				try 
+				{
+					continueSolve();
+				}
+				catch (Exception e) 
+				{
+					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
+				}				
+			}
+			
 		}
-		catch (Exception e) 
-		{
-			_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
-		}
+		);
+		_thread.start();		
 	}
-	public void startSolver()  {startSolver(true);}
-	public void startSolver(boolean initialize) 
+
+	public void startSolveOneStep()
 	{
-		_initialize = initialize; 			// Let run() know whether to initialize or not
-		_thread = new Thread(this);
+		_thread = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				try 
+				{
+					solveOneStep();
+				}
+				catch (Exception e) 
+				{
+					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
+				}				
+			}
+			
+		}
+		);
+		_thread.start();		
+	}
+	
+	@Override
+	public void startSolver() 
+	{
+		_thread = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				try 
+				{
+					solve();
+				}
+				catch (Exception e) 
+				{
+					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
+				}				
+			}
+			
+		}
+		);
 		_thread.start();
 	}
 	public void interruptSolver()

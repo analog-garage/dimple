@@ -40,9 +40,8 @@ function runMMtest(fg,stream,data,dataSource)
     end
     
     i = 1;
-    fg.NumSteps = 0;
     while dataSource.hasNext()
-        fg.solve(false);
+        fg.solveOneStep();
         fg2.solve();
         
         assertElementsAlmostEqual(stream.get(1).Belief(2),b(i).Belief);

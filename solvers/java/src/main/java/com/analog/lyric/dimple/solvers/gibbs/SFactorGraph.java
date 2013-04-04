@@ -136,23 +136,26 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		if (_scoreArray != null)
 			_scoreArray.clear();
+		
+		randomRestart();
 	}
 	
-	public void advance()
-	{
+
+	@Override
+	public void solveOneStep() 
+	{		
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
 		
-	}
-
-
-	@Override
-	public void solveOneTimeStep() 
-	{		
-		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
-			burnIn();
+			boolean randomRestart = true;
+			
+			if (restartCount == 0)
+				randomRestart = false;
+			
+			burnIn(randomRestart);
+			
 			for (int iter = 0; iter < _numSamples; iter++)
 			{
 				oneSample();
@@ -162,6 +165,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	
 	public final void burnIn()
+	{
+		burnIn(true);
+	}
+	
+	public final void burnIn(boolean randomRestart)
 	{
 		randomRestart();
 		iterate(_burnInUpdates);
@@ -453,5 +461,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			((ISolverVariableGibbs)vb.getSolver()).postAddFactor(null);
 		}
 	}
+
 	
 }

@@ -32,8 +32,8 @@ function testSolveMultipleTimes()
 
     fg.NumSteps = 10;
     fg.solve();
-    fg.solve(false);
-    fg.solve(false);
+    fg.continueSolve();
+    fg.continueSolve();
     assertEqual(b.Variables(1).Belief,[.8 .2]);
     fg.solve();
     assertEqual(b.Variables(1).Belief,[.5 .5]);

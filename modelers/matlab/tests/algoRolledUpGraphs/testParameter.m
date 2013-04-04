@@ -34,7 +34,7 @@ function testParameter
     for i = 1:10
         fg2.addFactor(@constFactor,b,[.6 .4]);
         fg2.solve();
-        fg.solve(false);
+        fg.solveOneStep();
 
         assertElementsAlmostEqual(b.Belief,v.Belief);
 

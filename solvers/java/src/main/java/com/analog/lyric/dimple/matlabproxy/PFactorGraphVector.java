@@ -162,23 +162,50 @@ public class PFactorGraphVector extends PFactorVector
 	
 	
 	
-    public void solve(boolean initialize) 
+    public void solve() 
     {
     	if (getGraph().isSolverRunning()) 
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-    	getGraph().solve(initialize);
+    	getGraph().solve();
     }
-	
+    
+    public void startContinueSolve()
+    {
+    	getGraph().getSolver().continueSolve();
+    }
+    
+    public void continueSolve()
+    {
+    	if (getGraph().isSolverRunning()) 
+    		throw new DimpleException("No changes allowed while the solver is running.");
+
+    	getGraph().continueSolve();
+    	
+    }
+    
+    public void solveOneStep() 
+    {
+    	if (getGraph().isSolverRunning()) 
+    		throw new DimpleException("No changes allowed while the solver is running.");
+
+    	getGraph().solveOneStep();
+    }
+    
+    public void startSolveOneStep()
+    {
+    	getGraph().getSolver().startSolveOneStep();
+    }
+    
     public boolean isSolverRunning()
     {
     	return getGraph().isSolverRunning();
     }
   
     
-    public void startSolver(boolean init)
+    public void startSolver()
     {
-    	getGraph().getSolver().startSolver(init);
+    	getGraph().getSolver().startSolver();
     }
     
 	public PVariableVector getVariableVector(int relativeNestingDepth,int forceIncludeBoundaryVariables) 

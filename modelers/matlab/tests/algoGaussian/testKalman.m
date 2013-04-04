@@ -199,7 +199,7 @@ function testKalman()
     fg.NumSteps = 0;
     fg.initialize();
     for i = 1:timesteps
-       fg.solve(false);
+       fg.solveOneStep();
        fgxs(i) = fxs.get(1).Belief.Means(1);
        fgys(i) = fxs.get(1).Belief.Means(2);
 

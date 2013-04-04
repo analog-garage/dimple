@@ -54,7 +54,7 @@ function testReal()
         r(i).Input = [1 1];
         r(i+1).Input = [1 1];
 
-        fg.solve(false);
+        fg.solveOneStep();
         fg2.solve();
 
 
