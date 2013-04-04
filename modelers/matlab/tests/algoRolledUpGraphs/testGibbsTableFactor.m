@@ -75,6 +75,11 @@ diff = b2(:,(end-10):end) - b1(:,(end-10):end);
 ndiff = norm(diff);
 assertTrue(ndiff < 1e-100);
 
+%check blast from the past is correct:
+inputMsg = x2.get(1).Ports{2}.InputMsg;
+sample = x2.get(1).Solver.getCurrentSample();
+assertEqual(inputMsg(sample+1),0);
+assertEqual(inputMsg(2-sample),Inf);
 
 end
 
