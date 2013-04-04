@@ -116,7 +116,6 @@ function testRealRolledUp()
     end
 
     % Solve
-    disp('Starting Gibbs solver');
     fg.Solver.setNumRestarts(numRestarts);
     fg.Solver.setNumSamples(numSamples);
     fg.Solver.setBurnInScans(burnInScans);
