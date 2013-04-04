@@ -16,8 +16,8 @@
 
 function testGibbsTableFactor
 
-N = 1000;
-bufferSize = 10;
+N = 100;
+bufferSize = 1;
 seed = 0;
 rs=RandStream('mt19937ar');
 RandStream.setGlobalStream(rs);
@@ -54,7 +54,19 @@ sink2 = DoubleArrayDataSink();
 [fg2, x2] = createGraph(source2, sink2, bufferSize);
 fg2.Solver = 'Gibbs';
 fg2.solve();
-
+%{
+%fg2.Solver.setNumRestarts(200);
+fg2.initialize();
+fg2.Solver.saveAllSamples();
+while 1
+   fg2.solveOneStep();
+   if ~ fg2.hasNext();
+       break;
+   end
+   
+   fg2.advance();
+end
+%}
 
 
 b2 = sink2.Array;

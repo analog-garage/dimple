@@ -290,4 +290,9 @@ public class FactorGraphStream
 		return null;
 	}
 
+	
+	public ArrayList<FactorGraph> getNestedGraphs()
+	{
+		return _nestedGraphs;
+	}
 }

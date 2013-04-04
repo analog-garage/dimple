@@ -198,5 +198,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		//throw new DimpleException("not supported");
 	}
 
+	@Override
+	public void setDirectedTo(int [] indices)
+	{
+		for (VariableBase vb : _factor.getVariables())
+		{
+			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();
+		}
+	}
 
 }

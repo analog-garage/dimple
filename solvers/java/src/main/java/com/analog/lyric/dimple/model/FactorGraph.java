@@ -1096,6 +1096,7 @@ public class FactorGraph extends FactorBase
 		
 		for (Factor f : getNonGraphFactorsFlat() )
 			f.getSolver().createMessages();
+		
 	}
 	
 	public void initialize() 

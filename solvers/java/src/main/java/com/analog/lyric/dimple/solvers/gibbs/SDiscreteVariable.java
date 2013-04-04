@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.Utilities;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.sun.tools.javac.code.Type.ForAll;
 
 
 
@@ -96,9 +97,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			// Sum up the messages to get the conditional distribution
 			for (int index = 0; index < messageLength; index++)
 			{
+
 				double out = _input[index];						// Sum of the input prior...
 				for (int port = 0; port < _numPorts; port++)
-					out += _inPortMsgs[port][index];			// Plus each input message value
+				{
+					double tmp = _inPortMsgs[port][index];
+					out += tmp;			// Plus each input message value
+				}
 				out *= _beta;									// Apply tempering
 
 				if (out < minEnergy) minEnergy = out;			// For normalization
@@ -115,7 +120,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 				setCurrentSampleIndex(index);
 				double out = _input[index];						// Sum of the input prior...
 				for (int port = 0; port < _numPorts; port++)	// Plus each input message value
-					out += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+				{
+					double tmp = ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+					out += tmp;
+				}
 				out *= _beta;									// Apply tempering
 
 				if (out < minEnergy) minEnergy = out;			// For normalization
@@ -124,9 +132,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			}
 		}
 		
-		
 		// Sample from the conditional distribution
-		setCurrentSampleIndex(generateSample(_conditional, minEnergy));
+		int index = generateSample(_conditional, minEnergy);
+		setCurrentSampleIndex(index);
 		
 	}
 	
@@ -174,7 +182,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Otherwise, compute the belief
 		long sum = 0;
 		for (int i = 0; i < domainLength; i++)
+		{
 			sum+= _beliefHistogram[i];
+		}
 		if (sum != 0)
 		{
 			for (int i = 0; i < domainLength; i++)
@@ -496,6 +506,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
 		_bestSampleIndex = -1;
+	
 
 	}
 	
@@ -589,6 +600,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_samplerScratch = ovar._samplerScratch;
 		_bestSampleIndex = ovar._bestSampleIndex;
 		_lengthRoundedUp = ovar._lengthRoundedUp;
+		
     }
 
 	

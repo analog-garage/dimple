@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
@@ -138,8 +139,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			_scoreArray.clear();
 		
 		randomRestart();
-	}
-	
+	}	
 
 	@Override
 	public void solveOneStep() 
@@ -238,6 +238,20 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		{
 			_temperature *= _temperingDecayConstant;
 			setTemperature(_temperature);
+		}
+	}
+	
+	@Override
+	public void advance()
+	{
+		for (FactorGraphStream fgs : getModel().getFactorGraphStreams())
+		{
+			
+			FactorGraph ng = fgs.getNestedGraphs().get(fgs.getNestedGraphs().size()-1);
+			for (VariableBase vb : ng.getBoundaryVariables())
+			{
+				((ISolverVariableGibbs)vb.getSolver()).randomRestart();
+			}
 		}
 	}
 	
