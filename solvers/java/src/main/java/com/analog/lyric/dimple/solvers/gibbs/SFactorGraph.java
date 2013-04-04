@@ -171,7 +171,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	public final void burnIn(boolean randomRestart)
 	{
-		randomRestart();
+		if (randomRestart)
+			randomRestart();
 		iterate(_burnInUpdates);
 	}
 	
