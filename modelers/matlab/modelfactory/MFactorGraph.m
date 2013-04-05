@@ -57,10 +57,7 @@ classdef MFactorGraph < handle
             obj.Solver.setNumIterations(numIterations);
         end
         
-        function solve(obj,initialize)
-            if initialize == false
-                error('not supported');
-            end
+        function solve(obj)
             obj.Solver.solve(obj.GraphId);
         end
         
