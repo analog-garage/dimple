@@ -308,13 +308,20 @@ public abstract class PNodeVector
 		{
 			if (m.getName().equals(methodName))
 			{
+				boolean keepTrying = false;
 				for (int i = 0; i < _nodes.length; i++)
-					try {
+				{
+					try 
+					{
 						m.invoke(_nodes[i].getSolver(),args);
-					} catch (Exception e) {
+					}
+					catch (IllegalArgumentException e) {keepTrying = true;}	// Might be another version with different signature
+					catch (Exception e)
+					{
 						throw new DimpleException(e);
 					}
-				return;
+				}
+				if (!keepTrying) return;
 			}
 		}
 
@@ -331,14 +338,21 @@ public abstract class PNodeVector
 		{
 			if (m.getName().equals(methodName))
 			{
+				boolean keepTrying = false;
 				Object [] retval = new Object[_nodes.length];
 				for (int i = 0; i < _nodes.length; i++)
-					try {
+				{
+					try
+					{
 						retval[i] = m.invoke(_nodes[i].getSolver(),args);
-					} catch (Exception e) {
+					}
+					catch (IllegalArgumentException e) {keepTrying = true;}	// Might be another version with different signature
+					catch (Exception e)
+					{
 						throw new DimpleException(e);
 					}
-				return retval;
+				}
+				if (!keepTrying) return retval;
 			}
 		}
 

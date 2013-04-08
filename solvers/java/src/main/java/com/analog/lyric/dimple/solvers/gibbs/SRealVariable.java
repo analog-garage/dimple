@@ -28,12 +28,16 @@ import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.DefaultRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.MHSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs
+public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISampleScorer
 {
 	protected Real _varReal;
 	protected ObjectSample _outputMsg;
@@ -41,8 +45,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	protected double _initialSampleValue = 0;
 	protected FactorFunction _input;
 	protected RealDomain _domain;
-	protected double _proposalStdDev = 1;
-	protected IProposalKernel _proposalKernel = new DefaultProposalKernel();
+	protected IRealSampler _sampler = new DefaultRealSampler();
 	protected ArrayList<Double> _sampleArray;
 	protected double _bestSampleValue;
 	protected double _beta = 1;
@@ -80,50 +83,25 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Also return if the variable is set to a fixed value
 		if (_var.hasFixedValue()) return;
 
-		
-		double _lowerBound = _domain.getLowerBound();
-		double _upperBound = _domain.getUpperBound();
-
-		double proposalValue = (Double)_proposalKernel.next(_sampleValue);
-		double previousSampleValue = _sampleValue;
-
-		// If outside the bounds, then reject
-		if ((proposalValue >= _lowerBound) && (proposalValue <= _upperBound))
-		{
-			// Get the potential for the current sample value
-			double LPrevious = getSamplePotential();
-			
-			// Get the potential for the proposed sample value
-			setCurrentSample(proposalValue);
-			double LProposed = getSamplePotential();
-
-			// Temper
-			LPrevious *= _beta;
-			LProposed *= _beta;
-
-			// Accept or reject
-			double rejectionThreshold = Math.exp(LPrevious - LProposed);	// Note, no Hastings factor if Gaussian proposal distribution
-			if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
-			{
-				setCurrentSample(proposalValue);		// Accept
-			}
-			else
-			{
-				setCurrentSample(previousSampleValue);	// Reject
-			}
-		}
+		// Get the next sample value from the sampler
+		double nextSampleValue = _sampler.nextSample(_sampleValue, this);
+		if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
+			setCurrentSample(nextSampleValue);
 	}
 	
-	// For sampling, get the potential for the neighboring factors given the current sample value
-	protected final double getSamplePotential()
+	
+	@Override
+	public double getCurrentSampleScore()
 	{
+		if ((_sampleValue < _domain.getLowerBound()) || (_sampleValue > _domain.getUpperBound()))
+			return Double.POSITIVE_INFINITY;		// Outside the domain
+			
 		int numPorts = _var.getSiblings().size();
 		double potential = 0;
 
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
 			potential = _input.evalEnergy(new Object[]{_sampleValue});
-
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
 			INode factorNode = _var.getSiblings().get(portIndex);
@@ -132,8 +110,21 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			potential += factor.getConditionalPotential(factorPortNumber);
 		}
 		
-		return potential;
+		return potential * _beta;	// Incorporate current temperature
 	}
+
+
+	@Override
+	public double getSampleScore(double sampleValue)
+	{
+		// WARNING: Side effect is that the current sample value changes to this sample value
+		// Could change back but less efficient to do this, since we'll be updating the sample value anyway
+		setCurrentSample(sampleValue);
+
+		return getCurrentSampleScore();
+	}
+
+
 
 	public void randomRestart()
 	{
@@ -324,35 +315,68 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 
-	// FIXME: Generalize to proposal kernels that take different parameters
+
+
+	// FIXME: REMOVE
+	// There should be a way to call these directly via the samplers
+	// If so, they should be removed from here since this makes this sampler-specific
 	public final void setProposalStandardDeviation(double stdDev)
 	{
-		_proposalStdDev = stdDev;
-		_proposalKernel.setParameters(stdDev);
+		if (_sampler instanceof MHSampler)
+			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
 	public final double getProposalStandardDeviation()
 	{
-		return _proposalStdDev;
+		if (_sampler instanceof MHSampler)
+			return (Double)((MHSampler)_sampler).getProposalKernel().getParameters()[0];
+		else
+			return 0;
 	}
-	
 	// Set the proposal kernel parameters more generally
 	public final void setProposalKernelParameters(Object... parameters)
 	{
-		_proposalKernel.setParameters(parameters);
+		if (_sampler instanceof MHSampler)
+			((MHSampler)_sampler).getProposalKernel().setParameters(parameters);
 	}
 	
-	// Override the default proposal kernel
+	// FIXME: REMOVE
+	// There should be a way to call these directly via the samplers
+	// If so, they should be removed from here since this makes this sampler-specific
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
-		_proposalKernel = proposalKernel;
+		if (_sampler instanceof MHSampler)
+			((MHSampler)_sampler).setProposalKernel(proposalKernel);
 	}
-	public final void setProposalKernel(String proposalKernelName) throws Exception		// Name of proposal kernel
+	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
 	{
-		String fullQualifiedName = "com.analog.lyric.dimple.solvers.core.proposalKernels." + proposalKernelName; 
-		_proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+		if (_sampler instanceof MHSampler)
+			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
 	}
-
+	public final IProposalKernel getProposalKernel()
+	{
+		if (_sampler instanceof MHSampler)
+			return ((MHSampler)_sampler).getProposalKernel();
+		else
+			return null;
+	}
 	
+	// Set/get the sampler to be used for this variable
+	public final void setSampler(IRealSampler sampler)
+	{
+		_sampler = sampler;
+	}
+	public final void setSampler(String samplerName)
+	{
+		_sampler = RealSamplerRegistry.get(samplerName);
+	}
+	public final IRealSampler getSampler()
+	{
+		return _sampler;
+	}
+	public final String getSamplerName()
+	{
+		return _sampler.getClass().getSimpleName();
+	}
 
 	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
 	public final double getInitialSampleValue() {return _initialSampleValue;}
@@ -472,7 +496,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
-		_proposalStdDev = ovar._proposalStdDev;
+		_sampler = ovar._sampler;
 		_holdSampleValue = ovar._holdSampleValue;
     }
 

@@ -16,9 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
-public interface IProposalKernel
+public class ProposalKernelRegistry
 {
-	public Proposal next(Object currentValue);
-	public void setParameters(Object... parameters);
-	public Object[] getParameters();
+	// Get a proposal kernel by name; assumes it is located in this package
+	public static IProposalKernel get(String proposalKernelName)
+	{
+		String fullQualifiedName = ProposalKernelRegistry.class.getPackage().getName() + "." + proposalKernelName;
+		try
+		{
+			IProposalKernel proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			return proposalKernel;
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
 }

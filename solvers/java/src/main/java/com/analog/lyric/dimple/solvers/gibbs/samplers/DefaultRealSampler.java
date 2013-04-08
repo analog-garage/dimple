@@ -14,11 +14,8 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public interface IProposalKernel
+public class DefaultRealSampler extends MHSampler	// FIXME: Change to slice sampler when completed
 {
-	public Proposal next(Object currentValue);
-	public void setParameters(Object... parameters);
-	public Object[] getParameters();
 }

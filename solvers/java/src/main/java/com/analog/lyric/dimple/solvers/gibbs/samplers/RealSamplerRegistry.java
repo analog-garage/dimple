@@ -14,11 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public interface IProposalKernel
+public class RealSamplerRegistry
 {
-	public Proposal next(Object currentValue);
-	public void setParameters(Object... parameters);
-	public Object[] getParameters();
+	// Get a proposal sampler by name; assumes it is located in this package
+	public static IRealSampler get(String samplerName)
+	{
+		String fullQualifiedName = RealSamplerRegistry.class.getPackage().getName() + "." + samplerName;
+		try
+		{
+			IRealSampler proposalKernel = (IRealSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			return proposalKernel;
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
 }

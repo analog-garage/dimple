@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -222,7 +223,8 @@ public class SRealVariable extends SRealVariableBase
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				double proposalValue = (Double)_proposalKernel.next(sampleValue);
+				Proposal proposal = _proposalKernel.next(sampleValue);
+				double proposalValue = (Double)proposal.value;
 
 				// If outside the bounds, then reject
 				if (proposalValue < _lowerBound) continue;
@@ -244,7 +246,7 @@ public class SRealVariable extends SRealVariableBase
 
 
 					// Accept or reject
-					double rejectionThreshold = Math.exp(potential - potentialProposed);	// Note, no Hastings factor if Gaussian proposal distribution
+					double rejectionThreshold = Math.exp(potential - potentialProposed + proposal.hastingsTerm);
 					if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 					{
 						sampleValue = proposalValue;

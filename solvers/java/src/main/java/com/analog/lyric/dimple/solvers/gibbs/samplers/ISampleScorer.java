@@ -14,11 +14,10 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public interface IProposalKernel
+public interface ISampleScorer
 {
-	public Proposal next(Object currentValue);
-	public void setParameters(Object... parameters);
-	public Object[] getParameters();
+	public double getCurrentSampleScore();
+	public double getSampleScore(double sampleValue);
 }
