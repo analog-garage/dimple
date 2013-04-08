@@ -45,7 +45,8 @@ fg.Solver.setBurnInUpdates(burnInUpdates);
 a = Real();
 fg.addFactor({'VonMises',0,1}, a);
 
-a.Solver.setProposalStandardDeviation(1);
+a.Solver.setSampler('MHSampler');           % Test MH Sampler
+a.Solver.getSampler.getProposalKernel.setParameters(1); % Proposal std-dev
 
 if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
@@ -61,7 +62,7 @@ assert(min(as) < -pi);
 % Try with circular kernel, values should never stray past +/-pi
 
 a.Solver.setProposalKernel('CircularNormalProposalKernel');
-a.Solver.setProposalKernelParameters(1);
+a.Solver.getSampler.getProposalKernel.setParameters(1); % Proposal std-dev
 
 fg.Solver.saveAllSamples();
 fg.solve();

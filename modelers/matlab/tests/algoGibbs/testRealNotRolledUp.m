@@ -22,14 +22,14 @@ function testRealNotRolledUp()
     doplot = false;
     
     % Gibbs solver parameters
-    numSamples = 20000;                   % Total number of Gibbs samples to run
+    numSamples = 2000;                    % Total number of Gibbs samples to run
     proposalStandardDeviation = 0.5;      % Proposal standard deviation for parameter variables
     scansPerSample = 1;                 % Number of scans (one update of all variables) per sample
     burnInScans = 100;                  % Number of burn-in scans before sampling
     numRestarts = 0;
 
     if (repeatable)
-        seed = 1;
+        seed = 4;
         rs=RandStream('mt19937ar');
         RandStream.setGlobalStream(rs);
         reset(rs,seed);
@@ -45,7 +45,7 @@ function testRealNotRolledUp()
     transitionSigma = 0.1;
     transitionPrecision = 1/transitionSigma^2;
     obsMean = 0;
-    obsSigma = 1;
+    obsSigma = 2;
 
 
     %**************************************************************************
@@ -81,9 +81,9 @@ function testRealNotRolledUp()
     % Would have liked to write "Xo = Xi + N" but that doesn't work in a
     % sub-graph since Xo is already defined as a boundary variable
     %sg.addFactor('Sum', Xo, Xi, N);
-    sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
+    sg.addFactor(FactorFunction('AdditiveNoise',transitionSigma),Xo,Xi);
 
-    sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
+    sg.addFactor(FactorFunction('AdditiveNoise',obsSigma), Ob, Xi);
 
     fg = FactorGraph();
     X = Real(1,hmmLength);
@@ -91,18 +91,10 @@ function testRealNotRolledUp()
     fg.addFactorVectorized(sg, X(1:end-1),X(2:end),  O);
 
     % Add observation data
-    % This is a hacky way to do it; better when we can set fixed input values
-    % for real variables too
-    %for i=1:hmmLength-1
-    %    O(i).Domain = [o(i) o(i)];
-    %    O(i).Solver.setInitialSampleValue(o(i));
-    %end
-    for i = 1:hmmLength-1
-        O(i).Solver.setAndHoldSampleValue(o(i));
-    end
+    O.FixedValue = o(1:hmmLength-1);
 
     % Set proposal standard deviation for real variables
-    X.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
+%     X.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
 
     if (repeatable)
         fg.Solver.setSeed(1);		% Make the Gibbs solver repeatable

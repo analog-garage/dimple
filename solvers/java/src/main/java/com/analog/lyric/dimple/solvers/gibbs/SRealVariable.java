@@ -482,8 +482,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	
 	public void createNonEdgeSpecificState()
 	{
-
 		_outputMsg = createDefaultMessage();
+		_sampleValue = (Double)_outputMsg.value;
 	}
 	
 	@Override

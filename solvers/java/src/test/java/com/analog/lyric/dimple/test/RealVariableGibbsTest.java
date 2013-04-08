@@ -40,7 +40,7 @@ public class RealVariableGibbsTest
 	{
 		if (debugPrint) System.out.println("== basicTest1 ==");
 
-		int numSamples = 100000;
+		int numSamples = 10000;
 		int updatesPerSample = 10;
 		int burnInUpdates = 1000;
 
@@ -100,10 +100,10 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Double)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.8048546099515951));
-		assertTrue(nearlyEquals(bMean,-0.21079379615278554));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.7982352395977991));
-		assertTrue(nearlyEquals((Double)sb.getBestSample(),-0.20088764481161117));
+		assertTrue(nearlyEquals(aMean,0.7928790579031635));
+		assertTrue(nearlyEquals(bMean,-0.1919900907454578));
+		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.8021410547314));
+		assertTrue(nearlyEquals((Double)sb.getBestSample(),-0.20351968251813402));
 	}
 	
 	
@@ -180,9 +180,9 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
 		if (debugPrint) System.out.println("bBest: " + (Integer)sb.getBestSample());
 		
-		assertTrue(nearlyEquals(aMean,0.18416769265598606));
-		assertTrue(nearlyEquals(bMean,0.598));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.9780485820519245));
+		assertTrue(nearlyEquals(aMean,0.20233124996414115));
+		assertTrue(nearlyEquals(bMean,0.6049));
+		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.9776296516826819));
 		assertTrue((Integer)sb.getBestSample() == 1);
 	}	
 	

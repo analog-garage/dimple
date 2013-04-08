@@ -73,7 +73,7 @@ public class SliceSampler implements IRealSampler
 			xSample = Ls + (Rs - Ls) * SolverRandomGenerator.rand.nextDouble();
 			double fSample = sampleScorer.getSampleScore(xSample);
 			
-			if (y > fSample && accept(xSample, x, y, L, R, sampleScorer))
+			if (y >= fSample && accept(xSample, x, y, L, R, sampleScorer))
 				break;	// Accept
 			
 			// Not accepted yet, shrink the interval

@@ -90,23 +90,6 @@ function testRealRolledUp()
     f = fg.addFactor(sg, X,X.getSlice(2),  O);
     f.BufferSize = bufferSize;
 
-    % Add observation data
-    % This is a hacky way to do it; better when we can set fixed input values
-    % for real variables too
-    %for i=1:hmmLength-1
-    %    O(i).Domain = [o(i) o(i)];
-    %    O(i).Solver.setInitialSampleValue(o(i));
-    %end
-    %<<<<<<< HEAD
-    %=======
-    %ffds = FactorFunctionDataSource();%
-
-    %for i = 1:hmmLength-1
-    %    ffds.add(com.analog.lyric.dimple.FactorFunctions.Normal(o(i),1e10));
-    %end
-    %O.DataSource = ffds;
-    %>>>>>>> dfd86036ea580086f701dab42d7b2be903578b04
-
     fg.initialize();
     fg.NumSteps = 0;
 
@@ -126,7 +109,7 @@ function testRealRolledUp()
     output = zeros(hmmLength,1);
 
     for j = 1:O.Size
-        O.get(j).Solver.setAndHoldSampleValue(o(inputIndex));
+        O.get(j).FixedValue = o(inputIndex);
         inputIndex = inputIndex+1;
     end
 

@@ -16,6 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public class DefaultRealSampler extends MHSampler	// FIXME: Change to slice sampler when completed
+public class DefaultRealSampler extends SliceSampler
 {
 }
