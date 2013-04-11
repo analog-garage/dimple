@@ -34,6 +34,8 @@ b = Real([-1,1]);
 c = Real(com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
 d = Real([-1.1,1.1], com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
 e = Real([0,Inf]);
+domain = RealDomain(-2.2, 3.7);
+f = Real(domain);
 
 assert(a.Domain.LB == -Inf);
 assert(a.Domain.UB == Inf);
@@ -45,6 +47,9 @@ assert(d.Domain.LB == -1.1);
 assert(d.Domain.UB == 1.1);
 assert(e.Domain.LB == 0);
 assert(e.Domain.UB == Inf);
+assert(f.Domain.LB == -2.2);
+assert(f.Domain.UB == 3.7);
+
 
 
 dtrace(debugPrint, ['c.Input.eval(0): ' num2str(c.Input.eval(0))]);

@@ -36,6 +36,9 @@ classdef Real < VariableBase
                 if (isnumeric(arg) && (length(arg) == 2))
                     domain = RealDomain(arg(1),arg(2));
                     varargIndex = varargIndex + 1;
+                elseif isa(arg, 'RealDomain')
+                    domain = arg;
+                    varargIndex = varargIndex + 1;
                 else
                     domain = RealDomain(-Inf,Inf);
                 end
