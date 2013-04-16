@@ -17,13 +17,15 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 
 
 public class GaussianAdd extends GaussianFactorBase
 {
 	
-	public GaussianAdd(com.analog.lyric.dimple.model.Factor factor) 
+	public GaussianAdd(Factor factor) 
 	{
 		super(factor);
 		
@@ -32,7 +34,7 @@ public class GaussianAdd extends GaussianFactorBase
 			VariableBase v = (VariableBase)factor.getSiblings().get(i);
 			
 			if (v.getDomain().isDiscrete())
-				throw new DimpleException("cannot connect discrete variable to the Gaussian add factor");
+				throw new DimpleException("Cannot connect discrete variable to the Gaussian add factor");
 		}
 
 	}	
@@ -74,11 +76,31 @@ public class GaussianAdd extends GaussianFactorBase
 		//sigma^2 = othersigma^2 + theothersigma^2 ...
 	}
 
-
 	@Override
 	public void initialize() 
 	{
 		
 	}
+	
+	
+	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	public static boolean isFactorCompatible(Factor factor)
+	{
+		
+		for (int i = 0; i < factor.getSiblings().size(); i++)
+		{
+			VariableBase v = (VariableBase)factor.getSiblings().get(i);
+			
+			// Must be real
+			if (v.getDomain().isDiscrete())
+				return false;
+			
+			// Must be univariate
+			if (v instanceof RealJoint)
+				return false;
+		}
+		return true;
+	}
+
 
 }

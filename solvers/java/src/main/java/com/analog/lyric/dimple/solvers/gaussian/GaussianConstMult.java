@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 
 
@@ -28,17 +30,17 @@ public class GaussianConstMult extends GaussianFactorBase
 	private double _constant;
 	private int _varIndex;
 	
-	public GaussianConstMult(com.analog.lyric.dimple.model.Factor factor) 
+	public GaussianConstMult(Factor factor) 
 	{
 		super(factor);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
 		if (factor.getSiblings().size() != 2)
-			throw new DimpleException("factor must be of form a = b*c where b or c is a constant");
+			throw new DimpleException("Factor must be of form a = b*c where b or c is a constant");
 		
 		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
 		if (ff.getConstants().length != 1)
-			throw new DimpleException("expected one constant");
+			throw new DimpleException("Expected one constant");
 		double constant = (Double)ff.getConstants()[0];
 		
 		
@@ -53,7 +55,7 @@ public class GaussianConstMult extends GaussianFactorBase
 		_constant = constant;
 		
 		if (_constant == 0)
-			throw new DimpleException("constant of 0 not supporetd");
+			throw new DimpleException("Constant of 0 not supported");
 		
 	}	
 
@@ -95,5 +97,36 @@ public class GaussianConstMult extends GaussianFactorBase
 		outMsg[1] = inMsg[1]/Math.abs(_constant);
 
 	}
+	
+	
+	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	public static boolean isFactorCompatible(Factor factor)
+	{
+		// Must be of the form form a = b*c where either b or c is a constant.
+		if (factor.getSiblings().size() != 2)
+			return false;
+
+		// Must have exactly one constant
+		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
+		if (ff.getConstants().length != 1)
+			return false;
+		double constant = (Double)ff.getConstants()[0];
+		
+		// Variables must be real and univariate
+		VariableBase a = (VariableBase)factor.getSiblings().get(0);
+		VariableBase b = (VariableBase)factor.getSiblings().get(1);
+		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
+			return false;
+		if (a instanceof RealJoint || b instanceof RealJoint)
+			return false;
+		
+		// Constant must be non-zero
+		if (constant == 0)
+			return false;
+
+		return true;
+	}
+
+
 
 }

@@ -108,12 +108,20 @@ public class SFactorGraph extends SFactorGraphBase
 			else
 				return new GaussianAdd(factor);
 		}
+		if (funcName.equals("Sum"))
+		{
+			return new GaussianAdd(factor);
+		}
 		else if (funcName.equals("constmult"))
 		{
 			if (isMultivariate(factor))
 				return new MultivariateGaussianConstMult(factor);
 			else
 				return new GaussianConstMult(factor);    		
+		}
+		else if (funcName.equals("Product"))
+		{
+			return new GaussianConstMult(factor);    		
 		}
 		else if (funcName.equals("polynomial"))
 		{
@@ -128,21 +136,16 @@ public class SFactorGraph extends SFactorGraphBase
 
 	public ISolverFactor createFactor(Factor factor)  
 	{
-		if (customFactorExists(factor.getFactorFunction().getName()))
+		if (customFactorExists(factor))
 			return createCustomFactor(factor);
 		else if (factor.isDiscrete())
 			return new com.analog.lyric.dimple.solvers.sumproduct.STableFactor(factor);
 		else
 		{
-			if (customFactorExists(factor.getFactorFunction().getName()))
-				return createCustomFactor(factor);
-			else
-			{
-				HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
-				sf.setNumSamples(_numSamples);
-				sf.setMaxNumTries(_maxNumTries);
-				return sf;
-			}
+			HybridSampledBPFactor sf = new HybridSampledGaussianFactor(factor,_random);
+			sf.setNumSamples(_numSamples);
+			sf.setMaxNumTries(_maxNumTries);
+			return sf;
 		}
 	}
 
@@ -174,6 +177,22 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else
 			return false;	
+	}
+	
+	
+	// For internal use, we check more than just the name
+	// This allows detection of factors used by overloaded operators to be used if used in the right way
+	public boolean customFactorExists(Factor factor)
+	{
+		String funcName = factor.getModelerFunctionName();
+		if (customFactorExists(funcName))
+			return true;
+		else if (funcName.equals("Sum"))
+			return GaussianAdd.isFactorCompatible(factor);
+		else if (funcName.equals("Product"))
+			return GaussianConstMult.isFactorCompatible(factor);
+		else
+			return false;
 	}
 
 
