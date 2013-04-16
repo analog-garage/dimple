@@ -102,9 +102,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
 			potential = _input.evalEnergy(new Object[]{_sampleValue});
+		ArrayList<INode> siblings = _var.getSiblings();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
-			INode factorNode = _var.getSiblings().get(portIndex);
+			INode factorNode = siblings.get(portIndex);
 			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
 			int factorPortNumber = factorNode.getPortNum(_var);
 			potential += factor.getConditionalPotential(factorPortNumber);
