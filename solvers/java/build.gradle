@@ -18,6 +18,7 @@ apply plugin: 'java'
 
 defaultTasks 'build'
 
+//Specify what repositories to use when looking for jars
 repositories {
   mavenCentral()
   maven {
@@ -29,56 +30,76 @@ repositories {
 
 }
 
+//Create a new configuration so that we can refer to all the jar file 
+//dependencies later
 configurations {
   jarfiles
 }
 
+//Create an array of all the dependency jars
 project.ext.myjars = [
     "org.apache.commons:commons-math:2.2",
     "edu.emory.mathcs:jtransforms:2.3",
     "jama:jama:1.0.2",
-    "colt:colt:1.2.0"
+    "colt:colt:1.2.0",
+    "junit:junit:4.10"
   ]
 
+//Set up all the external dependencies for dimple
 dependencies
 {
+  //for each jar file
   for (j in project.myjars)
   {
+    //add the dependency to the compile target
     compile(j)
+
+    //add the dependency to our custom jarfiles target
     jarfiles(j)
   }
 
-
-  testCompile 'junit:junit:4.10'
+  //add a dependency on junit for the testCompile target
+  //testCompile 'junit:junit:4.10'
   
 }
 
-task testJar(type: Jar) {
-  classifier = 'tests'
-  from sourceSets.test.output
-}
-
-task('copyjars', type: Copy) {
+//This task will copy all of the jar files into the lib directory.
+//MATLAB will add these jar files to the path.
+task('copyExternalJars', type: Copy) {
   from configurations.jarfiles
   into file('../lib')
 }
 
-task copyJarsForEclipse(type: Copy) {
+//Eclipse can only specify relative paths for jar files that are in
+//subdirectories of the .classpath file.  As a result, we also have
+//to copy all of the jar files into the build/external-libs directory
+task copyExternalJarsForEclipse(type: Copy) {
   from configurations.jarfiles
   into file('build/external-libs')
 }
 
-task(copydimplejar,type: Copy) {
+//We also provide a task to copy the dimple jar file to ../lib so that
+//the build kit and other projects can reference this jar file.
+task(copyDimpleJar,type: Copy) {
   from(file('build/libs/dimple.jar'))
   into(file('../lib'))
 }
 
-
+//clean removes the build directory by default.  We also remove ../lib.
 clean {
   delete '../lib'
-  delete 'jarsforeclipse'
 }
 
-assemble.dependsOn copyjars, copyJarsForEclipse
-build.dependsOn testJar, copydimplejar
+//define a new task for copying all jars
+task copyJars
+
+//In order to copy the dimple jar, we have to produce it
+copyDimpleJar.dependsOn jar
+
+//define all of the jar copy tasks
+copyJars.dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
+
+//As part of assembly, make sure all jars are in the required locations
+assemble.dependsOn copyJars
+
 

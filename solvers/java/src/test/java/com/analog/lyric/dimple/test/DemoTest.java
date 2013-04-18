@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.test;
 
 import org.junit.* ;
 
-import com.analog.lyric.dimple.test.Demo;
+import com.analog.lyric.util.test.Demo;
 
 public class DemoTest {
 

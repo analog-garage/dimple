@@ -36,7 +36,7 @@ x.Input = .75;
 w.Input = .75;
 y.Input = .75;
 z.Input = .75;
-
+g.Solver = 'SumProduct';
 g.solve();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

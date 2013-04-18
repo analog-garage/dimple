@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test;
+package com.analog.lyric.util.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;

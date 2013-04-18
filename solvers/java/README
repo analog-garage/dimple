@@ -1,0 +1,67 @@
+Dimple Gradle Build
+===================
+
+Gradle is a build system for Java.  The two main reasons for 
+choosing Gradle as a build system are:
+
+1) The ability to pull jar files from maven repositories.  allows us 
+   to avoid storing jar files in the git repository
+2) Relatively concise language for build scripting.
+
+With the java plugin, gradle provides a rich set of targets.
+See figure 23.1:
+http://www.gradle.org/docs/current/userguide/java_plugin.html
+
+The main target is build.
+
+"build" depends on "assemble" and "check"
+
+assemble (reverse list of dependencies)
+---------------------------------------
+compileJava
+classes
+jar
+assemble
+
+check (reverse list of dependencies)
+-------------------------------------
+compileJava
+classes
+compileTestJava
+testClasses
+test
+check
+
+Dimple specific targets
+========================
+The Dimple gradle build performs some custom tasks.
+
+All external jars and the dimple.jar are copied to:
+
+dimple/solvers/lib
+
+The MATLAB dimple startup.m script adds all jar files in dimple/solvers/lib
+to the javaclasspath.
+
+All external jars are also copied to:
+
+dimple/solvers/java/build/external-libs
+
+the Eclipse .classpath in dimple/solvers/java points to all of the external jars
+so that developers can use Eclipse.  Unfortunately the Eclipse .classpath file
+only works when relative paths are in the directory or subdirectories where the
+.classpath file is located. 
+
+The Dimple gradle script achieves this by creating additional dependencies:
+
+copyJars (dependencies in reverse order)
+--------
+compileJava
+classes
+jar
+copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
+copyJars
+assemble
+
+
+

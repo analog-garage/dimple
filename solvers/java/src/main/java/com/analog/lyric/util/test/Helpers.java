@@ -26,22 +26,13 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.TreeMap;
 
-import com.analog.lyric.dimple.FactorFunctions.XorDelta;
+import com.analog.lyric.dimple.FactorFunctions.*;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Model;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
-import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.model.*;
+import com.analog.lyric.dimple.schedulers.schedule.*;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+
 
 public class Helpers 
 {
@@ -79,8 +70,7 @@ public class Helpers
 		{
 			VariableList variables = fg.getVariables();
 			double[][] trivialRandomCodeword =
-				com.analog.lyric.util.test.Helpers
-					.trivialRandomCodeword(variables.size());
+				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
@@ -147,8 +137,7 @@ public class Helpers
 		{
 			VariableList variableList = fg.getVariables();
 			double[][] trivialRandomCodeword =
-				com.analog.lyric.util.test.Helpers
-					.trivialRandomCodeword(variableList.size());
+				trivialRandomCodeword(variableList.size());
 			for(int variable = 0; variable < variableList.size(); ++variable)
 			{
 				((Discrete)variableList.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
@@ -187,8 +176,7 @@ public class Helpers
 		{
 			VariableList variables = fg.getVariables();
 			double[][] trivialRandomCodeword =
-				com.analog.lyric.util.test.Helpers
-					.trivialRandomCodeword(variables.size());
+				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
@@ -234,8 +222,7 @@ public class Helpers
 		{
 			VariableList variables = fg.getVariables();
 			double[][] trivialRandomCodeword =
-				com.analog.lyric.util.test.Helpers
-					.trivialRandomCodeword(variables.size());
+				trivialRandomCodeword(variables.size());
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
@@ -920,4 +907,5 @@ public class Helpers
 	{
 		_r.setSeed(seed);
 	}
+	
 }
