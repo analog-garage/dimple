@@ -25,5 +25,7 @@ if __name__ == "__main__":
     progName = 'dimple'
     copyRoot = '..'
     pFileToCheck = '/modelers/matlab/core/FactorGraph'
-    buildCommand = 'gradle'
-    builder.build(sys.argv,__file__,versionFile,javaBuildDir,javaTargetDir,progName,copyRoot,pFileToCheck,buildCommand)
+    buildCommand = 'gradle assemble'
+    buildCommandWithTest = 'gradle'
+    builder.build(sys.argv,__file__,versionFile,javaBuildDir,javaTargetDir,
+                  progName,copyRoot,pFileToCheck,buildCommand,buildCommandWithTest)

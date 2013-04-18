@@ -66,7 +66,8 @@ class Builder:
     def __init__(self):
         pass
 
-    def build(self,args,scriptName,versionFile,javaBuildDir,javaTargetDir,progName,copyRoot,pFileToCheck,buildCommand):
+    def build(self,args,scriptName,versionFile,javaBuildDir,javaTargetDir,progName,
+              copyRoot,pFileToCheck,buildCommand, buildCommandWithTest):
 
         parser = optparse.OptionParser(self.usage(scriptName),version="%prog 1.0")
         parser.add_option('-t', '--test', action = 'store_true', help = 'unzip and test', default=False)
@@ -93,6 +94,7 @@ class Builder:
              copyRoot,
                   pFileToCheck,
                   buildCommand,
+                  buildCommandWithTest,
                   opt.reuse,
                   opt.no_doc)
         
@@ -109,13 +111,14 @@ class Builder:
              copyRoot,
              pFileToCheck,
              buildCommand,
+             buildCommandWithTest,
              reuse,
              no_doc):
 
             if not no_doc:
                 builddoc()
 
-            self.build_java_solver(javaBuildDir,javaTargetDir,buildCommand,reuse)
+            self.build_java_solver(javaBuildDir,javaTargetDir,buildCommand,buildCommandWithTest,test,reuse)
             
             (fexcludes, 
              rexcludes, 
@@ -159,7 +162,7 @@ class Builder:
         usage = usage + "\tpython " + scriptName + " -t\n\n"
         return usage
 
-    def build_java_solver(self,java_build_dir,target_dir,buildCommand,reuse):
+    def build_java_solver(self,java_build_dir,target_dir,buildCommand,buildCommandWithTest,test,reuse):
         print('building java...')
         curdir = os.getcwd()
         os.chdir(java_build_dir)
@@ -171,7 +174,10 @@ class Builder:
             if os.path.exists(target_dir):
                 raise Exception('clean failed!  Aborting')
         
-        os.system(buildCommand)
+        if test:
+            os.system(buildCommandWithTest)
+        else:
+            os.system(buildCommand)
 
         os.chdir(curdir)
 
