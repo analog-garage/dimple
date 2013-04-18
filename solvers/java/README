@@ -1,6 +1,9 @@
 Dimple Gradle Build
 ===================
 
+Why Gradle
+==========
+
 Gradle is a build system for Java.  The two main reasons for 
 choosing Gradle as a build system are:
 
@@ -11,6 +14,29 @@ choosing Gradle as a build system are:
 With the java plugin, gradle provides a rich set of targets.
 See figure 23.1:
 http://www.gradle.org/docs/current/userguide/java_plugin.html
+
+How to Use this Script
+======================
+
+gradle clean
+------------
+Removes all artifacts it creates.  Removes the build directory and the ../lib directory.
+
+gradle assemble
+---------------
+Builds all the jar files and copies them to ../lib (for MATLAB) and build/external-libs
+(for Eclipse).
+If you want to use Eclipse, you must first type "gradle assemble" to pull down all external
+jar files from their maven repositories.  If you are not on the network the first time this is
+run, this will fail.
+
+gradle (gradle with no arguments is the equivalent of gradle build)
+-------------------------------------------------------------------
+This will call assemble and will also run all of the tests.
+
+
+Gradle java plugin details
+==========================
 
 The main target is build.
 
@@ -32,8 +58,8 @@ testClasses
 test
 check
 
-Dimple specific targets
-========================
+Dimple specific target details
+==============================
 The Dimple gradle build performs some custom tasks.
 
 All external jars and the dimple.jar are copied to:
