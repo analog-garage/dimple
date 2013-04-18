@@ -14,6 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
+/*
+ * See the README file for a high level description of how the Dimple build
+ * script works.
+ */
+
 apply plugin: 'java'
 
 defaultTasks 'build'
