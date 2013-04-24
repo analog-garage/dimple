@@ -34,12 +34,12 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class LogNormal extends FactorFunction
 {
-	double _mean;
-	double _precision;
-	double _logPrecisionOverTwo;
-	double _precisionOverTwo;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	protected double _mean;
+	protected double _precision;
+	protected double _logPrecisionOverTwo;
+	protected double _precisionOverTwo;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 2;
 
 	public LogNormal() {super();}
 	public LogNormal(double mean, double precision)

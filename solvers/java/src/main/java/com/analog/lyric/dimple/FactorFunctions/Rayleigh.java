@@ -33,11 +33,11 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class Rayleigh extends FactorFunction
 {
-	double _sigma;
-	double _inverseSigmaSquared;
-	double _halfInverseSigmaSquared;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 1;
+	protected double _sigma;
+	protected double _inverseSigmaSquared;
+	protected double _halfInverseSigmaSquared;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 1;
 
 	public Rayleigh() {super();}
 	public Rayleigh(double sigma)

@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * 1) Mean parameter
  * 2) Precision parameter (inverse variance) (non-negative)
- * 3...) An arbitrary number of real variables
+ * 3...) An arbitrary number of real variables, each must be between -PI and PI
  * 
  * Mean and precision parameters may optionally be specified as constants in the constructor.
  * In this case, the mean and precision are not included in the list of arguments.
@@ -36,11 +36,13 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class VonMises extends FactorFunction
 {
-	double _mean;
-	double _precision;
-	double _logBesseli0Precision;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	protected double _mean;
+	protected double _precision;
+	protected double _logBesseli0Precision;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 2;
+	protected static double PI = Math.PI;
+	protected static double MINUS_PI = -Math.PI;
 
 	public VonMises() {super();}
 	public VonMises(double mean, double precision)
@@ -71,6 +73,8 @@ public class VonMises extends FactorFunction
     	for (; index < length; index++)
     	{
     		double x = FactorFunctionUtilities.toDouble(arguments[index]);				// Remaining inputs are VonMises variables
+    		if (x < MINUS_PI || x > PI)
+    			return Double.POSITIVE_INFINITY;
         	sum -= Math.cos(x - _mean);
     	}
     	return sum * _precision + N * _logBesseli0Precision;

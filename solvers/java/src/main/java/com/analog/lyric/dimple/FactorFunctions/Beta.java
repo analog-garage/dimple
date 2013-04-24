@@ -33,13 +33,13 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class Beta extends FactorFunction
 {
-	double _alpha;
-	double _beta;
-	double _alphaMinusOne;
-	double _betaMinusOne;
-	double _logBetaAlphaBeta;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	protected double _alpha;
+	protected double _beta;
+	protected double _alphaMinusOne;
+	protected double _betaMinusOne;
+	protected double _logBetaAlphaBeta;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 2;
 
 	public Beta() {super();}
 	public Beta(double alpha, double beta)
