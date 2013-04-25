@@ -30,7 +30,7 @@ for arg=varargin
 end
 
 N = prod(size(alphas));           % numel not supported for variable arrays
-discreteDomain = 1:N;
+discreteDomain = 0:N-1;           % Domain must be zero based integers
 var = Discrete(discreteDomain, outSize{:});
 
 ff = FactorFunction('Categorical', N);
