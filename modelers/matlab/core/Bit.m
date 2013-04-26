@@ -39,6 +39,10 @@ classdef Bit < DiscreteVariableBase
         end
         function setInput(obj,priors)
             
+            if (any(priors(:) > 1) || any(priors(:) < 0))
+                error('Inputs must be between 0 and 1, inclusive');
+            end
+            
             if length(obj.VectorIndices) == numel(obj.VectorIndices)
                 priors = reshape(priors,numel(priors),1);
                 priors = [1-priors priors];
