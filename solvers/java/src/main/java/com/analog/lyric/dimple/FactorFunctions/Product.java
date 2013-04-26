@@ -42,7 +42,7 @@ public class Product extends FactorFunction
 	public Product() {this(0);}
 	public Product(double smoothing)
 	{
-		super("Product");
+		super();
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -74,7 +74,7 @@ public class Product extends FactorFunction
     
     
     @Override
-    public final boolean isDirected()	{return true;}
+    public final boolean isDirected() {return true;}
     @Override
 	public final int[] getDirectedToIndices() {return new int[]{0};}
     @Override

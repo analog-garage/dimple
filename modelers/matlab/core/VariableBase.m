@@ -66,8 +66,11 @@ classdef VariableBase < Node
         end
         
         function z = mtimes(a,b)
-            if (~isscalar(a) && ~isscalar(b)); error('Overloaded matrix product not currently supported. Use ".*" for pointwise product'); end;
-            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+            if (isscalar(a) || isscalar(b))
+                z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+            else
+                z = MatrixVectorProduct(a, b);
+            end
         end
         
         function z = xor(a,b)
