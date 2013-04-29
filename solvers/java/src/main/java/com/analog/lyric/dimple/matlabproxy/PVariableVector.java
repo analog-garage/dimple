@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
-import com.analog.lyric.dimple.model.Discrete;
+
+import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.Real;
@@ -28,14 +30,14 @@ import com.analog.lyric.dimple.model.VariableBase;
 
 
 /*
- * This class provides vectors of Variables to allow matlab to set multiple inputs 
+ * This class provides vectors of Variables to allow matlab to set multiple inputs
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
 public class PVariableVector extends PNodeVector
 {
 	
-	public PVariableVector() 
+	public PVariableVector()
 	{
 		
 	}
@@ -57,29 +59,12 @@ public class PVariableVector extends PNodeVector
 		return (VariableBase)getModelerNode(index);
 	}
 	
-	public VariableBase [] getVariableArray() 
+	public VariableBase [] getVariableArray()
 	{
-		Node [] vars = this.getModelerNodes();
-		VariableBase [] realVars;
-		if (vars.length == 0)
-			realVars = new VariableBase[0];
-		else if (vars[0] instanceof Real)								// Assumes all variables are of the same class
-			realVars = new Real[vars.length];
-		else if (vars[0] instanceof Discrete)
-			realVars = new Discrete[vars.length];
-		else if (vars[0] instanceof RealJoint)
-			realVars = new RealJoint[vars.length];
-		else
-			throw new DimpleException("ack!");
-		
-		for (int i = 0; i < realVars.length; i++)
-		{
-			realVars[i] = (VariableBase)vars[i];
-		}
-		return realVars;
+		return (VariableBase[]) Supers.narrowArrayOf(VariableBase.class, 1, getModelerNodes());
 	}
 	
-	public String getModelerClassName() 
+	public String getModelerClassName()
 	{
 		if (size() > 0)
 			return getVariable(0).getModelerClassName();
@@ -89,7 +74,7 @@ public class PVariableVector extends PNodeVector
 	
 	//TODO: support all getFactors variants
 	
-	public PFactorVector getFactors(int relativeNestingDepth) 
+	public PFactorVector getFactors(int relativeNestingDepth)
 	{
 		
 		ArrayList<Node> retval = new ArrayList<Node>();
@@ -107,7 +92,7 @@ public class PVariableVector extends PNodeVector
 		
 	}
 	
-	public void setGuess(double [] guess) 
+	public void setGuess(double [] guess)
 	{
 		for (int i = 0; i < guess.length; i++)
 		{
@@ -115,7 +100,7 @@ public class PVariableVector extends PNodeVector
 		}
 	}
 	
-	public void setGuess(Object [] guess) 
+	public void setGuess(Object [] guess)
 	{
 		for (int i = 0; i < guess.length; i++)
 		{
@@ -123,7 +108,7 @@ public class PVariableVector extends PNodeVector
 		}
 	}
 	
-	public Object [] getGuess() 
+	public Object [] getGuess()
 	{
 		Object [] retval = new Object[size()];
 		VariableBase [] vars = getVariableArray();
@@ -154,15 +139,18 @@ public class PVariableVector extends PNodeVector
 		return (getVariable(0) instanceof RealJoint);
 	}
 	
+	@Override
 	public boolean isVariable()
 	{
 		return true;
 	}
+	@Override
 	public boolean isFactor()
 	{
 		return false;
 	}
 	
+	@Override
 	public boolean isGraph()
 	{
 		return false;
@@ -178,7 +166,7 @@ public class PVariableVector extends PNodeVector
 	}
 
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) 
+	public PNodeVector createNodeVector(Node[] nodes)
 	{
 		return new PVariableVector(nodes);
 	}

@@ -19,14 +19,15 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.matlabproxy.repeated.IPDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.IPDataSource;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorBase;
@@ -121,7 +122,7 @@ public class PHelpers
 	}
 
 	
-	public static PVariableVector convertToVariableVector(VariableList vars) 
+	public static PVariableVector convertToVariableVector(VariableList vars)
 	{
 		VariableBase [] array = new VariableBase[vars.size()];
 		vars.toArray(array);
@@ -131,53 +132,29 @@ public class PHelpers
 	
 	static public PVariableVector convertToVariableVector(VariableBase [] variables)
 	{
-		boolean isDiscrete = false;
-		boolean allSame = true;
-		
-		if (variables.length == 0)
+		final int n = variables.length;
+		if (n == 0)
 			return new PVariableVector();
 
-		isDiscrete = (variables[0] instanceof Discrete);
-
-		for (int i = 1; i < variables.length; i++)
-		{
-			if (  (variables[i] instanceof Discrete) != isDiscrete)
-			{
-				allSame = false;
-				break;
-			}
-		}
-
-		if (!allSame)
-		{
-			PVariableVector varVec = new PVariableVector(variables);
+		variables = Supers.narrowArrayOf(VariableBase.class, 1, variables);
+		
+		Class<?> commonVarClass = variables.getClass().getComponentType();
 			
-			return varVec;
+		if (Discrete.class.isAssignableFrom(commonVarClass))
+		{
+			return new PDiscreteVariableVector(variables);
+		}
+		else if (Real.class.isAssignableFrom(commonVarClass))
+		{
+			return new PRealVariableVector(variables);
+		}
+		else if (RealJoint.class.isAssignableFrom(commonVarClass))
+		{
+			return new PRealJointVariableVector(variables);
 		}
 		else
 		{
-
-			if (variables[0] instanceof Real)							// Assumes all variables in the array are of the same class
-			{
-				Real[] ivars = new Real[variables.length];
-				for (int i = 0; i < variables.length; i++)
-					ivars[i] = (Real)variables[i];
-				return new PRealVariableVector(ivars);
-			}
-			else if (variables[0] instanceof RealJoint)
-			{
-				RealJoint[] ivars = new RealJoint[variables.length];
-				for (int i = 0; i < variables.length; i++)
-					ivars[i] = (RealJoint)variables[i];
-				return new PRealJointVariableVector(ivars);
-			}
-			else
-			{
-				Discrete[] ivars = new Discrete[variables.length];
-				for (int i = 0; i < variables.length; i++)
-					ivars[i] = (Discrete)variables[i];
-				return new PDiscreteVariableVector(ivars);
-			}
+			return new PVariableVector(variables);
 		}
 	}
 
@@ -187,7 +164,7 @@ public class PHelpers
 		for (int i = 0; i < objects.length; i++)
 		{
 			Node n = convertToNode(objects[i]);
-			retval[i] = (Factor)n; 
+			retval[i] = (Factor)n;
 		}
 		return retval;
 	}
@@ -211,7 +188,7 @@ public class PHelpers
 		return vars;
 	}
 
-	public static PFactorVector [] convertToFactors(FactorBase [] functions) 
+	public static PFactorVector [] convertToFactors(FactorBase [] functions)
 	{
 		PFactorVector [] factors = new PFactorVector[functions.length];
 		for (int i = 0; i < functions.length; i++)
@@ -219,10 +196,10 @@ public class PHelpers
 		return factors;
 	}
 
-	public static PFactorVector [] convertFactorListToFactors(Collection<Factor> vbs) 
+	public static PFactorVector [] convertFactorListToFactors(Collection<Factor> vbs)
 	{
 		return convertToFactors(vbs.toArray(new FactorBase[0]));
-	}	
+	}
 
 	@SuppressWarnings("unchecked")
 	public static Object [] convertToMVariablesAndConstants(Object [] vars)
@@ -259,7 +236,7 @@ public class PHelpers
 
 	}
 
-	public static PNodeVector wrapObject(INode node) 
+	public static PNodeVector wrapObject(INode node)
 	{
 		if (node instanceof DiscreteFactor)
 		{
@@ -322,7 +299,7 @@ public class PHelpers
 				retval[i] = new int[1][1];
 				retval[i][0][0] = index;
 			}
-			else if (indices[i] instanceof double[][])			
+			else if (indices[i] instanceof double[][])
 			{
 				double [][] tmp = (double[][])indices[i];
 				retval[i] = new int[tmp.length][tmp[0].length];
@@ -337,7 +314,7 @@ public class PHelpers
 				retval[i] = new int[tmp.length][];
 				for (int j= 0; j < tmp.length; j++)
 					retval[i][j] = new int[]{(int)tmp[j]};
-			}				
+			}
 			else
 			{
 				throw new DimpleException("unsupported indices format: " + indices[i]);
