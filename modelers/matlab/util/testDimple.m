@@ -9,9 +9,9 @@
 %
 %   Unless required by applicable law or agreed to in writing, software
 %   distributed under the License is distributed on an "AS IS" BASIS,
-%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-%   See the License for the specific language governing permissions and
-%   limitations under the License.
+%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+%   implied. See the License for the specific language governing
+%   permissions and limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function failed = testDimple(varargin)
@@ -94,7 +94,7 @@ function failed = testDimple(varargin)
     %       Add test file to /tests/algoAlgoName dir
     %   
     % 
-    %  To add an aglorithm:
+    %  To add an algorithm:
     %       Copy /tests/algoDummy
     %       Change 'Dummy' to name of your algorithm. 
     %       Modify getSolvers.m to return the solver(s) you want to use. 
@@ -122,6 +122,7 @@ function failed = testDimple(varargin)
     parser.addFlag('exit');
     parser.addFlag('core_only');
     parser.addFlag('log');
+    parser.addFlag('general_only');
     parser.addFlag('verbose');      % Synonymous with 'log'
     parser.addOption('one_algo');
 
@@ -130,6 +131,7 @@ function failed = testDimple(varargin)
     bLog          = options.log || options.verbose;
     one_algo      = options.one_algo;
     core_only     = options.core_only;
+    general_only = options.general_only;
     bStoreAndExit = options.exit;
     test_csolver  = options.csolver;
     
@@ -162,6 +164,7 @@ function failed = testDimple(varargin)
     dimple_test_dir = [dimple_matlab_start_dir '/tests'];
     dimple_test_dirs = [{dimple_test_dir} getDimpleTestDir()];
     core_dir = [dimple_test_dir '/core'];
+    general_dir = [dimple_test_dir '/general'];
 
     if ~isempty(one_algo)
         one_algo_str = sprintf('%s', one_algo);
@@ -188,10 +191,18 @@ function failed = testDimple(varargin)
         cd(start_dir);
     elseif core_only
         [passed, failed, ran, faults] = test_core_only(core_dir, bLog);
+    elseif general_only
+        [passed, failed, ran, faults] = testDir(general_dir);
     else
         dtrace(bLog, 'Starting tests from [%s]\n', dimple_test_dir);     
 
         [passed, failed, ran, faults] = test_algorithms(dimple_test_dirs, core_dir, test_csolver,bLog);
+        
+        [passed1, failed1, ran1, faults1] = testDir(general_dir);
+        passed = passed + passed1;
+        failed = failed + failed1;
+        ran = ran + ran1;
+        faults = [faults faults1];
     end
     
     cd(initial_dir);
