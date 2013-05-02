@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class Supers
 {
-	private Supers() {} // prevent subclassing
+//	private Supers() {} // prevent subclassing
 
 	// JAVA7: In Java 7 it would be better to subclass ClassValue<ImmutableList<Class<?>>> to implement the cache.
 	
@@ -78,12 +78,22 @@ public abstract class Supers
 		int maxRelativeClassDepth,
 		T...elements)
 	{
+		if (elements.length == 0)
+		{
+			if (rootClass.equals(elements.getClass().getComponentType()))
+			{
+				return elements;
+			}
+			else
+			{
+				return (T[])Array.newInstance(rootClass, 0);
+			}
+		}
 		Class<?> c = nearestCommonSuperClass(elements);
 		if (maxRelativeClassDepth < 500)
 		{
 			ImmutableList<Class<?>> supers = superClasses(c);
 			final int maxClassDepth = numberOfSuperClasses(rootClass) + maxRelativeClassDepth;
-			System.out.format("maxDepth %d, supers size %d\n", maxClassDepth, supers.size());
 			if (maxClassDepth < supers.size())
 			{
 				c = supers.get(maxClassDepth);

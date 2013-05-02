@@ -30,6 +30,11 @@ public class TestSupers
 	{
 		narrowArrayOfTestCase(A.class, new B(), new C());
 		narrowArrayOfTestCase(E.class, new E(), new E());
+		
+		A[] a = (A[]) Supers.narrowArrayOf(A.class, 0, new Object[0]);
+		assertEquals(A.class, a.getClass().getComponentType());
+		A[] a2 = Supers.narrowArrayOf(A.class, 0, a);
+		assertSame(a, a2);
 	}
 	
 	private <T> void narrowArrayOfTestCase(Class<?> expectedComponentType, T...elements)
