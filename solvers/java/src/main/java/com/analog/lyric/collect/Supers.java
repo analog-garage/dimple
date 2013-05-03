@@ -4,10 +4,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 
 
@@ -16,14 +14,38 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class Supers
 {
-//	private Supers() {} // prevent subclassing
-
-	// JAVA7: In Java 7 it would be better to subclass ClassValue<ImmutableList<Class<?>>> to implement the cache.
+	// NOTE: Originally I tried to use the CacheBuilder class from Google's guava library, but that created
+	// problems when running in MATLAB because MATLAB uses an old and incompatible google-collections library
+	// and puts it in the static java class path, with the result that the guava code ended up loading an
+	// older version of the Objects utility class. The only way I could figure out to work around this was
+	// to actually edit MATLAB's internal classpath.txt file to put the desired guava jar before google-collections.
+	// In this case, it is easy enough to implement our own cache, but this may come up again - cbarber
 	
-	private static class SuperClassCacheLoader extends CacheLoader<Class<?>,ImmutableList<Class<?>>>
+	private static class SuperClassCache // JAVA7: extends ClassValue<ImmutableList<Class?>>
 	{
-		@Override
-		public ImmutableList<Class<?>> load(Class<?> c) throws Exception
+		// JAVA7: In Java 7, we can simply subclass ClassValue and just implement computeValue.
+		
+		private final ConcurrentHashMap<Class<?>,ImmutableList<Class<?>>> _cache =
+			new ConcurrentHashMap<Class<?>,ImmutableList<Class<?>>>();
+		
+		public ImmutableList<Class<?>> get(Class<?> c)
+		{
+			ImmutableList<Class<?>> supers = _cache.get(c);
+			if (supers == null)
+			{
+				synchronized(this)
+				{
+					supers = _cache.get(c);
+					if (supers == null)
+					{
+						_cache.put(c, supers = computeValue(c));
+					}
+				}
+			}
+			return supers;
+		}
+		
+		private ImmutableList<Class<?>> computeValue(Class<?> c)// throws Exception
 		{
 			ArrayList<Class<?>> supers = new ArrayList<Class<?>>();
 
@@ -40,12 +62,14 @@ public abstract class Supers
 			
 			Collections.reverse(supers);
 			
-			return ImmutableList.copyOf(supers);
+			// HACK: the google-collections version of guava contained in MATLAB only has
+			// the Iterable version of copyOf, so we need to make sure that is what we are using
+			// here. See comment above.
+			return ImmutableList.copyOf((Iterable<Class<?>>)supers);
 		}
 	}
 	
-	private static final LoadingCache<Class<?>,ImmutableList<Class<?>>> _superClassCache =
-		CacheBuilder.newBuilder().weakKeys().build(new SuperClassCacheLoader());
+	private static final SuperClassCache _superClassCache = new SuperClassCache();
 	
 	/**
 	 * Returns an array of super classes above {@code c}. The first class will always be {@link Object}
@@ -53,7 +77,7 @@ public abstract class Supers
 	 */
 	public static ImmutableList<Class<?>> superClasses(Class<?> c)
 	{
-		return _superClassCache.getUnchecked(c);
+		return _superClassCache.get(c);
 	}
 	
 	/**
