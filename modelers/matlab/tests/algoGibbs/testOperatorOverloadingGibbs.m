@@ -250,7 +250,16 @@ qq = d * CA';           % Real variable vector times constant matrix
 rr = cb * A';           % Constant vector times discrete matrix
 tt = cb * B';           % Constant vector times real matrix
 
-
+uu = a / 3;             % Discrete scalar and scalar constant
+vv = 3 / a;             % Discrete scalar and scalar constant
+ww = c / 3;             % Real scalar and scalar constant
+xx = 3 / c;             % Real scalar and scalar constant
+yy = b ./ c;            % Discrete vector and Real scalar
+zz = b ./ d;            % Discrete vector and Real vector
+aaa = c ./ b;           % Discrete vector and Real scalar
+bbb = d ./ b;           % Discrete vector and Real vector
+ccc = a ./ b;           % Discrete scalar and discrete vector
+ddd = d ./ c;           % Real scalar and real vector
 
 
 if (repeatable)
@@ -304,6 +313,16 @@ pps = pp.invokeSolverMethodWithReturnValue('getAllSamples');
 qqs = qq.invokeSolverMethodWithReturnValue('getAllSamples');
 rrs = rr.invokeSolverMethodWithReturnValue('getAllSamples');
 tts = tt.invokeSolverMethodWithReturnValue('getAllSamples');
+uus = uu.invokeSolverMethodWithReturnValue('getAllSamples');
+vvs = vv.invokeSolverMethodWithReturnValue('getAllSamples');
+wws = ww.invokeSolverMethodWithReturnValue('getAllSamples');
+xxs = xx.invokeSolverMethodWithReturnValue('getAllSamples');
+yys = yy.invokeSolverMethodWithReturnValue('getAllSamples');
+zzs = zz.invokeSolverMethodWithReturnValue('getAllSamples');
+aaas = aaa.invokeSolverMethodWithReturnValue('getAllSamples');
+bbbs = bbb.invokeSolverMethodWithReturnValue('getAllSamples');
+cccs = ccc.invokeSolverMethodWithReturnValue('getAllSamples');
+ddds = ddd.invokeSolverMethodWithReturnValue('getAllSamples');
 bts = bt.invokeSolverMethodWithReturnValue('getAllSamples');
 dts = dt.invokeSolverMethodWithReturnValue('getAllSamples');
 As = A.invokeSolverMethodWithReturnValue('getAllSamples');
@@ -367,6 +386,19 @@ qqsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), qqs, 'UniformOutput', false));
 rrsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), rrs, 'UniformOutput', false));
 ttsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), tts, 'UniformOutput', false));
 
+uusx = repmat(arrayfun(@(x)x, uus), 1, N);
+vvsx = repmat(arrayfun(@(x)x, vvs), 1, N);
+wwsx = repmat(arrayfun(@(x)x, wws), 1, N);
+xxsx = repmat(arrayfun(@(x)x, xxs), 1, N);
+
+yysx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), yys, 'UniformOutput', false));
+zzsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), zzs, 'UniformOutput', false));
+aaasx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), aaas, 'UniformOutput', false));
+bbbsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), bbbs, 'UniformOutput', false));
+cccsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), cccs, 'UniformOutput', false));
+dddsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), ddds, 'UniformOutput', false));
+
+
 btsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), bts', 'UniformOutput', false))';
 dtsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), dts', 'UniformOutput', false))';
 Asx = cellfun(@(x)(arrayfun(@(y)y,x)), As, 'UniformOutput', false);
@@ -414,6 +446,18 @@ assertElementsAlmostEqual(zsx, dsx .* csx, 'absolute');
 assertElementsAlmostEqual(aasx, bsx .^ asx, 'absolute');
 assertElementsAlmostEqual(bbsx, dsx .^ csx, 'absolute');
 assertElementsAlmostEqual(ccsx, csx .^ dsx, 'absolute');
+
+assertElementsAlmostEqual(uusx, asx / 3, 'absolute');
+assertElementsAlmostEqual(vvsx, 3 ./ asx, 'absolute');
+assertElementsAlmostEqual(wwsx, csx / 3, 'absolute');
+assertElementsAlmostEqual(xxsx, 3 ./ csx, 'absolute');
+assertElementsAlmostEqual(yysx, bsx ./ csx, 'absolute');
+assertElementsAlmostEqual(zzsx, bsx ./ dsx, 'absolute');
+assertElementsAlmostEqual(aaasx, csx ./ bsx, 'absolute');
+assertElementsAlmostEqual(bbbsx, dsx ./ bsx, 'absolute');
+assertElementsAlmostEqual(cccsx, asx ./ bsx, 'absolute');
+assertElementsAlmostEqual(dddsx, dsx ./ csx, 'absolute');
+
 
 for sample=1:numSamples
     assertElementsAlmostEqual(ddsx(:,sample), Asxx(:,:,sample) * btsx(:,sample), 'absolute');

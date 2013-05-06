@@ -40,8 +40,37 @@ classdef VariableBase < Node
             z = addBinaryOperatorOverloadedFactor(a,b,@mod,@(z,x,y) z == mod(x,y));
         end
         
+        function z = plus(a,b)
+            z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
+        end
+        
         function z = minus(a,b)
             z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
+        end
+        
+        function z = uminus(a)
+            z = addUnaryOperatorOverloadedFactor(a,@uminus,com.analog.lyric.dimple.FactorFunctions.Negate);
+        end
+        
+        function z = times(a,b)
+            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+        end
+        
+        function z = mtimes(a,b)
+            if (isscalar(a) || isscalar(b))
+                z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+            else
+                z = MatrixVectorProduct(a, b);
+            end
+        end
+        
+        function z = rdivide(a,b)
+            z = addBinaryOperatorOverloadedFactor(a,b,@rdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
+        end
+        
+        function z = mrdivide(a,b)
+            if (~isscalar(b)); error('Overloaded matrix division not currently supported. Use "./" for pointwise division'); end;
+            z = addBinaryOperatorOverloadedFactor(a,b,@mrdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
         end
         
         function z = power(a,b)
@@ -61,28 +90,8 @@ classdef VariableBase < Node
             z = addBinaryOperatorOverloadedFactor(a,b,@or,com.analog.lyric.dimple.FactorFunctions.Or);
         end
         
-        function z = times(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
-        end
-        
-        function z = mtimes(a,b)
-            if (isscalar(a) || isscalar(b))
-                z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
-            else
-                z = MatrixVectorProduct(a, b);
-            end
-        end
-        
         function z = xor(a,b)
             z = addBinaryOperatorOverloadedFactor(a,b,@xor,com.analog.lyric.dimple.FactorFunctions.Xor);
-        end
-        
-        function z = plus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
-        end
-        
-        function z = uminus(a)
-            z = addUnaryOperatorOverloadedFactor(a,@uminus,com.analog.lyric.dimple.FactorFunctions.Negate);
         end
         
         function z = not(a)
