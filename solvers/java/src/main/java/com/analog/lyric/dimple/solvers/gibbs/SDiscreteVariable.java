@@ -346,7 +346,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
     public final Object[] getAllSamples()
     {
-    	int length = _sampleIndexArray.size();
+		if (_sampleIndexArray == null)
+			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
+		int length = _sampleIndexArray.size();
     	Object[] domain = _varDiscrete.getDiscreteDomain().getElements();
     	Object[] retval = new Object[length];
     	for (int i = 0; i < length; i++)
@@ -355,6 +357,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     }
     public final int[] getAllSampleIndices()
     {
+		if (_sampleIndexArray == null)
+			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
     	int length = _sampleIndexArray.size();
     	int[] retval = new int[length];
     	for (int i = 0; i < length; i++)
