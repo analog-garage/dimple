@@ -56,6 +56,9 @@ public abstract class DeterministicRealUnaryFactorFunction extends FactorFunctio
 		double out = FactorFunctionUtilities.toDouble(arguments[0]);
 		double in = FactorFunctionUtilities.toDouble(arguments[1]);
 		double value = myFunction(in);
+		
+		if (Double.isNaN(value))
+			return Double.POSITIVE_INFINITY;
 
 		if (_smoothingSpecified)
 		{
