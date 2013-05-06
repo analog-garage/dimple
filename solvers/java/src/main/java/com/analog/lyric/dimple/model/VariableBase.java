@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.analog.lyric.dimple.FactorFunctions.EqualDelta;
+import com.analog.lyric.dimple.FactorFunctions.Equals;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -356,7 +356,7 @@ public abstract class VariableBase extends Node implements Cloneable
     	mycopy.setInputObject(null);
     	mycopy.setName(null);
     	
-    	fg.addFactor(new EqualDelta(), this,mycopy);
+    	fg.addFactor(new Equals(), this,mycopy);
     	
     	//for each factor to be moved
     	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
