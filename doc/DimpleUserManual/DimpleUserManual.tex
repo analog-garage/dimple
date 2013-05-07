@@ -1,0 +1,84 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage[titletoc]{appendix}		% titletoc adds 'Appendix' before the letter in the TOC
+\usepackage{hyperref}
+
+\parskip = 0.15in
+\parindent = 0.0in
+
+\interfootnotelinepenalty=10000		% Try to keep footnotes from splitting across pages
+\setcounter{secnumdepth}{5}			% Number paragraphs and subparagraphs
+\setcounter{tocdepth}{5}				% Include paragraphs and subparagraphs in TOC
+\newcommand{\para}[1]{\paragraph{#1}$\:$\\}				% Line-break after paragraph heading
+\newcommand{\subpara}[1]{\subparagraph{#1}$\:$\\}		% Line-break after sub-paragraph heading
+\newcommand{\paraNoToc}[1]{\paragraph*{#1}$\:$\\}		% Line-break after paragraph heading, not in TOC
+\newcommand{\subparaNoToc}[1]{\subparagraph*{#1}$\:$\\}	% Line-break after sub-paragraph heading, not in TOC
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+
+\lstset{ %
+  language=Matlab,                % the language of the code
+  basicstyle=\footnotesize\ttfamily,           % the size of the fonts that are used for the code
+  numbers=none,                   % where to put the line-numbers
+  % numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=t,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  keywordstyle=\color{blue},          % keyword style
+  commentstyle=\color{dkgreen},       % comment style
+  stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={*,...}               % if you want to add more keywords to the set
+}
+
+\title{\huge \bfseries Dimple User Manual \\ \normalfont \large Version 0.3}
+%\date{}							% Activate to display a given date or no date
+
+\begin{document}
+
+
+\maketitle
+
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{_WhatIsDimple}
+\input{_InstallingDimple}
+\input{_GettingStarted}
+\input{_HowTo}
+\input{_APIReference}
+
+\begin{appendices}
+\input{_IntroductionToFactorGraphs}
+\end{appendices}
+
+\end{document}  

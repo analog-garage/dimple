@@ -1,0 +1,561 @@
+\subsection{Performing Inference}
+
+Once a model has been created in Dimple, the user may then perform inference on that model.  This typically involves first conditioning on input data, then performing the inference computation, and then querying the model to retrieve information such as beliefs (marginals), maximum \emph{a posteriori} value, or samples from the posterior distribution.
+
+\subsubsection{Choosing a Solver}
+\label{sec:Solvers}
+
+To perform the inference computation, Dimple supports a variety of ``solver'' algorithms that the user can choose from.  For each solver, there are a number of options and configuration parameters that the user may specify to customize the behavior of the solver.
+
+At a high level, Dimple supports two categories of solver:
+%
+\begin{itemize}
+\item Belief propagation (BP)
+\item Gibbs sampling
+\end{itemize}
+
+The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} value.  In both cases, the result may be approximate, depending on the specific model.  In the case of sum-product, the solvers further divide based on how real variables are dealt with.  The basic SumProduct solver doesn't support real variables at all, while the Gaussian and ParticleBP solvers use Gaussian and particle representations, respectively, for messages passed to and from real variables.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
+
+The Gibbs solver supports all variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value.
+
+The Solver is a property of a factor graph.  To set the Solver for a given graph, this property is set to the name of the solver.  For example:
+
+\begin{lstlisting}
+myGraph.Solver = 'Gibbs';
+\end{lstlisting}
+
+The solver name is case insensitive.  The current set of valid solver names are:
+
+\begin{itemize}
+\item SumProduct
+\item MinSum
+\item Gaussian
+\item ParticleBP
+\item Gibbs
+\end{itemize}
+
+More detail on each of these solvers is provided later in this document.
+
+If no solver is specified for a graph, Dimple will use the SumProduct solver by default.
+
+
+\subsubsection{Conditioning on Input Data}
+
+In many cases, the model created in Dimple represents the prior, before conditioning on the data.  In this case, then assuming inference on the posterior model is desired, then the user must condition the model on the data before performing inference.
+
+There are two primary ways to condition on input data.  In the first approach, the values actually measured are not included in the model, and instead the effect of the data is specified via a likelihood function each variable that is indirectly influenced by the data.  The second approach, the variables that will be measured are included in the model, and the value of each is fixed to the actual measured data value.
+
+\para{Using a Likelihood Function as Input}
+
+Suppose a variable to be measured, $y$, depends only on another variable, $x$, and the conditional distribution $p(y|x)$ is known.  Then conditioned on the measured value, $y = Y$, then the likelihood of $x$ is given by $L(x) = p(y = Y | x)$.  If our model includes the variable $x$, but does not include $y$, then we can indicate the effect of measuring $y = Y$ by specifying the likelihood function $L(x)$ as the ``input'' to the variable $x$ using the Input property of the variable.
+
+The particular form of the Input property depends on the type of variable.  For a Discrete variable type, the Input property is a vector with length equal to the size of the variable domain.  The values represent the (not necessarily normalized) value of the likelihood function for each element of the domain.  For example,
+
+\begin{lstlisting}
+v = Discrete(1:4);
+v.Input = [1.2, 0.6, 0, 0.8];
+\end{lstlisting}
+
+Notice that values in the Input vector may be greater than one---the Input is assumed to be arbitrarily scaled.  All values, however, must be non-negative.
+
+For a Bit variable, the Input property is specified differently.  In this case, the Input is set to a scalar that represents a normalized version of the likelihood of the value 1.  That is,
+%
+\[
+\frac{L(x=1)}{L(x=0) + L(x=1)}
+\]
+
+For example,
+
+\begin{lstlisting}
+b = Bit();
+b.Input = 0.3;
+\end{lstlisting}
+
+In this case, the value must be between 0 and 1, inclusive.
+
+For a Real variable, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which the parameters can be fixed to a pre-defined constant.  For example:
+
+\begin{lstlisting}
+r = Real();
+r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
+\end{lstlisting}
+
+If the inputs are to be applied to an array of variables, this can generally be done all at once by setting the Input property of the entire array.  For a Discrete variable array, the Input is set to an array with the same dimensions as the variable array (or subarray), but with an extra dimensions corresponding to the Input vector for each variable in the array.  (If a dimension in the array is 1, that dimension is not included.) For example:
+
+\begin{lstlisting}
+v = Discrete(1:4, 2, 1);
+v.Input = [1.2, 0.6, 0, 0.8 ; 0.4, 0, 1.1, 0.9];
+\end{lstlisting}
+
+For an array of Bit variables, the Input is an array with the same dimensions as the Bit array.  For example:
+
+\begin{lstlisting}
+b = Bit(2,3);
+b.Input = [0.3 0.7 0.1; 0.0 0.8 0.6];
+\end{lstlisting}
+
+In the current version of Dimple, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+
+
+
+\para{Fixing a Variable to a Known Value}
+
+In some cases, the variable that will be measured is included in the model.  In this case, once the value becomes known, the variable may be fixed to that specific value so that the remainder of the model becomes conditioned on that value.  The FixedValue property is used to set a variable to a fixed value.  For a single variable, the FixedValue is set to any value in the domain of that variable.  For example:
+
+\begin{lstlisting}
+v = Discrete(1:4);
+v.FixedValue = 2;
+\end{lstlisting}
+
+\begin{lstlisting}
+v = Discrete([1.2, 5.6, 2.7, 6.94]);
+v.FixedValue = 5.6;
+\end{lstlisting}
+
+\begin{lstlisting}
+b = Bit();
+b.FixedValue = 0;
+\end{lstlisting}
+
+\begin{lstlisting}
+r = Real([-pi, pi]);
+r.FixedValue = 1.7;
+\end{lstlisting}
+
+For Discrete variables, the FixedValue property is currently limited to variables with numeric domains, though the domains need not include only integer values\footnote{This limitation may be removed in a future version.}.
+
+For arrays of variables, the FixedValue property may be set for the entire array by setting it to an array of values of with the same dimensions as the array (or subarray) being set.  For example:
+
+\begin{lstlisting}
+b = Bit(2,3);
+b.FixedValue = [0 1 0; 1 1 0];
+\end{lstlisting}
+
+To see if a FixedValue has been set on a variable, you can use the hasFixedValue method.  For a single variable this method returns a boolean value, and for an array of variables this method returns a boolean array.
+
+Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue removes any input\footnote{For implementation reasons, setting the fixed value of a Discrete or Bit variable also sets the Input to a delta function---with the value 0 except in the position corresponding to the fixed value that had been set.}.
+
+
+\para{Using a Data Source in a Rolled-Up Graph}
+
+In a rolled-up graph, the Input property of a variable can be set using a data source.  Detail on how to do this can be found in section~\ref{sec:rolledUpFactorGraphs}
+
+
+
+\subsubsection{Choosing a Schedule}
+
+All of the Dimple solvers operate by successively performing the inference computation on each element in the graph.  In the case of BP solvers, both variable and factor nodes must be updated, and the performance of the inference can depend strongly on the order that these updates occur.  Similarly, for the Gibbs solver, while variables must be updated in an order that maintains the requirements of valid Gibbs sampling, performance may depend on the particular order chosen.
+
+The order of updates in Dimple is called a ``schedule.''  The schedule may either be determined automatically using one of Dimple's built-in ``schedulers,'' or the user may specify a custom schedule.
+
+Each solver has a default scheduler, so if the user does not explicitly choose one, a reasonable choice is made automatically.
+
+
+\para{Built-in Schedulers}
+
+If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
+
+Another scheduler may be specified by setting the Scheduler property of a graph:
+\begin{lstlisting}
+myGraph.Scheduler = 'ExampleScheduler';	
+\end{lstlisting}
+
+When setting the scheduler for a graph, the name of the scheduler is case sensitive.
+
+For all of the BP (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available:
+
+\begin{longtable}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{DefaultScheduler} & Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified. \\ \hline
+%
+\textsf{TreeOrFloodingScheduler} & The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  If the entire graph is a tree, NumIterations should be set to 1, which is its default value.  If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below). \\ \hline
+%
+\textsf{TreeOrSequentialScheduler} & The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  \\ \hline
+%
+\textsf{FloodingScheduler} & The solver will apply a Flooding Schedule.  For each iteration, all variable nodes are updated, followed by all factor nodes.  Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result. \\ \hline
+%
+\textsf{SequentialScheduler} & The solver will apply a Sequential Schedule.  For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated.  The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph. \\ \hline
+%
+\textsf{RandomWithoutReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement.  On each subsequent iteration, a new random order is chosen.  Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once. \\ \hline
+%
+\textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
+%
+\end{longtable}
+
+
+In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
+
+It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
+%
+\begin{lstlisting}
+SubGraph.Scheduler = 'SequentialScheduler';
+ParentGraph.addFactor(SubGraph, boundaryVariables);
+ParentGraph.Scheduler = 'FloodingScheduler';
+\end{lstlisting}
+
+For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
+
+For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
+
+
+Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
+
+\begin{tabular}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{GibbsDefaultScheduler} & Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver. \\ \hline
+%
+\textsf{GibbsSequentialScanScheduler} & The solver will apply a Sequential Scan Schedule.  For each scan, each variable is resampled in a fixed order.  The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph. \\ \hline
+%
+\textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
+%
+\end{tabular}
+
+Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.
+
+
+\para{Custom Schedules}
+
+
+Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
+
+The following code demonstrates this feature:
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   fg = FactorGraph();
+   a = Bit();
+   b = Bit();
+   c = Bit();
+   eq1 = fg.addFactor(eq,a,b);
+   eq2 = fg.addFactor(eq,b,c);
+   
+   %define schedule
+   % update b
+   % update eq1->a
+   % update eq2->c
+   % update a->eq1
+   % update c->eq2
+   % update eq1->b
+   % update eq2->b
+   schedule = {
+       b,
+       {eq1,a},
+       {eq2,c},
+       {a,eq1},
+       {c,eq2},
+       {eq1,b},
+       {eq2,b}
+       };
+   
+   fg.Schedule = schedule;
+   
+   %Set priors
+   a.Input = .6;
+   b.Input = .7;
+   c.Input = .8;
+   
+   %Solve
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   b = Bit(2,1);
+   nfg = FactorGraph(b);
+   nfg.addFactor(eq,b(1),b(2));
+   b = Bit(3,1);
+   fg = FactorGraph();
+   nf1 = fg.addFactor(nfg,b(1),b(2));
+   nf2 = fg.addFactor(nfg,b(2),b(3));
+   
+   
+   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
+   b(1).Input = .7;
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+And finally we look at nesting a custom schedule:
+
+
+\begin{lstlisting}
+   %Now let's try nesting with a custom schedule on the nested graph.
+   
+   %Create a graph to nest and give it a funny schedule    
+   % nfg: eb(1) - f1 - ib - f2 - eb(2)
+   eb = Bit(2,1);
+   ib = Bit();
+   nfg = FactorGraph(eb);
+   f1 = nfg.addFactor(eq,eb(1),ib);
+   f2 = nfg.addFactor(eq,ib,eb(2));
+   %Set an input and solve
+   eb(1).Input = .8;
+   
+   nfg.NumIterations = 1;
+   nfg.solve();
+   
+   %We expect the output to be equal to the input since the tree
+   %scheduler passes the info along.
+   assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
+   
+   %Now we create a schedule that will not propagate the info.
+   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
+   nfg.solve();
+   
+   assertElementsAlmostEqual(eb(2).Belief,.5);
+
+   %Nest it and see if the schedule is preserved
+   b = Bit(2,1);
+   fg = FactorGraph();
+   g = fg.addFactor(nfg,b);
+   
+   fg.Schedule = {b(1),b(2),g};
+   
+   b(1).Input = .8;
+   fg.NumIterations = 1;
+   fg.solve();
+   assertElementsAlmostEqual(b(2).Belief,.5);
+\end{lstlisting}
+
+
+\subsubsection{Running the Solver}
+
+The once a factor graph has been created and conditioned on any input data, inference may be performed on the graph by calling the solve method:
+
+\begin{lstlisting}
+myGraph.solve();
+\end{lstlisting}
+
+The solve method performs all necessary computation, leaving the results available to be subsequently accessed.  The behavior of the solve method is determined by the chosen schedule as well as by any solver-specific configuration parameters.
+
+For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the NumIterations property of the graph may be used:
+
+\begin{lstlisting}
+myGraph.NumIterations = 10;
+myGraph.solve();
+\end{lstlisting}
+
+For the Gibbs solver, the NumIterations property isn't used, and instead other solver specific may be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has already been set to 'Gibbs'):
+
+\begin{lstlisting}
+myGraph.Solver.setNumSamples(1000);
+myGraph.solve();
+\end{lstlisting}
+
+Notice that while NumIterations is a property of a factor graph (even though it isn't used by the Gibbs solver), other solver-specific parameters are generally controlled by calling methods on the solver object.  The solver for a given factor graph is obtained via the Solver property, and solver-specific methods can be called on that.
+
+In general, each solver has a series of custom methods that can be used to customize the behavior of the solver.  A complete list of these can be found in section~\ref{sec:SolversAPI}.
+
+In some cases, it is useful to observe the intermediate behavior of the solver before it has completed.  For the BP solvers, this can be done by using the solver-specific iterate method instead of the solve method.  When called without any arguments, this results in running one iteration.  An optional argument allows specifying the number of iterations to run.  Successive calls to iterate do not reset the state of the solver, allowing it to be called multiple times in succession.  However, before running iterate for the first time, the initialize method must be called in order to reset the state before beginning.  For example, here we run one iteration at a time, displaying the belief of a particular variable after each iteration:
+
+\begin{lstlisting}
+myGraph.initialize();
+for i=1:numberOfIterations
+	myGraph.Solver.iterate();
+	disp(someVariable.Belief);
+end
+\end{lstlisting}
+
+If instead we wanted to run 5 iterations at a time, the iterate call would be replaced with:
+
+\begin{lstlisting}
+	myGraph.Solver.iterate(5);
+\end{lstlisting}
+
+For the Gibbs solver, a similar method allows running one or a specified number of samples at a time, skipping initialization as well as any burn-in or random restarts.  This is the sample method, which behaves the same as the iterate method:
+
+
+\subsubsection{Getting the Results of Inference}
+
+Once the solver has been run, the results of inference can be obtained from the elements of the graph.  The kinds of results that may be desired vary with the application, and the kinds of results that are available depend on the particular solver and other factors.
+
+One of the most common types of results are beliefs on individual variables in the graph.  The belief of a variable is an estimate of the marginal distribution of that variable given the graph and any conditioning data.  When available, the belief is accessed via the Belief property of a variable:
+
+\begin{lstlisting}
+b = myVariable.Belief;
+\end{lstlisting}
+
+The particular form of the Belief property depends on the type of variable, and in some cases on the solver.  For a Discrete variable type, the Belief property is a vector with length equal to the size of the variable domain.  The values represent the normalized value of the approximate marginal probability of each element of the domain.  For a Bit variable, the Belief property is a single number that represents the marginal probability of the value 1.
+
+For Real variables when using the Gaussian solver, the Belief is represented as a mean/standard-deviation pair.  Using the ParticleBP solver, beliefs are available for Real variables, but a different interface is used to obtain the beliefs in a useful form.  This is summarized in section~\ref{sec:ParticleBPRealVariableSpecificMethods}.  Beliefs for Real variables are not currently supported in the Gibbs solver.
+
+Beliefs can be obtained directly from an array of variables using the Belief property of the array.  For a Discrete variable array, the Belief is an array with the same dimensions as the variable array (or subarray), but with an extra dimensions corresponding to the Belief vector for each variable in the array.  (If a dimension in the array is 1, that dimension is not included.)  For an array of Bit variables, the Belief is an array with the same dimensions as the Bit array.
+
+Another useful inference result returned by the Value property of a variable.  This property returns a single value from the domain of the variable that corresponds to the maximum value of the belief:
+
+\begin{lstlisting}
+v = myVariable.Value;
+\end{lstlisting}
+
+As with the Belief property, this can be used either on individual variables or on a variable array.  Support for this property is currently limited to discrete variables.
+
+When using the Gibbs solver, there are additional inference results that may be useful.  For example, for a given variable, you can request the best sample value that has been seen during inference.
+
+\begin{lstlisting}
+bestValue = myVariable.Solver.getBestSample();
+\end{lstlisting}
+
+This is defined as the value of that variable associated with the sample over all variables that resulted in the most probably configuration observed given the graph and any conditioning data. Considering the graph as a potential function over the configuration space of all variables, this corresponds to the lowest energy configuration that had been observed.
+
+By default, the Gibbs solver doesn't save all samples, but if so configured for a given variable (or all variables) prior to running the solver, the solver will save all samples, allowing the entire set of samples (post burn-in) to be obtained.
+
+\begin{lstlisting}
+myVariable.saveAllSamples();
+myGraph.solve();
+allSamples = myVariable.Solver.getAllSamples();
+\end{lstlisting}
+
+There are a number of other useful results that can be obtained from the Gibbs solver, which are detailed in section~\ref{sec:GibbsSolverAPI}.
+
+%
+%\subsubsection{Inference on Rolled-Up Graphs}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%                - Data sources
+%                - Data sinks
+%
+%\subsubsection{Accessing Solver-Specific Methods}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Solver-Specific Methods on Arrays}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%
+%
+%\subsubsection{Belief Propagation}
+%
+%\para{Overview}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Types of Belief Propagation}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%                - ÉSum-product
+%                    - ...Message representation for Real variables
+%                        - ...Gaussian
+%                        - ...Particle BP
+%                - ÉMin-sum
+%
+%\para{Trees Vs. Loopy Graphs}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Setting the Number of Iterations}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Schedulers for BP}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Solving}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Iterating Step-by-Step}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Getting the Results of Inference}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Beliefs}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Values}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Damping}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{K-Best}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Using Gaussian form of Sum-Product BP}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Using Particle-BP form of Sum-Product BP}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Sum-Product with Finite Field Variables}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%
+%\subsubsection{Gibbs Sampling}
+%
+%\para{Overview}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Specifying Solver Parameters}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Schedulers for Gibbs Sampling}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\para{Getting the Results of Inference}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Samples}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Best Joint Sample}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Beliefs}
+%
+%[??? TO BE COMPLETED ???]
+%
+%
+%\subpara{Values}
+%
+%[??? TO BE COMPLETED ???]
+
+

@@ -1,0 +1,3564 @@
+\section{API Reference}
+
+The following section describes the functions, classes, properties, and methods that comprise the Dimple API for MATLAB.
+%
+%Bit
+%BitStream
+%ComplexVar
+%CSolver
+%DataSink
+%DataSource
+%Discrete
+%DiscreteDomain
+%DiscreteFactor
+%DiscreteStream
+%DiscreteVariableBase
+%Domain
+%DoubleArrayDataSink
+%DoubleArrayDataSource
+%Factor
+%FactorFunction
+%FactorFunctionDataSource
+%FactorFunctionRegistry
+%FactorGraph
+%FactorGraphStream
+%FactorTable
+%FactorTableFactory
+%FiniteFieldVariable
+%FunctionEntry
+%FunctionEntryDictionary
+%GenericDataSource
+%getFactorGraph
+%getModeler
+%getSolver
+%getSolverNames
+%MultivariateDataSink
+%MultivariateDataSource
+%MultivariateMsg
+%Node
+%Port
+%Real
+%RealDomain
+%RealJoint
+%RealJointDomain
+%RealJointStream
+%RealStream
+%registerSolver
+%setFactorGraph
+%setSolver
+%SolverRegistry
+%TableFactorFunction
+%unregisterSolver
+%Variable
+%VariableBase
+%VariableStreamBase
+%VariableStreamSlice
+% Solvers...
+%
+%\subsection{Factor Graph Nodes: Factor Graphs, Variables, and Factors}
+%
+%\subsubsection{Properties}
+%
+%
+%\subsubsection{Methods}
+%
+%
+%\subsection{FactorGraph}
+%
+%\subsubsection{Constructor}
+%
+%\subsubsection{Properties}
+%
+%\para{Solver}
+%
+% Read/Write
+%
+%\para{Scheduler}
+%
+%\para{Schedule}
+%
+%\para{NumIterations}
+%
+%\para{NumSteps}
+%
+%\para{Name}
+%
+%\para{QualifiedName}
+%
+%\para{ExplicitName}
+%
+%\para{Label}
+%
+%\para{QualifiedLabel}
+%
+%\para{UUID}
+%
+%\para{Nodes}
+%
+%\para{NodesFlat}
+%
+%\para{NodesTop}
+%
+%\para{Variables}
+%
+%\para{VariablesFlat}
+%
+%\para{VariablesTop}
+%
+%\para{Factors}
+%
+%\para{FactorsFlat}
+%
+%\para{FactorsTop}
+%
+%\para{NonGraphFactors}
+%
+%\para{NonGraphFactorsFlat}
+%
+%\para{NonGraphFactorsTop}
+%
+%\para{NestedGraphs}
+%
+%\para{FactorGraphStreams}
+%
+%\para{AdjacencyMatrix}
+%
+%\para{Score}
+%
+%\para{BetheFreeEnergy}
+%
+%\para{BetheEntropy}
+%
+%\para{InternalEnergy}
+%
+%
+%\subsubsection{Methods}
+%
+%\para{initialize}
+%
+%\para{solve}
+%
+%\para{addFactor}
+%
+%\para{addFactorVectorized}
+%
+%\para{addDirectedFactor}
+%
+%\para{addFactorNoCache}
+%
+%\para{addRepeatedFactor}
+%
+%\para{advance}
+%
+%\para{hasNext}
+%
+%\para{solveOneStep}
+%
+%\para{continueSolve}
+%
+%\para{baumWelch}
+%
+%\para{estimateParameters}
+%
+%\para{join}
+%
+%\para{split}
+%
+%\para{removeFactor}
+%
+%\para{plot}
+%
+%\para{defineVariableGroup} % Private functionality for now, not in public API
+%
+%\para{getVariableByName}
+%
+%\para{getVariableByUUID}
+%
+%\para{getFactorByName}
+%
+%\para{getFactorByUUID}
+%
+%\para{getGraphByName}
+%
+%\para{getGraphByUUID}
+%
+%\para{isTree}
+%
+%\para{isTreeFlat}
+%
+%\para{isTreeTop}
+%
+%\para{isAncestorOf}
+%
+%\para{depthFirstSearch}
+%
+%\para{depthFirstSearchFlat}
+%
+%\para{depthFirstSearchTop}
+%
+%\para{getFactorGraphDiffsByName}
+%
+%\para{getAdjacencyMatrix}
+%
+%\para{getAdjacencyMatrixFlat}
+%
+%\para{getAdjacencyMatrixTop}
+%
+%\para{getAdjacencyString}
+%
+%\para{getNodeString}
+%
+%\para{getFullString}
+%
+%\para{disp}
+%
+%
+%
+%\subsection{Variables}
+%
+%\subsubsection{Variable Types}
+%
+%\subsubsection{Discrete}
+%
+%\subsubsection{Bit}
+%
+%\subsubsection{Real}
+%
+%\subsubsection{RealJoint}
+%
+%\subsubsection{ComplexVar}
+%
+%\subsubsection{FiniteFieldVariable}
+%
+%\subsubsection{Variable Domains}
+%
+%\subsubsection{DiscreteDomain}
+%
+%\subsubsection{RealDomain}
+%
+%\subsubsection{RealJointDomain}
+%
+%\subsubsection{Variable Streams}
+%
+%\subsubsection{DiscreteStream}
+%
+%\subsubsection{RealStream}
+%
+%\subsubsection{RealJoinStream}
+%
+%\subsection{Factors}
+%
+%\subsubsection{Factor}
+%
+%\subsubsection{FactorFunction}
+%
+%\subsection{Solvers}
+%
+%\subsection{Schedulers}
+%
+%\subsection{Streaming Data}
+%
+%\subsubsection{DataSource}
+%
+%\subsubsection{DataSink}
+%
+%\subsection{Discrete Variables}
+%
+%\subsection{Top Level Functions}
+
+\subsection{Discrete Variables}
+
+
+Dimple supports both Discrete and Real Variables.  Not all solvers support real variables.  Currently the MinSum and SumProduct solvers only support Discrete variables while the Gibbs and ParticleBP solvers do support Real Variables.
+
+The Discrete class is either a single Discrete or a multidimensional array of Discrete variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
+
+Discretes can be created before the factor graph to which they will belong.
+
+\subsubsection{Constructor}
+
+\begin{lstlisting}
+domain = [0 1 2];
+w = Discrete(domain)
+x = Discrete(domain,4)
+y = Discrete(domain,2,3)
+z = Discrete(domain,2,3,4)
+\end{lstlisting}
+
+The Discrete constructor can be used to create an N-dimensional collection of Dimple Discretes.  It takes two arguments:
+
+\begin{itemize}
+\item Domain -- All Variables are currently discrete variables with finite domains.
+\item A Variable List of Dimensions -- The user can specify 0 to N dimensions for the Variable matrix.
+\end{itemize}
+
+Let’s examine each of these arguments in more detail in the following sections.
+
+\para{Domain}
+
+A discrete random variable has a domain associated with it.  A domain is a set.  Dimple supports any object types as elements of the set.
+
+The following are all valid domains:
+
+\begin{lstlisting}
+a = Discrete({1,2,3})
+b = Discrete({1+i, i, 2*i})
+c = Discrete({[1 0; 0 1],[i 1, 2*i 1]})
+d = Discrete({[1 0; 0 1],2,i+1})
+\end{lstlisting}
+
+(a) creates a variable whose domain consists of three values: 1, 2, and 3.  (b) creates a variable whose domain consists of three complex numbers.  (c) creates a variable whose domain consists of two elements, each of which is a 2x2 complex matrix.  (d) creates a variable whose domain consists of three elements: a matrix, real scalar, and complex scalar.
+
+The domain elements have meaning when Dimple calls user-defined delta functions to generate its internal tables.  The user-defined delta functions will get called with the domain items of each variable.
+
+In the previous example we used cell arrays to specify the elements of a domain.  To allow for more concise definitions of domains, users can also use vectors to create a domain:
+
+\begin{lstlisting}
+a) a = Discrete(0:2)
+b) b = Discrete([1 2 3; 4 5 6])
+c) c = Discrete([0:2]’)
+\end{lstlisting}
+
+(a) creates a variable with a domain of {0,1,2}.  (b) creates a variable with a domain of {[1 4]’, [2 5]’, [3 6]’}.  (c) creates a variable with domain of {0,1,2}.
+
+When a user specifies an n-dimensional matrix as a domain, the nth dimension determines the number of elements in the domain.  The rest of the dimensions apply to each domain item.  (c ), however, is a special case.  Column vectors are interpreted the same as row vectors.  If you want to create a Variable with a single item in its set, you will have to use the cell array syntax:
+
+\begin{lstlisting}
+d = Discrete({0:2})
+\end{lstlisting}
+
+\para{Variable List of Dimensions}
+
+If the variable constructor is called without any dimensions, it will create a single Variable.  With one dimension n1, it will create a square array of dimensions n1 x n1. With k dimensions n1, n2, …, nk, it will create a multidimensional array of dimensions n1 x n2 x ... x nk.
+
+\subsubsection{Belief}
+
+For any single variable Var, the Belief method will return a vector whose length is the total number of elements of the domain of Var, with each element of the vector containing the probability of the corresponding element of the domain.
+
+For an array of variables Var, the Belief method will return an array of vectors (i.e., an array one dimension larger) containing the beliefs of each variable.
+
+\begin{lstlisting}
+disp(Var.Belief);
+\end{lstlisting}
+
+The Belief method is only accessible after having run the solver.
+
+\subsubsection{Value}
+
+In some cases, users might wish to retrieve the single most likely element of a variable's domain.  The Value property does just that:
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(3,1);
+fg.addFactor(@xorDelta,b);
+b.Input = [.9 .9 .4];
+b.Value
+\end{lstlisting}
+
+This code displays the following:
+
+\begin{lstlisting}
+
+ans =
+
+     1
+     1
+     0
+
+\end{lstlisting}
+
+\subsubsection{Name}
+
+Users can both set and retrieve the name of Discrete Variables.  This is useful for debugging or plotting a graph.
+
+\subsubsection{Domain}
+
+For any variable, the Domain method returns the domain of that variable.
+
+\subsubsection{Input}
+
+For any variable, the Input method can be used to set and return the current ‘Input’ of that variable. An input is a single edge factor for a variable.
+
+\begin{lstlisting}
+Var.Input=[0.3 0.7];
+disp(Var.Input);
+\end{lstlisting}
+
+
+\subsubsection{FixedValue}
+
+Users may wish to set inputs to variables to domain values with 100\% certainty.  The FixedValue property also allows this.  This can be useful, for example, when a variable is measured and its value becomes known.  Setting a fixed value allows conditioning on the known value without modifying the graph.
+
+\begin{lstlisting}
+
+d = Discrete({0,1},3,1);
+fg = FactorGraph();
+fg.addFactor(@xorDelta,d);
+d.FixedValue= [1 1 0];
+d.Input
+
+\end{lstlisting}
+
+This code displays the following:
+
+\begin{lstlisting}
+
+ans =
+
+     0     1
+     0     1
+     1     0
+
+\end{lstlisting}
+
+The FixedValue property is related to the Input property in that only the most-recently set of these properties is used.  When FixedValue is set, the Input is ignored, unless it is subsequently set again.  If the Input is set, a FixedValue that had been set is ignored, unless the FixedValue is subsequently set again.
+
+When setting a FixedValue, the value being set must be a valid element of the Variable's domain.  For example:
+
+\begin{lstlisting}
+a = Discrete(1:10);
+a.FixedValue = 3;
+\end{lstlisting}
+
+Setting this value to ``11'' would not be valid.
+
+The fixed value, once set, may be read via getting the FixedValue property.  In the above example, ``a.FixedValue'' would display ``3''.
+
+To determine if a variable (or array of variables) has a fixed value or not, the method hasFixedValue may be used.
+
+
+
+\subsection{Bit}
+
+
+A Bit is a special kind of Discrete with domain [0 1]. Its constructor does not require a domain, only the list of dimensions of the Variable.
+
+\begin{lstlisting}
+BitVar1=Bit();
+BitVar2=Bit(3,1);
+BitVar3=Bit(3,5,3);
+\end{lstlisting}
+
+For simplicity, the Input method only requires the probability of 1 (and returns that probability). Similarly, the Belief method returns the probability of 1.
+
+\begin{lstlisting}
+BitVar1.Input=0.3;
+BitVar2.Input=[0.3 0.2 0.5];
+disp(BitVar3.Belief);
+\end{lstlisting}
+
+The last command returns a 3-by-5-by-3 array of numbers between 0 and 1.
+
+\subsection{Real Variables}
+
+
+\subsubsection{Constructors}
+
+\begin{lstlisting}
+Real([domainBound, input, dimensions])
+\end{lstlisting}
+
+All arguments are optional and can be used in any combination.
+
+\begin{itemize}
+\item domainBound is a two-element vector specifying a bound on the domain of the variable. The first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.
+\item input is an instance of a Java class specifying the factor function. All such Java classes are derived from the base class FactorFunction, and must have the eval() method implemented so that the factor can be evaluated in Java.
+\item dimensions specify the array dimensions in the normal way.
+\end{itemize}
+
+Examples:
+
+\begin{itemize}
+\item Real() specifies a scalar real variable with an unbounded domain and with no input distribution.
+\item Real(4,1) specifies a 4x1 vector of real variables with unbounded domain and with no input distribution.
+\item Real([-1 1]) specifies a scalar real variable with domain from -1 to 1.
+\item Real([-Inf 0],4,10,2) specifies a 4x10x2 array of real variables, each with the domain from negative infinity to zero.
+\item Real(com.analog.lyric.dimple.FactorFunctions.ExampleFactor()) specifies a scalar real variable with a prior distribution specified by the Java FactorFunction called ExampleFactor.
+\item Real([0 1], com.analog.lyric.dimple.FactorFunctions.ExampleFactor(), 1,6) specifies a vector of real variables, each with a domain from 0 to 1, and with a prior distribution specified by the Java FactorFunction called ExampleFactor.
+\end{itemize}
+
+NOTE: the discrete variable constructor is now called Discrete. For backwards compatibility, the Variable constructor is still supported and can also be used to create a discrete variable.
+
+\subsubsection{Methods}
+The following methods are supported:
+
+\begin{itemize}
+\item .Domain (get) returns the two-element vector specifying the bound on the domain specified during construction. If no domain had been set, the value is [-Inf Inf]. For an array of variables, .Domain returns the domain common to all of the variables in the array. Domain is not a settable parameter--it can only be set on construction.
+\item .Input (get) returns the Java object associated with the input. For an array of variables, .Input returns a cell-array of these Java objects with the same dimension as the variable. Some solvers that support real variables expect FactorFunctions as inputs.  Note that for each FactorFunction object, the eval method will return the value of the factor evaluated at the specified input value (example: v.Input.eval(1.75) for a scalar variable or vArr.Input{2,3}.eval(1.75) for an array of real-valued variables).
+\item .Input = (set) assigns the specified input to the variable. Input is a Java factor function.  It may be selected from the set of built-in factor functions (see~\ref{sec:builtInFactors}) or a user defined Java factor functions (see~\ref{sec:userJava})
+\item .FixedValue = (set) assigns a fixed value to the variable, which effectively replaces the Input.  This method operates the same as for a discrete variable.
+\item .FixedValue (get) returns the fixed-value that had been set by .FixedValue method, if one had been set.
+\item .hasFixedValue indicates whether or not a fixed value had been set.
+\end{itemize}
+
+\subsubsection{Factors for Real Variables}
+
+Factors can be added to a graph that are connected to real variables, discrete variables, or a combination of the two. Any factor that is connected to one or more real variables currently is constrained to use a built-in factor function (see section~\ref{sec:builtInFactors} or a user-provided Java factor function (see section~\ref{sec:createJavaFactorFunction}). It cannot use a factor function specified in MATLAB and cannot use a factor table.
+
+Example:
+
+\begin{lstlisting}
+f = graph.addFactor('ExampleFactor', realVar1, realVar2, discreteVar1, discreteVar2);
+\end{lstlisting}
+
+\subsubsection{Solvers}
+Currently, real variables are supported by several solvers including the Gibbs solver, Particle BP solver, and Gaussian solver.
+
+
+\subsection{Factor Graph}
+
+The FactorGraph class represents a Factor Graph and contains a collection of all Factors associated with that Factor Graph and all Variables that are connected by Factors to that graph.
+
+\subsubsection{Constructor}
+
+For a regular factor graph (on which we actually wish to perform inference), the constructor is simply the command FactorGraph.
+
+\begin{lstlisting}
+fg=FactorGraph();
+\end{lstlisting}
+
+For a nestable factor graph, we first need to declare the connector or helper variables, and use them as arguments of the factor graph declaration.
+
+\begin{lstlisting}
+ConnectVar=Discrete(Domain,1,5);
+NestableGraph=FactorGraph(ConnectVar);
+\end{lstlisting}
+
+The command above creates a nestable factor graph with connector variable ConnectVar (which is an array). Once the nestable factor graph is fully defined (i.e., all the factors have been added), knowing what the connector variables are is not useful anymore, as they only serve as dummy variables.
+
+
+\subsubsection{addFactor}
+
+The addFactor (and related) methods are used to add a factor to a factor-graph, connecting that factor to a specified set of variables.  There are several ways of specifying the particular factor:
+
+\begin{itemize}
+\item A MATLAB function handle.
+\item A sub-graph.
+\item A factor-table.
+\item A built-in factor.
+\item A built-in overloaded MATLAB operator.
+\item A custom Java FactorFunction object.
+\end{itemize}
+
+Each of these methods is summarized in the subsequent sections.
+
+\para{MATLAB Function Handle}
+
+A factor may be specified by defining a MATLAB function, and passing a handle to that function.  The function must accept values that correspond to the state of the connected variables (in the same order as specified in the addFactor call), and return a non-negative weight corresponding to the unnormalized value of the factor.
+
+In this case, the “addFactor” method takes the following arguments:
+
+\begin{itemize}
+\item A function handle. 
+\item A variable length list of Variables or matrices.
+\end{itemize}
+
+For example,
+
+\begin{lstlisting}
+MyGraph.addFactor(@XorDeltaTutorial,x,y,z);	
+\end{lstlisting}
+
+The ``@'' symbol indicates a function handle, where the function ``XorDeltaTutorial'' is assumed to exist somewhere in the current MATLAB path.
+
+Using a MATLAB function to specify a factor is valid in Dimple only when all of the connected variables are discrete (either Discrete or Bit).  Real values are allowed in other parts of a graph, as long as they are not directly connected to this factor.
+
+Some of the variables in the call may be replaced by constants.  In this case, no variable is created, but instead the specified constant value is used for the value of that input to the factor function.  The following shows an example of mixing variables and constants as arguments to the addFactor method.
+
+\begin{lstlisting}
+b = Bit(2,1);
+MyGraph.addFactor(@XorDeltaTutorial,b(1),1, b(2));	
+\end{lstlisting}
+
+The constants can be any n-dimensional real or complex matrix.  
+
+Adding a Factor in this way involves creating an array known as a factor table, which contains all assignments of the variables resulting in a positive value of the function, along with a value vector, containing all the corresponding values of the function. This table is then passed to the solver. Creating that table takes time (and typically space) proportional to the product of the size of the domains of all variables connected to that factor, thus requiring an exponential time in the degree of the factor.  The addFactor method attempts to save memory and time by re-using existing factors when addFactor is called with the same factor function.  The caching mechanism uses the name of the function (using MATLAB’s func2str) as well as the domain values for all of the arguments to addFactor when deciding if a FactorTable can be re-used.  If this behavior is undesirable, the addFactorNoCache method can be used instead of addFactor (see below).
+
+\para{Nested Graphs}
+
+In a nested graph, a sub-graph can be added to its parent graph using the addFactor method.  In this case, the first argument of the addFactor call is the sub-graph.  For example:
+
+\begin{lstlisting}
+MyGraph.addFactor(mySubGraph, a, b, c);
+\end{lstlisting}
+
+The number and order of the variables must correspond to the number and order of the connector variables declared when the sub-graph was created.
+
+Note that for backward compatibility, an equivalent method, addGraph, is also supported (see section~\ref{sec:addGraph}).
+
+\para{Specifying FactorTables}
+
+For all discrete factors, Dimple can build FactorTables under the hood. A Factor Table consists of a two dimensional array of integers and a single dimensional array of doubles. Each row of the two dimensional table represents a combination of variables for which the Factor Function returns a non-zero value. Each column represents a variable connected to the factor. The values of the table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles and that entry contains the return value of the Factor Function.
+
+In some situations, a user might be able to build a FactorTable much more efficiently than Dimple can. Dimple tries all combinations of variable values exhaustively and discards combinations for which the Factor Function returns zeros. If the user can avoid this exhaustive search, they can build the FactorTable more quickly.
+
+Once the user has created the table, they can add a Factor using this table in one of two ways. The first is to provide the indices and values directly to the addFactor call:
+
+\begin{lstlisting}
+   %First let's just add the factor as indices and values
+   fg = FactorGraph();
+   b = Bit(2,1);
+   ind = [0 0; 1 1];
+   val = [1 1];
+   fg.addFactor(ind,val,b);
+   b(1).Input = .8;
+   fg.solve();
+   assertEqual(b(2).Belief,.8);
+\end{lstlisting}
+   
+Notice that the indices and values chosen here will be equivalent to creating an equals factor between the two variables. In the following example we see that it's possible to first create a Table and then add a factor using that table. This has the advantage of using less overall memory if this same table will be used in multiple factors.
+
+\begin{lstlisting}
+   %Now let's add the Factor using createTable to test we can share tables
+   fg = FactorGraph();
+   b = Bit(2,1);   
+   t = FactorTable(ind,val,b.Domain,b.Domain);	
+   fg.addFactor(t,b);
+   b(1).Input = .8;
+   fg.solve();
+   assertEqual(b(2).Belief,.8);
+\end{lstlisting}
+
+Users can also create a FactorTable given a single n-dimensional matrix such that: $ val(x_1,...,x_n) = F(d_1(x_11),...,d_n(x_n)) $
+
+Where val is the N dimensional matrix, F is the desired Factor Function, and di is a function mapping 1 based indices to domain elements of domain i.  This will result in an uncompressed table, so it doesn’t offer a speed improvement, but provides a convenient way to create Factors in some cases.
+
+\begin{lstlisting}
+   fg = FactorGraph();
+   b = Bit(2,1);
+   val = [1 0; 0 1];
+   t = FactorTable(val,b.Domain,b.Domain);
+   fg.addFactor(t,b);
+   b(1).Input = .8;
+   fg.solve();
+   assertEqual(b(2).Belief,.8);
+\end{lstlisting}
+
+or equivalently:
+
+\begin{lstlisting}
+   fg = FactorGraph();
+   b = Bit(2,1);
+   val = [1 0; 0 1];
+   fg.addFactor(val,b);
+   b(1).Input = .8;
+   fg.solve();
+   assertEqual(b(2).Belief,.8);
+\end{lstlisting}
+
+In yet another way to specify FactorTables, users can create an empty Factor Table and use the “set” function to set values at specified domain combinations.
+
+\begin{lstlisting}
+   fg = FactorGraph();
+   b = Discrete({'on','off'},2,1);
+   t = FactorTable(b.Domain,b.Domain);
+   t.set('on','on',1);
+   t.set('off','off',1);
+   fg.addFactor(t,b);
+   b(1).Input = [.8 .2];
+   fg.solve();
+   assertEqual(b(2).Belief(1),.8);
+\end{lstlisting}
+
+Users can retrieve values using the FactorTable “get” function.
+
+\begin{lstlisting}
+>> t.get('on','on')
+
+ans =
+
+     1
+\end{lstlisting}
+
+
+\para{Built-in Factors}
+\label{sec:builtInFactors}
+
+Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, in which case an alternative syntax must be used (see below).
+
+As an example,
+
+\begin{lstlisting}
+Mean = Real();
+InverseVariance = Real();
+Values = Real(1,100);
+MyGraph.addFactor('Normal', Mean, InverseVariance, Values);
+\end{lstlisting}
+
+The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or vector of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B = Bit, D = Discrete, or R = Real).  If no list is shown, then any data-type may be used.
+
+\begin{longtable} {l p{2.2cm} p{2cm} p{7cm}}
+Name & Variables & Constructor & Description \\
+\hline
+\endhead
+%
+Abs & out(D,R) \newline in(D,R) & [smoothing] & Deterministic absolute value function, where out = abs(in).  An optional smoothing value may be specified as a constructor argument\footnote{\label{ftn:smoothing}If smoothing is enabled, the factor function becomes $e^{-(\textrm{out} - F(\textrm{in}))^2/\textrm{smoothing}}$ (making it non-deterministic) instead of $\delta(\textrm{out} - F(\textrm{in}))$, where $F$ is the deterministic function associated with this factor.  This is useful for solvers that do not work well with deterministic real-valued factors, such as particle BP, particularly when tempering is used.}.\\
+%
+ACos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-cosine function, where out = acos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+AdditiveNoise & out(R) \newline in(B,D,R) & $\sigma$ & Add Gaussian noise with a known standard deviation, $\sigma$, specified in constructor. \\
+%
+And & out(B) \newline in...(B) & - & Deterministic logical AND function, where out = AND(in...). \\
+%
+ASin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-sine function, where out = asin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ATan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-tangent function, where out = atan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Beta distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
+The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+%
+ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ConstantProduct & out(D,R) \newline in(D,R) & constant \newline [smoothing] &  Deterministic product function, multiplying the input times a constant value.  The constant value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Cos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic cosine function, where out = cos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Cosh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-cosine function, where out = cosh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+DiscreteTransition & x(D) \newline y(D) \newline A(R) & $N_{x}, N_{y} | \newline N$ & 
+Parameterized discrete transition factor, $p(y | x, A)$, where x and y are discrete variables, and $A$ is a matrix of transition probabilities. The transition matrix is organized such that columns correspond to the output distribution for each input state. That is, the transition matrix multiplies on the left. The number of columns in A and the domain size of x must equal the value of the constructor argument, $N_{x}$ and the number of rows in A and the domain size of y must equal the value of the constructor argument $N_{y}$.  If $N_{x}$ and $N_{y}$ are equal, a single constructor argument, $N$, may be used.  \newline
+The elements of the matrix A are represented as energy values, that is, $A_{i,j} = -\log(\rho_{i,j})$, where $\rho$ is an unnormalized transition probability matrix.  The conjugate prior for this representation is such that each entry of A is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+%
+Divide & quotient(D,R) \newline dividend(D,R) \newline divisor(D,R) & [smoothing] & Deterministic divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Equals & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+GreaterThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
+%
+InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Inverse Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+LessThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
+%
+LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant vector. The constant vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the constant vector. An optional smoothing value may be specified as a constructor argument\textsuperscript{\ref{ftn:smoothing}}. \\
+%
+Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
+%
+MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline $N_{y}$ \newline [smoothing] & Deterministic matrix-vector product function, $y = Mx$, where $x$ and $y$ are vectors and $M$ is a matrix. Constructor arguments, $N_{x}$ and $N_{y}$, specify the input and output vector lengths, respectively. The matrix dimension is $N_{y} \times N_{x}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+%
+Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
+%
+Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
+%
+Not & out(B) \newline in(B) & - & Deterministic logical NOT of function, where out = ~in. \\
+%
+Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out = OR(in...). \\
+%
+Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out = base$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Rayleigh & [$\sigma$](R) \newline value...(R) & [$\sigma$] & Rayleigh distribution. There can be any number of value variables, all associated with the same parameter value.  Parameter $\sigma$ can be a variable, or if constant, can be specified in the constructor. \\
+%
+Sin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic sine function, where out = sin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sinh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-sine function, where out = sinh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sqrt & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square root function, where out = sqrt(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Square & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square function, where out = in$^{2}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Subtract & out(D,R) \newline posIn(B,D,R) \newline negIn...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sum & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, where out = tan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Tanh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-tangent function, where out = tanh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Von Mises distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor.  The distribution is non-zero for value variables in the range $-\pi$ to $\pi$. \\
+%
+Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where out = XOR(in...). \\
+%
+\end{longtable}
+
+The above factors may be specified by name if no constructor arguments are needed.  If constructor arguments are needed, then there are two ways to specify the factor.  The preferred way is to create a FactorFunction object, which takes the name of the factor followed by the constructor arguments for that factor.  For example:
+
+\begin{lstlisting}
+MyGraph.addFactor(FactorFunction('Gamma', 1, 1), X);
+\end{lstlisting}
+
+The same FactorFunction can be used more than once, which avoids creating additional copies of the FactorFunction object.  For example:
+
+\begin{lstlisting}
+myFactorFunction = FactorFunction('Gamma', 1, 1);
+MyGraph.addFactor(myFactorFunction, X1);
+MyGraph.addFactor(myFactorFunction, X2);
+\end{lstlisting}
+
+A short-hand notation may alternatively be used, in which the name of the factor function and its constructor arguments are contained in a cell array.  For example:
+
+\begin{lstlisting}
+MyGraph.addFactor({'Gamma', 1, 1}, X);
+\end{lstlisting}
+
+
+In addition to the built-in factors listed above, there are a set of solver-specific built-in factors, also referred to as ``custom factors.''  These factors may also be specified by name in the addFactor call (using either a quoted string or as a function handle).  These are summarized in the following table:
+
+\begin{longtable} {l p{3cm} p{7cm}}
+Name & Solver & Description \\
+\hline
+\endhead
+%
+FiniteFieldFactor & SumProduct\footnote{\label{ftn:fff} These may also be used for discrete variables with the Gaussian or particle BP solvers, which use the sum-product solver for discrete-only portions of the graph.}  & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldProjection & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldAdd & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldConstMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+CustomXor & MinSum & Same as the Xor factor described above, but with a significantly faster implementation. \\ 
+\end{longtable}
+
+
+Dimple also includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided.
+
+\begin{itemize}
+\item getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
+\item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+\end{itemize}
+
+
+
+
+\para{Adding Factors Implicitly Using MATLAB Operators or Functions}
+
+Dimple supports a set of built-in factors that can be added implicitly using overloaded MATLAB operators or functions.  For example,
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Discrete(1:4);
+b = Discrete(1:10);
+c = a + b;
+\end{lstlisting}
+
+The last line of this example will create a new variable, c, and a 'Sum' factor with variables c, a, and b.  The domain of c will be defined appropriately given the domains of the input variables.  In this example, the domain of c would automatically be set to the range [2:14].
+
+These operations can be compounded in a single line of code, and variables of different data types as well as constants can be intermingled (as long as the type is supported by the specific operator).  In this case, intermediate anonymous variables will be created in the graph associated with intermediate results of the operation.  For example,
+
+\begin{lstlisting}
+z = (a + b) * c^d - sqrt(-e);
+\end{lstlisting}
+
+Like using the addFactor method, adding factors implicitly can include constants.  Specifically, for binary operators, one of the inputs may be a constant instead of a variable.  For example:
+
+\begin{lstlisting}
+x = a^2;
+y = (a + b + 2) * 3;
+\end{lstlisting}
+
+Since adding a factor implicitly does not specifically refer to the factor graph, the graph to which these factors are added is also implicit.  In particular, these implicitly defined factors are added to the last factor graph that was created.  So, in the first example above, the factor would be added to fg, regardless of whether other factor graphs had previously been created.
+
+The specific set of operators supported is given in section~\ref{sec:overloaded}.
+
+
+
+\para{Specifying Java Factor Functions}
+\label{sec:userJava}
+
+There are some cases in which it is desirable to add a factor function that is defined in Java rather than MATLAB. Specific cases where this is desirable are:
+
+\begin{itemize}
+\item The user wants to use a sample-based solver. Dimple's sample based solvers must use Java Factor Functions in order to be able to call the Factor Function at runtime. This is partly because MATLAB does not officially support callbacks from Java to MATLAB and also because calls from Java to Java will be faster than those that cross a language boundary.
+\item The user wants their code to run faster. MATLAB function calls are very slow as compared to java function calls.
+The following sections provides the steps users must follow to add a Java Factor Function to their FactorGraph.
+\end{itemize}
+
+
+\subpara{Create a Class That Inherits from Java FactorFunction}
+\label{sec:createJavaFactorFunction}
+
+Users must extend the FactorFunction class. They have to provide two methods:
+
+\begin{itemize}
+\item A constructor that call's the parent constructor.
+\item An eval function that returns a weight for each possible set of inputs.
+\end{itemize}
+
+\begin{lstlisting}
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+
+/*
+ * This factor enforces equality between all variables and weights
+ * elements of the domain proportional to their value
+ */
+public class BigEquals extends FactorFunction
+{	
+    public BigEquals() 
+    {
+	super("BigEquals");
+    }
+  
+    @Override
+    public double eval(Object... input) throws Exception 
+    {
+	if (input.length == 0)
+	    return 0;
+	else
+	{
+	    double first = (Double) input[0];
+	    
+	    for (int i = 1; i < input.length; i++)
+	    {
+	        if ((Double)input[i] != first)
+		    return 0;
+	    }
+	    return first;   
+	}
+    }
+}
+\end{lstlisting}
+
+\subpara{Compiling}
+
+The new class must be compiled to class files. Users can optionally create a jar file. If using Eclipse, users can simply create a new project, create the new class, and the .class files will be created automatically.
+
+\subpara{Adding Binary to MATLAB Path}
+
+In MATLAB, the user must use the javaaddpath call to add the java files to the javaclasspath.
+
+\begin{lstlisting}
+javaaddpath('<path to my project>/MyFactorFunctions/bin');
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}
+javaaddpath('<path to the jar>/myjar.jar');
+\end{lstlisting}
+
+\para{Using the Factor Function}
+
+Users can now instantiate the FactorFunction and call addFactor with the instance.
+
+\begin{lstlisting}
+be = BigEquals();
+fg = FactorGraph(); 
+v = Variable({0,1,2},2,1);
+fg.addFactor(be,v(1),v(2));
+fg.solve();
+v(1).Belief
+\end{lstlisting}
+
+Note that the BigEquals class was added to the default package, so we can just call:
+
+\begin{lstlisting}
+be = BigEquals();
+\end{lstlisting}
+
+The previous code results in the following answer from MATLAB:
+
+\begin{lstlisting}
+ans =
+
+   0.0000    0.3333    0.6667
+\end{lstlisting}
+
+\subpara{Re-using the Factor Function}
+We can re-use the BigEquals() FactorFunction multiple times within a single graph or across graphs. This will result in caching of FactorTables when the arguments to the addFactor function have identical domains.
+
+\begin{lstlisting}
+be = BigEquals();
+fg = FactorGraph(); 
+v = Variable({0,1,2},2,1);
+fg.addFactor(be,v(1),v(2));
+fg.solve();
+v(1).Belief
+
+fg2 = FactorGraph();
+v2 = Variable({0,1,2},2,1);
+fg2.addFactor(be,v2(1),v2(2));
+fg2.solve();
+v2(1).Belief
+\end{lstlisting}
+
+\para{addFactorNoCache}
+\label{sec:addFactorNoCache}
+
+There are several cases where Dimple’s factor caching mechanism is undesirable.  As an example, if the user is calling addFactor with the same factor many times, but they know the arguments are unique, they can save time by skipping the code that searches for a match in the cache. 
+
+\begin{lstlisting}
+fg = FactorGraph(); 
+func = @(x,y) 1;
+b = Bit(2,1);
+for i=1:1000
+fg.addFactorNoCache(func,b,rand());
+end
+\end{lstlisting}
+
+This is a somewhat contrived example but, in this case, replacing addFactorNoCache with addFactor will significantly slow down the code.
+
+
+\subsubsection{addFactorVectorized}
+
+To get reasonable speed out of MATLAB, one needs to vectorize their code.  If a user wishes to build a FactorGraph with large numbers of factors, 
+they will want to avoid making many calls to addFactor.  The addFactorVectorized method can be called once to create many factors.
+
+\para{Vectorizing over all variables}
+
+In this first example, we create three variable matrices and generate 12 factors connecting a(i,j), b(i,j), and c(i,j) for all i and j.
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Bit(3,4);
+b = Bit(3,4);
+c = Bit(3,4);
+fg.addFactorVectorized(@xorDelta,a,b,c);
+\end{lstlisting}
+
+\para{Specify Vectorize Dimensions}
+
+By default addFactorVectorized will add factors for every dimension.  However, if a user wants to only vectorize over a subset of dimensions, addFactorVectorize
+allows them to provide a cell array containing a variable matrix as the first argument and a list of dimensions to vectorize over as the second argument.  The following code will vectorize over the first two dimensions to create 12 xor factors.  Each xor factor is connected to 5 bits.
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(3,4,5);
+fg.addFactorVectorized(@xorDelta,{b,[1 2]});
+\end{lstlisting}
+
+\para{Connecting a single variable with addFactorVectorized}
+
+The addFactorVectorized method will ensure that dimensions being vectorized match for all inputs.  However, the call allows single variables to be connected to many as follows:
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Bit(10,1);
+b = Bit();
+fg.addFactorVectorized(@xorDelta,a,b);
+\end{lstlisting}
+
+This will create a graph such that b is connected to every element of a via a total of 10 factors.
+
+\para{repmat}
+
+Similar things can be done with repmat.  Suppose you have a 10x1 vector of variables that you want connected to a 10x20 matrix of different variables.
+The following code will create 200 factors.  Each element of a will be connected to 20 elements of b via 20 factors.
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Bit(10,1);
+b = Bit(10,20);
+fg.addFactorVectorized(@xorDelta,repmat(a,1,10),b);
+\end{lstlisting}
+
+\para{Constants}
+
+Users can still pass constants to addFactor.  The following passes the constant 1 to the xorDelta factor function as the final argument.
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(10,3);
+fg.addFactorVectorized(@xorDelta,{b 1},1);
+\end{lstlisting}
+
+\para{Nested Graphs}
+
+Nested Graphs are also supported
+
+\begin{lstlisting}
+a = Bit(3,1);
+ng = FactorGraph(a);
+ng.addFactor(@xorDelta,a);
+fg = FactorGraph();
+b = Bit(10,3);
+fg.addFactorVectorized(ng,{b, 1});
+\end{lstlisting}
+
+
+\para{Adding Vectorized Factors Implicitly Using MATLAB Operators or Functions}
+
+Adding built-in factors implicitly using overloaded MATLAB operators or functions can also be vectorized, with some limitations.  Specifically, if each of the input variables are vectors of the same dimension, then the result will be to create a vector of output variables of the same dimension, along with a vector of factors relating the inputs and outputs.
+
+In some cases, to be consistent with MATLAB notation, there is a distinction made between the vectorized and non-vectorized operator.  Specifically, Dimple uses MATLAB's notation for point wise product and power operators to indicate a vectorized operation (currently using the matrix version of these operators on vector inputs is not supported).  For example, if variables a through e are vectors of variables of identical size, then the following would create a variable vector z, and a series of factors relating these variables.
+
+\begin{lstlisting}
+z = (a .* b) + c.^d - sqrt(-e);
+\end{lstlisting}
+
+For binary operators, one of the inputs may be a scalar variable or a scalar constant instead of a variable vector.  For a scalar variable, the result is that scalar variable connecting to each instance of the factors that are created.  For a constant, each instance of the factor uses the same constant for that input (vectors of distinct constants are not currently supported).  As an example:
+
+\begin{lstlisting}
+a = Real();
+b = Discrete(domain, 1, 10);
+z = a + b;					
+\end{lstlisting}
+
+The specific set of operators supported is given in section~\ref{sec:overloaded}.
+
+
+\subsubsection{addGraph}
+\label{sec:addGraph}
+
+\begin{lstlisting}
+MyGraph.addGraph(NestableGraph,Vars);	
+\end{lstlisting}
+
+The addGraph method creates a copy of the nestable factor graph, and connects the connector variables to the input variables of the addGraph method.
+
+
+
+\subsubsection{List of Overloaded MATLAB Operators and Functions}
+\label{sec:overloaded}
+
+The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding factor, the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.
+
+\begin{longtable} {l p{3cm} p{1cm} p{1cm} p{1cm} l p{4cm}}
+Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
+\hline
+\endhead
+%
+$\&$ & And & B & B & B & \checkmark & Logical AND \\
+$|$ & Or & B & B & B & \checkmark & Logical OR \\
+xor() & Xor & B & B & B & \checkmark & Logical XOR \\
+$\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
+$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\
+$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\
+$-$ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\
+$*$ & Product \newline MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply, or matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.  Otherwise the Product factor will be used.} \\
+$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\
+$/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\
+$./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\
+$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
+$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
+$>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
+$<=$ & GreaterThan & B & D,R & D,R & \checkmark & Less than or equal to (uses GreaterThan factor, reversing the order) \\
+$>=$ & LessThan & B & D,R & D,R & \checkmark & Greater than or equal to (uses LessThan factor, reversing the order) \\
+mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
+abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
+sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
+log() & Log & R & R & - & \checkmark & Natural log \\
+exp() & Exp & R & R & - & \checkmark & Exponential function \\
+sin() & Sin & R & R & - & \checkmark & Sine \\
+cos() & Cos & R & R & - & \checkmark & Cosine \\
+tan() & Tan & R & R & - & \checkmark & Tangent \\
+asin() & ASin & R & R & - & \checkmark & Arc-sine \\
+acos() & ACos & R & R & - & \checkmark & Arc-cosine \\
+atan() & ATan & R & R & - & \checkmark & Arc-tangent \\
+sinh() & Sinh & R & R & - & \checkmark & Hyperbolic sine \\
+cosh() & Cosh & R & R & - & \checkmark & Hyperbolic cosine \\
+tanh() & Tanh & R & R & - & \checkmark & Hyperbolic tangent \\
+\end{longtable}
+
+
+Dimple also includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions listed above.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  The built-in factors that support this syntax are:
+
+\begin{itemize}
+\item Beta
+\item Gamma
+\item InverseGamma
+\item NegativeExpGamma
+\item Normal
+\item LogNormal
+\item VonMises
+\item Rayleigh
+\item Categorical
+\end{itemize}
+
+For each, the arguments are the parameters of the distribution.  For example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta);
+X = Normal(mean, precision);
+Y = Categorical(alphaVector);
+Z = Rayleigh(sigma);
+\end{lstlisting}
+
+
+The parameters can be variables, constants, or some of each.
+
+By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph.  But, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph.  These arguments can be in either order after the parameters.  For example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta, altGraph);
+X = Normal(mean, precision, [100, 1]);
+Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Z = Rayleigh(sigma, myGraph, size(somethingElse));
+\end{lstlisting}
+
+
+
+\subsubsection{Setting the Solver}
+
+
+\para{Specifying an object}
+
+It is possible to switch the solver of an existing model.  An Example:
+
+\begin{lstlisting}
+   setSolver('SumProduct');
+   fg = FactorGraph();
+   b = Bit(3,1);
+   fg.addFactor(@xorDelta,b);
+   b.Input = [.8 .8 .6];
+   fg.NumIterations = 1;
+   fg.solve();
+   
+   expected = [0.7586; 0.7586; 0.4138];
+   assertTrue(all((b.Belief-expected)<.0001));
+   fg.Solver = 'MinSum';
+   fg.NumIterations = 1;
+   fg.solve();
+   expected = [0.7273; 0.7273; 0.2727];
+   assertTrue(all((b.Belief-expected)<.0001));
+\end{lstlisting}
+
+Switching solvers is not currently supported when custom factors are in use, because it will cause errors in two different cases:
+
+Case 1: 
+
+\begin{enumerate}
+\item The user sets a solver that provides a custom factor.
+\item The user instantiate a graph that uses that custom factor.
+\item The user switches to a Solver that does not provide that same custom factor.
+\item The user tries to solve the graph using the new solver.
+\end{enumerate}
+
+In step 2, Dimple avoids creating a FactorTable to avoid the overhead of creating something it will not use.  If allowed to get to step 4, Dimple cannot successfully solve because it has neither a FactorTable or a custom factor for one of the nodes of the graph.  Dimple will throw an error at step 3, indicating the problem.
+
+Case 2:
+
+\begin{enumerate}
+\item The user sets a solver that provides no custom factors.
+\item The user creates a graph
+\item The user sets a new solver that defines a custom factor for one of the nodes in this graph.
+\item The user tells Dimple to solve
+\end{enumerate}
+
+In this case, Dimple will not use the custom factor or combo table associated with the node, and will throw and error at step 4.
+
+ In the future we might fix some of these issues but, until then, users should only switch solvers in cases where custom factor nodes are not used.
+
+\para{Using a Name}
+
+Dimple has been modified to allow users to register commonly used solvers so that they can be assigned using shorter names. Previously users had to do:
+
+\begin{lstlisting}
+setSolver(com.analog.lyric.dimple.solvers.sumproduct.Solver());
+fg = FactorGraph();
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}
+fg = FactorGraph();
+fg.Solver = com.analog.lyric.dimple.solvers.sumproduct.Solver();
+Users can now do:
+setSolver('SumProduct'); 
+fg = FactorGraph();
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}
+fg = FactorGraph();
+fg.Solver = 'SumProduct';
+\end{lstlisting}
+
+When setting the solver by name, the name is case insensitive.
+
+For solvers that take constructor arguments, users can use the setSolver command:
+
+\begin{lstlisting}
+fg = FactorGraph();
+fg.setSolver('Gibbs',param1,param2,param3,param4);
+\end{lstlisting}
+
+or
+
+\begin{lstlisting}
+setSolver('Gibbs',param1,param2,param3,param4);
+\end{lstlisting}
+
+For a full list of registered solvers, type:
+
+\begin{lstlisting}
+getSolverNames()
+\end{lstlisting}
+
+If users wish to register their own solvers they can call:
+
+\begin{lstlisting}
+registerSolver(solverName,solverConstructor);
+\end{lstlisting}
+
+And if they wish to unregister a solver they can call:
+
+\begin{lstlisting}
+unregisterSolver(solverName);
+\end{lstlisting}
+
+
+\subsubsection{Setting the Scheduler}
+
+The scheduler determines the schedule to apply when solving the graph, which is the order of updates of variables and factors.  The user may choose among one of several pre-defined schedulers using the Scheduler method.  Each scheduler examines the structure of the graph and applies a rule to determine the schedule that will be used.  Alternatively, the user may supply a custom schedule using the Schedule method (see section~\ref{sec:customSchedules}).
+
+If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
+
+A scheduler is specified as follows:
+\begin{lstlisting}
+MyGraph.Scheduler = 'ExampleScheduler';	
+\end{lstlisting}
+
+When setting the scheduler for a graph, the name of the scheduler is case sensitive.
+
+For all solvers except for the Gibbs solver (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available:
+
+\begin{longtable}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{DefaultScheduler} & Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified. \\ \hline
+%
+\textsf{TreeOrFloodingScheduler} & The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  If the entire graph is a tree, NumIterations should be set to 1, which is its default value.  If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below). \\ \hline
+%
+\textsf{TreeOrSequentialScheduler} & The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  \\ \hline
+%
+\textsf{FloodingScheduler} & The solver will apply a Flooding Schedule.  For each iteration, all variable nodes are updated, followed by all factor nodes.  Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result. \\ \hline
+%
+\textsf{SequentialScheduler} & The solver will apply a Sequential Schedule.  For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated.  The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph. \\ \hline
+%
+\textsf{RandomWithoutReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement.  On each subsequent iteration, a new random order is chosen.  Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once. \\ \hline
+%
+\textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
+%
+\end{longtable}
+
+
+In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
+
+It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
+%
+\begin{lstlisting}
+SubGraph.Scheduler = 'SequentialScheduler';
+ParentGraph.addFactor(SubGraph, boundaryVariables);
+ParentGraph.Scheduler = 'FloodingScheduler';
+\end{lstlisting}
+
+For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
+
+For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
+
+
+Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
+
+\begin{tabular}{l p{4in}}
+\textbf{Name} & \textbf{Description} \\ \hline \hline
+%
+\textsf{GibbsDefaultScheduler} & Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver. \\ \hline
+%
+\textsf{GibbsSequentialScanScheduler} & The solver will apply a Sequential Scan Schedule.  For each scan, each variable is resampled in a fixed order.  The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph. \\ \hline
+%
+\textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
+%
+\end{tabular}
+
+Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.
+
+
+\subsubsection{Custom Schedules}
+\label{sec:customSchedules}
+
+
+Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
+
+The following code demonstrates this feature:
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   fg = FactorGraph();
+   a = Bit();
+   b = Bit();
+   c = Bit();
+   eq1 = fg.addFactor(eq,a,b);
+   eq2 = fg.addFactor(eq,b,c);
+   
+   %define schedule
+   % update b
+   % update eq1->a
+   % update eq2->c
+   % update a->eq1
+   % update c->eq2
+   % update eq1->b
+   % update eq2->b
+   schedule = {
+       b,
+       {eq1,a},
+       {eq2,c},
+       {a,eq1},
+       {c,eq2},
+       {eq1,b},
+       {eq2,b}
+       };
+   
+   fg.Schedule = schedule;
+   
+   %Set priors
+   a.Input = .6;
+   b.Input = .7;
+   c.Input = .8;
+   
+   %Solve
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
+
+\begin{lstlisting}
+   eq = @(x,y) x == y;
+   b = Bit(2,1);
+   nfg = FactorGraph(b);
+   nfg.addFactor(eq,b(1),b(2));
+   b = Bit(3,1);
+   fg = FactorGraph();
+   nf1 = fg.addFactor(nfg,b(1),b(2));
+   nf2 = fg.addFactor(nfg,b(2),b(3));
+   
+   
+   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
+   b(1).Input = .7;
+   fg.NumIterations = 1;
+   fg.solve();
+\end{lstlisting}
+
+And finally we look at nesting a custom schedule:
+
+
+\begin{lstlisting}
+   %Now let's try nesting with a custom schedule on the nested graph.
+   
+   %Create a graph to nest and give it a funny schedule    
+   % nfg: eb(1) - f1 - ib - f2 - eb(2)
+   eb = Bit(2,1);
+   ib = Bit();
+   nfg = FactorGraph(eb);
+   f1 = nfg.addFactor(eq,eb(1),ib);
+   f2 = nfg.addFactor(eq,ib,eb(2));
+   %Set an input and solve
+   eb(1).Input = .8;
+   
+   nfg.NumIterations = 1;
+   nfg.solve();
+   
+   %We expect the output to be equal to the input since the tree
+   %scheduler passes the info along.
+   assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
+   
+   %Now we create a schedule that will not propagate the info.
+   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
+   nfg.solve();
+   
+   assertElementsAlmostEqual(eb(2).Belief,.5);
+
+   %Nest it and see if the schedule is preserved
+   b = Bit(2,1);
+   fg = FactorGraph();
+   g = fg.addFactor(nfg,b);
+   
+   fg.Schedule = {b(1),b(2),g};
+   
+   b(1).Input = .8;
+   fg.NumIterations = 1;
+   fg.solve();
+   assertElementsAlmostEqual(b(2).Belief,.5);
+\end{lstlisting}
+
+
+
+\subsubsection{NumIterations}
+
+\begin{lstlisting}
+MyGraph.NumIterations = 30;
+\end{lstlisting}
+
+The NumIterations method sets the number of iterations BP is going to run for.  This only applies to solvers that use BP, which are the SumProduct, MinSum, Gaussian, and ParticleBP solvers.
+
+The default value is 1.  For a factor graph with a tree-structure, when using the default scheduler, one iteration is appropriate.  Otherwise, would normally be appropriate to set the number of iterations to a larger value.
+
+
+\subsubsection{Solve}
+
+\begin{lstlisting}
+MyGraph.solve();
+\end{lstlisting}
+
+The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
+
+
+\subsubsection{Modifying an Existing Graph}
+
+
+\para{Removing a Factor}
+
+It’s possible to remove a Factor from a FactorGraph:
+
+\begin{lstlisting}
+fg = FactorGraph();
+   b = Bit(3,1);
+   fg.addFactor(@xorDelta,b(1:2));
+   f = fg.addFactor(@xorDelta,b(2:3));
+   b.Input = [.8 .8 .6];
+   fg.NumIterations = 2;
+   fg.solve();
+   assertElementsAlmostEqual([.96 .96 .96]',b.Belief);
+   fg.removeFactor(f);
+   fg.solve();
+   p1 = .8*.8;
+   p0 = .2*.2;
+   total = p1+p0;
+   p1 = p1/total;
+   p0 = p0/total;
+   assertElementsAlmostEqual([p1 p1 .6]',b.Belief);
+\end{lstlisting}
+
+\para{Splitting Variables}
+
+It can be useful to make a copy of a variable and relate it to the old variable with an equals factor. The following code shows how to do this.
+
+\begin{lstlisting}
+   a = Bit();
+   a.Name = 'a';
+   b = Bit();
+   b.Name = 'b';
+  
+   fg = FactorGraph();
+  
+   f = fg.addFactor(@(x,y) x~=y,a,b);
+   f.Name = 'unequal';
+   
+   b2 = fg.split(b);
+   b2.Name = 'b2';
+   a2 = fg.split(a,f);
+   a2.Name = 'a2';
+   
+   fg.plot(1);
+\end{lstlisting}
+
+We've added code to name all the variables and factors so that the following plot is informative.
+
+\includegraphics{images/SplitGraph.png}
+ 
+Note that the split method takes a list of factors as the second through nth argument. This is the list of factors that will be moved from the original variable to the copied variable. All unspecified factors will remain connected to the initial variable.
+
+
+
+\para{Joining Variables}
+
+Users can now join variables. This will create a new joint variable and modify all factors connected to the original variables to reconnect to the new joint variable. This can be useful in eliminating loops in a graph. The following code creates a loopy graph and then uses join to remove the loop.
+
+\begin{lstlisting}
+a = Bit(); 
+a.Name = 'a'; 
+b = Bit();
+b.Name  = 'b';
+c = Bit();
+c.Name = 'c';
+d = Bit();
+d.Name = 'd';
+
+fg = FactorGraph();
+f1 = fg.addFactor(@xorDelta,a,b,c);
+f1.Name = 'xor';
+f2 = fg.addFactor(@(x,y,z) (x|y)==z ,a,b,d);
+f2.Name = 'or';
+ 
+newvar = fg.join(a,b);
+newvar.Name = 'a,b';
+
+fg.plot(1);
+\end{lstlisting}
+
+The following is the loopy graph:
+
+\includegraphics{images/LoopyGraph.png}
+  
+And after joining the variables we have:
+
+\includegraphics{images/NonLoopyGraph.png}
+
+\para{Joining Factors}
+
+Users can also join factors. It is possible to remove loops by joining factors as well as by joining variables.
+
+\begin{lstlisting}
+   b = Bit(4,1);
+   for i = 1:4
+       b(i).Name = sprintf('b%d',i);
+   end
+   fg = FactorGraph();
+   f1 = fg.addFactor(@xorDelta,b(1:3));
+   f2 = fg.addFactor(@xorDelta,b(2:4));
+   
+   f3 = fg.join(f1,f2);
+   f3.Name = 'twoxors';
+   
+   b.Input = input;
+   fg.solve();
+   actualBelief = b.Belief;
+   
+   fg.plot(1);
+\end{lstlisting}
+
+The following plot shows the graph with the loops:  
+ 
+\includegraphics{images/LoopyGraph2.png}
+
+And the following plot shows the graph after the factor is joined: 
+ 
+\includegraphics{images/NonLoopyGraph2.png}
+
+To join factors, Dimple does the following:
+
+\begin{itemize}
+\item Find the variables in common between two factors.
+\item Take the cartesian product of the tables but discard rows where the common variable indices differ.
+\item Consolidate the columns with common variables.
+\item Multiply the values for each row.
+\end{itemize}
+
+
+
+\subsubsection{Explicit Scheduling and Retrieving Message Values}
+
+Dimple supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
+
+\begin{lstlisting}
+%OK, first we create a simple Factor Graph with a single xor connecting two  
+%variables.
+fg = FactorGraph(); 
+b = Bit(2,1);
+f = fg.addFactor(@xorDelta,b);
+%We can go ahead and set some inputs
+b(1).Input = .8;
+b(2).Input = .7;
+
+
+%we can examine some edges 
+disp(f.Ports{1}.InputMsg);
+disp(f.Ports{1}.OutputMsg);
+
+%we can even set some edge messages
+f.Ports{1}.InputMsg = [.6 .4];
+
+%we can update a node 
+b(1).update();
+b(2).update();
+
+%or all the variables in a vector.
+b.update();
+
+%or a specific edge
+b(1).updateEdge(f);
+ 
+%but updating via portNum is quicker
+b(1).updateEdge(1);
+
+%of course, if we don't know the portNum, we can get it
+portNum = b(1).getPortNum(f);
+b(1).updateEdge(portNum);
+
+%We can do the same kind of stuff with factors
+f.updateEdge(b(1));
+f.updateEdge(f.getPortNum(b(2)));
+
+%Let's look at some messages again
+b(1).Ports{1}.InputMsg
+b(2).Ports{1}.InputMsg
+
+%and some beliefs
+b.Belief
+\end{lstlisting}
+
+
+
+\subsubsection{Plotting}
+
+
+When debugging Factor Graphs, it is sometimes useful to be able to plot a Factor Graph.  The FactorGraph class provides a plot method that can be used to visualize a Factor Graph.
+
+The following code describes how to use the plot function in various ways.
+
+\begin{lstlisting}
+%First we build a Factor Graph to use for plotting examples
+fg = FactorGraph();
+b = Bit(6,1);
+for i = 1:6
+    b(i).Name = sprintf('b%d',i);
+end
+ 
+%We use Label rather than Name for the factors so that we can assign
+%them the same Label.  Name must be a unique identifier,
+%Label is just used for printing/plotting.
+f1 = fg.addFactor(@xorDelta,b(1:4));
+f1.Label = 'f';
+f2 = fg.addFactor(@xorDelta,b(4:6));
+f2.Label = 'f';
+ 
+ 
+pause_time = 1;
+ 
+%Calling plot with no arguments shows no labels.  It draws variables as
+%circles and factors as squares.
+fg.plot();
+\end{lstlisting}
+
+This will result in the following graph:
+
+
+\includegraphics{images/plot1.png}
+
+Note that factors are displayed as squares and variables as circles.
+
+\begin{lstlisting}
+pause(pause_time);
+ 
+%The following is equivalent to the previous plot command.  We are simply
+%explicitly turning off labels.
+fg.plot('labels',false);
+\end{lstlisting}
+
+Results in the same plot as above.
+
+\begin{lstlisting}
+pause(pause_time);
+ 
+%Now we turn on the labels.  Now we see the names we assigned to the
+%various nodes and variables of the Factor Graph.
+fg.plot('labels',true);
+\end{lstlisting}
+
+Results in the following:
+ 
+
+ 
+\includegraphics{images/plot2.png}
+
+If the user has specified a Label, those will be displayed, otherwise the object’s Name’s will be displayed.
+
+
+\begin{lstlisting}
+pause(pause_time)
+ 
+%We can specify a subset of nodes to plot
+fg.plot('labels',1,'nodes',{b(1:2),f1});
+\end{lstlisting}
+
+Results in the following:
+
+
+
+\includegraphics{images/plot3.png}
+
+Only the specified nodes and their connectivity were included.
+
+\begin{lstlisting}
+pause(pause_time)
+ 
+%By can set a global color for all the nodes in the graph.
+fg.plot('labels',1,'color','g');
+\end{lstlisting}
+
+Setting a global color:
+
+
+
+\includegraphics{images/plot4.png}
+
+\begin{lstlisting}
+pause(pause_time)
+ 
+%We can specify a color for one node in the graph.
+fg.plot('labels',1,'nodes',{b(1:2),f1},'color',b(1),'g');
+\end{lstlisting}
+
+Setting a color for a specific node:
+ 
+\includegraphics{images/plot5.png}
+ 
+\begin{lstlisting}
+pause(pause_time)
+ 
+%We can specify colors for multiple nodes in the graph.
+fg.plot('labels',1,'nodes',{b(1:2),f1},'color',{b(2),f1},{'r','c'});
+\end{lstlisting}
+
+Setting colors for multiple nodes:
+
+\includegraphics{images/plot6.png}
+
+\begin{lstlisting}
+pause(pause_time)
+ 
+%We can mix setting a global color, colors for a single node mutliple
+%times, and colors for multiple nodes.  The global color is used in all
+%cases where a color has not explicitly been set for a node.
+fg.plot('labels',1,'color',b(1),'g','color',b(2),'r','color',{b(3),b(4)},{'y','c'},'color','b');
+\end{lstlisting}
+
+Mixing and matching the various coloring options:
+
+\includegraphics{images/plot7.png}
+
+\begin{lstlisting}
+pause(pause_time)
+ 
+%We can also specify a root node on which we perform a depth first search
+%up to a specific depth and then only print nodes up to that depth.
+for depth = 0:5
+ 
+    %Furthermore, we color the root node green so we know which is the root
+    %node.
+    fg.plot('labels',1,'depth',b(1),depth,'color',b(1),'g','color','b');
+    
+    pause(pause_time);
+end
+\end{lstlisting}
+
+Specifying a depth will display a specified root node and all nodes that are N steps away.  The following shows the result of calling plot with ‘depth’ of b(1) and 2:
+ 
+
+\includegraphics{images/plot8.png}
+
+We also colored the root node green to make it clear which was the root node.
+
+\begin{lstlisting}
+%The following shows how using the depth feature we might be able to find
+%out interesting information.  Here we increase the depth until we visually
+%see a loop.
+[ldpc,vars] = createLDPC();
+v = vars(1);
+ 
+for depth = 0:6
+    ldpc.plot('depth',v,depth);
+    
+    pause(pause_time);
+end
+\end{lstlisting}
+
+Here, we show how we can use plot to find interesting information about a large graph.  The final plot with a depth of 6 shows a cycle in an LDPC Factor Graph:
+
+\includegraphics{images/plot9.png}
+
+ 
+\para{Nesting}
+
+By default, the plotting method ignores hierarchy and plots the flattened graph.  If the user specifies the 'nesting' parameter, however, they can specify how deep to descend into the hierarchy before considering NestedGraphs to be Factors and plotting them as such.
+
+When labels are turned off, nested graphs are displayed as triangles
+
+First let's build a graph with three levels of nesting.
+
+\begin{lstlisting}
+b = Bit(2,1);
+template1 = FactorGraph(b);
+iv = Bit();
+template1.addFactor(@xorDelta,b(1),iv);
+template1.addFactor(@xorDelta,b(2),iv);
+ 
+b = Bit(2,1);
+template2 = FactorGraph(b);
+iv = Bit();
+template2.addFactor(template1,b(1),iv);
+template2.addFactor(template1,b(2),iv);
+ 
+template2.plot();
+ 
+b = Bit(2,1);
+fg = FactorGraph(b);
+iv = Bit();
+fg.addFactor(template2,b(1),iv);
+fg.addFactor(template2,b(2),iv);
+\end{lstlisting}
+ 
+Here we show the graph plotted with various levels of nesting.
+
+fg.plot('nesting',0);
+
+\includegraphics{images/plot10.png}
+
+
+Notice the Nested Graphs show up as triangles.
+
+\begin{lstlisting}
+fg.plot('nesting',1);
+\end{lstlisting}
+
+\includegraphics{images/plot11.png}
+ 
+\begin{lstlisting}
+fg.plot('nesting',2);
+\end{lstlisting}
+
+
+\includegraphics{images/plot12.png}
+ 
+Note that once we’ve reached the bottom, we’re actually seeing the Factors plotted.
+ 
+We can retrieve an instance of a nested graph and plot that with nesting set.
+
+\begin{lstlisting}
+fg.NestedGraphs{1}.plot('nesting',0);
+pause(pause_time);
+\end{lstlisting}
+
+
+
+\includegraphics{images/plot13.png}
+ 
+ 
+When plotting graphs, boundary variables show up as stars.
+
+Next we mix depth first search with nesting
+
+
+\begin{lstlisting}
+fg.plot('nesting',0,'depth',iv,0);
+\end{lstlisting}
+
+\includegraphics{images/plot14.png}
+ 
+
+ 
+\begin{lstlisting}
+fg.plot('nesting',0,'depth',iv,1);
+\end{lstlisting}
+
+\includegraphics{images/plot15.png}
+ 
+
+ 
+\begin{lstlisting}
+fg.plot('nesting',0,'depth',iv,2);
+\end{lstlisting}
+
+
+\includegraphics{images/plot16.png}
+
+
+
+
+\subsubsection{Energy}
+
+\para{Bethe Free Energy}
+
+\[
+BetheFreeEnergy = InternalEnergy - BetheEntropy
+\]
+
+\begin{lstlisting}
+bfe = fg.BetheFreeEnergy;
+\end{lstlisting}
+
+\para{Internal Energy}
+
+\[
+ InternalEnergy = \sum_{a \in F }InternalEnergy(a) + \sum_{i \in V}InternalEnergy(i) 
+ \]
+
+Where F is the set of all Factors and V is the set of all variables.  If Dimple treated inputs as single node Factors, this method would only sum over factors.
+
+\begin{lstlisting}
+ie = fg.InternalEnergy;
+\end{lstlisting}
+
+\para{Bethe Entropy}
+
+\[
+ BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}BetheEntropy(i)(degree(i)-1) 
+ \]
+
+Where F is the set of all Factors and V is the set of all variables.
+
+\begin{lstlisting}
+be = fg.BetheEntropy;
+\end{lstlisting}
+
+\para{Factor Internal Energy}
+
+\[
+InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*(-log(Weight(\vec{x}))) 
+\]
+
+Where a is an instance of a Factor, X is the set of variables connected to a, Weight is the FactorTable entry for the specified set of variable values, and B~a~ is the belief of that factor node.
+
+\begin{lstlisting}
+ie = f.InternalEnergy;
+\end{lstlisting}
+
+\para{Factor Bethe Entropy}
+
+\[
+BetheEntropy(a) = - \sum_{\vec{x} \in domain(\vec{X})}B_a(\vec{x})*log(B_a(\vec{x})) 
+\]
+
+Where a is an instance of a Factor, X is the set of variables connected to a, and B~a~ is the belief of that factor node.
+
+\begin{lstlisting}
+be = f.BetheEntropy;
+\end{lstlisting}
+
+\para{Variable Internal Energy}
+
+\[
+ InternalEnergy(i) = \sum_{d \in D}B_i(d)*(-log(Input(d))) 
+ \]
+
+Where D is variable i's domain and Input is the variable's input.
+
+\begin{lstlisting}
+ie = v.InternalEnergy;
+\end{lstlisting}
+
+\para{Variable Bethe Entropy}
+
+\[
+BentheEntropy(i) = - \sum_{d \in D}B_i(d)*log(B_i(d)) 
+\]
+
+Where D is variable i's domain.
+
+\begin{lstlisting}
+be = v.BetheEntropy();
+\end{lstlisting}
+
+Factor Belief
+
+To support the Bethe Free Energy property, Dimple provides getBelief associated with a Factor.
+
+\[
+B_a(\vec{x}) = \frac{Weight(\vec{x})\prod_{i=0}^N \mu_{X_i \rightarrow a}(x_i)}{\sum_{\vec{x} \in \vec{X}}Weight(\vec{x})\prod_{i=0}^N \mu_{X_i \rightarrow a}(x_i\
+)} 
+\]
+
+Where $ \vec{x} \in domain(\vec{X}) $ and $ \vec{X} $ is the set of variables connected to the factor a.
+
+\begin{lstlisting}
+b = f.Belief;
+\end{lstlisting}
+
+\para{Score}
+\label{sec:score}
+
+Users can retrieve the Energy of a Factor Graph, Variable Vector, or Factor. This feature is currently only supported with the SumProduct algorithm.
+
+The following are examples of ways to retrieve the energy of FactorGraphs, factors, and variables:
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(3,1);
+f = fg.addFactor(@xorDelta,b);
+
+fg.Score
+f.Score
+b.Score
+b(1).Score
+\end{lstlisting}
+
+When computing the score, the most likely variable value is used. It's possible to override that by setting a guess on a variable using:
+
+\begin{lstlisting}
+b.Guess = 1; %For other variable types, var.Guess takes a domain item.
+\end{lstlisting}
+
+\para{Math behind the score}
+
+The variable energy is normalized by the maximum input probability.
+
+\[
+score(v) = -log(inputProb(guess) + log(max(inputProb)) 
+\]
+
+The factor energy is normalized by the largest factor value.
+
+\[
+score(f) = - log(f(guessxguessyguessz))+log(max(f)) 
+\]
+
+And the Factor Graph’s energy is as follows:
+
+\[
+score(fg) = \sum_{v \in V} score(v) + \sum_{f \in F} score(f) 
+\]
+
+
+\subsubsection{Introspection}
+
+The FactorGraph class provides several feature for inspecting aspects of the graph.  The ability to nest graphs complicates things a bit.  Nested FactorGraphs can be considered Factors.  All of the introspection features allow the user to view nested graphs as leaf factors or to descend into them and operate on the children of the nested graphs.  Each feature provides several methods:
+
+\begin{itemize}
+\item $<$FeatureName$>$(int relativeNestingDepth) -- The relativeNestingDepth specifies how deep to descend into the nested FactorGraphs before treating deeper NestedGraphs as Factors.  Specifying 0 will treat the top level nested Graphs as factors.  Specifying a large enough number will descend all the way to the leaf factors.  Specifying something between 0 and the FactorGraph’s maximum depth will descend as far as this parameter specifies before considering NestedGraphs to be factors.  The parameter contains the word “relative” because users can retrieve nested graphs.  They can call one of the feature’s methods on that nested graph.  
+\item $<$FeatureName$>$Flat() -- equivalent of $<$FeatureName$>$(max int)
+\item $<$FeatureName$>$Top() -- equivalent of $<$FeatureName$>$(0)
+\item $<$FeatureName$>$() -- equivalent of $<$FeatureName$>$Flat().  It was thought that users will most often want to operate on the FactorGraph in its flattened form.
+\end{itemize}
+
+Now, on to the specific features.
+
+\para{Retrieving All Factors}
+
+Users can retrieve Factors and/or NestedGraphs associated with a graph using the Factors methods and properties:
+
+\begin{itemize}
+\item Fg.Factors
+\item Fg.FactorsFlat
+\item Fg.FactorsTop
+\item Fg.getFactors(relativeNestingDepth)
+\end{itemize}
+
+When the user specifies a relativeNestingDepth or calls FactorsTop, the resulting cell array will contain a mix of leaf factors and Nested Graphs.
+
+\para{Retrieving Factors but not Nested Factor Graphs}
+
+The FactorGraph class provides the following:
+
+\begin{itemize}
+\item NonFactorGraphFactors
+\item NonFactorGraphFactorsFlat
+\item NonFactorGraphFactorsTop
+\item getNonFactorGraphFactors(relativeNestingDepth)
+\end{itemize}
+
+As the name implies, this will behave similar to the Factors properties and methods but will exclude nested graphs.
+
+\para{Retrieving Variables}
+
+The FactorGraph class provides the following:
+
+\begin{itemize}
+\item Variables -- calls VariablesFlat
+\item VariablesFlat -- Returns a list of all the Variables in the graph, including those contained by nested graphs.
+\item VariablesTop -- Returns only those variables contained in the top level of the graph.
+\item getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) -- Returns all variables contained in the FactorGraph from which the method is called as Variables that are as deep as the specified relativeNestingDepth.  The second parameter is optional and defaults to false.  When false, boundary variables are only included by the root graph.  When true, boundary variables are included regardless of whether a graph is a root or nested graph.
+\end{itemize}
+
+\para{Retrieving all Nodes}
+
+The FactorGraph provides the following:
+
+\begin{itemize}
+\item Nodes
+\item NodesFlat
+\item NodesTop
+\item getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
+\end{itemize}
+
+These methods call the Factor and Variable methods and concatenate the results together.
+
+\para{Determining if a FactorGraph is a tree}
+
+The FactorGraph class provides the following:
+
+\begin{itemize}
+\item isTree(relativeNestingDepth) 
+\item isTreeTop 
+\item isTreeFlat 
+\end{itemize}
+
+
+isTree -- Users can call <factor graph name>.isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf cells.  
+
+\para{Retrieving an Adjacency Matrix}
+
+All of the following methods return a pair: [A, labels] where A is a square connectivity matrix and labels is a cell array of strings specifying the names of the nodes in A. 
+
+\begin{itemize}
+\item getAdjacencyMatrix(relativeNestingDepth,forceIncludeBoundaryVariables) -- relativeNestingDepth behaves the same as in other methods that take this parameter.  So does forceIncludeBoundaryVariables. forceIncludeBoundaryVariables has a default value of false.
+\item getAdjacencyMatrix(nodes,forceIncludeBoundaryVariables) -- Users can specify a specific subset of nodes in which they’re interested.  This method will return an adjacency matrix with only those nodes.  Nodes are considered connected only if there is an edge directly connecting them.
+\item getAdjacencyMatrixTop() -- equivalent to getAdjacencyMatrix(0,false)
+\item getAdjacencyMatrixFlat() -- equivalent to getAdjacencyMatrix(intmax,false)
+\end{itemize}
+
+FactorGraph also provides an AdjacencyMatrix Property:
+
+\begin{itemize}
+\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  MATLAB properties can only return one object.
+\end{itemize}
+
+An example of getAdjacencyMatrix:
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(2,1);
+b(1).Name = ‘b1’;
+b(2).Name = ‘b2’;
+f = fg.addFactor(@xorDelta,b);
+f.Name = ‘f’;
+[A,labels] = fg.getAdjacencyMatrix();
+A =
+
+     0     0     1
+     0     0     1
+     1     1     0
+
+
+labels = 
+
+    'b1'
+    'b2'
+    'f'
+\end{lstlisting}
+
+\para{Depth first search}
+
+\begin{itemize}
+\item depthFirstSearch(node, searchDepth, relativeNestingDepth) -- 
+\begin{itemize}
+\item node -- Specifies the node from which to initiate the search
+\item searchDepth -- specifies how far from “node” the search should go.
+\item relativeNestingDepth -- determines how deep to go down the NestedGraphs before considering NestedGraphs to be leaf cells. 
+\end{itemize}
+\item depthFirstSearchFlat(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,maxint)
+\item depthFirstSearchThop(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,0)
+\end{itemize}
+
+An example:
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(6,1);
+for i = 1:6
+b(i).Name = sprintf('b%d',i);
+end
+f1 = fg.addFactor(@xorDelta,b(1:4));
+f1.Name = 'f1';
+f2 = fg.addFactor(@xorDelta,b(4:6));
+f2.Name = 'f2';
+ 
+nodes = fg.depthFirstSearch(b(1),3);
+\end{lstlisting}
+
+calling fg.plot(‘color’,b(1),’g’,’labels’,true) reveals the following structure of this graph
+
+\includegraphics{images/Introspection.png}
+ 
+As you might guess fg.depthFirstSearch(b(1),3) will return a collection of six nodes: b1, f1, b2, b3, b4, and f2.  It will not include b5 and b6 since those are at a depth of four from b1.
+
+\subsubsection{Estimating Parameters}
+
+Dimple provides support for estimating parameters.  Only the sumproduct solver currently supports this. 
+The sum product algorithm computes the gradient of the BetheFreeEnergy and performs a gradient descent on this.  Users can
+specify how many times to restart the gradient descent with random table values.
+
+Users provide four arguments:
+
+\begin{itemize}
+\item factorsAndFactorTables - A cell array of FactorTables for which the user wants parameters to be estimated.  They can mix Factors and FactorTables
+\item numRestarts - The number of times to randomly initialize the FactorTables and restart the gradient descent.
+\item numSteps - The number of times to descend down along the gradient
+\item stepScaleFactor - The value we scale the gradient by.
+\end{itemize}
+
+\begin{lstlisting}
+fg.estimateParameters({factorTable1,factorTable2,factor1,etc...},numRestarts,numSteps,stepScaleFactor);
+\end{lstlisting}
+
+\subsubsection{Invoking Methods on the Underlying Solver Objects}
+
+Users sometimes need access to the underlying solver objects in order to set and get
+solver specific properties.  For instance K-best is implemented by minsum and sumproduct 
+solvers.  
+
+Let's use the following code to show examples of accessing underlying solver objects
+
+\begin{lstlisting}
+fg = FactorGraph();
+d = Discrete(1:10,10,1);
+ft = FactorTable(rand(10),d.Domain,d.Domain);
+ft.normalize(1);
+f = fg.addFactorVectorized(ft,d(1:(end-1)),d(2:end));
+f.DirectedTo = d(2:end);
+\end{lstlisting}
+
+This code constructs a Markov Model of 10 variables with domain 1 through 10 and a randomized transition matrix.  Suppose we want to use K-best for all the factors.  We could access the underlying solver object of each factor and call setK on that object:
+
+\begin{lstlisting}
+for i = 1:length(f)
+   f(i).Solver.setK(5);
+end
+\end{lstlisting}
+
+However, in the case of very large graphs, this can be very inefficient.  MATLAB has a fairly large penalty for invoking function calls in a large for loop.  Instead, variables, factors, and factor graphs all have an invokeSolverMethod that can be used to call a method on all objects in the vector.
+
+\begin{lstlisting}
+f.invokeSolverMethod('setK',uint32(5));
+\end{lstlisting}
+
+After this is invoked, all factors will have K set to 5.  There are two issues with the current implementation that should be fixed at some point.  The first is that it currently only supports providing the same values to all solver objects.  If you wanted to set a different K for all factors, you could not use this mechanism.  The second issue is that, users must be careful to correctly cast their arguments to the appropriate types.  This could and should be fixed.
+
+It's also possible to call methods with return values as follows:
+
+\begin{lstlisting}
+d.invokeSolverMethod('setDamping',uint32(0),2.0);
+damping = d.invokeSolverMethodWithReturnValue('getDamping',uint32(0));
+
+damping
+
+>> damping
+
+damping = 
+
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+    [2]
+
+\end{lstlisting}
+
+Here we set the damping value for the first edge of every variable.
+
+\subsection{Factor}
+
+It is possible to retrieve a Factor object in a number of ways:
+
+\begin{lstlisting}
+factor = fg.addFactor(@xorDelta,b);
+factors = fg.Factors;
+factors = b.Factors;
+%other ways specified in the introspection section.
+\end{lstlisting}
+
+
+The Factor object provides methods for inspecting as well as modifying the Factor Graph.
+
+\subsubsection{Changing FactorTables}
+
+FactorTables are shared between factors. A change a combo table for one factor and that combo table is shared by another factor, you are changing it globally. 
+
+The following unit test shows how to use this feature:
+
+\begin{lstlisting}
+function testChangeFactorTable()
+   %Create a Factor Grap
+   fg = FactorGraph();
+   
+   %Create 6 bits
+   b1 = Bit(3,1);
+   b2 = Bit(3,1);
+   
+   %Create two factors that are independent from one another.
+   %We do this so that we can show that changing one factor's
+   %combo table affects the other factor.
+   f1 = fg.addFactor(@xorDelta,b1);
+   f2 = fg.addFactor(@xorDelta,b2);
+   
+   fg.NumIterations = 1;
+   fg.solve();
+   %First, make sure we get 50% for all variables.
+   assertElementsAlmostEqual([.5 .5 .5]',b1.Belief);
+   assertElementsAlmostEqual([.5 .5 .5]',b2.Belief);
+   %Now we change the values
+   newvals = [1 2 3 4]';
+   f1.FactorTable.Values = newvals;
+   %Solve
+   fg.solve();
+   %Now we want to check that the result is correct
+   indices = f1.FactorTable.Indices;
+   
+   %Since we've left the input as 50%, we can use a trick
+   %where we multiply the values against the indices for each variable
+   %to get the expected belief
+   p0s = double(indices)'* newvals;
+   p1s = double(~indices)'* newvals;
+   total = p0s + p1s;
+   p1s_normalized = p1s ./ total;
+   %compare
+   assertElementsAlmostEqual(p1s_normalized,b1.Belief);
+   assertElementsAlmostEqual(p1s_normalized,b2.Belief);
+   %Now we try changing the indices.  This is basically an inverted
+   %xor.
+   f1.FactorTable.Indices = ~indices;
+   fg.solve();
+   %we expect the probabilities to be inverted.
+   assertElementsAlmostEqual(1-p1s_normalized,b1.Belief);
+   assertElementsAlmostEqual(1-p1s_normalized,b2.Belief);
+
+   %Try changing the combo table completely.  here we turn it
+   %into an equals gate.
+   f1.FactorTable.change([0 0 0; 1 1 1],[1 1]);
+   b1(1).Input = .8;
+   b2(1).Input = .8;
+   
+   fg.solve();
+   
+   assertElementsAlmostEqual([.8 .8 .8]',b1.Belief);
+   assertElementsAlmostEqual([.8 .8 .8]',b2.Belief);
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %Let's test our ability to catch errors
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   
+   %First we try this when the user sets the value vector to a bad length
+   thrown = 0;
+   try
+       f1.FactorTable.Values = [1 2 3];
+   catch exception
+       thrown = 1;
+   end
+   assertTrue(thrown==1);
+   %Next we try setting the indices to an incorrect length
+   thrown = 0;
+   try
+       f1.FactorTable.Indices = ones(3,3);
+   catch exception
+       thrown = 1;
+   end
+   assertTrue(thrown==1);
+   %Set indices to values that are too large for the domain lengths
+   thrown = 0;
+   try
+       f1.FactorTable.Indices = ones(2,3)*2;
+   catch exception
+       thrown = 1;
+   end
+   assertTrue(thrown==1);
+end
+\end{lstlisting}
+
+\subsubsection{Factor Belief}
+
+
+Users can retrieve beliefs from Factors. As demonstrated in this unit test:
+
+\begin{lstlisting}
+function output = funkyFactor(x,y,z)
+   if x == y && y == z
+       if x == 0
+           output = 1;
+       else
+           output = 2;
+       end
+   else
+       output = 0;
+   end
+end
+    %Create a Factor Graph
+       b = Bit(3,1);
+       fg = FactorGraph();
+       f = fg.addFactor(@funkyFactor,b(1),b(2),b(3));
+       
+       %Set inputs
+       input = [.8 .8 .6];
+       b.Input = input;
+       %We have to solver right now
+       fg.Solver.setNumIterations(1);
+       fg.solve();
+       %funkyFactor only allows these two combos.
+       expectedDomain = {0,0,0;1,1,1};
+       assertEqual(expectedDomain,f.Domain);
+       %Bit stores values as 1,0.
+       expectedIndices = int32([2,2,2;1,1,1]);
+       assertEqual(expectedIndices,f.Indices);
+       %Let's calculate the belief by hand and compare to Dimple.
+       val0 = prod(1-input)*funkyFactor(0,0,0);
+       val1 = prod(input)*funkyFactor(1,1,1);
+       total = val0 + val1;
+       val0 = val0 / total;
+       val1 = val1 / total;
+       expectedBelief = [val0; val1];
+       assertElementsAlmostEqual(expectedBelief,f.Belief);
+       %Now we create a full belief and compare to our expected.
+      expectedFullBelief = zeros(2,2,2);
+       expectedFullBelief(1,1,1) = val1;
+       expectedFullBelief(2,2,2) = val0;
+       assertElementsAlmostEqual(expectedFullBelief,f.FullBelief);
+\end{lstlisting}
+
+\subsubsection{Setting Directionality of a Factor}
+\label{sec:setDirected}
+
+
+Some solver features require knowledge of factor directionality.  Users can set directionality of a factor with the FactorTo property.
+This property expects a cell array containing a comma separated list of variables the factor is directed towards.  When directionality is set, if 
+a FactorTable exists, Dimple will check to ensure the factor is normalized properly.  
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(3,1);
+f = fg.addFactor(@xorDelta,b);
+f.DirectedTo = {b(1), b(2)};
+\end{lstlisting}
+
+Users can also specify variable matrices.  The above is equivalent to:
+
+\begin{lstlisting}
+f.DirectedTo = {b};
+\end{lstlisting}
+
+Dimple provides the ability to pass a variable directly as well:
+
+\begin{lstlisting}
+f.DirectedTo = b;
+\end{lstlisting}
+
+Also, DirectedTo works with addFactorVectorized.  Users must ensure the variable dimensions match the factor dimensions.  The following
+create a Markov Model.
+
+\begin{lstlisting}
+fg = FactorGraph();
+s = Discrete(states,N);
+fg.addFactorVectorized(@transitionFunction,s(1:(end-1)),s(2:end)).DirectedTo = s(2:end);
+\end{lstlisting}
+
+More complicated vectorizations are possible.  The following creates 12 factors, each of which contains 10 variables (5 from a and 5 from b).
+The first 2 of the 5 from a and the first from b are what the factor is directed to.
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Bit(3,4,5);
+b = Bit(3,4,5);
+fg.addFactorVectorized(@somefactor,{a, [1 2]}, {b, [1 2]}).DirectedTo = {a(:,:,1:2), b(:,:,1)};
+\end{lstlisting}
+
+\subsection{General Features}
+
+\subsubsection{User Specified Names}
+
+It can be useful to let users specify explicit names for variables, factors, and factor graphs.  The following demonstrates how to do this:
+
+\begin{lstlisting}
+ fg = FactorGraph();
+ fg.Name = ‘MyFactorGraph’;
+ a = Bit();
+ b = Bit();
+ a.Name = 'a';
+ b.Name = 'b';
+ f = fg.addFactor(@xorDelta,a,b);
+ f.Name = 'f';
+\end{lstlisting}
+
+
+\subsection{Solvers}
+\label{sec:SolversAPI}
+
+
+\subsubsection{Sum-Product Solver}
+
+Use of the sum-product solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'SumProduct';
+\end{lstlisting}
+
+
+The sum-product solver only supports discrete variables.
+
+\para{Damping}
+
+
+The sum product solver supports setting damping:
+
+\begin{lstlisting}
+fg.Solver.setDamping(dampingVal);
+\end{lstlisting}
+
+
+\para{K Best}
+
+The sum product solver supports a k-best algorithm.  Users can set a K value on 
+each factor:
+
+\begin{lstlisting}
+fg = FactorGraph();
+vars = Discrete(1:D,NumVars,1);
+f = fg.addFactor(factorFunction,vars);
+f.Solver.setK(K);
+vars.Input = 1:D;
+fg.solve();
+\end{lstlisting}
+
+The solver will only use the k-best values for each variable when calculating output messages
+on a factor node.
+
+IMPORTANT: k-best and damping are not yet compatible.
+
+
+\subsubsection{Min-Sum Solver}
+
+Use of the min-sum solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'MinSum';
+\end{lstlisting}
+
+
+The min-sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping\footnote{Note that in the min-sum solver, damping is done on messages in the log-domain, which has slightly different behavior than damping  in the probability domain, as is done in the sum-product solver} and k-best.
+
+
+\subsubsection{Particle BP Solver}
+
+Use of the particle BP solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'ParticleBP';
+\end{lstlisting}
+
+
+\para{Constructor}
+
+The basic constructor for the Particle BP solver is:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.particleBP.Solver()
+\end{lstlisting}
+
+\para{Methods}
+
+The following sections list the solver-specific methods for the Particle BP solver (MATLAB versions).
+
+\subpara{Graph Methods}
+
+\begin{lstlisting}
+graph.Solver.setNumParticles(numParticles);
+\end{lstlisting}
+
+For each variable in the graph, sets the number of particles per variable. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
+
+\begin{lstlisting}
+graph.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
+\end{lstlisting}
+
+For each variable in the graph, sets the number of updates per particle to perform each time the particle is resampled. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
+
+\begin{lstlisting}
+graph.Solver.setNumIterationsBetweenResampling(numIterationsBetweenResampling);
+graph.Solver.getNumIterationsBetweenResampling();
+\end{lstlisting}
+
+Set/get the number of iterations between re-sampling all of the variables in the graph (default is 1, meaning resample between every iteration).
+
+\begin{lstlisting}
+graph.Solver.setInitialTemperature(initialTemperature);
+graph.Solver.getInitialTemperature();
+\end{lstlisting}
+
+Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.setTemperingHalfLifeInIterations();
+graph.Solver.getTemperingHalfLifeInIterations();
+\end{lstlisting}
+
+Set/get the tempering half-life—the number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.enableTempering();
+graph.Solver.disableTempering();
+graph.Solver.isTemperingEnabled();
+\end{lstlisting}
+
+Enable or disable the use of tempering, or determine if tempering is in use.
+
+\begin{lstlisting}
+graph.Solver.setTemperature(T);
+graph.Solver.getTemperature();
+\end{lstlisting}
+
+Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
+
+\begin{lstlisting}
+graph.Solver.setSeed(seed);
+\end{lstlisting}
+
+Set the random seed used for re-sampling. Setting the seed allows repeatable execution of the solver.
+
+\subpara{Variable Methods}
+
+The Particle BP solver supports both discrete and real variables. For discrete variables, the solver uses sum-product BP as normal, and all of the corresponding methods for the sum-product solver may be used for discrete variables. For real variables, several solver-specific methods are defined, as follows.
+
+\subpara{Real-Variable-Specific Methods}
+\label{sec:ParticleBPRealVariableSpecificMethods}
+
+\begin{lstlisting}
+variable.Solver.setNumParticles(numParticles);
+variable.Solver.getNumParticles();
+\end{lstlisting}
+
+Set/get the number of particles to represent this variable.
+
+\begin{lstlisting}
+variable.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
+variable.Solver.getResamplingUpdatesPerParticle();
+\end{lstlisting}
+
+Set/get the number of updates per particle to perform each time the particle is resampled.
+
+\begin{lstlisting}
+variable.Solver.setProposalStandardDeviation(stdDev);
+variable.Solver.getProposalStandardDeviation();
+\end{lstlisting}
+
+Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+
+\begin{lstlisting}
+variable.Solver.setInitialParticleRange(min, max);
+\end{lstlisting}
+
+Set the range over which the initial particle values will be defined. The initial particle values are uniformly spaced between the min and max values specified. If the range is specified using this method, it overrides any other initial value. Otherwise, if a finite domain has been specified, the initial particle values are uniformly spaced between the lower and upper bound of the domain. Otherwise, all particles are initially set to zero.
+
+\begin{lstlisting}
+variable.Solver.getParticleValues();
+\end{lstlisting}
+
+Returns the current set of particle values associated with the variable.
+
+\begin{lstlisting}
+variable.Solver.getBelief(valueSet);
+\end{lstlisting}
+
+Given a set of values in the domain of the variable, returns the belief evaluated at these points. The result is normalized relative to the set of points requested so that the sum over the set of returned beliefs is 1.
+
+NOTE: the generic variable method Belief (or getBeliefs() with no arguments) operates similarly to the discrete-variable case, but the belief values returned are those at the current set of particle values. Note that this representation does not represent a set of weighted particles. That is, the particle positions are distributed approximately by the belief and the belief values represent the belief. It remains to be see if this should be the representation of belief that is used, or if an alternative representation would be better. The alternative solver-specific getBelief(valueSet) method allows getting the beliefs on a user-specified set of values, which may be uniform, and would not have this unusual interpretation.
+
+\para{Schedulers}
+
+Since Particle BP is a form of BP, any of the schedulers for BP can be used for Particle BP.
+
+
+\subsubsection{Gibbs Solver}
+\label{sec:GibbsSolverAPI}
+
+Use of the Gibbs solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gibbs';
+\end{lstlisting}
+
+The Gibbs solver performs Gibbs sampling on a factor graph.  It supports both discrete and real variables.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
+
+In the current implementation, sampling of real variables makes use of the Metropolis-Hastings algorithm.  In future versions of Dimple, additional sampling methods will be provided.
+
+The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:setDirected}.
+ 
+
+\para{Constructor}
+
+\subpara{Basic Constructor}
+
+The basic constructor for the Gibbs solver is:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver()
+\end{lstlisting}
+
+\subpara{Optional Constructor Arguments}
+
+There are two optional constructors that allow specifying some of the solver configuration parameters up front. These are:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample)
+\end{lstlisting}
+
+and
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample, initialTemperature, temperingHalfLifeInSamples)
+\end{lstlisting}
+
+The arguments of these constructors are defined as follows:
+
+\begin{itemize}
+\item burnInUpdates is the number of single-variable updates for the burn-in phase. This is zero by default.
+\item updatePerSample is the number of single-variable updates per sample. This is one by default. The state of the graph between samples is ignored for the purposes of saving samples and calculating beliefs.
+\item initialTemperature is the initial temperature for using tempering. This is one by default.
+\item temperingHalfLifeInSamples is the number of samples for the temperature to drop by half when annealing.
+\end{itemize}
+
+Note that when the second constructor is used, tempering is automatically enabled. It is otherwise disabled by default.
+
+\para{Methods}
+
+All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
+
+NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
+
+The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
+
+\subpara{Graph Methods}
+
+The following methods are available on a graph set to use the Gibbs solver:
+
+\begin{lstlisting}
+graph.Solver.setNumSamples(numSamples);
+graph.Solver.getNumSamples();
+\end{lstlisting}
+
+Set/get the number of samples to be run when solving the graph (post burn-in).
+
+\begin{lstlisting}
+graph.Solver.setUpdatesPerSample(updatesPerSample);
+graph.Solver.getUpdatesPerSample();
+\end{lstlisting}
+
+Set/get the number of single-variable updates between samples.
+
+\begin{lstlisting}
+graph.Solver.setScansPerSample(scansPerSample);
+\end{lstlisting}
+
+Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
+
+\begin{lstlisting}
+graph.Solver.setBurnInUpdates(burnInUpdates);
+graph.Solver.getBurnInUpdates();
+\end{lstlisting}
+
+Set/get the number of single-variable updates for the burn-in period prior to collecting samples.
+
+\begin{lstlisting}
+graph.Solver.setBurnInScans();
+\end{lstlisting}
+
+Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
+
+\begin{lstlisting}
+graph.Solver.setNumRestarts(numRestarts)
+graph.Solver.getNumRestarts() 
+\end{lstlisting}
+
+Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
+
+\begin{lstlisting}
+graph.Solver.setInitialTemperature(initialTemperature);
+graph.Solver.getInitialTemperature();
+\end{lstlisting}
+
+Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.setTemperingHalfLifeInSamples();
+graph.Solver.getTemperingHalfLifeInSamples();
+\end{lstlisting}
+
+Set/get the tempering half-life—the number of samples for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.enableTempering();
+graph.Solver.disableTempering();
+graph.Solver.isTemperingEnabled();
+\end{lstlisting}
+
+Enable or disable the use of tempering, or determine if tempering is in use.
+
+\begin{lstlisting}
+graph.Solver.setTemperature(T);
+graph.Solver.getTemperature();
+\end{lstlisting}
+
+Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
+
+\begin{lstlisting}
+graph.Solver.saveAllSamples();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
+
+\begin{lstlisting}
+graph.Solver.saveAllScores();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:score}) of the graph for each sample.
+
+\begin{lstlisting}
+graph.Solver.getAllScores();
+\end{lstlisting}
+
+Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
+
+\begin{lstlisting}
+graph.Solver.setSeed(seed);
+\end{lstlisting}
+
+Set the random seed used for sampling (and used for random scan, if that schedule is used). Setting the seed allows repeatable execution of the Gibbs solver.
+
+\begin{lstlisting}
+graph.Solver.getTotalPotential();
+\end{lstlisting}
+
+After running the solver, returns the total potential (score) over all factors of the graph (including input priors on variables) given the most recent sample values.
+
+\begin{lstlisting}
+graph.Solver.sample(numSamples)
+\end{lstlisting}
+
+This method runs a specified number of samples without re-initializing, burn-in, or random-restarts (this is distinct from iterate(), which runs a specified number of single-variable updates).  Before running this method for the first time, the graph must be initialized using the initialize() method.
+
+\begin{lstlisting}
+graph.Solver.burnIn()
+\end{lstlisting}
+
+Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
+
+
+
+\subpara{Variable Methods}
+
+\begin{lstlisting}
+variable.Solver.getCurrentSample();
+\end{lstlisting}
+
+Returns the current sample value for a variable.
+
+\begin{lstlisting}
+variable.Solver.getAllSamples();
+\end{lstlisting}
+
+Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if .saveAllSamples() method had previously been called on the graph or for the variable.
+
+\begin{lstlisting}
+variable.Solver.getBestSample();
+\end{lstlisting}
+
+Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).  When getting the best sample from multiple variables, they all correspond to the same sample in time, thus should be a valid sample from the joint distribution.
+
+\begin{lstlisting}
+variable.Solver.saveAllSamples();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
+
+
+\subpara{Discrete-Variable-Specific Methods}
+
+\begin{lstlisting}
+variable.Solver.getSampleIndex;
+\end{lstlisting}
+
+Returns the index of the current sample for a variable, where the index refers to the index into the domain of the variable.
+
+\begin{lstlisting}
+variable.Solver.getAllSampleIndices;
+\end{lstlisting}
+
+Returns an array including the indices of all samples seen so far for a variable.
+
+\begin{lstlisting}
+variable.Solver.getBestSampleIndex;
+\end{lstlisting}
+
+Returns the index of the best sample seen so far.
+
+\subpara{Real-Variable-Specific Methods}
+
+\begin{lstlisting}
+variable.Solver.setProposalStandardDeviation(stdDev)
+variable.Solver.getProposalStandardDeviation()
+\end{lstlisting}
+
+Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+
+\begin{lstlisting}
+variable.Solver.setInitialSampleValue(initialSampleValue)
+variable.Solver.getInitialSampleValue()
+\end{lstlisting}
+
+Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).
+
+\subpara{Factor Methods}
+
+\begin{lstlisting}
+factor.Solver.getPotential();
+\end{lstlisting}
+
+Returns the potential value of a factor given the current values of its connected variables.
+
+\begin{lstlisting}
+factor.Solver.getPotential(values);
+\end{lstlisting}
+
+Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
+
+\subpara{Schedulers}
+
+There are two schedulers currently defined for the Gibbs solver:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler
+\end{lstlisting}
+
+Sequentially chooses the next variable for updating in a fixed order. It updates all variables in the graph, completing an entire scan, before repeating the same fixed order. (In Gibbs literature this seems to be known as a sequential-scan, systematic-scan, or fixed-scan schedule.)
+
+\begin{lstlisting}
+com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler
+\end{lstlisting}
+
+Randomly selects a variable for each update (with replacement).
+
+The default scheduler when using the Gibbs solver is the GibbsSequentialScanScheduler, which is used if no scheduler is explicitly specified.
+
+The user may specify a custom schedule when using the Gibbs solver.  In this case, the schedule should include only Variable node updates (not specific edges), and no Factor updates (any Factor updates specified will be ignored).
+
+
+
+\subsubsection{Gaussian Solver}
+
+Use of the Gaussian solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gaussian';
+\end{lstlisting}
+
+\para{Univariate Gaussian}
+
+\para{High Level View of the Gaussian Solver Math}
+
+The Gaussian solver passes means and variances along the Factor Graph edges. It provides two factors that analytically calculate the outgoing messages. The first is a factor for addition and the second is a factor for multiplication by a constant.
+
+Users can create additional factors that use sampling by overriding the GaussianFactorFunction class. The user is required to override two methods: acceptanceRatio and generateSample. These will be described in a later section.
+
+\para{Creating Variables and a Graph}
+
+The Gaussian solver currently works only with real variables. (We will eventually enhance it to work with Discrete variables as well). The following is an example of how to create a Factor Graph that will eventually use the Gaussian solver:
+
+\begin{lstlisting}
+a = Real(3,1);
+mu = 3;
+sigma = 4;
+a(1).Input = [mu sigma];  
+mu2 = 10;
+sigma2 = 2;
+a(2).Input = [mu2 sigma2];
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+\end{lstlisting}
+
+We have not yet added a factor, so the real variables indicated by a are not yet associated with the fg FactorGraph.
+
+\begin{enumerate}
+\item Linear Factors
+\item Add
+\end{enumerate}
+
+As mentioned previously, the add function is implemented analytically. The following code demonstrates how to implement a factor graph that imposes the constraint that a=b+c
+
+\begin{lstlisting}
+a = Real();
+b = Real();
+c = Real();
+ 
+mus = [8 10 -1];
+sigmas = [1 2 3];
+
+a.Input = [mus(1) sigmas(1)];
+b.Input = [mus(2) sigmas(2)];
+c.Input = [mus(3) sigmas(3)];
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+
+f = fg.addFactor(@add,a,b,c);
+
+fg.solve();
+\end{lstlisting}
+
+Note that the @add syntax in MATLAB implies that add is a method and @add is a function handle. Users do not have to define an add function or worry about an existing add function since Dimple matches the function name to its custom add factor.
+
+\para{Multiply by Constant}
+
+The constmult factor adds a constraint that a=bc or a=cb. The product should be the left most argument to the addFactor call.
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Real();
+b = Real();
+c = 5;
+
+fg.Solver = 'Gaussian';
+fg.addFactor(@constmult,a,b,c);
+a.Input = [10 1];
+fg.solve();
+
+assertEqual(b.Belief,[10/5; 1/5]);
+     
+a.Input = [0 Inf];
+b.Input = [10, 1];
+   
+fg.solve();
+    
+assertEqual(a.Belief,[10*5; 1*5]);
+\end{lstlisting}
+
+\para{Linear Factor}
+
+Assuming you want to specify the following constraint:
+
+\[
+ \sum_i x_i c_i = total
+\]
+
+where c is a vector of constants and x is a vector of variables and total is a constant, you can use the Gaussian solver linear factor:
+
+\begin{lstlisting}
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+
+    x1 = Real();
+    x2 = Real();
+    x3 = Real();
+    consts = [1 2 3];
+    total = 6;
+    fg.addFactor(@linear,x1,x2,x3,consts,total);
+\end{lstlisting}
+
+\para{General Factors}
+
+The Gaussian Solver provides a mechanism to support general factors that cannot calculate messages analytically and require sampling methods instead. The user must provide several methods:
+
+\begin{itemize}
+\item For each edge of the factor:
+\begin{itemize}
+\item A (first) function that is passed sample values of all of the *other* edges, and returns a value between 0 and 1.
+\begin{itemize}
+\item This function represents the integral or sum of the factor function over the variable associated with this edge (scaled to be between 0 and 1). For example, if the factor is F(x,y,z), then for variable z, this would return Hz(x,y)/max(Hz), where $ Hz(x,y) = int_z F(x,y,z) dz $, and Max(Hz) is the maximum value of Hz(x,y) over all values of x and y. For output variable y, it would return a similar function, but integrated over y instead of z; and for output variable x, integrated over x. If a particular variable is discrete, this sum can be done in software. For real variables, the user would be responsible for this integration (this is why we might need other methods--sometimes an integral would be too difficult to do by hand).
+\end{itemize}
+\end{itemize}
+\item A (second) function that is passed sample values of all of the *other* edges, and returns a sample from the conditional probability of the variable associated with this edge given a value for all other edges. It is up to the user to write the code to sample from this distribution.
+\begin{itemize}
+\item For example, if the factor is F(x,y,z), then for variable z, this would return Z ~ p(z|x,y) = F(x,y,z) / Hz(x,y), where Hz(x,y) is as defined above. In some cases, such as certain delta-factors that are single-valued in a given direction, p(z|x,y) may be deterministic in which case no sampling is required. In other cases, such as delta-factors that are multi-valued in a given direction, the sampling is uniform among a small set of values. In other cases, it may be more difficult, and at some point we might need to provide some additional utilities to facilitate generating samples.
+\end{itemize}
+\end{itemize}
+
+
+The Dimple Gaussian Solver uses those methods as follows:
+
+\begin{itemize}
+\item For some number of samples
+\begin{itemize}
+\item Until a sample is accepted
+\begin{itemize}
+\item For each input message (mean/variance)
+\begin{itemize}
+\item Generate a new sample using the specified mean/variance
+\end{itemize}
+\item Call the first user-method for the given output edge, which returns a value H (the function that returns Hz(x,y)/max(Hz) in the example above)
+\item Choose a random number U from 0 to 1
+\item If U < H, then accept the new set of input edge sample values, and break
+\item Otherwise, continue
+\end{itemize}
+\item Call the second user-method for the given output edge using the accepted input values are arguments, which returns a sample Z (the function that returns Z ~ p(z|x,y) in the example above)
+\item Add the sample Z to a list of output sample values
+\end{itemize}
+\item For all output sample values
+\begin{itemize}
+\item Calculate the sample mean
+\item Calculate the sample variance
+\item Set the output message to these values
+\end{itemize}
+\end{itemize}
+
+
+
+\para{The Factor}
+
+Users who wish to create their own FactorFunctions to be used with the Gaussian solver must create a class that extends the GaussianFactorFunction provided by Dimple. The user must provide implementations for the acceptanceRatio method and the generateSample method.
+
+\begin{lstlisting}
+
+import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorFunction;
+
+public class GaussianAddFactorFunction extends GaussianFactorFunction
+{
+
+    public GaussianAddFactorFunction() 
+    {
+        super("GaussianAdd");
+    }
+
+    @Override
+    public double acceptanceRatio(int portIndex, Object... inputs) 
+    {
+        return 1;
+    }
+
+    @Override
+    public Object generateSample(int portIndex, Object... inputs) 
+    {
+        if (portIndex == 0)
+        {
+	    double sum = 0;
+	    for (int i = 0; i < inputs.length; i++)
+            {
+                sum += (Double)inputs[i];
+            }
+            return sum;
+         }
+         else
+         {
+             double sum = (Double)inputs[0];
+             for (int i = 1; i < inputs.length; i++)
+             {
+                 sum -= (Double)inputs[i];
+             }
+             return sum;
+         }
+    }
+}
+\end{lstlisting}
+
+
+This class is only useful for demonstration since it simply provides a less precise method for calculating an @add factor. Note that the acceptanceRatio method always returns 1 in this instance.
+
+The portIndex indicates which edge of the Factor is being updated (the index of the factor's argument). The inputs array specifies the samples that were generated from all of the edges other than the output edge.
+
+\para{Example}
+
+The following example does the following:
+
+
+\begin{itemize}
+\item Create a Factor Graph and Variable
+\item Specify how many samples to generate before calculating an outgoing message.
+\item Specify a random seed (for repeatability of testing)
+\item For each edge
+\begin{itemize}
+\item Specify the inputs
+\item Add the factor
+\item Solve
+\item Get the beliefs
+\item Remove the factor and replace with the @add factor
+\item Solve
+\item Get the beliefs
+\item Compare the analytic to the sampled result.
+\end{itemize}
+\end{itemize}
+
+
+
+\begin{lstlisting}
+v = Real(3,1);
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+fg.Solver.setNumSamples(100000);
+fg.Solver.setSeed(0);
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%Test add
+inputs = [9 2; ...
+          3 2; ...
+          6 2];
+
+for i = 1:3
+   tmpinputs = inputs;
+    
+   tmpinputs(i,:) = [0 Inf];
+   
+   v(1).Input = tmpinputs(1,:);
+   v(2).Input = tmpinputs(2,:);
+   v(3).Input = tmpinputs(3,:);
+
+   f = fg.addFactor(com.lyricsemi.dimple.test.GaussianAddFactorFunction(),v(1),v(2),v(3));
+
+   fg.solve();
+
+   actualBelief = v(i).Belief;
+    
+   fg.removeFactor(f);
+    
+   f = fg.addFactor(@add,v(1),v(2),v(3));
+
+   fg.solve();
+
+   expectedBelief = v(i).Belief;
+    
+   fg.removeFactor(f);
+    
+   diff = abs(actualBelief - expectedBelief);
+   assertTrue(all(diff < .02));
+
+end
+\end{lstlisting}
+
+
+
+Users can specify different numbers of samples to be accrued for each factor.
+
+
+\begin{lstlisting}
+f1.setNumSamples(x);
+f2.setNumSamples(y);
+\end{lstlisting}
+
+
+where f1 and f2 are objects returned from an addFactor call.
+
+
+\para{MaxNumTries}
+
+If the user defined FactorFunction provides a low acceptance ratio, it's conceivable a Factor computation might never terminate. The user can specify a maximum number of attempts to be made before throwing an exception:
+
+\begin{lstlisting}
+fg.Solver.setMaxNumTries(1e6);
+\end{lstlisting}
+
+\subsubsection{Multivariate Gaussians}
+\label{sec:MultivariateGaussians}
+
+The Dimple Gaussian solver provides some support for multivariate Gaussian variables and factors.
+
+\para{Variables}
+
+The following code demonstrates the creation and use of a multivariate Gaussian.
+
+
+\begin{lstlisting}
+rj = RealJoint(2);
+means = [2 3]’;
+covar = [1 0;
+         0 1];
+rj.Input = MultivariateMsg(means,covar);
+rj.Belief.Means
+rj.Belief.Covariance
+\end{lstlisting}
+
+Users must create RealJoint variables.  The first argument of the constructor specifies the number of variables in the multivariate Gaussian.  The Gaussian solver expects users to specify a MultivariateMsg type as input to the variable.  This message type takes a mean vector and covariance matrix as arguments.  Beliefs return MultivariateMsg types.
+
+
+\para{Factors}
+
+The Multivariate Gaussian solver supports a matrix multiplication and addition factor.  The following code snippet is taken from the demos/17\_KalmanFilter/run.m file.
+
+\begin{lstlisting}
+%F is the state transition model.  (Given current state, what's the next 
+%state?)
+%new position is a function of old position, velocity, acceleration
+%New velocity is old velocity + acceleration
+%new acceleration is a function of velocity, friction, and force. 
+ 
+F = [1  0   dt          0           dt^2/2  0       0       0;
+    0  1   0           dt          0       dt^2/2  0       0;
+    0  0   1           0           dt/2    0       0       0;
+    0  0   0           1           0       dt/2    0       0;
+    0  0   -gamma/m    0           0       0       Fw(1)   0;
+    0  0   0           -gamma/m    0       0       0       Fw(2);
+    0  0   0           0           0       0       1       0
+    0  0   0           0           0       0       0       1
+    ];
+ 
+%H is the matrix that projects down to the observation.
+H = [1 0 0 0 0 0 0 0;
+    0 1 0 0 0 0 0 0];
+
+
+fz = RealJoint(2);
+fv = RealJoint(2);
+fznonoise = RealJoint(2);
+fx = RealJoint(8);
+fxnext = RealJoint(8);
+
+nested.addFactor(@constmult,fznonoise,H,fx);
+nested.addFactor(@add,fz,fv,fznonoise);
+nested.addFactor(@constmult,fxnext,F,fx);
+\end{lstlisting}
+
+\para{Rolled up graphs and Multivariate Gaussians}
+
+Rolled up graphs can be used with Multivariate Gaussians.  This is useful for creating Kalman filters.  The only difference between Multivariate Gaussian rolled up graphs and other rolled up graphs is the data source type.  The following code snippet is taken from the demo/17\_KalmanFilter/run.m file:
+
+\begin{lstlisting}
+%create the rolled up graph.
+fzs = RealJointStream(numel(p0));
+fvs = RealJointStream(numel(p0));
+fznonoise = RealJointStream(numel(p0));
+fxs = RealJointStream(numel(x00));
+fg = FactorGraph();
+rf = fg.addRepeatedFactor(nested,fxs.getSlice(1),fxs.getSlice(2),...
+                     fznonoise.getSlice(1),fvs.getSlice(1),fzs.getSlice(1));
+ 
+%If we set the buffersize to something other than the default of 1, this
+%will no longer be a Kalman filter.  Backwards messages will improve the
+%guesses.
+%rf.BufferSize = 10;
+ 
+%Create data sources.
+zDataSource = MultivariateDataSource();
+vDataSource = MultivariateDataSource();
+
+%Assign data
+the following is in a loop
+    zDataSource.add(z,eye(2)*1e-100);
+    vDataSource.add(zeros(2,1),R);
+end
+
+fzs.DataSource = zDataSource;
+fvs.DataSource = vDataSource;
+ 
+%Create arrays to save data.
+fgxs = zeros(timesteps,1);
+fgys = zeros(timesteps,1);
+ 
+%Step through time and solve the Factor Graph.
+for i = 1:timesteps
+   fg.solve();
+   fgxs(i) = fxs.FirstVar.Belief.Means(1);
+   fgys(i) = fxs.FirstVar.Belief.Means(2);
+         
+   if fg.hasNext()
+       fg.advance();
+   else
+       break;
+   end
+end
+\end{lstlisting}
+
+\subsection{Finite Fields}
+\label{sec:finiteFields}
+
+
+\subsubsection{Overview}
+
+
+Dimple supports a special variable type called a FiniteFieldVariable and a few custom factors for these variables. They represent finite fields with $N=2^{n}$ elements. These fields find frequent use in error correcting codes. Because Dimple can describe any discrete distribution, it is possible to handle finite fields simply by describing their combo tables. However, the native FiniteFieldVariable type is much more efficient. In particular, variable addition and multiplication, which naively require $\mathcal{O}(N^{3})$ operations, are calculated in only $\mathcal{O}(N\log N)$ operations.
+
+\subsubsection{Finite Fields Without Optimizations}
+
+As we mentioned previously, a user can construct (non-optimized) finite fields from scratch.
+
+First we create a domain for our variables using the MATLAB gf function (for Galois Field).
+
+\begin{lstlisting}
+m = 3; 
+numElements = 2^m;
+domain = 0:numElements-1;
+
+tmp = gf(domain,m); 
+real_domain = cell(length(tmp),1);
+for i = 1:length(tmp)
+  real_domain{i} = tmp(i); 
+end
+\end{lstlisting}
+
+Next we create a bunch of variables with that domain.
+
+\begin{lstlisting}
+x_slow = Discrete(real_domain);
+y_slow = Discrete(real_domain); 
+z_slow = Discrete(real_domain);
+\end{lstlisting}
+
+Now we create our graph and add the addition constraint.
+
+\begin{lstlisting}
+fg_slow = FactorGraph();
+
+addDelta = @(x,y,z) x+y==z;
+fg_slow.addFactor(addDelta,x_slow,y_slow,z_slow);
+\end{lstlisting}
+
+This code runs in $\mathcal{O}(N^3) $ time since it tries all combinations of x,y, and z.
+Next we set some inputs.
+
+\begin{lstlisting}
+x_input = rand(size(x_slow.Domain.Elements));
+y_input = rand(size(y_slow.Domain.Elements));
+
+x_slow.Input = x_input;
+y_slow.Input = y_input;
+\end{lstlisting}
+
+Finally we set number of iterations, solve, and look at beliefs.
+
+\begin{lstlisting}
+fg_slow.Solver.setNumIterations(1);
+
+fg_slow.solve();
+
+z_slow.Belief
+\end{lstlisting}
+
+The solver runs in $\mathcal{O}(N^2)$ time since z is determined by x and y, x is determined by z, and y, and y is determined by x and z.
+
+\subsubsection{Optimized Finite Field Operations}
+
+Rather than building finite field elements from scratch, a user can use a build-in variable type and associated set of function nodes. These native variables are much faster, both for programming and algorithmic reasons. All of these operations are supported with the SumProduct solver.
+
+\para{FiniteFieldVariables}
+
+Dimple supports a FiniteFieldVariable variable type, which takes a primitive polynomial (to be discussed later) and dimensions of the matrix as constructor arguments:
+
+\begin{lstlisting}
+v = FiniteFieldVariable(prim_poly,3,2);
+\end{lstlisting}
+
+This would create a 3x2 matrix of finite field Variables with the given primitive polynomial.
+
+\para{Addition}
+
+Users can use the following syntax to create an addition factor node with three variables:
+
+\begin{lstlisting}
+myFactorGraph.addFactor(@finiteFieldAdd,x,y,z);
+\end{lstlisting}
+
+The @finiteFieldAdd method must have exactly that name for the Custom Factor to be used.
+
+Adding this variable take $\mathcal{O}(1)$ time and solving takes $\mathcal{O}(N\log N)$ time, where N is the size of the finite field domain.
+
+\para{Multiplication}
+
+Similarly, the following syntax can be used to create a factor node with three variables for multiplication:
+
+\begin{lstlisting}
+myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
+\end{lstlisting}
+
+Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
+
+\para{NVarFiniteFieldPlus}
+
+Suppose we have the finite field equation $ x1+x2+x3+x4=0 $.
+
+We can not express that using the finiteFieldAdd function directly, since it accepts only three arguments. However, we can support larger addition constraints by building a tree of these constraints. We do so using the following function:
+
+\begin{lstlisting}
+NumVars = 4;
+[graph,vars] = getNVarFiniteFieldPlus(prim_poly,NumVars);
+\end{lstlisting}
+
+This function takes a primitive polynomial and the number of variables involved in the constraint and builds up a graph such that  $ x_1+...+x_n = 0 $ .
+
+It returns both the graph and the external variables of the graph. This can be used in one of two ways: setting inputs on the variables and solving the graph directly or using this as a nested sub-graph.
+
+\para{Projection}
+
+Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, x3+x+1 could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the finiteFieldProjection factor to relate n bits to a finite field variable with a domain of size 2n.
+
+The following code shows how to do that:
+
+\begin{lstlisting}
+args = cell(n*2,1);
+for j = 0:n-1
+   args{j*2+1} = j;
+   args{j*2+2} = bits(n-j);
+end
+
+myFactorGraph.addFactor(@finiteFieldProjection,v,args{:});
+\end{lstlisting}
+
+\subsubsection{Primitive Polynomials}
+
+See Wikipedia for a definition. 
+
+\subsubsection{Algorithmics}
+
+
+Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e., an exponentiation operator).
+
+\begin{itemize}
+\item The addition code computes $x+y$ by performing a fast Hadamard transform of the distribution of both $x$ and $y$, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
+\item The generic multiplication code computes $xy$ by performing a fast Fourier transform on the distribution of the non-zero elements of the distribution, pointwise multiplying the transforms, performing an inverse fast Fourier transform, and then accounting for the zero elements.
+% FIXME
+\item The constant multiplication code computes $x$ by converting the distribution of the non-zero values of $x$ to the discrete log domain (which corresponds to reshuffling the array), adding the discrete log of   modulo $N-1$ (cyclically shifting the array), and exponentiating (unshuffling the array back to the original representation).  
+\end{itemize}

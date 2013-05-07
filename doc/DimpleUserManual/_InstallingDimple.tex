@@ -1,0 +1,50 @@
+\section{Installing Dimple}
+
+\begin{enumerate}
+\item MATLAB of at least version 2008a is required. 
+\item Extract the Dimple zip file.
+\item Execute the startup.m script in the resulting Dimple directory to 
+load Dimple in MATLAB.
+\item To avoid having to manually change to this directory and execute 
+this script every time you start MATLAB, you will need to add the following lines to MATLAB's startup.m file:
+\begin{lstlisting}
+cd <Path-to-Dimple>
+startup
+\end{lstlisting}
+Google ``MATLAB startup.m'' for more details regarding startup.m files.
+\item Verify the installation:
+\begin{enumerate}
+\item Start MATLAB
+\item  At the MATLAB command prompt type:
+\begin{lstlisting} 
+testDimple;
+\end{lstlisting}
+\item Verify the output ends with something like the following (showing that all tests passed): \\
+\begin{minipage}{\textwidth}
+\begin{lstlisting} 
+
+
+**********************************************************************
+PASSED ALL TESTS
+147 of 147 tests passed, 0 failed
+**********************************************************************
+
+--testDimple
+======================================================================
+\end{lstlisting}
+\end{minipage}
+
+\end{enumerate}
+\end{enumerate}
+
+
+\subsection{Adjusting MATLAB's Java Memory Limit}
+
+Each object in Dimple corresponds to underlying Java objects. The amount of heap memory reserved for Java (when called from MATLAB) is limited, and typically low.  In some cases, this can cause Dimple to fail if the memory it requires exceeds this modest limit.  To increase the value of this limit, edit the file java.opts in the MATLAB startup directory, and add the following two lines:
+
+\begin{lstlisting}
+-Xmx1024m
+-Xms512m
+\end{lstlisting}
+
+The value after Xmx is the maximum amount of heap memory allocated to Java, and Xms is the starting value.  You may use wish to use larger values if your system has sufficient memory.  Google ``MATLAB java.opts file'' to determine the specific location of this file on your operating system.
