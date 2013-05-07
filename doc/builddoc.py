@@ -21,6 +21,8 @@ import glob
 
 def producedoc(fileName,option):
     os.system('pdflatex ' + fileName)
+    os.system('pdflatex ' + fileName)
+    os.system('pdflatex ' + fileName)
 
 if __name__ == "__main__":
     
