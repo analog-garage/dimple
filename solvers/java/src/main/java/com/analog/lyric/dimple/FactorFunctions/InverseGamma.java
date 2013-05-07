@@ -34,12 +34,12 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class InverseGamma extends FactorFunction
 {
-	double _alpha;
-	double _beta;
-	double _alphaPlusOne;
-	double _logGammaAlphaMinusAlphaLogBeta;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	protected double _alpha;
+	protected double _beta;
+	protected double _alphaPlusOne;
+	protected double _logGammaAlphaMinusAlphaLogBeta;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 2;
 
 	public InverseGamma() {super();}
 	public InverseGamma(double alpha, double beta)

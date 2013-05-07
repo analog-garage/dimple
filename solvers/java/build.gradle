@@ -43,11 +43,13 @@ configurations {
 
 //Create an array of all the dependency jars
 project.ext.myjars = [
+	"com.google.guava:guava:14.0",
     "org.apache.commons:commons-math:2.2",
     "edu.emory.mathcs:jtransforms:2.3",
     "jama:jama:1.0.2",
     "colt:colt:1.2.0",
-    "junit:junit:4.10"
+    "junit:junit:4.10",
+    "net.jcip:jcip-annotations:1.0"
   ]
 
 //Set up all the external dependencies for dimple

@@ -81,7 +81,7 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
         lib_dir = fullfile(dimple_base, 'solvers', 'lib');
     end
     
-	if nargin > 2
+    if nargin > 2
 		ActualJavaDir = JavaDir;
 	end
     javaaddpath(ActualJavaDir);
@@ -91,11 +91,13 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
         javaaddpath(JavaTestClassDir);
     end
     
+    % Add jars to end of javaclasspath so they don't come before
+    % directories
     jars = dir(lib_dir);
     for i = 1:length(jars)
         j = jars(i).name;
-        if ~isempty(strfind(j,'jar'))
-            javaaddpath(fullfile(lib_dir, j));
+        if (regexp(j, '\.jar$'))
+            javaaddpath(fullfile(lib_dir, j),'-end');
         end
     end
 

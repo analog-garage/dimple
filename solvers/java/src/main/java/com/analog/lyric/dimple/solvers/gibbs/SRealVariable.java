@@ -292,6 +292,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public final double[] getAllSamples()
 	{
+		if (_sampleArray == null)
+			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
 		int length = _sampleArray.size();
 		double[] retval = new double[length];
 		for (int i = 0; i < length; i++)

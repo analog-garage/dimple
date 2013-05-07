@@ -21,8 +21,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 /**
- * Deterministic product. This is a deterministic directed factor (if smoothing
- * is not enabled).
+ * Deterministic division. This is a deterministic directed factor (if
+ * smoothing is not enabled).
  * 
  * Optional smoothing may be applied, by providing a smoothing value in the
  * constructor. If smoothing is enabled, the distribution is smoothed by
@@ -31,16 +31,17 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (product of inputs)
- * 2...) An arbitrary number of inputs (double or integer)
+ * 1) Output (quotient = dividend / divisor)
+ * 2) Dividend
+ * 3) Divisor
  * 
  */
-public class Product extends FactorFunction
+public class Divide extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public Product() {this(0);}
-	public Product(double smoothing)
+	public Divide() {this(0);}
+	public Divide(double smoothing)
 	{
 		super();
 		if (smoothing > 0)
@@ -53,22 +54,26 @@ public class Product extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	int length = arguments.length;
-    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
+    	double quotient = FactorFunctionUtilities.toDouble(arguments[0]);
+    	double dividend = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double divisor = FactorFunctionUtilities.toDouble(arguments[2]);
+    	
+    	double expectedQuotient = dividend / divisor;
+    	
+    	if (Double.isNaN(expectedQuotient))
+    		return Double.POSITIVE_INFINITY;
+    	if (Double.isInfinite(expectedQuotient))
+    		return Double.POSITIVE_INFINITY;
     	
     	if (_smoothingSpecified)
     	{
-    		double diff = product - out;
+    		double diff = expectedQuotient - quotient;
     		double potential = diff*diff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (product == out) ? 0 : Double.POSITIVE_INFINITY;
+    		return (expectedQuotient == quotient) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -82,12 +87,13 @@ public class Product extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = arguments.length;
+    	double dividend = FactorFunctionUtilities.toDouble(arguments[1]);
+    	double divisor = FactorFunctionUtilities.toDouble(arguments[2]);
 
-    	double product = 1;
-    	for (int i = 1; i < length; i++)
-    		product *= FactorFunctionUtilities.toDouble(arguments[i]);
-    	
-    	arguments[0] = product;		// Replace the output value
+    	double quotient = dividend / divisor;
+    	if (Double.isNaN(quotient))
+    		quotient = 0;
+
+    	arguments[0] = quotient;		// Replace the output value
     }
 }

@@ -34,13 +34,13 @@ import com.analog.lyric.dimple.model.DimpleException;
  */
 public class Gamma extends FactorFunction
 {
-	double _alpha;
-	double _beta;
-	double _alphaMinusOne;
-	double _logBeta;
-	double _logGammaAlphaMinusAlphaLogBeta;
-	boolean _parametersConstant = false;
-	int _firstDirectedToIndex = 2;
+	protected double _alpha;
+	protected double _beta;
+	protected double _alphaMinusOne;
+	protected double _logBeta;
+	protected double _logGammaAlphaMinusAlphaLogBeta;
+	protected boolean _parametersConstant = false;
+	protected int _firstDirectedToIndex = 2;
 
 	public Gamma() {super();}
 	public Gamma(double alpha, double beta)

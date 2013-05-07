@@ -18,8 +18,9 @@ package com.analog.lyric.dimple.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
-import com.analog.lyric.dimple.FactorFunctions.EqualDelta;
+import com.analog.lyric.dimple.FactorFunctions.Equals;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -31,21 +32,21 @@ public abstract class VariableBase extends Node implements Cloneable
 	protected Object _fixedValue = null;
 	protected String _modelerClassName;
 	protected ISolverVariable _solverVariable = null;
-	protected HashMap<String,Object> _properties = new HashMap<String,Object>();
+	protected Map<String,Object> _properties = null;
 	private Domain _domain;
     private boolean _hasFixedValue = false;
 
 	
-	public VariableBase(Domain domain) 
+	public VariableBase(Domain domain)
 	{
 		this(NodeId.getNext(),"Variable",domain);
 	}
-	public VariableBase(Domain domain,String modelerClassName) 
+	public VariableBase(Domain domain,String modelerClassName)
 	{
 		this(NodeId.getNext(),modelerClassName,domain);
 	}
 	
-	public VariableBase(int id, String modelerClassName, Domain domain) 
+	public VariableBase(int id, String modelerClassName, Domain domain)
 	{
 		super(id);
 		
@@ -93,18 +94,18 @@ public abstract class VariableBase extends Node implements Cloneable
     	return "Variable";
     }
     
-    public void setGuess(Object guess) 
+    public void setGuess(Object guess)
     {
     	_solverVariable.setGuess(guess);
     }
 
-    public Object getGuess() 
+    public Object getGuess()
     {
     	return _solverVariable.getGuess();
     }
     
 	@Override
-	public double getScore() 
+	public double getScore()
 	{
 		if (_solverVariable == null)
 			throw new DimpleException("solver needs to be set before calculating energy");
@@ -112,6 +113,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _solverVariable.getScore();
 	}
 
+	@Override
 	public double getBetheEntropy()
 	{
 		if (_solverVariable == null)
@@ -120,6 +122,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _solverVariable.getBetheEntropy();
 	}
 	
+	@Override
 	public double getInternalEnergy()
 	{
 		if (_solverVariable == null)
@@ -141,7 +144,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
-		{		
+		{
 			_solverVariable = factorGraph.createVariable(this);
 			_solverVariable.createNonEdgeSpecificState();
 			_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
@@ -154,11 +157,15 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public void setProperty(String key,Object value)
 	{
+		if (_properties == null)
+		{
+			_properties = new HashMap<String,Object>();
+		}
 		_properties.put(key, value);
 	}
 	public Object getProperty(String key)
 	{
-		return _properties.get(key);
+		return _properties == null ? null : _properties.get(key);
 	}
 
 	@Override
@@ -170,7 +177,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		 * must first call super.clone(), and then deep-copy those instance
 		 * variables to the clone.
 		 *******/
-		VariableBase v = (VariableBase)(super.clone());		
+		VariableBase v = (VariableBase)(super.clone());
 		v._solverVariable = null;
 		return v;
 	}
@@ -203,7 +210,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		inputOrFixedValueChanged();
 	}
 
-    public void setInputObject(Object value) 
+    public void setInputObject(Object value)
     {
     	_hasFixedValue = false;		// In case the value had previously been fixed, then un-fix it
     	_input = value;
@@ -233,7 +240,7 @@ public abstract class VariableBase extends Node implements Cloneable
     	return _modelerClassName;
     }
         
-    public Object getBeliefObject() 
+    public Object getBeliefObject()
     {
     	if (_solverVariable != null)
     		return _solverVariable.getBelief();
@@ -242,13 +249,15 @@ public abstract class VariableBase extends Node implements Cloneable
     }
    
     
+	@Override
 	public void initialize(int portNum)
 	{
 		if (_solverVariable != null)
 			_solverVariable.resetEdgeMessages(portNum);
 	}
     
-    public void initialize() 
+    @Override
+	public void initialize()
     {
 
     	if (_solverVariable != null)
@@ -287,7 +296,7 @@ public abstract class VariableBase extends Node implements Cloneable
 		
 	}
 	
-	public void remove(Factor factor) 
+	public void remove(Factor factor)
 	{
 		ArrayList<INode> siblings = getSiblings();
 		
@@ -317,20 +326,20 @@ public abstract class VariableBase extends Node implements Cloneable
 	}
 	
 	@Override
-	public void update() 
+	public void update()
 	{
 		checkSolverNotNull();
 		_solverVariable.update();
 	}
 
 	@Override
-	public void updateEdge(int outPortNum) 
+	public void updateEdge(int outPortNum)
 	{
 		checkSolverNotNull();
 		_solverVariable.updateEdge(outPortNum);
 	}
 	
-	private void checkSolverNotNull() 
+	private void checkSolverNotNull()
 	{
 		if (_solverVariable == null)
 			throw new DimpleException("solver must be set before performing this action.");
@@ -339,7 +348,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	
     
     
-    public VariableBase split(FactorGraph fg,Factor [] factorsToBeMovedToCopy) 
+    public VariableBase split(FactorGraph fg,Factor [] factorsToBeMovedToCopy)
     {
     	//create a copy of this variable
     	VariableBase mycopy = clone();
@@ -347,7 +356,7 @@ public abstract class VariableBase extends Node implements Cloneable
     	mycopy.setInputObject(null);
     	mycopy.setName(null);
     	
-    	fg.addFactor(new EqualDelta(), this,mycopy);
+    	fg.addFactor(new Equals(), this,mycopy);
     	
     	//for each factor to be moved
     	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
@@ -375,12 +384,12 @@ public abstract class VariableBase extends Node implements Cloneable
 	    	
 	    	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
 	    		factorsToBeMovedToCopy[i].createSolverObject(fg.getSolver());
-    	}    	
+    	}
     	return mycopy;
     }
     
     
-    VariableBase createJointNoFactors(VariableBase otherVariable) 
+    VariableBase createJointNoFactors(VariableBase otherVariable)
     {
     	throw new DimpleException("not implemented");
     }

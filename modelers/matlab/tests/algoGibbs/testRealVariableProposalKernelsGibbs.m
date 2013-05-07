@@ -56,10 +56,12 @@ fg.Solver.saveAllSamples();
 fg.solve();
 
 as = a.Solver.getAllSamples;
-assert(max(as) > pi);
-assert(min(as) < -pi);
+assert(max(as) > pi-.01);
+assert(max(as) <= pi);
+assert(min(as) < -pi+.01);
+assert(min(as) >= -pi);
 
-% Try with circular kernel, values should never stray past +/-pi
+% Try with circular kernel, by default, bounds are +/-pi
 
 a.Solver.setProposalKernel('CircularNormalProposalKernel');
 a.Solver.getSampler.getProposalKernel.setParameters(1); % Proposal std-dev
@@ -68,22 +70,27 @@ fg.Solver.saveAllSamples();
 fg.solve();
 
 as = a.Solver.getAllSamples;
+assert(max(as) > pi-.01);
 assert(max(as) <= pi);
+assert(min(as) < -pi+.01);
 assert(min(as) >= -pi);
 
 
 
-% Try with circular kernel with different bounds, values should never stray past +/-pi
+% Try with circular kernel with different bounds, values should never stray
+% past +/-pi/2
 
 a.Solver.setProposalKernel('CircularNormalProposalKernel');
-a.Solver.setProposalKernelParameters({1, -14, -2});
+a.Solver.setProposalKernelParameters({1, -pi/2, pi/2});
 
 fg.Solver.saveAllSamples();
 fg.solve();
 
 as = a.Solver.getAllSamples;
-assert(max(as) <= -2);
-assert(min(as) >= -14);
+assert(max(as) > pi/2-.01);
+assert(max(as) <= pi/2);
+assert(min(as) < -pi/2+.01);
+assert(min(as) >= -pi/2);
 
 
 end
