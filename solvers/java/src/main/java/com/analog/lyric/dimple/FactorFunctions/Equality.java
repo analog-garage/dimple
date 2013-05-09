@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -37,13 +37,13 @@ import com.analog.lyric.dimple.model.Domain;
  * 1...) Arbitrary length list of values (double, integer, or boolean)
  * 
  */
-public class Equals extends FactorFunction 
+public class Equality extends FactorFunction 
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
 
-	public Equals() {this(0);}
-	public Equals(double smoothing)
+	public Equality() {this(0);}
+	public Equality(double smoothing)
 	{
 		super();
 		if (smoothing > 0)
@@ -54,27 +54,27 @@ public class Equals extends FactorFunction
 	}
 	
     @Override
-    public double evalEnergy(Object ... input)
+    public double evalEnergy(Object... arguments)
     {
-    	if (input.length == 0)
+    	if (arguments.length == 0)
     		return 0;
     	
-    	double firstVal = FactorFunctionUtilities.toDouble(input[0]);
+    	double firstVal = FactorFunctionUtilities.toDouble(arguments[0]);
 
     	if (_smoothingSpecified)
     	{
     		double potential = 0;
-    		for (int i = 1; i < input.length; i++)
+    		for (int i = 1; i < arguments.length; i++)
     		{
-    			double diff = firstVal - FactorFunctionUtilities.toDouble(input[i]);
+    			double diff = firstVal - FactorFunctionUtilities.toDouble(arguments[i]);
     			potential += diff*diff;
     		}
         	return potential*_beta;
     	}
     	else
     	{
-    		for (int i = 1; i < input.length; i++)
-    			if (FactorFunctionUtilities.toDouble(input[i]) != firstVal)
+    		for (int i = 1; i < arguments.length; i++)
+    			if (FactorFunctionUtilities.toDouble(arguments[i]) != firstVal)
     				return Double.POSITIVE_INFINITY;
         	return 0;
     	}

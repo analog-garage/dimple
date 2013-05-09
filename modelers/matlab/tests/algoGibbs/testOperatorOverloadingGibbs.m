@@ -25,6 +25,7 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -531,3 +532,151 @@ function value = myPlusFactor(out,in1,in2)
     end
 end
 
+
+% Test Equals and NotEquals
+function test5(debugPrint, repeatable)
+
+numSamples = 100;
+scansPerSample = 1;
+burnInScans = 0;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setScansPerSample(scansPerSample);
+fg.Solver.setBurnInScans(burnInScans);
+
+N = 8;
+a = Discrete(1:4);
+b = Discrete(1:4);
+c = Bit();
+d = Bit();
+aa = Discrete(1:4,1,N);
+ba = Discrete(1:4,1,N);
+ca = Bit(1,N);
+da = Bit(1,N);
+
+e = Equals(a);
+f = Equals(a,b);
+g = Equals(a,b,c,d);
+h = Equals(a,3);
+ea = Equals(aa);
+fa = Equals(aa,ba);
+ga = Equals(aa,ba,ca,da);
+ha = Equals(aa,3);
+ia = Equals(a,ba);
+ja = Equals(aa,ba,c);
+
+en = NotEquals(a);
+fn = NotEquals(a,b);
+gn = NotEquals(a,b,c,d);
+hn = NotEquals(a,3);
+ean = NotEquals(aa);
+fan = NotEquals(aa,ba);
+gan = NotEquals(aa,ba,ca,da);
+han = NotEquals(aa,3);
+ian = NotEquals(a,ba);
+jan = NotEquals(aa,ba,c);
+
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+fg.Solver.saveAllSamples();
+fg.solve();
+
+
+aS = a.Solver.getAllSamples();
+bS = b.Solver.getAllSamples();
+cS = c.Solver.getAllSamples();
+dS = d.Solver.getAllSamples();
+aaS = aa.invokeSolverMethodWithReturnValue('getAllSamples');
+baS = ba.invokeSolverMethodWithReturnValue('getAllSamples');
+caS = ca.invokeSolverMethodWithReturnValue('getAllSamples');
+daS = da.invokeSolverMethodWithReturnValue('getAllSamples');
+
+eS = e.Solver.getAllSamples();
+fS = f.Solver.getAllSamples();
+gS = g.Solver.getAllSamples();
+hS = h.Solver.getAllSamples();
+eaS = ea.invokeSolverMethodWithReturnValue('getAllSamples');
+faS = fa.invokeSolverMethodWithReturnValue('getAllSamples');
+gaS = ga.invokeSolverMethodWithReturnValue('getAllSamples');
+haS = ha.invokeSolverMethodWithReturnValue('getAllSamples');
+iaS = ia.invokeSolverMethodWithReturnValue('getAllSamples');
+jaS = ja.invokeSolverMethodWithReturnValue('getAllSamples');
+
+enS = en.Solver.getAllSamples();
+fnS = fn.Solver.getAllSamples();
+gnS = gn.Solver.getAllSamples();
+hnS = hn.Solver.getAllSamples();
+eanS = ean.invokeSolverMethodWithReturnValue('getAllSamples');
+fanS = fan.invokeSolverMethodWithReturnValue('getAllSamples');
+ganS = gan.invokeSolverMethodWithReturnValue('getAllSamples');
+hanS = han.invokeSolverMethodWithReturnValue('getAllSamples');
+ianS = ian.invokeSolverMethodWithReturnValue('getAllSamples');
+janS = jan.invokeSolverMethodWithReturnValue('getAllSamples');
+
+
+aSX = arrayfun(@(x)x, aS);
+bSX = arrayfun(@(x)x, bS);
+cSX = arrayfun(@(x)x, cS);
+dSX = arrayfun(@(x)x, dS);
+aSXN = repmat(aSX, 1, N);
+bSXN = repmat(bSX, 1, N);
+cSXN = repmat(cSX, 1, N);
+dSXN = repmat(dSX, 1, N);
+aaSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), aaS, 'UniformOutput', false));
+baSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), baS, 'UniformOutput', false));
+caSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), caS, 'UniformOutput', false));
+daSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), daS, 'UniformOutput', false));
+
+eSX = arrayfun(@(x)x, eS);
+fSX = arrayfun(@(x)x, fS);
+gSX = arrayfun(@(x)x, gS);
+hSX = arrayfun(@(x)x, hS);
+eaSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), eaS, 'UniformOutput', false));
+faSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), faS, 'UniformOutput', false));
+gaSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), gaS, 'UniformOutput', false));
+haSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), haS, 'UniformOutput', false));
+iaSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), iaS, 'UniformOutput', false));
+jaSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), jaS, 'UniformOutput', false));
+
+enSX = arrayfun(@(x)x, enS);
+fnSX = arrayfun(@(x)x, fnS);
+gnSX = arrayfun(@(x)x, gnS);
+hnSX = arrayfun(@(x)x, hnS);
+eanSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), eanS, 'UniformOutput', false));
+fanSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), fanS, 'UniformOutput', false));
+ganSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), ganS, 'UniformOutput', false));
+hanSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), hanS, 'UniformOutput', false));
+ianSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), ianS, 'UniformOutput', false));
+janSX = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), janS, 'UniformOutput', false));
+
+
+assert(all(eSX));            
+assert(all(fSX == (aSX==bSX)));            
+assert(all(gSX == (aSX==bSX & aSX==cSX & aSX==dSX)));            
+assert(all(hSX == (aSX==3)));          
+
+assert(all(eaSX(:)));
+assert(all(faSX(:) == (aaSX(:)==baSX(:))));
+assert(all(gaSX(:) == (aaSX(:)==baSX(:) & aaSX(:)==caSX(:) & aaSX(:)==daSX(:))));            
+assert(all(haSX(:) == (aaSX(:)==3)));          
+assert(all(iaSX(:) == (aSXN(:)==baSX(:))));          
+assert(all(jaSX(:) == (aaSX(:)==baSX(:) & aaSX(:)==cSXN(:))));            
+
+assert(all(~enSX));            
+assert(all(fnSX ~= (aSX==bSX)));            
+assert(all(gnSX ~= (aSX==bSX & aSX==cSX & aSX==dSX)));            
+assert(all(hnSX ~= (aSX==3)));            
+
+assert(all(~eanSX(:)));
+assert(all(fanSX(:) ~= (aaSX(:)==baSX(:))));
+assert(all(ganSX(:) ~= (aaSX(:)==baSX(:) & aaSX(:)==caSX(:) & aaSX(:)==daSX(:))));            
+assert(all(hanSX(:) ~= (aaSX(:)==3)));          
+assert(all(ianSX(:) ~= (aSXN(:)==baSX(:))));          
+assert(all(janSX(:) ~= (aaSX(:)==baSX(:) & aaSX(:)==cSXN(:))));            
+
+
+end

@@ -725,7 +725,9 @@ In the current implementation, the domain of the x variable must be zero-based c
 %
 Divide & quotient(D,R) \newline dividend(D,R) \newline divisor(D,R) & [smoothing] & Deterministic divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Equals & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Equality & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Equals & out(B) \newline in...(B,D,R) & - & Deterministic equals function, where out~=~(in(1)~==~in(2)~== ... ). \\
 %
 Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -755,9 +757,11 @@ Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline
 %
 Not & out(B) \newline in(B) & - & Deterministic logical NOT of function, where out = ~in. \\
 %
+NotEquals & out(B) \newline in...(B,D,R) & - & Deterministic not-equals function, where out~=~$\sim$(in(1)~==~in(2)~== ... ). \\
+%
 Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out = OR(in...). \\
 %
-Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out = base$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out~=~base~$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -1134,8 +1138,10 @@ $\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkma
 $.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
 $<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
 $>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
-$<=$ & GreaterThan & B & D,R & D,R & \checkmark & Less than or equal to (uses GreaterThan factor, reversing the order) \\
-$>=$ & LessThan & B & D,R & D,R & \checkmark & Greater than or equal to (uses LessThan factor, reversing the order) \\
+$<=$ & GreaterThan\footnote{Uses GreaterThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Less than or equal to \\
+$>=$ & LessThan\footnote{Uses LessThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Greater than or equal to \\
+Equals() & Equals & B & B,D,R & B,D,R\footnote{\label{ftn:equals}This function is not limited to two inputs, but can take an arbitrary number of inputs} & \checkmark & Equals\footnote{Equivalent to the $==$ operator, but the $==$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
+NotEquals() & NotEquals & B & B,D,R & B,D,R$^{\ref{ftn:equals}}$ & \checkmark & Not equals\footnote{Equivalent to the $\sim=$ operator, but the $\sim=$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
 mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
 abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
 sqrt() & Sqrt & R & R & - & \checkmark & Square root \\

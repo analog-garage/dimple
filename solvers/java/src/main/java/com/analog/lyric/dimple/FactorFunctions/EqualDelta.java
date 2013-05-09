@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 // This is for backwards compatibility with test and demo code
-public class EqualDelta extends Equals
+public class EqualDelta extends Equality
 {
 	public EqualDelta() {super();}
 }
