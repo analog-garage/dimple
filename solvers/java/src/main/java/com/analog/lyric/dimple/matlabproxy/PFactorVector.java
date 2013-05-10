@@ -24,9 +24,15 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.util.misc.Matlab;
 
+@Matlab
 public class PFactorVector extends PNodeVector
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public PFactorVector()
 	{
 	}
@@ -40,34 +46,29 @@ public class PFactorVector extends PNodeVector
 		super(nodes);
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+	
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) 
-	{
-		return new PFactorVector(nodes);
-	}
-
-	@Override
-	public boolean isVariable() 
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isFactor() 
+	public boolean isFactor()
 	{
 		return true;
 	}
 
+	/*---------------------
+	 * PNodeVector methods
+	 */
+
 	@Override
-	public boolean isGraph() 
+	public PNodeVector createNodeVector(Node[] nodes)
 	{
-		return false;
+		return new PFactorVector(nodes);
 	}
 
-	public boolean isDiscrete()
-	{
-		return false;
-	}
+	/*-----------------------
+	 * PFactorVector methods
+	 */
 	
 	private Factor getFactor(int index)
 	{
@@ -79,7 +80,7 @@ public class PFactorVector extends PNodeVector
 		return getFactor(0).getFactorFunction();
 	}
 	
-	public PVariableVector getVariables() 
+	public PVariableVector getVariables()
 	{
 		ArrayList<VariableBase> retval = new ArrayList<VariableBase>();
 		
@@ -125,7 +126,7 @@ public class PFactorVector extends PNodeVector
 				VariableBase [] tmp = ((PVariableVector)nodeVectors[i][j]).getVariableArray();
 				vl.add(tmp);
 			}
-			f.setDirectedTo(vl);			
+			f.setDirectedTo(vl);
 		}
 		
 	}

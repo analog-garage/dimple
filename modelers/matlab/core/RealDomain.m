@@ -23,11 +23,20 @@ classdef RealDomain < Domain
     
     methods
         function obj = RealDomain(lowerBound,upperBound)
-            if nargin < 2
-                upperBound = Inf;
-            end
-            if nargin < 1
-                lowerBound = -Inf;
+            switch (nargin)
+                case 0
+                    upperBound = Inf;
+                    lowerBound = -Inf;
+                case 1
+                    if isa(lowerBound, 'com.analog.lyric.dimple.matlabproxy.PRealDomain')
+                        % If called with single argument of java type
+                        % PRealDomain, just use that for the domain.
+                        obj.IDomain = lowerBound;
+                        obj.UB = obj.IDomain.getUpperBound();
+                        obj.LB = obj.IDomain.getLowerBound();
+                        return;
+                    end
+                    upperBound = Inf;
             end
             obj.UB = upperBound;
             obj.LB = lowerBound;

@@ -15,33 +15,49 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function result = wrapProxyObject(proxyObject)
+    result = [];
+    
     if isempty(proxyObject)
-        result = [];
-    elseif proxyObject.isGraph()
-        result = FactorGraph('VectorObject',proxyObject);
-    elseif proxyObject.isFactor()
-        if proxyObject.isDiscrete()
-            result = DiscreteFactor(proxyObject,0:(proxyObject.size()-1));
-        else
-            result = Factor(proxyObject,0:(proxyObject.size()-1));
+        return;
+    end
+        
+    if isjava(proxyObject)
+        if proxyObject.isGraph()
+            result = FactorGraph('VectorObject',proxyObject);
+        elseif proxyObject.isFactor()
+            if proxyObject.isDiscrete()
+                result = DiscreteFactor(proxyObject,0:(proxyObject.size()-1));
+            else
+                result = Factor(proxyObject,0:(proxyObject.size()-1));
+            end
+            
+        elseif proxyObject.isVariable()
+            if proxyObject.isDiscrete()
+                domain = cell(proxyObject.getDomain().getElements());
+                indices = 0:(proxyObject.size()-1);
+                result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
+            elseif proxyObject.isJoint()
+                domain = RealJointDomain(proxyObject.getDomain().getNumVars());
+                indices = 0:(proxyObject.size()-1);
+                result = RealJoint(domain,'existing',proxyObject,indices);
+            else
+                domain = RealDomain(proxyObject.getDomain().getLowerBound(),proxyObject.getDomain().getUpperBound);
+                indices = 0:(proxyObject.size()-1);
+                result = Real(domain,'existing',proxyObject,indices);
+            end
+            
+        elseif proxyObject.isDomain()
+            if proxyObject.isDiscrete()
+                result = DiscreteDomain(proxyObject);
+            elseif proxyObject.isReal()
+                result = RealDomain(proxyObject);
+            elseif proxyObject.isJoint()
+                result = RealJointDomain(proxyObject);
+            end
         end
-
-    elseif proxyObject.isVariable()
-        if proxyObject.isDiscrete()
-            domain = cell(proxyObject.getDomain().getElements());
-            indices = 0:(proxyObject.size()-1);
-            result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
-        elseif proxyObject.isJoint()
-            domain = RealJointDomain(proxyObject.getDomain().getNumVars());
-            indices = 0:(proxyObject.size()-1);
-            result = RealJoint(domain,'existing',proxyObject,indices);
-        else
-            domain = RealDomain(proxyObject.getDomain().getLowerBound(),proxyObject.getDomain().getUpperBound);
-            indices = 0:(proxyObject.size()-1);
-            result = Real(domain,'existing',proxyObject,indices);
-        end
-
-    else
+    end
+    
+    if isempty(result) && ~isempty(proxyObject)
         error('not supported');
     end
 end

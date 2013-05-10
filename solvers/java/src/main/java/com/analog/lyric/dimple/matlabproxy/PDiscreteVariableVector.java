@@ -17,20 +17,25 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.util.misc.Matlab;
 
 
 
 /*
- * This class provides vectors of Variables to allow matlab to set multiple inputs 
+ * This class provides vectors of Variables to allow matlab to set multiple inputs
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
+@Matlab
 public class PDiscreteVariableVector extends PVariableVector
 {
+	/*---------------
+	 * Construction
+	 */
+	
 	public PDiscreteVariableVector(Node node)
 	{
 		super(new Node[] {node});
@@ -41,7 +46,7 @@ public class PDiscreteVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
-	public PDiscreteVariableVector(String varType, PDiscreteDomain domain, int numElements) 
+	public PDiscreteVariableVector(String varType, PDiscreteDomain domain, int numElements)
 	{
 		Node [] nodes  = new Node[numElements];
 		
@@ -50,7 +55,7 @@ public class PDiscreteVariableVector extends PVariableVector
 			//TODO: do we really want that here?
 			int id = NodeId.getNext();
 
-			Discrete v = new Discrete(id, (DiscreteDomain)domain.getModelerObject(),varType);
+			Discrete v = new Discrete(id, domain.getModelerObject(),varType);
 			nodes[i] = v;
 		}
 		
@@ -62,13 +67,27 @@ public class PDiscreteVariableVector extends PVariableVector
 		super(variables);
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isDiscrete()
+	{
+		return true;
+	}
+	
+	/*---------------------------
+	 * PDiscreteVariable methods
+	 */
+	
 	private Discrete getDiscreteVariable(int index)
 	{
 		return (Discrete)getModelerNode(index);
 	}
 	
-	public void setInput(int [] indices,double [][] inputs) 
-	{		
+	public void setInput(int [] indices,double [][] inputs)
+	{
 		for (int i = 0; i < indices.length; i++)
 		{
 			int index = indices[i];
@@ -76,8 +95,8 @@ public class PDiscreteVariableVector extends PVariableVector
 		}
 	}
 	
-	public void setFixedValueIndices(int[] indices, int[] fixedValueIndices) 
-	{		
+	public void setFixedValueIndices(int[] indices, int[] fixedValueIndices)
+	{
 		for (int i = 0; i < indices.length; i++)
 			getDiscreteVariable(indices[i]).setFixedValueIndex(fixedValueIndices[i]);
 	}
@@ -111,7 +130,7 @@ public class PDiscreteVariableVector extends PVariableVector
 		
 	}
 
-	public Object [] getBeliefs(int [] indices) 
+	public Object [] getBeliefs(int [] indices)
 	{
 		Object [] beliefs = new Object[indices.length];
 		
@@ -130,22 +149,23 @@ public class PDiscreteVariableVector extends PVariableVector
 		return valueIndices;
 	}
 	
-	public double [][] getInput(int [] indices) 
+	public double [][] getInput(int [] indices)
 	{
 		double [][] output = new double[size()][];
 		for (int i = 0; i < indices.length; i++)
-			output[i] = (double[])getDiscreteVariable(indices[i]).getInput();
+			output[i] = getDiscreteVariable(indices[i]).getInput();
 		
 		return output;
 	}
 
 	
 	@Override
-	public PNodeVector createNodeVector(Node [] nodes) 
+	public PNodeVector createNodeVector(Node [] nodes)
 	{
 		return new PDiscreteVariableVector(nodes);
 	}
 	
+	@Override
 	public PDomain getDomain()
 	{
 		return new PDiscreteDomain(getDiscreteVariable(0).getDiscreteDomain());

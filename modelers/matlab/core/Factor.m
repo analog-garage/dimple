@@ -56,7 +56,7 @@ classdef Factor < Node
             
             for i = 1:length(variables)
                 var = vars.getSlice(i-1);
-                domain = cell(var.getDomain());
+                domain = wrapProxyObject(var.getDomain());
                 indices = 0;
                 variables{i} = Variable(domain,'existing',var,indices);
             end

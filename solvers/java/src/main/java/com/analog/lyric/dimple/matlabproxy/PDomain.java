@@ -16,17 +16,33 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.Domain;
+import net.jcip.annotations.Immutable;
 
-public class PDomain 
+import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.util.misc.Matlab;
+
+@Immutable
+@Matlab
+public class PDomain extends PObject
 {
-	private Domain _domain;
+	private final Domain _domain;
 	
-	public PDomain(Domain domain)
+	PDomain(Domain domain)
 	{
 		_domain = domain;
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+
+	@Override
+	public boolean isDomain()
+	{
+		return true;
+	}
+	
+	@Override
 	public Domain getModelerObject()
 	{
 		return _domain;

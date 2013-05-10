@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.model;
 
-public abstract class Domain 
+public abstract class Domain
 {
-	public abstract boolean isDiscrete();
-	public abstract boolean isJoint();
+	public boolean isDiscrete() { return false; }
+	public boolean isJoint() { return false; }
+	public boolean isReal() { return false; }
 }

@@ -110,13 +110,13 @@ public class FactorTableBase
 		return copy;
 	}
 	
-	public void changeIndices(int [][] indices) 
+	public void changeIndices(int [][] indices)
 	{
 		check(indices,_weights);
 		_indices = indices;
 	}
 	
-	public void changeWeights(double [] probs) 
+	public void changeWeights(double [] probs)
 	{
 		check(_indices,probs);
 		_weights = probs;
@@ -249,7 +249,7 @@ public class FactorTableBase
 		try
 		{
 			s.append(
-					String.format("ComboTable  r:%d  c:%d  w:%d\n"
+					String.format("FactorTable  r:%d  c:%d  w:%d\n"
 							,_indices.length
 							,_indices[0].length
 							,_weights.length));

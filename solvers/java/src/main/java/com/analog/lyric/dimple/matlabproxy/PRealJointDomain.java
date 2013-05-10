@@ -16,33 +16,64 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import net.jcip.annotations.Immutable;
+
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.util.misc.Matlab;
 
-public class PRealJointDomain extends PDomain 
+@Immutable
+@Matlab
+public class PRealJointDomain extends PDomain
 {
+	/*---------------
+	 * Construction
+	 */
+	
 	public PRealJointDomain(RealJointDomain domain)
 	{
 		super(domain);
 	}
 
-	public PRealJointDomain(Object [] domains) 
-	{		
+	/**
+	 * Construct from an array containing {@link PRealDomain}s.
+	 */
+	public PRealJointDomain(Object [] domains)
+	{
 		super(new RealJointDomain(unwrapRealDomains(domains)));
-		// TODO Auto-generated constructor stub
 	}
+	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public RealJointDomain getModelerObject()
+	{
+		return (RealJointDomain)super.getModelerObject();
+	}
+	
+	@Override
+	public boolean isJoint()
+	{
+		return true;
+	}
+	
+	/*--------------------------
+	 * PRealJointDomain methods
+	 */
 	
 	private static RealDomain [] unwrapRealDomains(Object [] domains)
 	{
 		RealDomain [] rdomains = new RealDomain[domains.length];
 		for (int i = 0; i < rdomains.length; i++)
-			rdomains[i] = (RealDomain) ((PRealDomain)domains[i]).getModelerObject();
+			rdomains[i] = ((PRealDomain)domains[i]).getModelerObject();
 		return rdomains;
 		
 	}
 
 	public int getNumVars()
 	{
-		return ((RealJointDomain)getModelerObject()).getNumVars();
+		return getModelerObject().getNumVars();
 	}
 }

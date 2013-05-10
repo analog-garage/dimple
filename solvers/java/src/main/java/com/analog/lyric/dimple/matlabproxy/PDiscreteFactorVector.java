@@ -18,35 +18,50 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.util.misc.Matlab;
 
-public class PDiscreteFactorVector extends PFactorVector 
+@Matlab
+public class PDiscreteFactorVector extends PFactorVector
 {
 	public PDiscreteFactorVector(Node [] nodes)
 	{
 		super(nodes);
 	}
-	public PDiscreteFactorVector(DiscreteFactor f) 
+	public PDiscreteFactorVector(DiscreteFactor f)
 	{
 		super(f);
 	}
 
+	/*-----------------
+	 * PObject methods
+	 */
+	
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) 
-	{
-		return new PDiscreteFactorVector(nodes);
-	}
-
 	public boolean isDiscrete()
 	{
 		return true;
 	}
+	
+	/*---------------------
+	 * PNodeVector methods
+	 */
+
+	@Override
+	public PNodeVector createNodeVector(Node[] nodes)
+	{
+		return new PDiscreteFactorVector(nodes);
+	}
+
+	/*-------------------------------
+	 * PDiscreteFactorVector methods
+	 */
 	
 	private DiscreteFactor getDiscreteFactor(int index)
 	{
 		return (DiscreteFactor)getModelerNode(0);
 	}
 	
-	public PFactorTable getFactorTable() 
+	public PFactorTable getFactorTable()
 	{
 		return new PFactorTable(getDiscreteFactor(0).getFactorTable());
 	}
@@ -64,7 +79,7 @@ public class PDiscreteFactorVector extends PFactorVector
 		
 	}
 	
-	public Object [] getBeliefs(int [] indices) 
+	public Object [] getBeliefs(int [] indices)
 	{
 		Object [] beliefs = new Object[indices.length];
 		
@@ -76,7 +91,7 @@ public class PDiscreteFactorVector extends PFactorVector
 		return beliefs;
 	}
 
-	public int[][] getPossibleBeliefIndices(int index) 
+	public int[][] getPossibleBeliefIndices(int index)
 	{
 		return getDiscreteFactor(index).getPossibleBeliefIndices();
 	}

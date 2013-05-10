@@ -17,7 +17,9 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.util.misc.Matlab;
 
+@Matlab
 public class PRealDomain extends PDomain
 {
 	public PRealDomain(RealDomain domain)
@@ -25,12 +27,32 @@ public class PRealDomain extends PDomain
 		super(domain);
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public RealDomain getModelerObject()
+	{
+		return (RealDomain)super.getModelerObject();
+	}
+	
+	@Override
+	public boolean isReal()
+	{
+		return true;
+	}
+	
+	/*---------------------
+	 * PRealDomain methods
+	 */
+	
 	public double getUpperBound()
 	{
-		return ((RealDomain)getModelerObject()).getUpperBound();
+		return getModelerObject().getUpperBound();
 	}
 	public double getLowerBound()
 	{
-		return ((RealDomain)getModelerObject()).getLowerBound();
+		return getModelerObject().getLowerBound();
 	}
 }

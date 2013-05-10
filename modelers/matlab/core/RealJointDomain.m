@@ -20,10 +20,16 @@ classdef RealJointDomain < Domain
         function obj = RealJointDomain(varargin)
             
             %should allow either a number or a vector of RealDomains
-            if length(varargin) == 1 && isnumeric(varargin{1})
-                domains = cell(varargin{1},1);
-                for i = 1:length(domains)
-                    domains{i} = RealDomain();
+            if length(varargin) == 1
+                arg = varargin{1};
+                if isa(arg, 'com.analog.lyric.dimple.matlabproxy.PRealJointDomain')
+                    obj.IDomain = arg;
+                    return;
+                elseif isnumeric(arg)
+                    domains = cell(arg,1);
+                    for i = 1:length(domains)
+                        domains{i} = RealDomain();
+                    end
                 end
             else
                 domains = varargin;

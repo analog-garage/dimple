@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.util.misc.Matlab;
 
-public class PFactorFunction 
+@Matlab
+public class PFactorFunction extends PObject
 {
 	private FactorFunction _factorFunction;
 	
@@ -27,8 +29,19 @@ public class PFactorFunction
 		_factorFunction = factorFunc;
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+
+	@Override
 	public FactorFunction getModelerObject()
 	{
 		return _factorFunction;
+	}
+	
+	@Override
+	public boolean isFactorFunction()
+	{
+		return true;
 	}
 }

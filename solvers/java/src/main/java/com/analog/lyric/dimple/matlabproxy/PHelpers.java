@@ -47,6 +47,8 @@ import com.analog.lyric.dimple.model.repeated.MultivariateDataSink;
 import com.analog.lyric.dimple.model.repeated.MultivariateDataSource;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
+// TODO: how many of these functions are intended to be invoked from MATLAB? And how many don't need to be public?
+
 public class PHelpers
 {
 	public static Node convertToNode(Object obj)
@@ -84,7 +86,7 @@ public class PHelpers
 			if (!domains[i].getModelerObject().isDiscrete())
 				throw new RuntimeException("ack");
 			
-			retval[i] = (DiscreteDomain)domains[i].getModelerObject();
+			retval[i] = domains[i].getModelerObject();
 		}
 	
 		

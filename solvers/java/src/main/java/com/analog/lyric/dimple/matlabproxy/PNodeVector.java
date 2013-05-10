@@ -20,14 +20,25 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Matlab;
 
-public abstract class PNodeVector 
+@Matlab
+public abstract class PNodeVector extends PObject
 {
+	/*
+	 * State
+	 */
+	
 	private Node [] _nodes = new Node[0];
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public PNodeVector() {}
 
@@ -36,6 +47,20 @@ public abstract class PNodeVector
 		_nodes = nodes.clone();
 	}
 
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isVector()
+	{
+		return true;
+	}
+	
+	/*---------------------
+	 * PNodeVector methods
+	 */
+	
 	public void setNodes(Node [] nodes)
 	{
 		_nodes = nodes;
@@ -121,7 +146,7 @@ public abstract class PNodeVector
 		return ids;
 	}
 	
-	public double getScore() 
+	public double getScore()
 	{
 		double sum = 0;
 
@@ -151,13 +176,13 @@ public abstract class PNodeVector
 		return sum;
 	}
 	
-	public void setName(String name) 
+	public void setName(String name)
 	{
 		for (Node variable : _nodes)
 			variable.setName(name);
 	}
 	
-	public void setNames(String baseName) 
+	public void setNames(String baseName)
 	{
 		for(int i = 0; i < _nodes.length; ++i)
 		{
@@ -165,10 +190,10 @@ public abstract class PNodeVector
 		}
 	}
 	
-	public void setLabel(String name) 
+	public void setLabel(String name)
 	{
 		for (Node variable : _nodes)
-			variable.setLabel(name);		
+			variable.setLabel(name);
 	}
 	
 	public String [] getNames()
@@ -258,7 +283,7 @@ public abstract class PNodeVector
 		return ports;
 	}
 	
-	public void update() 
+	public void update()
 	{
 		for (int i = 0; i < _nodes.length; i++)
 			_nodes[i].update();
@@ -269,7 +294,7 @@ public abstract class PNodeVector
 		updateEdge(getPortNum(nodeVector));
 	}
 	
-	public void updateEdge(int portNum) 
+	public void updateEdge(int portNum)
 	{
 		for (int i = 0; i < _nodes.length; i++)
 			_nodes[i].updateEdge(portNum);
@@ -311,7 +336,7 @@ public abstract class PNodeVector
 				boolean keepTrying = false;
 				for (int i = 0; i < _nodes.length; i++)
 				{
-					try 
+					try
 					{
 						m.invoke(_nodes[i].getSolver(),args);
 					}
@@ -359,9 +384,4 @@ public abstract class PNodeVector
 		
 		throw new DimpleException("method not found");
 	}
-	
-	public abstract boolean isVariable();
-	public abstract boolean isFactor();
-	public abstract boolean isGraph();
-
 }

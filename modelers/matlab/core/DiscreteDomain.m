@@ -22,6 +22,11 @@ classdef DiscreteDomain < Domain
     methods
         function obj = DiscreteDomain(elements)
             if ~iscell(elements)
+                if isa(elements, 'com.analog.lyric.dimple.matlabproxy.PDiscreteDomain')
+                    obj.IDomain = elements;
+                    obj.Elements = cell(obj.IDomain.getElements())';
+                    return;
+                end
                 newdomain = cell(1,numel(elements));
                 for i = 1:numel(elements);
                     newdomain{i} = elements(i);

@@ -19,18 +19,23 @@ package com.analog.lyric.dimple.matlabproxy;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.util.misc.Matlab;
 
 
 
 /*
- * This class provides vectors of Reals to allow matlab to set multiple inputs 
+ * This class provides vectors of Reals to allow matlab to set multiple inputs
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
+@Matlab
 public class PRealVariableVector extends PVariableVector
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public PRealVariableVector(Real real)
 	{
 		super(new Node [] {real});
@@ -41,7 +46,7 @@ public class PRealVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
-	public PRealVariableVector(String varType, PRealDomain domain, Object input, int numElements) 
+	public PRealVariableVector(String varType, PRealDomain domain, Object input, int numElements)
 	{
 		Node [] nodes = new Node[numElements];
 		
@@ -50,7 +55,7 @@ public class PRealVariableVector extends PVariableVector
 			//TODO: do we really want that here?
 			int id = NodeId.getNext();
 			
-			Real v = new Real(id,varType,(RealDomain)domain.getModelerObject(),input);
+			Real v = new Real(id,varType,domain.getModelerObject(),input);
 			nodes[i] = v;
 		}
 		setNodes(nodes);
@@ -61,12 +66,36 @@ public class PRealVariableVector extends PVariableVector
 		super(variables);
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isReal()
+	{
+		return true;
+	}
+	
+	/*---------------------
+	 * PNodeVector methods
+	 */
+
+	@Override
+	public PNodeVector createNodeVector(Node[] nodes)
+	{
+		return new PRealVariableVector(nodes);
+	}
+
+	/*-----------------------------
+	 * PRealVariableVector methods
+	 */
+	
 	private Real getRealVariable(int index)
 	{
 		return (Real)getModelerNode(index);
 	}
 	
-	public Object [] getBeliefs(int [] indices) 
+	public Object [] getBeliefs(int [] indices)
 	{
 		Object [] beliefs = new Object[indices.length];
 		
@@ -78,15 +107,15 @@ public class PRealVariableVector extends PVariableVector
 	}
 
 	
-	public void setInput(int [] indices, Object factorFunction) 
+	public void setInput(int [] indices, Object factorFunction)
 	{
 		for (int i = 0; i < indices.length; i++)
 			getRealVariable(indices[i]).setInputObject(factorFunction);
 	}
 
 	
-	public void setFixedValues(int[] indices, double[] fixedValues) 
-	{		
+	public void setFixedValues(int[] indices, double[] fixedValues)
+	{
 		for (int i = 0; i < indices.length; i++)
 			getRealVariable(indices[i]).setFixedValue(fixedValues[i]);
 	}
@@ -109,7 +138,7 @@ public class PRealVariableVector extends PVariableVector
 
 	
 	
-	public Object[] getInput(int[] indices) 
+	public Object[] getInput(int[] indices)
 	{
 		Object[] output = new Object[size()];
 		for (int i = 0; i < indices.length; i++)
@@ -118,10 +147,4 @@ public class PRealVariableVector extends PVariableVector
 		return output;
 	}
 	
-	@Override
-	public PNodeVector createNodeVector(Node[] nodes) 
-	{
-		return new PRealVariableVector(nodes);
-	}
-
 }

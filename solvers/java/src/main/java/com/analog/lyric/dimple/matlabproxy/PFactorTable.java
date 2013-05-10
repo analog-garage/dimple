@@ -17,10 +17,16 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.util.misc.Matlab;
 
-public class PFactorTable 
+@Matlab
+public class PFactorTable extends PObject
 {
 	private FactorTable _table;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public PFactorTable(PDiscreteDomain [] domains)
 	{
@@ -41,6 +47,32 @@ public class PFactorTable
 	{
 		_table = table;
 	}
+	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public FactorTable getModelerObject()
+	{
+		return _table;
+	}
+	
+	@Override
+	public boolean isDiscrete()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean isFactorTable()
+	{
+		return true;
+	}
+	
+	/*----------------------
+	 * PFactorTable methods
+	 */
 	
 	public void normalize(int [] directedTo)
 	{
@@ -78,28 +110,19 @@ public class PFactorTable
 		_table.set(indices, value);
 	}
 	
-	public void changeWeights(double [] values) 
+	public void changeWeights(double [] values)
 	{
 		_table.changeWeights(values);
 	}
 	
-	public void changeIndices(int [][] indices) 
+	public void changeIndices(int [][] indices)
 	{
 		_table.changeIndices(indices);
 	}
 	
-	public void change(int [][] indices, double [] weights) 
+	public void change(int [][] indices, double [] weights)
 	{
 		_table.change(indices,weights);
 	}
 
-	public FactorTable getModelerObject()
-	{
-		return _table;
-	}
-	
-	public boolean isFactorTable()
-	{
-		return true;
-	}
 }

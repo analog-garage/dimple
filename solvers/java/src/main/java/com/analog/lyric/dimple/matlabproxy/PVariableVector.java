@@ -20,12 +20,10 @@ import java.util.ArrayList;
 
 import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.util.misc.Matlab;
 
 
 
@@ -34,8 +32,12 @@ import com.analog.lyric.dimple.model.VariableBase;
  * simultaneously.  This is important for performance reasons.  (MATLAB is slow to
  * manipulate lots of objects)
  */
+@Matlab
 public class PVariableVector extends PNodeVector
 {
+	/*--------------
+	 * Construction
+	 */
 	
 	public PVariableVector()
 	{
@@ -53,8 +55,31 @@ public class PVariableVector extends PNodeVector
 		}
 	}
 	
+	/*------------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isVariable()
+	{
+		return true;
+	}
 
-	private VariableBase getVariable(int index)
+	/*---------------------
+	 * PNodeVector methods
+	 */
+	
+	@Override
+	public PNodeVector createNodeVector(Node[] nodes)
+	{
+		return new PVariableVector(nodes);
+	}
+	
+	/*-------------------------
+	 * PVariableVector methods
+	 */
+	
+	public VariableBase getVariable(int index)
 	{
 		return (VariableBase)getModelerNode(index);
 	}
@@ -119,43 +144,11 @@ public class PVariableVector extends PNodeVector
 		return retval;
 	}
 	
-	public boolean isDiscrete()
-	{
-		return (getVariable(0) instanceof Discrete);
-	}
-
-	public boolean isReal()
-	{
-		return (getVariable(0) instanceof Real);
-	}
-	
 	public PDomain getDomain()
 	{
 		return PHelpers.wrapDomain(getVariable(0).getDomain());
 	}
 	
-	public boolean isJoint()
-	{
-		return (getVariable(0) instanceof RealJoint);
-	}
-	
-	@Override
-	public boolean isVariable()
-	{
-		return true;
-	}
-	@Override
-	public boolean isFactor()
-	{
-		return false;
-	}
-	
-	@Override
-	public boolean isGraph()
-	{
-		return false;
-	}
-
 	VariableBase [] getModelerVariables()
 	{
 		Node [] nodes = getModelerNodes();
@@ -165,12 +158,6 @@ public class PVariableVector extends PNodeVector
 		return retval;
 	}
 
-	@Override
-	public PNodeVector createNodeVector(Node[] nodes)
-	{
-		return new PVariableVector(nodes);
-	}
-	
 	public void setProperty(String key,Object value)
 	{
 		for (VariableBase vb : getVariableArray())

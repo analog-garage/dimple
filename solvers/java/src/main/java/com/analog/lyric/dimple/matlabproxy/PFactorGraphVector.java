@@ -46,9 +46,15 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.Matlab;
 
+@Matlab
 public class PFactorGraphVector extends PFactorVector
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public PFactorGraphVector(FactorGraph f)
 	{
 		super(new Node [] {f});
@@ -59,26 +65,37 @@ public class PFactorGraphVector extends PFactorVector
 		super(nodes);
 	}
 
+	/*-----------------
+	 * PObject methods
+	 */
 
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) {
-		return new PFactorGraphVector(nodes);
+	public boolean isDiscrete()
+	{
+		for (Factor f : getGraph().getFactorsFlat())
+			if (!f.isDiscrete())
+				return false;
+		
+		return true;
 	}
-
-	@Override
-	public boolean isVariable() {
-		return false;
-	}
-
-	@Override
-	public boolean isFactor() {
-		return false;
-	}
-
+	
 	@Override
 	public boolean isGraph() {
 		return true;
 	}
+
+	/*---------------------
+	 * PNodeVector methods
+	 */
+	
+	@Override
+	public PNodeVector createNodeVector(Node[] nodes) {
+		return new PFactorGraphVector(nodes);
+	}
+	
+	/*-----------------------------
+	 * PFactorGraphVector methods
+	 */
 
 	private FactorGraph getGraph()
 	{
@@ -106,9 +123,9 @@ public class PFactorGraphVector extends PFactorVector
 		return getGraph().getNumStepsInfinite();
 	}
 	
-	public PFactorGraphVector addGraph(PFactorGraphVector childGraph, PVariableVector varVector) 
+	public PFactorGraphVector addGraph(PFactorGraphVector childGraph, PVariableVector varVector)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	return new PFactorGraphVector(getGraph().addGraph(childGraph.getGraph(), varVector.getVariableArray()));
@@ -116,44 +133,44 @@ public class PFactorGraphVector extends PFactorVector
 		
 	}
 	
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
 		return getGraph().customFactorExists(funcName);
 	}
 	
-	public PFactorVector createFactor(PFactorTable factorTable, Object [] vars) 
+	public PFactorVector createFactor(PFactorTable factorTable, Object [] vars)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	Factor f = getGraph().addFactor(new TableFactorFunction("table", factorTable.getModelerObject()),PHelpers.convertToMVariablesAndConstants(vars));
     	
     	if (f.isDiscrete())
     		return new PDiscreteFactorVector((DiscreteFactor) f);
-    	else 
+    	else
     		return new PFactorVector(f);
 		
-	}	
+	}
 
 
-	public PFactorVector createFactor(FactorFunction factorFunction, Object [] vars) 
+	public PFactorVector createFactor(FactorFunction factorFunction, Object [] vars)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	Factor f = getGraph().addFactor(factorFunction,PHelpers.convertToMVariablesAndConstants(vars));
     	
     	if (f.isDiscrete())
     		return new PDiscreteFactorVector((DiscreteFactor) f);
-    	else 
+    	else
     		return new PFactorVector(f);
 		
-	}	
+	}
 	
-	public PFactorVector createFactor(PFactorFunction factorFunction, Object [] vars) 
+	public PFactorVector createFactor(PFactorFunction factorFunction, Object [] vars)
 	{
     	
     	FactorFunction ff = factorFunction.getModelerObject();
@@ -162,9 +179,9 @@ public class PFactorGraphVector extends PFactorVector
 	
 	
 	
-    public void solve() 
+    public void solve()
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	getGraph().solve();
@@ -177,16 +194,16 @@ public class PFactorGraphVector extends PFactorVector
     
     public void continueSolve()
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	getGraph().continueSolve();
     	
     }
     
-    public void solveOneStep() 
+    public void solveOneStep()
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	getGraph().solveOneStep();
@@ -208,23 +225,23 @@ public class PFactorGraphVector extends PFactorVector
     	getGraph().getSolver().startSolver();
     }
     
-	public PVariableVector getVariableVector(int relativeNestingDepth,int forceIncludeBoundaryVariables) 
+	public PVariableVector getVariableVector(int relativeNestingDepth,int forceIncludeBoundaryVariables)
 	{
-    	if (isSolverRunning()) 
+    	if (isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
 		PVariableVector tmp =  PHelpers.convertToVariableVector(getGraph().getVariables(relativeNestingDepth,forceIncludeBoundaryVariables!=0));
 		return tmp;
 	}
 	
-    public PFactorVector getFactors(int relativeNestingDepth) 
+    public PFactorVector getFactors(int relativeNestingDepth)
     {
     	return getFactors(getGraph().getFactors(relativeNestingDepth));
     }
 
-    public PFactorVector getFactors(MapList<FactorBase> factors) 
+    public PFactorVector getFactors(MapList<FactorBase> factors)
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
     	
@@ -241,19 +258,19 @@ public class PFactorGraphVector extends PFactorVector
     	//return new PFactorVector(nodes);
     }
     
-	public int [][] getAdjacencyMatrix() 
+	public int [][] getAdjacencyMatrix()
 	{
 		return getGraph().getAdjacencyMatrix();
 	}
 
     //Returns an adjacency matrix with the given nesting depth.
-	public int [][] getAdjacencyMatrix(int relativeNestingDepth) 
+	public int [][] getAdjacencyMatrix(int relativeNestingDepth)
 	{
 		return getGraph().getAdjacencyMatrix(relativeNestingDepth);
 	}
 	
 	//Returns an adjacency matrix of the given objects.
-	public int [][] getAdjacencyMatrix(Object [] objects) 
+	public int [][] getAdjacencyMatrix(Object [] objects)
 	{
 		ArrayList<Node> alNodes = new ArrayList<Node>();
 		
@@ -315,14 +332,14 @@ public class PFactorGraphVector extends PFactorVector
 
 	}
 	
-	public void setSolver(IFactorGraphFactory solver) 
+	public void setSolver(IFactorGraphFactory solver)
 	{
 		getGraph().setSolverFactory(solver);
 	}
 
-	public PFactorVector createCustomFactor(String funcName,PVariableVector varVector) 
+	public PFactorVector createCustomFactor(String funcName,PVariableVector varVector)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
 		VariableBase [] vars = varVector.getVariableArray();
@@ -331,20 +348,20 @@ public class PFactorGraphVector extends PFactorVector
 	}
 
 	
-	public PFactorVector createCustomFactor(String funcName, Object [] variables) 
+	public PFactorVector createCustomFactor(String funcName, Object [] variables)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	Factor f = getGraph().addFactor(new NopFactorFunction(funcName),PHelpers.convertToMVariablesAndConstants(variables));
 		return new PFactorVector(f);
 	}
 
-	public PFactorGraphVector [] getNestedGraphs() 
+	public PFactorGraphVector [] getNestedGraphs()
 	{
 		Collection<FactorGraph> graphs = getGraph().getNestedGraphs();
 		
-		PFactorGraphVector [] retval = new PFactorGraphVector[graphs.size()]; 
+		PFactorGraphVector [] retval = new PFactorGraphVector[graphs.size()];
 		
 		int i = 0;
 		for (FactorGraph g : graphs)
@@ -356,7 +373,7 @@ public class PFactorGraphVector extends PFactorVector
 		return retval;
 	}
 
-	public boolean isTree(int relativeNestingDepth) 
+	public boolean isTree(int relativeNestingDepth)
 	{
 		return getGraph().isTree(relativeNestingDepth);
 	}
@@ -365,7 +382,7 @@ public class PFactorGraphVector extends PFactorVector
 
 
 
-	public PNodeVector [] depthFirstSearch(PNodeVector root, int searchDepth, int relativeNestingDepth) 
+	public PNodeVector [] depthFirstSearch(PNodeVector root, int searchDepth, int relativeNestingDepth)
 	{
 		if (root.size() != 1)
 			throw new DimpleException("choose one root");
@@ -383,10 +400,10 @@ public class PFactorGraphVector extends PFactorVector
 		return retval;
 	}
 	
-	public PFactorGraphStream addRepeatedFactor(PFactorGraphVector nestedGraph, int bufferSize,Object ... vars) 
+	public PFactorGraphStream addRepeatedFactor(PFactorGraphVector nestedGraph, int bufferSize,Object ... vars)
 	{
 		//Object [] arr = new Object[vars.length];
-		ArrayList<Object> al = new ArrayList<Object>(); 
+		ArrayList<Object> al = new ArrayList<Object>();
 				
 		for (int i = 0; i < vars.length; i++)
 		{
@@ -459,13 +476,13 @@ public class PFactorGraphVector extends PFactorVector
 		this.getGraph().estimateParameters(mfandt,numRestarts,numSteps,stepScaleFactor);
 	}
 
-	public void advance() 
+	public void advance()
 	{
 		getGraph().advance();
 	}
 
 	
-	public boolean hasNext() 
+	public boolean hasNext()
 	{
 		return getGraph().hasNext();
 	}
@@ -492,7 +509,7 @@ public class PFactorGraphVector extends PFactorVector
 	 * 
 	 * TODO: Push this down
 	 */
-	public void setSchedule(Object [] schedule) 
+	public void setSchedule(Object [] schedule)
 	{
 		ArrayList<IScheduleEntry> alEntries = new ArrayList<IScheduleEntry>();
 		
@@ -539,7 +556,7 @@ public class PFactorGraphVector extends PFactorVector
 		getGraph().setSchedule(new FixedSchedule(entries));
 	}
 	
-	public void removeFactor(PFactorVector factor) 
+	public void removeFactor(PFactorVector factor)
 	{
 		Node [] factors = factor.getModelerNodes();
 		
@@ -548,14 +565,14 @@ public class PFactorGraphVector extends PFactorVector
 	}
 	
 	
-	public String serializeToXML(String FgName, String targetDirectory) 
+	public String serializeToXML(String FgName, String targetDirectory)
 	{
 		return getGraph().serializeToXML(FgName, targetDirectory);
 	}
 
-	public void initialize() 
+	public void initialize()
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	getGraph().initialize();
@@ -563,14 +580,14 @@ public class PFactorGraphVector extends PFactorVector
     
 
     
-    public PFactorVector [] getNonGraphFactors(int relativeNestingDepth) 
+    public PFactorVector [] getNonGraphFactors(int relativeNestingDepth)
     {
     	return getNonGraphFactors(getGraph().getNonGraphFactors(relativeNestingDepth));
     }
     
-    public PFactorVector [] getNonGraphFactors(MapList<Factor> factors) 
+    public PFactorVector [] getNonGraphFactors(MapList<Factor> factors)
     {
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
     	
@@ -584,7 +601,7 @@ public class PFactorGraphVector extends PFactorVector
 	}
 	
 
-	public PFactorGraphVector getParentGraph() 
+	public PFactorGraphVector getParentGraph()
 	{
 		FactorGraph mgraph = getGraph().getParentGraph();
 		if(mgraph != null)
@@ -593,21 +610,21 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorGraphVector getRootGraph() 
+	public PFactorGraphVector getRootGraph()
 	{
 		return new PFactorGraphVector(getGraph().getRootGraph());
 	}
 
-	public PVariableVector getVariableByName(String name) 
+	public PVariableVector getVariableByName(String name)
 	{
 		VariableBase mo = getGraph().getVariableByName(name);
 		if (mo != null)
 			return (PVariableVector)PHelpers.wrapObject(mo);
-		else 
+		else
 			return null;
 	}
 	
-	public PFactorVector getFactorByName(String name) 
+	public PFactorVector getFactorByName(String name)
 	{
 		Factor mo = getGraph().getFactorByName(name);
 		if(mo != null)
@@ -616,7 +633,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorGraphVector getGraphByName(String name) 
+	public PFactorGraphVector getGraphByName(String name)
 	{
 		FactorGraph mo = getGraph().getGraphByName(name);
 		if(mo != null)
@@ -625,7 +642,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PVariableVector getVariableByUUID(UUID uuid) 
+	public PVariableVector getVariableByUUID(UUID uuid)
 	{
 		Discrete mo = getGraph().getVariableByUUID(uuid);
 		if(mo != null)
@@ -634,7 +651,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorVector getFactorByUUID(UUID uuid) 
+	public PFactorVector getFactorByUUID(UUID uuid)
 	{
 		Factor mo = getGraph().getFactorByUUID(uuid);
 		if(mo != null)
@@ -643,7 +660,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorGraphVector getGraphByUUID(UUID uuid) 
+	public PFactorGraphVector getGraphByUUID(UUID uuid)
 	{
 		FactorGraph mo = getGraph().getGraphByUUID(uuid);
 		if(mo != null)
@@ -652,9 +669,9 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public void setScheduler(IScheduler scheduler) 
+	public void setScheduler(IScheduler scheduler)
 	{
-    	if (getGraph().isSolverRunning()) 
+    	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
     	getGraph().setScheduler(scheduler);
@@ -674,16 +691,16 @@ public class PFactorGraphVector extends PFactorVector
 		return retval;
 	}
 	
-	public FactorGraphDiffs getFactorGraphDiffsByName(PFactorGraphVector b) 
+	public FactorGraphDiffs getFactorGraphDiffsByName(PFactorGraphVector b)
 	{
 		return FactorGraphDiffs.getFactorGraphDiffs(
-				   getGraph(), 
+				   getGraph(),
 				   b.getGraph(),
 				   false,
 				   true);
-	}	
+	}
 	
-	public PFactorVector joinFactors(Object [] factors) 
+	public PFactorVector joinFactors(Object [] factors)
 	{
 		//convert Object [] to Factor array
 		Factor [] facs = new Factor[factors.length];
@@ -694,11 +711,11 @@ public class PFactorGraphVector extends PFactorVector
 			facs[i] = (Factor)PHelpers.convertToNode(factors[i]);
 		}
 		
-		Factor f = getGraph().join(facs);		
+		Factor f = getGraph().join(facs);
 		return (PFactorVector)PHelpers.wrapObject(f);
 	}
 	
-	public PVariableVector joinVariables(Object [] variables) 
+	public PVariableVector joinVariables(Object [] variables)
 	{
 		VariableBase [] vars = new VariableBase[variables.length];
 		
@@ -715,7 +732,7 @@ public class PFactorGraphVector extends PFactorVector
 	}
 
 	
-	public PVariableVector split(PVariableVector variable, Object [] factors) 
+	public PVariableVector split(PVariableVector variable, Object [] factors)
 	{
 		Factor [] pfactors = {};
 		
@@ -735,16 +752,6 @@ public class PFactorGraphVector extends PFactorVector
 		return getGraph().getBetheFreeEnergy();
 	}
 
-	
-	public boolean isDiscrete()
-	{
-		for (Factor f : getGraph().getFactorsFlat())
-			if (!f.isDiscrete())
-				return false;
-		
-		return true;
-	}	
-	
 	
 	// For operating collectively on groups of variables that are not already part of a variable vector
 	public int defineVariableGroup(Object[] variables)

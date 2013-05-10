@@ -18,10 +18,15 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.util.misc.Matlab;
 
+@Matlab
 public class PTableFactorFunction extends PFactorFunction
 {
-
+	/*--------------
+	 * Construction
+	 */
+	
 	public PTableFactorFunction(TableFactorFunction tff)
 	{
 		super(tff);
@@ -42,6 +47,20 @@ public class PTableFactorFunction extends PFactorFunction
 		super(new TableFactorFunction(name, new FactorTable(indices,values, PHelpers.convertDomains(domains))));
 	}
 
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isDiscrete()
+	{
+		return true;
+	}
+	
+	/*------------------------------
+	 * PTableFactorFunction methods
+	 */
+	
 	public PFactorTable getFactorTable()
 	{
 		return new PFactorTable(((TableFactorFunction)getModelerObject()).getFactorTable());

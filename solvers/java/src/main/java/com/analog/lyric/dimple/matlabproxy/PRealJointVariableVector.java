@@ -19,18 +19,22 @@ package com.analog.lyric.dimple.matlabproxy;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.RealJoint;
-import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.util.misc.Matlab;
 
-
+@Matlab
 public class PRealJointVariableVector extends PVariableVector
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public PRealJointVariableVector(Node [] nodes)
 	{
 		super(nodes);
 	}
 	
-	public PRealJointVariableVector(String varType, PRealJointDomain domain, int numElements) 
+	public PRealJointVariableVector(String varType, PRealJointDomain domain, int numElements)
 	{
 		Node [] nodes = new Node[numElements];
 		
@@ -38,7 +42,7 @@ public class PRealJointVariableVector extends PVariableVector
 		{
 			//TODO: do we really want that here?
 			//int id = NodeId.getNext();
-			RealJoint v = new RealJoint(NodeId.getNext(),(RealJointDomain)domain.getModelerObject(),varType);
+			RealJoint v = new RealJoint(NodeId.getNext(),domain.getModelerObject(),varType);
 			nodes[i] = v;
 		}
 		setNodes(nodes);
@@ -48,19 +52,33 @@ public class PRealJointVariableVector extends PVariableVector
 	{
 		super(variables);
 	}
+	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public boolean isJoint()
+	{
+		return true;
+	}
+	
+	/*-----------------------------------
+	 * PRealJointVariableVector methods
+	 */
 		
 	private RealJoint getRealJointVariable(int index)
 	{
 		return (RealJoint)getModelerNode(index);
 	}
 	
-	public void setInput(int [] indices, Object input) 
+	public void setInput(int [] indices, Object input)
 	{
 		for (int i = 0; i < indices.length; i++)
 			getRealJointVariable(indices[i]).setInputObject(input);
 	}
 
-	public Object [] getBeliefs(int [] indices) 
+	public Object [] getBeliefs(int [] indices)
 	{
 		Object [] beliefs = new Object[indices.length];
 		
@@ -72,7 +90,7 @@ public class PRealJointVariableVector extends PVariableVector
 	}
 	
 	@Override
-	public PNodeVector createNodeVector(Node[] nodes) 
+	public PNodeVector createNodeVector(Node[] nodes)
 	{
 		return new PRealJointVariableVector(nodes);
 	}

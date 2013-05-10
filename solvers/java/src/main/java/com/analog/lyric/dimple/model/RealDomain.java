@@ -23,7 +23,7 @@ public class RealDomain extends Domain
 	
 	public RealDomain() {}
 	public RealDomain(double[] domain)  {this(domain[0], domain[1]);}
-	public RealDomain(double lower, double upper) 
+	public RealDomain(double lower, double upper)
 	{
 		if (lower > upper) throw new DimpleException("Upper bound must be greater than lower bound");
 		_lowerBound = lower;
@@ -39,11 +39,12 @@ public class RealDomain extends Domain
 	}
 	
 	@Override
-	public boolean isDiscrete() 
+	public boolean isReal()
 	{
-		return false;
+		return true;
 	}
 	
+	@Override
 	public boolean equals(Object other)
 	{
 		if (this == other)
@@ -70,14 +71,10 @@ public class RealDomain extends Domain
 		return result;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return "RealDomain: " + _lowerBound + ", " + _upperBound;
-	}
-	
-	public boolean isJoint()
-	{
-		return false;
 	}
 
 }

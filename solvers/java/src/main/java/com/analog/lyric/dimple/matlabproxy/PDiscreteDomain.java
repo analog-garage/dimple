@@ -16,8 +16,13 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.util.misc.Matlab;
+
+@Immutable
+@Matlab
 public class PDiscreteDomain extends PDomain
 {
 	public PDiscreteDomain(DiscreteDomain domain)
@@ -25,8 +30,28 @@ public class PDiscreteDomain extends PDomain
 		super(domain);
 	}
 	
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public DiscreteDomain getModelerObject()
+	{
+		return (DiscreteDomain)super.getModelerObject();
+	}
+	
+	@Override
+	public boolean isDiscrete()
+	{
+		return true;
+	}
+	
+	/*-------------------------
+	 * PDiscreteDomain methods
+	 */
+	
 	public Object [] getElements()
 	{
-		return ((DiscreteDomain)getModelerObject()).getElements();
+		return getModelerObject().getElements();
 	}
 }
