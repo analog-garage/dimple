@@ -21,7 +21,7 @@ function result = wrapProxyObject(proxyObject)
         return;
     end
         
-    if isjava(proxyObject)
+    if isjava(proxyObject) || isobject(proxyObject)
         if proxyObject.isGraph()
             result = FactorGraph('VectorObject',proxyObject);
         elseif proxyObject.isFactor()
