@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import java.util.concurrent.LinkedBlockingQueue;
+
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -54,6 +55,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
+	@Override
 	public void moveMessages(ISolverNode other)
 	{
 		SFactorGraphBase sother = (SFactorGraphBase)other;
@@ -65,7 +67,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myFactors.size(); i++)
 		{
-			ISolverFactor sf = (ISolverFactor)myFactors.getByIndex(i).getSolver();
+			ISolverFactor sf = myFactors.getByIndex(i).getSolver();
 			sf.moveMessages(otherFactors.getByIndex(i).getSolver());
 		}
 		
@@ -74,33 +76,38 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myVars.size(); i++)
 		{
-			ISolverVariable sv = (ISolverVariable)myVars.getByIndex(i).getSolver();
+			ISolverVariable sv = myVars.getByIndex(i).getSolver();
 			sv.moveNonEdgeSpecificState(otherVars.getByIndex(i).getSolver());
 		}
 		
 	}
 
 
-	public boolean customFactorExists(String funcName) 
+	@Override
+	public boolean customFactorExists(String funcName)
 	{
 		return false;
 	}
 
-	public void initialize() 
+	@Override
+	public void initialize()
 	{
 
 	}
 
-	public void setNumIterations(int numIter) 
+	@Override
+	public void setNumIterations(int numIter)
 	{
 		_numIterations = numIter;
 	}
+	@Override
 	public int getNumIterations()
 	{
 		return _numIterations;
 	}
 
-	public void update() 
+	@Override
+	public void update()
 	{
 		for (IScheduleEntry entry : _factorGraph.getSchedule())
 		{
@@ -108,20 +115,22 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 
 	}
-	public void updateEdge(int outPortNum) 
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		throw new DimpleException("Not supported");
 	}
 
-	public void iterate() 
+	public void iterate()
 	{
 		iterate(1);
 	}
 
 
-	public void iterate(int numIters) 
+	@Override
+	public void iterate(int numIters)
 	{
-		if (_numThreads == 1)	
+		if (_numThreads == 1)
 		{
 			// *** Single thread
 			for (int iterNum = 0; iterNum < numIters; iterNum++)
@@ -133,13 +142,14 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 					return;
 			}
 		}
-		else					
+		else
 		{
 			// *** Multiple threads
 			iterateMultiThreaded(numIters);
 		}
 	}
 	
+	@Override
 	public void solveOneStep()
 	{
 		iterate(_numIterations);
@@ -147,7 +157,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	
 	
 	@Override
-	public void solve() 
+	public void solve()
 	{
 			
 		_factorGraph.initialize();
@@ -170,7 +180,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			if (!infinite && i >= maxSteps)
 				break;
 			
-			getModel().advance();			
+			getModel().advance();
 			solveOneStep();
 			
 			i++;
@@ -178,6 +188,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 
+	@Override
 	public ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
@@ -188,11 +199,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 		return graph;
 	}
+	@Override
 	public ISolverFactorGraph getRootGraph()
 	{
 		return _factorGraph.getRootGraph().getSolver();
 	}
 
+	@Override
 	public double getBetheFreeEnergy()
 	{
 		return getInternalEnergy() - getBetheEntropy();
@@ -208,10 +221,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps)
 	{
-		throw new DimpleException("not supported by this solver");		
+		throw new DimpleException("not supported by this solver");
 	}
 
 	
+	@Override
 	public double getBetheEntropy()
 	{
 		double sum = 0;
@@ -227,6 +241,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return sum;
 	}
 
+	@Override
 	public double getScore()
 	{
 		
@@ -243,6 +258,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 	
 	//TODO: should this live in the model?
+	@Override
 	public double getInternalEnergy()
 	{
 		double sum = 0;
@@ -284,21 +300,22 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 
 			@Override
 			public void run() {
-				try 
+				try
 				{
 					continueSolve();
 				}
-				catch (Exception e) 
+				catch (Exception e)
 				{
 					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
-				}				
+				}
 			}
 			
 		}
 		);
-		_thread.start();		
+		_thread.start();
 	}
 
+	@Override
 	public void startSolveOneStep()
 	{
 		_thread = new Thread(new Runnable()
@@ -306,43 +323,44 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 
 			@Override
 			public void run() {
-				try 
+				try
 				{
 					solveOneStep();
 				}
-				catch (Exception e) 
+				catch (Exception e)
 				{
 					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
-				}				
-			}
-			
-		}
-		);
-		_thread.start();		
-	}
-	
-	@Override
-	public void startSolver() 
-	{
-		_thread = new Thread(new Runnable()
-		{
-
-			@Override
-			public void run() {
-				try 
-				{
-					solve();
 				}
-				catch (Exception e) 
-				{
-					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
-				}				
 			}
 			
 		}
 		);
 		_thread.start();
 	}
+	
+	@Override
+	public void startSolver()
+	{
+		_thread = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				try
+				{
+					solve();
+				}
+				catch (Exception e)
+				{
+					_exception = e;					// Pass any exceptions to the main thread so they can be passed to the client
+				}
+			}
+			
+		}
+		);
+		_thread.start();
+	}
+	@Override
 	public void interruptSolver()
 	{
 		if (_thread != null)
@@ -357,7 +375,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 						thread.interrupt();
 		}
 	}
-	public boolean isSolverRunning() 
+	@Override
+	public boolean isSolverRunning()
 	{
 		if (_exception != null)
 		{
@@ -416,7 +435,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	// Primarily for testing: allows testing execution time of solve or iterate without including the time to create the dependency graph
 	// When called with no arguments, uses the current _numIterations (used by solve); otherwise can specify a number of iterations (for using iterate)
 	public void prepareForMultiThreading()  {prepareForMultiThreading(_numIterations);}
-	public void prepareForMultiThreading(int numIters) 
+	public void prepareForMultiThreading(int numIters)
 	{
 		// Create a schedule dependency graph, but only if necessary
 		if (
@@ -435,7 +454,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 
 
 	// Run iterations using multi-threading (called by iterate if multi-threading is in use)
-	protected void iterateMultiThreaded(int numIters) 
+	protected void iterateMultiThreaded(int numIters)
 	{
 		prepareForMultiThreading(numIters);	// Create _scheduleDependencyGraph if not already up-to-date
 		_numScheduleEntriesRemaining = _scheduleDependencyGraph.size();
@@ -539,7 +558,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		MonitorObject _monitorObject = new MonitorObject();
 		boolean _wasSignalled = false;
 
-		public void doWait() 
+		public void doWait()
 		{
 			synchronized(_monitorObject)
 			{
@@ -563,7 +582,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
 	{
 		throw new DimpleException("Not supported");
 		
@@ -576,7 +595,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		throw new DimpleException("Not supported by " + this);
 	}
@@ -605,6 +624,17 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void postSetSolverFactory()
 	{
 		
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * The default implementation always returns null.
+	 */
+	@Override
+	public String getMatlabSolveWrapper()
+	{
+		return null;
 	}
 
 }

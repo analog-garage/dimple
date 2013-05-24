@@ -27,8 +27,8 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.Utilities;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -54,18 +54,20 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected boolean _isDeterministicDependent = false;
 	protected boolean _hasDeterministicDependents = false;
 
-	public SDiscreteVariable(VariableBase var) 
+	public SDiscreteVariable(VariableBase var)
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
 	}
 
 
+	@Override
 	public void updateEdge(int outPortNum)
 	{
 		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 
+	@Override
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
@@ -137,6 +139,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 	}
 	
+	@Override
 	public void randomRestart()
 	{
 		// If the sample value is being held, don't modify the value
@@ -161,12 +164,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		setCurrentSampleIndex(generateSample(_input, minEnergy));
 	}
 
+	@Override
 	public void updateBelief()
 	{
 		_beliefHistogram[_sampleIndex]++;
 	}
 
-	public Object getBelief() 
+	@Override
+	public double[] getBelief()
 	{
 		int domainLength = _input.length;
 		double[] outBelief = new double[domainLength];
@@ -192,7 +197,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else
 		{
 			for (int i = 0; i < domainLength; i++)
-				outBelief[i] = ((double[])_input)[i];		// Disconnected variable that has never been updated
+				outBelief[i] = _input[i];		// Disconnected variable that has never been updated
 		}
 		
 		return outBelief;
@@ -250,22 +255,26 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	
-    public final void saveAllSamples()
+    @Override
+	public final void saveAllSamples()
     {
     	_sampleIndexArray = new ArrayList<Integer>();
     }
     
-    public final void saveCurrentSample()
+    @Override
+	public final void saveCurrentSample()
     {
     	if (_sampleIndexArray != null)
     		_sampleIndexArray.add(_sampleIndex);
     }
     
-    public final void saveBestSample()
+    @Override
+	public final void saveBestSample()
     {
     	_bestSampleIndex = _sampleIndex;
     }
     
+	@Override
 	public double getConditionalPotential(int portIndex)
 	{
 		double result = getPotential();		// Start with the local potential
@@ -279,6 +288,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		    return result;
 	}
 	
+	@Override
 	public final double getPotential()
 	{
 		if (!_var.hasFixedValue())
@@ -287,6 +297,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			return 0;
 	}
 	
+	@Override
 	public final double getScore()
 	{
 		if (!_var.hasFixedValue())
@@ -295,6 +306,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			return 0;	// If the value is fixed, ignore the guess
 	}
 	
+	@Override
 	public final void setCurrentSample(Object value)
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
@@ -389,7 +401,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
     
-    public final void setBeta(double beta)	// beta = 1/temperature
+    @Override
+	public final void setBeta(double beta)	// beta = 1/temperature
     {
     	_beta = beta;
     }
@@ -497,6 +510,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return false;
 	}
 	
+	@Override
 	public void createNonEdgeSpecificState()
 	{
 			_outputMsg = new DiscreteSample(0, 0);
@@ -514,7 +528,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public Object []  createMessages(ISolverFactor factor) 
+	public Object []  createMessages(ISolverFactor factor)
 	{
 		int portNum = _var.getPortNum(factor.getModelObject());
     	_numPorts= Math.max(portNum+1, _numPorts);
@@ -534,14 +548,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
 	}
 
-	public double [] createDefaultMessage() 
+	public double [] createDefaultMessage()
 	{
 		double[] retVal = new double[((Discrete)_var).getDiscreteDomain().getElements().length];
 		return (double[])resetInputMessage(retVal);
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) 
+	public Object resetInputMessage(Object message)
 	{
 		double [] retval = (double[])message;
 		Arrays.fill(retval, 0);
@@ -558,7 +572,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		if (!_holdSampleValue)
@@ -566,26 +580,26 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
 
 	@Override
-	public void setInputMsg(int portIndex, Object obj) 
+	public void setInputMsg(int portIndex, Object obj)
 	{
 		_inPortMsgs[portIndex] = (double[])obj;
 		
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		SDiscreteVariable ovar = ((SDiscreteVariable)other);
 		_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
@@ -608,13 +622,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	
 
+	@Override
 	public void initialize()
 	{
 		super.initialize();
 		
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
-		for (int i = 0; i < messageLength; i++) 
+		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;
 		
 	}

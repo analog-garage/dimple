@@ -22,10 +22,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
 
-public class DiscreteFactor extends Factor 
+public class DiscreteFactor extends Factor
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	public DiscreteFactor(int id, FactorFunction factorFunc,
-			VariableBase[] variables)  
+			VariableBase[] variables)
 			{
 		super(id, factorFunc, variables);
 		
@@ -33,19 +37,35 @@ public class DiscreteFactor extends Factor
 			throw new DimpleException("ack");
 	}
 
-	public FactorTable getFactorTable() 
+	/*--------------
+	 * Node methods
+	 */
+	
+	@Override
+	public Discrete getConnectedNodeFlat(int i)
+	{
+		return (Discrete)super.getConnectedNodeFlat(i);
+	}
+	
+	/*----------------
+	 * Factor methods
+	 */
+	
+	@Override
+	public FactorTable getFactorTable()
 	{
 		return getFactorFunction().getFactorTable(getDomains());
 	}
 
 	
-	public int[][] getPossibleBeliefIndices() 
+	public int[][] getPossibleBeliefIndices()
 	{
 		return _solverFactor.getPossibleBeliefIndices();
 	}
 	
 
-	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint) 
+	@Override
+	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
 	{
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
 		ArrayList<INode> ports = getSiblings();
@@ -74,7 +94,7 @@ public class DiscreteFactor extends Factor
 		for (int i = 0; i < newDomains.length; i++)
 			newDomains[i] = ((Discrete)newVariables.get(i)).getDiscreteDomain();
 		 
-		//Now, we modify the combo table to include the new variables. 
+		//Now, we modify the combo table to include the new variables.
 		if (newDomains.length > 0)
 		{
 			//getFactorFunction();
@@ -83,7 +103,7 @@ public class DiscreteFactor extends Factor
 			
 			for (VariableBase v : newVariables)
 				addVariable(v);
-		}		
+		}
 
 		//Now get the indices of all the variables
 		int [] factorVarIndices = new int[variablesToJoin.length];
@@ -100,7 +120,7 @@ public class DiscreteFactor extends Factor
 					factorVarIndices[index] = i;
 					indexToJointIndex[j] = index;
 					index++;
-					break;				
+					break;
 				}
 			}
 		}
@@ -109,10 +129,10 @@ public class DiscreteFactor extends Factor
 		//Get all the domain lengths
 		DiscreteDomain [] allDomains = new DiscreteDomain[ports.size()];
 		for (int i = 0; i < allDomains.length; i++)
-			allDomains[i] = ((Discrete)getConnectedNodeFlat(i)).getDiscreteDomain();
+			allDomains[i] = getConnectedNodeFlat(i).getDiscreteDomain();
 		
 		//Create the new combo table
-		FactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable( 
+		FactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable(
 				factorVarIndices,
 				indexToJointIndex,
 				allDomains,
@@ -129,20 +149,20 @@ public class DiscreteFactor extends Factor
 		//Add the new joint variable
 		addVariable(newJoint);
 
-		//Tell all old variables to remove this factor graph. 
+		//Tell all old variables to remove this factor graph.
 		for (VariableBase v : variablesToJoin)
 			v.remove(this);
 		
 		
 	}
 
-	public String getFactorTableString() 
+	public String getFactorTableString()
 	{
 		String s = "TableFactor [" + getLabel() + "] " + getFactorTable().toString();
 		return s;
 	}
 	
-	public double [] getBelief() 
+	public double [] getBelief()
 	{
 		return (double[])_solverFactor.getBelief();
 	}

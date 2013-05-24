@@ -22,18 +22,20 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 
 public class Discrete extends VariableBase
 {
-
+	/*--------------
+	 * Construction
+	 */
 	public Discrete(int id,DiscreteDomain domain, String modelerClassName)
 	{
 		super(id, modelerClassName, domain);
 	}
 	
-	public Discrete(DiscreteDomain domain) 
+	public Discrete(DiscreteDomain domain)
 	{
 		this(NodeId.getNext(),domain,"Discrete");
 	}
 
-	public Discrete(Object ... domain) 
+	public Discrete(Object ... domain)
 	{
 		this(NodeId.getNext(),new DiscreteDomain(domain),"Discrete");
 
@@ -47,11 +49,33 @@ public class Discrete extends VariableBase
     	return (double[])getInputObject();
     }
     
-    public DiscreteDomain getDiscreteDomain()
+    /*----------------------
+     * VariableBase methods
+     */
+    
+    @Override
+	public DiscreteDomain getDomain()
     {
-    	return (DiscreteDomain)getDomain();
+    	return (DiscreteDomain)super.getDomain();
     }
     
+    public DiscreteDomain getDiscreteDomain()
+    {
+    	return getDomain();
+    }
+    
+    @Override
+    public Integer getFixedValueObject()
+    {
+    	return (Integer)super.getFixedValueObject();
+    }
+    
+    @Override
+	protected void setFixedValueObject(Object value, boolean leaveInput)
+	{
+    	super.setFixedValueObject(value, leaveInput);
+	}
+
     @Override
     public Object getInputObject()
     {
@@ -63,12 +87,13 @@ public class Discrete extends VariableBase
     		return tmp;
     }
     
-    public double [] getBelief() 
+    public double [] getBelief()
     {
     	return (double[])getBeliefObject();
     }
     
-    public Object getBeliefObject() 
+    @Override
+	public Object getBeliefObject()
     {
     	if (_solverVariable != null)
     		return _solverVariable.getBelief();
@@ -103,7 +128,8 @@ public class Discrete extends VariableBase
 	}
 	
 	
-    protected VariableBase createJointNoFactors(VariableBase otherVariable) 
+    @Override
+	protected VariableBase createJointNoFactors(VariableBase otherVariable)
     {
     	if (! (otherVariable instanceof Discrete))
     	{
@@ -136,31 +162,31 @@ public class Discrete extends VariableBase
     	return retval;
     }
 	
-	public void setInput(double ... value) 
+	public void setInput(double ... value)
 	{
-		setInputObject((Object)value);
+		setInputObject(value);
 	}
 	
 	
 	// Fix the variable to a specific value
 	public final int getFixedValueIndex()
 	{
-		Object tmp = getFixedValueObject();
-		if (tmp == null)
+		Integer index = getFixedValueObject();
+		if (index == null)
 			throw new DimpleException("Fixed value not set");
 		
-		return (Integer)tmp;
+		return index;
 	}
 	
 	public final Object getFixedValue()
 	{
-		Object tmp = getFixedValueObject();
-		if (tmp == null)
+		Integer index = getFixedValueObject();
+		if (index == null)
 			throw new DimpleException("Fixed value not set");
 		
-		return ((DiscreteDomain)getDomain()).getElements()[(Integer)tmp];
+		return getDomain().getElements()[index];
 	}
-	public void setFixedValueIndex(int fixedValueIndex) 
+	public void setFixedValueIndex(int fixedValueIndex)
 	{
 		// In case the solver doesn't directly support fixed-values, convert the fixed-value to an input
 		double[] input = new double[getDiscreteDomain().size()];
@@ -173,7 +199,7 @@ public class Discrete extends VariableBase
 	}
 	public void setFixedValue(Object fixedValue)
 	{
-		int index = ((DiscreteDomain)getDomain()).getIndex(fixedValue);
+		int index = getDomain().getIndex(fixedValue);
 		if (index < 0)
 			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
 		setFixedValueIndex(index);

@@ -31,18 +31,18 @@ public class SVariable extends SDiscreteVariableBase
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
-	 */	
+	 */
     protected double [][] _inPortMsgs = new double[0][];
     double [][] _logInPortMsgs = new double[0][];
     protected double [][] _outMsgArray = new double[0][];
-    double [][] _savedOutMsgArray = new double[0][];    
+    double [][] _savedOutMsgArray = new double[0][];
     double [][] _outPortDerivativeMsgs = new double[0][];
     double [] _dampingParams = new double[0];
     protected double [] _input;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
 
-	public SVariable(VariableBase var)  
+	public SVariable(VariableBase var)
     {
 		super(var);
 		
@@ -62,24 +62,25 @@ public class SVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		_outMsgArray[portNum] = (double[])resetOutputMessage(_outMsgArray[portNum]);
 	}
 	
 	
+	@Override
 	public double getScore()
 	{
 		return -Math.log(_input[getGuessIndex()]);
 	}
 	
 	@Override
-    public void setInputOrFixedValue(Object priors,Object fixed, boolean hasFixedValue) 
+    public void setInputOrFixedValue(Object priors,Object fixed, boolean hasFixedValue)
     {
     	if (priors == null)
     	{
-    		_input = (double[])createDefaultMessage();
+    		_input = createDefaultMessage();
     	}
     	else
     	{
@@ -95,7 +96,7 @@ public class SVariable extends SDiscreteVariableBase
 		if (portIndex >= _dampingParams.length)
 		{
 			double [] tmp = new double [portIndex+1];
-			for (int i = 0; i < _dampingParams.length; i++)				
+			for (int i = 0; i < _dampingParams.length; i++)
 				tmp[i] = _dampingParams[i];
 			
 			_dampingParams = tmp;
@@ -124,11 +125,12 @@ public class SVariable extends SDiscreteVariableBase
 			return _dampingParams[portIndex];
 	}
 
-    public void updateEdge(int outPortNum) 
+    @Override
+	public void updateEdge(int outPortNum)
     {
     	
         final double minLog = -100;
-        double[] priors = (double[])_input;
+        double[] priors = _input;
         int M = priors.length;
         int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
@@ -194,10 +196,11 @@ public class SVariable extends SDiscreteVariableBase
     }
     
 
-    public void update() 
+    @Override
+	public void update()
     {
         final double minLog = -100;
-        double[] priors = (double[])_input;
+        double[] priors = _input;
         int M = priors.length;
         int D = _var.getSiblings().size();
         
@@ -286,11 +289,12 @@ public class SVariable extends SDiscreteVariableBase
     }
     
         
-    public Object getBelief()
+    @Override
+	public double[] getBelief()
     {
 
         final double minLog = -100;
-        double[] priors = (double[])_input;
+        double[] priors = _input;
         int M = priors.length;
         int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
@@ -365,15 +369,16 @@ public class SVariable extends SDiscreteVariableBase
 	}
 	
 	/******************************************************
-	 * Energy, Entropy, and derivatives of all that. 
+	 * Energy, Entropy, and derivatives of all that.
 	 ******************************************************/
 	
+	@Override
 	public double getInternalEnergy()
 	{
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
 		double sum = 0;
 		
-		double [] belief = (double[])getBelief();
+		double [] belief = getBelief();
 		double [] input = _input;
 		
 		//make sure input is normalized
@@ -391,18 +396,19 @@ public class SVariable extends SDiscreteVariableBase
 		return sum;
 	}
 
+	@Override
 	public double getBetheEntropy()
 	{
 		double sum = 0;
 		
-		double [] belief = (double[])getBelief();
+		double [] belief = getBelief();
 		for (int i = 0; i < belief.length; i++)
 		{
-			if (belief[i] != 0)					
+			if (belief[i] != 0)
 				sum -= belief[i] * Math.log(belief[i]);
 		}
 		
-		return sum;		
+		return sum;
 	}
 	
 	public double calculatedf(double f, int weightIndex, int domain)
@@ -415,7 +421,7 @@ public class SVariable extends SDiscreteVariableBase
 			double tmp = f / inputMsg;
 			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
 			tmp = tmp * der;
-			sum += tmp; 
+			sum += tmp;
 		}
 		return sum;
 	}
@@ -469,7 +475,7 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		double sum = 0;
 		
-		double [] belief = (double[])getBelief();
+		double [] belief = getBelief();
 		
 		for (int d = 0; d < _input.length; d++)
 		{
@@ -502,7 +508,7 @@ public class SVariable extends SDiscreteVariableBase
     	double f = calculateProdFactorMessagesForDomain(outPortNum,d);
     	
     	//calculate g
-    	double g = 0; 
+    	double g = 0;
     	for (int i = 0; i < _input.length; i++)
     		g += calculateProdFactorMessagesForDomain(outPortNum, i);
     	
@@ -516,7 +522,7 @@ public class SVariable extends SDiscreteVariableBase
 	    	double dg = calculatedg(outPortNum,weight);
 	    	
 	    	derivative = (df*g - f*dg)/(g*g);
-    	}    	
+    	}
     	
     	_outMessageDerivative[weight][outPortNum][d] = derivative;
     }
@@ -558,7 +564,7 @@ public class SVariable extends SDiscreteVariableBase
 				STableFactor stf = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
 				
-				df += f/thisMsg * dfactor[d]; 
+				df += f/thisMsg * dfactor[d];
 			}
 		}
 		return df;
@@ -584,7 +590,7 @@ public class SVariable extends SDiscreteVariableBase
     }
 
 	@Override
-	public Object [] createMessages(ISolverFactor factor) 
+	public Object [] createMessages(ISolverFactor factor)
 	{
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
@@ -620,7 +626,7 @@ public class SVariable extends SDiscreteVariableBase
 
 	}
 	
-	public double [] createDefaultMessage() 
+	public double [] createDefaultMessage()
 	{
 		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
 		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
@@ -629,7 +635,7 @@ public class SVariable extends SDiscreteVariableBase
     }
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPortNum) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
 	{
 		SVariable sother = (SVariable)other;
 		_inPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
@@ -643,26 +649,26 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outMsgArray[portIndex];
 	}
 
 	@Override
-	public void setInputMsg(int portIndex, Object obj) 
+	public void setInputMsg(int portIndex, Object obj)
 	{
 		_inPortMsgs[portIndex] = (double[])obj;
 		
 	}
 
 	@Override
-	public void setInputMsgValues(int portIndex, Object obj) 
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		double [] tmp = (double[])obj;
 		for (int i = 0; i <tmp.length; i++)
@@ -670,7 +676,7 @@ public class SVariable extends SDiscreteVariableBase
 	}
 	
 	@Override
-	public void setOutputMsgValues(int portIndex, Object obj) 
+	public void setOutputMsgValues(int portIndex, Object obj)
 	{
 		double [] tmp = (double[])obj;
 		for (int i = 0; i <tmp.length; i++)

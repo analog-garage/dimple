@@ -29,21 +29,31 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	
 	public SVariableBase(VariableBase var)
 	{
-		super(var);		
+		super(var);
 		_var = var;
+	}
+	
+	/*---------------------
+	 * ISolverNode methods
+	 */
+
+	@Override
+	public VariableBase getModelObject()
+	{
+		return _var;
 	}
 	
 //	public void moveInputs(ISolverVariable other)
 //	{
-//		
+//
 //		VariableBase vb = (VariableBase)other.getModelObject();
 //		Object inputs = vb.getInputObject();
 //		_var.setInputObject(inputs);
-//		
+//
 //	}
 
 	@Override
-	public void update()  
+	public void update()
 	{
 		for (int i = 0; i < _var.getSiblings().size(); i++)
 		{
@@ -51,6 +61,15 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The implementation provided by this class simply returns the solver object
+	 * associated with the model variable's {@link FactorGraph}.
+	 * <p>
+	 * This means that if the solver is changed on the model, this will return the
+	 * new solver graph object, which may not be applicable to this instance.
+	 */
 	@Override
 	public ISolverFactorGraph getParentGraph()
 	{
@@ -82,21 +101,21 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 
 	@Override
-	public void setGuess(Object guess)  
+	public void setGuess(Object guess)
 	{
 		throw new DimpleException("not supported");
 	}
 
 	@Override
-	public Object getGuess()  
+	public Object getGuess()
 	{
 		throw new DimpleException("not supported");
 	}
 
 	@Override
 	public double getScore()
-	{    	
-		throw new DimpleException("not supported");    	
+	{
+		throw new DimpleException("not supported");
 	}
 
 	@Override
@@ -106,9 +125,9 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 
 	@Override
-	public double getBetheEntropy() 
+	public double getBetheEntropy()
 	{
-		throw new DimpleException("not supported");    	
+		throw new DimpleException("not supported");
 	}
 	
 	@Override

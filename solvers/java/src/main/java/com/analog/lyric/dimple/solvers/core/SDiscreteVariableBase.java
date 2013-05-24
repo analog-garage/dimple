@@ -39,6 +39,13 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		_guessWasSet = false;
 	}
 	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
+	
+	@Override
+	public abstract double[] getBelief();
+	
 	@Override
 	public Object getValue()
 	{
@@ -51,7 +58,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		if (_var.hasFixedValue())	// If there's a fixed value set, use that instead of the belief
 			return ((Discrete)_var).getFixedValueIndex();
 					
-		double[] belief = (double[])getBelief();
+		double[] belief = getBelief();
 		int numValues = belief.length;
 		double maxBelief = Double.NEGATIVE_INFINITY;
 		int maxBeliefIndex = -1;
@@ -75,7 +82,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	}
 	
 	@Override
-	public void setGuess(Object guess) 
+	public void setGuess(Object guess)
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
 		int guessIndex = domain.getIndex(guess);
@@ -97,7 +104,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	}
 	
 
-	public void setGuessIndex(int index) 
+	public void setGuessIndex(int index)
 	{
 		if (index < 0 || index >= ((DiscreteDomain)_var.getDomain()).size())
 			throw new DimpleException("illegal index");

@@ -19,6 +19,10 @@ package com.analog.lyric.dimple.model;
 
 public abstract class FactorBase extends Node
 {
+	/*--------------
+	 * Construction
+	 */
+	
 	// FIXME: constructors should probably have package access to enforce intention that all
 	// subclasses are either Factors or FactorGraphs.
 	
@@ -32,6 +36,10 @@ public abstract class FactorBase extends Node
 		super();
 	}
 
+	/*--------------
+	 * Node methods
+	 */
+	
 	/** {@inheritDoc} If null {@link #asFactorGraph()} will be non-null. */
 	@Override
 	public Factor asFactor() { return null; }
@@ -41,5 +49,12 @@ public abstract class FactorBase extends Node
 	public FactorGraph asFactorGraph() { return null; }
 
 	//public abstract void initialize();
+	
+	@Override
+	public VariableBase getConnectedNodeFlat(int i)
+	{
+		// Factors may only be connected to variables so this cast should be safe.
+		return (VariableBase)super.getConnectedNodeFlat(i);
+	}
 }
 
