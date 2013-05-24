@@ -38,9 +38,12 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void startSolver();
 	public void setNumIterations(int numIterations);
 	public int getNumIterations();
+	@Override
 	public double getScore();
 	public double getBetheFreeEnergy();
+	@Override
 	public double getInternalEnergy();
+	@Override
 	public double getBetheEntropy();
 	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
 	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps);
@@ -48,4 +51,14 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void postAdvance();
 	public void postAddFactor(Factor f);
 	public void postSetSolverFactory();
+	
+	/**
+	 * Returns the name of a solver-specific MATLAB wrapper function that should be invoked from
+	 * MATLAB to do the solve. The value or existence of the function is allowed to change depending
+	 * on the parameters to the solver. The MATLAB function should take two positional arguments:
+	 * the MATLAB FactorGraph object and the instance of this interface.
+	 * 
+	 * @return name of MATLAB function used to do actual solve in MATLAB interface or null if there is none.
+	 */
+	public String getMatlabSolveWrapper();
 }

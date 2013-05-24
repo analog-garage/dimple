@@ -104,6 +104,11 @@ public class PFactorGraphVector extends PFactorVector
 		return (FactorGraph)getModelerNode(0);
 	}
 	
+	public String getMatlabSolveWrapper()
+	{
+		return getGraph().getSolver().getMatlabSolveWrapper();
+	}
+	
 	public int getNumSteps()
 	{
 		return getGraph().getNumSteps();

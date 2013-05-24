@@ -36,6 +36,7 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'core');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'lib');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'factorfunctions');
+    Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'solverWrappers');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'lib', 'GraphViz2Mat1.2');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'util');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'tests');
