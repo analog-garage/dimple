@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.analog.lyric.dimple.FactorFunctions.Equality;
+import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -81,14 +82,49 @@ public abstract class VariableBase extends Node implements Cloneable
     	return _input;
     }
 
-    
+    /**
+     * Returns the solver-specific variable instance associated with this model variable if any.
+     */
 	@Override
 	public ISolverVariable getSolver()
 	{
 		return _solverVariable;
 	}
 	
-    @Override
+    /**
+     * Returns the solver-specific variable instance associated with this model variable if it is
+     * an instance of the specified {@code solverVariableClass}, otherwise returns null.
+     */
+	public <T extends ISolverVariable> T getSolverIfType(Class<? extends T> solverVariableClass)
+	{
+		T svar = null;
+		
+		if (_solverVariable != null && solverVariableClass.isAssignableFrom(_solverVariable.getClass()))
+		{
+			svar = solverVariableClass.cast(_solverVariable);
+		}
+		
+		return svar;
+	}
+	
+    /**
+     * Returns the solver-specific variable instance associated with this model variable if it is
+     * an instance of the specified {@code solverVariableClass} and has {@link SNode#getParentGraph()} equal to
+     * {@code solverGraph}, otherwise returns null.
+     */
+	public <T extends ISolverVariable> T getSolverIfTypeAndGraph(
+		Class<? extends T> solverVariableClass,
+		ISolverFactorGraph solverGraph)
+	{
+		T svar = getSolverIfType(solverVariableClass);
+		if (svar != null && svar.getParentGraph() != solverGraph)
+		{
+			svar = null;
+		}
+		return svar;
+	}
+
+	@Override
 	public String getClassLabel()
     {
     	return "Variable";
