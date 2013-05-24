@@ -21,16 +21,17 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public abstract class SNode implements ISolverNode 
+public abstract class SNode implements ISolverNode
 {
-	private Node _model;
+	private final Node _model;
 	
 	public SNode(Node n)
 	{
 		_model = n;
 	}
 	
-    public INode getModelObject()
+    @Override
+	public INode getModelObject()
     {
     	return _model;
     }
