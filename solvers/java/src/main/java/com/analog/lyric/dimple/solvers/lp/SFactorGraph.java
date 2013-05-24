@@ -249,7 +249,7 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
 	{
-		// TODO
+		return null;
 	}
 
 	@Override
