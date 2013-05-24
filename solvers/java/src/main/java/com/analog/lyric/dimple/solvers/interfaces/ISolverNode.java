@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.INode;
  * @author schweitz
  *
  */
-public interface ISolverNode 
+public interface ISolverNode
 {
 	//Update all outgoing messages
 	public void update() ;
@@ -39,7 +39,9 @@ public interface ISolverNode
 	//This method is called for every edge during initialize.
 	public void resetEdgeMessages(int portNum);
 	
-	//Returns the Factor Graph to which this node belongs.
+	/**
+	 * Returns the solver factor graph to which this node belongs.
+	 */
 	public ISolverFactorGraph getParentGraph();
 	
 	//Gets the highest level graph to which this node belongs.
@@ -63,7 +65,7 @@ public interface ISolverNode
     public void setInputMsg(int portIndex,Object obj);
     
     //Replace the output message with the specified object
-    public void setOutputMsg(int portIndex,Object obj);   
+    public void setOutputMsg(int portIndex,Object obj);
     
     //Set the input message values to be the same as the specified obj
     public void setInputMsgValues(int portIndex,Object obj);
