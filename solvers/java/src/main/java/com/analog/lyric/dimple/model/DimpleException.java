@@ -16,23 +16,55 @@
 
 package com.analog.lyric.dimple.model;
 
-public class DimpleException extends RuntimeException implements IDimpleException 
+/**
+ * Base class for all exceptions thrown by Dimple library.
+ * <p>
+ * Note that since it is derived from {@link RuntimeException} these exceptions
+ * are not checked and do not have to be listed in throws clauses for methods.
+ */
+public class DimpleException extends RuntimeException implements IDimpleException
 {
 
 	private static final long serialVersionUID = 1L;
 
+	/*--------------
+	 * Construction
+	 */
+	
+	/**
+	 * Constructs exception with given {@code message}.
+	 */
 	public DimpleException(String message)
 	{
 		super(message);
 	}
+	
+	/**
+	 * Constructs exception with message formatted by {@link String#format}.
+	 */
+	public DimpleException(String format, Object...args)
+	{
+		super(String.format(format, args));
+	}
 
+	/**
+	 * Constructs exception wrapping given exception.
+	 */
 	public DimpleException(Exception e)
 	{
 		super(e);
 	}
 	
+	/**
+	 * Creates an exception stating that specified operation is not supported by a particular solver.
+	 */
+	public static DimpleException unsupportedBySolver(String solver, String operation)
+	{
+		return new DimpleException("Operation '%s' not supported by '%s' solver", operation, solver);
+	}
+	
 	@Override
-	public Exception getException() 
+	public Exception getException()
 	{
 		return this;
 	}
