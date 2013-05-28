@@ -901,9 +901,15 @@ classdef FactorGraph < Node
             
             % See if the solver has a MATLAB-specific wrapper for its
             % current parameter settings, and if so invoke that instead.
-            matlabSolve = char(obj.VectorObject.getMatlabSolveWrapper());
-            if (~isempty(matlabSolve))
-                solveFunc = str2func(matlabSolve);
+            solveFunc = [];
+            try
+                matlabSolve = char(obj.VectorObject.getMatlabSolveWrapper());
+                if (~isempty(matlabSolve))
+                    solveFunc = str2func(matlabSolve);
+                end
+            catch err
+            end
+            if (~isempty(solveFunc))
                 solveFunc(obj);
                 return;
             end
