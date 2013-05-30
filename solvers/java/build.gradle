@@ -49,7 +49,8 @@ project.ext.myjars = [
     "jama:jama:1.0.2",
     "colt:colt:1.2.0",
     "junit:junit:4.10",
-    "net.jcip:jcip-annotations:1.0"
+    "net.jcip:jcip-annotations:1.0",
+	files('../non-maven-jars/javailp-1.2a.jar')
   ]
 
 //Set up all the external dependencies for dimple

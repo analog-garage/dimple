@@ -28,8 +28,8 @@ import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -68,7 +68,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		public double temperingHalfLifeInSamples = 1;
 	}
 	
-	protected SFactorGraph(FactorGraph factorGraph, Arguments arguments)  
+	protected SFactorGraph(FactorGraph factorGraph, Arguments arguments)
 	{
 		super(factorGraph);
 		setNumSamples(arguments.numSamples);
@@ -97,7 +97,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	@Override
-	public ISolverFactor createFactor(Factor factor)  
+	public ISolverFactor createFactor(Factor factor)
 	{
 	
 		if (factor.isDiscrete())
@@ -111,7 +111,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)  
+	public ISolverVariable createVariable(VariableBase var)
 	{
 		if (var.getModelerClassName().equals("Real"))
 			return new SRealVariable(var);
@@ -120,7 +120,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 		super.initialize();
 		
@@ -139,11 +139,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			_scoreArray.clear();
 		
 		randomRestart();
-	}	
+	}
 	
 	@Override
-	public void solveOneStep() 
-	{		
+	public void solveOneStep()
+	{
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
 		
@@ -183,7 +183,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void sample() {sample(1);}
 	public void sample(int numSamples)
 	{
-		for (int sample = 0; sample < numSamples; sample++) 
+		for (int sample = 0; sample < numSamples; sample++)
 			oneSample();
 	}
 
@@ -193,7 +193,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// update() method for Gibbs-specific schedules will update only a single variable.
 	// Also, multithreaded operation for Gibbs is not supported
 	@Override
-	public void iterate(int numIters) 
+	public void iterate(int numIters)
 	{
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
 		{
@@ -209,7 +209,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	
-	protected void oneSample() 
+	protected void oneSample()
 	{
 		iterate(_updatesPerSample);
 		for (VariableBase v : _factorGraph.getVariables())
@@ -280,10 +280,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Before running, calling this method instructs the solver to save all sample values for all variables in the graph
-	public void saveAllSamples() 
+	public void saveAllSamples()
 	{
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)(v.getSolver())).saveAllSamples();		
+			((ISolverVariableGibbs)(v.getSolver())).saveAllSamples();
 	}
 	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
@@ -314,7 +314,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_temperature = T;
 		double beta = 1/T;
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)(v.getSolver())).setBeta(beta);		
+			((ISolverVariableGibbs)(v.getSolver())).setBeta(beta);
 	}
 	public double getTemperature() {return _temperature;}
 	
@@ -338,7 +338,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	// Set the number of scans between samples as an alternative means of specifying the sample rate
 	// A scan is an update of the number of variables equal to the total number of variables in the graph
-	public void setScansPerSample(int scansPerSample) 
+	public void setScansPerSample(int scansPerSample)
 	{
 		if (scansPerSample < 1)
 			throw new DimpleException("Scans per sample must be greater than 0.");
@@ -410,7 +410,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			if (var instanceof SDiscreteVariable)
 				((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
 			else if (var instanceof SRealVariable)
-				((SRealVariable)var).setAndHoldSampleValue((Double)values[i]);
+				((SRealVariable)var).setAndHoldSampleValue(values[i]);
 			else
 				throw new DimpleException("Invalid variable class");
 		}
@@ -457,7 +457,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 
 	// 'Iterations' are not defined for Gibbs since that term is ambiguous.  Instead, set the number of samples using setNumSamples().
 	@Override
-	public void setNumIterations(int numIter) 
+	public void setNumIterations(int numIter)
 	{
 		throw new DimpleException("The length of a run in the Gibbs solver is not specified by a number of 'iterations', but by the number of 'samples'");
 	}

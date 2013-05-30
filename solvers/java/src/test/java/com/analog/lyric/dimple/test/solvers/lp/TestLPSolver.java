@@ -3,6 +3,7 @@ package com.analog.lyric.dimple.test.solvers.lp;
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.FactorFunctions.Cos;
@@ -215,5 +216,31 @@ public class TestLPSolver
 		stoogeCase1.testLPState();
 	}
 
-	
+
+	@Test
+	@Ignore
+	public void testGLPK()
+	{
+		DiscreteDomain booleanDomain = new DiscreteDomain(false,true);
+		
+		FactorGraph fg1 = new FactorGraph();
+		Discrete x = new Discrete(booleanDomain);
+		x.setName("x");
+		Discrete y = new Discrete(booleanDomain);
+		y.setName("y");
+		Discrete z = new Discrete(booleanDomain);
+		z.setName("z");
+
+		fg1.addFactor(OnlyOneTrue.INSTANCE, x, y);
+		fg1.addFactor(OnlyOneTrue.INSTANCE, y, z);
+		fg1.addFactor(OnlyOneTrue.INSTANCE, x, z);
+		
+		x.setInput(.3, .7);
+		y.setInput(.2, .8);
+		z.setInput(.6, .3);
+
+		SFactorGraph solver = new Solver().createFactorGraph(fg1);
+		solver.setLPSolverName("GLPK");
+		solver.solve();
+	}
 }

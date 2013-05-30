@@ -22,5 +22,6 @@
 			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git-history/v14.0/javadoc/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="build/external-libs/javailp-1.2a.jar"/>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>

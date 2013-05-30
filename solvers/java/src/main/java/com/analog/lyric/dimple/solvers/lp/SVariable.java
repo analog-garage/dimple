@@ -245,7 +245,7 @@ public class SVariable extends SDiscreteVariableBase
 	
 	/**
 	 * Convert index into variable domain into index of corresponding LP variable.
-	 * Returns negative value if {@link #computeObjectFunction} not yet called
+	 * Returns negative value if {@link #computeObjectiveFunction} not yet called
 	 * of if there is no LP variable for the given {@code domainIndex} (because
 	 * the value has been pruned from the equations because of zero weight).
 	 */

@@ -21,6 +21,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
+import net.sf.javailp.Linear;
+import net.sf.javailp.Operator;
+import net.sf.javailp.Problem;
+import net.sf.javailp.Result;
+import net.sf.javailp.SolverFactory;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -29,15 +34,14 @@ import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.solvers.core.SNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
+import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
 
 @NotThreadSafe
-public class SFactorGraph extends SNode implements ISolverFactorGraph
+public class SFactorGraph extends SFactorGraphBase
 {
 	/*-------
 	 * State
@@ -88,7 +92,7 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	/**
 	 * Name of external LP solver to be used to do the actual solving.
 	 */
-	private String _lpSolverName = null;
+	private String _lpSolverName = "";
 	
 	/*--------------
 	 * Construction
@@ -243,15 +247,6 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	 * ISolverFactorGraph methods
 	 */
 	
-	/**
-	 * Unsupported.
-	 */
-	@Override
-	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
-	{
-		return null;
-	}
-
 	@Override
 	public STableFactor createFactor(Factor factor)
 	{
@@ -332,72 +327,68 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	@Override
 	public String getMatlabSolveWrapper()
 	{
-		if (_lpSolverName == null || _lpSolverName.equalsIgnoreCase("matlab"))
-		{
-			return "dimpleLPSolve";
-		}
-		
-		return null;
+		return useMatlabSolver() ? "dimpleLPSolve" : null;
+	}
+	
+	private boolean useMatlabSolver()
+	{
+		return _lpSolverName.isEmpty() || _lpSolverName.equalsIgnoreCase("matlab");
 	}
 	
 	@Override
-	public void solve()
-	{
-		
-		// FIXME: invoke external solver...
-	}
-
-	@Override
-	public void solveOneStep()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void continueSolve()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void startSolveOneStep()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void startContinueSolve()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void iterate(int numIters)
 	{
-		// TODO Auto-generated method stub
+		if (useMatlabSolver())
+		{
+			throw new DimpleException("Java solve() not supported for LP solver using 'MATLAB' as underlying solver");
+		}
+		
+		net.sf.javailp.Solver solver = null;
+		
+		try
+		{
+			Class<SolverFactory> factoryClass =
+				(Class<SolverFactory>)Class.forName(String.format("net.sf.javailp.SolverFactory%s", _lpSolverName));
+			solver = factoryClass.newInstance().get();
+		}
+		catch (Exception ex)
+		{
+			throw new DimpleException("Cannot load underlying LP solver '%s': %s'", _lpSolverName, ex.toString());
+		}
+		
+		buildLPState();
 
-	}
-
-	@Override
-	public boolean isSolverRunning()
-	{
-		return false;
-	}
-
-	@Override
-	public void interruptSolver()
-	{
-	}
-
-	@Override
-	public void startSolver()
-	{
-		// TODO Auto-generated method stub
-
+		Problem problem = new Problem();
+		
+		double[] objectiveCoefficients = getObjectiveFunction();
+		Linear objective = new Linear();
+		for (int i = 0, end = objectiveCoefficients.length; i < end; ++i)
+		{
+			objective.add(objectiveCoefficients[i], i);
+			problem.setVarBounds(0.0, i, 1.0);
+		}
+		problem.setObjective(objective);
+		
+		for (IntegerEquation constraint : getConstraints())
+		{
+			Linear linear = new Linear();
+			TermIterator iter = constraint.getTerms();
+			while (iter.advance())
+			{
+				linear.add(iter.getCoefficient(), iter.getVariable());
+			}
+			
+			problem.add(linear, Operator.EQ, constraint.getRHS());
+		}
+		
+		Result result = solver.solve(problem);
+		
+		double[] solution = new double[getNumberOfLPVariables()];
+		for (int i = 0, end = solution.length; i < end; ++i)
+		{
+			solution[i] = result.get(i).doubleValue();
+		}
+		setSolution(solution);
 	}
 
 	/**
@@ -418,34 +409,6 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	}
 
 	@Override
-	public double getScore()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getBetheFreeEnergy()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getInternalEnergy()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getBetheEntropy()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public void estimateParameters(FactorTable[] tables, int numRestarts, int numSteps, double stepScaleFactor)
 	{
 		throw unsupported("estimateParameters");
@@ -460,30 +423,7 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void postAdvance()
-	{
-		// TODO
-	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
-	public void postAddFactor(Factor f)
-	{
-	}
-
-	/**
-	 * Does nothing.
-	 */
-	@Override
-	public void postSetSolverFactory()
-	{
+		throw unsupported("moveMessages");
 	}
 
 	/*-------------------------
@@ -530,7 +470,7 @@ public class SFactorGraph extends SNode implements ISolverFactorGraph
 	@Matlab
 	public void setLPSolverName(String name)
 	{
-		_lpSolverName = name;
+		_lpSolverName = name != null ? name : "";
 	}
 	
 	/**

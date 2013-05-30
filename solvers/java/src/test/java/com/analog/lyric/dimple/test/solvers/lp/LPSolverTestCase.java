@@ -346,6 +346,6 @@ public class LPSolverTestCase
 		solver.printConstraints(new PrintStream(out));
 		assertEquals("Constraints not yet computed.", out.toString().trim());
 
-		assertNull(solver.getLPSolverName());
+		assertEquals("", solver.getLPSolverName());
 	}
 }
