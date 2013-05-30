@@ -98,5 +98,5 @@ org.eclipse.jdt.core.compiler.problem.unusedPrivateMember=warning
 org.eclipse.jdt.core.compiler.problem.unusedWarningToken=warning
 org.eclipse.jdt.core.compiler.problem.varargsArgumentNeedCast=warning
 org.eclipse.jdt.core.compiler.taskCaseSensitive=enabled
-org.eclipse.jdt.core.compiler.taskPriorities=NORMAL,HIGH,LOW
-org.eclipse.jdt.core.compiler.taskTags=TODO,FIXME,JAVA7
+org.eclipse.jdt.core.compiler.taskPriorities=NORMAL,HIGH,LOW,NORMAL,LOW
+org.eclipse.jdt.core.compiler.taskTags=TODO,FIXME,JAVA7,MEMORY,REFACTOR
