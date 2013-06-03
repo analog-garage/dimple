@@ -55,6 +55,11 @@ public class DimpleException extends RuntimeException implements IDimpleExceptio
 		super(e);
 	}
 	
+	public static DimpleException unsupported(String operation)
+	{
+		return new DimpleException("Operation '%s' not supported", operation);
+	}
+	
 	/**
 	 * Creates an exception stating that specified operation is not supported by a particular solver.
 	 */
