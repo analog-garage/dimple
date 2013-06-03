@@ -25,8 +25,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.options.AbstractOptionHolder;
+import com.analog.lyric.options.IOptionHolder;
 
-public class SBlastFromThePast implements ISolverBlastFromThePastFactor
+public class SBlastFromThePast extends AbstractOptionHolder implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
 	protected Port _portForOtherVar;
@@ -36,6 +38,20 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	{
 		_factor = f;
 	}
+	
+	/*-----------------------
+	 * IOptionHolder methods
+	 */
+	
+	@Override
+	public IOptionHolder getOptionParent()
+	{
+		return getParentGraph();
+	}
+	
+	/*---------------------------
+	 * SBlastFromThePast methods
+	 */
 	
 	public BlastFromThePastFactor getFactor()
 	{
@@ -48,19 +64,19 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	}
 	
 	@Override
-	public Object getBelief() 
+	public Object getBelief()
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public double getInternalEnergy() 
+	public double getInternalEnergy()
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public double getBetheEntropy() 
+	public double getBetheEntropy()
 	{
 		throw new DimpleException("Not implemented");
 	}
@@ -78,7 +94,7 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	    for (int index = 0; index < _factor.getVariables().size(); index++)
 	    {
 	    	ISolverVariable is = _factor.getVariables().getByIndex(index).getSolver();
-	    	is.createMessages(this);	    	
+	    	is.createMessages(this);
 	    }
 	    
 	    _portForOtherVar = portForOtherVar;
@@ -86,116 +102,116 @@ public class SBlastFromThePast implements ISolverBlastFromThePastFactor
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other) 
+	public void moveMessages(ISolverNode other)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public int[][] getPossibleBeliefIndices() 
+	public int[][] getPossibleBeliefIndices()
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void update() 
+	public void update()
 	{
 	}
 
 	@Override
-	public void updateEdge(int outPortNum) 
+	public void updateEdge(int outPortNum)
 	{
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum) 
-	{
-		throw new DimpleException("Not implemented");
-	}
-
-	@Override
-	public ISolverFactorGraph getParentGraph() 
+	public void resetEdgeMessages(int portNum)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public ISolverFactorGraph getRootGraph() 
+	public ISolverFactorGraph getParentGraph()
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public double getScore() 
+	public ISolverFactorGraph getRootGraph()
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public INode getModelObject() 
+	public double getScore()
+	{
+		throw new DimpleException("Not implemented");
+	}
+
+	@Override
+	public INode getModelObject()
 	{
 		return _factor;
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void setInputMsg(int portIndex, Object obj) 
+	public void setInputMsg(int portIndex, Object obj)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void setOutputMsg(int portIndex, Object obj) 
+	public void setOutputMsg(int portIndex, Object obj)
 	{
 		VariableBase var = _factor.getVariables().getByIndex(portIndex);
 		int index = var.getPortNum(getModelObject());
-		var.getSolver().setInputMsg(index,obj);		
+		var.getSolver().setInputMsg(index,obj);
 	}
 
 	@Override
-	public void setInputMsgValues(int portIndex, Object obj) 
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void setOutputMsgValues(int portIndex, Object obj) 
+	public void setOutputMsgValues(int portIndex, Object obj)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+			int otherPortNum)
 	{
 		throw new DimpleException("Not implemented");
 	}
 
 	@Override
-	public void advance() 
+	public void advance()
 	{
-		_portForBlastVar.node.getSolver().moveMessages(_portForOtherVar.node.getSolver(), 
+		_portForBlastVar.node.getSolver().moveMessages(_portForOtherVar.node.getSolver(),
 				_portForBlastVar.index,_portForOtherVar.index);
 	}
 
 	@Override
-	public void setDirectedTo(int[] indices) 
+	public void setDirectedTo(int[] indices)
 	{
 		//NOP
 	}

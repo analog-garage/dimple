@@ -20,15 +20,38 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.options.AbstractOptionHolder;
+import com.analog.lyric.options.IOptionHolder;
 
-public abstract class SNode implements ISolverNode
+public abstract class SNode extends AbstractOptionHolder implements ISolverNode
 {
+	/*-------
+	 * State
+	 */
 	private final Node _model;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public SNode(Node n)
 	{
 		_model = n;
 	}
+	
+	/*-----------------------
+	 * IOptionHolder methods
+	 */
+	
+	@Override
+	public IOptionHolder getOptionParent()
+	{
+		return getParentGraph();
+	}
+	
+	/*---------------------
+	 * ISolverNode methods
+	 */
 	
     @Override
 	public INode getModelObject()
