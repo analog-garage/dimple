@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+// TODO: implement NavigableMap - requires implementing various submap/keyset views.
+
 public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 {
 
