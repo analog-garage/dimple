@@ -2001,8 +2001,7 @@ public class FactorGraph extends FactorBase
 	{
 		VariableBase v = null;
 		Object o = getObjectByName(name);
-		if(o != null &&
-				o instanceof Discrete)
+		if(o instanceof VariableBase)
 		{
 			v = (VariableBase) o;
 		}
@@ -2013,8 +2012,7 @@ public class FactorGraph extends FactorBase
 	{
 		Factor f = null;
 		Object o = getObjectByName(name);
-		if(o != null &&
-				o instanceof Factor)
+		if(o instanceof Factor)
 		{
 			f = (Factor) o;
 		}
@@ -2024,19 +2022,17 @@ public class FactorGraph extends FactorBase
 	{
 		FactorGraph fg = null;
 		Object o = getObjectByName(name);
-		if(o != null &&
-				o instanceof FactorGraph)
+		if(o instanceof FactorGraph)
 		{
 			fg = (FactorGraph) o;
 		}
 		return fg;
 	}
-	public Discrete 	getVariableByUUID(UUID uuid)
+	public VariableBase getVariableByUUID(UUID uuid)
 	{
 		Discrete v = null;
 		Object o = getObjectByUUID(uuid);
-		if(o != null &&
-				o instanceof Discrete)
+		if(o instanceof Discrete)
 		{
 
 			v = (Discrete) o;
