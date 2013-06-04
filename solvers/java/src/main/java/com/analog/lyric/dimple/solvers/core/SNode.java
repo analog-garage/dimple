@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -31,7 +30,7 @@ public abstract class SNode implements ISolverNode
 	}
 	
     @Override
-	public INode getModelObject()
+	public Node getModelObject()
     {
     	return _model;
     }

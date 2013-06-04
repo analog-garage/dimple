@@ -54,6 +54,12 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		return _factorGraph;
 	}
+	
+	@Override
+	public FactorGraph getModelObject()
+	{
+		return _factorGraph;
+	}
 
 	@Override
 	public void moveMessages(ISolverNode other)

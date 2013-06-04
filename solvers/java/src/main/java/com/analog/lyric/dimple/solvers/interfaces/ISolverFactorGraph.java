@@ -18,11 +18,15 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 
 public interface ISolverFactorGraph extends ISolverNode
 {
+	@Override
+	public FactorGraph getModelObject();
+	
 	public ISolverVariable createVariable(VariableBase var);
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
