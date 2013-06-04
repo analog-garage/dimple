@@ -50,6 +50,39 @@ public class Trace
 			}
 		}		
 	}
+	static public void traceBytes(StringBuilder sb, byte[] data)
+	{
+		traceBytes(sb, data, false, false);
+	}
+	static public void traceBytes(StringBuilder sb, byte[] data, boolean multipleLines, boolean lineNumbers)
+	{
+		if(lineNumbers)
+		{
+			sb.append(String.format("%03d:\t", 0));
+		}
+		for(int i = 0; i < data.length; ++i)
+		{
+			sb.append(String.format("%02X ", data[i]));
+			if(multipleLines && lineNumbers && (i + 1) % 8 == 0)
+			{
+				sb.append("\n");
+				sb.append(String.format("%03d:\t", i + 1));
+			}
+		}		
+	}
+	static public String traceBytes(byte[] data)
+	{
+		StringBuilder sb = new StringBuilder(); 
+		traceBytes(sb, data, false, false);
+		return sb.toString();
+	}
+	static public String traceBytes(byte[] data, boolean multipleLines, boolean lineNumbers)
+	{
+		StringBuilder sb = new StringBuilder(); 
+		traceBytes(sb, data, multipleLines, lineNumbers);
+		return sb.toString();		
+	}
+	
 	static public String traceMem(int[] data)
 	{
 		StringBuilder sb = new StringBuilder(); 

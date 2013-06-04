@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.AbstractOptionHolder;
@@ -54,7 +53,7 @@ public abstract class SNode extends AbstractOptionHolder implements ISolverNode
 	 */
 	
     @Override
-	public INode getModelObject()
+	public Node getModelObject()
     {
     	return _model;
     }

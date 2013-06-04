@@ -649,7 +649,7 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public PVariableVector getVariableByUUID(UUID uuid)
 	{
-		Discrete mo = getGraph().getVariableByUUID(uuid);
+		VariableBase mo = getGraph().getVariableByUUID(uuid);
 		if(mo != null)
 			return (PVariableVector)PHelpers.wrapObject(mo);
 		else
