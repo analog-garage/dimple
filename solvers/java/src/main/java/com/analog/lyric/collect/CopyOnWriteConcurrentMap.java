@@ -16,153 +16,40 @@
 
 package com.analog.lyric.collect;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentSkipListMap;
+
+import net.jcip.annotations.ThreadSafe;
 
 /**
- * @author cbarber
- *
+ * An extension of {@link CopyOnWriteMap} for delegating to a {@link ConcurrentMap}.
  */
-public class CopyOnWriteConcurrentMap<K, V> implements ConcurrentMap<K, V>
+@ThreadSafe
+public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implements ConcurrentMap<K,V>
 {
-	/*-------
-	 * State
-	 */
-	
-	private final ConcurrentMap<K,V> _originalMap;
-	private AtomicReference<ConcurrentMap<K,V>> _map;
-
 	/*--------------
 	 * Construction
 	 */
 	
+	/**
+	 * Construct map delegating to {@code underlyingMap} until
+	 * the first mutating operation, which will trigger a copy
+	 * to be made.
+	 */
 	public CopyOnWriteConcurrentMap(ConcurrentMap<K,V> underlyingMap)
 	{
-		_originalMap = underlyingMap;
-		_map = new AtomicReference<ConcurrentMap<K,V>>(underlyingMap);
+		super(underlyingMap);
 	}
 	
 	/*-----------------------
 	 * ConcurrentMap methods
 	 */
 	
-	@Override
-	public void clear()
-	{
-		if (_originalMap.isEmpty())
-		{
-			_map.set(_originalMap);
-		}
-		else
-		{
-			mutableMap().clear();
-		}
-	}
-	
-	/*
-	 * 
-	 */
-	@Override
-	public boolean containsKey(Object key)
-	{
-		return readOnlyMap().containsKey(key);
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public boolean containsValue(Object value)
-	{
-		return readOnlyMap().containsValue(value);
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public Set<java.util.Map.Entry<K, V>> entrySet()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public V get(Object key)
-	{
-		return readOnlyMap().get(key);
-	}
-
-	@Override
-	public boolean isEmpty()
-	{
-		return readOnlyMap().isEmpty();
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public Set<K> keySet()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public V put(K key, V value)
-	{
-		return mutableMap().put(key, value);
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public void putAll(Map<? extends K, ? extends V> map)
-	{
-		mutableMap().putAll(map);
-	}
-
-	@Override
-	public V remove(Object key)
-	{
-		V prevValue = null;
-		if (readOnlyMap().containsKey(key))
-		{
-			prevValue = mutableMap().remove(key);
-		}
-		return prevValue;
-	}
-
-	@Override
-	public int size()
-	{
-		return readOnlyMap().size();
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public Collection<V> values()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/*
-	 * 
+	/**
+	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
 	public V putIfAbsent(K key, V value)
@@ -170,18 +57,17 @@ public class CopyOnWriteConcurrentMap<K, V> implements ConcurrentMap<K, V>
 		return mutableMap().putIfAbsent(key, value);
 	}
 
-	/*
-	 * 
+	/**
+	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
 	public boolean remove(Object key, Object value)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return mutableMap().remove(key, value);
 	}
 
-	/*
-	 * 
+	/**
+	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
 	public V replace(K key, V value)
@@ -189,8 +75,8 @@ public class CopyOnWriteConcurrentMap<K, V> implements ConcurrentMap<K, V>
 		return mutableMap().replace(key,  value);
 	}
 
-	/*
-	 * 
+	/**
+	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
 	public boolean replace(K key, V oldValue, V newValue)
@@ -202,54 +88,54 @@ public class CopyOnWriteConcurrentMap<K, V> implements ConcurrentMap<K, V>
 	 * CopyOnWriteConcurrentMap methods
 	 */
 	
+	@Override
 	public ConcurrentMap<K,V> originalMap()
 	{
-		return _originalMap;
+		return (ConcurrentMap<K, V>)super.originalMap();
 	}
 	
-	public void reset()
+	@Override
+	protected ConcurrentMap<K,V> copyOriginalMap()
 	{
-		_map.set(_originalMap);
-	}
-	
-	public boolean wasCopied()
-	{
-		return _map.get() != _originalMap;
+		return (ConcurrentMap<K, V>) super.copyOriginalMap();
 	}
 
+	/**
+	 * Creates an empty map with specified initial capacity.
+	 * <p>
+	 * This implementation returns a new {@link ConcurrentSkipListMap} if the
+	 * {@link #originalMap()} is a {@link SortedMap} and otherwise returns
+	 * a new {@link ConcurrentHashMap}.
+	 * <p>
+	 * Subclasses may override this method to return other map types.
+	 */
+	@Override
+	protected ConcurrentMap<K,V> createEmptyMap(int capacity)
+	{
+		Map<K,V> original = originalMap();
+		if (original instanceof SortedMap)
+		{
+			return new ConcurrentSkipListMap<K, V>(((SortedMap<K,V>)original).comparator());
+		}
+		else
+		{
+			return new ConcurrentHashMap<K,V>(original.size());
+		}
+	}
+	
 	/*-----------------
 	 * Private methods
 	 */
 	
-	private ConcurrentMap<K,V> copyOriginalMap()
+	@Override
+	protected ConcurrentMap<K,V> readOnlyMap()
 	{
-		ConcurrentMap<K,V> map = new ConcurrentHashMap<K,V>();
-		
-		map.putAll(_originalMap);
-		
-		return map;
+		return (ConcurrentMap<K, V>) super.readOnlyMap();
 	}
 	
-	private ConcurrentMap<K,V> readOnlyMap()
+	@Override
+	protected ConcurrentMap<K,V> mutableMap()
 	{
-		return _map.get();
-	}
-	
-	private ConcurrentMap<K,V> mutableMap()
-	{
-		ConcurrentMap<K,V> map = _map.get();
-		
-		if (map == _originalMap)
-		{
-			synchronized (_map)
-			{
-				if (_map.get() == _originalMap)
-				{
-					_map.set(copyOriginalMap());
-				}
-			}
-		}
-		
-		return map;
+		return (ConcurrentMap<K, V>) super.mutableMap();
 	}
 }
