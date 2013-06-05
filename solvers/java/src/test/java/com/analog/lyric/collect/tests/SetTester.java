@@ -16,9 +16,9 @@
 
 package com.analog.lyric.collect.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
+import java.util.Iterator;
 import java.util.Set;
 
 public class SetTester<T> extends CollectionTester<T>
@@ -38,7 +38,39 @@ public class SetTester<T> extends CollectionTester<T>
 		
 		int size = set.size();
 		
-		assertFalse(set.retainAll(set));
+		try
+		{
+			assertFalse(set.retainAll(set));
+		}
+		catch (UnsupportedOperationException ex)
+		{
+			// Ignore - ok for set to not implement retainAll
+		}
+		
 		assertEquals(size, set.size());
+	}
+	
+	public void assertSetEquals(Set<T> set1, Set<T> set2)
+	{
+		assertEquals(set1.size(), set2.size());
+		for (T element : set1)
+		{
+			assertTrue(set2.contains(element));
+		}
+		for (T element : set2)
+		{
+			assertTrue(set1.contains(element));
+		}
+	}
+	
+	public void assertSetOrderedEquals(Set<T> set1, Set<T> set2)
+	{
+		assertSetEquals(set1, set2);
+		Iterator<T> set1Iter = set1.iterator();
+		for (T element : set2)
+		{
+			assertEquals(element, set1Iter.next());
+		}
+		assertFalse(set1Iter.hasNext());
 	}
 }
