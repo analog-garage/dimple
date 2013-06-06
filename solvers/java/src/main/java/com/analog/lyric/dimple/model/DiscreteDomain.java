@@ -19,9 +19,16 @@ package com.analog.lyric.dimple.model;
 import java.util.Arrays;
 
 
-public class DiscreteDomain extends Domain 
+public class DiscreteDomain extends Domain
 {
+	/*-------
+	 * State
+	 */
 	private Object[] _elements;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public DiscreteDomain(Object ... elements)
 	{
@@ -29,17 +36,48 @@ public class DiscreteDomain extends Domain
 		_elements = elements;
 	}
 	
+	/*----------------
+	 * Domain methods
+	 */
+	
+	@Override
+	public boolean containsValue(Object value)
+	{
+		return isElementOf(value);
+	}
+	
+	/**
+	 * @return true if {@code value} is a {@link Number} representating a valid
+	 * integer index into the array of elements returned by {@link #getElements()}.
+	 */
+	@Override
+	public boolean containsValueWithRepresentation(Object value)
+	{
+		if (value instanceof Number)
+		{
+			Number number = (Number)value;
+			int index = number.intValue();
+			return index >=0 && index < _elements.length;
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public final boolean isDiscrete()
+	{
+		return true;
+	}
+	
+	/*------------------------
+	 * DiscreteDomain methods
+	 */
+	
 	public final Object[] getElements()
 	{
 		return _elements;
 	}
 
-	@Override
-	public final boolean isDiscrete() 
-	{
-		return true;
-	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -70,6 +108,7 @@ public class DiscreteDomain extends Domain
 		return _elements.length;
 	}
 	
+	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder(String.format("DiscreteDomain - %d elements - ", _elements != null ? _elements.length : 0));
@@ -77,7 +116,7 @@ public class DiscreteDomain extends Domain
 		{
 			for (int i = 0; i < _elements.length; i++)
 			{
-				sb.append(String.format("type: %s value:%s" 
+				sb.append(String.format("type: %s value:%s"
 						,_elements[i] != null ? _elements[i].getClass() : "null"
 						,_elements[i] != null ? _elements[i].toString() : "null"));
 				if (i < _elements.length-1)
@@ -85,11 +124,6 @@ public class DiscreteDomain extends Domain
 			}
 		}
 		return sb.toString();
-	}
-	
-	public final boolean isJoint()
-	{
-		return false;
 	}
 	
 	// Find the list of elements corresponding to the value; return -1 if not a valid value

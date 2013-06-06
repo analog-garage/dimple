@@ -16,11 +16,20 @@
 
 package com.analog.lyric.dimple.model;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class RealJointDomain extends Domain 
+public class RealJointDomain extends Domain
 {
+	/*-------
+	 * State
+	 */
+	
 	private RealDomain [] _domains;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public RealJointDomain(int size)
 	{
@@ -35,11 +44,42 @@ public class RealJointDomain extends Domain
 		_domains = domains.clone();
 	}
 	
+	/*----------------
+	 * Domain methods
+	 */
+	
+	/**
+	 * @returns true if value is an array of length matching {@link #getNumVars()} and whose
+	 * elements are contained in the correspond {@link RealDomain} in {@link #getRealDomains()}.
+	 */
 	@Override
-	public boolean isDiscrete() 
+	public boolean containsValue(Object value)
+	{
+		if (value.getClass().isArray() && Array.getLength(value) == _domains.length)
+		{
+			for (int i = 0, end = _domains.length; i < end; ++i)
+			{
+				if (! _domains[i].containsValue(Array.get(value, i)))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public boolean isDiscrete()
 	{
 		return false;
 	}
+	
+	/*-------------------------
+	 * RealJointDomain methods
+	 */
 	
 	public RealDomain [] getRealDomains()
 	{
@@ -51,6 +91,7 @@ public class RealJointDomain extends Domain
 		return _domains.length;
 	}
 	
+	@Override
 	public boolean isJoint()
 	{
 		return true;

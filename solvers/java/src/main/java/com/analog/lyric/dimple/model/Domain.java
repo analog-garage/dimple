@@ -21,4 +21,30 @@ public abstract class Domain
 	public boolean isDiscrete() { return false; }
 	public boolean isJoint() { return false; }
 	public boolean isReal() { return false; }
+	
+	/**
+	 * @return true if {@code value} is a valid member of the domain. Implementors
+	 * should not throw a cast exception.
+	 */
+	public abstract boolean containsValue(Object value);
+	
+	/**
+	 * @return true if {@code representation} corresponds to a valid member of the domain for
+	 * domains that can represent values using an alternate representation, such as the index
+	 * of a {@link Discrete} domain with enumerated elements.
+	 * <p>
+	 * The default implementation simply invokes {@link #containsValue(Object)}.
+	 */
+	public boolean containsValueWithRepresentation(Object representation)
+	{
+		return containsValue(representation);
+	}
+
+	/**
+	 * @return an exception stating that {@code value} is not a member of this domain.
+	 */
+	public DimpleException domainError(Object value)
+	{
+		return new DimpleException("'%s' is not a member of domain '%s'", value, this);
+	}
 }

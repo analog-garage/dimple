@@ -18,8 +18,16 @@ package com.analog.lyric.dimple.model;
 
 public class RealDomain extends Domain
 {
+	/*-------
+	 * State
+	 */
+	
 	protected double _lowerBound = Double.NEGATIVE_INFINITY;
 	protected double _upperBound = Double.POSITIVE_INFINITY;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public RealDomain() {}
 	public RealDomain(double[] domain)  {this(domain[0], domain[1]);}
@@ -29,6 +37,27 @@ public class RealDomain extends Domain
 		_lowerBound = lower;
 		_upperBound = upper;
 	}
+	
+	/*----------------
+	 * Domain methods
+	 */
+	
+	@Override
+	public boolean containsValue(Object value)
+	{
+		return value instanceof Number && inDomain(((Number)value).doubleValue());
+	}
+	
+	@Override
+	public boolean isReal()
+	{
+		return true;
+	}
+	
+	/*--------------------
+	 * RealDomain methods
+	 */
+	
 	public double getLowerBound() {return _lowerBound;}
 	public double getUpperBound() {return _upperBound;}
 	
@@ -36,12 +65,6 @@ public class RealDomain extends Domain
 	public boolean inDomain(double value)
 	{
 		return (value >= _lowerBound) && (value <= _upperBound);
-	}
-	
-	@Override
-	public boolean isReal()
-	{
-		return true;
 	}
 	
 	@Override
