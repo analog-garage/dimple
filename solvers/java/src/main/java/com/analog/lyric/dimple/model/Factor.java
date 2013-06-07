@@ -53,7 +53,7 @@ public class Factor extends FactorBase implements Cloneable
 		return _modelerFunctionName;
 	}
 	
-	public Factor(int id,FactorFunction factorFunc, VariableBase [] variables) 
+	public Factor(int id,FactorFunction factorFunc, VariableBase [] variables)
 	{
 		super(id);
 
@@ -65,7 +65,7 @@ public class Factor extends FactorBase implements Cloneable
 			addVariable(variables[i]);
 	}
 	
-	public Factor(int id,VariableBase [] variables, String modelerFunctionName) 
+	public Factor(int id,VariableBase [] variables, String modelerFunctionName)
 	{
 		super(id);
 				
@@ -109,7 +109,7 @@ public class Factor extends FactorBase implements Cloneable
 			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}
 	
-	protected void addVariable(VariableBase variable) 
+	protected void addVariable(VariableBase variable)
 	{
 		_variables = null;
 		connect(variable);
@@ -146,12 +146,18 @@ public class Factor extends FactorBase implements Cloneable
     	return "Factor";
     }
 	
-	public void createSolverObject(ISolverFactorGraph factorGraph) 
+	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
 		_variables = null;
-		_solverFactor = factorGraph.createFactor(this);
-		_solverFactor.createMessages();
-
+		if (factorGraph != null)
+		{
+			_solverFactor = factorGraph.createFactor(this);
+			_solverFactor.createMessages();
+		}
+		else
+		{
+			_solverFactor = null;
+		}
 	}
 	
 	public void replace(VariableBase oldVariable, VariableBase newVariable)
@@ -195,6 +201,7 @@ public class Factor extends FactorBase implements Cloneable
 		return f;
 	}
 
+	@Override
 	public void initialize(int portNum)
 	{
 		if (_solverFactor != null)
@@ -202,7 +209,8 @@ public class Factor extends FactorBase implements Cloneable
 	}
     
 	
-	public void initialize() 
+	@Override
+	public void initialize()
 	{
 		if (_solverFactor != null)
 			_solverFactor.initialize();
@@ -217,38 +225,38 @@ public class Factor extends FactorBase implements Cloneable
 		{
 			_variables = new VariableList();
 			for (int i = 0; i < _siblings.size(); i++)
-				_variables.add((VariableBase)_siblings.get(i));			
+				_variables.add((VariableBase)_siblings.get(i));
 		}
 		
 		return _variables;
 	}
 
 	@Override
-	public void update() 
+	public void update()
 	{
 		checkSolverNotNull();
 		_solverFactor.update();
 	}
 
 	@Override
-	public void updateEdge(int outPortNum) 
+	public void updateEdge(int outPortNum)
 	{
 		checkSolverNotNull();
 		_solverFactor.updateEdge(outPortNum);
 	}
 	
-	private void checkSolverNotNull() 
+	private void checkSolverNotNull()
 	{
 		if (_solverFactor == null)
 			throw new DimpleException("solver must be set before performing this action.");
 	}
 	
-	void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint) 
+	void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
 	{
 		throw new DimpleException("not implemented");
 	}
 	
-	Factor join(Factor other) 
+	Factor join(Factor other)
 	{
 		_variables = null;
 		ArrayList<VariableBase> varList = new ArrayList<VariableBase>();
@@ -261,7 +269,7 @@ public class Factor extends FactorBase implements Cloneable
 		for (int i = 0; i < getSiblings().size(); i++)
 		{
 			map1.add(i);
-			varList.add((VariableBase)getConnectedNodeFlat(i));
+			varList.add(getConnectedNodeFlat(i));
 			
 		}
 		
@@ -288,7 +296,7 @@ public class Factor extends FactorBase implements Cloneable
 			{
 				map2.add(varList.size());
 				newnuminputs++;
-				varList.add((VariableBase)other.getConnectedNodeFlat(i));
+				varList.add(other.getConnectedNodeFlat(i));
 			}
 		}
 		
@@ -310,7 +318,7 @@ public class Factor extends FactorBase implements Cloneable
 	
 
 	@Override
-	public double getScore() 
+	public double getScore()
 	{
 		if (_solverFactor == null)
 			throw new DimpleException("solver needs to be set before calculating energy");
@@ -318,6 +326,7 @@ public class Factor extends FactorBase implements Cloneable
 		return _solverFactor.getScore();
 	}
 	
+	@Override
 	public double getInternalEnergy()
 	{
 		if (_solverFactor == null)
@@ -327,6 +336,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 	}
 
+	@Override
 	public double getBetheEntropy()
 	{
 		if (_solverFactor == null)
