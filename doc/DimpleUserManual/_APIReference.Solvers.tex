@@ -1,0 +1,1023 @@
+\subsection{Solvers}
+\label{sec:SolversAPI}
+
+
+\subsubsection{Sum-Product Solver}
+
+Use of the sum-product solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'SumProduct';
+\end{lstlisting}
+
+
+The sum-product solver only supports discrete variables.
+
+\para{Damping}
+
+
+The sum product solver supports setting damping:
+
+\begin{lstlisting}
+fg.Solver.setDamping(dampingVal);
+\end{lstlisting}
+
+
+\para{K Best}
+
+The sum product solver supports a k-best algorithm.  Users can set a K value on 
+each factor:
+
+\begin{lstlisting}
+fg = FactorGraph();
+vars = Discrete(1:D,NumVars,1);
+f = fg.addFactor(factorFunction,vars);
+f.Solver.setK(K);
+vars.Input = 1:D;
+fg.solve();
+\end{lstlisting}
+
+The solver will only use the k-best values for each variable when calculating output messages
+on a factor node.
+
+IMPORTANT: k-best and damping are not yet compatible.
+
+
+\subsubsection{Min-Sum Solver}
+
+Use of the min-sum solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'MinSum';
+\end{lstlisting}
+
+
+The min-sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping\footnote{Note that in the min-sum solver, damping is done on messages in the log-domain, which has slightly different behavior than damping  in the probability domain, as is done in the sum-product solver} and k-best.
+
+
+
+\subsubsection{Gibbs Solver}
+\label{sec:GibbsSolverAPI}
+
+Use of the Gibbs solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gibbs';
+\end{lstlisting}
+
+The Gibbs solver performs Gibbs sampling on a factor graph.  It supports both discrete and real variables.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
+
+In the current implementation, sampling of real variables makes use of the Metropolis-Hastings algorithm.  In future versions of Dimple, additional sampling methods will be provided.
+
+The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:setDirected}.
+ 
+
+\para{Constructor}
+
+\subpara{Basic Constructor}
+
+The basic constructor for the Gibbs solver is:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver()
+\end{lstlisting}
+
+\subpara{Optional Constructor Arguments}
+
+There are two optional constructors that allow specifying some of the solver configuration parameters up front. These are:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample)
+\end{lstlisting}
+
+and
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample, initialTemperature, temperingHalfLifeInSamples)
+\end{lstlisting}
+
+The arguments of these constructors are defined as follows:
+
+\begin{itemize}
+\item burnInUpdates is the number of single-variable updates for the burn-in phase. This is zero by default.
+\item updatePerSample is the number of single-variable updates per sample. This is one by default. The state of the graph between samples is ignored for the purposes of saving samples and calculating beliefs.
+\item initialTemperature is the initial temperature for using tempering. This is one by default.
+\item temperingHalfLifeInSamples is the number of samples for the temperature to drop by half when annealing.
+\end{itemize}
+
+Note that when the second constructor is used, tempering is automatically enabled. It is otherwise disabled by default.
+
+\para{Methods}
+
+All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
+
+NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
+
+The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
+
+\subpara{Graph Methods}
+
+The following methods are available on a graph set to use the Gibbs solver:
+
+\begin{lstlisting}
+graph.Solver.setNumSamples(numSamples);
+graph.Solver.getNumSamples();
+\end{lstlisting}
+
+Set/get the number of samples to be run when solving the graph (post burn-in).
+
+\begin{lstlisting}
+graph.Solver.setUpdatesPerSample(updatesPerSample);
+graph.Solver.getUpdatesPerSample();
+\end{lstlisting}
+
+Set/get the number of single-variable updates between samples.
+
+\begin{lstlisting}
+graph.Solver.setScansPerSample(scansPerSample);
+\end{lstlisting}
+
+Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
+
+\begin{lstlisting}
+graph.Solver.setBurnInUpdates(burnInUpdates);
+graph.Solver.getBurnInUpdates();
+\end{lstlisting}
+
+Set/get the number of single-variable updates for the burn-in period prior to collecting samples.
+
+\begin{lstlisting}
+graph.Solver.setBurnInScans();
+\end{lstlisting}
+
+Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
+
+\begin{lstlisting}
+graph.Solver.setNumRestarts(numRestarts)
+graph.Solver.getNumRestarts() 
+\end{lstlisting}
+
+Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
+
+\begin{lstlisting}
+graph.Solver.setInitialTemperature(initialTemperature);
+graph.Solver.getInitialTemperature();
+\end{lstlisting}
+
+Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.setTemperingHalfLifeInSamples();
+graph.Solver.getTemperingHalfLifeInSamples();
+\end{lstlisting}
+
+Set/get the tempering half-life—the number of samples for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.enableTempering();
+graph.Solver.disableTempering();
+graph.Solver.isTemperingEnabled();
+\end{lstlisting}
+
+Enable or disable the use of tempering, or determine if tempering is in use.
+
+\begin{lstlisting}
+graph.Solver.setTemperature(T);
+graph.Solver.getTemperature();
+\end{lstlisting}
+
+Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
+
+\begin{lstlisting}
+graph.Solver.saveAllSamples();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
+
+\begin{lstlisting}
+graph.Solver.saveAllScores();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:score}) of the graph for each sample.
+
+\begin{lstlisting}
+graph.Solver.getAllScores();
+\end{lstlisting}
+
+Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
+
+\begin{lstlisting}
+graph.Solver.setSeed(seed);
+\end{lstlisting}
+
+Set the random seed used for sampling (and used for random scan, if that schedule is used). Setting the seed allows repeatable execution of the Gibbs solver.
+
+\begin{lstlisting}
+graph.Solver.getTotalPotential();
+\end{lstlisting}
+
+After running the solver, returns the total potential (score) over all factors of the graph (including input priors on variables) given the most recent sample values.
+
+\begin{lstlisting}
+graph.Solver.sample(numSamples)
+\end{lstlisting}
+
+This method runs a specified number of samples without re-initializing, burn-in, or random-restarts (this is distinct from iterate(), which runs a specified number of single-variable updates).  Before running this method for the first time, the graph must be initialized using the initialize() method.
+
+\begin{lstlisting}
+graph.Solver.burnIn()
+\end{lstlisting}
+
+Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
+
+
+
+\subpara{Variable Methods}
+
+\begin{lstlisting}
+variable.Solver.getCurrentSample();
+\end{lstlisting}
+
+Returns the current sample value for a variable.
+
+\begin{lstlisting}
+variable.Solver.getAllSamples();
+\end{lstlisting}
+
+Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if .saveAllSamples() method had previously been called on the graph or for the variable.
+
+\begin{lstlisting}
+variable.Solver.getBestSample();
+\end{lstlisting}
+
+Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).  When getting the best sample from multiple variables, they all correspond to the same sample in time, thus should be a valid sample from the joint distribution.
+
+\begin{lstlisting}
+variable.Solver.saveAllSamples();
+\end{lstlisting}
+
+Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
+
+
+\subpara{Discrete-Variable-Specific Methods}
+
+\begin{lstlisting}
+variable.Solver.getSampleIndex;
+\end{lstlisting}
+
+Returns the index of the current sample for a variable, where the index refers to the index into the domain of the variable.
+
+\begin{lstlisting}
+variable.Solver.getAllSampleIndices;
+\end{lstlisting}
+
+Returns an array including the indices of all samples seen so far for a variable.
+
+\begin{lstlisting}
+variable.Solver.getBestSampleIndex;
+\end{lstlisting}
+
+Returns the index of the best sample seen so far.
+
+\subpara{Real-Variable-Specific Methods}
+
+\begin{lstlisting}
+variable.Solver.setProposalStandardDeviation(stdDev)
+variable.Solver.getProposalStandardDeviation()
+\end{lstlisting}
+
+Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+
+\begin{lstlisting}
+variable.Solver.setInitialSampleValue(initialSampleValue)
+variable.Solver.getInitialSampleValue()
+\end{lstlisting}
+
+Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).
+
+\subpara{Factor Methods}
+
+\begin{lstlisting}
+factor.Solver.getPotential();
+\end{lstlisting}
+
+Returns the potential value of a factor given the current values of its connected variables.
+
+\begin{lstlisting}
+factor.Solver.getPotential(values);
+\end{lstlisting}
+
+Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
+
+\subpara{Schedulers}
+
+There are two schedulers currently defined for the Gibbs solver:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler
+\end{lstlisting}
+
+Sequentially chooses the next variable for updating in a fixed order. It updates all variables in the graph, completing an entire scan, before repeating the same fixed order. (In Gibbs literature this seems to be known as a sequential-scan, systematic-scan, or fixed-scan schedule.)
+
+\begin{lstlisting}
+com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler
+\end{lstlisting}
+
+Randomly selects a variable for each update (with replacement).
+
+The default scheduler when using the Gibbs solver is the GibbsSequentialScanScheduler, which is used if no scheduler is explicitly specified.
+
+The user may specify a custom schedule when using the Gibbs solver.  In this case, the schedule should include only Variable node updates (not specific edges), and no Factor updates (any Factor updates specified will be ignored).
+
+
+
+\subsubsection{Gaussian Solver}
+
+Use of the Gaussian solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'Gaussian';
+\end{lstlisting}
+
+\para{Univariate Gaussian}
+
+\para{High Level View of the Gaussian Solver Math}
+
+The Gaussian solver passes means and variances along the Factor Graph edges. It provides two factors that analytically calculate the outgoing messages. The first is a factor for addition and the second is a factor for multiplication by a constant.
+
+Users can create additional factors that use sampling by overriding the GaussianFactorFunction class. The user is required to override two methods: acceptanceRatio and generateSample. These will be described in a later section.
+
+\para{Creating Variables and a Graph}
+
+The Gaussian solver currently works only with real variables. (We will eventually enhance it to work with Discrete variables as well). The following is an example of how to create a Factor Graph that will eventually use the Gaussian solver:
+
+\begin{lstlisting}
+a = Real(3,1);
+mu = 3;
+sigma = 4;
+a(1).Input = [mu sigma];  
+mu2 = 10;
+sigma2 = 2;
+a(2).Input = [mu2 sigma2];
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+\end{lstlisting}
+
+We have not yet added a factor, so the real variables indicated by a are not yet associated with the fg FactorGraph.
+
+\begin{enumerate}
+\item Linear Factors
+\item Add
+\end{enumerate}
+
+As mentioned previously, the add function is implemented analytically. The following code demonstrates how to implement a factor graph that imposes the constraint that a=b+c
+
+\begin{lstlisting}
+a = Real();
+b = Real();
+c = Real();
+ 
+mus = [8 10 -1];
+sigmas = [1 2 3];
+
+a.Input = [mus(1) sigmas(1)];
+b.Input = [mus(2) sigmas(2)];
+c.Input = [mus(3) sigmas(3)];
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+
+f = fg.addFactor(@add,a,b,c);
+
+fg.solve();
+\end{lstlisting}
+
+Note that the @add syntax in MATLAB implies that add is a method and @add is a function handle. Users do not have to define an add function or worry about an existing add function since Dimple matches the function name to its custom add factor.
+
+\para{Multiply by Constant}
+
+The constmult factor adds a constraint that a=bc or a=cb. The product should be the left most argument to the addFactor call.
+
+\begin{lstlisting}
+fg = FactorGraph();
+a = Real();
+b = Real();
+c = 5;
+
+fg.Solver = 'Gaussian';
+fg.addFactor(@constmult,a,b,c);
+a.Input = [10 1];
+fg.solve();
+
+assertEqual(b.Belief,[10/5; 1/5]);
+     
+a.Input = [0 Inf];
+b.Input = [10, 1];
+   
+fg.solve();
+    
+assertEqual(a.Belief,[10*5; 1*5]);
+\end{lstlisting}
+
+\para{Linear Factor}
+
+Assuming you want to specify the following constraint:
+
+\[
+ \sum_i x_i c_i = total
+\]
+
+where c is a vector of constants and x is a vector of variables and total is a constant, you can use the Gaussian solver linear factor:
+
+\begin{lstlisting}
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+
+    x1 = Real();
+    x2 = Real();
+    x3 = Real();
+    consts = [1 2 3];
+    total = 6;
+    fg.addFactor(@linear,x1,x2,x3,consts,total);
+\end{lstlisting}
+
+\para{General Factors}
+
+The Gaussian Solver provides a mechanism to support general factors that cannot calculate messages analytically and require sampling methods instead. The user must provide several methods:
+
+\begin{itemize}
+\item For each edge of the factor:
+\begin{itemize}
+\item A (first) function that is passed sample values of all of the *other* edges, and returns a value between 0 and 1.
+\begin{itemize}
+\item This function represents the integral or sum of the factor function over the variable associated with this edge (scaled to be between 0 and 1). For example, if the factor is F(x,y,z), then for variable z, this would return Hz(x,y)/max(Hz), where $ Hz(x,y) = int_z F(x,y,z) dz $, and Max(Hz) is the maximum value of Hz(x,y) over all values of x and y. For output variable y, it would return a similar function, but integrated over y instead of z; and for output variable x, integrated over x. If a particular variable is discrete, this sum can be done in software. For real variables, the user would be responsible for this integration (this is why we might need other methods--sometimes an integral would be too difficult to do by hand).
+\end{itemize}
+\end{itemize}
+\item A (second) function that is passed sample values of all of the *other* edges, and returns a sample from the conditional probability of the variable associated with this edge given a value for all other edges. It is up to the user to write the code to sample from this distribution.
+\begin{itemize}
+\item For example, if the factor is F(x,y,z), then for variable z, this would return Z ~ p(z|x,y) = F(x,y,z) / Hz(x,y), where Hz(x,y) is as defined above. In some cases, such as certain delta-factors that are single-valued in a given direction, p(z|x,y) may be deterministic in which case no sampling is required. In other cases, such as delta-factors that are multi-valued in a given direction, the sampling is uniform among a small set of values. In other cases, it may be more difficult, and at some point we might need to provide some additional utilities to facilitate generating samples.
+\end{itemize}
+\end{itemize}
+
+
+The Dimple Gaussian Solver uses those methods as follows:
+
+\begin{itemize}
+\item For some number of samples
+\begin{itemize}
+\item Until a sample is accepted
+\begin{itemize}
+\item For each input message (mean/variance)
+\begin{itemize}
+\item Generate a new sample using the specified mean/variance
+\end{itemize}
+\item Call the first user-method for the given output edge, which returns a value H (the function that returns Hz(x,y)/max(Hz) in the example above)
+\item Choose a random number U from 0 to 1
+\item If U < H, then accept the new set of input edge sample values, and break
+\item Otherwise, continue
+\end{itemize}
+\item Call the second user-method for the given output edge using the accepted input values are arguments, which returns a sample Z (the function that returns Z ~ p(z|x,y) in the example above)
+\item Add the sample Z to a list of output sample values
+\end{itemize}
+\item For all output sample values
+\begin{itemize}
+\item Calculate the sample mean
+\item Calculate the sample variance
+\item Set the output message to these values
+\end{itemize}
+\end{itemize}
+
+
+
+\para{The Factor}
+
+Users who wish to create their own FactorFunctions to be used with the Gaussian solver must create a class that extends the GaussianFactorFunction provided by Dimple. The user must provide implementations for the acceptanceRatio method and the generateSample method.
+
+\begin{lstlisting}
+
+import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorFunction;
+
+public class GaussianAddFactorFunction extends GaussianFactorFunction
+{
+
+    public GaussianAddFactorFunction() 
+    {
+        super("GaussianAdd");
+    }
+
+    @Override
+    public double acceptanceRatio(int portIndex, Object... inputs) 
+    {
+        return 1;
+    }
+
+    @Override
+    public Object generateSample(int portIndex, Object... inputs) 
+    {
+        if (portIndex == 0)
+        {
+	    double sum = 0;
+	    for (int i = 0; i < inputs.length; i++)
+            {
+                sum += (Double)inputs[i];
+            }
+            return sum;
+         }
+         else
+         {
+             double sum = (Double)inputs[0];
+             for (int i = 1; i < inputs.length; i++)
+             {
+                 sum -= (Double)inputs[i];
+             }
+             return sum;
+         }
+    }
+}
+\end{lstlisting}
+
+
+This class is only useful for demonstration since it simply provides a less precise method for calculating an @add factor. Note that the acceptanceRatio method always returns 1 in this instance.
+
+The portIndex indicates which edge of the Factor is being updated (the index of the factor's argument). The inputs array specifies the samples that were generated from all of the edges other than the output edge.
+
+\para{Example}
+
+The following example does the following:
+
+
+\begin{itemize}
+\item Create a Factor Graph and Variable
+\item Specify how many samples to generate before calculating an outgoing message.
+\item Specify a random seed (for repeatability of testing)
+\item For each edge
+\begin{itemize}
+\item Specify the inputs
+\item Add the factor
+\item Solve
+\item Get the beliefs
+\item Remove the factor and replace with the @add factor
+\item Solve
+\item Get the beliefs
+\item Compare the analytic to the sampled result.
+\end{itemize}
+\end{itemize}
+
+
+
+\begin{lstlisting}
+v = Real(3,1);
+
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
+fg.Solver.setNumSamples(100000);
+fg.Solver.setSeed(0);
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%Test add
+inputs = [9 2; ...
+          3 2; ...
+          6 2];
+
+for i = 1:3
+   tmpinputs = inputs;
+    
+   tmpinputs(i,:) = [0 Inf];
+   
+   v(1).Input = tmpinputs(1,:);
+   v(2).Input = tmpinputs(2,:);
+   v(3).Input = tmpinputs(3,:);
+
+   f = fg.addFactor(com.lyricsemi.dimple.test.GaussianAddFactorFunction(),v(1),v(2),v(3));
+
+   fg.solve();
+
+   actualBelief = v(i).Belief;
+    
+   fg.removeFactor(f);
+    
+   f = fg.addFactor(@add,v(1),v(2),v(3));
+
+   fg.solve();
+
+   expectedBelief = v(i).Belief;
+    
+   fg.removeFactor(f);
+    
+   diff = abs(actualBelief - expectedBelief);
+   assertTrue(all(diff < .02));
+
+end
+\end{lstlisting}
+
+
+
+Users can specify different numbers of samples to be accrued for each factor.
+
+
+\begin{lstlisting}
+f1.setNumSamples(x);
+f2.setNumSamples(y);
+\end{lstlisting}
+
+
+where f1 and f2 are objects returned from an addFactor call.
+
+
+\para{MaxNumTries}
+
+If the user defined FactorFunction provides a low acceptance ratio, it's conceivable a Factor computation might never terminate. The user can specify a maximum number of attempts to be made before throwing an exception:
+
+\begin{lstlisting}
+fg.Solver.setMaxNumTries(1e6);
+\end{lstlisting}
+
+\para{Multivariate Gaussians}
+\label{sec:MultivariateGaussians}
+
+The Dimple Gaussian solver provides some support for multivariate Gaussian variables and factors.
+
+\subpara{Variables}
+
+The following code demonstrates the creation and use of a multivariate Gaussian.
+
+
+\begin{lstlisting}
+rj = RealJoint(2);
+means = [2 3]’;
+covar = [1 0;
+         0 1];
+rj.Input = MultivariateMsg(means,covar);
+rj.Belief.Means
+rj.Belief.Covariance
+\end{lstlisting}
+
+Users must create RealJoint variables.  The first argument of the constructor specifies the number of variables in the multivariate Gaussian.  The Gaussian solver expects users to specify a MultivariateMsg type as input to the variable.  This message type takes a mean vector and covariance matrix as arguments.  Beliefs return MultivariateMsg types.
+
+
+\subpara{Factors}
+
+The Multivariate Gaussian solver supports a matrix multiplication and addition factor.  The following code snippet is taken from the demos/17\_KalmanFilter/run.m file.
+
+\begin{lstlisting}
+%F is the state transition model.  (Given current state, what's the next 
+%state?)
+%new position is a function of old position, velocity, acceleration
+%New velocity is old velocity + acceleration
+%new acceleration is a function of velocity, friction, and force. 
+ 
+F = [1  0   dt          0           dt^2/2  0       0       0;
+    0  1   0           dt          0       dt^2/2  0       0;
+    0  0   1           0           dt/2    0       0       0;
+    0  0   0           1           0       dt/2    0       0;
+    0  0   -gamma/m    0           0       0       Fw(1)   0;
+    0  0   0           -gamma/m    0       0       0       Fw(2);
+    0  0   0           0           0       0       1       0
+    0  0   0           0           0       0       0       1
+    ];
+ 
+%H is the matrix that projects down to the observation.
+H = [1 0 0 0 0 0 0 0;
+    0 1 0 0 0 0 0 0];
+
+
+fz = RealJoint(2);
+fv = RealJoint(2);
+fznonoise = RealJoint(2);
+fx = RealJoint(8);
+fxnext = RealJoint(8);
+
+nested.addFactor(@constmult,fznonoise,H,fx);
+nested.addFactor(@add,fz,fv,fznonoise);
+nested.addFactor(@constmult,fxnext,F,fx);
+\end{lstlisting}
+
+\subpara{Rolled up Graphs and Multivariate Gaussians}
+
+Rolled up graphs can be used with Multivariate Gaussians.  This is useful for creating Kalman filters.  The only difference between Multivariate Gaussian rolled up graphs and other rolled up graphs is the data source type.  The following code snippet is taken from the demo/17\_KalmanFilter/run.m file:
+
+\begin{lstlisting}
+%create the rolled up graph.
+fzs = RealJointStream(numel(p0));
+fvs = RealJointStream(numel(p0));
+fznonoise = RealJointStream(numel(p0));
+fxs = RealJointStream(numel(x00));
+fg = FactorGraph();
+rf = fg.addRepeatedFactor(nested,fxs.getSlice(1),fxs.getSlice(2),...
+                     fznonoise.getSlice(1),fvs.getSlice(1),fzs.getSlice(1));
+ 
+%If we set the buffersize to something other than the default of 1, this
+%will no longer be a Kalman filter.  Backwards messages will improve the
+%guesses.
+%rf.BufferSize = 10;
+ 
+%Create data sources.
+zDataSource = MultivariateDataSource();
+vDataSource = MultivariateDataSource();
+
+%Assign data
+the following is in a loop
+    zDataSource.add(z,eye(2)*1e-100);
+    vDataSource.add(zeros(2,1),R);
+end
+
+fzs.DataSource = zDataSource;
+fvs.DataSource = vDataSource;
+ 
+%Create arrays to save data.
+fgxs = zeros(timesteps,1);
+fgys = zeros(timesteps,1);
+ 
+%Step through time and solve the Factor Graph.
+for i = 1:timesteps
+   fg.solve();
+   fgxs(i) = fxs.FirstVar.Belief.Means(1);
+   fgys(i) = fxs.FirstVar.Belief.Means(2);
+         
+   if fg.hasNext()
+       fg.advance();
+   else
+       break;
+   end
+end
+\end{lstlisting}
+
+\subsubsection{Particle BP Solver}
+
+Use of the particle BP solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'ParticleBP';
+\end{lstlisting}
+
+
+\para{Constructor}
+
+The basic constructor for the Particle BP solver is:
+
+\begin{lstlisting}
+com.analog.lyric.dimple.solvers.particleBP.Solver()
+\end{lstlisting}
+
+\para{Methods}
+
+The following sections list the solver-specific methods for the Particle BP solver (MATLAB versions).
+
+\subpara{Graph Methods}
+
+\begin{lstlisting}
+graph.Solver.setNumParticles(numParticles);
+\end{lstlisting}
+
+For each variable in the graph, sets the number of particles per variable. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
+
+\begin{lstlisting}
+graph.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
+\end{lstlisting}
+
+For each variable in the graph, sets the number of updates per particle to perform each time the particle is resampled. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
+
+\begin{lstlisting}
+graph.Solver.setNumIterationsBetweenResampling(numIterationsBetweenResampling);
+graph.Solver.getNumIterationsBetweenResampling();
+\end{lstlisting}
+
+Set/get the number of iterations between re-sampling all of the variables in the graph (default is 1, meaning resample between every iteration).
+
+\begin{lstlisting}
+graph.Solver.setInitialTemperature(initialTemperature);
+graph.Solver.getInitialTemperature();
+\end{lstlisting}
+
+Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.setTemperingHalfLifeInIterations();
+graph.Solver.getTemperingHalfLifeInIterations();
+\end{lstlisting}
+
+Set/get the tempering half-life—the number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+
+\begin{lstlisting}
+graph.Solver.enableTempering();
+graph.Solver.disableTempering();
+graph.Solver.isTemperingEnabled();
+\end{lstlisting}
+
+Enable or disable the use of tempering, or determine if tempering is in use.
+
+\begin{lstlisting}
+graph.Solver.setTemperature(T);
+graph.Solver.getTemperature();
+\end{lstlisting}
+
+Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
+
+\begin{lstlisting}
+graph.Solver.setSeed(seed);
+\end{lstlisting}
+
+Set the random seed used for re-sampling. Setting the seed allows repeatable execution of the solver.
+
+\subpara{Variable Methods}
+
+The Particle BP solver supports both discrete and real variables. For discrete variables, the solver uses sum-product BP as normal, and all of the corresponding methods for the sum-product solver may be used for discrete variables. For real variables, several solver-specific methods are defined, as follows.
+
+\subpara{Real-Variable-Specific Methods}
+\label{sec:ParticleBPRealVariableSpecificMethods}
+
+\begin{lstlisting}
+variable.Solver.setNumParticles(numParticles);
+variable.Solver.getNumParticles();
+\end{lstlisting}
+
+Set/get the number of particles to represent this variable.
+
+\begin{lstlisting}
+variable.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
+variable.Solver.getResamplingUpdatesPerParticle();
+\end{lstlisting}
+
+Set/get the number of updates per particle to perform each time the particle is resampled.
+
+\begin{lstlisting}
+variable.Solver.setProposalStandardDeviation(stdDev);
+variable.Solver.getProposalStandardDeviation();
+\end{lstlisting}
+
+Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+
+\begin{lstlisting}
+variable.Solver.setInitialParticleRange(min, max);
+\end{lstlisting}
+
+Set the range over which the initial particle values will be defined. The initial particle values are uniformly spaced between the min and max values specified. If the range is specified using this method, it overrides any other initial value. Otherwise, if a finite domain has been specified, the initial particle values are uniformly spaced between the lower and upper bound of the domain. Otherwise, all particles are initially set to zero.
+
+\begin{lstlisting}
+variable.Solver.getParticleValues();
+\end{lstlisting}
+
+Returns the current set of particle values associated with the variable.
+
+\begin{lstlisting}
+variable.Solver.getBelief(valueSet);
+\end{lstlisting}
+
+Given a set of values in the domain of the variable, returns the belief evaluated at these points. The result is normalized relative to the set of points requested so that the sum over the set of returned beliefs is 1.
+
+NOTE: the generic variable method Belief (or getBeliefs() with no arguments) operates similarly to the discrete-variable case, but the belief values returned are those at the current set of particle values. Note that this representation does not represent a set of weighted particles. That is, the particle positions are distributed approximately by the belief and the belief values represent the belief. It remains to be see if this should be the representation of belief that is used, or if an alternative representation would be better. The alternative solver-specific getBelief(valueSet) method allows getting the beliefs on a user-specified set of values, which may be uniform, and would not have this unusual interpretation.
+
+\para{Schedulers}
+
+Since Particle BP is a form of BP, any of the schedulers for BP can be used for Particle BP.
+
+
+
+
+
+
+\subsection{Finite Fields}
+\label{sec:finiteFields}
+
+
+\subsubsection{Overview}
+
+
+Dimple supports a special variable type called a FiniteFieldVariable and a few custom factors for these variables. They represent finite fields with $N=2^{n}$ elements. These fields find frequent use in error correcting codes. Because Dimple can describe any discrete distribution, it is possible to handle finite fields simply by describing their factor tables. However, the native FiniteFieldVariable type is much more efficient. In particular, variable addition and multiplication, which naively require $\mathcal{O}(N^{3})$ operations, are calculated in only $\mathcal{O}(N\log N)$ operations.
+
+\subsubsection{Finite Fields Without Optimizations}
+
+As we mentioned previously, a user can construct (non-optimized) finite fields from scratch.
+
+First we create a domain for our variables using the MATLAB gf function (for Galois Field).
+
+\begin{lstlisting}
+m = 3; 
+numElements = 2^m;
+domain = 0:numElements-1;
+
+tmp = gf(domain,m); 
+real_domain = cell(length(tmp),1);
+for i = 1:length(tmp)
+  real_domain{i} = tmp(i); 
+end
+\end{lstlisting}
+
+Next we create a bunch of variables with that domain.
+
+\begin{lstlisting}
+x_slow = Discrete(real_domain);
+y_slow = Discrete(real_domain); 
+z_slow = Discrete(real_domain);
+\end{lstlisting}
+
+Now we create our graph and add the addition constraint.
+
+\begin{lstlisting}
+fg_slow = FactorGraph();
+
+addDelta = @(x,y,z) x+y==z;
+fg_slow.addFactor(addDelta,x_slow,y_slow,z_slow);
+\end{lstlisting}
+
+This code runs in $\mathcal{O}(N^3) $ time since it tries all combinations of x,y, and z.
+Next we set some inputs.
+
+\begin{lstlisting}
+x_input = rand(size(x_slow.Domain.Elements));
+y_input = rand(size(y_slow.Domain.Elements));
+
+x_slow.Input = x_input;
+y_slow.Input = y_input;
+\end{lstlisting}
+
+Finally we set number of iterations, solve, and look at beliefs.
+
+\begin{lstlisting}
+fg_slow.Solver.setNumIterations(1);
+
+fg_slow.solve();
+
+z_slow.Belief
+\end{lstlisting}
+
+The solver runs in $\mathcal{O}(N^2)$ time since z is determined by x and y, x is determined by z, and y, and y is determined by x and z.
+
+\subsubsection{Optimized Finite Field Operations}
+
+Rather than building finite field elements from scratch, a user can use a build-in variable type and associated set of function nodes. These native variables are much faster, both for programming and algorithmic reasons. All of these operations are supported with the SumProduct solver.
+
+\para{FiniteFieldVariables}
+
+Dimple supports a FiniteFieldVariable variable type, which takes a primitive polynomial (to be discussed later) and dimensions of the matrix as constructor arguments:
+
+\begin{lstlisting}
+v = FiniteFieldVariable(prim_poly,3,2);
+\end{lstlisting}
+
+This would create a 3x2 matrix of finite field Variables with the given primitive polynomial.
+
+\para{Addition}
+
+Users can use the following syntax to create an addition factor node with three variables:
+
+\begin{lstlisting}
+myFactorGraph.addFactor(@finiteFieldAdd,x,y,z);
+\end{lstlisting}
+
+The @finiteFieldAdd method must have exactly that name for the Custom Factor to be used.
+
+Adding this variable take $\mathcal{O}(1)$ time and solving takes $\mathcal{O}(N\log N)$ time, where N is the size of the finite field domain.
+
+\para{Multiplication}
+
+Similarly, the following syntax can be used to create a factor node with three variables for multiplication:
+
+\begin{lstlisting}
+myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
+\end{lstlisting}
+
+Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
+
+\para{NVarFiniteFieldPlus}
+
+Suppose we have the finite field equation $ x1+x2+x3+x4=0 $.
+
+We can not express that using the finiteFieldAdd function directly, since it accepts only three arguments. However, we can support larger addition constraints by building a tree of these constraints. We do so using the following function:
+
+\begin{lstlisting}
+NumVars = 4;
+[graph,vars] = getNVarFiniteFieldPlus(prim_poly,NumVars);
+\end{lstlisting}
+
+This function takes a primitive polynomial and the number of variables involved in the constraint and builds up a graph such that  $ x_1+...+x_n = 0 $ .
+
+It returns both the graph and the external variables of the graph. This can be used in one of two ways: setting inputs on the variables and solving the graph directly or using this as a nested sub-graph.
+
+\para{Projection}
+
+Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, x3+x+1 could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the finiteFieldProjection factor to relate n bits to a finite field variable with a domain of size 2n.
+
+The following code shows how to do that:
+
+\begin{lstlisting}
+args = cell(n*2,1);
+for j = 0:n-1
+   args{j*2+1} = j;
+   args{j*2+2} = bits(n-j);
+end
+
+myFactorGraph.addFactor(@finiteFieldProjection,v,args{:});
+\end{lstlisting}
+
+\subsubsection{Primitive Polynomials}
+
+See Wikipedia for a definition. 
+
+\subsubsection{Algorithmics}
+
+
+Dimple interprets the domains as integers mapping to bit strings describing the coefficients of polynomials. Internally, the FiniteFieldVariable contains functions to map from this representation to a representation of powers of the primitive polynomial. This operation is known as the discrete log. Similarly Dimple FiniteFieldVariables provide a function to map the powers back to the original representation (i.e., an exponentiation operator).
+
+\begin{itemize}
+\item The addition code computes $x+y$ by performing a fast Hadamard transform of the distribution of both $x$ and $y$, pointwise multiplying the transforms, and then performing an inverse fast Hadamard transform.
+\item The generic multiplication code computes $xy$ by performing a fast Fourier transform on the distribution of the non-zero elements of the distribution, pointwise multiplying the transforms, performing an inverse fast Fourier transform, and then accounting for the zero elements.
+% FIXME
+\item The constant multiplication code computes $x$ by converting the distribution of the non-zero values of $x$ to the discrete log domain (which corresponds to reshuffling the array), adding the discrete log of   modulo $N-1$ (cyclically shifting the array), and exponentiating (unshuffling the array back to the original representation).  
+\end{itemize}
