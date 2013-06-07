@@ -268,7 +268,7 @@ B1=Discrete(Domain);
 B2=Discrete(Domain);
 B3=Discrete(Domain);
 B4=Discrete(Domain);
-FourBitXor.addFactor(@BadNBitXorDelta_Tutorial,[B1,B2,B3,B4]);
+FourBitXor.addFactor(@BadNBitXorDelta_Tutorial, [B1,B2,B3,B4]);
 B1.Input=[0.2 0.8];
 B2.Input=[0.2 0.8];
 B3.Input=[0.2 0.8];
@@ -278,7 +278,7 @@ FourBitXor.solve;
 disp(B1.Value);
 \end{lstlisting}
 
-IMPORTANT: Note that the BadNBitXorDelta\_Tutorial is a function which takes only ONE argument, but this argument is an array. This is reflected in the declaration FourBitXor.addFactor(@BadNBitXorDelta\_Tutorial,[B1,B2,B3,B4]), where we created an array of random variables using square brackets.
+Note that the BadNBitXorDelta\_Tutorial is a function which takes only ONE argument, but this argument is an array. This is reflected in the declaration FourBitXor.addFactor (@BadNBitXorDelta\_Tutorial, [B1,B2,B3,B4]), where we created an array of random variables using square brackets.
 
 IMPORTANT: We also introduce the Discrete method ‘Value’, which returns the most likely assignment of that random variable.
 

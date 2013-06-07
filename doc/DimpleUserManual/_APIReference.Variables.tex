@@ -1,0 +1,476 @@
+\subsection{Variables}
+
+\subsubsection{Variable Types}
+
+The following variable types are defined in Dimple.  Some variable types are supported by only a subset of solvers.  The following table lists the Dimple variable types and the solvers that support them.
+
+\begin{longtable} {l | p{5cm}}
+Variable Type & Supported Solvers \\
+\hline
+\endhead
+Discrete & all \\
+Bit & all \\
+Real & Gibbs, Gaussian, ParticleBP \\
+RealJoint & Gaussian \\
+ComplexVar & Gaussian \\
+FiniteFieldVariable & SumProduct \\
+\end{longtable} 
+
+\subsubsection{Common Properties and Methods}
+
+The following properties and methods are common to variables of all types.
+
+\para{Properties}
+
+\subpara{Name}
+
+Read-write.  When read, retrieves the current name of the variable or array of variables.  When set, modifies the name of the variable to the corresponding value.  The value set must be a string.
+
+\begin{lstlisting}
+var.Name = 'string';
+\end{lstlisting}
+
+When setting the Name, only one variable in an array may be set at a time.  To set the names of an entire array of variables to distinct values, the setNames method may be used (see section~\ref{sec:Variable.setNames}).
+
+\subpara{Solver}
+
+Read-only.  Returns the solver-object associated with the variable, to which solver-specific methods can be called.  See section~\ref{sec:SolversAPI}, which describes the solvers, including the solver-specific methods for each solver.
+
+\para{Methods}
+
+\subpara{setNames}
+\label{sec:Variable.setNames}
+
+For an array of variables, the setNames method sets the name of each variable in the array to a distinct value derived from the supplied string argument.  When called with:
+
+\begin{lstlisting}
+varArray.setName('baseName');
+\end{lstlisting}
+
+the resulting variable names are of the form: \texttt{baseName\textunderscore vv0}, \texttt{baseName\textunderscore vv1}, \texttt{baseName\textunderscore vv2}, etc., where each variable's name is the concatenation of the base name with the suffix \texttt{\textunderscore vv} followed by a unique number for each variable in the array.
+
+
+
+
+\subsubsection{Discrete}
+
+A Discrete variable represents a variable that can take on a finite set of distinct states.  The Discrete class corresponds to either a single Discrete variable or a multidimensional array of Discrete variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
+
+\para{Constructor}
+
+The Discrete constructor can be used to create an N-dimensional collection of Dimple Discrete variables.  The constructor is called with the following arguments (arguments in brackets are optional).
+
+\begin{lstlisting}
+Discrete(domain, [dimensions])
+\end{lstlisting}
+
+\begin{itemize}
+\item domain is a required argument indicating the domain of the variable
+\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable)
+\end{itemize}
+
+For example:
+
+\begin{lstlisting}
+domain = [0 1 2];
+w = Discrete(domain);
+x = Discrete(domain, 4);
+y = Discrete(domain, 2, 3);
+z = Discrete(domain, 2, 3, 4);
+\end{lstlisting}
+
+We examine each of these arguments in more detail in the following sections.
+
+\subpara{Domain}
+
+Every Discrete random variable has a domain associated with it.  A domain is a set.  Elements of the set may be any object type.  For example, the following are Discrete variables with valid domains:
+
+\begin{lstlisting}
+a = Discrete({1, 2, 3});
+b = Discrete({1+i, i, 2*i});
+c = Discrete({[1 0; 0 1], [i 1, 2*i 1]});
+d = Discrete({[1 0; 0 1], 2, i+1});
+e = Discrete({1.2, 3, pi/2});
+f = Discrete({'red', 'green', 'blue'});
+\end{lstlisting}
+
+(a) creates a variable whose domain consists of three values: 1, 2, and 3.  (b) creates a variable whose domain consists of three complex numbers.  (c) creates a variable whose domain consists of two elements, each of which is a 2x2 complex matrix.  (d) creates a variable whose domain consists of three elements: a matrix, real scalar, and complex scalar.  (e) creates a variable whose domain consists of both floating-point and integer values.  (f) creates a variable whose domain is a set of strings.
+
+In the previous example we used cell arrays to specify the elements of a domain.  When the domain consists only of numeric values (integer or floating-point), domains can instead be specified as a numeric array.  In this case, each element of the array (regardless of the array's dimensions) is considered a distinct entry in the domain.
+
+\begin{lstlisting}
+a = Discrete(0:2);
+b = Discrete([1 2 3; 4 5 6]);
+c = Discrete([0:2]Õ);
+\end{lstlisting}
+
+(a) creates a variable with a domain of 0, 1, and 2.  (b) creates a variable with a domain of 1, 2, 3, 4, 5, 6.  (c) creates a variable with domain of 0, 1, and 2.
+
+The domain may also be specified using a DiscreteDomain object.  In that case, the domain of the variable consists of the elements of this object.  For example:
+
+\begin{lstlisting}
+myDomain = DiscreteDomain(0:10);
+a = Discrete(myDomain);
+\end{lstlisting}
+
+See section~\ref{sec:DiscreteDomain} for more information about the DiscreteDomain class.
+
+
+\subpara{List of Matrix Dimensions}
+\label{sec:VariableMatrixDimensions}
+
+If the variable constructor is called without any dimensions, a single variable will be created.
+
+If one dimension n is specified, a square array of dimensions n x n variables will be created\footnote{This follows a common MATLAB convention.}.
+
+With k dimensions specified, n1, n2, É, nk, a multidimensional variable array of dimensions n1 x n2 x ... x nk will be created.
+
+\para{Properties}
+
+\subpara{Domain}
+\label{sec:Discrete.Domain}
+
+Read-only.  The Domain property returns the domain of that variable in the form of a DiscreteDomain object.
+
+\subpara{Belief}
+\label{sec:Discrete.Belief}
+
+Read-only.  For any single variable, the Belief method returns a vector whose length is the total number of elements of the domain of the variable.  When called after running a solver to perform inference on the graph, each element of the vector contains the estimated marginal probability of the corresponding element of the domain of the variable.  The results are undefined if called prior to running a solver.
+
+For an array of variables, the Belief method will return an array of vectors (that is, an array one dimension larger than the variable array) containing the beliefs of each variable in the array.
+
+\subpara{Value}
+\label{sec:Discrete.Value}
+
+Read-only.  In some cases, one may wish to retrieve the single most likely element of a variable's domain.  The Value property does just that.
+
+For any single variable, the Value method returns a single value chosen from the domain of the variable.  When called after running a solver to perform inference on the graph, the value returned corresponds to the element in the variable's domain that has the largest estimated marginal probability\footnote{If more than one domain element has identical marginal probabilities that are larger than for any other value, a single value from the domain is returned, chosen arbitrarily among these.}.  The results are undefined if called prior to running a solver.
+
+For an array of variables, the Value method will return an array of values, each from the domain of the corresponding variable representing the largest estimated marginal probability for that variable.
+
+\subpara{Input}
+\label{sec:Discrete.Input}
+
+Read-write.  For any variable, the Input method can be used to set and return the current input of that variable. An input behaves much like a single edge factor connected to the variable, and is typically used the represent the likelihood function associated with a measured value (see section~\ref{sec:LikelihoodInput}).
+
+When read, for a single variable returns an array of values with each value representing the current input setting for the corresponding element of the variable's domain.  The length of this array is equal to the total number of elements of the domain.  When read, for an array of variables, the result is an array with dimension one larger than the dimension of the variable array.  The additional dimension represents the current set of input values for the corresponding variable in the array.
+
+When written, for a single variable, the value must be an array of length equal to the domain of the variable.  The values in the array must all be non-negative, and non-infinite, but are otherwise arbitrary.  When written, for an array of variables, the values must be a multidimensional array where the first set of dimensions exactly match the dimensions of the array (or the portion of the array) being set, and length of the last dimension is the number of elements in the variable's domain.
+
+
+\subpara{FixedValue}
+\label{sec:Discrete.FixedValue}
+
+Read-write.  For any variable, the FixedValue method can be used to set the variable to a specific fixed value, and to retrieve the fixed-value if one has been set.  This would generally be used for conditioning a graph on known data without modifying the graph (see section~\ref{sec:FixingAVariableValue}).
+
+Reading this property results in an error if no fixed value has been set.  To determine if a fixed value has been set, use the hasFixedValue method (see section~\ref{sec:Discrete.hasFixedValue}).
+
+When setting this property on a single variable, the value must be a value included in the domain of the variable.
+The fixed value must be a value chosen from the domain of the variable.  For example:
+
+\begin{lstlisting}
+a = Discrete(1:10);
+a.FixedValue = 3;
+\end{lstlisting}
+
+When setting this property on a variable array, the value must be an array of the same dimensions as the variable array, and each entry in the array must be an element of the domain.
+
+Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue property replaces the input with a delta function---the value 0 except in the position corresponding to the fixed value that had been set.
+
+
+\para{Methods}
+
+\subpara{hasFixedValue}
+\label{sec:Discrete.hasFixedValue}
+
+This method takes no arguments.  When called for a single variable, it returns a boolean indicating whether or not a fixed-value is currently set for this variable.  When called for a variable array, it returns a boolean array of dimensions equal to the size of the variable array, where each entry indicates whether a fixed value is set for the corresponding variable.
+
+
+
+\subsubsection{Bit}
+
+A Bit is a special kind of Discrete with domain [0 1].
+
+\para{Constructor}
+
+The Bit constructor can be used to create an N-dimensional collection of Dimple Discrete variables.  Its constructor does not require a domain, since the domain is predetermined.  The constructor takes only a variable-length list of matrix dimensions, where an empty list indicates a single Bit variable.
+
+\begin{lstlisting}
+Bit([dimensions])
+\end{lstlisting}
+
+The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+
+
+\para{Properties}
+
+\subpara{Domain}
+
+See section~\ref{sec:Discrete.Domain}.
+
+\subpara{Belief}
+
+Read-only.  For a single Bit variable, the Belief property is a single number that represents the estimated marginal probability of the value one.
+
+For an array of Bit variables, the Belief property is an array of numbers with size equal to the size of the variable array, with each value representing the estimated marginal probability of one for the corresponding variable.
+
+\subpara{Value}
+
+See section~\ref{sec:Discrete.Value}.
+
+\subpara{Input}
+
+Read-write.  For setting the Input property on a single Bit variable, the value must be a single number in the range 0 to 1, which represents the normalized likelihood of the value one (see section~\ref{sec:LikelihoodInput}).  If $L(x)$ is the likelihood of the variable, the Input should be set to $\frac{L(x=1)}{L(x=0) + L(x=1)}$.
+
+For setting the Input property on an array of Bit variables, the value must be an array of normalized likelihood values, where the array dimensions must match the dimensions of the array (or the portion of the array) being set.
+
+
+\subpara{FixedValue}
+
+See section~\ref{sec:Discrete.FixedValue}.
+
+\para{Methods}
+
+\subpara{hasFixedValue}
+
+See section~\ref{sec:Discrete.hasFixedValue}.
+
+
+
+
+\subsubsection{Real}
+
+A Real variable represents a variable that takes values on the real line, or on a contiguous subset of the real line.  The Real class corresponds to either a single Real variable or a multidimensional array of Real variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
+
+\para{Constructor}
+
+\begin{lstlisting}
+Real([domain], [dimensions])
+\end{lstlisting}
+
+All arguments are optional and can be used in any combination.
+
+\begin{itemize}
+\item domain is specifies a bound on the domain of the variable. It can either be specified as a two-element array or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as an array, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\item dimensions specify the array dimensions.  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+\end{itemize}
+
+Examples:
+
+\begin{itemize}
+\item Real() specifies a scalar real variable with an unbounded domain.
+\item Real(4,1) specifies a 4x1 vector of real variables with unbounded domain.
+\item Real([-1 1]) specifies a scalar real variable with domain from -1 to 1.
+\item Real([-Inf 0], 4, 10, 2) specifies a 4x10x2 array of real variables, each with the domain from negative infinity to zero.
+\item Real(RealDomain(-pi, pi)) specifies a scalar real variable with domain from $-\pi$ to $\pi$.
+\end{itemize}
+
+\para{Properties}
+
+\subpara{Domain}
+
+Read-only.  The Domain property returns the domain of that variable in the form of a RealDomain object (see section~\ref{sec:RealDomain}).
+
+\subpara{Belief}
+
+Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
+
+
+\subpara{Value}
+
+Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
+
+
+\subpara{Input}
+
+Read-write.  For a Real variable, the form of the Input property depends on the particular solver.  For the Gibbs and ParticleBP solvers, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For example:
+
+\begin{lstlisting}
+r = Real();
+r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
+\end{lstlisting}
+
+For the Gaussian solver, the Input property is a two-element array, where the first element is the mean, and the second element is the standard deviation.  For example:
+
+\begin{lstlisting}
+r = Real();
+r.Input = [measuredMean, measurementStandardDeviation];
+\end{lstlisting}
+
+In the current version of Dimple, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+
+
+\subpara{FixedValue}
+
+Read-write.  The behavior of the FixedValue property for a Real variable is nearly identical to that of Discrete variables (see section~\ref{sec:Discrete.FixedValue}).  When setting the FixedValue of a Real variable, the value must be within the domain of the variable, that is greater than or equal to the lower bound and less than or equal to the upper bound.  For example:
+
+\begin{lstlisting}
+a = Real([-pi pi]);
+a.FixedValue = 1.7;
+\end{lstlisting}
+
+Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue property removes the input.
+
+
+\para{Methods}
+
+\subpara{hasFixedValue}
+
+See section~\ref{sec:Discrete.hasFixedValue}.
+
+
+
+
+
+
+
+\subsubsection{RealJoint}
+
+A RealJoint variable is a tightly coupled set of real variables that are treated by a solver as a single joint variable rather than a separate collection of variables.  For example, in the Gaussian solver, the messages associated with RealJoint variables involve joint mean and covariance matrix rather than an individual mean and variance for each variable.
+
+Like other variables, the RealJoint class can represent either a single RealJoint variable (representing a collection of real values) or an array of RealJoint variables.
+
+\para{Constructor}
+
+\begin{lstlisting}
+RealJoint(numElements, [dimensions])
+\end{lstlisting}
+
+The arguments are defined as follows:
+
+\begin{itemize}
+\item numElements specifies the number of joint real-valued elements.
+\item dimensions specify the array dimensions (the array of individual RealJoint variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+\end{itemize}
+
+Note that in the current version of Dimple, RealJoint variables do not support bounded domains, thus the domain of each of the individual real values is assumed to range from $-\infty$ to $\infty$\footnote{This limitation may be removed in a future version of Dimple.}.
+
+\para{Properties}
+
+\subpara{Belief}
+
+Read-only.  After running the Gaussian solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  For an array of RealJoint variables, this property returns a cell array of MultivariateMsg objects, each corresponding to the estimated marginal distribution of the corresponding variable.  The results are undefined if called prior to running a solver.
+
+\subpara{Input}
+
+Read-write.  For the Gaussian solver, for a single RealJoint variable, the value of this property must be a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  For an array of RealJoint variables, the value of this property must be a cell array of MultivariateMsg objects, with dimensions equal to the dimension of the array (or the portion of the array) being set.
+
+
+\subsubsection{ComplexVar}
+
+ComplexVar is a special kind of RealJoint variable with exactly two joint elements.
+
+The behavior of all properties and methods is identical to that of RealJoint variables.
+
+\para{Constructor}
+
+\begin{lstlisting}
+ComplexVar([dimensions])
+\end{lstlisting}
+
+The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+
+
+\subsubsection{FiniteFieldVariable}
+
+Dimple supports a special variable type called a FiniteFieldVariable, which represent finite fields with $N=2^{n}$ elements. These fields find frequent use in error correcting codes.  These variables are used along with certain custom factors that are implemented more efficiently for sum-product belief propagation than the alternative using discrete variables and factors implemented directly.  See section~\ref{sec:finiteFields} for more information on how these variables are used.
+
+The behavior of all properties and methods is identical to that of Discrete variables.
+
+\para{Constructor}
+
+\begin{lstlisting}
+FiniteFieldVariable(primitivePolynomial, [dimensions])
+\end{lstlisting}
+
+The arguments are defined as follows:
+
+\begin{itemize}
+\item primitivePolynomial the primitive polynomial of the finite field.  The format of the primitive polynomial follows the same definition used by MATLAB in the \texttt{gf} function.  See the MATLAB help on the \texttt{gf} function for more detail.
+\item dimensions specify the array dimensions (the array of individual FiniteFieldVariable variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+\end{itemize}
+
+
+\subsubsection{DiscreteDomain}
+\label{sec:DiscreteDomain}
+
+The DiscreteDomain class is used to refer to the domain of Discrete variables.
+
+\para{Constructor}
+
+\begin{lstlisting}
+DiscreteDomain(elementList)
+\end{lstlisting}
+
+The elementList argument is either a cell array or array of domain elements.  Every entry of the array or cell array is considered an element of the domain, regardless of the number of dimensions it has.  For a cell array, each object in the cell array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
+
+\para{Properties}
+
+\subpara{Elements}
+
+Read-only.  This property returns the set of elements in the discrete domain in the form of a one-dimensional cell array.
+
+
+
+
+\subsubsection{RealDomain}
+\label{sec:RealDomain}
+
+The RealDomain class is used to refer to the domain of Real variables.
+
+\para{Constructor}
+
+\begin{lstlisting}
+RealDomain([lowerBound, [upperBound] ])
+\end{lstlisting}
+
+\begin{itemize}
+\item lowerBound indicates the lower bound of the domain.  The value must be a scalar numeric value.  It may be set to -Inf to indicate that there is no lower bound.  The default value is -Inf.
+\item upperBound indicates the upper bound of the domain.  The value must be a scalar numeric value.  It may be set to Inf to indicate that there is no upper bound.  The default value is Inf.
+\end{itemize}
+
+
+\para{Properties}
+
+\subpara{LB}
+
+Read-only.  This property returns the value of the lower bound.  The default value is -Inf.
+
+\subpara{UB}
+
+Read-only.  This property returns the value of the upper bound.  The default value is Inf.
+
+
+\subsubsection{MultivariateMsg}
+\label{sec:MultivariateMsg}
+
+The MultivariateMsg class is used to specify the parameters of a multivariate Guassian distribution, as used in the Gaussian solver.
+
+\para{Constructor}
+
+\begin{lstlisting}
+MultivariateMsg(meanVector, covarianceMatrix)
+\end{lstlisting}
+
+\begin{itemize}
+\item meanVector indicates the mean value of each element in a joint set of variables.  The value must be a one-dimensional numeric array.
+\item covarianceMatrix indicates the covariance matrix associated with the elements of a joint set of variables.  The value must be a two-dimensional numeric array with each dimension identical to the length of the meanVector.
+\end{itemize}
+
+
+\para{Properties}
+
+\subpara{Means}
+
+Read-only.  Returns a vector of values, where each value indicates the mean value of each element in a joint set of variables.
+
+\subpara{Covariance}
+
+Read-only.  Returns a two-dimensional array of values, representing the covariance matrix of a joint set of variables.
+
+
+
+
+
+
+

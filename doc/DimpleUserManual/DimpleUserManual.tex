@@ -14,8 +14,14 @@
 \usepackage[titletoc]{appendix}		% titletoc adds 'Appendix' before the letter in the TOC
 \usepackage{hyperref}
 
+
 \parskip = 0.15in
 \parindent = 0.0in
+\textwidth = 6 in
+\textheight = 9 in
+\headheight = 0.0 in
+\headsep = 0.0 in
+
 
 \interfootnotelinepenalty=10000		% Try to keep footnotes from splitting across pages
 \setcounter{secnumdepth}{5}			% Number paragraphs and subparagraphs
@@ -58,6 +64,10 @@
   morekeywords={*,...}               % if you want to add more keywords to the set
 }
 
+
+
+
+
 \title{\huge \bfseries Dimple User Manual \\ \normalfont \large Version 0.3}
 %\date{}							% Activate to display a given date or no date
 
@@ -66,10 +76,17 @@
 
 \maketitle
 
+%\clearpage
+%\renewcommand{\contentsname}{Brief Contents}
+%\setcounter{tocdepth}{1}				% Include paragraphs and subparagraphs in TOC
+%\tableofcontents
 
-\newpage
+\clearpage
+%\renewcommand{\contentsname}{Contents}
+%\setcounter{tocdepth}{5}				% Include paragraphs and subparagraphs in TOC
 \tableofcontents
-\newpage
+
+\clearpage
 
 \input{_WhatIsDimple}
 \input{_InstallingDimple}
