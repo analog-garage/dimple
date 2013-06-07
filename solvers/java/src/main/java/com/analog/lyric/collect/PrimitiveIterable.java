@@ -1,5 +1,8 @@
 package com.analog.lyric.collect;
 
+/**
+ * Iterables supporting unboxed iteration of primitive types.
+ */
 public interface PrimitiveIterable<T> extends Iterable<T>
 {
 	@Override

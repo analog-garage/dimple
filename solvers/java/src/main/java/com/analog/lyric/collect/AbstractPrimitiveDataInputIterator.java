@@ -112,7 +112,7 @@ public abstract class AbstractPrimitiveDataInputIterator<T> implements Primitive
 	/**
 	 * This should be invoked by subclass implementations of {@link #next()}
 	 * or their primitive variant. This will cause the next call to {@link #hasNext()}
-	 * to read next value using {@link #readNex
+	 * to read next value using {@link #readNext()}.
 	 * <p>
 	 * @throws NoSuchElementException if {@link #hasNext()} returns false.
 	 */
