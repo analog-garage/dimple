@@ -178,7 +178,7 @@ public class FactorGraph extends FactorBase
 	private void setSolverFactorySubGraph(IFactorGraphFactory factory)
 	{
 		_solverFactory = factory;
-		_solverFactorGraph = factory.createFactorGraph(this);
+		_solverFactorGraph = factory != null ? factory.createFactorGraph(this) : null;
 
 	}
 	private void setSolverFactorySubGraphRecursive(IFactorGraphFactory factory)
@@ -203,8 +203,10 @@ public class FactorGraph extends FactorBase
 		for (Factor f : getNonGraphFactorsFlat())
 			f.createSolverObject(_solverFactorGraph);
 
-
-		_solverFactorGraph.postSetSolverFactory();
+		if (_solverFactorGraph != null)
+		{
+			_solverFactorGraph.postSetSolverFactory();
+		}
 	}
 
 	
