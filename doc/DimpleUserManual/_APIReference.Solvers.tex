@@ -66,7 +66,7 @@ The Gibbs solver performs Gibbs sampling on a factor graph.  It supports both di
 
 In the current implementation, sampling of real variables makes use of the Metropolis-Hastings algorithm.  In future versions of Dimple, additional sampling methods will be provided.
 
-The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:setDirected}.
+The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
  
 
 \para{Constructor}
@@ -445,19 +445,19 @@ The Gaussian Solver provides a mechanism to support general factors that cannot 
 \begin{itemize}
 \item For each edge of the factor:
 \begin{itemize}
-\item A (first) function that is passed sample values of all of the *other* edges, and returns a value between 0 and 1.
+\item A (first) function that is passed sample values of all of the \emph{other} edges, and returns a value between 0 and 1.
 \begin{itemize}
-\item This function represents the integral or sum of the factor function over the variable associated with this edge (scaled to be between 0 and 1). For example, if the factor is F(x,y,z), then for variable z, this would return Hz(x,y)/max(Hz), where $ Hz(x,y) = int_z F(x,y,z) dz $, and Max(Hz) is the maximum value of Hz(x,y) over all values of x and y. For output variable y, it would return a similar function, but integrated over y instead of z; and for output variable x, integrated over x. If a particular variable is discrete, this sum can be done in software. For real variables, the user would be responsible for this integration (this is why we might need other methods--sometimes an integral would be too difficult to do by hand).
+\item This function represents the integral or sum of the factor function over the variable associated with this edge (scaled to be between 0 and 1). For example, if the factor is $F(x,y,z)$, then for variable $z$, this would return $\frac{H_{z}(x,y)}{\max(H_{z})}$, where $H_{z}(x,y) = \int_z F(x,y,z) dz$, and $\max(H_{z})$ is the maximum value of $H_{z}(x,y)$ over all values of $x$ and $y$. For output variable $y$, it would return a similar function, but integrated over $y$ instead of $z$; and for output variable $x$, integrated over $x$. If a particular variable is discrete, this sum can be done in software. For real variables, the user would be responsible for this integration.
 \end{itemize}
-\end{itemize}
-\item A (second) function that is passed sample values of all of the *other* edges, and returns a sample from the conditional probability of the variable associated with this edge given a value for all other edges. It is up to the user to write the code to sample from this distribution.
+\item A (second) function that is passed sample values of all of the \emph{other} edges, and returns a sample from the conditional probability of the variable associated with this edge given a value for all other edges. It is up to the user to write the code to sample from this distribution.
 \begin{itemize}
-\item For example, if the factor is F(x,y,z), then for variable z, this would return Z ~ p(z|x,y) = F(x,y,z) / Hz(x,y), where Hz(x,y) is as defined above. In some cases, such as certain delta-factors that are single-valued in a given direction, p(z|x,y) may be deterministic in which case no sampling is required. In other cases, such as delta-factors that are multi-valued in a given direction, the sampling is uniform among a small set of values. In other cases, it may be more difficult, and at some point we might need to provide some additional utilities to facilitate generating samples.
+\item For example, if the factor is $F(x,y,z)$, then for variable $z$, this would return $Z \sim p(z|x,y) = \frac{F(x,y,z) }{ H_{z}(x,y)}$, where $H_{z}(x,y)$ is as defined above. In some cases, such as certain factors that are single-valued in a given direction, $p(z|x,y)$ may be deterministic in which case no sampling is required. In other cases, such as deterministic factors that are multi-valued in a given direction, the sampling is uniform among a small set of values. In other cases, it may be more difficult.
+\end{itemize}
 \end{itemize}
 \end{itemize}
 
 
-The Dimple Gaussian Solver uses those methods as follows:
+The Dimple Gaussian solver uses those methods as follows:
 
 \begin{itemize}
 \item For some number of samples
@@ -468,13 +468,13 @@ The Dimple Gaussian Solver uses those methods as follows:
 \begin{itemize}
 \item Generate a new sample using the specified mean/variance
 \end{itemize}
-\item Call the first user-method for the given output edge, which returns a value H (the function that returns Hz(x,y)/max(Hz) in the example above)
-\item Choose a random number U from 0 to 1
-\item If U < H, then accept the new set of input edge sample values, and break
+\item Call the first user-method for the given output edge, which returns a value $H$ (the function that returns $\frac{H_{z}(x,y) }{\max(H_{z})}$ in the example above)
+\item Choose a random number $U$ from 0 to 1
+\item If $U < H$, then accept the new set of input edge sample values, and break
 \item Otherwise, continue
 \end{itemize}
-\item Call the second user-method for the given output edge using the accepted input values are arguments, which returns a sample Z (the function that returns Z ~ p(z|x,y) in the example above)
-\item Add the sample Z to a list of output sample values
+\item Call the second user-method for the given output edge using the accepted input values are arguments, which returns a sample $Z$ (the function that returns $Z \sim p(z|x,y)$ in the example above)
+\item Add the sample $Z$ to a list of output sample values
 \end{itemize}
 \item For all output sample values
 \begin{itemize}
@@ -534,7 +534,7 @@ public class GaussianAddFactorFunction extends GaussianFactorFunction
 \end{lstlisting}
 
 
-This class is only useful for demonstration since it simply provides a less precise method for calculating an @add factor. Note that the acceptanceRatio method always returns 1 in this instance.
+This class is only useful for demonstration since it simply provides a less precise method for calculating the built-in GaussianAdd factor. Note that the acceptanceRatio method always returns 1 in this instance.
 
 The portIndex indicates which edge of the Factor is being updated (the index of the factor's argument). The inputs array specifies the samples that were generated from all of the edges other than the output edge.
 
