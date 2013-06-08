@@ -187,8 +187,14 @@ The initialize method resets the state of the factor graph and its associated so
 
 \para{solve}
 
+\begin{lstlisting}
+MyGraph.solve();
+\end{lstlisting}
+
+The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
+
+
 \para{addFactor}
-\subsubsection{addFactor}
 
 The addFactor (and related) methods are used to add a factor to a factor-graph, connecting that factor to a specified set of variables.  There are several ways of specifying the particular factor:
 
@@ -203,7 +209,7 @@ The addFactor (and related) methods are used to add a factor to a factor-graph, 
 
 Each of these methods is summarized in the subsequent sections.
 
-\para{MATLAB Function Handle}
+\subpara{MATLAB Function Handle}
 
 A factor may be specified by defining a MATLAB function, and passing a handle to that function.  The function must accept values that correspond to the state of the connected variables (in the same order as specified in the addFactor call), and return a non-negative weight corresponding to the unnormalized value of the factor.
 
@@ -235,7 +241,7 @@ The constants can be any n-dimensional real or complex matrix.
 
 Adding a Factor in this way involves creating an array known as a factor table, which contains all assignments of the variables resulting in a positive value of the function, along with a value vector, containing all the corresponding values of the function. This table is then passed to the solver. Creating that table takes time (and typically space) proportional to the product of the size of the domains of all variables connected to that factor, thus requiring an exponential time in the degree of the factor.  The addFactor method attempts to save memory and time by re-using existing factors when addFactor is called with the same factor function.  The caching mechanism uses the name of the function (using MATLABÕs func2str) as well as the domain values for all of the arguments to addFactor when deciding if a FactorTable can be re-used.  If this behavior is undesirable, the addFactorNoCache method can be used instead of addFactor (see below).
 
-\para{Nested Graphs}
+\subpara{Nested Graphs}
 
 In a nested graph, a sub-graph can be added to its parent graph using the addFactor method.  In this case, the first argument of the addFactor call is the sub-graph.  For example:
 
@@ -245,9 +251,7 @@ MyGraph.addFactor(mySubGraph, a, b, c);
 
 The number and order of the variables must correspond to the number and order of the connector variables declared when the sub-graph was created.
 
-Note that for backward compatibility, an equivalent method, addGraph, is also supported (see section~\ref{sec:addGraph}).
-
-\para{Specifying FactorTables}
+\subpara{Specifying FactorTables}
 
 For all discrete factors, Dimple can build FactorTables under the hood. A Factor Table consists of a two dimensional array of integers and a single dimensional array of doubles. Each row of the two dimensional table represents a combination of variables for which the Factor Function returns a non-zero value. Each column represents a variable connected to the factor. The values of the table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles and that entry contains the return value of the Factor Function.
 
@@ -332,7 +336,7 @@ ans =
 \end{lstlisting}
 
 
-\para{Built-in Factors}
+\subpara{Built-in Factors}
 \label{sec:builtInFactors}
 
 Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  When calling the addFactor method, in many cases, the user may specify these functions by name (which is case sensitive).  In some cases, there are optional arguments for these built-in factor, in which case an alternative syntax must be used (see below).
@@ -497,7 +501,7 @@ Dimple also includes some built-in helper functions to create structured graphs,
 
 
 
-\para{Adding Factors Implicitly Using MATLAB Operators or Functions}
+\subpara{Adding Factors Implicitly Using MATLAB Operators or Functions}
 
 Dimple supports a set of built-in factors that can be added implicitly using overloaded MATLAB operators or functions.  For example,
 
@@ -529,7 +533,7 @@ The specific set of operators supported is given in section~\ref{sec:overloaded}
 
 
 
-\para{Specifying Java Factor Functions}
+\subpara{Specifying Java Factor Functions}
 \label{sec:userJava}
 
 There are some cases in which it is desirable to add a factor function that is defined in Java rather than MATLAB. Specific cases where this is desirable are:
@@ -541,7 +545,7 @@ The following sections provides the steps users must follow to add a Java Factor
 \end{itemize}
 
 
-\subpara{Create a Class That Inherits from Java FactorFunction}
+\subparaNoToc{Create a Class That Inherits from Java FactorFunction}
 \label{sec:createJavaFactorFunction}
 
 Users must extend the FactorFunction class. They have to provide two methods:
@@ -585,11 +589,11 @@ public class BigEquals extends FactorFunction
 }
 \end{lstlisting}
 
-\subpara{Compiling}
+\subparaNoToc{Compiling}
 
 The new class must be compiled to class files. Users can optionally create a jar file. If using Eclipse, users can simply create a new project, create the new class, and the .class files will be created automatically.
 
-\subpara{Adding Binary to MATLAB Path}
+\subparaNoToc{Adding Binary to MATLAB Path}
 
 In MATLAB, the user must use the javaaddpath call to add the java files to the javaclasspath.
 
@@ -603,7 +607,7 @@ or
 javaaddpath('<path to the jar>/myjar.jar');
 \end{lstlisting}
 
-\para{Using the Factor Function}
+\subpara{Using the Factor Function}
 
 Users can now instantiate the FactorFunction and call addFactor with the instance.
 
@@ -630,7 +634,7 @@ ans =
    0.0000    0.3333    0.6667
 \end{lstlisting}
 
-\subpara{Re-using the Factor Function}
+\subparaNoToc{Re-using the Factor Function}
 We can re-use the BigEquals() FactorFunction multiple times within a single graph or across graphs. This will result in caching of FactorTables when the arguments to the addFactor function have identical domains.
 
 \begin{lstlisting}
@@ -647,6 +651,18 @@ fg2.addFactor(be,v2(1),v2(2));
 fg2.solve();
 v2(1).Belief
 \end{lstlisting}
+
+
+\subpara{Constants}
+
+Users can pass constants to addFactor.  The following passes the constant 1 to the xorDelta factor function as the final argument.
+
+\begin{lstlisting}
+fg = FactorGraph();
+b = Bit(10,3);
+fg.addFactorVectorized(@xorDelta,{b 1},1);
+\end{lstlisting}
+
 
 \para{addFactorNoCache}
 \label{sec:addFactorNoCache}
@@ -668,11 +684,10 @@ This is a somewhat contrived example but, in this case, replacing addFactorNoCac
 
 
 \para{addFactorVectorized}
-\subsubsection{addFactorVectorized}
 
 To get reasonable speed out of MATLAB, one needs to vectorize their code.  If a user wishes to build a FactorGraph with large numbers of factors in a regular arrangement, they will want to avoid making many calls to addFactor.  The addFactorVectorized method can be used instead to create many factors at once.
 
-\para{Vectorizing over All Variables}
+\subpara{Vectorizing over All Variables}
 
 In this first example, we create three variable matrices and generate 12 factors connecting a(i,j), b(i,j), and c(i,j) for all i and j.
 
@@ -684,7 +699,7 @@ c = Bit(3,4);
 fg.addFactorVectorized(@xorDelta,a,b,c);
 \end{lstlisting}
 
-\para{Specify Vectorize Dimensions}
+\subpara{Specify Vectorize Dimensions}
 
 By default addFactorVectorized will add factors for every dimension.  However, if a user wants to only vectorize over a subset of dimensions, addFactorVectorize
 allows them to provide a cell array containing a variable matrix as the first argument and a list of dimensions to vectorize over as the second argument.  The following code will vectorize over the first two dimensions to create 12 xor factors.  Each xor factor is connected to 5 bits.
@@ -695,7 +710,7 @@ b = Bit(3,4,5);
 fg.addFactorVectorized(@xorDelta,{b,[1 2]});
 \end{lstlisting}
 
-\para{Connecting a single variable with addFactorVectorized}
+\subpara{Connecting a single variable with addFactorVectorized}
 
 The addFactorVectorized method will ensure that dimensions being vectorized match for all inputs.  However, the call allows single variables to be connected to many as follows:
 
@@ -708,7 +723,7 @@ fg.addFactorVectorized(@xorDelta,a,b);
 
 This will create a graph such that b is connected to every element of a via a total of 10 factors.
 
-\para{repmat}
+\subpara{repmat}
 
 Similar things can be done with repmat.  Suppose you have a 10x1 vector of variables that you want connected to a 10x20 matrix of different variables.
 The following code will create 200 factors.  Each element of a will be connected to 20 elements of b via 20 factors.
@@ -718,16 +733,6 @@ fg = FactorGraph();
 a = Bit(10,1);
 b = Bit(10,20);
 fg.addFactorVectorized(@xorDelta,repmat(a,1,10),b);
-\end{lstlisting}
-
-\para{Constants}
-
-Users can still pass constants to addFactor.  The following passes the constant 1 to the xorDelta factor function as the final argument.
-
-\begin{lstlisting}
-fg = FactorGraph();
-b = Bit(10,3);
-fg.addFactorVectorized(@xorDelta,{b 1},1);
 \end{lstlisting}
 
 \para{Nested Graphs}
@@ -1167,13 +1172,6 @@ And finally we look at nesting a custom schedule:
 
 
 
-\subsubsection{Solve}
-
-\begin{lstlisting}
-MyGraph.solve();
-\end{lstlisting}
-
-The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
 
 
 \subsubsection{Modifying an Existing Graph}
