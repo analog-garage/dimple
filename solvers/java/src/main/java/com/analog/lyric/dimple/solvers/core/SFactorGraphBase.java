@@ -61,6 +61,20 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default implementation simply returns {@link VariableBase#getSolver()}, which
+	 * assumes that the {@code variable}'s model is currenty attached to this solver graph.
+	 * Subclasses may override this to return a more precise type or to support solvers that
+	 * can still be used when they are detached from the model.
+	 */
+	@Override
+	public ISolverVariable getSolverVariable(VariableBase variable)
+	{
+		return variable.getSolver();
+	}
+	
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
