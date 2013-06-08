@@ -36,7 +36,7 @@ public class DummyCustomFactor extends SFactorBase
 	public Object getDefaultMessage(Port port) 
 	{
 		com.analog.lyric.dimple.model.Discrete var = (com.analog.lyric.dimple.model.Discrete)port.getConnectedNode();
-		DummyVariable v = (DummyVariable)var.getSolver();
+		DummyDiscreteVariable v = (DummyDiscreteVariable)var.getSolver();
 		return v.getDefaultMessage(port);
 	}
 
