@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -24,23 +26,24 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class DummyFactorGraph extends SFactorGraphBase
 {
-	public DummyFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public DummyFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph)
 	{
 		super(factorGraph);
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)
 	{
 		String funcName = factor.getModelerFunctionName();
 		if (funcName.equals("dummyCustomFactor"))
-		{    		
+		{
 			return new DummyCustomFactor(factor);
 		}
 		else
 			throw new DimpleException("Not implemented");
 	}
 
-	public ISolverFactor createFactor(com.analog.lyric.dimple.model.Factor factor)  
+	@Override
+	public ISolverFactor createFactor(com.analog.lyric.dimple.model.Factor factor)
 	{
 		if (customFactorExists(factor.getFactorFunction().getName()))
 			return createCustomFactor(factor);
@@ -49,22 +52,32 @@ public class DummyFactorGraph extends SFactorGraphBase
 	}
 
 	
-	public ISolverVariable createVariable(VariableBase var)  
+	@Override
+	public ISolverVariable createVariable(VariableBase var)
 	{
-		return new DummyVariable(var);
+		if (var instanceof Discrete)
+		{
+			return new DummyDiscreteVariable((Discrete)var);
+		}
+		else if (var instanceof Real)
+		{
+			return new DummyRealVariable((Real)var);
+		}
+		
+		throw DimpleException.unsupported("DummyFactorGraph.createVariable with variable not Real or Discrete");
 	}
 
 	@Override
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
 		if (funcName.equals("dummyCustomFactor"))
 			return true;
 		else
-			return false;	
+			return false;
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 
 	}

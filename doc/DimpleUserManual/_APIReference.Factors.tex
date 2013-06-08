@@ -1,0 +1,277 @@
+\subsection{Factors}
+
+\subsubsection{Factor}
+
+The Factor class can represent either a single factor or a multidimensional array of factors.  The Factor class is never created directly, but is the result of using the addFactor or addFactorVectorized (or related) methods on a FactorGraph.
+
+\para{Properties}
+
+\subpara{Name}
+
+Read-write.  When read, retrieves the current name of the factor or array of factors.  When set, modifies the name of the factor to the corresponding value.  The value set must be a string.
+
+\begin{lstlisting}
+factor.Name = 'string';
+\end{lstlisting}
+
+When setting the Name, only one factor in an array may be set at a time.  To set the names of an entire array of factors to distinct values, the setNames method may be used (see section~\ref{sec:Factor.setNames}).
+
+
+\subpara{DirectedTo}
+\label{sec:Factor.DirectedTo}
+
+Read-write.  The DirectedTo property indicates a set of variables to which the factor is directed.  The value may be either a single variable or a cell array of variables.  The DirectedTo property is used by some solvers, and in some cases is required for proper operation of certain features.  Such cases are identified elsewhere in this manual.
+
+For example, if a factor F corresponds to a function $F(a, b, c, d)$, where $a$, $b$, $c$, and $d$ are variables, then the factor is directed toward $c$ and $d$ if $\sum_{c, d} F(a, b, c, d)$ is constant for all values of $a$ and $b$.  In this case, we may set:
+
+\begin{lstlisting}
+F.DirectedTo = {c, d};
+\end{lstlisting}
+
+In some cases, the set of DirectedTo variables can be automatically determined when a factor is created.  In this case it need not be set manually by the user.  This includes many built-in factors supported by Dimple.  If this property is set by the user, then in the case of factors connected only to discrete variables, Dimple will check that the factor is in fact directed in the specified direction.
+
+If the set of variables the factor are directed toward are part of a variable array, then these may be specified together in a single cell array.  For example, if varArray is an array of variables, and a factor F is directed toward all of the variables in varArray, then we can set:
+
+\begin{lstlisting}
+F.DirectedTo = varArray;
+\end{lstlisting}
+
+In the case of a vector of factors, we can identify the variables to which each factor is directed in a vectorized way.  For example:
+
+\begin{lstlisting}
+s = Discrete(domain,N);
+fg.addFactorVectorized(factorFunction, s(1:(end-1)), s(2:end)).DirectedTo = s(2:end);
+\end{lstlisting}
+
+This example also shows that the DirectedTo property can be set directly on the result of the factor creation without assigning the factor to a named variable.
+
+As a more complicated vectorized example, the following creates 12 factors, each of which contains 10 variables (5 from a and 5 from b).  The first 2 of the 5 from a and the first from b are what the factor is directed to.
+
+\begin{lstlisting}
+a = Bit(3,4,5);
+b = Bit(3,4,5);
+fg.addFactorVectorized(factorFunction, {a, [1 2]}, {b, [1 2]}).DirectedTo = {a(:,:,1:2), b(:,:,1)};
+\end{lstlisting}
+
+\subpara{Belief}
+\label{sec:Factor.Belief}
+
+Read-only.  The belief of a factor is the joint belief over all joint states of the variables connected to that factor.  There are two properties that represent the belief in different ways: Belief and FullBelief.  Reading the Belief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a compact one-dimensional vector that includes only values that correspond to non-zero entries in the factor table.  This form is used because in some situation, the full representation over all possible variable values (as returned by the FullBelief property) would result in a data structure too large to be practical.
+
+\begin{lstlisting}
+fb = myFactor.Belief;
+\end{lstlisting}
+
+The result is a vector of belief values, where the order of the vector corresponds to the order of the factor table entries.  The order of factor table entries can be determined from the factor using:
+
+\begin{lstlisting}
+ind = f.FactorTable.Indices
+\end{lstlisting}
+
+This returns a two-dimensional array, where each row corresponds to one entry in the factor table, and where each column-entry in a row indicates the index into the domain of the corresponding variable (where the order of the variable is the order used when the factor was created).
+
+
+\subpara{FullBelief}
+\label{sec:Factor.FullBelief}
+
+Read-only.  Reading the FullBelief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a multi-dimensional array, where each dimension of the multi-dimensional array ranges over the domain of the corresponding variable (the order of the dimensions corresponds to the variable order used when the factor was created).
+
+\begin{lstlisting}
+fb = myFactor.FullBelief;
+\end{lstlisting}
+
+
+\para{Methods}
+
+\subpara{setNames}
+\label{sec:Factor.setNames}
+
+For an array of factors, the setNames method sets the name of each factor in the array to a distinct value derived from the supplied string argument.  When called with:
+
+\begin{lstlisting}
+factorArray.setName('baseName');
+\end{lstlisting}
+
+the resulting factor names are of the form: \texttt{baseName\textunderscore vv0}, \texttt{baseName\textunderscore vv1}, \texttt{baseName\textunderscore vv2}, etc., where each factor's name is the concatenation of the base name with the suffix \texttt{\textunderscore vv} followed by a unique number for each factor in the array.
+
+
+
+
+
+
+\subsubsection{FactorFunction}
+\label{sec:FactorFunction}
+
+The FactorFunction class is used specify a Dimple built-in factor function in a way that can be reused for creating multiple factors, and that allows specification of constructor arguments.
+
+\para{Constructor}
+
+\begin{lstlisting}
+FactorFunction(factorFunctionName, [constructorArguments])
+\end{lstlisting}
+
+\begin{itemize}
+\item factorFunctionName is a string that indicates the name of the built-in factor function
+\item constructorArguments is a variable-length comma-separated list of constructor arguments, whose interpretation is specific to the particular built-in factor function.  If no arguments are needed, this list would be empty.
+\end{itemize}
+
+There are no available properties or methods in this class.
+
+
+
+%\subsubsection{FactorTable}
+%
+%The FactorTable class is used to explicitly specify a factor table in lieu of Dimple creating one automatically from a factor function.  This is sometimes useful in cases where the factor table is highly structured, but automatic creation would be time consuming due to a large number of possible states of the connected variables.
+%
+%\para{Constructor}
+%
+%\para{Properties}
+%
+%\para{Methods}
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%
+%\subsubsection{Changing FactorTables}
+%
+%FactorTables are shared between factors. A change a combo table for one factor and that combo table is shared by another factor, you are changing it globally. 
+%
+%The following unit test shows how to use this feature:
+%
+%\begin{lstlisting}
+%function testChangeFactorTable()
+%   %Create a Factor Grap
+%   fg = FactorGraph();
+%   
+%   %Create 6 bits
+%   b1 = Bit(3,1);
+%   b2 = Bit(3,1);
+%   
+%   %Create two factors that are independent from one another.
+%   %We do this so that we can show that changing one factor's
+%   %combo table affects the other factor.
+%   f1 = fg.addFactor(@xorDelta,b1);
+%   f2 = fg.addFactor(@xorDelta,b2);
+%   
+%   fg.NumIterations = 1;
+%   fg.solve();
+%   %First, make sure we get 50% for all variables.
+%   assertElementsAlmostEqual([.5 .5 .5]',b1.Belief);
+%   assertElementsAlmostEqual([.5 .5 .5]',b2.Belief);
+%   %Now we change the values
+%   newvals = [1 2 3 4]';
+%   f1.FactorTable.Values = newvals;
+%   %Solve
+%   fg.solve();
+%   %Now we want to check that the result is correct
+%   indices = f1.FactorTable.Indices;
+%   
+%   %Since we've left the input as 50%, we can use a trick
+%   %where we multiply the values against the indices for each variable
+%   %to get the expected belief
+%   p0s = double(indices)'* newvals;
+%   p1s = double(~indices)'* newvals;
+%   total = p0s + p1s;
+%   p1s_normalized = p1s ./ total;
+%   %compare
+%   assertElementsAlmostEqual(p1s_normalized,b1.Belief);
+%   assertElementsAlmostEqual(p1s_normalized,b2.Belief);
+%   %Now we try changing the indices.  This is basically an inverted
+%   %xor.
+%   f1.FactorTable.Indices = ~indices;
+%   fg.solve();
+%   %we expect the probabilities to be inverted.
+%   assertElementsAlmostEqual(1-p1s_normalized,b1.Belief);
+%   assertElementsAlmostEqual(1-p1s_normalized,b2.Belief);
+%
+%   %Try changing the combo table completely.  here we turn it
+%   %into an equals gate.
+%   f1.FactorTable.change([0 0 0; 1 1 1],[1 1]);
+%   b1(1).Input = .8;
+%   b2(1).Input = .8;
+%   
+%   fg.solve();
+%   
+%   assertElementsAlmostEqual([.8 .8 .8]',b1.Belief);
+%   assertElementsAlmostEqual([.8 .8 .8]',b2.Belief);
+%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   %Let's test our ability to catch errors
+%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   
+%   %First we try this when the user sets the value vector to a bad length
+%   thrown = 0;
+%   try
+%       f1.FactorTable.Values = [1 2 3];
+%   catch exception
+%       thrown = 1;
+%   end
+%   assertTrue(thrown==1);
+%   %Next we try setting the indices to an incorrect length
+%   thrown = 0;
+%   try
+%       f1.FactorTable.Indices = ones(3,3);
+%   catch exception
+%       thrown = 1;
+%   end
+%   assertTrue(thrown==1);
+%   %Set indices to values that are too large for the domain lengths
+%   thrown = 0;
+%   try
+%       f1.FactorTable.Indices = ones(2,3)*2;
+%   catch exception
+%       thrown = 1;
+%   end
+%   assertTrue(thrown==1);
+%end
+%\end{lstlisting}
+%
+%\subsubsection{Factor Belief}
+%
+%
+%Users can retrieve beliefs from Factors. As demonstrated in this unit test:
+%
+%\begin{lstlisting}
+%function output = funkyFactor(x,y,z)
+%   if x == y && y == z
+%       if x == 0
+%           output = 1;
+%       else
+%           output = 2;
+%       end
+%   else
+%       output = 0;
+%   end
+%end
+%    %Create a Factor Graph
+%       b = Bit(3,1);
+%       fg = FactorGraph();
+%       f = fg.addFactor(@funkyFactor,b(1),b(2),b(3));
+%       
+%       %Set inputs
+%       input = [.8 .8 .6];
+%       b.Input = input;
+%       %We have to solver right now
+%       fg.Solver.setNumIterations(1);
+%       fg.solve();
+%       %funkyFactor only allows these two combos.
+%       expectedDomain = {0,0,0;1,1,1};
+%       assertEqual(expectedDomain,f.Domain);
+%       %Bit stores values as 1,0.
+%       expectedIndices = int32([2,2,2;1,1,1]);
+%       assertEqual(expectedIndices,f.Indices);
+%       %Let's calculate the belief by hand and compare to Dimple.
+%       val0 = prod(1-input)*funkyFactor(0,0,0);
+%       val1 = prod(input)*funkyFactor(1,1,1);
+%       total = val0 + val1;
+%       val0 = val0 / total;
+%       val1 = val1 / total;
+%       expectedBelief = [val0; val1];
+%       assertElementsAlmostEqual(expectedBelief,f.Belief);
+%       %Now we create a full belief and compare to our expected.
+%      expectedFullBelief = zeros(2,2,2);
+%       expectedFullBelief(1,1,1) = val1;
+%       expectedFullBelief(2,2,2) = val0;
+%       assertElementsAlmostEqual(expectedFullBelief,f.FullBelief);
+%\end{lstlisting}
+%
+%%%%%%%%%%%%%%%%%%%%%
