@@ -2032,12 +2032,11 @@ public class FactorGraph extends FactorBase
 	}
 	public VariableBase getVariableByUUID(UUID uuid)
 	{
-		Discrete v = null;
+		VariableBase v = null;
 		Object o = getObjectByUUID(uuid);
-		if(o instanceof Discrete)
+		if (o instanceof VariableBase)
 		{
-
-			v = (Discrete) o;
+			v = (VariableBase) o;
 		}
 		return v;
 	}
