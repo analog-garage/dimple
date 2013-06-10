@@ -50,6 +50,22 @@ varArray.setName('baseName');
 the resulting variable names are of the form: \texttt{baseName\textunderscore vv0}, \texttt{baseName\textunderscore vv1}, \texttt{baseName\textunderscore vv2}, etc., where each variable's name is the concatenation of the base name with the suffix \texttt{\textunderscore vv} followed by a unique number for each variable in the array.
 
 
+\subpara{invokeSolverSpecificMethod}
+
+\begin{lstlisting}
+variableArray.invokeSolverSpecificMethod('methodName', arguments);
+\end{lstlisting}
+
+For an array of variables, the invokeSolverSpecificMethod calls the specified solver-specific method on each of the variables in the array.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  This method does not result in any return values.  For solver specific methods that return results, use the invokeSolverSpecificMethodWithReturnValue method instead.
+
+
+\subpara{invokeSolverSpecificMethodWithReturnValue}
+
+\begin{lstlisting}
+returnArray = variableArray.invokeSolverSpecificMethodWithReturnValue('methodName', arguments);
+\end{lstlisting}
+
+For an array of variables, the invokeSolverSpecificMethodWithReturnValue calls the specified solver-specific method on each of the variables in the array, returning a return value for each variable.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  The returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the variable array.
 
 
 \subsubsection{Discrete}

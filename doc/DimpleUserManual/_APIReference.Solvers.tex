@@ -1,6 +1,39 @@
 \subsection{Solvers}
 \label{sec:SolversAPI}
 
+\subsubsection{Solver-Specific Methods}
+
+Each solver supports a series of solver-specific methods, which are described in the following sections.  Solver-specific methods may be available for various objects: a factor-graph, variable, or factor.  In each case, to call a solver-specific method, the method is applied to the solver object, returned by the Solver property.  For example:
+
+\begin{lstlisting}
+factorGraph.Solver.solverSpecificMethod(arguments);
+\end{lstlisting}
+
+\begin{lstlisting}
+variable.Solver.solverSpecificMethod(arguments);
+\end{lstlisting}
+
+\begin{lstlisting}
+factor.Solver.solverSpecificMethod(arguments);
+\end{lstlisting}
+
+Some solver-specific methods return results, while others do not.  Some solver-specific methods require arguments, while others do not.  If no arguments are needed, the parentheses are optional.
+
+In some cases it is convenient to call solver-specific methods on each element in an array of objects.  Utility methods are provided for this purpose.  Specifically, to call a solver-specific method that has no return value:
+\begin{lstlisting}
+objectArray.invokeSolverSpecificMethod('methodName', arguments);
+\end{lstlisting}
+
+In this case, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.
+
+To call a solver specific method that has a return value:
+\begin{lstlisting}
+returnArray = objectArray.invokeSolverSpecificMethodWithReturnValue('methodName', arguments);
+\end{lstlisting}
+
+In this case, returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the object array.
+
+
 
 \subsubsection{Sum-Product Solver}
 
@@ -9,37 +42,40 @@ Use of the sum-product solver is specified by calling:
 fg.Solver = 'SumProduct';
 \end{lstlisting}
 
+If no solver is specified, the SumProduct solver is used by default.
 
-The sum-product solver only supports discrete variables.
+The sum-product solver supports only discrete variables.
 
-\para{Damping}
+\para{Methods}
 
+\subpara{setDamping}
 
-The sum product solver supports setting damping:
+The SumProduct solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated).  The damping parameter sets the weighting value:
 
-\begin{lstlisting}
-fg.Solver.setDamping(dampingVal);
-\end{lstlisting}
+\[
+\mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
+\]
 
-
-\para{K Best}
-
-The sum product solver supports a k-best algorithm.  Users can set a K value on 
-each factor:
+where $D$ is the damping value.  The set Damping method can be used to set the damping value.
 
 \begin{lstlisting}
-fg = FactorGraph();
-vars = Discrete(1:D,NumVars,1);
-f = fg.addFactor(factorFunction,vars);
-f.Solver.setK(K);
-vars.Input = 1:D;
-fg.solve();
+fg.Solver.setDamping(dampingValue);
 \end{lstlisting}
 
-The solver will only use the k-best values for each variable when calculating output messages
-on a factor node.
+The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
 
-IMPORTANT: k-best and damping are not yet compatible.
+
+\subpara{setK}
+
+The SumProduct solver supports the k-best variant of the sum-product algorithm.  Users can set a K value on each factor:
+
+\begin{lstlisting}
+factor.Solver.setK(K);
+\end{lstlisting}
+
+The solver will only use the K best values for each variable when calculating output messages on a factor node.
+
+IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
 
 
 \subsubsection{Min-Sum Solver}
@@ -50,7 +86,42 @@ fg.Solver = 'MinSum';
 \end{lstlisting}
 
 
-The min-sum solver only supports discrete variables.  Like Sum Product, Min Sum supports both damping\footnote{Note that in the min-sum solver, damping is done on messages in the log-domain, which has slightly different behavior than damping  in the probability domain, as is done in the sum-product solver} and k-best.
+The MinSum solver only supports discrete variables.
+
+\para{Methods}
+
+\subpara{setDamping}
+
+The MinSum solver supports damping, in which messages are damped by replacing each message by a weighted sum of the computed message value and the previous value of that message (when the corresponding edge was most-recently updated).  The damping parameter sets the weighting value:
+
+\[
+\mathrm{message} = \mathrm{computedMessage} \cdot (1 - D) + \mathrm{previousMessage} \cdot D
+\]
+
+where $D$ is the damping value.  The set Damping method can be used to set the damping value.
+
+\begin{lstlisting}
+fg.Solver.setDamping(dampingValue);
+\end{lstlisting}
+
+The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
+
+Note that damping in the MinSum solver is done on messages in the log-domain, which has slightly different behavior than damping in the probability domain, as is done in the SumProduct solver.
+
+
+\subpara{setK}
+
+The SumProduct solver supports the k-best variant of the sum-product algorithm.  Users can set a K value on each factor:
+
+\begin{lstlisting}
+factor.Solver.setK(K);
+\end{lstlisting}
+
+The solver will only use the K best values for each variable when calculating output messages on a factor node.
+
+IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
+
+
 
 
 
@@ -62,9 +133,11 @@ Use of the Gibbs solver is specified by calling:
 fg.Solver = 'Gibbs';
 \end{lstlisting}
 
-The Gibbs solver performs Gibbs sampling on a factor graph.  It supports both discrete and real variables.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
+The Gibbs solver supports both discrete and real variables.
 
-In the current implementation, sampling of real variables makes use of the Metropolis-Hastings algorithm.  In future versions of Dimple, additional sampling methods will be provided.
+This solver performs Gibbs sampling on a factor graph.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
+
+For discrete variables, the Gibbs solver directly samples from the conditional distribution of each variable using a variation of the CDF sampling method.  For real variables, the Gibbs solver uses Slice sampling by default.  Optionally, the Metropolis-Hastings algorithm may be used instead.  In future versions of Dimple, other sampling methods will also be provided.
 
 The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
  
@@ -306,7 +379,7 @@ factor.Solver.getPotential(values);
 
 Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
 
-\subpara{Schedulers}
+\para{Schedulers}
 
 There are two schedulers currently defined for the Gibbs solver:
 
