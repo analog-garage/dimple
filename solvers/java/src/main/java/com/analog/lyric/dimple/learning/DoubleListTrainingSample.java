@@ -146,7 +146,7 @@ public class DoubleListTrainingSample implements IVariableListTrainingSample
 	{
 		TrainingAssignmentType type = assignmentTypeForVariable(var, value);
 		Object objValue = type != TrainingAssignmentType.MISSING ? value : null;
-		return TrainingAssignment.create(this, var, type, objValue);
+		return TrainingAssignment.create(var, type, objValue);
 	}
 	
 	/*-----------------
