@@ -142,41 +142,6 @@ For discrete variables, the Gibbs solver directly samples from the conditional d
 The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
  
 
-\para{Constructor}
-
-\subpara{Basic Constructor}
-
-The basic constructor for the Gibbs solver is:
-
-\begin{lstlisting}
-com.analog.lyric.dimple.solvers.gibbs.Solver()
-\end{lstlisting}
-
-\subpara{Optional Constructor Arguments}
-
-There are two optional constructors that allow specifying some of the solver configuration parameters up front. These are:
-
-\begin{lstlisting}
-com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample)
-\end{lstlisting}
-
-and
-
-\begin{lstlisting}
-com.analog.lyric.dimple.solvers.gibbs.Solver(burnInUpdates, updatePerSample, initialTemperature, temperingHalfLifeInSamples)
-\end{lstlisting}
-
-The arguments of these constructors are defined as follows:
-
-\begin{itemize}
-\item burnInUpdates is the number of single-variable updates for the burn-in phase. This is zero by default.
-\item updatePerSample is the number of single-variable updates per sample. This is one by default. The state of the graph between samples is ignored for the purposes of saving samples and calculating beliefs.
-\item initialTemperature is the initial temperature for using tempering. This is one by default.
-\item temperingHalfLifeInSamples is the number of samples for the temperature to drop by half when annealing.
-\end{itemize}
-
-Note that when the second constructor is used, tempering is automatically enabled. It is otherwise disabled by default.
-
 \para{Methods}
 
 All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
@@ -381,23 +346,22 @@ Get the potential value of a factor given the variable values specified by the a
 
 \para{Schedulers}
 
-There are two schedulers currently defined for the Gibbs solver:
+The built-in schedulers designed for belief propagation are not appropriate for the Gibbs solver.  Instead, there are two built-in schedulers specifically for the Gibbs solver:
 
-\begin{lstlisting}
-com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler
-\end{lstlisting}
+\begin{itemize}
+\item GibbsSequentialScanScheduler
+\item GibbsRandomScanScheduler
+\end{itemize}
 
-Sequentially chooses the next variable for updating in a fixed order. It updates all variables in the graph, completing an entire scan, before repeating the same fixed order. (In Gibbs literature this seems to be known as a sequential-scan, systematic-scan, or fixed-scan schedule.)
+The GibbsSequentialScanScheduler chooses the next variable for updating in a fixed order. It updates all variables in the graph, completing an entire scan, before repeating the same fixed order. (In Gibbs literature this seems to be known as a sequential-scan, systematic-scan, or fixed-scan schedule.)
 
-\begin{lstlisting}
-com.analog.lyric.dimple.schedulers.GibbsRandomScanScheduler
-\end{lstlisting}
-
-Randomly selects a variable for each update (with replacement).
+The GibbsRandomScanScheduler randomly selects a variable for each update (with replacement).
 
 The default scheduler when using the Gibbs solver is the GibbsSequentialScanScheduler, which is used if no scheduler is explicitly specified.
 
 The user may specify a custom schedule when using the Gibbs solver.  In this case, the schedule should include only Variable node updates (not specific edges), and no Factor updates (any Factor updates specified will be ignored).
+
+To explicitly specify a scheduler, use the Scheduler or Schedule property of the FactorGraph (see sections~\ref{sec:FactorGraph.Scheduler} and~\ref{sec:FactorGraph.Schedule}).
 
 
 
@@ -820,14 +784,6 @@ fg.Solver = 'ParticleBP';
 \end{lstlisting}
 
 
-\para{Constructor}
-
-The basic constructor for the Particle BP solver is:
-
-\begin{lstlisting}
-com.analog.lyric.dimple.solvers.particleBP.Solver()
-\end{lstlisting}
-
 \para{Methods}
 
 The following sections list the solver-specific methods for the Particle BP solver (MATLAB versions).
@@ -935,11 +891,6 @@ variable.Solver.getBelief(valueSet);
 Given a set of values in the domain of the variable, returns the belief evaluated at these points. The result is normalized relative to the set of points requested so that the sum over the set of returned beliefs is 1.
 
 NOTE: the generic variable method Belief (or getBeliefs() with no arguments) operates similarly to the discrete-variable case, but the belief values returned are those at the current set of particle values. Note that this representation does not represent a set of weighted particles. That is, the particle positions are distributed approximately by the belief and the belief values represent the belief. It remains to be see if this should be the representation of belief that is used, or if an alternative representation would be better. The alternative solver-specific getBelief(valueSet) method allows getting the beliefs on a user-specified set of values, which may be uniform, and would not have this unusual interpretation.
-
-\para{Schedulers}
-
-Since Particle BP is a form of BP, any of the schedulers for BP can be used for Particle BP.
-
 
 
 
