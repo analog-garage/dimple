@@ -208,6 +208,7 @@ Because of the nature of the Gibbs solver, the nested structure of a graph is ig
 
 
 \para{Custom Schedules}
+\label{sec:CustomSchedules}
 
 
 Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
@@ -420,6 +421,58 @@ fb = myFactor.FullBelief;
 Using the Belief property results in a compact representation of the belief that leaves out values corresponding to zero values of the factor.  The FullBelief property results in a multidimensional array of beliefs over the range of all possible states of the connected variables.  The more compact representation may be needed where the full representation would result in a data structure too large to be practical.  More information about the Belief and FullBelief properties can be found in sections~\ref{sec:Factor.Belief} and~\ref{sec:Factor.FullBelief}, respectively.
 
  
+\subsubsection{Explicit Scheduling and Retrieving Message Values}
+
+Dimple supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
+
+\begin{lstlisting}
+%OK, first we create a simple Factor Graph with a single xor connecting two  
+%variables.
+fg = FactorGraph(); 
+b = Bit(2,1);
+f = fg.addFactor(@xorDelta,b);
+%We can go ahead and set some inputs
+b(1).Input = .8;
+b(2).Input = .7;
+
+
+%we can examine some edges 
+disp(f.Ports{1}.InputMsg);
+disp(f.Ports{1}.OutputMsg);
+
+%we can even set some edge messages
+f.Ports{1}.InputMsg = [.6 .4];
+
+%we can update a node 
+b(1).update();
+b(2).update();
+
+%or all the variables in a vector.
+b.update();
+
+%or a specific edge
+b(1).updateEdge(f);
+ 
+%but updating via portNum is quicker
+b(1).updateEdge(1);
+
+%of course, if we don't know the portNum, we can get it
+portNum = b(1).getPortNum(f);
+b(1).updateEdge(portNum);
+
+%We can do the same kind of stuff with factors
+f.updateEdge(b(1));
+f.updateEdge(f.getPortNum(b(2)));
+
+%Let's look at some messages again
+b(1).Ports{1}.InputMsg
+b(2).Ports{1}.InputMsg
+
+%and some beliefs
+b.Belief
+\end{lstlisting}
+
+
 
 
 %

@@ -1,0 +1,81 @@
+\subsection{List of Overloaded MATLAB Operators and Functions}
+\label{sec:overloaded}
+
+The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding factor, the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.
+
+\begin{longtable} {l p{3cm} p{1cm} p{1cm} p{1cm} l p{4cm}}
+Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
+\hline
+\endhead
+%
+$\&$ & And & B & B & B & \checkmark & Logical AND \\
+$|$ & Or & B & B & B & \checkmark & Logical OR \\
+xor() & Xor & B & B & B & \checkmark & Logical XOR \\
+$\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
+$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\
+$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\
+$-$ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\
+$*$ & Product \newline MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply, or matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.  Otherwise the Product factor will be used.} \\
+$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\
+$/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\
+$./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\
+$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
+$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
+$>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
+$<=$ & GreaterThan\footnote{Uses GreaterThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Less than or equal to \\
+$>=$ & LessThan\footnote{Uses LessThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Greater than or equal to \\
+Equals() & Equals & B & B,D,R & B,D,R\footnote{\label{ftn:equals}This function is not limited to two inputs, but can take an arbitrary number of inputs} & \checkmark & Equals\footnote{Equivalent to the $==$ operator, but the $==$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
+NotEquals() & NotEquals & B & B,D,R & B,D,R$^{\ref{ftn:equals}}$ & \checkmark & Not equals\footnote{Equivalent to the $\sim=$ operator, but the $\sim=$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
+mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
+abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
+sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
+log() & Log & R & R & - & \checkmark & Natural log \\
+exp() & Exp & R & R & - & \checkmark & Exponential function \\
+sin() & Sin & R & R & - & \checkmark & Sine \\
+cos() & Cos & R & R & - & \checkmark & Cosine \\
+tan() & Tan & R & R & - & \checkmark & Tangent \\
+asin() & ASin & R & R & - & \checkmark & Arc-sine \\
+acos() & ACos & R & R & - & \checkmark & Arc-cosine \\
+atan() & ATan & R & R & - & \checkmark & Arc-tangent \\
+sinh() & Sinh & R & R & - & \checkmark & Hyperbolic sine \\
+cosh() & Cosh & R & R & - & \checkmark & Hyperbolic cosine \\
+tanh() & Tanh & R & R & - & \checkmark & Hyperbolic tangent \\
+\end{longtable}
+
+
+Dimple also includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions listed above.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  The built-in factors that support this syntax are:
+
+\begin{itemize}
+\item Beta
+\item Gamma
+\item InverseGamma
+\item NegativeExpGamma
+\item Normal
+\item LogNormal
+\item VonMises
+\item Rayleigh
+\item Categorical
+\end{itemize}
+
+For each, the arguments are the parameters of the distribution.  For example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta);
+X = Normal(mean, precision);
+Y = Categorical(alphaVector);
+Z = Rayleigh(sigma);
+\end{lstlisting}
+
+
+The parameters can be variables, constants, or some of each.
+
+By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta, altGraph);
+X = Normal(mean, precision, [100, 1]);
+Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Z = Rayleigh(sigma, myGraph, size(somethingElse));
+\end{lstlisting}
+

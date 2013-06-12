@@ -108,7 +108,24 @@ Because of the nature of the Gibbs solver, the nested structure of a graph is ig
 \para{Schedule}
 \label{sec:FactorGraph.Schedule}
 
-Read-write.  Specifies a custom schedule to be used for performing inference.
+Read-write.  Specifies a custom schedule to be used for performing inference.  A custom schedule is in the form of a list of nodes or edges in the graph to be updated.  Specifically, a cell array where each entry is either a node in the graph (either variable or factor), or a cell array containing a neighboring pair of nodes (\{variable, factor\} or \{factor, variable\}).  The order of the entries in the cell array indicate the order that updates should be performed in a single iteration (or scan) when performing inference.  Examples of using custom schedules are given in section~\ref{sec:CustomSchedules}.
+
+For all BP solvers, any of these entries may be included, and have the following interpretation.
+
+\begin{description}
+\item[Variable] Update messages for all outgoing edges of that variable.
+\item[Factor] Update messages for all outgoing edges of that factor.
+\item[\{Variable, Factor\}] Update a single outgoing edge of the variable in the direction connecting to the specified factor.
+\item[\{Factor, Variable\}] Update a single outgoing edge of the factor in the direction connecting to the specified variable.
+\end{description}
+
+For BP solvers, a check is made when a custom schedule is set to ensure that all edges in the graph are updated at least once.
+
+For the Gibbs solvers, the Schedule should include only variable entries.  Any other entries will be ignored.
+
+If a custom schedule is set on a factor graph (either an entire graph or a sub-graph), this schedule is used instead of any built-in scheduler that may have previously been set (or the default scheduler).
+
+In a nested graph, the Schedule property at each nesting level may be set independently.  For some built-in schedulers, the user may mix custom schedules at some nesting layers, while using built-in schedulers at others.  The particular built-in schedulers that support such mixing are described in section~\ref{sec:FactorGraph.Scheduler}.
 
 
 \para{NumIterations}
@@ -737,7 +754,7 @@ b = Bit(10,20);
 fg.addFactorVectorized(@xorDelta,repmat(a,1,10),b);
 \end{lstlisting}
 
-\para{Nested Graphs}
+\subpara{Nested Graphs}
 
 Nested Graphs are also supported
 
@@ -751,7 +768,7 @@ fg.addFactorVectorized(ng,{b, 1});
 \end{lstlisting}
 
 
-\para{Adding Vectorized Factors Implicitly Using MATLAB Operators or Functions}
+\subpara{Adding Vectorized Factors Implicitly Using MATLAB Operators or Functions}
 
 Adding built-in factors implicitly using overloaded MATLAB operators or functions can also be vectorized, with some limitations.  Specifically, if each of the input variables are vectors of the same dimension, then the result will be to create a vector of output variables of the same dimension, along with a vector of factors relating the inputs and outputs.
 
@@ -780,69 +797,6 @@ The specific set of operators supported is given in section~\ref{sec:overloaded}
 
 \para{addRepeatedFactor}
 
-\para{setSolver}
-\para{Using a Name}
-
-Dimple has been modified to allow users to register commonly used solvers so that they can be assigned using shorter names. Previously users had to do:
-
-\begin{lstlisting}
-setSolver(com.analog.lyric.dimple.solvers.sumproduct.Solver());
-fg = FactorGraph();
-\end{lstlisting}
-
-or
-
-\begin{lstlisting}
-fg = FactorGraph();
-fg.Solver = com.analog.lyric.dimple.solvers.sumproduct.Solver();
-Users can now do:
-setSolver('SumProduct'); 
-fg = FactorGraph();
-\end{lstlisting}
-
-or
-
-\begin{lstlisting}
-fg = FactorGraph();
-fg.Solver = 'SumProduct';
-\end{lstlisting}
-
-When setting the solver by name, the name is case insensitive.
-
-For solvers that take constructor arguments, users can use the setSolver command:
-
-\begin{lstlisting}
-fg = FactorGraph();
-fg.setSolver('Gibbs',param1,param2,param3,param4);
-\end{lstlisting}
-
-or
-
-\begin{lstlisting}
-setSolver('Gibbs',param1,param2,param3,param4);
-\end{lstlisting}
-
-For a full list of registered solvers, type:
-
-\begin{lstlisting}
-getSolverNames()
-\end{lstlisting}
-
-If users wish to register their own solvers they can call:
-
-\begin{lstlisting}
-registerSolver(solverName,solverConstructor);
-\end{lstlisting}
-
-And if they wish to unregister a solver they can call:
-
-\begin{lstlisting}
-unregisterSolver(solverName);
-\end{lstlisting}
-
-
-
-
 \para{advance}
 
 \para{hasNext}
@@ -855,775 +809,78 @@ unregisterSolver(solverName);
 
 \para{estimateParameters}
 
+Dimple provides support for estimating parameters.  In the current version of Dimple, only the SumProduct solver supports this feature.  The sum product algorithm computes the gradient of the BetheFreeEnergy and performs a gradient descent on this.  Users can specify how many times to restart the gradient descent with random table values.
+
+\begin{lstlisting}
+fg.estimateParameters({factorTable1,factorTable2,factor1,etc...}, numRestarts, numSteps, stepScaleFactor);
+\end{lstlisting}
+
+The estimateParameters method takes the following arguments:
+
+\begin{itemize}
+\item factorsAndFactorTables - A cell array of Factors or FactorTables for which parameters are to be estimated.  This list can include both Factors and FactorTables.
+\item numRestarts - The number of times to randomly initialize the FactorTables and restart the gradient descent.
+\item numSteps - The number of times to descend down along the gradient
+\item stepScaleFactor - The value we scale the gradient by.
+\end{itemize}
+
+
 \para{join}
+
+The join method can be used to join a set of existing variables or a set of existing factors in a graph.  In the current version of Dimple this method is supported only for discrete variables, and factors connected only to discrete variables.
+
+When joining variables, the join method is called with a comma-separated list of variables to be joined.
+
+\begin{lstlisting}
+fg.join(variableList);
+\end{lstlisting}
+
+The result is a new variable with a domain that is the Cartesian product of the domains of all of the variables being joined.
+
+When joining factors, the join method is called with a comma-separated list of factors to be joined.
+
+\begin{lstlisting}
+fg.join(factorList);
+\end{lstlisting}
+
+The result is a new factor with a factor table that corresponds to the product of the factors being joined.  The new factor connects with the union of all variables that were previously connected to any of the joined variables.
+
 
 \para{split}
 
+The split method splits a variable in an existing graph into two variables connected by an Equality factor.
+
+\begin{lstlisting}
+fg.split(variable, [factorList]);
+\end{lstlisting}
+
+The method takes an optional comma-separated list of factors.  This list of factors identifies factors already connected to the variable that are to be moved to the new instance of the variable.  All unspecified factors remain connected to the original instance.
+
 \para{removeFactor}
+
+\begin{lstlisting}
+fg.removeFactor(factor);
+\end{lstlisting}
+
+This method removes the specified factor from an existing factor graph that contains it.  This also removes all edges that connect this factor to neighboring variables.
 
 \para{plot}
 
-%\para{getVariableByName}
-%
-%\para{getVariableByUUID}
-%
-%\para{getFactorByName}
-%
-%\para{getFactorByUUID}
-%
-%\para{getGraphByName}
-%
-%\para{getGraphByUUID}
-%
-%\para{isTree}
-%
-%\para{isTreeFlat}
-%
-%\para{isTreeTop}
-%
-%\para{isAncestorOf}
-%
-%\para{depthFirstSearch}
-%
-%\para{depthFirstSearchFlat}
-%
-%\para{depthFirstSearchTop}
-%
-%\para{getFactorGraphDiffsByName}
-%
-%\para{getAdjacencyMatrix}
-%
-%\para{getAdjacencyMatrixFlat}
-%
-%\para{getAdjacencyMatrixTop}
-%
-%\para{getAdjacencyString}
-%
-%\para{getNodeString}
-%
-%\para{getFullString}
-%
-%\para{disp}
+The plot method is used to visualize a factor graph or a portion of a factor graph.  Examples of various use cases for plotting factor graphs are given in section~\ref{sec:PlottingAGraph}.
 
+The plot method may be called with no arguments, or with a set of optional arguments.  The optional arguments are defined in the following table.  These are in the form of names (as strings) followed by one or more values.
 
-
-
-
-
-
-\subsubsection{List of Overloaded MATLAB Operators and Functions}
-\label{sec:overloaded}
-
-The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding factor, the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.
-
-\begin{longtable} {l p{3cm} p{1cm} p{1cm} p{1cm} l p{4cm}}
-Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
+\begin{longtable} {l p{3cm} p{10cm}}
+Name & Values & Description \\
 \hline
 \endhead
-%
-$\&$ & And & B & B & B & \checkmark & Logical AND \\
-$|$ & Or & B & B & B & \checkmark & Logical OR \\
-xor() & Xor & B & B & B & \checkmark & Logical XOR \\
-$\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
-$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\
-$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\
-$-$ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\
-$*$ & Product \newline MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply, or matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.  Otherwise the Product factor will be used.} \\
-$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\
-$/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\
-$./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\
-$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
-$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
-$<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
-$>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
-$<=$ & GreaterThan\footnote{Uses GreaterThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Less than or equal to \\
-$>=$ & LessThan\footnote{Uses LessThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Greater than or equal to \\
-Equals() & Equals & B & B,D,R & B,D,R\footnote{\label{ftn:equals}This function is not limited to two inputs, but can take an arbitrary number of inputs} & \checkmark & Equals\footnote{Equivalent to the $==$ operator, but the $==$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
-NotEquals() & NotEquals & B & B,D,R & B,D,R$^{\ref{ftn:equals}}$ & \checkmark & Not equals\footnote{Equivalent to the $\sim=$ operator, but the $\sim=$ operator is not overloaded for this purpose so that it can instead be used to determine whether or not two variables reference the same Dimple variable.} \\
-mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mod() operator supports discrete variables only, and it uses the MATLAB definition of mod on negative numbers.  This may be subject to change in future versions.} \\
-abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
-sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
-log() & Log & R & R & - & \checkmark & Natural log \\
-exp() & Exp & R & R & - & \checkmark & Exponential function \\
-sin() & Sin & R & R & - & \checkmark & Sine \\
-cos() & Cos & R & R & - & \checkmark & Cosine \\
-tan() & Tan & R & R & - & \checkmark & Tangent \\
-asin() & ASin & R & R & - & \checkmark & Arc-sine \\
-acos() & ACos & R & R & - & \checkmark & Arc-cosine \\
-atan() & ATan & R & R & - & \checkmark & Arc-tangent \\
-sinh() & Sinh & R & R & - & \checkmark & Hyperbolic sine \\
-cosh() & Cosh & R & R & - & \checkmark & Hyperbolic cosine \\
-tanh() & Tanh & R & R & - & \checkmark & Hyperbolic tangent \\
+\texttt{'labels'} & true/false & Boolean value indicating whether or not to display the name of each variable and factor node.  By default labels are not displayed. \\
+\texttt{'color'} & [nodeList], color & Specifies the color of some or all nodes in the graph.  If no nodeList is included, then this specifies the color of all nodes in the graph.  If nodeList is specified, then the color applies to only the listed nodes.  The nodeList argument is a cell-array of nodes in the graph (factors and variables).  The color argument is a string indicating a MATLAB color (e.g., 'r').  More than one set of 'color' arguments may appear in a single call to plot. \\ 
+\texttt{'nodes'} & nodeList & Indicates the set of nodes in the graph to be included in the plot.  The nodeList argument is a cell-array of nodes in the graph (factors and variables).  By default the entire graph is plotted.  \\
+\texttt{'depth'} & rootNode, depth & This argument indicates a portion of the graph to be displayed by specifying a root node and depth (distance) from that node.  The plot includes only the root node and all other nodes that are within the specified distance from the root.  By default the entire graph is plotted.  \\
+\texttt{'nesting'} & nestingDepth & By default, the plotting method ignores hierarchy and plots the flattened graph.  The nesting argument specifies how deep to descend into the nesting hierarchy before considering nested graphs to be factors and plotting them as such. \\
 \end{longtable}
 
-
-Dimple also includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions listed above.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  The built-in factors that support this syntax are:
-
-\begin{itemize}
-\item Beta
-\item Gamma
-\item InverseGamma
-\item NegativeExpGamma
-\item Normal
-\item LogNormal
-\item VonMises
-\item Rayleigh
-\item Categorical
-\end{itemize}
-
-For each, the arguments are the parameters of the distribution.  For example:
-
-\begin{lstlisting}
-W = Gamma(alpha, beta);
-X = Normal(mean, precision);
-Y = Categorical(alphaVector);
-Z = Rayleigh(sigma);
-\end{lstlisting}
-
-
-The parameters can be variables, constants, or some of each.
-
-By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
-
-\begin{lstlisting}
-W = Gamma(alpha, beta, altGraph);
-X = Normal(mean, precision, [100, 1]);
-Y = Categorical(alphaVector, [10, 10, 2], aGraph);
-Z = Rayleigh(sigma, myGraph, size(somethingElse));
-\end{lstlisting}
-
-
-
-\subsubsection{Setting the Solver}
-
-
-
-\subsubsection{Setting the Scheduler}
-
-The scheduler determines the schedule to apply when solving the graph, which is the order of updates of variables and factors.  The user may choose among one of several pre-defined schedulers using the Scheduler method.  Each scheduler examines the structure of the graph and applies a rule to determine the schedule that will be used.  Alternatively, the user may supply a custom schedule using the Schedule method (see section~\ref{sec:customSchedules}).
-
-If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
-
-A scheduler is specified as follows:
-\begin{lstlisting}
-MyGraph.Scheduler = 'ExampleScheduler';	
-\end{lstlisting}
-
-When setting the scheduler for a graph, the name of the scheduler is case sensitive.
-
-For all solvers except for the Gibbs solver (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available:
-
-\begin{longtable}{l p{4in}}
-\textbf{Name} & \textbf{Description} \\ \hline \hline
-%
-\textsf{DefaultScheduler} & Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified. \\ \hline
-%
-\textsf{TreeOrFloodingScheduler} & The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  If the entire graph is a tree, NumIterations should be set to 1, which is its default value.  If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below). \\ \hline
-%
-\textsf{TreeOrSequentialScheduler} & The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  \\ \hline
-%
-\textsf{FloodingScheduler} & The solver will apply a Flooding Schedule.  For each iteration, all variable nodes are updated, followed by all factor nodes.  Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result. \\ \hline
-%
-\textsf{SequentialScheduler} & The solver will apply a Sequential Schedule.  For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated.  The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph. \\ \hline
-%
-\textsf{RandomWithoutReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement.  On each subsequent iteration, a new random order is chosen.  Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once. \\ \hline
-%
-\textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
-%
-\end{longtable}
-
-
-In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
-
-It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
-%
-\begin{lstlisting}
-SubGraph.Scheduler = 'SequentialScheduler';
-ParentGraph.addFactor(SubGraph, boundaryVariables);
-ParentGraph.Scheduler = 'FloodingScheduler';
-\end{lstlisting}
-
-For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
-
-For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
-
-
-Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
-
-\begin{tabular}{l p{4in}}
-\textbf{Name} & \textbf{Description} \\ \hline \hline
-%
-\textsf{GibbsDefaultScheduler} & Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver. \\ \hline
-%
-\textsf{GibbsSequentialScanScheduler} & The solver will apply a Sequential Scan Schedule.  For each scan, each variable is resampled in a fixed order.  The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph. \\ \hline
-%
-\textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
-%
-\end{tabular}
-
-Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.
-
-
-\subsubsection{Custom Schedules}
-\label{sec:customSchedules}
-
-
-Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
-
-The following code demonstrates this feature:
-
-\begin{lstlisting}
-   eq = @(x,y) x == y;
-   fg = FactorGraph();
-   a = Bit();
-   b = Bit();
-   c = Bit();
-   eq1 = fg.addFactor(eq,a,b);
-   eq2 = fg.addFactor(eq,b,c);
-   
-   %define schedule
-   % update b
-   % update eq1->a
-   % update eq2->c
-   % update a->eq1
-   % update c->eq2
-   % update eq1->b
-   % update eq2->b
-   schedule = {
-       b,
-       {eq1,a},
-       {eq2,c},
-       {a,eq1},
-       {c,eq2},
-       {eq1,b},
-       {eq2,b}
-       };
-   
-   fg.Schedule = schedule;
-   
-   %Set priors
-   a.Input = .6;
-   b.Input = .7;
-   c.Input = .8;
-   
-   %Solve
-   fg.NumIterations = 1;
-   fg.solve();
-\end{lstlisting}
-
-Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
-
-\begin{lstlisting}
-   eq = @(x,y) x == y;
-   b = Bit(2,1);
-   nfg = FactorGraph(b);
-   nfg.addFactor(eq,b(1),b(2));
-   b = Bit(3,1);
-   fg = FactorGraph();
-   nf1 = fg.addFactor(nfg,b(1),b(2));
-   nf2 = fg.addFactor(nfg,b(2),b(3));
-   
-   
-   fg.Schedule = {b(1),nf1,b(2),nf2,b(3)};
-   b(1).Input = .7;
-   fg.NumIterations = 1;
-   fg.solve();
-\end{lstlisting}
-
-And finally we look at nesting a custom schedule:
-
-
-\begin{lstlisting}
-   %Now let's try nesting with a custom schedule on the nested graph.
-   
-   %Create a graph to nest and give it a funny schedule    
-   % nfg: eb(1) - f1 - ib - f2 - eb(2)
-   eb = Bit(2,1);
-   ib = Bit();
-   nfg = FactorGraph(eb);
-   f1 = nfg.addFactor(eq,eb(1),ib);
-   f2 = nfg.addFactor(eq,ib,eb(2));
-   %Set an input and solve
-   eb(1).Input = .8;
-   
-   nfg.NumIterations = 1;
-   nfg.solve();
-   
-   %We expect the output to be equal to the input since the tree
-   %scheduler passes the info along.
-   assertElementsAlmostEqual(eb(2).Belief,eb(1).Input(1));
-   
-   %Now we create a schedule that will not propagate the info.
-   nfg.Schedule = {ib,{f1,eb(1)},{f2,eb(2)},eb(1),eb(2),f1,f2};
-   nfg.solve();
-   
-   assertElementsAlmostEqual(eb(2).Belief,.5);
-
-   %Nest it and see if the schedule is preserved
-   b = Bit(2,1);
-   fg = FactorGraph();
-   g = fg.addFactor(nfg,b);
-   
-   fg.Schedule = {b(1),b(2),g};
-   
-   b(1).Input = .8;
-   fg.NumIterations = 1;
-   fg.solve();
-   assertElementsAlmostEqual(b(2).Belief,.5);
-\end{lstlisting}
-
-
-
-
-
-\subsubsection{Modifying an Existing Graph}
-
-
-\para{Removing a Factor}
-
-ItÕs possible to remove a Factor from a FactorGraph:
-
-\begin{lstlisting}
-fg = FactorGraph();
-   b = Bit(3,1);
-   fg.addFactor(@xorDelta,b(1:2));
-   f = fg.addFactor(@xorDelta,b(2:3));
-   b.Input = [.8 .8 .6];
-   fg.NumIterations = 2;
-   fg.solve();
-   assertElementsAlmostEqual([.96 .96 .96]',b.Belief);
-   fg.removeFactor(f);
-   fg.solve();
-   p1 = .8*.8;
-   p0 = .2*.2;
-   total = p1+p0;
-   p1 = p1/total;
-   p0 = p0/total;
-   assertElementsAlmostEqual([p1 p1 .6]',b.Belief);
-\end{lstlisting}
-
-\para{Splitting Variables}
-
-It can be useful to make a copy of a variable and relate it to the old variable with an equals factor. The following code shows how to do this.
-
-\begin{lstlisting}
-   a = Bit();
-   a.Name = 'a';
-   b = Bit();
-   b.Name = 'b';
-  
-   fg = FactorGraph();
-  
-   f = fg.addFactor(@(x,y) x~=y,a,b);
-   f.Name = 'unequal';
-   
-   b2 = fg.split(b);
-   b2.Name = 'b2';
-   a2 = fg.split(a,f);
-   a2.Name = 'a2';
-   
-   fg.plot(1);
-\end{lstlisting}
-
-We've added code to name all the variables and factors so that the following plot is informative.
-
-\includegraphics{images/SplitGraph.png}
- 
-Note that the split method takes a list of factors as the second through nth argument. This is the list of factors that will be moved from the original variable to the copied variable. All unspecified factors will remain connected to the initial variable.
-
-
-
-\para{Joining Variables}
-
-Users can now join variables. This will create a new joint variable and modify all factors connected to the original variables to reconnect to the new joint variable. This can be useful in eliminating loops in a graph. The following code creates a loopy graph and then uses join to remove the loop.
-
-\begin{lstlisting}
-a = Bit(); 
-a.Name = 'a'; 
-b = Bit();
-b.Name  = 'b';
-c = Bit();
-c.Name = 'c';
-d = Bit();
-d.Name = 'd';
-
-fg = FactorGraph();
-f1 = fg.addFactor(@xorDelta,a,b,c);
-f1.Name = 'xor';
-f2 = fg.addFactor(@(x,y,z) (x|y)==z ,a,b,d);
-f2.Name = 'or';
- 
-newvar = fg.join(a,b);
-newvar.Name = 'a,b';
-
-fg.plot(1);
-\end{lstlisting}
-
-The following is the loopy graph:
-
-\includegraphics{images/LoopyGraph.png}
-  
-And after joining the variables we have:
-
-\includegraphics{images/NonLoopyGraph.png}
-
-\para{Joining Factors}
-
-Users can also join factors. It is possible to remove loops by joining factors as well as by joining variables.
-
-\begin{lstlisting}
-   b = Bit(4,1);
-   for i = 1:4
-       b(i).Name = sprintf('b%d',i);
-   end
-   fg = FactorGraph();
-   f1 = fg.addFactor(@xorDelta,b(1:3));
-   f2 = fg.addFactor(@xorDelta,b(2:4));
-   
-   f3 = fg.join(f1,f2);
-   f3.Name = 'twoxors';
-   
-   b.Input = input;
-   fg.solve();
-   actualBelief = b.Belief;
-   
-   fg.plot(1);
-\end{lstlisting}
-
-The following plot shows the graph with the loops:  
- 
-\includegraphics{images/LoopyGraph2.png}
-
-And the following plot shows the graph after the factor is joined: 
- 
-\includegraphics{images/NonLoopyGraph2.png}
-
-To join factors, Dimple does the following:
-
-\begin{itemize}
-\item Find the variables in common between two factors.
-\item Take the cartesian product of the tables but discard rows where the common variable indices differ.
-\item Consolidate the columns with common variables.
-\item Multiply the values for each row.
-\end{itemize}
-
-
-
-\subsubsection{Explicit Scheduling and Retrieving Message Values}
-
-Dimple supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
-
-\begin{lstlisting}
-%OK, first we create a simple Factor Graph with a single xor connecting two  
-%variables.
-fg = FactorGraph(); 
-b = Bit(2,1);
-f = fg.addFactor(@xorDelta,b);
-%We can go ahead and set some inputs
-b(1).Input = .8;
-b(2).Input = .7;
-
-
-%we can examine some edges 
-disp(f.Ports{1}.InputMsg);
-disp(f.Ports{1}.OutputMsg);
-
-%we can even set some edge messages
-f.Ports{1}.InputMsg = [.6 .4];
-
-%we can update a node 
-b(1).update();
-b(2).update();
-
-%or all the variables in a vector.
-b.update();
-
-%or a specific edge
-b(1).updateEdge(f);
- 
-%but updating via portNum is quicker
-b(1).updateEdge(1);
-
-%of course, if we don't know the portNum, we can get it
-portNum = b(1).getPortNum(f);
-b(1).updateEdge(portNum);
-
-%We can do the same kind of stuff with factors
-f.updateEdge(b(1));
-f.updateEdge(f.getPortNum(b(2)));
-
-%Let's look at some messages again
-b(1).Ports{1}.InputMsg
-b(2).Ports{1}.InputMsg
-
-%and some beliefs
-b.Belief
-\end{lstlisting}
-
-
-
-\subsubsection{Plotting}
-
-
-When debugging Factor Graphs, it is sometimes useful to be able to plot a Factor Graph.  The FactorGraph class provides a plot method that can be used to visualize a Factor Graph.
-
-The following code describes how to use the plot function in various ways.
-
-\begin{lstlisting}
-%First we build a Factor Graph to use for plotting examples
-fg = FactorGraph();
-b = Bit(6,1);
-for i = 1:6
-    b(i).Name = sprintf('b%d',i);
-end
- 
-%We use Label rather than Name for the factors so that we can assign
-%them the same Label.  Name must be a unique identifier,
-%Label is just used for printing/plotting.
-f1 = fg.addFactor(@xorDelta,b(1:4));
-f1.Label = 'f';
-f2 = fg.addFactor(@xorDelta,b(4:6));
-f2.Label = 'f';
- 
- 
-pause_time = 1;
- 
-%Calling plot with no arguments shows no labels.  It draws variables as
-%circles and factors as squares.
-fg.plot();
-\end{lstlisting}
-
-This will result in the following graph:
-
-
-\includegraphics{images/plot1.png}
-
-Note that factors are displayed as squares and variables as circles.
-
-\begin{lstlisting}
-pause(pause_time);
- 
-%The following is equivalent to the previous plot command.  We are simply
-%explicitly turning off labels.
-fg.plot('labels',false);
-\end{lstlisting}
-
-Results in the same plot as above.
-
-\begin{lstlisting}
-pause(pause_time);
- 
-%Now we turn on the labels.  Now we see the names we assigned to the
-%various nodes and variables of the Factor Graph.
-fg.plot('labels',true);
-\end{lstlisting}
-
-Results in the following:
- 
-
- 
-\includegraphics{images/plot2.png}
-
-If the user has specified a Label, those will be displayed, otherwise the objectÕs NameÕs will be displayed.
-
-
-\begin{lstlisting}
-pause(pause_time)
- 
-%We can specify a subset of nodes to plot
-fg.plot('labels',1,'nodes',{b(1:2),f1});
-\end{lstlisting}
-
-Results in the following:
-
-
-
-\includegraphics{images/plot3.png}
-
-Only the specified nodes and their connectivity were included.
-
-\begin{lstlisting}
-pause(pause_time)
- 
-%By can set a global color for all the nodes in the graph.
-fg.plot('labels',1,'color','g');
-\end{lstlisting}
-
-Setting a global color:
-
-
-
-\includegraphics{images/plot4.png}
-
-\begin{lstlisting}
-pause(pause_time)
- 
-%We can specify a color for one node in the graph.
-fg.plot('labels',1,'nodes',{b(1:2),f1},'color',b(1),'g');
-\end{lstlisting}
-
-Setting a color for a specific node:
- 
-\includegraphics{images/plot5.png}
- 
-\begin{lstlisting}
-pause(pause_time)
- 
-%We can specify colors for multiple nodes in the graph.
-fg.plot('labels',1,'nodes',{b(1:2),f1},'color',{b(2),f1},{'r','c'});
-\end{lstlisting}
-
-Setting colors for multiple nodes:
-
-\includegraphics{images/plot6.png}
-
-\begin{lstlisting}
-pause(pause_time)
- 
-%We can mix setting a global color, colors for a single node mutliple
-%times, and colors for multiple nodes.  The global color is used in all
-%cases where a color has not explicitly been set for a node.
-fg.plot('labels',1,'color',b(1),'g','color',b(2),'r','color',{b(3),b(4)},{'y','c'},'color','b');
-\end{lstlisting}
-
-Mixing and matching the various coloring options:
-
-\includegraphics{images/plot7.png}
-
-\begin{lstlisting}
-pause(pause_time)
- 
-%We can also specify a root node on which we perform a depth first search
-%up to a specific depth and then only print nodes up to that depth.
-for depth = 0:5
- 
-    %Furthermore, we color the root node green so we know which is the root
-    %node.
-    fg.plot('labels',1,'depth',b(1),depth,'color',b(1),'g','color','b');
-    
-    pause(pause_time);
-end
-\end{lstlisting}
-
-Specifying a depth will display a specified root node and all nodes that are N steps away.  The following shows the result of calling plot with ÔdepthÕ of b(1) and 2:
- 
-
-\includegraphics{images/plot8.png}
-
-We also colored the root node green to make it clear which was the root node.
-
-\begin{lstlisting}
-%The following shows how using the depth feature we might be able to find
-%out interesting information.  Here we increase the depth until we visually
-%see a loop.
-[ldpc,vars] = createLDPC();
-v = vars(1);
- 
-for depth = 0:6
-    ldpc.plot('depth',v,depth);
-    
-    pause(pause_time);
-end
-\end{lstlisting}
-
-Here, we show how we can use plot to find interesting information about a large graph.  The final plot with a depth of 6 shows a cycle in an LDPC Factor Graph:
-
-\includegraphics{images/plot9.png}
-
- 
-\para{Nesting}
-
-By default, the plotting method ignores hierarchy and plots the flattened graph.  If the user specifies the 'nesting' parameter, however, they can specify how deep to descend into the hierarchy before considering NestedGraphs to be Factors and plotting them as such.
-
-When labels are turned off, nested graphs are displayed as triangles
-
-First let's build a graph with three levels of nesting.
-
-\begin{lstlisting}
-b = Bit(2,1);
-template1 = FactorGraph(b);
-iv = Bit();
-template1.addFactor(@xorDelta,b(1),iv);
-template1.addFactor(@xorDelta,b(2),iv);
- 
-b = Bit(2,1);
-template2 = FactorGraph(b);
-iv = Bit();
-template2.addFactor(template1,b(1),iv);
-template2.addFactor(template1,b(2),iv);
- 
-template2.plot();
- 
-b = Bit(2,1);
-fg = FactorGraph(b);
-iv = Bit();
-fg.addFactor(template2,b(1),iv);
-fg.addFactor(template2,b(2),iv);
-\end{lstlisting}
- 
-Here we show the graph plotted with various levels of nesting.
-
-fg.plot('nesting',0);
-
-\includegraphics{images/plot10.png}
-
-
-Notice the Nested Graphs show up as triangles.
-
-\begin{lstlisting}
-fg.plot('nesting',1);
-\end{lstlisting}
-
-\includegraphics{images/plot11.png}
- 
-\begin{lstlisting}
-fg.plot('nesting',2);
-\end{lstlisting}
-
-
-\includegraphics{images/plot12.png}
- 
-Note that once weÕve reached the bottom, weÕre actually seeing the Factors plotted.
- 
-We can retrieve an instance of a nested graph and plot that with nesting set.
-
-\begin{lstlisting}
-fg.NestedGraphs{1}.plot('nesting',0);
-pause(pause_time);
-\end{lstlisting}
-
-
-
-\includegraphics{images/plot13.png}
- 
- 
-When plotting graphs, boundary variables show up as stars.
-
-Next we mix depth first search with nesting
-
-
-\begin{lstlisting}
-fg.plot('nesting',0,'depth',iv,0);
-\end{lstlisting}
-
-\includegraphics{images/plot14.png}
- 
-
- 
-\begin{lstlisting}
-fg.plot('nesting',0,'depth',iv,1);
-\end{lstlisting}
-
-\includegraphics{images/plot15.png}
- 
-
- 
-\begin{lstlisting}
-fg.plot('nesting',0,'depth',iv,2);
-\end{lstlisting}
-
-
-\includegraphics{images/plot16.png}
 
 
 
@@ -1924,84 +1181,6 @@ calling fg.plot(ÔcolorÕ,b(1),ÕgÕ,ÕlabelsÕ,true) reveals the following structure 
  
 As you might guess fg.depthFirstSearch(b(1),3) will return a collection of six nodes: b1, f1, b2, b3, b4, and f2.  It will not include b5 and b6 since those are at a depth of four from b1.
 
-\subsubsection{Estimating Parameters}
-
-Dimple provides support for estimating parameters.  Only the sumproduct solver currently supports this. 
-The sum product algorithm computes the gradient of the BetheFreeEnergy and performs a gradient descent on this.  Users can
-specify how many times to restart the gradient descent with random table values.
-
-Users provide four arguments:
-
-\begin{itemize}
-\item factorsAndFactorTables - A cell array of FactorTables for which the user wants parameters to be estimated.  They can mix Factors and FactorTables
-\item numRestarts - The number of times to randomly initialize the FactorTables and restart the gradient descent.
-\item numSteps - The number of times to descend down along the gradient
-\item stepScaleFactor - The value we scale the gradient by.
-\end{itemize}
-
-\begin{lstlisting}
-fg.estimateParameters({factorTable1,factorTable2,factor1,etc...},numRestarts,numSteps,stepScaleFactor);
-\end{lstlisting}
-
-\subsubsection{Invoking Methods on the Underlying Solver Objects}
-
-Users sometimes need access to the underlying solver objects in order to set and get
-solver specific properties.  For instance K-best is implemented by minsum and sumproduct 
-solvers.  
-
-Let's use the following code to show examples of accessing underlying solver objects
-
-\begin{lstlisting}
-fg = FactorGraph();
-d = Discrete(1:10,10,1);
-ft = FactorTable(rand(10),d.Domain,d.Domain);
-ft.normalize(1);
-f = fg.addFactorVectorized(ft,d(1:(end-1)),d(2:end));
-f.DirectedTo = d(2:end);
-\end{lstlisting}
-
-This code constructs a Markov Model of 10 variables with domain 1 through 10 and a randomized transition matrix.  Suppose we want to use K-best for all the factors.  We could access the underlying solver object of each factor and call setK on that object:
-
-\begin{lstlisting}
-for i = 1:length(f)
-   f(i).Solver.setK(5);
-end
-\end{lstlisting}
-
-However, in the case of very large graphs, this can be very inefficient.  MATLAB has a fairly large penalty for invoking function calls in a large for loop.  Instead, variables, factors, and factor graphs all have an invokeSolverMethod that can be used to call a method on all objects in the vector.
-
-\begin{lstlisting}
-f.invokeSolverMethod('setK',uint32(5));
-\end{lstlisting}
-
-After this is invoked, all factors will have K set to 5.  There are two issues with the current implementation that should be fixed at some point.  The first is that it currently only supports providing the same values to all solver objects.  If you wanted to set a different K for all factors, you could not use this mechanism.  The second issue is that, users must be careful to correctly cast their arguments to the appropriate types.  This could and should be fixed.
-
-It's also possible to call methods with return values as follows:
-
-\begin{lstlisting}
-d.invokeSolverMethod('setDamping',uint32(0),2.0);
-damping = d.invokeSolverMethodWithReturnValue('getDamping',uint32(0));
-
-damping
-
->> damping
-
-damping = 
-
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-    [2]
-
-\end{lstlisting}
-
-Here we set the damping value for the first edge of every variable.
 
 
 
