@@ -2,7 +2,6 @@ package com.analog.lyric.options;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
@@ -22,11 +21,12 @@ public class OptionRegistry
 	 * State
 	 */
 	
-	private final String _separator = ".";
-	
 	@GuardedBy("this")
 	private final ConcurrentNavigableMap<String,IOptionKey<?>> _optionMap;
 	
+	private static final int publicStatic = Modifier.PUBLIC | Modifier.STATIC;
+	private static final int publicStaticFinal = publicStatic | Modifier.FINAL;
+
 	/*--------------
 	 * Construction
 	 */
@@ -40,6 +40,11 @@ public class OptionRegistry
 	 * OptionRegistry methods
 	 */
 	
+	public void add(IOptionKey<?> option)
+	{
+		_optionMap.put(OptionKey.qualifiedName(option), option);
+	}
+	
 	/**
 	 * Registers statically declared option instances found reflectively in specified class.
 	 * Adds all statically declared, final fields of type {@link IOptionKey} and if the
@@ -49,21 +54,17 @@ public class OptionRegistry
 	public int addFromClass(Class<?> c)
 	{
 		int nAdded = 0;
-		String className = c.getName();
-		
 		if (c.isEnum() && IOptionKey.class.isAssignableFrom(c))
 		{
 			// Enum implements IOptionKey, so all of its instances are options
 			// that can be registered.
 			for (Object option : c.getEnumConstants())
 			{
-				put(className, (IOptionKey<?>)option);
+				add((IOptionKey<?>)option);
 				++nAdded;
 			}
 		}
 		
-		final int publicStatic = Modifier.PUBLIC | Modifier.STATIC;
-		final int publicStaticFinal = publicStatic | Modifier.FINAL;
 		
 		for (Field field : c.getFields())
 		{
@@ -72,7 +73,7 @@ public class OptionRegistry
 			{
 				try
 				{
-					put(className, (IOptionKey<?>)field.get(c));
+					add((IOptionKey<?>)field.get(c));
 					++nAdded;
 				}
 				catch (IllegalAccessException ex)
@@ -94,6 +95,16 @@ public class OptionRegistry
 		return nAdded;
 	}
 	
+	public <T> IOptionKey<T> addFromQualifiedName(String qualifiedName)
+	{
+		IOptionKey<T> key = OptionKey.forQualifiedName(qualifiedName);
+		add(key);
+		return key;
+	}
+	
+	/**
+	 * Returns view of the contents of the registry as a sorted ummodifiable map.
+	 */
 	public SortedMap<String, IOptionKey<?>> asSortedMap()
 	{
 		return Collections.unmodifiableSortedMap(_optionMap);
@@ -140,36 +151,13 @@ public class OptionRegistry
 		return Collections.unmodifiableSortedMap(_optionMap.subMap(prefix, prefix + Character.MAX_VALUE));
 	}
 	
-	public ArrayList<String> getAllKeysForOption(IOptionKey<?> option)
-	{
-		ArrayList<String> results = new ArrayList<String>();
-		
-		for (Map.Entry<String,IOptionKey<?>> entry : _optionMap.entrySet())
-		{
-			if (entry.getValue() == option)
-			{
-				results.add(entry.getKey());
-			}
-		}
-		
-		return results;
-	}
-	
-	public IOptionKey<?> put(String prefix, IOptionKey<?> option)
-	{
-		final String suffix = _separator + option.name();
-		final String key = prefix.endsWith(suffix) ? prefix : prefix + suffix;
-		
-		return _optionMap.put(key, option);
-	}
-	
 	public IOptionKey<?> remove(String key)
 	{
 		return _optionMap.remove(key);
 	}
 	
-	public boolean remove(String key, IOptionKey<?> option)
+	public boolean remove(IOptionKey<?> option)
 	{
-		return _optionMap.remove(key, option);
+		return _optionMap.remove(OptionKey.qualifiedName(option), option);
 	}
 }

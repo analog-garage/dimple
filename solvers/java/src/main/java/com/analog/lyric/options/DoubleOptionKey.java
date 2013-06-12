@@ -3,23 +3,27 @@ package com.analog.lyric.options;
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public class DoubleOptionKey extends AbstractOptionKey<Double>
+public class DoubleOptionKey extends OptionKey<Double>
 {
 	private static final long serialVersionUID = 1L;
 	
 	private final double _defaultValue;
 	
-	public DoubleOptionKey(String name)
+	public DoubleOptionKey(Class<?> declaringClass, String name)
 	{
-		this(name, 0.0);
+		this(declaringClass, name, 0.0);
 	}
 
-	public DoubleOptionKey(String name, double defaultValue)
+	public DoubleOptionKey(Class<?> declaringClass, String name, double defaultValue)
 	{
-		super(name);
+		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
-
+	
+	/*--------------------
+	 * IOptionKey methods
+	 */
+	
 	@Override
 	public final Class<Double> type()
 	{

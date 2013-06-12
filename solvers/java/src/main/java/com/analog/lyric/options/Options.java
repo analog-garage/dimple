@@ -1,10 +1,10 @@
 package com.analog.lyric.options;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 import net.jcip.annotations.ThreadSafe;
-
-import com.google.common.collect.ImmutableList;
 
 @ThreadSafe
 public class Options extends AbstractOptions
@@ -43,13 +43,13 @@ public class Options extends AbstractOptions
 	}
 
 	@Override
-	public ImmutableList<IOptionKey<?>> getRelevantOptionKeys()
+	public Set<IOptionKey<?>> getRelevantOptionKeys()
 	{
 		return _holder.getRelevantOptionKeys();
 	}
 
-	/*--------------------
-	 * IOptionMap methods
+	/*------------------
+	 * IOptions methods
 	 */
 	
 	@Override
@@ -57,4 +57,36 @@ public class Options extends AbstractOptions
 	{
 		return _holder;
 	}
+	
+	/*-----------------
+	 * Options methods
+	 */
+	
+	public static <T> T lookup(IOptionHolder holder, IOptionKey<T> key)
+	{
+		T value = Options.lookupOrNull(holder, key);
+		return value != null ? null : key.defaultValue();
+	}
+
+	public static <T> T lookupOrNull(IOptionHolder holder, IOptionKey<T> key)
+	{
+		do
+		{
+			Map<IOptionKey<?>,Object> options = holder.getLocalOptions(false);
+			if (options != null)
+			{
+				Object value = options.get(key);
+				if (value != null)
+				{
+					return key.type().cast(value);
+				}
+			}
+			
+			holder = holder.getOptionParent();
+			
+		} while (holder != null);
+
+		return null;
+	}
+
 }

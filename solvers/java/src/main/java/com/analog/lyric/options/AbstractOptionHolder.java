@@ -16,10 +16,11 @@
 
 package com.analog.lyric.options;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author cbarber
@@ -73,9 +74,9 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	 * Default implementation returns empty list.
 	 */
 	@Override
-	public ImmutableList<IOptionKey<?>> getRelevantOptionKeys()
+	public Set<IOptionKey<?>> getRelevantOptionKeys()
 	{
-		return ImmutableList.of();
+		return Collections.EMPTY_SET;
 	}
 
 	/**

@@ -3,23 +3,26 @@ package com.analog.lyric.options;
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public class StringOptionKey extends AbstractOptionKey<String>
+public class StringOptionKey extends OptionKey<String>
 {
 	private static final long serialVersionUID = 1L;
 	
 	private final String _defaultValue;
 	
-	public StringOptionKey(String name)
+	public StringOptionKey(Class<?> declaringClass, String name)
 	{
-		this(name, "");
+		this(declaringClass, name, "");
 	}
 	
-	public StringOptionKey(String name, String defaultValue)
+	public StringOptionKey(Class<?> declaringClass, String name, String defaultValue)
 	{
-		super(name);
+		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
 
+	/*--------------------
+	 * IOptionKey methods
+	 */
 	@Override
 	public final Class<String> type()
 	{
@@ -36,5 +39,4 @@ public class StringOptionKey extends AbstractOptionKey<String>
 	{
 		return _defaultValue;
 	}
-
 }

@@ -104,7 +104,7 @@ public abstract class AbstractOptions implements IOptions
 	}
 	
 	/*--------------------
-	 * IOptionMap methods
+	 * IOptions methods
 	 */
 	
 	@Override
@@ -124,32 +124,13 @@ public abstract class AbstractOptions implements IOptions
 	@Override
 	public <T> T lookup(IOptionKey<T> key)
 	{
-		T value = lookupOrNull(key);
-		return value != null ? null : key.defaultValue();
+		return Options.lookup(this, key);
 	}
 	
 	@Override
 	public <T> T lookupOrNull(IOptionKey<T> key)
 	{
-		IOptionHolder holder = this;
-		
-		do
-		{
-			Map<IOptionKey<?>,Object> options = holder.getLocalOptions(false);
-			if (options != null)
-			{
-				Object value = options.get(key);
-				if (value != null)
-				{
-					return key.type().cast(value);
-				}
-			}
-			
-			holder = holder.getOptionParent();
-			
-		} while (holder != null);
-
-		return null;
+		return Options.lookupOrNull(this, key);
 	}
 
 	@Override
@@ -164,7 +145,7 @@ public abstract class AbstractOptions implements IOptions
 	{
 		put(key, value);
 	}
-
+	
 	@Override
 	public void setOption(IOption<?> option)
 	{

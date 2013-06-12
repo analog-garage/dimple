@@ -3,20 +3,20 @@ package com.analog.lyric.options;
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public class IntegerOptionKey extends AbstractOptionKey<Integer>
+public class IntegerOptionKey extends OptionKey<Integer>
 {
 	private static final long serialVersionUID = 1L;
 	
 	private final int _defaultValue;
 	
-	public IntegerOptionKey(String name)
+	public IntegerOptionKey(Class<?> declaringClass, String name)
 	{
-		this(name, 0);
+		this(declaringClass, name, 0);
 	}
 
-	public IntegerOptionKey(String name, int defaultValue)
+	public IntegerOptionKey(Class<?> declaringClass, String name, int defaultValue)
 	{
-		super(name);
+		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
 
