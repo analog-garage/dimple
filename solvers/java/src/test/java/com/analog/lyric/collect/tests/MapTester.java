@@ -16,8 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Map;
@@ -74,5 +73,15 @@ public class MapTester<K,V>
 			assertTrue( keySet.contains(key) );
 			assertTrue( values.contains(value) );
 		}
+	}
+	
+	public void assertMapEquals(Map<K,V> map1, Map<K,V> map2)
+	{
+		assertEquals(map1.isEmpty(), map2.isEmpty());
+		assertEquals(map1.size(), map2.size());
+		
+		_entrySetTester.assertSetEquals(map1.entrySet(), map2.entrySet());
+		_keySetTester.assertSetEquals(map1.keySet(), map2.keySet());
+		_valueCollectionTester.assertCollectionEquals(map1.values(), map2.values());
 	}
 }
