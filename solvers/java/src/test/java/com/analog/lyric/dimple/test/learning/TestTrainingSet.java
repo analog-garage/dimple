@@ -72,6 +72,8 @@ public class TestTrainingSet
 		case VALUE:
 			assertTrue(var.getDomain().containsValueWithRepresentation(value));
 			break;
+		case INPUTS:
+			break;
 		}
 		
 		// Test serialization
