@@ -2,6 +2,11 @@ function testLP()
     bLog = false;
     dtrace(bLog, '++testLP');
     
+    if (isempty(ver('optim')))
+        dtrace(true, 'WARNING: testLP was skipped because optimization toolbox not installed');
+        return;
+    end
+    
     setSolver('lp');
 
     X=Variable(0:1,1,1);
