@@ -80,6 +80,10 @@ Read-only.  Reading the FullBelief property after the solver has been run\footno
 fb = myFactor.FullBelief;
 \end{lstlisting}
 
+\subpara{Ports}
+
+Read-only.  Retrieves a cell array containing a list of Ports connecting the factor to its neighboring variables.
+
 
 \para{Methods}
 
@@ -192,6 +196,7 @@ Read-only.  Returns a cell-array of DiscreteDomain objects, each of which repres
 \para{Methods}
 
 \subpara{set}
+\label{sec:FactorTable.set}
 
 This method allows setting individual entries in the factor table.  For each entry to be set, the domain values (not indices) are specified followed by the weight value.  To set a single entry, the domain values are specified in a comma-separated list, followed by the weight value.  To set multiple entries in a single call, a cell array of such comma-separated lists are specified.
 
