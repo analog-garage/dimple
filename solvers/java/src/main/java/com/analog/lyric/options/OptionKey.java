@@ -103,7 +103,8 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 */
 	protected Object readResolve() throws ObjectStreamException
 	{
-		return getCanonicalInstance();
+		IOptionKey<T> canonical = getCanonicalInstance(this);
+		return canonical != null ? canonical : this;
 	}
 	
 	/*----------------
@@ -127,7 +128,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	}
 	
 	@Override
-	public String name()
+	public final String name()
 	{
 		return _name;
 	}
@@ -150,22 +151,29 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		holder.options().unset(this);
 	}
 	
-	/*---------------------------
-	 * AbstractOptionKey methods
+	/*--------------------
+	 * OptionKey methods
 	 */
 	
 	/**
-	 * Returns the canonical instance of this option key, i.e. the one that is declared in
-	 * {@link #getDeclaringClass()}.
+	 * Returns the canonical instance of {@code key}, i.e. the one that is publicly declared as
+	 * a static field or enum instance of {@link #getDeclaringClass()} with given {@link #name()}
+	 * or returns null if there isn't one.
+	 * <p>
+	 * This method is implemented using reflection and is not expected to be very fast. It is
+	 * intended to be
 	 */
-	public OptionKey<T> getCanonicalInstance()
+	public static <T> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
 	{
-		OptionKey<T> canonical = this;
+		IOptionKey<T> canonical = null;
+		
+		Class<?> declaringClass = key.getDeclaringClass();
+		String name = key.name();
 		
 		try
 		{
-			OptionKey<T> option = (OptionKey<T>)_declaringClass.getField(_name).get(null);
-			if (_name.equals(option.name()) && option.type() == type())
+			IOptionKey<T> option = (IOptionKey<T>)declaringClass.getField(name).get(null);
+			if (name.equals(option.name()) && option.type() == key.type())
 			{
 				canonical = option;
 			}
@@ -177,6 +185,10 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		return canonical;
 	}
 	
+	/**
+	 * Computes the qualified name of the option, which consists of the full name of
+	 * {@link #getDeclaringClass()} and {@link #name} separated by '.'.
+	 */
 	public static String qualifiedName(IOptionKey<?> option)
 	{
 		return String.format("%s.%s", option.getDeclaringClass().getName(), option.name());
