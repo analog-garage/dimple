@@ -31,26 +31,26 @@ public class Real extends VariableBase
     }
 	
 	
-	public Real()  
+	public Real()
 	{
-		this(new RealDomain(), null);
+		this(RealDomain.full(), null);
 	}
 
-	public Real(RealDomain domain)  
+	public Real(RealDomain domain)
 	{
 		this(domain, null);
 	}
-	public Real(Object input)  
+	public Real(Object input)
 	{
-		this(new RealDomain(), input);
+		this(RealDomain.full(), input);
 	}
 	
-	public Real(RealDomain domain, Object input) 
+	public Real(RealDomain domain, Object input)
 	{
 		this(NodeId.getNext(), domain, input, "Real");
 	}
 
-	public Real(int id, RealDomain domain, Object input, String modelerClassName) 
+	public Real(int id, RealDomain domain, Object input, String modelerClassName)
 	{
 		//this(id,new RealDomain[]{domain},input,modelerClassName);
 		super(id,modelerClassName,domain);
@@ -60,7 +60,7 @@ public class Real extends VariableBase
 
 	}
 	
-//	public Real(int id, RealDomain [] domains, Object input, String modelerClassName) 
+//	public Real(int id, RealDomain [] domains, Object input, String modelerClassName)
 //	{
 //		super(id,modelerClassName,domains);
 //		//super(id, modelerClassName);
@@ -72,7 +72,7 @@ public class Real extends VariableBase
 	{
 		return (RealDomain)getDomain();
 	}
-	public Object getInput() 
+	public Object getInput()
 	{
 		return getInputObject();
 	}
@@ -88,7 +88,7 @@ public class Real extends VariableBase
 			return (Double)tmp;
 	}
 	
-	public void setFixedValue(double fixedValue) 
+	public void setFixedValue(double fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
 		if (!((RealDomain)getDomain()).inDomain(fixedValue))

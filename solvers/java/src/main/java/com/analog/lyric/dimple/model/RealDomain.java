@@ -16,26 +16,96 @@
 
 package com.analog.lyric.dimple.model;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class RealDomain extends Domain
 {
 	/*-------
 	 * State
 	 */
 	
-	protected double _lowerBound = Double.NEGATIVE_INFINITY;
-	protected double _upperBound = Double.POSITIVE_INFINITY;
+	private final double _lowerBound;
+	private final double _upperBound;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public RealDomain() {}
+	public RealDomain() { this(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); }
 	public RealDomain(double[] domain)  {this(domain[0], domain[1]);}
 	public RealDomain(double lower, double upper)
 	{
 		if (lower > upper) throw new DimpleException("Upper bound must be greater than lower bound");
 		_lowerBound = lower;
 		_upperBound = upper;
+	}
+	
+	/**
+	 * Returns domain with given lower and upper bounds. May return a previously
+	 * interned instance.
+	 */
+	public static RealDomain create(double lower, double upper)
+	{
+		for (StandardDomain standard : StandardDomain.values())
+		{
+			RealDomain domain = standard.domain;
+			if (domain.getLowerBound() == lower && domain.getUpperBound() == upper)
+			{
+				return domain;
+			}
+		}
+		
+		// TODO: cache other domains as well...
+		
+		return new RealDomain(lower, upper);
+	}
+	
+	/**
+	 * Domain including the entire real number line: [-infinity, +infinity]
+	 */
+	public static RealDomain full()
+	{
+		return StandardDomain.FULL.domain;
+	}
+	
+	/**
+	 * Domain consisting of zero plus all positive numbers: [0.0, +infinity]
+	 */
+	public static RealDomain nonNegative()
+	{
+		return StandardDomain.NON_NEGATIVE.domain;
+	}
+	
+	/**
+	 * Domain consisting of zero plus all negative numbers: [-infinity, 0.0]
+	 */
+	public static RealDomain nonPositive()
+	{
+		return StandardDomain.NON_POSITIVE.domain;
+	}
+
+	/**
+	 * Probability domain numbers between zero and one: [0.0, 1.0]
+	 */
+	public static RealDomain probability()
+	{
+		return StandardDomain.PROBABILITY.domain;
+	}
+	
+	private static enum StandardDomain
+	{
+		FULL(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+		PROBABILITY(0.0, 1.0),
+		NON_NEGATIVE(0.0, Double.POSITIVE_INFINITY),
+		NON_POSITIVE(Double.NEGATIVE_INFINITY, 0.0);
+		
+		private final RealDomain domain;
+		
+		private StandardDomain(double lower, double upper)
+		{
+			domain = new RealDomain(lower, upper);
+		}
 	}
 	
 	/*----------------
