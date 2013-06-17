@@ -1,5 +1,11 @@
 package com.analog.lyric.dimple.parameters;
 
+/**
+ * Abstract base class for {@link IParameterList} implementations with eight or less parameters.
+ * <p>
+ * Provides implementation of {@link #isFixed(int)} and {@link #setFixed(int, boolean)} methods
+ * based on a small bit mask.
+ */
 public abstract class SmallParameterListBase<Key extends IParameterKey> extends AbstractParameterList<Key>
 {
 	/*-------

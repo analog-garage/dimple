@@ -3,12 +3,19 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.NotThreadSafe;
 
+/**
+ * Abstract base class for {@link IParameterList} implementation with a single parameter.
+ */
 @NotThreadSafe
 public abstract class ParameterList1<Key extends IParameterKey> extends SmallParameterListBase<Key>
 {
 	private static final long serialVersionUID = 1L;
 	
 	protected double _parameter0;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	protected ParameterList1()
 	{
@@ -30,8 +37,12 @@ public abstract class ParameterList1<Key extends IParameterKey> extends SmallPar
 	@Override
 	public abstract ParameterList1<Key> clone();
 	
+	/*------------------------
+	 * IParameterList methods
+	 */
+	
 	@Override
-	public double get(int index)
+	public final double get(int index)
 	{
 		if (index == 0)
 		{
@@ -46,18 +57,16 @@ public abstract class ParameterList1<Key extends IParameterKey> extends SmallPar
 	@Override
 	public void set(int index, double value)
 	{
+		assertNotFixed(index);
 		if (index == 0)
 		{
 			_parameter0 = value;
-		}
-		else
-		{
-			throw indexOutOfRange(index);
+			valueChanged(index);
 		}
 	}
 
 	@Override
-	public int size()
+	public final int size()
 	{
 		return 1;
 	}

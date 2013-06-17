@@ -127,16 +127,28 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 		return _fixed;
 	}
 	
+	/**
+	 * Key identifying the parameter. May be null in which case only the {@link #index()} is relevant.
+	 */
 	public Key key()
 	{
 		return _key;
 	}
 
+	/**
+	 * The index identifying the parameter. Must be non-negative and less than the size of the
+	 * parameter list to which it refers.
+	 * <p>
+	 * If {@link #key()} is non-null, this is expected to be the same as {@link IParameterKey#ordinal()}.
+	 */
 	public int index()
 	{
 		return _index;
 	}
 	
+	/**
+	 * True if parameter has missing value, i.e. {@link #value()} is a NaN.
+	 */
 	public boolean isMissing()
 	{
 		return Double.isNaN(_value);

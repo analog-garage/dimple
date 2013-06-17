@@ -39,7 +39,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 		public ParameterValue<Key> next()
 		{
 			int i = _index.getAndIncrement();
-			return new ParameterValue<Key>(_keys[i], i, get(i), isFixed(i));
+			return new ParameterValue<Key>(_keys != null ? _keys[i] : null, i, get(i), isFixed(i));
 		}
 
 		@Override
@@ -62,6 +62,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	@Override
 	public double get(Key key)
 	{
+		assertHasKeys("get");
 		return get(key.ordinal());
 	}
 	
@@ -77,14 +78,22 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
+	public boolean hasKeys()
+	{
+		return getKeys() != null;
+	}
+	
+	@Override
 	public boolean isFixed(Key key)
 	{
+		assertHasKeys("isFixed");
 		return isFixed(key.ordinal());
 	}
 	
 	@Override
 	public void set(Key key, double value)
 	{
+		assertHasKeys("set");
 		set(key.ordinal(), value);
 	}
 	
@@ -93,7 +102,15 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	{
 		for (ParameterValue<Key> value : values)
 		{
-			set(value.index(), value.value());
+			Key key = value.key();
+			if (key != null)
+			{
+				set(key, value.value());
+			}
+			else
+			{
+				set(value.index(), value.value());
+			}
 		}
 	}
 	
@@ -109,10 +126,13 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	@Override
 	public void setAllToDefault()
 	{
-		Key[] keys = getKeys();
-		for (int i = 0, end = keys.length; i < end; ++i)
+		if (hasKeys())
 		{
-			set(i, keys[i].defaultValue());
+			Key[] keys = getKeys();
+			for (int i = 0, end = keys.length; i < end; ++i)
+			{
+				set(i, keys[i].defaultValue());
+			}
 		}
 	}
 	
@@ -128,12 +148,27 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	@Override
 	public void setFixed(Key key, boolean fixed)
 	{
+		assertHasKeys("setFixed");
 		setFixed(key.ordinal(), fixed);
 	}
 	
 	/*-------------------------
 	 * Subclass helper methods
 	 */
+	
+	protected void assertHasKeys(String operation)
+	{
+		if (!hasKeys())
+		{
+			throw expectedKeys(operation);
+		}
+	}
+	
+	protected UnsupportedOperationException expectedKeys(String operation)
+	{
+		throw new UnsupportedOperationException(
+			String.format("Attempt to invoke '%s' with key on keyless parameter list", operation));
+	}
 	
 	protected void assertNotFixed(int index)
 	{
@@ -156,8 +191,20 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 		}
 	}
 	
-	protected DimpleException indexOutOfRange(int index)
+	protected IndexOutOfBoundsException indexOutOfRange(int index)
 	{
-		return new DimpleException("Parameter index '%d' is out of allowed range [0,%d]", index, size() - 1);
+		return new IndexOutOfBoundsException(
+			String.format("Parameter index '%d' is out of allowed range [0,%d]", index, size() - 1));
+	}
+	
+	/**
+	 * Subclasses can override this to respond to changes to option with given index.
+	 * This should be called *after* the value has changed.
+	 * <p>
+	 * Subclasses that implement {@link #set(int, double)} or that implement modification without
+	 * call that method, should invoke this after the value has been set.
+	 */
+	protected void valueChanged(int index)
+	{
 	}
 }

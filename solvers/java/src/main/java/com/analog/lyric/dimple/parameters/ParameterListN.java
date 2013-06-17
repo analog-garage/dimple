@@ -74,6 +74,7 @@ public abstract class ParameterListN<Key extends IParameterKey>
 	@Override
 	public final boolean isFixed(int index)
 	{
+		assertIndexInRange(index);
 		int bit = 1 << (index & 7);
 		int byteIndex = index >>> 3;
 		
@@ -83,7 +84,9 @@ public abstract class ParameterListN<Key extends IParameterKey>
 	@Override
 	public void set(int index, double value)
 	{
+		assertNotFixed(index);
 		_values[index] = value;
+		valueChanged(index);
 	}
 
 	@Override

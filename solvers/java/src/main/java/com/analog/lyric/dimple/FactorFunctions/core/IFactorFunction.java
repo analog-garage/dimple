@@ -3,7 +3,12 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.parameters.IParameterKey;
 import com.analog.lyric.dimple.parameters.IParameterList;
+
+// This is a prototype interface for factor functions to accomodate parameterization.
+// I am not sure whether we would want to make this an actual interface of FactorFunction or just modify
+// the FactorFunction class accordingly.
 
 public interface IFactorFunction
 {
@@ -101,10 +106,11 @@ public interface IFactorFunction
 	public abstract IParameterList<?> getParameters();
 
 	/**
-	 * Returns the default conjugate prior function for this function's
-	 * non-fixed parameters or null if there is none.
+	 * Makes default conjugate prior for given keys in order.
+	 * <p>
+	 * @param keys one or more keys from the list of valid keys for this factor's parameters.
 	 */
-	public abstract IFactorFunction makeDefaultConjugatePrior();
+	public abstract IFactorFunction makeDefaultConjugatePrior(IParameterKey ... keys);
 	
 	/*--------------------
 	 * Evaluation methods

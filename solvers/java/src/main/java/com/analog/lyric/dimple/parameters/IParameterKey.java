@@ -43,6 +43,24 @@ import com.analog.lyric.options.IOptionKey;
  *     public RealDomain domain() { return _domain; }
  * }
  * </pre>
+ * 
+ * The corresponding static final field version looks like:
+ * 
+ * <pre>
+ * public class GuassianParameter
+ * {
+ *     public static final ParameterKey mean =
+ *         new ParameterKey(0, Parameter2.class, "mean");
+ * 
+ *     public static final ParameterKey precision =
+ *         new ParameterKey(1, Parameter2.class, "precision", 1.0, RealDomain.nonNegative());
+ * 
+ *     public static ParameterKey[] values()
+ *     {
+ *        return new ParameterKey[] { mean, precision };
+ *     }
+ * }
+ * </pre>
  */
 public interface IParameterKey extends IEnumOptionKey<Double>
 {
