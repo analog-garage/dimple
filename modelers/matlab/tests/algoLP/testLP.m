@@ -2,6 +2,17 @@ function testLP()
     bLog = false;
     dtrace(bLog, '++testLP');
     
+    if (isempty(ver('optim')))
+        dtrace(true, 'WARNING: testLP was skipped because optimization toolbox not installed');
+        return;
+    end
+    
+    [hasLicense err] = license('checkout', 'optimization_toolbox');
+    if ~hasLicense
+        dtrace(true, 'WARNING: testLP was skipped because optimization toolbox license could not be obtained');
+        return;
+    end
+    
     setSolver('lp');
 
     X=Variable(0:1,1,1);

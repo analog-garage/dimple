@@ -24,15 +24,15 @@ function failed = testDimple(varargin)
     %   
     %   OR
     %
-    %   >> testDimple({'log', 1})
+    %   >> testDimple('log', 1)
     %
     %   OR
     %
-    %   >> testDimple({'one_algo', 'SumProduct'})
+    %   >> testDimple('one_algo', 'SumProduct')
     %
     %   OR
     %
-    %   >> testDimple({'csolver',1})
+    %   >> testDimple('csolver',1)
     %       
     %   ==Installing==
     %
