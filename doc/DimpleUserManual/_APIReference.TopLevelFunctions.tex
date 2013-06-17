@@ -30,4 +30,48 @@ This function changes the default solver to the solver designated by the argumen
 %\end{lstlisting}
 %
 
+\subsubsection{Factor Creation Utility Functions}
+
+Dimple includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions described in section~\ref{sec:overloaded}.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  Such helper functions are defined for the following built-in distributions:
+
+\begin{itemize}
+\item Beta
+\item Gamma
+\item InverseGamma
+\item NegativeExpGamma
+\item Normal
+\item LogNormal
+\item VonMises
+\item Rayleigh
+\item Categorical
+\end{itemize}
+
+For each, the arguments are the parameters of the distribution.  For example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta);
+X = Normal(mean, precision);
+Y = Categorical(alphaVector);
+Z = Rayleigh(sigma);
+\end{lstlisting}
+
+
+The parameters can be variables, constants, or some of each.
+
+By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta, altGraph);
+X = Normal(mean, precision, [100, 1]);
+Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Z = Rayleigh(sigma, myGraph, size(somethingElse));
+\end{lstlisting}
+
+
+Dimple also includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided:
+
+\begin{itemize}
+\item getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
+\item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+\end{itemize}
 

@@ -1,4 +1,4 @@
-\subsection{Factors}
+\subsection{Factors and Related Classes}
 
 \subsubsection{Factor}
 
@@ -80,6 +80,15 @@ Read-only.  Reading the FullBelief property after the solver has been run\footno
 fb = myFactor.FullBelief;
 \end{lstlisting}
 
+
+\subpara{Score}
+\label{sec:Factor.Score}
+
+Read-only.  When read, computes and returns the score (energy) of the factor given a specified value for each of the neighboring variables to this factor.  The score represents the energy of the factor given the specified variable configuration.  The score value is relative, and may be arbitrarily normalized by an additive constant.
+
+The value of each variable used when computing the Score is the Guess value for that variable (see section~\ref{sec:Variable.Guess}).  If no Guess had yet been specified for a given variable, the value with the most likely belief (which corresponds to the Value property of the variable) is used\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
+
+
 \subpara{Ports}
 
 Read-only.  Retrieves a cell array containing a list of Ports connecting the factor to its neighboring variables.
@@ -140,6 +149,7 @@ There are no available properties or methods in this class.
 
 
 \subsubsection{FactorTable}
+\label{sec:FactorTable}
 
 The FactorTable class is used to explicitly specify a factor table in lieu of Dimple creating one automatically from a factor function.  This is sometimes useful in cases where the factor table is highly structured, but automatic creation would be time consuming due to a large number of possible states of the connected variables.
 

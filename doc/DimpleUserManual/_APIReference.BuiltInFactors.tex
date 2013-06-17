@@ -1,0 +1,122 @@
+\subsection{List of Built-in Factors}
+\label{sec:builtInFactors}
+
+The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or vector of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B = Bit, D = Discrete, or R = Real).  If no list is shown, then any data-type may be used.
+
+\begin{longtable} {l p{2.2cm} p{2cm} p{7cm}}
+Name & Variables & Constructor & Description \\
+\hline
+\endhead
+%
+Abs & out(D,R) \newline in(D,R) & [smoothing] & Deterministic absolute value function, where out = abs(in).  An optional smoothing value may be specified as a constructor argument\footnote{\label{ftn:smoothing}If smoothing is enabled, the factor function becomes $e^{-(\textrm{out} - F(\textrm{in}))^2/\textrm{smoothing}}$ (making it non-deterministic) instead of $\delta(\textrm{out} - F(\textrm{in}))$, where $F$ is the deterministic function associated with this factor.  This is useful for solvers that do not work well with deterministic real-valued factors, such as particle BP, particularly when tempering is used.}.\\
+%
+ACos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-cosine function, where out = acos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+AdditiveNoise & out(R) \newline in(B,D,R) & $\sigma$ & Add Gaussian noise with a known standard deviation, $\sigma$, specified in constructor. \\
+%
+And & out(B) \newline in...(B) & - & Deterministic logical AND function, where out = AND(in...). \\
+%
+ASin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-sine function, where out = asin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ATan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-tangent function, where out = atan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Beta distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
+The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+%
+ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ConstantProduct & out(D,R) \newline in(D,R) & constant \newline [smoothing] &  Deterministic product function, multiplying the input times a constant value.  The constant value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Cos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic cosine function, where out = cos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Cosh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-cosine function, where out = cosh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+DiscreteTransition & x(D) \newline y(D) \newline A(R) & $N_{x}, N_{y} | \newline N$ & 
+Parameterized discrete transition factor, $p(y | x, A)$, where x and y are discrete variables, and $A$ is a matrix of transition probabilities. The transition matrix is organized such that columns correspond to the output distribution for each input state. That is, the transition matrix multiplies on the left. The number of columns in A and the domain size of x must equal the value of the constructor argument, $N_{x}$ and the number of rows in A and the domain size of y must equal the value of the constructor argument $N_{y}$.  If $N_{x}$ and $N_{y}$ are equal, a single constructor argument, $N$, may be used.  \newline
+The elements of the matrix A are represented as energy values, that is, $A_{i,j} = -\log(\rho_{i,j})$, where $\rho$ is an unnormalized transition probability matrix.  The conjugate prior for this representation is such that each entry of A is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+%
+Divide & quotient(D,R) \newline dividend(D,R) \newline divisor(D,R) & [smoothing] & Deterministic divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Equality & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Equals & out(B) \newline in...(B,D,R) & - & Deterministic equals function, where out~=~(in(1)~==~in(2)~== ... ). \\
+%
+Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+GreaterThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
+%
+InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Inverse Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
+%
+LessThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
+%
+LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant vector. The constant vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the constant vector. An optional smoothing value may be specified as a constructor argument\textsuperscript{\ref{ftn:smoothing}}. \\
+%
+Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
+%
+MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline $N_{y}$ \newline [smoothing] & Deterministic matrix-vector product function, $y = Mx$, where $x$ and $y$ are vectors and $M$ is a matrix. Constructor arguments, $N_{x}$ and $N_{y}$, specify the input and output vector lengths, respectively. The matrix dimension is $N_{y} \times N_{x}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+%
+Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
+%
+Normal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
+%
+Not & out(B) \newline in(B) & - & Deterministic logical NOT of function, where out = ~in. \\
+%
+NotEquals & out(B) \newline in...(B,D,R) & - & Deterministic not-equals function, where out~=~$\sim$(in(1)~==~in(2)~== ... ). \\
+%
+Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out = OR(in...). \\
+%
+Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out~=~base~$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Rayleigh & [$\sigma$](R) \newline value...(R) & [$\sigma$] & Rayleigh distribution. There can be any number of value variables, all associated with the same parameter value.  Parameter $\sigma$ can be a variable, or if constant, can be specified in the constructor. \\
+%
+Sin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic sine function, where out = sin(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sinh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-sine function, where out = sinh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sqrt & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square root function, where out = sqrt(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Square & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square function, where out = in$^{2}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Subtract & out(D,R) \newline posIn(B,D,R) \newline negIn...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Sum & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, where out = tan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+Tanh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-tangent function, where out = tanh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Von Mises distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor.  The distribution is non-zero for value variables in the range $-\pi$ to $\pi$. \\
+%
+Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where out = XOR(in...). \\
+%
+\end{longtable}
+
+In addition to the built-in factors listed above, there are a set of solver-specific built-in factors, also referred to as ``custom factors.''  These factors may also be specified by name in the addFactor call (using either a quoted string or as a function handle).  These are summarized in the following table:
+
+\begin{longtable} {l p{3cm} p{7cm}}
+Name & Solver & Description \\
+\hline
+\endhead
+%
+FiniteFieldFactor & SumProduct\footnote{\label{ftn:fff} These may also be used for discrete variables with the Gaussian or particle BP solvers, which use the sum-product solver for discrete-only portions of the graph.}  & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldProjection & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldAdd & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldConstMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+FiniteFieldMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+CustomXor & MinSum & Same as the Xor factor described above, but with a significantly faster implementation. \\ 
+\end{longtable}
+

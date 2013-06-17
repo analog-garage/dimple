@@ -205,7 +205,7 @@ The factor specification is one or more arguments that define the factor.  Dimpl
 \item A factor-table
 \item A built-in factor
 \item A built-in overloaded MATLAB operator\footnote{This method of factor creation does not use addFactor, but instead uses a different syntax to create the factor implicitly.}
-\item A custom Java FactorFunction object\footnote{The mechanism to create and use custom Java FactorFunction objects is described in section~\ref{sec:userJava}.}
+\item A custom Java FactorFunction object\footnote{The mechanism to create and use custom Java FactorFunction objects is described in Appendix~\ref{sec:userJava}.}
 \end{itemize}
 
 After the factor specification argument(s), the remaining arguments are all treated as variables or constants.  The variables may be individual variables or arrays of variables, or combinations thereof.
@@ -239,6 +239,7 @@ Note that in this case, the ``Normal'' built-in factor requires the precision to
 
 
 \para{Vectorized Factor Creation}
+\label{sec:vectorizedFactorCreation}
 
 In many cases, a factor graph has repeated patterns of variables and factors, where the factors are all of the same type.  In this case, Dimple provides a vectorized factor creation method that allows adding an entire array of factors all at once with a single operation.  Using this approach is typically significantly faster than adding factors one-by-one in a loop.
 
