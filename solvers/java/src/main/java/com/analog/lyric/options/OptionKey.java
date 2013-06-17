@@ -30,6 +30,11 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		_name = name;
 	}
 	
+	/**
+	 * Returns key with specified {@code name} in {@code declaringClass} using Java reflection.
+	 * <p>
+	 * @see OptionRegistry#addFromClass(Class)
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> IOptionKey<T> inClass(Class<?> declaringClass, String name)
 	{
@@ -68,6 +73,13 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		}
 	}
 	
+	/**
+	 * Returns key with specified {@code qualifiedName} using Java reflection to load the
+	 * declaring class.
+	 * <p>
+	 * Because this uses reflection it is not expected to be very fast so it is better to put keys
+	 * in a {@link OptionRegistry} if you need frequent lookup by name.
+	 */
 	public static <T> IOptionKey<T> forQualifiedName(String qualifiedName)
 	{
 		int i = qualifiedName.lastIndexOf('.');

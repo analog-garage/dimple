@@ -14,6 +14,12 @@ import java.util.regex.Pattern;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+/**
+ * A registry of known option keys indexed by qualified name. For use in looking up option keys
+ * by string either for use in configuration files or in implementing external APIs (e.g. MATLAB).
+ * 
+ * @see OptionKey#qualifiedName(IOptionKey)
+ */
 @ThreadSafe
 public class OptionRegistry
 {
@@ -40,25 +46,30 @@ public class OptionRegistry
 	 * OptionRegistry methods
 	 */
 	
+	/**
+	 * Adds specified option key to the registry.
+	 */
 	public void add(IOptionKey<?> option)
 	{
 		_optionMap.put(OptionKey.qualifiedName(option), option);
 	}
 	
 	/**
-	 * Registers statically declared option instances found reflectively in specified class.
+	 * Registers statically declared option key instances found reflectively in specified class.
 	 * Adds all statically declared, final fields of type {@link IOptionKey} and if the
 	 * class is an enum type that implements {@link IOptionKey}, it will add all of its
-	 * instances.
+	 * instances. Also will recursively add from public nested classes.
+	 * 
+	 * @return the number of option keys that were added
 	 */
-	public int addFromClass(Class<?> c)
+	public int addFromClass(Class<?> declaringClass)
 	{
 		int nAdded = 0;
-		if (c.isEnum() && IOptionKey.class.isAssignableFrom(c))
+		if (declaringClass.isEnum() && IOptionKey.class.isAssignableFrom(declaringClass))
 		{
 			// Enum implements IOptionKey, so all of its instances are options
 			// that can be registered.
-			for (Object option : c.getEnumConstants())
+			for (Object option : declaringClass.getEnumConstants())
 			{
 				add((IOptionKey<?>)option);
 				++nAdded;
@@ -66,14 +77,14 @@ public class OptionRegistry
 		}
 		
 		
-		for (Field field : c.getFields())
+		for (Field field : declaringClass.getFields())
 		{
 			if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
 				IOptionKey.class.isAssignableFrom(field.getType()))
 			{
 				try
 				{
-					add((IOptionKey<?>)field.get(c));
+					add((IOptionKey<?>)field.get(declaringClass));
 					++nAdded;
 				}
 				catch (IllegalAccessException ex)
@@ -84,17 +95,20 @@ public class OptionRegistry
 			}
 		}
 		
-		for (Class<?> innerClass : c.getDeclaredClasses())
+		for (Class<?> innerClass : declaringClass.getDeclaredClasses())
 		{
 			if ((innerClass.getModifiers() & publicStatic) == publicStatic)
 			{
-				addFromClass(innerClass);
+				nAdded += addFromClass(innerClass);
 			}
 		}
 		
 		return nAdded;
 	}
 	
+	/**
+	 * Registers option key loaded using {@link OptionKey#forQualifiedName(String)}.
+	 */
 	public <T> IOptionKey<T> addFromQualifiedName(String qualifiedName)
 	{
 		IOptionKey<T> key = OptionKey.forQualifiedName(qualifiedName);
@@ -103,13 +117,16 @@ public class OptionRegistry
 	}
 	
 	/**
-	 * Returns view of the contents of the registry as a sorted ummodifiable map.
+	 * Returns view of the contents of the registry as a sorted unmodifiable map.
 	 */
 	public SortedMap<String, IOptionKey<?>> asSortedMap()
 	{
 		return Collections.unmodifiableSortedMap(_optionMap);
 	}
 	
+	/**
+	 * Removes the entire contents of the registry.
+	 */
 	public void clear()
 	{
 		synchronized(this)
@@ -118,11 +135,19 @@ public class OptionRegistry
 		}
 	}
 	
-	public IOptionKey<?> get(String key)
+	/**
+	 * Returns option key with specified name or null if not found.
+	 * @see OptionKey#qualifiedName(IOptionKey)
+	 */
+	public IOptionKey<?> get(String qualifiedName)
 	{
-		return _optionMap.get(key);
+		return _optionMap.get(qualifiedName);
 	}
 	
+	/**
+	 * Returns a sorted map containing all keys whose qualified name matches the given
+	 * regular expression pattern.
+	 */
 	public SortedMap<String, IOptionKey<?>> getAllMatching(Pattern pattern)
 	{
 		Matcher matcher = pattern.matcher("");
@@ -141,21 +166,35 @@ public class OptionRegistry
 		return results;
 	}
 	
+	/**
+	 * Returns a sorted map containing all keys whose qualified name matches the given
+	 * regular expression pattern.
+	 */
 	public SortedMap<String, IOptionKey<?>> getAllMatching(String regexp)
 	{
 		return getAllMatching(Pattern.compile(regexp));
 	}
 	
+	/**
+	 * Returns a sorted map containing all keys whose qualified name begins with the specified string.
+	 */
 	public SortedMap<String, IOptionKey<?>> getAllStartingWith(String prefix)
 	{
 		return Collections.unmodifiableSortedMap(_optionMap.subMap(prefix, prefix + Character.MAX_VALUE));
 	}
 	
-	public IOptionKey<?> remove(String key)
+	/**
+	 * Removes and returns key with given qualified name. Returns null if it was not present.
+	 */
+	public IOptionKey<?> remove(String qualifiedName)
 	{
-		return _optionMap.remove(key);
+		return _optionMap.remove(qualifiedName);
 	}
-	
+
+	/**
+	 * Removes option key from registry.
+	 * @return false if option key was not present.
+	 */
 	public boolean remove(IOptionKey<?> option)
 	{
 		return _optionMap.remove(OptionKey.qualifiedName(option), option);

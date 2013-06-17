@@ -12,6 +12,11 @@ import net.jcip.annotations.Immutable;
  * Conforming concrete implementations can either consist of an enum that implements
  * this interface, or a subclass of {@link OptionKey}. Concrete instances should either
  * be public enum instance values or public static final fields, with given {@link #name()}.
+ * <p>
+ * {@link OptionKey} also has useful static methods for loading option keys, whether or not
+ * they are implemented as subclasses of that class.
+ * <p>
+ * @see OptionKey#forQualifiedName
  */
 @Immutable
 public interface IOptionKey<T> extends Serializable
