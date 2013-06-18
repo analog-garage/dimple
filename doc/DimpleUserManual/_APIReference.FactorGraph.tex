@@ -1,6 +1,6 @@
 \subsection{FactorGraph}
 
-The FactorGraph class represents a single factor graph and contains a collection of all factors associated with that factor graph and all variables that are connected by factors to the graph.
+The FactorGraph class represents a single factor graph and contains a collection of all factors and variables associated with that factor graph.
 
 \subsubsection{Constructor}
 
@@ -37,13 +37,13 @@ The current set of valid solver names are:
 
 A description of each of these solvers is given in section~\ref{sec:SolversAPI}.
 
-Note that the solver can be modified at any time.  After running the solver on a graph, the solver may be modified and the new solver run using the same graph\footnote{In this case, care must be taken to set any solver-specific parameters to the new values after changing the solver.}.  One exception is that if solver-specific built-in factors (also referred to as ``custom factors'') are used in a graph, it is not possible to switch solvers (a list of solver-specific built-in factors is given at the end of section~\ref{sec:builtInFactors}).
+Note that the solver can be modified at any time.  After running the solver on a graph, the solver may be modified and the new solver run using the same graph\footnote{In this case, care must be taken to set any solver-specific parameters to the new values after changing the solver.}.  One exception is that if solver-specific built-in factors (also referred to as ``custom factors'') are used in a graph, it is not possible to switch solvers (a list of solver-specific built-in factors is given in section~\ref{sec:solverSpecificBuiltInFactors}).
 
 
 \para{Scheduler}
 \label{sec:FactorGraph.Scheduler}
 
-Read-write.  Indicates the scheduler to be used for performing inference on the graph (unless a custom schedule is specified instead).
+Read-write.  Indicates the scheduler to be used for performing inference on the graph (unless a custom schedule is specified instead).  A scheduler defines a rule that determines the update schedule of a factor graph when performing inference.
 
 When setting the scheduler, the scheduler is given by a string representing the name of the scheduler.  The scheduler name is case \emph{sensitive}.
 
@@ -51,58 +51,7 @@ When setting the scheduler, the scheduler is given by a string representing the 
 fg.Scheduler = 'SchedulerName';
 \end{lstlisting}
 
-For all of the BP solvers (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available:
-
-\begin{longtable}{l p{4in}}
-\textbf{Name} & \textbf{Description} \\ \hline \hline
-%
-\textsf{DefaultScheduler} & Same as the TreeOrFloodingScheduler, which is the default if no scheduler or custom schedule is specified. \\ \hline
-%
-\textsf{TreeOrFloodingScheduler} & The solver will use either a Tree Schedule or a Flooding Schedule depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  If the factor-graph is a tree, the scheduler will automatically detect this and use a Tree Schedule.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  If the entire graph is a tree, NumIterations should be set to 1, which is its default value.  If the factor-graph is loopy, the solver will instead use a Flooding Schedule (as described below). \\ \hline
-%
-\textsf{TreeOrSequentialScheduler} & The solver will use either a Tree Schedule (as described above) or a Sequential Schedule (as described below) depending on whether the factor-graph contains cycles.  In a nested graph, this choice is applied independently in each subgraph.  \\ \hline
-%
-\textsf{FloodingScheduler} & The solver will apply a Flooding Schedule.  For each iteration, all variable nodes are updated, followed by all factor nodes.  Because the graph is bipartite (factor nodes only connect to variable nodes, and vice versa), the order of update within each node type does not affect the result. \\ \hline
-%
-\textsf{SequentialScheduler} & The solver will apply a Sequential Schedule.  For each factor node in the graph, first, for each variable connected to that factor, the edge connecting the variable to the factor is updated; then the factor node is updated.  The specific order of factors chosen is arbitrary, and depends on the order that factors were added to the graph. \\ \hline
-%
-\textsf{RandomWithoutReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly without replacement.  On each subsequent iteration, a new random order is chosen.  Since the factor order is chosen randomly with replacement, on each iteration, each factor will be updated exactly once. \\ \hline
-%
-\textsf{RandomWithReplacementScheduler} & The solver will apply a Sequential Schedule with the order of factors chosen randomly with replacement.  On each subsequent iteration, a new random order is chosen.  The number of factors updated per iteration is equal to the total number of factors in the graph. However, since the factors are chosen randomly with replacement, not all factors are necessarily updated in a single iteration, and some may be updated more than once. \\ \hline
-%
-\end{longtable}
-
-
-In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
-
-It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
-%
-\begin{lstlisting}
-SubGraph.Scheduler = 'SequentialScheduler';
-ParentGraph.addFactor(SubGraph, boundaryVariables);
-ParentGraph.Scheduler = 'FloodingScheduler';
-\end{lstlisting}
-
-For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
-
-For the RandomWithoutReplacementScheduler and RandomWithReplacementScheduler, if these are applied to a graph or subgraph, the hierarchy of any lower nesting layers is ignored.  That is, the subgraphs below are essentially flattened prior to schedule creation, and any schedulers or custom schedules specified in lower layers of the hierarchy are ignored.
-
-
-Because of the differences in operation between the Gibbs solver and the BP based solvers, the Gibbs solver supports a distinct set of schedulers.  For the Gibbs solver, the following schedulers are available:
-
-\begin{tabular}{l p{4in}}
-\textbf{Name} & \textbf{Description} \\ \hline \hline
-%
-\textsf{GibbsDefaultScheduler} & Same as the GibbsSequentialScanScheduler, which is the default when using the Gibbs solver. \\ \hline
-%
-\textsf{GibbsSequentialScanScheduler} & The solver will apply a Sequential Scan Schedule.  For each scan, each variable is resampled in a fixed order.  The specific order of variables chosen is arbitrary, and depends on the order that variables were added to the graph. \\ \hline
-%
-\textsf{GibbsRandomScanScheduler} & The solver will apply a Random Scan Schedule.  Each successive variable to be resampled is chosen randomly with replacement.  The number of variables resampled per scan is equal to the total number of variables in the graph, but not all variables are necessarily resampled in a given scan, and some may be resampled more than once. \\ \hline
-%
-\end{tabular}
-
-Because of the nature of the Gibbs solver, the nested structure of a graph is ignored in creating the schedule.  That is, the graph hierarchy is essentially flattened prior to schedule creation, and only the scheduler specified on the outermost graph is applied.
-
+Each scheduler is applicable only to a certain subset of solvers.  The list of all available built-in schedulers and a description of their behavior can be found in section~\ref{sec:Schedulers}.
 
 
 \para{Schedule}
@@ -136,6 +85,8 @@ The default value is 1.  For a factor graph with a tree-structure, when using th
 
 \para{NumSteps}
 
+Read-write.  This property is used for rolled-up graphs (see section~\ref{sec:rolledUpFactorGraphs}).  This property determines the number of steps over which to perform inference when using the solve or continueSolve methods (see sections~\ref{sec:FactorGraph.solve} and~\ref{sec:FactorGraph.continueSolve}).  A \emph{step} corresponds to a single run of the solver over the current portion of the rolled-up graph, followed by advancing the graph to the next position.  By default, this property is infinite, resulting in no limit to the number of steps to be run (running until there is no more source data).
+
 \para{Name}
 
 Read-write.  When read, retrieves the current name of the factor graph.  When set, modifies the name of the factor graph to the corresponding value.  The value set must be a string.
@@ -156,23 +107,6 @@ For a rolled-up graph, the Score property represents only the score for only the
 
 
 \subsubsection{Methods}
-
-\para{initialize}
-
-\begin{lstlisting}
-MyGraph.initialize();
-\end{lstlisting}
-
-The initialize method resets the state of the factor graph and its associated solver.  When performing inference incrementally, for example using the iterate method, the initialize method must be called before the first iterate call.  When using the solve method to perform inference, there is no need to call initialize first.  The initialize method takes not arguments.
-
-\para{solve}
-
-\begin{lstlisting}
-MyGraph.solve();
-\end{lstlisting}
-
-The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
-
 
 \para{addFactor}
 \label{sec:FactorGraph.addFactor}
@@ -262,19 +196,94 @@ Further description and examples of using addFactorVectorized is given in sectio
 
 When creating a factor for discrete variables, Dimple attempts to determine if the resulting factor tables would be the same as any previously created factors.  If so, it shares the factor table to save space.  In some cases, it may not be desirable for certain factors to share a factor table (for example if entries in one of the factor tables will later be modified).  In such cases, the addFactorNoCache method can be used in lieu of the addFactor method.  The interface for the addFactorNoCache is identical to that of the addFactor method.
 
-
 \para{addDirectedFactor}
 
+When adding a factor that will be designated as directed, this method provides a shorthand way to indicate this on factor creation.
 
-\para{addRepeatedFactor}
+\begin{lstlisting}
+fg.addDirectedFactor(factorSpecification, variableList, directedTo);
+\end{lstlisting}
 
-\para{advance}
+The factorSpecification is defined identically to addFactor (see section~\ref{sec:FactorGraph.addFactor}).
 
-\para{hasNext}
+Instead of being a comma-separated list, the variableList argument is a cell array containing the list of variables or variable arrays to be connected to the factor.  Otherwise, the behavior of the variable list is the same as for the addFactorMethod.
+
+The directedTo argument is a cell array containing a subset of the variables listed in the variableList, specifically, the set of variables that are directed outputs of the factor.
+
+Using addDirectedFactor is equivalent to the following (where the variableList in this case is a comma-separated list instead of a cell array):
+
+ \begin{lstlisting}
+f = fg.addFactor(factorSpecification, variableList);
+f.directedTo(directedTo);
+\end{lstlisting}
+
+
+\para{initialize}
+
+\begin{lstlisting}
+MyGraph.initialize();
+\end{lstlisting}
+
+The initialize method resets the state of the factor graph and its associated solver.  When performing inference incrementally, for example using the iterate method, the initialize method must be called before the first iterate call.  When using the solve method to perform inference, there is no need to call initialize first.  The initialize method takes no arguments.
+
+\para{solve}
+\label{sec:FactorGraph.solve}
+
+\begin{lstlisting}
+MyGraph.solve();
+\end{lstlisting}
+
+The solve method runs the solver on the factor graph for the specified duration.  Calling solve initializes the graph prior to solving.
+
+For BP-based solvers, the solver runs the number of iterations specified by the NumIterations property.  For the Gibbs solver, it runs for the specified number of samples (see section~\ref{sec:GibbsSolverAPI}).
+
+For rolled-up factor graphs, the solver runs the solver over multiple steps of the graph.  A \emph{step} corresponds to a single run of the solver over the current portion of the rolled-up graph, followed by advancing the graph to the next position.  It performs the number of steps of inference specified by the NumSteps property or until there is no more data in a data source, whichever comes first.
+
+
+\para{continueSolve}
+\label{sec:FactorGraph.continueSolve}
+
+This method is used for manually advancing a rolled-up graph (see section~\ref{sec:manuallyAdvancingRolledUpGraph}).  This method takes no arguments and returns no value.  When called, it performs the number of steps of inference specified by the NumSteps property or until there is no more data in a data source, whichever comes first.  A \emph{step} corresponds to a single run of the solver over the current portion of the rolled-up graph, followed by advancing the graph to the next position.  The initialize method should be called prior to calling this method for the first time on an entire rolled-up graph, but should not be called before calling this method again to run additional steps.
 
 \para{solveOneStep}
 
-\para{continueSolve}
+This method is used for manually advancing a rolled-up graph (see section~\ref{sec:manuallyAdvancingRolledUpGraph}).  This method takes no arguments and returns no value.  When called, it performs inference on the current portion of the rolled-up graph.  Inference is performed on this section of the graph using whatever solver-specific parameters had previously been specified.  The graph is not re-initialized prior to performing inference, starting instead from the final state resulting from inference on the previous graph position.  The initialize method should be called prior to calling this method for the first time on an entire rolled-up graph, but should not be called after each advance to the next section.
+
+\para{advance}
+
+This method is used for manually advancing a rolled-up graph (see section~\ref{sec:manuallyAdvancingRolledUpGraph}).  This method takes no arguments and returns no value.  When called, it advances the graph to the next position.  Advancing the graph involves getting the next value of all data sources, and writing the next available value to all data sinks.
+
+\para{hasNext}
+
+This method is used for manually advancing a rolled-up graph (see section~\ref{sec:manuallyAdvancingRolledUpGraph}).  This method takes no arguments.  It returns a boolean value indicating whether or not it is possible to advance the graph to the next position.  This will be true only if all of the data sources have at least one more available value.
+
+\para{baumWelch}
+
+\begin{lstlisting}
+fg.baumWelch(factorList, numRestarts, numSteps);
+\end{lstlisting}
+
+The baumWelch method performs the Expectation-Maximization (EM) algorithm on a factor graph (the specific case of EM on an HMM graph is called the Baum-Welch algorithm, though EM in Dimple can be applied to any graph structure).
+
+This method has the following limitations:
+
+\begin{itemize}
+\item The factors on which parameter estimation is being performed must be directed (see section~\ref{sec:Factor.DirectedTo}).
+\item The factors on which parameter estimation is being performed must be connected only to discrete variables.
+\item The factors on which parameter estimation is being performed must \emph{not} be solver-specific built-in factors (also known as custom factors, see section~\ref{sec:solverSpecificBuiltInFactors}).
+\item The Solver must be set to use the SumProduct solver (the default solver).
+\end{itemize}
+
+The factorList argument is either a single Factor or FactorTable, or a cell array of Factors or FactorTables.  The weight values in these factor tables are the parameters to be estimated.  All other factors in the graph remain fixed and unmodified.  When including a FactorTable, if that table is used in more than one factor in the graph, the entries in the table are tied, estimating them jointly for all factors containing that table.
+
+The numRestarts argument indicates the number of times the EM process is repeated using distinct random restart values for the parameters.  When numRestarts is greater than 1, the EM process is repeated with different random initialization, and the final resulting parameter values are chosen from the run that resulted in the smallest Bethe free energy for the graph.
+
+The numSteps argument indicates (for each restart), how many steps of the EM algorithm are to be run.  A single step of the EM algorithm is one run of belief propagation followed by re-estimation of the parameter values.
+
+Note that the number of iterations for each run of belief propagation is determined from the NumIterations property.  If the graph is a tree, the number of iterations should be 1 (the default value).  If the graph is loopy, it should be set to a larger value (in this case, the EM algorithm is only approximate).
+
+Upon completion of this method, the result appears in the factor tables that were listed in the factorList argument.  That is, the factor table weights contain the resulting estimated values.  To read these values, the Weights property of the factor table can be read (see section~\ref{sec:FactorTable}).  For a factor, the factor table can be extracted using the FactorTable property (see section~\ref{sec:FactorTable}), and then the weights can be read from that.
+
 
 \para{join}
 

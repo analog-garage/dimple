@@ -25,10 +25,12 @@ Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \ne
 Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
 The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
-%
-ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
-%
-ConstantProduct & out(D,R) \newline in(D,R) & constant \newline [smoothing] &  Deterministic product function, multiplying the input times a constant value.  The constant value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%%
+%% Primarily for testing, need not be listed here.
+%ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%%
+%% Primarily for testing, need not be listed here.
+%ConstantProduct & out(D,R) \newline in(D,R) & constant \newline [smoothing] &  Deterministic product function, multiplying the input times a constant value.  The constant value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Cos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic cosine function, where out = cos(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -62,8 +64,9 @@ Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log functi
 LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
 MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline $N_{y}$ \newline [smoothing] & Deterministic matrix-vector product function, $y = Mx$, where $x$ and $y$ are vectors and $M$ is a matrix. Constructor arguments, $N_{x}$ and $N_{y}$, specify the input and output vector lengths, respectively. The matrix dimension is $N_{y} \times N_{x}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
-%
-MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+%%
+%% Primarily for testing, need not be listed here.
+%MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
 %
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -105,6 +108,9 @@ Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where o
 %
 \end{longtable}
 
+\subsubsection{Solver-Specific Built-in Factors}
+\label{sec:solverSpecificBuiltInFactors}
+
 In addition to the built-in factors listed above, there are a set of solver-specific built-in factors, also referred to as ``custom factors.''  These factors may also be specified by name in the addFactor call (using either a quoted string or as a function handle).  These are summarized in the following table:
 
 \begin{longtable} {l p{3cm} p{7cm}}
@@ -119,4 +125,52 @@ FiniteFieldConstMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finit
 FiniteFieldMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
 CustomXor & MinSum & Same as the Xor factor described above, but with a significantly faster implementation. \\ 
 \end{longtable}
+
+
+
+\subsubsection{Factor Creation Utility Functions}
+
+Dimple includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions described in section~\ref{sec:overloaded}.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  Such helper functions are defined for the following built-in distributions:
+
+\begin{itemize}
+\item Beta
+\item Gamma
+\item InverseGamma
+\item NegativeExpGamma
+\item Normal
+\item LogNormal
+\item VonMises
+\item Rayleigh
+\item Categorical
+\end{itemize}
+
+For each, the arguments are the parameters of the distribution.  For example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta);
+X = Normal(mean, precision);
+Y = Categorical(alphaVector);
+Z = Rayleigh(sigma);
+\end{lstlisting}
+
+
+The parameters can be variables, constants, or some of each.
+
+By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
+
+\begin{lstlisting}
+W = Gamma(alpha, beta, altGraph);
+X = Normal(mean, precision, [100, 1]);
+Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Z = Rayleigh(sigma, myGraph, size(somethingElse));
+\end{lstlisting}
+
+
+Dimple also includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided:
+
+\begin{itemize}
+\item getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
+\item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+\end{itemize}
+
 

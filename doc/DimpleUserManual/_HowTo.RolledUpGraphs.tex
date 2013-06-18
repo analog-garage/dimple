@@ -271,6 +271,7 @@ This produces the following output:
 \end{lstlisting}
 
 \subsubsection{Manually Advancing}
+\label{sec:manuallyAdvancingRolledUpGraph}
 
 By default, rolled up graphs will advance until there is no data left in a DataSource.  Users may override this behavior by either using FactorGraph.solveOneStep or setting the FactorGraph.NumSteps parameter.  By default, NumSteps is set to Inf.  By setting this to a finite number, N, users can examine the graph at every N steps of the rolled up graph.  This allows the user to pull Beliefs off of any portion of the graph.
 
