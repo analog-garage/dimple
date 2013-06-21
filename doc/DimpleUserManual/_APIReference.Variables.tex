@@ -140,6 +140,7 @@ In this case varRef is a 10x10 array of variables.  Each element of varRef, howe
 
 
 \subsubsection{Discrete}
+\label{sec:Discrete}
 
 A Discrete variable represents a variable that can take on a finite set of distinct states.  The Discrete class corresponds to either a single Discrete variable or a multidimensional array of Discrete variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
 
@@ -152,8 +153,8 @@ Discrete(domain, [dimensions])
 \end{lstlisting}
 
 \begin{itemize}
-\item domain is a required argument indicating the domain of the variable
-\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable)
+\item domain is a required argument indicating the domain of the variable.  The domain may either be a numeric array of domain elements, a cell array of domain elements, or a DiscreteDomain object (see section~\ref{Discrete.Domain}).
+\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable).
 \end{itemize}
 
 For example:
@@ -169,6 +170,7 @@ z = Discrete(domain, 2, 3, 4);
 We examine each of these arguments in more detail in the following sections.
 
 \subpara{Domain}
+\label{Discrete.Domain}
 
 Every Discrete random variable has a domain associated with it.  A domain is a set.  Elements of the set may be any object type.  For example, the following are Discrete variables with valid domains:
 
