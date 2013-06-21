@@ -132,7 +132,7 @@ fgs.BufferSize = bufferSize; - Set on the FactorGraphStream directly.
 
 Users can create data sources and attach them to VariableStreams.  As variables are created, data is retrieved from the DataSources and applied as inputs to the variables.  If a VariableStream is never connected to a DataSource, hasNext() will always return true for that VariableStream.  When a VariableStream is connected to a data source, hasNext() only returns true when there's more data in the DataSource.
 
-DataSources must implement the hasNext and getNext methods.  Methods include:
+DataSources implement the hasNext and getNext methods.  Methods include:
 
 \begin{itemize}
 
@@ -140,7 +140,7 @@ DataSources must implement the hasNext and getNext methods.  Methods include:
 \item DoubleArrayDataSource(data); -- Constructor that expects a matrix as input.  The data should be formatted such that each column provides input data for a step in the rolled up graph.
 \item DoubleArrayDataSource(dimensions); -- Dimensions is a row vector specifying the dimensions of the variable for each step of the repeated graph.
 \item DoubleArrayDataSource(dimensions,data); -- Dimensions means the same as above.  The data is added to the double array data source as though add(data) were called.  See the following:
-\item Add(data); -- Users can add  more data to the end of the data source.  Data should have the following dimensions: [VarDimensions AizeOfArrayperVariable NumSteps).  So if the user creates an MxN variable and wants to repeat it P times and the variable has domain of length K, the data should have the dimensions: [M N K P]
+\item add(data); -- Users can add  more data to the end of the data source.  Data should have the following dimensions: [VarDimensions SizeOfInputData NumSteps).  So if the user creates an MxN variable and wants to repeat it P times and the variable has domain of length K, the data should have the dimensions: [M N K P]
 \end{itemize}
 
 Dimple also has support for MultivariateDataSources.
