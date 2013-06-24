@@ -342,7 +342,7 @@ returns a (1,2) array containing the most likely values of VarArray2(1,2) and Va
 
 IMPORTANT: Since Beliefs or Inputs are arrays themselves, calling them on an array returns an array one dimension larger.
 
-Often, we will find it useful to have random Bits. For that purpose, one can directly create random Bits with the command Bit. A Bit is simply a Discrete with Domain [1;0] (note the ordering). Also, in order to simplify Input declarations, for a Bit variable named BitVar, BitVar.Input takes a single number, the probability of 1. Similarly, BitVar.Belief returns the marginal probability of BitVar being equal to 1.
+Often, we will find it useful to have random Bits. For that purpose, one can directly create random Bits with the command Bit. A Bit is simply a Discrete with Domain [0, 1]. Also, in order to simplify Input declarations, for a Bit variable named BitVar, BitVar.Input takes a single number, the probability of 1. Similarly, BitVar.Belief returns the marginal probability of BitVar being equal to 1.
 
 The second version of the 4-bit XOR will uses Bit variables to represent our random variables. Furthermore, it will decompose the 4 bits XOR into two 3-bits XOR. It is indeed easy to prove that $ B_1 + B_2 + B_3 + B_4 = 0(mod 2) $ is equivalent to
 
