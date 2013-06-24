@@ -19,6 +19,17 @@ import os
 import shutil
 import glob
 
+class cd:
+    def __init__(self, newPath):
+        self.newPath = newPath
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
+
 def producedoc(fileName,option):
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
@@ -29,8 +40,10 @@ if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option("-u","--user_doc",action="store_true",default=False,dest="user_doc")
     parser.add_option("-d","--devel_doc",action="store_true",default=False,dest="devel_doc")
-    parser.add_option("-f","--user_doc_filename",dest="user_doc_filename",default="DimpleUserDocumentation")
+    parser.add_option("-f","--user_doc_filename",dest="user_doc_filename",default="DimpleUserManual")
+    parser.add_option("-F","--user_doc_dir",dest="user_doc_dir",default="DimpleUserManual")
     parser.add_option("-r","--devel_doc_filename",dest="devel_doc_filename",default="DimpleDeveloperDocumentation")
+    parser.add_option("-R","--devel_doc_dir",dest="devel_doc_dir",default="DimpleDeveloperDocumentation")
     parser.add_option("-c","--clean",dest="clean",default=False,action="store_true")
                       
     (option,args) = parser.parse_args()
@@ -50,6 +63,8 @@ if __name__ == "__main__":
                      
     #Create user doc
     if option.user_doc:
-        producedoc(option.user_doc_filename,option)
+        with cd(option.user_doc_dir):
+            producedoc(option.user_doc_filename,option)
     if option.devel_doc:
-        producedoc(option.devel_doc_filename,option)
+        with cd(option.devel_doc_dir):
+            producedoc(option.devel_doc_filename,option)
