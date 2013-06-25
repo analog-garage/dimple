@@ -144,11 +144,11 @@ The Gibbs solver automatically performs block-Gibbs updates for variables that a
 
 \para{Methods}
 
-All existing Dimple methods work more-or-less as normal, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
+Most Dimple methods work more-or-less as normal when using the Gibbs solver, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
 NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
-The following sections list the solver-specific methods for the Gibbs solver (MATLAB versions).
+The following sections list the solver-specific methods for the Gibbs solver.
 
 \subpara{Graph Methods}
 
@@ -162,6 +162,13 @@ graph.Solver.getNumSamples();
 Set/get the number of samples to be run when solving the graph (post burn-in).
 
 \begin{lstlisting}
+graph.Solver.setScansPerSample(scansPerSample);
+graph.Solver.getScansPerSample();
+\end{lstlisting}
+
+Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
+
+\begin{lstlisting}
 graph.Solver.setUpdatesPerSample(updatesPerSample);
 graph.Solver.getUpdatesPerSample();
 \end{lstlisting}
@@ -169,10 +176,11 @@ graph.Solver.getUpdatesPerSample();
 Set/get the number of single-variable updates between samples.
 
 \begin{lstlisting}
-graph.Solver.setScansPerSample(scansPerSample);
+graph.Solver.setBurnInScans(burnInScans);
+graph.Solver.getBurnInScans();
 \end{lstlisting}
 
-Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
+Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
 
 \begin{lstlisting}
 graph.Solver.setBurnInUpdates(burnInUpdates);
@@ -180,12 +188,6 @@ graph.Solver.getBurnInUpdates();
 \end{lstlisting}
 
 Set/get the number of single-variable updates for the burn-in period prior to collecting samples.
-
-\begin{lstlisting}
-graph.Solver.setBurnInScans();
-\end{lstlisting}
-
-Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
 
 \begin{lstlisting}
 graph.Solver.setNumRestarts(numRestarts)
@@ -233,7 +235,7 @@ Prior to solving the graph, this method instructs the solver to save all sample 
 graph.Solver.saveAllScores();
 \end{lstlisting}
 
-Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:score}) of the graph for each sample.
+Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:FactorGraph.Score}) of the graph for each sample.
 
 \begin{lstlisting}
 graph.Solver.getAllScores();
@@ -315,6 +317,21 @@ variable.Solver.getBestSampleIndex;
 Returns the index of the best sample seen so far.
 
 \subpara{Real-Variable-Specific Methods}
+
+\begin{lstlisting}
+variable.Solver.setSampler(samplerName);
+variable.Solver.getSampler();
+\end{lstlisting}
+
+Set/get the sampler to be used for this variable.  The following samplers are available in the current version of Dimple:
+\begin{itemize}
+\item 'SliceSampler'
+\item 'MHSampler'
+\end{itemize}
+
+The SliceSampler is used by default.
+
+The MHSampler uses the Metropolis-Hastings algorithm.  For the MHSampler, the Gaussian proposal distribution is used, with a standard deviation that can be set using the following method:
 
 \begin{lstlisting}
 variable.Solver.setProposalStandardDeviation(stdDev)
@@ -428,6 +445,13 @@ fg.solve();
 
 Note that the @add syntax in MATLAB implies that add is a method and @add is a function handle. Users do not have to define an add function or worry about an existing add function since Dimple matches the function name to its custom add factor.
 
+Note that the addition factor could alternatively have been added using the overloaded plus operator:
+
+\begin{lstlisting}
+a = b + c;
+\end{lstlisting}
+
+
 \para{Multiply by Constant}
 
 The constmult factor adds a constraint that a=bc or a=cb. The product should be the left most argument to the addFactor call.
@@ -452,6 +476,13 @@ fg.solve();
     
 assertEqual(a.Belief,[10*5; 1*5]);
 \end{lstlisting}
+
+Note that the constant multiplication factor could alternatively have been added using the overloaded product operator, with one of the arguments being a constant:
+
+\begin{lstlisting}
+a = b * c;
+\end{lstlisting}
+
 
 \para{Linear Factor}
 
@@ -728,53 +759,8 @@ nested.addFactor(@constmult,fxnext,F,fx);
 
 \subpara{Rolled up Graphs and Multivariate Gaussians}
 
-Rolled up graphs can be used with Multivariate Gaussians.  This is useful for creating Kalman filters.  The only difference between Multivariate Gaussian rolled up graphs and other rolled up graphs is the data source type.  The following code snippet is taken from the demo/17\_KalmanFilter/run.m file:
+Rolled up graphs can be used with Multivariate Gaussians.  This is useful for creating Kalman filters.  The only difference between Multivariate Gaussian rolled up graphs and other rolled up graphs is the data source type.  See the example code in demo/16\_KalmanFilter/run.m for an example of how this is used.
 
-\begin{lstlisting}
-%create the rolled up graph.
-fzs = RealJointStream(numel(p0));
-fvs = RealJointStream(numel(p0));
-fznonoise = RealJointStream(numel(p0));
-fxs = RealJointStream(numel(x00));
-fg = FactorGraph();
-rf = fg.addRepeatedFactor(nested,fxs.getSlice(1),fxs.getSlice(2),...
-                     fznonoise.getSlice(1),fvs.getSlice(1),fzs.getSlice(1));
- 
-%If we set the buffersize to something other than the default of 1, this
-%will no longer be a Kalman filter.  Backwards messages will improve the
-%guesses.
-%rf.BufferSize = 10;
- 
-%Create data sources.
-zDataSource = MultivariateDataSource();
-vDataSource = MultivariateDataSource();
-
-%Assign data
-the following is in a loop
-    zDataSource.add(z,eye(2)*1e-100);
-    vDataSource.add(zeros(2,1),R);
-end
-
-fzs.DataSource = zDataSource;
-fvs.DataSource = vDataSource;
- 
-%Create arrays to save data.
-fgxs = zeros(timesteps,1);
-fgys = zeros(timesteps,1);
- 
-%Step through time and solve the Factor Graph.
-for i = 1:timesteps
-   fg.solve();
-   fgxs(i) = fxs.FirstVar.Belief.Means(1);
-   fgys(i) = fxs.FirstVar.Belief.Means(2);
-         
-   if fg.hasNext()
-       fg.advance();
-   else
-       break;
-   end
-end
-\end{lstlisting}
 
 \subsubsection{Particle BP Solver}
 

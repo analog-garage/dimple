@@ -1,4 +1,4 @@
-\subsection{Variables}
+\subsection{Variables and Related Classes}
 
 \subsubsection{Variable Types}
 
@@ -36,6 +36,21 @@ When setting the Name, only one variable in an array may be set at a time.  To s
 
 Read-only.  Returns the solver-object associated with the variable, to which solver-specific methods can be called.  See section~\ref{sec:SolversAPI}, which describes the solvers, including the solver-specific methods for each solver.
 
+\subpara{Guess}
+\label{sec:Variable.Guess}
+
+Read-write.  Specifies a value from the variable to be used when computing the Score of the factor graph (or of the variable or neighboring factors).  The Guess must be a valid value from the domain of the variable.
+
+If the Guess had not yet been set, its value defaults to the most likely belief (which corresponds to the Value property of the variable)\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
+
+\subpara{Score}
+\label{sec:Variable.Score}
+
+Read-only.  When read, computes and returns the score (energy) of the Input to this variable, which is treated as a single-edge factors, given a specified value for the variable.  The score value is relative, and may be arbitrarily normalized by an additive constant.
+
+The value of the variable used when computing the Score is the Guess value for this variable (see section~\ref{sec:Variable.Guess}).  If no Guess had yet been specified, the value with the most likely belief (which corresponds to the Value property of the variable) is used\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
+
+
 \subpara{Ports}
 
 Read-only.  Retrieves a cell array containing a list of Ports connecting the variable to its neighboring factors.
@@ -72,8 +87,60 @@ returnArray = variableArray.invokeSolverSpecificMethodWithReturnValue('methodNam
 
 For an array of variables, the invokeSolverSpecificMethodWithReturnValue calls the specified solver-specific method on each of the variables in the array, returning a return value for each variable.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  The returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the variable array.
 
+\para{Operators}
+
+\subpara{Operators for Implicit Factor Creation}
+
+Dimple supports a set of overloaded MATLAB operators and functions that operate on variables to implicitly add factors to a factor graph.
+
+The list of supported operators and functions is given in section~\ref{sec:overloaded}.  A description of how to use these operators and functions is given in section~\ref{sec:ImplicitFactorCreation}.
+
+Using one of the defined operators or functions with one or more variables will result in creation of a new variable, which can be assigned to a new variable name, with the appropriate domain.  It will also result in the creation of a factor which is added to the most recently created factor graph.  This factor will connect to the input variables and the newly created result variable.  For example:
+
+\begin{lstlisting}
+c = a + b;
+\end{lstlisting}
+
+This results in the creation of a Sum factor with connected variables, c, a, and b (in that order).
+
+These operators and functions can be compounded into a single line of code, resulting in creation of intermediate anonymous variables.  For example:
+
+\begin{lstlisting}
+z = (a + b) * c^d - sqrt(-e);
+\end{lstlisting}
+
+Like using the addFactor method, some of the inputs to these operators and functions may be constants.  Specifically, for binary operators, one of the inputs may be a constant instead of a variable.  For example:
+
+\begin{lstlisting}
+x = a^2;
+y = (a + b + 2) * 3;
+\end{lstlisting}
+
+These operators and functions can be applied to arrays of variables, with some limitations.  Specifically, if each of the input variables are vectors of the same dimension, then the result will be to create a vector of output variables of the same dimension, along with a vector of factors relating the inputs and outputs.
+
+In some cases, to be consistent with MATLAB notation, there is a distinction made between the vectorized and non-vectorized operator.  Specifically, Dimple uses MATLAB's notation for pointwise product and power operators to indicate a vectorized operation.  For example, if variables a through e are vectors of variables of identical size, then the following would create a variable vector z, and a series of factors relating these variables.
+
+\begin{lstlisting}
+z = (a .* b) + c.^d - sqrt(-e);
+\end{lstlisting}
+
+For binary operators, one of the inputs may be a scalar variable or a scalar constant instead of a variable vector.  For a scalar variable, the result is that scalar variable connecting to each instance of the factors that are created.  For a constant, each instance of the factor uses the same constant for that input (vectors of distinct constants are not currently supported).
+
+\subpara{repmat}
+
+Dimple overloads the MATLAB repmat function when called with a Dimple variable or variable array as its first argument.  The result of this function is an array of variables in the requested dimensions.  Dimple does not actually make multiple copies of the variables, but instead creates a variable array that provides repeated references to the same variables in the existing array.  
+
+For example:
+\begin{lstlisting}
+var = Bit(10, 1);
+varRef = repmat(var, 1, 10);
+\end{lstlisting}
+
+In this case varRef is a 10x10 array of variables.  Each element of varRef, however, is not a distinct Dimple variable, but a reference to an element in var, where for each row of varRef, there are 10 repeated copies of the corresponding variable in var.  Use of repmat for variables can be useful when using addFactorVectorized (see sections~\ref{sec:vectorizedFactorCreation} and~\ref{sec:FactorGraph.addFactorVectorized}).
+
 
 \subsubsection{Discrete}
+\label{sec:Discrete}
 
 A Discrete variable represents a variable that can take on a finite set of distinct states.  The Discrete class corresponds to either a single Discrete variable or a multidimensional array of Discrete variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
 
@@ -86,8 +153,8 @@ Discrete(domain, [dimensions])
 \end{lstlisting}
 
 \begin{itemize}
-\item domain is a required argument indicating the domain of the variable
-\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable)
+\item domain is a required argument indicating the domain of the variable.  The domain may either be a numeric array of domain elements, a cell array of domain elements, or a DiscreteDomain object (see section~\ref{Discrete.Domain}).
+\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable).
 \end{itemize}
 
 For example:
@@ -103,6 +170,7 @@ z = Discrete(domain, 2, 3, 4);
 We examine each of these arguments in more detail in the following sections.
 
 \subpara{Domain}
+\label{Discrete.Domain}
 
 Every Discrete random variable has a domain associated with it.  A domain is a set.  Elements of the set may be any object type.  For example, the following are Discrete variables with valid domains:
 
@@ -465,7 +533,7 @@ Read-only.  This property returns the value of the upper bound.  The default val
 \subsubsection{MultivariateMsg}
 \label{sec:MultivariateMsg}
 
-The MultivariateMsg class is used to specify the parameters of a multivariate Guassian distribution, as used in the Gaussian solver.
+The MultivariateMsg class is used to specify the parameters of a multivariate Gaussian distribution, as used in the Gaussian solver.
 
 \para{Constructor}
 

@@ -1,7 +1,7 @@
 \subsection{List of Overloaded MATLAB Operators and Functions}
 \label{sec:overloaded}
 
-The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding factor, the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.
+The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding built-in factor (as described in section~\ref{sec:builtInFactors}), the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.  The use of these operators and functions is described in section~\ref{sec:ImplicitFactorCreation}.
 
 \begin{longtable} {l p{3cm} p{1cm} p{1cm} p{1cm} l p{4cm}}
 Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
@@ -44,38 +44,4 @@ tanh() & Tanh & R & R & - & \checkmark & Hyperbolic tangent \\
 \end{longtable}
 
 
-Dimple also includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions listed above.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  The built-in factors that support this syntax are:
-
-\begin{itemize}
-\item Beta
-\item Gamma
-\item InverseGamma
-\item NegativeExpGamma
-\item Normal
-\item LogNormal
-\item VonMises
-\item Rayleigh
-\item Categorical
-\end{itemize}
-
-For each, the arguments are the parameters of the distribution.  For example:
-
-\begin{lstlisting}
-W = Gamma(alpha, beta);
-X = Normal(mean, precision);
-Y = Categorical(alphaVector);
-Z = Rayleigh(sigma);
-\end{lstlisting}
-
-
-The parameters can be variables, constants, or some of each.
-
-By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
-
-\begin{lstlisting}
-W = Gamma(alpha, beta, altGraph);
-X = Normal(mean, precision, [100, 1]);
-Y = Categorical(alphaVector, [10, 10, 2], aGraph);
-Z = Rayleigh(sigma, myGraph, size(somethingElse));
-\end{lstlisting}
 

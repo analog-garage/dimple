@@ -25,7 +25,6 @@
 
 \interfootnotelinepenalty=10000		% Try to keep footnotes from splitting across pages
 \setcounter{secnumdepth}{6}			% Number paragraphs and subparagraphs
-\setcounter{tocdepth}{6}				% Include paragraphs and subparagraphs in TOC
 \newcommand{\para}[1]{\paragraph{#1}$\:$\\}				% Line-break after paragraph heading
 \newcommand{\subpara}[1]{\subparagraph{#1}$\:$\\}		% Line-break after sub-paragraph heading
 \newcommand{\paraNoToc}[1]{\paragraph*{#1}$\:$\\}		% Line-break after paragraph heading, not in TOC
@@ -36,22 +35,23 @@
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
 
-% Subsubparagraphs
-\makeatletter
-\newcounter{subsubparagraph}[subparagraph]
-\renewcommand\thesubsubparagraph{%
-  \thesubparagraph.\@arabic\c@subsubparagraph}
-\newcommand\subsubparagraph{%
-  \@startsection{subsubparagraph}    % counter
-    {6}                              % level
-    {\parindent}                     % indent
-    {3.25ex \@plus 1ex \@minus .2ex} % beforeskip
-    {-1em}                           % afterskip
-    {\normalfont\normalsize\bfseries}}
-\newcommand\l@subsubparagraph{\@dottedtocline{6}{10em}{5em}}
-\newcommand{\subsubparagraphmark}[1]{}
-\makeatother
-\newcommand{\subsubparaNoToc}[1]{\subsubparagraph*{#1}$\:$\\}	% Line-break after sub-paragraph heading, not in TOC
+%% Subsubparagraphs
+%\makeatletter
+%\newcounter{subsubparagraph}[subparagraph]
+%\renewcommand\thesubsubparagraph{%
+%  \thesubparagraph.\@arabic\c@subsubparagraph}
+%\newcommand\subsubparagraph{%
+%  \@startsection{subsubparagraph}    % counter
+%    {6}                              % level
+%    {\parindent}                     % indent
+%    {3.25ex \@plus 1ex \@minus .2ex} % beforeskip
+%    {-1em}                           % afterskip
+%    {\normalfont\normalsize\bfseries}}
+%\newcommand\l@subsubparagraph{\@dottedtocline{6}{13em}{6em}}
+%\newcommand{\subsubparagraphmark}[1]{}
+%\makeatother
+%\newcommand{\subsubpara}[1]{\subsubparagraph{#1}$\:$\\}			% Line-break after sub-paragraph heading
+%\newcommand{\subsubparaNoToc}[1]{\subsubparagraph*{#1}$\:$\\}	% Line-break after sub-paragraph heading, not in TOC
 
 
 \lstset{ %
@@ -94,6 +94,7 @@
 
 \maketitle
 
+% Attempt to have a brief contents overview prior to the full contents
 %\clearpage
 %\renewcommand{\contentsname}{Brief Contents}
 %\setcounter{tocdepth}{1}				% Include only the top-level sections in the brief TOC
@@ -101,7 +102,7 @@
 
 \clearpage
 %\renewcommand{\contentsname}{Contents}
-%\setcounter{tocdepth}{5}				% Include paragraphs and subparagraphs in TOC
+\setcounter{tocdepth}{5}				% Include paragraphs and subparagraphs in TOC
 \tableofcontents
 
 \clearpage
@@ -114,6 +115,7 @@
 
 \begin{appendices}
 \input{_IntroductionToFactorGraphs}
+\input{_CustomJavaFactorFunctions}
 \end{appendices}
 
 \end{document}  
