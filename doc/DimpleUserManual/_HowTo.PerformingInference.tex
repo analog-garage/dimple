@@ -7,16 +7,19 @@ Once a model has been created in Dimple, the user may then perform inference on 
 
 To perform the inference computation, Dimple supports a variety of \emph{solver} algorithms that the user can choose from.  For each solver, there are a number of options and configuration parameters that the user may specify to customize the behavior of the solver.
 
-At a high level, Dimple supports two categories of solver:
+At a high level, Dimple supports three categories of solver:
 %
 \begin{itemize}
 \item Belief propagation (BP)
 \item Gibbs sampling
+\item Linear programming (LP)
 \end{itemize}
 
 The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} value.  In both cases, the result may be approximate, depending on the specific model.  In the case of sum-product, the solvers further divide based on how real variables are dealt with.  The basic SumProduct solver doesn't support real variables at all, while the Gaussian and ParticleBP solvers use Gaussian and particle representations, respectively, for messages passed to and from real variables.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
 
-The Gibbs solver supports all of the primary variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value.
+The Gibbs solver supports all of the primary variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value (see section~\ref{sec:GibbsSolverAPI}).
+
+The LP solver transforms a factor graph over discrete variables into an equivalent linear program then solves this linear program (see section~\ref{sec:LPSolver}).  This solver is limited to factor graphs containing only discrete variables.
 
 The Solver is a property of a factor graph.  To set the Solver for a given graph, this property is set to the name of the solver.  For example:
 
@@ -32,9 +35,10 @@ The solver name is case insensitive.  The current set of valid solver names are:
 \item Gaussian
 \item ParticleBP
 \item Gibbs
+\item LP
 \end{itemize}
 
-More detail on each of these solvers is provided later in this document.
+More detail on each of these solvers is provided in section~\ref{sec:SolversAPI}.
 
 If no solver is specified for a graph, Dimple will use the SumProduct solver by default.
 

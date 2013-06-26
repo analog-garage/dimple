@@ -879,3 +879,21 @@ Given a set of values in the domain of the variable, returns the belief evaluate
 NOTE: the generic variable method Belief (or getBeliefs() with no arguments) operates similarly to the discrete-variable case, but the belief values returned are those at the current set of particle values. Note that this representation does not represent a set of weighted particles. That is, the particle positions are distributed approximately by the belief and the belief values represent the belief. It remains to be see if this should be the representation of belief that is used, or if an alternative representation would be better. The alternative solver-specific getBelief(valueSet) method allows getting the beliefs on a user-specified set of values, which may be uniform, and would not have this unusual interpretation.
 
 
+
+\subsubsection{LP Solver}
+\label{sec:LPSolver}
+
+Use of the linear programming (LP) solver is specified by calling:
+\begin{lstlisting}
+fg.Solver = 'LP';
+\end{lstlisting}
+
+The LP solver transforms a factor graph into an equivalent linear program, which is solved using a linear programming software package.  The current version of Dimple uses the MATLAB linear programming function for this purpose.  As a result, use of Dimple's LP solver requires the MATLAB Optimization Toolbox\footnote{This restriction may be lifted in a future version of Dimple.}.
+
+The LP solver supports only discrete variables.
+
+In the current version of Dimple (version 0.3), there is no support for rolled-up graphs when using the LP solver.
+
+There are currently no solver-specific methods for the LP solver.
+
+
