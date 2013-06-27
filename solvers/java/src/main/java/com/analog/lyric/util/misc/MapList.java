@@ -35,6 +35,17 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	private HashMap<Integer,T> _hashMap = new HashMap<Integer, T>();
 	private ArrayList<T> _arrayList = new ArrayList<T>();
 		
+	public MapList()
+	{
+		
+	}
+	
+	public MapList(Iterable<T> vars)
+	{
+		for (T v : vars)
+			add(v);
+	}
+	
 	public T getByKey(int id)
 	{
 		

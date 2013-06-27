@@ -15,12 +15,32 @@ public abstract class ParameterEstimator
 	private FactorGraph _fg;
 	private FactorTable [] _tables;
 	private Random _r;
+	private HashMap<FactorTable,ArrayList<Factor>> _table2factors;
 
 	public ParameterEstimator(FactorGraph fg, FactorTable [] tables, Random r)
 	{
 		_fg = fg;
 		_tables = tables;
 		_r = r;
+		
+		HashMap<FactorTable,ArrayList<Factor>> table2factors = new HashMap<FactorTable, ArrayList<Factor>>();
+
+		for (Factor f  : fg.getFactorsFlat())
+		{
+			FactorTable ft = f.getFactorTable();
+			if (! table2factors.containsKey(ft))
+				table2factors.put(ft,new ArrayList<Factor>());
+			table2factors.get(ft).add(f);
+		}
+
+		//Verify directionality is consistent.
+		_table2factors = table2factors;
+
+	}
+	
+	public HashMap<FactorTable,ArrayList<Factor>> getTable2Factors()
+	{
+		return _table2factors;
 	}
 
 	public FactorTable [] getTables()
@@ -103,27 +123,14 @@ public abstract class ParameterEstimator
 
 	public static class BaumWelch extends ParameterEstimator
 	{
-		HashMap<FactorTable,ArrayList<Factor>> _table2factors;
 
 		public BaumWelch(FactorGraph fg, FactorTable[] tables, Random r) 
 		{
 			super(fg, tables, r);
-			HashMap<FactorTable,ArrayList<Factor>> table2factors = new HashMap<FactorTable, ArrayList<Factor>>();
 
-			for (Factor f  : fg.getFactorsFlat())
+			for (FactorTable table : getTable2Factors().keySet())
 			{
-				FactorTable ft = f.getFactorTable();
-				if (! table2factors.containsKey(ft))
-					table2factors.put(ft,new ArrayList<Factor>());
-				table2factors.get(ft).add(f);
-			}
-
-			//Verify directionality is consistent.
-			_table2factors = table2factors;
-
-			for (FactorTable table : _table2factors.keySet())
-			{
-				ArrayList<Factor> factors = _table2factors.get(table);
+				ArrayList<Factor> factors = getTable2Factors().get(table);
 				int [] direction = null;
 				for (Factor f : factors)
 				{
@@ -155,10 +162,10 @@ public abstract class ParameterEstimator
 
 			//Assign new weights
 			//For each Factor Table
-			for (FactorTable ft : _table2factors.keySet())
+			for (FactorTable ft : getTable2Factors().keySet())
 			{
 				//Calculate the average of the FactorTable beliefs
-				ArrayList<Factor> factors = _table2factors.get(ft);
+				ArrayList<Factor> factors = getTable2Factors().get(ft);
 
 				double [] sum = new double[ft.getRows()];
 

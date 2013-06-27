@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core;
+package com.analog.lyric.math;
 
 import java.util.Random;
 

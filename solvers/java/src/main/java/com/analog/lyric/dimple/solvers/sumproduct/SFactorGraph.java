@@ -16,13 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
+
+import org.apache.commons.collections.map.MultiKeyMap;
+
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -189,6 +196,123 @@ public class SFactorGraph extends SFactorGraphBase
 					ft.changeWeight(i,weights[i] - weights[i]*derivative*_scaleFactor);
 				}
 			}
+		}
+		
+	}
+	
+	public void pseudoLikelihood(FactorTable [] fts, 
+			VariableBase [] vars,
+			Object [][] data,
+			int numSteps, 
+			double stepScaleFactor)
+	{
+		
+	}
+	
+	public class PseudoLikelihood extends ParameterEstimator
+	{
+
+		private VariableBase [] _vars;
+		private int [][] _data;
+		private double _scaleFactor;
+		
+		private class RelevantSamples
+		{
+			public RelevantSamples(Factor f)
+			{
+				
+			}
+			
+			//public 
+		}
+		
+		public PseudoLikelihood(FactorGraph fg, FactorTable[] tables, Random r,
+				VariableBase [] vars, int [][] dataIndices, double scaleFactor) 
+		{
+			super(fg, tables, r);
+			_scaleFactor = scaleFactor;
+			_data = dataIndices;
+			_vars = vars;
+
+			FactorList fl = fg.getFactorsFlat();
+
+			
+			MultiKeyMap m = new MultiKeyMap();
+			m.put(1,2,3);
+		
+			
+			//Go through data
+				//For each factor
+					//Add 1 for state of connected variables
+			//for each factor, normalize the hash table
+			for (int i = 0; i < dataIndices.length; i++)
+			{
+				for (int j = 0; j < fl.size(); j++)
+				{
+					//get the int [] of indices for the variables of this factor
+					//
+				}
+			}
+			
+			
+			HashMap<VariableBase,Integer> var2index = new HashMap<VariableBase, Integer>();
+			
+			for (int i = 0; i < vars.length; i++)
+			{
+				var2index.put(vars[i], i);
+			}
+			//MultiKeyMap<Factor,Integer,v> multiMap;
+			for (int i = 0; i < dataIndices.length; i++)
+			{
+				for (int j = 0; j < fl.size(); j++)
+				{
+					Factor f = fl.getByIndex(j);
+					VariableList vl = f.getVariables();
+					
+					int [] varIndices = new int[vl.size()];
+					for (int k = 0; k < varIndices.length; k++)
+						varIndices[k] = var2index.get(vl.getByIndex(k));
+					
+					int weightIndex = f.getFactorTable().getWeightIndexFromTableIndices(varIndices);
+					
+					
+				}
+			}
+		}
+
+		@Override
+		public void runStep(FactorGraph fg) 
+		{
+			FactorTable [] tables = getTables();
+			HashMap<FactorTable,ArrayList<Factor>> table2factors = getTable2Factors();
+			double [][] gradients = new double[tables.length][];
+			
+			for (int i = 0; i < tables.length; i++)
+			{
+				double [] weights = tables[i].getWeights();
+				for (int j = 0; j < weights.length; j++) 
+				{
+					ArrayList<Factor> factors = table2factors.get(tables[i]);
+					for (int k = 0; k < factors.size(); k++)
+					{
+//						relevantSamples = getRelevantInfo(factors.get(k),j);
+//						relevantSamples.getImpericalProbForWeight();
+//						
+//						double [] nsp = relevantSamples.getImpericalProbsForNeighborStates();
+//						int [][] indices = relevantSamples.getNeighborValues();
+						
+						//get PD(
+					}
+				}
+			}
+			//tables[0].changeWeights(probs)
+	        //for each unique table
+				//for each entry		
+					//for each factor
+				    	//for each sample related to that parameter (across all factors?)
+					    	//calculate local gradient and add
+
+				
 		}
 		
 	}

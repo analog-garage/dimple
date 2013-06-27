@@ -20,4 +20,20 @@ import com.analog.lyric.util.misc.MapList;
 
 public class VariableList extends MapList<VariableBase>
 {
+	public VariableList()
+	{
+		super();
+	}
+
+	public VariableList(VariableBase [] vars)
+	{
+		for (VariableBase v : vars)
+			add(v);
+	}
+
+	public VariableList(Iterable<VariableBase> vars)
+	{
+		super(vars);
+	}
+
 }
