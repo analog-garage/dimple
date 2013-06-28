@@ -38,6 +38,11 @@ public abstract class ParameterEstimator
 
 	}
 	
+	public void setRandom(Random r)
+	{
+		_r = r;
+	}
+	
 	public HashMap<FactorTable,ArrayList<Factor>> getTable2Factors()
 	{
 		return _table2factors;
