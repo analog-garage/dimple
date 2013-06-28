@@ -32,7 +32,10 @@ public class SparseJointHistogram
 	
 	public void add(LinkedList<Integer> ll, int count)
 	{
-		_indices2prob.put(ll, _indices2prob.get(ll)+count);
+		Integer tmp = _indices2prob.get(ll);
+		if (tmp == null)
+			tmp = 0;
+		_indices2prob.put(ll, +count);
 		_total+=count;
 	}
 	public int getTotal()

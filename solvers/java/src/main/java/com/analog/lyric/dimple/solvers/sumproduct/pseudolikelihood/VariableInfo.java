@@ -102,7 +102,7 @@ public class VariableInfo extends NodeInfo
 					
 					for (int j = 0; j < mapping.length; j++)
 					{
-						if (mapping[j] > domainValues.length)
+						if (mapping[j] >= domainValues.length)
 							indices[j] = i;
 						else
 							indices[j] = domainValues[mapping[j]];
