@@ -3,8 +3,11 @@ package com.analog.lyric.dimple.parameters;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.jcip.annotations.ThreadSafe;
+
 import com.analog.lyric.dimple.model.DimpleException;
 
+@ThreadSafe
 public abstract class AbstractParameterList<Key extends IParameterKey> implements IParameterList<Key>
 {
 	private static final long serialVersionUID = 1L;
@@ -13,10 +16,6 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	 * Object methods
 	 */
 	
-	/**
-	 * All concrete subclasses should implement this by implementing a
-	 * copy constructor and returning a new instance using that.
-	 */
 	@Override
 	public abstract AbstractParameterList<Key> clone();
 	
@@ -24,7 +23,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	 * Iterable methods
 	 */
 	
-	private class IteratorImpl implements Iterator<ParameterValue<Key>>
+	private class IteratorImpl implements Iterator<Parameter<Key>>
 	{
 		private final AtomicInteger _index = new AtomicInteger(0);
 		private final Key[] _keys = getKeys();
@@ -36,10 +35,17 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 		}
 
 		@Override
-		public ParameterValue<Key> next()
+		public Parameter<Key> next()
 		{
 			int i = _index.getAndIncrement();
-			return new ParameterValue<Key>(_keys != null ? _keys[i] : null, i, get(i), isFixed(i));
+			boolean shared = true;
+			SharedParameterValue value = getSharedValue(i);
+			if (value == null)
+			{
+				shared = false;
+				value = new SharedParameterValue(get(i));
+			}
+			return new Parameter<Key>(_keys != null ? _keys[i] : null, i, value, isFixed(i), shared);
 		}
 
 		@Override
@@ -50,7 +56,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
-	public Iterator<ParameterValue<Key>> iterator()
+	public Iterator<Parameter<Key>> iterator()
 	{
 		return new IteratorImpl();
 	}
@@ -64,6 +70,13 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	{
 		assertHasKeys("get");
 		return get(key.ordinal());
+	}
+	
+	@Override
+	public SharedParameterValue getSharedValue(Key key)
+	{
+		assertHasKeys("getSharedValue");
+		return getSharedValue(key.ordinal());
 	}
 	
 	@Override
@@ -91,6 +104,13 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
+	public boolean isShared(Key key)
+	{
+		assertHasKeys("isShared");
+		return isShared(key.ordinal());
+	}
+	
+	@Override
 	public void set(Key key, double value)
 	{
 		assertHasKeys("set");
@@ -98,9 +118,9 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
-	public void setAll(ParameterValue<Key> ... values)
+	public void setAll(Parameter<Key> ... values)
 	{
-		for (ParameterValue<Key> value : values)
+		for (Parameter<Key> value : values)
 		{
 			Key key = value.key();
 			if (key != null)
@@ -131,7 +151,10 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 			Key[] keys = getKeys();
 			for (int i = 0, end = keys.length; i < end; ++i)
 			{
-				set(i, keys[i].defaultValue());
+				if (!isFixed(i))
+				{
+					set(i, keys[i].defaultValue());
+				}
 			}
 		}
 	}
@@ -141,7 +164,10 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	{
 		for (int i = 0, end = size(); i < end; ++ i)
 		{
-			set(i, Double.NaN);
+			if (!isFixed(i))
+			{
+				set(i, Double.NaN);
+			}
 		}
 	}
 	
@@ -150,6 +176,20 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	{
 		assertHasKeys("setFixed");
 		setFixed(key.ordinal(), fixed);
+	}
+	
+	@Override
+	public void setShared(Key key, boolean shared)
+	{
+		assertHasKeys("setShared");
+		setShared(key.ordinal(), shared);
+	}
+	
+	@Override
+	public void setSharedValue(Key key, SharedParameterValue value)
+	{
+		assertHasKeys("setSharedValue");
+		setSharedValue(key.ordinal(), value);
 	}
 	
 	/*-------------------------
@@ -172,7 +212,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	
 	protected void assertNotFixed(int index)
 	{
-		if (!isFixed(index))
+		if (isFixed(index))
 		{
 			throw expectedNotFixed(index);
 		}
@@ -180,7 +220,8 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	
 	protected DimpleException expectedNotFixed(int index)
 	{
-		return new DimpleException("Attempt to modify fixed parameter '%s'.", getKeys()[index]);
+		Key[] keys = getKeys();
+		return new DimpleException("Attempt to modify fixed parameter '%s'.", keys != null ? keys[index] : index);
 	}
 	
 	protected void assertIndexInRange(int index)

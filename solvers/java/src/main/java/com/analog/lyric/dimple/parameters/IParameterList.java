@@ -14,14 +14,24 @@ import java.io.Serializable;
  * relevant for parameter lists that do not support keys (for which {@link #hasKeys()} is false).
  */
 public interface IParameterList<Key extends IParameterKey>
-	extends Serializable, Iterable<ParameterValue<Key>>, Cloneable
+	extends Serializable, Iterable<Parameter<Key>>, Cloneable
 {
+	/**
+	 * True if individual parameter values may be shared. If false, then
+	 * attempting to set shared values will result in an exception.
+	 * @see #setSharedValue(int, SharedParameterValue)
+	 */
+	public boolean canShare();
+	
 	/**
 	 * Returns a copy of this list.
 	 * <p>
 	 * Implementors should override this method with the return type declared as the type of
 	 * the overriding class, and should implement it by calling a copy constructor specific
 	 * to the overriding type (as opposed to calling {@code super.clone()}.
+	 * <p>
+	 * If list has any shared parameters, the new list's {@link #getSharedValue} must return the same value object
+	 * as the original list for any shared parameter.
 	 */
 	public IParameterList<Key> clone();
 	
@@ -46,6 +56,22 @@ public interface IParameterList<Key extends IParameterKey>
 	public boolean isFixed(int index);
 	
 	/**
+	 * Indicates whether parameter value may be shared with other parameter lists (i.e. parameter tying).
+	 * <p>
+	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
+	 * @see #isShared(int)
+	 */
+	public boolean isShared(Key key);
+	
+	/**
+	 * Indicates whether parameter value may be shared with other parameter lists (i.e. parameter tying).
+	 * <p>
+	 * @throws IndexOutOfBoundsException if index is less than zero or greater than or equal to {@link #size()}.
+	 * @see #isShared(int)
+	 */
+	public boolean isShared(int index);
+	
+	/**
 	 * Returns current value associated with given parameter {@code key}.
 	 * <p>
 	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
@@ -66,6 +92,26 @@ public interface IParameterList<Key extends IParameterKey>
 	 * @see #hasKeys()
 	 */
 	public Key[] getKeys();
+	
+	/**
+	 * Returns {@link SharedParameterValue} object containing parameter value if parameter
+	 * {@link #isShared(IParameterKey)}; otherwise returns null. If non-null, the value
+	 * object may be used to access or modify the parameter value.
+	 * <p>
+	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
+	 * @see #getSharedValue(int)
+	 */
+	public SharedParameterValue getSharedValue(Key key);
+	
+	/**
+	 * Returns {@link SharedParameterValue} object containing parameter value if parameter
+	 * {@link #isShared(IParameterKey)}; otherwise returns null. If non-null, the value
+	 * object may be used to access or modify the parameter value.
+	 * <p>
+	 * @throws IndexOutOfBoundsException if index is less than zero or greater than or equal to {@link #size()}.
+	 * @see #getSharedValue(IParameterKey)
+	 */
+	public SharedParameterValue getSharedValue(int index);
 	
 	/**
 	 * True if parameter list supports parameter access by key.
@@ -91,7 +137,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * <p>
 	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
 	 * @see #set(IParameterKey, double)
-	 * @see #setAll(ParameterValue...)
+	 * @see #setAll(Parameter...)
 	 */
 	public void set(int index, double value);
 	
@@ -102,7 +148,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * @throws IndexOutOfBoundsException if index of a value is negative or not less than {@link #size()}.
 	 * @see #setAll(double...)
 	 */
-	public void setAll(ParameterValue<Key> ... values);
+	public void setAll(Parameter<Key> ... values);
 	
 	/**
 	 * Sets corresponding parameters from specified array of {@code values}, where each parameter is
@@ -113,19 +159,27 @@ public interface IParameterList<Key extends IParameterKey>
 	public void setAll(double ...values);
 	
 	/**
-	 * Sets all parameters to their default values, if any. If {@link #hasKeys()} is true, then
+	 * Sets all non-fixed parameters to their default values, if any. If {@link #hasKeys()} is true, then
 	 * this is expected to be the value of {@link IParameterKey#defaultValue()} for the corresponding
 	 * key.
 	 */
 	public void setAllToDefault();
 	
 	/**
-	 * Sets all parameters to NaN to indicate value is missing.
+	 * Sets all non-fixed parameters to NaN to indicate value is missing.
 	 */
 	public void setAllMissing();
 	
 	/**
+	 * Sets all parameter's fixed attribute.
+	 * 
+	 * @see #setFixed(int, boolean)
+	 */
+	public void setAllFixed(boolean fixed);
+	
+	/**
 	 * Sets whether parameter with given index should be considered fixed.
+	 * @throws IndexOutOfBoundsException if index of a value is negative or not less than {@link #size()}.
 	 * @see #isFixed(int)
 	 * @see #setFixed(IParameterKey, boolean)
 	 */
@@ -140,6 +194,32 @@ public interface IParameterList<Key extends IParameterKey>
 	 * */
 	public void setFixed(Key key, boolean fixed);
 
+	public void setSharedValue(Key key, SharedParameterValue value);
+	
+	public void setSharedValue(int index, SharedParameterValue value);
+	
+	/**
+	 * Sets whether given parameter may be shared.
+	 * 
+	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false or implementation
+	 * does not support parameter sharing.
+	 * @see #canShare()
+	 * @see #setShared(int, boolean)
+	 * @see #isShared(IParameterKey)
+	 */
+	public void setShared(Key key, boolean shared);
+	
+	/**
+	 * Sets whether given parameter may be shared.
+	 * 
+	 * @throws UnsupportedOperationException if implementation does not support parameter sharing.
+	 * @throws IndexOutOfBoundsException if index of a value is negative or not less than {@link #size()}.
+	 * @see #canShare()
+	 * @see #setShared(int, boolean)
+	 * @see #isShared(IParameterKey)
+	 */
+	public void setShared(int index, boolean shared);
+	
 	/**
 	 * The number of parameters in the list, which specifies the valid range
 	 * of parameter indexes: [0, size-1]. The size is constant.

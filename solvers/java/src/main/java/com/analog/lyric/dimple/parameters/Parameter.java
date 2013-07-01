@@ -9,7 +9,7 @@ import net.jcip.annotations.Immutable;
  * Simple holder for a {@link IParameterKey}/value pair.
  */
 @Immutable
-public final class ParameterValue<Key extends IParameterKey> implements Serializable
+public final class Parameter<Key extends IParameterKey> implements Serializable
 {
 	/*-------
 	 * State
@@ -19,43 +19,57 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 	
 	private final Key _key;
 	private final int _index;
-	private final double _value;
+	private final SharedParameterValue _value;
 	private final boolean _fixed;
+	private final boolean _shared;
 	
 	/*--------------
 	 * Construction
 	 */
 
-	/**
-	 * Construct with given attributes.
-	 */
-	public ParameterValue(Key key, int index, double value, boolean fixed)
+	Parameter(Key key, int index, SharedParameterValue value, boolean fixed, boolean shared)
 	{
 		_key = key;
 		_index = index;
 		_value = value;
 		_fixed = fixed;
+		_shared = shared;
 	}
 	
-	public ParameterValue<Key> fixedCopy()
+	public Parameter(Key key, SharedParameterValue value, boolean fixed)
 	{
-		return fixed() ? this : new ParameterValue<Key>(_key, _index, _value, true);
+		this(key, key.ordinal(), value, fixed, true);
 	}
 	
-	public ParameterValue<Key> unfixedCopy()
+	public Parameter(Key key, double value, boolean fixed)
 	{
-		return fixed() ? new ParameterValue<Key>(_key, _index, _value, false) : this;
+		this(key, key.ordinal(), new SharedParameterValue(value), fixed, false);
 	}
 
+	public Parameter(int index, SharedParameterValue value, boolean fixed)
+	{
+		this(null, index, value, fixed, true);
+	}
+	
+	public Parameter(int index, double value, boolean fixed)
+	{
+		this(null, index, new SharedParameterValue(value), fixed, false);
+	}
+	
 	/**
 	 * Returns a {@link #fixed} parameter value with given {@link #key} and {@link #value}.
 	 * The {@link #index} will be set to the value of {@link IParameterKey#ordinal()} of {@code key}.
 	 * <p>
 	 * @see #unfixed(IParameterKey, double)
 	 */
-	public static <Key extends IParameterKey> ParameterValue<Key> fixed(Key key, double value)
+	public static <Key extends IParameterKey> Parameter<Key> fixed(Key key, double value)
 	{
-		return new ParameterValue<Key>(key, key.ordinal(), value, true);
+		return new Parameter<Key>(key, value, true);
+	}
+	
+	public static <Key extends IParameterKey> Parameter<Key> fixed(Key key, SharedParameterValue value)
+	{
+		return new Parameter<Key>(key, value, true);
 	}
 	
 	/**
@@ -64,24 +78,29 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 	 * <p>
 	 * @see #unfixed(IParameterKey, double)
 	 * @see #fixed(int, double)
-	 * @see #missing(int)
+	 * @see #unknown(int)
 	 */
-	public static <Key extends IParameterKey> ParameterValue<Key> fixed(int index, double value)
+	public static <Key extends IParameterKey> Parameter<Key> fixed(int index, double value)
 	{
-		return new ParameterValue<Key>(null, index, value, false);
+		return new Parameter<Key>(index, value, false);
 	}
 
+	public static <Key extends IParameterKey> Parameter<Key> fixed(int index, SharedParameterValue value)
+	{
+		return new Parameter<Key>(index, value, true);
+	}
+	
 	/**
 	 * Returns a non-{@link #fixed} parameter value with given {@link #key} and {@link #value}.
 	 * The {@link #index} will be set to the value of {@link IParameterKey#ordinal()} of {@code key}.
 	 * <p>
 	 * @see #unfixed(IParameterKey)
 	 * @see #fixed(IParameterKey, double)
-	 * @see #missing(IParameterKey)
+	 * @see #unknown(IParameterKey)
 	 */
-	public static <Key extends IParameterKey> ParameterValue<Key> unfixed(Key key, double value)
+	public static <Key extends IParameterKey> Parameter<Key> unfixed(Key key, double value)
 	{
-		return new ParameterValue<Key>(key, key.ordinal(), value, false);
+		return new Parameter<Key>(key, value, false);
 	}
 
 	/**
@@ -90,11 +109,11 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 	 * <p>
 	 * @see #unfixed(IParameterKey, double)
 	 * @see #fixed(int, double)
-	 * @see #missing(int)
+	 * @see #unknown(int)
 	 */
-	public static <Key extends IParameterKey> ParameterValue<Key> unfixed(int index, double value)
+	public static <Key extends IParameterKey> Parameter<Key> unfixed(int index, double value)
 	{
-		return new ParameterValue<Key>(null, index, value, false);
+		return new Parameter<Key>(index, value, false);
 	}
 
 	/**
@@ -103,17 +122,17 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 	 * <p>
 	 * @see #unfixed(IParameterKey, double)
 	 */
-	public static <Key extends IParameterKey> ParameterValue<Key> unfixed(Key key)
+	public static <Key extends IParameterKey> Parameter<Key> unfixed(Key key)
 	{
 		return unfixed(key, key.defaultValue());
 	}
 
-	public static <Key extends IParameterKey> ParameterValue<Key> missing(Key key)
+	public static <Key extends IParameterKey> Parameter<Key> unknown(Key key)
 	{
 		return unfixed(key, Double.NaN);
 	}
 	
-	public static <Key extends IParameterKey> ParameterValue<Key> missing(int index)
+	public static <Key extends IParameterKey> Parameter<Key> unknown(int index)
 	{
 		return unfixed(index, Double.NaN);
 	}
@@ -147,15 +166,20 @@ public final class ParameterValue<Key extends IParameterKey> implements Serializ
 	}
 	
 	/**
-	 * True if parameter has missing value, i.e. {@link #value()} is a NaN.
+	 * True if parameter has known value, i.e. {@link #value()} is not NaN.
 	 */
-	public boolean isMissing()
+	public boolean known()
 	{
-		return Double.isNaN(_value);
+		return _value.known();
 	}
 	
 	public double value()
 	{
-		return _value;
+		return _value.get();
+	}
+	
+	public SharedParameterValue sharedValue()
+	{
+		return _shared ? _value : null;
 	}
 }
