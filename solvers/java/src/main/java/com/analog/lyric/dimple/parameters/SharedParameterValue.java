@@ -2,10 +2,8 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.google.common.util.concurrent.AtomicDouble;
-
 @ThreadSafe
-public class SharedParameterValue extends AtomicDouble implements Cloneable
+public class SharedParameterValue extends ParameterValue
 {
 	private static final long serialVersionUID = 1L;
 
@@ -20,12 +18,11 @@ public class SharedParameterValue extends AtomicDouble implements Cloneable
 	
 	public SharedParameterValue()
 	{
-		this(Double.NaN);
 	}
 	
 	public SharedParameterValue(SharedParameterValue that)
 	{
-		this(that.get());
+		super(that);
 	}
 	
 	/*----------------
@@ -35,15 +32,42 @@ public class SharedParameterValue extends AtomicDouble implements Cloneable
 	@Override
 	public SharedParameterValue clone()
 	{
-		return new SharedParameterValue(get());
+		return new SharedParameterValue(this);
 	}
 	
-	/*------------------------------
-	 * SharedParameterValue methods
+	@Override
+	public SharedParameterValue cloneOrShare()
+	{
+		return this;
+	}
+	
+	/*-------------------------
+	 * ParameterValue methods
 	 */
 	
-	public final boolean known()
+	@Override
+	public SharedParameterValue asSharedValue()
 	{
-		return ! Double.isNaN(get());
+		return this;
+	}
+	
+	@Override
+	public final boolean isShared()
+	{
+		return true;
+	}
+	
+	@Override
+	public SharedParameterValue toShared()
+	{
+		return this;
+	}
+	
+	@Override
+	public ParameterValue toUnshared()
+	{
+		return new ParameterValue(this.get());
 	}
 }
+
+

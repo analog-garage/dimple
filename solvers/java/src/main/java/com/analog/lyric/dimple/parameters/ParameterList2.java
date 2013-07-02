@@ -15,8 +15,8 @@ public abstract class ParameterList2<Key extends IParameterKey> extends SmallPar
 	
 	private static final long serialVersionUID = 1L;
 	
-	protected volatile SharedParameterValue _parameter0;
-	protected volatile SharedParameterValue _parameter1;
+	protected volatile ParameterValue _parameter0;
+	protected volatile ParameterValue _parameter1;
 	
 	/*--------------
 	 * Construction
@@ -29,14 +29,14 @@ public abstract class ParameterList2<Key extends IParameterKey> extends SmallPar
 	
 	protected ParameterList2(double value0, double value1)
 	{
-		super(false, false);
-		_parameter0 = new SharedParameterValue(value0);
-		_parameter1 = new SharedParameterValue(value1);
+		super(false);
+		_parameter0 = new ParameterValue(value0);
+		_parameter1 = new ParameterValue(value1);
 	}
 	
 	protected ParameterList2(SharedParameterValue value0, SharedParameterValue value1)
 	{
-		super(false, true);
+		super(false);
 		_parameter0 = value0;
 		_parameter1 = value1;
 	}
@@ -44,8 +44,8 @@ public abstract class ParameterList2<Key extends IParameterKey> extends SmallPar
 	protected ParameterList2(ParameterList2<Key> that)
 	{
 		super(that);
-		_parameter0 = isShared(0) ? that._parameter0 : that._parameter0.clone();
-		_parameter1 = isShared(1) ? that._parameter1 : that._parameter1.clone();
+		_parameter0 = that._parameter0.cloneOrShare();
+		_parameter1 = that._parameter1.cloneOrShare();
 	}
 	
 	/*----------------
@@ -58,68 +58,35 @@ public abstract class ParameterList2<Key extends IParameterKey> extends SmallPar
 	/*------------------------
 	 * IParameterList methods
 	 */
-	
+
 	@Override
-	public final double get(int index)
+	public ParameterValue getParameterValue(int index)
 	{
 		switch (index)
 		{
 		case 0:
-			return _parameter0.get();
+			return _parameter0;
 		case 1:
-			return _parameter1.get();
+			return _parameter1;
 		default:
 			throw indexOutOfRange(index);
 		}
 	}
 	
 	@Override
-	public final SharedParameterValue getSharedValue(int index)
+	public void setParameterValue(int index, ParameterValue value)
 	{
-		SharedParameterValue value = null;
-		synchronized(this)
-		{
-			if (isShared(index))
-			{
-				value = index == 0 ? _parameter0 : _parameter1;
-			}
-		}
-		return value;
-	}
-	
-	@Override
-	public void set(int index, double value)
-	{
-		assertNotFixed(index);
 		switch (index)
 		{
 		case 0:
-			_parameter0.set(value);
+			_parameter0 = value;
 			break;
 		case 1:
-			_parameter1.set(value);
+			_parameter1 = value;
 			break;
+		default:
+			throw indexOutOfRange(index);
 		}
-		valueChanged(index);
-	}
-
-	@Override
-	public final void setSharedValue(int index, SharedParameterValue value)
-	{
-		assertNotFixed(index);
-		synchronized(this)
-		{
-			setShared(index, value != null);
-			if (index == 0)
-			{
-				_parameter0 = value == null ? _parameter0.clone() : value;
-			}
-			else
-			{
-				_parameter1 = value == null ? _parameter1.clone() : value;
-			}
-		}
-		valueChanged(index);
 	}
 	
 	@Override

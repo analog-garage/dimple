@@ -17,22 +17,19 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	
 	private static final long serialVersionUID = 1L;
 	protected volatile byte _fixedMask;
-	protected volatile byte _sharedMask;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	protected SmallParameterListBase(boolean fixed, boolean shared)
+	protected SmallParameterListBase(boolean fixed)
 	{
 		_fixedMask = fixed ? (byte)-1 : (byte)0 ;
-		_sharedMask = shared? (byte)-1 : (byte)0 ;
 	}
 
 	protected SmallParameterListBase(SmallParameterListBase<Key> that)
 	{
 		_fixedMask = that._fixedMask;
-		_sharedMask = that._sharedMask;
 	}
 	
 	/*------------------------
@@ -51,6 +48,18 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	}
 	
 	@Override
+	public final double get(int index)
+	{
+		return getParameterValue(index).get();
+	}
+	
+	@Override
+	public final SharedParameterValue getSharedValue(int index)
+	{
+		return getParameterValue(index).asSharedValue();
+	}
+	
+	@Override
 	public final boolean isFixed(int index)
 	{
 		return isSet(index, _fixedMask);
@@ -59,7 +68,15 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	@Override
 	public final boolean isShared(int index)
 	{
-		return isSet(index, _sharedMask);
+		return getParameterValue(index).isShared();
+	}
+
+	@Override
+	public void set(int index, double value)
+	{
+		assertNotFixed(index);
+		getParameterValue(index).set(value);
+		valueChanged(index);
 	}
 
 	@Override
@@ -77,14 +94,27 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	@Override
 	public void setShared(int index, boolean shared)
 	{
-		byte prevMask = _sharedMask;
-		byte newMask = setBit(index, prevMask, shared);
-		_sharedMask = newMask;
-		if (prevMask != newMask && !shared)
-		{
-			setSharedValue(index, null);
-		}
+		setSharedValue(index, shared ? getParameterValue(index).toShared() : null);
 	}
+	
+	@Override
+	public final void setSharedValue(int index, SharedParameterValue value)
+	{
+		assertNotFixed(index);
+		setParameterValue(index, value == null ? getParameterValue(index).toUnshared() : value);
+		valueChanged(index);
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	protected abstract ParameterValue getParameterValue(int index);
+	protected abstract void setParameterValue(int index, ParameterValue value);
+	
+	/*-----------------
+	 * Private methods
+	 */
 
 	private boolean isSet(int index, int mask)
 	{

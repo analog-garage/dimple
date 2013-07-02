@@ -351,17 +351,17 @@ public class TestParameters
 		IParameterList<Key> copy2 = SerializationTester.clone(list);
 		assertNotSame(copy2, list);
 		assertParameterListEquals(list, copy2);
-		for (int i = 0; i < copy2.size(); ++i)
-		{
-			copy2.setShared(i, false);
-			assertFalse(copy2.isShared(i));
-		}
 		
 		//
 		// Test mutable cases on cloned list
 		//
 		
 		copy2.setAllFixed(false);
+		for (int i = 0; i < copy2.size(); ++i)
+		{
+			copy2.setShared(i, false);
+			assertFalse(copy2.isShared(i));
+		}
 		for (int i = 0; i < copy2.size(); ++i)
 		{
 			assertFalse(copy2.isFixed(i));
