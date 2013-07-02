@@ -2,6 +2,9 @@ package com.analog.lyric.dimple.test.parameters;
 
 import static org.junit.Assert.*;
 
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.model.DimpleException;
@@ -16,9 +19,16 @@ import com.analog.lyric.dimple.parameters.ParameterListN;
 import com.analog.lyric.dimple.parameters.SharedParameterValue;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.test.SerializationTester;
+import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.AtomicDouble;
+import com.google.common.util.concurrent.AtomicDoubleArray;
 
 public class TestParameters
 {
+	/*---------------
+	 * Test classes
+	 */
+	
 	public static class ParamN extends ParameterListN<IParameterKey>
 	{
 		private static final long serialVersionUID = 1L;
@@ -146,6 +156,10 @@ public class TestParameters
 		}
 	}
 	
+	/*------------
+	 * Test cases
+	 */
+	
 	@Test
 	public void testParameterList()
 	{
@@ -196,6 +210,162 @@ public class TestParameters
 			assertEquals(i * 2, n5.get(i), 0.0);
 		}
 	}
+	
+	private double d;
+	private double d2;
+	
+	@Test
+	@Ignore
+	public void testAtomicDoublePerformance()
+	{
+		// Measure performance of AtomicDouble types used by parameter class implementations.
+		// Slowdown appears to be about 4.5x for AtomicDoubleArray and 2x for AtomicDouble
+		
+		boolean verbose = true;
+		
+		AtomicDoubleArray n100 = new AtomicDoubleArray(100);
+		double[] d100 = new double[100];
+		double[] out100 = new double[100];
+		
+		Stopwatch stopwatch = new Stopwatch();
+		
+		final int n = 1000;
+		
+		stopwatch.start();
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < 100; ++j)
+			{
+				n100.set(j, j);
+			}
+		}
+		stopwatch.stop();
+		
+		long atomicNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < 100; ++j)
+			{
+				d100[j] = j;
+			}
+		}
+		stopwatch.stop();
+		
+		long doubleNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		double atomicNsPerWrite = atomicNs / (100 * n);
+		double doubleNsPerWrite = doubleNs / (100 * n);
+		double ratio = atomicNsPerWrite / doubleNsPerWrite;
+			
+		if (verbose)
+		{
+			System.out.format("AtomicDoubleArray/double[] WRITE: %.0f/%.0f ns/write (%.1fX slowdown)\n",
+				atomicNsPerWrite, doubleNsPerWrite, ratio);
+		}
+
+		stopwatch.start();
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < 100; ++j)
+			{
+				out100[j] = n100.get(j);
+			}
+		}
+		stopwatch.stop();
+		
+		atomicNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n; ++i)
+		{
+			for (int j = 0; j < 100; ++j)
+			{
+				out100[j] = d100[j];
+			}
+		}
+		stopwatch.stop();
+		
+		doubleNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		atomicNsPerWrite = atomicNs / (100 * n);
+		doubleNsPerWrite = doubleNs / (100 * n);
+		ratio = atomicNsPerWrite / doubleNsPerWrite;
+			
+		if (verbose)
+		{
+			System.out.format("AtomicDoubleArray/double[] READ: %.0f/%.0f ns/read (%.1fX slowdown)\n",
+				atomicNsPerWrite, doubleNsPerWrite, ratio);
+		}
+		
+		AtomicDouble a = new AtomicDouble();
+//		double d = 0.0, d2 = 0.0;
+		
+		final int n2 = n * 100;
+		
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n2; ++i)
+		{
+			a.set(d2);
+		}
+		stopwatch.stop();
+		atomicNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n2; ++i)
+		{
+			d = d2;
+		}
+		stopwatch.stop();
+		doubleNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		atomicNsPerWrite = atomicNs / n2;
+		doubleNsPerWrite = doubleNs / n2;
+		ratio = atomicNsPerWrite / doubleNsPerWrite;
+			
+		if (verbose)
+		{
+			System.out.format("AtomicDouble/double WRITE: %.0f/%.0f ns/write (%.1fX slowdown)\n",
+				atomicNsPerWrite, doubleNsPerWrite, ratio);
+		}
+
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n2; ++i)
+		{
+			d2 = a.get();
+		}
+		stopwatch.stop();
+		atomicNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+
+		stopwatch.reset();
+		stopwatch.start();
+		for (int i = 0; i < n2; ++i)
+		{
+			d2 = d;
+		}
+		stopwatch.stop();
+		doubleNs = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+		
+		atomicNsPerWrite = atomicNs / n2;
+		doubleNsPerWrite = doubleNs / n2;
+		ratio = atomicNsPerWrite / doubleNsPerWrite;
+			
+		if (verbose)
+		{
+			System.out.format("AtomicDouble/double READ: %.0f/%.0f ns/read (%.1fX slowdown)\n",
+				atomicNsPerWrite, doubleNsPerWrite, ratio);
+		}
+	}
+	
+	/*-----------------
+	 * Helper methods
+	 */
 
 	public static <Key extends IParameterKey> void assertParameterListInvariants(IParameterList<Key> list)
 	{
