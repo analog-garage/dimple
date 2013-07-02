@@ -93,26 +93,26 @@ public class PseudoLikelihood extends ParameterEstimator
 				vi.addSample(dataIndices[i]);
 		}
 		
-		System.out.println("priting ----");
-		for (FactorInfo fi :  _factor2factorInfo.values())
-		{
-			Set<LinkedList<Integer>> nonZero = fi.getDistribution().getNonZeroKeys();
-			for (LinkedList<Integer> ll : nonZero)
-			{
-				System.out.println(ll + " " + fi.getDistribution().get(ll));
-			}
-		}
-		System.out.println("------");
-		System.out.println("variable info stuff");
-		for (VariableInfo vi :  _var2varInfo.values())
-		{
-			System.out.println(vi.getVariable());
-			Set<LinkedList<Integer>> nonZero = vi.getDistribution().getNonZeroKeys();
-			for (LinkedList<Integer> ll : nonZero)
-			{
-				System.out.println(ll + " " + vi.getDistribution().get(ll));
-			}
-		}
+//		System.out.println("priting ----");
+//		for (FactorInfo fi :  _factor2factorInfo.values())
+//		{
+//			Set<LinkedList<Integer>> nonZero = fi.getDistribution().getNonZeroKeys();
+//			for (LinkedList<Integer> ll : nonZero)
+//			{
+//				System.out.println(ll + " " + fi.getDistribution().get(ll));
+//			}
+//		}
+//		System.out.println("------");
+//		System.out.println("variable info stuff");
+//		for (VariableInfo vi :  _var2varInfo.values())
+//		{
+//			System.out.println(vi.getVariable());
+//			Set<LinkedList<Integer>> nonZero = vi.getDistribution().getNonZeroKeys();
+//			for (LinkedList<Integer> ll : nonZero)
+//			{
+//				System.out.println(ll + " " + vi.getDistribution().get(ll));
+//			}
+//		}
 
 	}
 	
@@ -198,6 +198,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	
 	double [][] calculateGradient()
 	{
+		
 		//Calculate the gradient
 		FactorTable [] tables = getTables();
 		HashMap<FactorTable,ArrayList<Factor>> table2factors = getTable2Factors();
@@ -210,60 +211,66 @@ public class PseudoLikelihood extends ParameterEstimator
 		for (int i = 0; i < tables.length; i++)
 		{
 			double [] weights = tables[i].getWeights();
-			
+			//TODO: avoid this new?
 			gradients[i] = new double[weights.length];
+			int [][] indices = tables[i].getIndices();
+			int degree = indices[0].length;
 			
-			//for eqch unique weight
-			for (int j = 0; j < weights.length; j++) 
+			//for each factor
+			ArrayList<Factor> factors = table2factors.get(tables[i]);
+			for (int k = 0; k < factors.size(); k++)
 			{
-				
-				//Sum the gradient over all factors related to this factor table
-				double total = 0;
-				//System.out.println("total for : " + j + " " + total);
-				ArrayList<Factor> factors = table2factors.get(tables[i]);
-				for (int k = 0; k < factors.size(); k++)
+				Factor f = factors.get(k);
+				VariableList vl = f.getVariables();
+				FactorInfo fi = _factor2factorInfo.get(f);	
+
+				//for each weight
+				for (int j = 0; j < weights.length; j++)
 				{
-					
-					Factor f = factors.get(k);
-					VariableList vl = f.getVariables();
-					FactorInfo fi = _factor2factorInfo.get(f);	
-					int [][] indices = tables[i].getIndices();
+					//add degree * pd(indices)
 					double impericalFactorD = fi.getDistribution().get(indices[j]);
-					
-					//start with the empirical distribution of the factor
-					total += 2*impericalFactorD;
-					
-					//for each variable, subtract sum_neighbors PD(neighbors)*p(x|neighbors)
-					for (int m = 0; m < vl.size(); m++)
+					gradients[i][j] += degree*impericalFactorD;
+				}
+
+				//for each variable
+				for (VariableBase v : vl)
+				{
+					VariableInfo vi = _var2varInfo.get(v);
+					//for each element of the variables domain
+					for (int d = 0; d < v.asDiscreteVariable().getDiscreteDomain().size(); d++)
 					{
-						VariableBase vb = vl.getByIndex(m);
-						int varIndex = indices[j][m];
-						int otherVarIndex = indices[j][1-m];
-						VariableInfo vi = _var2varInfo.get(vb);
-						Set<LinkedList<Integer>> uniqueSamples = vi.getUniqueSamples(varIndex);
+						Set<LinkedList<Integer>> samples = vi.getUniqueSamples();
 						
-						//Sum over all possible neighbors
-						for (LinkedList<Integer> ll : uniqueSamples)
+						//for each unique sample
+						for (LinkedList<Integer> sample : samples)
 						{
-							if (ll.get(0) == otherVarIndex)
-							{
-								double prob = vi.getProb(varIndex, ll);
-								//System.out.println("prob for var " + vi.getVariable().getLabel() + " domain " + ll + " " + prob);
-								total -= prob;
-							}
+							//calculate pneighbors
+							double prob = vi.getProb(d,sample);
+							
+							//find weight index from variable domain and unique sample
+							int index = vi.getFactorTableIndex(f, d, sample);
+							
+							//subtract prob
+							gradients[i][index] -= prob;
+							
 						}
 						
 					}
+					
+					
 				}
-				gradients[i][j] = total;
+
 			}
+		
 		}
+
 		return gradients;
 	}
 	
+	
 	public void applyGradient(double [][] gradient)
 	{
-		System.out.println("applying gradient " + Arrays.toString(gradient[0]));
+		//System.out.println("applying gradient " + Arrays.toString(gradient[0]));
 		FactorTable [] tables = getTables();
 		for (int i = 0; i < tables.length; i++)
 		{

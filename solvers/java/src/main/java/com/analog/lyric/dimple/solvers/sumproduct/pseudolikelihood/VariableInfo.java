@@ -19,7 +19,7 @@ import com.google.common.collect.Table;
 
 public class VariableInfo extends NodeInfo
 {
-	private Table<Integer, LinkedList<Integer>,Boolean> _uniqueSamplesPerValue = HashBasedTable.create();
+	private HashSet<LinkedList<Integer>> _uniqueSamplesPerValue = new HashSet<LinkedList<Integer>>();
 	private int _thisIndex;
 	private VariableBase [] _neighbors;
 	private Discrete _var;
@@ -85,6 +85,30 @@ public class VariableInfo extends NodeInfo
 	{
 		_neighbors2distributions.clear();
 	}
+
+	public int getFactorTableIndex(Factor f, int domainValue, LinkedList<Integer> domainVals)
+	{
+		Integer [] domainValues = new Integer[domainVals.size()];
+		domainValues = domainVals.toArray(domainValues);
+
+		return getFactorTableIndex(f, domainValue, domainValues);
+	}
+	public int getFactorTableIndex(Factor f, int domainValue, Integer [] domainVals)
+	{
+		int [] mapping = _factor2mapping.get(f);
+		int [] indices = new int[f.getVariables().size()];
+		
+		for (int j = 0; j < mapping.length; j++)
+		{
+			if (mapping[j] >= domainVals.length)
+				indices[j] = domainValue;
+			else
+				indices[j] = domainVals[mapping[j]];
+		}
+		
+		int index = f.getFactorTable().getWeightIndexFromTableIndices(indices);
+		return index;
+	}
 	
 	public double getProb(int varIndex,LinkedList<Integer> neighbors)
 	{
@@ -102,18 +126,7 @@ public class VariableInfo extends NodeInfo
 				double total = 1;
 				for (Factor f : _factor2mapping.keySet())
 				{
-					int [] mapping = _factor2mapping.get(f);
-					int [] indices = new int[f.getVariables().size()];
-					
-					for (int j = 0; j < mapping.length; j++)
-					{
-						if (mapping[j] >= domainValues.length)
-							indices[j] = i;
-						else
-							indices[j] = domainValues[mapping[j]];
-					}
-					
-					int index = f.getFactorTable().getWeightIndexFromTableIndices(indices);
+					int index = getFactorTableIndex(f,i,domainValues);
 					
 					//TODO: is this a prob or energy?
 					double weight = f.getFactorTable().getWeights()[index];
@@ -166,12 +179,12 @@ public class VariableInfo extends NodeInfo
 	{
 		super.addSample(allDataIndices);		
 		LinkedList<Integer> otherIndices = indicesToRelevantOnes(allDataIndices);		
-		_uniqueSamplesPerValue.put(_thisIndex, otherIndices, true);		
+		_uniqueSamplesPerValue.add(otherIndices);		
 	}
 	
-	public Set<LinkedList<Integer>> getUniqueSamples(int index)
+	public Set<LinkedList<Integer>> getUniqueSamples()
 	{
-		return _uniqueSamplesPerValue.row(index).keySet();
+		return _uniqueSamplesPerValue;
 	}
 	
 }

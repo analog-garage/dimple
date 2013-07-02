@@ -57,6 +57,10 @@ public abstract class VariableBase extends Node implements Cloneable
 	}
 
 	
+	public final Discrete asDiscreteVariable()
+	{
+		return (Discrete)this;
+	}
 	
 	@Override
 	public final VariableBase asVariable()
