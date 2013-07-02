@@ -23,7 +23,7 @@ public class VariableInfo extends NodeInfo
 	private int _thisIndex;
 	private VariableBase [] _neighbors;
 	private Discrete _var;
-	private double [] _distribution;
+	private HashMap<LinkedList<Integer>,double[]> _neighbors2distributions = new HashMap<LinkedList<Integer>, double[]>();
 	private HashMap<Factor, int []> _factor2mapping = new java.util.HashMap<Factor, int[]>();
 
 	public static VariableInfo createVariableInfo(VariableBase var,HashMap<VariableBase,Integer> var2index)
@@ -76,9 +76,14 @@ public class VariableInfo extends NodeInfo
 		//I should create the necessary info so that I can later 
 	}
 	
-	public void invalidateDistribution()
+	public VariableBase getVariable()
 	{
-		_distribution = null;
+		return _var;
+	}
+	
+	public void invalidateDistributions()
+	{
+		_neighbors2distributions.clear();
 	}
 	
 	public double getProb(int varIndex,LinkedList<Integer> neighbors)
@@ -88,11 +93,11 @@ public class VariableInfo extends NodeInfo
 		Integer [] domainValues = new Integer[neighbors.size()];
 		domainValues = neighbors.toArray(domainValues);
 		
-		if (_distribution == null)
+		if (!_neighbors2distributions.containsKey(neighbors))
 		{
-			_distribution = new double[_var.getDiscreteDomain().getElements().length];
+			double [] distribution = new double[_var.getDiscreteDomain().getElements().length];
 			double normalizer = 0;
-			for (int i = 0; i < _distribution.length; i++)
+			for (int i = 0; i < distribution.length; i++)
 			{
 				double total = 1;
 				for (Factor f : _factor2mapping.keySet())
@@ -114,15 +119,16 @@ public class VariableInfo extends NodeInfo
 					double weight = f.getFactorTable().getWeights()[index];
 					total *= weight;
 				}
-				_distribution[i] = total;
+				distribution[i] = total;
 				normalizer += total;
 			}
-			for (int i = 0; i < _distribution.length; i++)
-				_distribution[i] /= normalizer;
+			for (int i = 0; i < distribution.length; i++)
+				distribution[i] /= normalizer;
 			
+			_neighbors2distributions.put(neighbors,distribution);
 		}		
 		
-		return _distribution[varIndex]*pneighbors;
+		return _neighbors2distributions.get(neighbors)[varIndex]*pneighbors;
 	}
 	
 	

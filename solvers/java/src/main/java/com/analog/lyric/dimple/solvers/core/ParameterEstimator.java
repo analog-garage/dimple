@@ -16,6 +16,7 @@ public abstract class ParameterEstimator
 	private FactorTable [] _tables;
 	private Random _r;
 	private HashMap<FactorTable,ArrayList<Factor>> _table2factors;
+	private boolean _forceKeep;
 
 	public ParameterEstimator(FactorGraph fg, FactorTable [] tables, Random r)
 	{
@@ -75,6 +76,16 @@ public abstract class ParameterEstimator
 		}
 		return factorTables;
 	}
+	
+	public FactorGraph getFactorGraph()
+	{
+		return _fg;
+	}
+	
+	public void setForceKeep(boolean val)
+	{
+		_forceKeep = val;
+	}
 
 	public void run(int numRestarts, int numSteps)
 	{
@@ -87,7 +98,7 @@ public abstract class ParameterEstimator
 		FactorTable [] bestFactorTables = saveFactorTables(_tables);
 
 		//for each restart
-		for (int i = 0; i < numRestarts; i++)
+		for (int i = 0; i <= numRestarts; i++)
 		{
 			//if not first time, pick random weights
 			if (i != 0)
@@ -109,7 +120,7 @@ public abstract class ParameterEstimator
 
 			//if betheFreeEnergy is better
 			//store this is answer
-			if (newBetheFreeEnergy < currentBFE)
+			if (newBetheFreeEnergy < currentBFE || _forceKeep)
 			{
 				currentBFE = newBetheFreeEnergy;
 				bestFactorTables = saveFactorTables(_tables);

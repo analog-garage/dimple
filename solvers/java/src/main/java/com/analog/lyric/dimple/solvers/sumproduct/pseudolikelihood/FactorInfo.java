@@ -1,10 +1,14 @@
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Set;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
 
 public class FactorInfo extends NodeInfo
@@ -26,6 +30,7 @@ public class FactorInfo extends NodeInfo
 	public FactorInfo(Factor f, HashMap<VariableBase,Integer> var2index)
 	{
 		super(getVarIndices(f, var2index));
-	}			
+	}		
+	
 }
 

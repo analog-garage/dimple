@@ -35,7 +35,7 @@ public class SparseJointHistogram
 		Integer tmp = _indices2prob.get(ll);
 		if (tmp == null)
 			tmp = 0;
-		_indices2prob.put(ll, +count);
+		_indices2prob.put(ll, tmp+count);
 		_total+=count;
 	}
 	public int getTotal()
