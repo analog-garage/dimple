@@ -7,14 +7,13 @@ import java.util.Set;
 
 public class SparseJointHistogram
 {
-	private int _dims;
 	private HashMap<LinkedList<Integer>, Integer> _indices2prob = new HashMap<LinkedList<Integer>, Integer>();
 	private int _total = 0;
 	
 	public SparseJointHistogram(int dimensions)
 	{
-		_dims = dimensions;
 	}
+	
 	public void add(LinkedList<Integer> ll)
 	{
 		add(ll,1);

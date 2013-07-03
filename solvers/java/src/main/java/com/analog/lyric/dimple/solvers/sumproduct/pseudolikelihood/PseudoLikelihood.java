@@ -1,13 +1,11 @@
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
@@ -32,7 +30,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	/*
 	 * Used to convert input data from domain values to indices into the domain lists.
 	 */
-	public int [][] convertObjects2Indices(Object [][] data)
+	final private int [][] convertObjects2Indices(Object [][] data)
 	{
 		int [][] retval = new int[data.length][data[0].length];
 		for (int i = 0; i < retval.length; i++)
@@ -46,15 +44,6 @@ public class PseudoLikelihood extends ParameterEstimator
 		return retval;
 	}
 
-	
-	
-//	public PseudoLikelihood(FactorGraph fg, FactorTable[] tables,
-//			VariableBase [] vars, Object [][] data, double scaleFactor) 
-//	{
-//		this(fg,tables,vars,convertObjects2Indices(vars,data),scaleFactor);
-//	}
-	
-	// int [][] dataIndices, double scaleFactor
 	
 	public PseudoLikelihood(FactorGraph fg, FactorTable[] tables, 
 			VariableBase [] vars) 

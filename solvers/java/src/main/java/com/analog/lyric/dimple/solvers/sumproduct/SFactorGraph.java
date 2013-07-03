@@ -16,34 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Random;
-import java.util.Set;
-
-import org.apache.commons.collections.map.MultiKeyMap;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.FactorList;
-import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood.FactorInfo;
-import com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood.VariableInfo;
-import com.analog.lyric.util.misc.MapList;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import com.google.common.collect.Table.Cell;
 
 public class SFactorGraph extends SFactorGraphBase
 {

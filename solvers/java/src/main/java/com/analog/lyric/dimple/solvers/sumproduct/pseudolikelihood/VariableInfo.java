@@ -1,26 +1,20 @@
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.util.misc.MapList;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 
 
 public class VariableInfo extends NodeInfo
 {
 	private HashSet<LinkedList<Integer>> _uniqueSamplesPerValue = new HashSet<LinkedList<Integer>>();
-	private int _thisIndex;
 	private VariableBase [] _neighbors;
 	private Discrete _var;
 	private HashMap<LinkedList<Integer>,double[]> _neighbors2distributions = new HashMap<LinkedList<Integer>, double[]>();
@@ -44,7 +38,6 @@ public class VariableInfo extends NodeInfo
 			HashMap<VariableBase,Integer> var2index)
 	{
 		super(indices);
-		_thisIndex = var2index.get(var);
 		_neighbors = neighbors;
 		_var = (Discrete)var;
 		

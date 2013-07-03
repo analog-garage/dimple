@@ -1,6 +1,5 @@
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 
 
