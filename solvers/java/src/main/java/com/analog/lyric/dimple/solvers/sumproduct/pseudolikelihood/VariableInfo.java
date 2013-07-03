@@ -1,3 +1,19 @@
+/*******************************************************************************
+*   Copyright 2013 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
 import java.util.HashMap;
@@ -11,7 +27,13 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.util.misc.MapList;
 
-
+/*
+ * The VariableInfo object stores an empirical distribution of all variables that it is
+ * directly connected to through neighboring factors (excluding itself)
+ * 
+ * Additionally, it provides a method to calculate the joint probability of a particular state
+ * of variables using p(joint) = p(x|neighbors)*p(neighbors)
+ */
 public class VariableInfo extends NodeInfo
 {
 	private HashSet<LinkedList<Integer>> _uniqueSamplesPerValue = new HashSet<LinkedList<Integer>>();
@@ -20,26 +42,33 @@ public class VariableInfo extends NodeInfo
 	private HashMap<LinkedList<Integer>,double[]> _neighbors2distributions = new HashMap<LinkedList<Integer>, double[]>();
 	private HashMap<Factor, int []> _factor2mapping = new java.util.HashMap<Factor, int[]>();
 
-	public static VariableInfo createVariableInfo(VariableBase var,HashMap<VariableBase,Integer> var2index)
+	//This is a factory method for creating a variable.  This is necessary since
+	//the parent class's constructor requires we already know the mapping from all variables
+	//to variables of interest.
+	public static VariableInfo createVariableInfo(VariableBase var,
+			HashMap<VariableBase,Integer> var2index)
 	{
+		
+		//Find the variables neighboring variables.
 		VariableBase [] neighbors = getNeighbors(var);
+		
+		//Get the indices of interest for this variable.
 		int [] indices = getIndices(var,var2index);
+		
 		return new VariableInfo(var,indices,neighbors,var2index);
 	}
 	
-	public void reset()
-	{
-		_uniqueSamplesPerValue.clear();
-		invalidateDistributions();
-		super.reset();
-	}
-	
+
 	private VariableInfo(VariableBase var,int [] indices, VariableBase [] neighbors,
 			HashMap<VariableBase,Integer> var2index)
 	{
 		super(indices);
+		
 		_neighbors = neighbors;
 		_var = (Discrete)var;
+		
+		//For every factor we will build a mapping from the factor's variable index
+		//to an index into the full list of neighbors.
 		
 		Factor [] fs = var.getFactorsFlat();
 		for (Factor f : fs)
@@ -51,11 +80,15 @@ public class VariableInfo extends NodeInfo
 			for (int i = 0; i < vs.size(); i++)
 			{
 				VariableBase tmp = vs.getByIndex(i);
+				
 				if (var == tmp)
+					//This is a special case
 					mapping[i] = _neighbors.length;
 				else
 				{
 					boolean found = false;
+					
+					//Silly linear search.  Fix this eventually.
 					for (int j = 0; j < neighbors.length; j++)
 					{
 						if (neighbors[j] == tmp)
@@ -68,24 +101,35 @@ public class VariableInfo extends NodeInfo
 					if (! found)
 						throw new RuntimeException("ack, this should never happen");
 				}
-				//mapping[i] = ???
 			}
 			_factor2mapping.put(f, mapping);
 		}
 		
-		//I should create the necessary info so that I can later 
 	}
+	
+	//Cleanup when reset is called so this can be reused.
+	public void reset()
+	{
+		_uniqueSamplesPerValue.clear();
+		invalidateDistributions();
+		super.reset();
+	}
+	
 	
 	public VariableBase getVariable()
 	{
 		return _var;
 	}
 	
+	//Distributions are cached but, as a result, we have to invalidate the cache at the right
+	//time.
 	public void invalidateDistributions()
 	{
 		_neighbors2distributions.clear();
 	}
 
+	//Given a factor, a domain value, and domain values for the neighbors, calculate the
+	//factor table index.
 	public int getFactorTableIndex(Factor f, int domainValue, LinkedList<Integer> domainVals)
 	{
 		Integer [] domainValues = new Integer[domainVals.size()];
@@ -93,7 +137,87 @@ public class VariableInfo extends NodeInfo
 
 		return getFactorTableIndex(f, domainValue, domainValues);
 	}
-	public int getFactorTableIndex(Factor f, int domainValue, Integer [] domainVals)
+	
+	//Retrieve the joint probability of a variable and its neighbors.
+	public double getProb(int varIndex,LinkedList<Integer> neighbors)
+	{
+		//First get the empirical probability of a neighbor.
+		double pneighbors = getDistribution().get(neighbors);
+		
+		
+		Integer [] domainValues = new Integer[neighbors.size()];
+		domainValues = neighbors.toArray(domainValues);
+		
+		//Cache the distribution of p(x|neighbors) since we have to calculate them all to
+		//correctly normalize things.
+		if (!_neighbors2distributions.containsKey(neighbors))
+		{
+			//initialize
+			double [] distribution = new double[_var.getDiscreteDomain().getElements().length];
+			double normalizer = 0;
+			
+			//calculate the probability for each setting of this var.
+			for (int i = 0; i < distribution.length; i++)
+			{				
+				double total = 0;
+				
+				//For every factor
+				for (Factor f : _factor2mapping.keySet())
+				{
+					//retrieve the factor table index from this vars domain
+					//and the neighbor domains
+					int index = getFactorTableIndex(f,i,domainValues);
+					
+					//retrieve the weight
+					double weight = f.getFactorTable().getWeights()[index];
+										
+					//TODO: should probably do this in the log domain
+					//multiply it in
+					total *= weight;
+				}
+				
+				//save the value
+				distribution[i] = total;
+				
+				//add to the normalizing constant
+				normalizer += total;
+			}
+			
+			//normalize
+			for (int i = 0; i < distribution.length; i++)
+				distribution[i] /= normalizer;
+			
+			//save
+			_neighbors2distributions.put(neighbors,distribution);
+		}		
+		
+		return _neighbors2distributions.get(neighbors)[varIndex]*pneighbors;
+	}
+	
+	
+
+
+	// In addition to bulding up the empirical distribution, save all of the sample data
+	// relevant to this variable.  This ends up duplicating the data across variables
+	// so this trade-off for speed will cost memory.  There is probably a better way.
+	// There is some compression due to storing these as a set.
+	@Override
+	public void addSample(int [] allDataIndices)
+	{
+		super.addSample(allDataIndices);		
+		LinkedList<Integer> otherIndices = indicesToRelevantOnes(allDataIndices);		
+		_uniqueSamplesPerValue.add(otherIndices);		
+	}
+
+	//Returns the set of unique samples.
+	public Set<LinkedList<Integer>> getUniqueSamples()
+	{
+		return _uniqueSamplesPerValue;
+	}
+
+	//Converts the domain value for this variable plus the neighbor domain values
+	//to a factor table index.
+	private int getFactorTableIndex(Factor f, int domainValue, Integer [] domainVals)
 	{
 		int [] mapping = _factor2mapping.get(f);
 		int [] indices = new int[f.getVariables().size()];
@@ -101,6 +225,7 @@ public class VariableInfo extends NodeInfo
 		for (int j = 0; j < mapping.length; j++)
 		{
 			if (mapping[j] >= domainVals.length)
+				//deal with the special case.
 				indices[j] = domainValue;
 			else
 				indices[j] = domainVals[mapping[j]];
@@ -110,41 +235,7 @@ public class VariableInfo extends NodeInfo
 		return index;
 	}
 	
-	public double getProb(int varIndex,LinkedList<Integer> neighbors)
-	{
-		double pneighbors = getDistribution().get(neighbors);
-		
-		Integer [] domainValues = new Integer[neighbors.size()];
-		domainValues = neighbors.toArray(domainValues);
-		
-		if (!_neighbors2distributions.containsKey(neighbors))
-		{
-			double [] distribution = new double[_var.getDiscreteDomain().getElements().length];
-			double normalizer = 0;
-			for (int i = 0; i < distribution.length; i++)
-			{
-				double total = 1;
-				for (Factor f : _factor2mapping.keySet())
-				{
-					int index = getFactorTableIndex(f,i,domainValues);
-					
-					//TODO: is this a prob or energy?
-					double weight = f.getFactorTable().getWeights()[index];
-					total *= weight;
-				}
-				distribution[i] = total;
-				normalizer += total;
-			}
-			for (int i = 0; i < distribution.length; i++)
-				distribution[i] /= normalizer;
-			
-			_neighbors2distributions.put(neighbors,distribution);
-		}		
-		
-		return _neighbors2distributions.get(neighbors)[varIndex]*pneighbors;
-	}
-	
-	
+	//uses a breadth first search to find all neighboring variables.
 	private static VariableBase [] getNeighbors(VariableBase var)
 	{
 		MapList<INode> ml = var.getRootGraph().depthFirstSearchFlat(var, 2);
@@ -159,6 +250,8 @@ public class VariableInfo extends NodeInfo
 	}
 
 	
+	//uses a breadth first search to find all neighboring variables and then builds
+	//the map.
 	private static int [] getIndices(VariableBase var,HashMap<VariableBase,Integer> var2index)
 	{
 		VariableBase [] neighbors = getNeighbors(var);
@@ -171,20 +264,6 @@ public class VariableInfo extends NodeInfo
 		}
 		
 		return indices;
-	}
-	
-	
-	@Override
-	public void addSample(int [] allDataIndices)
-	{
-		super.addSample(allDataIndices);		
-		LinkedList<Integer> otherIndices = indicesToRelevantOnes(allDataIndices);		
-		_uniqueSamplesPerValue.add(otherIndices);		
-	}
-	
-	public Set<LinkedList<Integer>> getUniqueSamples()
-	{
-		return _uniqueSamplesPerValue;
 	}
 	
 }
