@@ -22,4 +22,3 @@ doc/README
 doc/builddoc.py
 doc/DimpleDeveloperDocumentation
 doc/DimpleDeveloperDocumentation.pdf
-
