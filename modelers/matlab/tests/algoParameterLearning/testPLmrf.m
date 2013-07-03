@@ -98,7 +98,10 @@ function testPLmrf()
     if verbose
         disp('learning params...')
     end
-    pl.learn(numSteps,samples,scaleFactor);
+    args.numSteps = numSteps;
+    args.scaleFactor = scaleFactor;
+    
+    pl.learn(samples,args);
 
     learnedHorzWeights = reshape(horzFT2.Weights,2,2);
     learnedHorzWeights = learnedHorzWeights / sum(learnedHorzWeights(:));
