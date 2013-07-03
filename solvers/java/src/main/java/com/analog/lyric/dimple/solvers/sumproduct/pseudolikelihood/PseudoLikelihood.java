@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -26,18 +27,19 @@ public class PseudoLikelihood extends ParameterEstimator
 	private HashMap<VariableBase, VariableInfo> _var2varInfo = new HashMap<VariableBase, VariableInfo>();
 	private int [][] _data;
 	private HashMap<VariableBase,Integer> _var2index = new HashMap<VariableBase, Integer>();
+	private VariableBase [] _vars;
 	
 	/*
 	 * Used to convert input data from domain values to indices into the domain lists.
 	 */
-	public static int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
+	public int [][] convertObjects2Indices(Object [][] data)
 	{
 		int [][] retval = new int[data.length][data[0].length];
 		for (int i = 0; i < retval.length; i++)
 		{
 			for (int j = 0; j < retval[i].length; j++)
 			{
-				retval[i][j] = ((Discrete)vars[j]).getDiscreteDomain().getIndex(data[i][j]);
+				retval[i][j] = _vars[j].asDiscreteVariable().getDiscreteDomain().getIndex(data[i][j]);
 			}
 		}
 		
@@ -46,19 +48,21 @@ public class PseudoLikelihood extends ParameterEstimator
 
 	
 	
-	public PseudoLikelihood(FactorGraph fg, FactorTable[] tables,
-			VariableBase [] vars, Object [][] data, double scaleFactor) 
-	{
-		this(fg,tables,vars,convertObjects2Indices(vars,data),scaleFactor);
-	}
+//	public PseudoLikelihood(FactorGraph fg, FactorTable[] tables,
+//			VariableBase [] vars, Object [][] data, double scaleFactor) 
+//	{
+//		this(fg,tables,vars,convertObjects2Indices(vars,data),scaleFactor);
+//	}
+	
+	// int [][] dataIndices, double scaleFactor
 	
 	public PseudoLikelihood(FactorGraph fg, FactorTable[] tables, 
-			VariableBase [] vars, int [][] dataIndices, double scaleFactor) 
+			VariableBase [] vars) 
 	{
 		super(fg, tables, new Random());
+	
 		
-		_scaleFactor = scaleFactor;
-		_data = dataIndices;
+		_vars = vars;
 		
 		
 		FactorList fl = fg.getFactorsFlat();
@@ -85,39 +89,68 @@ public class PseudoLikelihood extends ParameterEstimator
 
 		//Go through all data and add the samples to the variable and factor infos.
 		//This will be used to build the histograms for the empirical distributions.
-		for (int i = 0; i < dataIndices.length; i++)
-		{
-			for (FactorInfo fi : _factor2factorInfo.values())
-				fi.addSample(dataIndices[i]);
-			for (VariableInfo vi : _var2varInfo.values())
-				vi.addSample(dataIndices[i]);
-		}
+
 		
-//		System.out.println("priting ----");
-//		for (FactorInfo fi :  _factor2factorInfo.values())
-//		{
-//			Set<LinkedList<Integer>> nonZero = fi.getDistribution().getNonZeroKeys();
-//			for (LinkedList<Integer> ll : nonZero)
-//			{
-//				System.out.println(ll + " " + fi.getDistribution().get(ll));
-//			}
-//		}
-//		System.out.println("------");
-//		System.out.println("variable info stuff");
-//		for (VariableInfo vi :  _var2varInfo.values())
-//		{
-//			System.out.println(vi.getVariable());
-//			Set<LinkedList<Integer>> nonZero = vi.getDistribution().getNonZeroKeys();
-//			for (LinkedList<Integer> ll : nonZero)
-//			{
-//				System.out.println(ll + " " + vi.getDistribution().get(ll));
-//			}
-//		}
 
 	}
 	
+	
+	public void setData(Object [][] data)
+	{
+		setData(convertObjects2Indices(data));
+	}
+	
+	public void setData(int [][] data)
+	{
+		_data = data;
+
+		for (FactorInfo fi : _factor2factorInfo.values())
+			fi.reset();
+		for (VariableInfo vi : _var2varInfo.values())
+			vi.reset();
+		
+		for (int i = 0; i < data.length; i++)
+		{
+			for (FactorInfo fi : _factor2factorInfo.values())
+				fi.addSample(data[i]);
+			for (VariableInfo vi : _var2varInfo.values())
+				vi.addSample(data[i]);
+		}
+
+	}
+	
+	public void setScaleFactor(double scale)
+	{
+		_scaleFactor = scale;
+	}
+	
+	public void learn(int numSteps,Object [][] data, double scaleFactor)
+	{
+		setForceKeep(true);
+		setData(data);
+		setScaleFactor(scaleFactor);
+		super.run(0,numSteps);
+	}
+	
+	public void learn(int numSteps,int [][] data, double scaleFactor)
+	{
+		setForceKeep(true);
+		setData(data);
+		setScaleFactor(scaleFactor);
+		super.run(0,numSteps);
+	}
+
+	public void run(int numRestarts,int numSteps)
+	{
+		throw new DimpleException("Not supported");
+	}
+	
+	
 	public double calculateNumericalGradient(FactorTable table, int weight, double delta)
 	{
+		if (_data == null)
+			throw new DimpleException("Must set data first");
+			
 		double y1 = calculatePseudoLikelihood();
 		double oldval = table.getWeights()[weight];
 		double newval = oldval * Math.exp(delta);
@@ -196,8 +229,10 @@ public class PseudoLikelihood extends ParameterEstimator
 		return total;
 	}
 	
-	double [][] calculateGradient()
+	public double [][] calculateGradient()
 	{
+		if (_data == null)
+			throw new DimpleException("Must set data first");
 		
 		//Calculate the gradient
 		FactorTable [] tables = getTables();
@@ -218,48 +253,50 @@ public class PseudoLikelihood extends ParameterEstimator
 			
 			//for each factor
 			ArrayList<Factor> factors = table2factors.get(tables[i]);
-			for (int k = 0; k < factors.size(); k++)
+			if (factors != null)
 			{
-				Factor f = factors.get(k);
-				VariableList vl = f.getVariables();
-				FactorInfo fi = _factor2factorInfo.get(f);	
-
-				//for each weight
-				for (int j = 0; j < weights.length; j++)
+				for (int k = 0; k < factors.size(); k++)
 				{
-					//add degree * pd(indices)
-					double impericalFactorD = fi.getDistribution().get(indices[j]);
-					gradients[i][j] += degree*impericalFactorD;
-				}
-
-				//for each variable
-				for (VariableBase v : vl)
-				{
-					VariableInfo vi = _var2varInfo.get(v);
-					//for each element of the variables domain
-					for (int d = 0; d < v.asDiscreteVariable().getDiscreteDomain().size(); d++)
+					Factor f = factors.get(k);
+					VariableList vl = f.getVariables();
+					FactorInfo fi = _factor2factorInfo.get(f);	
+	
+					//for each weight
+					for (int j = 0; j < weights.length; j++)
 					{
-						Set<LinkedList<Integer>> samples = vi.getUniqueSamples();
-						
-						//for each unique sample
-						for (LinkedList<Integer> sample : samples)
+						//add degree * pd(indices)
+						double impericalFactorD = fi.getDistribution().get(indices[j]);
+						gradients[i][j] += degree*impericalFactorD;
+					}
+	
+					//for each variable
+					for (VariableBase v : vl)
+					{
+						VariableInfo vi = _var2varInfo.get(v);
+						//for each element of the variables domain
+						for (int d = 0; d < v.asDiscreteVariable().getDiscreteDomain().size(); d++)
 						{
-							//calculate pneighbors
-							double prob = vi.getProb(d,sample);
+							Set<LinkedList<Integer>> samples = vi.getUniqueSamples();
 							
-							//find weight index from variable domain and unique sample
-							int index = vi.getFactorTableIndex(f, d, sample);
-							
-							//subtract prob
-							gradients[i][index] -= prob;
+							//for each unique sample
+							for (LinkedList<Integer> sample : samples)
+							{
+								//calculate pneighbors
+								double prob = vi.getProb(d,sample);
+								
+								//find weight index from variable domain and unique sample
+								int index = vi.getFactorTableIndex(f, d, sample);
+								
+								//subtract prob
+								gradients[i][index] -= prob;
+								
+							}
 							
 						}
 						
+						
 					}
-					
-					
 				}
-
 			}
 		
 		}

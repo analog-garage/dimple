@@ -51,6 +51,21 @@ import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 
 public class PHelpers
 {
+	
+	public static VariableBase [] convertToVariableArray(Object [] vlVectors)
+	{
+		ArrayList<VariableBase> al = new ArrayList<VariableBase>();
+		for (Object o : vlVectors)
+		{
+			PVariableVector vec = (PVariableVector)o;
+			for (VariableBase vb : vec.getVariableArray())
+				al.add(vb);
+		}
+		
+		VariableBase [] retval = new VariableBase[al.size()];
+		return al.toArray(retval);
+	}
+	
 	public static Node convertToNode(Object obj)
 	{
 		return convertToNode((PNodeVector)obj);

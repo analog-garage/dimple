@@ -33,6 +33,13 @@ public class VariableInfo extends NodeInfo
 		return new VariableInfo(var,indices,neighbors,var2index);
 	}
 	
+	public void reset()
+	{
+		_uniqueSamplesPerValue.clear();
+		invalidateDistributions();
+		super.reset();
+	}
+	
 	private VariableInfo(VariableBase var,int [] indices, VariableBase [] neighbors,
 			HashMap<VariableBase,Integer> var2index)
 	{

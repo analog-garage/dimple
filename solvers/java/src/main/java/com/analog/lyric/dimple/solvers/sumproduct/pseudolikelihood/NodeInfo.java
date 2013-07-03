@@ -41,4 +41,10 @@ public class NodeInfo
 		
 		return _dist;
 	}
+	
+	public void reset()
+	{
+		_hist = new SparseJointHistogram(_indices.length);
+		_dist = null;
+	}
 }
