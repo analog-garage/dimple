@@ -15,12 +15,38 @@ public abstract class ParameterEstimator
 	private FactorGraph _fg;
 	private FactorTable [] _tables;
 	private Random _r;
+	private HashMap<FactorTable,ArrayList<Factor>> _table2factors;
+	private boolean _forceKeep;
 
 	public ParameterEstimator(FactorGraph fg, FactorTable [] tables, Random r)
 	{
 		_fg = fg;
 		_tables = tables;
 		_r = r;
+		
+		HashMap<FactorTable,ArrayList<Factor>> table2factors = new HashMap<FactorTable, ArrayList<Factor>>();
+
+		for (Factor f  : fg.getFactorsFlat())
+		{
+			FactorTable ft = f.getFactorTable();
+			if (! table2factors.containsKey(ft))
+				table2factors.put(ft,new ArrayList<Factor>());
+			table2factors.get(ft).add(f);
+		}
+
+		//Verify directionality is consistent.
+		_table2factors = table2factors;
+
+	}
+	
+	public void setRandom(Random r)
+	{
+		_r = r;
+	}
+	
+	public HashMap<FactorTable,ArrayList<Factor>> getTable2Factors()
+	{
+		return _table2factors;
 	}
 
 	public FactorTable [] getTables()
@@ -50,6 +76,16 @@ public abstract class ParameterEstimator
 		}
 		return factorTables;
 	}
+	
+	public FactorGraph getFactorGraph()
+	{
+		return _fg;
+	}
+	
+	public void setForceKeep(boolean val)
+	{
+		_forceKeep = val;
+	}
 
 	public void run(int numRestarts, int numSteps)
 	{
@@ -62,7 +98,7 @@ public abstract class ParameterEstimator
 		FactorTable [] bestFactorTables = saveFactorTables(_tables);
 
 		//for each restart
-		for (int i = 0; i < numRestarts; i++)
+		for (int i = 0; i <= numRestarts; i++)
 		{
 			//if not first time, pick random weights
 			if (i != 0)
@@ -84,7 +120,7 @@ public abstract class ParameterEstimator
 
 			//if betheFreeEnergy is better
 			//store this is answer
-			if (newBetheFreeEnergy < currentBFE)
+			if (newBetheFreeEnergy < currentBFE || _forceKeep)
 			{
 				currentBFE = newBetheFreeEnergy;
 				bestFactorTables = saveFactorTables(_tables);
@@ -103,27 +139,14 @@ public abstract class ParameterEstimator
 
 	public static class BaumWelch extends ParameterEstimator
 	{
-		HashMap<FactorTable,ArrayList<Factor>> _table2factors;
 
 		public BaumWelch(FactorGraph fg, FactorTable[] tables, Random r) 
 		{
 			super(fg, tables, r);
-			HashMap<FactorTable,ArrayList<Factor>> table2factors = new HashMap<FactorTable, ArrayList<Factor>>();
 
-			for (Factor f  : fg.getFactorsFlat())
+			for (FactorTable table : getTable2Factors().keySet())
 			{
-				FactorTable ft = f.getFactorTable();
-				if (! table2factors.containsKey(ft))
-					table2factors.put(ft,new ArrayList<Factor>());
-				table2factors.get(ft).add(f);
-			}
-
-			//Verify directionality is consistent.
-			_table2factors = table2factors;
-
-			for (FactorTable table : _table2factors.keySet())
-			{
-				ArrayList<Factor> factors = _table2factors.get(table);
+				ArrayList<Factor> factors = getTable2Factors().get(table);
 				int [] direction = null;
 				for (Factor f : factors)
 				{
@@ -155,10 +178,10 @@ public abstract class ParameterEstimator
 
 			//Assign new weights
 			//For each Factor Table
-			for (FactorTable ft : _table2factors.keySet())
+			for (FactorTable ft : getTable2Factors().keySet())
 			{
 				//Calculate the average of the FactorTable beliefs
-				ArrayList<Factor> factors = _table2factors.get(ft);
+				ArrayList<Factor> factors = getTable2Factors().get(ft);
 
 				double [] sum = new double[ft.getRows()];
 

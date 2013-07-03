@@ -45,6 +45,7 @@ configurations {
 project.ext.myjars = [
 	"com.google.guava:guava:14.0",
     "org.apache.commons:commons-math:2.2",
+    "commons-collections:commons-collections:3.2.1",
     "edu.emory.mathcs:jtransforms:2.3",
     "jama:jama:1.0.2",
     "colt:colt:1.2.0",
