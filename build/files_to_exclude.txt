@@ -17,11 +17,9 @@ modelers/matlab/lyric
 modelers/matlab/demo/02_LDPC
 modelers/matlab/tests/algoLlrMinSumLyric
 legal/Lyric Semiconductor - Dimple - Research Use License Agreement.pdf
-doc/DimpleUserDocumentation.txt
-doc/DimpleDeveloperDocumentation.txt
-doc/DimpleDeveloperDocumentation.pdf
+doc/DimpleUserManual
 doc/README
-doc/README.pdf
-doc/output
-doc/images
 doc/builddoc.py
+doc/DimpleDeveloperDocumentation
+doc/DimpleDeveloperDocumentation.pdf
+
