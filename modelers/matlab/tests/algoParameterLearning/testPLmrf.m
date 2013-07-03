@@ -48,7 +48,7 @@ function testPLmrf()
     samples = collectSamples(fg,BURN_INS,NUM_SAMPLES,SCANS_PER_SAMPLE);
 
     %%%%%%%%%%%%%%%%%%%%%%%%
-    % Learn the parameters
+    % Create the new graph and the learner
     %%%%%%%%%%%%%%%%%%%%%%%%
     
     %Build the new graph and randomize parameters
