@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.VariableList;
 public class FactorInfo extends NodeInfo
 {			
 
+	//Given a variable-to-index map, create the indices of interest.
 	public static int [] getVarIndices(Factor f,HashMap<VariableBase,Integer> var2index )
 	{
 		VariableList vl = f.getVariables();

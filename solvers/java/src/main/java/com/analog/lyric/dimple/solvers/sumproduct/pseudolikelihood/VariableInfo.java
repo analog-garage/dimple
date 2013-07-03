@@ -159,7 +159,7 @@ public class VariableInfo extends NodeInfo
 			//calculate the probability for each setting of this var.
 			for (int i = 0; i < distribution.length; i++)
 			{				
-				double total = 0;
+				double total = 1;
 				
 				//For every factor
 				for (Factor f : _factor2mapping.keySet())

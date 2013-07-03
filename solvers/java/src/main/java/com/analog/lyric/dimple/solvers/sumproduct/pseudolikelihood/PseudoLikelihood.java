@@ -149,7 +149,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		//gradient = FactorDegree * imperical distribution of factor
 		//     - sum over all variables
 		//          sum over all unique neighbor sample settings
-		//             Pd(neighbors)*p(
+		//             Pd(neighbors)*p(var | neighbors)
 		
 		if (_data == null)
 			throw new DimpleException("Must set data first");
@@ -200,6 +200,7 @@ public class PseudoLikelihood extends ParameterEstimator
 					for (VariableBase v : vl)
 					{
 						VariableInfo vi = _var2varInfo.get(v);
+						
 						//for each element of the variables domain
 						for (int d = 0; d < v.asDiscreteVariable().getDiscreteDomain().size(); d++)
 						{
@@ -218,42 +219,17 @@ public class PseudoLikelihood extends ParameterEstimator
 								gradients[i][index] -= prob;
 								
 							}
-							
 						}
-						
-						
 					}
 				}
 			}
-		
 		}
 
 		return gradients;
 	}
 	
-	
-	public void applyGradient(double [][] gradient)
-	{
-		//System.out.println("applying gradient " + Arrays.toString(gradient[0]));
-		FactorTable [] tables = getTables();
-		for (int i = 0; i < tables.length; i++)
-		{
-			double [] ws = tables[i].getWeights();
-			double normalizer = 0;
-			for (int j = 0; j < ws.length; j++)
-			{
-				double tmp = Math.log(ws[j]);
-				tmp = tmp + gradient[i][j]*_scaleFactor;
-				ws[j] = Math.exp(tmp);
-				normalizer += ws[j];
-			}
-			for (int j = 0; j < ws.length; j++)
-				ws[j] /= normalizer;
-			
-			tables[i].changeWeights(ws);
-		}
-	}
-	
+	//One step of gradient descent simply calculates the gradient
+	//and applies it.
 	@Override
 	public void runStep(FactorGraph fg) 
 	{
@@ -261,12 +237,47 @@ public class PseudoLikelihood extends ParameterEstimator
 		applyGradient(gradient);
 	}
 	
+	//Given a gradient, change the parameters.
+	private void applyGradient(double [][] gradient)
+	{
+		FactorTable [] tables = getTables();
+		
+		// for each table
+		for (int i = 0; i < tables.length; i++)
+		{
+			double [] ws = tables[i].getWeights();
+			double normalizer = 0;
+			
+			//for each weight
+			for (int j = 0; j < ws.length; j++)
+			{
+				//update the parameter
+				double tmp = Math.log(ws[j]);
+				tmp = tmp + gradient[i][j]*_scaleFactor;
+				ws[j] = Math.exp(tmp);
+				
+				//build a normalizing constant
+				normalizer += ws[j];
+			}
+			
+			//normalize
+			for (int j = 0; j < ws.length; j++)
+				ws[j] /= normalizer;
+			
+			//save the changed weights.
+			tables[i].changeWeights(ws);
+		}
+	}
+	
 
+	//Calculate the numerical gradient.  Useful for debugging.
 	public double calculateNumericalGradient(FactorTable table, int weight, double delta)
 	{
 		if (_data == null)
 			throw new DimpleException("Must set data first");
 			
+		//numerical gradient = change of pseudo likelihood / change of parameter 
+		
 		double y1 = calculatePseudoLikelihood();
 		double oldval = table.getWeights()[weight];
 		double newval = oldval * Math.exp(delta);
@@ -276,29 +287,36 @@ public class PseudoLikelihood extends ParameterEstimator
 		return (y2-y1)/delta;
 	}
 
-	public double calculatePseudoLikelihood()
+	//Used for calculating the numerical gradient
+	private double calculatePseudoLikelihood()
 	{
 		//1/M sum(m) sum(i) sum(j in neighbors(i)) tehta(xj,xi)
 		//- 1/M sum(m) sum(i) log Z(neighbors(i))
+		
+		//retrieve the factor graph and variables
 		FactorGraph fg = getFactorGraph();
 		VariableList vl = fg.getVariablesFlat();
 		
 		double total = 0;
 		
 		//1/M sum(m) sum(i) sum(j in neighbors(i)) tehta(xj,xi)
+		
+		//for each data point
 		for (int m = 0; m < _data.length; m++)
 		{
+			//for each variable
 			for (VariableBase v : vl)
 			{
+				//for each factor associated with the variable
 				for (Factor f : v.getFactorsFlat())
 				{
+					//Build the indices associated with these variables
 					VariableList fvs = f.getVariables();
 					int [] indices = new int[fvs.size()];
 					for (int i = 0; i < indices.length; i++)
-					{
 						indices[i] = _data[m][_var2index.get(fvs.getByIndex(i))];
-					}
 					
+					//add the term.
 					double tmp = Math.log(f.getFactorTable().getWeights()[f.getFactorTable().getWeightIndexFromTableIndices(indices)]);
 					total += tmp;
 				}
@@ -309,17 +327,24 @@ public class PseudoLikelihood extends ParameterEstimator
 		
 		//- 1/M sum(m) sum(i) log Z(neighbors(i))
 		double total2 = 0;
+		
+		//for each data point
 		for (int m = 0; m < _data.length; m++)
 		{
+			//for each variable
 			for (VariableBase v : vl)
 			{
 				double sum = 0;
 				
+				//for each domain value.
 				for (int d = 0; d < ((Discrete)v).getDomain().size(); d++)
 				{
 					double product = 1;
+					
+					//for every factor connected to the variable.
 					for (Factor f : v.getFactorsFlat())
 					{
+						//build up the list of indices associated with that factor.
 						VariableList fvs = f.getVariables();
 						int [] indices = new int[fvs.size()];
 						for (int i = 0; i < indices.length; i++)
@@ -331,21 +356,25 @@ public class PseudoLikelihood extends ParameterEstimator
 								indices[i] = _data[m][_var2index.get(fv)];
 						}
 						
+						//multiply in that term.
 						product *=  f.getFactorTable().getWeights()[f.getFactorTable().getWeightIndexFromTableIndices(indices)];
 					}
+					
+					//add terms together.
 					sum += product;
 				}
 				
+				//take the log of the partition function.
 				total2 += Math.log(sum);
 			}
 		}
 		
-		total -= total2 / _data.length;
-		
+		//return the totals
+		total -= total2 / _data.length;		
 		return total;
 	}
 	
-	
+	//Used for dealing with data that is provided as domain objects rather than indices.
 	final private int [][] convertObjects2Indices(Object [][] data)
 	{
 		int [][] retval = new int[data.length][data[0].length];
