@@ -193,6 +193,22 @@ public class SFactorGraph extends SFactorGraphBase
 		
 	}
 	
+	public void pseudoLikelihood(FactorTable [] fts, 
+			VariableBase [] vars,
+			Object [][] data,
+			int numSteps, 
+			double stepScaleFactor)
+	{
+		
+	}
+	
+	public static int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
+	{
+		
+		return null;
+	}
+
+	
 	@Override
 	public void estimateParameters(FactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
 	{
