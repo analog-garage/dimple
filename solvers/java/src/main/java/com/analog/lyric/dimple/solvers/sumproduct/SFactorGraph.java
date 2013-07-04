@@ -17,8 +17,9 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Random;
+
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -31,15 +32,15 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public class SFactorGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
-	private FactorTable _currentFactorTable = null;
+	private IFactorTable _currentFactorTable = null;
 
-	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)
 	{
 		String funcName = factor.getFactorFunction().getName();
 		if (funcName.equals("finiteFieldMult"))
@@ -53,7 +54,7 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 		else if (funcName.equals("finiteFieldAdd"))
 		{
-			return new FiniteFieldAdd(factor);    		
+			return new FiniteFieldAdd(factor);
 		}
 		else if (funcName.equals("finiteFieldProjection"))
 		{
@@ -63,7 +64,8 @@ public class SFactorGraph extends SFactorGraphBase
 			throw new DimpleException("Not implemented");
 	}
 	
-	public ISolverVariable createVariable(VariableBase var)  
+	@Override
+	public ISolverVariable createVariable(VariableBase var)
 	{
 		if (var.getModelerClassName().equals("FiniteFieldVariable"))
 			return new FiniteFieldVariable(var);
@@ -72,7 +74,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
 		if (funcName.equals("finiteFieldMult"))
 			return true;
@@ -81,7 +83,7 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("finiteFieldProjection"))
 			return true;
 		else
-			return false;	
+			return false;
 	}
 
 
@@ -98,7 +100,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 	@Override
-	public ISolverFactor createFactor(Factor factor)  
+	public ISolverFactor createFactor(Factor factor)
 	{
 		if (customFactorExists(factor.getFactorFunction().getName()))
 		{
@@ -119,8 +121,8 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Set the global solver damping parameter.  We have to go through all factor graphs
 	 * and update the damping parameter on all existing table functions in that graph.
 	 */
-	public void setDamping(double damping) 
-	{		
+	public void setDamping(double damping)
+	{
 		_damping = damping;
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
@@ -151,11 +153,12 @@ public class SFactorGraph extends SFactorGraphBase
 				SVariable svar = (SVariable)var.getSolver();
 				svar.setDamping(j,_damping);
 			}
-		}		
+		}
 
 	}
 	
-	public void baumWelch(FactorTable [] fts, int numRestarts, int numSteps)
+	@Override
+	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)
 	{
 		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SFactorGraph.getRandom());
 		pe.run(numRestarts, numSteps);
@@ -166,17 +169,17 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		private double _scaleFactor;
 
-		public GradientDescent(FactorGraph fg, FactorTable[] tables, Random r, double scaleFactor) 
+		public GradientDescent(FactorGraph fg, IFactorTable[] tables, Random r, double scaleFactor)
 		{
 			super(fg, tables, r);
 			_scaleFactor = scaleFactor;
 		}
 
 		@Override
-		public void runStep(FactorGraph fg) 
+		public void runStep(FactorGraph fg)
 		{
 			//_factorGraph.solve();
-			for (FactorTable ft : getTables())
+			for (IFactorTable ft : getTables())
 			{
 				double [] weights = ft.getWeights();
 			      //for each weight
@@ -193,10 +196,10 @@ public class SFactorGraph extends SFactorGraphBase
 		
 	}
 	
-	public void pseudoLikelihood(FactorTable [] fts, 
+	public void pseudoLikelihood(IFactorTable [] fts,
 			VariableBase [] vars,
 			Object [][] data,
-			int numSteps, 
+			int numSteps,
 			double stepScaleFactor)
 	{
 		
@@ -210,24 +213,24 @@ public class SFactorGraph extends SFactorGraphBase
 
 	
 	@Override
-	public void estimateParameters(FactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
+	public void estimateParameters(IFactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
 	{
 		new GradientDescent(_factorGraph, fts, getRandom(), stepScaleFactor).run(numRestarts, numSteps);
 	}
 
 	
-	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(FactorTable ft,
+	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft,
 			int weightIndex)
 	{
 		//BFE = InternalEnergy - BetheEntropy
-		//InternalEnergy = Sum over all factors (Internal Energy of Factor) 
+		//InternalEnergy = Sum over all factors (Internal Energy of Factor)
 		//                   + Sum over all variables (Internal Energy of Variable)
-		//BetheEntropy = Sum over all factors (BetheEntropy(factor)) 
+		//BetheEntropy = Sum over all factors (BetheEntropy(factor))
 		//                  + sum over all variables (BetheEntropy(variable)
 		//So derivative of BFE = Sum over all factors that contain the weight
 		//                                              (derivative of Internal Energy of Factor
 		//                                              - derivative of BetheEntropy of Factor)
-		//                        
+		//
 		
 		_currentFactorTable = ft;
 		
@@ -258,7 +261,7 @@ public class SFactorGraph extends SFactorGraphBase
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 			}
-		} 
+		}
 		finally
 		{
 			setCalculateDerivative(false);
@@ -282,7 +285,8 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 	
-	public FactorTable getCurrentFactorTable()
+	// REFACTOR: make this package-protected?
+	public IFactorTable getCurrentFactorTable()
 	{
 		return _currentFactorTable;
 	}

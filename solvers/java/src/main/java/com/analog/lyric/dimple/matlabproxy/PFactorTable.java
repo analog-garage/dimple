@@ -17,12 +17,13 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
 public class PFactorTable extends PObject
 {
-	private FactorTable _table;
+	private IFactorTable _table;
 	
 	/*--------------
 	 * Construction
@@ -43,7 +44,7 @@ public class PFactorTable extends PObject
 		_table = new FactorTable(indices,values,PHelpers.convertDomains(domains));
 	}
 	
-	public PFactorTable(FactorTable table)
+	public PFactorTable(IFactorTable table)
 	{
 		_table = table;
 	}
@@ -53,7 +54,7 @@ public class PFactorTable extends PObject
 	 */
 	
 	@Override
-	public FactorTable getModelerObject()
+	public IFactorTable getModelerObject()
 	{
 		return _table;
 	}

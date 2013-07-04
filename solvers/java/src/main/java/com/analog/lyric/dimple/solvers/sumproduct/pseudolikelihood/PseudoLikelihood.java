@@ -22,7 +22,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
+
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
@@ -48,9 +50,9 @@ public class PseudoLikelihood extends ParameterEstimator
 	
 	//The constructor saves the factor graph, the tables of interest, and the variables
 	//It also builds the NodeInfo object mappings.
-	public PseudoLikelihood(FactorGraph fg, 
-			FactorTable[] tables, 
-			VariableBase [] vars) 
+	public PseudoLikelihood(FactorGraph fg,
+			FactorTable[] tables,
+			VariableBase [] vars)
 	{
 		super(fg, tables, new Random());
 	
@@ -74,7 +76,7 @@ public class PseudoLikelihood extends ParameterEstimator
 			varsConnectedToFactors.addAll(f.getVariables());
 		
 		//for each variable, create a variable info
-		//This will be used to store a joint empirical distribution over all of the 
+		//This will be used to store a joint empirical distribution over all of the
 		//variable's neighbors.
 		//Additionally it will be used to calculate the probability of a setting of a variable given
 		//the emperical distribution and the current factor weights.
@@ -138,6 +140,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	}
 
 	//Users cannot call run directly.
+	@Override
 	public void run(int numRestarts,int numSteps)
 	{
 		throw new DimpleException("Not supported");
@@ -155,8 +158,8 @@ public class PseudoLikelihood extends ParameterEstimator
 			throw new DimpleException("Must set data first");
 		
 		//Get the list of tables of interest.
-		FactorTable [] tables = getTables();
-		HashMap<FactorTable,ArrayList<Factor>> table2factors = getTable2Factors();
+		IFactorTable [] tables = getTables();
+		HashMap<IFactorTable,ArrayList<Factor>> table2factors = getTable2Factors();
 		
 		//initialize the gradient
 		double [][] gradients = new double[tables.length][];
@@ -186,7 +189,7 @@ public class PseudoLikelihood extends ParameterEstimator
 				{
 					Factor f = factors.get(k);
 					VariableList vl = f.getVariables();
-					FactorInfo fi = _factor2factorInfo.get(f);	
+					FactorInfo fi = _factor2factorInfo.get(f);
 	
 					//for each weight
 					for (int j = 0; j < weights.length; j++)
@@ -231,7 +234,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	//One step of gradient descent simply calculates the gradient
 	//and applies it.
 	@Override
-	public void runStep(FactorGraph fg) 
+	public void runStep(FactorGraph fg)
 	{
 		double [][] gradient = calculateGradient();
 		applyGradient(gradient);
@@ -240,7 +243,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	//Given a gradient, change the parameters.
 	private void applyGradient(double [][] gradient)
 	{
-		FactorTable [] tables = getTables();
+		IFactorTable [] tables = getTables();
 		
 		// for each table
 		for (int i = 0; i < tables.length; i++)
@@ -276,14 +279,14 @@ public class PseudoLikelihood extends ParameterEstimator
 		if (_data == null)
 			throw new DimpleException("Must set data first");
 			
-		//numerical gradient = change of pseudo likelihood / change of parameter 
+		//numerical gradient = change of pseudo likelihood / change of parameter
 		
 		double y1 = calculatePseudoLikelihood();
 		double oldval = table.getWeights()[weight];
 		double newval = oldval * Math.exp(delta);
 		table.getWeights()[weight] = newval;
 		double y2 = calculatePseudoLikelihood();
-		table.getWeights()[weight] = oldval;		
+		table.getWeights()[weight] = oldval;
 		return (y2-y1)/delta;
 	}
 
@@ -370,7 +373,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		}
 		
 		//return the totals
-		total -= total2 / _data.length;		
+		total -= total2 / _data.length;
 		return total;
 	}
 	

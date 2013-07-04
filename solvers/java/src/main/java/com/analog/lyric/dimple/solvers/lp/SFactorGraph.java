@@ -27,7 +27,7 @@ import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.SolverFactory;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
@@ -112,7 +112,7 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public FactorGraph getModelObject()
 	{
-		return (FactorGraph)super.getModelObject();
+		return super.getModelObject();
 	}
 
 	/**
@@ -409,13 +409,13 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public void estimateParameters(FactorTable[] tables, int numRestarts, int numSteps, double stepScaleFactor)
+	public void estimateParameters(IFactorTable[] tables, int numRestarts, int numSteps, double stepScaleFactor)
 	{
 		throw unsupported("estimateParameters");
 	}
 
 	@Override
-	public void baumWelch(FactorTable[] tables, int numRestarts, int numSteps)
+	public void baumWelch(IFactorTable[] tables, int numRestarts, int numSteps)
 	{
 		throw unsupported("baumWelch");
 	}
@@ -628,6 +628,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Returns solver variable belonging to this solver graph that is
 	 * associated with input model variable or else null.
 	 */
+	@Override
 	public SVariable getSolverVariable(VariableBase var)
 	{
 		return _varMap.get(var);

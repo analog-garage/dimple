@@ -22,8 +22,8 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTableBase;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.VariableList;
@@ -169,7 +169,7 @@ public class STableFactor extends STableFactorBase
 	int computeValidAssignments()
 	{
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
+		final IFactorTable factorTable = factor.getFactorTable();
 		final double[] weights = factorTable.getWeights();
 		final SVariable[] svariables = getSVariables();
 
@@ -241,7 +241,7 @@ public class STableFactor extends STableFactorBase
 
 			final double totalWeight = _totalWeight;
 			final DiscreteFactor factor = getModelObject();
-			final FactorTable factorTable = factor.getFactorTable();
+			final IFactorTable factorTable = factor.getFactorTable();
 			final double[] weights = factorTable.getWeights();
 			final int nWeights = weights.length;
 
@@ -286,7 +286,7 @@ public class STableFactor extends STableFactorBase
 		}
 		
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
+		final IFactorTable factorTable = factor.getFactorTable();
 		final int[][] rows = factorTable.getIndices();
 		final int nRows = rows.length;
 
@@ -373,7 +373,7 @@ public class STableFactor extends STableFactorBase
 		final int lpVar = lpVars[0];
 
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
+		final IFactorTable factorTable = factor.getFactorTable();
 		final int[][] rows = factorTable.getIndices();
 		final int nRows = rows.length;
 

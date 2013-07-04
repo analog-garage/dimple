@@ -21,11 +21,12 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
 
 
-public class TableFactorFunction extends FactorFunction 
+public class TableFactorFunction extends FactorFunction
 {
 	
-	private FactorTable _factorTable;
+	private IFactorTable _factorTable;
 
+	@Override
 	public boolean factorTableExists(Domain [] domainList)
 	{
     	if (domainList.length != _factorTable.getDomains().length)
@@ -34,36 +35,37 @@ public class TableFactorFunction extends FactorFunction
     	return true;
 	}
 
-	public TableFactorFunction(String name,FactorTable factorTable) 
-	{		
-		super(name);		
+	public TableFactorFunction(String name,IFactorTable factorTable)
+	{
+		super(name);
 		_factorTable = factorTable;
 				
 	}
 	
-	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains) 
+	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains)
 	{
 		this(name,new FactorTable(indices,probs,domains));
 	}
-	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes) 
+	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes)
 	{
 		this(name,new FactorTable(indices,probs,discretes));
 	}
 	
 
 	@Override
-	public double eval(Object... input) 
+	public double eval(Object... input)
 	{
 		return _factorTable.evalAsFactorFunction(input);
 	}
 	
 
-	public FactorTable getFactorTable()
+	public IFactorTable getFactorTable()
 	{
 		return _factorTable;
 	}
 	
-    public FactorTable getFactorTable(Domain [] domainList)
+    @Override
+	public IFactorTable getFactorTable(Domain [] domainList)
     {
     	//first step, convert domains to DiscreteDOmains
     	//make sure domain lists match
@@ -75,17 +77,22 @@ public class TableFactorFunction extends FactorFunction
     
     
 	// For directed factors...
+	@Override
 	public boolean isDirected() {return _factorTable.isDirected();}
+	@Override
 	protected int[] getDirectedToIndices() {return _factorTable.getDirectedTo();}
 	
 	// For deterministic directed factors...
 	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)
+	@Override
 	public boolean isDeterministicDirected() {return _factorTable.isDeterministicDirected();}
 	
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
+	@Override
 	public void evalDeterministicFunction(Object... arguments){_factorTable.evalDeterministicFunction(arguments);}
 	
+	@Override
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{
 		return true;

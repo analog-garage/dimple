@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.FactorFunctions;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
@@ -37,7 +38,7 @@ import com.analog.lyric.dimple.model.Domain;
  * 1...) Arbitrary length list of values (double, integer, or boolean)
  * 
  */
-public class Equality extends FactorFunction 
+public class Equality extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
@@ -82,7 +83,7 @@ public class Equality extends FactorFunction
     
     
     @Override
-    public FactorTable getFactorTable(Domain [] domainList)
+    public IFactorTable getFactorTable(Domain [] domainList)
     {
     	boolean allsame = true;
     	DiscreteDomain first = null;

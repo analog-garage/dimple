@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 
-public class FactorTableBase
+public abstract class FactorTableBase implements IFactorTable
 {
 	private int [][] _indices = null;
 	private double[] _weights = null;
@@ -33,25 +33,27 @@ public class FactorTableBase
 	 */
 	private double [] _potentials = null;
 	
-	public FactorTableBase()
+	protected FactorTableBase()
 	{
 		
 	}
 
-	public void copy(FactorTableBase copy)
+	@Override
+	public void copy(IFactorTable copy)
 	{
-		_indices = copy._indices.clone();
-		_weights = copy._weights.clone();
+		_indices = copy.getIndices().clone();
+		_weights = copy.getWeights().clone();
 		//maybe clone potentials if they're not null
 		_potentials = null;
 		
 	}
 	
-	public FactorTableBase(FactorTableBase copy)
+	protected FactorTableBase(FactorTableBase copy)
 	{
 		copy(copy);
 	}
 	
+	@Override
 	public void changeWeight(int index, double weight)
 	{
 		_weights[index] = weight;
@@ -75,31 +77,38 @@ public class FactorTableBase
 		_weights = probs;
 	}
 	
+	@Override
 	public int [][] getIndices()
 	{
 		return _indices;
 	}
 	
+	@Override
 	public double [] getWeights()
 	{
 		return _weights;
 	}
+	@Override
 	public int getRows()
 	{
 		return getIndices().length;
 	}
+	@Override
 	public int getColumns()
 	{
 		return getIndices()[0].length;
 	}
+	@Override
 	public int getEntry(int row, int column)
 	{
 		return getIndices()[row][column];
 	}
+	@Override
 	public int[] getRow(int row)
 	{
 		return getIndices()[row];
 	}
+	@Override
 	public int[] getColumnCopy(int column)
 	{
 		int[] copy = new int[getRows()];
@@ -110,12 +119,14 @@ public class FactorTableBase
 		return copy;
 	}
 	
+	@Override
 	public void changeIndices(int [][] indices)
 	{
 		check(indices,_weights);
 		_indices = indices;
 	}
 	
+	@Override
 	public void changeWeights(double [] probs)
 	{
 		check(_indices,probs);
@@ -150,12 +161,14 @@ public class FactorTableBase
 		throw new RuntimeException("invalid indices.  Don't match the domains or were currently not in sparse table");
 	}
 	
+	@Override
 	public double get(int [] indices)
 	{
 		int loc = findLocationFromIndices(indices);
 		return _weights[loc];
 	}
 	
+	@Override
 	public void set(int [] indices, double value)
 	{
 		int loc = findLocationFromIndices(indices);
@@ -166,6 +179,7 @@ public class FactorTableBase
 		}
 	}
 	
+	@Override
 	public void change(int [][] indices, double [] weights)
 	{
 		change(indices,weights,true);
@@ -190,6 +204,7 @@ public class FactorTableBase
 
 
 	
+	@Override
 	public double [] getPotentials()
 	{
 		if (_potentials == null)
@@ -232,6 +247,7 @@ public class FactorTableBase
 		}
 	}
 	
+	@Override
 	public void randomizeWeights(Random r)
 	{
 		_potentials = null;

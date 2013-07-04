@@ -6,29 +6,30 @@ import java.util.HashSet;
 import java.util.Random;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 
-public abstract class ParameterEstimator 
+public abstract class ParameterEstimator
 {
 	private FactorGraph _fg;
-	private FactorTable [] _tables;
+	private IFactorTable [] _tables;
 	private Random _r;
-	private HashMap<FactorTable,ArrayList<Factor>> _table2factors;
+	private HashMap<IFactorTable,ArrayList<Factor>> _table2factors;
 	private boolean _forceKeep;
 
-	public ParameterEstimator(FactorGraph fg, FactorTable [] tables, Random r)
+	public ParameterEstimator(FactorGraph fg, IFactorTable [] tables, Random r)
 	{
 		_fg = fg;
 		_tables = tables;
 		_r = r;
 		
-		HashMap<FactorTable,ArrayList<Factor>> table2factors = new HashMap<FactorTable, ArrayList<Factor>>();
+		HashMap<IFactorTable,ArrayList<Factor>> table2factors = new HashMap<IFactorTable, ArrayList<Factor>>();
 
 		for (Factor f  : fg.getFactorsFlat())
 		{
-			FactorTable ft = f.getFactorTable();
+			IFactorTable ft = f.getFactorTable();
 			if (! table2factors.containsKey(ft))
 				table2factors.put(ft,new ArrayList<Factor>());
 			table2factors.get(ft).add(f);
@@ -44,32 +45,32 @@ public abstract class ParameterEstimator
 		_r = r;
 	}
 	
-	public HashMap<FactorTable,ArrayList<Factor>> getTable2Factors()
+	public HashMap<IFactorTable,ArrayList<Factor>> getTable2Factors()
 	{
 		return _table2factors;
 	}
 
-	public FactorTable [] getTables()
+	public IFactorTable [] getTables()
 	{
 		return _tables;
 	}
 
-	FactorTable [] saveFactorTables(FactorTable [] fts)
+	IFactorTable [] saveFactorTables(IFactorTable [] fts)
 	{
-		FactorTable [] savedFts = new FactorTable[fts.length];
+		IFactorTable [] savedFts = new IFactorTable[fts.length];
 		for (int i = 0; i < fts.length; i++)
 			savedFts[i] = fts[i].copy();
 		return savedFts;
 	}
 
-	FactorTable [] unique(FactorTable  [] factorTables)
+	IFactorTable [] unique(IFactorTable  [] factorTables)
 	{
-		HashSet<FactorTable> set = new HashSet<FactorTable>();
+		HashSet<IFactorTable> set = new HashSet<IFactorTable>();
 		for (int i = 0; i < factorTables.length; i++)
 			set.add(factorTables[i]);
 		factorTables = new FactorTable[set.size()];
 		int i = 0;
-		for (FactorTable ft : set)
+		for (IFactorTable ft : set)
 		{
 			factorTables[i] = ft;
 			i++;
@@ -95,7 +96,7 @@ public abstract class ParameterEstimator
 		//measure betheFreeEnergy
 		_fg.solve();
 		double currentBFE = _fg.getBetheFreeEnergy();
-		FactorTable [] bestFactorTables = saveFactorTables(_tables);
+		IFactorTable [] bestFactorTables = saveFactorTables(_tables);
 
 		//for each restart
 		for (int i = 0; i <= numRestarts; i++)
@@ -140,11 +141,11 @@ public abstract class ParameterEstimator
 	public static class BaumWelch extends ParameterEstimator
 	{
 
-		public BaumWelch(FactorGraph fg, FactorTable[] tables, Random r) 
+		public BaumWelch(FactorGraph fg, IFactorTable[] tables, Random r)
 		{
 			super(fg, tables, r);
 
-			for (FactorTable table : getTable2Factors().keySet())
+			for (IFactorTable table : getTable2Factors().keySet())
 			{
 				ArrayList<Factor> factors = getTable2Factors().get(table);
 				int [] direction = null;
@@ -170,7 +171,7 @@ public abstract class ParameterEstimator
 
 
 		@Override
-		public void runStep(FactorGraph fg) 
+		public void runStep(FactorGraph fg)
 		{
 
 			//run BP
@@ -178,7 +179,7 @@ public abstract class ParameterEstimator
 
 			//Assign new weights
 			//For each Factor Table
-			for (FactorTable ft : getTable2Factors().keySet())
+			for (IFactorTable ft : getTable2Factors().keySet())
 			{
 				//Calculate the average of the FactorTable beliefs
 				ArrayList<Factor> factors = getTable2Factors().get(ft);
@@ -192,7 +193,7 @@ public abstract class ParameterEstimator
 						sum[i] += belief[i];
 
 
-				}				
+				}
 
 
 				//Get first directionality
@@ -202,7 +203,7 @@ public abstract class ParameterEstimator
 				//Set the weights to that
 				ft.changeWeights(sum);
 				ft.normalize(directedTo, directedFrom);
-			}			
-		}		
+	}
+		}
 	}
 }

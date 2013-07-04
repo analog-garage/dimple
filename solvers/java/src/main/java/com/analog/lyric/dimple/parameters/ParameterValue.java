@@ -11,6 +11,11 @@ public class ParameterValue extends AtomicDouble implements Cloneable
 	 * Construction
 	 */
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public ParameterValue()
 	{
 		this(Double.NaN);

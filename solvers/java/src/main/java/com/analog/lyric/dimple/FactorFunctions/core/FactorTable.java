@@ -19,9 +19,10 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.util.misc.IndexCounter;
 import com.analog.lyric.util.misc.Misc;
 
@@ -89,7 +90,7 @@ public class FactorTable extends FactorTableBase
 			indices[index] = counter.clone();
 			index++;
 		}
-		_domains = domains;		
+		_domains = domains;
 		change(indices,values,false);
 	}
 
@@ -115,14 +116,25 @@ public class FactorTable extends FactorTableBase
 		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
 	}
 	
-	public void copy(FactorTable copy)
+	@Override
+	public void copy(IFactorTable copy)
 	{
 		super.copy(copy);
-		_domains = copy._domains;
-		if (copy._directedTo != null) _directedTo = copy._directedTo.clone();
-		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
+		_domains = copy.getDomains();
+		int[] vars = copy.getDirectedTo();
+		if (vars != null)
+		{
+			// FIXME: should assignment be done if vars is null
+			_directedTo = vars.clone();
+		}
+		vars = copy.getDirectedFrom();
+		if (vars != null)
+		{
+			_directedFrom = vars.clone();
+		}
 	}
 	
+	@Override
 	public FactorTable copy()
 	{
 		return new FactorTable(this);
@@ -145,14 +157,14 @@ public class FactorTable extends FactorTableBase
 		_checkedIfDeterministicDirected = false;
 	}
 	@Override
-	public void changeIndices(int [][] indices) 
+	public void changeIndices(int [][] indices)
 	{
 		super.changeIndices(indices);
 		_indices2weightIndex = null;
 		_checkedIfDeterministicDirected = false;
 	}
 	@Override
-	public void changeWeights(double [] probs) 
+	public void changeWeights(double [] probs)
 	{
 		super.changeWeights(probs);
 		_checkedIfDeterministicDirected = false;
@@ -176,10 +188,12 @@ public class FactorTable extends FactorTableBase
 	{
 		return _directedFrom;
 	}
+	@Override
 	public int [] getDirectedTo()
 	{
 		return _directedTo;
 	}
+	@Override
 	public boolean isDirected()
 	{
 		if (_directedTo == null)
@@ -210,6 +224,7 @@ public class FactorTable extends FactorTableBase
 		return !changing;
 	}
 	
+	@Override
 	public void setDirected(int [] directedTo, int [] directedFrom)
 	{
 		boolean changing = ! isDirectionalityTheSame(directedTo, directedFrom);
@@ -246,6 +261,7 @@ public class FactorTable extends FactorTableBase
 	}
 	
 	
+	@Override
 	public boolean isDeterministicDirected()
 	{
 		if (_checkedIfDeterministicDirected)
@@ -321,6 +337,7 @@ public class FactorTable extends FactorTableBase
 		return new Object[] {normalizers,directedFromSizes};
 	}
 	
+	@Override
 	public void normalize()
 	{
 		if (_directedTo == null)
@@ -340,6 +357,7 @@ public class FactorTable extends FactorTableBase
 		}
 	}
 	
+	@Override
 	public void normalize(int [] directedTo)
 	{
 		int [] directedFrom = new int[_domains.length-directedTo.length];
@@ -400,12 +418,13 @@ public class FactorTable extends FactorTableBase
 		this(indices,weights,true,domains);
 	}
 	
+	@Override
 	public DiscreteDomain [] getDomains()
 	{
 		return _domains;
 	}
 	
-	private void check(FactorTableBase table, DiscreteDomain [] domains) 
+	private void check(FactorTableBase table, DiscreteDomain [] domains)
 	{
 		
 		int [][] indices = table.getIndices();
@@ -440,7 +459,7 @@ public class FactorTable extends FactorTableBase
 	//with the domain of each variable.  So if we had a table with 20 rows with two new variables
 	//where one has a domain of 3 elements and another has a domain of 4 elements, we'll end up with
 	//a FactorTable with 3*4*20 rows.
-	public FactorTable createTableWithNewVariables(DiscreteDomain [] newDomains) 
+	public FactorTable createTableWithNewVariables(DiscreteDomain [] newDomains)
 	{
 		
 		int [][] indices = getIndices();
@@ -501,7 +520,7 @@ public class FactorTable extends FactorTableBase
 	public FactorTable joinVariablesAndCreateNewTable(int [] varIndices,
 			int [] indexToJointIndex,
 			DiscreteDomain [] allDomains,
-			DiscreteDomain jointDomain) 
+			DiscreteDomain jointDomain)
 	{
 		int [] allDomainLengths = new int[allDomains.length];
 		
@@ -557,7 +576,7 @@ public class FactorTable extends FactorTableBase
 				if (!indexSet.contains(c))
 				{
 					newtable[r][ctColIndex] = indices[r][c];
-					ctColIndex++;				                             
+					ctColIndex++;
 				}
 			}
 			
@@ -598,6 +617,7 @@ public class FactorTable extends FactorTableBase
 	// This method provides the ability to get the weight index from the table
 	// indices.  The weight index can be used to either retrieve the weight
 	// or the potential.
+	@Override
 	public int getWeightIndexFromTableIndices(int [] indices)
 	{
 		
@@ -618,7 +638,7 @@ public class FactorTable extends FactorTableBase
 	 // getWeightIndex... possible.
 	 // This routine creates an array that is as long as the full
 	 // Cartesian product of the variables connected to this factor
-	 // table.  
+	 // table.
 	private void initIndices2weightIndex()
 	{
 		_offsets = new int[_domains.length];
@@ -647,7 +667,7 @@ public class FactorTable extends FactorTableBase
 			int tmp = 0;
 			for (int j = 0; j < indices[i].length ;j++)
 				tmp += indices[i][j] * _offsets[j];
-			_indices2weightIndex[tmp] = i;			
+			_indices2weightIndex[tmp] = i;
 		}
 	}
 	
@@ -656,6 +676,7 @@ public class FactorTable extends FactorTableBase
 	// Evaluate the factor table as if it were a FactorFunction
 	//////////////////////////////////////////////////////////////////
 
+	@Override
 	public double evalAsFactorFunction(Object ... arguments)
 	{
 		if (_lookupTable == null)
@@ -675,7 +696,7 @@ public class FactorTable extends FactorTableBase
 		if (_lookupTable.containsKey(key))
 			return _lookupTable.get(key);
 		else
-			return 0;	
+			return 0;
 	}
 	
 	
@@ -696,7 +717,7 @@ public class FactorTable extends FactorTableBase
 				row.add(domains[j].getElements()[indices[i][j]]);
 			}
 			
-			_lookupTable.put(row,values[i]);			
+			_lookupTable.put(row,values[i]);
 		}
 		
 		for (int i = 0; i < domains.length; i++)
@@ -715,6 +736,7 @@ public class FactorTable extends FactorTableBase
 	// For directed-deterministic factors, evaluate the deterministic function
 	//////////////////////////////////////////////////////////////////
 
+	@Override
 	public void evalDeterministicFunction(Object... arguments)
 	{
 		int numDirectedInputs = _directedFrom.length;
@@ -779,27 +801,28 @@ public class FactorTable extends FactorTableBase
 	// Serialization code
 	//////////////////////////////////////////////////////////////////
 	
-	public void serializeToXML(String serializeName, String targetDirectory) 
+	@Override
+	public void serializeToXML(String serializeName, String targetDirectory)
 	{
 		serializeToXML(this, serializeName, targetDirectory);
 	}
 	
-	static public void serializeToXML(FactorTable ct, String serializeName, String targetDirectory) 
+	static public void serializeToXML(FactorTable ct, String serializeName, String targetDirectory)
 	{
-		com.analog.lyric.dimple.model.xmlSerializer toXML 
+		com.analog.lyric.dimple.model.xmlSerializer toXML
 			= new com.analog.lyric.dimple.model.xmlSerializer();
 		
-		toXML.serializeFactorTableToXML(ct, 
-									   serializeName, 
-									   targetDirectory);		
+		toXML.serializeFactorTableToXML(ct,
+									   serializeName,
+									   targetDirectory);
 	}
 
-	public static FactorTable deserializeFromXML(String docName) 
+	public static FactorTable deserializeFromXML(String docName)
 	{
 		com.analog.lyric.dimple.model.xmlSerializer x
 			= new com.analog.lyric.dimple.model.xmlSerializer();
 		
-		FactorTable mct = x.deserializeFactorTableFromXML(docName);		
+		FactorTable mct = x.deserializeFactorTableFromXML(docName);
 		
 		return mct;
 	}

@@ -30,7 +30,7 @@ public class JointFactorFunction extends FactorFunction
 	private int _newNumInputs;
 
 	public JointFactorFunction(String name,FactorFunctionBase ff1, FactorFunctionBase ff2,
-			ArrayList<Integer> inputsForFf1, ArrayList<Integer> inputsForFf2) 
+			ArrayList<Integer> inputsForFf1, ArrayList<Integer> inputsForFf2)
 	{
 		super(name);
 		
@@ -50,7 +50,7 @@ public class JointFactorFunction extends FactorFunction
 	}
 
 	@Override
-	public double eval(Object... input) 
+	public double eval(Object... input)
 	{
 		//Make sure length of inputs is correct
 		if (input.length != _newNumInputs)
@@ -71,7 +71,7 @@ public class JointFactorFunction extends FactorFunction
 	}
 	
 	@Override
-	public double evalEnergy(Object... input) 
+	public double evalEnergy(Object... input)
 	{
 		//Make sure length of inputs is correct
 		if (input.length != _newNumInputs)
@@ -93,7 +93,7 @@ public class JointFactorFunction extends FactorFunction
 	//TODO: we should override the function that generates a combo table and build a combo table
 	//     more efficiently.
 	@Override
-    public FactorTable getFactorTable(Domain [] domainList)
+    public IFactorTable getFactorTable(Domain [] domainList)
     {
 		return super.getFactorTable(domainList);
     }

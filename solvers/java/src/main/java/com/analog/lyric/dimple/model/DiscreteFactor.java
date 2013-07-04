@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
 
 public class DiscreteFactor extends Factor
@@ -52,7 +52,7 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Override
-	public FactorTable getFactorTable()
+	public IFactorTable getFactorTable()
 	{
 		return getFactorFunction().getFactorTable(getDomains());
 	}
@@ -98,7 +98,7 @@ public class DiscreteFactor extends Factor
 		if (newDomains.length > 0)
 		{
 			//getFactorFunction();
-			FactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
+			IFactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
 			setFactorFunction(new TableFactorFunction(getFactorFunction().getName(), newTable));
 			
 			for (VariableBase v : newVariables)
@@ -132,7 +132,7 @@ public class DiscreteFactor extends Factor
 			allDomains[i] = getConnectedNodeFlat(i).getDiscreteDomain();
 		
 		//Create the new combo table
-		FactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable(
+		IFactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable(
 				factorVarIndices,
 				indexToJointIndex,
 				allDomains,

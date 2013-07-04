@@ -31,10 +31,10 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -53,7 +53,7 @@ public class Serializer
 		_dbg = dbg;
 	}
 	
-	private void addVariableElement(VariableBase v, int boundaryIdx, Element Parent, Document Doc) 
+	private void addVariableElement(VariableBase v, int boundaryIdx, Element Parent, Document Doc)
 	{
 		Element e = Doc.createElement("node");
 		e.setAttribute("type", "Variable");
@@ -108,14 +108,14 @@ public class Serializer
 		
 		Parent.appendChild(e);
 	}
-	private void addFunctionElement(Factor f, 
-									Element Parent, 
-									Document Doc, 
+	private void addFunctionElement(Factor f,
+									Element Parent,
+									Document Doc,
 									HashMap<Integer,
-											xmlsFactorTable> factorTables) 	
+											xmlsFactorTable> factorTables)
 	{
         Element e = Doc.createElement("node");
-		e.setAttribute("type", "Function");		
+		e.setAttribute("type", "Function");
 		e.setAttribute("id", f.getUUID().toString());
 		String explicitName = "";
 		if(f.getExplicitName() != null)
@@ -126,13 +126,13 @@ public class Serializer
 		e.setAttribute("class", f.getModelerFunctionName());
 			
 		ArrayList<INode> ports = f.getSiblings();
-		e.setAttribute("numEdges", Integer.toString(ports.size()));			
+		e.setAttribute("numEdges", Integer.toString(ports.size()));
 
 		// * TODO TableFactor?
 		if(f.isDiscrete())
 		{
 			DiscreteFactor tf = (DiscreteFactor) f;
-			FactorTable ct = tf.getFactorTable();
+			IFactorTable ct = tf.getFactorTable();
 			int hash = ct.hashCode();
 			if(!factorTables.containsKey(hash))
 			{
@@ -144,25 +144,25 @@ public class Serializer
 				factorTables.put(hash, xct);
 			}
 			e.setAttribute("comboTable", Integer.toString(hash));
-		}	
+		}
 
 		
 		Parent.appendChild(e);
 					
 		for (int i = 0; i < ports.size(); i++)
-		{			
+		{
 			Element edgeElement = Doc.createElement("edge");
-			VariableBase targetV = (VariableBase)(f.getConnectedNodeFlat(i));
+			VariableBase targetV = (f.getConnectedNodeFlat(i));
 
 			edgeElement.setAttribute("source", f.getUUID().toString());
 			edgeElement.setAttribute("target", targetV.getUUID().toString());
 			edgeElement.setAttribute("srcIdx", Integer.toString(i));
 			
-			Parent.appendChild(edgeElement);		
-		}	        	
+			Parent.appendChild(edgeElement);
+		}
 	}
 	
-	private void appendDomainElement(Domain domain, Document doc, Element parent) 
+	private void appendDomainElement(Domain domain, Document doc, Element parent)
 	{
 		if (!domain.isDiscrete())
 			throw new DimpleException("only support discrete domains for now");
@@ -174,7 +174,7 @@ public class Serializer
 		for (int j = 0; j < dd.size(); j++)
 		{
 			Element domain_item = doc.createElement("domain_element");
-			Object domainElementObject = dd.getElements()[j]; 
+			Object domainElementObject = dd.getElements()[j];
 			String domainElementString = "null";
 			if(domainElementObject != null)
 			{
@@ -189,7 +189,7 @@ public class Serializer
 	
 	private void appendFactorTableElement(xmlsFactorTable xct,
 			 Document doc,
-			 Element parent) 
+			 Element parent)
 	{
 		Element elFactorTable = doc.createElement("ComboTable");
 		elFactorTable.setAttribute("id", Integer.toString(xct._ephemeralId));
@@ -233,7 +233,7 @@ public class Serializer
 
 
 		
-		parent.appendChild(elFactorTable);		
+		parent.appendChild(elFactorTable);
 	}
 	
 	
@@ -242,7 +242,7 @@ public class Serializer
 	{
 		trace(String.format("++serializeToXML [%s] [%s]", FileName, targetDirectory));
 		String SerializedFileName = targetDirectory;
-		try {			
+		try {
 	        FactorList fl = fg.getNonGraphFactorsFlat();
 	        com.analog.lyric.dimple.model.VariableList vl = fg.getVariablesFlat();
 	        com.analog.lyric.dimple.model.VariableList bl = fg.getBoundaryVariables();
@@ -250,7 +250,7 @@ public class Serializer
 	        trace(String.format("%d Variables", vl.size()));
 	        trace(String.format("%d Boundary Variables", bl.size()));
 
-			DocumentBuilderFactory factory 
+			DocumentBuilderFactory factory
 	         = DocumentBuilderFactory.newInstance();
 	        factory.setNamespaceAware(true);
 	        DocumentBuilder builder = factory.newDocumentBuilder();
@@ -258,8 +258,8 @@ public class Serializer
 
 	        
 	        // Create the document
-	        Document doc = impl.createDocument(null, 
-	        								   FileName, 
+	        Document doc = impl.createDocument(null,
+	        								   FileName,
 	        								   null);
        	    Element root = doc.getDocumentElement();
 	        Element Version = doc.createElement("version");
@@ -275,26 +275,26 @@ public class Serializer
 	        }
 	        graph.setAttribute("explicitName", explicitName);
 	        graph.setAttribute("edgedefault", "undirected");
-	        graph.setAttribute("numBoundaryVariables", 
-	        				   Integer.toString(bl.size()));			
+	        graph.setAttribute("numBoundaryVariables",
+	        				   Integer.toString(bl.size()));
 	        graph.setAttribute("solverClass", fg.getFactorGraphFactory().getClass().getName());
 	        //Variables
 	        int i = 0;
 	        for(VariableBase v : bl)
 	        {
-        		addVariableElement((VariableBase)v, i, graph, doc);		        		
+        		addVariableElement(v, i, graph, doc);
         		i++;
 	        }
 	        for(VariableBase v : vl)
 	        {
 	        	if(!bl.contains(v))
 	        	{
-	        		addVariableElement((VariableBase)v, -1, graph, doc);		        		
+	        		addVariableElement(v, -1, graph, doc);
 	        	}
 	        }
 	        
 	        //Functions and connectivity
-	        HashMap<Integer, xmlsFactorTable> comboTableMap = new HashMap<Integer, xmlsFactorTable>();	        
+	        HashMap<Integer, xmlsFactorTable> comboTableMap = new HashMap<Integer, xmlsFactorTable>();
 	        for(Factor f : fl)
 	        {
 	        	addFunctionElement(f, graph, doc, comboTableMap);
@@ -319,40 +319,40 @@ public class Serializer
 	        SerializedFileName += FileName;
 	        SerializedFileName += ".xml";
 	        	
-	        try 
-	        { 
-		        BufferedWriter outFile = new BufferedWriter(new FileWriter(SerializedFileName)); 
-		        outFile.write(out); 
-		        outFile.close(); 
-	        } 
-	        catch (IOException e) 
+	        try
+	        {
+		        BufferedWriter outFile = new BufferedWriter(new FileWriter(SerializedFileName));
+		        outFile.write(out);
+		        outFile.close();
+	        }
+	        catch (IOException e)
 	        {
 	        	System.out.println("IO Exception: " + e.getMessage());
 	        	SerializedFileName = "";
-	        } 
+	        }
 	 
 	      }
-	      catch (FactoryConfigurationError e) 
-	      { 
-	        System.out.println("Could not locate a JAXP factory class"); 
+	      catch (FactoryConfigurationError e)
+	      {
+	        System.out.println("Could not locate a JAXP factory class");
         	SerializedFileName = "";
 	      }
-	      catch (ParserConfigurationException e) 
-	      { 
+	      catch (ParserConfigurationException e)
+	      {
 	        System.out.println(
 	          "Could not locate a JAXP DocumentBuilder class"
-	        ); 
+	        );
         	SerializedFileName = "";
 	      }
-	      catch (DOMException e) 
+	      catch (DOMException e)
 	      {
-	        System.err.println("DOMException: " + e); 
+	        System.err.println("DOMException: " + e);
         	SerializedFileName = "";
 	        
 	      }
 	      catch(Exception e)
 	      {
-	        	System.out.println("Exception: " + e.getMessage());	    	  
+	        	System.out.println("Exception: " + e.getMessage());
 	        	SerializedFileName = "";
 	      }
 	      
@@ -363,9 +363,9 @@ public class Serializer
 	{
 		trace(String.format("++serializeComboTableToXML [%s] [%s]", ctName, targetDirectory));
 		String SerializedFileName = targetDirectory;
-		try {			
+		try {
 
-			DocumentBuilderFactory factory 
+			DocumentBuilderFactory factory
 	         = DocumentBuilderFactory.newInstance();
 	        factory.setNamespaceAware(true);
 	        DocumentBuilder builder = factory.newDocumentBuilder();
@@ -373,8 +373,8 @@ public class Serializer
 
 	        
 	        // Create the document
-	        Document doc = impl.createDocument(null, 
-	        								   ctName, 
+	        Document doc = impl.createDocument(null,
+	        								   ctName,
 	        								   null);
        	    Element root = doc.getDocumentElement();
 	        Element version = doc.createElement("version");
@@ -383,7 +383,7 @@ public class Serializer
 	       
 	        xmlsFactorTable xct = new xmlsFactorTable(ctName, 1, indices, values,domains);
 	        
-	    	appendFactorTableElement(xct, 
+	    	appendFactorTableElement(xct,
 	    							doc,
 									root);
 
@@ -393,47 +393,47 @@ public class Serializer
 	        SerializedFileName += ctName;
 	        SerializedFileName += ".xml";
 	        	
-	        try 
-	        { 
-		        BufferedWriter outFile = new BufferedWriter(new FileWriter(SerializedFileName)); 
-		        outFile.write(out); 
-		        outFile.close(); 
-	        } 
-	        catch (IOException e) 
+	        try
+	        {
+		        BufferedWriter outFile = new BufferedWriter(new FileWriter(SerializedFileName));
+		        outFile.write(out);
+		        outFile.close();
+	        }
+	        catch (IOException e)
 	        {
 	        	System.out.println("IO Exception: " + e.getMessage());
 	        	SerializedFileName = "";
-	        } 
+	        }
 	 
 	      }
-	      catch (FactoryConfigurationError e) 
-	      { 
-	        System.out.println("Could not locate a JAXP factory class"); 
+	      catch (FactoryConfigurationError e)
+	      {
+	        System.out.println("Could not locate a JAXP factory class");
         	SerializedFileName = "";
 	      }
-	      catch (ParserConfigurationException e) 
-	      { 
+	      catch (ParserConfigurationException e)
+	      {
 	        System.out.println(
 	          "Could not locate a JAXP DocumentBuilder class"
-	        ); 
+	        );
         	SerializedFileName = "";
 	      }
-	      catch (DOMException e) 
+	      catch (DOMException e)
 	      {
-	        System.err.println("DOMException: " + e); 
+	        System.err.println("DOMException: " + e);
         	SerializedFileName = "";
 	        
 	      }
 	      catch(Exception e)
 	      {
-	        	System.out.println("Exception: " + e.getMessage() + " " + e.toString());	    	  
+	        	System.out.println("Exception: " + e.getMessage() + " " + e.toString());
 	        	SerializedFileName = "";
 	      }
 	      
 	      trace(String.format("--serializeComboTableToXML [%s]", SerializedFileName));
-	      return SerializedFileName;		
-	}	
-	public void setDbg(boolean dbg) 
+	      return SerializedFileName;
+	}
+	public void setDbg(boolean dbg)
 	{
 		_dbg = dbg;
 	}

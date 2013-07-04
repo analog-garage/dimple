@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -1009,7 +1010,7 @@ public class FactorGraph extends FactorBase
 	 */
 	public void estimateParameters(Object [] factorsAndTables,int numRestarts,int numSteps, double stepScaleFactor)
 	{
-		HashSet<FactorTable> sfactorTables = new HashSet<FactorTable>();
+		HashSet<IFactorTable> sfactorTables = new HashSet<IFactorTable>();
 		for (Object o : factorsAndTables)
 		{
 			if (o instanceof Factor)
@@ -1017,15 +1018,15 @@ public class FactorGraph extends FactorBase
 				Factor f = (Factor)o;
 				sfactorTables.add(f.getFactorTable());
 			}
-			else if (o instanceof FactorTable)
+			else if (o instanceof IFactorTable)
 			{
-				sfactorTables.add((FactorTable)o);
+				sfactorTables.add((IFactorTable)o);
 			}
 		}
 		
-		FactorTable [] factorTables = new FactorTable[sfactorTables.size()];
+		IFactorTable [] factorTables = new IFactorTable[sfactorTables.size()];
 		int i = 0;
-		for (FactorTable ft : sfactorTables)
+		for (IFactorTable ft : sfactorTables)
 		{
 			factorTables[i] = ft;
 			i++;
@@ -1036,7 +1037,7 @@ public class FactorGraph extends FactorBase
 	
 	public void baumWelch(Object [] factorsAndTables,int numRestarts,int numSteps)
 	{
-		HashSet<FactorTable> sfactorTables = new HashSet<FactorTable>();
+		HashSet<IFactorTable> sfactorTables = new HashSet<IFactorTable>();
 		for (Object o : factorsAndTables)
 		{
 			if (o instanceof Factor)
@@ -1044,15 +1045,15 @@ public class FactorGraph extends FactorBase
 				Factor f = (Factor)o;
 				sfactorTables.add(f.getFactorTable());
 			}
-			else if (o instanceof FactorTable)
+			else if (o instanceof IFactorTable)
 			{
-				sfactorTables.add((FactorTable)o);
+				sfactorTables.add((IFactorTable)o);
 			}
 		}
 		
-		FactorTable [] factorTables = new FactorTable[sfactorTables.size()];
+		IFactorTable [] factorTables = new IFactorTable[sfactorTables.size()];
 		int i = 0;
-		for (FactorTable ft : sfactorTables)
+		for (IFactorTable ft : sfactorTables)
 		{
 			factorTables[i] = ft;
 			i++;
@@ -1060,13 +1061,13 @@ public class FactorGraph extends FactorBase
 		baumWelch(factorTables,numRestarts,numSteps);
 	}
 
-	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps)
+	public void baumWelch(IFactorTable [] tables,int numRestarts,int numSteps)
 	{
 		getSolver().baumWelch(tables, numRestarts, numSteps);
 
 	}
 	
-	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor)
+	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor)
 	{
 		getSolver().estimateParameters(tables, numRestarts, numSteps,  stepScaleFactor);
 

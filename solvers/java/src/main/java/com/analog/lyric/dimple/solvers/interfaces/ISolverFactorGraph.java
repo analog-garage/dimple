@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -62,8 +62,8 @@ public interface ISolverFactorGraph extends ISolverNode
 	public double getInternalEnergy();
 	@Override
 	public double getBetheEntropy();
-	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
-	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps);
+	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
+	public void baumWelch(IFactorTable[] tables,int numRestarts,int numSteps);
 	public void moveMessages(ISolverNode other);
 	public void postAdvance();
 	public void postAddFactor(Factor f);

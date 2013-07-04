@@ -19,19 +19,19 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
 
 public abstract class FactorFunction extends FactorFunctionBase
-{	
+{
 	private FactorTableFactory _factory;
     
 	public FactorFunction()
 	{
 		super();
 	}
-    public FactorFunction(String name) 
+    public FactorFunction(String name)
     {
 		super(name);
 	}
@@ -54,7 +54,8 @@ public abstract class FactorFunction extends FactorFunctionBase
     	return _factory.tableExists(this, dds);
 	}
 	
-    public FactorTable getFactorTable(Domain [] domainList)
+    @Override
+	public IFactorTable getFactorTable(Domain [] domainList)
     {
     	//first step, convert domains to DiscreteDOmains
     	
@@ -110,20 +111,20 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        		if(domains.length == currTable.getDomains().length)
 	        		{
 	        			
-	        			//Check variable by variable	
+	        			//Check variable by variable
 		        		matched = true;
-	        			for(int variableIdx = 0; 
-	        				variableIdx < domains.length && matched; 
+	        			for(int variableIdx = 0;
+	        				variableIdx < domains.length && matched;
 		        			++variableIdx)
-		        		{		        			
+		        		{
 		        			Object[] tableDomain = currTable.getDomains()[variableIdx].getElements();
 		        			Object[] variableDomain = domains[variableIdx].getElements();
 		        			matched = tableDomain.length == variableDomain.length;
 		        			if(matched)
 		        			{
 		        				//Check domain member by domain member
-		        				for(int memberIdx = 0; 
-		        					memberIdx < tableDomain.length && matched; 
+		        				for(int memberIdx = 0;
+		        					memberIdx < tableDomain.length && matched;
 		        					++memberIdx)
 		        				{
 		        					Object tableDomainMember = tableDomain[memberIdx];
@@ -137,7 +138,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        		{
 	        			table = currTable;
 	        		}
-	        	}//end all table entry check 
+	        	}//end all table entry check
     			
     			if(!matched)
     			{
@@ -169,7 +170,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        	
 	        	//initialize indices to all zeros
 	        	int[] currIndicesToInput = new int[domain.length];
-	        	Object [] currInput = new Object[domain.length];	        	
+	        	Object [] currInput = new Object[domain.length];
 	        	int[] domainLengths = new int[domain.length];
 	        	
 	        	for (int i = 0; i < domainLengths.length; i++)
@@ -219,7 +220,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        	}
 
 
-	        	//FactorTable table = 
+	        	//FactorTable table =
 	        	int [][] rIndices = new int [indices.size()][];
 	        	double [] rValues  = new double[indices.size()];
 	        	        	
@@ -228,7 +229,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        		rIndices[i] = indices.get(i).clone();
 	        		rValues[i] = values.get(i);
 	        	}
-	        	FactorTable table = new FactorTable(rIndices,rValues,false,domain); 
+	        	FactorTable table = new FactorTable(rIndices,rValues,false,domain);
 	        	_tables.add(table);
 	        	
 	    		return table;
@@ -250,7 +251,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 				
 		}
 		
-		public Object[] getTable(FactorFunction factorFunction, DiscreteDomain [] domain) 
+		public Object[] getTable(FactorFunction factorFunction, DiscreteDomain [] domain)
 		{
 			FunctionEntry fe = _name2FunctionEntry.get(factorFunction.getName());
 			

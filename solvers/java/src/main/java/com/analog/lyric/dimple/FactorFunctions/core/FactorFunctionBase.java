@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.FactorFunctions.core;
 
 import com.analog.lyric.dimple.model.Domain;
 
-public abstract class FactorFunctionBase 
+public abstract class FactorFunctionBase
 {
 	private String _name;
 
@@ -51,7 +51,7 @@ public abstract class FactorFunctionBase
 	}
 	
 	
-	public abstract FactorTable getFactorTable(Domain [] domainList);
+	public abstract IFactorTable getFactorTable(Domain [] domainList);
 	
 	
 	// For directed factors...
