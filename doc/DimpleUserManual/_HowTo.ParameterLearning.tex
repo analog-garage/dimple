@@ -1,6 +1,116 @@
-%\subsection{Parameter Learning}
-%
-%\subsubsection{Expectation-Maximization on Directed Graphs}
+\subsection{Parameter Learning}
+
+Dimple currently has two supported parameter learning algorithms: Expectation-Maximization on directed graphs and PseudoLikelihood Parameter Estimation on undirected graphs.  Both of these algorithms are provided as early stage implementations and the APIs will likely change in the next version of Dimple.
+
+\subsubsection{PseudoLikelihood Parameter Estimation on Undirected Graphs}
+
+The PseudoLikelihood Parameter Estimation uses the following as its objective function:
+
+\[
+\ell_{PL}(\theta) = \frac{1}{M}\sum_m \sum_i \sum_{a \sim  i} (x_{-i}^{(m)},x_i^{(m)}) - \\
+\frac{1}{M} \sum_m \sum_i log Z(x_{N(i)};\theta)
+\]
+
+Currently it uses a very naive gradient descent optimizer.  Future versions will likely have pluggable optimizers for each learning algorithm.  (Likely including algorithms like BFGS).
+
+\paragraph{Creating a parameter learner}
+
+The following creates a learner and initializes a few variables:
+
+\begin{lstlisting}
+pl = PLLearner(factorGraph,factorTables,variables);
+\end{lstlisting}
+
+Arguments:
+\begin{itemize}
+\item factorGraph - the Factor Graph of interest
+\item factorTables - a cell array of factor tables for which to learn parameters.
+\item variables - a cell array of variable matrices (the order must match your data ordering).
+\end{itemize}
+
+\paragraph{Learning}
+
+The following method runs pseudo likelihood gradient descent.  After it is run, the factor tables will contain the values of the learned parameters.  For now the optimizer is simply a routine that multiplies the gradient by a scale factor and applies that change to the parameters.  In the future, optimizers will be first class citizens and can be plugged into learners.
+
+\begin{lstlisting}
+args.numSteps = 100;
+args.scaleFactor = 0.05;
+pl.learn(samples,args);
+\end{lstlisting}
+
+Arguments:
+\begin{itemize}
+\item samples - An MxN matrix where M is the number of samples and N is the number of variables.  Variable data must be specified in the same order the variables were specified in the learner's constructor.  For now, this data specifies the domain indices, not the domain values.  This should be fixed in the future (so the user can do either).  In reality, we'll probably split out training data into a more interesting data structure.  (Same with the optimizer) 
+\item args.numSteps - How many gradient descent steps should the optimizer run. 
+\item scaleFactor - The value by which we multiply the gradient before adding to the current parameters.  oldParams = oldParams + scaleFactor*gradient
+\end{itemize}
+
+
+\paragraph{Batch Mode}
+Users can divide their samples into subsets to run pseudo likelihood parameter learning in "batch" mode.  Assuming users have their samples stored in a cell array of matrices, they could iterate over the cell array as follows:
+
+\begin{lstlisting}
+for i = 1:length(samples)
+    pl.learn(1,samples{i},scaleFactor)
+end
+\end{lstlisting}
+
+ \paragraph{Setting Data}
+When calling the learn routine, users can set the data.  However, if users want some visibility into the gradient or the numerical gradient, they must first set the data using the setData method
+
+\begin{lstlisting}
+pl.setData(samples)
+\end{lstlisting}
+
+Arguments:
+\begin{itemize}
+\item samples - Takes the same form as in the learn method.
+\end{itemize}
+
+\paragraph{Calculating the Pseudo Likelihood}
+Users can retrieve the pseudo likelihood given the currently set samples using the following code:
+
+\begin{lstlisting}
+likelihood = pl.calculatePseudoLikelihood();
+\end{lstlisting}
+
+Return value:
+\begin{itemize}
+\item likelihood - The log pseudo likelihood.
+\end{itemize}
+
+\paragraph{Calculating the Gradient}
+For debugging purposes, the user can retrieve the gradient given the current sample set and parameter settings.
+
+\begin{lstlisting}
+result = pl.calculateGradient()
+\end{lstlisting}
+
+Return values:
+\begin{itemize}
+\item result - MxN matrix where M is the number of factor tables being learned and N is the number of weights per factor table.
+\end{itemize}
+
+\paragraph{Calculating the Numerical Gradient}
+For debugging purposes, the user can return a numerical gradient
+
+\begin{lstlisting}
+pl.calculateNumericalGradient(table, weightIndex, delta)
+\end{lstlisting}
+
+Arguments:
+\begin{itemize}
+\item table - Which table to modify
+\item weightIndex - Which weight index to modify
+\item delta - the delta (in the log domain) of the parameter.
+\end{itemize}
+
+
+
+\subsubsection{Expectation-Maximization on Directed Graphs}
+
+See the FactorGraph.baumWelch method in the API section.
+
 %
 %[??? TO BE COMPLETED ???]
 %

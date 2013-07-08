@@ -122,7 +122,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	}
 	
 	//The learn function sets the data, num steps, scale factor and runs the gradient descent
-	public void learn(int numSteps,Object [][] data, double scaleFactor)
+	public void learn(Object [][] data, int numSteps,double scaleFactor)
 	{
 		setForceKeep(true);
 		setData(data);
@@ -131,7 +131,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	}
 	
 	//The learn function sets the data, num steps, scale factor and runs the gradient descent
-	public void learn(int numSteps,int [][] data, double scaleFactor)
+	public void learn(int [][] data, int numSteps, double scaleFactor)
 	{
 		setForceKeep(true);
 		setData(data);
@@ -291,7 +291,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	}
 
 	//Used for calculating the numerical gradient
-	private double calculatePseudoLikelihood()
+	public double calculatePseudoLikelihood()
 	{
 		//1/M sum(m) sum(i) sum(j in neighbors(i)) tehta(xj,xi)
 		//- 1/M sum(m) sum(i) log Z(neighbors(i))

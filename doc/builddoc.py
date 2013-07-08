@@ -65,6 +65,10 @@ if __name__ == "__main__":
     if option.user_doc:
         with cd(option.user_doc_dir):
             producedoc(option.user_doc_filename,option)
+        shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
+                        option.user_doc_filename + ".pdf")
     if option.devel_doc:
         with cd(option.devel_doc_dir):
             producedoc(option.devel_doc_filename,option)
+        shutil.copyfile(option.devel_doc_dir + '/' + option.devel_doc_filename + ".pdf",
+                        option.devel_doc_filename + ".pdf")

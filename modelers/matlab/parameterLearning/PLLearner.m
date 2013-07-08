@@ -21,9 +21,27 @@ classdef PLLearner < handle
 
         end
         
-        function learn(obj,numSteps,data,scaleFactor)
+        function learn(obj,data,args)
+            if nargin > 2
+                if isfield(args,'scaleFactor');
+                    scaleFactor = args.scaleFactor;
+                else
+                    scaleFactor = 1;
+                end
+                
+                if isfield(args,'numSteps')
+                    numSteps = args.numSteps;
+                else
+                    numSteps = 1;
+                end
+                
+            else
+                scaleFactor = 1;
+                numSteps = 1;
+            end
+            
             %TODO: assumes indices. Eventually handle domain values.
-            obj.IPLLearner.learn(numSteps,int32(data),scaleFactor);
+            obj.IPLLearner.learn(int32(data),numSteps,scaleFactor);
         end
         
         function setData(obj,data)
@@ -36,6 +54,10 @@ classdef PLLearner < handle
         
         function result = calculateNumericalGradient(obj, table, weightIndex, delta)
             result = obj.IPLLearner.calculateNumericalGradient(table.ITable.getModelerObject(),weightIndex-1,delta);
+        end
+        
+        function result = calculatePseudoLikelihood(obj)
+            result = obj.IPLLearner.calculatePseudoLikelihood();
         end
 
     end
