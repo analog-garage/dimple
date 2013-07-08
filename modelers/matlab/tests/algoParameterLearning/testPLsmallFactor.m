@@ -93,13 +93,16 @@ function testPLsmallFactor()
         assertTrue(l2 < 1e-5);
         
         %Learn
-        numSteps = 2000;
-        scaleFactor = 0.05;
+        args.numSteps = 2000;
+        args.scaleFactor = 0.05;
         if verbose
             disp('learning...');
         end
-        pl.learn(numSteps,samples,scaleFactor);
-
+       
+        start = pl.calculatePseudoLikelihood();
+        pl.learn(samples,args);
+    	final = pl.calculatePseudoLikelihood();
+        assertTrue(final > start);
         %Compare the weights
         cdims = num2cell(dims);
         learned_weights = reshape(f.FactorTable.Weights,cdims{:});

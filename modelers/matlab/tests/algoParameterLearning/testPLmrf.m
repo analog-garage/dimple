@@ -48,7 +48,7 @@ function testPLmrf()
     samples = collectSamples(fg,BURN_INS,NUM_SAMPLES,SCANS_PER_SAMPLE);
 
     %%%%%%%%%%%%%%%%%%%%%%%%
-    % Learn the parameters
+    % Create the new graph and the learner
     %%%%%%%%%%%%%%%%%%%%%%%%
     
     %Build the new graph and randomize parameters
@@ -98,7 +98,10 @@ function testPLmrf()
     if verbose
         disp('learning params...')
     end
-    pl.learn(numSteps,samples,scaleFactor);
+    args.numSteps = numSteps;
+    args.scaleFactor = scaleFactor;
+    
+    pl.learn(samples,args);
 
     learnedHorzWeights = reshape(horzFT2.Weights,2,2);
     learnedHorzWeights = learnedHorzWeights / sum(learnedHorzWeights(:));
