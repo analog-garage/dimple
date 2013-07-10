@@ -6,6 +6,10 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 
 public interface IFactorTable
 {
+	//==============
+	// Old methods
+	//
+	
 	// Used only by PFactorTable/MATLAB
 	public void change(int [][] indices, double [] weights);
 	public void changeIndices(int [][] indices);
@@ -56,7 +60,7 @@ public interface IFactorTable
 	public int [] getDirectedFrom();
 	public int [] getDirectedTo();
 	
-	// Only used by FactorTableBase.getColumnBase and test
+	// Only used by FactorTableBase.getColumnCopy and test
 	public int getEntry(int row, int column);
 	
 	// Multiple users
