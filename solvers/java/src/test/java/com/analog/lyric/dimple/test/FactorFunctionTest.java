@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.test;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -75,7 +77,7 @@ public class FactorFunctionTest {
 		
 		Discrete[] discretes = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)};
 		Discrete[] discretes6 = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0),new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)};
-		DiscreteDomain[] domains = new DiscreteDomain[]{new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0)};
+		DiscreteDomain[] domains = new DiscreteDomain[]{DiscreteDomain.forBit(),  DiscreteDomain.forBit(), DiscreteDomain.forBit()};
 		DiscreteDomain[] vDomains = new DiscreteDomain[]{discretes[0].getDiscreteDomain(), discretes[1].getDiscreteDomain(), discretes[2].getDiscreteDomain()};
 		
 		XorDelta xorFF = new XorDelta();
@@ -170,17 +172,20 @@ public class FactorFunctionTest {
 			
 		}
 		
-		DiscreteDomain[] domains6 = new DiscreteDomain[]{new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0),
-													     new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0)};
+		DiscreteDomain[] domains6 = new DiscreteDomain[6];
+		Arrays.fill(domains6, DiscreteDomain.forBit());
 		
-		DiscreteDomain domainThreeEntries = new DiscreteDomain(0.0, 1.0, 2.0);
+		DiscreteDomain domainThreeEntries = DiscreteDomain.doubleRangeFromSize(3);
 		
 		IFactorTable ftThreeBinary = xorFF.getFactorTable(domains);
 		IFactorTable ftThreeBinary2 = xorFF.getFactorTable(vDomains);
+		assertSame(ftThreeBinary, ftThreeBinary2);
 		assertEquals(ftThreeBinary.hashCode(), ftThreeBinary2.hashCode());
 		IFactorTable xor6FT = xorFF.getFactorTable(domains6);
 		IFactorTable xor3AryFT = xorFF.getFactorTable(new DiscreteDomain[]{domains[0], domains[1], domainThreeEntries});
+		assertNotSame(ftThreeBinary, xor6FT);
 		assertTrue(ftThreeBinary.hashCode() != xor6FT.hashCode());
+		assertNotSame(ftThreeBinary, xor3AryFT);
 		assertTrue(ftThreeBinary.hashCode() != xor3AryFT.hashCode());
 		
 		

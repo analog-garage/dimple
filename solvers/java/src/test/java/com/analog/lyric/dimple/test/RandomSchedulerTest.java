@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class RandomSchedulerTest
 	protected static boolean debugPrint = false;
 
 	@Test
-	public void test1() 
+	public void test1()
 	{
 		if (debugPrint) System.out.println("== test1 ==");
 
@@ -47,7 +47,7 @@ public class RandomSchedulerTest
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
-		DiscreteDomain bit = new DiscreteDomain(0.0,1.0); 
+		DiscreteDomain bit = DiscreteDomain.forBit();
 		Discrete a = new Discrete(bit);
 		Discrete b = new Discrete(bit);
 		Discrete c = new Discrete(bit);
@@ -91,7 +91,7 @@ public class RandomSchedulerTest
 	}
 
 	@Test
-	public void test2() 
+	public void test2()
 	{
 		if (debugPrint) System.out.println("== test2 ==");
 
@@ -102,7 +102,7 @@ public class RandomSchedulerTest
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
-		DiscreteDomain bit = new DiscreteDomain(0.0,1.0); 
+		DiscreteDomain bit = DiscreteDomain.forBit();
 		Discrete a = new Discrete(bit);
 		Discrete b = new Discrete(bit);
 		Discrete c = new Discrete(bit);

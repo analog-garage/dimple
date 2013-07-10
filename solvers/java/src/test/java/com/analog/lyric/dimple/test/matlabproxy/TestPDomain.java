@@ -20,7 +20,7 @@ public class TestPDomain
 	@Test
 	public void test()
 	{
-		DiscreteDomain abc = new DiscreteDomain('a','b','c');
+		DiscreteDomain abc = DiscreteDomain.fromElements('a','b','c');
 		PDiscreteDomain pabc = new PDiscreteDomain(abc);
 		assertInvariants(pabc);
 		assertSame(abc, pabc.getModelerObject());

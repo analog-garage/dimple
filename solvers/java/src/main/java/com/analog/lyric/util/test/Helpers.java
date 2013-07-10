@@ -16,8 +16,7 @@
 
 package com.analog.lyric.util.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,33 +25,44 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.TreeMap;
 
-import com.analog.lyric.dimple.FactorFunctions.*;
+import com.analog.lyric.dimple.FactorFunctions.XorDelta;
 import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.model.*;
-import com.analog.lyric.dimple.schedulers.schedule.*;
+import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.IntRangeDomain;
+import com.analog.lyric.dimple.model.Model;
+import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 
-public class Helpers 
+public class Helpers
 {
 	static public Random _r = new Random();
 	final static public double EPSILON = 0.00001;
 
 	
-	static public FactorGraph MakeSimpleThreeLevelGraph() 
+	static public FactorGraph MakeSimpleThreeLevelGraph()
 	{
 		return MakeSimpleThreeLevelGraph(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph MakeSimpleThreeLevelGraph(IFactorGraphFactory graphFactory) 
+	static public FactorGraph MakeSimpleThreeLevelGraph(IFactorGraphFactory graphFactory)
 	{
-		return (FactorGraph) MakeSimpleThreeLevelGraphs(graphFactory)[0];
+		return MakeSimpleThreeLevelGraphs(graphFactory)[0];
 	}
 
 	
 	static public FactorGraph MakeSimpleGraph(String tag,
-											 IFactorGraphFactory graphFactory, 
-											 boolean randomInput) 
+											 IFactorGraphFactory graphFactory,
+											 boolean randomInput)
 	{
 		Discrete vB1 = new Discrete(0.0, 1.0);
 		Discrete vO1 = new Discrete(0.0, 1.0);
@@ -60,11 +70,11 @@ public class Helpers
 		vB1.setName(String.format("v%sB1", tag));
 		vO1.setName(String.format("v%sO1", tag));
 		vO2.setName(String.format("v%sO2", tag));
-		FactorGraph fg = new FactorGraph(vB1); 
+		FactorGraph fg = new FactorGraph(vB1);
 		fg.setName(tag);
 		fg.setSolverFactory(graphFactory);
 		Factor f = fg.addFactor(new XorDelta(), vB1, vO1, vO2);
-		f.setName(String.format("f%s", tag));		
+		f.setName(String.format("f%s", tag));
 		
 		if(randomInput)
 		{
@@ -74,11 +84,11 @@ public class Helpers
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
-			}			
+			}
 		}
-		return fg;		
+		return fg;
 	}
-	static public FactorGraph MakeSimpleGraph(String tag) 
+	static public FactorGraph MakeSimpleGraph(String tag)
 	{
 		return MakeSimpleGraph(tag, Model.getInstance().getDefaultGraphFactory(), false);
 	}
@@ -87,7 +97,7 @@ public class Helpers
 												 	 int variables,
 												 	 int extraFactors,
 												 	 int maxDegree,
-												 	 boolean randomInput) 
+												 	 boolean randomInput)
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(graphFactory);
@@ -95,12 +105,12 @@ public class Helpers
 		Discrete[] discretes = new Discrete[variables];
 		for(int variable = 0; variable < discretes.length; ++variable)
 		{
-			discretes[variable] = new Discrete(0.0, 1.0); 
+			discretes[variable] = new Discrete(0.0, 1.0);
 		}
 		
 		XorDelta xorFF = new XorDelta();
 
-		//make sure graph is connected. 
+		//make sure graph is connected.
 		for(int factor = 0; factor < variables; ++factor)
 		{
 			if(factor < variables - 1)
@@ -141,7 +151,7 @@ public class Helpers
 			for(int variable = 0; variable < variableList.size(); ++variable)
 			{
 				((Discrete)variableList.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
-			}			
+			}
 		}
 		
 		FixedSchedule fs = (FixedSchedule) fg.getSchedule();
@@ -152,16 +162,16 @@ public class Helpers
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
 												 	IFactorGraphFactory graphFactory,
 												 	int factors,
-												 	boolean randomInput) 
+												 	boolean randomInput)
 	{
-		FactorGraph fg = new FactorGraph(); 
+		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(graphFactory);
 		fg.setName(tag);
 
 		Discrete[] discretes = new Discrete[factors + 1];
 		for(int variable = 0; variable < discretes.length; ++variable)
 		{
-			discretes[variable] = new Discrete(0.0, 1.0); 
+			discretes[variable] = new Discrete(0.0, 1.0);
 		}
 
 		XorDelta xorFF = new XorDelta();
@@ -180,13 +190,13 @@ public class Helpers
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
-			}			
+			}
 		}
-		return fg;							
+		return fg;
 	}
 	static public FactorGraph MakeSimpleLoopyGraph(	String tag,
-												 	IFactorGraphFactory graphFactory, 
-												 	boolean randomInput) 
+												 	IFactorGraphFactory graphFactory,
+												 	boolean randomInput)
 	{
 		IFactorGraphFactory oldFactory = Model.getInstance().getDefaultGraphFactory();
 		Model.getInstance().setDefaultGraphFactory(graphFactory);
@@ -199,24 +209,24 @@ public class Helpers
 		vB1.setName(String.format("v%sB1", tag));
 		vO1.setName(String.format("v%sO1", tag));
 		vO2.setName(String.format("v%sO2", tag));
-		fg = new FactorGraph(vB1); 
+		fg = new FactorGraph(vB1);
 		fg.setName(tag);
 		XorDelta xorFF = new XorDelta();
 
 		Factor f1 = fg.addFactor(xorFF, vB1, vO1, vO2);
-		f1.setName(String.format("f1%s", tag));		
+		f1.setName(String.format("f1%s", tag));
 
 		Discrete vO3 = new Discrete(0.0, 1.0);
 		Discrete vO4 = new Discrete(0.0, 1.0);
 		vO3.setName(String.format("v%sO3", tag));
 		vO4.setName(String.format("v%sO4", tag));
 		Factor f2 = fg.addFactor(xorFF, vO2, vO3, vO4);
-		f2.setName(String.format("f2%s", tag));		
+		f2.setName(String.format("f2%s", tag));
 
 		Discrete vO5 = new Discrete(0.0, 1.0);
 		vO5.setName(String.format("v%sO5", tag));
 		Factor f3 = fg.addFactor(xorFF, vO3, vO5, vO1);
-		f3.setName(String.format("f3%s", tag));		
+		f3.setName(String.format("f3%s", tag));
 		
 		if(randomInput)
 		{
@@ -226,18 +236,18 @@ public class Helpers
 			for(int variable = 0; variable < variables.size(); ++variable)
 			{
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
-			}			
+			}
 		}
 		}
 		catch(Exception e){}
 		Model.getInstance().setDefaultGraphFactory(oldFactory);
-		return fg;				
+		return fg;
 	}
-	static public FactorGraph[] MakeSimpleThreeLevelGraphs() 
+	static public FactorGraph[] MakeSimpleThreeLevelGraphs()
 	{
 		return MakeSimpleThreeLevelGraphs(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph[] MakeSimpleThreeLevelGraphs(IFactorGraphFactory factory) 
+	static public FactorGraph[] MakeSimpleThreeLevelGraphs(IFactorGraphFactory factory)
 	{
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
 		Discrete vRootO1 = new Discrete(0.0, 1.0);
@@ -261,7 +271,7 @@ public class Helpers
 		vLeafO1.setName("vLeafO1");
 		vLeafO2.setName("vLeafO2");
 
-		FactorGraph fgRoot = new FactorGraph(vRootB1); 
+		FactorGraph fgRoot = new FactorGraph(vRootB1);
 		FactorGraph fgMid  = new FactorGraph(vMidB1);
 		FactorGraph fgLeaf = new FactorGraph(vLeafB1);
 		
@@ -287,7 +297,7 @@ public class Helpers
 		fgMid.addGraph(fgLeaf, vMidO2);
 
 		//Two sub graphs
-		fgRoot.addGraph(fgMid, vRootO2);		
+		fgRoot.addGraph(fgMid, vRootO2);
 				
 		return new FactorGraph[]{fgRoot, fgMid, fgLeaf};
 	}
@@ -298,22 +308,22 @@ public class Helpers
 	}
 	static public double compareBeliefs(double[][] a, double[][] b, String tag)
 	{
-		return compareBeliefs(a, b, EPSILON, false, tag);		
+		return compareBeliefs(a, b, EPSILON, false, tag);
 	}
 	static public double compareBeliefs(double[][] a, double[][] b, double epsilon)
-	{ 		
+	{
 		return compareBeliefs(a, b, epsilon, false);
 	}
 	static public double compareBeliefs(double[][] a, double[][] b, double epsilon, String tag)
-	{ 		
+	{
 		return compareBeliefs(a, b, epsilon, false, tag);
 	}
 	static public double compareBeliefs(double[][] a, double[][] b, double epsilon, boolean shouldBeSomeMismatch)
-	{ 		
+	{
 		return compareBeliefs(a, b, epsilon, shouldBeSomeMismatch, "kaboom");
 	}
 	static public double compareBeliefs(double[][] a, double[][] b, double epsilon, boolean shouldBeSomeMismatch, String tag)
-	{ 		
+	{
  		double diffSum = 0;
  		int diffs = 0;
  		boolean same = a.length == b.length;
@@ -361,13 +371,13 @@ public class Helpers
  		{
  			if(diffs == 0)
  			{
- 	 			System.out.println(String.format("Expecting at least one mismatch, got 0 > epislon. diffSum:%f  epsilon:%f  [%s]", diffSum, epsilon, tag)); 				
+ 	 			System.out.println(String.format("Expecting at least one mismatch, got 0 > epislon. diffSum:%f  epsilon:%f  [%s]", diffSum, epsilon, tag));
  			}
  			assertTrue(tag, diffs > 0);
  		}
  		return diffSum;
 	}
-	static public void setInputs(FactorGraph fg, double[][] inputs) 
+	static public void setInputs(FactorGraph fg, double[][] inputs)
 	{
 		VariableList vs = fg.getVariables();
 		for(int i = 0; i < vs.size(); ++i)
@@ -380,23 +390,23 @@ public class Helpers
 	{
 		return compareBeliefs(a, b, EPSILON, true);
 	}
-	static public double[][] beliefs(FactorGraph fg) 
+	static public double[][] beliefs(FactorGraph fg)
 	{
 		return beliefsOrInputs(fg, false, false, true, true);
 	}
-	static public double[][] inputs(FactorGraph fg) 
+	static public double[][] inputs(FactorGraph fg)
 	{
 		return beliefsOrInputs(fg, false, false, true, false);
 	}
-	static public double[][] beliefs(FactorGraph fg, boolean byName) 
+	static public double[][] beliefs(FactorGraph fg, boolean byName)
 	{
 		return beliefsOrInputs(fg, byName, false, false, true);
 	}
-	static public double[][] beliefs(FactorGraph fg, boolean byName, boolean print) 
+	static public double[][] beliefs(FactorGraph fg, boolean byName, boolean print)
 	{
 		return beliefsOrInputs(fg, byName, print, false, true);
 	}
-	static public double[][] beliefsOrInputs(FactorGraph fg, boolean byName, boolean print, boolean byAddOrder, boolean getbeliefs) 
+	static public double[][] beliefsOrInputs(FactorGraph fg, boolean byName, boolean print, boolean byAddOrder, boolean getbeliefs)
 	{
 		VariableList vs = fg.getVariables();
 		ArrayList<Discrete> orderUsed= new ArrayList<Discrete>();
@@ -414,7 +424,7 @@ public class Helpers
 				{
 					ret[i] = d.getInput();
 				}
-				orderUsed.add(d);				
+				orderUsed.add(d);
 			}
 		}
 		else
@@ -427,8 +437,8 @@ public class Helpers
 				{
 					sortBy = vs.getByIndex(i).getUUID().toString();
 				}
-				vsSorted.put(sortBy, 
-							 (Discrete)(vs.getByIndex(i)));			
+				vsSorted.put(sortBy,
+							 (Discrete)(vs.getByIndex(i)));
 			}
 			
 			int i = 0;
@@ -475,32 +485,32 @@ public class Helpers
 					}
 				}
 				sb.append("}");
-				System.out.println(sb.toString());				
+				System.out.println(sb.toString());
 			}
 		}
 		return ret;
 	}
-	static public double compareBeliefs(FactorGraph fgA, 
-			  						  FactorGraph fgB) 
+	static public double compareBeliefs(FactorGraph fgA,
+			  						  FactorGraph fgB)
 	{
 		return compareBeliefs(fgA, fgB, true, EPSILON);
 	}
-	static public double compareBeliefs(FactorGraph fgA, 
+	static public double compareBeliefs(FactorGraph fgA,
 									  FactorGraph fgB,
-									  double epsilon) 
+									  double epsilon)
     {
 		return compareBeliefs(fgA, fgB, true, epsilon);
     }
-	static public double compareBeliefs(FactorGraph fgA, 
+	static public double compareBeliefs(FactorGraph fgA,
 									  FactorGraph fgB,
-									  boolean byName) 
+									  boolean byName)
 	{
 		return compareBeliefs(fgA, fgB, byName, EPSILON);
   	}
-	static public double compareBeliefs(FactorGraph fgA, 
+	static public double compareBeliefs(FactorGraph fgA,
 									  FactorGraph fgB,
-									  boolean byName, 
-									  double epsilon) 
+									  boolean byName,
+									  double epsilon)
 	{
 		double[][] beliefsA = beliefs(fgA, byName);
 		double[][] beliefsB = beliefs(fgB, byName);
@@ -511,10 +521,10 @@ public class Helpers
 
 
 	
-	public static String getBeliefString(INode node) 
+	public static String getBeliefString(INode node)
 	{
 		StringBuilder sb = new StringBuilder();
-		ArrayList<Discrete> variables = new ArrayList<Discrete>(); 
+		ArrayList<Discrete> variables = new ArrayList<Discrete>();
 		if(node instanceof Discrete)
 		{
 			for(Port p : node.getPorts())
@@ -553,7 +563,7 @@ public class Helpers
 					sb.append(" ");
 				}
 			}
-			sb.append("}");			
+			sb.append("}");
 		}
 		catch(Exception e)
 		{
@@ -561,7 +571,7 @@ public class Helpers
 		}
 	}
 	
-	public static void printDifferences(String tag, double[][] a, double[][] b) 
+	public static void printDifferences(String tag, double[][] a, double[][] b)
 	{
  		double epsilon = 0.00001;
  		
@@ -584,7 +594,7 @@ public class Helpers
  					same = false;
  				}
  			}
- 		}	
+ 		}
  		
  		if(!same)
  		{
@@ -605,8 +615,8 @@ public class Helpers
  	 				sb.append(" ");
  	 				sb.append(((Double)b[i][j]).toString());
  	 			}
- 	 			sb.append("\n"); 	 			
- 	 		}	 			
+ 	 			sb.append("\n");
+ 	 		}
  			
  			System.out.println(sb.toString());
  		}
@@ -625,11 +635,11 @@ public class Helpers
 		return copy;
 	}
 
-	static public double[][] zerosCodeWord(int length, int numErrors) 
+	static public double[][] zerosCodeWord(int length, int numErrors)
 	{
 		return zerosCodeWord(length, numErrors, 0.99999);
 	}
-	static public double[][] zerosCodeWord(int length, int numErrors, double confidence) 
+	static public double[][] zerosCodeWord(int length, int numErrors, double confidence)
 	{
 		if(numErrors > length)
 		{
@@ -645,14 +655,14 @@ public class Helpers
 		for(int i = 0; i < numErrors; ++i)
 		{
 			int errorIdx = _r.nextInt(codeWord.length);
-			double temp = codeWord[errorIdx][0]; 
+			double temp = codeWord[errorIdx][0];
 			codeWord[errorIdx][0] = codeWord[errorIdx][1];
 			codeWord[errorIdx][1] = temp;
 		}
 		return codeWord;
 	}
 	
-	static public double[][] trivialRandomCodeword(int length) 
+	static public double[][] trivialRandomCodeword(int length)
 	{
 		double[][] codeWord = new double[length][];
 		for(int i = 0; i < codeWord.length; i++)
@@ -661,27 +671,27 @@ public class Helpers
 			codeWord[i][0] = _r.nextDouble();
 			codeWord[i][1] = 1 - codeWord[i][0];
 		}
-		return codeWord;		
+		return codeWord;
 	}
-	public static double decodeZerosCodeword( double[][] codewordWithErrors, 
-			FactorGraph fg, 
+	public static double decodeZerosCodeword( double[][] codewordWithErrors,
+			FactorGraph fg,
 			int iterations,
 			IFactorGraphFactory solver,
-			ISchedule schedule) 
+			ISchedule schedule)
 	{
-		return decodeZerosCodeword(codewordWithErrors, 
-							fg, 
-							iterations, 
-							solver, 
-							schedule, 
+		return decodeZerosCodeword(codewordWithErrors,
+							fg,
+							iterations,
+							solver,
+							schedule,
 							false);
 	}
-	public static double decodeZerosCodeword( double[][] codewordWithErrors, 
-			FactorGraph fg, 
+	public static double decodeZerosCodeword( double[][] codewordWithErrors,
+			FactorGraph fg,
 											int iterations,
 											IFactorGraphFactory solver,
-											ISchedule schedule, 
-											boolean shouldFail) 
+											ISchedule schedule,
+											boolean shouldFail)
 	{
 		double diffSum = 0;
 		initFgForDecode(fg, solver, schedule, iterations);
@@ -734,7 +744,7 @@ public class Helpers
 	
 	static VariableBase[] ordered_vars;
 	
-	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory solver, ISchedule schedule, int iterations) 
+	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory solver, ISchedule schedule, int iterations)
 			
 	{
 		fg.setSolverFactory(solver);
@@ -742,11 +752,11 @@ public class Helpers
 		fg.getSolver().setNumIterations(iterations);
 	}
 	
-	public static double[][] decodeGeneralCodeword( double[][] codewordWithErrors, 
-			FactorGraph fg) 
+	public static double[][] decodeGeneralCodeword( double[][] codewordWithErrors,
+			FactorGraph fg)
 											//int iterations,
 											//IFactorGraphFactory solver,
-											//ISchedule schedule) 
+											//ISchedule schedule)
 	//		)
 	{
 		
@@ -755,12 +765,12 @@ public class Helpers
 //			fg.setSchedule(schedule);
 //			fg.getSolver().setNumIterations(iterations);
 //			didInits = true;
-//		}		
+//		}
 		
 		VariableList variables = fg.getVariables();
 		
 		VariableBase namedVar = fg.getVariableByName("order_vv0");
-		// Some graphs have explicitNames of "order_vv#" so that this routine can work on 
+		// Some graphs have explicitNames of "order_vv#" so that this routine can work on
 		// graphs such as fec
 		boolean hasOrderNames = (namedVar != null);
 		if (hasOrderNames && ordered_vars == null) {
@@ -787,7 +797,7 @@ public class Helpers
 			((Discrete)thisVar).setInput(codewordWithErrors[i]);
 			//((Discrete)variables.getByIndex(i)).setInput(codewordWithErrors[i]);
 		}
-		fg.solve();	
+		fg.solve();
 
 		//Verify we decoded!
 		VariableList vs = fg.getVariables();
@@ -809,27 +819,21 @@ public class Helpers
 	}
 
 
-	static public DiscreteDomain domainFromRange(int first, int last) 
+	static public IntRangeDomain domainFromRange(int first, int last)
 	{
 		if(first >= last)
 		{
 			throw new DimpleException(String.format("first (%d) must be less than last (%d)", first, last));
 		}
 		
-		Integer[] entries = new Integer[last - first + 1];
-		for(int i = 0; i < entries.length; ++i)
-		{
-			entries[i] = new Integer(i + first);
-		}
-		
-		return new DiscreteDomain((Object[])entries);
+		return DiscreteDomain.range(first, last);
 	}
 	
-	static public Factor addSillyFactor(FactorGraph fg, int rows, Object[] variables) 
+	static public Factor addSillyFactor(FactorGraph fg, int rows, Object[] variables)
 	{
 		return addSillyFactor(fg, rows, variables, false);
 	}
-	static public Factor addSillyFactor(FactorGraph fg, int rows, Object[] variables, boolean randomWeights) 
+	static public Factor addSillyFactor(FactorGraph fg, int rows, Object[] variables, boolean randomWeights)
 	{
 		AlwaysTrueUpToNRowsFactorFunction atff = new AlwaysTrueUpToNRowsFactorFunction(rows, randomWeights);
 		Factor f = fg.addFactor(atff, variables);
@@ -837,7 +841,7 @@ public class Helpers
 	}
 
 	
-	static public TableFactorFunction createSillyTable(int rows, int columns) 
+	static public TableFactorFunction createSillyTable(int rows, int columns)
 	{
   		int[][] dummyTable = new int[rows][columns];
   		for(int i = 0; i < dummyTable.length; ++i)
@@ -855,7 +859,7 @@ public class Helpers
  			
   			for(int j = 0; j < dummyTable[i].length; ++j)
   			{
-  				dummyTable[i][j] = bits.get(j) ? 0 : 1; 
+  				dummyTable[i][j] = bits.get(j) ? 0 : 1;
   			}
   		}
   		
@@ -863,15 +867,12 @@ public class Helpers
 		Arrays.fill(dummyValues, 1.0);
 		
 		DiscreteDomain[] domains = new DiscreteDomain[columns];
-		for(int domain = 0; domain < domains.length; ++domain)
-		{
-			domains[domain] = new DiscreteDomain(0.0, 1.0);
-		}
+		Arrays.fill(domains, DiscreteDomain.forBit());
 		
   		return new TableFactorFunction("silly", dummyTable, dummyValues, domains);
 	}
 
-	static public void verifyDecode(FactorGraph fg, int errors, int iterations) 
+	static public void verifyDecode(FactorGraph fg, int errors, int iterations)
 	{
 		long initialStartDBG = System.currentTimeMillis();
 		long diffDBG = 0;
@@ -903,7 +904,7 @@ public class Helpers
 		System.out.println(String.format("verifyDecode time:%d (total)\n", diffDBG));
 	}
 	
-	static public void setSeed(long seed) 
+	static public void setSeed(long seed)
 	{
 		_r.setSeed(seed);
 	}

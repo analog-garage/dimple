@@ -99,7 +99,7 @@ public class TestLPSolver
 			assertThat(ex.getMessage(), containsString("is not a DiscreteFactor"));
 		}
 			
-		DiscreteDomain booleanDomain = new DiscreteDomain(false,true);
+		DiscreteDomain booleanDomain = DiscreteDomain.forBoolean();
 		
 		FactorGraph fg1 = new FactorGraph();
 		Discrete x = new Discrete(booleanDomain);
@@ -179,7 +179,7 @@ public class TestLPSolver
 		case4.expectedConstraints = new String[0];
 		case4.testLPState();
 		
-		DiscreteDomain stoogeDomain = new DiscreteDomain("Moe", "Larry", "Curly");
+		DiscreteDomain stoogeDomain = DiscreteDomain.fromElements("Moe", "Larry", "Curly");
 		FactorGraph fg2 = new FactorGraph();
 		Discrete a = new Discrete(stoogeDomain);
 		a.setName("a");
@@ -221,7 +221,7 @@ public class TestLPSolver
 	@Ignore
 	public void testGLPK()
 	{
-		DiscreteDomain booleanDomain = new DiscreteDomain(false,true);
+		DiscreteDomain booleanDomain = DiscreteDomain.fromElements(false,true);
 		
 		FactorGraph fg1 = new FactorGraph();
 		Discrete x = new Discrete(booleanDomain);

@@ -16,24 +16,224 @@
 
 package com.analog.lyric.dimple.model;
 
-import java.util.Arrays;
+import net.jcip.annotations.Immutable;
 
+import com.google.common.math.DoubleMath;
 
-public class DiscreteDomain extends Domain
+@Immutable
+public abstract class DiscreteDomain extends Domain
 {
-	/*-------
-	 * State
-	 */
-	private Object[] _elements;
+	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public DiscreteDomain(Object ... elements)
+	DiscreteDomain(int hashCode)
 	{
-		//TODO: should we check for uniqueness?
-		_elements = elements;
+		_hashCode = hashCode;
+	}
+	
+	public static TypedDiscreteDomain<Boolean> forBoolean()
+	{
+		return new ArrayDiscreteDomain<Boolean>(false, true);
+	}
+	
+	public static TypedDiscreteDomain<Double> forBit()
+	{
+		return fromElements(0.0, 1.0);
+	}
+	
+	public static <T> TypedDiscreteDomain<T> fromElements(T ... elements)
+	{
+		int size = elements.length;
+		Object firstElt = elements[0];
+		Class<?> eltClass = firstElt.getClass();
+		
+		if (eltClass.isEnum())
+		{
+			boolean useEnumDomain = true;
+			for (int i = 0; i < size; ++i)
+			{
+				Object elt = elements[i];
+				if (elt.getClass() != eltClass || ((Enum<?>)elt).ordinal() != i)
+				{
+					useEnumDomain = false;
+					break;
+				}
+			}
+			
+			if (useEnumDomain)
+			{
+				@SuppressWarnings({ "unchecked", "rawtypes" })
+				TypedDiscreteDomain<T> domain = new EnumDomain(eltClass);
+				return domain;
+			}
+		}
+		else if (Integer.class.isAssignableFrom(eltClass))
+		{
+			// We could eliminate the instanceof checks if the component type of the 'elements'
+			// array is Integer...
+			if (size > 1 && elements[1] instanceof Integer)
+			{
+				int first = ((Integer)firstElt).intValue();
+				int prev = ((Integer)elements[1]).intValue();
+				int interval = prev - first;
+				boolean useIntRangeDomain = true;
+				
+				for (int i = 2; i < size; ++i)
+				{
+					Object element = elements[i];
+					if (element instanceof Integer)
+					{
+						int next = prev + interval;
+						if (next == ((Integer)element).intValue())
+						{
+							prev = next;
+							continue;
+						}
+					}
+					useIntRangeDomain = false;
+					break;
+				}
+				
+				if (useIntRangeDomain)
+				{
+					@SuppressWarnings("unchecked")
+					TypedDiscreteDomain<T> domain =
+						(TypedDiscreteDomain<T>) intRangeFromSizeStartAndInterval(size, first, interval);
+					return domain;
+				}
+			}
+		}
+		else if (Double.class.isAssignableFrom(eltClass))
+		{
+			if (size > 1 && elements[1] instanceof Double)
+			{
+				double first = ((Double)firstElt).doubleValue();
+				double prev = ((Double)elements[1]).doubleValue();
+				double interval = prev - first;
+				double tolerance = DoubleRangeDomain.defaultToleranceForInterval(interval);
+				boolean useDoubleRangeDomain = true;
+				
+				for (int i = 2; i < size; ++i)
+				{
+					Object element = elements[i];
+					if (element instanceof Double)
+					{
+						double next = prev + interval;
+						if (DoubleMath.fuzzyEquals(next, (Double)element, tolerance))
+						{
+							prev = next;
+							continue;
+						}
+					}
+					useDoubleRangeDomain = false;
+					break;
+				}
+				
+				if (useDoubleRangeDomain)
+				{
+					@SuppressWarnings("unchecked")
+					TypedDiscreteDomain<T> domain =
+						(TypedDiscreteDomain<T>) doubleRangeFromSizeStartAndInterval(size, first, interval);
+					return domain;
+				}
+			}
+		}
+		
+		return new ArrayDiscreteDomain<T>(elements);
+	}
+	
+	public static <E extends Enum<E>> EnumDomain<E> forEnum(Class<E> enumClass)
+	{
+		return new EnumDomain<E>(enumClass);
+	}
+	
+	public static IntRangeDomain range(int low, int high)
+	{
+		return new IntRangeDomain(1 + high - low, low);
+	}
+	
+	public static IntRangeDomain intRangeFromSize(int size)
+	{
+		return new IntRangeDomain(size);
+	}
+	
+	public static IntRangeDomain intRangeFromSizeAndStart(int size, int start)
+	{
+		return new IntRangeDomain(size, start);
+	}
+	
+	public static IntRangeDomain intRangeFromSizeStartAndInterval(int size, int start, int interval)
+	{
+		return new IntRangeDomain(size, start, interval);
+	}
+	
+	public static DoubleRangeDomain doubleRangeFromSize(int size)
+	{
+		return new DoubleRangeDomain(size, 0.0, 1.0);
+	}
+	
+	public static DoubleRangeDomain doubleRangeFromSizeAndStart(int size, double start)
+	{
+		return new DoubleRangeDomain(size, start);
+	}
+	
+	public static DoubleRangeDomain doubleRangeFromSizeStartAndInterval(int size, double start, double interval)
+	{
+		return new DoubleRangeDomain(size, start, interval);
+	}
+
+	/*----------------
+	 * Object methods
+	 */
+	
+	/**
+	 * True if elements of domain are the same and in the same order.
+	 * <p>
+	 * The default implementation simply does an elementwise comparison.
+	 */
+	@Override
+	public boolean equals(Object thatObj)
+	{
+		if (this == thatObj)
+		{
+			return true;
+		}
+		
+		if (!(thatObj instanceof DiscreteDomain))
+		{
+			return false;
+		}
+		
+		DiscreteDomain that = (DiscreteDomain)thatObj;
+		if (size() != that.size())
+		{
+			return false;
+		}
+		
+		for (int i = 0, end = size(); i < end; ++i)
+		{
+			Object thisElt = this.getElement(i);
+			Object thatElt = that.getElement(i);
+			
+			if (thisElt != thatElt)
+			{
+				if (thisElt == null || !thisElt.equals(thatElt))
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override
+	public final int hashCode()
+	{
+		return _hashCode;
 	}
 	
 	/*----------------
@@ -43,11 +243,11 @@ public class DiscreteDomain extends Domain
 	@Override
 	public boolean containsValue(Object value)
 	{
-		return isElementOf(value);
+		return (getIndex(value) >= 0);
 	}
 	
 	/**
-	 * @return true if {@code value} is a {@link Number} representating a valid
+	 * @return true if {@code value} is a {@link Number} representing a valid
 	 * integer index into the array of elements returned by {@link #getElements()}.
 	 */
 	@Override
@@ -57,7 +257,7 @@ public class DiscreteDomain extends Domain
 		{
 			Number number = (Number)value;
 			int index = number.intValue();
-			return index >=0 && index < _elements.length;
+			return index >=0 && index < size();
 		}
 		
 		return false;
@@ -73,96 +273,42 @@ public class DiscreteDomain extends Domain
 	 * DiscreteDomain methods
 	 */
 	
-	public final Object[] getElements()
-	{
-		return _elements;
-	}
+	public abstract Object getElement(int i);
+	
+	public abstract Object[] getElements();
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this._elements);
-		return result;
-	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		
-		if (obj == null)
-			return false;
-		
-		if (!(obj instanceof DiscreteDomain))
-			return false;
-		
-		DiscreteDomain other = (DiscreteDomain) obj;
-		if (!Arrays.equals(this._elements, other._elements))
-			return false;
-		return true;
-	}
-
-	public final int size()
-	{
-		return _elements.length;
-	}
+	public abstract int size();
 	
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder(String.format("DiscreteDomain - %d elements - ", _elements != null ? _elements.length : 0));
-		if(_elements != null)
+		int n = size();
+		StringBuilder sb = new StringBuilder(String.format("DiscreteDomain - %d elements - ", n));
+		if(n > 0)
 		{
-			for (int i = 0; i < _elements.length; i++)
+			for (int i = 0; i < n; i++)
 			{
-				sb.append(String.format("type: %s value:%s"
-						,_elements[i] != null ? _elements[i].getClass() : "null"
-						,_elements[i] != null ? _elements[i].toString() : "null"));
-				if (i < _elements.length-1)
+				if (i > 0)
+				{
 					sb.append(", ");
+				}
+				Object element = getElement(i);
+				sb.append(String.format("type: %s value:%s"
+						, element != null ? element.getClass() : "null"
+						, element != null ? element.toString() : "null"));
 			}
 		}
 		return sb.toString();
 	}
 	
 	// Find the list of elements corresponding to the value; return -1 if not a valid value
-	public int getIndex(Object value)
-	{
-		int domainLength = _elements.length;
-		int index = -1;
-		for (int i = 0; i < domainLength; i++)
-		{
-			Object element = _elements[i];
-			
-			if (element.equals(value))		// Easy case, objects are the same
-			{
-				index = i;
-				break;
-			}
-			else if (element instanceof double[] && value instanceof double[])
-			{
-				if (Arrays.equals((double[])element, (double[])value))
-				{
-					index = i;
-					break;
-				}
-			}
-			else if (element instanceof Object[] && value instanceof Object[])
-			{
-				if (Arrays.deepEquals((Object[])element, (Object[])value))
-				{
-					index = i;
-					break;
-				}
-			}
+	public abstract int getIndex(Object value);
 
-		}
-		return index;
-	}
-	
-	
-	// Determine if the specified value is in the domain
+	/**
+	 * @deprecated Use {@link #containsValue} instead.
+	 */
+	@Deprecated
 	public boolean isElementOf(Object value)
 	{
 		return (getIndex(value) >= 0);

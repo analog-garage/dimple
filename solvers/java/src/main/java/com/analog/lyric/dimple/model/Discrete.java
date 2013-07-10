@@ -37,7 +37,7 @@ public class Discrete extends VariableBase
 
 	public Discrete(Object ... domain)
 	{
-		this(NodeId.getNext(),new DiscreteDomain(domain),"Discrete");
+		this(NodeId.getNext(),DiscreteDomain.fromElements(domain),"Discrete");
 
 		if(domain.length < 1)
 			throw new DimpleException(String.format("ERROR Variable domain length %d must be at least 2", domain.length));
