@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.FactorFunctions.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.google.common.math.DoubleMath;
 
 public class FactorFunctionUtilities
 {
@@ -18,26 +19,31 @@ public class FactorFunctionUtilities
 	public static final double toDouble(Object value)
 	{
 		double out = 0;
-    	if (value instanceof Double)
-    		out = (Double)value;
-    	else if (value instanceof Integer)
-    		out = (Integer)value;
+    	if (value instanceof Number)
+    	{
+    		out = ((Number)value).doubleValue();
+    	}
     	else if (value instanceof Boolean)
+    	{
     		out = (Boolean)value ? 1 : 0;
+    	}
     	else
-    		throw new DimpleException("Invalid value type");
+    		throw new DimpleException("Invalid value type '%s'", value.getClass());
     	return out;
 	}
 	
 	public static final int toInteger(Object value)
 	{
 		int out = 0;
-    	if (value instanceof Double)
-    		out = (int)Math.round((Double)value);
-    	else if (value instanceof Integer)
-    		out = (Integer)value;
+    	if (value instanceof Number)
+    	{
+    		double d = ((Number)value).doubleValue();
+    		out = DoubleMath.isMathematicalInteger(d) ? (int)d : (int)Math.round(d);
+    	}
     	else if (value instanceof Boolean)
+    	{
     		out = (Boolean)value ? 1 : 0;
+    	}
     	else
     		throw new DimpleException("Invalid value type");
     	return out;
@@ -46,12 +52,14 @@ public class FactorFunctionUtilities
 	public static final boolean toBoolean(Object value)
 	{
 		boolean out;
-    	if (value instanceof Double)
-    		out = (Math.round((Double)value) != 0);
-    	else if (value instanceof Integer)
-    		out = ((Integer)value != 0);
+    	if (value instanceof Number)
+    	{
+    		out = ((Number)value).doubleValue() != 0.0;
+    	}
     	else if (value instanceof Boolean)
+    	{
     		out = (Boolean)value;
+    	}
     	else
     		throw new DimpleException("Invalid value type");
     	return out;
