@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
@@ -108,6 +109,7 @@ public class VariableInfo extends NodeInfo
 	}
 	
 	//Cleanup when reset is called so this can be reused.
+	@Override
 	public void reset()
 	{
 		_uniqueSamplesPerValue.clear();
@@ -153,12 +155,12 @@ public class VariableInfo extends NodeInfo
 		if (!_neighbors2distributions.containsKey(neighbors))
 		{
 			//initialize
-			double [] distribution = new double[_var.getDiscreteDomain().getElements().length];
+			double [] distribution = new double[_var.getDiscreteDomain().size()];
 			double normalizer = 0;
 			
 			//calculate the probability for each setting of this var.
 			for (int i = 0; i < distribution.length; i++)
-			{				
+			{
 				double total = 1;
 				
 				//For every factor
@@ -189,7 +191,7 @@ public class VariableInfo extends NodeInfo
 			
 			//save
 			_neighbors2distributions.put(neighbors,distribution);
-		}		
+		}
 		
 		return _neighbors2distributions.get(neighbors)[varIndex]*pneighbors;
 	}
@@ -204,9 +206,9 @@ public class VariableInfo extends NodeInfo
 	@Override
 	public void addSample(int [] allDataIndices)
 	{
-		super.addSample(allDataIndices);		
-		LinkedList<Integer> otherIndices = indicesToRelevantOnes(allDataIndices);		
-		_uniqueSamplesPerValue.add(otherIndices);		
+		super.addSample(allDataIndices);
+		LinkedList<Integer> otherIndices = indicesToRelevantOnes(allDataIndices);
+		_uniqueSamplesPerValue.add(otherIndices);
 	}
 
 	//Returns the set of unique samples.
@@ -245,7 +247,7 @@ public class VariableInfo extends NodeInfo
 			if (n.isVariable() && n != var)
 				neighbors.add(n.asVariable());
 		}
-		VariableBase [] retVal = new VariableBase[neighbors.size()]; 
+		VariableBase [] retVal = new VariableBase[neighbors.size()];
 		return neighbors.toArray(retVal);
 	}
 

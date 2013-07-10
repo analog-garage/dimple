@@ -277,7 +277,6 @@ public abstract class DiscreteDomain extends Domain
 	
 	public abstract Object[] getElements();
 
-
 	public abstract int size();
 	
 	@Override

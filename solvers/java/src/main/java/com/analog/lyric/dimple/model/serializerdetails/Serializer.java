@@ -174,7 +174,7 @@ public class Serializer
 		for (int j = 0; j < dd.size(); j++)
 		{
 			Element domain_item = doc.createElement("domain_element");
-			Object domainElementObject = dd.getElements()[j];
+			Object domainElementObject = dd.getElement(j);
 			String domainElementString = "null";
 			if(domainElementObject != null)
 			{

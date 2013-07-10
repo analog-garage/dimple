@@ -129,16 +129,16 @@ public class FactorFunctionTest {
 		
 		for(int i = 0; i < ftVar.getDomains().length; ++i)
 		{
-			for(int j = 0; j < ftVar.getDomains()[i].getElements().length; ++j)
+			for(int j = 0; j < ftVar.getDomains()[i].size(); ++j)
 			{
-				assertEquals(ftVar.getDomains()[i].getElements()[j],ftVDomain.getDomains()[i].getElements()[j]);
-				assertEquals(ftVar.getDomains()[i].getElements()[j],ftDomain.getDomains()[i].getElements()[j]);
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffVar.getFactorTable(domains).getDomains()[i].getElements()[j]);
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffDVar.getFactorTable(domains).getDomains()[i].getElements()[j]);
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffVDomain.getFactorTable(domains).getDomains()[i].getElements()[j]);
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffDomain.getFactorTable(domains).getDomains()[i].getElements()[j]);
+				assertEquals(ftVar.getDomains()[i].getElement(j),ftVDomain.getDomains()[i].getElement(j));
+				assertEquals(ftVar.getDomains()[i].getElement(j),ftDomain.getDomains()[i].getElement(j));
+				assertEquals(ftVar.getDomains()[i].getElement(j),tffVar.getFactorTable(domains).getDomains()[i].getElement(j));
+				assertEquals(ftVar.getDomains()[i].getElement(j),tffDVar.getFactorTable(domains).getDomains()[i].getElement(j));
+				assertEquals(ftVar.getDomains()[i].getElement(j),tffVDomain.getFactorTable(domains).getDomains()[i].getElement(j));
+				assertEquals(ftVar.getDomains()[i].getElement(j),tffDomain.getFactorTable(domains).getDomains()[i].getElement(j));
 				
-				assertEquals(ftVar.getDomains()[i].getElements()[j],fVar2.getFactorTable().getDomains()[i].getElements()[j]);
+				assertEquals(ftVar.getDomains()[i].getElement(j),fVar2.getFactorTable().getDomains()[i].getElement(j));
 			}
 		}
 		

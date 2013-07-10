@@ -390,7 +390,7 @@ public class STableFactor extends STableFactorBase
 				Discrete var = svar.getModelObject();
 				String varName = var.getName();
 				int varValueIndex = svar.lpVarToDomainIndex(lpVar);
-				Object varValue = var.getDomain().getElements()[varValueIndex];
+				Object varValue = var.getDomain().getElement(varValueIndex);
 				out.format("-p(%s=%s)", varName, varValue);
 				break;
 			}

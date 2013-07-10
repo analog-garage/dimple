@@ -184,6 +184,7 @@ public class FactorTable extends FactorTableBase
 	
 
 
+	@Override
 	public int [] getDirectedFrom()
 	{
 		return _directedFrom;
@@ -383,6 +384,7 @@ public class FactorTable extends FactorTableBase
 		normalize(directedTo,directedFrom);
 	}
 	
+	@Override
 	public void normalize(int [] directedTo, int [] directedFrom)
 	{
 		
@@ -439,7 +441,7 @@ public class FactorTable extends FactorTableBase
 			
 			for (int j = 0; j < indices[i].length; j++)
 			{
-				if (indices[i][j] < 0 || indices[i][j] >= domains[j].getElements().length)
+				if (indices[i][j] < 0 || indices[i][j] >= domains[j].size())
 					throw new RuntimeException("index: " + indices[i][j] + " is larger than domain of variable number " + j);
 			}
 
@@ -459,6 +461,7 @@ public class FactorTable extends FactorTableBase
 	//with the domain of each variable.  So if we had a table with 20 rows with two new variables
 	//where one has a domain of 3 elements and another has a domain of 4 elements, we'll end up with
 	//a FactorTable with 3*4*20 rows.
+	@Override
 	public FactorTable createTableWithNewVariables(DiscreteDomain [] newDomains)
 	{
 		
@@ -517,6 +520,7 @@ public class FactorTable extends FactorTableBase
 	}
 
 	
+	@Override
 	public FactorTable joinVariablesAndCreateNewTable(int [] varIndices,
 			int [] indexToJointIndex,
 			DiscreteDomain [] allDomains,
@@ -714,18 +718,18 @@ public class FactorTable extends FactorTableBase
 			
 			for (int j = 0; j < indices[i].length; j++)
 			{
-				row.add(domains[j].getElements()[indices[i][j]]);
+				row.add(domains[j].getElement(indices[i][j]));
 			}
 			
 			_lookupTable.put(row,values[i]);
 		}
 		
-		for (int i = 0; i < domains.length; i++)
+		for (DiscreteDomain domain : domains)
 		{
-			HashSet<Object> set = new HashSet<Object>();
-			for (int j = 0; j < domains[i].getElements().length; j++)
+			HashSet<Object> set = new HashSet<Object>(domain.size());
+			for (int j = 0, end = domain.size(); j < end; ++j)
 			{
-				set.add(domains[i].getElements()[j]);
+				set.add(domain.getElement(j));
 			}
 			_domainSets.add(set);
 		}
@@ -778,7 +782,7 @@ public class FactorTable extends FactorTableBase
 			for (int i = 0; i < numDirectedInputs; i++)
 			{
 				int edgeIndex = _directedFrom[i];
-				inputs.add(domains[edgeIndex].getElements()[indices[row][edgeIndex]]);
+				inputs.add(domains[edgeIndex].getElement(indices[row][edgeIndex]));
 			}
 			
 			// Fill in the array of output values
@@ -786,7 +790,7 @@ public class FactorTable extends FactorTableBase
 			for (int i = 0; i < numDirectedOutputs; i++)
 			{
 				int edgeIndex = _directedTo[i];
-				outputs.add(domains[edgeIndex].getElements()[indices[row][edgeIndex]]);
+				outputs.add(domains[edgeIndex].getElement(indices[row][edgeIndex]));
 			}
 
 			_deterministicDirectedLookupTable.put(inputs, outputs);

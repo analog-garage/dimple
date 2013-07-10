@@ -174,7 +174,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        	int[] domainLengths = new int[domain.length];
 	        	
 	        	for (int i = 0; i < domainLengths.length; i++)
-	        		domainLengths[i] = domain[i].getElements().length;
+	        		domainLengths[i] = domain[i].size();
 	        	
 	        	double currValue;
 	        	
@@ -182,7 +182,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        	{
 	        		//get values for indices
 	        		for (int i = 0; i < currIndicesToInput.length; i++)
-	        			currInput[i] = domain[i].getElements()[currIndicesToInput[i]];
+	        			currInput[i] = domain[i].getElement(currIndicesToInput[i]);
 	        		
 	        		//eval func for indices
 	        		currValue = _factorFunction.eval(currInput);

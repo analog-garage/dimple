@@ -150,7 +150,8 @@ public class Discrete extends VariableBase
 		{
 	    	for (int i = 0; i < getDiscreteDomain().size(); i++)
 	    	{
-    			Object [] pair = new Object[] {this.getDiscreteDomain().getElements()[i],dOtherVar.getDiscreteDomain().getElements()[j]};
+    			Object [] pair =
+    				new Object[] {this.getDiscreteDomain().getElement(i),dOtherVar.getDiscreteDomain().getElement(j)};
     			newDomain[index] = pair;
     			inputs[index] = this.getInput()[i]*dOtherVar.getInput()[j];
     			index++;
@@ -184,7 +185,7 @@ public class Discrete extends VariableBase
 		if (index == null)
 			throw new DimpleException("Fixed value not set");
 		
-		return getDomain().getElements()[index];
+		return getDomain().getElement(index);
 	}
 	public void setFixedValueIndex(int fixedValueIndex)
 	{

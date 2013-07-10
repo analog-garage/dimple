@@ -18,16 +18,17 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
-public class DiscreteSampler extends HybridSampledBPSampler 
+public class DiscreteSampler extends HybridSampledBPSampler
 {
 
-	public DiscreteSampler(Port p, Random random) 
+	public DiscreteSampler(Port p, Random random)
 	{
 		super(p, random);
 		// TODO Auto-generated constructor stub
@@ -37,19 +38,16 @@ public class DiscreteSampler extends HybridSampledBPSampler
 		if (! (n instanceof Discrete))
 			throw new DimpleException("expected Discrete");
 		
-		Discrete d = (Discrete)n;
-		
-		_domain = d.getDiscreteDomain().getElements();
-
+		_domain = ((Discrete)n).getDomain();
 	}
 
 	private double [] _msg;
-	private Object [] _domain;
+	private final DiscreteDomain _domain;
 	
 
 
 	@Override
-	public Object generateSample() 
+	public Object generateSample()
 	{
 		//normalize
 		double sum = 0;
@@ -66,16 +64,16 @@ public class DiscreteSampler extends HybridSampledBPSampler
 			
 			if (d < cum)
 			{
-				return _domain[i];
+				return _domain.getElement(i);
 			}
 		}
 		
 		
-		return _domain[_domain.length-1];
+		return _domain.getElement(_domain.size()-1);
 	}
 	
 	@Override
-	public void initialize()  
+	public void initialize()
 	{
 		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
 		_msg = (double[])var.resetInputMessage(_msg);
@@ -83,19 +81,19 @@ public class DiscreteSampler extends HybridSampledBPSampler
 	}
 
 	@Override
-	public void createMessage(Object msg) 
+	public void createMessage(Object msg)
 	{
-		_msg = (double[])msg;		
+		_msg = (double[])msg;
 	}
 
 	@Override
-	public Object getInputMsg() 
+	public Object getInputMsg()
 	{
 		return _msg;
 	}
 
 	@Override
-	public void moveMessages(HybridSampledBPSampler other) 
+	public void moveMessages(HybridSampledBPSampler other)
 	{
 		_msg = ((DiscreteSampler)other)._msg;
 	}

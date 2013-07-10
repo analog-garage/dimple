@@ -1,6 +1,9 @@
 package com.analog.lyric.dimple.model;
 
-public abstract class TypedDiscreteDomain<T> extends DiscreteDomain
+import java.util.Iterator;
+
+// REFACTOR: I think this should eventually be folded up into DiscreteDomain.
+public abstract class TypedDiscreteDomain<T> extends DiscreteDomain implements Iterable<T>
 {
 	protected TypedDiscreteDomain(int hashCode)
 	{
@@ -12,4 +15,31 @@ public abstract class TypedDiscreteDomain<T> extends DiscreteDomain
 
 	@Override
 	public abstract T[] getElements();
+	
+	@Override
+	public Iterator<T> iterator()
+	{
+		return new Iterator<T>() {
+
+			private volatile int _next = 0;
+			
+			@Override
+			public boolean hasNext()
+			{
+				return _next < size();
+			}
+
+			@Override
+			public T next()
+			{
+				return getElement(_next++);
+			}
+
+			@Override
+			public void remove()
+			{
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
 }

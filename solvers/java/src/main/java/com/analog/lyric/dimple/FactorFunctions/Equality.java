@@ -115,7 +115,7 @@ public class Equality extends FactorFunction
     		return super.getFactorTable(domainList);
     	
     	
-    	int [][] indices = new int[first.getElements().length][];
+    	int [][] indices = new int[first.size()][];
     	double [] probs = new double[indices.length];
     	
     	for (int i = 0; i < indices.length; i++)
