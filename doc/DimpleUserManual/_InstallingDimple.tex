@@ -1,7 +1,13 @@
 \section{Installing Dimple}
 
+
+\subsection{Installing Binaries}
+
+\ifmatlab
+
 \begin{enumerate}
 \item MATLAB of at least version 2008a is required. 
+\item Download the latest version of Dimple from http://dimple.probprog.org.
 \item Extract the Dimple zip file.
 \item Execute the startup.m script in the resulting Dimple directory to 
 load Dimple in MATLAB.
@@ -48,3 +54,36 @@ Each object in Dimple corresponds to underlying Java objects. The amount of heap
 \end{lstlisting}
 
 The value after Xmx is the maximum amount of heap memory allocated to Java, and Xms is the starting value.  You may use wish to use larger values if your system has sufficient memory.  Google ``MATLAB java.opts file'' to determine the specific location of this file on your operating system.
+
+
+
+\fi
+
+\ifjava
+
+It is possible to use Dimple only with the Java API.  To do so, users have to add all of the jar files in the following directories to their java class path:
+
+TODO: Fix < and >
+\begin{enumerate}
+\item <java directory>/solvers/lib
+\item <java directory>/solvers/non-maven-jars
+\end{enumerate}
+
+\fi
+
+\subsection{Installing from source}
+
+\begin{enumerate}
+\item Download the source from TODO: Github link
+\item Install gradle from TODO.  Gradle is a java build tool that pulls down jars from maven repositories.
+\item Change to <dimple directory>/solvers/java  TODO: Fix <
+\item Run gradle by typing "gradle"
+\end{enumerate}
+
+If you want to edit java files with eclipse:
+
+\begin{enumerate}
+\item Execute "gradle eclipse".  This will create the appropriate references to all of the dependencies in the Eclipse .classpath file.
+\item From eclipse, Import->Existing Projects Into Workspace
+\item Browse to the dimple directory, select sovers/java, and click Finish.
+\end{enumerate}

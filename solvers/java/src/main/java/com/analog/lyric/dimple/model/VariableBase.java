@@ -378,6 +378,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		checkSolverNotNull();
 		_solverVariable.updateEdge(outPortNum);
 	}
+
+
 	
 	private void checkSolverNotNull()
 	{

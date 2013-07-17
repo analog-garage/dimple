@@ -73,7 +73,8 @@ public interface INode  extends INameable
 
     //TODO: should these only be on solver?
     public void update() ;
-	public void updateEdge(int outPortNum) ;
+	public void updateEdge(int outPortNum);
+	public void updateEdge(INode other);
 	
 	public ISolverNode getSolver();
 	

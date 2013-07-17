@@ -19,9 +19,19 @@ package com.analog.lyric.dimple.model;
 public class Bit extends Discrete 
 {
 
-	public Bit()  {
-		super(new DiscreteDomain(new Object[]{0.0,1.0}));
-		// TODO Auto-generated constructor stub
+	public Bit()  
+	{
+		super(new DiscreteDomain(new Object[]{new Integer(1),new Integer(0)}));
+	}
+	
+	public double getP1()
+	{
+		return getBelief()[0];
 	}
 
+	public void setInput(double p1)
+	{
+		setInput(p1,1-p1);
+	}
+	
 }

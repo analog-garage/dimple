@@ -8,7 +8,7 @@ Once a model has been created in Dimple, the user may then perform inference on 
 To perform the inference computation, Dimple supports a variety of \emph{solver} algorithms that the user can choose from.  For each solver, there are a number of options and configuration parameters that the user may specify to customize the behavior of the solver.
 
 At a high level, Dimple supports three categories of solver:
-%
+
 \begin{itemize}
 \item Belief propagation (BP)
 \item Gibbs sampling
@@ -22,6 +22,8 @@ The Gibbs solver supports all of the primary variable types, and may be used to 
 The LP solver transforms a factor graph over discrete variables into an equivalent linear program then solves this linear program (see section~\ref{sec:LPSolver}).  This solver is limited to factor graphs containing only discrete variables.
 
 The Solver is a property of a factor graph.  To set the Solver for a given graph, this property is set to the name of the solver.  For example:
+
+\ifmatlab
 
 \begin{lstlisting}
 myGraph.Solver = 'Gibbs';
@@ -37,6 +39,31 @@ The solver name is case insensitive.  The current set of valid solver names are:
 \item Gibbs
 \item LP
 \end{itemize}
+
+\fi
+
+\ifjava
+
+TODO: Do we want to support named solvers at some point?
+
+\begin{lstlisting}
+myGraph.setSolverFactory(
+     new com.analog.lyric.dimple.solvers.gibbs.Solver()
+     );
+\end{lstlisting}
+
+The current set of solvers is:
+
+\begin{itemize}
+\item com.analog.lyric.dimple.solvers.sumproduct.Solver()
+\item com.analog.lyric.dimple.solvers.minsum.Solver()
+\item com.analog.lyric.dimple.solvers.gaussian.Solver()
+\item com.analog.lyric.dimple.solvers.particleBP.Solver()
+\item com.analog.lyric.dimple.solvers.gibbs.Solver()
+\item LP - TODO not yet supported by Java
+\end{itemize}
+
+\fi
 
 More detail on each of these solvers is provided in section~\ref{sec:SolversAPI}.
 
@@ -56,10 +83,22 @@ Suppose a variable to be measured, $y$, depends only on another variable, $x$, a
 
 The particular form of the Input property depends on the type of variable.  For a Discrete variable type, the Input property is a vector with length equal to the size of the variable domain.  The values represent the (not necessarily normalized) value of the likelihood function for each element of the domain.  For example,
 
+\ifmatlab
+
 \begin{lstlisting}
 v = Discrete(1:4);
 v.Input = [1.2, 0.6, 0, 0.8];
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+Discrete v = new Discrete(1,2,3,4);
+v.setInput(new double []{1.2, 0.6, 0, 0.8});
+\end{lstlisting}
+
+\fi
 
 Notice that values in the Input vector may be greater than one---the Input is assumed to be arbitrarily scaled.  All values, however, must be non-negative.
 
@@ -71,26 +110,63 @@ For a Bit variable, the Input property is specified differently.  In this case, 
 
 For example,
 
+\ifmatlab
+
 \begin{lstlisting}
 b = Bit();
 b.Input = 0.3;
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Bit b = new Bit();
+b.setInput(0.3);
+\end{lstlisting}
+\fi
+
 In this case, the value must be between 0 and 1, inclusive.
 
 For a Real variable, the form of the Input property depends on the particular solver.  For the Gibbs and ParticleBP solvers, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For example:
+
+\ifmatlab
 
 \begin{lstlisting}
 r = Real();
 r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real r = new Real();
+r.setInput(new Normal(measuredMean, measurementPrecision));
+\end{lstlisting}
+
+\fi
+
 For the Gaussian solver, the Input property is a two-element array, where the first element is the mean, and the second element is the standard deviation.  For example:
+
+\ifmatlab
 
 \begin{lstlisting}
 r = Real();
 r.Input = [measuredMean, measurementStandardDeviation];
 \end{lstlisting}
+
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+Real r = new Real();
+r.setInput(new double []  {measuredMean, measurementStandardDeviation});
+\end{lstlisting}
+\fi
+
+\ifmatlab
 
 If the inputs are to be applied to an array of variables, this can generally be done all at once by setting the Input property of the entire array.  For a Discrete variable array, the Input is set to an array with the same dimensions as the variable array (or subarray), but with an extra dimensions corresponding to the Input vector for each variable in the array.  (If a dimension in the array is 1, that dimension is not included.) For example:
 
@@ -108,7 +184,7 @@ b.Input = [0.3 0.7 0.1; 0.0 0.8 0.6];
 
 In the current version of Dimple, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
 
-
+\fi
 
 \para{Fixing a Variable to a Known Value}
 \label{sec:FixingAVariableValue}
@@ -137,6 +213,9 @@ r.FixedValue = 1.7;
 
 For Discrete variables, the FixedValue property is currently limited to variables with numeric domains, though the domains need not include only integer values\footnote{This limitation may be removed in a future version.}.
 
+
+\ifmatlab
+
 For arrays of variables, the FixedValue property may be set for the entire array by setting it to an array of values of with the same dimensions as the array (or subarray) being set.  For example:
 
 \begin{lstlisting}
@@ -144,7 +223,16 @@ b = Bit(2,3);
 b.FixedValue = [0 1 0; 1 1 0];
 \end{lstlisting}
 
-To see if a FixedValue has been set on a variable, you can use the hasFixedValue method.  For a single variable this method returns a boolean value, and for an array of variables this method returns a boolean array.
+\fi
+
+\ifjava
+\begin{lstlisting}
+Bit b = new Bit();
+b.setFixedValue(1);
+\end{lstlisting}
+\fi
+
+To see if a FixedValue has been set on a variable, you can use the hasFixedValue method.  \ifmatlab For a single variable this method returns a boolean value, and for an array of variables this method returns a boolean array. \fi
 
 Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue property removes any input\footnote{For implementation reasons, setting the fixed value of a Discrete or Bit variable also sets the Input to a delta function---with the value 0 except in the position corresponding to the fixed value that had been set.}.
 
@@ -169,11 +257,22 @@ Each solver has a default scheduler, so if the user does not explicitly choose o
 If no scheduler or custom schedule is specified, a default scheduler will be used.  The default scheduler depends on the selected solver.
 
 Another scheduler may be specified by setting the Scheduler property of a graph:
+
+\ifmatlab
+
 \begin{lstlisting}
 myGraph.Scheduler = 'ExampleScheduler';	
 \end{lstlisting}
 
 When setting the scheduler for a graph, the name of the scheduler is case sensitive.
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+myGraph.setScheduler(new ExampleScheduler());
+\end{lstlisting}
+\fi
 
 For all of the BP solvers (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available.  More detail on each of these schedulers is provided in section~\ref{sec:FactorGraph.Scheduler}.
 
@@ -189,12 +288,26 @@ For all of the BP solvers (SumProduct, MinSum, Gaussian, ParticleBP), the follow
 In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
 
 It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
-%
+
+\ifmatlab
+
 \begin{lstlisting}
 SubGraph.Scheduler = 'SequentialScheduler';
 ParentGraph.addFactor(SubGraph, boundaryVariables);
 ParentGraph.Scheduler = 'FloodingScheduler';
 \end{lstlisting}
+
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+SubGraph.setScheduler(new SequentialScheduler());
+ParentGraph.addFactor(SubGraph, boundaryVariables);
+ParentGraph.setScheduler(new FloodingScheduler());
+\end{lstlisting}
+
+\fi
 
 For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
 
@@ -215,9 +328,11 @@ Because of the nature of the Gibbs solver, the nested structure of a graph is ig
 \label{sec:CustomSchedules}
 
 
-Dimple supports user defined custom schedules created in MATLAB.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
+Dimple supports user defined custom schedules created with a list of nodes and/or edges.  A custom schedule is specified using the Schedule method.  Specifying a custom schedule overrides any scheduler that the graph would otherwise use.
 
 The following code demonstrates this feature:
+
+\ifmatlab
 
 \begin{lstlisting}
    eq = @(x,y) x == y;
@@ -258,7 +373,44 @@ The following code demonstrates this feature:
    fg.solve();
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Equals eq = new Equals();
+FactorGraph fg = new FactorGraph();
+Bit a = new Bit();
+Bit b = new Bit();
+Bit c = new Bit();
+Factor eq1 = fg.addFactor(eq,a,b);
+Factor eq2 = fg.addFactor(eq,b,c);
+
+//define schedule
+FixedSchedule fs = new FixedSchedule();
+fs.add(b);
+fs.add(eq1,a);
+fs.add(eq2,c);
+fs.add(a,eq1);
+fs.add(c,eq2);
+fs.add(eq1,b);
+fs.add(eq2,b);
+		
+//set schedule
+fg.setSchedule(fs);
+
+//Set priors
+a.setInput(0.6);
+b.setInput(0.7);
+c.setInput(0.8);
+
+//Solve
+fg.solve();
+\end{lstlisting}
+\fi
+
 Dimple also supports nesting custom schedules and nesting in general. The following example demonstrates specifying nested graphs in a schedule.
+
+\ifmatlab
 
 \begin{lstlisting}
    eq = @(x,y) x == y;
@@ -277,8 +429,35 @@ Dimple also supports nesting custom schedules and nesting in general. The follow
    fg.solve();
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+
+Equals eq = new Equals();
+Bit b1 = new Bit();
+Bit b2 = new Bit();
+FactorGraph nfg = new FactorGraph(b1,b2);
+nfg.addFactor(eq,b1,b2);
+Bit c1 = new Bit();
+Bit c2 = new Bit();
+Bit c3 = new Bit();
+FactorGraph fg = new FactorGraph();
+FactorGraph nf1 = fg.addFactor(nfg,c1,c2);
+FactorGraph nf2 = fg.addFactor(nfg,c2,c3);
+
+FixedSchedule schedule = new FixedSchedule();
+schedule.add(c1,nf1,c2,nf2,c3);
+c1.setInput(0.7);
+fg.solve();
+\end{lstlisting}
+
+\fi
+
+
 And finally we look at nesting a custom schedule:
 
+\ifmatlab
 
 \begin{lstlisting}
    %Now let's try nesting with a custom schedule on the nested graph.
@@ -319,10 +498,69 @@ And finally we look at nesting a custom schedule:
    assertElementsAlmostEqual(b(2).Belief,.5);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+//Now let's try nesting with a custom schedule on the nested graph.
+Equals eq = new Equals();
+	
+//create a graph to nest and give it a funny schedule    
+// nfg: eb(1) - f1 - ib - f2 - eb(2)
+Bit eb1 = new Bit();
+Bit eb2 = new Bit();
+Bit ib = new Bit();
+FactorGraph nfg = new FactorGraph(eb1,eb2);
+Factor f1 = nfg.addFactor(eq,eb1,ib);
+Factor f2 = nfg.addFactor(eq,ib,eb2);
+//Set an input and solve
+eb1.setInput(0.8);
+
+nfg.solve();
+
+//We expect the output to be equal to the input since the tree
+//scheduler passes the info along.
+System.out.println(eb2.getP1() - eb1.getInput()[0]);
+
+//Now we create a schedule that will not propagate the info.
+FixedSchedule schedule = new FixedSchedule();
+schedule.add(ib);
+schedule.add(f1,eb1);
+schedule.add(f2,eb2);
+schedule.add(eb1);
+schedule.add(eb2);
+schedule.add(f1);
+schedule.add(f2);
+nfg.setSchedule(schedule);
+nfg.solve();
+
+System.out.println(eb2.getP1() - 0.5);
+
+		
+//Nest it and see if the schedule is preserved
+Bit b1 = new Bit();
+Bit b2 = new Bit();
+FactorGraph fg = new FactorGraph();
+FactorGraph g = fg.addFactor(nfg,b1,b2);
+
+FixedSchedule schedule2 = new FixedSchedule();
+schedule2.add(b1,b2,g);
+fg.setSchedule(schedule2);
+
+b1.setInput(0.8);		
+fg.solve();
+System.out.println(b2.getP1()-0.5);
+
+\end{lstlisting}
+
+\fi
 
 \subsubsection{Running the Solver}
 
 The once a factor graph has been created and conditioned on any input data, inference may be performed on the graph by calling the solve method:
+
+
 
 \begin{lstlisting}
 myGraph.solve();
@@ -332,23 +570,48 @@ The solve method performs all necessary computation, leaving the results availab
 
 For example, for all of the BP solvers, the number of iterations can be set.  By default, the number of iterations is 1, but for a loopy factor graph, generally multiple iterations should be performed.  To set the number of iterations prior to solving, the NumIterations property of the graph may be used:
 
+\ifmatlab
+
 \begin{lstlisting}
 myGraph.NumIterations = 10;
 myGraph.solve();
 \end{lstlisting}
 
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+myGraph.getSolver().setNumIterations(10);
+myGraph.solve();
+\end{lstlisting}
+
+
+\fi
+
 For the Gibbs solver, the NumIterations property isn't used, and instead other solver specific may be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has already been set to 'Gibbs'):
 
+\ifmatlab
 \begin{lstlisting}
 myGraph.Solver.setNumSamples(1000);
 myGraph.solve();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myGraph.getSolver().setNumSamples(1000);
+myGraph.solve();
+\end{lstlisting}
+\fi
 
 Notice that while NumIterations is a property of a factor graph (even though it isn't used by the Gibbs solver), other solver-specific parameters are generally controlled by calling methods on the solver object.  The solver for a given factor graph is obtained via the Solver property, and solver-specific methods can be called on that.
 
 In general, each solver has a series of custom methods that can be used to customize the behavior of the solver.  A complete list of these can be found in section~\ref{sec:SolversAPI}.
 
 In some cases, it is useful to observe the intermediate behavior of the solver before it has completed.  For the BP solvers, this can be done by using the solver-specific iterate method instead of the solve method.  When called without any arguments, this results in running one iteration.  An optional argument allows specifying the number of iterations to run.  Successive calls to iterate do not reset the state of the solver, allowing it to be called multiple times in succession.  However, before running iterate for the first time, the initialize method must be called in order to reset the state before beginning.  For example, here we run one iteration at a time, displaying the belief of a particular variable after each iteration:
+
+\ifmatlab
 
 \begin{lstlisting}
 myGraph.initialize();
@@ -358,11 +621,37 @@ for i=1:numberOfIterations
 end
 \end{lstlisting}
 
-If instead we wanted to run 5 iterations at a time, the iterate call would be replaced with:
+\fi
+
+\ifjava
 
 \begin{lstlisting}
-	myGraph.Solver.iterate(5);
+myGraph.initialize();
+for (int i=0; i <  numberOfIterations; i++)\
+{
+	myGraph.Solver.iterate();
+	System.out.println(Arrays.toString(someVariable.getBelief()));
+}
 \end{lstlisting}
+
+\fi
+
+If instead we wanted to run 5 iterations at a time, the iterate call would be replaced with:
+
+\ifmatlab
+
+\begin{lstlisting}
+myGraph.Solver.iterate(5);
+\end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+myGraph.getSolver().iterate(5);
+\end{lstlisting}
+
+\fi
 
 For the Gibbs solver, a similar method allows running one or a specified number of samples at a time, skipping initialization as well as any burn-in or random restarts.  This is the sample method, which behaves the same as the iterate method:
 
@@ -371,11 +660,26 @@ For the Gibbs solver, a similar method allows running one or a specified number 
 
 Once the solver has been run, the results of inference can be obtained from the elements of the graph.  The kinds of results that may be desired vary with the application, and the kinds of results that are available depend on the particular solver and other factors.
 
-One of the most common types of results are beliefs on individual variables in the graph.  The belief of a variable is an estimate of the marginal distribution of that variable given the graph and any conditioning data.  When available, the belief is accessed via the Belief property of a variable:
+One of the most common types of results are beliefs on individual variables in the graph.  The belief of a variable is an estimate of the marginal distribution of that variable given the graph and any conditioning data.  
+
+\ifmatlab
+
+When available, the belief is accessed via the Belief property of a variable:
 
 \begin{lstlisting}
 b = myVariable.Belief;
 \end{lstlisting}
+\fi
+
+\ifjava
+
+When available, the belief is accessed via the getBeliefObject() method.  If the variable is a Discrete variable, a double array can be retrieved using the getBelief() method.
+
+\begin{lstlisting}
+double [] d = myVariable.getBelief();
+Object o = myVariable.getbeliefObject();
+\end{lstlisting}
+\fi
 
 The particular form of the Belief property depends on the type of variable, and in some cases on the solver.  For a Discrete variable type, the Belief property is a vector with length equal to the size of the variable domain.  The values represent the normalized value of the approximate marginal probability of each element of the domain.  For a Bit variable, the Belief property is a single number that represents the marginal probability of the value 1.
 
@@ -385,50 +689,96 @@ Beliefs can be obtained directly from an array of variables using the Belief pro
 
 Another useful inference result returned by the Value property of a variable.  This property returns a single value from the domain of the variable that corresponds to the maximum value of the belief:
 
+\ifmatlab
 \begin{lstlisting}
 v = myVariable.Value;
 \end{lstlisting}
 
 As with the Belief property, this can be used either on individual variables or on a variable array.  Support for this property is currently limited to discrete variables.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+v = myVariable.getValue();
+\end{lstlisting}
+\fi
+
 When using the Gibbs solver, there are additional inference results that may be useful.  For example, for a given variable, you can request the best sample value that has been seen during inference.
 
+\ifmatlab
 \begin{lstlisting}
 bestValue = myVariable.Solver.getBestSample();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+double bestValue = myVariable.getSolver().getBestSample();
+\end{lstlisting}
+\fi
 
 This is defined as the value of that variable associated with the sample over all variables that resulted in the most probably configuration observed given the graph and any conditioning data. Considering the graph as a potential function over the configuration space of all variables, this corresponds to the lowest energy configuration that had been observed.
 
 By default, the Gibbs solver doesn't save all samples, but if so configured for a given variable (or all variables) prior to running the solver, the solver will save all samples, allowing the entire set of samples (post burn-in) to be obtained.
 
+\ifmatlab
 \begin{lstlisting}
 myVariable.saveAllSamples();
 myGraph.solve();
 allSamples = myVariable.Solver.getAllSamples();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myVariable.saveAllSamples();
+myGraph.solve();
+double [] allSamples = myVariable.getSolver().getAllSamples();
+\end{lstlisting}
+\fi
 
 There are a number of other useful results that can be obtained from the Gibbs solver, which are detailed in section~\ref{sec:GibbsSolverAPI}.
 
-
 It is also possible to retrieve beliefs from factors.  The belief of a factor is defined as the joint belief over all joint states of the variables connected to that factor.  In the current version of Dimple, this works only for factors connected exclusively to discrete variables.  The beliefs can be extracted using one of two properties of a factor:
 
+\ifmatlab
 \begin{lstlisting}
 fb = myFactor.Belief;
 \end{lstlisting}
+\fi
 
-or
+
+
+\ifjava
+\begin{lstlisting}
+double [] fb = ((DiscreteFactor)myFactor).getBelief();
+\end{lstlisting}
+
+\fi
+
+Using the Belief property results in a compact representation of the belief that leaves out values corresponding to zero values of the factor.  
+
+\ifjava
+TODO: Should support fullBelief
+\fi
+
+\ifmatlab
+
+It is also possible to call:
 
 \begin{lstlisting}
 fb = myFactor.FullBelief;
 \end{lstlisting}
 
-Using the Belief property results in a compact representation of the belief that leaves out values corresponding to zero values of the factor.  The FullBelief property results in a multidimensional array of beliefs over the range of all possible states of the connected variables.  The more compact representation may be needed where the full representation would result in a data structure too large to be practical.  More information about the Belief and FullBelief properties can be found in sections~\ref{sec:Factor.Belief} and~\ref{sec:Factor.FullBelief}, respectively.
-
+The FullBelief property results in a multidimensional array of beliefs over the range of all possible states of the connected variables.  The more compact representation may be needed where the full representation would result in a data structure too large to be practical.  More information about the Belief and FullBelief properties can be found in sections~\ref{sec:Factor.Belief} and~\ref{sec:Factor.FullBelief}, respectively.
+\fi
  
 \subsubsection{Explicit Scheduling and Retrieving Message Values}
 
 Dimple supports the ability to retrieve and set messages as well as to explicitly update edges, factors and variables.
 
+\ifmatlab
 \begin{lstlisting}
 %OK, first we create a simple Factor Graph with a single xor connecting two  
 %variables.
@@ -475,4 +825,52 @@ b(2).Ports{1}.InputMsg
 %and some beliefs
 b.Belief
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+//OK, first we create a simple Factor Graph with a single xor connecting two  
+//variables.
+Equals eq = new Equals();
+FactorGraph fg = new FactorGraph(); 
+Bit b1 = new Bit();
+Bit b2 = new Bit();
+Factor f = fg.addFactor(eq,b1,b2);
+//We can go ahead and set some inputs
+b1.setInput(0.8);
+b1.setInput(0.7);
+
+//we can examine some edges
+
+System.out.println(f.getPorts().get(0).getInputMsg());
+System.out.println(f.getPorts().get(0).getOutputMsg());
+
+//we can even set some edge messages
+f.getPorts().get(0).setInputMsgValues(new double [] {0.6,0.4});
+
+//we can update a node
+b1.update();
+b2.update();
+
+//or a specific edge		
+b1.updateEdge(f);
+ 
+//but updating via portNum is quicker
+b1.updateEdge(0);
+
+//of course, if we don't know the portNum, we can get it
+int portNum = b1.getPortNum(f);
+b1.updateEdge(portNum);
+
+//We can do the same kind of stuff with factors
+f.updateEdge(b1);
+f.updateEdge(f.getPortNum(b2));
+
+//Let's look at some messages again
+System.out.println(b1.getPorts().get(0).getInputMsg());
+System.out.println(b2.getPorts().get(0).getInputMsg());
+
+//and some beliefs
+System.out.println(b1.getBelief());
+\end{lstlisting}
+\fi

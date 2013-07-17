@@ -31,6 +31,8 @@ class cd:
         os.chdir(self.savedPath)
 
 def producedoc(fileName,option):
+    #pdflatex "\def\forjava{}\input{DimpleUserManual.tex}"
+    #TODO: add java user doc as an option
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)

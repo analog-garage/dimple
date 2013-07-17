@@ -13,7 +13,7 @@ The PseudoLikelihood Parameter Estimation uses the following as its objective fu
 
 Currently it uses a very naive gradient descent optimizer.  Future versions will likely have pluggable optimizers for each learning algorithm.  (Likely including algorithms like BFGS).
 
-\paragraph{Creating a parameter learner}
+\para{Creating a parameter learner}
 
 The following creates a learner and initializes a few variables:
 
@@ -28,7 +28,7 @@ Arguments:
 \item variables - a cell array of variable matrices (the order must match your data ordering).
 \end{itemize}
 
-\paragraph{Learning}
+\para{Learning}
 
 The following method runs pseudo likelihood gradient descent.  After it is run, the factor tables will contain the values of the learned parameters.  For now the optimizer is simply a routine that multiplies the gradient by a scale factor and applies that change to the parameters.  In the future, optimizers will be first class citizens and can be plugged into learners.
 
@@ -46,7 +46,7 @@ Arguments:
 \end{itemize}
 
 
-\paragraph{Batch Mode}
+\para{Batch Mode}
 Users can divide their samples into subsets to run pseudo likelihood parameter learning in "batch" mode.  Assuming users have their samples stored in a cell array of matrices, they could iterate over the cell array as follows:
 
 \begin{lstlisting}
@@ -55,7 +55,7 @@ for i = 1:length(samples)
 end
 \end{lstlisting}
 
- \paragraph{Setting Data}
+ \para{Setting Data}
 When calling the learn routine, users can set the data.  However, if users want some visibility into the gradient or the numerical gradient, they must first set the data using the setData method
 
 \begin{lstlisting}
@@ -67,7 +67,7 @@ Arguments:
 \item samples - Takes the same form as in the learn method.
 \end{itemize}
 
-\paragraph{Calculating the Pseudo Likelihood}
+\para{Calculating the Pseudo Likelihood}
 Users can retrieve the pseudo likelihood given the currently set samples using the following code:
 
 \begin{lstlisting}
@@ -79,7 +79,7 @@ Return value:
 \item likelihood - The log pseudo likelihood.
 \end{itemize}
 
-\paragraph{Calculating the Gradient}
+\para{Calculating the Gradient}
 For debugging purposes, the user can retrieve the gradient given the current sample set and parameter settings.
 
 \begin{lstlisting}
@@ -91,7 +91,7 @@ Return values:
 \item result - MxN matrix where M is the number of factor tables being learned and N is the number of weights per factor table.
 \end{itemize}
 
-\paragraph{Calculating the Numerical Gradient}
+\para{Calculating the Numerical Gradient}
 For debugging purposes, the user can return a numerical gradient
 
 \begin{lstlisting}

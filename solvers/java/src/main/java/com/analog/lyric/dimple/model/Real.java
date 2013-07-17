@@ -30,6 +30,10 @@ public class Real extends VariableBase
     	setInputObject(input);
     }
 	
+	public Real(double lower, double upper)
+	{
+		this(new RealDomain(lower,upper));
+	}
 	
 	public Real()  
 	{
