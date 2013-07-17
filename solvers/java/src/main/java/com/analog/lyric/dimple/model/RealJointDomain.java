@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 public class RealJointDomain extends Domain 
 {
-	private RealDomain [] _domains;
+	private RealDomain[] _domains;
 	
 	public RealJointDomain(int size)
 	{
@@ -41,9 +41,14 @@ public class RealJointDomain extends Domain
 		return false;
 	}
 	
-	public RealDomain [] getRealDomains()
+	public RealDomain[] getRealDomains()
 	{
 		return _domains;
+	}
+	
+	public RealDomain getRealDomain(int dimension)
+	{
+		return _domains[dimension];
 	}
 	
 	public int getNumVars()
@@ -77,4 +82,25 @@ public class RealJointDomain extends Domain
 			return false;
 		return true;
 	}
+	
+	// Utility to check if a value is in the domain or not
+	public boolean inDomain(double[] value)
+	{
+		int size = value.length;
+		if (size != _domains.length)
+			return false;
+		
+		for (int i = 0; i < size; i++)
+			if (!_domains[i].inDomain(value[i]))
+				return false;
+		
+		return true;
+	}
+	
+	// Get the domain of an individual dimension in the joint domain
+	public RealDomain getDomainDimension(int dimension)
+	{
+		return _domains[dimension];
+	}
+
 }

@@ -18,19 +18,48 @@ package com.analog.lyric.dimple.model;
 
 public class RealJoint extends VariableBase 
 {
+	// Constructors...
 	public RealJoint(int size) 
 	{
 		this(new RealJointDomain(size));
 	}
-	
-	public RealJoint(RealJointDomain domain) 
+	public RealJoint(RealJointDomain domain)
 	{
-		this(NodeId.getNext(), domain,"RealJoint");
+		this(domain, "RealJoint");
+	}
+	public RealJoint(RealJointDomain domain, String modelerClassName) 
+	{
+		super(domain, modelerClassName);
+	}
+
+	
+	public RealJointDomain getRealDomain()
+	{
+		return (RealJointDomain)getDomain();
+	}
+	public Object getInput() 
+	{
+		return getInputObject();
 	}
 	
-	public RealJoint(int id, RealJointDomain domain, String modelerClassName) 
+	
+	// Fix the variable to a specific value
+	public final double[] getFixedValue()
 	{
-		super(id,modelerClassName,domain);
+		Object tmp = getFixedValueObject();
+		if (tmp == null)
+			throw new DimpleException("Fixed Value is not set");
+		else
+			return (double[])tmp;
+	}
+	
+	public void setFixedValue(double[] fixedValue) 
+	{
+		// Verify that the fixed value is in the domain of the variable
+		if (!((RealJointDomain)getDomain()).inDomain(fixedValue))
+			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
+	
+		setFixedValueObject(fixedValue);
 	}
 
 }

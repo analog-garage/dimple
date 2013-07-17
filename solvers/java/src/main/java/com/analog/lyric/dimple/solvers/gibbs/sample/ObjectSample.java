@@ -14,13 +14,17 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs;
+package com.analog.lyric.dimple.solvers.gibbs.sample;
 
 public class ObjectSample 
 {
+	protected Object _value;
+	
 	public ObjectSample(Object value)
 	{
-		this.value = value;
+		_value = value;
 	}
-	public Object value;
+	
+	public final Object getObject() {return _value;}
+	public final void setObject(Object value) {_value = value;}
 }

@@ -14,11 +14,10 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Deprecated. Preserved for backwards compatibility
-classdef ComplexVar < Complex
+classdef Complex < RealJoint
    methods
-       function obj = ComplexVar(varargin)
-           obj@Complex(varargin{:});
+       function obj = Complex(varargin)
+           obj@RealJoint(2,varargin{:});
        end
    end    
 end

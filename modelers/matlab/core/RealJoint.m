@@ -107,6 +107,16 @@ classdef RealJoint < VariableBase
             
             if isa(input,'Msg')
                 input = input.IMsg;
+            elseif iscell(input)
+                if (isa(input{1}, 'FactorFunction'))
+                    for i=1:length(input)
+                        input{i} = input{i}.get();
+                    end
+                elseif (iscell(input{1}))
+                    for i=1:length(input)
+                        input{i} = FactorFunction(input{i}{:}).get();
+                    end
+                end
             end
             
             varids = reshape(v,numel(v),1);

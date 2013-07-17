@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
@@ -97,7 +98,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			Object[] values = new Object[numPorts];
 			
 			for (int port = 0; port < numPorts; port++)
-				values[port] = _inputMsgs[port].value;
+				values[port] = _inputMsgs[port].getObject();
 
 			//TODO: these could be cached instead.
 			double[] outputMsgs = (double[])var.getSolver().getInputMsg(_factor.getSiblingPortIndex(outPortNum)); 
@@ -117,7 +118,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	    int numPorts = _factor.getSiblings().size();
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = _inputMsgs[port].value;
+	    	inPortMsgs[port] = _inputMsgs[port].getObject();
 	    
 	    return getPotential(inPortMsgs);
 	}
@@ -139,7 +140,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		// Compute the output values of the deterministic factor function from the input values
 	    Object[] values = new Object[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = _inputMsgs[port].value;
+	    	values[port] = _inputMsgs[port].getObject();
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values
