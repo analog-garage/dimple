@@ -51,23 +51,53 @@ if __name__ == "__main__":
     if option.clean:
         for n in glob.glob("*.pdf"):
             os.remove(n)
-        for n in glob.glob("*.aux"):
+        for n in glob.glob("*/*.pdf"):
             os.remove(n)
-        for n in glob.glob("*.dvi"):
+        for n in glob.glob("*/*.aux"):
             os.remove(n)
-        for n in glob.glob("*.toc"):
+        for n in glob.glob("*/*.dvi"):
             os.remove(n)
-        for n in glob.glob("*.log"):
+        for n in glob.glob("*/*.toc"):
             os.remove(n)
+        for n in glob.glob("*/*.log"):
+            os.remove(n)
+        for n in glob.glob("*/*.out"):
+            os.remove(n)
+
+    # user_doc  devel_doc options
+    #    F          F              build both unless clean
+    #    F          T              build devel_doc
+    #    T          F              build user_doc
+    #    T          T              build both
+
+    if not option.clean:
+        build_user_doc = True
+        build_devel_doc = True
+    else:
+        build_user_doc = False
+        build_devel_doc = False
+
+    if option.user_doc and not option.devel_doc:
+        build_user_doc = True
+        build_devel_doc = False
+
+    if option.devel_doc and not option.user_doc:
+        build_user_doc = False
+        build_devel_doc = True        
+
+    if option.devel_doc and option.user_doc:
+        build_user_doc = True
+        build_devel_doc = True        
+
  
-                     
-    #Create user doc
-    if option.user_doc:
+    # Create user doc
+    if build_user_doc:
         with cd(option.user_doc_dir):
             producedoc(option.user_doc_filename,option)
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
                         option.user_doc_filename + ".pdf")
-    if option.devel_doc:
+    # Create developer doc
+    if build_devel_doc:
         with cd(option.devel_doc_dir):
             producedoc(option.devel_doc_filename,option)
         shutil.copyfile(option.devel_doc_dir + '/' + option.devel_doc_filename + ".pdf",
