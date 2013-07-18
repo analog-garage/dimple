@@ -14,10 +14,11 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Complex < RealJoint
-   methods
-       function obj = Complex(varargin)
-           obj@RealJoint(2,varargin{:});
-       end
-   end
+classdef ComplexDomain < RealJointDomain
+    
+    methods
+        function obj = ComplexDomain(varargin)
+           obj@RealJointDomain(2,varargin{:});
+        end
+    end
 end

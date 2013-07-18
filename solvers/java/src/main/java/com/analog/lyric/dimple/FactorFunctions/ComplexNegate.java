@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 
 
 /**
- * Deterministic complex sum. This is a deterministic directed factor (if smoothing is
+ * Deterministic complex negation. This is a deterministic directed factor (if smoothing is
  * not enabled).
  * 
  * Optional smoothing may be applied, by providing a smoothing value in the
@@ -30,16 +30,16 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (sum of inputs)
- * 2...) An arbitrary number of inputs, each may be complex or real (double or integer)
+ * 1) Output (negative of input)
+ * 2) Input
  * 
  */
-public class CSum extends FactorFunction
+public class ComplexNegate extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public CSum() {this(0);}
-	public CSum(double smoothing)
+	public ComplexNegate() {this(0);}
+	public ComplexNegate(double smoothing)
 	{
 		super();
 		if (smoothing > 0)
@@ -52,30 +52,24 @@ public class CSum extends FactorFunction
     @Override
     public double evalEnergy(Object ... arguments)
     {
-    	int length = arguments.length;
-//    	double out = FactorFunctionUtilities.toDouble(arguments[0]);
-		double rOut = ((double[])arguments[0])[0];
-		double iOut = ((double[])arguments[0])[1];
+		double[] out = ((double[])arguments[0]);
+		double rOut = out[0];
+		double iOut = out[1];
 
-    	double rSum = 0;
-    	double iSum = 0;
-    	for (int i = 1; i < length; i++)
-    	{
-//    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
-    		rSum += ((double[])arguments[i])[0];
-    		iSum += ((double[])arguments[i])[1];
-    	}
-    	
+		double[] in = ((double[])arguments[1]);
+		double rNegation = -in[0];
+		double iNegation = -in[1];
+
     	if (_smoothingSpecified)
     	{
-    		double rDiff = rSum - rOut;
-    		double iDiff = iSum - iOut;
+    		double rDiff = rNegation - rOut;
+    		double iDiff = iNegation - iOut;
     		double potential = rDiff*rDiff + iDiff*iDiff;
     		return potential*_beta;
     	}
     	else
     	{
-    		return (rSum == rOut && iSum == iOut) ? 0 : Double.POSITIVE_INFINITY;
+    		return (rNegation == rOut && iNegation == iOut) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
     
@@ -89,18 +83,12 @@ public class CSum extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-    	int length = arguments.length;
-
-    	double rSum = 0;
-    	double iSum = 0;
-    	for (int i = 1; i < length; i++)
-    	{
-//    		sum += FactorFunctionUtilities.toDouble(arguments[i]);
-    		rSum += ((double[])arguments[i])[0];
-    		iSum += ((double[])arguments[i])[1];
-    	}
+		double[] in = ((double[])arguments[1]);
+		double rNegation = -in[0];
+		double iNegation = -in[1];
     	
-    	((double[])arguments[0])[0] = rSum;		// Replace the output value
-    	((double[])arguments[0])[1] = iSum;		// Replace the output value
+		double[] out = ((double[])arguments[0]);
+    	out[0] = rNegation;		// Replace the output value
+    	out[1] = iNegation;		// Replace the output value
     }
 }

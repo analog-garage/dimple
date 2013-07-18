@@ -41,40 +41,76 @@ classdef VariableBase < Node
         end
         
         function z = plus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
+            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexSum);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
+            end
         end
         
         function z = minus(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
+            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexSubtract);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
+            end
         end
         
         function z = uminus(a)
-            z = addUnaryOperatorOverloadedFactor(a,@uminus,com.analog.lyric.dimple.FactorFunctions.Negate);
+            if (isa(a,'Complex'))
+                z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.FactorFunctions.ComplexNegate);
+            else
+                z = addUnaryOperatorOverloadedFactor(a,@uminus,com.analog.lyric.dimple.FactorFunctions.Negate);
+            end
         end
         
         function z = times(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexProduct);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@times,com.analog.lyric.dimple.FactorFunctions.Product);
+            end
         end
         
         function z = mtimes(a,b)
             if (isscalar(a) || isscalar(b))
-                z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+                if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                    z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexProduct);
+                else
+                    z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
+                end
             else
                 z = MatrixVectorProduct(a, b);
             end
         end
         
         function z = rdivide(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@rdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
+            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexDivide);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@rdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
+            end
         end
         
         function z = mrdivide(a,b)
             if (~isscalar(b)); error('Overloaded matrix division not currently supported. Use "./" for pointwise division'); end;
-            z = addBinaryOperatorOverloadedFactor(a,b,@mrdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
+            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexDivide);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@mrdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
+            end
+        end
+        
+        function z = ctranspose(a)
+            if (isa(a,'Complex'))
+                z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.FactorFunctions.ComplexConjugate).';
+            else
+                z = a.'; % No need for a factor in this case, just transpose the matrix
+            end
         end
         
         function z = power(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.FactorFunctions.Power);
+            z = addBinaryOperatorOverloadedFactor(a,b,@power,com.analog.lyric.dimple.FactorFunctions.Power);
         end
         
         function z = mpower(a,b)
@@ -123,7 +159,11 @@ classdef VariableBase < Node
         end
 
         function z = exp(a)
-            z = addUnaryOperatorOverloadedFactor(a,@exp,com.analog.lyric.dimple.FactorFunctions.Exp);
+            if (isa(a,'Complex'))
+                z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.FactorFunctions.ComplexExp);
+            else
+                z = addUnaryOperatorOverloadedFactor(a,@exp,com.analog.lyric.dimple.FactorFunctions.Exp);
+            end
         end
 
         function z = sqrt(a)
@@ -426,6 +466,58 @@ classdef VariableBase < Node
             fg.addFactorVectorized(factor,z,a);
         end
         
+
+        function z = addComplexBinaryOperatorOverloadedFactor(a,b,factor)
+            % Sizes should be the same, or one of them should be length 1
+            if (~((length(a) == length(b)) || (length(a) == 1) || (length(b) == 1)))
+                error('Mismatch in dimension of input arguments');
+            end
+            
+            % Use the largest size (one of them could be length 1)
+            if (length(a) > length(b))
+                vectorSize = size(a);
+            else
+                vectorSize = size(b);
+            end
+
+            % Check for constant inputs
+            if (~isa(a, 'VariableBase'));
+                a = [real(a) imag(a)];
+            end;
+            if (~isa(b, 'VariableBase'));
+                b = [real(b) imag(b)];
+            end;
+
+            % output variable must be Complex
+            if (~isa(factor, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                error('Can only override faction functions for real-valued operators');
+            end
+            
+            vs = num2cell(vectorSize);
+            z = Complex(vs{:});
+            fg = getFactorGraph();
+            fg.addFactorVectorized(factor,z,a,b);
+                
+        end
+        
+        
+        
+        function z = addComplexUnaryOperatorOverloadedFactor(a,factor)
+            vectorSize = size(a);
+
+            % output variable must be Complex
+            if (~isa(factor, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                error('Can only override faction functions for real-valued operators');
+            end
+            
+            vs = num2cell(vectorSize);
+            z = Complex(vs{:});
+            fg = getFactorGraph();
+            fg.addFactorVectorized(factor,z,a);
+                
+        end
+        
+        
         function b = getDomain(obj)
             b = obj.Domain;
         end
@@ -441,7 +533,7 @@ classdef VariableBase < Node
                 end
             end
         end
-        
+
     end
     
 end
