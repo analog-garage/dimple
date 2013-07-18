@@ -2,6 +2,7 @@ package com.analog.lyric.dimple.examples;
 
 import java.util.Arrays;
 
+import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.Normal;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
@@ -11,9 +12,17 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.Model;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.repeated.BitStream;
+import com.analog.lyric.dimple.model.repeated.DiscreteStream;
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSink;
+import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
+import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.model.repeated.MultivariateDataSource;
+import com.analog.lyric.dimple.model.repeated.RealStream;
 import com.analog.lyric.dimple.schedulers.SequentialScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 
@@ -62,49 +71,74 @@ public class Tmp {
 	 */
 	public static void main(String[] args) 
 	{
-		//OK, first we create a simple Factor Graph with a single xor connecting two  
-		//variables.
-		Equals eq = new Equals();
-		FactorGraph fg = new FactorGraph(); 
-		Bit b1 = new Bit();
-		Bit b2 = new Bit();
-		Factor f = fg.addFactor(eq,b1,b2);
-		//We can go ahead and set some inputs
-		b1.setInput(0.8);
-		b1.setInput(0.7);
+//simple Markov Model with larger buffer size
+Equals eq = new Equals();
 
-		//we can examine some edges
-		
-		System.out.println(f.getPorts().get(0).getInputMsg());
-		System.out.println(f.getPorts().get(0).getOutputMsg());
+//Create the data
+int N = 10;
+double [][] data = new double[N][];
+for (int i = 0; i < N; i++)
+	data[i] = new double [] {0.4,0.6};
 
-		//we can even set some edge messages
-		f.getPorts().get(0).setInputMsgValues(new double [] {0.6,0.4});
+//Create a data source
+DoubleArrayDataSource dataSource = new DoubleArrayDataSource(data);
 
-		//we can update a node
-		b1.update();
-		b2.update();
+//Create a variable stream.
+DiscreteStream vs = new DiscreteStream(0,1);
+vs.setDataSource(dataSource);
 
-		//or a specific edge		
-		b1.updateEdge(f);
-		 
-		//but updating via portNum is quicker
-		b1.updateEdge(0);
+//Create our nested graph
+Bit in = new Bit();
+Bit out = new Bit();
+FactorGraph ng = new FactorGraph(in,out);
+ng.addFactor(eq,in,out);
 
-		//of course, if we don't know the portNum, we can get it
-		int portNum = b1.getPortNum(f);
-		b1.updateEdge(portNum);
+//Create our main factor graph
+FactorGraph fg = new FactorGraph();
 
-		//We can do the same kind of stuff with factors
-		f.updateEdge(b1);
-		f.updateEdge(f.getPortNum(b2));
+//Build the repeated graph
+int bufferSize = 2;
+FactorGraphStream fgs = fg.addRepeatedFactorWithBufferSize(ng, 
+		bufferSize,vs,vs.getSlice(2));
 
-		//Let's look at some messages again
-		System.out.println(b1.getPorts().get(0).getInputMsg());
-		System.out.println(b2.getPorts().get(0).getInputMsg());
 
-		//and some beliefs
-		System.out.println(b1.getBelief());
+//Initialize our messages
+fg.initialize();
+
+while (true)
+{
+    //Solve the current time step
+    fg.solveOneStep();
+    
+    //Get the belief for the first variable
+    double [] belief = ((double[])vs.get(2).getBeliefObject());
+    		System.out.println(Arrays.toString(belief));
+
+    if (fg.hasNext())
+    	fg.advance();
+    else
+    	break;
+}
+
+//Initialize our messages
+fg.initialize();
+fg.setNumSteps(2);
+
+while (true)
+{
+    //Solve the current time step
+    fg.continueSolve(); //This method is need to avoid initialization
+    
+    //Get the belief for the first variable
+    //Get the belief for the first variable
+    double [] belief = ((double[])vs.get(2).getBeliefObject());
+    		System.out.println(Arrays.toString(belief));
+
+    if (fg.hasNext())
+    	fg.advance();
+    else
+    	break;
+}
 
 	}
 
