@@ -1315,6 +1315,14 @@ public class FactorGraph extends FactorBase
 	{
 		return getAdjacencyMatrix(0);
 	}
+
+	public int [][] getAdjacencyMatrix(MapList<INode> nodes)
+	{
+		INode [] inodes = new INode[nodes.size()];
+		nodes.toArray(inodes);
+		return getAdjacencyMatrix(inodes);
+	}
+
 	
 	public int [][] getAdjacencyMatrix(INode [] nodes)
 	{

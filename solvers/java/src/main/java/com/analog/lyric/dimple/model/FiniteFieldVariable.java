@@ -35,14 +35,16 @@ public class FiniteFieldVariable extends Discrete
 	
 	public FiniteFieldVariable(int poly)  
 	{
-//		 * TODO /
-			super((Object[])_getDomainFromPoly(poly));
-			/*
-			com.lyricsemi.dimple.model.Discrete impl 
-			= (com.lyricsemi.dimple.model.Discrete) getModelerObject();
-			double [] dpoly = _convert2poly(poly);
-  		setProperty("primitivePolynomial", dpoly);
-  		*/
+			super(NodeId.getNext(),
+					new DiscreteDomain((Object[])_getDomainFromPoly(poly)),
+					"FiniteFieldVariable");
+
+			Object [] domain = getDiscreteDomain().getElements();
+			double [] dpoly = new double [domain.length];
+			for (int i = 0; i < domain.length; i++)
+				dpoly[i] = (Double)domain[i];
+			this.setProperty("primitivePolynomial", dpoly);
+
 	}
 	
 	private static double [] _convert2poly(int poly)

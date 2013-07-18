@@ -17,21 +17,41 @@ Currently it uses a very naive gradient descent optimizer.  Future versions will
 
 The following creates a learner and initializes a few variables:
 
+\ifmatlab
 \begin{lstlisting}
 pl = PLLearner(factorGraph,factorTables,variables);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+PseudoLikelihood pll = new PseudoLikelihood(fg, tables, vars2);
+\end{lstlisting}
+\fi
 
 Arguments:
+
+\ifmatlab
 \begin{itemize}
 \item factorGraph - the Factor Graph of interest
 \item factorTables - a cell array of factor tables for which to learn parameters.
 \item variables - a cell array of variable matrices (the order must match your data ordering).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item factorGraph - the Factor Graph of interest
+\item factorTables - an array of factor tables for which to learn parameters.
+\item variables - an array of variable matrices (the order must match your data ordering).
+\end{itemize}
+\fi
 
 \para{Learning}
 
 The following method runs pseudo likelihood gradient descent.  After it is run, the factor tables will contain the values of the learned parameters.  For now the optimizer is simply a routine that multiplies the gradient by a scale factor and applies that change to the parameters.  In the future, optimizers will be first class citizens and can be plugged into learners.
 
+\ifmatlab
 \begin{lstlisting}
 args.numSteps = 100;
 args.scaleFactor = 0.05;
@@ -42,18 +62,42 @@ Arguments:
 \begin{itemize}
 \item samples - An MxN matrix where M is the number of samples and N is the number of variables.  Variable data must be specified in the same order the variables were specified in the learner's constructor.  For now, this data specifies the domain indices, not the domain values.  This should be fixed in the future (so the user can do either).  In reality, we'll probably split out training data into a more interesting data structure.  (Same with the optimizer) 
 \item args.numSteps - How many gradient descent steps should the optimizer run. 
+\item args.scaleFactor - The value by which we multiply the gradient before adding to the current parameters.  oldParams = oldParams + scaleFactor*gradient
+\end{itemize}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+pll.learn(data, numSteps, scaleFactor);
+\end{lstlisting}
+
+Arguments:
+\begin{itemize}
+\item data - An MxN array where M is the number of samples and N is the number of variables.  Variable data must be specified in the same order the variables were specified in the learner's constructor.  For now, this data specifies the domain indices, not the domain values.  This should be fixed in the future (so the user can do either).  In reality, we'll probably split out training data into a more interesting data structure.  (Same with the optimizer) 
+\item numSteps - How many gradient descent steps should the optimizer run. 
 \item scaleFactor - The value by which we multiply the gradient before adding to the current parameters.  oldParams = oldParams + scaleFactor*gradient
 \end{itemize}
 
+\fi
 
 \para{Batch Mode}
-Users can divide their samples into subsets to run pseudo likelihood parameter learning in "batch" mode.  Assuming users have their samples stored in a cell array of matrices, they could iterate over the cell array as follows:
+Users can divide their samples into subsets to run pseudo likelihood parameter learning in "batch" mode.  Assuming users have their samples stored in a \ifmatlab cell \fi array of matrices, they could iterate over the cell array as follows:
 
+\ifmatlab
 \begin{lstlisting}
 for i = 1:length(samples)
-    pl.learn(1,samples{i},scaleFactor)
+    pl.learn(samples{i},args);
 end
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+for (int i = 0; i < samples.length; i++)
+    pl.learn(samples[i],scaleFactor);
+\end{lstlisting}
+\fi
 
  \para{Setting Data}
 When calling the learn routine, users can set the data.  However, if users want some visibility into the gradient or the numerical gradient, they must first set the data using the setData method
@@ -110,6 +154,7 @@ Arguments:
 \subsubsection{Expectation-Maximization on Directed Graphs}
 
 See the FactorGraph.baumWelch method in the API section.
+see section~\ref{sec:FactorGraph.BaumWelch}
 
 %
 %[??? TO BE COMPLETED ???]

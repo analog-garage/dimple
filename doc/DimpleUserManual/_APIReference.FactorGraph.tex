@@ -4,9 +4,17 @@ The FactorGraph class represents a single factor graph and contains a collection
 
 \subsubsection{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 FactorGraph([boundaryVariables])
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph(VariableBase ... boundaryVariables)
+\end{lstlisting}
+\fi
 
 For a basic factor graph, the constructor is simply the command FactorGraph with no arguments.
 
@@ -21,6 +29,7 @@ Read-write.  Indicates the choice of solver to be used for performing inference 
 
 When setting the solver, the solver is given by a string representing the name of the solver.  The solver name is case insensitive.
 
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'SolverName';
 \end{lstlisting}
@@ -36,6 +45,27 @@ The current set of valid solver names are:
 \item LP
 \end{itemize}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.setSolver(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+\end{lstlisting}
+
+The current set of valid solvers are:
+
+\begin{itemize}
+\item com.analog.lyric.dimple.solvers.sumproduct.Solver
+\item com.analog.lyric.dimple.solvers.minsum.Solver
+\item com.analog.lyric.dimple.solvers.gaussian.Solver
+\item com.analog.lyric.dimple.solvers.particleBP.Solver
+\item com.analog.lyric.dimple.solvers.gibbs.Solver
+\item LP - TODO: not currently supported
+\end{itemize}
+
+\fi
+
+
 A description of each of these solvers is given in section~\ref{sec:SolversAPI}.
 
 Note that the solver can be modified at any time.  After running the solver on a graph, the solver may be modified and the new solver run using the same graph\footnote{In this case, care must be taken to set any solver-specific parameters to the new values after changing the solver.}.  One exception is that if solver-specific built-in factors (also referred to as ``custom factors'') are used in a graph, it is not possible to switch solvers (a list of solver-specific built-in factors is given in section~\ref{sec:solverSpecificBuiltInFactors}).
@@ -48,26 +78,50 @@ Read-write.  Indicates the scheduler to be used for performing inference on the 
 
 When setting the scheduler, the scheduler is given by a string representing the name of the scheduler.  The scheduler name is case \emph{sensitive}.
 
+\ifmatlab
 \begin{lstlisting}
 fg.Scheduler = 'SchedulerName';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrSequentialScheduler());
+\end{lstlisting}
+\fi
 
 Each scheduler is applicable only to a certain subset of solvers.  The list of all available built-in schedulers and a description of their behavior can be found in section~\ref{sec:Schedulers}.
-
 
 \para{Schedule}
 \label{sec:FactorGraph.Schedule}
 
+\ifmatlab
 Read-write.  Specifies a custom schedule to be used for performing inference.  A custom schedule is in the form of a list of nodes or edges in the graph to be updated.  Specifically, a cell array where each entry is either a node in the graph (either variable or factor), or a cell array containing a neighboring pair of nodes (\{variable, factor\} or \{factor, variable\}).  The order of the entries in the cell array indicate the order that updates should be performed in a single iteration (or scan) when performing inference.  Examples of using custom schedules are given in section~\ref{sec:CustomSchedules}.
+\fi
+
+\ifjava
+Read-write.  Specifies a custom schedule to be used for performing inference.  Schedules must implement the ISchedule interface which provides an iterator over schedule entries.  Users can instantiate a FixedSchedule object and add nodes and/or edges to the fixed schedule to provide an order of updates.  Examples of using custom schedules are given in section~\ref{sec:CustomSchedules}.
+\fi
 
 For all BP solvers, any of these entries may be included, and have the following interpretation.
 
+\ifmatlab
 \begin{description}
 \item[Variable] Update messages for all outgoing edges of that variable.
 \item[Factor] Update messages for all outgoing edges of that factor.
 \item[\{Variable, Factor\}] Update a single outgoing edge of the variable in the direction connecting to the specified factor.
 \item[\{Factor, Variable\}] Update a single outgoing edge of the factor in the direction connecting to the specified variable.
 \end{description}
+\fi
+
+\ifjava
+\begin{description}
+\item[FixedSchedule.add(variable)] Update messages for all outgoing edges of that variable.
+\item[FixedSchedule.add(factor)] Update messages for all outgoing edges of that factor.
+\item[FixedSchedule.add(variable,factor)] Update a single outgoing edge of the variable in the direction connecting to the specified factor.
+\item[FixedSchedule.add(factor,variable)] Update a single outgoing edge of the factor in the direction connecting to the specified variable.
+\end{description}
+\fi
 
 For BP solvers, a check is made when a custom schedule is set to ensure that all edges in the graph are updated at least once.
 
@@ -92,10 +146,21 @@ Read-write.  This property is used for rolled-up graphs (see section~\ref{sec:ro
 
 Read-write.  When read, retrieves the current name of the factor graph.  When set, modifies the name of the factor graph to the corresponding value.  The value set must be a string.
 
+\ifmatlab
 \begin{lstlisting}
 fg.Name = 'string';
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+fg.setName('string');
+\end{lstlisting}
+\fi
+
+\para{Label}
+
+Read-write.  All variables and factors in a Factor Graph must have unique names.  However, sometimes it's desirable to have variables or factors share similar strings when being plotted or printed.  Users can set the Label property to set the name for display.  If the Label is not set, the Name will be used for display.  Once the label is set, the label will be used for display.
 
 \para{Score}
 \label{sec:FactorGraph.Score}
@@ -118,12 +183,13 @@ MyGraph.addFactor(factorSpecification, variableList);
 
 The addFactor method is used to add a factor to a factor-graph, connecting that factor to a specified set of variables. There are several ways of specifying the factor.  The method takes a factorSpecification argument followed by a comma-separated list of variables or variable arrays.
 
-The list of variables or variable arrays indicate which variables to connect to the factor.  The order of the variables listed must correspond to the order of edges of the factor.   In the case of variable arrays, the array is flattened to a one-dimensional form using the usual MATLAB ordering, defining the order of the individual variables in the array.  In this ordering, the array is scanned in successive dimensions, beginning with the first (row) dimension (equivalent to the MATLAB \texttt{(:)} operator).
+The list of variables or variable arrays indicate which variables to connect to the factor.  The order of the variables listed must correspond to the order of edges of the factor.   \ifmatlab  In the case of variable arrays, the array is flattened to a one-dimensional form using the usual MATLAB ordering, defining the order of the individual variables in the array.  In this ordering, the array is scanned in successive dimensions, beginning with the first (row) dimension (equivalent to the MATLAB \texttt{(:)} operator). \fi
 
-Some of the variables may be replaced by constants.  In this case, no variable is created, but instead the specified constant value is used in place of a variable for the corresponding edge of the factor.  The value of a constant must be a valid value given the definition of the corresponding factor.  Constants may be arrays, but in this case, they are not flattened.  Instead they are treated as array-valued constants\footnote{This is because Dimple supports variables that have domains for which individual domain elements are arrays.}.
+Some of the variables may be replaced by constants.  In this case, no variable is created, but instead the specified constant value is used in place of a variable for the corresponding edge of the factor.  The value of a constant must be a valid value given the definition of the corresponding factor.  \ifmatlab Constants may be arrays, but in this case, they are not flattened.  Instead they are treated as array-valued constants\footnote{This is because Dimple supports variables that have domains for which individual domain elements are arrays.}.  \fi
 
 The factorSpecification may be specified in one of a number of different ways.  The following table lists the various ways the factorSpecification can be specified:
 
+\ifmatlab
 \begin{longtable} {l p{10cm}}
 Factor Specification & Description \\
 \hline
@@ -147,12 +213,25 @@ FactorGraph & A sub-graph to be nested within this graph.  The number and order 
 %
 javaFactorFunction & The fully-qualified name of a Java FactorFunction class.  Creation of custom Java FactorFunctions is described in Appendix~\ref{sec:userJava}. \\
 \end{longtable} 
+\fi
+
+\ifjava
+\begin{longtable} {l p{10cm}}
+Factor Specification & Description \\
+\hline
+\endhead
+%
+FactorFunction & A FactorFunction object as described in section~\ref{sec:FactorFunction}. This form can be used to specify a built-in factor that requires constructor arguments.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.\\
+%
+FactorTable & A FactorTable object as described in section~\ref{sec:FactorTable}.  Specifying a factor in this form is supported only if all connected variables are discrete. \\
+%
+FactorGraph & A sub-graph to be nested within this graph.  The number and order of the variables listed in the variableList must correspond to the number and order of the boundary variables declared when the sub-graph was created.  When adding a nested graph within an outer graph, the specified sub-graph is used as a template to create a new factor graph that is actually added to the outer graph.  Copies are made of all of the variables and factors in the specified sub-graph. \\
+\end{longtable} 
+
+\fi
 
 
-
-
-
-
+\ifmatlab
 \para{addFactorVectorized}
 \label{sec:FactorGraph.addFactorVectorized}
 
@@ -189,14 +268,17 @@ The vectorized dimensions for all non-scalar variables must be of the same size.
 As in addFactor, some of the variables in variableList may be replaced with constants.  In this case, every copy of the factor in the factor array uses the same constant value.
 
 Further description and examples of using addFactorVectorized is given in section~\ref{sec:vectorizedFactorCreation}.
+\fi
 
-
-
+\ifmatlab
 \para{addFactorNoCache}
 \label{sec:addFactorNoCache}
 
 When creating a factor for discrete variables, Dimple attempts to determine if the resulting factor tables would be the same as any previously created factors.  If so, it shares the factor table to save space.  In some cases, it may not be desirable for certain factors to share a factor table (for example if entries in one of the factor tables will later be modified).  In such cases, the addFactorNoCache method can be used in lieu of the addFactor method.  The interface for the addFactorNoCache is identical to that of the addFactor method.
 
+\fi
+
+\ifmatlab
 \para{addDirectedFactor}
 
 When adding a factor that will be designated as directed, this method provides a shorthand way to indicate this on factor creation.
@@ -218,6 +300,7 @@ f = fg.addFactor(factorSpecification, variableList);
 f.directedTo(directedTo);
 \end{lstlisting}
 
+\fi
 
 \para{initialize}
 
@@ -259,6 +342,7 @@ This method is used for manually advancing a rolled-up graph (see section~\ref{s
 This method is used for manually advancing a rolled-up graph (see section~\ref{sec:manuallyAdvancingRolledUpGraph}).  This method takes no arguments.  It returns a boolean value indicating whether or not it is possible to advance the graph to the next position.  This will be true only if all of the data sources have at least one more available value.
 
 \para{baumWelch}
+\label{sec:FactorGraph.BaumWelch}
 
 \begin{lstlisting}
 fg.baumWelch(factorList, numRestarts, numSteps);
@@ -325,6 +409,7 @@ fg.removeFactor(factor);
 
 This method removes the specified factor from an existing factor graph that contains it.  This also removes all edges that connect this factor to neighboring variables.
 
+\ifmatlab
 \para{plot}
 
 The plot method is used to visualize a factor graph or a portion of a factor graph.  Examples of various use cases for plotting factor graphs are given in section~\ref{sec:PlottingAGraph}.
@@ -342,7 +427,7 @@ Name & Values & Description \\
 \texttt{'nesting'} & nestingDepth & By default, the plotting method ignores hierarchy and plots the flattened graph.  The nesting argument specifies how deep to descend into the nesting hierarchy before considering nested graphs to be factors and plotting them as such. \\
 \end{longtable}
 
-
+\fi
 
 \subsubsection{Introspection}
 
@@ -361,12 +446,23 @@ Now, on to the specific features.
 
 Users can retrieve Factors and/or NestedGraphs associated with a graph using the Factors methods and properties:
 
+\ifmatlab
 \begin{itemize}
 \item Fg.Factors
 \item Fg.FactorsFlat
 \item Fg.FactorsTop
 \item Fg.getFactors(relativeNestingDepth)
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item Fg.getFactors()
+\item Fg.getFactorsFlat()
+\item Fg.getFactorsTop()
+\item Fg.getFactors(relativeNestingDepth)
+\end{itemize}
+\fi
 
 When the user specifies a relativeNestingDepth or calls FactorsTop, the resulting cell array will contain a mix of leaf factors and Nested Graphs.
 
@@ -374,12 +470,24 @@ When the user specifies a relativeNestingDepth or calls FactorsTop, the resultin
 
 The FactorGraph class provides the following:
 
+\ifmatlab
 \begin{itemize}
 \item NonFactorGraphFactors
 \item NonFactorGraphFactorsFlat
 \item NonFactorGraphFactorsTop
 \item getNonFactorGraphFactors(relativeNestingDepth)
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item getNonFactorGraphFactors()
+\item getNonFactorGraphFactorsFlat()
+\item getNonFactorGraphFactorsTop()
+\item getNonFactorGraphFactors(relativeNestingDepth)
+\end{itemize}
+\fi
+
 
 As the name implies, this will behave similar to the Factors properties and methods but will exclude nested graphs.
 
@@ -387,23 +495,46 @@ As the name implies, this will behave similar to the Factors properties and meth
 
 The FactorGraph class provides the following:
 
+\ifmatlab
 \begin{itemize}
 \item Variables -- calls VariablesFlat
 \item VariablesFlat -- Returns a list of all the Variables in the graph, including those contained by nested graphs.
 \item VariablesTop -- Returns only those variables contained in the top level of the graph.
 \item getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) -- Returns all variables contained in the FactorGraph from which the method is called as Variables that are as deep as the specified relativeNestingDepth.  The second parameter is optional and defaults to false.  When false, boundary variables are only included by the root graph.  When true, boundary variables are included regardless of whether a graph is a root or nested graph.
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item getVariables() -- calls getVariablesFlat()
+\item getVariablesFlat() -- Returns a list of all the Variables in the graph, including those contained by nested graphs.
+\item getVariablesTop() -- Returns only those variables contained in the top level of the graph.
+\item getVariables(relativeNestingDepth,forceIncludeBoundaryVariables) -- Returns all variables contained in the FactorGraph from which the method is called as Variables that are as deep as the specified relativeNestingDepth.  The second parameter is optional and defaults to false.  When false, boundary variables are only included by the root graph.  When true, boundary variables are included regardless of whether a graph is a root or nested graph.
+\end{itemize}
+\fi
+
 
 \para{Retrieving All Nodes}
 
 The FactorGraph provides the following:
 
+\ifmatlab
 \begin{itemize}
 \item Nodes
 \item NodesFlat
 \item NodesTop
 \item getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item getNodes()
+\item getNodesFlat()
+\item getNodesTop()
+\item getNodes(relativeNestingDepth,forceIncludeBoundaryVariables)
+\end{itemize}
+\fi
 
 These methods call the Factor and Variable methods and concatenate the results together.
 
@@ -411,11 +542,21 @@ These methods call the Factor and Variable methods and concatenate the results t
 
 The FactorGraph class provides the following:
 
+\ifmatlab
 \begin{itemize}
 \item isTree(relativeNestingDepth) 
 \item isTreeTop 
 \item isTreeFlat 
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item isTree(relativeNestingDepth) 
+\item isTreeTop()
+\item isTreeFlat()
+\end{itemize}
+\fi
 
 
 isTree -- Users can call <factor graph name>.isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf cells.  
@@ -434,11 +575,12 @@ All of the following methods return a pair: [A, labels] where A is a square conn
 FactorGraph also provides an AdjacencyMatrix Property:
 
 \begin{itemize}
-\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  MATLAB properties can only return one object.
+\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  \ifmatlab MATLAB properties can only return one object. \fi
 \end{itemize}
 
 An example of getAdjacencyMatrix:
 
+\ifmatlab
 \begin{lstlisting}
 fg = FactorGraph();
 b = Bit(2,1);
@@ -460,6 +602,37 @@ labels =
     'b2'
     'f'
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+Bit b1 = new Bit();
+b1.setName("b1");
+Bit b2 = new Bit();
+b2.setName("b2");
+Equals ne = new Equals();
+Factor f = fg.addFactor(ne,b1,b2);
+f.setName("f");
+MapList<INode> nodes = fg.getNodesFlat();
+int [][] matrix = fg.getAdjacencyMatrix(nodes);
+for (INode n : nodes)
+	System.out.println(n);
+for (int i = 0; i < matrix.length; i++)
+	System.out.println(Arrays.toString(matrix[i]));
+\end{lstlisting}
+
+results in:
+
+\begin{lstlisting}
+b1
+b2
+f
+[0, 0, 1]
+[0, 0, 1]
+[1, 1, 0]
+\end{lstlisting}
+\fi
 
 \para{Depth First Search}
 
@@ -476,6 +649,7 @@ labels =
 
 An example:
 
+\ifmatlab
 \begin{lstlisting}
 fg = FactorGraph();
 b = Bit(6,1);
@@ -495,7 +669,44 @@ calling fg.plot(ÔcolorÕ,b(1),ÕgÕ,ÕlabelsÕ,true) reveals the following structure 
 \includegraphics{images/Introspection.png}
  
 As you might guess fg.depthFirstSearch(b(1),3) will return a collection of six nodes: b1, f1, b2, b3, b4, and f2.  It will not include b5 and b6 since those are at a depth of four from b1.
+\fi
 
+\ifjava
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+Bit [] b = new Bit[6];
+for (int i = 0; i < b.length; i++)
+{
+	b[i] = new Bit();
+	b[i].setName("B" + i);
+}
+Factor f1 = fg.addFactor(new XorDelta(), b[0],b[1],b[2],b[3]);
+f1.setName("f1");
+Factor f2 = fg.addFactor(new XorDelta(), b[3],b[4],b[5]);
+f2.setName("f2");
+ 
+MapList<INode> nodes = fg.depthFirstSearch(b[0],3);
+
+for (INode n : nodes)
+{
+	System.out.println(n);
+}
+\end{lstlisting}
+
+results in:
+
+\begin{lstlisting}
+B0
+f1
+B1
+B2
+B3
+f2
+\end{lstlisting}
+ 
+As you might guess fg.depthFirstSearch(b[0],3) will return a collection of six nodes: b0, f1, b1, b2, b3, and f2.  It will not include b5 and b6 since those are at a depth of four from b1.
+
+\fi
 
 
 

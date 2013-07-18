@@ -1,6 +1,6 @@
 \section{API Reference}
 
-The following section describes the functions, classes, properties, and methods that comprise the Dimple API for MATLAB.
+The following section describes the functions, classes, properties, and methods that comprise the Dimple API for \ifmatlab MATLAB. \fi \ifjava Java. \fi
 
 \input{_APIReference.FactorGraph}
 \input{_APIReference.Variables}
@@ -9,5 +9,9 @@ The following section describes the functions, classes, properties, and methods 
 \input{_APIReference.Solvers}
 \input{_APIReference.StreamingData}
 \input{_APIReference.BuiltInFactors}
+
+\ifmatlab
 \input{_APIReference.OverloadedOperatorsAndFunctions}
+\fi
+
 \input{_APIReference.TopLevelFunctions}
