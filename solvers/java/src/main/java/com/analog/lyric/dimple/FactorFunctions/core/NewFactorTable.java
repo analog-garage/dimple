@@ -328,7 +328,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		_computedMask &= ~NORMALIZED;
 		
-		final int nDomains = domainCount();
+		final int nDomains = getDomainCount();
 		final int[] oldToFromMap = new int[nDomains];
 		final int[] directedFromProducts = computeDomainSubsetInfo(_domains, directedFrom, oldToFromMap);
 		final int nDirectedFrom = directedFromProducts.length - 1;
@@ -600,7 +600,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			_energies[location] = energy;
 			break;
 		case WEIGHT:
-			_energies[location] = energyToWeight(energy);
+			_weights[location] = energyToWeight(energy);
 			break;
 		case BOTH:
 			_energies[location] = energy;
@@ -909,6 +909,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		return locationFromIndices(indices);
 	}
 
+	// FIXME: what to do if table is directed? Should we assert that the joined
+	// variables are all either inputs or outputs?
 	@Override
 	public NewFactorTable joinVariablesAndCreateNewTable(int[] varIndices,
 		int[] indexToJointIndex,
@@ -932,7 +934,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// just change the domains.
 		//
 
-		if (varIndexSet.nextSetBit(0) == jointDomainIndex)
+		if (varIndexSet.nextSetBit(0) == jointDomainIndex && !isDirected())
 		{
 			DiscreteDomain[] newDomains = Arrays.copyOf(_domains, nNewDomains);
 			newDomains[jointDomainIndex] = jointDomain;
@@ -1036,7 +1038,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		BitSet fromSet = bitsetFromIndices(domainCount(), directedTo);
+		BitSet fromSet = bitsetFromIndices(getDomainCount(), directedTo);
 		fromSet.flip(0, fromSet.size());
 		normalize(fromSet);
 	}

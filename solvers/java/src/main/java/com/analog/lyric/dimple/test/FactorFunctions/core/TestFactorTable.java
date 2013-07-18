@@ -24,7 +24,7 @@ public class TestFactorTable
 	public void testNewFactorTable()
 	{
 		NewFactorTable t2x3 = new NewFactorTable(domain2, domain3);
-		assertEquals(2, t2x3.domainCount());
+		assertEquals(2, t2x3.getDomainCount());
 		assertEquals(domain2, t2x3.getDomain(0));
 		assertEquals(domain3, t2x3.getDomain(1));
 		assertFalse(t2x3.isDense());
@@ -47,6 +47,7 @@ public class TestFactorTable
 		t2x3.randomizeWeights(rand);
 		assertInvariants(t2x3);
 		
+		assertEquals(INewFactorTable.Representation.ENERGY, t2x3.getRepresentation());
 		t2x3.computeWeights();
 		assertEquals(INewFactorTable.Representation.BOTH, t2x3.getRepresentation());
 		assertInvariants(t2x3);
@@ -80,8 +81,10 @@ public class TestFactorTable
 	
 	public static void assertInvariants(NewFactorTable table)
 	{
+		INewFactorTable.Representation representation = table.getRepresentation();
 		assertBaseInvariants(table);
 		assertOldInvariants(table);
+		table.setRepresentation(representation);
 	}
 	
 	public static void assertOldInvariants(IFactorTable table)
@@ -205,7 +208,7 @@ public class TestFactorTable
 	
 	public static void assertBaseInvariants(INewFactorTableBase table)
 	{
-		int nDomains = table.domainCount();
+		int nDomains = table.getDomainCount();
 		assertTrue(nDomains >= 0);
 		
 		int expectedJointSize = 1;
@@ -270,6 +273,10 @@ public class TestFactorTable
 			assertEquals(energy, -Math.log(weight), 1e-12);
 		}
 		
+		// Test some bogus inputs
+		assertEquals(Double.POSITIVE_INFINITY, table.getEnergy(-1), 0.0);
+		assertEquals(0.0, table.getWeight(-1), 0.0);
+		
 		if (table.isNormalized())
 		{
 			
@@ -303,8 +310,8 @@ public class TestFactorTable
 		
 		assertEquals(table1.getInputSet(), table2.getInputSet());
 		
-		assertEquals(table1.domainCount(), table2.domainCount());
-		int nDomains = table1.domainCount();
+		assertEquals(table1.getDomainCount(), table2.getDomainCount());
+		int nDomains = table1.getDomainCount();
 		for (int i = 0; i < nDomains; ++i)
 		{
 			assertEquals(table1.getDomainSize(i), table2.getDomainSize(i));

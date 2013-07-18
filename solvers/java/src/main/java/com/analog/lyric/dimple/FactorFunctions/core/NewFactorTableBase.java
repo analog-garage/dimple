@@ -22,7 +22,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	/**
 	 * If non-null, specifies which arguments/indices/domains represent inputs
 	 * for a directed table. The {@link BitSet#size()} should be the same as
-	 * the {@link #domainCount()} and should have at least one set bit and one
+	 * the {@link #getDomainCount()} and should have at least one set bit and one
 	 * clear bit.
 	 */
 	protected final BitSet _inputSet;
@@ -163,7 +163,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	 */
 
 	@Override
-	public final int domainCount()
+	public final int getDomainCount()
 	{
 		return _domains.length;
 	}
@@ -309,7 +309,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	public int[] getColumnCopy(int column)
 	{
 		int[] result = new int[size()];
-		int[] indices = new int[domainCount()];
+		int[] indices = new int[getDomainCount()];
 		
 		for (int i = 0, end = size(); i < end; ++i)
 		{
@@ -323,7 +323,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int getColumns()
 	{
-		return domainCount();
+		return getDomainCount();
 	}
 
 	@Override
@@ -347,7 +347,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[] getRow(int row)
 	{
-		int[] indices = new int[domainCount()];
+		int[] indices = new int[getDomainCount()];
 		locationToIndices(row, indices);
 		return indices;
 	}
