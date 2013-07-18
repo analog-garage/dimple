@@ -18,6 +18,7 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Model;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BitStream;
 import com.analog.lyric.dimple.model.repeated.DiscreteStream;
@@ -77,24 +78,10 @@ public class Tmp {
 	 */
 	public static void main(String[] args) 
 	{
-		FactorGraph fg = new FactorGraph();
-		Bit [] b = new Bit[6];
-		for (int i = 0; i < b.length; i++)
-		{
-			b[i] = new Bit();
-			b[i].setName("B" + i);
-		}
-		Factor f1 = fg.addFactor(new XorDelta(), b[0],b[1],b[2],b[3]);
-		f1.setName("f1");
-		Factor f2 = fg.addFactor(new XorDelta(), b[3],b[4],b[5]);
-		f2.setName("f2");
-		 
-		MapList<INode> nodes = fg.depthFirstSearch(b[0],3);
-
-		for (INode n : nodes)
-		{
-			System.out.println(n);
-		}
+		RealJoint rj;
+		Discrete a = new Discrete(1, 2, 3);
+		Discrete b = new Discrete(new double [] {1,0,0,1},1); 
+		Discrete c = new Discrete("red","blue",2);
 	}
 
 }
