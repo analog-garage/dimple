@@ -219,7 +219,15 @@ This solver performs Gibbs sampling on a factor graph.  It supports a variety of
 
 For discrete variables, the Gibbs solver directly samples from the conditional distribution of each variable using a variation of the CDF sampling method.  For real variables, the Gibbs solver uses Slice sampling by default.  Optionally, the Metropolis-Hastings algorithm may be used instead.  In future versions of Dimple, other sampling methods will also be provided.
 
-The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
+The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  
+
+\ifmatlab
+For user-defined factors specified by MATLAB factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
+\fi
+
+\ifjava
+For user-defined factors specified by factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
+\fi
  
 
 \para{Methods}
@@ -234,176 +242,389 @@ The following sections list the solver-specific methods for the Gibbs solver.
 
 The following methods are available on a graph set to use the Gibbs solver:
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setNumSamples(numSamples);
 graph.Solver.getNumSamples();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setNumSamples(numSamples);
+graph.getSolver().getNumSamples();
+\end{lstlisting}
+\fi
 
 Set/get the number of samples to be run when solving the graph (post burn-in).
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setScansPerSample(scansPerSample);
 graph.Solver.getScansPerSample();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setScansPerSample(scansPerSample);
+graph.getSolver().getScansPerSample();
+\end{lstlisting}
+\fi
 
 Set the number of scans between samples as an alternative means of specifying the sample rate. A scan is an update of the number of variables equal to the total number of variables in the graph.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setUpdatesPerSample(updatesPerSample);
 graph.Solver.getUpdatesPerSample();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setUpdatesPerSample(updatesPerSample);
+graph.getSolver().getUpdatesPerSample();
+\end{lstlisting}
+\fi
+
 
 Set/get the number of single-variable updates between samples.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setBurnInScans(burnInScans);
 graph.Solver.getBurnInScans();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setBurnInScans(burnInScans);
+graph.getSolver().getBurnInScans();
+\end{lstlisting}
+\fi
 
 Set the number of scans for burn-in as an alternative means of specifying the burn-in period.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setBurnInUpdates(burnInUpdates);
 graph.Solver.getBurnInUpdates();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setBurnInUpdates(burnInUpdates);
+graph.getSolver().getBurnInUpdates();
+\end{lstlisting}
+\fi
 
 Set/get the number of single-variable updates for the burn-in period prior to collecting samples.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setNumRestarts(numRestarts)
 graph.Solver.getNumRestarts() 
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setNumRestarts(numRestarts)
+graph.getSolver().getNumRestarts() 
+\end{lstlisting}
+\fi
 
 Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setInitialTemperature(initialTemperature);
 graph.Solver.getInitialTemperature();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setInitialTemperature(initialTemperature);
+graph.getSolver().getInitialTemperature();
+\end{lstlisting}
+\fi
 
 Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setTemperingHalfLifeInSamples();
 graph.Solver.getTemperingHalfLifeInSamples();
 \end{lstlisting}
+\fi
 
-Set/get the tempering half-life—the number of samples for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setTemperingHalfLifeInSamples();
+graph.getSolver().getTemperingHalfLifeInSamples();
+\end{lstlisting}
+\fi
 
+
+Set/get the tempering half-life.  the number of samples for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.enableTempering();
 graph.Solver.disableTempering();
 graph.Solver.isTemperingEnabled();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().enableTempering();
+graph.getSolver().disableTempering();
+graph.getSolver().isTemperingEnabled();
+\end{lstlisting}
+\fi
 
 Enable or disable the use of tempering, or determine if tempering is in use.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setTemperature(T);
 graph.Solver.getTemperature();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setTemperature(T);
+graph.getSolver().getTemperature();
+\end{lstlisting}
+\fi
 
 Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.saveAllSamples();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().saveAllSamples();
+\end{lstlisting}
+\fi
 
 Prior to solving the graph, this method instructs the solver to save all sample values for all variables. Note that this is practical only for relatively small graphs with relatively small number of samples.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.saveAllScores();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().saveAllScores();
+\end{lstlisting}
+\fi
 
 Prior to solving the graph, this method instructs the solver to save the score value (see section~\ref{sec:FactorGraph.Score}) of the graph for each sample.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.getAllScores();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().getAllScores();
+\end{lstlisting}
+\fi
 
 Returns an array including the score value for each sample. This method only returns a non-empty value if .saveAllScores() method had previously been called on the graph.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setSeed(seed);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setSeed(seed);
+\end{lstlisting}
+\fi
 
 Set the random seed used for sampling (and used for random scan, if that schedule is used). Setting the seed allows repeatable execution of the Gibbs solver.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.getTotalPotential();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().getTotalPotential();
+\end{lstlisting}
+\fi
 
 After running the solver, returns the total potential (score) over all factors of the graph (including input priors on variables) given the most recent sample values.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.sample(numSamples)
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().sample(numSamples)
+\end{lstlisting}
+\fi
 
 This method runs a specified number of samples without re-initializing, burn-in, or random-restarts (this is distinct from iterate(), which runs a specified number of single-variable updates).  Before running this method for the first time, the graph must be initialized using the initialize() method.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.burnIn()
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().burnIn()
+\end{lstlisting}
+\fi
 
 Run the burn-in samples independently of using solve (which automatically runs the burn-in samples).  This may be run before using sample() or iterate().
 
-
-
 \subpara{Variable Methods}
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getCurrentSample();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getCurrentSample();
+\end{lstlisting}
+\fi
 
 Returns the current sample value for a variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getAllSamples();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getAllSamples();
+\end{lstlisting}
+\fi
 
 Returns an array including all sample values seen so far for a variable. Over multiple variables, samples with the same index correspond to the same joint sample value. This method only returns a non-empty value if .saveAllSamples() method had previously been called on the graph or for the variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getBestSample();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getBestSample();
+\end{lstlisting}
+\fi
+
 
 Returns the value of the best sample value seen so far, where best is defined as the sample with the minimum total potential over the graph (sum of -log of the factor values and input priors).  When getting the best sample from multiple variables, they all correspond to the same sample in time, thus should be a valid sample from the joint distribution.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.saveAllSamples();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().saveAllSamples();
+\end{lstlisting}
+\fi
 
 Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
 
-
 \subpara{Discrete-Variable-Specific Methods}
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getSampleIndex;
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampleIndex();
+\end{lstlisting}
+\fi
 
 Returns the index of the current sample for a variable, where the index refers to the index into the domain of the variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getAllSampleIndices;
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getAllSampleIndices();
+\end{lstlisting}
+\fi
 
 Returns an array including the indices of all samples seen so far for a variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getBestSampleIndex;
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getBestSampleIndex();
+\end{lstlisting}
+\fi
 
 Returns the index of the best sample seen so far.
 
 \subpara{Real-Variable-Specific Methods}
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setSampler(samplerName);
 variable.Solver.getSampler();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setSampler(samplerName);
+variable.getSolver().getSampler();
+\end{lstlisting}
+\fi
 
 Set/get the sampler to be used for this variable.  The following samplers are available in the current version of Dimple:
+
 \begin{itemize}
 \item 'SliceSampler'
 \item 'MHSampler'
@@ -413,31 +634,65 @@ The SliceSampler is used by default.
 
 The MHSampler uses the Metropolis-Hastings algorithm.  For the MHSampler, the Gaussian proposal distribution is used, with a standard deviation that can be set using the following method:
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setProposalStandardDeviation(stdDev)
 variable.Solver.getProposalStandardDeviation()
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setProposalStandardDeviation(stdDev)
+variable.getSolver().getProposalStandardDeviation()
+\end{lstlisting}
+\fi
 
 Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setInitialSampleValue(initialSampleValue)
 variable.Solver.getInitialSampleValue()
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setInitialSampleValue(initialSampleValue)
+variable.getSolver().getInitialSampleValue()
+\end{lstlisting}
+\fi
 
 Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).
 
 \subpara{Factor Methods}
 
+\ifmatlab
 \begin{lstlisting}
 factor.Solver.getPotential();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+factor.getSolver().getPotential();
+\end{lstlisting}
+\fi
 
 Returns the potential value of a factor given the current values of its connected variables.
 
+\ifmatlab
 \begin{lstlisting}
 factor.Solver.getPotential(values);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+factor.getSolver().getPotential(values);
+\end{lstlisting}
+\fi
 
 Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
 
@@ -465,9 +720,18 @@ To explicitly specify a scheduler, use the Scheduler or Schedule property of the
 \subsubsection{Gaussian Solver}
 
 Use of the Gaussian solver is specified by calling:
+
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'Gaussian';
 \end{lstlisting}
+\fi
+
+\ifmatlab
+\begin{lstlisting}
+fg.setSolver(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+\end{lstlisting}
+\fi
 
 \para{Univariate Gaussian}
 
@@ -481,6 +745,7 @@ Users can create additional factors that use sampling by overriding the Gaussian
 
 The Gaussian solver currently works only with real variables. (We will eventually enhance it to work with Discrete variables as well). The following is an example of how to create a Factor Graph that will eventually use the Gaussian solver:
 
+\ifmatlab
 \begin{lstlisting}
 a = Real(3,1);
 mu = 3;
@@ -493,6 +758,23 @@ a(2).Input = [mu2 sigma2];
 fg = FactorGraph();
 fg.Solver = 'Gaussian';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real a1 = new Real();
+Real a2 = new Real();
+Real a3 = new Real();
+double mu = 3;
+double sigma = 4;
+a1.setInputObject(new double [] {mu,sigma});
+double mu2 = 10;
+double sigma2 = 2;
+a2.setInputObject(new double [] {mu2,sigma2});
+FactorGraph fg = new FactorGraph(); 
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+\end{lstlisting}
+\fi
 
 We have not yet added a factor, so the real variables indicated by a are not yet associated with the fg FactorGraph.
 

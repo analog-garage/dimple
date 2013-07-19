@@ -80,22 +80,17 @@ public class Tmp {
 	 */
 	public static void main(String[] args) 
 	{
-		FactorGraph SubGraph = new FactorGraph();
-		FactorGraph ParentGraph = new FactorGraph();
-		Bit a = new Bit();
-		Bit b = new Bit();
-		SubGraph.setScheduler(new com.analog.lyric.dimple.schedulers.SequentialScheduler()); 
-		ParentGraph.addFactor(SubGraph , a,b); 
-		ParentGraph.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler());		
-		
-		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		SFactorGraph s = ((SFactorGraph)fg.getSolver());
-		//Factor f = fg.addFactor(null);
-		Factor f = null;
-		STableFactor sfactor = (STableFactor)f.getSolver();
-		//sfactor.setK(k);
-		
+		Real a1 = new Real();
+		Real a2 = new Real();
+		Real a3 = new Real();
+		double mu = 3;
+		double sigma = 4;
+		a1.setInputObject(new double [] {mu,sigma});
+		double mu2 = 10;
+		double sigma2 = 2;
+		a2.setInputObject(new double [] {mu2,sigma2});
+		FactorGraph fg = new FactorGraph(); 
+		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
 	}
 
 }
