@@ -78,10 +78,14 @@ public class Tmp {
 	 */
 	public static void main(String[] args) 
 	{
-		RealJoint rj;
-		Discrete a = new Discrete(1, 2, 3);
-		Discrete b = new Discrete(new double [] {1,0,0,1},1); 
-		Discrete c = new Discrete("red","blue",2);
+
+		DiscreteDomain dd = new DiscreteDomain(1,2);
+		int [][] indices = null;
+		double [] weights = null;
+		FactorTable ft = new FactorTable(indices,weights, dd,dd);
+		
+		
+		
 	}
 
 }
