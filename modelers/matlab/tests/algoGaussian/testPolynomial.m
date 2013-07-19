@@ -22,8 +22,8 @@ function testPolynomial()
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
 
-    y = ComplexVar();
-    x = ComplexVar();
+    y = Complex();
+    x = Complex();
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
