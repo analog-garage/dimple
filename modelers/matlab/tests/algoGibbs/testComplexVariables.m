@@ -24,11 +24,13 @@ dtrace(debugPrint, '++testOperatorOverloadingGibbs');
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
 end
 
+% Basic test
 function test1(debugPrint, repeatable)
 
 fg = FactorGraph();
@@ -56,15 +58,20 @@ end
 
 fg.solve();
 
+as = a.Solver.getAllSamples;
+bs = b.Solver.getAllSamples;
 cs = c.Solver.getAllSamples;
+ac = pairsToComplex(as);
+bc = pairsToComplex(bs);
+cc = pairsToComplex(cs);
 
+assertElementsAlmostEqual(cc, ac + bc, 'absolute');
 assertElementsAlmostEqual(mean(cs), [7,5], 'absolute', 0.05);
-
 
 end
 
 
-
+% Test complex operator overloading
 function test2(debugPrint, repeatable)
 
 numSamples = 100;
@@ -128,12 +135,8 @@ assertElementsAlmostEqual(gc, exp(xc), 'absolute');
 end
 
 
-function c = pairsToComplex(s)
-c = s(:,1) + 1i*s(:,2);
-end
 
-
-
+% Test vectorized complex operator overloading
 function test3(debugPrint, repeatable)
 
 numSamples = 20;
@@ -244,3 +247,95 @@ assertElementsAlmostEqual(sc, bc', 'absolute');
 assertElementsAlmostEqual(tc, btc', 'absolute');         
 
 end
+
+
+% Test multi-dimensional complex variables
+function test4(debugPrint, repeatable)
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+a22 = Complex(2);
+b22 = Complex(2);
+a23 = Complex(2,3);
+b23 = Complex(2,3);
+a234 = Complex(2,3,4);
+b234 = Complex(2,3,4);
+
+c22 = a22 + b22;
+c23 = a23 + b23;
+c234 = a234 + b234;
+
+fg.addFactorVectorized('ComplexSum', c22, a22, b22);
+fg.addFactorVectorized('ComplexSum', c23, a23, b23);
+fg.addFactorVectorized('ComplexSum', c234, a234, b234);
+
+for x=1:2
+    for y=1:2
+        a22(x,y).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-1,1)};
+        b22(x,y).Input = {FactorFunction('Normal',2,5), FactorFunction('Normal',-2,1)};
+        c22(x,y).Input = {FactorFunction('Normal',1,5), FactorFunction('Normal',-3,1)};
+    end
+end
+
+for x=1:2
+    for y=1:3
+        a23(x,y).Input = {FactorFunction('Normal',4,5), FactorFunction('Normal',-2,1)};
+        b23(x,y).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-3,1)};
+        c23(x,y).Input = {FactorFunction('Normal',2,5), FactorFunction('Normal',-4,1)};
+    end
+end
+
+for x=1:2
+    for y=1:3
+        for z = 1:4
+            a234(x,y).Input = {FactorFunction('Normal',5,5), FactorFunction('Normal',-3,1)};
+            b234(x,y).Input = {FactorFunction('Normal',4,5), FactorFunction('Normal',-4,1)};
+            c234(x,y).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-5,1)};
+        end
+    end
+end
+
+        
+fg.Solver.setNumSamples(20);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+a22s = a22.invokeSolverMethodWithReturnValue('getAllSamples');
+b22s = b22.invokeSolverMethodWithReturnValue('getAllSamples');
+c22s = c22.invokeSolverMethodWithReturnValue('getAllSamples');
+a23s = a23.invokeSolverMethodWithReturnValue('getAllSamples');
+b23s = b23.invokeSolverMethodWithReturnValue('getAllSamples');
+c23s = c23.invokeSolverMethodWithReturnValue('getAllSamples');
+a234s = a234.invokeSolverMethodWithReturnValue('getAllSamples');
+b234s = b234.invokeSolverMethodWithReturnValue('getAllSamples');
+c234s = c234.invokeSolverMethodWithReturnValue('getAllSamples');
+
+a22c = cell2mat(cellfun(@(x)pairsToComplex(x), a22s, 'UniformOutput', false));
+b22c = cell2mat(cellfun(@(x)pairsToComplex(x), b22s, 'UniformOutput', false));
+c22c = cell2mat(cellfun(@(x)pairsToComplex(x), c22s, 'UniformOutput', false));
+a23c = cell2mat(cellfun(@(x)pairsToComplex(x), a23s, 'UniformOutput', false));
+b23c = cell2mat(cellfun(@(x)pairsToComplex(x), b23s, 'UniformOutput', false));
+c23c = cell2mat(cellfun(@(x)pairsToComplex(x), c23s, 'UniformOutput', false));
+a234c = cell2mat(cellfun(@(x)pairsToComplex(x), a234s, 'UniformOutput', false));
+b234c = cell2mat(cellfun(@(x)pairsToComplex(x), b234s, 'UniformOutput', false));
+c234c = cell2mat(cellfun(@(x)pairsToComplex(x), c234s, 'UniformOutput', false));
+
+assertElementsAlmostEqual(c22c, a22c + b22c, 'absolute');            
+assertElementsAlmostEqual(c23c, a23c + b23c, 'absolute');            
+assertElementsAlmostEqual(c234c, a234c + b234c, 'absolute');            
+
+end
+
+
+% Utility function - convert column pairs to complex numbers
+function c = pairsToComplex(s)
+c = s(:,1) + 1i*s(:,2);
+end
+

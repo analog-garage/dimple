@@ -38,7 +38,12 @@ classdef RealJoint < VariableBase
                 if numel(varargin) == 1
                     dims = 1;
                 else
-                    dims = cell2mat(varargin(2:end));
+                    dimArgs = varargin(2:end);
+                    dims = [dimArgs{:}];
+                    if size(dims) == 1
+                        dimArgs = {dimArgs{1}, dimArgs{1}};
+                        dims = [dimArgs{:}];
+                    end
                 end
                 
                 numEls = prod(dims);
