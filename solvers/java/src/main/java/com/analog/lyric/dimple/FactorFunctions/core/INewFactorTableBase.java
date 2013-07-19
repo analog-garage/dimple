@@ -6,8 +6,28 @@ import java.util.BitSet;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 
-public interface INewFactorTableBase extends Cloneable, Serializable
+public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<NewFactorTableEntry>
 {
+	/*------------------
+	 * Iterator methods
+	 */
+	
+	/**
+	 * Returns an iterator over the sparse locations in the table in order of increasing
+	 * location.
+	 */
+	@Override
+	public abstract NewFactorTableIterator iterator();
+	
+	/**
+	 * Returns an iterator over the joint indexes in the table in increasing order.
+	 */
+	public abstract NewFactorTableIterator jointIndexIterator();
+	
+	/*-------------
+	 * New methods
+	 */
+	
 	/**
 	 * Returns a deep copy of this factor table.
 	 */
@@ -23,22 +43,6 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 */
 	public abstract void evalDeterministic(Object[] arguments);
 	
-	/**
-	 * Returns energy of factor table entry for given {@code arguments}.
-	 * <p>
-	 * @see #getEnergy(int...)
-	 * @see #evalWeight(Object...)
-	 */
-	public abstract double evalEnergy(Object ... arguments);
-	
-	/**
-	 * Returns energy of factor table entry for given {@code arguments}.
-	 * <p>
-	 * @see #getWeight(int...)
-	 * @see #evalEnergy(Object...)
-	 */
-	public abstract double evalWeight(Object ... arguments);
-
 	/**
 	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
 	 * that represent inputs or the "from" size of the directionality. Returns null if table is not
@@ -68,6 +72,16 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	public abstract int getDomainSize(int i);
 
 	/**
+	 * Returns energy of factor table entry for given {@code arguments}.
+	 * <p>
+	 * @see #getEnergyForIndices(int...)
+	 * @see #getWeightForArguments(Object...)
+	 */
+	public abstract double getEnergyForArguments(Object ... arguments);
+	
+	public abstract double getEnergyForJointIndex(int jointIndex);
+
+	/**
 	 * Returns energy of factor table entry at given {@code location}.
 	 * <p>
 	 * The energy is the same as the negative log of the weight for the same {@code location}.
@@ -76,19 +90,29 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 * table entry to access.
 	 * @return energy for entry if {@code location} is non-negative, otherwise returns positive infinity.
 	 * @throws ArrayIndexOutOfBoundsException if {@code location} is not less than {@link #size()}.
-	 * @see #getEnergy(int...)
-	 * @see #getWeight(int)
+	 * @see #getEnergyForIndices(int...)
+	 * @see #getWeightForLocation(int)
 	 */
-	public abstract double getEnergy(int location);
+	public abstract double getEnergyForLocation(int location);
 
 	/**
 	 * Returns the energy of factor table entry with given {@code indices}.
 	 * <p>
-	 * @see #evalEnergy(Object...)
-	 * @see #getEnergy(int)
-	 * @see #getWeight(int...)
+	 * @see #getEnergyForArguments(Object...)
+	 * @see #getEnergyForLocation(int)
+	 * @see #getWeightForIndices(int...)
 	 */
-	public abstract double getEnergy(int ... indices);
+	public abstract double getEnergyForIndices(int ... indices);
+	
+	/**
+	 * Returns energy of factor table entry for given {@code arguments}.
+	 * <p>
+	 * @see #getWeightForIndices(int...)
+	 * @see #getEnergyForArguments(Object...)
+	 */
+	public abstract double getWeightForArguments(Object ... arguments);
+
+	public abstract double getWeightForJointIndex(int jointIndex);
 	
 	/**
 	 * Returns weight of factor table entry at given {@code location}.
@@ -97,19 +121,19 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 * table entry to access.
 	 * @return weight for entry if {@code location} is non-negative, otherwise returns zero.
 	 * @throws ArrayIndexOutOfBoundsException if {@code location} is not less than {@link #size()}.
-	 * @see #getWeight(int...)
-	 * @see #getEnergy(int)
+	 * @see #getWeightForIndices(int...)
+	 * @see #getEnergyForLocation(int)
 	 */
-	public abstract double getWeight(int location);
+	public abstract double getWeightForLocation(int location);
 	
 	/**
 	 * Returns the weight of factor table entry with given {@code indices}.
 	 * <p>
-	 * @see #evalWeight(Object...)
-	 * @see #getWeight(int)
-	 * @see #getEnergy(int...)
+	 * @see #getWeightForArguments(Object...)
+	 * @see #getWeightForLocation(int)
+	 * @see #getEnergyForIndices(int...)
 	 */
-	public abstract double getWeight(int ... indices);
+	public abstract double getWeightForIndices(int ... indices);
 
 	/**
 	 * True if table {@link #isDirected()} and has exactly one entry for each combination of
@@ -155,25 +179,25 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @param joint a unique joint table index in the range [0,{@link #jointSize()}).
-	 * @param arguments an array of length {@link #getDomainCount()} into which the computed domain values
-	 * will be written.
+	 * @param arguments if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #jointIndexToIndices(int, int[])
 	 * @see #jointIndexFromArguments(Object...)
 	 * @see #locationToArguments(int, Object[])
 	 */
-	public abstract void jointIndexToArguments(int joint, Object[] arguments);
+	public abstract Object[] jointIndexToArguments(int joint, Object[] arguments);
 	
 	/**
 	 * Computes domain indices corresponding to given joint index.
 	 * <p>
 	 * @param joint a unique joint table index in the range [0,{@link #jointSize()}).
-	 * @param indices an array of length {@link #getDomainCount()} into which the computed indices
-	 * will be written.
+	 * @param indices if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #jointIndexToArguments(int, Object[])
 	 * @see #jointIndexFromIndices(int...)
 	 * @see #locationToIndices(int, int[])
 	 */
-	public abstract void jointIndexToIndices(int joint, int[] indices);
+	public abstract int[] jointIndexToIndices(int joint, int[] indices);
 	
 	/**
 	 * The number of possible combinations of the values of all the domains in this table.
@@ -207,7 +231,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	
 	/**
 	 * Converts joint index (oner per valid combination of domain indices) to location index
-	 * (one per table entry.
+	 * (one per table entry).
 	 * <p>
 	 * @return if {@code joint} has a corresponding table entry its location is returned as
 	 * a number in the range [0,{@link #size}), otherwise it returns -1-{@code location} where
@@ -220,18 +244,26 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @param location index in the range [0,{@link #size}).
-	 * @param arguments an array of length {@link #getDomainCount()} into which the computed domain values
-	 * will be written.
+	 * @param arguments if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #locationToIndices(int, int[])
 	 * @see #locationFromArguments(Object...)
 	 * @see #jointIndexToArguments(int, Object[])
 	 */
-	public abstract void locationToArguments(int location, Object[] arguments);
+	public abstract Object[] locationToArguments(int location, Object[] arguments);
 	
 	/**
 	 * Converts location index (one per table entry) to joint index (one per valid combination
 	 * of domain indices).
-	 * 
+	 * <p>
+	 * The location and joint index values should have the same ordering relationship, so that
+	 * <pre>
+	 *   location1 < location2</pre>
+	 * implies that
+	 * <pre>
+	 *    t.locationToJointIndex(location1) < t.locationToJointIndex(location2)
+	 * </pre>
+	 * <p>
 	 * @return joint location index in range [0,{@link #jointSize}).
 	 * @see #locationFromJointIndex(int)
 	 */
@@ -241,13 +273,13 @@ public interface INewFactorTableBase extends Cloneable, Serializable
 	 * Computes domain indices corresponding to given location index.
 	 * 
 	 * @param location index in range [0,{@link #size}).
-	 * @param indices an array of length {@link #getDomainCount()} into which the computed indices
-	 * will be written.
+	 * @param indices if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #locationToArguments(int, Object[])
 	 * @see #locationFromIndices(int...)
 	 * @see #jointIndexToIndices(int, int[])
 	 */
-	public abstract void locationToIndices(int location, int[] indices);
+	public abstract int[] locationToIndices(int location, int[] indices);
 
 	/**
 	 * Normalizes the weights/energies of the table.

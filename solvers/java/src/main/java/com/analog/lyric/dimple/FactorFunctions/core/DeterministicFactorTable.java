@@ -52,13 +52,13 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	}
 	
 	@Override
-	public final double getEnergy(int i)
+	public final double getEnergyForLocation(int i)
 	{
 		return i >= 0 && i < size() ? 0.0 : Double.POSITIVE_INFINITY;
 	}
 	
 	@Override
-	public final double getWeight(int i)
+	public final double getWeightForLocation(int i)
 	{
 		return i >= 0 && i < size() ? 1.0 : 0.0;
 	}
@@ -218,7 +218,7 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	@Override
 	public double evalAsFactorFunction(Object... arguments)
 	{
-		return evalWeight(arguments);
+		return getWeightForArguments(arguments);
 	}
 
 	@Override
@@ -269,21 +269,4 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	 * DeterministicFactorTable methods
 	 */
 
-	/*-----------------
-	 * Private methods
-	 */
-	
-	private int locationFromInputOutputIndexes(int inputIndex, int outputIndex)
-	{
-		int computedOutput = _outputValues[inputIndex];
-		
-		if (outputIndex == computedOutput)
-		{
-			return inputIndex;
-		}
-
-		int expectedJointIndex = outputIndex + inputIndex * getOutputIndexSize();
-		return -1 - expectedJointIndex;
-	}
-	
 }

@@ -158,6 +158,22 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public abstract NewFactorTableBase clone();
 	
+	/*------------------
+	 * Iterable methods
+	 */
+	
+	@Override
+	public NewFactorTableIterator iterator()
+	{
+		return new NewFactorTableIterator(this, false);
+	}
+	
+	@Override
+	public NewFactorTableIterator jointIndexIterator()
+	{
+		return new NewFactorTableIterator(this, true);
+	}
+	
 	/*-----------------------------
 	 * INewFactorTableBase methods
 	 */
@@ -169,15 +185,15 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 
 	@Override
-	public final double evalEnergy(Object ... arguments)
+	public final double getEnergyForArguments(Object ... arguments)
 	{
-		return getEnergy(locationFromArguments(arguments));
+		return getEnergyForLocation(locationFromArguments(arguments));
 	}
 	
 	@Override
-	public final double evalWeight(Object ... arguments)
+	public final double getWeightForArguments(Object ... arguments)
 	{
-		return getWeight(locationFromArguments(arguments));
+		return getWeightForLocation(locationFromArguments(arguments));
 	}
 	
 	@Override
@@ -199,15 +215,27 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 
 	@Override
-	public final double getEnergy(int ... indices)
+	public final double getEnergyForIndices(int ... indices)
 	{
-		return getEnergy(locationFromIndices(indices));
+		return getEnergyForLocation(locationFromIndices(indices));
 	}
 	
 	@Override
-	public final double getWeight(int ... indices)
+	public final double getEnergyForJointIndex(int jointIndex)
 	{
-		return getWeight(locationFromIndices(indices));
+		return getEnergyForLocation(locationFromJointIndex(jointIndex));
+	}
+	
+	@Override
+	public final double getWeightForIndices(int ... indices)
+	{
+		return getWeightForLocation(locationFromIndices(indices));
+	}
+	
+	@Override
+	public final double getWeightForJointIndex(int jointIndex)
+	{
+		return getWeightForLocation(locationFromJointIndex(jointIndex));
 	}
 	
 	@Override
@@ -223,15 +251,15 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public void locationToArguments(int location, Object[] arguments)
+	public Object[] locationToArguments(int location, Object[] arguments)
 	{
-		jointIndexToArguments(locationToJointIndex(location), arguments);
+		return jointIndexToArguments(locationToJointIndex(location), arguments);
 	}
 	
 	@Override
-	public final void locationToIndices(int location, int[] indices)
+	public final int[] locationToIndices(int location, int[] indices)
 	{
-		jointIndexToIndices(locationToJointIndex(location), indices);
+		return jointIndexToIndices(locationToJointIndex(location), indices);
 	}
 	
 	@Override
@@ -247,23 +275,33 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public void jointIndexToArguments(int joint, Object[] arguments)
+	public Object[] jointIndexToArguments(int joint, Object[] arguments)
 	{
+		if (arguments == null || arguments.length != _domains.length)
+		{
+			arguments = new Object[_domains.length];
+		}
 		final int outputSize = getOutputIndexSize();
 		final int inputIndex = joint / outputSize;
 		final int outputIndex = joint - inputIndex * outputSize;
 		inputIndexToArguments(inputIndex, arguments);
 		outputIndexToArguments(outputIndex, arguments);
+		return arguments;
 	}
 	
 	@Override
-	public void jointIndexToIndices(int joint, int[] indices)
+	public int[] jointIndexToIndices(int joint, int[] indices)
 	{
+		if (indices == null || indices.length != _domains.length)
+		{
+			indices = new int[_domains.length];
+		}
 		final int outputSize = getOutputIndexSize();
 		final int inputIndex = joint / outputSize;
 		final int outputIndex = joint - inputIndex * outputSize;
 		inputIndexToIndices(inputIndex, indices);
 		outputIndexToIndices(outputIndex, indices);
+		return indices;
 	}
 	
 	@Override
@@ -285,7 +323,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public double get(int[] indices)
 	{
-		return getWeight(indices);
+		return getWeightForIndices(indices);
 	}
 
 	@Override
@@ -409,8 +447,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	 */
 	protected static int bitsetToIndexMap(BitSet bitset, int[] indexMap)
 	{
-		assert(bitset.size() == indexMap.length);
-		
 		int nTrue = 0;
 		for (int i = 0, end = indexMap.length; i < end; ++i)
 		{
@@ -551,7 +587,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		
 		if (subindices.length == 0)
 		{
-			assert(products.length == arguments.length + 1);
 			for (int i = 0, end = products.length - 1; i < end; ++i)
 			{
 				location += products[i] * domains[i].getIndex(arguments[i]);

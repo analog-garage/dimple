@@ -31,11 +31,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	private int _size;
 	
 	/**
-	 * Maps sparse locations to dense locations. Empty if table is in dense form.
+	 * Maps sparse locations to joint indexes. Empty if table is in dense form
+	 * (because in that case the location and joint index are the same).
 	 * <p>
-	 * This will require binary search to find sparse index given dense one.
+	 * If not dense or deterministic (&directed) this lookup will require a
+	 * binary search.
 	 */
-	private int[] _sparseToDense = EMPTY_INT_ARRAY;
+	private int[] _locationToJointIndex = EMPTY_INT_ARRAY;
 	
 	private static final int DETERMINISTIC = 0x01;
 	private static final int DETERMINISTIC_COMPUTED = 0x02;
@@ -80,9 +82,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			_weights = that._weights.clone();
 		}
-		if (that._sparseToDense.length > 0)
+		if (that._locationToJointIndex.length > 0)
 		{
-			_sparseToDense = that._sparseToDense.clone();
+			_locationToJointIndex = that._locationToJointIndex.clone();
 		}
 	}
 	
@@ -101,45 +103,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 */
 	
 	@Override
-	public final double getEnergy(int location)
-	{
-		double energy = Double.POSITIVE_INFINITY;
-		if (location >= 0)
-		{
-			switch (_representation)
-			{
-			case ENERGY:
-			case BOTH:
-				energy = _energies[location];
-				break;
-			case WEIGHT:
-				energy = weightToEnergy(_weights[location]);
-				break;
-			}
-		}
-		return energy;
-	}
-	
-	@Override
-	public final double getWeight(int location)
-	{
-		double weight = 0.0;
-		if (location >= 0)
-		{
-			switch (_representation)
-			{
-			case ENERGY:
-				weight = energyToWeight(_energies[location]);
-				break;
-			case WEIGHT:
-			case BOTH:
-				weight = _weights[location];
-			}
-		}
-		return weight;
-	}
-	
-	@Override
 	public void evalDeterministic(Object[] arguments)
 	{
 		if (!isDeterministicDirected())
@@ -151,16 +114,31 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		int outputSize = getOutputIndexSize();
 		int inputIndex = inputIndexFromArguments(arguments);
-		int jointIndex = inputIndex * outputSize;
-		
-		int i = Arrays.binarySearch(_sparseToDense, jointIndex);
-		if (i < 0)
-		{
-			i = -1-i;
-		}
-		
-		int outputIndex = _sparseToDense[i] % outputSize;
+		int jointIndex = _locationToJointIndex[inputIndex];
+		int outputIndex = jointIndex - inputIndex * outputSize;
 		outputIndexToArguments(outputIndex, arguments);
+	}
+	
+	@Override
+	public final double getEnergyForLocation(int location)
+	{
+		double energy = Double.POSITIVE_INFINITY;
+		if (location >= 0)
+		{
+			energy = _representation.storeEnergies() ? _energies[location] : weightToEnergy(_weights[location]);
+		}
+		return energy;
+	}
+	
+	@Override
+	public final double getWeightForLocation(int location)
+	{
+		double weight = 0.0;
+		if (location >= 0)
+		{
+			weight = _representation.storeWeights() ? _weights[location] : energyToWeight(_energies[location]);
+		}
+		return weight;
 	}
 	
 	@Override
@@ -183,7 +161,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				deterministic = true;
 				final int outputSize = getOutputIndexSize();
 				int prevInputIndex = -1;
-				for (int joint : _sparseToDense)
+				for (int joint : _locationToJointIndex)
 				{
 					int inputIndex = joint / outputSize;
 					if (inputIndex == prevInputIndex)
@@ -218,19 +196,40 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public final int locationToJointIndex(int location)
 	{
-		if (location < _sparseToDense.length)
+		if (location < _locationToJointIndex.length)
 		{
-			location = _sparseToDense[location];
+			location = _locationToJointIndex[location];
 		}
 		return location;
 	}
 	
 	@Override
-	public final int locationFromJointIndex(int location)
+	public final int locationFromJointIndex(int jointIndex)
 	{
-		if (_sparseToDense.length == _size)
+		int location = jointIndex;
+		if (_locationToJointIndex.length == _size)
 		{
-			location = Arrays.binarySearch(_sparseToDense, location);
+			if ((DETERMINISTIC & _computedMask) == 0)
+			{
+				location = Arrays.binarySearch(_locationToJointIndex, location);
+			}
+			else
+			{
+				// Optimize deterministic case. Since there is exactly one entry per distinct
+				// set of outputs, we can simply check to see if the jointIndex is found at
+				// the corresponding location for the output indices.
+				int outputSize = getOutputIndexSize();
+				location /= outputSize;
+				int prevJointIndex = _locationToJointIndex[location];
+				if (prevJointIndex != jointIndex)
+				{
+					if (jointIndex > prevJointIndex)
+					{
+						++location;
+					}
+					location = -1-location;
+				}
+			}
 		}
 		return location;
 	}
@@ -252,7 +251,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		double total = 0.0;
 		for (int i = size(); --i>= 0;)
 		{
-			total += getWeight(i);
+			total += getWeightForLocation(i);
 		}
 		
 		if (total != 0.0)
@@ -354,7 +353,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				directedFromIndices[j] = indices[fromToOldMap[j]];
 			}
 			int index = locationFromIndices(directedFromIndices, EMPTY_INT_ARRAY, directedFromProducts);
-			normalizers[index] += getWeight(i);
+			normalizers[index] += getWeightForLocation(i);
 		}
 		
 		for (int i = 0, endi = _size; i < endi; ++i)
@@ -365,7 +364,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				directedFromIndices[j] = indices[fromToOldMap[j]];
 			}
 			int index = locationFromIndices(directedFromIndices, EMPTY_INT_ARRAY, directedFromProducts);
-			setWeight(i, getWeight(i) / normalizers[index]);
+			setWeightForLocation(getWeightForLocation(i) / normalizers[index], i);
 		}
 		
 		_computedMask |= NORMALIZED;
@@ -386,23 +385,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return false;
 		}
 		
-		boolean doEnergies = false, doWeights = false;
-		
-		switch (_representation)
-		{
-		case ENERGY:
-			doEnergies = true;
-			break;
-		case WEIGHT:
-			doWeights = true;
-			break;
-		case BOTH:
-			doEnergies = true;
-			doWeights = true;
-			break;
-		}
-		
-		if (doEnergies)
+		if (_representation.storeEnergies())
 		{
 			double[] energies = new double[denseSize];
 			Arrays.fill(energies, Double.POSITIVE_INFINITY);
@@ -413,7 +396,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			_energies = energies;
 		}
 		
-		if (doWeights)
+		if (_representation.storeWeights())
 		{
 			double[] weights = new double[denseSize];
 			for (int i = 0; i < _weights.length; ++i)
@@ -423,7 +406,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			_weights = weights;
 		}
 		
-		_sparseToDense = EMPTY_INT_ARRAY;
+		_locationToJointIndex = EMPTY_INT_ARRAY;
 		_size = denseSize;
 		
 		return true;
@@ -437,20 +420,23 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return;
 		}
 		
-		switch (representation)
+		if (representation.storeEnergies())
 		{
-		case ENERGY:
 			computeEnergies();
+		}
+		
+		if (representation.storeWeights())
+		{
+			computeWeights();
+		}
+		else
+		{
 			_weights = EMPTY_DOUBLE_ARRAY;
-			break;
-		case WEIGHT:
-			computeWeights();
+		}
+		
+		if (!representation.storeEnergies())
+		{
 			_energies = EMPTY_DOUBLE_ARRAY;
-			break;
-		case BOTH:
-			computeWeights();
-			computeEnergies();
-			break;
 		}
 		
 		_representation = representation;
@@ -462,26 +448,26 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		final double[] oldWeights = _weights;
 		final double[] oldEnergies = _energies;
 		
+		final boolean storeWeights = _representation.storeWeights();
+		
 		//
 		// Compute number of values to retain and index of first value to remove.
 		//
 		int sparseSize = 0;
 		int first = -1;
-		switch (_representation)
+		if (storeWeights)
 		{
-		case ENERGY:
-			for (int i = oldEnergies.length; --i>=0;)
-			{
-				if (Double.isInfinite(oldEnergies[i])) { first = i; } else { ++sparseSize; }
-			}
-			break;
-		case WEIGHT:
-		case BOTH:
 			for (int i = oldWeights.length; --i>=0;)
 			{
 				if (oldWeights[i] == 0.0) { first = i; } else { ++sparseSize; }
 			}
-			break;
+		}
+		else
+		{
+			for (int i = oldEnergies.length; --i>=0;)
+			{
+				if (Double.isInfinite(oldEnergies[i])) { first = i; } else { ++sparseSize; }
+			}
 		}
 		
 		if (first < 0) return false;
@@ -494,7 +480,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			_energies = EMPTY_DOUBLE_ARRAY;
 			_weights = EMPTY_DOUBLE_ARRAY;
-			_sparseToDense = EMPTY_INT_ARRAY;
+			_locationToJointIndex = EMPTY_INT_ARRAY;
 			_size = 0;
 			return true;
 		}
@@ -504,7 +490,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		//
 		
 		final boolean wasDense = isDense();
-		final int[] oldSparseToDense = _sparseToDense;
+		final int[] oldSparseToDense = _locationToJointIndex;
 		final int[] newSparseToDense = new int[sparseSize];
 	
 		double newEnergies[] = oldEnergies;
@@ -557,7 +543,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				if (weight != 0.0)
 				{
 					newWeights[newi] = weight;
-					newSparseToDense[newi] = wasDense ? oldi : newSparseToDense[oldi];
+					newSparseToDense[newi] = wasDense ? oldi : oldSparseToDense[oldi];
 					++newi;
 				}
 			}
@@ -573,7 +559,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				{
 					newWeights[newi] = weight;
 					newEnergies[newi] = oldEnergies[oldi];
-					newSparseToDense[newi] = wasDense ? oldi : newSparseToDense[oldi];
+					newSparseToDense[newi] = wasDense ? oldi : oldSparseToDense[oldi];
 					++newi;
 				}
 			}
@@ -585,87 +571,109 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_size = sparseSize;
 		_energies = newEnergies;
 		_weights = newWeights;
-		_sparseToDense = newSparseToDense;
+		_locationToJointIndex = newSparseToDense;
 			
 		return true;
 	}
 	
 	@Override
-	public void setEnergy(int location, double energy)
+	public void setEnergyForLocation(double energy, int location)
 	{
 		clearComputed();
-		switch (_representation)
+		boolean changed = false;
+		if (_representation.storeEnergies())
 		{
-		case ENERGY:
-			_energies[location] = energy;
-			break;
-		case WEIGHT:
-			_weights[location] = energyToWeight(energy);
-			break;
-		case BOTH:
-			_energies[location] = energy;
-			_weights[location] = energyToWeight(energy);
-			break;
+			double prevEnergy = _energies[location];
+			if (energy != prevEnergy)
+			{
+				_energies[location] = energy;
+				changed = true;
+			}
+		}
+		if (_representation.storeWeights())
+		{
+			double prevWeight = _weights[location];
+			double weight = energyToWeight(energy);
+			if (weight != prevWeight)
+			{
+				_weights[location] = weight;
+				changed = true;
+			}
+		}
+		
+		if (changed)
+		{
+			clearComputed();
 		}
 	}
 
 	@Override
-	public final void setEnergy(int[] indices, double energy)
+	public final void setEnergyForArguments(double energy, Object ... arguments)
 	{
-		int jointLocation = jointIndexFromIndices(indices);
-		int location = locationFromJointIndex(jointLocation);
-		if (location < 0)
-		{
-			location = -1-location;
-			allocateLocation(location, jointLocation);
-		}
-		setEnergy(location, energy);
+		setEnergyForJointIndex(energy, jointIndexFromArguments(arguments));
+	}
+
+	@Override
+	public final void setEnergyForIndices(double energy, int ... indices)
+	{
+		setEnergyForJointIndex(energy, jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final void setEnergy(double energy, int ... indices)
+	public final void setEnergyForJointIndex(double energy, int jointIndex)
 	{
-		setEnergy(indices, energy);
+		setEnergyForLocation(energy, allocateLocationForJointIndex(jointIndex));
 	}
-	
+
 	@Override
-	public void setWeight(int location, double weight)
+	public void setWeightForLocation(double weight, int location)
 	{
 		clearComputed();
-		switch (_representation)
+		boolean changed = false;
+		if (_representation.storeEnergies())
 		{
-		case ENERGY:
-			_energies[location] = weightToEnergy(weight);
-			break;
-		case WEIGHT:
-			_weights[location] = weight;
-			break;
-		case BOTH:
-			_energies[location] = weightToEnergy(weight);
-			_weights[location] = weight;
-			break;
+			double prevEnergy = _energies[location];
+			double energy = weightToEnergy(weight);
+			if (energy != prevEnergy)
+			{
+				_energies[location] = energy;
+				changed = true;
+			}
+		}
+		if (_representation.storeWeights())
+		{
+			double prevWeight = _weights[location];
+			if (weight != prevWeight)
+			{
+				_weights[location] = weight;
+				changed = true;
+			}
+		}
+		
+		if (changed)
+		{
+			clearComputed();
 		}
 	}
 
 	@Override
-	public final void setWeight(int[] indices, double weight)
+	public final void setWeightForArguments(double weight, Object ... arguments)
 	{
-		int jointLocation = jointIndexFromIndices(indices);
-		int location = locationFromJointIndex(jointLocation);
-		if (location < 0)
-		{
-			location = -1-location;
-			allocateLocation(location, jointLocation);
-		}
-		setWeight(location, weight);
+		setWeightForJointIndex(weight, jointIndexFromArguments(arguments));
+	}
+
+	@Override
+	public final void setWeightForIndices(double weight, int ... indices)
+	{
+		setWeightForJointIndex(weight, jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final void setWeight(double weight, int ... indices)
+	public final void setWeightForJointIndex(double weight, int jointIndex)
 	{
-		setWeight(indices, weight);
+		setWeightForLocation(weight, allocateLocationForJointIndex(jointIndex));
 	}
-	
+
 	/*----------------------
 	 * Old IFactorTable methods
 	 */
@@ -685,7 +693,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (indices.length == 0)
 		{
 			_energies = _weights = EMPTY_DOUBLE_ARRAY;
-			_sparseToDense = EMPTY_INT_ARRAY;
+			_locationToJointIndex = EMPTY_INT_ARRAY;
 			return;
 		}
 		
@@ -701,14 +709,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_representation = Representation.WEIGHT;
 		_energies = EMPTY_DOUBLE_ARRAY;
 		_weights = new double[newSize];
-		_sparseToDense = makeDense ? EMPTY_INT_ARRAY : new int[newSize];
+		_locationToJointIndex = makeDense ? EMPTY_INT_ARRAY : new int[newSize];
 		
 		if (makeDense)
 		{
 			densify();
 			for (int i = 0; i < newSize; ++i)
 			{
-				setWeight(indices[i], weights[i]);
+				setWeightForIndices(weights[i], indices[i]);
 			}
 		}
 		else
@@ -742,7 +750,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				Entry entry = newEntries.get(i);
 				_weights[i] = entry.weight;
-				_sparseToDense[i] = entry.location;
+				_locationToJointIndex[i] = entry.location;
 			}
 		}
 	}
@@ -757,7 +765,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void set(int[] indices, double value)
 	{
-		setWeight(indices, value);
+		setWeightForIndices(value, indices);
 	}
 
 	@Override
@@ -765,7 +773,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	{
 		for (int i = 0; i < _size; ++i)
 		{
-			setWeight(i, values[i]);
+			setWeightForLocation(values[i], i);
 		}
 	}
 
@@ -780,7 +788,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void changeWeight(int index, double weight)
 	{
-		setWeight(index, weight);
+		setWeightForLocation(weight, index);
 	}
 
 	@Override
@@ -809,7 +817,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			_representation = other._representation;
 			_energies = other._energies.length > 0 ? other._energies.clone() : EMPTY_DOUBLE_ARRAY;
 			_weights = other._weights.length > 0 ? other._weights.clone() : EMPTY_DOUBLE_ARRAY;
-			_sparseToDense = other._sparseToDense.length > 0 ? other._sparseToDense.clone() : EMPTY_INT_ARRAY;
+			_locationToJointIndex = other._locationToJointIndex.length > 0 ? other._locationToJointIndex.clone() : EMPTY_INT_ARRAY;
 			_computedMask = other._computedMask;
 		}
 		else
@@ -817,14 +825,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			_representation = Representation.WEIGHT;
 			_energies = EMPTY_DOUBLE_ARRAY;
 			_weights = new double[jointSize()];
-			_sparseToDense = EMPTY_INT_ARRAY;
+			_locationToJointIndex = EMPTY_INT_ARRAY;
 			_size = 0;
 			
 			int[][] indices = that.getIndices();
 			double[] weights = that.getWeights();
 			for (int i = 0, end = weights.length; i < end; ++i)
 			{
-				setWeight(weights[i], indices[i]);
+				setWeightForIndices(weights[i], indices[i]);
 			}
 		}
 	}
@@ -864,17 +872,17 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			newTable._weights = weights;
 		}
 		
-		if (_sparseToDense.length > 0)
+		if (_locationToJointIndex.length > 0)
 		{
 			int[] sparseToDense = new int[newSize];
 			for (int i = 0, m = 0; m < multiplier; ++m)
 			{
 				for (int j = 0; j < _size; ++j, ++i)
 				{
-					sparseToDense[i] = _sparseToDense[j] + m * _size;
+					sparseToDense[i] = _locationToJointIndex[j] + m * _size;
 				}
 			}
-			newTable._sparseToDense = sparseToDense;
+			newTable._locationToJointIndex = sparseToDense;
 		}
 		
 		newTable._size = newSize;
@@ -885,7 +893,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public double evalAsFactorFunction(Object... arguments)
 	{
-		return getWeight(locationFromJointIndex(jointIndexFromArguments(arguments)));
+		return getWeightForLocation(locationFromJointIndex(jointIndexFromArguments(arguments)));
 	}
 
 	@Override
@@ -904,8 +912,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public int getWeightIndexFromTableIndices(int[] indices)
 	{
-		// Force table into dense representation to maximize lookup speed.
-		densify();
 		return locationFromIndices(indices);
 	}
 
@@ -950,9 +956,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				newTable._weights = _weights.clone();
 			}
-			if (_sparseToDense.length > 0)
+			if (_locationToJointIndex.length > 0)
 			{
-				newTable._sparseToDense = _sparseToDense.clone();
+				newTable._locationToJointIndex = _locationToJointIndex.clone();
 			}
 			return newTable;
 		}
@@ -1054,7 +1060,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	{
 		for (int i = size(); --i >= 0;)
 		{
-			setWeight(i, rand.nextDouble());
+			setWeightForLocation(rand.nextDouble(), i);
 		}
 	}
 
@@ -1074,27 +1080,32 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * Private methods
 	 */
 	
-	private void allocateLocation(int location, int jointLocation)
+	private int allocateLocationForJointIndex(int jointIndex)
 	{
-		if (!isDense())
+		if (isDense())
 		{
-			switch (_representation)
+			return jointIndex;
+		}
+		
+		
+		int location = locationFromJointIndex(jointIndex);
+		if (location < 0)
+		{
+			location = -1-location;
+			if (_representation.storeEnergies())
 			{
-			case ENERGY:
 				_energies = copyArrayForInsert(_energies, location, 1);
-				break;
-			case WEIGHT:
-				_weights = copyArrayForInsert(_weights, location, 1);
-				break;
-			case BOTH:
-				_energies = copyArrayForInsert(_energies, location, 1);
-				_weights = copyArrayForInsert(_weights, location, 1);
-				break;
 			}
-			_sparseToDense = copyArrayForInsert(_sparseToDense, location, 1);
-			_sparseToDense[location] = jointLocation;
+			if (_representation.storeWeights())
+			{
+				_weights = copyArrayForInsert(_weights, location, 1);
+			}
+			_locationToJointIndex = copyArrayForInsert(_locationToJointIndex, location, 1);
+			_locationToJointIndex[location] = jointIndex;
 			++_size;
 		}
+		
+		return location;
 	}
 	
 	private void clearComputed()
