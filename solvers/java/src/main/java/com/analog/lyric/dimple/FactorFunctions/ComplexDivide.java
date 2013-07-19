@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 /**
@@ -57,13 +58,29 @@ public class ComplexDivide extends FactorFunction
 		double rQuotient = quotient[0];
 		double iQuotient = quotient[1];
 		
-		double[] dividend = ((double[])arguments[1]);
-		double rDividend = dividend[0];
-		double iDividend = dividend[1];
+		double rDividend = 0;
+		double iDividend = 0;
+		Object argdd = arguments[1];
+		if (argdd instanceof double[])	// Complex dividend
+		{
+			double[] dividend = ((double[])argdd);
+			rDividend = dividend[0];
+			iDividend = dividend[1];
+		}
+		else	// Real dividend
+			rDividend = FactorFunctionUtilities.toDouble(argdd);
 
-		double[] divisor = ((double[])arguments[2]);
-		double rDivisor = divisor[0];
-		double iDivisor = divisor[1];
+		double rDivisor = 0;
+		double iDivisor = 0;
+		Object argdr = arguments[2];
+		if (argdr instanceof double[])	// Complex divisor
+		{
+			double[] divisor = ((double[])argdr);
+			rDivisor = divisor[0];
+			iDivisor = divisor[1];
+		}
+		else	// Real divisor
+			rDivisor = FactorFunctionUtilities.toDouble(argdr);
 
 		double normalizer = 1 / (rDivisor*rDivisor + iDivisor*iDivisor);
     	if (Double.isNaN(normalizer))
@@ -97,14 +114,30 @@ public class ComplexDivide extends FactorFunction
     @Override
 	public final void evalDeterministicFunction(Object... arguments)
     {
-		double[] dividend = ((double[])arguments[1]);
-		double rDividend = dividend[0];
-		double iDividend = dividend[1];
+		double rDividend = 0;
+		double iDividend = 0;
+		Object argdd = arguments[1];
+		if (argdd instanceof double[])	// Complex dividend
+		{
+			double[] dividend = ((double[])argdd);
+			rDividend = dividend[0];
+			iDividend = dividend[1];
+		}
+		else	// Real dividend
+			rDividend = FactorFunctionUtilities.toDouble(argdd);
 
-		double[] divisor = ((double[])arguments[2]);
-		double rDivisor = divisor[0];
-		double iDivisor = divisor[1];
-
+		double rDivisor = 0;
+		double iDivisor = 0;
+		Object argdr = arguments[2];
+		if (argdr instanceof double[])	// Complex divisor
+		{
+			double[] divisor = ((double[])argdr);
+			rDivisor = divisor[0];
+			iDivisor = divisor[1];
+		}
+		else	// Real divisor
+			rDivisor = FactorFunctionUtilities.toDouble(argdr);
+		
 		double normalizer = 1 / (rDivisor*rDivisor + iDivisor*iDivisor);
 		double rQuotient = (rDividend * rDivisor + iDividend * iDivisor) * normalizer;
 		double iQuotient = (iDividend * rDivisor - rDividend * iDivisor) * normalizer;

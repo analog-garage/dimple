@@ -71,7 +71,7 @@ assertElementsAlmostEqual(mean(cs), [7,5], 'absolute', 0.05);
 end
 
 
-% Test complex operator overloading
+% Test complex operator overloading; all complex operators
 function test2(debugPrint, repeatable)
 
 numSamples = 100;
@@ -155,6 +155,9 @@ b = Complex(1,N);
 c = Complex(1,N);
 bt = Complex(N,1);
 
+ar = Real();
+br = Real(1,N);
+
 d = a + 1+2i;           % Complex scalar and complex scalar constant
 e = b + 1+2i;           % Complex vector and complex scalar constant
 f = a - b;              % Complex scalar and complex vector
@@ -176,6 +179,26 @@ r = b ./ c;             % Complex vector divided by complex vector (pointwise op
 s = b';                 % Conjugate transpose
 t = bt';                % Conjugate transpose
 
+u = a - ar;             % Complex scalar and real scalar
+v = ar + a;             % Real scalar and complex scalar
+w = b - br;             % Complex vector and real vector
+x = br + b;             % Real vector and complex vector
+
+y = a * br;             % Complex scalar times real vector (non-pointwise operator)
+z = b * ar;             % Complex vector times real scalar (non-pointwise operator)
+aa = ar .* b;           % Real scalar times complex vector (pointwise operator)
+bb = br .* a;           % Real vector times complex scalar (pointwise operator)
+
+cc = b / ar;            % Complex vector divided by real scalar (non-pointwise operator)
+dd = a ./ br;           % Complex scalar divided by real vector (pointwise operator)
+ee = b ./ ar;           % Complex vector divided by real scalar (pointwise operator)
+ff = b ./ br;           % Complex vector divided by real complex vector (pointwise operator)
+
+gg = br / a;            % Real vector divided by complex scalar (non-pointwise operator)
+hh = ar ./ b;           % Real scalar divided by complex vector (pointwise operator)
+ii = br ./ a;           % Real vector divided by complex scalar (pointwise operator)
+jj = br ./ b;           % Real vector divided by complex vector (pointwise operator)
+
 
 if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
@@ -184,8 +207,10 @@ fg.Solver.saveAllSamples();
 fg.solve();
 
 as = a.invokeSolverMethodWithReturnValue('getAllSamples');
+ars = ar.invokeSolverMethodWithReturnValue('getAllSamples');
 bs = b.invokeSolverMethodWithReturnValue('getAllSamples');
 bts = bt.invokeSolverMethodWithReturnValue('getAllSamples');
+brs = br.invokeSolverMethodWithReturnValue('getAllSamples');
 cs = c.invokeSolverMethodWithReturnValue('getAllSamples');
 ds = d.invokeSolverMethodWithReturnValue('getAllSamples');
 es = e.invokeSolverMethodWithReturnValue('getAllSamples');
@@ -204,10 +229,28 @@ qs = q.invokeSolverMethodWithReturnValue('getAllSamples');
 rs = r.invokeSolverMethodWithReturnValue('getAllSamples');
 ss = s.invokeSolverMethodWithReturnValue('getAllSamples');
 ts = t.invokeSolverMethodWithReturnValue('getAllSamples');
+us = u.invokeSolverMethodWithReturnValue('getAllSamples');
+vs = v.invokeSolverMethodWithReturnValue('getAllSamples');
+ws = w.invokeSolverMethodWithReturnValue('getAllSamples');
+xs = x.invokeSolverMethodWithReturnValue('getAllSamples');
+ys = y.invokeSolverMethodWithReturnValue('getAllSamples');
+zs = z.invokeSolverMethodWithReturnValue('getAllSamples');
+aas = aa.invokeSolverMethodWithReturnValue('getAllSamples');
+bbs = bb.invokeSolverMethodWithReturnValue('getAllSamples');
+ccs = cc.invokeSolverMethodWithReturnValue('getAllSamples');
+dds = dd.invokeSolverMethodWithReturnValue('getAllSamples');
+ees = ee.invokeSolverMethodWithReturnValue('getAllSamples');
+ffs = ff.invokeSolverMethodWithReturnValue('getAllSamples');
+ggs = gg.invokeSolverMethodWithReturnValue('getAllSamples');
+hhs = hh.invokeSolverMethodWithReturnValue('getAllSamples');
+iis = ii.invokeSolverMethodWithReturnValue('getAllSamples');
+jjs = jj.invokeSolverMethodWithReturnValue('getAllSamples');
 
 ac = repmat(pairsToComplex(as), 1, N);
+arc = repmat(ars, 1, N);
 bc = cell2mat(cellfun(@(x)pairsToComplex(x), bs, 'UniformOutput', false));
 btc = cell2mat(cellfun(@(x)pairsToComplex(x), bts, 'UniformOutput', false).').';
+brc = cell2mat(brs);
 cc = cell2mat(cellfun(@(x)pairsToComplex(x), cs, 'UniformOutput', false));
 dc = repmat(pairsToComplex(ds), 1, N);
 ec = cell2mat(cellfun(@(x)pairsToComplex(x), es, 'UniformOutput', false));
@@ -226,6 +269,22 @@ qc = cell2mat(cellfun(@(x)pairsToComplex(x), qs, 'UniformOutput', false));
 rc = cell2mat(cellfun(@(x)pairsToComplex(x), rs, 'UniformOutput', false));
 sc = cell2mat(cellfun(@(x)pairsToComplex(x), ss, 'UniformOutput', false).').';
 tc = cell2mat(cellfun(@(x)pairsToComplex(x), ts, 'UniformOutput', false));
+uc = repmat(pairsToComplex(us), 1, N);
+vc = repmat(pairsToComplex(vs), 1, N);
+wc = cell2mat(cellfun(@(x)pairsToComplex(x), ws, 'UniformOutput', false));
+xc = cell2mat(cellfun(@(x)pairsToComplex(x), xs, 'UniformOutput', false));
+yc = cell2mat(cellfun(@(x)pairsToComplex(x), ys, 'UniformOutput', false));
+zc = cell2mat(cellfun(@(x)pairsToComplex(x), zs, 'UniformOutput', false));
+aac = cell2mat(cellfun(@(x)pairsToComplex(x), aas, 'UniformOutput', false));
+bbc = cell2mat(cellfun(@(x)pairsToComplex(x), bbs, 'UniformOutput', false));
+ccc = cell2mat(cellfun(@(x)pairsToComplex(x), ccs, 'UniformOutput', false));
+ddc = cell2mat(cellfun(@(x)pairsToComplex(x), dds, 'UniformOutput', false));
+eec = cell2mat(cellfun(@(x)pairsToComplex(x), ees, 'UniformOutput', false));
+ffc = cell2mat(cellfun(@(x)pairsToComplex(x), ffs, 'UniformOutput', false));
+ggc = cell2mat(cellfun(@(x)pairsToComplex(x), ggs, 'UniformOutput', false));
+hhc = cell2mat(cellfun(@(x)pairsToComplex(x), hhs, 'UniformOutput', false));
+iic = cell2mat(cellfun(@(x)pairsToComplex(x), iis, 'UniformOutput', false));
+jjc = cell2mat(cellfun(@(x)pairsToComplex(x), jjs, 'UniformOutput', false));
 
 % Compare results
 assertElementsAlmostEqual(dc, ac + 1+2i, 'absolute');            
@@ -245,6 +304,22 @@ assertElementsAlmostEqual(qc, bc ./ ac, 'absolute');
 assertElementsAlmostEqual(rc, bc ./ cc, 'absolute');            
 assertElementsAlmostEqual(sc, bc', 'absolute');            
 assertElementsAlmostEqual(tc, btc', 'absolute');         
+assertElementsAlmostEqual(uc, ac - arc, 'absolute');            
+assertElementsAlmostEqual(vc, arc + ac, 'absolute');            
+assertElementsAlmostEqual(wc, bc - brc, 'absolute');            
+assertElementsAlmostEqual(xc, brc + bc, 'absolute');    
+assertElementsAlmostEqual(yc, ac .* brc, 'absolute');            
+assertElementsAlmostEqual(zc, bc .* arc, 'absolute');            
+assertElementsAlmostEqual(aac, arc .* bc, 'absolute');            
+assertElementsAlmostEqual(bbc, brc .* ac, 'absolute');
+assertElementsAlmostEqual(ccc, bc ./ arc, 'absolute');            
+assertElementsAlmostEqual(ddc, ac ./ brc, 'absolute');            
+assertElementsAlmostEqual(eec, bc ./ arc, 'absolute');            
+assertElementsAlmostEqual(ffc, bc ./ brc, 'absolute');            
+assertElementsAlmostEqual(ggc, brc ./ ac, 'absolute');            
+assertElementsAlmostEqual(hhc, arc ./ bc, 'absolute');            
+assertElementsAlmostEqual(iic, brc ./ ac, 'absolute');            
+assertElementsAlmostEqual(jjc, brc ./ bc, 'absolute');            
 
 end
 

@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 /**
@@ -30,9 +31,9 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (difference = positive input - sum of subtracted inputs)
- * 2) Positive input
- * 3...) An arbitrary number of subtracted inputs
+ * 1) Complex output (difference = positive input - sum of subtracted inputs)
+ * 2) Positive input (complex or real)
+ * 3...) An arbitrary number of subtracted inputs (complex or real)
  * 
  */
 public class ComplexSubtract extends FactorFunction
@@ -58,14 +59,32 @@ public class ComplexSubtract extends FactorFunction
 		double rOut = out[0];
 		double iOut = out[1];
 
-		double[] posIn = ((double[])arguments[1]);
-		double rSum = posIn[0];
-		double iSum = posIn[1];
+		double rSum = 0;
+		double iSum = 0;
+
+		// Positive input
+		Object argPosIn = arguments[1];
+		if (argPosIn instanceof double[])	// Complex input
+		{
+			double[] posIn = ((double[])argPosIn);
+			rSum = posIn[0];
+			iSum = posIn[1];
+		}
+		else	// Real input
+			rSum = FactorFunctionUtilities.toDouble(argPosIn);
+		
+		// Negative inputs
     	for (int i = 2; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		rSum -= arg[0];
-    		iSum -= arg[1];
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])	// Input is complex
+    		{
+    			double[] in = ((double[])arg);
+    			rSum -= in[0];
+    			iSum -= in[1];
+    		}
+    		else	// Input is real
+    			rSum -= FactorFunctionUtilities.toDouble(arg);
     	}
     	
     	if (_smoothingSpecified)
@@ -93,14 +112,32 @@ public class ComplexSubtract extends FactorFunction
     {
     	int length = arguments.length;
 
-		double[] posIn = ((double[])arguments[1]);
-		double rSum = posIn[0];
-		double iSum = posIn[1];
+		double rSum = 0;
+		double iSum = 0;
+
+		// Positive input
+		Object argPosIn = arguments[1];
+		if (argPosIn instanceof double[])	// Complex input
+		{
+			double[] posIn = ((double[])argPosIn);
+			rSum = posIn[0];
+			iSum = posIn[1];
+		}
+		else	// Real input
+			rSum = FactorFunctionUtilities.toDouble(argPosIn);
+		
+		// Negative inputs
     	for (int i = 2; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		rSum -= arg[0];
-    		iSum -= arg[1];
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])	// Input is complex
+    		{
+    			double[] in = ((double[])arg);
+    			rSum -= in[0];
+    			iSum -= in[1];
+    		}
+    		else	// Input is real
+    			rSum -= FactorFunctionUtilities.toDouble(arg);
     	}
     	
 		double[] out = ((double[])arguments[0]);

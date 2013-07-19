@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 /**
@@ -30,8 +31,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (product of inputs)
- * 2...) An arbitrary number of inputs
+ * 1) Complex output (product of inputs)
+ * 2...) An arbitrary number of inputs (complex or real)
  * 
  */
 public class ComplexProduct extends FactorFunction
@@ -61,13 +62,23 @@ public class ComplexProduct extends FactorFunction
     	double iProduct = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		double rIn = arg[0];
-    		double iIn = arg[1];
-    		double rProductNext = rIn * rProduct - iIn * iProduct;
-    		double iProductNext = rIn * iProduct + iIn * rProduct;
-    		rProduct = rProductNext;
-    		iProduct = iProductNext;
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])	// Complex input
+    		{
+    			double[] in = ((double[])arg);
+    			double rIn = in[0];
+    			double iIn = in[1];
+    			double rProductNext = rIn * rProduct - iIn * iProduct;
+    			double iProductNext = rIn * iProduct + iIn * rProduct;
+    			rProduct = rProductNext;
+    			iProduct = iProductNext;
+    		}
+    		else	// Real input
+    		{
+    			Double in = FactorFunctionUtilities.toDouble(arg);
+    			rProduct *= in;
+    			iProduct *= in;
+    		}
     	}
     	
     	if (_smoothingSpecified)
@@ -99,13 +110,23 @@ public class ComplexProduct extends FactorFunction
     	double iProduct = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		double rIn = arg[0];
-    		double iIn = arg[1];
-    		double rProductNext = rIn * rProduct - iIn * iProduct;
-    		double iProductNext = rIn * iProduct + iIn * rProduct;
-    		rProduct = rProductNext;
-    		iProduct = iProductNext;
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])	// Complex input
+    		{
+    			double[] in = ((double[])arg);
+    			double rIn = in[0];
+    			double iIn = in[1];
+    			double rProductNext = rIn * rProduct - iIn * iProduct;
+    			double iProductNext = rIn * iProduct + iIn * rProduct;
+    			rProduct = rProductNext;
+    			iProduct = iProductNext;
+    		}
+    		else	// Real input
+    		{
+    			Double in = FactorFunctionUtilities.toDouble(arg);
+    			rProduct *= in;
+    			iProduct *= in;
+    		}
     	}
     	
 		double[] out = ((double[])arguments[0]);

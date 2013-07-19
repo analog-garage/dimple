@@ -41,7 +41,7 @@ classdef VariableBase < Node
         end
         
         function z = plus(a,b)
-            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+            if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexSum);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.FactorFunctions.Sum);
@@ -49,7 +49,7 @@ classdef VariableBase < Node
         end
         
         function z = minus(a,b)
-            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+            if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexSubtract);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.FactorFunctions.Subtract);
@@ -65,7 +65,7 @@ classdef VariableBase < Node
         end
         
         function z = times(a,b)
-            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+            if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexProduct);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@times,com.analog.lyric.dimple.FactorFunctions.Product);
@@ -74,7 +74,7 @@ classdef VariableBase < Node
         
         function z = mtimes(a,b)
             if (isscalar(a) || isscalar(b))
-                if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+                if (iscomplex(a) || iscomplex(b))
                     z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexProduct);
                 else
                     z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.FactorFunctions.Product);
@@ -85,7 +85,7 @@ classdef VariableBase < Node
         end
         
         function z = rdivide(a,b)
-            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+            if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexDivide);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@rdivide,com.analog.lyric.dimple.FactorFunctions.Divide);
@@ -94,7 +94,7 @@ classdef VariableBase < Node
         
         function z = mrdivide(a,b)
             if (~isscalar(b)); error('Overloaded matrix division not currently supported. Use "./" for pointwise division'); end;
-            if ((isa(a,'Complex') || isnumeric(a)) && (isa(b,'Complex') || isnumeric(b)))
+            if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.FactorFunctions.ComplexDivide);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@mrdivide,com.analog.lyric.dimple.FactorFunctions.Divide);

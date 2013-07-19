@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.FactorFunctions;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 
 
 /**
@@ -30,8 +31,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (sum of inputs)
- * 2...) An arbitrary number of complex inputs
+ * 1) Complex output (sum of inputs)
+ * 2...) An arbitrary number of inputs (complex or real)
  * 
  */
 public class ComplexSum extends FactorFunction
@@ -61,9 +62,15 @@ public class ComplexSum extends FactorFunction
     	double iSum = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		rSum += arg[0];
-    		iSum += arg[1];
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])
+    		{
+    			double[] in = ((double[])arg);
+    			rSum += in[0];
+    			iSum += in[1];
+    		}
+    		else
+    			rSum += FactorFunctionUtilities.toDouble(arg);
     	}
     	
     	if (_smoothingSpecified)
@@ -95,9 +102,15 @@ public class ComplexSum extends FactorFunction
     	double iSum = 0;
     	for (int i = 1; i < length; i++)
     	{
-    		double[] arg = ((double[])arguments[i]);
-    		rSum += arg[0];
-    		iSum += arg[1];
+    		Object arg = arguments[i];
+    		if (arg instanceof double[])	// Input is complex
+    		{
+    			double[] in = ((double[])arg);
+    			rSum += in[0];
+    			iSum += in[1];
+    		}
+    		else	// Input is real
+    			rSum += FactorFunctionUtilities.toDouble(arg);
     	}
     	
 		double[] out = ((double[])arguments[0]);
