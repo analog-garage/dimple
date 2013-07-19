@@ -32,7 +32,7 @@ function testMultivariateDataSource()
 
     fg = FactorGraph();
     fg.Solver = 'gaussian';
-    x = RealJoint(2,N);
+    x = RealJoint(2,N,1);
     fg.addFactorVectorized(@constmult,x(2:end),F,x(1:end-1));
 
     x(1).Input = MultivariateMsg(A,eye(2));
@@ -44,7 +44,7 @@ function testMultivariateDataSource()
     end
 
     setSolver('gaussian');
-    x = RealJoint(2,2);
+    x = RealJoint(2,2,1);
     ng = FactorGraph(x);
     ng.addFactor(@constmult,x(2),F,x(1));
 
