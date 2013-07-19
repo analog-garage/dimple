@@ -30,6 +30,8 @@ import com.analog.lyric.dimple.model.repeated.RealStream;
 import com.analog.lyric.dimple.schedulers.SequentialScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood.PseudoLikelihood;
 import com.analog.lyric.util.misc.MapList;
 
@@ -78,13 +80,21 @@ public class Tmp {
 	 */
 	public static void main(String[] args) 
 	{
-
-		DiscreteDomain dd = new DiscreteDomain(1,2);
-		int [][] indices = null;
-		double [] weights = null;
-		FactorTable ft = new FactorTable(indices,weights, dd,dd);
+		FactorGraph SubGraph = new FactorGraph();
+		FactorGraph ParentGraph = new FactorGraph();
+		Bit a = new Bit();
+		Bit b = new Bit();
+		SubGraph.setScheduler(new com.analog.lyric.dimple.schedulers.SequentialScheduler()); 
+		ParentGraph.addFactor(SubGraph , a,b); 
+		ParentGraph.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler());		
 		
-		
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+		SFactorGraph s = ((SFactorGraph)fg.getSolver());
+		//Factor f = fg.addFactor(null);
+		Factor f = null;
+		STableFactor sfactor = (STableFactor)f.getSolver();
+		//sfactor.setK(k);
 		
 	}
 

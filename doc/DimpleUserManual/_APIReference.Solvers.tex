@@ -5,6 +5,7 @@
 
 Each solver supports a series of solver-specific methods, which are described in the following sections.  Solver-specific methods may be available for various objects: a factor-graph, variable, or factor.  In each case, to call a solver-specific method, the method is applied to the solver object, returned by the Solver property.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 factorGraph.Solver.solverSpecificMethod(arguments);
 \end{lstlisting}
@@ -16,8 +17,26 @@ variable.Solver.solverSpecificMethod(arguments);
 \begin{lstlisting}
 factor.Solver.solverSpecificMethod(arguments);
 \end{lstlisting}
+\fi
 
-Some solver-specific methods return results, while others do not.  Some solver-specific methods require arguments, while others do not.  If no arguments are needed, the parentheses are optional.
+\ifjava
+\begin{lstlisting}
+factorGraph.getSolver().solverSpecificMethod(arguments);
+\end{lstlisting}
+
+\begin{lstlisting}
+variable.getSolver().solverSpecificMethod(arguments);
+\end{lstlisting}
+
+\begin{lstlisting}
+factor.getSolver().solverSpecificMethod(arguments);
+\end{lstlisting}
+\fi
+
+
+Some solver-specific methods return results, while others do not.  Some solver-specific methods require arguments, while others do not.  \ifmatlab If no arguments are needed, the parentheses are optional. \fi
+
+\ifmatlab
 
 In some cases it is convenient to call solver-specific methods on each element in an array of objects.  Utility methods are provided for this purpose.  Specifically, to call a solver-specific method that has no return value:
 \begin{lstlisting}
@@ -33,14 +52,23 @@ returnArray = objectArray.invokeSolverSpecificMethodWithReturnValue('methodName'
 
 In this case, returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the object array.
 
-
+\fi
 
 \subsubsection{Sum-Product Solver}
 
 Use of the sum-product solver is specified by calling:
+
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'SumProduct';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+\end{lstlisting}
+\fi
 
 If no solver is specified, the SumProduct solver is used by default.
 
@@ -58,9 +86,18 @@ The SumProduct solver supports damping, in which messages are damped by replacin
 
 where $D$ is the damping value.  The set Damping method can be used to set the damping value.
 
+\ifmatlab
 \begin{lstlisting}
 fg.Solver.setDamping(dampingValue);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+SFactorGraph solver = ((SFactorGraph)fg.getSolver());
+solver.setDamping(dampingValue);
+\end{lstlisting}
+\fi
 
 The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
 
@@ -69,9 +106,19 @@ The dampingValue argument must be in the range from 0 through 1.  If this method
 
 The SumProduct solver supports the k-best variant of the sum-product algorithm.  Users can set a K value on each factor:
 
+\ifmatlab
 \begin{lstlisting}
 factor.Solver.setK(K);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+STableFactor sfactor = (STableFactor)f.getSolver();
+sfactor.setK(K);
+\end{lstlisting}
+\fi
+
 
 The solver will only use the K best values for each variable when calculating output messages on a factor node.
 
@@ -81,10 +128,18 @@ IMPORTANT: k-best and damping are not compatible with each other\footnote{This r
 \subsubsection{Min-Sum Solver}
 
 Use of the min-sum solver is specified by calling:
+
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'MinSum';
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+fg.setSolver(new com.analog.lyric.dimple.solvers.minsum.Solver());
+\end{lstlisting}
+\fi
 
 The MinSum solver only supports discrete variables.
 
@@ -100,9 +155,19 @@ The MinSum solver supports damping, in which messages are damped by replacing ea
 
 where $D$ is the damping value.  The set Damping method can be used to set the damping value.
 
+\ifmatlab
 \begin{lstlisting}
 fg.Solver.setDamping(dampingValue);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+SFactorGraph solver = ((SFactorGraph)fg.getSolver());
+solver.setDamping(dampingValue);
+\end{lstlisting}
+\fi
+
 
 The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
 
@@ -113,25 +178,40 @@ Note that damping in the MinSum solver is done on messages in the log-domain, wh
 
 The SumProduct solver supports the k-best variant of the sum-product algorithm.  Users can set a K value on each factor:
 
+\ifmatlab
 \begin{lstlisting}
 factor.Solver.setK(K);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+STableFactor sfactor = (STableFactor)f.getSolver();
+sfactor.setK(K);
+\end{lstlisting}
+\fi
 
 The solver will only use the K best values for each variable when calculating output messages on a factor node.
 
 IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
 
 
-
-
-
 \subsubsection{Gibbs Solver}
 \label{sec:GibbsSolverAPI}
 
 Use of the Gibbs solver is specified by calling:
+
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'Gibbs';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.setSolver(new com.analog.lyric.dimple.solvers.gibbs.Solver());
+\end{lstlisting}
+\fi
 
 The Gibbs solver supports both discrete and real variables.
 
