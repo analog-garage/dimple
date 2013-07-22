@@ -50,7 +50,7 @@ public final class NewFactorTableEntry
 	 */
 	public int[] indices(int[] indices)
 	{
-		return _table.jointIndexToIndices(_jointIndex, indices);
+		return _table.getDomainList().jointIndexToIndices(_jointIndex, indices);
 	}
 	
 	public int jointIndex()
@@ -75,7 +75,7 @@ public final class NewFactorTableEntry
 	
 	public Object[] values(Object[] arguments)
 	{
-		return _table.jointIndexToArguments(_jointIndex, arguments);
+		return _table.getDomainList().jointIndexToElements(_jointIndex, arguments);
 	}
 	
 	/**

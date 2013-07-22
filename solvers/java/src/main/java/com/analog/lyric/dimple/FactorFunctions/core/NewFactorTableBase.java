@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.FactorFunctions.core;
 
 import java.util.BitSet;
+import java.util.Random;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
@@ -68,11 +69,17 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	 */
 
 	@Override
-	public final int getDomainCount()
+	public final int getDimensions()
 	{
 		return _domains.size();
 	}
-
+	
+	@Override
+	public final DiscreteDomainList getDomainList()
+	{
+		return _domains;
+	}
+	
 	@Override
 	public final double getEnergyForArguments(Object ... arguments)
 	{
@@ -86,23 +93,11 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public final DiscreteDomain getDomain(int i)
-	{
-		return _domains.get(i);
-	}
-
-	@Override
 	public final BitSet getInputSet()
 	{
 		return _domains.getInputSet();
 	}
 	
-	@Override
-	public final int getDomainSize(int i)
-	{
-		return _domains.get(i).size();
-	}
-
 	@Override
 	public final double getEnergyForIndices(int ... indices)
 	{
@@ -130,55 +125,25 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final int locationFromArguments(Object ... arguments)
 	{
-		return locationFromJointIndex(jointIndexFromArguments(arguments));
+		return locationFromJointIndex(_domains.jointIndexFromElements(arguments));
 	}
 	
 	@Override
 	public final int locationFromIndices(int ... indices)
 	{
-		return locationFromJointIndex(jointIndexFromIndices(indices));
+		return locationFromJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
 	public Object[] locationToArguments(int location, Object[] arguments)
 	{
-		return jointIndexToArguments(locationToJointIndex(location), arguments);
+		return _domains.jointIndexToElements(locationToJointIndex(location), arguments);
 	}
 	
 	@Override
 	public final int[] locationToIndices(int location, int[] indices)
 	{
-		return jointIndexToIndices(locationToJointIndex(location), indices);
-	}
-	
-	@Override
-	public int jointIndexFromArguments(Object ... arguments)
-	{
-		return _domains.jointIndexFromElements(arguments);
-	}
-	
-	@Override
-	public int jointIndexFromIndices(int ... indices)
-	{
-		return _domains.jointIndexFromIndices(indices);
-	}
-	
-	@Override
-	public Object[] jointIndexToArguments(int jointIndex, Object[] arguments)
-	{
-		return _domains.jointIndexToElements(jointIndex, arguments);
-	}
-	
-	@Override
-	public int[] jointIndexToIndices(int joint, int[] indices)
-	{
-		return _domains.jointIndexToIndices(joint, indices);
-	}
-	
-	@Override
-	public final int jointSize()
-	{
-		return _domains.getCardinality();
+		return _domains.jointIndexToIndices(locationToJointIndex(location), indices);
 	}
 	
 	@Override
@@ -187,10 +152,76 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		return _domains.isDirected();
 	}
 
+	@Override
+	public final int jointSize()
+	{
+		return _domains.getCardinality();
+	}
+	
+	@Override
+	public final void setEnergyForArguments(double energy, Object ... arguments)
+	{
+		setEnergyForJointIndex(energy, _domains.jointIndexFromElements(arguments));
+	}
+
+	@Override
+	public final void setEnergyForIndices(double energy, int ... indices)
+	{
+		setEnergyForJointIndex(energy, _domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final void setEnergyForJointIndex(double energy, int jointIndex)
+	{
+		setEnergyForLocation(energy, allocateLocationForJointIndex(jointIndex));
+	}
+
+	@Override
+	public final void setWeightForArguments(double weight, Object ... arguments)
+	{
+		setWeightForJointIndex(weight, _domains.jointIndexFromElements(arguments));
+	}
+
+	@Override
+	public final void setWeightForIndices(double weight, int ... indices)
+	{
+		setWeightForJointIndex(weight, _domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final void setWeightForJointIndex(double weight, int jointIndex)
+	{
+		setWeightForLocation(weight, allocateLocationForJointIndex(jointIndex));
+	}
+
 	/*-----------------------
 	 * IFactorTable methods
 	 */
 	
+	@Override
+	public void changeIndices(int[][] indices)
+	{
+		change(indices, getWeights());
+	}
+
+	@Override
+	public void changeWeight(int index, double weight)
+	{
+		setWeightForLocation(weight, index);
+	}
+
+	@Override
+	public double evalAsFactorFunction(Object... arguments)
+	{
+		return getWeightForLocation(locationFromJointIndex(_domains.jointIndexFromElements(arguments)));
+	}
+
+	@Override
+	public void evalDeterministicFunction(Object... arguments)
+	{
+		evalDeterministic(arguments);
+	}
+
 	@Override
 	public double get(int[] indices)
 	{
@@ -200,7 +231,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final DiscreteDomain[] getDomains()
 	{
-		return _domains.toArray(new DiscreteDomain[_domains.size()]);
+		return _domains.toArray(new DiscreteDomain[getDimensions()]);
 	}
 
 	@Override
@@ -218,7 +249,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	public int[] getColumnCopy(int column)
 	{
 		int[] result = new int[size()];
-		int[] indices = new int[getDomainCount()];
+		int[] indices = new int[getDimensions()];
 		
 		for (int i = 0, end = size(); i < end; ++i)
 		{
@@ -232,7 +263,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int getColumns()
 	{
-		return getDomainCount();
+		return getDimensions();
 	}
 
 	@Override
@@ -256,7 +287,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[] getRow(int row)
 	{
-		int[] indices = new int[getDomainCount()];
+		int[] indices = new int[getDimensions()];
 		locationToIndices(row, indices);
 		return indices;
 	}
@@ -268,15 +299,44 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 
 	@Override
+	public int getWeightIndexFromTableIndices(int[] indices)
+	{
+		return locationFromIndices(indices);
+	}
+
+	@Override
+	public void randomizeWeights(Random rand)
+	{
+		for (int i = size(); --i >= 0;)
+		{
+			setWeightForLocation(rand.nextDouble(), i);
+		}
+	}
+
+	@Override
 	public void serializeToXML(String serializeName, String targetDirectory)
 	{
 		throw DimpleException.unsupported("serializeToXML");
 	}
 	
+	@Override
+	public void set(int[] indices, double value)
+	{
+		setWeightForIndices(value, indices);
+	}
+
+	@Override
+	public void setDirected(int[] directedTo, int[] directedFrom)
+	{
+		throw DimpleException.unsupported("setDirected");
+	}
+
 	/*--------------------------
 	 * Protected helper methods
 	 */
 	
+	protected abstract int allocateLocationForJointIndex(int jointIndex);
+
 	/**
 	 * Constructs a new {@link BitSet} of given {@code size} whose set bits are specified
 	 * by {@code indices}.

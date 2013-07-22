@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.BitSet;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<NewFactorTableEntry>
 {
@@ -43,6 +43,14 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public abstract void evalDeterministic(Object[] arguments);
 	
+	
+	/**
+	 * The number of dimensions in the table.
+	 * <p>
+	 * The same as {@link #getDomainList()}.size().
+	 */
+	public abstract int getDimensions();
+	
 	/**
 	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
 	 * that represent inputs or the "from" size of the directionality. Returns null if table is not
@@ -52,25 +60,8 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public BitSet getInputSet();
 	
-	/**
-	 * The number of domains defining the dimensions of this table.
-	 * @see #getDomain(int)
-	 * @see #getDomainSize(int)
-	 */
-	public abstract int getDomainCount();
+	public abstract DiscreteDomainList getDomainList();
 	
-	/**
-	 * Returns the ith domain for this table.
-	 * @param i must be non-negative and less than {@link #getDomainCount()}.
-	 * @throws ArrayIndexOutOfBoundsException if {@code i} is out of range.
-	 */
-	public abstract DiscreteDomain getDomain(int i);
-	
-	/**
-	 * Shorthand for {@link #getDomain}(i).size().
-	 */
-	public abstract int getDomainSize(int i);
-
 	/**
 	 * Returns energy of factor table entry for given {@code arguments}.
 	 * <p>
@@ -153,55 +144,8 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract boolean isNormalized();
 
 	/**
-	 * Computes a unique joint index for the table entry associated with the specified arguments.
-	 * <p>
-	 * @param arguments must have length equal to {@link #getDomainCount()} and each argument must
-	 * be an element of the corresponding domain.
-	 * @see #jointIndexFromIndices(int ... )
-	 * @see #jointIndexToArguments(int, Object[])
-	 * @see #locationFromArguments(Object...)
-	 */
-	public abstract int jointIndexFromArguments(Object ... arguments);
-
-	/**
-	 * Computes a unique joint index for the table entry associated with the specified {@code indices}.
-	 * 
-	 * @param indices must have length equal to {@link #getDomainCount()} and each index must be a non-negative
-	 * value less than the corresponding {@link #getDomainSize(int)} otherwise the function could return an
-	 * incorrect result.
-	 * @see #jointIndexFromArguments
-	 * @see #jointIndexToIndices
-	 * @see #locationFromIndices
-	 */
-	public abstract int jointIndexFromIndices(int ... indices);
-	
-	/**
-	 * Computes domain values corresponding to given joint index.
-	 * <p>
-	 * @param joint a unique joint table index in the range [0,{@link #jointSize()}).
-	 * @param arguments if this is an array of length {@link #getDomainCount()}, the computed values will
-	 * be placed in this array, otherwise a new array will be allocated.
-	 * @see #jointIndexToIndices(int, int[])
-	 * @see #jointIndexFromArguments(Object...)
-	 * @see #locationToArguments(int, Object[])
-	 */
-	public abstract Object[] jointIndexToArguments(int joint, Object[] arguments);
-	
-	/**
-	 * Computes domain indices corresponding to given joint index.
-	 * <p>
-	 * @param joint a unique joint table index in the range [0,{@link #jointSize()}).
-	 * @param indices if this is an array of length {@link #getDomainCount()}, the computed values will
-	 * be placed in this array, otherwise a new array will be allocated.
-	 * @see #jointIndexToArguments(int, Object[])
-	 * @see #jointIndexFromIndices(int...)
-	 * @see #locationToIndices(int, int[])
-	 */
-	public abstract int[] jointIndexToIndices(int joint, int[] indices);
-	
-	/**
 	 * The number of possible combinations of the values of all the domains in this table.
-	 * Equivalent to the product of all of the {@link #getDomainSize(int)} values for this table.
+	 * Same as {@link DiscreteDomainList#getCardinality()} of {@link #getDomainList()}.
 	 * @see #size()
 	 */
 	public abstract int jointSize();
@@ -209,10 +153,9 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Computes location index for the table entry associated with the specified arguments.
 	 * <p>
-	 * @param arguments must have length equal to {@link #getDomainCount()} and each argument must
+	 * @param arguments must have length equal to {@link #getDimensions()} and each argument must
 	 * be an element of the corresponding domain.
 	 * @see #locationFromIndices(int ... )
-	 * @see #jointIndexToArguments(int, Object[])
 	 * @see #locationFromArguments(Object...)
 	 */
 	public abstract int locationFromArguments(Object ... arguments);
@@ -220,12 +163,11 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Computes a location index for the table entry associated with the specified {@code indices}.
 	 * 
-	 * @param indices must have length equal to {@link #getDomainCount()} and each index must be a non-negative
-	 * value less than the corresponding {@link #getDomainSize(int)} otherwise the function could return an
+	 * @param indices must have length equal to {@link #getDimensions()} and each index must be a non-negative
+	 * value less than the corresponding domain size otherwise the function could return an
 	 * incorrect result.
 	 * @see #locationFromArguments
 	 * @see #locationToIndices
-	 * @see #jointIndexFromIndices
 	 */
 	public abstract int locationFromIndices(int... indices);
 	
@@ -244,11 +186,10 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @param location index in the range [0,{@link #size}).
-	 * @param arguments if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * @param arguments if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #locationToIndices(int, int[])
 	 * @see #locationFromArguments(Object...)
-	 * @see #jointIndexToArguments(int, Object[])
 	 */
 	public abstract Object[] locationToArguments(int location, Object[] arguments);
 	
@@ -273,11 +214,10 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * Computes domain indices corresponding to given location index.
 	 * 
 	 * @param location index in range [0,{@link #size}).
-	 * @param indices if this is an array of length {@link #getDomainCount()}, the computed values will
+	 * @param indices if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #locationToArguments(int, Object[])
 	 * @see #locationFromIndices(int...)
-	 * @see #jointIndexToIndices(int, int[])
 	 */
 	public abstract int[] locationToIndices(int location, int[] indices);
 
@@ -291,6 +231,16 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public abstract void normalize();
 
+	public void setEnergyForArguments(double energy, Object ... arguments);
+	public void setEnergyForIndices(double energy, int ... indices);
+	public void setEnergyForLocation(double energy, int location);
+	public void setEnergyForJointIndex(double energy, int jointIndex);
+
+	public void setWeightForArguments(double weight, Object ... arguments);
+	public void setWeightForIndices(double weight, int ... indices);
+	public void setWeightForLocation(double weight, int i);
+	public void setWeightForJointIndex(double weight, int jointIndex);
+	
 	/**
 	 * The number of entries in the table that can be accessed by a location index.
 	 * This can be no larger than {@link #jointSize()} and if smaller, indicates that

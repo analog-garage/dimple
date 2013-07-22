@@ -29,9 +29,9 @@ public class TestFactorTable
 	public void testNewFactorTable()
 	{
 		NewFactorTable t2x3 = new NewFactorTable(domain2, domain3);
-		assertEquals(2, t2x3.getDomainCount());
-		assertEquals(domain2, t2x3.getDomain(0));
-		assertEquals(domain3, t2x3.getDomain(1));
+		assertEquals(2, t2x3.getDimensions());
+		assertEquals(domain2, t2x3.getDomainList().get(0));
+		assertEquals(domain3, t2x3.getDomainList().get(1));
 		assertFalse(t2x3.isDense());
 		assertFalse(t2x3.isDirected());
 		assertEquals(INewFactorTable.Representation.ENERGY, t2x3.getRepresentation());
@@ -153,8 +153,8 @@ public class TestFactorTable
 	
 	private void testRandomOperations(NewFactorTable table, int nOperations)
 	{
-		int[] indices = new int[table.getDomainCount()];
-		Object[] arguments = new Object[table.getDomainCount()];
+		int[] indices = new int[table.getDimensions()];
+		Object[] arguments = new Object[table.getDimensions()];
 		
 		while (--nOperations >= 0)
 		{
@@ -218,25 +218,25 @@ public class TestFactorTable
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.jointIndexToIndices(jointIndex, indices);
+				table.getDomainList().jointIndexToIndices(jointIndex, indices);
 				table.setWeightForIndices(weight, indices);
 				assertWeight(table, weight, jointIndex);
 
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.jointIndexToIndices(jointIndex, indices);
+				table.getDomainList().jointIndexToIndices(jointIndex, indices);
 				table.setEnergyForIndices(-Math.log(weight), indices);
 				assertWeight(table, weight, jointIndex);
 
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.jointIndexToArguments(jointIndex, arguments);
+				table.getDomainList().jointIndexToElements(jointIndex, arguments);
 				table.setWeightForArguments(weight, arguments);
 				assertWeight(table, weight, jointIndex);
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.jointIndexToArguments(jointIndex, arguments);
+				table.getDomainList().jointIndexToElements(jointIndex, arguments);
 				table.setEnergyForArguments(-Math.log(weight), arguments);
 				assertWeight(table, weight, jointIndex);
 			}
@@ -256,11 +256,11 @@ public class TestFactorTable
 		assertEquals(energy, table.getEnergyForLocation(location), 1e-12);
 		assertEquals(weight, table.getWeightForLocation(location), 1e-12);
 
-		int[] indices = table.jointIndexToIndices(jointIndex, null);
+		int[] indices = table.getDomainList().jointIndexToIndices(jointIndex, null);
 		assertEquals(energy, table.getEnergyForIndices(indices), 1e-12);
 		assertEquals(weight, table.getWeightForIndices(indices), 13-12);
 		
-		Object[] arguments = table.jointIndexToArguments(jointIndex, null);
+		Object[] arguments = table.getDomainList().jointIndexToElements(jointIndex, null);
 		assertEquals(energy, table.getEnergyForArguments(arguments), 1e-12);
 		assertEquals(weight, table.getWeightForArguments(arguments), 13-12);
 	}
@@ -394,14 +394,14 @@ public class TestFactorTable
 	
 	public static void assertBaseInvariants(INewFactorTableBase table)
 	{
-		int nDomains = table.getDomainCount();
+		int nDomains = table.getDimensions();
 		assertTrue(nDomains >= 0);
 		
 		int expectedJointSize = 1;
 		int[] domainSizes = new int[nDomains];
 		for (int i = 0; i < nDomains; ++i)
 		{
-			int domainSize = table.getDomainSize(i);
+			int domainSize = table.getDomainList().getDomainSize(i);
 			assertTrue(domainSize > 0);
 			expectedJointSize *= domainSize;
 			domainSizes[i] = domainSize;
@@ -485,7 +485,7 @@ public class TestFactorTable
 			table.locationToArguments(location, arguments);
 			for (int j = 0; j < nDomains; ++j)
 			{
-				assertEquals(arguments[j], table.getDomain(j).getElement(indices[j]));
+				assertEquals(arguments[j], table.getDomainList().get(j).getElement(indices[j]));
 			}
 			assertEquals(location, table.locationFromArguments(arguments));
 			
@@ -543,12 +543,12 @@ public class TestFactorTable
 		
 		assertEquals(table1.getInputSet(), table2.getInputSet());
 		
-		assertEquals(table1.getDomainCount(), table2.getDomainCount());
-		int nDomains = table1.getDomainCount();
+		assertEquals(table1.getDimensions(), table2.getDimensions());
+		int nDomains = table1.getDimensions();
 		for (int i = 0; i < nDomains; ++i)
 		{
-			assertEquals(table1.getDomainSize(i), table2.getDomainSize(i));
-			assertSame(table1.getDomain(i), table2.getDomain(i));
+			assertEquals(table1.getDomainList().getDomainSize(i), table2.getDomainList().getDomainSize(i));
+			assertSame(table1.getDomainList().get(i), table2.getDomainList().get(i));
 		}
 		
 		assertEquals(table1.isDirected(), table2.isDirected());

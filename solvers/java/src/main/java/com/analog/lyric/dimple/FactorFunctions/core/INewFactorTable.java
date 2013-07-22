@@ -40,17 +40,7 @@ public interface INewFactorTable extends INewFactorTableBase
 
 	boolean isDense();
 	
-	public void setEnergyForArguments(double energy, Object ... arguments);
-	public void setEnergyForIndices(double energy, int ... indices);
-	public void setEnergyForLocation(double energy, int location);
-	public void setEnergyForJointIndex(double energy, int jointIndex);
-
 	public void setRepresentation(Representation representation);
-	
-	public void setWeightForArguments(double weight, Object ... arguments);
-	public void setWeightForIndices(double weight, int ... indices);
-	public void setWeightForLocation(double weight, int i);
-	public void setWeightForJointIndex(double weight, int jointIndex);
 	
 	boolean sparsify();
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.Random;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -329,7 +328,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		_computedMask &= ~NORMALIZED;
 		
-		final int nDomains = getDomainCount();
+		final int nDomains = getDimensions();
 		final int[] oldToFromMap = new int[nDomains];
 		final int[] directedFromProducts = computeDomainSubsetInfo(_domains, directedFrom, oldToFromMap);
 		final int nDirectedFrom = directedFromProducts.length - 1;
@@ -610,24 +609,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 
 	@Override
-	public final void setEnergyForArguments(double energy, Object ... arguments)
-	{
-		setEnergyForJointIndex(energy, jointIndexFromArguments(arguments));
-	}
-
-	@Override
-	public final void setEnergyForIndices(double energy, int ... indices)
-	{
-		setEnergyForJointIndex(energy, jointIndexFromIndices(indices));
-	}
-	
-	@Override
-	public final void setEnergyForJointIndex(double energy, int jointIndex)
-	{
-		setEnergyForLocation(energy, allocateLocationForJointIndex(jointIndex));
-	}
-
-	@Override
 	public void setWeightForLocation(double weight, int location)
 	{
 		clearComputed();
@@ -656,24 +637,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			clearComputed();
 		}
-	}
-
-	@Override
-	public final void setWeightForArguments(double weight, Object ... arguments)
-	{
-		setWeightForJointIndex(weight, jointIndexFromArguments(arguments));
-	}
-
-	@Override
-	public final void setWeightForIndices(double weight, int ... indices)
-	{
-		setWeightForJointIndex(weight, jointIndexFromIndices(indices));
-	}
-	
-	@Override
-	public final void setWeightForJointIndex(double weight, int jointIndex)
-	{
-		setWeightForLocation(weight, allocateLocationForJointIndex(jointIndex));
 	}
 
 	/*----------------------
@@ -744,7 +707,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			ArrayList<Entry> newEntries = new ArrayList<Entry>(newSize);
 			for (int i = 0; i < newSize; ++i)
 			{
-				newEntries.add(new Entry(jointIndexFromIndices(indices[i]), weights[i]));
+				newEntries.add(new Entry(_domains.jointIndexFromIndices(indices[i]), weights[i]));
 			}
 			Collections.sort(newEntries);
 			
@@ -755,19 +718,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				_locationToJointIndex[i] = entry.location;
 			}
 		}
-	}
-
-	@Override
-	public void changeIndices(int[][] indices)
-	{
-		clearComputed();
-		change(indices, getWeights());
-	}
-
-	@Override
-	public void set(int[] indices, double value)
-	{
-		setWeightForIndices(value, indices);
 	}
 
 	@Override
@@ -785,12 +735,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		computeWeights();
 		return _weights;
-	}
-
-	@Override
-	public void changeWeight(int index, double weight)
-	{
-		setWeightForLocation(weight, index);
 	}
 
 	@Override
@@ -843,7 +787,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
 	{
 		final int nAdditionalDomains = additionalDomains.length;
-		final int nOldDomains = _domains.size();
+		final int nOldDomains = getDimensions();
 		DiscreteDomain[] domains = _domains.toArray(new DiscreteDomain[nOldDomains + nAdditionalDomains]);
 		for (int i = 0, j = nOldDomains, end = nAdditionalDomains; i < end; ++i, ++j)
 		{
@@ -899,28 +843,10 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 
 	@Override
-	public double evalAsFactorFunction(Object... arguments)
-	{
-		return getWeightForLocation(locationFromJointIndex(jointIndexFromArguments(arguments)));
-	}
-
-	@Override
-	public void evalDeterministicFunction(Object... arguments)
-	{
-		evalDeterministic(arguments);
-	}
-
-	@Override
 	public double[] getPotentials()
 	{
 		computeEnergies();
 		return _energies;
-	}
-
-	@Override
-	public int getWeightIndexFromTableIndices(int[] indices)
-	{
-		return locationFromIndices(indices);
 	}
 
 	// FIXME: what to do if table is directed? Should we assert that the joined
@@ -931,7 +857,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		DiscreteDomain[] allDomains,
 		DiscreteDomain jointDomain)
 	{
-		final int nOldDomains = _domains.size();
+		final int nOldDomains = getDimensions();
 		final int nJoinedDomains = varIndices.length;
 		final int nNewDomains = nOldDomains + 1 - nJoinedDomains;
 		final int jointDomainIndex = nNewDomains - 1;
@@ -999,7 +925,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				}
 			}
 			newIndices[jointDomainIndex] = locationFromIndices(removedIndices, oldVarSizeProducts);
-			int newDenseLocation = jointIndexFromIndices(newIndices);
+			int newDenseLocation = _domains.jointIndexFromIndices(newIndices);
 			if (useWeight)
 			{
 				_weights[newDenseLocation] = _weights[oldLocation];
@@ -1023,7 +949,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		BitSet fromSet = bitsetFromIndices(getDomainCount(), directedTo);
+		BitSet fromSet = bitsetFromIndices(getDimensions(), directedTo);
 		fromSet.flip(0, fromSet.size());
 		normalize(fromSet);
 	}
@@ -1034,32 +960,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		normalize(directedFrom);
 	}
 
-	@Override
-	public void randomizeWeights(Random rand)
-	{
-		for (int i = size(); --i >= 0;)
-		{
-			setWeightForLocation(rand.nextDouble(), i);
-		}
-	}
-
-	@Override
-	public void serializeToXML(String serializeName, String targetDirectory)
-	{
-		throw DimpleException.unsupported("serializeToXML");
-	}
-
-	@Override
-	public void setDirected(int[] directedTo, int[] directedFrom)
-	{
-		throw DimpleException.unsupported("setDirected");
-	}
-
 	/*-----------------
 	 * Private methods
 	 */
 	
-	private int allocateLocationForJointIndex(int jointIndex)
+	@Override
+	protected int allocateLocationForJointIndex(int jointIndex)
 	{
 		if (isDense())
 		{

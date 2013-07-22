@@ -90,6 +90,11 @@ public class DiscreteDomainList
 		return _cardinality;
 	}
 	
+	public final int getDomainSize(int i)
+	{
+		return _domains[i].size();
+	}
+	
 	public int getInputCardinality()
 	{
 		return 1;
@@ -169,21 +174,56 @@ public class DiscreteDomainList
 	{
 	}
 	
+	/**
+	 * Computes a unique joint index associated with the specified domain elements.
+	 * <p>
+	 * @param elements must have length equal to {@link #size()} and each elements must
+	 * be an element of the corresponding domain.
+	 * @see #jointIndexFromIndices(int ... )
+	 * @see #jointIndexToElements(int, Object[])
+	 */
 	public int jointIndexFromElements(Object ... elements)
 	{
 		return undirectedJointIndexFromElements(elements);
 	}
 
+	/**
+	 * Computes a unique joint index associated with the specified {@code indices}.
+	 * 
+	 * @param indices must have length equal to {@link #size()} and each index must be a non-negative
+	 * value less than the size of the corresponding domain otherwise the function could return an
+	 * incorrect result.
+	 * @see #jointIndexFromElements
+	 * @see #jointIndexToIndices
+	 */
 	public int jointIndexFromIndices(int ... indices)
 	{
 		return undirectedJointIndexFromIndices(indices);
 	}
 	
+	/**
+	 * Computes domain values corresponding to given joint index.
+	 * <p>
+	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
+	 * @param elements if this is an array of length {@link #size()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
+	 * @see #jointIndexToIndices(int, int[])
+	 * @see #jointIndexFromElements(Object...)
+	 */
 	public Object[] jointIndexToElements(int jointIndex, Object[] elements)
 	{
 		return undirectedJointIndexToElements(jointIndex, elements);
 	}
 	
+	/**
+	 * Computes domain indices corresponding to given joint index.
+	 * <p>
+	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
+	 * @param indices if this is an array of length {@link #size()}, the computed values will
+	 * be placed in this array, otherwise a new array will be allocated.
+	 * @see #jointIndexToElements(int, Object[])
+	 * @see #jointIndexFromIndices(int...)
+	 */
 	public int[] jointIndexToIndices(int jointIndex, int[] indices)
 	{
 		return undirectedJointIndexToIndices(jointIndex, indices);
