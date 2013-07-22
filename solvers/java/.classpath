@@ -6,15 +6,15 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="build/external-libs/colt-1.2.0.jar"/>
 	<classpathentry kind="lib" path="build/external-libs/jcip-annotations-1.0.jar"/>
-	<classpathentry kind="lib" path="build/external-libs/commons-collections-3.2.1.jar" />
+	<classpathentry kind="lib" path="build/external-libs/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="build/external-libs/guava-14.0.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://docs.guava-libraries.googlecode.com/git-history/v14.0/javadoc/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/javailp-1.2a.jar"/>
-	<classpathentry kind="lib" path="/Users/shershey/git/dimple/solvers/lib/jama-1.0.2.jar"/>
-	<classpathentry kind="lib" path="/Users/shershey/git/dimple/solvers/lib/jtransforms-2.3.jar"/>
-	<classpathentry kind="lib" path="/Users/shershey/git/dimple/solvers/lib/commons-math-2.2.jar"/>
+	<classpathentry kind="lib" path="build/external-libs/commons-math-2.2.jar"/>
+	<classpathentry kind="lib" path="build/external-libs/jama-1.0.2.jar"/>
+	<classpathentry kind="lib" path="build/external-libs/jtransforms-2.3.jar"/>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>

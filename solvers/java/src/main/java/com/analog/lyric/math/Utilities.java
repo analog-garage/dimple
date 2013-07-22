@@ -18,12 +18,12 @@ package com.analog.lyric.math;
 
 import java.util.Random;
 
-public class Utilities 
+public class Utilities
 {
 
 	/*
 	 * This method expects a PMF and a random number generator and returns a sample from that
-	 * distribution.  The PMF does not actually have to be normalized for this to work. 
+	 * distribution.  The PMF does not actually have to be normalized for this to work.
 	 */
 	public static final int sampleFromMultinomial(double[] unnormalizedPMF, Random rand)
 	{
@@ -69,10 +69,13 @@ public class Utilities
         return ++x;
     }
     
-    
     // Find the position of the MSB
     public static final int findMSB(int value)
     {
+    	// This might be faster depending on the JVM:
+    	// return 32 - Integer.numberOfLeadingZeros(x);
+    	// Also, this currently returns 1-based index. Perhaps 0-based would be better w/ -1 for zero case.
+
     	int count = 0;
     	while (value != 0)
     	{
@@ -82,11 +85,11 @@ public class Utilities
     	return count;
     }
     
-    
     // Log base 2
+    private static final double LOG2 = Math.log(2);
 	public static final double log2(double x)
 	{
-		return Math.log(x)/Math.log(2);
+		return Math.log(x)/LOG2;
 	}
 
 }

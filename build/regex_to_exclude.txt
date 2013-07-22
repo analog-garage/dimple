@@ -15,4 +15,3 @@ testDimpleexitDone
 .*\.tex$
 .*\.out$
 .*~$
-
