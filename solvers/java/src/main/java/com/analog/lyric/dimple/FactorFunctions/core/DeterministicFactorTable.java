@@ -21,7 +21,7 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	public DeterministicFactorTable(BitSet directedFrom, DiscreteDomain ... domains)
 	{
 		super(directedFrom, domains);
-		_outputValues = new int[getInputIndexSize()];
+		_outputValues = new int[_domains.getInputCardinality()];
 	}
 	
 	public DeterministicFactorTable(DeterministicFactorTable that)
@@ -47,8 +47,8 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	@Override
 	public void evalDeterministic(Object[] arguments)
 	{
-		int outputIndex = _outputValues[inputIndexFromArguments(arguments)];
-		outputIndexToArguments(outputIndex, arguments);
+		int outputIndex = _outputValues[_domains.inputIndexFromElements(arguments)];
+		_domains.outputIndexToElements(outputIndex, arguments);
 	}
 	
 	@Override
@@ -78,7 +78,7 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	@Override
 	public final int locationFromJointIndex(int joint)
 	{
-		int outputSize = getOutputIndexSize();
+		int outputSize = _domains.getOutputCardinality();
 		int location = joint / outputSize;
 		int outputIndex = joint - location * outputSize;
 		if (outputIndex == _outputValues[location])
@@ -94,7 +94,7 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	@Override
 	public final int locationToJointIndex(int location)
 	{
-		return _outputValues[location] + location * getOutputIndexSize();
+		return _outputValues[location] + location * _domains.getOutputCardinality();
 	}
 	
 	@Override
@@ -121,7 +121,7 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 				String.format("indices and weights lenghts differ (%d vs %d)", indices.length, weights.length));
 		}
 		
-		final int nTos = _outputIndices.length;
+		final int nTos = _domains.getOutputSize();
 		int[] newValues = new int[size()];
 		Arrays.fill(newValues,  -1);
 		for (int i = 0, endi = indices.length; i < endi; ++i)
@@ -129,10 +129,10 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 			if (weights[i] != 0.0)
 			{
 				int[] row = indices[i];
-				int valueIndex = inputIndexFromIndices(row) * nTos;
+				int valueIndex = _domains.inputIndexFromIndices(row) * nTos;
 				for (int j = 0, endj = nTos; j < endj; ++j, ++ valueIndex)
 				{
-					newValues[valueIndex] = row[_outputIndices[j]];
+					newValues[valueIndex] = row[_domains.getOutputIndex(j)];
 				}
 			}
 		}
@@ -151,14 +151,14 @@ public class DeterministicFactorTable extends NewFactorTableBase implements INew
 	@Override
 	public void changeIndices(int[][] indices)
 	{
-		final int nTos = _outputIndices.length;
+		final int nTos = _domains.getOutputSize();
 		for (int i = 0, endi = indices.length; i < endi; ++i)
 		{
 			int[] row = indices[i];
-			int valueIndex = inputIndexFromIndices(row) * nTos;
+			int valueIndex = _domains.inputIndexFromIndices(row) * nTos;
 			for (int j = 0, endj = nTos; j < endj; ++j, ++ valueIndex)
 			{
-				_outputValues[valueIndex] = row[_outputIndices[j]];
+				_outputValues[valueIndex] = row[_domains.getOutputIndex(j)];
 			}
 		}
 	}

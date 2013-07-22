@@ -10,6 +10,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 @NotThreadSafe
 public class NewFactorTable extends NewFactorTableBase implements INewFactorTable, IFactorTable
@@ -112,11 +113,11 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		sparsify();
 		
-		int outputSize = getOutputIndexSize();
-		int inputIndex = inputIndexFromArguments(arguments);
+		int outputSize = _domains.getOutputCardinality();
+		int inputIndex = _domains.inputIndexFromElements(arguments);
 		int jointIndex = _locationToJointIndex[inputIndex];
 		int outputIndex = jointIndex - inputIndex * outputSize;
-		outputIndexToArguments(outputIndex, arguments);
+		_domains.outputIndexToElements(outputIndex, arguments);
 	}
 	
 	@Override
@@ -156,10 +157,10 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			sparsify();
 			// Table can only be deterministic if there is exactly one
 			// valid output for each possible input.
-			if (_size == getInputIndexSize())
+			if (_size == _domains.getInputCardinality())
 			{
 				deterministic = true;
-				final int outputSize = getOutputIndexSize();
+				final int outputSize = _domains.getOutputCardinality();
 				int prevInputIndex = -1;
 				for (int joint : _locationToJointIndex)
 				{
@@ -218,7 +219,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				// Optimize deterministic case. Since there is exactly one entry per distinct
 				// set of outputs, we can simply check to see if the jointIndex is found at
 				// the corresponding location for the output indices.
-				int outputSize = getOutputIndexSize();
+				int outputSize = _domains.getOutputCardinality();
 				location /= outputSize;
 				int prevJointIndex = _locationToJointIndex[location];
 				if (prevJointIndex != jointIndex)
@@ -242,9 +243,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return;
 		}
 			
-		if (_inputSet != null)
+		if (_domains.isDirected())
 		{
-			normalize(_inputSet);
+			normalize(_domains.getInputSet());
 			return;
 		}
 		
@@ -318,7 +319,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	
 	protected void normalize(BitSet directedFrom)
 	{
-		boolean canonical = _inputSet != null && _inputSet.equals(directedFrom);
+		BitSet inputSet = _domains.getInputSet();
+		boolean canonical = inputSet != null && inputSet.equals(directedFrom);
 		
 		if (canonical && (_computedMask & NORMALIZED) != 0)
 		{
@@ -352,7 +354,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				directedFromIndices[j] = indices[fromToOldMap[j]];
 			}
-			int index = locationFromIndices(directedFromIndices, EMPTY_INT_ARRAY, directedFromProducts);
+			int index = locationFromIndices(directedFromIndices,directedFromProducts);
 			normalizers[index] += getWeightForLocation(i);
 		}
 		
@@ -363,7 +365,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				directedFromIndices[j] = indices[fromToOldMap[j]];
 			}
-			int index = locationFromIndices(directedFromIndices, EMPTY_INT_ARRAY, directedFromProducts);
+			int index = locationFromIndices(directedFromIndices, directedFromProducts);
 			setWeightForLocation(getWeightForLocation(i) / normalizers[index], i);
 		}
 		
@@ -805,7 +807,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return;
 		}
 
-		if (!Arrays.equals(_domains, that.getDomains()))
+		if (!Arrays.equals(_domains.toArray(), that.getDomains()))
 		{
 			throw new DimpleException("Cannot copy from factor table with different domains");
 		}
@@ -840,7 +842,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
 	{
-		DiscreteDomain[] domains = Arrays.copyOf(_domains, _domains.length + additionalDomains.length);
+		final int nAdditionalDomains = additionalDomains.length;
+		final int nOldDomains = _domains.size();
+		DiscreteDomain[] domains = _domains.toArray(new DiscreteDomain[nOldDomains + nAdditionalDomains]);
+		for (int i = 0, j = nOldDomains, end = nAdditionalDomains; i < end; ++i, ++j)
+		{
+			domains[j] = additionalDomains[i];
+		}
 		NewFactorTable newTable = new NewFactorTable(domains);
 		
 		int multiplier = newTable.jointSize() / jointSize();
@@ -923,7 +931,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		DiscreteDomain[] allDomains,
 		DiscreteDomain jointDomain)
 	{
-		final int nOldDomains = _domains.length;
+		final int nOldDomains = _domains.size();
 		final int nJoinedDomains = varIndices.length;
 		final int nNewDomains = nOldDomains + 1 - nJoinedDomains;
 		final int jointDomainIndex = nNewDomains - 1;
@@ -933,35 +941,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		//
 		
 		final BitSet varIndexSet = bitsetFromIndices(nOldDomains, varIndices);
-		
-		//
-		// If all of the removed variables are at the end of the list, then the
-		// order of the values will not be changed, so we can simply copy the state and
-		// just change the domains.
-		//
-
-		if (varIndexSet.nextSetBit(0) == jointDomainIndex && !isDirected())
-		{
-			DiscreteDomain[] newDomains = Arrays.copyOf(_domains, nNewDomains);
-			newDomains[jointDomainIndex] = jointDomain;
-			
-			NewFactorTable newTable = new NewFactorTable(newDomains);
-			newTable._representation = _representation;
-			newTable._size = _size;
-			if (_energies.length > 0)
-			{
-				newTable._energies = _energies.clone();
-			}
-			if (_weights.length > 0)
-			{
-				newTable._weights = _weights.clone();
-			}
-			if (_locationToJointIndex.length > 0)
-			{
-				newTable._locationToJointIndex = _locationToJointIndex.clone();
-			}
-			return newTable;
-		}
 		
 		//
 		// Compute new domains and state needed to construct new table.
@@ -1019,7 +998,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 					newIndices[1-j] = oldi;
 				}
 			}
-			newIndices[jointDomainIndex] = locationFromIndices(removedIndices, EMPTY_INT_ARRAY, oldVarSizeProducts);
+			newIndices[jointDomainIndex] = locationFromIndices(removedIndices, oldVarSizeProducts);
 			int newDenseLocation = jointIndexFromIndices(newIndices);
 			if (useWeight)
 			{
@@ -1128,19 +1107,19 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * where the first entry is 1 and the last entry will be the product of all of the
 	 * subset domain sizes.
 	 */
-	static int[] computeDomainSubsetInfo(DiscreteDomain[] domains, BitSet domainSubset, int[] oldToNewMap)
+	static int[] computeDomainSubsetInfo(DiscreteDomainList domains, BitSet domainSubset, int[] oldToNewMap)
 	{
 		int nTrue = bitsetToIndexMap(domainSubset, oldToNewMap);
 		
 		int[] products = new int[nTrue + 1];
 		products[0] = 1;
 		
-		for (int i = 0, end = domains.length; i < end; ++i)
+		for (int i = 0, end = domains.size(); i < end; ++i)
 		{
 			int j = oldToNewMap[i];
 			if (j >= 0)
 			{
-				products[j+1] = products[j] * domains[i].size();
+				products[j+1] = products[j] * domains.get(i).size();
 			}
 		}
 		

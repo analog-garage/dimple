@@ -4,6 +4,7 @@ import java.util.BitSet;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 public abstract class NewFactorTableBase implements INewFactorTableBase, IFactorTable
 {
@@ -13,56 +14,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * The domains defining the dimensions of the factor table in the order in
-	 * which the corresponding arguments/indices are passed.
-	 */
-	protected final DiscreteDomain[] _domains;
-	
-	/**
-	 * If non-null, specifies which arguments/indices/domains represent inputs
-	 * for a directed table. The {@link BitSet#size()} should be the same as
-	 * the {@link #getDomainCount()} and should have at least one set bit and one
-	 * clear bit.
-	 */
-	protected final BitSet _inputSet;
-
-	/**
-	 * If this is a directed factor table (and {@link #_inputSet} is non-null),
-	 * this will contain the indexes of the input arguments in increasing order.
-	 * Otherwise this will be null.
-	 */
-	protected final int[] _inputIndices;
-	
-	/**
-	 * If this is a directed factor table (and {@link #_inputSet} is non-null),
-	 * this will contain the indexes of the output arguments in increasing order.
-	 * Otherwise this will be null.
-	 */
-	protected final int[] _outputIndices;
-	
-	/**
-	 * If this is a directed factor table {@link #_inputSet} is non-null,
-	 * the first entry will contain one, and subsequent entries will contain
-	 * the cumulative product of the domain sizes of the input arguments in
-	 * the order specified by {@link #_inputIndices}.
-	 * <p>
-	 * If this is an undirected factor table this will contain the cumulative
-	 * products of the domain sizes of all of the arguments.
-	 */
-	protected final int[] _inputDomainProducts;
-
-	/**
-	 * Similar to {@link #_inputDomainProducts} for input arguments, but when
-	 * table is not directed this array will only contain a single element with
-	 * the value 1.
-	 */
-	protected final int[] _outputDomainProducts;
-	
-	/**
-	 * @see #jointSize()
-	 */
-	protected final int _jointSize;
+	protected final DiscreteDomainList _domains;
 
 	/**
 	 * Canonical empty double array.
@@ -80,75 +32,12 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	
 	protected NewFactorTableBase(BitSet directedFrom, DiscreteDomain ... domains)
 	{
-		_domains = domains;
-		_inputSet = directedFrom;
-
-		final int nDomains = domains.length;
-		
-		if (directedFrom == null)
-		{
-			_outputIndices = EMPTY_INT_ARRAY;
-			_inputIndices = EMPTY_INT_ARRAY;
-			_inputDomainProducts = new int[nDomains + 1];
-			_inputDomainProducts[0] = 1;
-			_outputDomainProducts = new int[] { 1 };
-			
-			int product = 1;
-			for (int i  = 0; i < nDomains; ++i)
-			{
-				product *= domains[i].size();
-				_inputDomainProducts[i + 1] = product;
-			}
-			
-			_jointSize = product;
-		}
-		else
-		{
-			final int indexMap[] = new int[nDomains];
-			final int nInputs = bitsetToIndexMap(directedFrom, indexMap);
-			final int nOutputs = nDomains - nInputs;
-			int inputProduct = 1, outputProduct = 1;
-			
-			_inputIndices = new int[nInputs];
-			_inputDomainProducts = new int[nInputs + 1];
-			_inputDomainProducts[0] = 1;
-			
-			_outputIndices = new int[nOutputs];
-			_outputDomainProducts = new int[nOutputs + 1];
-			_outputDomainProducts[0] = 1;
-			
-			for (int i = 0; i < nDomains; ++i)
-			{
-				int size = domains[i].size();
-				int j = indexMap[i];
-				if (j >= 0)
-				{
-					_inputIndices[j] = i;
-					inputProduct *= size;
-					_inputDomainProducts[j+1] = inputProduct;
-				}
-				else
-				{
-					j = -1-j;
-					_outputIndices[j] = i;
-					outputProduct *= size;
-					_outputDomainProducts[j+1] = outputProduct;
-				}
-			}
-			
-			_jointSize = inputProduct * outputProduct;
-		}
+		_domains = DiscreteDomainList.create(directedFrom, domains);
 	}
 	
 	public NewFactorTableBase(NewFactorTableBase that)
 	{
-		_domains = that._domains.clone();
-		_inputSet = that._inputSet == null ? null : (BitSet)that._inputSet.clone();
-		_inputDomainProducts = cloneArray(that._inputDomainProducts);
-		_outputDomainProducts = cloneArray(that._outputDomainProducts);
-		_inputIndices = cloneArray(that._inputIndices);
-		_outputIndices = cloneArray(that._outputIndices);
-		_jointSize = that._jointSize;
+		_domains = that._domains;
 	}
 	
 	/*----------------
@@ -181,7 +70,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final int getDomainCount()
 	{
-		return _domains.length;
+		return _domains.size();
 	}
 
 	@Override
@@ -197,21 +86,21 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public DiscreteDomain getDomain(int i)
+	public final DiscreteDomain getDomain(int i)
 	{
-		return _domains[i];
+		return _domains.get(i);
 	}
 
 	@Override
-	public BitSet getInputSet()
+	public final BitSet getInputSet()
 	{
-		return _inputSet == null ? null : (BitSet)_inputSet.clone();
+		return _domains.getInputSet();
 	}
 	
 	@Override
-	public int getDomainSize(int i)
+	public final int getDomainSize(int i)
 	{
-		return _domains[i].size();
+		return _domains.get(i).size();
 	}
 
 	@Override
@@ -265,55 +154,37 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int jointIndexFromArguments(Object ... arguments)
 	{
-		return outputIndexFromArguments(arguments) + inputIndexFromArguments(arguments) * getOutputIndexSize();
+		return _domains.jointIndexFromElements(arguments);
 	}
 	
 	@Override
 	public int jointIndexFromIndices(int ... indices)
 	{
-		return outputIndexFromIndices(indices) + inputIndexFromIndices(indices) * getOutputIndexSize();
+		return _domains.jointIndexFromIndices(indices);
 	}
 	
 	@Override
-	public Object[] jointIndexToArguments(int joint, Object[] arguments)
+	public Object[] jointIndexToArguments(int jointIndex, Object[] arguments)
 	{
-		if (arguments == null || arguments.length != _domains.length)
-		{
-			arguments = new Object[_domains.length];
-		}
-		final int outputSize = getOutputIndexSize();
-		final int inputIndex = joint / outputSize;
-		final int outputIndex = joint - inputIndex * outputSize;
-		inputIndexToArguments(inputIndex, arguments);
-		outputIndexToArguments(outputIndex, arguments);
-		return arguments;
+		return _domains.jointIndexToElements(jointIndex, arguments);
 	}
 	
 	@Override
 	public int[] jointIndexToIndices(int joint, int[] indices)
 	{
-		if (indices == null || indices.length != _domains.length)
-		{
-			indices = new int[_domains.length];
-		}
-		final int outputSize = getOutputIndexSize();
-		final int inputIndex = joint / outputSize;
-		final int outputIndex = joint - inputIndex * outputSize;
-		inputIndexToIndices(inputIndex, indices);
-		outputIndexToIndices(outputIndex, indices);
-		return indices;
+		return _domains.jointIndexToIndices(joint, indices);
 	}
 	
 	@Override
 	public final int jointSize()
 	{
-		return _jointSize;
+		return _domains.getCardinality();
 	}
 	
 	@Override
 	public boolean isDirected()
 	{
-		return _inputSet != null;
+		return _domains.isDirected();
 	}
 
 	/*-----------------------
@@ -329,7 +200,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final DiscreteDomain[] getDomains()
 	{
-		return _domains;
+		return _domains.toArray(new DiscreteDomain[_domains.size()]);
 	}
 
 	@Override
@@ -367,13 +238,13 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[] getDirectedFrom()
 	{
-		return _inputIndices.clone();
+		return _domains.getInputIndices();
 	}
 
 	@Override
 	public int[] getDirectedTo()
 	{
-		return _outputIndices.clone();
+		return _domains.getOutputIndices();
 	}
 
 	@Override
@@ -531,154 +402,18 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		return newArray;
 	}
 
-	protected int getInputIndexSize()
-	{
-		return _inputDomainProducts[_inputDomainProducts.length - 1];
-	}
-	
-	protected int getOutputIndexSize()
-	{
-		return _outputDomainProducts[_outputDomainProducts.length - 1];
-	}
-	
-	protected int inputIndexFromArguments(Object[] arguments)
-	{
-		return locationFromArguments(arguments, _domains, _inputIndices, _inputDomainProducts);
-	}
-	
-	protected int inputIndexFromIndices(int[] indices)
-	{
-		return locationFromIndices(indices, _inputIndices, _inputDomainProducts);
-	}
-
-	protected void inputIndexToArguments(int inputIndex, Object[] arguments)
-	{
-		locationToArguments(inputIndex, arguments, _domains, _inputIndices, _inputDomainProducts);
-	}
-
-	protected void inputIndexToIndices(int inputIndex, int[] indices)
-	{
-		locationToIndices(inputIndex, indices, _inputIndices, _inputDomainProducts);
-	}
-	
-	protected int outputIndexFromArguments(Object[] arguments)
-	{
-		return locationFromArguments(arguments, _domains, _outputIndices, _outputDomainProducts);
-	}
-	
-	protected int outputIndexFromIndices(int[] indices)
-	{
-		return locationFromIndices(indices, _outputIndices, _outputDomainProducts);
-	}
-	
-	protected void outputIndexToIndices(int outputIndex, int[] indices)
-	{
-		locationToIndices(outputIndex, indices, _outputIndices, _outputDomainProducts);
-	}
-
-	protected void outputIndexToArguments(int outputIndex, Object[] arguments)
-	{
-		locationToArguments(outputIndex, arguments, _domains, _outputIndices, _outputDomainProducts);
-	}
-		
-	protected static int locationFromArguments(Object[] arguments, DiscreteDomain[] domains, int[] subindices, int[] products)
+	protected static int locationFromIndices(int[] indices, int[] products)
 	{
 		int location = 0;
 		
-		if (subindices.length == 0)
+		for (int i = 0, end = products.length - 1; i < end; ++i)
 		{
-			for (int i = 0, end = products.length - 1; i < end; ++i)
-			{
-				location += products[i] * domains[i].getIndex(arguments[i]);
-			}
-		}
-		else
-		{
-			assert(subindices.length + 1 == products.length);
-			for (int i = 0, end = subindices.length; i < end; ++i)
-			{
-				int j = subindices[i];
-				location += products[i] * domains[j].getIndex(arguments[j]);
-			}
+			location += products[i] * indices[i];
 		}
 		
 		return location;
 	}
 	
-	protected static int locationFromIndices(int[] indices, int[] subindices, int[] products)
-	{
-		int location = 0;
-		
-		if (subindices.length == 0)
-		{
-			for (int i = 0, end = products.length - 1; i < end; ++i)
-			{
-				location += products[i] * indices[i];
-			}
-		}
-		else
-		{
-			assert(products.length == subindices.length + 1);
-			for (int i = 0, end = subindices.length; i < end; ++i)
-			{
-				location += products[i] * indices[subindices[i]];
-			}
-		}
-		
-		return location;
-	}
-	
-	protected static void locationToArguments(int location, Object[] arguments, DiscreteDomain[] domains,
-		int[] subindices, int[] products)
-	{
-		assert(location >= 0);
-		int product, index;
-		if (subindices.length == 0)
-		{
-			for (int i = products.length - 1; --i >= 0;)
-			{
-				index = location / (product = products[i]);
-				arguments[i] = domains[i].getElement(index);
-				location -= index * product;
-			}
-		}
-		else
-		{
-			assert(products.length == subindices.length + 1);
-			for (int i = subindices.length; --i >= 0;)
-			{
-				int j = subindices[i];
-				index = location / (product = products[i]);
-				arguments[j] = domains[j].getElement(index);
-				location -= index * product;
-			}
-		}
-
-	}
-
-	protected static void locationToIndices(int location, int[] indices, int[] subindices, int[] products)
-	{
-		assert(location >= 0);
-		int product, index;
-		if (subindices.length == 0)
-		{
-			for (int i = products.length - 1; --i >= 0;)
-			{
-				indices[i] = index = location / (product = products[i]);
-				location -= index * product;
-			}
-		}
-		else
-		{
-			assert(products.length == subindices.length + 1);
-			for (int i = subindices.length; --i >= 0;)
-			{
-				indices[subindices[i]] = index = location / (product = products[i]);
-				location -= index * product;
-			}
-		}
-	}
-
 	protected static double energyToWeight(double energy)
 	{
 		return Math.exp(-energy);

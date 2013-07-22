@@ -25,7 +25,6 @@ public interface IFactorTable
 	public int [][] getIndices();
 	public double[] getWeights();
 	
-	// Is this just an optimization? Can directedTo != getDirectedTo()?
 	public void normalize(int [] directedTo);
 
 	//

@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.INewFactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.INewFactorTableBase;
@@ -91,6 +92,63 @@ public class TestFactorTable
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
 		testRandomOperations(t2x3x4, 10000);
+	}
+	
+	@Test
+	public void performanceComparison()
+	{
+		int iterations = 10000;
+		
+		Random rand = new Random(13);
+		DiscreteDomain domain10 = DiscreteDomain.intRangeFromSize(10);
+		DiscreteDomain domain20 = DiscreteDomain.intRangeFromSize(20);
+		DiscreteDomain domain5 = DiscreteDomain.intRangeFromSize(5);
+
+		NewFactorTable newTable = new NewFactorTable(domain10, domain20, domain5);
+		newTable.densify();
+		newTable.setRepresentation(INewFactorTable.Representation.WEIGHT);
+		newTable.randomizeWeights(rand);
+		
+		FactorTable oldTable = new FactorTable(domain10, domain20, domain5);
+		oldTable.change(newTable.getIndices(), newTable.getWeights());
+		
+		FactorTablePerformanceTester oldTester = new FactorTablePerformanceTester(oldTable, iterations);
+		FactorTablePerformanceTester newTester = new FactorTablePerformanceTester(newTable, iterations);
+
+		@SuppressWarnings("unused")
+		double oldNs, newNs;
+
+		System.out.println("==== dense 10x20x5 table ==== ");
+		
+		oldNs = oldTester.testGet();
+		newNs = newTester.testGet();
+		
+		oldNs = oldTester.testGetWeightIndexFromTableIndices();
+		newNs = newTester.testGetWeightIndexFromTableIndices();
+
+		oldNs = oldTester.testEvalAsFactorFunction();
+		newNs = newTester.testEvalAsFactorFunction();
+		
+		System.out.println("==== sparse 10x20x5 table ==== ");
+		
+		// Randomly sparsify the tables
+		for (int i = newTable.jointSize() / 2; --i>=0;)
+		{
+			newTable.setWeightForJointIndex(0.0, rand.nextInt(newTable.jointSize()));
+		}
+		newTable.sparsify();
+		oldTable.change(newTable.getIndices(), newTable.getWeights());
+		
+//		oldNs = oldTester.testGet();
+//		newNs = newTester.testGet();
+
+		newTable.densify();
+		oldNs = oldTester.testGetWeightIndexFromTableIndices();
+		newNs = newTester.testGetWeightIndexFromTableIndices();
+
+		oldNs = oldTester.testEvalAsFactorFunction();
+		newNs = newTester.testEvalAsFactorFunction();
+		
 	}
 	
 	private void testRandomOperations(NewFactorTable table, int nOperations)
