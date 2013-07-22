@@ -108,9 +108,13 @@ public class SFactorGraph extends SFactorGraphBase
 			else
 				return new GaussianAdd(factor);
 		}
-		if (funcName.equals("Sum"))
+		else if (funcName.equals("Sum"))
 		{
 			return new GaussianAdd(factor);
+		}
+		else if (funcName.equals("ComplexSum"))
+		{
+			return new MultivariateGaussianAdd(factor);
 		}
 		else if (funcName.equals("constmult"))
 		{
@@ -122,6 +126,10 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("Product"))
 		{
 			return new GaussianConstMult(factor);    		
+		}
+		else if (funcName.equals("ComplexProduct"))
+		{
+			return new MultivariateGaussianConstMult(factor);    		
 		}
 		else if (funcName.equals("polynomial"))
 		{
@@ -174,6 +182,14 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("multivariateconstmult"))
 			return true;
 		else if (funcName.equals("linear"))
+			return true;
+		else if (funcName.equals("Sum"))
+			return true;
+		else if (funcName.equals("ComplexSum"))
+			return true;
+		else if (funcName.equals("Product"))
+			return true;
+		else if (funcName.equals("ComplexProduct"))
 			return true;
 		else
 			return false;	

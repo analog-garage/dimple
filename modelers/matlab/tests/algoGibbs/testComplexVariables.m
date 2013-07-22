@@ -25,6 +25,7 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -67,6 +68,9 @@ cc = pairsToComplex(cs);
 
 assertElementsAlmostEqual(cc, ac + bc, 'absolute');
 assertElementsAlmostEqual(mean(cs), [7,5], 'absolute', 0.05);
+assert(a.Domain.NumElements == 2);
+assert(b.Domain.NumElements == 2);
+assert(c.Domain.NumElements == 2);
 
 end
 
@@ -414,3 +418,59 @@ function c = pairsToComplex(s)
 c = s(:,1) + 1i*s(:,2);
 end
 
+
+
+
+% Test bounded complex domains
+function test5(debugPrint, repeatable)
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+minr = -1;
+maxr = 1;
+mini = -0.5;
+maxi = 0.5;
+dr = RealDomain(minr,maxr);
+di = RealDomain(mini, maxi);
+jd = RealJointDomain(dr,di);
+
+a = Complex(jd);
+b = Complex(jd);
+a.Name = 'a';
+b.Name = 'b';
+
+c = a + b;
+
+a.Input = {FactorFunction('Normal',.3,2), FactorFunction('Normal',-.1,2)};
+b.Input = {FactorFunction('Normal',.4,2), FactorFunction('Normal',.6,2)};
+
+fg.Solver.setNumSamples(1000);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+as = a.Solver.getAllSamples;
+bs = b.Solver.getAllSamples;
+cs = c.Solver.getAllSamples;
+ac = pairsToComplex(as);
+bc = pairsToComplex(bs);
+cc = pairsToComplex(cs);
+
+assertElementsAlmostEqual(cc, ac + bc, 'absolute');
+
+% Check that samples of a and b don't exceed the bounds
+assert(all(min(as) > [minr mini]));
+assert(all(max(as) < [maxr maxi]));
+assert(all(min(bs) > [minr mini]));
+assert(all(max(bs) < [maxr maxi]));
+assert(all(min(cs) > [2*minr 2*mini]));
+assert(all(max(cs) < [2*maxr 2*maxi]));
+
+
+end

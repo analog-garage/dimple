@@ -86,6 +86,16 @@ public class PRealJointVariableVector extends PVariableVector
 		return beliefs;
 	}
 	
+	public double[][] getValues(int[] indices)
+	{
+		double[][] values = new double[indices.length][];
+		
+		for (int i = 0; i < indices.length; i++)
+			values[i] = getRealJointVariable(indices[i]).getValue();
+		
+		return values;
+	}
+	
 	@Override
 	public PNodeVector createNodeVector(Node[] nodes)
 	{

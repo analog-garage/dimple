@@ -57,6 +57,11 @@ public class Real extends VariableBase
 	}
 	
 	
+	public double getValue()
+	{
+		return (Double)_solverVariable.getValue();
+	}
+	
 	// Fix the variable to a specific value
 	public double getFixedValue()
 	{

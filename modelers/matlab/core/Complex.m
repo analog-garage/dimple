@@ -20,4 +20,26 @@ classdef Complex < RealJoint
            obj@RealJoint(2,varargin{:});
        end
    end
+   
+   
+   methods (Access=protected)
+      
+       function v = getValue(obj)
+            values = getValue@RealJoint(obj);
+            
+            % Turn the values into complex numbers
+            % Final dimension of values array have the real and imaginary parts
+            arrayDims = ndims(values);
+            if (arrayDims == 2 && size(vec(values),2) == 1)
+                arrayDims = 1;  % ndims answers 2 even if it's really 1
+            end
+            rindex = repmat({':'},1,arrayDims);
+            iindex = rindex;
+            rindex{arrayDims} = 1;
+            iindex{arrayDims} = 2;
+            v = values(rindex{:}) + 1i*values(iindex{:});
+       end
+
+   end
+   
 end

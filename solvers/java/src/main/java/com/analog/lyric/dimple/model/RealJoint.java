@@ -43,6 +43,12 @@ public class RealJoint extends VariableBase
 	}
 	
 	
+	public double[] getValue()
+	{
+		return (double[])_solverVariable.getValue();
+	}
+
+	
 	// Fix the variable to a specific value
 	public final double[] getFixedValue()
 	{

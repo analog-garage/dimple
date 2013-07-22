@@ -64,6 +64,13 @@ public class MultivariateVariable extends SVariableBase
 		doUpdate(m,-1);
 		return m;
 	}
+	
+	@Override
+	public Object getValue()
+	{
+		MultivariateMsg m = (MultivariateMsg)getBelief();
+		return m.getMeans();
+	}
 
 	@Override
 	public void updateEdge(int outPortNum)  

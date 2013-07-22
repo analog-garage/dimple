@@ -101,6 +101,16 @@ public class PRealVariableVector extends PVariableVector
 		}
 		return beliefs;
 	}
+	
+	public double[] getValues(int[] indices)
+	{
+		double[] values = new double[indices.length];
+		
+		for (int i = 0; i < indices.length; i++)
+			values[i] = getRealVariable(indices[i]).getValue();
+		
+		return values;
+	}
 
 	
 	public void setInput(int [] indices, Object factorFunction)
