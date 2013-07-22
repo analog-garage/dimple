@@ -132,8 +132,6 @@ myFactorGraph.addFactor(new NopFactorFunction("finiteFieldMult"),x,y,z);
 \end{lstlisting}
 \fi
 
-TODO: Test the Java Finite Field stuff.
-
 Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
 
 \ifmatlab

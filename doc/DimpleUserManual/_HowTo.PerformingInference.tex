@@ -44,8 +44,6 @@ The solver name is case insensitive.  The current set of valid solver names are:
 
 \ifjava
 
-TODO: Do we want to support named solvers at some point?
-
 \begin{lstlisting}
 myGraph.setSolverFactory(
      new com.analog.lyric.dimple.solvers.gibbs.Solver()
@@ -60,7 +58,7 @@ The current set of solvers is:
 \item com.analog.lyric.dimple.solvers.gaussian.Solver()
 \item com.analog.lyric.dimple.solvers.particleBP.Solver()
 \item com.analog.lyric.dimple.solvers.gibbs.Solver()
-\item LP - TODO not yet supported by Java
+\item LP - The LP solver is not currently supported by Java.
 \end{itemize}
 
 \fi
@@ -758,10 +756,6 @@ double [] fb = ((DiscreteFactor)myFactor).getBelief();
 \fi
 
 Using the Belief property results in a compact representation of the belief that leaves out values corresponding to zero values of the factor.  
-
-\ifjava
-TODO: Should support fullBelief
-\fi
 
 \ifmatlab
 

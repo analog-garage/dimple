@@ -71,6 +71,7 @@ public class TestLPSolver
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void test()
 	{

@@ -803,7 +803,7 @@ The specific set of operators supported is given in section~\ref{sec:overloaded}
 \para{Implicit Factor Creation}
 \label{sec:ImplicitFactorCreation}
 
-TODO: Java does not currently support anything similar to MATLAB's operator overloading.  However, it would be easy to extend the java to support things like:
+Java Dimple does not currently support anything similar to MATLAB Dimple's operator overloading.  However, it would be easy to extend the java to support things like:
 
 \begin{lstlisting}
 Real z = a.plus(b).times(c.pow(d)).minus(e.minus().sqrt());
@@ -943,8 +943,6 @@ Factor f = fg.addFactor(ne,a,b);
 VariableBase b2 = fg.split(b);
 VariableBase a2 = fg.split(a,f);
 \end{lstlisting}
-
-TODO: should fix this so we retrieve something other than VariableBase
 
 \fi
 
@@ -1383,7 +1381,7 @@ fg.plot('nesting',0,'depth',iv,2);
 \fi
 
 \ifjava
-TODO: Plotting graphs is not currently supported in Java.  this should be fixed.
+Plotting graphs is not currently supported in Java Dimple.  (MATLAB Dimple does support plotting graphs).  
 \fi
 
 

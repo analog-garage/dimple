@@ -7,7 +7,7 @@ See /demo/12\_Tutorial for the code.
 \fi
 
 \ifjava
-TODO: Where should we put the java examples?
+All java examples referenced in this section can be found in /solvers/java/src/main/java/com/analog/lyric/dimple/examples if Dimple has been installed from source.
 \fi
 
 \subsection{A Hidden Markov Model}
@@ -35,7 +35,7 @@ See \/demo/12\_Tutorial/DimpleTutorial\_HMM.m
 
 \ifjava
 
-TODO: See what?
+See solvers/java/src/main/java/com/analog/lyric/dimple/examples/HMM.java.
 
 \fi
 
@@ -237,7 +237,7 @@ end
 
 \ifjava
 
-see TODO.  What?
+see the ObservationFactorFunction from solvers/java/src/main/java/com/analog/lyric/dimple/examples/HMM.java.
 
 \begin{lstlisting}
 	public static class ObservationFactorFunction extends FactorFunction
@@ -495,10 +495,11 @@ end
 
 \ifjava
 
-From TODO
+
+See solvers/java/src/main/java/com/analog/lyric/dimple/examples/BadNBitXor.java
 
 \begin{lstlisting}
-	public static class BadNBitXor extends FactorFunction
+	public static class BadNBitXorFactor extends FactorFunction
 	{
 		@Override
 		public double eval(Object ... args)
@@ -551,7 +552,7 @@ Discrete b1 = new Discrete(domain);
 Discrete b2 = new Discrete(domain);
 Discrete b3 = new Discrete(domain);
 Discrete b4 = new Discrete(domain);
-fourBitXor.addFactor(new BadNBitXor(),b1,b2,b3,b4);
+fourBitXor.addFactor(new BadNBitXorFactor(),b1,b2,b3,b4);
 b1.setInput(0.2,0.8);
 b2.setInput(0.2,0.8);
 b3.setInput(0.2,0.8);
@@ -683,7 +684,7 @@ disp(b.Value);
 
 \ifjava
 
-From TODO
+From solvers/java/src/main/java/com/analog/lyric/dimple/examples/ThreeBitXor.java
 
 \begin{lstlisting}
 public class ThreeBitXor extends FactorFunction
@@ -700,7 +701,7 @@ public class ThreeBitXor extends FactorFunction
 }
 \end{lstlisting}
 
-From TODO
+From solvers/java/src/main/java/com/analog/lyric/dimple/examples/FourBitXor.java
 
 \begin{lstlisting}
 
@@ -767,7 +768,7 @@ XorGraph.addFactor(@XorDeltaTutorial,b(3),b(4),c);
 
 \ifjava
 
-from TODO
+See solvers/java/src/main/java/com/analog/lyric/dimple/examples/Nested.java
 
 \begin{lstlisting}
 ////////////////////////////////////// 
