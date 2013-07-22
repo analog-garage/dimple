@@ -776,15 +776,13 @@ fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
 \end{lstlisting}
 \fi
 
-We have not yet added a factor, so the real variables indicated by a are not yet associated with the fg FactorGraph.
+We have not yet added a factor, so the real variables indicated by a are not yet associated with the FactorGraph.
 
-\begin{enumerate}
-\item Linear Factors
-\item Add
-\end{enumerate}
+\para{Add}
 
 As mentioned previously, the add function is implemented analytically. The following code demonstrates how to implement a factor graph that imposes the constraint that a=b+c
 
+\ifmatlab
 \begin{lstlisting}
 a = Real();
 b = Real();
@@ -814,10 +812,35 @@ a = b + c;
 \end{lstlisting}
 
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real a = new Real();
+Real b = new Real();
+Real c = new Real();
+		 
+a.setInputObject(new double [] {8,1});
+b.setInputObject(new double [] {10,2});
+c.setInputObject(new double [] {-1,3});
+
+FactorGraph fg = new FactorGraph();
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+
+Factor f = fg.addFactor(new NopFactorFunction("add"),a,b,c);
+
+fg.solve();
+\end{lstlisting}
+
+Note that the NopFactorFunction is simply used to provide a factor function with the "add" name.  The gaussian solver provides a custom factor for functions named "add".
+\fi
+
+
 \para{Multiply by Constant}
 
 The constmult factor adds a constraint that a=bc or a=cb. The product should be the left most argument to the addFactor call.
 
+\ifmatlab
 \begin{lstlisting}
 fg = FactorGraph();
 a = Real();
@@ -839,11 +862,43 @@ fg.solve();
 assertEqual(a.Belief,[10*5; 1*5]);
 \end{lstlisting}
 
+
 Note that the constant multiplication factor could alternatively have been added using the overloaded product operator, with one of the arguments being a constant:
 
 \begin{lstlisting}
 a = b * c;
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+Real a = new Real();
+Real b = new Real();
+double c = 5;
+
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());		
+fg.addFactor(new NopFactorFunction("constmult"),a,b,c);
+a.setInputObject(new double [] {10,1});
+fg.solve();
+
+double [] belief = (double[])b.getBeliefObject();
+
+System.out.println(belief[0] - 10.0/5);
+System.out.println(belief[1] - 1.0/5);
+
+a.setInputObject(new double [] {0,Double.POSITIVE_INFINITY});
+b.setInputObject(new double [] {10,1});
+fg.solve();
+
+belief = (double[])a .getBeliefObject();
+
+System.out.println(belief[0] - 10.0*5);
+System.out.println(belief[1] - 1.0*5);
+\end{lstlisting}
+\fi
+
 
 
 \para{Linear Factor}
@@ -856,17 +911,35 @@ Assuming you want to specify the following constraint:
 
 where c is a vector of constants and x is a vector of variables and total is a constant, you can use the Gaussian solver linear factor:
 
+\ifmatlab
 \begin{lstlisting}
-    fg = FactorGraph();
-    fg.Solver = 'Gaussian';
+fg = FactorGraph();
+fg.Solver = 'Gaussian';
 
-    x1 = Real();
-    x2 = Real();
-    x3 = Real();
-    consts = [1 2 3];
-    total = 6;
-    fg.addFactor(@linear,x1,x2,x3,consts,total);
+x1 = Real();
+x2 = Real();
+x3 = Real();
+consts = [1 2 3];
+total = 6;
+fg.addFactor(@linear,x1,x2,x3,consts,total);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+
+Real x1 = new Real();
+Real x2 = new Real();
+Real x3 = new Real();
+double [] consts = new double [] {1,2,3};
+double total = 6;
+fg.addFactor(new NopFactorFunction("linear"),x1,x2,x3,consts,total);
+\end{lstlisting}
+\fi
+
+
 
 \para{General Factors}
 
@@ -922,9 +995,8 @@ Users who wish to create their own FactorFunctions to be used with the Gaussian 
 
 \begin{lstlisting}
 
-import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorFunction;
 
-public class GaussianAddFactorFunction extends GaussianFactorFunction
+public class GaussianAddFactorFunction extends HybridSampledBPFactorFunction
 {
 
     public GaussianAddFactorFunction() 
@@ -991,7 +1063,7 @@ The following example does the following:
 \end{itemize}
 
 
-
+\ifmatlab
 \begin{lstlisting}
 v = Real(3,1);
 
@@ -1036,16 +1108,77 @@ for i = 1:3
 
 end
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+Real [] v = new Real[3];
+for (int i = 0; i < 3; i++)
+	v[i] = new Real();
 
+FactorGraph fg = new FactorGraph();
+fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+com.analog.lyric.dimple.solvers.gaussian.SFactorGraph sfg = (com.analog.lyric.dimple.solvers.gaussian.SFactorGraph)fg.getSolver(); 
+sfg.setNumSamples(100000);
+sfg.setSeed(0);
+
+////////////////////
+//Test add
+double [][] inputs = new double [][] {
+	new double [] {9,2},
+	new double [] {3,2},
+	new double [] {6,2}
+};
+
+for (int i = 0; i < 3; i++)
+{
+	double [][] tmpinputs = inputs.clone();
+	tmpinputs[i] = new double [] {0,Double.POSITIVE_INFINITY};
+
+	for (int j = 0; j < 3; j++)
+		v[j].setInputObject(tmpinputs[j]);
+
+	Factor f = fg.addFactor(new com.analog.lyric.dimple.FactorFunctions.HybridAddFactorFunction(),v[0],v[1],v[2]);
+
+	fg.solve();
+
+	
+   double [] actualBelief = (double[]) v[i].getBeliefObject();
+    
+   fg.remove(f);
+    
+   f = fg.addFactor(new NopFactorFunction("add"),v[0],v[1],v[2]);
+
+   fg.solve();
+
+   double [] expectedBelief = (double[] )v[i].getBeliefObject();
+    
+   fg.remove(f);
+    
+   double diff = 0;
+   for (int j = 0; j < 2; j++)
+	   diff += Math.pow(actualBelief[j]-expectedBelief[j],2);
+
+   System.out.println(diff);
+}
+\end{lstlisting}
+\fi
 
 Users can specify different numbers of samples to be accrued for each factor.
 
-
+\ifmatlab
 \begin{lstlisting}
 f1.setNumSamples(x);
 f2.setNumSamples(y);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+((HybridSampledBPFactor)f1).setNumSamples(x);
+((HybridSampledBPFactor)f2).setNumSamples(y);
+\end{lstlisting}
+\fi
 
 
 where f1 and f2 are objects returned from an addFactor call.
@@ -1055,9 +1188,17 @@ where f1 and f2 are objects returned from an addFactor call.
 
 If the user defined FactorFunction provides a low acceptance ratio, it's conceivable a Factor computation might never terminate. The user can specify a maximum number of attempts to be made before throwing an exception:
 
+\ifmatlab
 \begin{lstlisting}
 fg.Solver.setMaxNumTries(1e6);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.getSolver().setMaxNumTries(1000000);
+\end{lstlisting}
+\fi
 
 \para{Multivariate Gaussians}
 \label{sec:MultivariateGaussians}
@@ -1068,7 +1209,7 @@ The Dimple Gaussian solver provides some support for multivariate Gaussian varia
 
 The following code demonstrates the creation and use of a multivariate Gaussian.
 
-
+\ifmatlab
 \begin{lstlisting}
 rj = RealJoint(2);
 means = [2 3]Õ;
@@ -1078,13 +1219,36 @@ rj.Input = MultivariateMsg(means,covar);
 rj.Belief.Means
 rj.Belief.Covariance
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealJoint rj = new RealJoint(2);
+double [] means = new double [] {2,3};
+double [][] covar = new double [][] {
+		new double [] {1,0},
+		new double [] {0,1}
+};
+rj.setInputObject(new MultivariateMsg(means, covar));
+rj.getBeliefObject();
+rj.setInput(means,covar);
+System.out.println(Arrays.toString(rj.getBelief().getMeans()));
+double [][] covarBelief = rj.getBelief().getCovariance();
+for (int i = 0; i < covarBelief.length; i++)
+	System.out.println(Arrays.toString(covarBelief[i]));
+\end{lstlisting}
+\fi
 
 Users must create RealJoint variables.  The first argument of the constructor specifies the number of variables in the multivariate Gaussian.  The Gaussian solver expects users to specify a MultivariateMsg type as input to the variable.  This message type takes a mean vector and covariance matrix as arguments.  Beliefs return MultivariateMsg types.
 
 
 \subpara{Factors}
 
-The Multivariate Gaussian solver supports a matrix multiplication and addition factor.  The following code snippet is taken from the demos/17\_KalmanFilter/run.m file.
+The Multivariate Gaussian solver supports a matrix multiplication and addition factor.  
+
+\ifmatlab
+The following code snippet is taken from the demos/17\_KalmanFilter/run.m file.
+
 
 \begin{lstlisting}
 %F is the state transition model.  (Given current state, what's the next 
@@ -1118,6 +1282,14 @@ nested.addFactor(@constmult,fznonoise,H,fx);
 nested.addFactor(@add,fz,fv,fznonoise);
 nested.addFactor(@constmult,fxnext,F,fx);
 \end{lstlisting}
+\fi
+
+\ifjava
+
+TODO: Create Java Kalman Filter example.
+
+\fi
+
 
 \subpara{Rolled up Graphs and Multivariate Gaussians}
 
@@ -1127,10 +1299,18 @@ Rolled up graphs can be used with Multivariate Gaussians.  This is useful for cr
 \subsubsection{Particle BP Solver}
 
 Use of the particle BP solver is specified by calling:
+
+\ifmatlab
 \begin{lstlisting}
 fg.Solver = 'ParticleBP';
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+fg.setSolver(new com.analog.lyric.dimple.solvers.particleBP.Solver());
+\end{lstlisting}
+\fi
 
 \para{Methods}
 
@@ -1138,57 +1318,128 @@ The following sections list the solver-specific methods for the Particle BP solv
 
 \subpara{Graph Methods}
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setNumParticles(numParticles);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setNumParticles(numParticles);
+\end{lstlisting}
+\fi
 
 For each variable in the graph, sets the number of particles per variable. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setResamplingUpdatesPerParticle(updatesPerParticle);
+\end{lstlisting}
+\fi
 
 For each variable in the graph, sets the number of updates per particle to perform each time the particle is resampled. This is set globally for all variables in the graph as an alternative to setting this for all variables separately.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setNumIterationsBetweenResampling(numIterationsBetweenResampling);
 graph.Solver.getNumIterationsBetweenResampling();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.setSolver().setNumIterationsBetweenResampling(numIterationsBetweenResampling);
+graph.setSolver().getNumIterationsBetweenResampling();
+\end{lstlisting}
+\fi
 
 Set/get the number of iterations between re-sampling all of the variables in the graph (default is 1, meaning resample between every iteration).
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setInitialTemperature(initialTemperature);
 graph.Solver.getInitialTemperature();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setInitialTemperature(initialTemperature);
+graph.getSolver().getInitialTemperature();
+\end{lstlisting}
+\fi
+
 
 Set/get the initial temperature when using tempering. Note that setting the initial temperature automatically enables the use of tempering if it had not been enabled already.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setTemperingHalfLifeInIterations();
 graph.Solver.getTemperingHalfLifeInIterations();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setTemperingHalfLifeInIterations();
+graph.getSolver().getTemperingHalfLifeInIterations();
+\end{lstlisting}
+\fi
 
 Set/get the tempering half-lifeÑthe number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.enableTempering();
 graph.Solver.disableTempering();
 graph.Solver.isTemperingEnabled();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().enableTempering();
+graph.getSolver().disableTempering();
+graph.getSolver().isTemperingEnabled();
+\end{lstlisting}
+\fi
 
 Enable or disable the use of tempering, or determine if tempering is in use.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setTemperature(T);
 graph.Solver.getTemperature();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setTemperature(T);
+graph.getSolver().getTemperature();
+\end{lstlisting}
+\fi
 
 Set/get the current temperature. Setting the current temperature overrides the current annealing temperature.
 
+\ifmatlab
 \begin{lstlisting}
 graph.Solver.setSeed(seed);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setSeed(seed);
+\end{lstlisting}
+\fi
 
 Set the random seed used for re-sampling. Setting the seed allows repeatable execution of the solver.
 
@@ -1199,42 +1450,95 @@ The Particle BP solver supports both discrete and real variables. For discrete v
 \subpara{Real-Variable-Specific Methods}
 \label{sec:ParticleBPRealVariableSpecificMethods}
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setNumParticles(numParticles);
 variable.Solver.getNumParticles();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setNumParticles(numParticles);
+variable.getSolver().getNumParticles();
+\end{lstlisting}
+\fi
 
 Set/get the number of particles to represent this variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setResamplingUpdatesPerParticle(updatesPerParticle);
 variable.Solver.getResamplingUpdatesPerParticle();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setResamplingUpdatesPerParticle(updatesPerParticle);
+variable.getSolver().getResamplingUpdatesPerParticle();
+\end{lstlisting}
+\fi
+
 
 Set/get the number of updates per particle to perform each time the particle is resampled.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setProposalStandardDeviation(stdDev);
 variable.Solver.getProposalStandardDeviation();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setProposalStandardDeviation(stdDev);
+variable.getSolver().getProposalStandardDeviation();
+\end{lstlisting}
+\fi
+
 
 Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.setInitialParticleRange(min, max);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setInitialParticleRange(min, max);
+\end{lstlisting}
+\fi
 
 Set the range over which the initial particle values will be defined. The initial particle values are uniformly spaced between the min and max values specified. If the range is specified using this method, it overrides any other initial value. Otherwise, if a finite domain has been specified, the initial particle values are uniformly spaced between the lower and upper bound of the domain. Otherwise, all particles are initially set to zero.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getParticleValues();
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getParticleValues();
+\end{lstlisting}
+\fi
 
 Returns the current set of particle values associated with the variable.
 
+\ifmatlab
 \begin{lstlisting}
 variable.Solver.getBelief(valueSet);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getBelief(valueSet);
+\end{lstlisting}
+\fi
 
 Given a set of values in the domain of the variable, returns the belief evaluated at these points. The result is normalized relative to the set of points requested so that the sum over the set of returned beliefs is 1.
 
@@ -1245,10 +1549,13 @@ NOTE: the generic variable method Belief (or getBeliefs() with no arguments) ope
 \subsubsection{LP Solver}
 \label{sec:LPSolver}
 
+\ifmatlab
 Use of the linear programming (LP) solver is specified by calling:
+
 \begin{lstlisting}
 fg.Solver = 'LP';
 \end{lstlisting}
+
 
 The LP solver transforms a factor graph into an equivalent linear program, which is solved using a linear programming software package.  The current version of Dimple uses the MATLAB linear programming function for this purpose.  As a result, use of Dimple's LP solver requires the MATLAB Optimization Toolbox\footnote{This restriction may be lifted in a future version of Dimple.}.
 
@@ -1258,4 +1565,8 @@ In the current version of Dimple (version 0.3), there is no support for rolled-u
 
 There are currently no solver-specific methods for the LP solver.
 
+\fi
 
+\ifjava
+TODO: Is the LP solver supported for Java
+\fi

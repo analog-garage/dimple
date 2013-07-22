@@ -7,6 +7,7 @@ import com.analog.lyric.dimple.FactorFunctions.Normal;
 import com.analog.lyric.dimple.FactorFunctions.XorDelta;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
 import com.analog.lyric.dimple.model.Bit;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
@@ -30,6 +31,7 @@ import com.analog.lyric.dimple.model.repeated.RealStream;
 import com.analog.lyric.dimple.schedulers.SequentialScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood.PseudoLikelihood;
@@ -75,22 +77,54 @@ public class Tmp {
 		}
 	}
 
+	
+	public class GaussianAddFactorFunction extends HybridSampledBPFactorFunction
+	{
+
+	    public GaussianAddFactorFunction() 
+	    {
+	        super("GaussianAdd");
+	    }
+
+	    @Override
+	    public double acceptanceRatio(int portIndex, Object... inputs) 
+	    {
+	        return 1;
+	    }
+
+	    @Override
+	    public Object generateSample(int portIndex, Object... inputs) 
+	    {
+	        if (portIndex == 0)
+	        {
+		    double sum = 0;
+		    for (int i = 0; i < inputs.length; i++)
+	            {
+	                sum += (Double)inputs[i];
+	            }
+	            return sum;
+	         }
+	         else
+	         {
+	             double sum = (Double)inputs[0];
+	             for (int i = 1; i < inputs.length; i++)
+	             {
+	                 sum -= (Double)inputs[i];
+	             }
+	             return sum;
+	         }
+	    }
+	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) 
 	{
-		Real a1 = new Real();
-		Real a2 = new Real();
-		Real a3 = new Real();
-		double mu = 3;
-		double sigma = 4;
-		a1.setInputObject(new double [] {mu,sigma});
-		double mu2 = 10;
-		double sigma2 = 2;
-		a2.setInputObject(new double [] {mu2,sigma2});
-		FactorGraph fg = new FactorGraph(); 
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
+		BitStream bs = new BitStream();
+		DoubleArrayDataSource dads = null;
+		MultivariateDataSource mds = new MultivariateDataSource();
+		DoubleArrayDataSink dads = new DoubleArrayDataSink();
+		
 	}
 
 }
