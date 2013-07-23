@@ -1,6 +1,9 @@
 Dimple Documentation
 ==================
 
+Building the documentation
+--------------------------
+
 The Dimple Documentation is written in LaTeX.  In order to build the documentation, developers must have LaTeX installed.
 
 To build the user documentation:
@@ -9,9 +12,53 @@ To build the user documentation:
 python builddoc.py -u
 ----
 
+The previous command will produce both Java and MATLAB documentation.  If you want just one or the other use:
+
+----
+python builddoc.py -j
+----
+
+for java documentation and:
+
+----
+python builddoc.py -m
+----
+
+for MATLAB documentation.
+
 To build the developer documentation:
 
 ----
 python builddoc.py -d
 ----
 
+Editing the User Documentation
+------------------------------
+The Java and MATLAB documentation are built from the same source.  As a result, all MATLAB specific content should be contained with:
+
+\ifmatlab
+matlab specific stuff
+\fi
+
+and all Java specific content should be contained with:
+
+\ifjava
+java specific stuff
+\fi
+
+When editing the Latex with TexShop, you can modify a flag in the DimpleUserManual.tex 
+file to switch between java and MATLAB documentation.  Find the following text:
+
+\ifdefined\forjava
+	\javatrue
+\else
+	\ifdefined\formatlab
+		\matlabtrue
+	\else		
+                %modify this flag to matlabtrue or javatrue when editing with TexShop
+                %When building from the commandline this will be ignored.
+		\javatrue
+	\fi
+\fi
+
+Modify the last \javatrue to \matlab true or vice versa.
