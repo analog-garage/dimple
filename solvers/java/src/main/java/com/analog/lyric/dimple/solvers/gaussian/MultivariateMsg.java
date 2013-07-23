@@ -67,6 +67,13 @@ public class MultivariateMsg implements Cloneable
 		_matrix = cloneMatrix(covariance);
 		_isInInformationForm = false;
 	}
+	
+	public void set(MultivariateMsg message)	// Set from another message without first extracting the components or determining which form
+	{
+		_vector = message._vector.clone();
+		_matrix = cloneMatrix(message._matrix);
+		_isInInformationForm = message._isInInformationForm;
+	}
 
 	public double [] getInformationVector() 
 	{
