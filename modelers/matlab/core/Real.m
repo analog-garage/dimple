@@ -109,16 +109,16 @@ classdef Real < VariableBase
         end
         
         
-        function setInput(obj,factorFunction)
-            if (isa(factorFunction, 'FactorFunction'))
-                factorFunction = factorFunction.get();
-            elseif (iscell(factorFunction))
-                factorFunction = FactorFunction(factorFunction{:}).get();
+        function setInput(obj,input)
+            if (isa(input, 'FactorFunction'))
+                input = input.get();
+            elseif (iscell(input))
+                input = FactorFunction(input{:}).get();
             end
             
             v = obj.VectorIndices;
             varids = reshape(v,numel(v),1);
-            obj.VectorObject.setInput(varids,factorFunction);
+            obj.VectorObject.setInput(varids,input);
             
         end
         function retval = getInput(obj)

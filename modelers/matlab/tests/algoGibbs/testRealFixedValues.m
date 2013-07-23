@@ -55,6 +55,9 @@ fg.solve();
 
 as = a.Solver.getCurrentSample;
 assert(~a.hasFixedValue);
+% Test that inputs read back properly too
+assertElementsAlmostEqual(a.Input.evalEnergy(4), a.Input.evalEnergy(2));
+assertElementsAlmostEqual(b.Input.evalEnergy(5), b.Input.evalEnergy(3));
 
 % Now, set a fixed value and run again
 a.FixedValue = 2.7;
@@ -102,6 +105,12 @@ fg.solve();
 
 as = a.Solver.getCurrentSample;
 assert(~a.hasFixedValue);
+% Test that inputs read back properly too
+assertElementsAlmostEqual(a.Input(1).evalEnergy(4), a.Input(1).evalEnergy(2));
+assertElementsAlmostEqual(a.Input(2).evalEnergy(0), a.Input(2).evalEnergy(-2));
+assertElementsAlmostEqual(b.Input(1).evalEnergy(5), b.Input(1).evalEnergy(3));
+assertElementsAlmostEqual(b.Input(2).evalEnergy(7), b.Input(2).evalEnergy(5));
+
 
 % Now, set a fixed value and run again
 a.FixedValue = 2.7 + 1i*1.2;
@@ -159,6 +168,10 @@ fg.solve();
 as = a.invokeSolverMethodWithReturnValue('getCurrentSample');
 hfv = a.hasFixedValue;
 assert(all(~hfv(:)));
+% Test that inputs read back properly too
+assertElementsAlmostEqual(a.Input{1,2,3}.evalEnergy(4), a.Input{1,2,3}.evalEnergy(2));
+assertElementsAlmostEqual(b.Input{1,2,3}.evalEnergy(5), b.Input{1,2,3}.evalEnergy(3));
+
 
 % Now, set a fixed value and run again
 fv = rand(2,3,4);
@@ -224,6 +237,11 @@ fg.solve();
 as = a.invokeSolverMethodWithReturnValue('getCurrentSample');
 hfv = a.hasFixedValue;
 assert(all(~hfv(:)));
+% Test that inputs read back properly too
+assertElementsAlmostEqual(a.Input{1,2,3}(1).evalEnergy(4), a.Input{1,2,3}(1).evalEnergy(2));
+assertElementsAlmostEqual(a.Input{1,2,3}(2).evalEnergy(0), a.Input{1,2,3}(2).evalEnergy(-2));
+assertElementsAlmostEqual(b.Input{1,2,3}(1).evalEnergy(3), b.Input{1,2,3}(1).evalEnergy(1));
+assertElementsAlmostEqual(b.Input{1,2,3}(2).evalEnergy(-1), b.Input{1,2,3}(2).evalEnergy(-3));
 
 % Now, set a fixed value and run again
 fv = rand(2,3,4) + 1i*rand(2,3,4);
@@ -290,6 +308,11 @@ fg.solve();
 as = a.invokeSolverMethodWithReturnValue('getCurrentSample');
 hfv = a.hasFixedValue;
 assert(all(~hfv(:)));
+% Test that inputs read back properly too
+assertElementsAlmostEqual(a.Input{1,2}(1).evalEnergy(4), a.Input{1,2}(1).evalEnergy(2));
+assertElementsAlmostEqual(a.Input{1,2}(2).evalEnergy(0), a.Input{1,2}(2).evalEnergy(-2));
+assertElementsAlmostEqual(b.Input{1,2}(1).evalEnergy(3), b.Input{1,2}(1).evalEnergy(1));
+assertElementsAlmostEqual(b.Input{1,2}(2).evalEnergy(-1), b.Input{1,2}(2).evalEnergy(-3));
 
 % Now, set a fixed value and run again
 fv = rand(2,3) + 1i*rand(2,3);

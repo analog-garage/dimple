@@ -75,6 +75,15 @@ public class PRealJointVariableVector extends PVariableVector
 			getRealJointVariable(indices[i]).setInputObject(input);
 	}
 
+	public Object[] getInput(int[] indices)
+	{
+		Object[] output = new Object[size()];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealJointVariable(indices[i]).getInput();
+		
+		return output;
+	}
+	
 	public Object [] getBeliefs(int [] indices)
 	{
 		Object [] beliefs = new Object[indices.length];

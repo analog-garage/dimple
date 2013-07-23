@@ -135,8 +135,32 @@ classdef RealJoint < VariableBase
         end
         
         
-        function x = getInput(obj)
-            error('not implemented');
+        function retval = getInput(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            b = cell(obj.VectorObject.getInput(varids));
+            
+            v = obj.VectorIndices;
+            
+            %1x1 - Leave priors as is
+            %1xN - Transpose
+            %Nx1 - Leave as is
+            %Anything else - Add extra dimension
+            sz = size(v);
+            isvector = numel(v) == length(v) && numel(v) > 1;
+            isrowvector = isvector && sz(1) == 1;
+            iscolvector = isvector && sz(2) == 1;
+            
+            if isscalar(v)
+                retval = b{1};
+            elseif isrowvector
+                retval = b';
+            elseif iscolvector
+                retval = b;
+            else
+                sz = size(v);
+                sz = [sz numel(b)/numel(v)];
+                retval = reshape(b,sz);
+            end
         end
         
         function setFixedValue(obj,value)
