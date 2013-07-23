@@ -25,6 +25,7 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testRealFixedValues');
 
@@ -245,6 +246,70 @@ for i=1:2
         for k=1:4
             a(i,j,k).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-1,1)};
         end
+    end
+end
+hfv3 = a.hasFixedValue;
+assert(all(~hfv3(:)));
+
+fg.solve();
+as2 = a.invokeSolverMethodWithReturnValue('getCurrentSample');
+cellfun(@(x,y)assert(all(x ~= y)), as2, af);
+
+
+end
+
+
+
+% Real-joint variable arrays (same as test4, but 2D case)
+function test5(debugPrint, repeatable)
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+a = Complex(2,3);
+b = Complex(2,3);
+
+c = a + b;
+
+% Run first with inputs and no fixed value
+% Array Input for Real varaibles doesn't yet work, do use loops
+for i=1:2
+    for j=1:3
+        a(i,j).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-1,1)};
+        b(i,j).Input = {FactorFunction('Normal',2,5), FactorFunction('Normal',-2,1)};
+    end
+end
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.Solver.setNumSamples(10);
+fg.solve();
+
+as = a.invokeSolverMethodWithReturnValue('getCurrentSample');
+hfv = a.hasFixedValue;
+assert(all(~hfv(:)));
+
+% Now, set a fixed value and run again
+fv = rand(2,3) + 1i*rand(2,3);
+a.FixedValue = fv;
+fg.solve();
+
+af = a.invokeSolverMethodWithReturnValue('getCurrentSample');
+
+cellfun(@(x,y)assert(all(x ~= y)), as, af);
+afr = cellfun(@(x)x(1), af, 'UniformOutput', false);
+afi = cellfun(@(x)x(2), af, 'UniformOutput', false);
+assertElementsAlmostEqual(cell2mat(afr) + 1i*cell2mat(afi), fv, 'absolute');
+assertElementsAlmostEqual(a.FixedValue, fv, 'absolute');
+hfv2 = a.hasFixedValue;
+assert(all(hfv2(:)));
+
+% Now set the input again, and run again
+for i=1:2
+    for j=1:3
+        a(i,j).Input = {FactorFunction('Normal',3,5), FactorFunction('Normal',-1,1)};
     end
 end
 hfv3 = a.hasFixedValue;

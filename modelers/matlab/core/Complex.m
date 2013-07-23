@@ -30,7 +30,7 @@ classdef Complex < RealJoint
             
             % Final dimension of values array have the real and imaginary parts
             arrayDims = ndims(values);
-            if (arrayDims == 2 && size(vec(values),2) == 1)
+            if (arrayDims == 2 && min(size(values)) == 1)
                 arrayDims = 1;  % ndims answers 2 even if it's really 1
             end
             rindex = repmat({':'},1,arrayDims);
@@ -43,7 +43,7 @@ classdef Complex < RealJoint
        % Treat the set values as complex numbers
        function setFixedValue(obj,value)
            arrayDims = ndims(value);
-           if (arrayDims == 2 && size(vec(value),2) == 1)
+           if (arrayDims == 2 && min(size(value)) == 1)
                arrayDims = 1;  % ndims answers 2 even if it's really 1
            end
            valueArray = cat(arrayDims+1, real(value), imag(value));
@@ -56,7 +56,7 @@ classdef Complex < RealJoint
             
             % Final dimension of values array have the real and imaginary parts
             arrayDims = ndims(values);
-            if (arrayDims == 2 && size(vec(values),2) == 1)
+            if (arrayDims == 2 && min(size(values)) == 1)
                 arrayDims = 1;  % ndims answers 2 even if it's really 1
             end
             rindex = repmat({':'},1,arrayDims);
