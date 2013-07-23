@@ -16,19 +16,43 @@ The model creation aspect of Dimple primarily involves defining variables and co
 
 To create a new factor graph, call the FactorGraph constructor and assign it to a MATLAB variable.  For example,
 
+\ifmatlab
+
 \begin{lstlisting}
 myGraph = FactorGraph();
 \end{lstlisting}
 
 Note that Dimple makes use of MATLAB objects.  In this case, a FactorGraph is such an object, and ``FactorGraph()'' corresponds to the constructor of that object; in this case, called with no arguments (if there are no arguments, the parentheses may be omitted).  The FactorGraph object has a number of properties and methods that can be called using MATLAB's standard notation for object properties and methods.  For example, ``myGraph.Name'' refers to the Name property of the factor graph.
 
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+FactorGraph myGraph = new FactorGraph();
+\end{lstlisting}
+
+\fi
+
 The created factor graph does not yet contain any variables or factors.  Once a graph is created, then variables and factors can be added to it, as described in the subsequent sections.
 
 Creating a factor graph in this way corresponds to a basic factor graph, or the top-level graph in a nested-graph hierarchy.  To create a factor graph that will ultimately be used as a sub-graph in a nested graph hierarchy, the constructor must include arguments that refer to the ``boundary variables'' that will connect it to the outer graph.  For example,
 
+\ifmatlab
+
 \begin{lstlisting}
 mySubGraph = FactorGraph(varA, varB, varC);
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph mySubGraph = new FactorGraph(varA, varB, varC);
+\end{lstlisting}
+
+\fi
+
 
 In this case, the variables listed in the constructor, must already have been created.  Creation of variables is described in section~\ref{sec:CreatingVariables}.
 
@@ -52,11 +76,21 @@ A factor graph may mix any combination of these variable types, though there are
 
 A variable of a given type can be created using the corresponding object constructor and assigning the result to a MATLAB variable.  For example,
 
+\ifmatlab
+
 \begin{lstlisting}
 myDiscreteVariable = Discrete(1:10);
 myBitVariable = Bit();
 myRealVariable = Real();
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+Discrete var = new Discrete(1,2,3,4,5,6,7,8,9,10);
+\end{lstlisting}
+\fi
 
 In this case, each of the above lines created a single variable of the corresponding type.  In the case of a Discrete variable, a constructor argument is required, which defines the domain of the variable.  In the above example, the domain is the set of integer numbers 1 through 10.
 
@@ -67,7 +101,11 @@ Note that variables may be created prior to creation of the factor graph that th
 
 \subpara{Discrete Variables}
 
-When creating a Discrete variable, the domain of that variable must be specified\footnote{Note that for Bit variables, the domain is implicit and is not specified in the constructor.}.  Once created, the domain of a variable cannot change.  The domain of the discrete variable is always the first argument of the constructor.  The domain is a list in the form of either a MATLAB numerical array, or a MATLAB cell array.  Each entry in the array corresponds to one possible state of the variable.  In the case of a cell array, the entries are arbitrary--they may be, for example, strings, vectors, arrays, or objects.
+When creating a Discrete variable, the domain of that variable must be specified\footnote{Note that for Bit variables, the domain is implicit and is not specified in the constructor.}.  Once created, the domain of a variable cannot change.  
+
+\ifmatlab
+
+The domain of the discrete variable is always the first argument of the constructor.  The domain is a list in the form of either a MATLAB numerical array, or a MATLAB cell array.  Each entry in the array corresponds to one possible state of the variable.  In the case of a cell array, the entries are arbitrary--they may be, for example, strings, vectors, arrays, or objects.
 
 Some examples:
 
@@ -78,9 +116,47 @@ v3 = Discrete({'Sun', 'Clouds', 'Rain', 'Snow'});
 v4 = Discrete({ [1 2; 3 4], [5 6 7; 8 9 10], 3.7});
 \end{lstlisting}
 
+\fi
+
+
+\ifjava
+
+The domain can be passed as a comma separated list, an object array, or a DiscreteDomain instance.
+
+Some examples:
+
+\begin{lstlisting}
+Object [] domain = new Object[10];
+for (int i = 1; i <= domain.length; i++)
+	domain[i-1] = i;
+Discrete var = new Discrete(domain);
+Discrete v2 = new Discrete(1.5, 1/3, 27.4327, -13.6, Math.sqrt(2), Math.sin(Math.PI/7));
+Discrete v3 = new Discrete("Sun", "Clouds", "Rain", "Snow");
+Discrete v4 = new Discrete(new double [][] {
+						new double [] {1,2},
+						new double [] {3,4}}, 
+					new double [][] {
+						new double [] {5,6,7},
+						new double [] {8,9,10}},
+					3.7);
+Discrete v5 = new Discrete(new DiscreteDomain(1,2,3));
+\end{lstlisting}
+
+WARNING:  The following code:
+
+\begin{lstlisting}
+Discrete v6 = new Discrete(new int [] {1,2,3});
+\end{lstlisting}
+
+Will return 1.  It will create a discrete variable with a single domain object which is an array of three integers.
+
+\fi
+
 Even though the domains are discrete, the actual values of the domain states may be anything, including real numbers.  Though, when using real numbers and objects, care must be taken, for example, when making equality comparisons.
 
 The domain of a variable need not be defined in-line in the constructor, but may be defined elsewhere in the program.  For example:
+
+\ifmatlab
 
 \begin{lstlisting}
 myDomain = 1:10;
@@ -88,8 +164,20 @@ myDomain = 1:10;
 myVariable = Discrete(myDomain);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Object [] domain = new Object[10];
+...
+for (int i = 1; i <= domain.length; i++)
+	domain[i-1] = i;
+\end{lstlisting}
+\fi
+
 Alternatively, the domain can be defined as a DiscreteDomain object, which provides an object wrapper around the domain.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 myDomain = DiscreteDomain(1:10);
 ...
@@ -98,19 +186,47 @@ myVariable = Discrete(myDomain);
 
 In this case, the myDomain object has properties that can be queried, such as ``.Elements'', which provides a list of the elements of the domain.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+DiscreteDomain myDomain =  new DiscreteDomain(1,2,3);
+...
+Discrete myVariable = new Discrete(myDomain);
+\end{lstlisting}
+
+
+\fi
+
+In this case, the myDomain object has properties that can be queried, such as \ifmatlab ``.Elements'' \fi \ifjava ".getElements()" \fi, which provides a list of the elements of the domain.
+
 To see the domain of a variable, you can query the Domain property.  For a discrete variable, this returns a DiscreteDomain object, which you can query as described above to see the elements of the domain.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 disp(myVariable.Domain.Elements);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+System.out.println(Arrays.toString(myVariable.getDomain().getElements()));
+\end{lstlisting}
+\fi
 
 The Domain property could be used, for example, to take one variable and create others that have the same domain.  For example,
 
+\ifmatlab
 \begin{lstlisting}
 newVariable = Discrete(otherVariable.Domain);
 \end{lstlisting}
+\fi
 
-
+\ifjava
+\begin{lstlisting}
+Discrete newVariable = new Discrete(otherVariable.getDomain());
+\end{lstlisting}
+\fi
 
 
 \subpara{Real Variables}
@@ -121,6 +237,7 @@ The domain of a Real variable is an array of two real numbers: the first specifi
 
 As with discrete variables, the domain may be specified ahead of time, and may be created by defining in this case a RealDomain object, which takes two arguments: the lower and upper bound, respectively.  Some examples:
 
+\ifmatlab
 \begin{lstlisting}
 r1 = Real();
 r2 = Real([ 0 Inf]);
@@ -131,7 +248,21 @@ r4 = Real(myDomain);
 
 The Domain property of a Real variable returns in this case a RealDomain object, which contains two properties, LB and UB, which correspond to the lower bound and upper bound, respectively.
 
+\fi
 
+\ifjava
+\begin{lstlisting}
+Real r1 = new Real();
+Real r2 = new Real(0.0,Double.POSITIVE_INFINITY);
+Real r3 = new Real(-Math.PI,Math.PI);
+RealDomain myDomain = new RealDomain(-2.6,12.4);
+Real r4 = new Real(myDomain);
+\end{lstlisting}
+
+The Domain property of a Real variable returns in this case a RealDomain object, which contains two properties, getLowerBound() and getUpperBound(), which correspond to the lower bound and upper bound, respectively.
+\fi
+
+\ifmatlab
 
 \para{Creating Arrays of Variables}
 
@@ -155,16 +286,28 @@ subArray = v2(:,:,:,1,8:end);
 subVector = v3(5:10);
 \end{lstlisting}
 
-                
+\fi
+
 \para{Naming Variables}
 
 Variables can be named, which can be useful in debugging as well as displaying a factor graph visually.  A single variable can be named by setting the Name property:
 
+\ifmatlab
 \begin{lstlisting}
 myVariable.Name = 'My variable';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myVariable.setName("My variable");
+\end{lstlisting}
+
+\fi
 
 The variable name can be retrieved by referencing the Name property.
+
+\ifmatlab
 
 An array of variables can be named, each with distinct names by using the setNames method\footnote{For large arrays, using this method is significantly faster than naming each variable individually in a loop.}:
 
@@ -174,7 +317,21 @@ myVariableArray.setNames('X');
 
 This results in a unique name assigned to each variable with the specified prefix, followed by a unique vector variable index number.
 
+\fi
 
+All variables in a factor graph must have unique names.  Sometimes it's desirable to give multiple variables the same label for plotting or displaying.  In this case, users can set the Label property.  If the Label property is not set, plotting and displaying uses the name.  If the Label property is set, the Label is used when displaying and plotting.
+
+\ifmatlab
+\begin{lstlisting}
+myVar.Label = 'myvar';
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myVar.setLabel("myvar");
+\end{lstlisting}
+\fi
 
 \subsubsection{Creating Factors and Connections to Variables}
 \label{sec:CreatingFactors}
@@ -199,6 +356,8 @@ Resulting from this method call, the specified factor is created, the factor is 
 
 The factor specification is one or more arguments that define the factor.  Dimple supports a variety of ways of specifying a factor, each of which is described in more detail in subsequent sections.  A factor specification may be one of the following:
 
+\ifmatlab
+
 \begin{itemize}
 \item A MATLAB function handle
 \item A sub-graph
@@ -208,11 +367,26 @@ The factor specification is one or more arguments that define the factor.  Dimpl
 \item A custom Java FactorFunction object\footnote{The mechanism to create and use custom Java FactorFunction objects is described in Appendix~\ref{sec:userJava}.}
 \end{itemize}
 
-After the factor specification argument(s), the remaining arguments are all treated as variables or constants.  The variables may be individual variables or arrays of variables, or combinations thereof.
+\fi
+
+\ifjava
+
+\begin{itemize}
+\item A sub-graph
+\item A factor-table
+\item An instance of a class that extends FactorFunction
+\end{itemize}
+
+
+\fi
+
+After the factor specification argument(s), the remaining arguments are all treated as variables or constants.   \ifmatlab The variables may be individual variables or arrays of variables, or combinations thereof. \fi
 
 The number and type of variables that can be connected to a factor depend on the type of factor being created.  In some cases, a factor is defined flexibly to accommodate an arbitrary number of connected variables, while in other cases there are restrictions.  In most cases, the order of variables matters.  The definition of a factor generally requires a specific order of variables, where each variable or set of variables may be required to be of a specific type.  In such cases, the arguments of the addFactor method call must appear in the required order.
 
 For example, ``Normal'' is a built-in factor that describes a set of normally distributed variables with variable mean and precision.  In this case, the first argument must be the mean, the second must be the precision, and the remaining one or more variables are the normally distributed variables.  In this case, the factor creation could look like the following:
+
+\ifmatlab
 
 \begin{lstlisting}
 fg = FactorGraph();
@@ -222,21 +396,77 @@ normalSamples = Real(100,100);
 fg.addFactor('Normal', meanValue, precisionValue, normalSamples);
 \end{lstlisting}
 
-In this example, the factor specification argument is the name of the built-in factor, and the normalSamples argument refers to the entire array of 100x100 normally distributed variables.  The number of these sample variables is of arbitrary length only because of the way the ``Normal'' built-in factor was defined.  Note that these variables could have been listed explicitly as separate arguments.  For example, if there were only two such variables, we could have written:
 
+In this example, the factor specification argument is the name of the built-in factor, and the normalSamples argument refers to the entire array of 100x100 normally distributed variables.  The number of these sample variables is of arbitrary length only because of the way the ``Normal'' built-in factor was defined. 
+
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+Real meanValue = new Real();
+Real precisionValue = new Real(0.0,Double.POSITIVE_INFINITY);
+Real [][] normalSamples = new Real[100][100];
+for (int i = 0; i < 100; i++)
+	for (int j = 0; j < 100; j++)
+		normalSamples[i][j] = new Real();
+		
+Object [] vars = new Object[2 + 100*100];
+vars[0] = meanValue;
+vars[1] = precisionValue;
+int index = 2;
+for (int i = 0; i < 100; i++)
+	for (int j = 0; j < 100; j++)
+	{
+		vars[index] = normalSamples[i][j];
+		index++;
+	}
+		
+fg.addFactor(new Normal(), vars);
+\end{lstlisting}
+
+In this example, the factor specification argument is an instance of the Normal factor function, and the normalSamples argument refers to the entire array of 100x100 normally distributed variables.  The number of these sample variables is of arbitrary length only because of the way the ``Normal'' built-in factor was defined.  
+
+\fi
+
+Note that these variables could have been listed explicitly as separate arguments.  For example, if there were only two such variables, we could have written:
+
+\ifmatlab
 \begin{lstlisting}
 normalSamples = Real(2,1);
-fg.addFactor('Normal', meanValue, precisionValue, normalSample1, normalSample2);
+fg.addFactor('Normal', meanValue, precisionValue, normalSamples(1), normalSamples(2));
 \end{lstlisting}
+\fi
 
-When creating a factor, it is sometimes convenient to supply a constant value to one or more of the factor's arguments instead of a variable.  This can be done simply by substituting a MATLAB value that is not a Dimple variable.  In this case, the value must be consistent with the possible values the particular factor is designed to accept.  In the above example, if we wished to have a variable mean value, but define a fixed precision of 0.2, we could have written:
+\ifjava
+\begin{lstlisting}
+Real normalSample1 = new Real();
+Real normalSample2 = new Real();
+fg.addFactor(new Normal(), meanValue, precisionValue, normalSample1, normalSample2);
+\end{lstlisting}
+\fi
+
+When creating a factor, it is sometimes convenient to supply a constant value to one or more of the factor's arguments instead of a variable.  This can be done simply by substituting a value that is not a Dimple variable.  In this case, the value must be consistent with the possible values the particular factor is designed to accept.  In the above example, if we wished to have a variable mean value, but define a fixed precision of 0.2, we could have written:
+
+\ifmatlab
 
 \begin{lstlisting}
-fg.addFactor('Normal', meanValue, 0.2, normalSample1, normalSample2);
+fg.addFactor('Normal', meanValue, 0.2, normalSamples(1), normalSamples(2));
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.addFactor(new Normal(), meanValue, 0.2, normalSample1, normalSample2);
+\end{lstlisting}
+
+\fi
 
 Note that in this case, the ``Normal'' built-in factor requires the precision to be positive, so if we had provided a constant value of -0.2, for example, this would have resulted in an error.  The particular requirements of a factor are specific to the definition of that factor.
 
+\ifmatlab
 
 \para{Vectorized Factor Creation}
 \label{sec:vectorizedFactorCreation}
@@ -340,20 +570,23 @@ function factorValue = StringMatchExample(string, pattern)
 end
 \end{lstlisting}
 
+\fi
 
 \para{Using Factor Tables}
 
-When Dimple creates a factor using a MATLAB factor function, behind the scenes it translates that factor function into a table by enumerating all possible states of all connected variables.  While steps are taken to make this efficient, including storing only non-zero values and reusing tables for identical factors, the time it takes to create the factor table take can in some cases be very large.  In some situation, a user may have specific knowledge of the structure of a factor that would allow them to create the same table much more efficiently.  To accommodate such cases, Dimple allows factors to be specified using user-created factor tables.
+When Dimple creates a factor using a factor function, for some solvers, behind the scenes it translates that factor function into a table by enumerating all possible states of all connected variables.  While steps are taken to make this efficient, including storing only non-zero values and reusing tables for identical factors, the time it takes to create the factor table take can in some cases be very large.  In some situation, a user may have specific knowledge of the structure of a factor that would allow them to create the same table much more efficiently.  To accommodate such cases, Dimple allows factors to be specified using user-created factor tables.
 
 A factor table consists of two parts: a two dimensional array of integers and a single dimensional array of doubles.  Each row of the two dimensional table represents a combination of variable values for which the factor value is non-zero.  Each column represents a variable connected to the factor. The values of this table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles, where that entry contains the value of the factor corresponding to the corresponding set of variable values.
 
 Once the user has created the table, they can create a factor using this table in one of two ways. The first is to provide the two dimensional array of indices and vector of values directly as the first two arguments of the addFactor call, respectively:
 
+\ifmatlab
+
 \begin{lstlisting}
    fg = FactorGraph();
    b = Bit(2,1);
    indices = [0 0; 1 1];
-   values = [1 1];
+   values = [2 1];
    fg.addFactor(indices, values, b);
 \end{lstlisting}
    
@@ -367,7 +600,24 @@ In the following example we first create a factor table object and then create a
    myFactorTable = FactorTable(indices, values, b.Domain, b.Domain);	
    fg.addFactor(myFactorTable, b);
 \end{lstlisting}
+   
+\fi
 
+\ifjava
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+Bit a = new Bit();
+Bit b = new Bit();
+int [][] indices = new int [][] {
+	new int [] {0,0},
+	new int [] {1,1}
+};
+double [] weights = new double [] {2.0,1.0};
+FactorTable ft = new FactorTable(indices, weights, a,b);
+fg.addFactor(ft,a,b);
+\end{lstlisting}
+\fi
+   
 
 
 \para{Using Sub-Graphs}
@@ -381,16 +631,34 @@ When a sub-graph is created, its boundary variables must be defined in the graph
 
 For example, we define a subgraph as follows:
 
+\ifmatlab
+
 \begin{lstlisting}
 a = Discrete(1:10);
 b = Bit;
-x = Bit(4,4);
+x = Bit;
 mySubGraph = FactorGraph(a, b);
 mySubGraph.addFactor(exampleFactor1, a, b);
 mySubGraph.addFactor(exampleFactor2, b, x);
 \end{lstlisting}
 
-To add this subgraph to an outer graph, we use addFactor (or addFactorVectorized), specifying the factor using the subgraph object.
+\fi
+
+\ifjava
+\begin{lstlisting}
+Discrete a = new Discrete(1,2,3);
+Bit b = new Bit();
+Bit x = new Bit();
+FactorGraph mySubGraph = new FactorGraph(a, b);
+mySubGraph.addFactor(exampleFactor1, a, b);
+mySubGraph.addFactor(exampleFactor2, b, x);
+\end{lstlisting}
+\fi
+
+To add this subgraph to an outer graph, we use addFactor \ifmatlab (or addFactorVectorized)\fi, specifying the factor using the subgraph object.
+
+\ifmatlab
+
 \begin{lstlisting}
 N = 5;
 fg = FactorGraph;
@@ -407,11 +675,33 @@ Equivalently, this can be vectorized using:
 fg.addFactorVectorized(mySubGraph, P, Q);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+int N = 5;
+FactorGraph fg = new FactorGraph();
+Discrete [] P = new Discrete[N];
+Discrete [] Q = new Discrete[N];
+for (int i = 0; i < P.length; i++)
+{
+	P[i] = new Discrete(1,2,3);
+	Q[i] = new Bit();
+}
+
+for (int i = 0; i < N; i++)
+    fg.addFactor(mySubGraph, P[i],Q[i]);
+
+\end{lstlisting}
+\fi
+
 
 \para{Using Built-In Factors}
 \label{sec:usingBuiltInFactors}
 
 Dimple supports a set of built-in factors that can be specified when adding a factor to a graph.  The complete list of available built-in factors can be found in section~\ref{sec:builtInFactors}.
+
+\ifmatlab
 
 In many cases, a built-in factor may be specified simply by referring to the name of the factor as a string (which is case sensitive).  As an example,
 
@@ -421,6 +711,7 @@ Precision = Real();
 Values = Real(1,100);
 MyGraph.addFactor('Normal', Mean, Precision, Values);
 \end{lstlisting}
+
 
 Built-in factors may be specified by name only if no constructor arguments are needed.  If constructor arguments are needed, then there are two ways to specify the factor.  The preferred way is to create a FactorFunction object, which takes the name of the factor followed by the constructor arguments for that factor.  For example:
 
@@ -442,6 +733,22 @@ A short-hand notation may alternatively be used, in which the name of the factor
 MyGraph.addFactor({'Gamma', 1, 1}, X);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+
+For example:
+
+\begin{lstlisting}
+FactorFunction myFactorFunction = new Gamma(1,1);
+MyGraph.addFactor(myFactorFunction, X1);
+MyGraph.addFactor(myFactorFunction, X2);
+\end{lstlisting}
+
+
+\fi
+
+\ifmatlab
 
 \para{Implicit Factor Creation Using Overloaded Operators and Functions}
 \label{sec:ImplicitFactorCreation}
@@ -490,17 +797,44 @@ z = a + b;
 
 The specific set of operators supported is given in section~\ref{sec:overloaded}.
 
+\fi
+
+\ifjava
+\para{Implicit Factor Creation}
+\label{sec:ImplicitFactorCreation}
+
+Java Dimple does not currently support anything similar to MATLAB Dimple's operator overloading.  However, it would be easy to extend the java to support things like:
+
+\begin{lstlisting}
+Real z = a.plus(b).times(c.pow(d)).minus(e.minus().sqrt());
+\end{lstlisting}
+
+\fi
 
 \para{Naming Factors}
 
-Just like variables, factors can be named, which can be useful in debugging as well as displaying a factor graph visually.  To name a factor, the factor object must be accessible via a MATLAB variable.  When using addFactor, the result is the factor object, which can be assigned to a MATLAB variable.  A single factor can be named by setting the Name property of the factor object.
+Just like variables, factors can be named, which can be useful in debugging as well as displaying a factor graph visually.  To name a factor, the factor object must be accessible via a variable.  When using addFactor, the result is the factor object, which can be assigned to a variable.  A single factor can be named by setting the Name property of the factor object.
+
+\ifmatlab
 
 \begin{lstlisting}
-myFactor = addFactor(exampleFactor, a, b, c);
+myFactor = fg.addFactor(exampleFactor, a, b, c);
 myFactor.Name = 'My factor';
 \end{lstlisting}
 
-And the factor name can be retrieved by referencing the Name property.
+\fi
+
+\ifjava
+\begin{lstlisting}
+Factor myFactor = fg.addFactor(exampleFactor, a, b, c);
+myFactor.setName("My factor");
+\end{lstlisting}
+
+\fi
+
+And the factor name can be retrieved by referencing the \ifmatlab Name property. \fi \ifjava getName() method. \fi
+
+\ifmatlab
 
 An array of factors can be named, each with distinct names by using the setNames method:
 
@@ -511,12 +845,17 @@ myFactorArray.setNames('F');
 
 This results in a unique name assigned to each factor with the specified prefix, followed by a unique vector variable index number.
 
+\fi
+
+Just like Variables, Factors also support the notion of a Label, which can be used to allow multiple factors to share the same label.
 
 \subsubsection{Modifying an Existing Graph}
 
 \para{Removing a Factor}
 
 ItÕs possible to remove a Factor from an existing FactorGraph:
+
+\ifmatlab
 
 \begin{lstlisting}
 fg = FactorGraph();
@@ -537,9 +876,36 @@ fg = FactorGraph();
    assertElementsAlmostEqual([p1 p1 .6]',b.Belief);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+FactorGraph fg = new FactorGraph();
+ Bit [] b = new Bit[3];
+ for (int i = 0; i < b.length; i++)
+	 b[i] = new Bit();
+ Equals equals = new Equals();
+ fg.addFactor(equals,b[0],b[1]);
+ Factor f = fg.addFactor(equals,b[1],b[2]);
+ double [] inputs = new double [] {0.8,0.8,0.6};
+ for (int i = 0; i < inputs.length ; i++)
+	 b[i].setInput(inputs[i]);
+ fg.solve();
+ for (int i = 0; i < b.length; i++)
+	 System.out.println(b[i].getP1());
+ fg.remove(f);
+ fg.solve();
+ for (int i = 0; i < b.length; i++)
+	 System.out.println(b[i].getP1());
+\end{lstlisting}
+\fi
+
 \para{Splitting Variables}
 
 It can be useful to make a copy of a variable and relate it to the old variable with an equals factor. The following code shows how to do this.
+
+\ifmatlab
 
 \begin{lstlisting}
    a = Bit();
@@ -562,6 +928,24 @@ It can be useful to make a copy of a variable and relate it to the old variable 
 
 We've added code to name all the variables and factors so that the following plot is informative.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+
+Bit a = new Bit();
+Bit b = new Bit();
+ 
+FactorGraph fg = new FactorGraph();
+NotEquals ne = new NotEquals();
+Factor f = fg.addFactor(ne,a,b);
+		   
+VariableBase b2 = fg.split(b);
+VariableBase a2 = fg.split(a,f);
+\end{lstlisting}
+
+\fi
+
 \includegraphics[width=.75\textwidth]{images/SplitGraph.png}
  
 Note that the split method takes a list of factors as the second through nth argument. This is the list of factors that will be moved from the original variable to the copied variable. All unspecified factors will remain connected to the initial variable.
@@ -570,6 +954,8 @@ Note that the split method takes a list of factors as the second through nth arg
 \para{Joining Variables}
 
 It is possible to join variables in an existing graph, which will create a new joint variable and modify all factors connected to the original variables to reconnect to the new joint variable. This can be useful in eliminating loops in a graph. The following code creates a loopy graph and then uses join to remove the loop.
+
+\ifmatlab
 
 \begin{lstlisting}
 a = Bit(); 
@@ -593,6 +979,24 @@ newvar.Name = 'a,b';
 fg.plot(1);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Bit a = new Bit(); 
+Bit b = new Bit();
+Bit c = new Bit();
+Bit d = new Bit();
+
+FactorGraph fg = new FactorGraph();
+ThreeBitXor xor = new ThreeBitXor();
+XorYequalsZ xoryequalsz = new XorYequalsZ();
+Factor f1 = fg.addFactor(xor,a,b,c);
+Factor f2 = fg.addFactor(xoryequalsz ,a,b,d);
+VariableBase newvar = fg.join(a,b);
+\end{lstlisting}
+\fi
+
 The following is the loopy graph:
 
 \includegraphics{images/LoopyGraph.png}
@@ -606,6 +1010,7 @@ And after joining the variables we have:
 
 It is possible to remove loops by joining factors as well as by joining variables.
 
+\ifmatlab
 \begin{lstlisting}
    b = Bit(4,1);
    for i = 1:4
@@ -624,6 +1029,23 @@ It is possible to remove loops by joining factors as well as by joining variable
    
    fg.plot(1);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Bit [] b = new Bit[4];
+for (int i = 0; i < b.length; i++)
+	   b[i] = new Bit();
+		   
+FactorGraph fg = new FactorGraph();
+ThreeBitXor xor = new ThreeBitXor();
+Factor f1 = fg.addFactor(xor, b[0],b[1],b[2]);
+Factor f2 = fg.addFactor(xor, b[1],b[2],b[3]);
+		   
+Factor f3 = fg.join(f1,f2);
+		   
+\end{lstlisting}
+\fi
 
 The following plot shows the graph with the loops:  
  
@@ -647,6 +1069,8 @@ To join factors, Dimple does the following:
 
 For factors connected only to discrete variables, the factors are stored in the form of a factor table (regardless of how the factor was originally specified).  It is possible to modify some or all of the entries of that factor table in an existing factor graph.
 
+\ifmatlab
+
 Modifying a single entry or set of entries in a factor table can be done by getting the FactorTable property and calling the set method.  For example, the following changes a single entry in a factor.  In this example, the factor has two edges, the first with domain containing strings, the second with a domain containing numbers.  The arguments of the set method prior to the last one specify the domain settings for which the factor value is to be changed.  The final argument is the new factor value for the particular domain setting, which will replace the previous value.
 
 \begin{lstlisting}
@@ -669,14 +1093,29 @@ weightList = [0.2 0.15 0.4 0.9];
 factor.FactorTable.change(indexList, weightList);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+int [][] indexList = new int [][] {
+	new int[] {0, 0, 0},
+	new int[][ {0, 1, 1},
+	new int[]{ 1, 1, 0},
+	new int[]{1, 0, 1}};
+double [] weightList = new double []{0.2, 0.15, 0.4, 0.9};
+factor.getFactorTable().change(indexList, weightList);
+\end{lstlisting}
+\fi
+
 Here the indexList is is an array where each row represents a set of zero-based indices into the list of domain elements for each successive domain in the set of domains associated with the variables connected to this factor.  The weightList is a one-dimensional array of real-valued entries in the factor table, where each entry corresponds to the indices given by the corresponding row of the indexList.
 
 IMPORTANT: Identical factor tables are automatically shared between factors.  If changing the factor table for a factor and if that factor is shared by other factors, then this changes it globally for all such factors.
 
 
-
-
 \subsubsection{Plotting a Graph}
+
+\ifmatlab
+
 \label{sec:PlottingAGraph}
 
 When debugging Factor Graphs, it is sometimes useful to be able to plot a Factor Graph.  The FactorGraph class provides a plot method that can be used to visualize a Factor Graph.
@@ -939,12 +1378,18 @@ fg.plot('nesting',0,'depth',iv,2);
 
 \includegraphics{images/plot16.png}
 
+\fi
 
+\ifjava
+Plotting graphs is not currently supported in Java Dimple.  (MATLAB Dimple does support plotting graphs).  
+\fi
 
 
 \subsubsection{Structuring Software for Model Portability}
 
-Because the specification of a model in Dimple is expressed in MATLAB code, this code can be intermingled with other MATLAB code that makes use of the model.  However, it is recommended that code for defining a model be clearly separated from code that makes use of the model or performs other functions.  Specifically, we recommend a structure whereby a graph (or subgraph) is encapsulated in a MATLAB function that creates the graph and returns the graph object, optionally along with some or all of the variables in the graph.  Depending on the application, the graph creation function may take some application-specific arguments.  For example:
+Because the specification of a model in Dimple is expressed in code, this code can be intermingled with other code that makes use of the model.  However, it is recommended that code for defining a model be clearly separated from code that makes use of the model or performs other functions.  Specifically, we recommend a structure whereby a graph (or subgraph) is encapsulated in a function that creates the graph and returns the graph object, optionally along with some or all of the variables in the graph.  Depending on the application, the graph creation function may take some application-specific arguments.  For example:
+
+\ifmatlab
 
 \begin{lstlisting}
 function [fg, vars] = createMyGraph(xDim, yDim)
@@ -962,6 +1407,50 @@ This function can then be used by calling, for example:
 \begin{lstlisting}
 [fg,vars] = createMyGraph(4,4);
 \end{lstlisting}
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+import com.analog.lyric.dimple.model.Bit;
+import com.analog.lyric.dimple.model.FactorGraph;
+
+public class MyGraphCreator {
+
+	public static class Return
+	{
+		FactorGraph graph;
+		Bit a;
+		Bit b;
+		Bit c;
+	}
+	
+	public static Return createGraph()
+	{
+		Return r = new Return();
+		
+		r.graph = new FactorGraph();
+		r.a = new Bit();
+		r.b = new Bit();
+		r.c = new Bit();
+		r.graph.addFactor(new ThreeBitXor(),r.a,r.b,r.c);
+		return r;
+	}
+	
+	public static void main(String[] args) 
+	{
+		Return r = createGraph();
+		
+		r.a.setInput(0.8);
+		r.b.setInput(0.9);
+		r.graph.solve();
+		System.out.println(r.c.getP1());
+
+	}
+
+}
+\end{lstlisting}
+\fi
 
 While it is possible using Dimple to retrieve variables from the factor graph object itself, returning variables in the graph creation function allows them to be more easily managed and manipulated.  The set of returned variables should include, at least, the variables that will subsequently be conditioned on input data and the variables that will be queried after performing inference.  But since it may not be known ahead of time, which variables will be used for these or other purposes, it is often useful to simply return all variables.  If more than one variable or variable array is to be returned, this could be done either by returning each as a separate return value, or combining them all into a single cell array, as shown in the above example.
 

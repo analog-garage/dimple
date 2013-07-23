@@ -11,8 +11,8 @@ Variable Type & Supported Solvers \\
 Discrete & all \\
 Bit & all \\
 Real & Gibbs, Gaussian, ParticleBP \\
-RealJoint & Gaussian \\
-ComplexVar & Gaussian \\
+RealJoint & Gaussian \\ 
+\ifmatlab ComplexVar & Gaussian \\ \fi
 FiniteFieldVariable & SumProduct \\
 \end{longtable} 
 
@@ -26,11 +26,38 @@ The following properties and methods are common to variables of all types.
 
 Read-write.  When read, retrieves the current name of the variable or array of variables.  When set, modifies the name of the variable to the corresponding value.  The value set must be a string.
 
+\ifmatlab
 \begin{lstlisting}
 var.Name = 'string';
 \end{lstlisting}
 
 When setting the Name, only one variable in an array may be set at a time.  To set the names of an entire array of variables to distinct values, the setNames method may be used (see section~\ref{sec:Variable.setNames}).
+
+\fi
+
+\ifjava
+\begin{lstlisting}
+var.setName('string');
+\end{lstlisting}
+
+\fi
+
+\subpara{Label}
+
+Read-write. All variables and factors in a Factor Graph must have unique names. However, sometimes it’s desirable to have variables or factors share similar strings when being plotted or printed. Users can set the Label property to set the name for display. If the Label is not set, the Name will be used for display. Once the label is set, the label will be used for display.
+
+\ifmatlab
+\begin{lstlisting}
+var.Label = 'string';
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+var.setLabel('string');
+\end{lstlisting}
+\fi
+
 
 \subpara{Solver}
 
@@ -55,9 +82,11 @@ The value of the variable used when computing the Score is the Guess value for t
 
 Read-only.  Retrieves a cell array containing a list of Ports connecting the variable to its neighboring factors.
 
-
+\ifmatlab
 \para{Methods}
+\fi
 
+\ifmatlab
 \subpara{setNames}
 \label{sec:Variable.setNames}
 
@@ -68,8 +97,9 @@ varArray.setName('baseName');
 \end{lstlisting}
 
 the resulting variable names are of the form: \texttt{baseName\textunderscore vv0}, \texttt{baseName\textunderscore vv1}, \texttt{baseName\textunderscore vv2}, etc., where each variable's name is the concatenation of the base name with the suffix \texttt{\textunderscore vv} followed by a unique number for each variable in the array.
+\fi
 
-
+\ifmatlab
 \subpara{invokeSolverSpecificMethod}
 
 \begin{lstlisting}
@@ -78,7 +108,9 @@ variableArray.invokeSolverSpecificMethod('methodName', arguments);
 
 For an array of variables, the invokeSolverSpecificMethod calls the specified solver-specific method on each of the variables in the array.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  This method does not result in any return values.  For solver specific methods that return results, use the invokeSolverSpecificMethodWithReturnValue method instead.
 
+\fi
 
+\ifmatlab
 \subpara{invokeSolverSpecificMethodWithReturnValue}
 
 \begin{lstlisting}
@@ -87,6 +119,9 @@ returnArray = variableArray.invokeSolverSpecificMethodWithReturnValue('methodNam
 
 For an array of variables, the invokeSolverSpecificMethodWithReturnValue calls the specified solver-specific method on each of the variables in the array, returning a return value for each variable.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  The returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the variable array.
 
+\fi
+
+\ifmatlab
 \para{Operators}
 
 \subpara{Operators for Implicit Factor Creation}
@@ -138,6 +173,7 @@ varRef = repmat(var, 1, 10);
 
 In this case varRef is a 10x10 array of variables.  Each element of varRef, however, is not a distinct Dimple variable, but a reference to an element in var, where for each row of varRef, there are 10 repeated copies of the corresponding variable in var.  Use of repmat for variables can be useful when using addFactorVectorized (see sections~\ref{sec:vectorizedFactorCreation} and~\ref{sec:FactorGraph.addFactorVectorized}).
 
+\fi
 
 \subsubsection{Discrete}
 \label{sec:Discrete}
@@ -148,17 +184,34 @@ A Discrete variable represents a variable that can take on a finite set of disti
 
 The Discrete constructor can be used to create an N-dimensional collection of Dimple Discrete variables.  The constructor is called with the following arguments (arguments in brackets are optional).
 
+\ifmatlab
 \begin{lstlisting}
 Discrete(domain, [dimensions])
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+Discrete(domain)
+\end{lstlisting}
+\fi
+
+\ifmatlab
 \begin{itemize}
 \item domain is a required argument indicating the domain of the variable.  The domain may either be a numeric array of domain elements, a cell array of domain elements, or a DiscreteDomain object (see section~\ref{Discrete.Domain}).
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item domain is a required argument indicating the domain of the variable.  The domain may either be an object array of domain elements, a comma separated list, or a DiscreteDomain object (see section~\ref{Discrete.Domain}).
+\end{itemize}
+\fi
 
 For example:
 
+\ifmatlab
 \begin{lstlisting}
 domain = [0 1 2];
 w = Discrete(domain);
@@ -166,6 +219,17 @@ x = Discrete(domain, 4);
 y = Discrete(domain, 2, 3);
 z = Discrete(domain, 2, 3, 4);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Object [] domain = new Object [] {0,1,2};
+Discrete w = new Discrete(domain);
+Discrete x = new Discrete(0,1,2);
+DiscreteDomain dd = new DiscreteDomain(0,1,2);
+Discrete y = new Discrete(dd);
+\end{lstlisting}
+\fi
 
 We examine each of these arguments in more detail in the following sections.
 
@@ -174,6 +238,7 @@ We examine each of these arguments in more detail in the following sections.
 
 Every Discrete random variable has a domain associated with it.  A domain is a set.  Elements of the set may be any object type.  For example, the following are Discrete variables with valid domains:
 
+\ifmatlab
 \begin{lstlisting}
 a = Discrete({1, 2, 3});
 b = Discrete({1+i, i, 2*i});
@@ -182,7 +247,17 @@ d = Discrete({[1 0; 0 1], 2, i+1});
 e = Discrete({1.2, 3, pi/2});
 f = Discrete({'red', 'green', 'blue'});
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+Discrete a = new Discrete(1, 2, 3);
+Discrete b = new Discrete(new double [] {1,0,0,1},1); 
+Discrete c = new Discrete("red","blue",2);
+\end{lstlisting}
+\fi
+
+\ifmatlab
 (a) creates a variable whose domain consists of three values: 1, 2, and 3.  (b) creates a variable whose domain consists of three complex numbers.  (c) creates a variable whose domain consists of two elements, each of which is a 2x2 complex matrix.  (d) creates a variable whose domain consists of three elements: a matrix, real scalar, and complex scalar.  (e) creates a variable whose domain consists of both floating-point and integer values.  (f) creates a variable whose domain is a set of strings.
 
 In the previous example we used cell arrays to specify the elements of a domain.  When the domain consists only of numeric values (integer or floating-point), domains can instead be specified as a numeric array.  In this case, each element of the array (regardless of the array's dimensions) is considered a distinct entry in the domain.
@@ -195,16 +270,27 @@ c = Discrete([0:2]’);
 
 (a) creates a variable with a domain of 0, 1, and 2.  (b) creates a variable with a domain of 1, 2, 3, 4, 5, 6.  (c) creates a variable with domain of 0, 1, and 2.
 
+\fi
+
 The domain may also be specified using a DiscreteDomain object.  In that case, the domain of the variable consists of the elements of this object.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 myDomain = DiscreteDomain(0:10);
 a = Discrete(myDomain);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+DiscreteDomain myDomain = new DiscreteDomain(0,1,2);
+Discrete a = new Discrete(myDomain);
+\end{lstlisting}
+\fi
 
 See section~\ref{sec:DiscreteDomain} for more information about the DiscreteDomain class.
 
-
+\ifmatlab
 \subpara{List of Matrix Dimensions}
 \label{sec:VariableMatrixDimensions}
 
@@ -213,6 +299,8 @@ If the variable constructor is called without any dimensions, a single variable 
 If one dimension n is specified, a square array of dimensions n x n variables will be created\footnote{This follows a common MATLAB convention.}.
 
 With k dimensions specified, n1, n2, …, nk, a multidimensional variable array of dimensions n1 x n2 x ... x nk will be created.
+
+\fi
 
 \para{Properties}
 
@@ -257,10 +345,19 @@ Reading this property results in an error if no fixed value has been set.  To de
 When setting this property on a single variable, the value must be a value included in the domain of the variable.
 The fixed value must be a value chosen from the domain of the variable.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 a = Discrete(1:10);
 a.FixedValue = 3;
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Discrete a = new Discrete(1,2,3);
+a.setFixedValue(3);
+\end{lstlisting}
+\fi
 
 When setting this property on a variable array, the value must be an array of the same dimensions as the variable array, and each entry in the array must be an element of the domain.
 
@@ -274,14 +371,14 @@ Because the Input and FixedValue properties serve similar purposes, setting one 
 
 This method takes no arguments.  When called for a single variable, it returns a boolean indicating whether or not a fixed-value is currently set for this variable.  When called for a variable array, it returns a boolean array of dimensions equal to the size of the variable array, where each entry indicates whether a fixed value is set for the corresponding variable.
 
-
-
 \subsubsection{Bit}
 
 A Bit is a special kind of Discrete with domain [0 1].
 
 \para{Constructor}
 
+
+\ifmatlab
 The Bit constructor can be used to create an N-dimensional collection of Dimple Discrete variables.  Its constructor does not require a domain, since the domain is predetermined.  The constructor takes only a variable-length list of matrix dimensions, where an empty list indicates a single Bit variable.
 
 \begin{lstlisting}
@@ -290,6 +387,13 @@ Bit([dimensions])
 
 The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+Bit()
+\end{lstlisting}
+\fi
 
 \para{Properties}
 
@@ -325,27 +429,44 @@ See section~\ref{sec:Discrete.FixedValue}.
 See section~\ref{sec:Discrete.hasFixedValue}.
 
 
-
-
 \subsubsection{Real}
 
-A Real variable represents a variable that takes values on the real line, or on a contiguous subset of the real line.  The Real class corresponds to either a single Real variable or a multidimensional array of Real variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.
+A Real variable represents a variable that takes values on the real line, or on a contiguous subset of the real line.  \ifmatlab The Real class corresponds to either a single Real variable or a multidimensional array of Real variables.  All properties/methods can either be called for all elements in the collection or for individual elements of the collection.  \fi
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 Real([domain], [dimensions])
 \end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+Real(RealDomain)
+Real()
+Real(lowerBound,upperBound)
+\end{lstlisting}
+\fi
+
+\ifmatlab
 All arguments are optional and can be used in any combination.
 
 \begin{itemize}
 \item domain is specifies a bound on the domain of the variable. It can either be specified as a two-element array or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as an array, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
 \item dimensions specify the array dimensions.  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item domain is specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\end{itemize}
+\fi
 
 Examples:
 
+\ifmatlab
 \begin{itemize}
 \item Real() specifies a scalar real variable with an unbounded domain.
 \item Real(4,1) specifies a 4x1 vector of real variables with unbounded domain.
@@ -353,6 +474,17 @@ Examples:
 \item Real([-Inf 0], 4, 10, 2) specifies a 4x10x2 array of real variables, each with the domain from negative infinity to zero.
 \item Real(RealDomain(-pi, pi)) specifies a scalar real variable with domain from $-\pi$ to $\pi$.
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item Real() specifies a scalar real variable with an unbounded domain.
+\item Real(-1, 1) specifies a scalar real variable with domain from -1 to 1.
+\item Real(Double.NEGATIVE\_INFINITY,0) specifies a variable with the domain from negative infinity to zero.
+\item Real(RealDomain(-Math.PI, Math.PI)) specifies a scalar real variable with domain from $-\pi$ to $\pi$.
+\end{itemize}
+\fi
+
 
 \para{Properties}
 
@@ -374,29 +506,55 @@ Read-only.  The behavior of this property for Real variables is solver specific.
 
 Read-write.  For a Real variable, the form of the Input property depends on the particular solver.  For the Gibbs and ParticleBP solvers, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 r = Real();
 r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real r = new Real();
+r.setInput(new Normal(measuredMean, measurementPrecision));
+\end{lstlisting}
+\fi
 
 For the Gaussian solver, the Input property is a two-element array, where the first element is the mean, and the second element is the standard deviation.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 r = Real();
 r.Input = [measuredMean, measurementStandardDeviation];
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real r = new Real();
+r.setInput( new double [] {measuredMean, measurementStandardDeviation});
+\end{lstlisting}
+\fi
 
 In the current version of Dimple, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
-
 
 \subpara{FixedValue}
 
 Read-write.  The behavior of the FixedValue property for a Real variable is nearly identical to that of Discrete variables (see section~\ref{sec:Discrete.FixedValue}).  When setting the FixedValue of a Real variable, the value must be within the domain of the variable, that is greater than or equal to the lower bound and less than or equal to the upper bound.  For example:
 
+\ifmatlab
 \begin{lstlisting}
 a = Real([-pi pi]);
 a.FixedValue = 1.7;
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Real a = new Real(-Math.PI,Math.PI);
+a.setFixedValue(1.7);
+\end{lstlisting}
+\fi
 
 Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue property removes the input.
 
@@ -406,10 +564,6 @@ Because the Input and FixedValue properties serve similar purposes, setting one 
 \subpara{hasFixedValue}
 
 See section~\ref{sec:Discrete.hasFixedValue}.
-
-
-
-
 
 
 
@@ -445,6 +599,7 @@ Read-only.  After running the Gaussian solver, this property returns the estimat
 Read-write.  For the Gaussian solver, for a single RealJoint variable, the value of this property must be a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  For an array of RealJoint variables, the value of this property must be a cell array of MultivariateMsg objects, with dimensions equal to the dimension of the array (or the portion of the array) being set.
 
 
+\ifmatlab
 \subsubsection{ComplexVar}
 
 ComplexVar is a special kind of RealJoint variable with exactly two joint elements.
@@ -459,6 +614,7 @@ ComplexVar([dimensions])
 
 The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 
+\fi
 
 \subsubsection{FiniteFieldVariable}
 
@@ -468,17 +624,32 @@ The behavior of all properties and methods is identical to that of Discrete vari
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 FiniteFieldVariable(primitivePolynomial, [dimensions])
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FiniteFieldVariable(primitivePolynomial)
+\end{lstlisting}
+\fi
 
 The arguments are defined as follows:
 
+\ifmatlab
 \begin{itemize}
 \item primitivePolynomial the primitive polynomial of the finite field.  The format of the primitive polynomial follows the same definition used by MATLAB in the \texttt{gf} function.  See the MATLAB help on the \texttt{gf} function for more detail.
 \item dimensions specify the array dimensions (the array of individual FiniteFieldVariable variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
+\fi
 
+\ifjava
+\begin{itemize}
+\item primitivePolynomial the primitive polynomial of the finite field.  The format of the primitive polynomial follows the same definition used by MATLAB in the \texttt{gf} function.  See the MATLAB help on the \texttt{gf} function for more detail.
+\end{itemize}
+\fi
 
 \subsubsection{DiscreteDomain}
 \label{sec:DiscreteDomain}
@@ -509,6 +680,7 @@ The RealDomain class is used to refer to the domain of Real variables.
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 RealDomain([lowerBound, [upperBound] ])
 \end{lstlisting}
@@ -518,14 +690,39 @@ RealDomain([lowerBound, [upperBound] ])
 \item upperBound indicates the upper bound of the domain.  The value must be a scalar numeric value.  It may be set to Inf to indicate that there is no upper bound.  The default value is Inf.
 \end{itemize}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealDomain(lowerBound,upperBound)
+RealDomain()
+RealDomain(double [] bounds)
+\end{lstlisting}
+
+\begin{itemize}
+\item lowerBound indicates the lower bound of the domain.  The value must be a scalar numeric value.  It may be set to -Inf to indicate that there is no lower bound.  The default value is -Inf.
+\item upperBound indicates the upper bound of the domain.  The value must be a scalar numeric value.  It may be set to Inf to indicate that there is no upper bound.  The default value is Inf.
+\end{itemize}
+
+\fi
 
 \para{Properties}
 
+\ifmatlab
 \subpara{LB}
+\fi
+\ifjava
+\subpara{LowerBound}
+\fi
 
 Read-only.  This property returns the value of the lower bound.  The default value is -Inf.
 
+\ifmatlab
 \subpara{UB}
+\fi
+\ifjava
+\subpara{UpperBound}
+\fi
 
 Read-only.  This property returns the value of the upper bound.  The default value is Inf.
 

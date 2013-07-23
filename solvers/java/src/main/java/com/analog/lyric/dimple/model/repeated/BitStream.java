@@ -14,23 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model;
+package com.analog.lyric.dimple.model.repeated;
 
-public class Bit extends Discrete 
+import com.analog.lyric.dimple.model.DiscreteDomain;
+
+public class BitStream extends DiscreteStream 
 {
-	public Bit()  
+	public BitStream()
 	{
-	    super(new DiscreteDomain(new Object[]{new Integer(0),new Integer(1)}),"Bit");
-	}
-	
-	public double getP1()
-	{
-		return getBelief()[0];
+		super(new DiscreteDomain(0,1));
 	}
 
-	public void setInput(double p1)
-	{
-		setInput(p1,1-p1);
-	}
-	
 }

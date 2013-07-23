@@ -19,7 +19,23 @@ package com.analog.lyric.dimple.model;
 
 public class Real extends VariableBase
 {
-	// Constructors...
+    // Constructors...
+    public Real(int id, String modelerClassName, RealDomain domain)
+    {
+    	super(id, modelerClassName, domain);
+    }
+
+    public Real(int id, String modelerClassName, RealDomain domain,Object input)
+    {
+    	super(id, modelerClassName, domain);
+    	setInputObject(input);
+    }
+	
+	public Real(double lower, double upper)
+	{
+		this(new RealDomain(lower,upper));
+	}
+	
 	public Real()  
 	{
 		this(new RealDomain(), null, "Real");

@@ -15,5 +15,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function valid = xorDeltaTutorial(x,y,z) 
-    valid = bitxor(bitxor(x,y),z);
+    valid = bitxor(bitxor(x,y),z) == 0;
 end

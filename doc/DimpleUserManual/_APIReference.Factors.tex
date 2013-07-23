@@ -10,26 +10,67 @@ The Factor class can represent either a single factor or a multidimensional arra
 
 Read-write.  When read, retrieves the current name of the factor or array of factors.  When set, modifies the name of the factor to the corresponding value.  The value set must be a string.
 
+\ifmatlab
 \begin{lstlisting}
 factor.Name = 'string';
 \end{lstlisting}
 
 When setting the Name, only one factor in an array may be set at a time.  To set the names of an entire array of factors to distinct values, the setNames method may be used (see section~\ref{sec:Factor.setNames}).
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+factor.setName("string");
+\end{lstlisting}
+\fi
+
+
+\subpara{Label}
+
+Read-write. All variables and factors in a Factor Graph must have unique names. However, sometimes its desirable to have variables or factors share similar strings when being plotted or printed. Users can set the Label property to set the name for display. If the Label is not set, the Name will be used for display. Once the label is set, the label will be used for display.
+
+\ifmatlab
+\begin{lstlisting}
+factor.Label = 'string';
+\end{lstlisting}
+\fi
+
+\ifmatlab
+\begin{lstlisting}
+factor.setLabel("string");
+\end{lstlisting}
+\fi
+
 
 \subpara{DirectedTo}
 \label{sec:Factor.DirectedTo}
 
+\ifmatlab
 Read-write.  The DirectedTo property indicates a set of variables to which the factor is directed.  The value may be either a single variable or a cell array of variables.  The DirectedTo property is used by some solvers, and in some cases is required for proper operation of certain features.  Such cases are identified elsewhere in this manual.
+\fi
+
+\ifjava
+Read-write.  The DirectedTo property indicates a set of variables to which the factor is directed.  The value may be either a single variable, a comma separated list of variables, a VariableList, or an array of integers specifying the edge indexes to which the factor is directed.  The DirectedTo property is used by some solvers, and in some cases is required for proper operation of certain features.  Such cases are identified elsewhere in this manual.
+\fi
 
 For example, if a factor F corresponds to a function $F(a, b, c, d)$, where $a$, $b$, $c$, and $d$ are variables, then the factor is directed toward $c$ and $d$ if $\sum_{c, d} F(a, b, c, d)$ is constant for all values of $a$ and $b$.  In this case, we may set:
 
+\ifmatlab
 \begin{lstlisting}
 F.DirectedTo = {c, d};
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+F.setDirectedTo(c,d);
+\end{lstlisting}
+\fi
 
 In some cases, the set of DirectedTo variables can be automatically determined when a factor is created.  In this case it need not be set manually by the user.  This includes many built-in factors supported by Dimple.  If this property is set by the user, then in the case of factors connected only to discrete variables, Dimple will check that the factor is in fact directed in the specified direction.
 
+\ifmatlab
 If the set of variables the factor are directed toward are part of a variable array, then these may be specified together in a single cell array.  For example, if varArray is an array of variables, and a factor F is directed toward all of the variables in varArray, then we can set:
 
 \begin{lstlisting}
@@ -52,34 +93,7 @@ a = Bit(3,4,5);
 b = Bit(3,4,5);
 fg.addFactorVectorized(factorFunction, {a, [1 2]}, {b, [1 2]}).DirectedTo = {a(:,:,1:2), b(:,:,1)};
 \end{lstlisting}
-
-\subpara{Belief}
-\label{sec:Factor.Belief}
-
-Read-only.  The belief of a factor is the joint belief over all joint states of the variables connected to that factor.  There are two properties that represent the belief in different ways: Belief and FullBelief.  Reading the Belief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a compact one-dimensional vector that includes only values that correspond to non-zero entries in the factor table.  This form is used because in some situation, the full representation over all possible variable values (as returned by the FullBelief property) would result in a data structure too large to be practical.
-
-\begin{lstlisting}
-fb = myFactor.Belief;
-\end{lstlisting}
-
-The result is a vector of belief values, where the order of the vector corresponds to the order of the factor table entries.  The order of factor table entries can be determined from the factor using:
-
-\begin{lstlisting}
-ind = f.FactorTable.Indices
-\end{lstlisting}
-
-This returns a two-dimensional array, where each row corresponds to one entry in the factor table, and where each column-entry in a row indicates the index into the domain of the corresponding variable (where the order of the variable is the order used when the factor was created).
-
-
-\subpara{FullBelief}
-\label{sec:Factor.FullBelief}
-
-Read-only.  Reading the FullBelief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a multi-dimensional array, where each dimension of the multi-dimensional array ranges over the domain of the corresponding variable (the order of the dimensions corresponds to the variable order used when the factor was created).
-
-\begin{lstlisting}
-fb = myFactor.FullBelief;
-\end{lstlisting}
-
+\fi
 
 \subpara{Score}
 \label{sec:Factor.Score}
@@ -94,6 +108,7 @@ The value of each variable used when computing the Score is the Guess value for 
 Read-only.  Retrieves a cell array containing a list of Ports connecting the factor to its neighboring variables.
 
 
+\ifmatlab
 \para{Methods}
 
 \subpara{setNames}
@@ -125,13 +140,71 @@ returnArray = factorArray.invokeSolverSpecificMethodWithReturnValue('methodName'
 
 For an array of factors, the invokeSolverSpecificMethodWithReturnValue calls the specified solver-specific method on each of the factors in the array, returning a return value for each variable.  Here, 'methodName' is a text string with the name of the solver-specific method, and arguments is an optional comma-separated list of arguments to that method.  The returnArray is a cell-array of the return values of the method, with dimensions equal to the dimensions of the factor array.
 
+\fi
+
+\subsubsection{DiscreteFactor}
+
+When all variables connected to a Factor are discrete, a DiscreteFactor is created.
+
+\para{Properties}
+
+\subpara{Belief}
+\label{sec:Factor.Belief}
+
+Read-only.  The belief of a factor is the joint belief over all joint states of the variables connected to that factor.  There are two properties that represent the belief in different ways: Belief and FullBelief.  Reading the Belief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a compact one-dimensional vector that includes only values that correspond to non-zero entries in the factor table.  This form is used because in some situation, the full representation over all possible variable values (as returned by the FullBelief property) would result in a data structure too large to be practical.
+
+\ifmatlab
+\begin{lstlisting}
+fb = myFactor.Belief;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+double [] fb = myFactor.getBelief();
+\end{lstlisting}
+\fi
+
+The result is a vector of belief values, where the order of the vector corresponds to the order of the factor table entries.  The order of factor table entries can be determined from the factor using:
+
+\ifmatlab
+\begin{lstlisting}
+ind = f.FactorTable.Indices
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+int [][] indices = f.getFactorTable().getIndices()
+\end{lstlisting}
+\fi
+
+This returns a two-dimensional array, where each row corresponds to one entry in the factor table, and where each column-entry in a row indicates the index into the domain of the corresponding variable (where the order of the variable is the order used when the factor was created).
 
 
+\subpara{FullBelief}
+\label{sec:Factor.FullBelief}
+
+Read-only.  Reading the FullBelief property after the solver has been run\footnote{In the current version of Dimple, the Belief property is only supported for factors connected exclusively to discrete variables, and is supported only by the SumProduct solver.  These restrictions may be removed in a future version.} returns the belief in a multi-dimensional array, where each dimension of the multi-dimensional array ranges over the domain of the corresponding variable (the order of the dimensions corresponds to the variable order used when the factor was created).
+
+\ifmatlab
+\begin{lstlisting}
+fb = myFactor.FullBelief;
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+double [] fb = myFactor.getFullBelief();
+\end{lstlisting}
+\fi
 
 \subsubsection{FactorFunction}
 \label{sec:FactorFunction}
 
-The FactorFunction class is used specify a Dimple built-in factor function in a way that can be reused for creating multiple factors, and that allows specification of constructor arguments.
+\ifmatlab
+
+The FactorFunction class is used to specify a Dimple built-in factor function in a way that can be reused for creating multiple factors, and that allows specification of constructor arguments.
 
 \para{Constructor}
 
@@ -146,7 +219,28 @@ FactorFunction(factorFunctionName, [constructorArguments])
 
 There are no available properties or methods in this class.
 
+\fi
 
+\ifjava
+The FactorFunction class is an abstract class that is used as the base class for all FactorFunctions passed to the addFactor call.  To create new FactorFunctions, users must override the FactorFunction class.
+
+\para{Constructors}
+
+\begin{itemize}
+\item FactorFunction()
+\item FactorFunction(String name);
+\end{itemize}
+
+\para{Methods}
+
+At least one or the other of these must be overridden in a derived class.  Users should override evalEnergy instead of eval, but for now can override one or the other.  Eventually eval should be made final and so that only evalEnergy can be overridden.
+
+\begin{itemize}
+\item double eval(Object ... args) - Should return a probability associated with the passed in configuration of arguments.
+\item double evalEnergy(Object ... args) - Should return -log(probability) associated with the passed in configuration of arguments.
+\end{itemize}
+
+\fi
 
 \subsubsection{FactorTable}
 \label{sec:FactorTable}
@@ -155,11 +249,13 @@ The FactorTable class is used to explicitly specify a factor table in lieu of Di
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 FactorTable([ ( indexList, weightList ) | weightMatrix ], domains)
 \end{lstlisting}
 
 A FactorTable is constructed by specifying the table values in one of two forms, or by creating an all-zeros FactorTable to be filled in later using the set method.  The first form, specifying an indexList and weightList, is useful for sparse factor tables in which many entires are zero and need not be included in the table.  The second form, specifying a weightMatrix, is useful for dense factor tables in which most or all of the entries are non-zero.
+
 
 \begin{itemize}
 \item indexList is an array where each row represents a set of zero-based indices into the list of domain elements for each successive domain in the given set of domains.
@@ -183,6 +279,26 @@ b = Bit;
 ft = FactorTable([.5 .4 .3; .1 0 .4], a.Domain, b.Domain);
 \end{lstlisting}
 
+\fi
+
+\ifjava
+
+\begin{itemize}
+\item FactorTable(DiscreteDomain ... domains) - Creates a full table with with the specified domains.
+\item FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains) - Creates a table with the specified indices and weights with the specified domains
+\item FactorTable(int [][] indices, double [] weights, Discrete ... variables) - Same as the previous method but extracts the domains from the variables.
+\item FactorTable(Object table, DiscreteDomain [] domains) - Assumes table is a tensor (number of dimensions equal to number of domains).  
+\end{itemize}
+
+A FactorTable is constructed by specifying the table values in one of two forms, or by creating an all-zeros FactorTable to be filled in later using the set method.  The first form, specifying an indexList and weightList, is useful for sparse factor tables in which many entires are zero and need not be included in the table.  The second form, specifying a weightMatrix, is useful for dense factor tables in which most or all of the entries are non-zero.
+
+\begin{itemize}
+\item indices is an array where each row represents a set of zero-based indices into the list of domain elements for each successive domain in the given set of domains.
+\item weights is a one-dimensional array of real-valued entries in the factor table, where each entry corresponds to the indices given by the corresponding row of the indexList.
+\item table is an N dimensional array of real-valued entries in the factor table.  The number of dimensions, N, must correspond to the number of discrete domain elements given in the subsequent arguments, and the number of elements in each dimension must equal the number of elements in the corresponding domain element.
+\end{itemize}
+
+\fi
 
 \para{Properties}
 
@@ -208,6 +324,9 @@ Read-only.  Returns a cell-array of DiscreteDomain objects, each of which repres
 \subpara{set}
 \label{sec:FactorTable.set}
 
+
+\ifmatlab
+
 This method allows setting individual entries in the factor table.  For each entry to be set, the domain values (not indices) are specified followed by the weight value.  To set a single entry, the domain values are specified in a comma-separated list, followed by the weight value.  To set multiple entries in a single call, a cell array of such comma-separated lists are specified.
 
 An example of setting a single entry:
@@ -215,20 +334,38 @@ An example of setting a single entry:
 ft.set('red', 1, 0.45);
 \end{lstlisting}
 
-An example of setting a single entry:
+An example of setting multiple entries:
 \begin{lstlisting}
 ft.set({'red', 1, 0.45}, {'blue', 0, 0.75});
 \end{lstlisting}
+\fi
 
+\ifjava
+
+This method allows setting individual entries in the factor table.  For each entry to be set, the indices are specified followed by the weight value.  
+
+\begin{lstlisting}
+ft.set(new int [] {0,1,1},1.0);
+\end{lstlisting}
+\fi
 
 \subpara{get}
 
+\ifmatlab
 This method retrieves the weight associated with a particular entry in the factor table.  The entry is specified by a comma-separated list of domain values (not indices).  For example:
 
 \begin{lstlisting}
 w = ft.get('red', 1);
 \end{lstlisting}
+\fi
 
+\ifjava
+This method retrieves the weight associated with a particular entry in the factor table.  The entry is specified by a comma-separated list of indices.  For example:
+
+\begin{lstlisting}
+double w = ft.get(new int [] {0,1,1});
+\end{lstlisting}
+\fi
 
 \subpara{change}
 

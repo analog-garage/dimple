@@ -28,12 +28,22 @@ Each scheduler is applicable only to a certain subset of solvers.  For all of th
 In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
 
 It is possible for subgraphs to be designated to use a schedule different from that of its parent graph.  This can be done by specifying either a scheduler or a custom schedule for the subgraph prior to adding it to the parent graph.  For example:
-%
+
+\ifmatlab
 \begin{lstlisting}
 SubGraph.Scheduler = 'SequentialScheduler';
 ParentGraph.addFactor(SubGraph, boundaryVariables);
 ParentGraph.Scheduler = 'FloodingScheduler';
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+SubGraph.setScheduler(new com.analog.lyric.dimple.schedulers.SequentialScheduler()); 
+ParentGraph.addFactor(SubGraph , a,b); 
+ParentGraph.setScheduler(new com.analog.lyric.dimple.schedulers.TreeOrFloodingScheduler());		
+\end{lstlisting}
+\fi
 
 For the TreeOrFloodingScheduler and the TreeOrSequentialScheduler, the choice of schedule is done independently in the outer graph and in each subgraph.  In case that a subgraph is a tree, the tree scheduler will be applied when updating that subgraph even if the parent graph is loopy.  This structure can improve the performance of belief propagation by ensuring that the effect of variables at the boundary of the subgraph fully propagates to all other variables in the subgraph on each iteration.
 

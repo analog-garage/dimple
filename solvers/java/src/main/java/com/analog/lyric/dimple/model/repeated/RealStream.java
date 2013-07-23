@@ -23,6 +23,10 @@ import com.analog.lyric.dimple.model.VariableBase;
 
 public class RealStream extends VariableStreamBase 
 {
+	public RealStream()  
+	{
+		this(new RealDomain());
+	}
 
 	public RealStream(RealDomain domain)  
 	{

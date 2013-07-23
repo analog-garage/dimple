@@ -6,6 +6,8 @@
 
 Dimple supports a special variable type called a FiniteFieldVariable and a few custom factors for these variables. They represent finite fields with $N=2^{n}$ elements. These fields find frequent use in error correcting codes. Because Dimple can describe any discrete distribution, it is possible to handle finite fields simply by describing their factor tables. However, the native FiniteFieldVariable type is much more efficient. In particular, variable addition and multiplication, which naively require $\mathcal{O}(N^{3})$ operations, are calculated in only $\mathcal{O}(N\log N)$ operations.
 
+\ifmatlab
+
 \subsubsection{Finite Fields Without Optimizations}
 
 As we mentioned previously, a user can construct (non-optimized) finite fields from scratch.
@@ -64,29 +66,53 @@ z_slow.Belief
 
 The solver runs in $\mathcal{O}(N^2)$ time since z is determined by x and y, x is determined by z, and y, and y is determined by x and z.
 
+\fi
+
 \subsubsection{Optimized Finite Field Operations}
 
-Rather than building finite field elements from scratch, a user can use a build-in variable type and associated set of function nodes. These native variables are much faster, both for programming and algorithmic reasons. All of these operations are supported with the SumProduct solver.
+Rather than building finite field elements from scratch, a user can use a built-in variable type and associated set of function nodes. These native variables are much faster, both for programming and algorithmic reasons. All of these operations are supported with the SumProduct solver.
 
 \para{FiniteFieldVariables}
 
 Dimple supports a FiniteFieldVariable variable type, which takes a primitive polynomial (to be discussed later) and dimensions of the matrix as constructor arguments:
 
+\ifmatlab
 \begin{lstlisting}
 v = FiniteFieldVariable(prim_poly,3,2);
 \end{lstlisting}
 
 This would create a 3x2 matrix of finite field Variables with the given primitive polynomial.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+FiniteFieldVariable v = new FiniteFieldVariable(prim_poly);
+\end{lstlisting}
+
+This would create a finite field Variable with the given primitive polynomial.
+
+\fi
+
 \para{Addition}
 
 Users can use the following syntax to create an addition factor node with three variables:
 
+\ifmatlab
 \begin{lstlisting}
 myFactorGraph.addFactor(@finiteFieldAdd,x,y,z);
 \end{lstlisting}
 
 The @finiteFieldAdd method must have exactly that name for the Custom Factor to be used.
+\fi
+
+\ifjava
+\begin{lstlisting}
+myFactorGraph.addFactor(new NopFactorFunction("finiteFieldAdd"),x,y,z);
+\end{lstlisting}
+
+The factor function must have the "finiteFieldAdd" name in order for the SumProduct solver to use the correct custom factor.
+\fi
 
 Adding this variable take $\mathcal{O}(1)$ time and solving takes $\mathcal{O}(N\log N)$ time, where N is the size of the finite field domain.
 
@@ -94,11 +120,21 @@ Adding this variable take $\mathcal{O}(1)$ time and solving takes $\mathcal{O}(N
 
 Similarly, the following syntax can be used to create a factor node with three variables for multiplication:
 
+\ifmatlab
 \begin{lstlisting}
 myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+myFactorGraph.addFactor(new NopFactorFunction("finiteFieldMult"),x,y,z);
+\end{lstlisting}
+\fi
 
 Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
+
+\ifmatlab
 
 \para{NVarFiniteFieldPlus}
 
@@ -115,12 +151,15 @@ This function takes a primitive polynomial and the number of variables involved 
 
 It returns both the graph and the external variables of the graph. This can be used in one of two ways: setting inputs on the variables and solving the graph directly or using this as a nested sub-graph.
 
+\fi
+
 \para{Projection}
 
-Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, x3+x+1 could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the finiteFieldProjection factor to relate n bits to a finite field variable with a domain of size 2n.
+Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, $x^3+x+1$ could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the finiteFieldProjection factor to relate n bits to a finite field variable with a domain of size $2^n$.
 
 The following code shows how to do that:
 
+\ifmatlab
 \begin{lstlisting}
 args = cell(n*2,1);
 for j = 0:n-1
@@ -130,6 +169,22 @@ end
 
 myFactorGraph.addFactor(@finiteFieldProjection,v,args{:});
 \end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+Object [] vars = new Object[n*2];
+		
+for (int j = 0; j < n; j++)
+{
+	vars[j*2] = j;
+	vars[j*2+1] = new Bit();
+}
+myFactorGraph.addFactor(new NopFactorFunction("finiteFieldProjection"), 
+					vars);
+
+\end{lstlisting}
+\fi
 
 \subsubsection{Primitive Polynomials}
 

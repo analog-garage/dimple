@@ -25,10 +25,13 @@ import java.util.Iterator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 
 
@@ -173,6 +176,29 @@ public class FixedSchedule extends ScheduleBase
 		return _schedule.iterator();
 	}
 	
+	public void add(INode node)
+	{
+		if (node.isFactorGraph())
+			add(new SubScheduleEntry(node.asFactorGraph().getSchedule()));
+		else
+			add(new NodeScheduleEntry(node));
+	}
+	
+	public void add(INode node, int index)
+	{
+		add(new EdgeScheduleEntry(node, index));
+	}
+	
+	public void add(INode ... nodes)
+	{
+		for (int i = 0; i < nodes.length; i++)
+			add(nodes[i]);
+	}
+	
+	public void add(INode from, INode to)
+	{
+		add(new EdgeScheduleEntry(from,to));
+	}
 	// Add one schedule entry
 	public void add(IScheduleEntry entry)
 	{

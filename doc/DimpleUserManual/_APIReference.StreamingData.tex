@@ -23,9 +23,11 @@ Read-write.  When written, connects the variable stream to a data source (see se
 
 Read-write.  When written, connects the variable stream to a data sink (see section~\ref{sec:DataSink}).  The data sink must be of a type appropriate for the particular variable stream type.
 
+\ifmatlab
 \subpara{Dimensions}
 
 Read-only.  Indicates the dimensions of the variable stream.  The dimensions correspond to the size of the variable array at each position in the stream.
+\fi
 
 \subpara{Size}
 
@@ -47,8 +49,13 @@ varStream.getSlice(startIndex);
 
 The getSlice method is used to extract a \emph{slice} of the stream, which means a version of the stream that may be offset from the original stream itself.  This is generally used for specifying streams to connect to a factor when calling addFactor.
 
+\ifmatlab
 Takes a single numeric argument, startIndex, which indicates the starting position in the stream.  The resulting stream slice is essentially a reference to the stream offset by startIndex-1.  For example, a startIndex of 2 returns a slice offset by 1, such that the first location in the slice corresponds to the second location in the original stream.  A startIndex of 1 returns a slice identical to the original stream.
+\fi
 
+\ifjava
+Takes a single numeric argument, startIndex, which indicates the starting position in the stream.  The resulting stream slice is essentially a reference to the stream offset by startIndex.  For example, a startIndex of 1 returns a slice offset by 1, such that the first location in the slice corresponds to the second location in the original stream.  A startIndex of 0 returns a slice identical to the original stream.
+\fi
 
 \subsubsection{DiscreteStream}
 
@@ -57,6 +64,7 @@ Takes a single numeric argument, startIndex, which indicates the starting positi
 
 The DiscreteStream constructor is used to create a stream of Discrete variables or arrays of Discrete variables.
 
+\ifmatlab
 \begin{lstlisting}
 DiscreteStream(domain, [dimensions]);
 \end{lstlisting}
@@ -66,12 +74,25 @@ DiscreteStream(domain, [dimensions]);
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Discrete variable).
 \end{itemize}
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+DiscreteStream(domain);
+\end{lstlisting}
+
+\begin{itemize}
+\item domain is a required argument indicating the domain of the variable.  The domain may either be a comma separated list, an object array, or a DiscreteDomain object (see section~\ref{Discrete.Domain}).
+\end{itemize}
+\fi
+
 \subsubsection{BitStream}
 
 \para{Constructor}
 
 The BitStream constructor is used to create a stream of Bit variables or arrays of Bit variables.
 
+\ifmatlab
 \begin{lstlisting}
 BitStream([dimensions]);
 \end{lstlisting}
@@ -79,6 +100,13 @@ BitStream([dimensions]);
 \begin{itemize}
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Bit variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+BitStream();
+\end{lstlisting}
+\fi
 
 \subsubsection{RealStream}
 
@@ -86,6 +114,7 @@ BitStream([dimensions]);
 
 The RealStream constructor is used to create a stream of Real variables or arrays of Real variables.
 
+\ifmatlab
 \begin{lstlisting}
 RealStream([dimensions]);
 \end{lstlisting}
@@ -93,6 +122,13 @@ RealStream([dimensions]);
 \begin{itemize}
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Real variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealStream();
+\end{lstlisting}
+\fi
 
 \subsubsection{RealJoinStream}
 
@@ -100,6 +136,7 @@ RealStream([dimensions]);
 
 The RealJoinStream constructor is used to create a stream of RealJoint variables or arrays of RealJoint variables.
 
+\ifmatlab
 \begin{lstlisting}
 RealJoinStream(numJointVariables, dimensions);
 \end{lstlisting}
@@ -107,6 +144,13 @@ RealJoinStream(numJointVariables, dimensions);
 \begin{itemize}
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single RealJoint variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealJoinStream(numJointVariables);
+\end{lstlisting}
+\fi
 
 
 \subsubsection{FactorGraphStream}
@@ -142,15 +186,17 @@ Each of these share common properties and method listed in the following section
 
 \para{Properties}
 
+\ifmatlab
 \subpara{Dimensions}
 
 Read-only.  Indicates the dimensions of the data source.  The dimensions correspond to the size of the variable array at each position in the stream that the data source will feed.
-
+\fi
 
 \subsubsection{DoubleArrayDataSource}
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 DoubleArrayDataSource([dimensions], [initialData]);
 \end{lstlisting}
@@ -159,6 +205,15 @@ DoubleArrayDataSource([dimensions], [initialData]);
 \item dimensions is an optional row vector indicating the matrix dimensions of the data source (an empty argument indicates a single data source to connect to a single variable stream).
 \item initialData is an optional array of data the stream will contain (more data can be added later).  This is a multidimensional array where the first dimensions correspond to the dimension of the variable stream this will feed, the next dimensions corresponds to the length of the Input vector for each variable (the domain size for discrete variable streams, and 2 for Gaussian variable streams), and the final dimension is the number of time-steps of data to provide.  For single variable streams, the first dimensions are omitted.
 \end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item DoubleArrayDataSource() - Create data source with no initial data
+\item DoubleArrayDataSource(ArrayList \textless double[] \textgreater  initialData) - Specify some initial data. 
+\item DoubleArrayDataSource(double [][] initialData) - Specify some initial data.  The first dimension indexes the step and the second dimension indexes the single step distribution.
+\end{itemize}
+\fi
 
 \para{Methods}
 
@@ -174,6 +229,7 @@ This method appends the data source with the specified data.  The data argument 
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 MultivariateDataSource([dimensions]);
 \end{lstlisting}
@@ -181,21 +237,40 @@ MultivariateDataSource([dimensions]);
 \begin{itemize}
 \item dimensions is an optional row vector indicating the matrix dimensions of the data source (an empty argument indicates a single data source to connect to a single variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+MultivariateDataSource();
+\end{lstlisting}
+\fi
 
 \para{Methods}
 
 \subpara{add}
 
+\ifmatlab
 \begin{lstlisting}
 dataSource.add(means, covariances);
 \end{lstlisting}
 
 This method appends the data source with the a single time-step of data (multiple time-steps must be added using successive calls to this method).  Means should have dimensions [VariableDimensions NumberJointVariables] and Covariances should be of the form [VariableDimensions NumberJointVariables NumberJointVariables].
+\fi
+
+\ifjava
+\begin{itemize}
+\item dataSource.add(MultivariateMsg msg) - Add data for a single step.
+\item dataSource.add(multivariateMsg [] msgs) - Add multiple steps of data.
+\item dataSource.add(double [] means, double [][] covariances) - Add data for a single step.
+\end{itemize}
+\fi
+
 
 \subsubsection{FactorFunctionDataSource}
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 FactorFunctionDataSource([dimensions]);
 \end{lstlisting}
@@ -203,6 +278,14 @@ FactorFunctionDataSource([dimensions]);
 \begin{itemize}
 \item dimensions is an optional row vector indicating the matrix dimensions of the data source (an empty argument indicates a single data source to connect to a single variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorFunctionDataSource();
+\end{lstlisting}
+\fi
+
 
 \para{Methods}
 
@@ -256,6 +339,7 @@ Used in connection with the getNext method (described in the sections below), th
 \subsubsection{DoubleArrayDataSink}
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 DoubleArrayDataSink([dimensions]);
 \end{lstlisting}
@@ -263,28 +347,49 @@ DoubleArrayDataSink([dimensions]);
 \begin{itemize}
 \item dimensions is an optional array indicating the matrix dimensions of the data sink (an empty argument indicates a single data sink to connect to a single variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+DoubleArrayDataSink();
+\end{lstlisting}
+\fi
 
 \para{Properties}
 
 \subpara{Array}
 
-Read-only.  Extracts the entire contents of the data sink as an array.  The first dimensions of the array correspond to the Dimensions of the data sink, the next dimension corresponds to the size of the belief array for each variable, and the final dimension corresponds to the number of time steps that had been gathered.  For discrete variables, the dimension of the belief array corresponds to the domain sizes, while for Gaussian variables the dimension is 2, where the elements correspond to the mean and standard deviation, respectively.
+
+Read-only.  Extracts the entire contents of the data sink as an array.  The first dimensions of the array correspond to the Dimensions of the data sink \ifmatlab, the next dimension corresponds to the size of the belief array for each variable,\fi and the final dimension corresponds to the number of time steps that had been gathered.  For discrete variables, the dimension of the belief array corresponds to the domain sizes, while for Gaussian variables the dimension is 2, where the elements correspond to the mean and standard deviation, respectively.
+
+
 
 \para{Methods}
 
 \subpara{getNext}
 
+\ifmatlab
 \begin{lstlisting}
 b = dataSink.getNext();
 \end{lstlisting}
 
 This method takes no arguments, and returns the set of belief values from the next time-step.  The returned value is a multidimensional array, where the first dimensions correspond to the Dimension of the data sink, and the next dimension corresponds to the size of the belief array for each variable.  For discrete variables, the dimension of the belief array corresponds to the domain sizes, while for Gaussian variables the dimension is 2, where the elements correspond to the mean and standard deviation, respectively.
 
+\fi
+
+\ifjava
+\begin{lstlisting}
+double [] b = dataSink.getNext();
+\end{lstlisting}
+
+This method takes no arguments, and returns the belief values from the next time-step.  The returned value is an array of beliefs for the variable for the given step.  For discrete variables, the dimension of the belief array corresponds to the domain sizes, while for Gaussian variables the dimension is 2, where the elements correspond to the mean and standard deviation, respectively.
+\fi
 
 \subsubsection{MultivariateDataSink}
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 MultivariateDataSink([dimensions]);
 \end{lstlisting}
@@ -292,14 +397,32 @@ MultivariateDataSink([dimensions]);
 \begin{itemize}
 \item dimensions is an optional array indicating the matrix dimensions of the data sink (an empty argument indicates a single data sink to connect to a single variable stream).
 \end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+MultivariateDataSink();
+\end{lstlisting}
+\fi
 
 \para{Methods}
 \subpara{getNext}
 
+\ifmatlab
 \begin{lstlisting}
 b = dataSink.getNext();
 \end{lstlisting}
 
 This method takes no arguments, and returns the set of belief values from the next time-step.  The returned value is a cell array of MultivariateMsg objects (see section~\ref{sec:MultivariateMsg}), each of which contains and mean vector and covariance matrix.  The dimensions of this cell array correspond to the Dimension of the data sink.
+\fi
+
+\ifjava
+\begin{lstlisting}
+b = dataSink.getNext();
+\end{lstlisting}
+
+This method takes no arguments, and returns the belief values from the next time-step.  The returned value is a MultivariateMsg object (see section~\ref{sec:MultivariateMsg}) that contains the mean vector and covariance matrix. 
+\fi
+
 
 

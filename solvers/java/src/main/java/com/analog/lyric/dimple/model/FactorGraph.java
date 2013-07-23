@@ -248,12 +248,13 @@ public class FactorGraph extends FactorBase
 	
 	public FactorGraphStream addRepeatedFactor(FactorGraph nestedGraph, Object ... vars)
 	{
-		return addRepeatedFactor(nestedGraph,1, vars);
+		return addRepeatedFactorWithBufferSize(nestedGraph,1, vars);
 	}
 	
 	
-	public FactorGraphStream addRepeatedFactor(FactorGraph nestedGraph, int bufferSize,Object ... vars)
+	public FactorGraphStream addRepeatedFactorWithBufferSize(FactorGraph nestedGraph, int bufferSize,Object ... vars)
 	{
+		
 		FactorGraphStream fgs = new FactorGraphStream(this, nestedGraph, bufferSize, vars);
 		_factorGraphStreams.add(fgs);
 		for (Object v : vars)
@@ -1315,6 +1316,14 @@ public class FactorGraph extends FactorBase
 	{
 		return getAdjacencyMatrix(0);
 	}
+
+	public int [][] getAdjacencyMatrix(MapList<INode> nodes)
+	{
+		INode [] inodes = new INode[nodes.size()];
+		nodes.toArray(inodes);
+		return getAdjacencyMatrix(inodes);
+	}
+
 	
 	public int [][] getAdjacencyMatrix(INode [] nodes)
 	{
