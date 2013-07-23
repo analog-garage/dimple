@@ -16,6 +16,10 @@
 
 classdef RealJointDomain < Domain
     
+    properties
+        NumElements;
+    end
+    
     methods
         function obj = RealJointDomain(varargin)
             
@@ -46,6 +50,10 @@ classdef RealJointDomain < Domain
         
         function retval = isDiscrete(obj)
             retval = false;
+        end
+        
+        function numElements = get.NumElements(obj)
+            numElements = obj.IDomain.getNumVars();
         end
     end
 end

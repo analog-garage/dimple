@@ -24,6 +24,7 @@ public class TestDomain
 	
 	enum E { A, B, C }
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test()
 	{
@@ -142,6 +143,7 @@ public class TestDomain
 		assertEquals(upper, real.getUpperBound(), 0.0);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static void assertInvariants(Domain domain)
 	{
 		assertNotEquals(domain, "foo");
@@ -243,7 +245,7 @@ public class TestDomain
 			
 			if (discrete instanceof EnumDomain)
 			{
-				EnumDomain<?> e = (EnumDomain)discrete;
+				EnumDomain<?> e = (EnumDomain<?>)discrete;
 				Class<?> eclass = e.getEnumClass();
 				assertTrue(eclass.isEnum());
 				Object[] evalues = eclass.getEnumConstants();

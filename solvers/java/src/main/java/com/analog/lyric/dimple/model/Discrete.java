@@ -25,24 +25,25 @@ public class Discrete extends VariableBase
 	/*--------------
 	 * Construction
 	 */
-	public Discrete(int id,DiscreteDomain domain, String modelerClassName)
-	{
-		super(id, modelerClassName, domain);
-	}
-	
 	public Discrete(DiscreteDomain domain)
 	{
-		this(NodeId.getNext(),domain,"Discrete");
+		this(domain, "Discrete");
 	}
 
-	public Discrete(Object ... domain)
+	public Discrete(Object... domain)
 	{
-		this(NodeId.getNext(),DiscreteDomain.fromElements(domain),"Discrete");
+		this(DiscreteDomain.fromElements(domain),"Discrete");
 
-		if(domain.length < 1)
+		if (domain.length < 1)
 			throw new DimpleException(String.format("ERROR Variable domain length %d must be at least 2", domain.length));
-
 	}
+	
+	public Discrete(DiscreteDomain domain, String modelerClassName)
+	{
+		super(domain, modelerClassName);
+	}
+	
+
 
     public double [] getInput()
     {

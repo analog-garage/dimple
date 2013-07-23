@@ -19,54 +19,33 @@ package com.analog.lyric.dimple.model;
 
 public class Real extends VariableBase
 {
-    public Real(int id, String modelerClassName, RealDomain domain)
-    {
-    	super(id, modelerClassName, domain);
-    }
-
-    public Real(int id, String modelerClassName, RealDomain domain,Object input)
-    {
-    	super(id, modelerClassName, domain);
-    	setInputObject(input);
-    }
-	
-	
+	// Constructors...
 	public Real()
 	{
-		this(RealDomain.full(), null);
+		this(RealDomain.full(), null, "Real");
 	}
-
 	public Real(RealDomain domain)
 	{
-		this(domain, null);
+		this(domain, null, "Real");
 	}
 	public Real(Object input)
 	{
-		this(RealDomain.full(), input);
+		this(RealDomain.full(), input, "Real");
 	}
-	
 	public Real(RealDomain domain, Object input)
 	{
-		this(NodeId.getNext(), domain, input, "Real");
+		this(domain, input, "Real");
 	}
-
-	public Real(int id, RealDomain domain, Object input, String modelerClassName)
+    public Real(RealDomain domain, String modelerClassName)
 	{
-		//this(id,new RealDomain[]{domain},input,modelerClassName);
-		super(id,modelerClassName,domain);
-		//super(id, modelerClassName);
-		//_domain = domain;
+    	this(domain, null, modelerClassName);
+    }
+	public Real(RealDomain domain, Object input, String modelerClassName) 
+	{
+		super(domain, modelerClassName);
 		setInputObject(input);
-
 	}
-	
-//	public Real(int id, RealDomain [] domains, Object input, String modelerClassName)
-//	{
-//		super(id,modelerClassName,domains);
-//		//super(id, modelerClassName);
-//		//_domain = domain;
-//		_input = input;
-//	}
+
 	
 	public RealDomain getRealDomain()
 	{
@@ -78,8 +57,13 @@ public class Real extends VariableBase
 	}
 	
 	
+	public double getValue()
+	{
+		return (Double)_solverVariable.getValue();
+	}
+	
 	// Fix the variable to a specific value
-	public final double getFixedValue()
+	public double getFixedValue()
 	{
 		Object tmp = getFixedValueObject();
 		if (tmp == null)

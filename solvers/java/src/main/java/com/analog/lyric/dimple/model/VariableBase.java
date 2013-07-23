@@ -40,17 +40,15 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public VariableBase(Domain domain)
 	{
-		this(NodeId.getNext(),"Variable",domain);
+		this(NodeId.getNext(), "Variable", domain);
 	}
-	public VariableBase(Domain domain,String modelerClassName)
+	public VariableBase(Domain domain, String modelerClassName)
 	{
-		this(NodeId.getNext(),modelerClassName,domain);
+		this(NodeId.getNext(), modelerClassName, domain);
 	}
-	
-	public VariableBase(int id, String modelerClassName, Domain domain)
+	private VariableBase(int id, String modelerClassName, Domain domain)
 	{
 		super(id);
-		
 		
 		_modelerClassName = modelerClassName;
 		_domain = domain;

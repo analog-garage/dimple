@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,12 +14,18 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model;
+package com.analog.lyric.dimple.solvers.gibbs.sample;
 
-public class Bit extends Discrete
+public class DiscreteSample extends ObjectSample
 {
+	protected int _index;
 
-	public Bit()  {
-		super(DiscreteDomain.forBit(), "Bit");
+	public DiscreteSample(int index, Object value)
+	{
+		super(value);
+		this._index = index;
 	}
+	
+	public final int getIndex() {return _index;}
+	public final void setIndex(int index) {_index = index;}
 }

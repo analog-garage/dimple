@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
@@ -52,10 +51,7 @@ public class PRealVariableVector extends PVariableVector
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			//TODO: do we really want that here?
-			int id = NodeId.getNext();
-			
-			Real v = new Real(id,varType,domain.getModelerObject(),input);
+			Real v = new Real(domain.getModelerObject(), input, varType);
 			nodes[i] = v;
 		}
 		setNodes(nodes);
@@ -104,6 +100,16 @@ public class PRealVariableVector extends PVariableVector
 			beliefs[i] = getRealVariable(indices[i]).getBeliefObject();
 		}
 		return beliefs;
+	}
+	
+	public double[] getValues(int[] indices)
+	{
+		double[] values = new double[indices.length];
+		
+		for (int i = 0; i < indices.length; i++)
+			values[i] = getRealVariable(indices[i]).getValue();
+		
+		return values;
 	}
 
 	

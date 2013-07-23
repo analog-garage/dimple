@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2013 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef ComplexVar < RealJoint
-   methods
-       function obj = ComplexVar(varargin)
-           obj@RealJoint(2,varargin{:});
-       end
-   end    
+% Determine if the input is either a complex number (or array)
+% or a Complex Dimple variable (or array)
+function c = iscomplex(a)
+if (isnumeric(a))
+    imagZero = (imag(a) == 0);
+    c = ~all(imagZero(:));
+else
+    c = isa(a,'Complex');
+end
 end

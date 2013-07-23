@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.Utilities;
@@ -322,8 +323,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_sampleIndex = index;
 
 		// Send the sample value to all output ports
-		_outputMsg.index = index;
-		_outputMsg.value = _varDiscrete.getDiscreteDomain().getElement(index);
+		_outputMsg.setIndex(index);
+		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElement(index));
 				
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
@@ -566,8 +567,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public Object resetOutputMessage(Object message)
 	{
 		DiscreteSample ds = (DiscreteSample)message;
-		ds.index = _var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0;	// Normally zero, but use fixed value if one has been set
-		ds.value = _varDiscrete.getDiscreteDomain().getElement(ds.index);
+		ds.setIndex(_var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
+		ds.setObject(_varDiscrete.getDiscreteDomain().getElement(ds.getIndex()));
 		return ds;
 	}
 

@@ -153,7 +153,8 @@ classdef Real < VariableBase
             
             b = cell(sz);
             
-            a = cell(obj.VectorObject.getBeliefs(obj.VectorIndices));
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            a = cell(obj.VectorObject.getBeliefs(varids));
             
             if prod(sz) == 1
                 b = a{1};
@@ -165,7 +166,9 @@ classdef Real < VariableBase
         end
         
         function v = getValue(obj)
-            error('not implemented');
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            values = obj.VectorObject.getValues(varids);
+            v = MatrixObject.unpack(values,obj.VectorIndices);
         end
 
         function setFixedValue(obj,value)
