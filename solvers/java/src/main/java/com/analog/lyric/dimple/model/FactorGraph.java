@@ -254,6 +254,7 @@ public class FactorGraph extends FactorBase
 	
 	public FactorGraphStream addRepeatedFactorWithBufferSize(FactorGraph nestedGraph, int bufferSize,Object ... vars)
 	{
+		
 		FactorGraphStream fgs = new FactorGraphStream(this, nestedGraph, bufferSize, vars);
 		_factorGraphStreams.add(fgs);
 		for (Object v : vars)
