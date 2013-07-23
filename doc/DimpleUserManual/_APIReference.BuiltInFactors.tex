@@ -130,6 +130,8 @@ CustomXor & MinSum & Same as the Xor factor described above, but with a signific
 
 \subsubsection{Factor Creation Utility Functions}
 
+\ifmatlab
+
 Dimple includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions described in section~\ref{sec:overloaded}.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  Such helper functions are defined for the following built-in distributions:
 
 \begin{itemize}
@@ -173,4 +175,9 @@ Dimple also includes some built-in helper functions to create structured graphs,
 \item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
 \end{itemize}
 
+\fi
+
+\ifjava
+Java Dimple does not yet support built in factors.  
+\fi
 

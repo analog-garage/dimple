@@ -46,7 +46,8 @@ public abstract class VariableBase extends Node implements Cloneable
 	{
 		this(NodeId.getNext(), modelerClassName, domain);
 	}
-	private VariableBase(int id, String modelerClassName, Domain domain)
+	
+	protected VariableBase(int id, String modelerClassName, Domain domain)
 	{
 		super(id);
 		
@@ -376,6 +377,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		checkSolverNotNull();
 		_solverVariable.updateEdge(outPortNum);
 	}
+
+
 	
 	private void checkSolverNotNull()
 	{

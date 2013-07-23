@@ -46,6 +46,12 @@ public class FactorTable extends FactorTableBase
 	private boolean _isDeterministicDirected = false;
 	private HashMap<ArrayList<Object>,ArrayList<Object>> _deterministicDirectedLookupTable = null;
 	
+
+	public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
+	{
+		this(indices,weights,true,domains);
+	}
+	
 	
 	public FactorTable(int [][] indices, double [] weights, Discrete... variables)
 	{
@@ -68,6 +74,10 @@ public class FactorTable extends FactorTableBase
 	
 	public FactorTable(DiscreteDomain ... domains)
 	{
+		if (domains.length == 0)
+			throw new DimpleException("Must specify at least one domain");
+			
+		
 		int size = 1;
 		int [] domainSizes = new int[domains.length];
 		for (int i = 0; i < domains.length; i++)
@@ -170,7 +180,6 @@ public class FactorTable extends FactorTableBase
 		_checkedIfDeterministicDirected = false;
 	}
 	
-
 
 	public int [] getDirectedFrom()
 	{
@@ -394,11 +403,6 @@ public class FactorTable extends FactorTableBase
 		}
 	}
 	
-	
-	public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
-	{
-		this(indices,weights,true,domains);
-	}
 	
 	public DiscreteDomain [] getDomains()
 	{

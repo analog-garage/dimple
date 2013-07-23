@@ -14,23 +14,20 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model;
+package com.analog.lyric.dimple.examples;
 
-public class Bit extends Discrete 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+
+public class ThreeBitXor extends FactorFunction 
 {
-	public Bit()  
+	@Override
+	public double eval(Object ... args)
 	{
-	    super(new DiscreteDomain(new Object[]{new Integer(0),new Integer(1)}),"Bit");
-	}
-	
-	public double getP1()
-	{
-		return getBelief()[0];
+		int arg0 = (Integer)args[0];
+		int arg1 = (Integer)args[1];
+		int arg2 = (Integer)args[2];
+		
+		return (arg0 ^ arg1 ^ arg2) == 0 ? 1 : 0;
 	}
 
-	public void setInput(double p1)
-	{
-		setInput(p1,1-p1);
-	}
-	
 }
