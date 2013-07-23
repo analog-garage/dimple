@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.model;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 import net.jcip.annotations.Immutable;
@@ -27,7 +28,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	
 	DirectedDiscreteDomainList(BitSet inputs, DiscreteDomain ... domains)
 	{
-		super(domains);
+		super(computeHashCode(inputs, domains), domains);
 		_inputSet = inputs;
 		
 		final int nDomains = domains.length;
@@ -74,6 +75,27 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		_inputProducts = inputProducts;
 		_outputIndices = outputIndices;
 		_outputProducts = outputProducts;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object that)
+	{
+		if (this == that)
+		{
+			return true;
+		}
+		
+		if (that instanceof DirectedDiscreteDomainList)
+		{
+			DirectedDiscreteDomainList thatDiscrete = (DirectedDiscreteDomainList)that;
+			return Arrays.equals(_domains, thatDiscrete._domains) && _inputSet.equals(thatDiscrete._inputSet);
+		}
+		
+		return false;
 	}
 	
 	/*----------------------------
@@ -226,6 +248,11 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	 * Private methods
 	 */
 	
+	private static int computeHashCode(BitSet inputs, DiscreteDomain[] domains)
+	{
+		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
+	}
+	
 	private int locationFromElements(Object[] elements, int[] subindices, int[] products)
 	{
 		final DiscreteDomain[] domains = _domains;
@@ -233,8 +260,8 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		
 		for (int i = 0, end = subindices.length; i < end; ++i)
 		{
-			int j = subindices[i];
-			location += products[i] * domains[j].getIndex(elements[j]);
+			final int j = subindices[i];
+			location += products[i] * domains[j].getIndexOrThrow(elements[j]);
 		}
 		
 		return location;

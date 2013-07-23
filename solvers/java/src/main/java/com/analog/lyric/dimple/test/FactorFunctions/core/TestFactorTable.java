@@ -97,7 +97,7 @@ public class TestFactorTable
 	@Test
 	public void performanceComparison()
 	{
-		int iterations = 10000;
+		int iterations = 100000;
 		
 		Random rand = new Random(13);
 		DiscreteDomain domain10 = DiscreteDomain.intRangeFromSize(10);
@@ -142,13 +142,13 @@ public class TestFactorTable
 //		oldNs = oldTester.testGet();
 //		newNs = newTester.testGet();
 
+		oldNs = oldTester.testEvalAsFactorFunction();
+		newNs = newTester.testEvalAsFactorFunction();
+		
 		newTable.densify();
 		oldNs = oldTester.testGetWeightIndexFromTableIndices();
 		newNs = newTester.testGetWeightIndexFromTableIndices();
 
-		oldNs = oldTester.testEvalAsFactorFunction();
-		newNs = newTester.testEvalAsFactorFunction();
-		
 	}
 	
 	private void testRandomOperations(NewFactorTable table, int nOperations)

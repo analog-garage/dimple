@@ -27,7 +27,17 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	@Override
 	public boolean equals(Object that)
 	{
-		return (that instanceof EnumDomain) && ((EnumDomain<?>)that)._enumClass == _enumClass;
+		if (this == that)
+		{
+			return true;
+		}
+		
+		if (that instanceof EnumDomain)
+		{
+			return ((EnumDomain<?>)that)._enumClass == _enumClass;
+		}
+		
+		return false;
 	}
 
 	/*-----------------

@@ -150,6 +150,16 @@ public abstract class DiscreteDomain extends Domain
 		return new EnumDomain<E>(enumClass);
 	}
 	
+	public static JointDiscreteDomain joint(DiscreteDomainList domains)
+	{
+		return new JointDiscreteDomain(domains);
+	}
+	
+	public static JointDiscreteDomain joint(DiscreteDomain ... domains)
+	{
+		return joint(DiscreteDomainList.create(domains));
+	}
+	
 	public static IntRangeDomain range(int low, int high)
 	{
 		return new IntRangeDomain(1 + high - low, low);
@@ -177,7 +187,7 @@ public abstract class DiscreteDomain extends Domain
 	
 	public static DoubleRangeDomain doubleRangeFromSizeAndStart(int size, double start)
 	{
-		return new DoubleRangeDomain(size, start);
+		return new DoubleRangeDomain(size, start, 1.0);
 	}
 	
 	public static DoubleRangeDomain doubleRangeFromSizeStartAndInterval(int size, double start, double interval)
@@ -302,7 +312,26 @@ public abstract class DiscreteDomain extends Domain
 	}
 	
 	// Find the list of elements corresponding to the value; return -1 if not a valid value
+	/**
+	 * Returns the index of {@code value} in this domains elements or else -1 if
+	 * {@code value} is not an element of this domain.
+	 * @see #getIndexOrThrow(Object)
+	 */
 	public abstract int getIndex(Object value);
+	
+	/**
+	 * Like {@link #getIndex(Object)} but throws a {@link DimpleException} instead of returning
+	 * -1 on failure.
+	 */
+	public int getIndexOrThrow(Object value)
+	{
+		int index = getIndex(value);
+		if (index < 0)
+		{
+			throw domainError(value);
+		}
+		return index;
+	}
 
 	/**
 	 * @deprecated Use {@link #containsValue} instead.
@@ -312,5 +341,4 @@ public abstract class DiscreteDomain extends Domain
 	{
 		return (getIndex(value) >= 0);
 	}
-
 }

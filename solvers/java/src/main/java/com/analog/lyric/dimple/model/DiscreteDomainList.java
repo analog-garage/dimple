@@ -2,6 +2,7 @@ package com.analog.lyric.dimple.model;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.RandomAccess;
@@ -22,13 +23,15 @@ public class DiscreteDomainList
 	final DiscreteDomain[] _domains;
 	final int[] _products;
 	final int _cardinality;
+	final int _hashCode;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	DiscreteDomainList(DiscreteDomain[] domains)
+	DiscreteDomainList(int hashCode, DiscreteDomain[] domains)
 	{
+		_hashCode = hashCode;
 		if (domains == null || domains.length == 0)
 		{
 			throw new DimpleException("Empty domain list");
@@ -48,6 +51,11 @@ public class DiscreteDomainList
 		_cardinality = product;
 	}
 	
+	DiscreteDomainList(DiscreteDomain[] domains)
+	{
+		this(Arrays.hashCode(domains), domains);
+	}
+	
 	public static DiscreteDomainList create(DiscreteDomain ... domains)
 	{
 		return new DiscreteDomainList(domains);
@@ -63,6 +71,33 @@ public class DiscreteDomainList
 		{
 			return create(domains);
 		}
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object that)
+	{
+		if (this == that)
+		{
+			return true;
+		}
+		
+		if (that instanceof DiscreteDomainList)
+		{
+			DiscreteDomainList thatDiscrete = (DiscreteDomainList)that;
+			return !thatDiscrete.isDirected() && Arrays.equals(_domains, thatDiscrete._domains);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public final int hashCode()
+	{
+		return _hashCode;
 	}
 	
 	/*--------------
@@ -256,7 +291,7 @@ public class DiscreteDomainList
 		int joint = 0;
 		for (int i = 0, end = products.length; i < end; ++i)
 		{
-			joint += products[i] * domains[i].getIndex(elements[i]);
+			joint += products[i] * domains[i].getIndexOrThrow(elements[i]);
 		}
 		return joint;
 	}

@@ -33,6 +33,27 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 		return first + size * 11 + interval * 13;
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object that)
+	{
+		if (this == that)
+		{
+			return true;
+		}
+		
+		if (that instanceof IntRangeDomain)
+		{
+			IntRangeDomain thatRange = (IntRangeDomain)that;
+			return _size == thatRange._size && _first == thatRange._first && _interval == thatRange._interval;
+		}
+		
+		return false;
+	}
+	
 	/*------------------------
 	 * DiscreteDomain methods
 	 */

@@ -24,16 +24,6 @@ public class DoubleRangeDomain extends TypedDiscreteDomain<Double>
 		_tolerance = defaultToleranceForInterval(interval);
 	}
 		
-	DoubleRangeDomain(int size, double first)
-	{
-		this(size, first, 1.0);
-	}
-	
-	DoubleRangeDomain(int size)
-	{
-		this(size, 0.0, 1.0);
-	}
-	
 	private static int computeHashCode(int size, double first, double interval)
 	{
 		return Doubles.hashCode(first) + size * 11 + Doubles.hashCode(interval) * 13;

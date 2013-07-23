@@ -167,7 +167,7 @@ public class RealDomain extends Domain
 	@Override
 	public String toString()
 	{
-		return "RealDomain: " + _lowerBound + ", " + _upperBound;
+		return "RealDomain: [" + _lowerBound + ", " + _upperBound + "]";
 	}
 
 }
