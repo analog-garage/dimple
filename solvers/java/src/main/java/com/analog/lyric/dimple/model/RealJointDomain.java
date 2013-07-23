@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model;
 
 import java.util.Arrays;
 
-public class RealJointDomain extends Domain 
+public class RealJointDomain extends Domain
 {
 	private RealDomain[] _domains;
 	
@@ -36,7 +36,7 @@ public class RealJointDomain extends Domain
 	}
 	
 	@Override
-	public boolean isDiscrete() 
+	public boolean isDiscrete()
 	{
 		return false;
 	}
@@ -56,6 +56,7 @@ public class RealJointDomain extends Domain
 		return _domains.length;
 	}
 	
+	@Override
 	public boolean isJoint()
 	{
 		return true;
@@ -97,10 +98,4 @@ public class RealJointDomain extends Domain
 		return true;
 	}
 	
-	// Get the domain of an individual dimension in the joint domain
-	public RealDomain getDomainDimension(int dimension)
-	{
-		return _domains[dimension];
-	}
-
 }
