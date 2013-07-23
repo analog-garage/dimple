@@ -433,7 +433,7 @@ mini = -0.5;
 maxi = 0.5;
 dr = RealDomain(minr,maxr);
 di = RealDomain(mini, maxi);
-jd = RealJointDomain(dr,di);
+jd = ComplexDomain(dr,di);
 
 a = Complex(jd);
 b = Complex(jd);

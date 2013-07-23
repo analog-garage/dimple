@@ -36,7 +36,14 @@ classdef RealJointDomain < Domain
                     end
                 end
             else
-                domains = varargin;
+                if isnumeric(varargin{1})
+                    domains = varargin(2:end);
+                    if (numel(domains) ~= varargin{1});
+                        error('Number of domain elements must match the number of joint variable elements');
+                    end
+                else
+                    domains = varargin;
+                end
             end
             
             idomains = cell(size(domains));

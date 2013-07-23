@@ -47,7 +47,8 @@ fg.solve();
 
 assertElementsAlmostEqual(c.Value, 5, 'absolute');
 assertElementsAlmostEqual(c.Belief(1), 5, 'absolute');
-
+assertElementsAlmostEqual(a.Input, [3; 1], 'absolute');
+assertElementsAlmostEqual(b.Input, [2; 2], 'absolute');
 
 end
 
@@ -70,6 +71,8 @@ fg.solve();
 
 assertElementsAlmostEqual(c.Value, 5 + 1i*9, 'absolute', 1e-5);
 assertElementsAlmostEqual(c.Belief.Means, [5; 9], 'absolute', 1e-5);
+assertElementsAlmostEqual(a.Input.getMeans(), [3; 2], 'absolute');
+assertElementsAlmostEqual(b.Input.getMeans(), [2; 7], 'absolute');
 
 end
 
@@ -102,10 +105,14 @@ fg.solve();
 
 assertElementsAlmostEqual(c.Value, ain(:,:,:) + bin(:,:,:), 'absolute');
 cBelief = c.Belief;
+aInput = a.Input;
+bInput = b.Input;
 for i=1:2
     for j=1:3
         for k=1:4
             assertElementsAlmostEqual(cBelief{i,j,k}(1), ain(i,j,k) + bin(i,j,k), 'absolute');
+            assertElementsAlmostEqual(aInput{i,j,k}(1), ain(i,j,k), 'absolute');
+            assertElementsAlmostEqual(bInput{i,j,k}(1), bin(i,j,k), 'absolute');
         end
     end
 end
@@ -143,10 +150,14 @@ fg.solve();
 
 assertElementsAlmostEqual(c.Value, (arin + brin) + 1i*(aiin + biin), 'absolute', 1e-5);
 cBelief = c.Belief;
+aInput = a.Input;
+bInput = b.Input;
 for i=1:2
     for j=1:3
         for k=1:4
             assertElementsAlmostEqual(cBelief{i,j,k}.Means, [arin(i,j,k) + brin(i,j,k); aiin(i,j,k) + biin(i,j,k)] , 'absolute', 1e-5);
+            assertElementsAlmostEqual(aInput{i,j,k}.getMeans(), [arin(i,j,k); aiin(i,j,k)], 'absolute');
+            assertElementsAlmostEqual(bInput{i,j,k}.getMeans(), [brin(i,j,k); biin(i,j,k)], 'absolute');
         end
     end
 end
