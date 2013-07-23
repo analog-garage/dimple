@@ -206,6 +206,15 @@ public class SVariable extends SRealVariableBase
     	return new double []{Mu,sigma};
     
     }
+    
+    
+	@Override
+	public Object getValue()
+	{
+		double[] belief = (double[])getBelief();
+		return new Double(belief[0]);
+	}
+	
 
 	@Override
 	public Object [] createMessages(ISolverFactor factor) 

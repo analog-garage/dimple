@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -52,10 +51,7 @@ public class PDiscreteVariableVector extends PVariableVector
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			//TODO: do we really want that here?
-			int id = NodeId.getNext();
-
-			Discrete v = new Discrete(id, domain.getModelerObject(),varType);
+			Discrete v = new Discrete(domain.getModelerObject(), varType);
 			nodes[i] = v;
 		}
 		

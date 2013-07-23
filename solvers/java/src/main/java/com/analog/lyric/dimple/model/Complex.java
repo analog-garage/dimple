@@ -16,10 +16,22 @@
 
 package com.analog.lyric.dimple.model;
 
-public class Bit extends Discrete 
+public class Complex extends RealJoint 
 {
-	public Bit()
+	// Constructors...
+	public Complex() 
 	{
-		super(new DiscreteDomain(new Object[]{0.0,1.0}), "Bit");
+		this(new RealJointDomain(2));
+	}
+	public Complex(RealJointDomain domain)
+	{
+		this(domain, "Complex");
+	}
+	public Complex(RealJointDomain domain, String modelerClassName) 
+	{
+		super(domain, modelerClassName);
+		
+		if (domain.getNumVars() != 2)
+			throw new DimpleException("Complex domain must have exactly two components");
 	}
 }

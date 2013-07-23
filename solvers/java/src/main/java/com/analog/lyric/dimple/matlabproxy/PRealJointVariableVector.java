@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.NodeId;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
@@ -40,9 +39,7 @@ public class PRealJointVariableVector extends PVariableVector
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			//TODO: do we really want that here?
-			//int id = NodeId.getNext();
-			RealJoint v = new RealJoint(NodeId.getNext(),domain.getModelerObject(),varType);
+			RealJoint v = new RealJoint(domain.getModelerObject(), varType);
 			nodes[i] = v;
 		}
 		setNodes(nodes);
@@ -87,6 +84,38 @@ public class PRealJointVariableVector extends PVariableVector
 			beliefs[i] = getRealJointVariable(indices[i]).getBeliefObject();
 		}
 		return beliefs;
+	}
+	
+	public double[][] getValues(int[] indices)
+	{
+		double[][] values = new double[indices.length][];
+		
+		for (int i = 0; i < indices.length; i++)
+			values[i] = getRealJointVariable(indices[i]).getValue();
+		
+		return values;
+	}
+	
+	public void setFixedValues(int[] indices, double[][] fixedValues)
+	{
+		for (int i = 0; i < indices.length; i++)
+			getRealJointVariable(indices[i]).setFixedValue(fixedValues[i]);
+	}
+	public double[][] getFixedValues(int[] indices)
+	{
+		double[][] output = new double[indices.length][];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealJointVariable(indices[i]).getFixedValue();
+		
+		return output;
+	}
+	public boolean[] hasFixedValue(int[] indices)
+	{
+		boolean[] output = new boolean[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealJointVariable(indices[i]).hasFixedValue();
+		
+		return output;
 	}
 	
 	@Override

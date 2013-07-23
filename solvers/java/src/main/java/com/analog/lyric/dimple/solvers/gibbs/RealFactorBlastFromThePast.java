@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 
 public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
 {
@@ -67,7 +68,7 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 	    int numPorts = _inputMsgs.length;
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = _inputMsgs[port].value;
+	    	inPortMsgs[port] = _inputMsgs[port].getObject();
 	    
 	    return getPotential(inPortMsgs);
 	}

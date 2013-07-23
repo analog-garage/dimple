@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,12 +14,19 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model;
+package com.analog.lyric.dimple.solvers.gibbs.sample;
 
-public class Bit extends Discrete 
+public class RealJointSample extends ObjectSample
 {
-	public Bit()
+	public RealJointSample(double[] value)
 	{
-		super(new DiscreteDomain(new Object[]{0.0,1.0}), "Bit");
+		super(value);
 	}
+	
+	public double[] getValue() {return (double[])_value;}
+	public void setValue(double[] value) {_value = value;}
+	
+	// Get/set a specific element of the sample
+	public double getValue(int index) {return ((double[])_value)[index];}
+	public void setValue(int index, double value) {((double[])_value)[index] = value;}
 }

@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -96,7 +97,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 		int[] inPortMsgs = new int[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
-			inPortMsgs[port] = _inPortMsgs[port].index;
+			inPortMsgs[port] = _inPortMsgs[port].getIndex();
 
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 		{
@@ -118,7 +119,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 	    int[] inPortMsgs = new int[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
-	    	inPortMsgs[port] = _inPortMsgs[port].index;
+	    	inPortMsgs[port] = _inPortMsgs[port].getIndex();
 	    
 	    return getPotential(inPortMsgs);
 	}
@@ -144,7 +145,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		// Compute the output values of the deterministic factor function from the input values
 	    Object[] values = new Object[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = _inPortMsgs[port].value;
+	    	values[port] = _inPortMsgs[port].getObject();
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values

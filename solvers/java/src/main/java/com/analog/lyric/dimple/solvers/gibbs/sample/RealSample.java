@@ -14,15 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs;
+package com.analog.lyric.dimple.solvers.gibbs.sample;
 
-public class DiscreteSample extends ObjectSample
+public class RealSample extends ObjectSample
 {
-	public DiscreteSample(int index, Object value)
+	public RealSample(double value)
 	{
 		super(value);
-		this.index = index;
 	}
 	
-	public int index;
+	public final double getValue() {return (Double)_value;}
+	public final void setValue(double value) {_value = value;}
 }

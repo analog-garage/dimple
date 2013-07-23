@@ -113,6 +113,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public ISolverVariable createVariable(VariableBase var)
 	{
+		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
+			return new SRealJointVariable(var);
 		if (var.getModelerClassName().equals("Real"))
 			return new SRealVariable(var);
 		else

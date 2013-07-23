@@ -31,16 +31,34 @@ classdef RealJoint < VariableBase
                 obj.VectorIndices = varargin{4};
             else
                 
-                domain = RealJointDomain(varargin{1});
+                % First argument can be either a RealJointDomain or
+                % the number of dimensions in the joint varaible
+                if (isa(varargin{1}, 'RealJointDomain'));
+                    domain = varargin{1};
+                    nextArg = 2;
+                elseif (isnumeric(varargin{1}) && (nargin > 1) && isa(varargin{2}, 'RealJointDomain'))
+                    % This case is for Complex, where size 2 is always
+                    % passed as the first argument
+                    domain = varargin{2};
+                    if (varargin{1} ~= domain.NumElements);
+                        error('Number of domain elements must match the number of joint variable elements');
+                    end
+                    nextArg = 3;
+                else
+                    domain = RealJointDomain(varargin{1});
+                    nextArg = 2;
+                end
                 obj.Domain = domain;
                
-               
-                if numel(varargin) == 1
+                % Determine the size of the array of RealJoint variables
+                if nargin < nextArg
                     dims = 1;
                 else
-                    dims = length(varargin{2:end});
-                    for i = 1:length(dims)
-                        dims(i) = varargin{i+1};
+                    dimArgs = varargin(nextArg:end);
+                    dims = [dimArgs{:}];
+                    if size(dims) == 1
+                        dimArgs = {dimArgs{1}, dimArgs{1}};
+                        dims = [dimArgs{:}];
                     end
                 end
                 
@@ -65,29 +83,13 @@ classdef RealJoint < VariableBase
             var = RealJoint(obj.Domain,'existing',varMat,VectorIndices);
         end
         
-        
-        function x = getValue(obj)
-            error('not implemented');
-        end
-        
-        function x = getInput(obj)
-            error('not implemented');
-        end
-        
-        function setFixedValue(obj,value)
-            error('not implemented');
-        end
-        
-        function x = getFixedValue(obj)
-            error('not implemented');
-        end
-        
         function b = getBelief(obj)
             sz = size(obj);
             
             b = cell(sz);
             
-            a = cell(obj.VectorObject.getBeliefs(obj.VectorIndices));
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            a = cell(obj.VectorObject.getBeliefs(varids));
             
             if prod(sz) == 1
                 m = MultivariateMsg(0,0);
@@ -102,16 +104,57 @@ classdef RealJoint < VariableBase
             end
         end
         
+        
+        function v = getValue(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            values = obj.VectorObject.getValues(varids);
+            v = MatrixObject.unpack(values,obj.VectorIndices);
+        end
+        
+
+        
         function setInput(obj,input)
             v = obj.VectorIndices;
             
             if isa(input,'Msg')
                 input = input.IMsg;
+            elseif iscell(input)
+                if (isa(input{1}, 'FactorFunction'))
+                    for i=1:length(input)
+                        input{i} = input{i}.get();
+                    end
+                elseif (iscell(input{1}))
+                    for i=1:length(input)
+                        input{i} = FactorFunction(input{i}{:}).get();
+                    end
+                end
             end
             
             varids = reshape(v,numel(v),1);
             obj.VectorObject.setInput(varids,input);
         end
+        
+        
+        function x = getInput(obj)
+            error('not implemented');
+        end
+        
+        function setFixedValue(obj,value)
+           fixedValues = MatrixObject.pack(value,obj.VectorIndices);
+           arraySize = prod(size(obj.VectorIndices));
+           numElements = obj.Domain.NumElements;
+           fixedValues = reshape(fixedValues,arraySize,numElements);
+           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+           obj.VectorObject.setFixedValues(varids, fixedValues);
+        end
+        
+        function x = getFixedValue(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            fixedValues = obj.VectorObject.getFixedValues(varids);
+            x = MatrixObject.unpack(fixedValues,obj.VectorIndices);
+        end
+        
+
         
     end
     

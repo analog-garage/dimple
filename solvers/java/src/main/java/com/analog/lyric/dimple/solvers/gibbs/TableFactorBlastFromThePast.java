@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
+import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 
 public class TableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
 {
@@ -58,7 +59,7 @@ public class TableFactorBlastFromThePast extends SBlastFromThePast implements IS
 	@Override
 	public double getPotential()
 	{
-		return _outputMsg[_inputMsg.index];
+		return _outputMsg[_inputMsg.getIndex()];
 	}
 	
 	@Override

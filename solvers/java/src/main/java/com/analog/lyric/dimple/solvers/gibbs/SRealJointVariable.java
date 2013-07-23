@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   Copyright 2012 Analog Devices, Inc.
+ *   Copyright 2013 Analog Devices, Inc.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.RealJoint;
+import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
-import com.analog.lyric.dimple.solvers.gibbs.sample.RealSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.RealJointSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.DefaultRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
@@ -38,50 +39,53 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-
-/**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
+/**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
  *
  */
 
-public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISampleScorer
+public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISampleScorer
 {
-	protected Real _varReal;
-	protected RealSample _outputMsg;
-	protected double _sampleValue = 0;
-	protected double _initialSampleValue = 0;
-	protected FactorFunction _input;
-	protected RealDomain _domain;
+	protected RealJoint _varReal;
+	protected RealJointSample _outputMsg;
+	protected double[] _sampleValue;
+	protected double[] _initialSampleValue;
+	protected FactorFunction[] _input;
+	protected RealJointDomain _domain;
 	protected IRealSampler _sampler = new DefaultRealSampler();
-	protected ArrayList<Double> _sampleArray;
-	protected double _bestSampleValue;
+	protected ArrayList<double[]> _sampleArray;
+	protected double[] _bestSampleValue;
 	protected double _beta = 1;
 	protected boolean _holdSampleValue = false;
 	protected boolean _isDeterministicDepdentent = false;
 	protected boolean _hasDeterministicDependents = false;
+	protected int _numRealVars;
+    protected double[] _guessValue;
+    protected boolean _guessWasSet = false;
+    protected int _tempIndex = 0;
 
 
-	// Primary constructor
-	public SRealVariable(VariableBase var)  
+	public SRealJointVariable(VariableBase var)  
 	{
 		super(var);
 
-		if (!(var.getDomain() instanceof RealDomain))
-			throw new DimpleException("expected real domain");
+		if (!(var.getDomain() instanceof RealJointDomain))
+			throw new DimpleException("expected real joint domain");
 
-		_varReal = (Real)_var;
-		_domain = (RealDomain)var.getDomain();
+		_varReal = (RealJoint)_var;
+		_domain = (RealJointDomain)var.getDomain();
+		
+		_numRealVars = _domain.getNumVars();
+		_sampleValue = new double[_numRealVars];
+		_initialSampleValue = new double[_numRealVars];
+		_bestSampleValue = new double[_numRealVars];
+		for (int i = 0; i < _numRealVars; i++)
+		{
+			_sampleValue[i] = 0;
+			_initialSampleValue[i] = 0;
+			_bestSampleValue[i] = 0;
+		}
 	}
-
-	// Alternative constructor for creating from a joint domain
-	public SRealVariable(VariableBase var, Real realVar, RealDomain domain)  
-	{
-		super(var);
-
-		_varReal = realVar;
-		_domain = domain;
-	}
-
 	
 	
 	public void updateEdge(int outPortNum)
@@ -101,9 +105,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_var.hasFixedValue()) return;
 
 		// Get the next sample value from the sampler
-		double nextSampleValue = _sampler.nextSample(_sampleValue, this);
-		if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
-			setCurrentSample(nextSampleValue);
+		for (int i = 0; i < _numRealVars; i++)
+		{
+			_tempIndex = i;		// Save this to be used by the call-back to getSampleScore
+			double sampleValue = _sampleValue[i];
+			double nextSampleValue = _sampler.nextSample(sampleValue, this);
+			if (nextSampleValue != _sampleValue[i])	// Would be exactly equal if not changed since last value tested
+				setCurrentSample(i, nextSampleValue);
+		}
 	}
 	
 	
@@ -112,13 +121,16 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		if (!_domain.inDomain(_sampleValue))
 			return Double.POSITIVE_INFINITY;		// Outside the domain
-			
+		
 		int numPorts = _var.getSiblings().size();
 		double potential = 0;
 
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
-			potential = _input.evalEnergy(new Object[]{_sampleValue});
+		{
+			for (int i = 0; i < _numRealVars; i++)
+				potential += _input[i].evalEnergy(_sampleValue[i]);
+		}
 		ArrayList<INode> siblings = _var.getSiblings();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
@@ -137,7 +149,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		// WARNING: Side effect is that the current sample value changes to this sample value
 		// Could change back but less efficient to do this, since we'll be updating the sample value anyway
-		setCurrentSample(sampleValue);
+		setCurrentSample(_tempIndex, sampleValue);
 
 		return getCurrentSampleScore();
 	}
@@ -157,10 +169,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		}
 
 		// TODO -- sample from the prior if specified, not just the bounds
-		double hi = _domain.getUpperBound();
-		double lo = _domain.getLowerBound();
-		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-			setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+		for (int i = 0; i < _numRealVars; i++)
+		{
+			RealDomain realDomain = _domain.getRealDomain(i);
+			double hi = realDomain.getUpperBound();
+			double lo = realDomain.getLowerBound();
+			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+				setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+		}
 	}
 
 	public void updateBelief()
@@ -174,15 +190,19 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue) 
+	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue) 
 	{
 		if (input == null)
 			_input = null;
 		else
-			_input = (FactorFunction)input;
+		{
+			_input = new FactorFunction[_numRealVars];
+			for (int i = 0; i < _numRealVars; i++)
+				_input[i] = (FactorFunction)((Object[])input)[i];
+		}
 
 		if (hasFixedValue)
-			setCurrentSample((Double)fixedValue);
+			setCurrentSample(fixedValue);
 	}
 
 	
@@ -199,50 +219,68 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		updateDirectedCache();
 		if (_var.hasFixedValue())
 		{
-			setCurrentSample((Double)_var.getFixedValueObject());
+			setCurrentSample(_var.getFixedValueObject());
 		}
 		else
 		{
 			setCurrentSample(_sampleValue);
 		}
-		
 	}
 
 	
 	@Override
 	public final double getScore()
 	{
+		double[] value;
 		if (_var.hasFixedValue())
 			return 0;
 		else if (_input == null)
 			return 0;
 		else if (_guessWasSet)
-			return _input.evalEnergy(_guessValue);
+			value = _guessValue;
 		else
-			return _input.evalEnergy(_sampleValue);
+			value = _sampleValue;
+		
+		double score = 0;
+		for (int i = 0; i < _numRealVars; i++)
+			score += _input[i].evalEnergy(value[i]);
+		return score;
 	}
 	
 	@Override
 	public Object getGuess()
 	{
 		if (_guessWasSet)
-			return Double.valueOf(_guessValue);
+			return _guessValue;
 		else if (_var.hasFixedValue())
-			return Double.valueOf(_varReal.getFixedValue());
+			return _varReal.getFixedValue();
 		else
-			return Double.valueOf(_sampleValue);
+			return _sampleValue;
 	}
+	
+	@Override
+	public void setGuess(Object guess) 
+	{
+		_guessValue = (double[])guess;
+
+		// Make sure the number is within the domain of the variable
+		if (!_domain.inDomain(_guessValue))
+			throw new DimpleException("Guess is not within the domain of the variable");
+		
+		_guessWasSet = true;
+	}
+
 
 
 	public final void saveAllSamples()
 	{
-		_sampleArray = new ArrayList<Double>();
+		_sampleArray = new ArrayList<double[]>();
 	}
 
 	public final void saveCurrentSample()
 	{
 		if (_sampleArray != null)
-			_sampleArray.add(_sampleValue);
+			_sampleArray.add(_sampleValue.clone());
 	}
 
 	public final void saveBestSample()
@@ -271,16 +309,35 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		else if (_input == null)
 			return 0;
 		else
-			return _input.evalEnergy(new Object[]{_sampleValue});
+		{
+			double potential = 0;
+			for (int i = 0; i < _numRealVars; i++)
+				potential += _input[i].evalEnergy(_sampleValue[i]);
+			return potential;
+		}
 	}
 
-    public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
-	public final void setCurrentSample(double value)
+	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
+	public final void setCurrentSample(double[] value)
 	{
 		_sampleValue = value;
-		_outputMsg.setValue(_sampleValue);
+		_outputMsg.setValue(value);
 		
 		// If this variable has deterministic dependents, then set their values
+		setDependentValues();
+	}
+    public final void setCurrentSample(int index, Object value) {setCurrentSample(index, FactorFunctionUtilities.toDouble(value));}
+	public final void setCurrentSample(int index, double value)
+	{
+		_sampleValue[index] = value;
+		_outputMsg.setValue(index, value);
+		
+		// If this variable has deterministic dependents, then set their values
+		setDependentValues();
+	}
+	
+	public final void setDependentValues()
+	{
 		if (_hasDeterministicDependents)
 		{
 			ArrayList<INode> siblings = _var.getSiblings();
@@ -294,28 +351,29 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		}
 	}
 
-	public final double getCurrentSample()
+
+	public final double[] getCurrentSample()
 	{
 		return _sampleValue;
 	}
 
-	public final double getBestSample()
+	public final double[] getBestSample()
 	{
 		return _bestSampleValue;
 	}
 
-	public final double[] getAllSamples()
+	public final double[][] getAllSamples()
 	{
 		if (_sampleArray == null)
 			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
 		int length = _sampleArray.size();
-		double[] retval = new double[length];
+		double[][] retval = new double[length][];
 		for (int i = 0; i < length; i++)
 			retval[i] = _sampleArray.get(i);
 		return retval;
 	}
 
-	public final void setAndHoldSampleValue(double value)
+	public final void setAndHoldSampleValue(double[] value)
 	{
 		setCurrentSample(value);
 		holdSampleValue();
@@ -395,8 +453,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return _sampler.getClass().getSimpleName();
 	}
 
-	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
-	public final double getInitialSampleValue() {return _initialSampleValue;}
+	public final void setInitialSampleValue(double[] initialSampleValue) {_initialSampleValue = initialSampleValue;}
+	public final double[] getInitialSampleValue() {return _initialSampleValue;}
 
 
 	public final void setBeta(double beta)	// beta = 1/temperature
@@ -431,18 +489,18 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 
 
-	public RealSample createDefaultMessage() 
+	public RealJointSample createDefaultMessage() 
 	{
 		if (_var.hasFixedValue())
-			return new RealSample(_varReal.getFixedValue());
+			return new RealJointSample(_varReal.getFixedValue());
 		else
-			return new RealSample(_initialSampleValue);
+			return new RealJointSample(_initialSampleValue);
 	}
 
 	@Override
 	public Object resetInputMessage(Object message) 
 	{
-		((RealSample)message).setObject(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		((RealJointSample)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 		return message;
 	}
 
@@ -482,7 +540,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 		if (!_isDeterministicDepdentent)
 		{
-			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
+			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
 				setCurrentSample(initialSampleValue);
 		}
@@ -506,7 +564,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
-		SRealVariable ovar = ((SRealVariable)other);
+		SRealJointVariable ovar = ((SRealJointVariable)other);
 		_outputMsg = ovar._outputMsg;
 		_sampleValue = ovar._sampleValue;
 		_initialSampleValue = ovar._initialSampleValue;
@@ -515,7 +573,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_beta = ovar._beta;
 		_sampler = ovar._sampler;
 		_holdSampleValue = ovar._holdSampleValue;
+		_numRealVars = ovar._numRealVars;
     }
-
 
 }
