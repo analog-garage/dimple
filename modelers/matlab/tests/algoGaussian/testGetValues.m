@@ -18,14 +18,14 @@ function testGetValues()
 
 debugPrint = false;
 
-dtrace(debugPrint, '++testOperatorOverloadingGibbs');
+dtrace(debugPrint, '++testGetValues');
 
 test1(debugPrint);
 test2(debugPrint);
 test3(debugPrint);
 test4(debugPrint);
 
-dtrace(debugPrint, '--testOperatorOverloadingGibbs');
+dtrace(debugPrint, '--testGetValues');
 
 end
 

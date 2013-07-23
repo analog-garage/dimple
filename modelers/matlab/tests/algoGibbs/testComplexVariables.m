@@ -19,7 +19,7 @@ function testComplexVariables()
 debugPrint = false;
 repeatable = true;
 
-dtrace(debugPrint, '++testOperatorOverloadingGibbs');
+dtrace(debugPrint, '++testComplexVariables');
 
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
@@ -27,7 +27,7 @@ test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 
-dtrace(debugPrint, '--testOperatorOverloadingGibbs');
+dtrace(debugPrint, '--testComplexVariables');
 
 end
 

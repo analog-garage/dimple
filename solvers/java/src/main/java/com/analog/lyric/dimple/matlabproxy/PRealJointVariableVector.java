@@ -96,6 +96,28 @@ public class PRealJointVariableVector extends PVariableVector
 		return values;
 	}
 	
+	public void setFixedValues(int[] indices, double[][] fixedValues)
+	{
+		for (int i = 0; i < indices.length; i++)
+			getRealJointVariable(indices[i]).setFixedValue(fixedValues[i]);
+	}
+	public double[][] getFixedValues(int[] indices)
+	{
+		double[][] output = new double[indices.length][];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealJointVariable(indices[i]).getFixedValue();
+		
+		return output;
+	}
+	public boolean[] hasFixedValue(int[] indices)
+	{
+		boolean[] output = new boolean[indices.length];
+		for (int i = 0; i < indices.length; i++)
+			output[i] = getRealJointVariable(indices[i]).hasFixedValue();
+		
+		return output;
+	}
+	
 	@Override
 	public PNodeVector createNodeVector(Node[] nodes)
 	{

@@ -83,19 +83,6 @@ classdef RealJoint < VariableBase
             var = RealJoint(obj.Domain,'existing',varMat,VectorIndices);
         end
         
-        
-        function x = getInput(obj)
-            error('not implemented');
-        end
-        
-        function setFixedValue(obj,value)
-            error('not implemented');
-        end
-        
-        function x = getFixedValue(obj)
-            error('not implemented');
-        end
-        
         function b = getBelief(obj)
             sz = size(obj);
             
@@ -146,6 +133,28 @@ classdef RealJoint < VariableBase
             varids = reshape(v,numel(v),1);
             obj.VectorObject.setInput(varids,input);
         end
+        
+        
+        function x = getInput(obj)
+            error('not implemented');
+        end
+        
+        function setFixedValue(obj,value)
+           fixedValues = MatrixObject.pack(value,obj.VectorIndices);
+           arraySize = prod(size(obj.VectorIndices));
+           numElements = obj.Domain.NumElements;
+           fixedValues = reshape(fixedValues,arraySize,numElements);
+           varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+           obj.VectorObject.setFixedValues(varids, fixedValues);
+        end
+        
+        function x = getFixedValue(obj)
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            fixedValues = obj.VectorObject.getFixedValues(varids);
+            x = MatrixObject.unpack(fixedValues,obj.VectorIndices);
+        end
+        
+
         
     end
     

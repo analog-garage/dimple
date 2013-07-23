@@ -24,10 +24,10 @@ classdef Complex < RealJoint
    
    methods (Access=protected)
       
+       % Turn the values into complex numbers
        function v = getValue(obj)
             values = getValue@RealJoint(obj);
             
-            % Turn the values into complex numbers
             % Final dimension of values array have the real and imaginary parts
             arrayDims = ndims(values);
             if (arrayDims == 2 && size(vec(values),2) == 1)
@@ -39,6 +39,33 @@ classdef Complex < RealJoint
             iindex{arrayDims} = 2;
             v = values(rindex{:}) + 1i*values(iindex{:});
        end
+       
+       % Treat the set values as complex numbers
+       function setFixedValue(obj,value)
+           arrayDims = ndims(value);
+           if (arrayDims == 2 && size(vec(value),2) == 1)
+               arrayDims = 1;  % ndims answers 2 even if it's really 1
+           end
+           valueArray = cat(arrayDims+1, real(value), imag(value));
+           setFixedValue@RealJoint(obj,valueArray);
+       end
+        
+       % Turn the return values into complex nubmers
+        function v = getFixedValue(obj)
+            values = getFixedValue@RealJoint(obj);
+            
+            % Final dimension of values array have the real and imaginary parts
+            arrayDims = ndims(values);
+            if (arrayDims == 2 && size(vec(values),2) == 1)
+                arrayDims = 1;  % ndims answers 2 even if it's really 1
+            end
+            rindex = repmat({':'},1,arrayDims);
+            iindex = rindex;
+            rindex{arrayDims} = 1;
+            iindex{arrayDims} = 2;
+            v = values(rindex{:}) + 1i*values(iindex{:});
+        end
+
 
    end
    
