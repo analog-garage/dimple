@@ -42,7 +42,7 @@ public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
 	 */
 	
 	@Override
-	public boolean containsValue(Object value)
+	public boolean inDomain(Object value)
 	{
 		return _elementToIndex.containsKey(value);
 	}

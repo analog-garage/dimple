@@ -26,18 +26,18 @@ public abstract class Domain
 	 * @return true if {@code value} is a valid member of the domain. Implementors
 	 * should not throw a cast exception.
 	 */
-	public abstract boolean containsValue(Object value);
+	public abstract boolean inDomain(Object value);
 	
 	/**
 	 * @return true if {@code representation} corresponds to a valid member of the domain for
 	 * domains that can represent values using an alternate representation, such as the index
 	 * of a {@link Discrete} domain with enumerated elements.
 	 * <p>
-	 * The default implementation simply invokes {@link #containsValue(Object)}.
+	 * The default implementation simply invokes {@link #inDomain(Object)}.
 	 */
 	public boolean containsValueWithRepresentation(Object representation)
 	{
-		return containsValue(representation);
+		return inDomain(representation);
 	}
 
 	/**

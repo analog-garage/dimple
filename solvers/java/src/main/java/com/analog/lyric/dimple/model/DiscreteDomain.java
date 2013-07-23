@@ -251,7 +251,7 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	
 	@Override
-	public boolean containsValue(Object value)
+	public boolean inDomain(Object value)
 	{
 		return (getIndex(value) >= 0);
 	}
@@ -334,7 +334,7 @@ public abstract class DiscreteDomain extends Domain
 	}
 
 	/**
-	 * @deprecated Use {@link #containsValue} instead.
+	 * @deprecated Use {@link #inDomain} instead.
 	 */
 	@Deprecated
 	public boolean isElementOf(Object value)

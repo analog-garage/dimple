@@ -53,13 +53,13 @@ public class RealJointDomain extends Domain
 	 * elements are contained in the correspond {@link RealDomain} in {@link #getRealDomains()}.
 	 */
 	@Override
-	public boolean containsValue(Object value)
+	public boolean inDomain(Object value)
 	{
 		if (value.getClass().isArray() && Array.getLength(value) == _domains.length)
 		{
 			for (int i = 0, end = _domains.length; i < end; ++i)
 			{
-				if (! _domains[i].containsValue(Array.get(value, i)))
+				if (! _domains[i].inDomain(Array.get(value, i)))
 				{
 					return false;
 				}

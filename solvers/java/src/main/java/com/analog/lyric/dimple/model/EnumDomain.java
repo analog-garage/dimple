@@ -45,7 +45,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	 */
 	
 	@Override
-	public final boolean containsValue(Object value)
+	public final boolean inDomain(Object value)
 	{
 		return value.getClass() == _enumClass;
 	}

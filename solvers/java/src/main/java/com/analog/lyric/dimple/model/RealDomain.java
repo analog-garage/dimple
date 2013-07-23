@@ -113,7 +113,7 @@ public class RealDomain extends Domain
 	 */
 	
 	@Override
-	public boolean containsValue(Object value)
+	public boolean inDomain(Object value)
 	{
 		return value instanceof Number && inDomain(((Number)value).doubleValue());
 	}

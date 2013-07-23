@@ -71,7 +71,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	 */
 	
 	@Override
-	public boolean containsValue(Object value)
+	public boolean inDomain(Object value)
 	{
 		Object[] values = ArrayUtil.toArray(value);
 		if (values != null)
@@ -82,7 +82,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 				for (int i = 0; i < dimensions; ++i)
 				{
 					DiscreteDomain discrete = _domains.get(i);
-					if (!discrete.containsValue(values[i]))
+					if (!discrete.inDomain(values[i]))
 					{
 						return false;
 					}

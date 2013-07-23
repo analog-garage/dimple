@@ -149,7 +149,7 @@ public class TestDomain
 		assertNotEquals(domain, "foo");
 		assertEquals(domain, domain);
 		
-		assertFalse(domain.containsValue(Bogus.X));
+		assertFalse(domain.inDomain(Bogus.X));
 		assertFalse(domain.containsValueWithRepresentation(Bogus.X));
 		
 		if (domain.isReal())
@@ -165,21 +165,21 @@ public class TestDomain
 			assertEquals(real, RealDomain.create(lower, upper));
 			assertEquals(real.hashCode(), RealDomain.create(lower, upper).hashCode());
 			
-			assertTrue(real.containsValue(lower));
-			assertTrue(real.containsValue(upper));
+			assertTrue(real.inDomain(lower));
+			assertTrue(real.inDomain(upper));
 			assertTrue(real.inDomain(lower));
 			assertTrue(real.inDomain(upper));
 			
 			double tooLow = lower - 1;
 			if (!Double.isInfinite(tooLow))
 			{
-				assertFalse(real.containsValue(tooLow));
+				assertFalse(real.inDomain(tooLow));
 			}
 			
 			double tooHigh = upper + 1;
 			if (!Double.isInfinite(tooHigh))
 			{
-				assertFalse(real.containsValue(tooHigh));
+				assertFalse(real.inDomain(tooHigh));
 			}
 		}
 		
@@ -217,7 +217,7 @@ public class TestDomain
 			for (int i = 0; i < size; ++i)
 			{
 				Object element = elements[i];
-				assertTrue(discrete.containsValue(element));
+				assertTrue(discrete.inDomain(element));
 				assertTrue(discrete.containsValueWithRepresentation(i));
 				assertTrue(discrete.isElementOf(element));
 				assertElementEquals(element, discrete.getElement(i));
@@ -274,12 +274,12 @@ public class TestDomain
 					assertEquals(i, joint.getIndexFromIndices(indices));
 					assertTrue(joint.containsValueWithRepresentation(indices));
 					
-					assertFalse(joint.containsValue(Arrays.copyOf(elements, elements.length - 1)));
+					assertFalse(joint.inDomain(Arrays.copyOf(elements, elements.length - 1)));
 					assertFalse(joint.containsValueWithRepresentation(Arrays.copyOf(indices, indices.length - 1)));
 				}
 				
 				Arrays.fill(element, Bogus.X);
-				assertFalse(joint.containsValue(element));
+				assertFalse(joint.inDomain(element));
 				
 				Arrays.fill(indices, -1);
 				assertFalse(joint.containsValueWithRepresentation(indices));
