@@ -108,13 +108,13 @@ if __name__ == "__main__":
         with cd(option.user_doc_dir):
             produceUserDoc(option.user_doc_filename,'forjava')
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
-                        option.user_doc_filename + "_java.pdf")
+                        option.user_doc_filename + "_Java_API.pdf")
 
     if build_matlab_user_doc:
         with cd(option.user_doc_dir):
             produceUserDoc(option.user_doc_filename,'formatlab')
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
-                        option.user_doc_filename + "_matlab.pdf")
+                        option.user_doc_filename + "_MATLAB_API.pdf")
     # Create developer doc
     if build_devel_doc:
         with cd(option.devel_doc_dir):
