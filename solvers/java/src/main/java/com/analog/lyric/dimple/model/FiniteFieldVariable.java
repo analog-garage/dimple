@@ -35,14 +35,9 @@ public class FiniteFieldVariable extends Discrete
 	
 	public FiniteFieldVariable(int poly)  
 	{
-			super(NodeId.getNext(),
-					new DiscreteDomain((Object[])_getDomainFromPoly(poly)),
+			super(new DiscreteDomain((Object[])_getDomainFromPoly(poly)),
 					"FiniteFieldVariable");
-
-			Object [] domain = getDiscreteDomain().getElements();
-			double [] dpoly = new double [domain.length];
-			for (int i = 0; i < domain.length; i++)
-				dpoly[i] = (Double)domain[i];
+			double [] dpoly = _convert2poly(poly);
 			this.setProperty("primitivePolynomial", dpoly);
 
 	}
