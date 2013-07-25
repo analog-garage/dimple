@@ -17,8 +17,16 @@
 function testFixedValues()
 
 debugPrint = false;
+repeatable = true;
 
 dtrace(debugPrint, '++testFixedValues');
+
+if (repeatable)
+    seed = 14;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
 
 test1(debugPrint);
 test2(debugPrint);
