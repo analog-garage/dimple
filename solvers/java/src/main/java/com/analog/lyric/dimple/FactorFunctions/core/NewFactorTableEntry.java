@@ -1,24 +1,45 @@
 package com.analog.lyric.dimple.FactorFunctions.core;
 
+import java.io.Serializable;
+
 import net.jcip.annotations.Immutable;
+
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 /**
  * Holds the information for one factor table entry from a {@link NewFactorTableIterator}
  */
 @Immutable
-public final class NewFactorTableEntry
+public final class NewFactorTableEntry implements Serializable
 {
-	private final INewFactorTableBase _table;
-	private final int _location;
+	private static final long serialVersionUID = 1L;
+
+	private final DiscreteDomainList _domains;
+	private final int _sparseIndex;
 	private final int _jointIndex;
 	private final double _energy;
+	private final double _weight;
 	
-	NewFactorTableEntry(INewFactorTableBase table, int location, int jointIndex, double energy)
+	/*--------------
+	 * Construction
+	 */
+	
+	public NewFactorTableEntry(DiscreteDomainList domains, int sparseIndex, int jointIndex, double energy, double weight)
 	{
-		_table = table;
-		_location = location;
+		_domains = domains;
+		_sparseIndex = sparseIndex;
 		_jointIndex = jointIndex;
 		_energy = energy;
+		_weight = weight;
+	}
+	
+	/*---------
+	 * Methods
+	 */
+	
+	public DiscreteDomainList domains()
+	{
+		return _domains;
 	}
 	
 	/**
@@ -50,7 +71,7 @@ public final class NewFactorTableEntry
 	 */
 	public int[] indices(int[] indices)
 	{
-		return _table.getDomainList().jointIndexToIndices(_jointIndex, indices);
+		return _domains.jointIndexToIndices(_jointIndex, indices);
 	}
 	
 	public int jointIndex()
@@ -58,16 +79,11 @@ public final class NewFactorTableEntry
 		return _jointIndex;
 	}
 
-	public int location()
+	public int sparseIndex()
 	{
-		return _location;
+		return _sparseIndex;
 	}
 
-	public INewFactorTableBase table()
-	{
-		return _table;
-	}
-	
 	public Object[] values()
 	{
 		return values(null);
@@ -75,7 +91,7 @@ public final class NewFactorTableEntry
 	
 	public Object[] values(Object[] arguments)
 	{
-		return _table.getDomainList().jointIndexToElements(_jointIndex, arguments);
+		return _domains.jointIndexToElements(_jointIndex, arguments);
 	}
 	
 	/**
@@ -84,6 +100,6 @@ public final class NewFactorTableEntry
 	 */
 	public double weight()
 	{
-		return NewFactorTableBase.energyToWeight(_energy);
+		return _weight;
 	}
 }

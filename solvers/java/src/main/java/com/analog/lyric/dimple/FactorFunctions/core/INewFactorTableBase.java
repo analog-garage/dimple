@@ -13,8 +13,8 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	
 	/**
-	 * Returns an iterator over the sparse locations in the table in order of increasing
-	 * location.
+	 * Returns an iterator over the non-zero entries in the table in increasing order
+	 * of sparse/joint index.
 	 */
 	@Override
 	public abstract NewFactorTableIterator iterator();
@@ -22,7 +22,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns an iterator over the joint indexes in the table in increasing order.
 	 */
-	public abstract NewFactorTableIterator jointIndexIterator();
+	public abstract NewFactorTableIterator fullIterator();
 	
 	/*-------------
 	 * New methods
@@ -33,6 +33,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public abstract INewFactorTableBase clone();
 
+	/**
+	 * Computes the minimum number of entries in sparse representation of table, which is equal
+	 * to the number of entries with non-zero weight (or non-infinite energy).
+	 */
+	public int computeMinSparseSize();
+	
 	/**
 	 * Deterministically computed output arguments from input arguments.
 	 * <p>
@@ -73,24 +79,23 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract double getEnergyForJointIndex(int jointIndex);
 
 	/**
-	 * Returns energy of factor table entry at given {@code location}.
+	 * Returns energy of factor table entry at given {@code sparseIndex}.
 	 * <p>
-	 * The energy is the same as the negative log of the weight for the same {@code location}.
+	 * The energy is the same as the negative log of the weight for the same {@code sparseIndex}.
 	 * <p>
-	 * @param location should be value less than {@link #size()} specifying which
+	 * @param sparseIndex should be value less than {@link #sparseSize()} specifying which
 	 * table entry to access.
-	 * @return energy for entry if {@code location} is non-negative, otherwise returns positive infinity.
-	 * @throws ArrayIndexOutOfBoundsException if {@code location} is not less than {@link #size()}.
+	 * @throws ArrayIndexOutOfBoundsException if {@code sparseIndex} is not in range [0,{@link #sparseSize}).
 	 * @see #getEnergyForIndices(int...)
-	 * @see #getWeightForLocation(int)
+	 * @see #getWeightForSparseIndex(int)
 	 */
-	public abstract double getEnergyForLocation(int location);
+	public abstract double getEnergyForSparseIndex(int sparseIndex);
 
 	/**
 	 * Returns the energy of factor table entry with given {@code indices}.
 	 * <p>
 	 * @see #getEnergyForArguments(Object...)
-	 * @see #getEnergyForLocation(int)
+	 * @see #getEnergyForSparseIndex(int)
 	 * @see #getWeightForIndices(int...)
 	 */
 	public abstract double getEnergyForIndices(int ... indices);
@@ -106,26 +111,28 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract double getWeightForJointIndex(int jointIndex);
 	
 	/**
-	 * Returns weight of factor table entry at given {@code location}.
+	 * Returns weight of factor table entry at given {@code sparseIndex}.
 	 * <p>
-	 * @param location should be value less than {@link #size()} specifying which
+	 * @param sparseIndex should be value less than {@link #sparseSize()} specifying which
 	 * table entry to access.
-	 * @return weight for entry if {@code location} is non-negative, otherwise returns zero.
-	 * @throws ArrayIndexOutOfBoundsException if {@code location} is not less than {@link #size()}.
+	 * @throws ArrayIndexOutOfBoundsException if {@code sparseIndex} is not in range [0, {@link #sparseSize}).
 	 * @see #getWeightForIndices(int...)
-	 * @see #getEnergyForLocation(int)
+	 * @see #getEnergyForSparseIndex(int)
 	 */
-	public abstract double getWeightForLocation(int location);
+	public abstract double getWeightForSparseIndex(int sparseIndex);
 	
 	/**
 	 * Returns the weight of factor table entry with given {@code indices}.
 	 * <p>
 	 * @see #getWeightForArguments(Object...)
-	 * @see #getWeightForLocation(int)
+	 * @see #getWeightForSparseIndex(int)
 	 * @see #getEnergyForIndices(int...)
 	 */
 	public abstract double getWeightForIndices(int ... indices);
 
+	public abstract boolean hasDenseRepresentation();
+	public abstract boolean hasSparseRepresentation();
+	
 	/**
 	 * True if table {@link #isDirected()} and has exactly one entry for each combination of
 	 * input indices with a non-zero weight.
@@ -146,80 +153,79 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * The number of possible combinations of the values of all the domains in this table.
 	 * Same as {@link DiscreteDomainList#getCardinality()} of {@link #getDomainList()}.
-	 * @see #size()
+	 * @see #sparseSize()
 	 */
 	public abstract int jointSize();
 	
 	/**
-	 * Computes location index for the table entry associated with the specified arguments.
+	 * Computes sparse index for the table entry associated with the specified arguments.
 	 * <p>
 	 * @param arguments must have length equal to {@link #getDimensions()} and each argument must
 	 * be an element of the corresponding domain.
-	 * @see #locationFromIndices(int ... )
-	 * @see #locationFromArguments(Object...)
+	 * @see #sparseIndexFromIndices(int ... )
+	 * @see #sparseIndexFromArguments(Object...)
 	 */
-	public abstract int locationFromArguments(Object ... arguments);
+	public abstract int sparseIndexFromArguments(Object ... arguments);
 	
 	/**
-	 * Computes a location index for the table entry associated with the specified {@code indices}.
+	 * Computes a sparse index for the table entry associated with the specified {@code indices}.
 	 * 
 	 * @param indices must have length equal to {@link #getDimensions()} and each index must be a non-negative
 	 * value less than the corresponding domain size otherwise the function could return an
 	 * incorrect result.
-	 * @see #locationFromArguments
-	 * @see #locationToIndices
+	 * @see #sparseIndexFromArguments
+	 * @see #sparseIndexToIndices
 	 */
-	public abstract int locationFromIndices(int... indices);
+	public abstract int sparseIndexFromIndices(int... indices);
 	
 	/**
-	 * Converts joint index (oner per valid combination of domain indices) to location index
-	 * (one per table entry).
+	 * Converts joint index (oner per valid combination of domain indices) to sparse index.
 	 * <p>
 	 * @return if {@code joint} has a corresponding table entry its location is returned as
-	 * a number in the range [0,{@link #size}), otherwise it returns -1-{@code location} where
+	 * a number in the range [0,{@link #sparseSize}), otherwise it returns -1-{@code location} where
 	 * {@code location} is the location where the entry would be if it were in the table.
-	 * @see #locationToJointIndex
+	 * @see #sparseIndexToJointIndex
 	 */
-	public abstract int locationFromJointIndex(int joint);
+	public abstract int sparseIndexFromJointIndex(int joint);
 	
 	/**
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
-	 * @param location index in the range [0,{@link #size}).
+	 * @param sparseIndex index in the range [0,{@link #sparseSize}).
 	 * @param arguments if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
-	 * @see #locationToIndices(int, int[])
-	 * @see #locationFromArguments(Object...)
+	 * @see #sparseIndexToIndices(int, int[])
+	 * @see #sparseIndexFromArguments(Object...)
 	 */
-	public abstract Object[] locationToArguments(int location, Object[] arguments);
+	public abstract Object[] sparseIndexToArguments(int sparseIndex, Object[] arguments);
 	
 	/**
-	 * Converts location index (one per table entry) to joint index (one per valid combination
+	 * Converts sparse index (one per table entry) to joint index (one per valid combination
 	 * of domain indices).
 	 * <p>
-	 * The location and joint index values should have the same ordering relationship, so that
+	 * The sparse and joint index values should have the same ordering relationship, so that
 	 * <pre>
-	 *   location1 < location2</pre>
+	 *   sparse1 < sparse2</pre>
 	 * implies that
 	 * <pre>
-	 *    t.locationToJointIndex(location1) < t.locationToJointIndex(location2)
+	 *    t.sparseIndexToJointIndex(sparse1) < t.sparseIndexToJointIndex(sparse2)
 	 * </pre>
 	 * <p>
-	 * @return joint location index in range [0,{@link #jointSize}).
-	 * @see #locationFromJointIndex(int)
+	 * @return joint index in range [0,{@link #jointSize}).
+	 * @see #sparseIndexFromJointIndex(int)
 	 */
-	public abstract int locationToJointIndex(int location);
+	public abstract int sparseIndexToJointIndex(int sparseIndex);
 
 	/**
-	 * Computes domain indices corresponding to given location index.
+	 * Computes domain indices corresponding to given sparse index.
 	 * 
-	 * @param location index in range [0,{@link #size}).
+	 * @param sparseIndex index in range [0,{@link #sparseSize}).
 	 * @param indices if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
-	 * @see #locationToArguments(int, Object[])
-	 * @see #locationFromIndices(int...)
+	 * @see #sparseIndexToArguments(int, Object[])
+	 * @see #sparseIndexFromIndices(int...)
 	 */
-	public abstract int[] locationToIndices(int location, int[] indices);
+	public abstract int[] sparseIndexToIndices(int sparseIndex, int[] indices);
 
 	/**
 	 * Normalizes the weights/energies of the table.
@@ -233,24 +239,21 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 
 	public void setEnergyForArguments(double energy, Object ... arguments);
 	public void setEnergyForIndices(double energy, int ... indices);
-	public void setEnergyForLocation(double energy, int location);
+	public void setEnergyForSparseIndex(double energy, int sparseIndex);
 	public void setEnergyForJointIndex(double energy, int jointIndex);
 
 	public void setWeightForArguments(double weight, Object ... arguments);
 	public void setWeightForIndices(double weight, int ... indices);
-	public void setWeightForLocation(double weight, int i);
+	public void setWeightForSparseIndex(double weight, int sparseIndex);
 	public void setWeightForJointIndex(double weight, int jointIndex);
 	
 	/**
-	 * The number of entries in the table that can be accessed by a location index.
+	 * The number of entries in the table that can be accessed by a sparse index.
 	 * This can be no larger than {@link #jointSize()} and if smaller, indicates that
 	 * the table has a sparse representation that does not include combinations with
-	 * zero weight/infinite energy.
-	 * <p>
-	 * When this value is the same as {@link #jointSize()} then it is expected that
-	 * all of the {@code location*} methods will behave the same as the correspondingly
-	 * named {@code jointIndex*} methods.
+	 * zero weight/infinite energy. The actual number of non-zero weight entries may
+	 * be less than the sparse size.
 	 */
-	public abstract int size();
+	public abstract int sparseSize();
 
 }

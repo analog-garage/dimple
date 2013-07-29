@@ -12,17 +12,16 @@ import com.analog.lyric.dimple.model.DimpleException;
 @NotThreadSafe
 public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 {
-	
-	
 	/*-------
 	 * State
 	 */
 	
 	private final boolean _dense;
 	private final INewFactorTableBase _table;
-	private int _location;
+	private int _sparseIndex;
 	private int _jointIndex;
 	private double _energy;
+	private double _weight;
 	
 	/*--------------
 	 * Construction
@@ -32,8 +31,52 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	{
 		_dense = dense;
 		_table = table;
-		_location = -1;
-		_jointIndex = -1;
+		_sparseIndex = 0;
+		_jointIndex = 0;
+		_energy = Double.POSITIVE_INFINITY;
+		_weight = 0.0;
+		
+		if (dense)
+		{
+			if (table.hasSparseRepresentation())
+			{
+				if (0 < table.sparseSize() && table.sparseIndexToJointIndex(0) == 0)
+				{
+					_weight = table.getWeightForSparseIndex(0);
+					_energy = table.getEnergyForSparseIndex(0);
+				}
+			}
+			else
+			{
+				_weight = table.getWeightForJointIndex(0);
+				_energy = table.getEnergyForJointIndex(0);
+			}
+		}
+		else
+		{
+			if (table.hasSparseRepresentation())
+			{
+				if (0 < table.sparseSize())
+				{
+					_jointIndex = table.sparseIndexToJointIndex(0);
+					_weight = table.getWeightForSparseIndex(0);
+					_energy = table.getEnergyForSparseIndex(0);
+				}
+			}
+			else
+			{
+				_sparseIndex = -1;
+				for (int end = table.jointSize(); _jointIndex < end; ++_jointIndex)
+				{
+					_weight = table.getWeightForJointIndex(_jointIndex);
+					if (_weight != 0.0)
+					{
+						_energy = table.getEnergyForJointIndex(_jointIndex);
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	/*------------------
@@ -43,23 +86,18 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	@Override
 	public boolean hasNext()
 	{
-		if (_jointIndex + 1 >= _table.jointSize())
-		{
-			return false;
-		}
-		
-		if (!_dense)
-		{
-			return fixedLocation() + 1 < _table.size();
-		}
-		
-		return true;
+		return _dense ? _jointIndex < _table.jointSize() : _weight != 0.0;
 	}
 	
 	@Override
 	public NewFactorTableEntry next()
 	{
-		return advance() ? getEntry() : null;
+		NewFactorTableEntry entry = getEntry();
+		if (entry != null)
+		{
+			advance();
+		}
+		return entry;
 	}
 
 	@Override
@@ -74,40 +112,31 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	
 	public boolean advance()
 	{
-		boolean advanced = false;
-		
-		if (_jointIndex + 1 < _table.jointSize())
+		if (done())
 		{
-			if (_dense)
-			{
-				++_jointIndex;
-				_location = _table.locationFromJointIndex(_jointIndex);
-				advanced = true;
-			}
-			else
-			{
-				_location = fixedLocation();
-				if (_location + 1 < _table.size())
-				{
-					++_location;
-					_jointIndex = _table.locationToJointIndex(_location);
-					advanced = true;
-				}
-				else
-				{
-					_jointIndex = _table.jointSize();
-				}
-			}
+			return false;
 		}
 		
-		_energy = advanced ? _table.getEnergyForLocation(_location) : Double.POSITIVE_INFINITY;
+		fixSparseIndex();
 		
-		return advanced;
+		return _dense? denseAdvance() : sparseAdvance();
+	}
+	
+	public boolean done()
+	{
+		return _jointIndex >= _table.jointSize();
 	}
 	
 	public NewFactorTableEntry getEntry()
 	{
-		return new NewFactorTableEntry(_table, _location, _jointIndex, _energy);
+		NewFactorTableEntry entry = null;
+		
+		if (_jointIndex < _table.jointSize())
+		{
+			entry = new NewFactorTableEntry(_table.getDomainList(), _sparseIndex, _jointIndex, _energy, _weight);
+		}
+		
+		return entry;
 	}
 	
 	public double energy()
@@ -115,38 +144,145 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		return _energy;
 	}
 	
-	public int location()
-	{
-		return _location;
-	}
-	
 	public int jointIndex()
 	{
 		return _jointIndex;
 	}
 	
+	public int sparseIndex()
+	{
+		return _sparseIndex;
+	}
+	
 	public double weight()
 	{
-		return NewFactorTableBase.energyToWeight(_energy);
+		return _weight;
 	}
 
 	/*-----------------
 	 * Private methods
 	 */
 	
-	private int fixedLocation()
+	private boolean denseAdvance()
 	{
-		int location = _location;
-		if (_jointIndex >= 0 && _jointIndex != _table.locationToJointIndex(location))
+		_energy = Double.POSITIVE_INFINITY;
+		_weight = 0.0;
+
+		final int ji = ++_jointIndex;
+		if (ji >= _table.jointSize())
 		{
-			// Reset location from joint location.
-			location = _table.locationFromJointIndex(_jointIndex);
-			if (location < 0)
+			_sparseIndex = -1;
+			return false;
+		}
+		
+		if (_table.hasSparseRepresentation())
+		{
+			if (_sparseIndex >= _table.sparseSize())
 			{
-				location = -1-_location;
+				return true;
+			}
+			
+			int sji = _table.sparseIndexToJointIndex(_sparseIndex);
+			if (sji < ji)
+			{
+				++_sparseIndex;
+				if (_sparseIndex >= _table.sparseSize())
+				{
+					_sparseIndex = -1;
+					return true;
+				}
+				sji = _table.sparseIndexToJointIndex(_sparseIndex);
+			}
+			
+			if (sji == ji)
+			{
+				_energy = _table.getEnergyForSparseIndex(_sparseIndex);
+				_weight = _table.getWeightForSparseIndex(_sparseIndex);
 			}
 		}
-		return location;
+		else
+		{
+			_sparseIndex = -1;
+			_energy = _table.getEnergyForJointIndex(ji);
+			_weight = _table.getWeightForJointIndex(ji);
+		}
+		
+		return true;
 	}
 	
+	private boolean sparseAdvance()
+	{
+		if (_table.hasSparseRepresentation())
+		{
+			for (int si = _sparseIndex + 1, end = _table.sparseSize(); si < end; ++si)
+			{
+				final double weight = _table.getWeightForSparseIndex(si);
+				if (weight != 0.0)
+				{
+					_sparseIndex = si;
+					_jointIndex = _table.sparseIndexToJointIndex(si);
+					_weight = weight;
+					_energy = _table.getEnergyForSparseIndex(si);
+					return true;
+				}
+			}
+		}
+		else
+		{
+			for (int ji = _jointIndex + 1, end = _table.jointSize(); ji < end; ++ji)
+			{
+				final double weight = _table.getWeightForJointIndex(ji);
+				if (weight != 0.0)
+				{
+					_sparseIndex = -1;
+					_jointIndex = ji;
+					_weight = weight;
+					_energy = _table.getEnergyForJointIndex(ji);
+					return true;
+				}
+			}
+		}
+		
+		_weight = 0.0;
+		_energy = Double.POSITIVE_INFINITY;
+		_jointIndex = _table.jointSize();
+		
+		return false;
+	}
+
+	private void fixSparseIndex()
+	{
+		final int ji = _jointIndex;
+		
+		if (_table.hasSparseRepresentation())
+		{
+			int si = _sparseIndex;
+			boolean broken = si < 0 || si >= _table.sparseSize();
+ 
+			if (!broken)
+			{
+				final int sji = _table.sparseIndexToJointIndex(si);
+				if (_dense)
+				{
+					broken = ji < sji || si+1 < _table.sparseSize() && ji >= _table.sparseIndexToJointIndex(si+1);
+				}
+				else
+				{
+					broken = ji != sji;
+				}
+			}
+
+			if (broken)
+			{
+				si = _table.sparseIndexFromJointIndex(ji);
+				_sparseIndex = si < 0 ? -1-si : si;
+			}
+			
+			assert(_sparseIndex >=0);
+		}
+		else
+		{
+			_sparseIndex = -1;
+		}
+	}
 }

@@ -288,8 +288,8 @@ public class DiscreteDomainList
 	{
 		final DiscreteDomain[] domains = _domains;
 		final int[] products = _products;
-		int joint = 0;
-		for (int i = 0, end = products.length; i < end; ++i)
+		int joint = domains[0].getIndexOrThrow(elements[0]);
+		for (int i = 1, end = products.length; i < end; ++i)
 		{
 			joint += products[i] * domains[i].getIndexOrThrow(elements[i]);
 		}
@@ -299,8 +299,8 @@ public class DiscreteDomainList
 	public final int undirectedJointIndexFromIndices(int ... indices)
 	{
 		final int[] products = _products;
-		int joint = 0;
-		for (int i = 0, end = products.length; i < end; ++i)
+		int joint = indices[0]; // products[0] should always be 1.
+		for (int i = 1, end = products.length; i < end; ++i)
 		{
 			joint += products[i] * indices[i];
 		}

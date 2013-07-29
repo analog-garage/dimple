@@ -5,6 +5,128 @@ import java.lang.reflect.Array;
 public abstract class ArrayUtil
 {
 	/**
+	 * Canonical empty double array.
+	 */
+	public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
+	
+	/**
+	 * Canonical empty int array.
+	 */
+	public static final int[] EMPTY_INT_ARRAY = new int[0];
+
+	public static double[] cloneArray(double[] array)
+	{
+		if (array == null)
+		{
+			return null;
+		}
+		else if (array.length == 0)
+		{
+			return EMPTY_DOUBLE_ARRAY;
+		}
+		else
+		{
+			return array.clone();
+		}
+	}
+
+	public static int[] cloneArray(int[] array)
+	{
+		if (array == null)
+		{
+			return null;
+		}
+		else if (array.length == 0)
+		{
+			return EMPTY_INT_ARRAY;
+		}
+		else
+		{
+			return array.clone();
+		}
+	}
+	public static double[] copyArrayForInsert(double[] array, int insertionPoint, int insertLength)
+	{
+		int curSize = array == null ? 0 : array.length;
+		
+		assert(insertionPoint >= 0 && insertionPoint <= curSize);
+		assert(insertLength >= 0);
+		
+		
+		double[] newArray = new double[curSize + insertLength];
+		
+		for (int i = 0; i < insertionPoint; ++i)
+		{
+			newArray[i] = array[i];
+		}
+		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
+		{
+			newArray[j] = array[i];
+		}
+		
+		return newArray;
+	}
+	public static int[] copyArrayForInsert(int[] array, int insertionPoint, int insertLength)
+	{
+		int curSize = array == null ? 0 : array.length;
+		
+		assert(insertionPoint >= 0 && insertionPoint <= curSize);
+		assert(insertLength >= 0);
+		
+		
+		int[] newArray = new int[curSize + insertLength];
+		
+		for (int i = 0; i < insertionPoint; ++i)
+		{
+			newArray[i] = array[i];
+		}
+		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
+		{
+			newArray[j] = array[i];
+		}
+		
+		return newArray;
+	}
+	
+	public static double[] repeat(double[] array, int multiplier)
+	{
+		if (array.length > 0)
+		{
+			final double[] newArray = new double[array.length * multiplier];
+			for (int i = 0, m = 0; m < multiplier; ++m)
+			{
+				for (double value : array)
+				{
+					newArray[i++] = value;
+				}
+			}
+			array = newArray;
+		}
+		return array;
+	}
+
+	public static Object[] toArray(Object value)
+	{
+		if (value instanceof Object[])
+		{
+			return (Object[])value;
+		}
+		
+		if (value.getClass().isArray())
+		{
+			final int size = Array.getLength(value);
+			final Object[] array = new Object[size];
+			for (int i = 0; i < size; ++i)
+			{
+				array[i] = Array.get(value, i);
+			}
+			return array;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Converts value to an int array or else returns null.
 	 * <p>
 	 * If {@code value} is an int array it will simply be returned.
@@ -39,27 +161,6 @@ public abstract class ArrayUtil
 				return null;
 			}
 			
-			return array;
-		}
-
-		return null;
-	}
-	
-	public static Object[] toArray(Object value)
-	{
-		if (value instanceof Object[])
-		{
-			return (Object[])value;
-		}
-		
-		if (value.getClass().isArray())
-		{
-			final int size = Array.getLength(value);
-			final Object[] array = new Object[size];
-			for (int i = 0; i < size; ++i)
-			{
-				array[i] = Array.get(value, i);
-			}
 			return array;
 		}
 

@@ -5,8 +5,12 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
+import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
@@ -17,6 +21,8 @@ import com.analog.lyric.dimple.FactorFunctions.core.NewFactorTableEntry;
 import com.analog.lyric.dimple.FactorFunctions.core.NewFactorTableIterator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.google.common.base.Stopwatch;
 
 public class TestFactorTable
 {
@@ -32,35 +38,35 @@ public class TestFactorTable
 		assertEquals(2, t2x3.getDimensions());
 		assertEquals(domain2, t2x3.getDomainList().get(0));
 		assertEquals(domain3, t2x3.getDomainList().get(1));
-		assertFalse(t2x3.isDense());
+		assertFalse(t2x3.getRepresentation().hasDense());
 		assertFalse(t2x3.isDirected());
-		assertEquals(INewFactorTable.Representation.ENERGY, t2x3.getRepresentation());
+		assertEquals(INewFactorTable.Representation.SPARSE_ENERGY, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
-		t2x3.densify();
-		assertTrue(t2x3.isDense());
-		assertInvariants(t2x3);
-		assertEquals(t2x3.jointSize(), t2x3.size());
-		
-		t2x3.sparsify();
-		assertFalse(t2x3.isDense());
-		assertEquals(0, t2x3.size());
+		t2x3.setRepresentation(INewFactorTable.Representation.DENSE_ENERGY);
+		assertEquals(INewFactorTable.Representation.DENSE_ENERGY, t2x3.getRepresentation());
+		assertTrue(t2x3.getRepresentation().hasDense());
 		assertInvariants(t2x3);
 		
-		t2x3.densify();
+		t2x3.setRepresentation(INewFactorTable.Representation.SPARSE_ENERGY);
+		assertFalse(t2x3.getRepresentation().hasDense());
+		assertEquals(0, t2x3.sparseSize());
+		assertInvariants(t2x3);
+		
+		t2x3.setRepresentation(INewFactorTable.Representation.ALL_ENERGY);
 		t2x3.randomizeWeights(rand);
 		assertInvariants(t2x3);
 		
-		assertEquals(INewFactorTable.Representation.ENERGY, t2x3.getRepresentation());
-		t2x3.computeWeights();
-		assertEquals(INewFactorTable.Representation.BOTH, t2x3.getRepresentation());
+		assertEquals(INewFactorTable.Representation.ALL_ENERGY, t2x3.getRepresentation());
+		t2x3.setRepresentation(INewFactorTable.Representation.ALL);
+		assertEquals(INewFactorTable.Representation.ALL, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
 		t2x3.normalize();
 		assertInvariants(t2x3);
 		
-		t2x3.setRepresentation(INewFactorTable.Representation.WEIGHT);
-		assertEquals(INewFactorTable.Representation.WEIGHT, t2x3.getRepresentation());
+		t2x3.setRepresentation(INewFactorTable.Representation.SPARSE_WEIGHT);
+		assertEquals(INewFactorTable.Representation.SPARSE_WEIGHT, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
 		BitSet xor3Input = new BitSet(3);
@@ -80,6 +86,7 @@ public class TestFactorTable
 		}
 		assertTrue(xor2.isDeterministicDirected());
 		assertInvariants(xor2);
+		testRandomOperations(xor2, 10000);
 		
 		NewFactorTable t2x2x2 = xor2.clone();
 		assertBaseEqual(t2x2x2, xor2);
@@ -88,7 +95,7 @@ public class TestFactorTable
 		assertInvariants(t2x2x2);
 		
 		NewFactorTable t2x3x4 = new NewFactorTable(domain2, domain3, domain5);
-		t2x3x4.densify();
+		t2x3.setRepresentation(INewFactorTable.Representation.DENSE_WEIGHT);
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
 		testRandomOperations(t2x3x4, 10000);
@@ -105,8 +112,7 @@ public class TestFactorTable
 		DiscreteDomain domain5 = DiscreteDomain.intRangeFromSize(5);
 
 		NewFactorTable newTable = new NewFactorTable(domain10, domain20, domain5);
-		newTable.densify();
-		newTable.setRepresentation(INewFactorTable.Representation.WEIGHT);
+		newTable.setRepresentation(INewFactorTable.Representation.DENSE_WEIGHT);
 		newTable.randomizeWeights(rand);
 		
 		FactorTable oldTable = new FactorTable(domain10, domain20, domain5);
@@ -136,19 +142,89 @@ public class TestFactorTable
 		{
 			newTable.setWeightForJointIndex(0.0, rand.nextInt(newTable.jointSize()));
 		}
-		newTable.sparsify();
+		newTable.setRepresentation(INewFactorTable.Representation.SPARSE_WEIGHT);
 		oldTable.change(newTable.getIndices(), newTable.getWeights());
 		
-//		oldNs = oldTester.testGet();
-//		newNs = newTester.testGet();
+		oldNs = oldTester.testGet();
+		newNs = newTester.testGet();
 
 		oldNs = oldTester.testEvalAsFactorFunction();
 		newNs = newTester.testEvalAsFactorFunction();
 		
-		newTable.densify();
 		oldNs = oldTester.testGetWeightIndexFromTableIndices();
 		newNs = newTester.testGetWeightIndexFromTableIndices();
 
+		oldNs = oldTester.testGetWeightForIndices();
+		newNs = newTester.testGetWeightForIndices();
+		
+	}
+	
+	
+	/**
+	 * Crude speed test of binary search vs. Colt's IntInt hash table to see at which
+	 * point the hash table is a win.
+	 * <p>
+	 * On my machine, the binary search is not much worse than the hash table until the
+	 * size gets above 120-150 elements.
+	 */
+	@Test
+	@Ignore
+	public void binarySearchVsHashTable()
+	{
+		binarySearchVsHashTable(100, 1000);
+		
+		int iterations = 1000;
+		for (int size = 10; size < 200; ++size)
+		{
+			binarySearchVsHashTable(size, iterations);
+		}
+	}
+	
+	private void binarySearchVsHashTable(int size, int iterations)
+	{
+		Random rand = new Random(123);
+		int[] array = new int[size];
+		OpenIntIntHashMap map = new OpenIntIntHashMap(size * 2);
+		
+		for (int i = 0; i < size; ++i)
+		{
+			array[i] = rand.nextInt();
+			map.put(array[i], i);
+		}
+		
+		Stopwatch timer = new Stopwatch();
+		
+		timer.start();
+		for (int i = iterations; --i>=0;)
+		{
+			for (int j = size; --j>=0;)
+			{
+				Arrays.binarySearch(array, array[j]);
+			}
+		}
+		timer.stop();
+		
+		long bsns = timer.elapsed(TimeUnit.NANOSECONDS);
+		
+		timer.reset();
+		timer.start();
+		for (int i = iterations; --i>=0;)
+		{
+			for (int j = size; --j>=0;)
+			{
+				map.get(array[j]);
+			}
+		}
+		timer.stop();
+		
+		long hmns = timer.elapsed(TimeUnit.NANOSECONDS);
+		
+		long calls = (long)size * (long)iterations;
+		
+		long nsPerBS = bsns / calls;
+		long nsPerHM = hmns / calls;
+		
+		System.out.format("Size %d: BS %d vs HT %d ns/call\n", size, nsPerBS, nsPerHM);
 	}
 	
 	private void testRandomOperations(NewFactorTable table, int nOperations)
@@ -158,31 +234,33 @@ public class TestFactorTable
 		
 		while (--nOperations >= 0)
 		{
+			if (nOperations == 9810)
+			{
+				Math.log(1);
+			}
 			int operation = rand.nextInt(10);
 			switch (operation)
 			{
 			case 0:
-				// Make sure there is at least one zero entry and sparsify
+				// Randomly zero out an entry.
 				table.setWeightForJointIndex(0.0, rand.nextInt(table.jointSize()));
-				table.sparsify();
 				break;
 			case 1:
-				table.densify();
-				assertTrue(table.isDense());
-				break;
-			case 2:
-				table.setRepresentation(INewFactorTable.Representation.ENERGY);
-				assertEquals(INewFactorTable.Representation.ENERGY, table.getRepresentation());
+				// Randomly set the representation
+				INewFactorTable.Representation oldRep = table.getRepresentation();
+				INewFactorTable.Representation newRep = INewFactorTable.Representation.values()[rand.nextInt(16)];
+				try
+				{
+					table.setRepresentation(newRep);
+					assertEquals(newRep, table.getRepresentation());
+				}
+				catch (DimpleException ex)
+				{
+					assertEquals(oldRep, table.getRepresentation());
+					assertTrue(newRep.isDeterministic());
+				}
 				break;
 			case 3:
-				table.setRepresentation(INewFactorTable.Representation.WEIGHT);
-				assertEquals(INewFactorTable.Representation.WEIGHT, table.getRepresentation());
-				break;
-			case 4:
-				table.setRepresentation(INewFactorTable.Representation.BOTH);
-				assertEquals(INewFactorTable.Representation.BOTH, table.getRepresentation());
-				break;
-			case 5:
 				table.normalize();
 				assertTrue(table.isNormalized());
 				break;
@@ -200,19 +278,19 @@ public class TestFactorTable
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				int location = table.locationFromJointIndex(jointIndex);
+				int location = table.sparseIndexFromJointIndex(jointIndex);
 				if (location >= 0)
 				{
-					table.setWeightForLocation(weight, table.locationFromJointIndex(jointIndex));
+					table.setWeightForSparseIndex(weight, table.sparseIndexFromJointIndex(jointIndex));
 					assertWeight(table, weight, jointIndex);
 				}
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				location = table.locationFromJointIndex(jointIndex);
+				location = table.sparseIndexFromJointIndex(jointIndex);
 				if (location >= 0)
 				{
-					table.setEnergyForLocation(-Math.log(weight), location);
+					table.setEnergyForSparseIndex(-Math.log(weight), location);
 					assertWeight(table, weight, jointIndex);
 				}
 				
@@ -252,9 +330,12 @@ public class TestFactorTable
 		assertEquals(energy, table.getEnergyForJointIndex(jointIndex), 1e-12);
 		assertEquals(weight, table.getWeightForJointIndex(jointIndex), 1e-12);
 		
-		int location = table.locationFromJointIndex(jointIndex);
-		assertEquals(energy, table.getEnergyForLocation(location), 1e-12);
-		assertEquals(weight, table.getWeightForLocation(location), 1e-12);
+		int sparseIndex = table.sparseIndexFromJointIndex(jointIndex);
+		if (sparseIndex >= 0)
+		{
+			assertEquals(energy, table.getEnergyForSparseIndex(sparseIndex), 1e-12);
+			assertEquals(weight, table.getWeightForSparseIndex(sparseIndex), 1e-12);
+		}
 
 		int[] indices = table.getDomainList().jointIndexToIndices(jointIndex, null);
 		assertEquals(energy, table.getEnergyForIndices(indices), 1e-12);
@@ -302,7 +383,7 @@ public class TestFactorTable
 				assertEquals(rowValues[col], table.getEntry(row, col));
 			}
 
-			assertEquals(weights[row], table.get(rowValues), 0.0);
+			assertEquals(weights[row], table.get(rowValues), 1e-12);
 		}
 		
 		for (int col = 0; col < nCols; ++col)
@@ -397,11 +478,14 @@ public class TestFactorTable
 		int nDomains = table.getDimensions();
 		assertTrue(nDomains >= 0);
 		
+		DiscreteDomainList domains = table.getDomainList();
+		assertEquals(nDomains, domains.size());
+		
 		int expectedJointSize = 1;
 		int[] domainSizes = new int[nDomains];
 		for (int i = 0; i < nDomains; ++i)
 		{
-			int domainSize = table.getDomainList().getDomainSize(i);
+			int domainSize = domains.getDomainSize(i);
 			assertTrue(domainSize > 0);
 			expectedJointSize *= domainSize;
 			domainSizes[i] = domainSize;
@@ -418,7 +502,7 @@ public class TestFactorTable
 			assertNull(fromSet);
 		}
 		
-		int size = table.size();
+		int size = table.sparseSize();
 		assertTrue(size >= 0);
 		int jointSize = table.jointSize();
 		assertTrue(size <= jointSize);
@@ -432,36 +516,68 @@ public class TestFactorTable
 			int i = 0;
 			for (NewFactorTableEntry entry : table)
 			{
-				assertEquals(i, entry.location());
-				assertSame(table, entry.table());
-				assertEquals(table.getEnergyForLocation(i), entry.energy(), 0.0);
+				final int si = entry.sparseIndex();
+				final int ji = entry.jointIndex();
+
+				assertSame(domains, entry.domains());
+				assertNotEquals(0.0, entry.weight(), 0.0);
+				assertFalse(Double.isInfinite(entry.energy()));
 				assertEquals(entry.energy(), -Math.log(entry.weight()), 1e-12);
+				assertEquals(entry.weight(), table.getWeightForJointIndex(ji), 1e-12);
 				
-				assertEquals(table.locationToJointIndex(i), entry.jointIndex());
-				
-				assertArrayEquals(table.locationToIndices(i, null), entry.indices());
-				assertArrayEquals(table.locationToArguments(i, null), entry.values());
-				
+				if (table.hasSparseRepresentation())
+				{
+					assertTrue(si >= 0);
+					assertTrue(si < table.sparseSize());
+					assertTrue(i <= si);
+					assertEquals(table.getEnergyForSparseIndex(si), entry.energy(), 0.0);
+					assertEquals(table.sparseIndexToJointIndex(si), ji);
+					assertArrayEquals(table.sparseIndexToIndices(si, null), entry.indices());
+					assertArrayEquals(table.sparseIndexToArguments(si, null), entry.values());
+				}
+				else
+				{
+					assertTrue(si < 0);
+				}
 				++i;
 			}
-			assertEquals(table.size(), i);
+// FIXME			assertEquals(table.sparseSize(), i);
+
+			double totalWeight = 0.0;
+			int nonZeroCount = 0;
 			
 			i = 0;
-			NewFactorTableIterator iter = table.jointIndexIterator();
+			NewFactorTableIterator iter = table.fullIterator();
 			while (iter.hasNext())
 			{
 				NewFactorTableEntry entry = iter.next();
 				assertEquals(i, entry.jointIndex());
-				assertEquals(entry.jointIndex(), iter.jointIndex());
-				assertEquals(entry.energy(), iter.energy(), 0.0);
-				assertEquals(entry.weight(), iter.weight(), 0.0);
-				assertEquals(entry.location(), iter.location());
+				if (entry.weight() != 0.0)
+				{
+					totalWeight += entry.weight();
+					++nonZeroCount;
+				}
 				++i;
 			}
 			assertEquals(table.jointSize(), i);
+			assertEquals(nonZeroCount, table.computeMinSparseSize());
+			if (table.isNormalized())
+			{
+				if (table.isDirected())
+				{
+					// TODO
+				}
+				else
+				{
+					if (totalWeight != 0.0)
+					{
+						assertEquals(1.0, totalWeight, 1e-12);
+					}
+				}
+			}
 			
 			assertNull(iter.next());
-			
+
 			try
 			{
 				iter.remove();
@@ -472,52 +588,53 @@ public class TestFactorTable
 			}
 		}
 		
-		for (int location = 0; location < size; ++location)
+		if (table.hasSparseRepresentation())
 		{
-			table.locationToIndices(location, indices);
-			for (int j = 0; j < nDomains; ++j)
+			for (int si = 0; si < size; ++si)
 			{
-				assertTrue(indices[j] >= 0);
-				assertTrue(indices[j] < domainSizes[j]);
+				table.sparseIndexToIndices(si, indices);
+				for (int j = 0; j < nDomains; ++j)
+				{
+					assertTrue(indices[j] >= 0);
+					assertTrue(indices[j] < domainSizes[j]);
+				}
+				assertEquals(si, table.sparseIndexFromIndices(indices));
+
+				table.sparseIndexToArguments(si, arguments);
+				for (int j = 0; j < nDomains; ++j)
+				{
+					assertEquals(arguments[j], domains.get(j).getElement(indices[j]));
+				}
+				assertEquals(si, table.sparseIndexFromArguments(arguments));
+
+				int joint = table.sparseIndexToJointIndex(si);
+				assertTrue(joint >= 0);
+				assertTrue(joint < jointSize);
+				assertEquals(si, table.sparseIndexFromJointIndex(joint));
+
+				double energy = table.getEnergyForSparseIndex(si);
+				assertEquals(energy, table.getEnergyForIndices(indices), 1e-12);
+				assertEquals(energy, table.getEnergyForArguments(arguments), 1e-12);
+
+				double weight = table.getWeightForSparseIndex(si);
+				assertEquals(weight, table.getWeightForIndices(indices), 1e-12);
+				assertEquals(weight, table.getWeightForArguments(arguments), 1e-12);
+
+				assertEquals(energy, -Math.log(weight), 1e-12);
 			}
-			assertEquals(location, table.locationFromIndices(indices));
-			
-			table.locationToArguments(location, arguments);
-			for (int j = 0; j < nDomains; ++j)
-			{
-				assertEquals(arguments[j], table.getDomainList().get(j).getElement(indices[j]));
-			}
-			assertEquals(location, table.locationFromArguments(arguments));
-			
-			int joint = table.locationToJointIndex(location);
-			assertTrue(joint >= 0);
-			assertTrue(joint < jointSize);
-			assertEquals(location, table.locationFromJointIndex(joint));
-			
-			double energy = table.getEnergyForLocation(location);
-			assertEquals(energy, table.getEnergyForIndices(indices), 0.0);
-			assertEquals(energy, table.getEnergyForArguments(arguments), 0.0);
-			
-			double weight = table.getWeightForLocation(location);
-			assertEquals(weight, table.getWeightForIndices(indices), 0.0);
-			assertEquals(weight, table.getWeightForArguments(arguments), 0.0);
-			
-			assertEquals(energy, -Math.log(weight), 1e-12);
-		}
-		
-		// Test some bogus inputs
-		assertEquals(Double.POSITIVE_INFINITY, table.getEnergyForLocation(-1), 0.0);
-		assertEquals(0.0, table.getWeightForLocation(-1), 0.0);
-		
-		if (table.isNormalized())
-		{
-			
 		}
 		
 		if (table.isDeterministicDirected())
 		{
 			assertTrue(table.isDirected());
-			table.evalDeterministic(arguments);
+			
+			for (int inputIndex = 0, end = domains.getInputCardinality(); inputIndex < end; ++inputIndex)
+			{
+				Arrays.fill(arguments, null);
+				domains.inputIndexToElements(inputIndex, arguments);
+				table.evalDeterministic(arguments);
+				assertEquals(1.0, table.getWeightForArguments(arguments), 0.0);
+			}
 		}
 		else
 		{
@@ -555,13 +672,25 @@ public class TestFactorTable
 		assertEquals(table1.isNormalized(), table2.isNormalized());
 		assertEquals(table1.isDeterministicDirected(), table2.isDeterministicDirected());
 		
-		assertEquals(table1.size(), table2.size());
-		int size = table1.size();
-		for (int i = 0; i < size; ++i)
+		assertEquals(table1.sparseSize(), table2.sparseSize());
+		if (table1.hasSparseRepresentation())
 		{
-			assertEquals(table1.getWeightForLocation(i), table2.getWeightForLocation(i), 1e-12);
-			assertEquals(table1.getEnergyForLocation(i), table2.getEnergyForLocation(i), 1e-12);
-			assertEquals(table1.locationToJointIndex(i), table2.locationToJointIndex(i));
+			final int size = table1.sparseSize();
+			for (int i = 0; i < size; ++i)
+			{
+				assertEquals(size, table1.sparseSize());
+				assertEquals(table1.getWeightForSparseIndex(i), table2.getWeightForSparseIndex(i), 1e-12);
+				assertEquals(table1.getEnergyForSparseIndex(i), table2.getEnergyForSparseIndex(i), 1e-12);
+				assertEquals(table1.sparseIndexToJointIndex(i), table2.sparseIndexToJointIndex(i));
+			}
+		}
+		
+		assertEquals(table1.jointSize(), table2.jointSize());
+		final int jointSize = table1.jointSize();
+		for (int ji = 0; ji < jointSize; ++ji)
+		{
+			assertEquals(table1.getWeightForJointIndex(ji), table2.getWeightForJointIndex(ji), 1e-12);
+			assertEquals(table1.getEnergyForJointIndex(ji), table2.getEnergyForJointIndex(ji), 1e-12);
 		}
 	}
 }

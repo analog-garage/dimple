@@ -17,15 +17,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 
 	protected final DiscreteDomainList _domains;
 
-	/**
-	 * Canonical empty double array.
-	 */
-	protected static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
 	
-	/**
-	 * Canonical empty int array.
-	 */
-	protected static final int[] EMPTY_INT_ARRAY = new int[0];
 	
 	/*--------------
 	 * Construction
@@ -59,7 +51,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public NewFactorTableIterator jointIndexIterator()
+	public NewFactorTableIterator fullIterator()
 	{
 		return new NewFactorTableIterator(this, true);
 	}
@@ -83,13 +75,13 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final double getEnergyForArguments(Object ... arguments)
 	{
-		return getEnergyForLocation(locationFromArguments(arguments));
+		return getEnergyForJointIndex(_domains.jointIndexFromElements(arguments));
 	}
 	
 	@Override
 	public final double getWeightForArguments(Object ... arguments)
 	{
-		return getWeightForLocation(locationFromArguments(arguments));
+		return getWeightForJointIndex(_domains.jointIndexFromElements(arguments));
 	}
 	
 	@Override
@@ -101,49 +93,37 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final double getEnergyForIndices(int ... indices)
 	{
-		return getEnergyForLocation(locationFromIndices(indices));
-	}
-	
-	@Override
-	public final double getEnergyForJointIndex(int jointIndex)
-	{
-		return getEnergyForLocation(locationFromJointIndex(jointIndex));
+		return getEnergyForJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
 	public final double getWeightForIndices(int ... indices)
 	{
-		return getWeightForLocation(locationFromIndices(indices));
+		return getWeightForJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final double getWeightForJointIndex(int jointIndex)
+	public final int sparseIndexFromArguments(Object ... arguments)
 	{
-		return getWeightForLocation(locationFromJointIndex(jointIndex));
+		return sparseIndexFromJointIndex(_domains.jointIndexFromElements(arguments));
 	}
 	
 	@Override
-	public final int locationFromArguments(Object ... arguments)
+	public final int sparseIndexFromIndices(int ... indices)
 	{
-		return locationFromJointIndex(_domains.jointIndexFromElements(arguments));
+		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final int locationFromIndices(int ... indices)
+	public Object[] sparseIndexToArguments(int sparseIndex, Object[] arguments)
 	{
-		return locationFromJointIndex(_domains.jointIndexFromIndices(indices));
+		return _domains.jointIndexToElements(sparseIndexToJointIndex(sparseIndex), arguments);
 	}
 	
 	@Override
-	public Object[] locationToArguments(int location, Object[] arguments)
+	public final int[] sparseIndexToIndices(int sparseIndex, int[] indices)
 	{
-		return _domains.jointIndexToElements(locationToJointIndex(location), arguments);
-	}
-	
-	@Override
-	public final int[] locationToIndices(int location, int[] indices)
-	{
-		return _domains.jointIndexToIndices(locationToJointIndex(location), indices);
+		return _domains.jointIndexToIndices(sparseIndexToJointIndex(sparseIndex), indices);
 	}
 	
 	@Override
@@ -171,12 +151,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public final void setEnergyForJointIndex(double energy, int jointIndex)
-	{
-		setEnergyForLocation(energy, allocateLocationForJointIndex(jointIndex));
-	}
-
-	@Override
 	public final void setWeightForArguments(double weight, Object ... arguments)
 	{
 		setWeightForJointIndex(weight, _domains.jointIndexFromElements(arguments));
@@ -188,12 +162,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		setWeightForJointIndex(weight, _domains.jointIndexFromIndices(indices));
 	}
 	
-	@Override
-	public final void setWeightForJointIndex(double weight, int jointIndex)
-	{
-		setWeightForLocation(weight, allocateLocationForJointIndex(jointIndex));
-	}
-
 	/*-----------------------
 	 * IFactorTable methods
 	 */
@@ -207,13 +175,13 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public void changeWeight(int index, double weight)
 	{
-		setWeightForLocation(weight, index);
+		setWeightForSparseIndex(weight, index);
 	}
 
 	@Override
 	public double evalAsFactorFunction(Object... arguments)
 	{
-		return getWeightForLocation(locationFromJointIndex(_domains.jointIndexFromElements(arguments)));
+		return getWeightForSparseIndex(sparseIndexFromJointIndex(_domains.jointIndexFromElements(arguments)));
 	}
 
 	@Override
@@ -237,8 +205,8 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[][] getIndices()
 	{
-		int[][] indices = new int[size()][];
-		for (int i = 0, end = size(); i < end; ++i)
+		int[][] indices = new int[sparseSize()][];
+		for (int i = 0, end = sparseSize(); i < end; ++i)
 		{
 			indices[i] = getRow(i);
 		}
@@ -248,12 +216,12 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[] getColumnCopy(int column)
 	{
-		int[] result = new int[size()];
+		int[] result = new int[sparseSize()];
 		int[] indices = new int[getDimensions()];
 		
-		for (int i = 0, end = size(); i < end; ++i)
+		for (int i = 0, end = sparseSize(); i < end; ++i)
 		{
-			locationToIndices(i, indices);
+			sparseIndexToIndices(i, indices);
 			result[i] = indices[column];
 		}
 	
@@ -288,28 +256,28 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	public int[] getRow(int row)
 	{
 		int[] indices = new int[getDimensions()];
-		locationToIndices(row, indices);
+		sparseIndexToIndices(row, indices);
 		return indices;
 	}
 
 	@Override
 	public int getRows()
 	{
-		return size();
+		return sparseSize();
 	}
 
 	@Override
-	public int getWeightIndexFromTableIndices(int[] indices)
+	public final int getWeightIndexFromTableIndices(int[] indices)
 	{
-		return locationFromIndices(indices);
+		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 
 	@Override
 	public void randomizeWeights(Random rand)
 	{
-		for (int i = size(); --i >= 0;)
+		for (int i = jointSize(); --i >= 0;)
 		{
-			setWeightForLocation(rand.nextDouble(), i);
+			setWeightForJointIndex(rand.nextDouble(), i);
 		}
 	}
 
@@ -334,8 +302,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	/*--------------------------
 	 * Protected helper methods
 	 */
-	
-	protected abstract int allocateLocationForJointIndex(int jointIndex);
 
 	/**
 	 * Constructs a new {@link BitSet} of given {@code size} whose set bits are specified
@@ -386,82 +352,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		return nTrue;
 	}
 	
-	protected static int[] cloneArray(int[] array)
-	{
-		if (array == null)
-		{
-			return null;
-		}
-		else if (array.length == 0)
-		{
-			return EMPTY_INT_ARRAY;
-		}
-		else
-		{
-			return array.clone();
-		}
-	}
-	
-	protected static double[] cloneArray(double[] array)
-	{
-		if (array == null)
-		{
-			return null;
-		}
-		else if (array.length == 0)
-		{
-			return EMPTY_DOUBLE_ARRAY;
-		}
-		else
-		{
-			return array.clone();
-		}
-	}
-	
-	protected static int[] copyArrayForInsert(int[] array, int insertionPoint, int insertLength)
-	{
-		int curSize = array == null ? 0 : array.length;
-		
-		assert(insertionPoint >= 0 && insertionPoint <= curSize);
-		assert(insertLength >= 0);
-		
-		
-		int[] newArray = new int[curSize + insertLength];
-		
-		for (int i = 0; i < insertionPoint; ++i)
-		{
-			newArray[i] = array[i];
-		}
-		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
-		{
-			newArray[j] = array[i];
-		}
-		
-		return newArray;
-	}
-
-	protected static double[] copyArrayForInsert(double[] array, int insertionPoint, int insertLength)
-	{
-		int curSize = array == null ? 0 : array.length;
-		
-		assert(insertionPoint >= 0 && insertionPoint <= curSize);
-		assert(insertLength >= 0);
-		
-		
-		double[] newArray = new double[curSize + insertLength];
-		
-		for (int i = 0; i < insertionPoint; ++i)
-		{
-			newArray[i] = array[i];
-		}
-		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
-		{
-			newArray[j] = array[i];
-		}
-		
-		return newArray;
-	}
-
 	protected static int locationFromIndices(int[] indices, int[] products)
 	{
 		int location = 0;
