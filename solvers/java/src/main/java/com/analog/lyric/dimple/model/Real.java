@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+
 
 public class Real extends VariableBase
 {
@@ -72,5 +74,14 @@ public class Real extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
+	public void setInput(FactorFunction input)
+	{
+		setInputObject(input);
+	}
+	
+	public void setInput(double[] input)
+	{
+		setInputObject(input);
+	}
 
 }
