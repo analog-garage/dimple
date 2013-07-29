@@ -35,6 +35,8 @@
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
 
+% Attempt to define subsubparagraphs, which does not properly create the TOC used for navigation in a PDF reader
+% Commented out until it can be made to work
 %% Subsubparagraphs
 %\makeatletter
 %\newcounter{subsubparagraph}[subparagraph]
@@ -95,16 +97,17 @@
 	\else		
                 %modify this flag to matlabtrue or javatrue when editing with TexShop
                 %When building from the commandline this will be ignored.
-		\javatrue
+%		\javatrue
+		\matlabtrue
 	\fi
 \fi
 
 \ifjava
-\title{\huge \bfseries Java Dimple User Manual \\ \normalfont \large Version 0.3}
+\title{\huge \bfseries Dimple User Manual \linebreak Java Interface \\ \normalfont \large Version 0.03}
 \fi
 
 \ifmatlab
-\title{\huge \bfseries MATLAB Dimple User Manual \\ \normalfont \large Version 0.3}
+\title{\huge \bfseries Dimple User Manual \linebreak MATLAB Interface \\ \normalfont \large Version 0.03}
 \fi
 
 %\date{}							% Activate to display a given date or no date
@@ -115,6 +118,7 @@
 \maketitle
 
 % Attempt to have a brief contents overview prior to the full contents
+% Commented out until it can be made to work
 %\clearpage
 %\renewcommand{\contentsname}{Brief Contents}
 %\setcounter{tocdepth}{1}				% Include only the top-level sections in the brief TOC

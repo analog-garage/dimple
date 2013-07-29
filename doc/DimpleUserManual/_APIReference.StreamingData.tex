@@ -8,7 +8,8 @@ Dimple supports several types of variable streams:
 \item DiscreteStream
 \item BitStream
 \item RealStream
-\item RealJoinStream
+\item RealJointStream
+\item ComplexStream
 \end{itemize}
 
 Each of these share common properties and method listed in the following sections.
@@ -130,27 +131,56 @@ RealStream();
 \end{lstlisting}
 \fi
 
-\subsubsection{RealJoinStream}
+\subsubsection{RealJointStream}
 
 \para{Constructor}
 
-The RealJoinStream constructor is used to create a stream of RealJoint variables or arrays of RealJoint variables.
+The RealJointStream constructor is used to create a stream of RealJoint variables\ifmatlab or arrays of RealJoint variables\fi.
 
 \ifmatlab
 \begin{lstlisting}
-RealJoinStream(numJointVariables, dimensions);
+RealJointStream(numJointVariables, [dimensions]);
 \end{lstlisting}
 
 \begin{itemize}
+\item numJointVariables indicates the dimension of the associated RealJoint variables.
 \item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single RealJoint variable stream).
 \end{itemize}
 \fi
 
 \ifjava
 \begin{lstlisting}
-RealJoinStream(numJointVariables);
+RealJointStream(numJointVariables);
+\end{lstlisting}
+
+\begin{itemize}
+\item numJointVariables indicates the dimension of the associated RealJoint variables.
+\end{itemize}
+\fi
+
+
+\subsubsection{ComplexStream}
+
+\para{Constructor}
+
+The ComplexStream constructor is used to create a stream of Complex variables\ifmatlab or arrays of Complex variables \fi.
+
+\ifmatlab
+\begin{lstlisting}
+ComplexStream([dimensions]);
+\end{lstlisting}
+
+\begin{itemize}
+\item dimensions is an optional variable-length comma-separated list of matrix dimensions (an empty list indicates a single Complex variable stream).
+\end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+ComplexStream();
 \end{lstlisting}
 \fi
+
 
 
 \subsubsection{FactorGraphStream}

@@ -609,6 +609,8 @@ Returns the index of the best sample seen so far.
 
 \subpara{Real-Variable-Specific Methods}
 
+The following methods apply to Real, RealJoint, and Complex variables when using the Gibbs solver.
+
 \ifmatlab
 \begin{lstlisting}
 variable.Solver.setSampler(samplerName);
@@ -998,12 +1000,6 @@ Users who wish to create their own FactorFunctions to be used with the Gaussian 
 
 public class GaussianAddFactorFunction extends HybridSampledBPFactorFunction
 {
-
-    public GaussianAddFactorFunction() 
-    {
-        super("GaussianAdd");
-    }
-
     @Override
     public double acceptanceRatio(int portIndex, Object... inputs) 
     {

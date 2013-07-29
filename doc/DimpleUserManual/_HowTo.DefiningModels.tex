@@ -64,12 +64,15 @@ Creation of sub-graphs is described in more detail in section~\ref{sec:usingSubG
 
 \para{Types of Variables}
 
-There are three primary types of variables in Dimple\footnote{Dimple also supports some additional variable types: FiniteFieldVariable, RealJoint, and ComplexVar (which is a special-case of RealJoint).  Currently, support for these variable types is limited: the FiniteFieldVariable type is supported only by the SumProduct solver, and the RealJoint and ComplexVar variable types are supported only by the Gaussian solver.  More detail on FiniteFieldVariables can be found in section~\ref{sec:finiteFields}, and more detail on RealJoint variables can be found in section~\ref{sec:MultivariateGaussians}.}:
+Dimple supports several types of variables:
 
 \begin{description}
 \item[Discrete:] A Discrete variable is one that has a finite set of possible states.  The domain of a discrete variable is a list of the possible states.  These states may be anything---numbers, strings, arrays, objects, etc.
 \item[Bit:] A Bit is a special-case of a discrete variable that has exactly two states: 0 and 1.  Note that when using Bit variables, there are some differences in the API versus using Discrete variables.  These differences are noted in the appropriate sections of this manual.
 \item[Real:] A Real variable is a continuous variable defined on the real line, or some subset of the real line.
+\item[RealJoint:] A RealJoint variable is a multidimensional continuous variable, defined on $\mathbb{R^{N}}$ or a subset of $\mathbb{R^{N}}$.  Unlike a vector of Real variables, the components of a RealJoint variable cannot be connected independently in a graph.
+\item[Complex:] A Complex variable is a special-case of a RealJoint variable with two dimensions. \ifmatlab In some cases, the values of a Complex variable are expressed as MATLAB complex numbers. \fi
+\item[FiniteFieldVariable:] A FiniteFieldVariable is a special-case of a discrete variable that represents a finite field with $N=2^{n}$ elements.  These fields are often used, for example, in error correcting codes.  These variables can be used along with certain custom factors that are implemented more efficiently for sum-product belief propagation than the alternative using discrete variables and factors implemented directly.  See section~\ref{sec:finiteFields} for more information on how these variables are used.
 \end{description}
 
 A factor graph may mix any combination of these variable types, though there are some limitations in the use of certain variable types by some solvers.  Specifically, some solvers do not currently support Real variables\footnote{Currently Dimple has a restriction that prior to adding a Real variable to a factor graph, the solver for that factor graph must be set to one that supports real variables.  See section~\ref{sec:Solvers} to learn how to set the solver.  This restriction may be removed in a future version.}.
@@ -799,17 +802,6 @@ The specific set of operators supported is given in section~\ref{sec:overloaded}
 
 \fi
 
-\ifjava
-\para{Implicit Factor Creation}
-\label{sec:ImplicitFactorCreation}
-
-Java Dimple does not currently support anything similar to MATLAB Dimple's operator overloading.  However, it would be easy to extend the java to support things like:
-
-\begin{lstlisting}
-Real z = a.plus(b).times(c.pow(d)).minus(e.minus().sqrt());
-\end{lstlisting}
-
-\fi
 
 \para{Naming Factors}
 

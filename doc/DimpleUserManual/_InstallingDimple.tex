@@ -43,6 +43,39 @@ PASSED ALL TESTS
 \end{enumerate}
 \end{enumerate}
 
+\fi
+
+\ifjava
+
+It is possible to use Dimple with only the Java API.  To do so, add all of the jar files in the following directories to their java class path:
+
+\begin{enumerate}
+\item \textless textjava directory\textgreater /solvers/lib
+\item \textless java directory\textgreater /solvers/non-maven-jars
+\end{enumerate}
+
+\fi
+
+\subsection{Installing from Source}
+
+\begin{enumerate}
+\item Download the source from https://github.com/AnalogDevicesLyricLabs/dimple
+\item Install gradle from http://www.gradle.org/.  (Gradle is a java build tool that pulls down jars from Maven repositories.)
+\item Change to \textless dimple directory\textgreater /solvers/java 
+\item Run gradle by typing ``gradle''
+\end{enumerate}
+
+If you want to edit java files with eclipse:
+
+\begin{enumerate}
+\item Execute ``gradle eclipse''.  This will create the appropriate references to all of the dependencies in the Eclipse .classpath file.
+\item From eclipse, Import-\textgreater Existing Projects Into Workspace
+\item Browse to the dimple directory, select sovers/java, and click Finish.
+\end{enumerate}
+
+
+
+\ifmatlab
 
 \subsection{Adjusting MATLAB's Java Memory Limit}
 
@@ -55,34 +88,6 @@ Each object in Dimple corresponds to underlying Java objects. The amount of heap
 
 The value after Xmx is the maximum amount of heap memory allocated to Java, and Xms is the starting value.  You may use wish to use larger values if your system has sufficient memory.  Google ``MATLAB java.opts file'' to determine the specific location of this file on your operating system.
 
-
-
 \fi
 
-\ifjava
 
-It is possible to use Dimple only with the Java API.  To do so, users have to add all of the jar files in the following directories to their java class path:
-
-\begin{enumerate}
-\item \textless textjava directory \textgreater /solvers/lib
-\item \textless java directory \textgreater /solvers/non-maven-jars
-\end{enumerate}
-
-\fi
-
-\subsection{Installing from source}
-
-\begin{enumerate}
-\item Download the source from https://github.com/AnalogDevicesLyricLabs/dimple
-\item Install gradle from http://www.gradle.org/.  (Gradle is a java build tool that pulls down jars from maven repositories.)
-\item Change to \textless dimple directory \textgreater /solvers/java 
-\item Run gradle by typing "gradle"
-\end{enumerate}
-
-If you want to edit java files with eclipse:
-
-\begin{enumerate}
-\item Execute "gradle eclipse".  This will create the appropriate references to all of the dependencies in the Eclipse .classpath file.
-\item From eclipse, Import-\textgreater Existing Projects Into Workspace
-\item Browse to the dimple directory, select sovers/java, and click Finish.
-\end{enumerate}

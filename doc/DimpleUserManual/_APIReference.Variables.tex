@@ -11,8 +11,8 @@ Variable Type & Supported Solvers \\
 Discrete & all \\
 Bit & all \\
 Real & Gibbs, Gaussian, ParticleBP \\
-RealJoint & Gaussian \\ 
-\ifmatlab ComplexVar & Gaussian \\ \fi
+RealJoint & Gibbs, Gaussian \\ 
+Complex & Gibbs, Gaussian \\
 FiniteFieldVariable & SumProduct \\
 \end{longtable} 
 
@@ -149,6 +149,7 @@ Like using the addFactor method, some of the inputs to these operators and funct
 \begin{lstlisting}
 x = a^2;
 y = (a + b + 2) * 3;
+z = a * (2 + 1i);
 \end{lstlisting}
 
 These operators and functions can be applied to arrays of variables, with some limitations.  Specifically, if each of the input variables are vectors of the same dimension, then the result will be to create a vector of output variables of the same dimension, along with a vector of factors relating the inputs and outputs.
@@ -338,7 +339,7 @@ When written, for a single variable, the value must be an array of length equal 
 \subpara{FixedValue}
 \label{sec:Discrete.FixedValue}
 
-Read-write.  For any variable, the FixedValue method can be used to set the variable to a specific fixed value, and to retrieve the fixed-value if one has been set.  This would generally be used for conditioning a graph on known data without modifying the graph (see section~\ref{sec:FixingAVariableValue}).
+Read-write.  For any variable, the FixedValue property can be used to set the variable to a specific fixed value, and to retrieve the fixed-value if one has been set.  This would generally be used for conditioning a graph on known data without modifying the graph (see section~\ref{sec:FixingAVariableValue}).
 
 Reading this property results in an error if no fixed value has been set.  To determine if a fixed value has been set, use the hasFixedValue method (see section~\ref{sec:Discrete.hasFixedValue}).
 
@@ -443,8 +444,8 @@ Real([domain], [dimensions])
 
 \ifjava
 \begin{lstlisting}
-Real(RealDomain)
 Real()
+Real(RealDomain)
 Real(lowerBound,upperBound)
 \end{lstlisting}
 \fi
@@ -481,7 +482,7 @@ Examples:
 \item Real() specifies a scalar real variable with an unbounded domain.
 \item Real(-1, 1) specifies a scalar real variable with domain from -1 to 1.
 \item Real(Double.NEGATIVE\_INFINITY,0) specifies a variable with the domain from negative infinity to zero.
-\item Real(RealDomain(-Math.PI, Math.PI)) specifies a scalar real variable with domain from $-\pi$ to $\pi$.
+\item Real(new RealDomain(-Math.PI, Math.PI)) specifies a scalar real variable with domain from $-\pi$ to $\pi$.
 \end{itemize}
 \fi
 
@@ -500,6 +501,8 @@ Read-only.  The behavior of this property for Real variables is solver specific.
 \subpara{Value}
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
+
+For the Gaussian solver, the Value corresponds to the mean value of the belief.
 
 
 \subpara{Input}
@@ -575,6 +578,7 @@ Like other variables, the RealJoint class can represent either a single RealJoin
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
 RealJoint(numElements, [dimensions])
 \end{lstlisting}
@@ -585,36 +589,170 @@ The arguments are defined as follows:
 \item numElements specifies the number of joint real-valued elements.
 \item dimensions specify the array dimensions (the array of individual RealJoint variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
+\fi
 
-Note that in the current version of Dimple, RealJoint variables do not support bounded domains, thus the domain of each of the individual real values is assumed to range from $-\infty$ to $\infty$\footnote{This limitation may be removed in a future version of Dimple.}.
+\ifjava
+\begin{lstlisting}
+RealJoint(int size)
+RealJoint(RealJointDomain domain)
+\end{lstlisting}
+
+The arguments are defined as follows:
+
+\begin{itemize}
+\item size specifies the number of joint real-valued elements.
+\item domain specifies the domain of the RealJoint variable using a RealJointDomain object (see \ref{sec:RealJointDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.
+\end{itemize}
+\fi
 
 \para{Properties}
 
+\subpara{Domain}
+\label{sec:RealJoint.Domain}
+
+Read-only.  The Domain property returns the domain of that variable in the form of a RealJointDomain object (see section~\ref{sec:RealJointDomain}).
+
 \subpara{Belief}
+\label{sec:RealJoint.Belief}
 
-Read-only.  After running the Gaussian solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  For an array of RealJoint variables, this property returns a cell array of MultivariateMsg objects, each corresponding to the estimated marginal distribution of the corresponding variable.  The results are undefined if called prior to running a solver.
+Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
-\subpara{Input}
+For the Gaussian solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of MultivariateMsg objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
 
-Read-write.  For the Gaussian solver, for a single RealJoint variable, the value of this property must be a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  For an array of RealJoint variables, the value of this property must be a cell array of MultivariateMsg objects, with dimensions equal to the dimension of the array (or the portion of the array) being set.
+\subpara{Value}
+\label{sec:RealJoint.Value}
 
+Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
+
+For the Gaussian solver, this property returns the mean vector, with dimension equal to the dimension of the RealJoint variable.
 
 \ifmatlab
-\subsubsection{ComplexVar}
+For an array of RealJoint variables, this property returns an array where the initial dimensions correspond to the dimensions of the variable array (or portion of the variable array), and the final dimension corresponds to the dimension of the RealJoint variable.
+\fi
 
-ComplexVar is a special kind of RealJoint variable with exactly two joint elements.
+\subpara{Input}
+\label{sec:RealJoint.Input}
 
+Read-write.  The behavior of this property for Real variables is solver specific.  
+
+For the Gaussian solver, \ifmatlab for a single RealJoint variable, \fi the value of this property must be a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, the value of this property must be a cell array of MultivariateMsg objects, with dimensions equal to the dimension of the array (or the portion of the array) being set. \fi
+
+\ifmatlab
+For the Gibbs or ParticleBP solvers, for a single RealJoint variable, the value of this property must be a cell array of FactorFunction objects (see section~\ref{sec:FactorFunction}), one for each dimension of the RealJoint variable.  In the current version of Dimple, for these solvers, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+\fi
+\ifjava
+For the Gibbs or ParticleBP solvers, the value of this property must be FactorFunction (see section~\ref{sec:FactorFunction}).  For an array of RealJoint variables, the value of this property must be a cell array of FactorFunctions, with dimensions equal to the dimensions of the array (or portion of the array) being set.
+\fi
+
+\subpara{FixedValue}
+\label{sec:RealJoint.FixedValue}
+
+Read-write.  The behavior of the FixedValue property for a RealJoint variable is similar to that of Discrete variables (see section~\ref{sec:Discrete.FixedValue}).  When setting the FixedValue of a Real variable, the value must be within the domain of the variable.  When setting a fixed value, the value must be in an array with dimension equal to the dimension of the RealVariable.  For example:
+
+\ifmatlab
+\begin{lstlisting}
+a = RealJoint(4);
+a.FixedValue = [1.7, 2.0, 0, -1.2];
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealJoint a = new RealJoint(4);
+a.setFixedValue(new double[]{1.7, 2.0, 0, -1.2});
+\end{lstlisting}
+\fi
+
+\ifmatlab
+For an array of RealJoint variables, the fixed values of all variables may be set together.  In this case, the initial dimensions of the input array must equal the dimensions of the variable array (or subset of the variable array) being set, while the final dimension must equal the dimension of the RealJoint variable.
+\fi
+
+Because the Input and FixedValue properties serve similar purposes, setting one of these overrides any previous use of the other.  Setting the Input property removes any fixed value and setting the FixedValue property removes the input.
+
+
+\para{Methods}
+
+\subpara{hasFixedValue}
+
+See section~\ref{sec:Discrete.hasFixedValue}.
+
+
+
+\subsubsection{Complex}
+
+Complex is a special kind of RealJoint variable with exactly two joint elements.
+
+\ifmatlab
+The behavior of all properties and methods is identical to that of RealJoint variables, with the exception of a few methods (described below), which that refer directly to complex numerical values. 
+\fi
+\ifjava
 The behavior of all properties and methods is identical to that of RealJoint variables.
+\fi
 
 \para{Constructor}
 
+\ifmatlab
 \begin{lstlisting}
-ComplexVar([dimensions])
+Complex([dimensions])
 \end{lstlisting}
 
 The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
-
 \fi
+
+\ifjava
+\begin{lstlisting}
+Complex()
+Complex(RealJointDomain domain)
+\end{lstlisting}
+
+The arguments are defined as follows:
+
+\begin{itemize}
+\item domain specifies the domain of the Complex variable using a RealJointDomain object (see \ref{sec:RealJointDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.  For a Complex variable, the number of dimensions of the RealJointDomain must equal 2.
+\end{itemize}
+\fi
+
+\para{Properties}
+
+\subpara{Domain}
+
+Read-only.  See section~\ref{sec:RealJoint.Domain}.
+
+\subpara{Belief}
+
+Read-only.  See section~\ref{sec:RealJoint.Domain}.
+
+\subpara{Value}
+
+\ifmatlab
+Read-only.  This method behaves similarly to the Value property for a RealJoint variable, except the value returned is a single complex number.  For an array of Complex variables, each entry in the returned array is a complex number.
+\fi
+\ifjava
+Read-only.  See section~\ref{sec:RealJoint.Value}.
+\fi
+
+\subpara{Input}
+
+Read-write.  See section~\ref{sec:RealJoint.Input}.
+
+\subpara{FixedValue}
+
+\ifmatlab
+Read-write.  This method behaves similarly to the FixedValue property for a RealJoint variable, except that the fixed value is a single complex number.  For an array of Complex variables, each entry in the array should be a complex number.  For example:
+
+a = Complex();
+a.FixedValue = 5 + 1i*2;
+\fi
+\ifjava
+Read-write.  See section~\ref{sec:RealJoint.FixedValue}.
+\fi
+
+\para{Methods}
+
+\subpara{hasFixedValue}
+
+See section~\ref{sec:Discrete.hasFixedValue}.
+
 
 \subsubsection{FiniteFieldVariable}
 
@@ -725,6 +863,81 @@ Read-only.  This property returns the value of the lower bound.  The default val
 \fi
 
 Read-only.  This property returns the value of the upper bound.  The default value is Inf.
+
+
+
+\subsubsection{RealJointDomain}
+\label{sec:RealJointDomain}
+
+The RealJointDomain class is used to refer to the domain of RealJoint (or Complex) variables.
+
+\para{Constructor}
+
+\ifmatlab
+\begin{lstlisting}
+RealJointDomain([numDimensions], [listOfRealDomains]);
+\end{lstlisting}
+
+\begin{itemize}
+\item numDimensions indicates the number of dimensions in the domain of the RealJoint variable.  May be omitted only if the listOfRealDomains arguments are present.  In that case, the length of that list determines the dimension.
+\item listOfRealDomains comma-separated list of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the RealJoint variable.  If no listOfRealDomains is specified, then all dimensions are assumed to be unbounded.
+\end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+RealJointDomain(int size)
+RealJointDomain(RealDomain... domains)
+\end{lstlisting}
+
+\begin{itemize}
+\item size indicates the number of dimensions in the domain of the RealJoint variable.  If the version of the constructor that specifies only the size is called, then all dimensions are assumed to be unbounded.
+\item domains is a list or array of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain of the corresponding dimension of the RealJoint variable.  The number of entries determines the number of dimensions.
+\end{itemize}
+\fi
+
+\ifmatlab
+\para{Properties}
+
+\subpara{NumElements}
+
+Read-only.  Indicates the number of elements in the RealJointDomain, which corresponds to the number of dimensions of an associated RealJoint variable.
+\fi
+
+\ifjava
+\para{Methods}
+
+\subpara{getNumVars}
+
+\begin{lstlisting}
+domain.getNumVars();
+\end{lstlisting}
+
+Returns the number of elements in the RealJointDomain, which corresponds to the number of dimensions of an associated RealJoint variable.
+
+\subpara{getRealDomains}
+
+\begin{lstlisting}
+domain.getRealDomains();
+\end{lstlisting}
+
+Returns the collection of RealDomains that correspond to each dimension of the RealJointDomain.
+
+\subpara{getRealDomain}
+
+\begin{lstlisting}
+domain.getRealDomains(dimensionIndex);
+\end{lstlisting}
+
+Returns the RealDomain that correspond to the dimension corresponding to the specified \texttt{dimensionIndex}.
+
+
+\subpara{getRealDomain}
+
+
+
+\fi
+
 
 
 \subsubsection{MultivariateMsg}

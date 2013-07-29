@@ -58,7 +58,7 @@ FactorGraph HMM = new FactorGraph();
 \fi
 
 \subsubsection*{Declaring Variables}
-Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather… to SundayWeather. The command to create a variable is Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values ‘Sunny’ and ‘Rainy’. For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.
+Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather… to SundayWeather. The command to create a variable is Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values ‘Sunny’ and ‘Rainy’.\ifmatlab For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.\fi
 
 \ifmatlab
 
@@ -80,6 +80,7 @@ IMPORTANT: In the above, had we used the declaration Domain=['sunny','rainy'] in
 \ifjava
 
 \begin{lstlisting}
+DiscreteDomain domain = new DiscreteDomain("sunny", "rainy");
 Discrete MondayWeather = new Discrete(domain);
 Discrete TuesdayWeather = new Discrete(domain);
 Discrete WednesdayWeather = new Discrete(domain);
@@ -131,11 +132,6 @@ In our case, we define a class called TransitionFactorFunction.
 \begin{lstlisting}
 	public static class TransitionFactorFunction extends FactorFunction
 	{
-		public TransitionFactorFunction()
-		{
-			super("TransitionFactorFunction");
-		}
-		
 		@Override
 		public double eval(Object ... args)
 		{
@@ -242,11 +238,6 @@ see the ObservationFactorFunction from solvers/java/src/main/java/com/analog/lyr
 \begin{lstlisting}
 	public static class ObservationFactorFunction extends FactorFunction
 	{
-		public ObservationFactorFunction()
-		{
-			super("ObservationFactorFunction");
-		}
-		
 		@Override
 		public double eval(Object ... args)
 		{
