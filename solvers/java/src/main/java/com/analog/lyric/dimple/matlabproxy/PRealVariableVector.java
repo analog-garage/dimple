@@ -45,13 +45,13 @@ public class PRealVariableVector extends PVariableVector
 		super(nodes);
 	}
 	
-	public PRealVariableVector(String varType, PRealDomain domain, Object input, int numElements)
+	public PRealVariableVector(String varType, PRealDomain domain, int numElements)
 	{
 		Node [] nodes = new Node[numElements];
 		
 		for (int i = 0; i < numElements; i++)
 		{
-			Real v = new Real(domain.getModelerObject(), input, varType);
+			Real v = new Real(domain.getModelerObject(), varType);
 			nodes[i] = v;
 		}
 		setNodes(nodes);

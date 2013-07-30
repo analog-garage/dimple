@@ -75,8 +75,8 @@ public class FactorFunctionTest {
 //		public FactorTable(int [][] indices, double [] weights, Discrete... variables)
 //		public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
 		
-		Discrete[] discretes = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)};
-		Discrete[] discretes6 = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0),new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)};
+		Discrete[] discretes = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
+		Discrete[] discretes6 = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1),new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
 		DiscreteDomain[] domains = new DiscreteDomain[]{DiscreteDomain.forBit(),  DiscreteDomain.forBit(), DiscreteDomain.forBit()};
 		DiscreteDomain[] vDomains = new DiscreteDomain[]{discretes[0].getDiscreteDomain(), discretes[1].getDiscreteDomain(), discretes[2].getDiscreteDomain()};
 		

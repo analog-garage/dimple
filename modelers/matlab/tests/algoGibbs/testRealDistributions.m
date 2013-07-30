@@ -71,14 +71,14 @@ if (repeatable)
     fg.Solver.setSeed(seed);				% Make this repeatable
 end
 
-% Factor functions
-meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
-invVariancePrior = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
-
 % Variables
-invVarianceVar = Real([0 Inf], invVariancePrior);
-meanVar = Real(meanPrior);
+invVarianceVar = Real([0 Inf]);
+meanVar = Real();
 X = Real(1,numDataPoints);
+
+% Set priors
+invVarianceVar.Input = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
+meanVar.Input = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
 
 % Factors
 fg.addFactor('Normal', meanVar, invVarianceVar, X);
@@ -155,8 +155,11 @@ if (repeatable)
 end
 
 % Variables
-meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorPrecision));
+meanVar = Real();
 X = Real(1,numDataPoints);
+
+% Set priors
+meanVar.Input = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
 
 % Factors
 f = fg.addFactor('Normal', meanVar, invVarianceValue, X);
@@ -228,13 +231,13 @@ if (repeatable)
     fg.Solver.setSeed(seed);				% Make this repeatable
 end
 
-% Factor functions
-meanPrior = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
-invVariancePrior = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
-
 % Variables
-invVarianceVar = Real([0 Inf], invVariancePrior);
-meanVar = Real(meanPrior);
+invVarianceVar = Real([0 Inf]);
+meanVar = Real();
+
+% Set priors
+invVarianceVar.Input = FactorFunction('Gamma',invVariancePriorAlpha,invVariancePriorBeta);
+meanVar.Input = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
 
 % Factors
 X = Normal(meanVar, invVarianceVar, [1,numDataPoints]);
@@ -311,7 +314,10 @@ if (repeatable)
 end
 
 % Variables
-meanVar = Real(FactorFunction('Normal',meanPriorMean,meanPriorPrecision));
+meanVar = Real();
+
+% Set priors
+meanVar.Input = FactorFunction('Normal',meanPriorMean,meanPriorPrecision);
 
 % Factors
 X = Normal(meanVar, invVarianceValue, [1,numDataPoints]);

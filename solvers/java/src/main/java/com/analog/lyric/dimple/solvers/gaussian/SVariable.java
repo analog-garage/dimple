@@ -45,13 +45,15 @@ public class SVariable extends SRealVariableBase
 
 
 	@Override
-	public void setInputOrFixedValue(Object priors,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
-    	if (priors == null)
+		if (hasFixedValue)
+			_input = createFixedValueMessage((Double)fixedValue);
+		else if (input == null)
     		_input = (double[]) createDefaultMessage();
     	else
     	{
-	    	double [] vals = (double[])priors;
+	    	double [] vals = (double[])input;
 	    	if (vals.length != 2)
 	    		throw new DimpleException("expect priors to be a vector of mean and sigma");
 	    	
@@ -62,9 +64,18 @@ public class SVariable extends SRealVariableBase
     	}
     	
     }
-    
+	
     public void updateEdge(int outPortNum) 
     {
+    	// If fixed value, just return the input, which has been set to a zero-variance message
+    	if (_var.hasFixedValue())
+    	{
+        	double [] outMsg = _outputMsgs[outPortNum];
+        	outMsg[0] = _input[0];
+        	outMsg[1] = _input[1];
+        	return;
+    	}
+    	
     	ArrayList<INode> ports = _var.getSiblings();
     	
     	double R = 1/(_input[1]*_input[1]);
@@ -137,6 +148,8 @@ public class SVariable extends SRealVariableBase
     
     public Object getBelief() 
     {
+    	// If fixed value, just return the input, which has been set to a zero-variance message
+    	if (_var.hasFixedValue()) return _input.clone();
     	
     	double R = 1/(_input[1]*_input[1]);
     	double Mu = _input[0]*R;
@@ -279,5 +292,14 @@ public class SVariable extends SRealVariableBase
 	public void setInputMsg(int portIndex, Object obj) {
 		_inputMsgs[portIndex] = (double[])obj;
 	}
+	
+	public double[] createFixedValueMessage(double fixedValue)
+	{
+		double[] message = new double[2];
+		message[0] = fixedValue;
+		message[1] = 0;
+		return message;
+	}
+
 	
 }

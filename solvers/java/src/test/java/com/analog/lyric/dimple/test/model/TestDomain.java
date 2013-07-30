@@ -53,12 +53,12 @@ public class TestDomain
 		// Test discretes
 		//
 		
-		TypedDiscreteDomain<Double> bit = DiscreteDomain.forBit();
+		IntRangeDomain bit = DiscreteDomain.forBit();
 		assertInvariants(bit);
 		assertEquals(2, bit.size());
-		assertEquals(0.0, bit.getElement(0), 0.0);
-		assertEquals(1.0, bit.getElement(1), 0.0);
-		assertEquals(bit, DiscreteDomain.fromElements(0.0, 1.0));
+		assertEquals(0, bit.getIntElement(0));
+		assertEquals(1, bit.getIntElement(1));
+		assertEquals(bit, DiscreteDomain.fromElements(0, 1));
 		
 		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.forBoolean();
 		assertInvariants(bool);

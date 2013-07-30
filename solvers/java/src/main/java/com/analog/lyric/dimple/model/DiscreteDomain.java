@@ -39,9 +39,9 @@ public abstract class DiscreteDomain extends Domain
 		return new ArrayDiscreteDomain<Boolean>(false, true);
 	}
 	
-	public static TypedDiscreteDomain<Double> forBit()
+	public static IntRangeDomain forBit()
 	{
-		return fromElements(0.0, 1.0);
+		return intRangeFromSize(2);
 	}
 	
 	public static <T> TypedDiscreteDomain<T> fromElements(T ... elements)

@@ -434,7 +434,7 @@ public class PFactorGraphVector extends PFactorVector
 		
 		Object [] newarray = al.toArray();
 	
-		FactorGraphStream rfg = getGraph().addRepeatedFactor(nestedGraph.getGraph(), bufferSize, newarray);
+		FactorGraphStream rfg = getGraph().addRepeatedFactorWithBufferSize(nestedGraph.getGraph(), bufferSize, newarray);
 		return new PFactorGraphStream(rfg);
 	}
 

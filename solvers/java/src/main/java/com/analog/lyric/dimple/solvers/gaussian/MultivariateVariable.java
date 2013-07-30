@@ -40,14 +40,15 @@ public class MultivariateVariable extends SVariableBase
 	}
 	
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
-		if (input == null)
+		if (hasFixedValue)
+			_input = createFixedValueMessage((double[])fixedValue);
+		else if (input == null)
 			_input = (MultivariateMsg) createDefaultMessage();
 		else
 			_input = (MultivariateMsg)input;
 	}
-
 	
 	//TODO: remove this when I fix it for real.
 	public void moveInputs(ISolverVariable other)
@@ -81,6 +82,13 @@ public class MultivariateVariable extends SVariableBase
 
 	private void doUpdate(MultivariateMsg outMsg,int outPortNum) 
 	{
+    	// If fixed value, just return the input, which has been set to a zero-variance message
+		if (_var.hasFixedValue())
+		{
+			outMsg.set(_input);
+			return;
+		}
+		
 		double [] vector = _input.getInformationVector();		
 		double [][] matrix = _input.getInformationMatrix();		
 		
@@ -180,4 +188,15 @@ public class MultivariateVariable extends SVariableBase
 	public void setInputMsg(int portIndex, Object obj) {
 		_inputMsgs[portIndex] = (MultivariateMsg)obj;
 	}
+
+
+	public MultivariateMsg createFixedValueMessage(double[] fixedValue)
+	{
+		double[][] covariance = new double[_numVars][_numVars];
+		for (int i = 0; i < _numVars; i++)
+			Arrays.fill(covariance[i], 0);
+		MultivariateMsg message = new MultivariateMsg(fixedValue, covariance);
+		return message;
+	}
+
 }

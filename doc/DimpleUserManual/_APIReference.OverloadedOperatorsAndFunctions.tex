@@ -1,9 +1,9 @@
 \subsection{List of Overloaded MATLAB Operators and Functions}
 \label{sec:overloaded}
 
-The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding built-in factor (as described in section~\ref{sec:builtInFactors}), the valid variable data types of the inputs and outputs (B = Bit, D = Discrete, or R = Real), and wether or not vectorized inputs are supported.  The use of these operators and functions is described in section~\ref{sec:ImplicitFactorCreation}.
+The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding built-in factor (as described in section~\ref{sec:builtInFactors}), the valid variable data types of the inputs and outputs (B~=~Bit, D~=~Discrete, or R~=~Real, C~=~Complex), and wether or not vectorized inputs are supported.  The use of these operators and functions is described in section~\ref{sec:ImplicitFactorCreation}.
 
-\begin{longtable} {l p{3cm} p{1cm} p{1cm} p{1cm} l p{4cm}}
+\begin{longtable} {p{1.7cm} p{3.2cm} p{1cm} p{1cm} p{1cm} p{1.5cm} p{4.7cm}}
 Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
 \hline
 \endhead
@@ -12,15 +12,24 @@ $\&$ & And & B & B & B & \checkmark & Logical AND \\
 $|$ & Or & B & B & B & \checkmark & Logical OR \\
 xor() & Xor & B & B & B & \checkmark & Logical XOR \\
 $\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
-$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\
-$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\
-$-$ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\
-$*$ & Product \newline MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply, or matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.  Otherwise the Product factor will be used.} \\
-$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\
-$/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\
-$./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\
+$+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\*
+ & ComplexSum & C & C,R & C,R & \checkmark & Complex plus \\
+$-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\*
+ & ComplexSubtract & C & C,R & C,R & \checkmark & Complex minus \\*
+ & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\*
+ & ComplexNegate & C & C, R & - & \checkmark & Unary complex minus \\
+$*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:inScalar}One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply \\*
+ & ComplexProduct & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:inScalar}} & Complex scalar multiply \\*
+ & MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.} \\
+$.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\*
+ & ComplexProduct & C & C,R & C,R & \checkmark & Complex pointwise multiply \\
+$/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:divScalar}The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\*
+ & ComplexDivide & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:divScalar}} & Complex scalar divide \\
+$./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\*
+ & ComplexDivide & C & C,R & C,R & \checkmark & Complex pointwise divide \\
 $\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
 $.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$'$ & ComplexConjugate & C & C & - & \checkmark & Complex conjugate \\
 $<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
 $>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
 $<=$ & GreaterThan\footnote{Uses GreaterThan factor, reversing the order.} & B & D,R & D,R & \checkmark & Less than or equal to \\
@@ -31,7 +40,8 @@ mod() & - & D  & D & D & \checkmark & Modulo function\footnote{Currently, the mo
 abs() & Abs & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Absolute value \\
 sqrt() & Sqrt & R & R & - & \checkmark & Square root \\
 log() & Log & R & R & - & \checkmark & Natural log \\
-exp() & Exp & R & R & - & \checkmark & Exponential function \\
+exp() & Exp & R & R & - & \checkmark & Exponential function \\*
+ & ComplexExp & C & C & - & \checkmark & Complex exponential \\
 sin() & Sin & R & R & - & \checkmark & Sine \\
 cos() & Cos & R & R & - & \checkmark & Cosine \\
 tan() & Tan & R & R & - & \checkmark & Tangent \\

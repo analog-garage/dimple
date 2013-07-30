@@ -18,6 +18,7 @@ import optparse
 import os
 import shutil
 import glob
+import sys
 
 class cd:
     def __init__(self, newPath):
@@ -31,14 +32,26 @@ class cd:
         os.chdir(self.savedPath)
 
 def producedoc(fileName,option):
+    #pdflatex "\def\forjava{}\input{DimpleUserManual.tex}"
+    #TODO: add java user doc as an option
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
+
+def produceUserDoc(fileName,flag):
+    #forjava or formatlab
+    command = 'pdflatex "\def\\' + flag + '{}\input{' + fileName + '}"'
+    os.system(command)
+    os.system(command)
+    os.system(command)
+
 
 if __name__ == "__main__":
     
     parser = optparse.OptionParser()
     parser.add_option("-u","--user_doc",action="store_true",default=False,dest="user_doc")
+    parser.add_option("-j","--java_user_doc",action="store_true",default=False,dest="java_user_doc")
+    parser.add_option("-m","--matlab_user_doc",action="store_true",default=False,dest="matlab_user_doc")
     parser.add_option("-d","--devel_doc",action="store_true",default=False,dest="devel_doc")
     parser.add_option("-f","--user_doc_filename",dest="user_doc_filename",default="DimpleUserManual")
     parser.add_option("-F","--user_doc_dir",dest="user_doc_dir",default="DimpleUserManual")
@@ -70,32 +83,38 @@ if __name__ == "__main__":
     #    T          F              build user_doc
     #    T          T              build both
 
-    if not option.clean:
-        build_user_doc = True
+    if len(sys.argv) == 1:
+        build_java_user_doc = True
+        build_matlab_user_doc = True
         build_devel_doc = True
     else:
-        build_user_doc = False
+        build_java_user_doc = False
+        build_matlab_user_doc = False
         build_devel_doc = False
 
-    if option.user_doc and not option.devel_doc:
-        build_user_doc = True
-        build_devel_doc = False
-
-    if option.devel_doc and not option.user_doc:
-        build_user_doc = False
-        build_devel_doc = True        
-
-    if option.devel_doc and option.user_doc:
-        build_user_doc = True
-        build_devel_doc = True        
+    if option.user_doc:
+        build_java_user_doc = True
+        build_matlab_user_doc = True
+    if option.java_user_doc:
+        build_java_user_doc = True
+    if option.matlab_user_doc:
+        build_matlab_user_doc = True
+    if option.devel_doc:
+        build_devel_doc = True
 
  
     # Create user doc
-    if build_user_doc:
+    if build_java_user_doc:
         with cd(option.user_doc_dir):
-            producedoc(option.user_doc_filename,option)
+            produceUserDoc(option.user_doc_filename,'forjava')
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
-                        option.user_doc_filename + ".pdf")
+                        option.user_doc_filename + "_Java_API.pdf")
+
+    if build_matlab_user_doc:
+        with cd(option.user_doc_dir):
+            produceUserDoc(option.user_doc_filename,'formatlab')
+        shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
+                        option.user_doc_filename + "_MATLAB_API.pdf")
     # Create developer doc
     if build_devel_doc:
         with cd(option.devel_doc_dir):

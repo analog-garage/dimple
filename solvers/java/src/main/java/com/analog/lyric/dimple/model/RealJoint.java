@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+
 public class RealJoint extends VariableBase 
 {
 	// Constructors...
@@ -67,5 +70,24 @@ public class RealJoint extends VariableBase
 	
 		setFixedValueObject(fixedValue);
 	}
+	
+	public void setInput(FactorFunction[] input)
+	{
+		setInputObject(input);
+	}
+	
+	public void setInput(double [] means, double [][] covar)
+	{
+		setInputObject(new MultivariateMsg(means,covar));
+	}
 
+	public void setInput(MultivariateMsg msg)
+	{
+		setInputObject(msg);
+	}
+	
+	public MultivariateMsg getBelief()
+	{
+		return (MultivariateMsg)getBeliefObject();
+	}
 }

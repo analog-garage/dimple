@@ -366,7 +366,6 @@ public class NamesTest {
 		
 	}
 
-	@SuppressWarnings("null")
 	@Test
 	public void test_NameNestingStuff() 
 	{

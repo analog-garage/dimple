@@ -49,6 +49,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void continueSolve();
 	public void startSolveOneStep();
 	public void startContinueSolve();
+	public void iterate();
 	public void iterate(int numIters);
 	public boolean isSolverRunning();
 	public void interruptSolver();

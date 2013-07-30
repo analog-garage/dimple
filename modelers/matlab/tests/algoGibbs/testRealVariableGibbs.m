@@ -39,8 +39,9 @@ aPriorR = 1/(aPriorSigma*aPriorSigma);
 bPriorMean = -1;
 bPriorSigma = 2.;
 bPriorR = 1/(bPriorSigma*bPriorSigma);
-a = Real(FactorFunction('Normal',aPriorMean,aPriorR));
+a = Real();
 b = Real();
+a.Input = FactorFunction('Normal',aPriorMean,aPriorR);
 b.Input = {'Normal',bPriorMean, bPriorR};	% Try setting the input differently, just to test a different path
 
 abMean = 0;
@@ -107,8 +108,9 @@ aPriorSigma = 5;
 aPriorR = 1/(aPriorSigma*aPriorSigma);
 bProb1 = 0.6;
 bProb0 = 1 - bProb1;
-a = Real(FactorFunction('Normal',aPriorMean,aPriorR));
+a = Real();
 b = Variable([0 1]);
+a.Input = FactorFunction('Normal',aPriorMean,aPriorR);
 b.Input = [bProb0 bProb1];
 
 fMean0 = -1;

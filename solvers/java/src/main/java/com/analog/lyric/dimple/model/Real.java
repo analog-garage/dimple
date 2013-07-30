@@ -16,41 +16,40 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+
 
 public class Real extends VariableBase
 {
 	// Constructors...
 	public Real()
 	{
-		this(RealDomain.full(), null, "Real");
+		this(RealDomain.full(), "Real");
+	}
+	public Real(double lower, double upper)
+	{
+		this(RealDomain.create(lower,upper));
 	}
 	public Real(RealDomain domain)
 	{
-		this(domain, null, "Real");
+		this(domain, "Real");
 	}
-	public Real(Object input)
-	{
-		this(RealDomain.full(), input, "Real");
-	}
-	public Real(RealDomain domain, Object input)
-	{
-		this(domain, input, "Real");
-	}
-    public Real(RealDomain domain, String modelerClassName)
-	{
-    	this(domain, null, modelerClassName);
-    }
-	public Real(RealDomain domain, Object input, String modelerClassName) 
+	public Real(RealDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);
-		setInputObject(input);
 	}
 
+	@Override
+	public RealDomain getDomain()
+	{
+		return (RealDomain)super.getDomain();
+	}
 	
 	public RealDomain getRealDomain()
 	{
-		return (RealDomain)getDomain();
+		return getDomain();
 	}
+	
 	public Object getInput()
 	{
 		return getInputObject();
@@ -75,11 +74,20 @@ public class Real extends VariableBase
 	public void setFixedValue(double fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
-		if (!((RealDomain)getDomain()).inDomain(fixedValue))
+		if (!getDomain().inDomain(fixedValue))
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
 	
 		setFixedValueObject(fixedValue);
 	}
 
+	public void setInput(FactorFunction input)
+	{
+		setInputObject(input);
+	}
+	
+	public void setInput(double[] input)
+	{
+		setInputObject(input);
+	}
 
 }

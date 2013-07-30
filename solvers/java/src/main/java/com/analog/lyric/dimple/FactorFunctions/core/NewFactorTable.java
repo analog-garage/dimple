@@ -1087,7 +1087,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		Arrays.sort(jointTuples);
 		
-		int prevJoint = -1, ji = 0;
+		int prevJoint = -1, nNonZero = 0;
 		int[] jointIndexes = new int[newSize];
 		double[] orderedWeights = new double[newSize];
 		for (int i = 0; i < newSize; ++i)
@@ -1095,30 +1095,33 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			long jointTuple = jointTuples[i];
 			int joint = (int)(jointTuple >>> 32);
 			double weight = weights[(int)jointTuple];
-			if (joint == prevJoint || weight == 0.0)
+			if (joint == prevJoint)
 			{
-				continue;
+				throw new DimpleException("Table Factor contains multiple rows with same set of indices.");
+			}
+			if (weight != 0.0)
+			{
+				++nNonZero;
 			}
 			prevJoint = joint;
-			jointIndexes[ji] = joint;
-			orderedWeights[ji] = weight;
+			jointIndexes[i] = joint;
+			orderedWeights[i] = weight;
 		}
 		
-		// FIXME: _sparseSize, _nonZeroWeights
+		_nonZeroWeights = nNonZero;
 		
 		if (_representation.hasSparse())
 		{
-			boolean sameSize = (ji == newSize);
-			_sparseIndexToJointIndex = sameSize ? jointIndexes : Arrays.copyOf(jointIndexes, ji);
+			_sparseIndexToJointIndex = jointIndexes;
 			
 			if (_representation.hasSparseWeight())
 			{
-				_sparseWeights = sameSize ? orderedWeights : Arrays.copyOf(orderedWeights, ji);
+				_sparseWeights = orderedWeights;
 			}
 			if (_representation.hasSparseEnergy())
 			{
-				_sparseEnergies = new double[ji];
-				for (int i = 0; i < ji; ++i)
+				_sparseEnergies = new double[newSize];
+				for (int i = 0; i < newSize; ++i)
 				{
 					_sparseEnergies[i] = weightToEnergy(orderedWeights[i]);
 				}
@@ -1127,7 +1130,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		if (_representation.hasDenseWeight())
 		{
-			for (int i = 0; i < ji; ++i)
+			for (int i = 0; i < newSize; ++i)
 			{
 				_denseWeights[jointIndexes[i]] = orderedWeights[i];
 			}
@@ -1136,14 +1139,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			if (_representation.hasSparseEnergy())
 			{
-				for (int i = 0; i < ji; ++i)
+				for (int i = 0; i < newSize; ++i)
 				{
 					_denseEnergies[jointIndexes[i]] = _sparseEnergies[i];
 				}
 			}
 			else
 			{
-				for (int i = 0; i < ji; ++i)
+				for (int i = 0; i < newSize; ++i)
 				{
 					_denseEnergies[jointIndexes[i]] = weightToEnergy(orderedWeights[i]);
 				}

@@ -57,9 +57,10 @@ public class RealVariableGibbsTest
 		double bPriorMean = -1;
 		double bPriorSigma = 2.;
 		double bPriorR = 1/(bPriorSigma*bPriorSigma);
-		Real a = new Real(new Normal(aPriorMean,aPriorR));
+		Real a = new Real();
 		Real b = new Real();
-		b.setInputObject(new Normal(bPriorMean, bPriorR));	// Try setting the input differently, just to test a different path
+		a.setInputObject(new Normal(aPriorMean,aPriorR));
+		b.setInputObject(new Normal(bPriorMean, bPriorR));
 		a.setName("a");
 		b.setName("b");
 		
@@ -128,8 +129,8 @@ public class RealVariableGibbsTest
 		double aPriorR = 1/(aPriorSigma*aPriorSigma);
 		double bProb1 = 0.6;
 		double bProb0 = 1 - bProb1;
-		Real a = new Real(new Normal(aPriorMean,aPriorR));
-//		Real a = new Real();
+		Real a = new Real();
+		a.setInputObject(new Normal(aPriorMean,aPriorR));
 		Discrete b = new Discrete(0,1);
 		b.setInput(bProb0, bProb1);
 		a.setName("a");

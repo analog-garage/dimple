@@ -41,9 +41,11 @@ public class RealVariableTest
 		
 		Real a = new Real();
 		Real b = new Real(new RealDomain(-1,1));
-		Real c = new Real(new Normal(0,1));
-		Real d = new Real(new RealDomain(-1,1), new Normal(0,1));
+		Real c = new Real();
+		Real d = new Real(new RealDomain(-1,1));
 		Real e = new Real(new RealDomain(0,Double.POSITIVE_INFINITY));
+		c.setInputObject(new Normal(0,1));
+		d.setInputObject(new Normal(0,1));
 
 		a.setName("a");
 		b.setName("b");

@@ -116,6 +116,7 @@ public class FactorTablePerformanceTester
 			rows[i] = randomIndices();
 		}
 
+		@SuppressWarnings("unused")
 		double total = 0.0;
 		
 		// warmup

@@ -14,6 +14,10 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function valid = xorDeltaTutorial(x,y,z) 
-    valid = bitxor(bitxor(x,y),z) == 0;
+classdef ComplexStream < RealJointStream
+    methods
+       function obj = ComplexStream(varargin)
+           obj@RealJointStream(2,varargin{:});
+       end
+    end
 end

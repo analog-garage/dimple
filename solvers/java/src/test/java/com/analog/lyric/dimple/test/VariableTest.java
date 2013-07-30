@@ -50,7 +50,7 @@ public class VariableTest {
 		
 		assertTrue(a instanceof Discrete);
 		DiscreteDomain d = (DiscreteDomain)a.getDomain();
-		assertArrayEquals(d.getElements(),new Object [] {0.0,1.0});
+		assertArrayEquals(d.getElements(),new Object [] {0,1});
 	}
 
 	@Test

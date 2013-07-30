@@ -1,7 +1,7 @@
 \subsection{List of Built-in Factors}
 \label{sec:builtInFactors}
 
-The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or vector of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B = Bit, D = Discrete, or R = Real).  If no list is shown, then any data-type may be used.
+The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or vector of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B~=~Bit, D~=~Discrete, R~=~Real, C~=~Complex).
 
 \begin{longtable} {l p{2.2cm} p{2cm} p{7cm}}
 Name & Variables & Constructor & Description \\
@@ -25,6 +25,20 @@ Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \ne
 Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
 The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+%
+ComplexConjugate & out(C) \newline in(C,R) & [smoothing] & Deterministic complex conjugate function, where out = in$^{*}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexDivide & quotient(C) \newline dividend(C,R) \newline divisor(C,R) & [smoothing] & Deterministic complex divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexExp & out(C) \newline in(C,R) & [smoothing] & Deterministic complex exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexNegate & out(C) \newline in(C,R) & [smoothing] & Deterministic complex negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexProduct & out(C) \newline in...(C,R) & [smoothing] & Deterministic complex product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexSubtract & out(C) \newline posIn(C,R) \newline negIn...(C,R) & [smoothing] & Deterministic complex subtraction function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+ComplexSum & out(C) \newline in...(C,R) & [smoothing] & Deterministic complex summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %%
 %% Primarily for testing, need not be listed here.
 %ConstantPower & out(D,R) \newline base(D,R) & power \newline [smoothing] & Deterministic power function, with a constant power. The power value is specified in the constructor. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
@@ -94,7 +108,7 @@ Sqrt & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square root funct
 %
 Square & out(D,R) \newline in(D,R) & [smoothing] & Deterministic square function, where out = in$^{2}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-Subtract & out(D,R) \newline posIn(B,D,R) \newline negIn...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Subtract & out(D,R) \newline posIn(B,D,R) \newline negIn...(B,D,R) & [smoothing] & Deterministic subtraction function, where $\mathrm{out} = \mathrm{posIn} - \sum \mathrm{negIn}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Sum & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic summation function, where $\mathrm{out} = \sum \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -127,6 +141,7 @@ CustomXor & MinSum & Same as the Xor factor described above, but with a signific
 \end{longtable}
 
 
+\ifmatlab
 
 \subsubsection{Factor Creation Utility Functions}
 
@@ -173,4 +188,5 @@ Dimple also includes some built-in helper functions to create structured graphs,
 \item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
 \end{itemize}
 
+\fi
 

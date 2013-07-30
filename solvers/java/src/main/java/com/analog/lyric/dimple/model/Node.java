@@ -439,6 +439,14 @@ public abstract class Node implements INode, Cloneable
 		throw new DimpleException("Nodes are not connected: " + this + " and " + node);
 	}
 	
+	@Override
+	public void updateEdge(INode other)
+	{
+		int num = getPortNum(other);
+		updateEdge(num);
+	}
+
+	
 	public boolean isConnected(INode node)
 	{
 		for (int i = 0; i < _siblings.size(); i++)

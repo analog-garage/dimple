@@ -455,7 +455,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	// Primarily for testing: allows testing execution time of solve or iterate without including the time to create the dependency graph
 	// When called with no arguments, uses the current _numIterations (used by solve); otherwise can specify a number of iterations (for using iterate)
 	public void prepareForMultiThreading()  {prepareForMultiThreading(_numIterations);}
-	public void prepareForMultiThreading(int numIters)
+ 	public void prepareForMultiThreading(int numIters)
 	{
 		// Create a schedule dependency graph, but only if necessary
 		if (

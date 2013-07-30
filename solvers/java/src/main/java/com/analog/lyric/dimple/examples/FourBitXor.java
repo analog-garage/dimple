@@ -14,23 +14,39 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model;
+package com.analog.lyric.dimple.examples;
 
-public class Bit extends Discrete
+import com.analog.lyric.dimple.model.Bit;
+import com.analog.lyric.dimple.model.FactorGraph;
+
+public class FourBitXor 
 {
 
-	public Bit()  {
-		super(DiscreteDomain.forBit(), "Bit");
-	}
-	
-	public double getP1()
+	public static void main(String[] args) 
 	{
-		return getBelief()[0];
+		
+		FactorGraph xorGraph = new FactorGraph();
+		Bit [] b = new Bit[4];
+		for (int i = 0; i < b.length; i++)
+			b[i] = new Bit();
+		Bit c = new Bit();
+		
+		ThreeBitXor xd = new ThreeBitXor();
+		
+		xorGraph.addFactor(xd,b[0],b[1],c); 
+		xorGraph.addFactor(xd,b[2],b[3],c);
+		
+		double [] inputs = new double [] {.8, .8, .8, .5};
+		for (int i = 0; i < inputs.length; i++)
+			b[i].setInput(inputs[i]);
+		
+		xorGraph.solve();
+		
+		for (int i = 0; i < b.length; i++)
+			System.out.println(b[i].getP1());
+		for (int i = 0; i < b.length; i++)
+			System.out.println(b[i].getValue());
+
 	}
 
-	public void setInput(double p1)
-	{
-		setInput(p1,1-p1);
-	}
-	
 }
