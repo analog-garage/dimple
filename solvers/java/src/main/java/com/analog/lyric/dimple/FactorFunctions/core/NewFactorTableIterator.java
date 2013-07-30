@@ -32,53 +32,11 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		_dense = dense;
 		_table = table;
 		_sparseIndex = 0;
-		_jointIndex = 0;
+		_jointIndex = -1;
 		_energy = Double.POSITIVE_INFINITY;
 		_weight = 0.0;
-		
-		if (dense)
-		{
-			if (table.hasSparseRepresentation())
-			{
-				if (0 < table.sparseSize() && table.sparseIndexToJointIndex(0) == 0)
-				{
-					_weight = table.getWeightForSparseIndex(0);
-					_energy = table.getEnergyForSparseIndex(0);
-				}
-			}
-			else
-			{
-				_weight = table.getWeightForJointIndex(0);
-				_energy = table.getEnergyForJointIndex(0);
-			}
-		}
-		else
-		{
-			if (table.hasSparseRepresentation())
-			{
-				if (0 < table.sparseSize())
-				{
-					_jointIndex = table.sparseIndexToJointIndex(0);
-					_weight = table.getWeightForSparseIndex(0);
-					_energy = table.getEnergyForSparseIndex(0);
-				}
-			}
-			else
-			{
-				_sparseIndex = -1;
-				for (int end = table.jointSize(); _jointIndex < end; ++_jointIndex)
-				{
-					_weight = table.getWeightForJointIndex(_jointIndex);
-					if (_weight != 0.0)
-					{
-						_energy = table.getEnergyForJointIndex(_jointIndex);
-						break;
-					}
-				}
-			}
-		}
 	}
-	
+
 	/*------------------
 	 * Iterator methods
 	 */
@@ -86,18 +44,24 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	@Override
 	public boolean hasNext()
 	{
-		return _dense ? _jointIndex < _table.jointSize() : _weight != 0.0;
+		int ji = _jointIndex, si = _sparseIndex;
+		double w = _weight, e = _energy;
+		
+		boolean result = advance();
+		
+		_jointIndex = ji;
+		_sparseIndex = si;
+		_weight = w;
+		_energy = e;
+		
+		return result;
 	}
 	
 	@Override
 	public NewFactorTableEntry next()
 	{
-		NewFactorTableEntry entry = getEntry();
-		if (entry != null)
-		{
-			advance();
-		}
-		return entry;
+		advance();
+		return getEntry();
 	}
 
 	@Override
@@ -117,7 +81,10 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 			return false;
 		}
 		
-		fixSparseIndex();
+		if (_jointIndex >= 0)
+		{
+			fixSparseIndex();
+		}
 		
 		return _dense? denseAdvance() : sparseAdvance();
 	}
@@ -171,7 +138,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		final int ji = ++_jointIndex;
 		if (ji >= _table.jointSize())
 		{
-			_sparseIndex = -1;
+			_sparseIndex = ji;
 			return false;
 		}
 		
@@ -188,7 +155,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 				++_sparseIndex;
 				if (_sparseIndex >= _table.sparseSize())
 				{
-					_sparseIndex = -1;
+					_sparseIndex = _table.sparseSize();
 					return true;
 				}
 				sji = _table.sparseIndexToJointIndex(_sparseIndex);
@@ -214,6 +181,10 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	{
 		if (_table.hasSparseRepresentation())
 		{
+			if (_jointIndex < 0)
+			{
+				_sparseIndex = 0;
+			}
 			for (int si = _sparseIndex + 1, end = _table.sparseSize(); si < end; ++si)
 			{
 				final double weight = _table.getWeightForSparseIndex(si);

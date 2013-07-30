@@ -578,6 +578,29 @@ public class TestFactorTable
 			
 			assertNull(iter.next());
 
+			i = 0;
+			iter = table.fullIterator();
+			while (iter.advance())
+			{
+				assertFalse(iter.done());
+				assertEquals(i, iter.jointIndex());
+				if (table.hasSparseRepresentation())
+				{
+					int si = table.sparseIndexFromJointIndex(i);
+					if (si < 0) si = -1-si;
+					assertEquals(si, iter.sparseIndex());
+				}
+				else
+				{
+					assertEquals(-1, iter.sparseIndex());
+				}
+				assertEquals(table.getWeightForJointIndex(i), iter.weight(), 1e-12);
+				assertEquals(table.getEnergyForJointIndex(i), iter.energy(), 1e-12);
+				++i;
+			}
+			assertFalse(iter.advance());
+			assertTrue(iter.done());
+			
 			try
 			{
 				iter.remove();
