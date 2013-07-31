@@ -6,6 +6,7 @@ import java.util.BitSet;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
@@ -1309,7 +1310,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// Build joined variable index set.
 		//
 		
-		final BitSet varIndexSet = bitsetFromIndices(nOldDomains, varIndices);
+		final BitSet varIndexSet = BitSetUtil.bitsetFromIndices(nOldDomains, varIndices);
 		
 		//
 		// Compute new domains and state needed to construct new table.
@@ -1407,7 +1408,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		BitSet fromSet = bitsetFromIndices(getDimensions(), directedTo);
+		BitSet fromSet = BitSetUtil.bitsetFromIndices(getDimensions(), directedTo);
 		fromSet.flip(0, fromSet.size());
 		normalize(fromSet);
 	}
@@ -1496,7 +1497,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 */
 	static int[] computeDomainSubsetInfo(DiscreteDomainList domains, BitSet domainSubset, int[] oldToNewMap)
 	{
-		int nTrue = bitsetToIndexMap(domainSubset, oldToNewMap);
+		int nTrue = BitSetUtil.bitsetToIndexMap(domainSubset, oldToNewMap);
 		
 		int[] products = new int[nTrue + 1];
 		products[0] = 1;
