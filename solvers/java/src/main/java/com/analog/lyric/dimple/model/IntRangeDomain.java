@@ -2,6 +2,8 @@ package com.analog.lyric.dimple.model;
 
 public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 {
+	private static final long serialVersionUID = 1L;
+	
 	private final int _first;
 	private final int _interval;
 	private final int _size;

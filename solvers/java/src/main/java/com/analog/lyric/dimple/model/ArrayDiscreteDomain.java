@@ -9,6 +9,8 @@ public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+	
 	private final T[] _elements;
 	private final HashMap<Object,Integer> _elementToIndex;
 	

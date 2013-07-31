@@ -6,6 +6,8 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+
 	private final Class<E> _enumClass;
 	private final E[] _enumConstants;
 	

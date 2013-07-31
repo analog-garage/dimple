@@ -16,8 +16,12 @@
 
 package com.analog.lyric.dimple.model;
 
-public abstract class Domain
+import java.io.Serializable;
+
+public abstract class Domain implements Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	public boolean isDiscrete() { return false; }
 	public boolean isJoint() { return false; }
 	public boolean isReal() { return false; }

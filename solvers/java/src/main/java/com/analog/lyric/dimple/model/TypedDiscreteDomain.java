@@ -5,6 +5,8 @@ import java.util.Iterator;
 // REFACTOR: I think this should eventually be folded up into DiscreteDomain.
 public abstract class TypedDiscreteDomain<T> extends DiscreteDomain implements Iterable<T>
 {
+	private static final long serialVersionUID = 1L;
+
 	protected TypedDiscreteDomain(int hashCode)
 	{
 		super(hashCode);

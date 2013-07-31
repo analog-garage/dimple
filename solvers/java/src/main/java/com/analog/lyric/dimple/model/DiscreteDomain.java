@@ -23,6 +23,7 @@ import com.google.common.math.DoubleMath;
 @Immutable
 public abstract class DiscreteDomain extends Domain
 {
+	private static final long serialVersionUID = 1L;
 	private final int _hashCode;
 	
 	/*--------------

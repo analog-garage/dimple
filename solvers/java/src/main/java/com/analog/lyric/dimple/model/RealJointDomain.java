@@ -25,6 +25,8 @@ public class RealJointDomain extends Domain
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+	
 	private RealDomain [] _domains;
 	
 	/*--------------

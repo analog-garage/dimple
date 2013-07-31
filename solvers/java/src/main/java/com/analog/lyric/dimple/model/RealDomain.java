@@ -25,6 +25,8 @@ public class RealDomain extends Domain
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+	
 	private final double _lowerBound;
 	private final double _upperBound;
 	

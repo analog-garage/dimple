@@ -6,6 +6,8 @@ import com.google.common.primitives.Doubles;
 
 public class DoubleRangeDomain extends TypedDiscreteDomain<Double>
 {
+	private static final long serialVersionUID = 1L;
+	
 	private final double _first;
 	private final double _interval;
 	private final int _size;
