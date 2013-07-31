@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 
-public class MultiplexorCPD extends FactorGraph 
+public class MultiplexerCPD extends FactorGraph 
 {
 
 	private Discrete _y;
@@ -33,12 +33,12 @@ public class MultiplexorCPD extends FactorGraph
 	private Discrete _za;
 	private Discrete [] _zs;
 	
-	private MultiplexorCPD(VariableBase [] vars)
+	private MultiplexerCPD(VariableBase [] vars)
 	{
 		super(vars,"MultiplexorCPD");
 	}
 	
-	public MultiplexorCPD()
+	public MultiplexerCPD()
 	{
 		super();
 		
@@ -62,7 +62,7 @@ public class MultiplexorCPD extends FactorGraph
 	}
 	
 	
-	public static MultiplexorCPD create(Object [][] zDomains)
+	public static MultiplexerCPD create(Object [][] zDomains)
 	{
 		DiscreteDomain [] domains = new DiscreteDomain[zDomains.length];
 		for (int i = 0; i < domains.length; i++)
@@ -73,7 +73,7 @@ public class MultiplexorCPD extends FactorGraph
 		return create(domains);
 	}
 	
-	public static MultiplexorCPD create(DiscreteDomain [] zDomains)
+	public static MultiplexerCPD create(DiscreteDomain [] zDomains)
 	{
 		Discrete [] Zs = new Discrete[zDomains.length];
 		int zasize = 0;
@@ -98,7 +98,7 @@ public class MultiplexorCPD extends FactorGraph
 
 	}
 
-	public static MultiplexorCPD create(Discrete Y, Discrete [] Zs, int zasize)
+	public static MultiplexerCPD create(Discrete Y, Discrete [] Zs, int zasize)
 	{
 		Y.setLabel("Y");
 		
@@ -120,7 +120,7 @@ public class MultiplexorCPD extends FactorGraph
 		vars[1] = A;
 		for (int i = 0; i < Zs.length; i++)
 			vars[i+2] = Zs[i];
-		MultiplexorCPD cpd = new MultiplexorCPD(vars);
+		MultiplexerCPD cpd = new MultiplexerCPD(vars);
 		
 		//Create ZA variable
 		Object [] zaDomain = new Object[zasize];
@@ -241,7 +241,7 @@ public class MultiplexorCPD extends FactorGraph
 		return cpd;
 	}
 
-	public static MultiplexorCPD create(DiscreteDomain [] zDomains, DiscreteDomain yDomain)
+	public static MultiplexerCPD create(DiscreteDomain [] zDomains, DiscreteDomain yDomain)
 	{
 		//Create Z variables
 		Discrete [] Zs = new Discrete[zDomains.length];

@@ -16,23 +16,23 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.graphlibrary.MultiplexorCPD;
+import com.analog.lyric.dimple.graphlibrary.MultiplexerCPD;
 import com.analog.lyric.dimple.model.Discrete;
 
-public class PMultiplexorCPD extends PFactorGraphVector 
+public class PMultiplexerCPD extends PFactorGraphVector 
 {
-	private MultiplexorCPD _multiplexor;
+	private MultiplexerCPD _multiplexor;
 	
-	private PMultiplexorCPD(MultiplexorCPD f) 
+	private PMultiplexerCPD(MultiplexerCPD f) 
 	{
 		super(f);
 		
 		_multiplexor = f;
 	}
 	
-	public static PMultiplexorCPD create(Object [][] domains)
+	public static PMultiplexerCPD create(Object [][] domains)
 	{
-		return new PMultiplexorCPD(MultiplexorCPD.create(domains));
+		return new PMultiplexerCPD(MultiplexerCPD.create(domains));
 	}
 
 	public PDiscreteVariableVector getY()

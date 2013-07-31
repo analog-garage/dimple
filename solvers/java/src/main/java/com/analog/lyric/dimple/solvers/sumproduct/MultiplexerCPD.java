@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 
-public class MultiplexorCPD extends STableFactorDoubleArray 
+public class MultiplexerCPD extends STableFactorDoubleArray 
 {
 	private int _yDomainSize;
 	private int _aDomainSize;
@@ -32,7 +32,7 @@ public class MultiplexorCPD extends STableFactorDoubleArray
 	private int [][] _zIndices2yIndex;
 
 	@SuppressWarnings("unchecked")
-	public MultiplexorCPD(Factor factor) 
+	public MultiplexerCPD(Factor factor) 
 	{
 		super(factor);
 		

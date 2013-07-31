@@ -59,8 +59,8 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			return new FiniteFieldProjection(factor);
 		}
-		else if (funcName.equals("multiplexorCPD"))
-			return new MultiplexorCPD(factor);
+		else if (funcName.equals("multiplexerCPD"))
+			return new MultiplexerCPD(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
@@ -82,7 +82,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("finiteFieldProjection"))
 			return true;
-		else if (funcName.equals("multiplexorCPD"))
+		else if (funcName.equals("multiplexerCPD"))
 			return true;
 		else
 			return false;	

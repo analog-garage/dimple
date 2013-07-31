@@ -29,7 +29,7 @@ for i = 1:N
    end
 end
 %YDomain = num2cell(1:M);
-[ng,Y,A,Zs,ZA] = buildMultiplexorCPD(ZDomains);
+[ng,Y,A,Zs,ZA] = buildMultiplexerCPD(ZDomains);
 
 %Create Custom Factor Version
 CF_FG = FactorGraph();
@@ -37,7 +37,7 @@ CF_Y = Discrete(1:M);
 CF_A = Discrete(1:N);
 CF_Z = Discrete(1:M,N,1);
 
-CF_FG.addFactor(@multiplexorCPD,CF_Y,CF_A,CF_Z);
+CF_FG.addFactor(@multiplexerCPD,CF_Y,CF_A,CF_Z);
 
 %Create full version
 y = Discrete(1:M);

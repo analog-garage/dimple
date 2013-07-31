@@ -24,7 +24,7 @@ ZDomains = {{1,2},{2,3},{3,4,5}};
 N = length(ZDomains);
 
 %Create Nested Graph version
-[ng,Y,A,Zs,ZA] = buildMultiplexorCPD(ZDomains);
+[ng,Y,A,Zs,ZA] = buildMultiplexerCPD(ZDomains);
 
 %Create Custom Factor Version
 CF_FG = FactorGraph();
@@ -35,7 +35,7 @@ for i = 1:N
     CF_Zs{i} = Discrete(ZDomains{i});
 end
 
-CF_FG.addFactor(@multiplexorCPD,CF_Y,CF_A,CF_Zs{:});
+CF_FG.addFactor(@multiplexerCPD,CF_Y,CF_A,CF_Zs{:});
 
 %Create full version
 y = Discrete(Y.Domain);
