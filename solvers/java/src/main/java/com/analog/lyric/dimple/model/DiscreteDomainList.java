@@ -11,6 +11,10 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.BitSetUtil;
 
+/**
+ * Provides a representation and canonical indexing operations for an ordered list of
+ * {@link DiscreteDomain} for use in implementing discrete factor tables and messages.
+ */
 @Immutable
 public class DiscreteDomainList
 	extends AbstractList<DiscreteDomain>
@@ -134,16 +138,32 @@ public class DiscreteDomainList
 	 * DiscreteDomainList methods
 	 */
 	
+	/**
+	 * The number of possible combinations of all domain elements. Equal to the product of
+	 * all of the domain sizes.
+	 * <p>
+	 * @see #getInputCardinality()
+	 * @see #getOutputCardinality()
+	 */
 	public final int getCardinality()
 	{
 		return _cardinality;
 	}
 	
+	/**
+	 * Returns the size of the ith domain in the list.
+	 */
 	public final int getDomainSize(int i)
 	{
 		return _domains[i].size();
 	}
 	
+	/**
+	 * The number of possible combinations of input domain elements. Equal to the product of
+	 * all of the input domain sizes. Will be one if not {@link #isDirected()}.
+	 * @see #getCardinality()
+	 * @see #getOutputCardinality()
+	 */
 	public int getInputCardinality()
 	{
 		return 1;
@@ -154,26 +174,57 @@ public class DiscreteDomainList
 		throw new ArrayIndexOutOfBoundsException();
 	}
 	
+	/**
+	 * Returns a copy of the indexes of the input domains listed in increasing order or
+	 * else null if not {@link #isDirected()}.
+	 * <p>
+	 * Use {@link #getInputIndex(int)} to lookup an index without allocating a new array object.
+	 */
 	public int[] getInputIndices()
 	{
 		return null;
 	}
 	
+	/**
+	 * Returns a copy of the {@link BitSet} representing the indexes of the input domains or
+	 * else null if not {@link #isDirected()}.
+	 * 
+	 * @see #getInputIndices()
+	 * @see #getInputIndex(int)
+	 * @see #getOutputSet()
+	 */
 	public BitSet getInputSet()
 	{
 		return null;
 	}
 	
+	/**
+	 * The number of input domains if {@link #isDirected()}, otherwise zero.
+	 * <p>
+	 * If directed, this must be greater than zero and when combined with {@link #getOutputSize()} must add up to
+	 * {@link #size()}.
+	 */
 	public int getInputSize()
 	{
 		return 0;
 	}
 	
+	/**
+	 * The number of possible combinations of output domain elements. Equal to the product of
+	 * all of the output domain sizes. Will be the same as {@link #getCardinality()} if not {@link #isDirected()}.
+	 * @see #getInputCardinality()
+	 */
 	public int getOutputCardinality()
 	{
 		return _cardinality;
 	}
 	
+	/**
+	 * Returns the index of the ith output domain. If not {@link #isDirected()} this treats
+	 * all domains as output domains and will just return {@code i} if within range.
+	 * @throws ArrayIndexOutOfBoundsException if {@code i} is negative or not less than
+	 * {@link #getOutputSize()}.
+	 */
 	public int getOutputIndex(int i)
 	{
 		if (i < 0 || i >= size())
@@ -183,21 +234,44 @@ public class DiscreteDomainList
 		return i;
 	}
 	
+	/**
+	 * Returns a copy of the indexes of the input domains listed in increasing order or
+	 * else null if not {@link #isDirected()}.
+	 * <p>
+	 * Use {@link #getOutputIndex(int)} to lookup an index without allocating a new array object.
+	 */
 	public int[] getOutputIndices()
 	{
 		return null;
 	}
 	
+	/**
+	 * Returns a copy of the {@link BitSet} representing the indexes of the output domains or
+	 * else null if not {@link #isDirected()}.
+	 * 
+	 * @see #getOutputIndices()
+	 * @see #getOutputIndex(int)
+	 * @see #getInputSet()
+	 */
 	public BitSet getOutputSet()
 	{
 		return null;
 	}
 	
+	/**
+	 * The number of output domains if {@link #isDirected()}, otherwise the same as {@link #size()}.
+	 * <p>
+	 * If directed, this must be greater than zero and when combined with {@link #getInputSize()} must add up to
+	 * {@link #size()}.
+	 */
 	public int getOutputSize()
 	{
 		return size();
 	}
 	
+	/**
+	 * True if domain list is partitioned into inputs and outputs.
+	 */
 	public boolean isDirected()
 	{
 		return false;
@@ -352,8 +426,8 @@ public class DiscreteDomainList
 		return indices;
 	}
 	
-	/*
-	 * 
+	/*-----------------
+	 * Package methods
 	 */
 	
 	final Object[] allocateElements(Object [] elements)
