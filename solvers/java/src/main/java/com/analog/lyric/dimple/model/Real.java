@@ -16,50 +16,27 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+
 
 public class Real extends VariableBase
 {
     // Constructors...
-    public Real(int id, String modelerClassName, RealDomain domain)
-    {
-    	super(id, modelerClassName, domain);
-    }
-
-    public Real(int id, String modelerClassName, RealDomain domain,Object input)
-    {
-    	super(id, modelerClassName, domain);
-    	setInputObject(input);
-    }
-	
+	public Real()  
+	{
+		this(new RealDomain(), "Real");
+	}
 	public Real(double lower, double upper)
 	{
 		this(new RealDomain(lower,upper));
 	}
-	
-	public Real()  
-	{
-		this(new RealDomain(), null, "Real");
-	}
 	public Real(RealDomain domain)  
 	{
-		this(domain, null, "Real");
+		this(domain, "Real");
 	}
-	public Real(Object input)  
-	{
-		this(new RealDomain(), input, "Real");
-	}
-	public Real(RealDomain domain, Object input) 
-	{
-		this(domain, input, "Real");
-	}
-    public Real(RealDomain domain, String modelerClassName)
-    {
-    	this(domain, null, modelerClassName);
-    }
-	public Real(RealDomain domain, Object input, String modelerClassName) 
+	public Real(RealDomain domain, String modelerClassName) 
 	{
 		super(domain, modelerClassName);
-		setInputObject(input);
 	}
 
 	
@@ -97,5 +74,14 @@ public class Real extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
+	public void setInput(FactorFunction input)
+	{
+		setInputObject(input);
+	}
+	
+	public void setInput(double[] input)
+	{
+		setInputObject(input);
+	}
 
 }

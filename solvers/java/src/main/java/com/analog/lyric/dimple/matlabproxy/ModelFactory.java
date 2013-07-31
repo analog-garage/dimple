@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
@@ -142,9 +141,9 @@ public class ModelFactory
 
 
 
-	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, FactorFunction input, int numEls) 
+	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, int numEls) 
 	{
-		return new PRealVariableVector(className, domain, input, numEls);
+		return new PRealVariableVector(className, domain, numEls);
 	}
 
 

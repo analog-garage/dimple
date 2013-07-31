@@ -31,11 +31,15 @@ graph = FactorGraph();
 
 a = Real();
 b = Real([-1,1]);
-c = Real(com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
-d = Real([-1.1,1.1], com.analog.lyric.dimple.FactorFunctions.Normal(0,1));
+c = Real();
+d = Real([-1.1,1.1]);
 e = Real([0,Inf]);
 domain = RealDomain(-2.2, 3.7);
 f = Real(domain);
+
+normal01 = FactorFunction('Normal',0,1);
+c.Input = normal01;
+d.Input = normal01;
 
 assert(a.Domain.LB == -Inf);
 assert(a.Domain.UB == Inf);
@@ -66,9 +70,13 @@ assertElementsAlmostEqual(a.Input.eval(0), 1.0);
 
 % Arrays
 
-d14 = Real([-2,2], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),1,4);
-d41 = Real([-3,3], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),4,1);
-d45 = Real([-4,4], com.analog.lyric.dimple.FactorFunctions.Normal(0,1),4,5);
+d14 = Real([-2,2],1,4);
+d41 = Real([-3,3],4,1);
+d45 = Real([-4,4],4,5);
+
+d14.Input = normal01;
+d41.Input = normal01;
+d45.Input = normal01;
 
 assert(d14.Domain.LB == -2);
 assert(d14.Domain.UB == 2);

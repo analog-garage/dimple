@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model;
 
+import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
 public class RealJoint extends VariableBase 
@@ -68,6 +69,11 @@ public class RealJoint extends VariableBase
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
 	
 		setFixedValueObject(fixedValue);
+	}
+	
+	public void setInput(FactorFunction[] input)
+	{
+		setInputObject(input);
 	}
 	
 	public void setInput(double [] means, double [][] covar)

@@ -21,6 +21,13 @@ repeatable = true;
 
 dtrace(debugPrint, '++testRealFixedValues');
 
+if (repeatable)
+    seed = 14;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
+
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);

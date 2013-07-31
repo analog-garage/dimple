@@ -47,30 +47,7 @@ classdef Real < VariableBase
                     varargin = [varargin {1}];
                 end
                 
-                
-                arg = varargin{varargIndex};
-                if (isa(arg, 'function_handle'))
-                    input = func2str(arg);
-                    varargIndex = varargIndex + 1;
-                elseif (ischar(arg))
-                    input = arg;
-                    varargIndex = varargIndex + 1;
-                elseif (isa(arg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
-                    input = arg;
-                    varargIndex = varargIndex + 1;
-                elseif (isa(arg, 'FactorFunction'))
-                    input = arg.get();
-                    varargIndex = varargIndex + 1;
-                elseif (iscell(arg))
-                    input = FactorFunction(arg{:}).get();
-                    varargIndex = varargIndex + 1;
-                else
-                    input = [];
-                end
-                if (varargIndex > length(varargin))
-                    varargin = [varargin {1}];
-                end
-                
+
                 dimArgs = varargin(varargIndex:end);
                 
                 modeler = getModeler();
@@ -82,7 +59,7 @@ classdef Real < VariableBase
                 
                 numEls = prod(dims);
                 
-                VectorObject = modeler.createRealVariableVector(class(obj),domain.IDomain,input,numEls);
+                VectorObject = modeler.createRealVariableVector(class(obj),domain.IDomain,numEls);
                 
                 obj.VectorObject = VectorObject;
                 
@@ -90,9 +67,7 @@ classdef Real < VariableBase
                 
                 if (length(dimArgs) > 1)
                     obj.VectorIndices = reshape(obj.VectorIndices,dimArgs{:});
-                end
-                obj.Input = input;
-                
+                end                
                 
             end
             
