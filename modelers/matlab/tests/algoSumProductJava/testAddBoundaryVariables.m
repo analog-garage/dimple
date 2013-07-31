@@ -14,19 +14,21 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [fg,Y,A,Zs,ZA] = buildMultiplexorCPD(domains)
+function testAddBoundaryVariables
 
-    modeler = getModeler();
-    tmp = modeler.getMultiplexorCPD(domains);
-    fg = wrapProxyObject(tmp);
-    Y = wrapProxyObject(tmp.getY());
-    A = wrapProxyObject(tmp.getA());
-    ZA = wrapProxyObject(tmp.getZA());
-    tmpzs = cell(tmp.getZs());
-    Zs = cell(size(tmpzs));
-    for i = 1:length(Zs)
-        Zs{i} = wrapProxyObject(tmpzs{i});
-    end
+    ng = FactorGraph();
+    a = Bit();
+    b = Bit();
+    ng.addBoundaryVariables(a,b);
+    ng.addFactor(@xorDelta,a,b);
+
+    fg = FactorGraph();
+    a = Bit();
+    b = Bit();
+    fg.addFactor(ng,a,b);
+
+    a.Input = 0.8;
+    fg.solve();
+    assertEqual(b.Belief,0.8);
     
 end
-

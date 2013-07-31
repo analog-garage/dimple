@@ -97,7 +97,7 @@ public class PFactorGraphVector extends PFactorVector
 	 * PFactorGraphVector methods
 	 */
 
-	private FactorGraph getGraph()
+	protected FactorGraph getGraph()
 	{
 		if (size() != 1)
 			throw new DimpleException("operation not supported");
@@ -315,6 +315,15 @@ public class PFactorGraphVector extends PFactorVector
 			retval[i] = createFactor(factor.getFactorFunction(),args[i]).getModelerNode(0);
 	
 		return PHelpers.convertToFactorVector(retval);
+	}
+	
+	public void addBoundaryVariables(Object [] vars)
+	{
+		for (Object var : vars)
+		{
+			PVariableVector varvec = (PVariableVector)var;
+			getGraph().addBoundaryVariables(varvec.getVariableArray());
+		}
 	}
 	
 	public PFactorGraphVector addGraphVectorized(PFactorGraphVector graph, Object [] vars, Object [] indices)

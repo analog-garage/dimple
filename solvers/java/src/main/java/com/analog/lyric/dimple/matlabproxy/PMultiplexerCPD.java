@@ -23,17 +23,13 @@ public class PMultiplexerCPD extends PFactorGraphVector
 {
 	private MultiplexerCPD _multiplexor;
 	
-	private PMultiplexerCPD(MultiplexerCPD f) 
+	public PMultiplexerCPD(Object [][] domains) 
 	{
-		super(f);
-		
-		_multiplexor = f;
+		super(new MultiplexerCPD(domains,true,true));
+				
+		_multiplexor = (MultiplexerCPD)getGraph();
 	}
 	
-	public static PMultiplexerCPD create(Object [][] domains)
-	{
-		return new PMultiplexerCPD(MultiplexerCPD.create(domains));
-	}
 
 	public PDiscreteVariableVector getY()
 	{

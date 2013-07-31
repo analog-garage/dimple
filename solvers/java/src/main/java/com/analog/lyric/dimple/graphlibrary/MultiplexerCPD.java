@@ -18,8 +18,6 @@ package com.analog.lyric.dimple.graphlibrary;
 
 import java.util.Arrays;
 import java.util.HashSet;
-
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -33,15 +31,27 @@ public class MultiplexerCPD extends FactorGraph
 	private Discrete _za;
 	private Discrete [] _zs;
 	
-	private MultiplexerCPD(VariableBase [] vars)
+
+	public MultiplexerCPD(Object [][] zDomains)
 	{
-		super(vars,"MultiplexorCPD");
+		this(zDomains,false,false);
 	}
 	
-	public MultiplexerCPD()
+	public MultiplexerCPD(Object [][] zDomains, boolean oneBased, boolean aAsDoubles)
 	{
-		super();
-		
+		super("MultiplexerCPD");
+		create(zDomains,oneBased,aAsDoubles);
+	}
+
+	public MultiplexerCPD(DiscreteDomain [] domains)
+	{
+		this(domains,false,false);
+	}
+	
+	public MultiplexerCPD(DiscreteDomain [] domains, boolean oneBased, boolean aAsDoubles)
+	{
+		super("MultiplexerCPD");
+		create(domains,oneBased,aAsDoubles);
 	}
 	
 	public Discrete getY()
@@ -62,18 +72,16 @@ public class MultiplexerCPD extends FactorGraph
 	}
 	
 	
-	public static MultiplexerCPD create(Object [][] zDomains)
+	private MultiplexerCPD create(Object [][] zDomains, boolean oneBased, boolean aAsDouble)
 	{
 		DiscreteDomain [] domains = new DiscreteDomain[zDomains.length];
 		for (int i = 0; i < domains.length; i++)
-		{
 			domains[i] = new DiscreteDomain(zDomains[i]);
-		}
 		
-		return create(domains);
+		return create(domains,oneBased,aAsDouble);
 	}
 	
-	public static MultiplexerCPD create(DiscreteDomain [] zDomains)
+	private  MultiplexerCPD create(DiscreteDomain [] zDomains, boolean oneBased, boolean aAsDouble)
 	{
 		Discrete [] Zs = new Discrete[zDomains.length];
 		int zasize = 0;
@@ -94,11 +102,11 @@ public class MultiplexerCPD extends FactorGraph
 		Arrays.sort(yDomain);
 		Discrete Y = new Discrete(yDomain);
 		
-		return create(Y,Zs,zasize);
+		return create(Y,Zs,zasize, oneBased, aAsDouble);
 
 	}
 
-	public static MultiplexerCPD create(Discrete Y, Discrete [] Zs, int zasize)
+	private MultiplexerCPD create(Discrete Y, Discrete [] Zs, int zasize, boolean oneBased, boolean aAsDouble)
 	{
 		Y.setLabel("Y");
 		
@@ -110,9 +118,16 @@ public class MultiplexerCPD extends FactorGraph
 		//Create a variable
 		Object [] adomain = new Object[Zs.length];
 		for (int i = 0; i < adomain.length; i++)
-			adomain[i] = i;
+		{
+			int val = oneBased ? i+1 : i;
+			adomain[i] = aAsDouble ? (double)val : val;
+		}
 		Discrete A = new Discrete(adomain);		
 		A.setLabel("A");
+		
+		addBoundaryVariables(Y);
+		addBoundaryVariables(A);
+		addBoundaryVariables(Zs);
 		
 		//Make all of those boundary variables
 		VariableBase [] vars = new VariableBase[Zs.length+2];
@@ -120,7 +135,7 @@ public class MultiplexerCPD extends FactorGraph
 		vars[1] = A;
 		for (int i = 0; i < Zs.length; i++)
 			vars[i+2] = Zs[i];
-		MultiplexerCPD cpd = new MultiplexerCPD(vars);
+		//MultiplexerCPD cpd = new MultiplexerCPD(vars);
 		
 		//Create ZA variable
 		Object [] zaDomain = new Object[zasize];
@@ -157,7 +172,7 @@ public class MultiplexerCPD extends FactorGraph
 			}
 		}
 		
-		cpd.addFactor(indices,weights,ZA,Y).setLabel("Y2ZA");
+		this.addFactor(indices,weights,ZA,Y).setLabel("Y2ZA");
 		
 		//Create ZA A factor
 		indices = new int[zasize][2];
@@ -178,7 +193,7 @@ public class MultiplexerCPD extends FactorGraph
 			}
 		}
 
-		cpd.addFactor(indices,weights,ZA,A).setLabel("ZA2A");
+		this.addFactor(indices,weights,ZA,A).setLabel("ZA2A");
 		
 		//Create ZA Z* factors		
 		//Create Z* Z factors
@@ -210,7 +225,7 @@ public class MultiplexerCPD extends FactorGraph
 				}
 			}
 			
-			cpd.addFactor(indices,weights,ZA,Zstars[a]).setLabel("ZA2Z*");
+			this.addFactor(indices,weights,ZA,Zstars[a]).setLabel("ZA2Z*");
 			
 			//From Z* to Z
 			indices = new int[Zs[a].getDiscreteDomain().size()*2][2];
@@ -230,46 +245,46 @@ public class MultiplexerCPD extends FactorGraph
 				weights[ds+i] = 1;
 			}
 			
-			cpd.addFactor(indices, weights,Zstars[a],Zs[a]).setLabel("Z*2Z");
+			this.addFactor(indices, weights,Zstars[a],Zs[a]).setLabel("Z*2Z");
 		}
 
-		cpd._y = Y;
-		cpd._a = A;
-		cpd._za = ZA;
-		cpd._zs = Zs;
+		this._y = Y;
+		this._a = A;
+		this._za = ZA;
+		this._zs = Zs;
 		
-		return cpd;
+		return this;
 	}
 
-	public static MultiplexerCPD create(DiscreteDomain [] zDomains, DiscreteDomain yDomain)
-	{
-		//Create Z variables
-		Discrete [] Zs = new Discrete[zDomains.length];
-		int zasize = 0;
-		HashSet<Object> yDomainValues = new HashSet<Object>();
-		
-		for (int i = 0; i < zDomains.length; i++)
-		{
-			Zs[i] = new Discrete(zDomains[i]);
-			zasize += zDomains[i].getElements().length;
-			for (int j = 0; j < zDomains[i].size(); j++)
-			{
-				yDomainValues.add(zDomains[i].getElements()[j]);
-			}
-		}
-		
-		if (yDomainValues.size() != yDomain.size())
-			throw new DimpleException("Y Domain must be a union of Z domains");
-		
-		for (int i = 0; i < yDomain.size(); i++)
-			if (! yDomainValues.contains(yDomain.getElements()[i]))
-				throw new DimpleException("Y Domain must be a union of Z domains");
-
-		
-		//Create Y variable	
-		//TODO: Error check
-		Discrete Y = new Discrete(yDomain);
-		
-		return create(Y,Zs,zasize);
-	}
+//	public MultiplexerCPD create(DiscreteDomain [] zDomains, DiscreteDomain yDomain)
+//	{
+//		//Create Z variables
+//		Discrete [] Zs = new Discrete[zDomains.length];
+//		int zasize = 0;
+//		HashSet<Object> yDomainValues = new HashSet<Object>();
+//		
+//		for (int i = 0; i < zDomains.length; i++)
+//		{
+//			Zs[i] = new Discrete(zDomains[i]);
+//			zasize += zDomains[i].getElements().length;
+//			for (int j = 0; j < zDomains[i].size(); j++)
+//			{
+//				yDomainValues.add(zDomains[i].getElements()[j]);
+//			}
+//		}
+//		
+//		if (yDomainValues.size() != yDomain.size())
+//			throw new DimpleException("Y Domain must be a union of Z domains");
+//		
+//		for (int i = 0; i < yDomain.size(); i++)
+//			if (! yDomainValues.contains(yDomain.getElements()[i]))
+//				throw new DimpleException("Y Domain must be a union of Z domains");
+//
+//		
+//		//Create Y variable	
+//		//TODO: Error check
+//		Discrete Y = new Discrete(yDomain);
+//		
+//		return create(Y,Zs,zasize);
+//	}
 }

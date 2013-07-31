@@ -200,7 +200,7 @@ public class ModelFactory
 		return new PMultivariateDataSink((int)numVars);
 	}
 
-	public PMultiplexerCPD getMultiplexorCPD(Object [] zDomains)
+	public PMultiplexerCPD getMultiplexerCPD(Object [] zDomains)
 	{
 		Object [][] domains = new Object[zDomains.length][];
 		
@@ -210,6 +210,6 @@ public class ModelFactory
 		}
 		
 
-		return PMultiplexerCPD.create(domains);				
+		return new PMultiplexerCPD(domains);				
 	}
 }
