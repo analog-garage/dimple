@@ -9,6 +9,8 @@ import java.util.RandomAccess;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.BitSetUtil;
+
 @Immutable
 public class DiscreteDomainList
 	extends AbstractList<DiscreteDomain>
@@ -66,6 +68,18 @@ public class DiscreteDomainList
 		if (inputs != null)
 		{
 			return new DirectedDiscreteDomainList(inputs, domains);
+		}
+		else
+		{
+			return create(domains);
+		}
+	}
+	
+	public static DiscreteDomainList create(int[] inputIndices, DiscreteDomain[] domains)
+	{
+		if (inputIndices != null && inputIndices.length > 0)
+		{
+			return create(BitSetUtil.bitsetFromIndices(domains.length, inputIndices), domains);
 		}
 		else
 		{
@@ -174,11 +188,9 @@ public class DiscreteDomainList
 		return null;
 	}
 	
-	public final BitSet getOutputSet()
+	public BitSet getOutputSet()
 	{
-		BitSet set = getInputSet();
-		set.flip(0, set.size());
-		return set;
+		return null;
 	}
 	
 	public int getOutputSize()
@@ -346,7 +358,7 @@ public class DiscreteDomainList
 	
 	final Object[] allocateElements(Object [] elements)
 	{
-		if (elements == null || elements.length != _domains.length)
+		if (elements == null || elements.length < _domains.length)
 		{
 			elements = new Object[_domains.length];
 		}
@@ -355,7 +367,7 @@ public class DiscreteDomainList
 
 	final int[] allocateIndices(int [] indices)
 	{
-		if (indices == null || indices.length != _domains.length)
+		if (indices == null || indices.length < _domains.length)
 		{
 			indices = new int[_domains.length];
 		}

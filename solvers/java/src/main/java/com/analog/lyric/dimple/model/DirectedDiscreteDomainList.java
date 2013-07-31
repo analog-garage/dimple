@@ -151,6 +151,14 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	@Override
+	public BitSet getOutputSet()
+	{
+		BitSet set = getInputSet();
+		set.flip(0, size());
+		return set;
+	}
+
+	@Override
 	public int getOutputSize()
 	{
 		return _outputIndices.length;
