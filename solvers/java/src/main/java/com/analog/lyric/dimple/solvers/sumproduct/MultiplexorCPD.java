@@ -1,0 +1,196 @@
+/*******************************************************************************
+*   Copyright 2012 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
+package com.analog.lyric.dimple.solvers.sumproduct;
+
+
+import java.util.ArrayList;
+
+import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
+
+public class MultiplexorCPD extends STableFactorDoubleArray 
+{
+	private int _yDomainSize;
+	private int _aDomainSize;
+	
+	private ArrayList<int []> [] _yIndex2zIndices;
+	private int [][] _zIndices2yIndex;
+
+	@SuppressWarnings("unchecked")
+	public MultiplexorCPD(Factor factor) 
+	{
+		super(factor);
+		
+		VariableList vl = factor.getVariables();
+		
+		//TODO: test exists
+		_yDomainSize = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().size();
+		
+		//TODO: test exists and matches number of Zs
+		_aDomainSize = vl.getByIndex(1).asDiscreteVariable().getDiscreteDomain().size();
+		
+		//calculate the list of z index pairs for each y
+		_yIndex2zIndices = new ArrayList [_yDomainSize];
+		
+		Object [] yDomain = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().getElements();
+		
+		//TODO: Could speed this up.
+		for (int i = 0; i < _yDomainSize; i++)
+		{
+			_yIndex2zIndices[i] = new ArrayList<int[]>();
+			
+			for (int j = 0; j < _aDomainSize; j++)
+			{
+				Object [] zDomain = vl.getByIndex(2+j).asDiscreteVariable().getDiscreteDomain().getElements();
+				
+				for (int k = 0; k < zDomain.length; k++)
+				{
+					if (yDomain[i].equals(zDomain[k]))
+					{
+						_yIndex2zIndices[i].add(new int [] {j,k});
+						break;
+					}
+				}
+			}
+		}
+		
+		_zIndices2yIndex = new int[_aDomainSize][];
+		
+		for (int i = 0; i < _aDomainSize; i++)
+		{
+			Object [] zDomain = vl.getByIndex(2+i).asDiscreteVariable().getDiscreteDomain().getElements();
+
+			_zIndices2yIndex[i] = new int [zDomain.length];
+			
+			for (int j = 0; j < _zIndices2yIndex[i].length; j++)
+			{
+				_zIndices2yIndex[i][j] = -1;
+				for (int k = 0; k < _yDomainSize; k++)
+				{
+					if (yDomain[k].equals(zDomain[j]))
+					{
+						_zIndices2yIndex[i][j] = k;
+						break;
+					}
+				}
+			}
+		}
+		
+	}
+
+	@Override
+	public void updateEdge(int outPortNum) 
+	{
+		if (outPortNum == 0)
+			updateToY();
+		else if (outPortNum == 1)
+			updateToA();
+		else
+			updateToZ(outPortNum-2);
+	}
+
+	public void updateToA()
+	{
+		
+		double total = 0;
+	
+		for (int i = 0; i < _aDomainSize; i++)
+		{
+			double sm = 0;
+			
+			for (int j = 0; j < _zIndices2yIndex[i].length; j++)
+			{
+				int yIndex = _zIndices2yIndex[i][j];
+				sm += _inputMsgs[0][yIndex] * _inputMsgs[i+2][j];
+			}
+			
+			_outputMsgs[1][i] = sm;
+			total += sm;
+		}
+				
+		//normalize
+		for (int i = 0; i < _aDomainSize; i++)
+			_outputMsgs[1][i] /= total;
+		
+	}
+	
+	public void updateToY()
+	{
+		double [] outMsg = _outputMsgs[0];
+		double [] aInputMsg = _inputMsgs[1];
+		
+		double total = 0;
+		
+		for (int i = 0; i < _yDomainSize; i++)
+		{
+			ArrayList<int []> zIndices = _yIndex2zIndices[i];
+			double sm = 0;
+			
+			for (int [] tmp : zIndices)
+			{
+				int a = tmp[0];
+				int z = tmp[1];
+				sm += aInputMsg[a] * _inputMsgs[a+2][z];
+			}
+			
+			outMsg[i] = sm;
+			total += sm;
+		}
+		
+		//normalize
+		for (int i = 0; i < _yDomainSize; i++)
+			outMsg[i] /= total;
+		
+	}
+	
+	public void updateToZ(int index)
+	{
+		double [] zBelief = _outputMsgs[index+2];
+		
+		double offset = 0;
+		
+		for (int j = 0; j < _aDomainSize; j++)
+		{
+			if (j != index)
+			{
+				for (int k = 0; k < _zIndices2yIndex[j].length; k++)
+				{
+					int yIndex = _zIndices2yIndex[j][k];					
+					offset += _inputMsgs[1][j] * _inputMsgs[0][yIndex] * _inputMsgs[j+2][k];
+				}
+			}
+		}
+		
+		
+		double total = 0;
+		
+		for (int i = 0; i < _zIndices2yIndex[index].length; i++)
+		{
+			int yIndex = _zIndices2yIndex[index][i];
+			zBelief[i] = _inputMsgs[1][index] * _inputMsgs[0][yIndex] + offset;
+			total += zBelief[i];
+		}
+		
+		//normalize
+		for (int i = 0; i < zBelief.length; i++)
+			zBelief[i] /= total;
+		
+	}
+	
+
+}

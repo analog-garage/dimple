@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
-
 import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
@@ -201,4 +200,16 @@ public class ModelFactory
 		return new PMultivariateDataSink((int)numVars);
 	}
 
+	public PMultiplexorCPD getMultiplexorCPD(Object [] zDomains)
+	{
+		Object [][] domains = new Object[zDomains.length][];
+		
+		for (int i = 0; i < zDomains.length; i++)
+		{
+			domains[i] = (Object[])zDomains[i];
+		}
+		
+
+		return PMultiplexorCPD.create(domains);				
+	}
 }

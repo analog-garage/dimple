@@ -315,6 +315,11 @@ public class FactorGraph extends FactorBase
 		return _factorGraphStreams;
 	}
 	
+	public Factor addFactor(int [][] indices, double [] weights, Discrete ... vars)
+	{
+		return addFactor(new FactorTable(indices,weights,vars),vars);
+	}
+	
 	public Factor addFactor(FactorTable ft, VariableBase ... vars)
 	{
 		return addFactor(new TableFactorFunction("TableFactorFunction",ft),vars);
