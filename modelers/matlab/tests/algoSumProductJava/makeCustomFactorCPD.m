@@ -14,29 +14,17 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-M = 4;
-N = 5;
-T = 1000;
+function [fg,y,a,zs] = makeCustomFactorCPD(ZDomains)
 
-ZDomains = cell(N,1);
-for i = 1:N
-    ZDomains{i} = num2cell(1:M);
-end
+    tmp = MultiplexerCPD(ZDomains{:});
+    fg = FactorGraph();
+    y = Discrete(tmp.Y.Domain);
+    a = Discrete(1:length(ZDomains));
+    zs = cell(length(ZDomains),1);
+    for i = 1:length(ZDomains)
+        zs{i} = Discrete(ZDomains{i});
+    end
 
+    fg.addFactor(@multiplexerCPD,y,a,zs{:});
 
-[fg,y,a,zs] = makeCustomFactorCPD(ZDomains);
-vars = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','custom factor','T',T);
-[fg,y,a,zs] = makeMultiplexerCPD(ZDomains);
-vars(2) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','multiplexer CPD','T',T);
-[fg,y,a,zs] = makeNestedMultiplexerCPD(ZDomains);
-vars(3) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','nested multiplexer CPD','T',T);
-[fg,y,a,zs] = makeFullCPD(ZDomains);
-vars(4) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','full CPD','T',T);
-
-for i = 1:length(vars)
-    vars(i).fg.NumIterations = T;
-    tic
-    vars(i).fg.solve();
-    time = toc / T;
-    fprintf('type: %s time:      %.2E\n',vars(i).type,time);
 end
