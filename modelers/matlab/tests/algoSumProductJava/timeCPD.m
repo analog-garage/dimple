@@ -32,6 +32,9 @@ vars(2) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','multiplexer CPD','T',T);
 vars(3) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','nested multiplexer CPD','T',T);
 [fg,y,a,zs] = makeFullCPD(ZDomains);
 vars(4) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','full CPD','T',T);
+[fg,y,a,zs] = makeCustomFactorCPD(ZDomains);
+vars(5) = struct('fg',fg,'y',y,'a',a,'zs',{zs},'type','custom factor single update','T',T);
+fg.Schedule = [{y,a} zs' {fg.Factors{1}}];
 
 for i = 1:length(vars)
     vars(i).fg.NumIterations = T;
