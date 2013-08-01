@@ -53,6 +53,8 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 		
 		VariableList vl = factor.getVariables();
 		
+		factor.setDirectedTo(vl.getByIndex(0));
+		
 		if (vl.size() < 2)
 			throw new DimpleException("Must specify at least Y and A");
 		

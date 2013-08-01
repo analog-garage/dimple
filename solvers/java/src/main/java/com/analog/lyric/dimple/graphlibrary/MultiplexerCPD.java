@@ -18,8 +18,10 @@ package com.analog.lyric.dimple.graphlibrary;
 
 import java.util.Arrays;
 import java.util.HashSet;
+
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 
@@ -153,7 +155,6 @@ public class MultiplexerCPD extends FactorGraph
 		vars[1] = A;
 		for (int i = 0; i < Zs.length; i++)
 			vars[i+2] = Zs[i];
-		//MultiplexerCPD cpd = new MultiplexerCPD(vars);
 		
 		//Create ZA variable
 		Object [] zaDomain = new Object[zasize];
@@ -190,8 +191,9 @@ public class MultiplexerCPD extends FactorGraph
 			}
 		}
 		
-		this.addFactor(indices,weights,ZA,Y).setLabel("Y2ZA");
-		
+		Factor f = this.addFactor(indices,weights,ZA,Y);
+		f.setLabel("Y2ZA");
+
 		//Create ZA A factor
 		indices = new int[zasize][2];
 		weights = new double[zasize];
@@ -211,7 +213,8 @@ public class MultiplexerCPD extends FactorGraph
 			}
 		}
 
-		this.addFactor(indices,weights,ZA,A).setLabel("ZA2A");
+		f = this.addFactor(indices,weights,ZA,A);
+		f.setLabel("ZA2A");
 		
 		//Create ZA Z* factors		
 		//Create Z* Z factors
@@ -234,16 +237,23 @@ public class MultiplexerCPD extends FactorGraph
 					indices[index][0] = index;
 					
 					if (a == i)
+					{
 						indices[index][1] = j;
+					}
 					else
-						indices[index][1] = Zs[a].getDiscreteDomain().size();
+					{
+						int sz = Zs[a].getDiscreteDomain().size();
+						indices[index][1] = sz;
+
+					}
 					
 					weights[index] = 1;
 					index++;
 				}
 			}
 			
-			this.addFactor(indices,weights,ZA,Zstars[a]).setLabel("ZA2Z*");
+			f = this.addFactor(indices,weights,ZA,Zstars[a]);
+			f.setLabel("ZA2Z*");
 			
 			//From Z* to Z
 			indices = new int[Zs[a].getDiscreteDomain().size()*2][2];
@@ -263,7 +273,8 @@ public class MultiplexerCPD extends FactorGraph
 				weights[ds+i] = 1;
 			}
 			
-			this.addFactor(indices, weights,Zstars[a],Zs[a]).setLabel("Z*2Z");
+			f = this.addFactor(indices, weights,Zstars[a],Zs[a]);
+			f.setLabel("Z*2Z");
 		}
 
 		this._y = Y;
