@@ -155,6 +155,13 @@ classdef FactorGraph < Node
             table = FactorTable(VectorIndices,values,varargin{:});
         end
         
+        function addBoundaryVariables(obj,varargin)
+           input = cell(size(varargin));
+           for i = 1:length(input)
+              input{i} = varargin{i}.VectorObject; 
+           end
+           obj.VectorObject.addBoundaryVariables(input);
+        end
         
         function advance(obj)
             obj.VectorObject.advance();
