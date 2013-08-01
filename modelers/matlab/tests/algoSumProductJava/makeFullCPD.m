@@ -17,7 +17,7 @@
 function [fg, y, a, zs] = makeFullCPD(ZDomains)
 
     N = length(ZDomains);
-    y = Discrete(MultiplexerCPD(ZDomains{:}).Y.Domain);
+    y = Discrete(MultiplexerCPD(ZDomains).Y.Domain);
     a = Discrete(1:N);
     zs = cell(N,1);
     for i = 1:N

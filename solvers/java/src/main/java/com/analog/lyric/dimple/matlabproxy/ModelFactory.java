@@ -212,4 +212,9 @@ public class ModelFactory
 
 		return new PMultiplexerCPD(domains);				
 	}
+	
+	public PMultiplexerCPD getMultiplexerCPD(Object [] domain, double numZs)
+	{
+		return new PMultiplexerCPD(domain,(int)numZs);				
+	}
 }

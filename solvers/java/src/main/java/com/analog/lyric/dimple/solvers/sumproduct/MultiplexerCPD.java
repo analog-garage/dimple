@@ -19,16 +19,31 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 
+/*
+ * The multiplexer CPD is a directed factor 
+ *    a z(1) z(2) ...
+ *    \ |   /    /
+ *       y
+ *  such that P(Y=y|a,z(1),z(2),...) = Identity(y == z(a))
+ *  
+ *  The following custom factor provides optimized inference for the
+ *  Multiplexer CPD
+ */
 public class MultiplexerCPD extends STableFactorDoubleArray 
 {
 	private int _yDomainSize;
 	private int _aDomainSize;
 	
+	//Create a mapping between a yIndex and all the possible zs that could
+	//have been selected to achieve that value of y
 	private ArrayList<int []> [] _yIndex2zIndices;
+	
+	//Create a mapping between a z index and the y
 	private int [][] _zIndices2yIndex;
 
 	@SuppressWarnings("unchecked")
@@ -38,18 +53,21 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 		
 		VariableList vl = factor.getVariables();
 		
-		//TODO: test exists
-		_yDomainSize = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().size();
+		if (vl.size() < 2)
+			throw new DimpleException("Must specify at least Y and A");
 		
-		//TODO: test exists and matches number of Zs
+		_yDomainSize = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().size();
 		_aDomainSize = vl.getByIndex(1).asDiscreteVariable().getDiscreteDomain().size();
+		
+		if (_aDomainSize+2 != vl.size())
+			throw new DimpleException("Must specify " + _aDomainSize + " Zs");
 		
 		//calculate the list of z index pairs for each y
 		_yIndex2zIndices = new ArrayList [_yDomainSize];
 		
 		Object [] yDomain = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().getElements();
 		
-		//TODO: Could speed this up.
+		//Generate the mapping from Ys to Zs
 		for (int i = 0; i < _yDomainSize; i++)
 		{
 			_yIndex2zIndices[i] = new ArrayList<int[]>();
@@ -71,6 +89,7 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 		
 		_zIndices2yIndex = new int[_aDomainSize][];
 		
+		//Generate the mappings from zs to Y
 		for (int i = 0; i < _aDomainSize; i++)
 		{
 			Object [] zDomain = vl.getByIndex(2+i).asDiscreteVariable().getDiscreteDomain().getElements();
@@ -106,6 +125,7 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 
 	public void updateToA()
 	{
+		//p(a=x) = sum_{z in za} p(y=z)p(za=z)
 		
 		double total = 0;
 	
@@ -131,6 +151,8 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 	
 	public void updateToY()
 	{
+		//P(Y=y) = sum_{a} p(a)p(za=y)
+		
 		double [] outMsg = _outputMsgs[0];
 		double [] aInputMsg = _inputMsgs[1];
 		
@@ -160,6 +182,11 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 	
 	public void updateToZ(int index)
 	{
+		//TODO: Can we optimize update all edges to calculate this once
+		//      and then subtract off parts for each Z?
+		
+		//P(Zi=x) = p(a=i)p(y=x) + sum_{j not i} sum_{z in za} p(aj)p(y=z)p(za=z)
+		
 		double [] zBelief = _outputMsgs[index+2];
 		
 		double offset = 0;

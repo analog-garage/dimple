@@ -16,7 +16,7 @@
 
 function [fg,y,a,zs] = makeCustomFactorCPD(ZDomains)
 
-    tmp = MultiplexerCPD(ZDomains{:});
+    tmp = MultiplexerCPD(ZDomains);
     fg = FactorGraph();
     y = Discrete(tmp.Y.Domain);
     a = Discrete(1:length(ZDomains));

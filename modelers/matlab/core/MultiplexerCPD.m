@@ -25,10 +25,14 @@ classdef MultiplexerCPD < FactorGraph
     
     methods
         
-        function obj = MultiplexerCPD(varargin)
+        function obj = MultiplexerCPD(domain,numZs)
 
             modeler = getModeler();
-            tmp = modeler.getMultiplexerCPD(varargin);
+            if nargin < 2
+                tmp = modeler.getMultiplexerCPD(domain);
+            else
+                tmp = modeler.getMultiplexerCPD(domain,numZs);
+            end
             obj@FactorGraph('VectorObject',tmp);
 
         end

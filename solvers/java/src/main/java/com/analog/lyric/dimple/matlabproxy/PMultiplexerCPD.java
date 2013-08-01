@@ -30,6 +30,12 @@ public class PMultiplexerCPD extends PFactorGraphVector
 		_multiplexor = (MultiplexerCPD)getGraph();
 	}
 	
+	public PMultiplexerCPD(Object [] domain, int numZs) 
+	{
+		super(new MultiplexerCPD(domain,numZs,true,true));
+				
+		_multiplexor = (MultiplexerCPD)getGraph();
+	}
 
 	public PDiscreteVariableVector getY()
 	{

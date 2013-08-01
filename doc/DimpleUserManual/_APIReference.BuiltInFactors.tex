@@ -123,6 +123,7 @@ FiniteFieldProjection & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:fini
 FiniteFieldAdd & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
 FiniteFieldConstMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
 FiniteFieldMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
+multiplexerCPD & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:multiplexerCPD} \\ 
 CustomXor & MinSum & Same as the Xor factor described above, but with a significantly faster implementation. \\ 
 \end{longtable}
 
@@ -167,17 +168,26 @@ Y = Categorical(alphaVector, [10, 10, 2], aGraph);
 Z = Rayleigh(sigma, myGraph, size(somethingElse));
 \end{lstlisting}
 
+\fi
 
-Dimple also includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided:
 
+Dimple includes some built-in helper functions to create structured graphs, combining smaller factors to form an efficient implementation of a larger subgraph.  Specifically, the following functions are provided:
+
+\ifmatlab
 \begin{itemize}
 \item getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
 \item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
+\item MultiplexerCPD(domains) - See section~\ref{sec:multiplexerCPD}
+\item MultiplexerCPD(domain,numZs) - See section~\ref{sec:multiplexerCPD}
 \end{itemize}
-
 \fi
 
 \ifjava
-Java Dimple does not yet support built in factors.  
+\begin{itemize}
+\item MultiplexerCPD(domains) - See section~\ref{sec:multiplexerCPD}
+\item MultiplexerCPD(domain,numZs) - See section~\ref{sec:multiplexerCPD}
+\end{itemize}
 \fi
+
+
 

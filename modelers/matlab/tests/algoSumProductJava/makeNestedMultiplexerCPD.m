@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [fg,y,a,zs] = makeNestedMultiplexerCPD(ZDomains)
-    ng = MultiplexerCPD(ZDomains{:});
+    ng = MultiplexerCPD(ZDomains);
     
     zs = cell(size(ZDomains));
     for i = 1:length(zs)

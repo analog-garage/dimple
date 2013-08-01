@@ -30,7 +30,16 @@ public class MultiplexerCPD extends FactorGraph
 	private Discrete _a;
 	private Discrete _za;
 	private Discrete [] _zs;
-	
+
+	public MultiplexerCPD(Object [] domain, int numZs)
+	{
+		this(buildDomains(domain, numZs),false,false);
+	}
+
+	public MultiplexerCPD(DiscreteDomain domain, int numZs)
+	{
+		this(buildDomains(domain, numZs),false,false);
+	}
 
 	public MultiplexerCPD(Object [][] zDomains)
 	{
@@ -41,6 +50,12 @@ public class MultiplexerCPD extends FactorGraph
 	{
 		super("MultiplexerCPD");
 		create(zDomains,oneBased,aAsDoubles);
+	}
+
+	public MultiplexerCPD(Object [] domain, int numZs, boolean oneBased, boolean aAsDoubles)
+	{
+		super("MultiplexerCPD");
+		create(buildDomains(domain,numZs),oneBased,aAsDoubles);
 	}
 
 	public MultiplexerCPD(DiscreteDomain [] domains)
@@ -120,7 +135,10 @@ public class MultiplexerCPD extends FactorGraph
 		for (int i = 0; i < adomain.length; i++)
 		{
 			int val = oneBased ? i+1 : i;
-			adomain[i] = aAsDouble ? (double)val : val;
+			if (aAsDouble)
+				adomain[i] = (double)val;
+			else
+				adomain[i] = (int)val;
 		}
 		Discrete A = new Discrete(adomain);		
 		A.setLabel("A");
@@ -255,36 +273,17 @@ public class MultiplexerCPD extends FactorGraph
 		
 		return this;
 	}
+	public static DiscreteDomain [] buildDomains(DiscreteDomain domain, int numZs)
+	{
+		DiscreteDomain [] retval = new DiscreteDomain[numZs];
+		for (int i = 0; i < retval.length; i++)
+			retval[i] = domain;
+		
+		return retval;
+	}
 
-//	public MultiplexerCPD create(DiscreteDomain [] zDomains, DiscreteDomain yDomain)
-//	{
-//		//Create Z variables
-//		Discrete [] Zs = new Discrete[zDomains.length];
-//		int zasize = 0;
-//		HashSet<Object> yDomainValues = new HashSet<Object>();
-//		
-//		for (int i = 0; i < zDomains.length; i++)
-//		{
-//			Zs[i] = new Discrete(zDomains[i]);
-//			zasize += zDomains[i].getElements().length;
-//			for (int j = 0; j < zDomains[i].size(); j++)
-//			{
-//				yDomainValues.add(zDomains[i].getElements()[j]);
-//			}
-//		}
-//		
-//		if (yDomainValues.size() != yDomain.size())
-//			throw new DimpleException("Y Domain must be a union of Z domains");
-//		
-//		for (int i = 0; i < yDomain.size(); i++)
-//			if (! yDomainValues.contains(yDomain.getElements()[i]))
-//				throw new DimpleException("Y Domain must be a union of Z domains");
-//
-//		
-//		//Create Y variable	
-//		//TODO: Error check
-//		Discrete Y = new Discrete(yDomain);
-//		
-//		return create(Y,Zs,zasize);
-//	}
+	public static DiscreteDomain [] buildDomains(Object [] domain, int numZs)
+	{
+		return buildDomains(new DiscreteDomain(domain), numZs);
+	}
 }

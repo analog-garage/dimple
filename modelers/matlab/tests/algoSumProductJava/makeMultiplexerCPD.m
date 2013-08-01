@@ -16,7 +16,7 @@
 
 function [fg, y, a, zs] = makeMultiplexerCPD(ZDomains)
 
-    fg = MultiplexerCPD(ZDomains{:});
+    fg = MultiplexerCPD(ZDomains);
     y = fg.Y;
     a = fg.A;
     zs = fg.Zs;
