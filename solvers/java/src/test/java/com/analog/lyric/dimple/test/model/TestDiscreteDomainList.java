@@ -263,6 +263,8 @@ public class TestDiscreteDomainList
 		assertSame(dl2by3, converter1.getFromDomains());
 		assertSame(dl3by2, converter1.getToDomains());
 		testInvariants(converter1);
+		assertNotEquals(converter1, converter1.getInverse());
+		assertNotEquals(converter1.hashCode(), converter1.getInverse().hashCode());
 		double[] weights1 = new double[6];
 		for (int i = 0; i < weights1.length; ++i)
 		{
@@ -280,12 +282,21 @@ public class TestDiscreteDomainList
 			}
 		}
 		
+		DiscreteDomainListConverter converter1i =
+			DiscreteDomainListConverter.createPermuter(dl3by2, null,  dl2by3,  null, new int[] { 1, 0});
+		testInvariants(converter1i);
+		assertEquals(converter1, converter1i.getInverse());
+		assertEquals(converter1i, converter1.getInverse());
+		assertEquals(converter1.hashCode(), converter1i.getInverse().hashCode());
+		
 		// Remove a domain
 		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
 		DiscreteDomainListConverter converter2 = DiscreteDomainListConverter.createRemover(dl2by3, 0);
 		assertSame(dl2by3, converter2.getFromDomains());
 		assertEquals(dl2, converter2.getRemovedDomains());
 		testInvariants(converter2);
+		assertNotEquals(converter1, converter2);
+		assertNotEquals(converter1.hashCode(), converter2.hashCode());
 		weights2 = converter2.convertDenseWeights(weights1);
 		assertEquals(3, weights2.length);
 		for (int i = 0; i < 3; ++i)
@@ -306,11 +317,27 @@ public class TestDiscreteDomainList
 		
 		DiscreteDomainList dl2by3by4by5 = DiscreteDomainList.create(d2, d3, d4, d5);
 		DiscreteDomainListConverter converter4 = DiscreteDomainListConverter.createJoiner(dl2by3by4by5, 1, 2);
+		DiscreteDomainList dl2by12by5 = converter4.getToDomains();
 		testInvariants(converter4);
+		assertEquals(3, dl2by12by5.size());
+		assertEquals(12, dl2by12by5.getDomainSize(1));
+		assertNotEquals(converter1, converter4);
+		assertNotEquals(converter4, converter2);
+		assertNotEquals(converter4, converter4.getInverse());
+		assertNotEquals(converter4.hashCode(), converter4.getInverse().hashCode());
+		weights1 = new double[dl2by3by4by5.getCardinality()];
+		for (int i = weights1.length; --i>=0;) weights1[i] = rand.nextDouble();
+		assertArrayEquals(weights1, converter4.convertDenseWeights(weights1), 0.0);
+		
+		DiscreteDomainListConverter converter5 = DiscreteDomainListConverter.createSplitter(dl2by12by5, 1);
+		testInvariants(converter5);
+		assertEquals(converter4, converter5.getInverse());
 	}
 	
 	public static void testInvariants(DiscreteDomainListConverter converter)
 	{
+		assertEquals(converter, converter);
+
 		DiscreteDomainListConverter inverse = converter.getInverse();
 		assertSame(converter, inverse.getInverse());
 		
@@ -338,11 +365,13 @@ public class TestDiscreteDomainList
 		indices.release();
 		assertSame(indices, converter.getScratch());
 		assertNotSame(indices, converter.getScratch());
+		indices = converter.getScratch();
 		
 		final int maxFrom = converter.getFromDomains().getCardinality();
 		final int maxAdded = converter.getAddedCardinality();
 		
 		final AtomicInteger removedRef = new AtomicInteger();
+		final AtomicInteger removedRef2 = new AtomicInteger();
 		final AtomicInteger addedRef = new AtomicInteger();
 		
 		for (int from = 0; from < maxFrom; ++from)
@@ -350,12 +379,19 @@ public class TestDiscreteDomainList
 			for (int added = 0; added < maxAdded; ++added)
 			{
 				int to = converter.convertJointIndex(from,  added, null);
-				assertEquals(to, converter.convertJointIndex(from,  added));
+				assertEquals(to, converter.convertJointIndex(from, added));
 				assertEquals(to, converter.convertJointIndex(from, added, removedRef));
 				
 				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), null));
 				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), addedRef));
 				assertEquals(added, addedRef.get());
+				
+				indices.writeIndices(from, added);
+				converter.convertIndices(indices);
+				int to2 = indices.readIndices(null);
+				assertEquals(to, to2);
+				assertEquals(to, indices.readIndices(removedRef2));
+				assertEquals(removedRef.get(), removedRef2.get());
 			}
 		}
 		

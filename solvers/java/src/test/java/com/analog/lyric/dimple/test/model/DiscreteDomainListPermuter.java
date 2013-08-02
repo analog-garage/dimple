@@ -2,21 +2,25 @@ package com.analog.lyric.dimple.test.model;
 
 import java.util.Arrays;
 
+import net.jcip.annotations.ThreadSafe;
+
 import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 /**
  * {@link DiscreteDomainListConverter} implementation that permutes the domain order
  * including added and removed domains in the permutation.
  */
-public class DiscreteDomainListPermuter extends DiscreteDomainListConverter
+@ThreadSafe
+public final class DiscreteDomainListPermuter extends DiscreteDomainListConverter
 {
 
 	/*-------
 	 * State
 	 */
 	
-	final DiscreteDomainListPermuter _inverse;
+	final int _hashCode;
 	final int[] _oldToNewIndex;
+	final DiscreteDomainListPermuter _inverse;
 	
 	/*---------------
 	 * Construction
@@ -84,9 +88,10 @@ public class DiscreteDomainListPermuter extends DiscreteDomainListConverter
 			inverse = new DiscreteDomainListPermuter(toDomains, removedDomains,
 				fromDomains, addedDomains, newToOldIndex, this);
 		}
-		
-		_inverse = inverse;
+
+		_hashCode = computeHashCode();
 		_oldToNewIndex = oldToNewIndex;
+		_inverse = inverse;
 	}
 
 	DiscreteDomainListPermuter(
@@ -97,6 +102,38 @@ public class DiscreteDomainListPermuter extends DiscreteDomainListConverter
 		int[] oldToNewIndex)
 	{
 		this(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex, null);
+	}
+	
+	@Override
+	protected int computeHashCode()
+	{
+		return super.computeHashCode() * 19 + Arrays.hashCode(_oldToNewIndex);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof DiscreteDomainListPermuter && super.equals(other))
+		{
+			return Arrays.equals(_oldToNewIndex, ((DiscreteDomainListPermuter)other)._oldToNewIndex);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _hashCode;
 	}
 	
 	/*-------------------------------------
