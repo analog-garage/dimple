@@ -314,14 +314,4 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		
 		return location;
 	}
-	
-	protected static double energyToWeight(double energy)
-	{
-		return Math.exp(-energy);
-	}
-	
-	protected static double weightToEnergy(double weight)
-	{
-		return -Math.log(weight);
-	}
 }

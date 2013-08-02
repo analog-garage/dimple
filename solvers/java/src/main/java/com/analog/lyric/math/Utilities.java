@@ -92,4 +92,16 @@ public class Utilities
 		return Math.log(x)/LOG2;
 	}
 
+
+	public static double energyToWeight(double energy)
+	{
+		return Math.exp(-energy);
+	}
+
+
+	public static double weightToEnergy(double weight)
+	{
+		return -Math.log(weight);
+	}
+
 }

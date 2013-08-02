@@ -4,9 +4,12 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
@@ -240,5 +243,122 @@ public class TestDiscreteDomainList
 		DiscreteDomainList domainList2 = SerializationTester.clone(domainList);
 		assertEquals(domainList, domainList2);
 		assertEquals(domainList.hashCode(), domainList2.hashCode());
+	}
+	
+	@Test
+	public void testConverter()
+	{
+		Random rand = new Random(1323);
+		DiscreteDomain d2 = DiscreteDomain.intRangeFromSize(2);
+		DiscreteDomain d3 = DiscreteDomain.intRangeFromSize(3);
+		DiscreteDomain d4 = DiscreteDomain.intRangeFromSize(4);
+		DiscreteDomain d5 = DiscreteDomain.intRangeFromSize(5);
+		
+		DiscreteDomainList dl2by3 = DiscreteDomainList.create(d2, d3);
+		DiscreteDomainList dl3by2 = DiscreteDomainList.create(d3, d2);
+		
+		// A simple permutation
+		DiscreteDomainListConverter converter1 =
+			DiscreteDomainListConverter.createPermuter(dl2by3, null,  dl3by2,  null, new int[] { 1, 0});
+		assertSame(dl2by3, converter1.getFromDomains());
+		assertSame(dl3by2, converter1.getToDomains());
+		testInvariants(converter1);
+		double[] weights1 = new double[6];
+		for (int i = 0; i < weights1.length; ++i)
+		{
+			weights1[i] = rand.nextDouble();
+		}
+		double[] weights2 = converter1.convertDenseWeights(weights1);
+		assertEquals(weights2.length, weights1.length);
+		for (int i = 0; i < 2; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				int from = dl2by3.jointIndexFromIndices(i,j);
+				int to = dl3by2.jointIndexFromIndices(j,i);
+				assertEquals(weights1[from], weights2[to], 0.0);
+			}
+		}
+		
+		// Remove a domain
+		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
+		DiscreteDomainListConverter converter2 = DiscreteDomainListConverter.createRemover(dl2by3, 0);
+		assertSame(dl2by3, converter2.getFromDomains());
+		assertEquals(dl2, converter2.getRemovedDomains());
+		testInvariants(converter2);
+		weights2 = converter2.convertDenseWeights(weights1);
+		assertEquals(3, weights2.length);
+		for (int i = 0; i < 3; ++i)
+		{
+			double actual = weights2[i];
+			double expected = 0.0;
+			for (int j = 0; j < 2; ++j)
+			{
+				expected += weights1[dl2by3.jointIndexFromIndices(j,i)];
+			}
+			assertEquals(expected, actual, 1e-12);
+		}
+		
+		DiscreteDomainListConverter converter3 = DiscreteDomainListConverter.createRemover(dl2by3, 1);
+		assertSame(dl2by3, converter3.getFromDomains());
+		assertEquals(dl2, converter3.getToDomains());
+		testInvariants(converter3);
+		
+		DiscreteDomainList dl2by3by4by5 = DiscreteDomainList.create(d2, d3, d4, d5);
+		DiscreteDomainListConverter converter4 = DiscreteDomainListConverter.createJoiner(dl2by3by4by5, 1, 2);
+		testInvariants(converter4);
+	}
+	
+	public static void testInvariants(DiscreteDomainListConverter converter)
+	{
+		DiscreteDomainListConverter inverse = converter.getInverse();
+		assertSame(converter, inverse.getInverse());
+		
+		DiscreteDomainListConverter.Indices indices = converter.getScratch();
+		assertSame(converter, indices.converter);
+		assertEquals(converter.getFromDomains().size(), indices.fromIndices.length);
+		assertEquals(converter.getToDomains().size(), indices.toIndices.length);
+		if (converter.getAddedDomains() == null)
+		{
+			assertSame(ArrayUtil.EMPTY_INT_ARRAY, indices.addedIndices);
+		}
+		else
+		{
+			assertEquals(converter.getAddedDomains().size(), indices.addedIndices.length);
+		}
+		if (converter.getRemovedDomains() == null)
+		{
+			assertSame(ArrayUtil.EMPTY_INT_ARRAY, indices.removedIndices);
+		}
+		else
+		{
+			assertEquals(converter.getRemovedDomains().size(), indices.removedIndices.length);
+		}
+		
+		indices.release();
+		assertSame(indices, converter.getScratch());
+		assertNotSame(indices, converter.getScratch());
+		
+		final int maxFrom = converter.getFromDomains().getCardinality();
+		final int maxAdded = converter.getAddedCardinality();
+		
+		final AtomicInteger removedRef = new AtomicInteger();
+		final AtomicInteger addedRef = new AtomicInteger();
+		
+		for (int from = 0; from < maxFrom; ++from)
+		{
+			for (int added = 0; added < maxAdded; ++added)
+			{
+				int to = converter.convertJointIndex(from,  added, null);
+				assertEquals(to, converter.convertJointIndex(from,  added));
+				assertEquals(to, converter.convertJointIndex(from, added, removedRef));
+				
+				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), null));
+				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), addedRef));
+				assertEquals(added, addedRef.get());
+			}
+		}
+		
+		
 	}
 }

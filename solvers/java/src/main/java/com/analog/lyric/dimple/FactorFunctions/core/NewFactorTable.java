@@ -10,6 +10,7 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.math.Utilities;
 
 @NotThreadSafe
 public class NewFactorTable extends NewFactorTableBase implements INewFactorTable, IFactorTable
@@ -150,7 +151,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_WEIGHT:
 		case NOT_DENSE_ENERGY:
 		case SPARSE_ENERGY_DENSE_WEIGHT:
-			return weightToEnergy(_denseWeights[jointIndex]);
+			return Utilities.weightToEnergy(_denseWeights[jointIndex]);
 			
 		case ALL_SPARSE:
 		case SPARSE_ENERGY:
@@ -165,7 +166,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			sparseIndex = sparseIndexFromJointIndex(jointIndex);
 			if (sparseIndex >= 0)
 			{
-				return weightToEnergy(_sparseWeights[sparseIndex]);
+				return Utilities.weightToEnergy(_sparseWeights[sparseIndex]);
 			}
 			break;
 		}
@@ -202,7 +203,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case NOT_SPARSE_ENERGY:
 		case DENSE_ENERGY_SPARSE_WEIGHT:
 		case SPARSE_WEIGHT:
-			return weightToEnergy(_sparseWeights[sparseIndex]);
+			return Utilities.weightToEnergy(_sparseWeights[sparseIndex]);
 			
 		}
 		
@@ -236,7 +237,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY:
 		case NOT_DENSE_WEIGHT:
 		case DENSE_ENERGY_SPARSE_WEIGHT:
-			return energyToWeight(_denseEnergies[jointIndex]);
+			return Utilities.energyToWeight(_denseEnergies[jointIndex]);
 			
 		case ALL_SPARSE:
 		case SPARSE_WEIGHT:
@@ -251,7 +252,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			sparseIndex = sparseIndexFromJointIndex(jointIndex);
 			if (sparseIndex >= 0)
 			{
-				return energyToWeight(_sparseEnergies[sparseIndex]);
+				return Utilities.energyToWeight(_sparseEnergies[sparseIndex]);
 			}
 			break;
 		}
@@ -288,7 +289,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case SPARSE_ENERGY:
 		case NOT_SPARSE_WEIGHT:
 		case SPARSE_ENERGY_DENSE_WEIGHT:
-			return energyToWeight(_sparseEnergies[sparseIndex]);
+			return Utilities.energyToWeight(_sparseEnergies[sparseIndex]);
 		}
 
 		return 0.0;
@@ -470,7 +471,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			// TODO: if sparse size is large enough, it would be faster to iterate over the dense weights
 			for (double e: _sparseEnergies)
 			{
-				total += energyToWeight(e);
+				total += Utilities.energyToWeight(e);
 			}
 			break;
 			
@@ -485,7 +486,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY:
 			for (double e : _denseEnergies)
 			{
-				total += energyToWeight(e);
+				total += Utilities.energyToWeight(e);
 			}
 			break;
 		}
@@ -729,7 +730,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 						final double[] denseEnergies = _denseEnergies;
 						for (int si = sparseSize; --si>=0;)
 						{
-							sparseWeights[si] = energyToWeight(denseEnergies[sparseToJoint[si]]);
+							sparseWeights[si] = Utilities.energyToWeight(denseEnergies[sparseToJoint[si]]);
 						}
 					}
 					oldRep = oldRep.union(Representation.SPARSE_WEIGHT);
@@ -750,7 +751,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 						final double[] denseWeights = _denseWeights;
 						for (int si = sparseSize; --si>=0;)
 						{
-							sparseEnergies[si] = weightToEnergy(denseWeights[sparseToJoint[si]]);
+							sparseEnergies[si] = Utilities.weightToEnergy(denseWeights[sparseToJoint[si]]);
 						}
 					}
 					oldRep = oldRep.union(Representation.SPARSE_ENERGY);
@@ -773,7 +774,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				final double[] sparseEnergies = _sparseEnergies = new double[sparseWeights.length];
 				for (int i = sparseWeights.length; --i >= 0;)
 				{
-					sparseEnergies[i] = weightToEnergy(sparseWeights[i]);
+					sparseEnergies[i] = Utilities.weightToEnergy(sparseWeights[i]);
 				}
 				oldRep = oldRep.union(Representation.SPARSE_ENERGY);
 			}
@@ -783,7 +784,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				final double[] sparseWeights = _sparseWeights = new double[sparseEnergies.length];
 				for (int i = sparseEnergies.length; --i >= 0;)
 				{
-					sparseWeights[i] = energyToWeight(sparseEnergies[i]);
+					sparseWeights[i] = Utilities.energyToWeight(sparseEnergies[i]);
 				}
 				oldRep = oldRep.union(Representation.SPARSE_WEIGHT);
 			}
@@ -826,14 +827,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 						{
 							for (int di = denseEnergies.length; --di >=0;)
 							{
-								denseEnergies[di] = weightToEnergy(sparseWeights[di]);
+								denseEnergies[di] = Utilities.weightToEnergy(sparseWeights[di]);
 							}
 						}
 						else
 						{
 							for (int si = sparseToJoint.length; --si >= 0;)
 							{
-								denseEnergies[sparseToJoint[si]] = weightToEnergy(sparseWeights[si]);
+								denseEnergies[sparseToJoint[si]] = Utilities.weightToEnergy(sparseWeights[si]);
 							}
 						}
 					}
@@ -865,14 +866,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 						{
 							for(int di = denseWeights.length; --di>=0;)
 							{
-								denseWeights[di] = energyToWeight(sparseEnergies[di]);
+								denseWeights[di] = Utilities.energyToWeight(sparseEnergies[di]);
 							}
 						}
 						else
 						{
 							for (int si = sparseToJoint.length; -- si >= 0;)
 							{
-								denseWeights[sparseToJoint[si]] = energyToWeight(sparseEnergies[si]);
+								denseWeights[sparseToJoint[si]] = Utilities.energyToWeight(sparseEnergies[si]);
 							}
 						}
 					}
@@ -887,7 +888,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 					final double[] denseEnergies = _denseEnergies = new double[jointSize];
 					for (int i = 0; i < jointSize; ++i)
 					{
-						denseEnergies[i] = weightToEnergy(denseWeights[i]);
+						denseEnergies[i] = Utilities.weightToEnergy(denseWeights[i]);
 					}
 					oldRep = oldRep.union(Representation.DENSE_ENERGY);
 				}
@@ -897,7 +898,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 					final double[] denseWeights = _denseWeights = new double[jointSize];
 					for (int i = 0; i < jointSize; ++i)
 					{
-						denseWeights[i] = energyToWeight(denseEnergies[i]);
+						denseWeights[i] = Utilities.energyToWeight(denseEnergies[i]);
 					}
 					oldRep = oldRep.union(Representation.DENSE_WEIGHT);
 				}
@@ -948,7 +949,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double weight = _representation.hasWeight() ? energyToWeight(energy) : 0.0;
+				double weight = _representation.hasWeight() ? Utilities.energyToWeight(energy) : 0.0;
 				setWeightEnergyForJointIndex(weight, energy, jointIndex);
 			}
 			
@@ -977,7 +978,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double weight = _representation.hasWeight() ? energyToWeight(energy) : 0.0;
+				double weight = _representation.hasWeight() ? Utilities.energyToWeight(energy) : 0.0;
 				setWeightEnergyForSparseIndex(weight, energy, sparseIndex);
 			}
 			
@@ -1006,7 +1007,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double energy = _representation.hasEnergy() ? weightToEnergy(weight) : 0.0;
+				double energy = _representation.hasEnergy() ? Utilities.weightToEnergy(weight) : 0.0;
 				setWeightEnergyForJointIndex(weight, energy, jointIndex);
 			}
 			
@@ -1035,7 +1036,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double energy = _representation.hasEnergy() ? weightToEnergy(weight) : 0.0;
+				double energy = _representation.hasEnergy() ? Utilities.weightToEnergy(weight) : 0.0;
 				setWeightEnergyForSparseIndex(weight, energy, sparseIndex);
 			}
 			
@@ -1124,7 +1125,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				_sparseEnergies = new double[newSize];
 				for (int i = 0; i < newSize; ++i)
 				{
-					_sparseEnergies[i] = weightToEnergy(orderedWeights[i]);
+					_sparseEnergies[i] = Utilities.weightToEnergy(orderedWeights[i]);
 				}
 			}
 		}
@@ -1149,7 +1150,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				for (int i = 0; i < newSize; ++i)
 				{
-					_denseEnergies[jointIndexes[i]] = weightToEnergy(orderedWeights[i]);
+					_denseEnergies[jointIndexes[i]] = Utilities.weightToEnergy(orderedWeights[i]);
 				}
 			}
 		}
