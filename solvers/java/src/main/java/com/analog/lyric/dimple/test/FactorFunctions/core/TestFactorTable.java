@@ -132,6 +132,9 @@ public class TestFactorTable
 		oldNs = oldTester.testGetWeightIndexFromTableIndices();
 		newNs = newTester.testGetWeightIndexFromTableIndices();
 
+		oldNs = oldTester.testGetWeightForIndices();
+		newNs = newTester.testGetWeightForIndices();
+
 		oldNs = oldTester.testEvalAsFactorFunction();
 		newNs = newTester.testEvalAsFactorFunction();
 		
