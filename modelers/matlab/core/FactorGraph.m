@@ -1022,7 +1022,7 @@ classdef FactorGraph < Node
                     retval = obj.addJavaFactorFunction(firstArg.get(),varargin{:});
                     
                      % TODO: replace with a function call isFactorFunction
-                elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                elseif (isa(firstArg, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
                     retval = obj.addJavaFactorFunction(firstArg,varargin{:});
                     
                 elseif iscell(firstArg)

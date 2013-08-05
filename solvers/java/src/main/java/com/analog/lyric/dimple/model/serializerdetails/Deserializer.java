@@ -34,9 +34,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DimpleException;

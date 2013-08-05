@@ -80,9 +80,9 @@ function testRealRolledUp()
     % Would have liked to write "Xo = Xi + N" but that doesn't work in a
     % sub-graph since Xo is already defined as a boundary variable
     %sg.addFactor('Sum', Xo, Xi, N);
-    sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(transitionSigma),Xo,Xi);
+    sg.addFactor(com.analog.lyric.dimple.factorfunctions.AdditiveNoise(transitionSigma),Xo,Xi);
 
-    sg.addFactor(com.analog.lyric.dimple.FactorFunctions.AdditiveNoise(obsSigma), Ob, Xi);
+    sg.addFactor(com.analog.lyric.dimple.factorfunctions.AdditiveNoise(obsSigma), Ob, Xi);
 
     fg = FactorGraph();
     X = RealStream;

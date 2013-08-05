@@ -19,7 +19,7 @@ package com.analog.lyric.util.test;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.FactorFunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;

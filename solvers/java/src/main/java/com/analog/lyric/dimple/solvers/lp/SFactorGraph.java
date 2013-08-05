@@ -27,7 +27,7 @@ import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.SolverFactory;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;

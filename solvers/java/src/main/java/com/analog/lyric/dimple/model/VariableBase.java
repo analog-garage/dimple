@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.analog.lyric.dimple.FactorFunctions.Equality;
+import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;

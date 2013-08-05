@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.graphlibrary.MultiplexerCPD;
 import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.nestedgraphs.MultiplexerCPD;
 
 public class PMultiplexerCPD extends PFactorGraphVector 
 {

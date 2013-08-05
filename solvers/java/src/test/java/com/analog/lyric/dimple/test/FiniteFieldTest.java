@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
-import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FiniteFieldVariable;
 import com.analog.lyric.dimple.model.Model;
@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 
 import org.junit.* ;
+
 import static org.junit.Assert.* ;
 
 

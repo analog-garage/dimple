@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.MixedNormal;
-import com.analog.lyric.dimple.FactorFunctions.Normal;
-import com.analog.lyric.dimple.FactorFunctions.Sum;
+import com.analog.lyric.dimple.factorfunctions.MixedNormal;
+import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;

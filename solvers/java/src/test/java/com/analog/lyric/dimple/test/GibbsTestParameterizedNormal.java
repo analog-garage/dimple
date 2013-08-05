@@ -6,7 +6,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;

@@ -6,7 +6,7 @@ classdef PLLearner < handle
         function obj = PLLearner(fg,tables,vars)
             
             ifg = fg.VectorObject.getModelerNode(0);
-            fts = javaArray('com.analog.lyric.dimple.FactorFunctions.core.FactorTable',length(tables));
+            fts = javaArray('com.analog.lyric.dimple.factorfunctions.core.FactorTable',length(tables));
             for i = 1:length(tables)
                 fts(i) = tables{i}.ITable.getModelerObject();
             end

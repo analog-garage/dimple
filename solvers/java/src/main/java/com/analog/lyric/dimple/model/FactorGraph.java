@@ -30,12 +30,12 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.repeated.IVariableStreamSlice;

@@ -31,7 +31,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.DimpleException;
