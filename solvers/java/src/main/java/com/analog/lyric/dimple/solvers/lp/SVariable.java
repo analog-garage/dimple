@@ -285,13 +285,14 @@ public class SVariable extends SDiscreteVariableBase
 	 * has a fixed value (i.e. only one non-zero input weight), and otherwise should
 	 * equal the number of non-zero weights.
 	 */
-	int computeValidAssignments(int domlength)
+	int computeValidAssignments()
 	{
 		final double[] inputWeights = _inputs;
 
 		double totalWeight = 0.0;
-		int cardinality = 0;
 
+		int cardinality = 0;
+		int domlength = getModelObject().getDomain().size();
 		if (_inputs != null)
 		{
 			for (int i = inputWeights.length; --i >=0 ;)
@@ -318,10 +319,11 @@ public class SVariable extends SDiscreteVariableBase
 			return cardinality > 1 ? cardinality : 0;
 		}
 		else
-		{
+		{	
+		
 			_invalidAssignments = new BitSet(domlength);
 			_nValidAssignments = domlength;
-			_totalWeight = 1.0;
+			_totalWeight = 1.0/((float) domlength);
 			return domlength;
 
 		}

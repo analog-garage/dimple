@@ -1,4 +1,4 @@
-num_countries=20;
+num_countries=10;
 num_max_colors=10;
 [Adj_matrix,Vertex_info,C_info]=voronoi_box(num_countries); % fails sometimes - rarely
 
@@ -29,7 +29,7 @@ ColorMax.Input=exp(-(1:10));
 
 
 
-fg.Solver.setLPSolver('glpkIP');
+fg.Solver.setMatlabLPSolver('glpkIP');
 fg.solve();
 bestval=ColorMax.Value;
 figure(2);

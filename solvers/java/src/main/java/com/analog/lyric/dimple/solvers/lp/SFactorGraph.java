@@ -94,7 +94,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Name of external LP solver to be used to do the actual solving.
 	 */
 	private String _lpSolverName = "";
-	private String _lpSolver = ""; // TODO: merge lpSolverName and lpSolver.
+	private String _lpMatlabSolver = ""; // TODO: merge lpSolverName and lpSolver.
 	
 	
 	/*--------------
@@ -471,14 +471,14 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Matlab
-	public String getLPSolver()
+	public String getMatlabLPSolver()
 	{
-		return _lpSolver;
+		return _lpMatlabSolver;
 	}
 	@Matlab
-	public void setLPSolver(String name)
+	public void setMatlabLPSolver(String name)
 	{
-		_lpSolver = name != null ? name : "";
+		_lpMatlabSolver = name != null ? name : "";
 	}
 	@Matlab
 	public void setLPSolverName(String name)
@@ -574,10 +574,9 @@ public class SFactorGraph extends SFactorGraphBase
 		// Create solver variables, if not already created
 		for (VariableBase var : model.getVariables())
 		{
-			DiscreteDomain dom = (DiscreteDomain) var.getDomain();
-			int cardinality = (dom.getElements()).length;
+
 			SVariable svar = createVariable(var, true);
-			nLPVars += svar.computeValidAssignments(cardinality);
+			nLPVars += svar.computeValidAssignments();
 		}
 
 		// Create solver factor tables, if not already created.

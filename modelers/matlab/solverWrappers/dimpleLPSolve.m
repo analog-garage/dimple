@@ -3,9 +3,10 @@ function dimpleLPSolve( factorGraph )
 %   Detailed explanation goes here
     
     
-    sfg = factorGraph.Solver;
+    sfg = factorGraph.Solver; 
     sfg.buildLPState();
-    solver=char(sfg.getLPSolver());
+
+    solver=char(sfg.getMatlabLPSolver());
     if isequal(solver,'')
         solver='matlab';
     end
@@ -14,7 +15,7 @@ function dimpleLPSolve( factorGraph )
     %
     % Build the MATLAB LP arguments     
     % 
-    
+
     f = sfg.getObjectiveFunction();
 
     rows = sfg.getNumberOfConstraints();
@@ -35,20 +36,20 @@ function dimpleLPSolve( factorGraph )
     %
     % Do the LP solve
     %
-    
+
     switch solver
         case 'matlab'
-            
-            solution = linprog(-f, [], [], Aeq, beq, zeros(cols,1), ones(cols,1))
-    
+
+            solution = linprog(-f, [], [], Aeq, beq, zeros(cols,1), ones(cols,1));
+
         case 'glpk'
             
-            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('C',cols,1))
+            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('C',cols,1));
             
         case 'glpkIP'
-            
-            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('B',cols,1))
-            
+
+            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('B',cols,1));
+
             
         case 'gurobi'
             error('No Gurobi support yet');
