@@ -1,10 +1,6 @@
-package com.analog.lyric.dimple.test.model;
+package com.analog.lyric.dimple.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.JointDiscreteDomain;
 
 public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 {

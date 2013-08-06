@@ -1,10 +1,8 @@
-package com.analog.lyric.dimple.test.model;
+package com.analog.lyric.dimple.model;
 
 import java.util.Arrays;
 
 import net.jcip.annotations.ThreadSafe;
-
-import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 /**
  * {@link DiscreteDomainListConverter} implementation that permutes the domain order

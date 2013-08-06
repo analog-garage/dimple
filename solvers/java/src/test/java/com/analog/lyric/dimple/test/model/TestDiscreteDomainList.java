@@ -13,6 +13,7 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestDiscreteDomainList

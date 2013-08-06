@@ -1,10 +1,7 @@
-package com.analog.lyric.dimple.test.model;
+package com.analog.lyric.dimple.model;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 public final class ChainedDiscreteDomainListConverter extends DiscreteDomainListConverter
 {

@@ -10,7 +10,7 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.test.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 import com.analog.lyric.math.Utilities;
 
 @NotThreadSafe
@@ -90,14 +90,23 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_sparseIndexToJointIndex = ArrayUtil.cloneArray(that._sparseIndexToJointIndex);
 	}
 
-	public NewFactorTable(NewFactorTable that, DiscreteDomainListConverter converter)
+	/**
+	 * Constructs a new table by converting the contents of {@code other} table using
+	 * {@code converter} whose "from" domains must match {@code other}'s domains.
+	 */
+	public NewFactorTable(NewFactorTable other, DiscreteDomainListConverter converter)
 	{
 		super(converter.getToDomains());
-		_representation = that._representation;
-		convertFrom(that, converter);
+		_representation = other._representation;
+		convertFrom(other, converter);
 	}
 	
-	public void convertFrom(NewFactorTable that, DiscreteDomainListConverter converter)
+	/**
+	 * Copies table values from {@code other} table using given {@code converter} whose
+	 * "from" domains must match {@code other}'s domains and whose "to" domains must match
+	 * this table's domains.
+	 */
+	public void convertFrom(NewFactorTable other, DiscreteDomainListConverter converter)
 	{
 		final Representation representation = _representation;
 		
@@ -108,31 +117,33 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
 		_computedMask = 0;
 		
+		//
 		// Convert using single representation, then switch to desired representation.
+		//
 		
-		if (that._representation.hasDenseWeight())
+		if (other._representation.hasDenseWeight())
 		{
-			_denseWeights = converter.convertDenseWeights(that._denseWeights);
+			_denseWeights = converter.convertDenseWeights(other._denseWeights);
 			_representation = Representation.DENSE_WEIGHT;
 		}
-		else if (that._representation.hasDenseEnergy())
+		else if (other._representation.hasDenseEnergy())
 		{
-			_denseEnergies = converter.convertDenseEnergies(that._denseEnergies);
+			_denseEnergies = converter.convertDenseEnergies(other._denseEnergies);
 			_representation = Representation.DENSE_ENERGY;
 		}
 		else // DETERMINISTIC or sparse
 		{
-			_sparseIndexToJointIndex = converter.convertSparseToJointIndex(that._sparseIndexToJointIndex);
+			_sparseIndexToJointIndex = converter.convertSparseToJointIndex(other._sparseIndexToJointIndex);
 			
 			if (_representation.hasSparseWeight())
 			{
-				_sparseWeights = converter.convertSparseWeights(that._sparseWeights, that._sparseIndexToJointIndex,
+				_sparseWeights = converter.convertSparseWeights(other._sparseWeights, other._sparseIndexToJointIndex,
 					_sparseIndexToJointIndex);
 				_representation = Representation.SPARSE_WEIGHT;
 			}
 			else if (_representation.hasSparseEnergy())
 			{
-				_sparseEnergies = converter.convertSparseEnergies(that._sparseEnergies, that._sparseIndexToJointIndex,
+				_sparseEnergies = converter.convertSparseEnergies(other._sparseEnergies, other._sparseIndexToJointIndex,
 					_sparseIndexToJointIndex);
 				_representation = Representation.SPARSE_ENERGY;
 			}
@@ -140,9 +151,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		if (converter.getRemovedDomains() == null)
 		{
-			_nonZeroWeights = that._nonZeroWeights * converter.getAddedCardinality();
+			_nonZeroWeights = other._nonZeroWeights * converter.getAddedCardinality();
 		}
-		else if (that._nonZeroWeights == that.getDomainList().getCardinality())
+		else if (other._nonZeroWeights == other.getDomainList().getCardinality())
 		{
 			_nonZeroWeights = _domains.getCardinality();
 		}
@@ -1301,61 +1312,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 	}
 
-	public NewFactorTable createTableWithNewVariables2(DiscreteDomain[] additionalDomains)
+	@Override
+	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
 	{
 		DiscreteDomainListConverter converter =
 			DiscreteDomainListConverter.createAdder(_domains, _domains.size(), additionalDomains);
 
 		return new NewFactorTable(this, converter);
-	}
-	
-	@Override
-	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
-	{
-		final int nAdditionalDomains = additionalDomains.length;
-		final int nOldDomains = getDimensions();
-		DiscreteDomain[] domains = _domains.toArray(new DiscreteDomain[nOldDomains + nAdditionalDomains]);
-		for (int i = 0, j = nOldDomains, end = nAdditionalDomains; i < end; ++i, ++j)
-		{
-			domains[j] = additionalDomains[i];
-		}
-		NewFactorTable newTable = new NewFactorTable(domains);
-		
-		final int multiplier = newTable.jointSize() / jointSize();
-		final int newSize = sparseSize() * multiplier;
-		
-		newTable._sparseEnergies = ArrayUtil.repeat(_sparseEnergies, multiplier);
-		newTable._sparseWeights = ArrayUtil.repeat(_sparseWeights, multiplier);
-		newTable._denseEnergies = ArrayUtil.repeat(_denseEnergies, multiplier);
-		newTable._denseWeights = ArrayUtil.repeat(_denseWeights, multiplier);
-		
-		if (_sparseIndexToJointIndex.length > 0)
-		{
-			final int sparseSize = _sparseIndexToJointIndex.length;
-			int[] sparseToDense = new int[newSize];
-			for (int i = 0, m = 0; m < multiplier; ++m)
-			{
-				for (int j = 0; j < sparseSize; ++j, ++i)
-				{
-					sparseToDense[i] = _sparseIndexToJointIndex[j] + m * sparseSize;
-				}
-			}
-			newTable._sparseIndexToJointIndex = sparseToDense;
-		}
-		
-		newTable._nonZeroWeights = _nonZeroWeights * multiplier;
-		
-		if (_representation == Representation.DETERMINISTIC)
-		{
-			newTable._sparseEnergies = new double[newSize];
-			newTable._representation = Representation.SPARSE_ENERGY;
-		}
-		else
-		{
-			newTable._representation = _representation;
-		}
-		
-		return newTable;
 	}
 	
 	@Override

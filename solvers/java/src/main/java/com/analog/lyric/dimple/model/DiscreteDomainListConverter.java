@@ -1,4 +1,4 @@
-package com.analog.lyric.dimple.test.model;
+package com.analog.lyric.dimple.model;
 
 import static com.analog.lyric.math.Utilities.*;
 
@@ -13,9 +13,6 @@ import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.JointDiscreteDomain;
 import com.google.common.base.Objects;
 
 /**
