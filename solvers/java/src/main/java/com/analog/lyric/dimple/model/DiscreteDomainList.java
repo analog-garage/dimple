@@ -176,6 +176,49 @@ public class DiscreteDomainList
 	 * DiscreteDomainList methods
 	 */
 	
+	public double[] combineWeights(double[] ... subdomainWeights)
+	{
+		double[] weights = new double[_cardinality];
+		Arrays.fill(weights, 1.0);
+		
+		// Validate dimensions
+		//   This simply validates that the joint cardinality matches. It does not
+		//   actually compare against the subdomains. Ideally we should do that but
+		//   allowing for "drilling down" into subdomains that are joint domains.
+		int cardinality = 1;
+		for (double[] array : subdomainWeights)
+		{
+			cardinality *= array.length;
+		}
+		if (cardinality != _cardinality)
+		{
+			throw new DimpleException("Joint cardinality of input arrays is %d instead of %d",
+				cardinality, _cardinality);
+		}
+		
+		int inner = 1, outer = cardinality;
+		for (double[] subweights : subdomainWeights)
+		{
+			final int size = subweights.length;
+			int i = 0;
+			
+			outer /= size;
+			for (int o = 0; o < outer; ++o)
+			{
+				for (double weight : subweights)
+				{
+					for (int r = 0; r < inner; ++r)
+					{
+						weights[i++] *= weight;
+					}
+				}
+			}
+			inner *= size;
+		}
+		
+		return weights;
+	}
+	
 	/**
 	 * The number of possible combinations of all domain elements. Equal to the product of
 	 * all of the domain sizes.

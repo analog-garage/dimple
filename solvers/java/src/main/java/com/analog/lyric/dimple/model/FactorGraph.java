@@ -568,9 +568,6 @@ public class FactorGraph extends FactorBase
 				addVariables(variables[i]);
 		}
 
-		//Create the joint variable pointer
-		VariableBase currentJoint = variables[0];
-
 		//Create a hash of all factors affected.
 		HashSet<Factor> factors = new HashSet<Factor>();
 
@@ -585,22 +582,18 @@ public class FactorGraph extends FactorBase
 		}
 
 		//Create joint variable
-		for (int i = 1; i < variables.length; i++)
-		{
-			VariableBase tmp = currentJoint.createJointNoFactors(variables[i]);
-			currentJoint = tmp;
-		}
+		VariableBase joint = variables[0].createJointNoFactors(variables);
 
 		//Variables must first be part of the graph before the factor can join them.
-		addVariables(currentJoint);
+		addVariables(joint);
 
 		//Reattach the variable too, just in case.
-		currentJoint.createSolverObject(_solverFactorGraph);
+		joint.createSolverObject(_solverFactorGraph);
 
 		//go through each factor that was connected to any of the variables and tell it to join those variables
 		for (Factor f : factors)
 		{
-			f.replaceVariablesWithJoint(variables, currentJoint);
+			f.replaceVariablesWithJoint(variables, joint);
 
 			//reattach to the solver now that the factor graph has changed
 			f.createSolverObject(_solverFactorGraph);
@@ -613,7 +606,7 @@ public class FactorGraph extends FactorBase
 		//update the version Id so that we can recalculate the schedule
 		_versionId++;
 
-		return currentJoint;
+		return joint;
 	}
 
 	/*

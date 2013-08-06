@@ -128,40 +128,38 @@ public class Discrete extends VariableBase
 		return retval;
 	}
 	
-	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * All {@code variables} must be of type {@link Discrete}. The domain of the returned
+	 * variable will be a {@link JointDiscreteDomain} with the subdomains in the same order
+	 * as {@code variables}.
+	 */
     @Override
-	protected VariableBase createJointNoFactors(VariableBase otherVariable)
+	protected VariableBase createJointNoFactors(VariableBase ... variables)
     {
-    	if (! (otherVariable instanceof Discrete))
+    	final boolean thisIsFirst = (variables[0] == this);
+    	final int dimensions = thisIsFirst ? variables.length: variables.length + 1;
+    	final DiscreteDomain[] domains = new DiscreteDomain[dimensions];
+    	final double[][] subdomainWeights = new double[dimensions][];
+    	domains[0] = getDomain();
+    	subdomainWeights[0] = getInput();
+    	
+    	for (int i = thisIsFirst ? 1 : 0; i < dimensions; ++i)
     	{
-    		throw new DimpleException("Not currently supported");
-    		
-    	}
-    	
-    	Discrete dOtherVar = (Discrete)otherVariable;
-    	
-    	//First, create domain
-    	int newDomainLength = this.getDiscreteDomain().size()*dOtherVar.getDiscreteDomain().size();
-    	
-    	Object [] newDomain = new Object[newDomainLength];
-    	double [] inputs = new double[newDomainLength];
-    	
-    	int index = 0;
-		for (int j = 0; j <  dOtherVar.getDiscreteDomain().size(); j++)
-		{
-	    	for (int i = 0; i < getDiscreteDomain().size(); i++)
-	    	{
-    			Object [] pair =
-    				new Object[] {this.getDiscreteDomain().getElement(i),dOtherVar.getDiscreteDomain().getElement(j)};
-    			newDomain[index] = pair;
-    			inputs[index] = this.getInput()[i]*dOtherVar.getInput()[j];
-    			index++;
+    		final Discrete var = variables[i].asDiscreteVariable();
+    		if (var == null)
+    		{
+    			throw new DimpleException("Discrete.createJointNoFactors does not support non-discrete variables");
     		}
+    		domains[i] = var.getDomain();
+    		subdomainWeights[i] = var.getInput();
     	}
-    	
-    	Discrete retval =  new Discrete(newDomain);
-    	retval.setInput(inputs);
-    	return retval;
+
+    	final JointDiscreteDomain jointDomain = DiscreteDomain.joint(domains);
+    	final Discrete jointVar =  new Discrete(jointDomain);
+    	jointVar.setInput(jointDomain.getDomainList().combineWeights(subdomainWeights));
+    	return jointVar;
     }
 	
 	public void setInput(double ... value)
