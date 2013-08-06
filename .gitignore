@@ -25,3 +25,4 @@ doc/DimpleUserDocumentation.pdf
 DimpleEntry.mexa64
 doc/DimpleUserManual/*.gz
 /modelers/matlab/.project
+/startupglpk.m
