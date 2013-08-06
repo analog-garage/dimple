@@ -284,10 +284,24 @@ public abstract class DiscreteDomain extends Domain
 	 * DiscreteDomain methods
 	 */
 	
+	/**
+	 * Returns the value of the ith element in the domain.
+	 * @param i must be in the range [0,{@link #size()}-1].
+	 */
 	public abstract Object getElement(int i);
 	
+	/**
+	 * Returns an array containing all the elements of the domain in their canonical order.
+	 * <p>
+	 * Because this allocates memory and costs linear time to compute, it is usually better to use
+	 * {@link #getElement(int)} to access elements one at a time and {@link #size()} to get the
+	 * number of elements.
+	 */
 	public abstract Object[] getElements();
 
+	/**
+	 * The number of elements in the domain.
+	 */
 	public abstract int size();
 	
 	@Override

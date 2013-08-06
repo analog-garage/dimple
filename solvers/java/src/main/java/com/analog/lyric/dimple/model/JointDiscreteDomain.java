@@ -6,6 +6,18 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
 
+/**
+ * A discrete domain representing the Cartesian product of other discrete domains.
+ * Its elements are Java Object[] arrays with the nth element holding an element
+ * of the nth component domain.
+ * <p>
+ * It is represented efficiently using a {@link DiscreteDomainList}, so the full
+ * combinatoric list of elements does not need to be produced unless someone
+ * calls {@link #getElements()}.
+ * <p>
+ * Construct instances using {@link DiscreteDomain#joint(DiscreteDomain...)} or
+ * {@link DiscreteDomain#joint(DiscreteDomainList)}.
+ */
 @Immutable
 public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 {
@@ -72,6 +84,10 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	 * DiscreteDomain methods
 	 */
 	
+	/**
+	 * True if {@code value} is an array of length {@link #getDimensions()} for which
+	 * 
+	 */
 	@Override
 	public boolean inDomain(Object value)
 	{
@@ -122,7 +138,13 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Returns ith element in domain.
+	 * <p>
+	 * This allocates a new array. You can copy into an existing array using {@link #getElement(int, Object[])}.
+	 * @param i must be in the range [0, {@link #size()}-1].
+	 */
 	@Override
 	public Object[] getElement(int i)
 	{
@@ -185,26 +207,64 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	 * JointDiscreteDomain methods
 	 */
 
+	/**
+	 * Returns the number of dimensions, or subdomains that make up this joint domain.
+	 * Same as size of {@link #getDomainList()}.
+	 */
 	public final int getDimensions()
 	{
 		return _domains.size();
 	}
 	
+	/**
+	 * Returns the underlying {@link DiscreteDomainList} that represents this domain.
+	 */
 	public final DiscreteDomainList getDomainList()
 	{
 		return _domains;
 	}
 	
+	/**
+	 * Writes the subelements of the ith element in the domain into {@code array} and returns it.
+	 * <p>
+	 * @param i must be in the range [0, {@link #size()}-1].
+	 * @param array will only be used if non-null and no shorter than {@link #size()}, otherwise
+	 * a new array will be allocated.
+	 * @return array containing ith element, which will be the same as {@code array} provided it was big enough.
+	 * @see #getElement(int)
+	 * @see #getElementIndices(int, int[])
+	 */
 	public Object[] getElement(int i, Object[] array)
 	{
 		return _domains.jointIndexToElements(i, array);
 	}
 	
+	/**
+	 * Returns any array containing the individual subdomain indexes for the
+	 * ith element in this domain.
+	 * <p>
+	 * This is equivalent to calling {@link #getElementIndices(int, int[])} with a null second argument.
+	 * <p>
+	 * @param i must be in the range [0, {@link #size()}-1].
+	 * @return newly allocated array of indices
+	 */
 	public int[] getElementIndices(int i)
 	{
 		return _domains.jointIndexToIndices(i, null);
 	}
 
+	/**
+	 * Writes the individual subdomain indexes for the ith element in this domain into
+	 * provided {@code array} and returns it.
+	 * <p>
+	 * This is equivalent to calling {@link #getDomainList()}.jointIndexToIndices(i, array)
+	 * <p>
+	 * @param i must be in the range [0, {@link #size()}-1].
+	 * @param array must be at least {@link #size()} long or else a new array will be allocated.
+	 * @return array containing indices, which will be same as provided {@code array} if it is large enough
+	 * @see #getElementIndices(int)
+	 * @see #getElement(int, Object[])
+	 */
 	public int[] getElementIndices(int i, int[] array)
 	{
 		return _domains.jointIndexToIndices(i, array);
