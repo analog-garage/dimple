@@ -12,13 +12,13 @@ import org.junit.Test;
 
 import cern.colt.map.OpenIntIntHashMap;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.INewFactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.INewFactorTableBase;
-import com.analog.lyric.dimple.FactorFunctions.core.NewFactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.NewFactorTableEntry;
-import com.analog.lyric.dimple.FactorFunctions.core.NewFactorTableIterator;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.INewFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.INewFactorTableBase;
+import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableEntry;
+import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableIterator;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;

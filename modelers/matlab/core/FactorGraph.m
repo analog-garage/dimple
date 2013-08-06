@@ -155,6 +155,13 @@ classdef FactorGraph < Node
             table = FactorTable(VectorIndices,values,varargin{:});
         end
         
+        function addBoundaryVariables(obj,varargin)
+           input = cell(size(varargin));
+           for i = 1:length(input)
+              input{i} = varargin{i}.VectorObject; 
+           end
+           obj.VectorObject.addBoundaryVariables(input);
+        end
         
         function advance(obj)
             obj.VectorObject.advance();
@@ -1015,7 +1022,7 @@ classdef FactorGraph < Node
                     retval = obj.addJavaFactorFunction(firstArg.get(),varargin{:});
                     
                      % TODO: replace with a function call isFactorFunction
-                elseif (isa(firstArg, 'com.analog.lyric.dimple.FactorFunctions.core.FactorFunction'))
+                elseif (isa(firstArg, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
                     retval = obj.addJavaFactorFunction(firstArg,varargin{:});
                     
                 elseif iscell(firstArg)

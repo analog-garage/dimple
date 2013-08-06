@@ -21,7 +21,7 @@ import org.apache.commons.math.complex.Complex;
 import Jama.CholeskyDecomposition;
 import Jama.Matrix;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 

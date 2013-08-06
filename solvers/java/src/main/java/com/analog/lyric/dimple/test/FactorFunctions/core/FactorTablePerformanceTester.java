@@ -3,8 +3,8 @@ package com.analog.lyric.dimple.test.FactorFunctions.core;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.INewFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.INewFactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.google.common.base.Stopwatch;
 

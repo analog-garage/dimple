@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
 
 public class Real extends VariableBase

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorBase;

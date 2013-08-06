@@ -32,19 +32,24 @@ class cd:
         os.chdir(self.savedPath)
 
 def producedoc(fileName,option):
-    #pdflatex "\def\forjava{}\input{DimpleUserManual.tex}"
-    #TODO: add java user doc as an option
+    #pdflatex "\def\version{0.04}\input{\def\formatlab{}\input{DimpleUserManual.tex}}"
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
     os.system('pdflatex ' + fileName)
 
-def produceUserDoc(fileName,flag):
+def produceUserDoc(fileName,flag,versionString):
     #forjava or formatlab
-    command = 'pdflatex "\def\\' + flag + '{}\input{' + fileName + '}"'
+    command = 'pdflatex "\def\\version{' + versionString + '}\input{\def\\' + flag + '{}\input{' + fileName + '}}"'
+    print command
     os.system(command)
     os.system(command)
     os.system(command)
 
+
+def extractVersionString():
+    f = file('../VERSION','r')
+    version = f.readlines()[0].strip()
+    return version
 
 if __name__ == "__main__":
     
@@ -102,22 +107,23 @@ if __name__ == "__main__":
     if option.devel_doc:
         build_devel_doc = True
 
+    versionString = extractVersionString()
  
     # Create user doc
     if build_java_user_doc:
         with cd(option.user_doc_dir):
-            produceUserDoc(option.user_doc_filename,'forjava')
+            produceUserDoc(option.user_doc_filename,'forjava',versionString)
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
-                        option.user_doc_filename + "_Java_API.pdf")
+                        option.user_doc_filename + "_v" + versionString + "_Java_API.pdf")
 
     if build_matlab_user_doc:
         with cd(option.user_doc_dir):
-            produceUserDoc(option.user_doc_filename,'formatlab')
+            produceUserDoc(option.user_doc_filename,'formatlab',versionString)
         shutil.copyfile(option.user_doc_dir + '/' + option.user_doc_filename + ".pdf",
-                        option.user_doc_filename + "_MATLAB_API.pdf")
+                        option.user_doc_filename + "_v" + versionString + "_MATLAB_API.pdf")
     # Create developer doc
     if build_devel_doc:
         with cd(option.devel_doc_dir):
             producedoc(option.devel_doc_filename,option)
         shutil.copyfile(option.devel_doc_dir + '/' + option.devel_doc_filename + ".pdf",
-                        option.devel_doc_filename + ".pdf")
+                        option.devel_doc_filename + "_v" + versionString + ".pdf")

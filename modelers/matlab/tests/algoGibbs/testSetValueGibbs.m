@@ -67,7 +67,7 @@ function testSetValueGibbs()
     fg.Solver = 'Gibbs';
     b = -a; % Add implicit factor
     a.Input = {'Normal',1,1};
-    assert(isa(a.Input, 'com.analog.lyric.dimple.FactorFunctions.Normal'));
+    assert(isa(a.Input, 'com.analog.lyric.dimple.factorfunctions.Normal'));
     value = rand();
     assert(~a.hasFixedValue);
     a.FixedValue = value;

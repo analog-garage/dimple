@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.analog.lyric.dimple.FactorFunctions.core.HybridSampledBPFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.HybridSampledBPFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.Port;

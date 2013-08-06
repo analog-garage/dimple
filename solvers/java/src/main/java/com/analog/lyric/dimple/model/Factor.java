@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.model;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionBase;
-import com.analog.lyric.dimple.FactorFunctions.core.IFactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.JointFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 

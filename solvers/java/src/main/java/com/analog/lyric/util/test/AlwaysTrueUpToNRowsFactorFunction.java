@@ -18,7 +18,7 @@ package com.analog.lyric.util.test;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
 public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 {

@@ -6,9 +6,9 @@ import static org.junit.matchers.JUnitMatchers.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.Cos;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;

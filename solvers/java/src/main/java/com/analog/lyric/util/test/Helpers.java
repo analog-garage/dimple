@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.TreeMap;
 
-import com.analog.lyric.dimple.FactorFunctions.XorDelta;
-import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
