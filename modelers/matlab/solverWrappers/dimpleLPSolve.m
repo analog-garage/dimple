@@ -1,9 +1,15 @@
 function dimpleLPSolve( factorGraph )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
+    
+    
     sfg = factorGraph.Solver;
     sfg.buildLPState();
+    solver=char(sfg.getLPSolver());
+    if isequal(solver,'')
+        solver='matlab';
+    end
+    
     
     %
     % Build the MATLAB LP arguments     
@@ -30,7 +36,25 @@ function dimpleLPSolve( factorGraph )
     % Do the LP solve
     %
     
-    solution = linprog(-f, [], [], Aeq, beq, zeros(cols,1), ones(cols,1));
+    switch solver
+        case 'matlab'
+            
+            solution = linprog(-f, [], [], Aeq, beq, zeros(cols,1), ones(cols,1))
+    
+        case 'glpk'
+            
+            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('C',cols,1))
+            
+        case 'glpkIP'
+            
+            solution = glpk (-f, Aeq,beq,zeros(cols,1),ones(cols,1), repmat('S',rows,1),repmat('B',cols,1))
+            
+            
+        case 'gurobi'
+            error('No Gurobi support yet');
+    end
+    
+    
     
     %
     % Write the solution back

@@ -285,35 +285,49 @@ public class SVariable extends SDiscreteVariableBase
 	 * has a fixed value (i.e. only one non-zero input weight), and otherwise should
 	 * equal the number of non-zero weights.
 	 */
-	int computeValidAssignments()
+	int computeValidAssignments(int domlength)
 	{
 		final double[] inputWeights = _inputs;
 
 		double totalWeight = 0.0;
 		int cardinality = 0;
-		for (int i = inputWeights.length; --i >=0 ;)
+
+		if (_inputs != null)
 		{
-			double w = inputWeights[i];
-			if (w == 0.0)
+			for (int i = inputWeights.length; --i >=0 ;)
 			{
-				if (_invalidAssignments == null)
+				double w = inputWeights[i];
+				if (w == 0.0)
 				{
-					_invalidAssignments = new BitSet(i);
+					if (_invalidAssignments == null)
+					{
+						_invalidAssignments = new BitSet(i);
+					}
+					_invalidAssignments.set(i, true);
 				}
-				_invalidAssignments.set(i, true);
+				else
+				{
+					totalWeight += w;
+					++cardinality;
+				}
 			}
-			else
-			{
-				totalWeight += w;
-				++cardinality;
-			}
+
+			_totalWeight = totalWeight;
+			_nValidAssignments = cardinality;
+
+			return cardinality > 1 ? cardinality : 0;
 		}
-		
-		_totalWeight = totalWeight;
-		_nValidAssignments = cardinality;
-		
-		return cardinality > 1 ? cardinality : 0;
+		else
+		{
+			_invalidAssignments = new BitSet(domlength);
+			_nValidAssignments = domlength;
+			_totalWeight = 1.0;
+			return domlength;
+
+		}
+
 	}
+
 	
 	/**
 	 * Compute the objective function parameters for this variable. This is simply
@@ -439,6 +453,10 @@ public class SVariable extends SDiscreteVariableBase
 		return _inputs[index];
 	}
 	
+	double[] getInputs()
+	{
+		return _inputs;
+	}
 	/**
 	 * Returns the index of the first LP variable associated with the values of this variable.
 	 * Returns negative value if not yet computed or if there are no associated LP variables

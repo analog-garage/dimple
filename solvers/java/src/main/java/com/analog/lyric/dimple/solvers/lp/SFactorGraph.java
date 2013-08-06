@@ -30,6 +30,7 @@ import net.sf.javailp.SolverFactory;
 import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -93,6 +94,8 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Name of external LP solver to be used to do the actual solving.
 	 */
 	private String _lpSolverName = "";
+	private String _lpSolver = ""; // TODO: merge lpSolverName and lpSolver.
+	
 	
 	/*--------------
 	 * Construction
@@ -466,7 +469,17 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		return _lpSolverName;
 	}
-	
+
+	@Matlab
+	public String getLPSolver()
+	{
+		return _lpSolver;
+	}
+	@Matlab
+	public void setLPSolver(String name)
+	{
+		_lpSolver = name != null ? name : "";
+	}
 	@Matlab
 	public void setLPSolverName(String name)
 	{
@@ -561,8 +574,10 @@ public class SFactorGraph extends SFactorGraphBase
 		// Create solver variables, if not already created
 		for (VariableBase var : model.getVariables())
 		{
+			DiscreteDomain dom = (DiscreteDomain) var.getDomain();
+			int cardinality = (dom.getElements()).length;
 			SVariable svar = createVariable(var, true);
-			nLPVars += svar.computeValidAssignments();
+			nLPVars += svar.computeValidAssignments(cardinality);
 		}
 
 		// Create solver factor tables, if not already created.

@@ -15,9 +15,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-fileparts(mfilename('fullpath'))
-
 dimple_base = fileparts(mfilename('fullpath'));
 dimple_path = [dimple_base '/modelers/matlab/util'];
 addpath(dimple_path);
 addDimplePath();
+glpk_path=[dimple_base '/../glpkmex'];
+addpath(glpk_path);
