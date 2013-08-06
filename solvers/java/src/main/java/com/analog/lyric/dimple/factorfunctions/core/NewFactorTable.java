@@ -10,6 +10,7 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.test.model.DiscreteDomainListConverter;
 import com.analog.lyric.math.Utilities;
 
 @NotThreadSafe
@@ -52,12 +53,16 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * Construction
 	 */
 	
-	public NewFactorTable(BitSet directedFrom, DiscreteDomain ... domains)
+	public NewFactorTable(DiscreteDomainList domains)
 	{
-		super(directedFrom, domains);
-		
+		super(domains);
 		_nonZeroWeights = 0;
 		_representation = INewFactorTable.Representation.SPARSE_ENERGY;
+	}
+	
+	public NewFactorTable(BitSet directedFrom, DiscreteDomain ... domains)
+	{
+		this(DiscreteDomainList.create(directedFrom, domains));
 	}
 	
 	/**
@@ -83,6 +88,71 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_sparseEnergies = ArrayUtil.cloneArray(that._sparseEnergies);
 		_sparseWeights = ArrayUtil.cloneArray(that._sparseWeights);
 		_sparseIndexToJointIndex = ArrayUtil.cloneArray(that._sparseIndexToJointIndex);
+	}
+
+	public NewFactorTable(NewFactorTable that, DiscreteDomainListConverter converter)
+	{
+		super(converter.getToDomains());
+		_representation = that._representation;
+		convertFrom(that, converter);
+	}
+	
+	public void convertFrom(NewFactorTable that, DiscreteDomainListConverter converter)
+	{
+		final Representation representation = _representation;
+		
+		_denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_denseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_sparseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_sparseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
+		_computedMask = 0;
+		
+		// Convert using single representation, then switch to desired representation.
+		
+		if (that._representation.hasDenseWeight())
+		{
+			_denseWeights = converter.convertDenseWeights(that._denseWeights);
+			_representation = Representation.DENSE_WEIGHT;
+		}
+		else if (that._representation.hasDenseEnergy())
+		{
+			_denseEnergies = converter.convertDenseEnergies(that._denseEnergies);
+			_representation = Representation.DENSE_ENERGY;
+		}
+		else // DETERMINISTIC or sparse
+		{
+			_sparseIndexToJointIndex = converter.convertSparseToJointIndex(that._sparseIndexToJointIndex);
+			
+			if (_representation.hasSparseWeight())
+			{
+				_sparseWeights = converter.convertSparseWeights(that._sparseWeights, that._sparseIndexToJointIndex,
+					_sparseIndexToJointIndex);
+				_representation = Representation.SPARSE_WEIGHT;
+			}
+			else if (_representation.hasSparseEnergy())
+			{
+				_sparseEnergies = converter.convertSparseEnergies(that._sparseEnergies, that._sparseIndexToJointIndex,
+					_sparseIndexToJointIndex);
+				_representation = Representation.SPARSE_ENERGY;
+			}
+		}
+		
+		if (converter.getRemovedDomains() == null)
+		{
+			_nonZeroWeights = that._nonZeroWeights * converter.getAddedCardinality();
+		}
+		else if (that._nonZeroWeights == that.getDomainList().getCardinality())
+		{
+			_nonZeroWeights = _domains.getCardinality();
+		}
+		else
+		{
+			// Need to count them explicitly
+			computeNonZeroWeights();
+		}
+		
+		setRepresentation(representation);
 	}
 	
 	/*----------------
@@ -1231,6 +1301,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 	}
 
+	public NewFactorTable createTableWithNewVariables2(DiscreteDomain[] additionalDomains)
+	{
+		DiscreteDomainListConverter converter =
+			DiscreteDomainListConverter.createAdder(_domains, _domains.size(), additionalDomains);
+
+		return new NewFactorTable(this, converter);
+	}
+	
 	@Override
 	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
 	{
@@ -1445,6 +1523,54 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		return sparseIndex;
+	}
+	
+	private void computeNonZeroWeights()
+	{
+		int count = 0;
+		switch (_representation)
+		{
+		case DETERMINISTIC:
+			_nonZeroWeights = _sparseIndexToJointIndex.length;
+			break;
+			
+		case SPARSE_WEIGHT:
+		case DENSE_ENERGY_SPARSE_WEIGHT:
+		case ALL_WEIGHT:
+		case NOT_SPARSE_ENERGY:
+		case ALL_SPARSE:
+		case NOT_DENSE_ENERGY:
+		case NOT_DENSE_WEIGHT:
+		case ALL:
+			for (double w : _sparseWeights)
+				if (w != 0)
+					++count;
+			break;
+			
+		case SPARSE_ENERGY:
+		case ALL_ENERGY:
+		case SPARSE_ENERGY_DENSE_WEIGHT:
+		case NOT_SPARSE_WEIGHT:
+			for (double e : _sparseEnergies)
+				if (!Double.isInfinite(e))
+					++count;
+			break;
+			
+		case DENSE_WEIGHT:
+		case ALL_DENSE:
+			for (double w : _denseWeights)
+				if (w != 0)
+					++count;
+			break;
+			
+		case DENSE_ENERGY:
+			for (double e : _denseEnergies)
+				if (!Double.isInfinite(e))
+					++count;
+			break;
+		}
+		
+		_nonZeroWeights = count;
 	}
 	
 	private int[] computeSparseToJointIndexMap()

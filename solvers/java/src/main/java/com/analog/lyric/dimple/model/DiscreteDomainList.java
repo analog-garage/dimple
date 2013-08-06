@@ -91,6 +91,44 @@ public class DiscreteDomainList
 		}
 	}
 	
+	/**
+	 * Returns a new domain list that concatenates the domains of this list
+	 * with {@code that}. Only produces a directed list if both lists are directed.
+	 */
+	public static DiscreteDomainList concat(DiscreteDomainList domains1, DiscreteDomainList domains2)
+	{
+		if (domains1 == null)
+		{
+			return domains2;
+		}
+		else if (domains2 == null)
+		{
+			return domains1;
+		}
+		
+		final int size1 = domains1.size();
+		final int size2 = domains2.size();
+		final int size = size1 + domains2.size();
+		final DiscreteDomain[] domains = Arrays.copyOf(domains1._domains, size);
+		for (int i = 0; i < size2; ++ i)
+		{
+			domains[size1 + i] = domains2.get(i);
+		}
+		
+		BitSet inputs = null;
+
+		if (domains1.isDirected() && domains2.isDirected())
+		{
+			inputs = domains1.getInputSet();
+			for (int i : domains2.getInputIndices())
+			{
+				inputs.set(size1 + i);
+			}
+		}
+		
+		return DiscreteDomainList.create(inputs, domains);
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
@@ -293,6 +331,13 @@ public class DiscreteDomainList
 	
 	public void inputIndexToIndices(int inputIndex, int[] indices)
 	{
+	}
+	
+	public double[] jointWeights(double[] ... weightsPerSubdomain)
+	{
+		double[] weights = new double[getCardinality()];
+		
+		return weights;
 	}
 	
 	/**

@@ -1,11 +1,15 @@
 package com.analog.lyric.dimple.test.model;
 
+import static com.analog.lyric.math.Utilities.*;
+
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
+import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
@@ -265,6 +269,11 @@ public abstract class DiscreteDomainListConverter
 		return DiscreteDomainListJoiner.createSplitter(fromDomains, offset);
 	}
 	
+	public DiscreteDomainListConverter combineWith(DiscreteDomainListConverter that)
+	{
+		return ChainedDiscreteDomainListConverter.create(this, that);
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
@@ -295,13 +304,7 @@ public abstract class DiscreteDomainListConverter
 	/*-------------------------------------
 	 * DiscreteDomainListConverter methods
 	 */
-	
-	// FIXME: remove this?
-	public final int getAddedCardinality()
-	{
-		return _addedDomains == null ? 1 : _addedDomains.getCardinality();
-	}
-	
+
 	public final DiscreteDomainList getAddedDomains()
 	{
 		return _addedDomains;
@@ -338,36 +341,119 @@ public abstract class DiscreteDomainListConverter
 	
 	public abstract void convertIndices(Indices indices);
 	
-	public double[] convertDenseWeights(double[] oldWeights)
+	public double[] convertDenseEnergies(double[] oldEnergies)
 	{
-		final double[] weights = new double[_toDomains.getCardinality()];
-	
-		Indices scratch = getScratch();
+		if (_removedDomains == null)
+		{
+			// No domains removed, so we don't need to add together any weights and can
+			// do a simple copy.
+			return denseCopy(oldEnergies);
+		}
 		
-		if (_addedDomains == null)
+		final double[] values = new double[_toDomains.getCardinality()];
+		// values start out in weight domain and are converted to log domain at bottom.
+		
+		if (hasFastJointIndexConversion())
 		{
 			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 			{
-				_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
-				convertIndices(scratch);
-				weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+				for (int added = getAddedCardinality(); --added >= 0;)
+				{
+					values[convertJointIndex(oldJoint, added)] += energyToWeight(oldEnergies[oldJoint]);
+				}
 			}
 		}
 		else
 		{
+			Indices scratch = getScratch();
+
 			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 			{
 				_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
-				for (int added = _addedDomains.getCardinality(); --added >= 0;)
+				for (int added = getAddedCardinality(); --added >= 0;)
 				{
-					_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+					if (_addedDomains != null)
+					{
+						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+					}
+					convertIndices(scratch);
+					values[_toDomains.jointIndexFromIndices(scratch.toIndices)]
+						+= energyToWeight(oldEnergies[oldJoint]);
+				}
+			}
+
+			scratch.release();
+		}
+		
+		for (int i = values.length; --i>=0;)
+		{
+			values[i] = weightToEnergy(values[i]);
+		}
+		
+		return values;
+	}
+	
+	
+	public double[] convertDenseWeights(double[] oldWeights)
+	{
+		if (_removedDomains == null)
+		{
+			// No domains removed, so we don't need to add together any weights and can
+			// do a simple copy.
+			return denseCopy(oldWeights);
+		}
+		
+		final double[] weights = new double[_toDomains.getCardinality()];
+		
+		if (hasFastJointIndexConversion())
+		{
+			if (_addedDomains == null)
+			{
+				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+				{
+					weights[convertJointIndex(oldJoint, 0)] += oldWeights[oldJoint];
+				}
+			}
+			else
+			{
+				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+				{
+					for (int added = _addedDomains.getCardinality(); --added >= 0;)
+					{
+						weights[convertJointIndex(oldJoint, added)] += oldWeights[oldJoint];
+					}
+				}
+			}
+		}
+		else
+		{
+			Indices scratch = getScratch();
+
+			if (_addedDomains == null)
+			{
+				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+				{
+					_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
 					convertIndices(scratch);
 					weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
 				}
 			}
+			else
+			{
+				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+				{
+					_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
+					for (int added = _addedDomains.getCardinality(); --added >= 0;)
+					{
+						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+						convertIndices(scratch);
+						weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+					}
+				}
+			}
+
+			scratch.release();
 		}
-		
-		scratch.release();
 		
 		return weights;
 	}
@@ -390,6 +476,148 @@ public abstract class DiscreteDomainListConverter
 		return convertJointIndex(oldJointIndex, addedJointIndex, null);
 	}
 
+	public double[] convertSparseEnergies(double[] oldEnergies,
+		int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		if (sparseIndexToJointIndex.length == oldSparseIndexToJointIndex.length * getAddedCardinality())
+		{
+			// No entries need to be merged, so we can use a simple copy and avoid energy/weight conversions.
+			return sparseCopy(oldEnergies, oldSparseIndexToJointIndex, sparseIndexToJointIndex);
+		}
+		
+		final int size = sparseIndexToJointIndex.length;
+		final double[] values = new double[size];
+		
+		final OpenIntIntHashMap jointIndexToSparseIndex = new OpenIntIntHashMap(sparseIndexToJointIndex.length);
+		for (int si = sparseIndexToJointIndex.length; --si>=0;)
+		{
+			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
+		}
+
+		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		{
+			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
+			for (int added = getAddedCardinality(); --added >=0; )
+			{
+				final int newJoint = convertJointIndex(oldJoint, added);
+				final int newSparse = jointIndexToSparseIndex.get(newJoint);
+				values[newSparse] += energyToWeight(oldEnergies[oldSparse]);
+			}
+		}
+		
+		for (int i = 0; i < size; ++i)
+		{
+			values[i] = weightToEnergy(values[i]);
+		}
+		
+		return values;
+	}
+	public int[] convertSparseToJointIndex(int[] oldSparseToJointIndex)
+	{
+		final int[] sparseToJoint = new int[oldSparseToJointIndex.length * getAddedCardinality()];
+		
+		int i = 0;
+		for (int oldJoint : oldSparseToJointIndex)
+		{
+			for (int added = getAddedCardinality(); --added >-0; )
+			{
+				sparseToJoint[i++] = convertJointIndex(oldJoint, added);
+			}
+		}
+
+		if (!maintainsJointIndexOrder())
+		{
+			Arrays.sort(sparseToJoint);
+		}
+
+		if (_removedDomains != null)
+		{
+			// If domains are removed then we may end up with duplicates.
+			// First determine new size.
+			int count = 0, prev = -1;
+			for (int joint : sparseToJoint)
+			{
+				if (joint != prev)
+				{
+					++count;
+				}
+				prev = joint;
+			}
+			
+			if (count != sparseToJoint.length)
+			{
+				final int[] sparseToJoint2 = new int[count];
+				i = 0;
+				prev = -1;
+				for (int joint : sparseToJoint)
+				{
+					if (joint != prev)
+					{
+						sparseToJoint2[i++] = joint;
+					}
+					prev = joint;
+				}
+				return sparseToJoint2;
+			}
+		}
+		
+		return sparseToJoint;
+	}
+	
+	public double[] convertSparseWeights(double[] oldWeights,
+		int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		if (_removedDomains == null)
+		{
+			return sparseCopy(oldWeights, oldSparseIndexToJointIndex, sparseIndexToJointIndex);
+		}
+		
+		final int size = sparseIndexToJointIndex.length;
+		final double[] weights = new double[size];
+		
+		final OpenIntIntHashMap jointIndexToSparseIndex = new OpenIntIntHashMap(sparseIndexToJointIndex.length);
+		for (int si = sparseIndexToJointIndex.length; --si>=0;)
+		{
+			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
+		}
+
+		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		{
+			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
+			for (int added = getAddedCardinality(); --added >=0; )
+			{
+				final int newJoint = convertJointIndex(oldJoint, added);
+				final int newSparse = jointIndexToSparseIndex.get(newJoint);
+				weights[newSparse] += oldWeights[oldSparse];
+			}
+		}
+		
+		return weights;
+	}
+	
+	/**
+	 * The number of different possible combinations of values in {@link #getAddedDomains()}
+	 * or else returns 1 if no added domains.
+	 */
+	public final int getAddedCardinality()
+	{
+		return _addedDomains == null ? 1 : _addedDomains.getCardinality();
+	}
+	
+	public boolean hasFastJointIndexConversion()
+	{
+		return false;
+	}
+	
+	/**
+	 * True if converter maintains the same order of joint indexes such that if
+	 * oldA <= oldB, then newA <= newB.
+	 */
+	public boolean maintainsJointIndexOrder()
+	{
+		return false;
+	}
+	
 	/*-------------------
 	 * Protected methods
 	 */
@@ -418,8 +646,72 @@ public abstract class DiscreteDomainListConverter
 	 * Private methods
 	 */
 	
+	private double[] denseCopy(double[] oldValues)
+	{
+		final double[] values = new double[_toDomains.getCardinality()];
+		
+		if (hasFastJointIndexConversion())
+		{
+			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+			{
+				for (int added = getAddedCardinality(); --added >= 0;)
+				{
+					values[convertJointIndex(oldJoint, added)] = oldValues[oldJoint];
+				}
+			}
+		}
+		else
+		{
+			Indices scratch = getScratch();
+
+			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
+			{
+				_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
+				for (int added = getAddedCardinality(); --added >= 0;)
+				{
+					if (_addedDomains != null)
+					{
+						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+					}
+					convertIndices(scratch);
+					values[_toDomains.jointIndexFromIndices(scratch.toIndices)] = oldValues[oldJoint];
+				}
+			}
+
+			scratch.release();
+		}
+
+		return values;
+	}
+	
 	private final void releaseScratch(Indices scratch)
 	{
 		_scratch.lazySet(scratch);
 	}
+	
+	public double[] sparseCopy(double[] oldValues, int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		final int size = sparseIndexToJointIndex.length;
+		final double[] values = new double[size];
+		
+		final OpenIntIntHashMap jointIndexToSparseIndex = new OpenIntIntHashMap(sparseIndexToJointIndex.length);
+		for (int si = sparseIndexToJointIndex.length; --si>=0;)
+		{
+			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
+		}
+
+		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		{
+			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
+			for (int added = getAddedCardinality(); --added >=0; )
+			{
+				final int newJoint = convertJointIndex(oldJoint, added);
+				final int newSparse = jointIndexToSparseIndex.get(newJoint);
+				values[newSparse] = oldValues[oldSparse];
+			}
+		}
+		
+		return values;
+	}
+
 }

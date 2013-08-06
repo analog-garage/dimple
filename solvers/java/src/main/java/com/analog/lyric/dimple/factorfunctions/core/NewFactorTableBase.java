@@ -23,12 +23,17 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	 * Construction
 	 */
 	
+	protected NewFactorTableBase(DiscreteDomainList domains)
+	{
+		_domains = domains;
+	}
+	
 	protected NewFactorTableBase(BitSet directedFrom, DiscreteDomain ... domains)
 	{
 		_domains = DiscreteDomainList.create(directedFrom, domains);
 	}
 	
-	public NewFactorTableBase(NewFactorTableBase that)
+	protected NewFactorTableBase(NewFactorTableBase that)
 	{
 		_domains = that._domains;
 	}

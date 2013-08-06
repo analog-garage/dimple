@@ -258,19 +258,19 @@ public class TestDiscreteDomainList
 		DiscreteDomainList dl3by2 = DiscreteDomainList.create(d3, d2);
 		
 		// A simple permutation
-		DiscreteDomainListConverter converter1 =
+		DiscreteDomainListConverter dl2by3_to_dl3by2 =
 			DiscreteDomainListConverter.createPermuter(dl2by3, null,  dl3by2,  null, new int[] { 1, 0});
-		assertSame(dl2by3, converter1.getFromDomains());
-		assertSame(dl3by2, converter1.getToDomains());
-		testInvariants(converter1);
-		assertNotEquals(converter1, converter1.getInverse());
-		assertNotEquals(converter1.hashCode(), converter1.getInverse().hashCode());
+		assertSame(dl2by3, dl2by3_to_dl3by2.getFromDomains());
+		assertSame(dl3by2, dl2by3_to_dl3by2.getToDomains());
+		testInvariants(dl2by3_to_dl3by2);
+		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3by2.getInverse());
+		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3by2.getInverse().hashCode());
 		double[] weights1 = new double[6];
 		for (int i = 0; i < weights1.length; ++i)
 		{
 			weights1[i] = rand.nextDouble();
 		}
-		double[] weights2 = converter1.convertDenseWeights(weights1);
+		double[] weights2 = dl2by3_to_dl3by2.convertDenseWeights(weights1);
 		assertEquals(weights2.length, weights1.length);
 		for (int i = 0; i < 2; ++i)
 		{
@@ -282,22 +282,22 @@ public class TestDiscreteDomainList
 			}
 		}
 		
-		DiscreteDomainListConverter converter1i =
+		DiscreteDomainListConverter dl3by2_to_dl2by3 =
 			DiscreteDomainListConverter.createPermuter(dl3by2, null,  dl2by3,  null, new int[] { 1, 0});
-		testInvariants(converter1i);
-		assertEquals(converter1, converter1i.getInverse());
-		assertEquals(converter1i, converter1.getInverse());
-		assertEquals(converter1.hashCode(), converter1i.getInverse().hashCode());
+		testInvariants(dl3by2_to_dl2by3);
+		assertEquals(dl2by3_to_dl3by2, dl3by2_to_dl2by3.getInverse());
+		assertEquals(dl3by2_to_dl2by3, dl2by3_to_dl3by2.getInverse());
+		assertEquals(dl2by3_to_dl3by2.hashCode(), dl3by2_to_dl2by3.getInverse().hashCode());
 		
 		// Remove a domain
 		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
-		DiscreteDomainListConverter converter2 = DiscreteDomainListConverter.createRemover(dl2by3, 0);
-		assertSame(dl2by3, converter2.getFromDomains());
-		assertEquals(dl2, converter2.getRemovedDomains());
-		testInvariants(converter2);
-		assertNotEquals(converter1, converter2);
-		assertNotEquals(converter1.hashCode(), converter2.hashCode());
-		weights2 = converter2.convertDenseWeights(weights1);
+		DiscreteDomainListConverter dl2by3_to_dl3 = DiscreteDomainListConverter.createRemover(dl2by3, 0);
+		assertSame(dl2by3, dl2by3_to_dl3.getFromDomains());
+		assertEquals(dl2, dl2by3_to_dl3.getRemovedDomains());
+		testInvariants(dl2by3_to_dl3);
+		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3);
+		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3.hashCode());
+		weights2 = dl2by3_to_dl3.convertDenseWeights(weights1);
 		assertEquals(3, weights2.length);
 		for (int i = 0; i < 3; ++i)
 		{
@@ -310,28 +310,41 @@ public class TestDiscreteDomainList
 			assertEquals(expected, actual, 1e-12);
 		}
 		
-		DiscreteDomainListConverter converter3 = DiscreteDomainListConverter.createRemover(dl2by3, 1);
-		assertSame(dl2by3, converter3.getFromDomains());
-		assertEquals(dl2, converter3.getToDomains());
-		testInvariants(converter3);
+		DiscreteDomainListConverter dl2by3_to_dl2 = DiscreteDomainListConverter.createRemover(dl2by3, 1);
+		assertSame(dl2by3, dl2by3_to_dl2.getFromDomains());
+		assertEquals(dl2, dl2by3_to_dl2.getToDomains());
+		testInvariants(dl2by3_to_dl2);
 		
 		DiscreteDomainList dl2by3by4by5 = DiscreteDomainList.create(d2, d3, d4, d5);
-		DiscreteDomainListConverter converter4 = DiscreteDomainListConverter.createJoiner(dl2by3by4by5, 1, 2);
-		DiscreteDomainList dl2by12by5 = converter4.getToDomains();
-		testInvariants(converter4);
+		DiscreteDomainListConverter dl2by3by4by5_to_dl2by = DiscreteDomainListConverter.createJoiner(dl2by3by4by5, 1, 2);
+		DiscreteDomainList dl2by12by5 = dl2by3by4by5_to_dl2by.getToDomains();
+		testInvariants(dl2by3by4by5_to_dl2by);
 		assertEquals(3, dl2by12by5.size());
 		assertEquals(12, dl2by12by5.getDomainSize(1));
-		assertNotEquals(converter1, converter4);
-		assertNotEquals(converter4, converter2);
-		assertNotEquals(converter4, converter4.getInverse());
-		assertNotEquals(converter4.hashCode(), converter4.getInverse().hashCode());
+		assertNotEquals(dl2by3_to_dl3by2, dl2by3by4by5_to_dl2by);
+		assertNotEquals(dl2by3by4by5_to_dl2by, dl2by3_to_dl3);
+		assertNotEquals(dl2by3by4by5_to_dl2by, dl2by3by4by5_to_dl2by.getInverse());
+		assertNotEquals(dl2by3by4by5_to_dl2by.hashCode(), dl2by3by4by5_to_dl2by.getInverse().hashCode());
 		weights1 = new double[dl2by3by4by5.getCardinality()];
 		for (int i = weights1.length; --i>=0;) weights1[i] = rand.nextDouble();
-		assertArrayEquals(weights1, converter4.convertDenseWeights(weights1), 0.0);
+		assertArrayEquals(weights1, dl2by3by4by5_to_dl2by.convertDenseWeights(weights1), 0.0);
 		
-		DiscreteDomainListConverter converter5 = DiscreteDomainListConverter.createSplitter(dl2by12by5, 1);
-		testInvariants(converter5);
-		assertEquals(converter4, converter5.getInverse());
+		DiscreteDomainListConverter dl2by12by5_to_dl2by3by4by5 = DiscreteDomainListConverter.createSplitter(dl2by12by5, 1);
+		testInvariants(dl2by12by5_to_dl2by3by4by5);
+		assertEquals(dl2by3by4by5_to_dl2by, dl2by12by5_to_dl2by3by4by5.getInverse());
+		
+		// Chain
+		DiscreteDomainListConverter dl3by2_to_dl3 = dl3by2_to_dl2by3.combineWith(dl2by3_to_dl3);
+		testInvariants(dl3by2_to_dl3);
+		
+		try
+		{
+			dl3by2_to_dl3.combineWith(dl2by12by5_to_dl2by3by4by5);
+			fail("expected exception");
+		}
+		catch (DimpleException ex)
+		{
+		}
 	}
 	
 	public static void testInvariants(DiscreteDomainListConverter converter)
@@ -339,7 +352,7 @@ public class TestDiscreteDomainList
 		assertEquals(converter, converter);
 
 		DiscreteDomainListConverter inverse = converter.getInverse();
-		assertSame(converter, inverse.getInverse());
+		assertEquals(converter, inverse.getInverse());
 		
 		DiscreteDomainListConverter.Indices indices = converter.getScratch();
 		assertSame(converter, indices.converter);
@@ -394,7 +407,5 @@ public class TestDiscreteDomainList
 				assertEquals(removedRef.get(), removedRef2.get());
 			}
 		}
-		
-		
 	}
 }

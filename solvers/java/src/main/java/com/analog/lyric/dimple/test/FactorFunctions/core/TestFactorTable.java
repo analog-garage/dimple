@@ -7,7 +7,6 @@ import java.util.BitSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cern.colt.map.OpenIntIntHashMap;
@@ -171,7 +170,7 @@ public class TestFactorTable
 	 * size gets above 120-150 elements.
 	 */
 	@Test
-	@Ignore
+//	@Ignore
 	public void binarySearchVsHashTable()
 	{
 		binarySearchVsHashTable(100, 1000);
@@ -187,12 +186,11 @@ public class TestFactorTable
 	{
 		Random rand = new Random(123);
 		int[] array = new int[size];
-		OpenIntIntHashMap map = new OpenIntIntHashMap(size * 2);
-		
+//		OpenIntIntHashMap map = new OpenIntIntHashMap(size * 2);
 		for (int i = 0; i < size; ++i)
 		{
 			array[i] = rand.nextInt();
-			map.put(array[i], i);
+//			map.put(array[i], i);
 		}
 		
 		Stopwatch timer = new Stopwatch();
@@ -211,6 +209,11 @@ public class TestFactorTable
 		
 		timer.reset();
 		timer.start();
+		OpenIntIntHashMap map = new OpenIntIntHashMap(size);
+		for (int i = 0; i < size; ++i)
+		{
+			map.put(array[i], i);
+		}
 		for (int i = iterations; --i>=0;)
 		{
 			for (int j = size; --j>=0;)

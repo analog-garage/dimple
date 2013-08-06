@@ -150,6 +150,12 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 	}
 	
 	@Override
+	public double[] convertDenseEnergies(double[] oldEnergies)
+	{
+		return oldEnergies.clone();
+	}
+	
+	@Override
 	public double[] convertDenseWeights(double[] oldWeights)
 	{
 		return oldWeights.clone();
@@ -173,4 +179,31 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 	{
 		return oldJointIndex;
 	}
+	
+	@Override
+	public int[] convertSparseToJointIndex(int[] oldSparseToJointIndex)
+	{
+		return oldSparseToJointIndex.clone();
+	}
+
+	@Override
+	public double[] convertSparseWeights(double[] oldSparseWeights,
+		int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		return oldSparseWeights.clone();
+	}
+
+	@Override
+	public boolean hasFastJointIndexConversion()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean maintainsJointIndexOrder()
+	{
+		return true;
+	}
+	
+	
 }

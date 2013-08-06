@@ -182,7 +182,6 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 				removedIndices[to] = index;
 			}
 		}
-
 	}
 
 	@Override
@@ -191,4 +190,5 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 		return _inverse;
 	}
 
+	// TODO: implement hasFastJointIndexConversion() and maintainsJointIndexOrder()
 }
