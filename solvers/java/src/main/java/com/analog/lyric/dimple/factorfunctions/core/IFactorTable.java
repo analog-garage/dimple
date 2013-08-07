@@ -3,6 +3,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.Random;
 
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.JointDiscreteDomain;
 
 public interface IFactorTable
 {
@@ -40,6 +41,11 @@ public interface IFactorTable
 	// Used in FactorTableBase & ParameterEstimator.run
 	public void copy(IFactorTable that);
 	
+	/**
+	 * Creates a new factor table based on this one, with {@code newDomains} added to the
+	 * end of the tables domains. The existing table values will be duplicated for all
+	 * combinations of the new domain values.
+	 */
 	// Only used by DiscreteFactor.replaceVariablesWithJoint
 	public IFactorTable createTableWithNewVariables(DiscreteDomain[] newDomains);
 
@@ -79,8 +85,22 @@ public interface IFactorTable
 	
 	public boolean isDirected();
 	
+	/**
+	 * Creates a new factor table that replaces two or more of its domains with
+	 * a joint domain.
+	 * <p>
+	 * @param varIndices contains the indices of the domains to be joined. Must have at least two entries
+	 * in the range [0,{@link #getColumns()}-1].
+	 * @param indexToJointIndex specifies the order in which the joined domains are to be incorporated
+	 * into the new joint domain.
+	 * @param allDomains is the list of all domains before joining
+	 * @param jointDomain is the new joined domain. Its size must match the product of the sizes of the
+	 * joined domains, and it is expected to be of type {@link JointDiscreteDomain}. It will be the
+	 * last domain in the new table's domain list.
+	 */
 	// Only used by DiscreteFactor.replaceVariablesWithJoint
-	public IFactorTable joinVariablesAndCreateNewTable(int [] varIndices,
+	public IFactorTable joinVariablesAndCreateNewTable(
+		int [] varIndices,
 		int [] indexToJointIndex,
 		DiscreteDomain [] allDomains,
 		DiscreteDomain jointDomain);
