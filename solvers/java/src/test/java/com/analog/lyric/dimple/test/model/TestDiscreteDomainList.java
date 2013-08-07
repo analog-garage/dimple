@@ -40,7 +40,7 @@ public class TestDiscreteDomainList
 			DiscreteDomainList.create((DiscreteDomain[])null);
 			fail("should not get here");
 		}
-		catch (DimpleException ex)
+		catch (NullPointerException ex)
 		{
 		}
 		

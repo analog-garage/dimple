@@ -38,7 +38,7 @@ public class DiscreteDomainList
 	DiscreteDomainList(int hashCode, DiscreteDomain[] domains)
 	{
 		_hashCode = hashCode;
-		if (domains == null || domains.length == 0)
+		if (domains.length == 0)
 		{
 			throw new DimpleException("Empty domain list");
 		}
@@ -57,38 +57,68 @@ public class DiscreteDomainList
 		_cardinality = product;
 	}
 	
-	DiscreteDomainList(DiscreteDomain[] domains)
+	private DiscreteDomainList(DiscreteDomain[] domains)
 	{
 		this(Arrays.hashCode(domains), domains);
 	}
 	
-	public static DiscreteDomainList create(DiscreteDomain ... domains)
+	private static DiscreteDomainList lookupOrCreate(BitSet inputs, DiscreteDomain[] domains, boolean cloneDomains)
 	{
-		return new DiscreteDomainList(domains);
-	}
-	
-	public static DiscreteDomainList create(BitSet inputs, DiscreteDomain ... domains)
-	{
+		// TODO: implement cache...
+		
+		if (cloneDomains)
+		{
+			domains = domains.clone();
+		}
+		
 		if (inputs != null)
 		{
 			return new DirectedDiscreteDomainList(inputs, domains);
 		}
 		else
 		{
-			return create(domains);
+			return new DiscreteDomainList(domains);
 		}
+	}
+	
+	public static DiscreteDomainList create(BitSet inputs, DiscreteDomain ... domains)
+	{
+		return lookupOrCreate(inputs, domains, true);
+	}
+	
+	public static DiscreteDomainList create(DiscreteDomain ... domains)
+	{
+		return lookupOrCreate(null, domains, true);
 	}
 	
 	public static DiscreteDomainList create(int[] inputIndices, DiscreteDomain[] domains)
 	{
+		BitSet inputs = null;
+		
 		if (inputIndices != null && inputIndices.length > 0)
 		{
-			return create(BitSetUtil.bitsetFromIndices(domains.length, inputIndices), domains);
+			inputs = BitSetUtil.bitsetFromIndices(domains.length, inputIndices);
 		}
-		else
+		
+		return lookupOrCreate(inputs, domains, true);
+	}
+	
+	public static DiscreteDomainList create(int[] inputIndices, List<VariableBase> variables)
+	{
+		final int size = variables.size();
+		DiscreteDomain[] domains = new DiscreteDomain[size];
+		for (int i = 0; i < size; ++i)
 		{
-			return create(domains);
+			domains[i] = variables.get(i).asDiscreteVariable().getDomain();
 		}
+		
+		BitSet inputs = null;
+		if (inputIndices != null && inputIndices.length > 0)
+		{
+			inputs = BitSetUtil.bitsetFromIndices(domains.length, inputIndices);
+		}
+		
+		return lookupOrCreate(inputs, domains, false);
 	}
 	
 	/**

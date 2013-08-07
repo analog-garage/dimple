@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 /*
  * MapList is a collection that stores data in both a HashMap and
@@ -64,7 +65,7 @@ public class MapList<T extends IGetId>  implements Collection<T>
 		//return _hashMap.size();
 	}
 	
-	public Collection<T> values()
+	public List<T> values()
 	{
 		return _arrayList;
 	}
