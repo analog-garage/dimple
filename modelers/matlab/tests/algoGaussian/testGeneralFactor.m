@@ -39,7 +39,7 @@ function testGeneralFactor()
         v(2).Input = tmpinputs(2,:);
         v(3).Input = tmpinputs(3,:);
 
-        f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridAddFactorFunction(),v(1),v(2),v(3));
+        f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridAddFactorFunction(),v(1),v(2),v(3));
 
         fg.solve();
 
@@ -64,7 +64,7 @@ function testGeneralFactor()
     %Test square
     a = v(1);
     b = v(2);
-    f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridRealSquare(),a,b);
+    f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridRealSquare(),a,b);
 
     a.Input = [25 10];
     b.Input = [0 Inf];
@@ -109,7 +109,7 @@ function testGeneralFactor()
     a = Real();
     b = Real();
 
-    f = fg.addFactor(com.analog.lyric.dimple.FactorFunctions.HybridRealFixedPower(3),a,b);
+    f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridRealFixedPower(3),a,b);
 
     a.Input = [27 10];
     b.Input = [0 Inf];

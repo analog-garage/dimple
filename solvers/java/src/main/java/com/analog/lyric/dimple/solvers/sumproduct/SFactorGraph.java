@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Random;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -59,6 +59,8 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			return new FiniteFieldProjection(factor);
 		}
+		else if (funcName.equals("multiplexerCPD"))
+			return new MultiplexerCPD(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
@@ -79,6 +81,8 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("finiteFieldAdd"))
 			return true;
 		else if (funcName.equals("finiteFieldProjection"))
+			return true;
+		else if (funcName.equals("multiplexerCPD"))
 			return true;
 		else
 			return false;	

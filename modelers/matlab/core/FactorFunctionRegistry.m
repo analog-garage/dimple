@@ -48,7 +48,7 @@ classdef FactorFunctionRegistry < handle
         function factorFunction = get(obj,name)
 %           name = lower(name);   % How to make this case insensitive?
             if ~obj.Map.isKey(name)
-                composedName = ['com.analog.lyric.dimple.FactorFunctions.' name]; 
+                composedName = ['com.analog.lyric.dimple.factorfunctions.' name]; 
                 if exist(composedName, 'class') == 8    % Means name is a class
                     factorFunction = eval(['@' composedName]);                    
                 else

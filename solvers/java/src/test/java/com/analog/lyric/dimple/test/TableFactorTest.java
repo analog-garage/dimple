@@ -18,10 +18,11 @@ package com.analog.lyric.dimple.test;
 
 
 import org.junit.*;
+
 import static org.junit.Assert.* ;
 
-import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Factor;

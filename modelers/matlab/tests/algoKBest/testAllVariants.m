@@ -20,7 +20,7 @@ function testAllVariants()
     %1) minsum vs. sumproduct
     %2) matlab factor function vs. java factor function 
 
-    javaFF = com.analog.lyric.dimple.FactorFunctions.SumOfInputs();
+    javaFF = com.analog.lyric.dimple.factorfunctions.SumOfInputs();
     matlabFF = @(x) sum(x);
     factorFunctions = {javaFF,matlabFF};
     solvers = {'minsum','sumproduct'};

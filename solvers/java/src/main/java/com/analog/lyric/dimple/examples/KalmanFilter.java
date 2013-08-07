@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.examples;
 
-import com.analog.lyric.dimple.FactorFunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.RealJoint;
 

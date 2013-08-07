@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.repeated.FactorFunctionDataSource;
 
 public class PFactorFunctionDataSource extends PGenericDataSource<FactorFunctionDataSource,FactorFunction> 

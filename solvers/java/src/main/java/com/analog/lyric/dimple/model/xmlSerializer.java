@@ -39,7 +39,7 @@ import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.LSOutput;
 import org.xml.sax.SAXException;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.serializerdetails.Deserializer;
 import com.analog.lyric.dimple.model.serializerdetails.Serializer;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;

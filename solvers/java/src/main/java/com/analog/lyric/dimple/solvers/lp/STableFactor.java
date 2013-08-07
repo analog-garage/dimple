@@ -22,8 +22,8 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTableBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.VariableList;

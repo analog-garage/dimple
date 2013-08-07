@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 import com.analog.lyric.cs.Sort;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;

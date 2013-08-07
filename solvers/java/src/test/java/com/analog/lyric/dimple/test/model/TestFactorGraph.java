@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.FactorFunctions.Sum;
+import com.analog.lyric.dimple.factorfunctions.Sum;
 import com.analog.lyric.dimple.model.Bit;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;

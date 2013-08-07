@@ -19,8 +19,8 @@ package com.analog.lyric.util.misc;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.analog.lyric.dimple.FactorFunctions.XorDelta;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;

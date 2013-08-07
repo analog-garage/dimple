@@ -1134,7 +1134,7 @@ for (int i = 0; i < 3; i++)
 	for (int j = 0; j < 3; j++)
 		v[j].setInputObject(tmpinputs[j]);
 
-	Factor f = fg.addFactor(new com.analog.lyric.dimple.FactorFunctions.HybridAddFactorFunction(),v[0],v[1],v[2]);
+	Factor f = fg.addFactor(new com.analog.lyric.dimple.factorfunctions.HybridAddFactorFunction(),v[0],v[1],v[2]);
 
 	fg.solve();
 

@@ -26,8 +26,8 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.TreeMap;
 
-import com.analog.lyric.dimple.FactorFunctions.*;
-import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.*;
 import com.analog.lyric.dimple.model.*;
 import com.analog.lyric.dimple.schedulers.schedule.*;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;

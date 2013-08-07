@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.model;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.FactorFunctions.core.FactorFunction;
-import com.analog.lyric.dimple.FactorFunctions.core.FactorTable;
-import com.analog.lyric.dimple.FactorFunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 
 public class DiscreteFactor extends Factor
 {
