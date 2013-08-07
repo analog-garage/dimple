@@ -283,7 +283,7 @@ public class FactorGraph extends FactorBase
 
 	public Factor addFactor(int [][] indices, double [] weights, Discrete ... vars)
 	{
-		return addFactor(new FactorTable(indices,weights,vars),vars);
+		return addFactor(FactorTable.create(indices, weights, vars),vars);
 	}
 
 	public Factor addFactor(IFactorTable ft, VariableBase ... vars)

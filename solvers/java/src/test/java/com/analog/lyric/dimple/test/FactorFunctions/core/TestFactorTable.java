@@ -114,7 +114,7 @@ public class TestFactorTable
 		newTable.setRepresentation(INewFactorTable.Representation.DENSE_WEIGHT);
 		newTable.randomizeWeights(rand);
 		
-		FactorTable oldTable = new FactorTable(domain10, domain20, domain5);
+		IFactorTable oldTable = FactorTable.create(domain10, domain20, domain5);
 		oldTable.change(newTable.getIndices(), newTable.getWeights());
 		
 		FactorTablePerformanceTester oldTester = new FactorTablePerformanceTester(oldTable, iterations);

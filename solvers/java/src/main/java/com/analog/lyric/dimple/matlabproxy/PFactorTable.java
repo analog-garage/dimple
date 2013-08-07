@@ -31,17 +31,17 @@ public class PFactorTable extends PObject
 	
 	public PFactorTable(PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(PHelpers.convertDomains(domains));
+		_table = FactorTable.create(PHelpers.convertDomains(domains));
 	}
 	
 	public PFactorTable(Object table, PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(table, PHelpers.convertDomains(domains));
+		_table = FactorTable.create(table, PHelpers.convertDomains(domains));
 	}
 	
 	public PFactorTable(int [][] indices, double [] values, PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(indices,values,PHelpers.convertDomains(domains));
+		_table = FactorTable.create(indices, values, PHelpers.convertDomains(domains));
 	}
 	
 	public PFactorTable(IFactorTable table)

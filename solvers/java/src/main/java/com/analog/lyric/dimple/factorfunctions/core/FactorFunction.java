@@ -72,7 +72,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     	if (_factory == null)
     		_factory = new FactorTableFactory();
     	
-    	return (FactorTable)_factory.getTable(this, dds)[0];
+    	return (IFactorTable)_factory.getTable(this, dds)[0];
     }
        	
 	protected class FactorTableFactory
@@ -85,7 +85,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 		protected class FunctionEntry
 		{
 	        FactorFunction _factorFunction;
-	        ArrayList<FactorTable> _tables = new ArrayList<FactorTable>();
+	        ArrayList<IFactorTable> _tables = new ArrayList<IFactorTable>();
 	        
 	        public FunctionEntry(FactorFunction factorFunction)
 	        {
@@ -99,13 +99,13 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        
 	        public Object [] getCombinationTable(DiscreteDomain [] domains,boolean create)
 	        {
-	        	FactorTable table = null;
+	        	IFactorTable table = null;
     			boolean matched = false;
     			
 	        	//Check all tables
     			for(int i = 0; i < _tables.size() && !matched; ++i)
 	        	{
-    				FactorTable currTable = _tables.get(i);
+    				IFactorTable currTable = _tables.get(i);
 	        		
 	        		//Check this table
 	        		if(domains.length == currTable.getDomains().length)
@@ -152,7 +152,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 
 	        //private Method getMethodFromFactorFunctionAndVariables()
 	        
-        	protected FactorTable createCombinationTable(DiscreteDomain [] domain)
+        	protected IFactorTable createCombinationTable(DiscreteDomain [] domain)
 	        {
         		
 	        	//Variables for computation
@@ -229,7 +229,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	        		rIndices[i] = indices.get(i).clone();
 	        		rValues[i] = values.get(i);
 	        	}
-	        	FactorTable table = new FactorTable(rIndices,rValues,false,domain);
+	        	IFactorTable table = FactorTable.create(rIndices, rValues, false, domain);
 	        	_tables.add(table);
 	        	
 	    		return table;
@@ -262,7 +262,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 			}
 			
 			Object [] tmp = fe.getCombinationTable(domain);
-			FactorTable table = (FactorTable)tmp[0];
+			IFactorTable table = (IFactorTable)tmp[0];
 			Boolean isNewTable = (Boolean)tmp[1];
 			Object[] ret = new Object[2];
 			ret[0] = table;

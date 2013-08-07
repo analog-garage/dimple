@@ -48,13 +48,7 @@ public class FactorTable extends FactorTableBase
 	private HashMap<ArrayList<Object>,ArrayList<Object>> _deterministicDirectedLookupTable = null;
 	
 
-	public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
-	{
-		this(indices,weights,true,domains);
-	}
-	
-	
-	public FactorTable(int [][] indices, double [] weights, Discrete... variables)
+	private FactorTable(int [][] indices, double [] weights, Discrete... variables)
 	{
 		super(indices,weights,true);
 	
@@ -66,14 +60,7 @@ public class FactorTable extends FactorTableBase
 		_domains = domains;
 	}
 	
-	public FactorTable(Object table, DiscreteDomain [] domains)
-	{
-		Object [] result = Misc.nDimensionalArray2indicesAndValues(table);
-		_domains = domains;
-		change((int[][])result[0],(double[])result[1],false);
-	}
-	
-	public FactorTable(DiscreteDomain ... domains)
+	private FactorTable(DiscreteDomain ... domains)
 	{
 		if (domains.length == 0)
 			throw new DimpleException("Must specify at least one domain");
@@ -104,8 +91,8 @@ public class FactorTable extends FactorTableBase
 		change(indices,values,false);
 	}
 
-	
-	public FactorTable(int [][] indices, double [] weights, boolean checkTable, DiscreteDomain ... domains)
+
+	private FactorTable(int [][] indices, double [] weights, boolean checkTable, DiscreteDomain ... domains)
 	{
 		super(indices,weights,checkTable);
 		
@@ -118,7 +105,7 @@ public class FactorTable extends FactorTableBase
 		
 	}
 	
-	public FactorTable(FactorTable copy)
+	private FactorTable(FactorTable copy)
 	{
 		super(copy);
 		_domains = copy._domains;
@@ -126,6 +113,58 @@ public class FactorTable extends FactorTableBase
 		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
 	}
 	
+	public static volatile boolean useNewFactorTable = false;
+	
+	public static IFactorTable create(int[][] indices, double[] weights, DiscreteDomain... domains)
+	{
+		return create(indices, weights, true, domains);
+	}
+	
+	public static IFactorTable create(int[][] indices, double[] weights, Discrete... variables)
+	{
+		DiscreteDomain[] domains = new DiscreteDomain[variables.length];
+		for(int i = 0; i < domains.length; ++i)
+		{
+			domains[i] = variables[i].getDiscreteDomain();
+		}
+		return create(indices, weights, domains);
+	}
+
+	public static IFactorTable create(Object table, DiscreteDomain[] domains)
+	{
+		Object [] result = Misc.nDimensionalArray2indicesAndValues(table);
+		return create((int[][])result[0], (double[])result[1], false, domains);
+	}
+
+	public static IFactorTable create(DiscreteDomain... domains)
+	{
+		if (useNewFactorTable)
+		{
+			return new NewFactorTable(domains);
+		}
+		else
+		{
+			return new FactorTable(domains);
+		}
+	}
+
+	public static IFactorTable create(int[][] indices,
+		double[] weights,
+		boolean checkTable,
+		DiscreteDomain... domains)
+	{
+		if (useNewFactorTable)
+		{
+			IFactorTable table = new NewFactorTable(domains);
+			table.change(indices, weights);
+			return table;
+		}
+		else
+		{
+			return new FactorTable(indices, weights, checkTable, domains);
+		}
+	}
+
 	@Override
 	public void copy(IFactorTable copy)
 	{
@@ -465,7 +504,7 @@ public class FactorTable extends FactorTableBase
 	//where one has a domain of 3 elements and another has a domain of 4 elements, we'll end up with
 	//a FactorTable with 3*4*20 rows.
 	@Override
-	public FactorTable createTableWithNewVariables(DiscreteDomain [] newDomains)
+	public IFactorTable createTableWithNewVariables(DiscreteDomain [] newDomains)
 	{
 		
 		int [][] indices = getIndices();
@@ -519,7 +558,7 @@ public class FactorTable extends FactorTableBase
 		}
 		
 		
-		return new FactorTable(newTable, values, allDomains);
+		return new FactorTable(newTable, values, true, allDomains);
 	}
 
 	
@@ -824,14 +863,13 @@ public class FactorTable extends FactorTableBase
 									   targetDirectory);
 	}
 
-	public static FactorTable deserializeFromXML(String docName)
+	public static IFactorTable deserializeFromXML(String docName)
 	{
 		com.analog.lyric.dimple.model.xmlSerializer x
 			= new com.analog.lyric.dimple.model.xmlSerializer();
 		
-		FactorTable mct = x.deserializeFactorTableFromXML(docName);
+		IFactorTable mct = x.deserializeFactorTableFromXML(docName);
 		
 		return mct;
 	}
-		
 }

@@ -97,9 +97,9 @@ public class FactorFunctionTest {
 			weights[i] = xorWeights[i];
 		}
 		
-		FactorTable ftVar = new FactorTable(table, weights, discretes);
-		FactorTable ftVDomain = new FactorTable(table, weights, vDomains);
-		FactorTable ftDomain = new FactorTable(table, weights, domains);
+		IFactorTable ftVar = FactorTable.create(table, weights, discretes);
+		IFactorTable ftVDomain = FactorTable.create(table, weights, vDomains);
+		IFactorTable ftDomain = FactorTable.create(table, weights, domains);
 		
 		TableFactorFunction tffVar = new TableFactorFunction("tffVar", table, weights, discretes);
 		TableFactorFunction tffDVar = new TableFactorFunction("tffDVar", ftVar);

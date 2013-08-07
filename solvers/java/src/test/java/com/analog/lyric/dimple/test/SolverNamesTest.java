@@ -141,7 +141,7 @@ public class SolverNamesTest extends TestCase {
 		Arrays.fill(dummyValues, 1.0);
 		
 		TableFactorFunction factorFunc = new TableFactorFunction("table",
-				new FactorTable(dummyTable,dummyValues, DiscreteDomain.fromElements(0,1),DiscreteDomain.fromElements(0,1),DiscreteDomain.fromElements(0,1)));
+				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.fromElements(0,1), DiscreteDomain.fromElements(0,1), DiscreteDomain.fromElements(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
 		assertTrue(fn.getName().equals(fn.getUUID().toString()));
@@ -394,8 +394,7 @@ public class SolverNamesTest extends TestCase {
   		double[] dummyValues = new double[3];
 		Arrays.fill(dummyValues, 1.0);
 		
-		TableFactorFunction factorFunc = new TableFactorFunction("table", new FactorTable(dummyTable,dummyValues,
-				domain2, domain2, domain2));
+		TableFactorFunction factorFunc = new TableFactorFunction("table", FactorTable.create(dummyTable, dummyValues, domain2, domain2, domain2));
   		//fg.createTable(dummyTable, dummyValues);
   		Factor fn = fg.addFactor(factorFunc,variables);
 
@@ -434,8 +433,7 @@ public class SolverNamesTest extends TestCase {
 		Arrays.fill(dummyValuesSub, 1.0);
 		
 		
-		TableFactorFunction otherFactorFunc = new TableFactorFunction("table", new FactorTable(dummyTableSub,dummyValuesSub,
-				domain2, domain2, domain2));
+		TableFactorFunction otherFactorFunc = new TableFactorFunction("table", FactorTable.create(dummyTableSub, dummyValuesSub, domain2, domain2, domain2));
 		
 		fgSub.addFactor(otherFactorFunc, variablesSub);
  		

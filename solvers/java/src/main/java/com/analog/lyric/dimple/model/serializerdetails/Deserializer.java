@@ -36,6 +36,7 @@ import org.xml.sax.SAXException;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
@@ -503,7 +504,7 @@ public class Deserializer
 		    		for (int i = 0; i < domains.length; i++)
 		    			domains[i] = (DiscreteDomain)arguments[i].getDomain();
 		    		ff = new TableFactorFunction(xct._functionName,
-		    				new FactorTable(xct._indices, xct._values, domains));
+		    				FactorTable.create(xct._indices, xct._values, domains));
 		    		factorFunctions.put(xct,ff);
 		    	}
 		    	
@@ -521,9 +522,9 @@ public class Deserializer
 		return _fg;
 	}
 	
-	public FactorTable deserializeFactorTableFromXML(String docName)
+	public IFactorTable deserializeFactorTableFromXML(String docName)
 	{
-		FactorTable ct = null;
+		IFactorTable ct = null;
 		try
         {
     		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -532,7 +533,7 @@ public class Deserializer
     		Element DocElement = document.getDocumentElement();
 
     		xmlsFactorTable xct = deserializeFactorTableFromXML(DocElement);
-    		ct = new FactorTable(xct._indices, xct._values,xct._domains);
+    		ct = FactorTable.create(xct._indices, xct._values, xct._domains);
         }
 		catch (FactoryConfigurationError e)
 		{

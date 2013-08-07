@@ -44,11 +44,11 @@ public class TableFactorFunction extends FactorFunction
 	
 	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains)
 	{
-		this(name,new FactorTable(indices,probs,domains));
+		this(name,FactorTable.create(indices, probs, domains));
 	}
 	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes)
 	{
-		this(name,new FactorTable(indices,probs,discretes));
+		this(name,FactorTable.create(indices, probs, discretes));
 	}
 	
 

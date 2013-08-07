@@ -129,7 +129,7 @@ public class Equality extends FactorFunction
     		}
     	}
     	
-    	return new FactorTable(indices,probs, discreteDomains);
+    	return FactorTable.create(indices, probs, discreteDomains);
     }
     
 }

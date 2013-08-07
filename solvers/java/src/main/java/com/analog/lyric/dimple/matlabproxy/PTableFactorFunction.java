@@ -34,17 +34,17 @@ public class PTableFactorFunction extends PFactorFunction
 
 	public PTableFactorFunction(String name, PDiscreteDomain [] domains)
 	{
-		super(new TableFactorFunction(name,new FactorTable(PHelpers.convertDomains(domains))));
+		super(new TableFactorFunction(name,FactorTable.create(PHelpers.convertDomains(domains))));
 	}
 
 	public PTableFactorFunction(String name, Object values,PDiscreteDomain [] domains)
 	{
-		super(new TableFactorFunction(name,new FactorTable(values,PHelpers.convertDomains(domains))));
+		super(new TableFactorFunction(name,FactorTable.create(values, PHelpers.convertDomains(domains))));
 	}
 
 	public PTableFactorFunction(String name, int [][] indices, double [] values, PDiscreteDomain [] domains)
 	{
-		super(new TableFactorFunction(name, new FactorTable(indices,values, PHelpers.convertDomains(domains))));
+		super(new TableFactorFunction(name, FactorTable.create(indices, values, PHelpers.convertDomains(domains))));
 	}
 
 	/*-----------------
