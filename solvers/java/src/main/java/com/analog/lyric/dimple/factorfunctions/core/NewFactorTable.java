@@ -1,5 +1,8 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import static com.analog.lyric.dimple.model.DiscreteDomainListConverter.*;
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -284,7 +287,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case NOT_SPARSE_ENERGY:
 		case DENSE_ENERGY_SPARSE_WEIGHT:
 		case SPARSE_WEIGHT:
-			return Utilities.weightToEnergy(_sparseWeights[sparseIndex]);
+			return weightToEnergy(_sparseWeights[sparseIndex]);
 			
 		}
 		
@@ -318,7 +321,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY:
 		case NOT_DENSE_WEIGHT:
 		case DENSE_ENERGY_SPARSE_WEIGHT:
-			return Utilities.energyToWeight(_denseEnergies[jointIndex]);
+			return energyToWeight(_denseEnergies[jointIndex]);
 			
 		case ALL_SPARSE:
 		case SPARSE_WEIGHT:
@@ -333,7 +336,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			sparseIndex = sparseIndexFromJointIndex(jointIndex);
 			if (sparseIndex >= 0)
 			{
-				return Utilities.energyToWeight(_sparseEnergies[sparseIndex]);
+				return energyToWeight(_sparseEnergies[sparseIndex]);
 			}
 			break;
 		}
@@ -370,7 +373,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case SPARSE_ENERGY:
 		case NOT_SPARSE_WEIGHT:
 		case SPARSE_ENERGY_DENSE_WEIGHT:
-			return Utilities.energyToWeight(_sparseEnergies[sparseIndex]);
+			return energyToWeight(_sparseEnergies[sparseIndex]);
 		}
 
 		return 0.0;
@@ -552,7 +555,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			// TODO: if sparse size is large enough, it would be faster to iterate over the dense weights
 			for (double e: _sparseEnergies)
 			{
-				total += Utilities.energyToWeight(e);
+				total += energyToWeight(e);
 			}
 			break;
 			
@@ -567,7 +570,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY:
 			for (double e : _denseEnergies)
 			{
-				total += Utilities.energyToWeight(e);
+				total += energyToWeight(e);
 			}
 			break;
 		}
@@ -1059,7 +1062,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double weight = _representation.hasWeight() ? Utilities.energyToWeight(energy) : 0.0;
+				double weight = _representation.hasWeight() ? energyToWeight(energy) : 0.0;
 				setWeightEnergyForSparseIndex(weight, energy, sparseIndex);
 			}
 			
@@ -1088,7 +1091,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double energy = _representation.hasEnergy() ? Utilities.weightToEnergy(weight) : 0.0;
+				double energy = _representation.hasEnergy() ? weightToEnergy(weight) : 0.0;
 				setWeightEnergyForJointIndex(weight, energy, jointIndex);
 			}
 			
@@ -1117,7 +1120,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 			else
 			{
-				double energy = _representation.hasEnergy() ? Utilities.weightToEnergy(weight) : 0.0;
+				double energy = _representation.hasEnergy() ? weightToEnergy(weight) : 0.0;
 				setWeightEnergyForSparseIndex(weight, energy, sparseIndex);
 			}
 			
@@ -1206,7 +1209,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				_sparseEnergies = new double[newSize];
 				for (int i = 0; i < newSize; ++i)
 				{
-					_sparseEnergies[i] = Utilities.weightToEnergy(orderedWeights[i]);
+					_sparseEnergies[i] = weightToEnergy(orderedWeights[i]);
 				}
 			}
 		}
@@ -1231,7 +1234,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				for (int i = 0; i < newSize; ++i)
 				{
-					_denseEnergies[jointIndexes[i]] = Utilities.weightToEnergy(orderedWeights[i]);
+					_denseEnergies[jointIndexes[i]] = weightToEnergy(orderedWeights[i]);
 				}
 			}
 		}
@@ -1338,113 +1341,71 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	// FIXME: what to do if table is directed? Should we assert that the joined
 	// variables are all either inputs or outputs?
 	@Override
-	public NewFactorTable joinVariablesAndCreateNewTable(int[] varIndices,
+	public NewFactorTable joinVariablesAndCreateNewTable(
+		int[] varIndices,
 		int[] indexToJointIndex,
 		DiscreteDomain[] allDomains,
 		DiscreteDomain jointDomain)
 	{
-		final int nOldDomains = getDimensions();
-		final int nJoinedDomains = varIndices.length;
-		final int nNewDomains = nOldDomains + 1 - nJoinedDomains;
-		final int jointDomainIndex = nNewDomains - 1;
+		assert(Arrays.equals(allDomains, _domains.toArray()));
+		assert(varIndices.length == indexToJointIndex.length);
 		
-		//
-		// Build joined variable index set.
-		//
+		// Build a domain converter by first permuting joined domains to proper order at
+		// end of domain list, and then by doing the join.
 		
-		final BitSet varIndexSet = BitSetUtil.bitsetFromIndices(nOldDomains, varIndices);
+		final int joinedSize = varIndices.length;
+		final int unjoinedSize = _domains.size() - joinedSize;
+		final int[] permutation = new int[_domains.size()];
+		Arrays.fill(permutation, -1);
 		
-		//
-		// Compute new domains and state needed to construct new table.
-		//
+		// Compute the mappings for the joined variables to the end of the list
+		for (int i = 0; i < joinedSize; ++i)
+		{
+			permutation[varIndices[i]] = unjoinedSize + indexToJointIndex[i];
+		}
+		
+		// and the remaining unjoined variables at the front of the list.
+		int to = 0;
+		for (int i = 0; i < permutation.length; ++i)
+		{
+			if (permutation[i] < 0)
+			{
+				permutation[i] = to++;
+			}
+		}
+		
+		// See if permutation actually changes anything.
+		boolean identityMap = true;
+		for (int i = permutation.length; --i>=0;)
+		{
+			if (permutation[i] != i)
+			{
+				identityMap = false;
+				break;
+			}
+		}
+		
+		DiscreteDomainListConverter converter = null;
+		if (!identityMap)
+		{
+			DiscreteDomain[] toDomains = new DiscreteDomain[permutation.length];
+			for (int i = permutation.length; --i>=0;)
+			{
+				toDomains[permutation[i]] = _domains.get(i);
+			}
+			converter = createPermuter(_domains, null, DiscreteDomainList.create(toDomains), null, permutation);
+		}
+		
+		if (converter != null)
+		{
+			converter.combineWith(createJoiner(converter.getToDomains(), unjoinedSize, joinedSize));
+		}
+		else
+		{
+			converter = createJoiner(_domains, unjoinedSize, joinedSize);
+		}
 
-		final int [] oldToNewMap = new int[nOldDomains];
-		int[] oldVarSizeProducts = computeDomainSubsetInfo(_domains, varIndexSet, oldToNewMap);
-		
-		DiscreteDomain[] newDomains = new DiscreteDomain[nNewDomains];
-		newDomains[jointDomainIndex] = jointDomain;
-		for (int i = 0, end = nOldDomains; i < end; ++i)
-		{
-			int j = oldToNewMap[i];
-			if (j < 0)
-			{
-				newDomains[1 - j] = allDomains[i];
-			}
-		}
-		
-		//
-		// Build the new table.
-		//
-		
-		NewFactorTable joinedTable = new NewFactorTable(newDomains);
-		
-		// For simplicity, build table using dense weight representation.
-		//
-		// If we wanted to save memory and do the conversion in sparse representation, we would
-		// need to do something much more complicated.
-		joinedTable.setRepresentation(Representation.DENSE_WEIGHT);
-
-		final int [] oldIndices = new int[nOldDomains];
-		final int [] newIndices = new int[nNewDomains];
-		final int [] removedIndices = new int[nJoinedDomains];
-			
-		final int[] sparseToJoint = _sparseIndexToJointIndex;
-		if (sparseToJoint.length > 0)
-		{
-			for (int si = sparseToJoint.length; --si>=0;)
-			{
-				_domains.jointIndexToIndices(sparseToJoint[si], oldIndices);
-				for (int i = 0; i < nOldDomains; ++i)
-				{
-					final int oldi = oldIndices[i];
-					final int j = oldToNewMap[i];
-					if (j < 0)
-					{
-						removedIndices[j] = oldi;
-					}
-					else
-					{
-						newIndices[1-j] = oldi;
-					}
-				}
-				newIndices[jointDomainIndex] = locationFromIndices(removedIndices, oldVarSizeProducts);
-				int newJointIndex = _domains.jointIndexFromIndices(newIndices);
-				joinedTable.setWeightForJointIndex(getWeightForSparseIndex(si), newJointIndex);
-			}
-		}
-		else if (_nonZeroWeights > 0)
-		{
-			int jointSize = jointSize();
-			for (int ji = 0; ji < jointSize; ++ji)
-			{
-				double weight = getWeightForJointIndex(ji);
-				if (weight != 0.0)
-				{
-					_domains.jointIndexToIndices(ji, oldIndices);
-					for (int i = 0; i < nOldDomains; ++i)
-					{
-						final int oldi = oldIndices[i];
-						final int j = oldToNewMap[i];
-						if (j < 0)
-						{
-							removedIndices[j] = oldi;
-						}
-						else
-						{
-							newIndices[1-j] = oldi;
-						}
-					}
-					newIndices[jointDomainIndex] = locationFromIndices(removedIndices, oldVarSizeProducts);
-					int newJointIndex = _domains.jointIndexFromIndices(newIndices);
-					joinedTable.setWeightForJointIndex(weight, newJointIndex);
-				}
-			}
-		}
-		
-		// Convert to same representation as current table.
-		joinedTable.setRepresentation(_representation);
-		
-		return joinedTable;
+		return new NewFactorTable(this, converter);
 	}
 
 	@Override
