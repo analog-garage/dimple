@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.test.model;
 
+import static com.analog.lyric.math.Utilities.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -18,6 +19,8 @@ import com.analog.lyric.util.test.SerializationTester;
 
 public class TestDiscreteDomainList
 {
+	private Random rand = new Random(1323);
+	
 	@Test
 	public void test()
 	{
@@ -249,7 +252,6 @@ public class TestDiscreteDomainList
 	@Test
 	public void testConverter()
 	{
-		Random rand = new Random(1323);
 		DiscreteDomain d2 = DiscreteDomain.intRangeFromSize(2);
 		DiscreteDomain d3 = DiscreteDomain.intRangeFromSize(3);
 		DiscreteDomain d4 = DiscreteDomain.intRangeFromSize(4);
@@ -266,22 +268,6 @@ public class TestDiscreteDomainList
 		testInvariants(dl2by3_to_dl3by2);
 		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3by2.getInverse());
 		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3by2.getInverse().hashCode());
-		double[] weights1 = new double[6];
-		for (int i = 0; i < weights1.length; ++i)
-		{
-			weights1[i] = rand.nextDouble();
-		}
-		double[] weights2 = dl2by3_to_dl3by2.convertDenseWeights(weights1);
-		assertEquals(weights2.length, weights1.length);
-		for (int i = 0; i < 2; ++i)
-		{
-			for (int j = 0; j < 3; ++j)
-			{
-				int from = dl2by3.jointIndexFromIndices(i,j);
-				int to = dl3by2.jointIndexFromIndices(j,i);
-				assertEquals(weights1[from], weights2[to], 0.0);
-			}
-		}
 		
 		DiscreteDomainListConverter dl3by2_to_dl2by3 =
 			DiscreteDomainListConverter.createPermuter(dl3by2, null,  dl2by3,  null, new int[] { 1, 0});
@@ -298,18 +284,6 @@ public class TestDiscreteDomainList
 		testInvariants(dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3.hashCode());
-		weights2 = dl2by3_to_dl3.convertDenseWeights(weights1);
-		assertEquals(3, weights2.length);
-		for (int i = 0; i < 3; ++i)
-		{
-			double actual = weights2[i];
-			double expected = 0.0;
-			for (int j = 0; j < 2; ++j)
-			{
-				expected += weights1[dl2by3.jointIndexFromIndices(j,i)];
-			}
-			assertEquals(expected, actual, 1e-12);
-		}
 		
 		DiscreteDomainListConverter dl2by3_to_dl2 = DiscreteDomainListConverter.createRemover(dl2by3, 1);
 		assertSame(dl2by3, dl2by3_to_dl2.getFromDomains());
@@ -326,9 +300,6 @@ public class TestDiscreteDomainList
 		assertNotEquals(dl2by3by4by5_to_dl2by, dl2by3_to_dl3);
 		assertNotEquals(dl2by3by4by5_to_dl2by, dl2by3by4by5_to_dl2by.getInverse());
 		assertNotEquals(dl2by3by4by5_to_dl2by.hashCode(), dl2by3by4by5_to_dl2by.getInverse().hashCode());
-		weights1 = new double[dl2by3by4by5.getCardinality()];
-		for (int i = weights1.length; --i>=0;) weights1[i] = rand.nextDouble();
-		assertArrayEquals(weights1, dl2by3by4by5_to_dl2by.convertDenseWeights(weights1), 0.0);
 		
 		DiscreteDomainListConverter dl2by12by5_to_dl2by3by4by5 = DiscreteDomainListConverter.createSplitter(dl2by12by5, 1);
 		testInvariants(dl2by12by5_to_dl2by3by4by5);
@@ -348,7 +319,12 @@ public class TestDiscreteDomainList
 		}
 	}
 	
-	public static void testInvariants(DiscreteDomainListConverter converter)
+	public void testInvariants(DiscreteDomainListConverter converter)
+	{
+		testInvariants(converter, true);
+	}
+	
+	private void testInvariants(DiscreteDomainListConverter converter, boolean testInverse)
 	{
 		assertEquals(converter, converter);
 
@@ -388,8 +364,28 @@ public class TestDiscreteDomainList
 		final AtomicInteger removedRef2 = new AtomicInteger();
 		final AtomicInteger addedRef = new AtomicInteger();
 		
+		double[] fromDenseWeights = new double[maxFrom];
+		double[] fromDenseEnergies = new double[maxFrom];
+		for (int i = 0; i < maxFrom; ++i)
+		{
+			double w = rand.nextDouble();
+			fromDenseWeights[i] = w;
+			fromDenseEnergies[i] = weightToEnergy(w);
+		}
+		
+		final int maxTo = converter.getToDomains().getCardinality();
+		final int maxRemoved = converter.getRemovedCardinality();
+		
+		final double[] toDenseWeights = converter.convertDenseWeights(fromDenseWeights);
+		assertEquals(maxTo, toDenseWeights.length);
+		double[] toDenseEnergies = converter.convertDenseEnergies(fromDenseEnergies);
+		assertEquals(maxTo, toDenseEnergies.length);
+		
 		for (int from = 0; from < maxFrom; ++from)
 		{
+			double fromWeight = fromDenseWeights[from];
+			double fromEnergy = fromDenseEnergies[from];
+			
 			for (int added = 0; added < maxAdded; ++added)
 			{
 				int to = converter.convertJointIndex(from,  added, null);
@@ -406,7 +402,113 @@ public class TestDiscreteDomainList
 				assertEquals(to, to2);
 				assertEquals(to, indices.readIndices(removedRef2));
 				assertEquals(removedRef.get(), removedRef2.get());
+				
+				if (maxRemoved == 1)
+				{
+					assertEquals(fromWeight, toDenseWeights[to], 0.0);
+					assertEquals(fromEnergy, toDenseEnergies[to], 0.0);
+				}
+				else
+				{
+					// Weight must be equal sum of entries mapping to this one
+					double weightSum = 0.0;
+					for (int removed = 0; removed < maxRemoved; ++removed)
+					{
+						int fromInverse = inverse.convertJointIndex(to, removed);
+						weightSum += fromDenseWeights[fromInverse];
+					}
+					assertEquals(weightSum, toDenseWeights[to], 1e-12);
+					assertEquals(weightToEnergy(weightSum), toDenseEnergies[to], 1e-12);
+				}
 			}
+		}
+		
+		//
+		// Test sparse conversions
+		//
+		
+		// A "dense" sparse to joint index.
+		final int[] fromDenseSparseToJoint = new int[maxFrom];
+		for (int i = 0; i < maxFrom; ++i)
+		{
+			fromDenseSparseToJoint[i] = i;
+		}
+		final int[] toDenseSparseToJoint = converter.convertSparseToJointIndex(fromDenseSparseToJoint);
+		assertEquals(maxTo, toDenseSparseToJoint.length);
+		for (int i = toDenseSparseToJoint.length; --i>=0;)
+		{
+			assertEquals(i, toDenseSparseToJoint[i]);
+		}
+		assertArrayEquals(
+			toDenseWeights,
+			converter.convertSparseWeights(fromDenseWeights, fromDenseSparseToJoint, toDenseSparseToJoint),
+			1e-12);
+		assertArrayEquals(
+			toDenseEnergies,
+			converter.convertSparseEnergies(fromDenseEnergies, fromDenseSparseToJoint, toDenseSparseToJoint),
+			1e-12);
+		
+		// Test a random sparse selection
+		BitSet sparseSet = new BitSet(maxFrom);
+		for (int i = maxFrom/2; --i>=0;)
+		{
+			sparseSet.set(rand.nextInt(maxFrom));
+		}
+		final int[] fromSparseToJoint = new int[sparseSet.cardinality()];
+		for (int i = 0, sparseIndex = -1; i < fromSparseToJoint.length; ++i)
+		{
+			sparseIndex = sparseSet.nextSetBit(sparseIndex+1);
+			fromSparseToJoint[i] = sparseIndex;
+		}
+		final int[] toSparseToJoint = converter.convertSparseToJointIndex(fromSparseToJoint);
+		for (int oldSparse : fromSparseToJoint)
+		{
+			for (int added = 0; added < maxAdded; ++added)
+			{
+				int newSparse = converter.convertJointIndex(oldSparse, added);
+				assertTrue(Arrays.binarySearch(toSparseToJoint, newSparse) >= 0);
+			}
+		}
+		final double[] fromSparseWeights = new double[fromSparseToJoint.length];
+		final double[] fromSparseEnergies = new double[fromSparseToJoint.length];
+		for (int si = fromSparseToJoint.length; --si>=0;)
+		{
+			int ji = fromSparseToJoint[si];
+			fromSparseWeights[si] = fromDenseWeights[ji];
+			fromSparseEnergies[si] = fromDenseEnergies[ji];
+		}
+		final double[] toSparseWeights =
+			converter.convertSparseWeights(fromSparseWeights,  fromSparseToJoint, toSparseToJoint);
+		final double[] toSparseEnergies =
+			converter.convertSparseEnergies(fromSparseEnergies,  fromSparseToJoint, toSparseToJoint);
+		for (int si = toSparseToJoint.length; --si>=0;)
+		{
+			int ji = toSparseToJoint[si];
+			if (maxRemoved == 1)
+			{
+				assertEquals(toDenseWeights[ji], toSparseWeights[si], 1e-12);
+				assertEquals(toDenseEnergies[ji], toSparseEnergies[si], 1e-12);
+			}
+			else
+			{
+				// Weight must be equal sum of entries mapping to this one
+				double weightSum = 0.0;
+				for (int removed = 0; removed < maxRemoved; ++removed)
+				{
+					int fromInverse = inverse.convertJointIndex(ji, removed);
+					if (Arrays.binarySearch(fromSparseToJoint, fromInverse) >= 0)
+					{
+						weightSum += fromDenseWeights[fromInverse];
+					}
+				}
+				assertEquals(weightSum, toSparseWeights[si], 1e-12);
+				assertEquals(weightToEnergy(weightSum), toSparseEnergies[si], 1e-12);
+			}
+		}
+		
+		if (testInverse)
+		{
+			testInvariants(inverse, false);
 		}
 	}
 }

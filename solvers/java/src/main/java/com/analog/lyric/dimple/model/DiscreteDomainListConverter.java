@@ -482,6 +482,7 @@ public abstract class DiscreteDomainListConverter
 			return sparseCopy(oldEnergies, oldSparseIndexToJointIndex, sparseIndexToJointIndex);
 		}
 		
+		final int oldSize = oldSparseIndexToJointIndex.length;
 		final int size = sparseIndexToJointIndex.length;
 		final double[] values = new double[size];
 		
@@ -491,14 +492,17 @@ public abstract class DiscreteDomainListConverter
 			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
 		}
 
-		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		final int maxAdded = getAddedCardinality();
+
+		for (int oldSparse = 0; oldSparse < oldSize; ++oldSparse)
 		{
+			final double oldWeight = energyToWeight(oldEnergies[oldSparse]);
 			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
-			for (int added = getAddedCardinality(); --added >=0; )
+			for (int added = 0; added < maxAdded; ++added)
 			{
 				final int newJoint = convertJointIndex(oldJoint, added);
 				final int newSparse = jointIndexToSparseIndex.get(newJoint);
-				values[newSparse] += energyToWeight(oldEnergies[oldSparse]);
+				values[newSparse] += oldWeight;
 			}
 		}
 		
@@ -516,7 +520,7 @@ public abstract class DiscreteDomainListConverter
 		int i = 0;
 		for (int oldJoint : oldSparseToJointIndex)
 		{
-			for (int added = getAddedCardinality(); --added >-0; )
+			for (int added = getAddedCardinality(); --added >=0; )
 			{
 				sparseToJoint[i++] = convertJointIndex(oldJoint, added);
 			}
@@ -561,14 +565,15 @@ public abstract class DiscreteDomainListConverter
 		return sparseToJoint;
 	}
 	
-	public double[] convertSparseWeights(double[] oldWeights,
-		int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	public double[] convertSparseWeights(
+		double[] oldWeights, int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
 	{
 		if (_removedDomains == null)
 		{
 			return sparseCopy(oldWeights, oldSparseIndexToJointIndex, sparseIndexToJointIndex);
 		}
 		
+		final int oldSize = oldSparseIndexToJointIndex.length;
 		final int size = sparseIndexToJointIndex.length;
 		final double[] weights = new double[size];
 		
@@ -578,14 +583,17 @@ public abstract class DiscreteDomainListConverter
 			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
 		}
 
-		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		final int maxAdded = getAddedCardinality();
+		
+		for (int oldSparse = 0; oldSparse < oldSize; ++oldSparse)
 		{
+			final double oldWeight = oldWeights[oldSparse];
 			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
-			for (int added = getAddedCardinality(); --added >=0; )
+			for (int added = 0; added < maxAdded; ++added)
 			{
 				final int newJoint = convertJointIndex(oldJoint, added);
 				final int newSparse = jointIndexToSparseIndex.get(newJoint);
-				weights[newSparse] += oldWeights[oldSparse];
+				weights[newSparse] += oldWeight;
 			}
 		}
 		
@@ -601,6 +609,15 @@ public abstract class DiscreteDomainListConverter
 		return _addedDomains == null ? 1 : _addedDomains.getCardinality();
 	}
 	
+	/**
+	 * The number of different possible combinations of values in {@link #getRemovedDomains()}
+	 * or else returns 1 if no removed domains.
+	 */
+	public final int getRemovedCardinality()
+	{
+		return _removedDomains == null ? 1 : _removedDomains.getCardinality();
+	}
+
 	public boolean hasFastJointIndexConversion()
 	{
 		return false;
@@ -688,6 +705,7 @@ public abstract class DiscreteDomainListConverter
 	
 	public double[] sparseCopy(double[] oldValues, int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
 	{
+		final int oldSize = oldSparseIndexToJointIndex.length;
 		final int size = sparseIndexToJointIndex.length;
 		final double[] values = new double[size];
 		
@@ -697,7 +715,7 @@ public abstract class DiscreteDomainListConverter
 			jointIndexToSparseIndex.put(sparseIndexToJointIndex[si], si);
 		}
 
-		for (int oldSparse = 0; oldSparse < size; ++oldSparse)
+		for (int oldSparse = 0; oldSparse < oldSize; ++oldSparse)
 		{
 			final int oldJoint = oldSparseIndexToJointIndex[oldSparse];
 			for (int added = getAddedCardinality(); --added >=0; )
