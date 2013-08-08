@@ -48,16 +48,29 @@ function testDemos()
 
     
     %% 02_LDPC
+    skipLDPC = false;
+    if (isempty(ver('comm')))
+        dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because communications system toolbox not installed');
+        skipLDPC = true;
+    else
     
+        [hasLicense err] = license('checkout', 'communication_toolbox');
+        if ~hasLicense
+            dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because communications system toolbox license could not be obtained');
+            skipLDPC = true;
+        end
+    end
+
     %Single codeword
-    cd('../02_LDPC');
-    runSingleCodeword;
-    assertTrue(numMsgErrors == 0);    
+    if(~skipLDPC)
+        cd('../02_LDPC');
+        runSingleCodeword;
+        assertTrue(numMsgErrors == 0);    
     
-    %BER plot
-    run;
-    close;
-    
+        %BER plot
+        run;
+        close;
+    end
     %% 03_SudokuExample
     cd('../03_SudokuExample');
     run;
