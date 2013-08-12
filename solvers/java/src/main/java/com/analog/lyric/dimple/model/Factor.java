@@ -82,6 +82,11 @@ public class Factor extends FactorBase implements Cloneable
 		return getFactorFunction().getFactorTable(this);
 	}
 	
+	public boolean hasFactorTable()
+	{
+		return getFactorFunction().factorTableExists(this);
+	}
+
 	public boolean isDiscrete()
 	{
 		for (INode p : getSiblings())
@@ -434,10 +439,10 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_directedTo = directedTo;
 		
-		// FIXME: only applicable to old factor table implementation
-		if (getFactorFunction().factorTableExists(this))
+		IFactorTable factorTable = getFactorFunction().getFactorTableIfExists(this);
+		if (factorTable != null && factorTable.supportsSetDirected())
 		{
-			getFactorTable().setDirected(directedTo, _directedFrom);
+			factorTable.setDirected(directedTo, _directedFrom);
 		}
 		
 		if (_solverFactor != null)

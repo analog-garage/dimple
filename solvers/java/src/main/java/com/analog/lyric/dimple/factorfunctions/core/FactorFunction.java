@@ -127,26 +127,6 @@ public abstract class FactorFunction extends FactorFunctionBase
     	return factorTable;
     }
     
-    private static BitSet getInputSetForFactor(Factor factor)
-    {
-    	BitSet inputSet = null;
-    	
-    	if (factor.isDirected())
-    	{
-    		int[] directedTo = factor.getDirectedTo();
-    		if (directedTo != null && directedTo.length > 0)
-    		{
-    			inputSet = new BitSet(directedTo.length);
-    			for (int from : factor.getDirectedFrom())
-    			{
-    				inputSet.set(from);
-    			}
-    		}
-    	}
-    	
-    	return inputSet;
-    }
-    
     public IFactorTable getFactorTable(DiscreteFactor factor)
     {
     	BitSet inputSet = getInputSetForFactor(factor);
@@ -155,18 +135,31 @@ public abstract class FactorFunction extends FactorFunctionBase
     
     public IFactorTable getFactorTable(Factor factor)
     {
-    	Domain[] domains = factor.getDomains();
-    	DiscreteDomain[] discreteDomains = new DiscreteDomain[domains.length];
-    	for (int i = domains.length; --i >= 0;)
-    	{
-    		if ((discreteDomains[i] = domains[i].asDiscrete()) == null)
-    		{
-    			throw new DimpleException("only support getFactorTable for discrete domains");
-    		}
-    	}
-    	
     	BitSet inputSet = getInputSetForFactor(factor);
-    	return getFactorTable(DiscreteDomainList.create(inputSet, discreteDomains));
+    	return getFactorTable(DiscreteDomainList.create(inputSet, getFactorDiscreteDomains(factor, true)));
+    }
+
+    public IFactorTable getFactorTableIfExists(DiscreteDomainList domains)
+    {
+    	IFactorTable factorTable = null;
+    	ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    	if (factorTables != null)
+    	{
+    		factorTable = factorTables.get(domains);
+    	}
+    	return factorTable;
+    }
+    
+    public IFactorTable getFactorTableIfExists(Factor factor)
+    {
+    	DiscreteDomain[] discreteDomains = getFactorDiscreteDomains(factor, false);
+    	IFactorTable factorTable = null;
+    	if (discreteDomains != null)
+    	{
+    		BitSet inputSet = getInputSetForFactor(factor);
+    		factorTable = getFactorTableIfExists(DiscreteDomainList.create(inputSet, discreteDomains));
+    	}
+    	return factorTable;
     }
 
     /*-------------------
@@ -255,4 +248,50 @@ public abstract class FactorFunction extends FactorFunctionBase
     		return table;
     	}
     }
+    
+    /*-----------------
+     * Private methods
+     */
+    
+    private DiscreteDomain[] getFactorDiscreteDomains(Factor factor, boolean throwOnNonDiscrete)
+    {
+    	Domain[] domains = factor.getDomains();
+    	DiscreteDomain[] discreteDomains = new DiscreteDomain[domains.length];
+    	for (int i = domains.length; --i >= 0;)
+    	{
+    		if ((discreteDomains[i] = domains[i].asDiscrete()) == null)
+    		{
+    			if (throwOnNonDiscrete)
+    			{
+    				throw new DimpleException("only support getFactorTable for discrete domains");
+    			}
+    			else
+    			{
+    				return null;
+    			}
+    		}
+    	}
+    	return discreteDomains;
+    }
+    
+    private static BitSet getInputSetForFactor(Factor factor)
+    {
+    	BitSet inputSet = null;
+    	
+    	if (factor.isDirected())
+    	{
+    		int[] directedTo = factor.getDirectedTo();
+    		if (directedTo != null && directedTo.length > 0)
+    		{
+    			inputSet = new BitSet(directedTo.length);
+    			for (int from : factor.getDirectedFrom())
+    			{
+    				inputSet.set(from);
+    			}
+    		}
+    	}
+    	
+    	return inputSet;
+    }
+    
  }

@@ -1585,6 +1585,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		normalize(directedFrom);
 	}
 
+	@Override
+	public boolean supportsSetDirected()
+	{
+		return false;
+	}
+	
 	/*-----------------
 	 * Private methods
 	 */

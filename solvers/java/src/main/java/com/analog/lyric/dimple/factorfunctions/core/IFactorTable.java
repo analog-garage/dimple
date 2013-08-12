@@ -65,11 +65,6 @@ public interface IFactorTable
 	public int [] getDirectedFrom();
 	public int [] getDirectedTo();
 	
-	/**
-	 * Returns the energy of factor table entry with given {@code indices}.
-	 */
-	public abstract double getEnergyForIndices(int ... indices);
-
 	// Only used by FactorTableBase.getColumnCopy and test
 	public int getEntry(int row, int column);
 	
@@ -123,4 +118,15 @@ public interface IFactorTable
 	
 	// Only called from Factor.setDirectedTo
 	public void setDirected(int[] directedTo, int[] directedFrom);
+	
+	//
+	// New
+	//
+	
+	/**
+	 * Returns the energy of factor table entry with given {@code indices}.
+	 */
+	public abstract double getEnergyForIndices(int ... indices);
+
+	public abstract boolean supportsSetDirected();
 }

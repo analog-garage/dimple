@@ -48,6 +48,10 @@ public class FactorTable extends FactorTableBase
 	private boolean _isDeterministicDirected = false;
 	private HashMap<ArrayList<Object>,ArrayList<Object>> _deterministicDirectedLookupTable = null;
 	
+	/**
+	 * When true, the various {@code create*} methods of {@link FactorTable} will return
+	 * {@link NewFactorTable} instances.
+	 */
 	public static volatile boolean useNewFactorTable = false;
 	
 
@@ -301,6 +305,12 @@ public class FactorTable extends FactorTableBase
 				throw new DimpleException("weights must be normalized correctly for directed factors");
 			_checkedIfDeterministicDirected = false;
 		}
+	}
+	
+	@Override
+	public boolean supportsSetDirected()
+	{
+		return true;
 	}
 	
 	//TODO: this could be massive slow down if called from every factor.
