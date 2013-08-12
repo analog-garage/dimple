@@ -8,6 +8,7 @@ import java.util.BitSet;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -118,6 +119,8 @@ public class TestDiscreteDomainList
 				assertEquals(elements[j], domainList.get(j).getElement(indices[j]));
 			}
 			
+			domainList.validateIndices(indices);
+			
 			assertEquals(i, domainList.undirectedJointIndexFromElements(elements));
 			assertEquals(i, domainList.undirectedJointIndexFromIndices(indices));
 			
@@ -129,6 +132,8 @@ public class TestDiscreteDomainList
 			
 			int ji = domainList.jointIndexFromIndices(indices);
 			assertEquals(ji, domainList.jointIndexFromElements(elements));
+			
+			assertEquals(ji, domainList.jointIndexFromInputOutputIndices(in, out));
 			
 			Arrays.fill(indices2, -1);
 			Arrays.fill(elements2, null);
@@ -242,6 +247,36 @@ public class TestDiscreteDomainList
 			catch (ArrayIndexOutOfBoundsException ex)
 			{
 			}
+		}
+		
+		try
+		{
+			domainList.validateIndices();
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), CoreMatchers.containsString("Wrong number of indices"));
+		}
+		try
+		{
+			Arrays.fill(indices, 0);
+			indices[0] = -1;
+			domainList.validateIndices(indices);
+			fail("Expected IndiexOutOfBoundsException");
+		}
+		catch (IndexOutOfBoundsException ex)
+		{
+		}
+		try
+		{
+			Arrays.fill(indices, 0);
+			indices[0] = domainList.getDomainSize(0);
+			domainList.validateIndices(indices);
+			fail("Expected IndiexOutOfBoundsException");
+		}
+		catch (IndexOutOfBoundsException ex)
+		{
 		}
 		
 		DiscreteDomainList domainList2 = SerializationTester.clone(domainList);

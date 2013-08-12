@@ -21,6 +21,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	final int _outputCardinality;
 	final int[] _outputIndices;
 	final int[] _outputProducts;
+	final int[] _directedProducts;
 	
 	/*--------------
 	 * Construction
@@ -41,10 +42,11 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		}
 		
 		final int[] inputIndices = new int[nInputs];
-		final int[] inputProducts = new int[nInputs];
+		final int[] inputProducts = new int[nDomains];
 		final int[] outputIndices = new int[nOutputs];
-		final int[] outputProducts = new int[nOutputs];
-
+		final int[] outputProducts = new int[nDomains];
+		final int[] directedProducts = new int[nDomains];
+			
 		int curInput = 0, curOutput = 0;
 		int inputProduct = 1, outputProduct = 1;
 		
@@ -55,17 +57,28 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 			if (inputs.get(i))
 			{
 				inputIndices[curInput] = i;
-				inputProducts[curInput] = inputProduct;
+				inputProducts[i] = inputProduct;
 				inputProduct *= size;
 				++curInput;
 			}
 			else
 			{
 				outputIndices[curOutput] = i;
-				outputProducts[curOutput] = outputProduct;
+				outputProducts[i] = outputProduct;
 				outputProduct *= size;
 				++curOutput;
 			}
+		}
+		
+		for (int i = 0; i < nOutputs; ++i)
+		{
+			int j = outputIndices[i];
+			directedProducts[j] = outputProducts[j];
+		}
+		for (int i = 0; i < nInputs; ++i)
+		{
+			int j = inputIndices[i];
+			directedProducts[j] = inputProducts[j] * outputProduct;
 		}
 		
 		_inputCardinality = inputProduct;
@@ -75,6 +88,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		_inputProducts = inputProducts;
 		_outputIndices = outputIndices;
 		_outputProducts = outputProducts;
+		_directedProducts = directedProducts;
 	}
 	
 	/*----------------
@@ -173,13 +187,30 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public int inputIndexFromElements(Object ... elements)
 	{
-		return locationFromElements(elements, _inputIndices, _inputProducts);
+		final DiscreteDomain[] domains = _domains;
+		final int[] products = _inputProducts;
+		int joint = 0;
+		for (int i = 0, end = products.length; i < end; ++i)
+		{
+			int product = products[i];
+			if (product != 0)
+			{
+				joint += product * domains[i].getIndexOrThrow(elements[i]);
+			}
+		}
+		return joint;
 	}
 	
 	@Override
 	public int inputIndexFromIndices(int ... indices)
 	{
-		return locationFromIndices(indices, _inputIndices, _inputProducts);
+		final int length = indices.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += indices[i] * _inputProducts[i];
+		}
+		return joint;
 	}
 	
 	@Override
@@ -197,13 +228,26 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public int jointIndexFromElements(Object ... elements)
 	{
-		return jointIndexFromInputOutputIndices(inputIndexFromElements(elements), outputIndexFromElements(elements));
+		final DiscreteDomain[] domains = _domains;
+		final int[] products = _directedProducts;
+		int joint = 0;
+		for (int i = 0, end = products.length; i < end; ++i)
+		{
+			joint += products[i] * domains[i].getIndexOrThrow(elements[i]);
+		}
+		return joint;
 	}
 
 	@Override
 	public int jointIndexFromIndices(int ... indices)
 	{
-		return jointIndexFromInputOutputIndices(inputIndexFromIndices(indices), outputIndexFromIndices(indices));
+		final int length = indices.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += indices[i] * _directedProducts[i];
+		}
+		return joint;
 	}
 	
 	@Override
@@ -237,13 +281,30 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public int outputIndexFromElements(Object ... elements)
 	{
-		return locationFromElements(elements, _outputIndices, _outputProducts);
+		final DiscreteDomain[] domains = _domains;
+		final int[] products = _outputProducts;
+		int joint = 0;
+		for (int i = 0, end = products.length; i < end; ++i)
+		{
+			int product = products[i];
+			if (product != 0)
+			{
+				joint += product * domains[i].getIndexOrThrow(elements[i]);
+			}
+		}
+		return joint;
 	}
 	
 	@Override
 	public int outputIndexFromIndices(int ... indices)
 	{
-		return locationFromIndices(indices, _outputIndices, _outputProducts);
+		final int length = indices.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += indices[i] * _outputProducts[i];
+		}
+		return joint;
 	}
 	
 	@Override
@@ -267,32 +328,6 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
 	}
 	
-	private int locationFromElements(Object[] elements, int[] subindices, int[] products)
-	{
-		final DiscreteDomain[] domains = _domains;
-		int location = 0;
-		
-		for (int i = 0, end = subindices.length; i < end; ++i)
-		{
-			final int j = subindices[i];
-			location += products[i] * domains[j].getIndexOrThrow(elements[j]);
-		}
-		
-		return location;
-	}
-	
-	private static int locationFromIndices(int[] indices, int[] subindices, int[] products)
-	{
-		int location = 0;
-		
-		for (int i = 0, end = subindices.length; i < end; ++i)
-		{
-			location += products[i] * indices[subindices[i]];
-		}
-		
-		return location;
-	}
-	
 	private void locationToElements(int location, Object[] elements, int[] subindices, int[] products)
 	{
 		final DiscreteDomain[] domains = _domains;
@@ -300,7 +335,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		for (int i = subindices.length; --i >= 0;)
 		{
 			int j = subindices[i];
-			index = location / (product = products[i]);
+			index = location / (product = products[j]);
 			elements[j] = domains[j].getElement(index);
 			location -= index * product;
 		}
@@ -311,7 +346,8 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		int product, index;
 		for (int i = subindices.length; --i >= 0;)
 		{
-			indices[subindices[i]] = index = location / (product = products[i]);
+			int j = subindices[i];
+			indices[j] = index = location / (product = products[j]);
 			location -= index * product;
 		}
 	}
