@@ -201,7 +201,8 @@ public class STableFactor extends STableFactorBase
 					for (int j = 0, endj = indices.length; j < endj; ++j)
 					{
 						SVariable svar = svariables[j];
-						if (0.0 == svar.getInput(indices[j]))
+						double[] allinputs = svar.getInputs();
+						if (allinputs != null && 0.0 == svar.getInput(indices[j]))
 						{
 							skipEntry = true;
 							break;
