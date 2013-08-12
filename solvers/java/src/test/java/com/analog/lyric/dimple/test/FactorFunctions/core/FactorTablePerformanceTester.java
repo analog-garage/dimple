@@ -4,7 +4,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.INewFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.google.common.base.Stopwatch;
 
@@ -14,6 +14,7 @@ public class FactorTablePerformanceTester
 	private final Stopwatch _timer;
 	private final int _iterations;
 	private final Random _random;
+	public boolean showLog = true;
 	
 	FactorTablePerformanceTester(IFactorTable table, int iterations)
 	{
@@ -109,9 +110,9 @@ public class FactorTablePerformanceTester
 	
 	public double testGetWeightForIndices()
 	{
-		_random.setSeed(42);
-		int [][] rows = new int[_iterations][];
-		for (int i = 0; i < _iterations; ++i)
+		_random.setSeed(43);
+		int [][] rows = new int[500][];
+		for (int i = 0; i < rows.length; ++i)
 		{
 			rows[i] = randomIndices();
 		}
@@ -120,7 +121,7 @@ public class FactorTablePerformanceTester
 		double total = 0.0;
 		
 		// warmup
-		INewFactorTable newTable = getNewTable();
+		final NewFactorTable newTable = getNewTable();
 		if (newTable != null)
 		{
 			for (int[] indices : rows)
@@ -139,33 +140,40 @@ public class FactorTablePerformanceTester
 		
 		total = 0.0;
 		 _timer.reset();
-		 _timer.start();
 		 if (newTable != null)
 		 {
-			 for (int[] indices : rows)
+			 _timer.start();
+			 for (int i = _iterations; --i>=0;)
 			 {
-				 total += newTable.getWeightForIndices(indices);
+				 for (int[] indices : rows)
+				 {
+					 total += newTable.getDenseWeightForIndices(indices);
+				 }
 			 }
 		 }
 		 else
 		 {
-			 double[] weights = _table.getWeights();
-			 for (int[] indices : rows)
+			 _timer.start();
+			 for (int i = _iterations; --i>=0;)
 			 {
-				 total += weights[_table.getWeightIndexFromTableIndices(indices)];
+				 double[] weights = _table.getWeights();
+				 for (int[] indices : rows)
+				 {
+					 total += weights[_table.getWeightIndexFromTableIndices(indices)];
+				 }
 			 }
 		 }
 		 
 		 _timer.stop();
 		 long ns = _timer.elapsed(TimeUnit.NANOSECONDS);
-		 return logTime("getWeightForIndices", ns / _iterations, "call");
+		 return logTime("getWeightForIndices", ns / (_iterations * rows.length), "call");
 	}
 
-	private INewFactorTable getNewTable()
+	private NewFactorTable getNewTable()
 	{
-		if (_table instanceof INewFactorTable)
+		if (_table instanceof NewFactorTable)
 		{
-			return (INewFactorTable)_table;
+			return (NewFactorTable)_table;
 		}
 		
 		return null;
@@ -196,7 +204,10 @@ public class FactorTablePerformanceTester
 	
 	private double logTime(String name, double time, String unit)
 	{
-		System.out.format("%s.%s: %f/%s\n", _table.getClass().getSimpleName(), name, time, unit);
+		if (showLog)
+		{
+			System.out.format("%s.%s: %f/%s\n", _table.getClass().getSimpleName(), name, time, unit);
+		}
 		return time;
 	}
 }

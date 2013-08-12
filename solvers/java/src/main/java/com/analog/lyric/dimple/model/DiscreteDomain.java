@@ -252,6 +252,12 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	
 	@Override
+	public final DiscreteDomain asDiscrete()
+	{
+		return this;
+	}
+	
+	@Override
 	public boolean inDomain(Object value)
 	{
 		return (getIndex(value) >= 0);
@@ -319,7 +325,7 @@ public abstract class DiscreteDomain extends Domain
 				}
 				Object element = getElement(i);
 				sb.append(String.format("type: %s value:%s"
-						, element != null ? element.getClass() : "null"
+						, element != null ? element.getClass().getSimpleName() : "null"
 						, element != null ? element.toString() : "null"));
 			}
 		}

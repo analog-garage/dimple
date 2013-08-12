@@ -27,9 +27,9 @@ public class DiscreteDomainList
 	private static final long serialVersionUID = 1L;
 	
 	final DiscreteDomain[] _domains;
-	final int[] _products;
-	final int _cardinality;
-	final int _hashCode;
+	private final int[] _products;
+	private final int _cardinality;
+	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
@@ -434,12 +434,18 @@ public class DiscreteDomainList
 	 * incorrect result.
 	 * @see #jointIndexFromElements
 	 * @see #jointIndexToIndices
+	 * @see #validateIndices(int...)
 	 */
 	public int jointIndexFromIndices(int ... indices)
 	{
 		return undirectedJointIndexFromIndices(indices);
 	}
 	
+	public int jointIndexFromInputOutputIndices(int inputIndex, int outputIndex)
+	{
+		return outputIndex;
+	}
+
 	/**
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
@@ -502,11 +508,11 @@ public class DiscreteDomainList
 
 	public final int undirectedJointIndexFromIndices(int ... indices)
 	{
-		final int[] products = _products;
-		int joint = indices[0]; // products[0] should always be 1.
-		for (int i = 1, end = products.length; i < end; ++i)
+		final int length = indices.length;
+		int joint = indices[0]; // _products[0] is 1, so we can skip the multiply
+		for (int i = 1, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
-			joint += products[i] * indices[i];
+			joint += indices[i] * _products[i];
 		}
 		return joint;
 	}
@@ -542,6 +548,39 @@ public class DiscreteDomainList
 			jointIndex -= index * product;
 		}
 		return indices;
+	}
+	
+	/**
+	 * Verifies that the provided {@code indices} are in the correct range for
+	 * this domain list, namely that:
+	 * <ul>
+	 * <li>{@code indices} has {@link #size()} elements
+	 * <li>all values are non-negative
+	 * <li>{@code indices[i]} < {@link #getDomainSize}{@code (i)}
+	 * </ul>
+	 * @throws IllegalArgumentException if wrong number of indices
+	 * @throws IndexOutOfBoundsException if any index is out of range for its domain.
+	 */
+	public void validateIndices(int ... indices)
+	{
+		final DiscreteDomain[] domains = _domains;
+		final int length = domains.length;
+	
+		if (indices.length != length)
+		{
+			throw new IllegalArgumentException(
+				String.format("Wrong number of indices: %d instead of %d", indices.length, length));
+		}
+		
+		for (int i = length; --i>=0;)
+		{
+			final int index = indices[i];
+			if (index < 0 || index >= domains[i].size())
+			{
+				throw new IndexOutOfBoundsException(
+					String.format("Index %d out of bounds for domain with size %d", index, domains[i].size()));
+			}
+		}
 	}
 	
 	/*-----------------

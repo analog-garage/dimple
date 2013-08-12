@@ -20,15 +20,16 @@ import com.analog.lyric.dimple.model.Domain;
 
 public abstract class FactorFunctionBase
 {
-	private String _name;
+	private final String _name;
 
-	public FactorFunctionBase()
+	protected FactorFunctionBase()
 	{
-		_name = this.getClass().getSimpleName();
+		this(null);
 	}
-	public FactorFunctionBase(String name)
+
+	protected FactorFunctionBase(String name)
 	{
-		_name = name;
+		_name = name != null ? name : getClass().getSimpleName();
 	}
 
 	public String getName()

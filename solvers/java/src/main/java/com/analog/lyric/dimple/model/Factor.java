@@ -79,7 +79,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	public IFactorTable getFactorTable()
 	{
-		return getFactorFunction().getFactorTable(getDomains());
+		return getFactorFunction().getFactorTable(this);
 	}
 	
 	public boolean isDiscrete()
@@ -363,11 +363,13 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public int [] getDirectedTo()
 	{
+		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedTo;
 	}
 	public int [] getDirectedFrom()
 	{
+		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedFrom;
 	}
@@ -432,7 +434,8 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_directedTo = directedTo;
 		
-		if (getFactorFunction().factorTableExists(getDomains()))
+		// FIXME: only applicable to old factor table implementation
+		if (getFactorFunction().factorTableExists(this))
 		{
 			getFactorTable().setDirected(directedTo, _directedFrom);
 		}

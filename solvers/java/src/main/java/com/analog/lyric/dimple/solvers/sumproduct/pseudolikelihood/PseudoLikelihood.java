@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
@@ -50,7 +50,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	//The constructor saves the factor graph, the tables of interest, and the variables
 	//It also builds the NodeInfo object mappings.
 	public PseudoLikelihood(FactorGraph fg,
-			FactorTable[] tables,
+			IFactorTable[] tables,
 			VariableBase [] vars)
 	{
 		super(fg, tables, new Random());
@@ -273,7 +273,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	
 
 	//Calculate the numerical gradient.  Useful for debugging.
-	public double calculateNumericalGradient(FactorTable table, int weight, double delta)
+	public double calculateNumericalGradient(IFactorTable table, int weight, double delta)
 	{
 		if (_data == null)
 			throw new DimpleException("Must set data first");
@@ -319,8 +319,7 @@ public class PseudoLikelihood extends ParameterEstimator
 						indices[i] = _data[m][_var2index.get(fvs.getByIndex(i))];
 					
 					//add the term.
-					double tmp = Math.log(f.getFactorTable().getWeights()[f.getFactorTable().getWeightIndexFromTableIndices(indices)]);
-					total += tmp;
+					total -= f.getFactorTable().getEnergyForIndices(indices);
 				}
 			}
 		}

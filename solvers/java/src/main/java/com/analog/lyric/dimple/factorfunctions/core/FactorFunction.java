@@ -17,45 +17,76 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
+
+import net.jcip.annotations.ThreadSafe;
+import cern.colt.list.DoubleArrayList;
+import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.Factor;
 
+@ThreadSafe
 public abstract class FactorFunction extends FactorFunctionBase
 {
-	private FactorTableFactory _factory;
-    
-	public FactorFunction()
+	/*-------
+	 * State
+	 */
+	
+	// Cache of factor tables for this function by domain.
+	private AtomicReference<ConcurrentMap<DiscreteDomainList, IFactorTable>> _factorTables =
+		new AtomicReference<ConcurrentMap<DiscreteDomainList, IFactorTable>>();
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	protected FactorFunction()
 	{
-		super();
+		this(null);
 	}
-    public FactorFunction(String name)
+	
+    protected FactorFunction(String name)
     {
 		super(name);
 	}
 
-	public boolean factorTableExists(Domain [] domainList)
+    /*------------------------
+     * FactorFunction methods
+     */
+    
+    public boolean factorTableExists(DiscreteDomainList domains)
+    {
+    	ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    	return factorTables != null && factorTables.containsKey(domains);
+    }
+    
+	public boolean factorTableExists(Factor factor)
 	{
-    	//first step, convert domains to DiscreteDOmains
-		if (_factory == null)
-			return false;
-		
-    	DiscreteDomain [] dds = new DiscreteDomain[domainList.length];
-    	
-    	for (int i = 0; i < domainList.length; i++)
+    	Domain[] domains = factor.getDomains();
+    	DiscreteDomain[] discreteDomains = new DiscreteDomain[domains.length];
+    	for (int i = domains.length; --i >= 0;)
     	{
-    		if (!( domainList[i] instanceof DiscreteDomain))
+    		if ((discreteDomains[i] = domains[i].asDiscrete()) == null)
+    		{
     			return false;
-    		
-    		dds[i] = (DiscreteDomain)domainList[i];
+    		}
     	}
-    	return _factory.tableExists(this, dds);
+
+    	BitSet inputSet = getInputSetForFactor(factor);
+    	return factorTableExists(DiscreteDomainList.create(inputSet, discreteDomains));
 	}
 	
     @Override
-	public IFactorTable getFactorTable(Domain [] domainList)
+	public final IFactorTable getFactorTable(Domain [] domainList)
     {
     	//first step, convert domains to DiscreteDOmains
     	
@@ -69,207 +100,159 @@ public abstract class FactorFunction extends FactorFunctionBase
     		dds[i] = (DiscreteDomain)domainList[i];
     	}
     	
-    	if (_factory == null)
-    		_factory = new FactorTableFactory();
-    	
-    	return (IFactorTable)_factory.getTable(this, dds)[0];
+    	return getFactorTable(DiscreteDomainList.create(dds));
     }
-       	
-	protected class FactorTableFactory
-	{
-		protected HashMap<String, FunctionEntry> _name2FunctionEntry = new HashMap<String, FunctionEntry>();
+    
+    public IFactorTable getFactorTable(DiscreteDomainList domains)
+    {
+    	ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    	if (factorTables == null)
+    	{
+    		_factorTables.compareAndSet(null, new ConcurrentHashMap<DiscreteDomainList, IFactorTable>());
+    		factorTables = _factorTables.get();
+    	}
 
-		public FactorTableFactory(){}
-
-		
-		protected class FunctionEntry
-		{
-	        FactorFunction _factorFunction;
-	        ArrayList<IFactorTable> _tables = new ArrayList<IFactorTable>();
-	        
-	        public FunctionEntry(FactorFunction factorFunction)
-	        {
-	        	_factorFunction = factorFunction;
-	        }
-	        
-	        public Object [] getCombinationTable(DiscreteDomain [] domains)
-	        {
-	        	return getCombinationTable(domains,true);
-	        }
-	        
-	        public Object [] getCombinationTable(DiscreteDomain [] domains,boolean create)
-	        {
-	        	IFactorTable table = null;
-    			boolean matched = false;
-    			
-	        	//Check all tables
-    			for(int i = 0; i < _tables.size() && !matched; ++i)
-	        	{
-    				IFactorTable currTable = _tables.get(i);
-	        		
-	        		//Check this table
-	        		if(domains.length == currTable.getDomains().length)
-	        		{
-	        			
-	        			//Check variable by variable
-		        		matched = true;
-	        			for(int variableIdx = 0;
-	        				variableIdx < domains.length && matched;
-		        			++variableIdx)
-		        		{
-		        			Object[] tableDomain = currTable.getDomains()[variableIdx].getElements();
-		        			Object[] variableDomain = domains[variableIdx].getElements();
-		        			matched = tableDomain.length == variableDomain.length;
-		        			if(matched)
-		        			{
-		        				//Check domain member by domain member
-		        				for(int memberIdx = 0;
-		        					memberIdx < tableDomain.length && matched;
-		        					++memberIdx)
-		        				{
-		        					Object tableDomainMember = tableDomain[memberIdx];
-		        					Object variableDomainMember = variableDomain[memberIdx];
-		        					matched = tableDomainMember.equals(variableDomainMember);
-			        			}//end domain member x member check
-		        			}//end domain length check
-		        		}//end all variables check
-	        		}//end variables length check
-	        		if(matched)
-	        		{
-	        			table = currTable;
-	        		}
-	        	}//end all table entry check
-    			
-    			if(!matched)
+    	IFactorTable factorTable = factorTables.get(domains);
+    	
+    	if (factorTable == null)
+    	{
+    		IFactorTable newTable = createTableForDomains(domains);
+    		factorTable = factorTables.putIfAbsent(domains, newTable);
+    		if (factorTable == null)
+    		{
+    			factorTable = newTable;
+    		}
+    	}
+    	
+    	return factorTable;
+    }
+    
+    private static BitSet getInputSetForFactor(Factor factor)
+    {
+    	BitSet inputSet = null;
+    	
+    	if (factor.isDirected())
+    	{
+    		int[] directedTo = factor.getDirectedTo();
+    		if (directedTo != null && directedTo.length > 0)
+    		{
+    			inputSet = new BitSet(directedTo.length);
+    			for (int from : factor.getDirectedFrom())
     			{
-    				if (!create)
-    					return null;
-    				
-    				table = createCombinationTable(domains);
+    				inputSet.set(from);
     			}
-	        	return new Object[]{table,!matched};
-	        }
+    		}
+    	}
+    	
+    	return inputSet;
+    }
+    
+    public IFactorTable getFactorTable(DiscreteFactor factor)
+    {
+    	BitSet inputSet = getInputSetForFactor(factor);
+    	return getFactorTable(DiscreteDomainList.create(inputSet, factor.getDomains()));
+    }
+    
+    public IFactorTable getFactorTable(Factor factor)
+    {
+    	Domain[] domains = factor.getDomains();
+    	DiscreteDomain[] discreteDomains = new DiscreteDomain[domains.length];
+    	for (int i = domains.length; --i >= 0;)
+    	{
+    		if ((discreteDomains[i] = domains[i].asDiscrete()) == null)
+    		{
+    			throw new DimpleException("only support getFactorTable for discrete domains");
+    		}
+    	}
+    	
+    	BitSet inputSet = getInputSetForFactor(factor);
+    	return getFactorTable(DiscreteDomainList.create(inputSet, discreteDomains));
+    }
 
-	        //private Method getMethodFromFactorFunctionAndVariables()
-	        
-        	protected IFactorTable createCombinationTable(DiscreteDomain [] domain)
-	        {
+    /*-------------------
+     * Protected methods
+     */
+    
+    /**
+     * Generate a factor table for this function over the given domains.
+     * <p>
+     * Invoked implicitly by {@link #getFactorTable(DiscreteDomainList)} the first time
+     * a factor table is needed for specified domains.
+     */
+    protected IFactorTable createTableForDomains(DiscreteDomainList domains)
+    {
+    	if (FactorTable.useNewFactorTable)
+    	{
+    		final NewFactorTable table = new NewFactorTable(domains);
+    		
+        	final Object[] elements = new Object[domains.size()];
+        	
+        	if (isDeterministicDirected() && domains.isDirected())
+        	{
+        		final int maxInput = domains.getInputCardinality();
+        		final int[] outputs = new int[maxInput];
         		
-	        	//Variables for computation
-	        	//FactorTable table = new FactorTable();
-	        	//table.id = -1;
-	        	//table.variableDomains = new Object[domain.length][];
+        		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
+        		{
+        			domains.inputIndexToElements(inputIndex, elements);
+        			evalDeterministicFunction(elements);
+        			outputs[inputIndex] = domains.outputIndexFromElements(elements);
+        		}
+        		
+        		table.setDeterministicOuputIndices(outputs);
+        	}
+        	else
+        	{
+        		IntArrayList indexes = new IntArrayList();
+        		DoubleArrayList energies = new DoubleArrayList();
 
-	        	//for(int i = 0; i < domain.length; ++i)
-	        	//{
-	        	//	table.variableDomains[i] = domain[i].getElements().clone();
-	        	//}
-	        	
-	        	ArrayList<int[]> indices = new ArrayList<int[]>();
-	        	ArrayList<Double> values = new ArrayList<Double>();
-	        	
-	        	//initialize indices to all zeros
-	        	int[] currIndicesToInput = new int[domain.length];
-	        	Object [] currInput = new Object[domain.length];
-	        	int[] domainLengths = new int[domain.length];
-	        	
-	        	for (int i = 0; i < domainLengths.length; i++)
-	        		domainLengths[i] = domain[i].size();
-	        	
-	        	double currValue;
-	        	
-	        	while (true)
-	        	{
-	        		//get values for indices
-	        		for (int i = 0; i < currIndicesToInput.length; i++)
-	        			currInput[i] = domain[i].getElement(currIndicesToInput[i]);
-	        		
-	        		//eval func for indices
-	        		currValue = _factorFunction.eval(currInput);
-	        		
-	        		//if non zero, add to table
-	        		 if (currValue != 0)
-	        		 {
-	        			 indices.add(currIndicesToInput.clone());
-	        			 values.add(currValue);
-	        		 }
-	        		 
-	        		//increment indices
-        			 int carry = 1;
-        			 
-        			 for (int i = 0; i < currIndicesToInput.length; i++)
-        			 {
-        				 int newIndex = currIndicesToInput[i]+carry;
-        				 
-        				 if (newIndex >= domainLengths[i])
-        				 {
-        					 currIndicesToInput[i] = 0;
-        					 carry = 1;
-        					 
-        				 }
-        				 else
-        				 {
-        					 currIndicesToInput[i] = newIndex;
-        					 carry = 0;
-        				 }
-        				
-        			 }
-	        		
-        			 if (carry == 1)
-        				 break;
-	        	}
-
-
-	        	//FactorTable table =
-	        	int [][] rIndices = new int [indices.size()][];
-	        	double [] rValues  = new double[indices.size()];
-	        	        	
-	        	for (int i = 0; i < indices.size(); i++)
-	        	{
-	        		rIndices[i] = indices.get(i).clone();
-	        		rValues[i] = values.get(i);
-	        	}
-	        	IFactorTable table = FactorTable.create(rIndices, rValues, false, domain);
-	        	_tables.add(table);
-	        	
-	    		return table;
-	        }
-			
-		}
-		
-		public boolean tableExists(FactorFunction factorFunction, DiscreteDomain [] domain)
-		{
-			FunctionEntry fe = _name2FunctionEntry.get(factorFunction.getName());
-			if(fe == null)
-			{
-				return false;
-			}
-			if (fe.getCombinationTable(domain,false)==null)
-				return false;
-			else
-				return true;
-				
-		}
-		
-		public Object[] getTable(FactorFunction factorFunction, DiscreteDomain [] domain)
-		{
-			FunctionEntry fe = _name2FunctionEntry.get(factorFunction.getName());
-			
-			if(fe == null)
-			{
-				fe = new FunctionEntry(factorFunction);
-				_name2FunctionEntry.put(factorFunction.getName(), fe);
-			}
-			
-			Object [] tmp = fe.getCombinationTable(domain);
-			IFactorTable table = (IFactorTable)tmp[0];
-			Boolean isNewTable = (Boolean)tmp[1];
-			Object[] ret = new Object[2];
-			ret[0] = table;
-			ret[1] = isNewTable;
-			return ret;
-		}
-	}
-	
-	
+        		final int maxJoint = domains.getCardinality();
+        		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
+        		{
+        			domains.jointIndexToElements(jointIndex, elements);
+        			double energy = evalEnergy(elements);
+        			if (!Double.isInfinite(energy))
+        			{
+        				indexes.add(jointIndex);
+        				energies.add(energy);
+        			}
+        		}
+        		
+        		if (indexes.size() == maxJoint)
+        		{
+        			table.setDenseEnergies(Arrays.copyOf(energies.elements(), maxJoint));
+        		}
+        		else
+        		{
+        			table.setSparseEnergies(Arrays.copyOf(indexes.elements(), indexes.size()),
+        				Arrays.copyOf(energies.elements(), indexes.size()));
+        		}
+        	}
+        	
+        	return table;
+    	}
+    	else
+    	{
+    		IFactorTable table = FactorTable.create(domains);
+    		ArrayList<int[]> indices = new ArrayList<int[]>();
+    		DoubleArrayList weights = new DoubleArrayList();
+        	final Object[] elements = new Object[domains.size()];
+    		
+    		final int maxJoint = domains.getCardinality();
+    		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
+    		{
+    			domains.jointIndexToElements(jointIndex, elements);
+    			double weight = eval(elements);
+    			if (weight != 0)
+    			{
+    				indices.add(domains.jointIndexToIndices(jointIndex, null));
+    				weights.add(weight);
+    			}
+    		}
+    		
+    		table.change(indices.toArray(new int[indices.size()][]), Arrays.copyOf(weights.elements(), weights.size()));
+    		
+    		return table;
+    	}
+    }
  }

@@ -7,17 +7,18 @@ import java.util.BitSet;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.INewFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.INewFactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableEntry;
 import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableIterator;
+import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableRepresentation;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
@@ -39,33 +40,33 @@ public class TestFactorTable
 		assertEquals(domain3, t2x3.getDomainList().get(1));
 		assertFalse(t2x3.getRepresentation().hasDense());
 		assertFalse(t2x3.isDirected());
-		assertEquals(INewFactorTable.Representation.SPARSE_ENERGY, t2x3.getRepresentation());
+		assertEquals(NewFactorTableRepresentation.SPARSE_ENERGY, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
-		t2x3.setRepresentation(INewFactorTable.Representation.DENSE_ENERGY);
-		assertEquals(INewFactorTable.Representation.DENSE_ENERGY, t2x3.getRepresentation());
+		t2x3.setRepresentation(NewFactorTableRepresentation.DENSE_ENERGY);
+		assertEquals(NewFactorTableRepresentation.DENSE_ENERGY, t2x3.getRepresentation());
 		assertTrue(t2x3.getRepresentation().hasDense());
 		assertInvariants(t2x3);
 		
-		t2x3.setRepresentation(INewFactorTable.Representation.SPARSE_ENERGY);
+		t2x3.setRepresentation(NewFactorTableRepresentation.SPARSE_ENERGY);
 		assertFalse(t2x3.getRepresentation().hasDense());
 		assertEquals(0, t2x3.sparseSize());
 		assertInvariants(t2x3);
 		
-		t2x3.setRepresentation(INewFactorTable.Representation.ALL_ENERGY);
+		t2x3.setRepresentation(NewFactorTableRepresentation.ALL_ENERGY);
 		t2x3.randomizeWeights(rand);
 		assertInvariants(t2x3);
 		
-		assertEquals(INewFactorTable.Representation.ALL_ENERGY, t2x3.getRepresentation());
-		t2x3.setRepresentation(INewFactorTable.Representation.ALL);
-		assertEquals(INewFactorTable.Representation.ALL, t2x3.getRepresentation());
+		assertEquals(NewFactorTableRepresentation.ALL_ENERGY, t2x3.getRepresentation());
+		t2x3.setRepresentation(NewFactorTableRepresentation.ALL);
+		assertEquals(NewFactorTableRepresentation.ALL, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
 		t2x3.normalize();
 		assertInvariants(t2x3);
 		
-		t2x3.setRepresentation(INewFactorTable.Representation.SPARSE_WEIGHT);
-		assertEquals(INewFactorTable.Representation.SPARSE_WEIGHT, t2x3.getRepresentation());
+		t2x3.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT);
+		assertEquals(NewFactorTableRepresentation.SPARSE_WEIGHT, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
 		BitSet xor3Input = new BitSet(3);
@@ -94,7 +95,7 @@ public class TestFactorTable
 		assertInvariants(t2x2x2);
 		
 		NewFactorTable t2x3x4 = new NewFactorTable(domain2, domain3, domain5);
-		t2x3.setRepresentation(INewFactorTable.Representation.DENSE_WEIGHT);
+		t2x3.setRepresentation(NewFactorTableRepresentation.DENSE_WEIGHT);
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
 		testRandomOperations(t2x3x4, 10000);
@@ -105,13 +106,15 @@ public class TestFactorTable
 	{
 		int iterations = 100000;
 		
+		FactorTable.useNewFactorTable = false;
+		
 		Random rand = new Random(13);
 		DiscreteDomain domain10 = DiscreteDomain.intRangeFromSize(10);
 		DiscreteDomain domain20 = DiscreteDomain.intRangeFromSize(20);
 		DiscreteDomain domain5 = DiscreteDomain.intRangeFromSize(5);
 
 		NewFactorTable newTable = new NewFactorTable(domain10, domain20, domain5);
-		newTable.setRepresentation(INewFactorTable.Representation.DENSE_WEIGHT);
+		newTable.setRepresentation(NewFactorTableRepresentation.DENSE_WEIGHT);
 		newTable.randomizeWeights(rand);
 		
 		IFactorTable oldTable = FactorTable.create(domain10, domain20, domain5);
@@ -144,7 +147,7 @@ public class TestFactorTable
 		{
 			newTable.setWeightForJointIndex(0.0, rand.nextInt(newTable.jointSize()));
 		}
-		newTable.setRepresentation(INewFactorTable.Representation.SPARSE_WEIGHT);
+		newTable.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT);
 		oldTable.change(newTable.getIndices(), newTable.getWeights());
 		
 		oldNs = oldTester.testGet();
@@ -152,6 +155,8 @@ public class TestFactorTable
 
 		oldNs = oldTester.testEvalAsFactorFunction();
 		newNs = newTester.testEvalAsFactorFunction();
+		
+		newTable.setRepresentation(NewFactorTableRepresentation.ALL_WEIGHT);
 		
 		oldNs = oldTester.testGetWeightIndexFromTableIndices();
 		newNs = newTester.testGetWeightIndexFromTableIndices();
@@ -161,7 +166,6 @@ public class TestFactorTable
 		
 	}
 	
-	
 	/**
 	 * Crude speed test of binary search vs. Colt's IntInt hash table to see at which
 	 * point the hash table is a win.
@@ -170,7 +174,7 @@ public class TestFactorTable
 	 * size gets above 120-150 elements.
 	 */
 	@Test
-//	@Ignore
+	@Ignore
 	public void binarySearchVsHashTable()
 	{
 		binarySearchVsHashTable(100, 1000);
@@ -253,8 +257,8 @@ public class TestFactorTable
 				break;
 			case 1:
 				// Randomly set the representation
-				INewFactorTable.Representation oldRep = table.getRepresentation();
-				INewFactorTable.Representation newRep = INewFactorTable.Representation.values()[rand.nextInt(16)];
+				NewFactorTableRepresentation oldRep = table.getRepresentation();
+				NewFactorTableRepresentation newRep = NewFactorTableRepresentation.values()[rand.nextInt(16)];
 				try
 				{
 					table.setRepresentation(newRep);
@@ -354,7 +358,7 @@ public class TestFactorTable
 	
 	public static void assertInvariants(NewFactorTable table)
 	{
-		INewFactorTable.Representation representation = table.getRepresentation();
+		NewFactorTableRepresentation representation = table.getRepresentation();
 		assertBaseInvariants(table);
 		assertOldInvariants(table);
 		table.setRepresentation(representation);
@@ -517,6 +521,9 @@ public class TestFactorTable
 		Object[] arguments = new Object[nDomains];
 		int[] indices = new int[nDomains];
 		
+		assertEquals(table.hasDenseRepresentation(), table.hasDenseWeights() || table.hasDenseEnergies());
+		assertEquals(table.hasSparseRepresentation(), table.hasSparseWeights() || table.hasSparseEnergies());
+		
 		// Test iteration
 		{
 			int i = 0;
@@ -547,7 +554,6 @@ public class TestFactorTable
 				}
 				++i;
 			}
-// FIXME			assertEquals(table.sparseSize(), i);
 
 			double totalWeight = 0.0;
 			int nonZeroCount = 0;
@@ -562,6 +568,14 @@ public class TestFactorTable
 				{
 					totalWeight += entry.weight();
 					++nonZeroCount;
+				}
+				if (table.hasDenseEnergies())
+				{
+					assertEquals(entry.energy(), table.getDenseEnergyForIndices(entry.indices()), 1e-12);
+				}
+				if (table.hasDenseWeights())
+				{
+					assertEquals(entry.weight(), table.getDenseWeightForIndices(entry.indices()), 1e-12);
 				}
 				++i;
 			}
@@ -619,6 +633,7 @@ public class TestFactorTable
 		
 		if (table.hasSparseRepresentation())
 		{
+			assertTrue(table.hasSparseEnergies() || table.hasSparseWeights());
 			for (int si = 0; si < size; ++si)
 			{
 				table.sparseIndexToIndices(si, indices);

@@ -2,6 +2,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.google.common.math.DoubleMath;
+import com.google.common.primitives.Primitives;
 
 public class FactorFunctionUtilities
 {
@@ -65,6 +66,53 @@ public class FactorFunctionUtilities
     	return out;
 	}
 	
+	/**
+	 * Converts boolean {@code value} to specified {@code toClass},
+	 * which must be a primitive type.
+	 */
+	public static Object booleanToClass(boolean value, Class<?> toClass)
+	{
+		toClass = Primitives.wrap(toClass);
+		if (toClass == Boolean.class)
+		{
+			return value;
+		}
+		
+		byte intValue = value ? (byte)1 : (byte)0;
+			
+		if (toClass == Integer.class)
+		{
+			return Integer.valueOf(intValue);
+		}
+		else if (toClass == Double.class)
+		{
+			return Double.valueOf(intValue);
+		}
+		else if (toClass == Long.class)
+		{
+			return Long.valueOf(intValue);
+		}
+		else if (toClass == Float.class)
+		{
+			return Float.valueOf(intValue);
+	}
+		else if (toClass == Short.class)
+		{
+			return Short.valueOf(intValue);
+		}
+		else if (toClass == Byte.class)
+		{
+			return Byte.valueOf(intValue);
+		}
+		else if (toClass == Character.class)
+		{
+			return Character.valueOf((char)intValue);
+		}
+		else
+		{
+			throw new DimpleException("Invalid type");
+		}
+	}
 	
 	public static final int[] getListOfIndices(int startingIndex, int endingIndex)
 	{

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -68,7 +67,7 @@ public abstract class ParameterEstimator
 		HashSet<IFactorTable> set = new HashSet<IFactorTable>();
 		for (int i = 0; i < factorTables.length; i++)
 			set.add(factorTables[i]);
-		factorTables = new FactorTable[set.size()];
+		factorTables = new IFactorTable[set.size()];
 		int i = 0;
 		for (IFactorTable ft : set)
 		{

@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 public class JointFactorFunction extends FactorFunction
 {
@@ -89,14 +89,10 @@ public class JointFactorFunction extends FactorFunction
 		return _factor1.evalEnergy(input1) + _factor2.evalEnergy(input2);
 	}
 
-	
-	//TODO: we should override the function that generates a combo table and build a combo table
-	//     more efficiently.
 	@Override
-    public IFactorTable getFactorTable(Domain [] domainList)
-    {
-		return super.getFactorTable(domainList);
-    }
-	
-
+	protected IFactorTable createTableForDomains(DiscreteDomainList domains)
+	{
+		// TODO: provide a more efficient implementation
+		return super.createTableForDomains(domains);
+	}
 }

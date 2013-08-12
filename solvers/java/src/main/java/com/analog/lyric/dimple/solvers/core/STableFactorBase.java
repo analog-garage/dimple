@@ -36,7 +36,7 @@ public abstract class STableFactorBase extends SFactorBase
 	public final IFactorTable getFactorTable()
 	{
 		if (_factorTable==null)
-			_factorTable = getFactor().getFactorFunction().getFactorTable(getFactor().getDomains());
+			_factorTable = getFactor().getFactorTable();
 		return this._factorTable;
 	}
 

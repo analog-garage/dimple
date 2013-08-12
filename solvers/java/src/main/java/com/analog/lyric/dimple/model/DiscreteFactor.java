@@ -28,9 +28,8 @@ public class DiscreteFactor extends Factor
 	 * Construction
 	 */
 	
-	public DiscreteFactor(int id, FactorFunction factorFunc,
-			VariableBase[] variables)
-			{
+	public DiscreteFactor(int id, FactorFunction factorFunc, VariableBase[] variables)
+	{
 		super(id, factorFunc, variables);
 		
 		if (!isDiscrete())
@@ -52,9 +51,25 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Override
+	public DiscreteDomain[] getDomains()
+	{
+		VariableList variables = getVariables();
+		int numVariables = variables.size();
+		
+		DiscreteDomain[] retval = new DiscreteDomain[numVariables];
+		
+		for (int i = 0; i < numVariables; i++)
+		{
+			retval[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
+		}
+		
+		return retval;
+	}
+
+	@Override
 	public IFactorTable getFactorTable()
 	{
-		return getFactorFunction().getFactorTable(getDomains());
+		return getFactorFunction().getFactorTable(this);
 	}
 
 	

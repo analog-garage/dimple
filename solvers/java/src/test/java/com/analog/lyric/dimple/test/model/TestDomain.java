@@ -134,6 +134,16 @@ public class TestDomain
 		
 		DiscreteDomain primes = DiscreteDomain.fromElements(2,3,5,7,11,13);
 		assertInvariants(primes);
+		
+		// Test for -0.0
+		DiscreteDomain doublesWithZero = DiscreteDomain.fromElements(0.0, 1.0, 3.0);
+		assertInvariants(doublesWithZero);
+		assertEquals(0, doublesWithZero.getIndex(0.0));
+		assertEquals(0, doublesWithZero.getIndex(-0.0));
+		DiscreteDomain floatsWithZero = DiscreteDomain.fromElements((float)0.0, (float)1.0, (float)3.0);
+		assertInvariants(floatsWithZero);
+		assertEquals(0, floatsWithZero.getIndex((float)0.0));
+		assertEquals(0, floatsWithZero.getIndex((float)-0.0));
 	}
 	
 	public static void assertReal(RealDomain real, double lower, double upper)

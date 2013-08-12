@@ -27,7 +27,27 @@ public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
 		_elementToIndex = new HashMap<Object,Integer>(elements.length);
 		for (int i = 0, end = elements.length; i < end; ++i)
 		{
-			_elementToIndex.put(elements[i], i);
+			Object element = elements[i];
+			_elementToIndex.put(element, i);
+			
+			// HACK: In Java, although 0.0 == -0.0, this is not true when wrapped in a
+			// Double or Float object!
+			if (element instanceof Double)
+			{
+				Double d = (Double)element;
+				if (d == 0.0)
+				{
+					_elementToIndex.put(Double.valueOf(-d), i);
+				}
+			}
+			else if (element instanceof Float)
+			{
+				Float f = (Float)element;
+				if (f == 0.0)
+				{
+					_elementToIndex.put(Float.valueOf(-f), i);
+				}
+			}
 		}
 	}
 	

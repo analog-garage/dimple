@@ -27,9 +27,9 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 
  *  1) Output (Logical NOT of input)
  *  2) Input (inputs may be boolean, double 0.0/1.0 or integer 0/1)
- *  
+ * 
  */
-public class Not extends FactorFunction 
+public class Not extends FactorFunction
 {
     @Override
     public double evalEnergy(Object... arguments)
@@ -54,6 +54,7 @@ public class Not extends FactorFunction
     	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
     	boolean notValue = !inValue;
     	
-    	arguments[0] = FactorFunctionUtilities.toDouble(notValue);		// Replace the output value
+    	// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.booleanToClass(notValue,  arguments[1].getClass());
     }
 }

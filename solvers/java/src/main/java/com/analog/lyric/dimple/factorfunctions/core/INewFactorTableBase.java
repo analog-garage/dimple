@@ -66,6 +66,30 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public BitSet getInputSet();
 	
+	/**
+	 * Returns energy for given set of indices assuming that the table has a dense
+	 * representation for energies. This provides the fastest possible lookup for energies.
+	 * <p>
+	 * @throws ArrayIndexOutOfBoundsException may throw if {@code indices} are out of bound
+	 * or table does not have dense energies.
+	 * @see #hasDenseEnergies()
+	 * @see #getEnergyForIndices(int...)
+	 * @see #getDenseWeightForIndices(int...)
+	 */
+	public double getDenseEnergyForIndices(int ... indices);
+
+	/**
+	 * Returns weight for given set of indices assuming that the table has a dense
+	 * representation for weights. This provides the fastest possible lookup for weights.
+	 * <p>
+	 * @throws ArrayIndexOutOfBoundsException may throw if {@code indices} are out of bound
+	 * or table does not have dense weights.
+	 * @see #hasDenseWeights()
+	 * @see #getWeightForIndices(int...)
+	 * @see #getDenseEnergyForIndices(int...)
+	 */
+	public double getDenseWeightForIndices(int ... indices);
+
 	public abstract DiscreteDomainList getDomainList();
 	
 	/**
@@ -131,7 +155,11 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract double getWeightForIndices(int ... indices);
 
 	public abstract boolean hasDenseRepresentation();
+	public abstract boolean hasDenseEnergies();
+	public abstract boolean hasDenseWeights();
 	public abstract boolean hasSparseRepresentation();
+	public abstract boolean hasSparseEnergies();
+	public abstract boolean hasSparseWeights();
 	
 	/**
 	 * True if table {@link #isDirected()} and has exactly one entry for each combination of

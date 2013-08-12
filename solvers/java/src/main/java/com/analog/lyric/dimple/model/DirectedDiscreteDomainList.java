@@ -35,7 +35,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		final int nInputs = inputs.cardinality();
 		final int nOutputs = nDomains - nInputs;
 		
-		if (nInputs == 0 || nOutputs == 0 || inputs.length() > nDomains)
+		if (nOutputs == 0 || inputs.length() > nDomains)
 		{
 			throw new DimpleException("Illegal input set for domain list");
 		}
@@ -197,13 +197,19 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public int jointIndexFromElements(Object ... elements)
 	{
-		return outputIndexFromElements(elements) + inputIndexFromElements(elements) * _outputCardinality;
+		return jointIndexFromInputOutputIndices(inputIndexFromElements(elements), outputIndexFromElements(elements));
 	}
 
 	@Override
 	public int jointIndexFromIndices(int ... indices)
 	{
-		return outputIndexFromIndices(indices) + inputIndexFromIndices(indices) * _outputCardinality;
+		return jointIndexFromInputOutputIndices(inputIndexFromIndices(indices), outputIndexFromIndices(indices));
+	}
+	
+	@Override
+	public int jointIndexFromInputOutputIndices(int inputIndex, int outputIndex)
+	{
+		return outputIndex + inputIndex * _outputCardinality;
 	}
 	
 	@Override

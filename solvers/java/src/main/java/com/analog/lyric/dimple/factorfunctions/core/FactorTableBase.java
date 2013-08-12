@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -200,9 +202,26 @@ public abstract class FactorTableBase implements IFactorTable
 	//private HashMap<ArrayList<Integer>,Integer> _indices2weightIndex = null;
 
 	
-	
-
-
+	/**
+	 * Returns the energy of factor table entry with given {@code indices}.
+	 */
+	@Override
+	public double getEnergyForIndices(int ... indices)
+	{
+		final int index = getWeightIndexFromTableIndices(indices);
+		if (index < 0)
+		{
+			return Double.POSITIVE_INFINITY;
+		}
+		else if (_potentials != null)
+		{
+			return _potentials[index];
+		}
+		else
+		{
+			return weightToEnergy(_weights[index]);
+		}
+	}
 	
 	@Override
 	public double [] getPotentials()

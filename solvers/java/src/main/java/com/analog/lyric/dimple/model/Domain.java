@@ -22,6 +22,9 @@ public abstract class Domain implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
+	public DiscreteDomain asDiscrete() { return null; }
+	public RealDomain asReal() { return null; }
+	
 	public boolean isDiscrete() { return false; }
 	public boolean isJoint() { return false; }
 	public boolean isReal() { return false; }

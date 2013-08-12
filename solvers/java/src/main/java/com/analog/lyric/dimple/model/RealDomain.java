@@ -115,6 +115,12 @@ public class RealDomain extends Domain
 	 */
 	
 	@Override
+	public final RealDomain asReal()
+	{
+		return this;
+	}
+	
+	@Override
 	public boolean inDomain(Object value)
 	{
 		return value instanceof Number && inDomain(((Number)value).doubleValue());

@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 2...) An arbitrary number of inputs (inputs may be boolean, double 0.0/1.0 or integer 0/1)
  * 
  */
-public class And extends FactorFunction 
+public class And extends FactorFunction
 {
     @Override
     public double evalEnergy(Object ... arguments)
@@ -57,6 +57,7 @@ public class And extends FactorFunction
     	for(int i = 1; i < arguments.length; ++i)
     		andValue &= FactorFunctionUtilities.toBoolean(arguments[i]);
     	
-    	arguments[0] = andValue;		// Replace the output value
+		// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.booleanToClass(andValue, arguments[1].getClass());
     }
 }

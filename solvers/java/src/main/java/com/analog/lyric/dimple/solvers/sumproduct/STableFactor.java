@@ -57,7 +57,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		
 		
 		//TODO: should I recheck for factor table every once in a while?
-		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
+		if (factor.getFactorFunction().factorTableExists(getFactor()))
 		{
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
 		}

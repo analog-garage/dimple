@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -27,10 +27,15 @@ public class TableFactorFunction extends FactorFunction
 	private IFactorTable _factorTable;
 
 	@Override
-	public boolean factorTableExists(Domain [] domainList)
+	public boolean factorTableExists(DiscreteDomainList domains)
 	{
-    	if (domainList.length != _factorTable.getDomains().length)
-    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domainList.length + " factorTable's domain size: " + _factorTable.getDomains().length);
+    	if (domains.size() != _factorTable.getDomains().length)
+    	{
+    		return false;
+    	}
+    	// FIXME:
+//    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domains.size() +
+//    			" factorTable's domain size: " + _factorTable.getDomains().length);
     	    	
     	return true;
 	}
@@ -65,12 +70,13 @@ public class TableFactorFunction extends FactorFunction
 	}
 	
     @Override
-	public IFactorTable getFactorTable(Domain [] domainList)
+	public IFactorTable getFactorTable(DiscreteDomainList domains)
     {
     	//first step, convert domains to DiscreteDOmains
     	//make sure domain lists match
-    	if (domainList.length != _factorTable.getDomains().length)
-    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domainList.length + " factorTable's domain size: " + _factorTable.getDomains().length);
+    	if (domains.size() != _factorTable.getDomains().length)
+    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domains.size() +
+    			" factorTable's domain size: " + _factorTable.getDomains().length);
     	    	
     	return _factorTable;
     }

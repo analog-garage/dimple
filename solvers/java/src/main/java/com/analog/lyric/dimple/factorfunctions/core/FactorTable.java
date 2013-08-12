@@ -23,6 +23,7 @@ import java.util.HashSet;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.DiscreteDomainList;
 import com.analog.lyric.util.misc.IndexCounter;
 import com.analog.lyric.util.misc.Misc;
 
@@ -46,6 +47,8 @@ public class FactorTable extends FactorTableBase
 	private boolean _checkedIfDeterministicDirected = false;
 	private boolean _isDeterministicDirected = false;
 	private HashMap<ArrayList<Object>,ArrayList<Object>> _deterministicDirectedLookupTable = null;
+	
+	public static volatile boolean useNewFactorTable = false;
 	
 
 	private FactorTable(int [][] indices, double [] weights, Discrete... variables)
@@ -113,8 +116,6 @@ public class FactorTable extends FactorTableBase
 		if (copy._directedFrom != null) _directedFrom = copy._directedFrom.clone();
 	}
 	
-	public static volatile boolean useNewFactorTable = false;
-	
 	public static IFactorTable create(int[][] indices, double[] weights, DiscreteDomain... domains)
 	{
 		return create(indices, weights, true, domains);
@@ -136,6 +137,18 @@ public class FactorTable extends FactorTableBase
 		return create((int[][])result[0], (double[])result[1], false, domains);
 	}
 
+	public static IFactorTable create(DiscreteDomainList domains)
+	{
+		if (useNewFactorTable)
+		{
+			return new NewFactorTable(domains);
+		}
+		else
+		{
+			return new FactorTable(domains.toArray(new DiscreteDomain[domains.size()]));
+		}
+	}
+	
 	public static IFactorTable create(DiscreteDomain... domains)
 	{
 		if (useNewFactorTable)

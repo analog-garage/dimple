@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
+
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Factor;
@@ -27,7 +28,7 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
-{	
+{
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
@@ -40,14 +41,14 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
     protected boolean _kIsSmallerThanDomain;
     protected boolean _dampingInUse = false;
 
-    public STableFactor(Factor factor) 
+    public STableFactor(Factor factor)
 	{
     	super(factor);
     	
-		_dampingParams = new double[_factor.getSiblings().size()];		
+		_dampingParams = new double[_factor.getSiblings().size()];
 		_tableFactorEngine = new TableFactorEngine(this);
 		
-		if (factor.getFactorFunction().factorTableExists(getFactor().getDomains()))
+		if (factor.getFactorFunction().factorTableExists(getFactor()))
 			_kbestFactorEngine = new KBestFactorTableEngine(this);
 		else
 			_kbestFactorEngine = new KBestFactorEngine(this);
@@ -73,8 +74,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		}
 	}
     
-	public void updateEdge(int outPortNum) 
-	{		
+	@Override
+	public void updateEdge(int outPortNum)
+	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
@@ -84,7 +86,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 	
 	@Override
-	public void update() 
+	public void update()
 	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
@@ -115,25 +117,25 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 
 	@Override
-	public FactorFunction getFactorFunction() 
+	public FactorFunction getFactorFunction()
 	{
 		return getFactor().getFactorFunction();
 	}
 
 	@Override
-	public double initAccumulator() 
+	public double initAccumulator()
 	{
 		return 0;
 	}
 
 	@Override
-	public double accumulate(double oldVal, double newVal) 
+	public double accumulate(double oldVal, double newVal)
 	{
 		return oldVal + newVal;
 	}
 
 	@Override
-	public double combine(double oldVal, double newVal) 
+	public double combine(double oldVal, double newVal)
 	{
 		if (oldVal < newVal)
 			return oldVal;
@@ -142,7 +144,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 
 	@Override
-	public void normalize(double[] outputMsg) 
+	public void normalize(double[] outputMsg)
 	{
 		double minVal = Double.POSITIVE_INFINITY;
 		
@@ -155,39 +157,39 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 
 	@Override
-	public double evalFactorFunction(Object[] inputs) 
+	public double evalFactorFunction(Object[] inputs)
 	{
 		return -Math.log(getFactorFunction().eval(inputs));
 	}
 
 	@Override
-	public void initMsg(double[] msg) 
+	public void initMsg(double[] msg)
 	{
 		Arrays.fill(msg, Double.POSITIVE_INFINITY);
 	}
 
 	@Override
-	public double getFactorTableValue(int index) 
+	public double getFactorTableValue(int index)
 	{
 		return getFactorTable().getPotentials()[index];
 	}
 	
 	@Override
-	public int[] findKBestForMsg(double[] msg, int k) 
+	public int[] findKBestForMsg(double[] msg, int k)
 	{
 		return Sort.quickfindFirstKindices(msg, k);
 	}
 
 
 	@Override
-	public double[][] getInPortMsgs() 
+	public double[][] getInPortMsgs()
 	{
 		return _inputMsgs;
 	}
 
 
 	@Override
-	public double[][] getOutPortMsgs() 
+	public double[][] getOutPortMsgs()
 	{
 		return _outputMsgs;
 	}
@@ -197,7 +199,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		
@@ -209,7 +211,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    {
 	    	if (_dampingInUse)
 	    		_savedOutMsgArray[port] = new double[_inputMsgs[port].length];
-	    }		
+	    }
 	    
 	    setK(Integer.MAX_VALUE);
 	}
@@ -217,7 +219,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		super.moveMessages(other,portNum,otherPort);
 	    if (_dampingInUse)
