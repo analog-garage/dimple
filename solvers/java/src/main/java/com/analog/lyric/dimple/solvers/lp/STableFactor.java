@@ -240,7 +240,6 @@ public class STableFactor extends STableFactorBase
 		{
 			_lpVarIndex = start;
 
-			final double totalWeight = _totalWeight;
 			final DiscreteFactor factor = getModelObject();
 			final FactorTable factorTable = factor.getFactorTable();
 			final double[] weights = factorTable.getWeights();
