@@ -24,16 +24,10 @@ function dimpleLPSolve( factorGraph )
     
     % The variable constraints, which are the first constraints, have 1 on the rhs and the rest have zero.
     beq = [ones(sfg.getNumberOfVariableConstraints(),1); zeros(sfg.getNumberOfMarginalConstraints(),1)];
-    
-    termIter = sfg.getMatlabSparseConstraints();
-    Aeq = spalloc(rows, cols, termIter.size());
-    while (termIter.advance())
-        row = termIter.getRow();
-        col = termIter.getVariable();
-        val = termIter.getCoefficient();
-        Aeq(row,col) = val; %#ok<SPRIX>
-    end
-    
+   
+    matinfo = sfg.getMatlabConstraintArrays();
+    tic;
+    Aeq= sparse(matinfo(:,1),matinfo(:,2),matinfo(:,3),rows,cols);
     
     disp(['Time spent transfering model to solver:' num2str(toc) 'sec ']);
 
