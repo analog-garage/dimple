@@ -30,7 +30,6 @@ import net.sf.javailp.SolverFactory;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -464,6 +463,22 @@ public class SFactorGraph extends SFactorGraphBase
 		return new MatlabConstraintTermIterator(_constraints, _nConstraintTerms);
 	}
 	
+	@Matlab
+	public double[][] getMatlabConstraintArrays()
+	{
+		MatlabConstraintTermIterator termIter = getMatlabSparseConstraints();
+		int numel = termIter.size();
+		double[][] result= new double[numel][3];
+		int ct=0;
+		while (termIter.advance())
+		{
+			result[ct][0]=termIter.getRow();
+			result[ct][1]=termIter.getVariable();
+			result[ct][2]=termIter.getCoefficient();
+			ct++;
+		}
+		return result;
+	}
 	@Matlab
 	public String getLPSolverName()
 	{

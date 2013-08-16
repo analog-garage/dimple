@@ -252,7 +252,7 @@ public class STableFactor extends STableFactorBase
 				{
 					break;
 				}
-				objectiveFunction[start++] = Math.log(weights[i] / totalWeight);
+				objectiveFunction[start++] = Math.log(weights[i]);
 			}
 		}
 		

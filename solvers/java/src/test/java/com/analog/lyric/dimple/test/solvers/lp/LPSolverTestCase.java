@@ -143,7 +143,7 @@ public class LPSolverTestCase
 				if (lpVarForValue >= 0)
 				{
 					assertEquals(i, i2);
-					assertEquals(Math.log(w/totalWeight), objective[lpVarForValue], 1e-6);
+					assertEquals(Math.log(w), objective[lpVarForValue], 1e-6);
 				}
 				if (!svar.hasLPVariable() || mvar.getInput()[i] == 0.0)
 				{

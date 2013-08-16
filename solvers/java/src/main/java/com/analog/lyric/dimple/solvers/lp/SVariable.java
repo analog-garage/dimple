@@ -353,7 +353,7 @@ public class SVariable extends SDiscreteVariableBase
 			{
 				if (weight != 0.0)
 				{
-					objectiveFunction[start++] = Math.log(weight / totalWeight);
+					objectiveFunction[start++] = Math.log(weight);
 				}
 			}
 		}
