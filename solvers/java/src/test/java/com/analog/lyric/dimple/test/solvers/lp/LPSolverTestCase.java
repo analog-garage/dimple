@@ -128,12 +128,7 @@ public class LPSolverTestCase
 				assertTrue(nValidAssignments <= 1);
 			}
 			
-			double[] weights = mvar.getInput();
-			double totalWeight = 0.0;
-			for (double w : weights)
-			{
-				totalWeight += w;
-			}
+		
 			
 			for (int i = 0, end = svar.getModelObject().getDomain().size(); i < end; ++i)
 			{
