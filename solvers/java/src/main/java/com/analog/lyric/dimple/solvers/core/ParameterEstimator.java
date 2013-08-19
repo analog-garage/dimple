@@ -9,6 +9,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.util.misc.Misc;
 
 public abstract class ParameterEstimator
 {
@@ -150,6 +151,10 @@ public abstract class ParameterEstimator
 				int [] direction = null;
 				for (Factor f : factors)
 				{
+					if (f.getFactorTable() != table)
+					{
+						Misc.breakpoint();
+					}
 					int [] tmp = f.getDirectedTo();
 					if (tmp == null)
 						throw new DimpleException("Baum Welch only works with directed Factors");
@@ -187,6 +192,10 @@ public abstract class ParameterEstimator
 
 				for (Factor f : factors)
 				{
+					if (f.getFactorTable() != ft)
+					{
+						Misc.breakpoint();
+					}
 					double [] belief = (double[])f.getSolver().getBelief();
 					for (int i = 0; i < sum.length; i++)
 						sum[i] += belief[i];

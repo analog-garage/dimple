@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -26,7 +27,50 @@ public class TableFactorFunction extends FactorFunction
 	
 	private IFactorTable _factorTable;
 
-	@Override
+	public TableFactorFunction(String name,IFactorTable factorTable)
+	{
+		super(name);
+		_factorTable = factorTable;
+	}
+	
+	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains)
+	{
+		this(name,FactorTable.create(indices, probs, domains));
+	}
+	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes)
+	{
+		this(name,FactorTable.create(indices, probs, discretes));
+	}
+	
+
+    @Override
+	public boolean convertFactorTable(DiscreteDomainList oldDomains, DiscreteDomainList newDomains)
+    {
+    	boolean converted = false;
+    	
+    	if (oldDomains != null && newDomains != null)
+    	{
+    		if (_factorTable != null)
+    		{
+    			if (_factorTable instanceof INewFactorTable)
+    			{
+    				INewFactorTable oldTable = (INewFactorTable)_factorTable;
+    				DiscreteDomainListConverter converter =
+    					DiscreteDomainListConverter.createPermuter(oldDomains, newDomains);
+    				_factorTable = oldTable.convert(converter);
+    			}
+    			else
+    			{
+    				_factorTable.setDirected(newDomains.getOutputIndices(), newDomains.getInputIndices());
+    			}
+				converted = true;
+    		}
+    	}
+    	
+    	return converted;
+    }
+
+    @Override
 	public boolean factorTableExists(DiscreteDomainList domains)
 	{
     	if (domains.size() != _factorTable.getDomains().length)
@@ -39,23 +83,6 @@ public class TableFactorFunction extends FactorFunction
     	    	
     	return true;
 	}
-
-	public TableFactorFunction(String name,IFactorTable factorTable)
-	{
-		super(name);
-		_factorTable = factorTable;
-				
-	}
-	
-	public TableFactorFunction(String name, int [][] indices, double [] probs, DiscreteDomain ... domains)
-	{
-		this(name,FactorTable.create(indices, probs, domains));
-	}
-	public TableFactorFunction(String name, int [][] indices, double [] probs, Discrete... discretes)
-	{
-		this(name,FactorTable.create(indices, probs, discretes));
-	}
-	
 
 	@Override
 	public double eval(Object... input)
@@ -81,6 +108,11 @@ public class TableFactorFunction extends FactorFunction
     	return _factorTable;
     }
     
+    @Override
+	public IFactorTable getFactorTableIfExists(DiscreteDomainList domains)
+    {
+    	return factorTableExists(domains) ? _factorTable : null;
+    }
     
 	// For directed factors...
 	@Override

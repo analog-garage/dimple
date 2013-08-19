@@ -51,28 +51,22 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Override
-	public DiscreteDomain[] getDomains()
+	public DiscreteDomainList getDomainList()
 	{
 		VariableList variables = getVariables();
 		int numVariables = variables.size();
 		
-		DiscreteDomain[] retval = new DiscreteDomain[numVariables];
+		DiscreteDomain[] domains = new DiscreteDomain[numVariables];
 		
 		for (int i = 0; i < numVariables; i++)
 		{
-			retval[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
+			domains[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
 		}
 		
-		return retval;
+		return DiscreteDomainList.create(_directedTo, domains);
+		
 	}
 
-	@Override
-	public IFactorTable getFactorTable()
-	{
-		return getFactorFunction().getFactorTable(this);
-	}
-
-	
 	public int[][] getPossibleBeliefIndices()
 	{
 		return _solverFactor.getPossibleBeliefIndices();

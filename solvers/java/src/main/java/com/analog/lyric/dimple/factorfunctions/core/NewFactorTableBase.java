@@ -28,9 +28,9 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 		_domains = domains;
 	}
 	
-	protected NewFactorTableBase(BitSet directedFrom, DiscreteDomain ... domains)
+	protected NewFactorTableBase(BitSet directedTo, DiscreteDomain ... domains)
 	{
-		_domains = DiscreteDomainList.create(directedFrom, domains);
+		_domains = DiscreteDomainList.create(directedTo, domains);
 	}
 	
 	protected NewFactorTableBase(NewFactorTableBase that)

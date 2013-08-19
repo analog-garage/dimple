@@ -24,7 +24,7 @@ public class RealJoint extends VariableBase
 	// Constructors...
 	public RealJoint(int size) 
 	{
-		this(new RealJointDomain(size));
+		this(RealJointDomain.create(size));
 	}
 	public RealJoint(RealJointDomain domain)
 	{

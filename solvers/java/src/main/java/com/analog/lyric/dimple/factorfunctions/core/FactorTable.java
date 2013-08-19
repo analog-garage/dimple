@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -52,7 +53,7 @@ public class FactorTable extends FactorTableBase
 	 * When true, the various {@code create*} methods of {@link FactorTable} will return
 	 * {@link NewFactorTable} instances.
 	 */
-	public static volatile boolean useNewFactorTable = false;
+	public static volatile boolean useNewFactorTable = true;
 	
 
 	private FactorTable(int [][] indices, double [] weights, Discrete... variables)
@@ -164,8 +165,36 @@ public class FactorTable extends FactorTableBase
 			return new FactorTable(domains);
 		}
 	}
+	
+	public static IFactorTable create(BitSet outputSet, DiscreteDomain ... domains)
+	{
+		if (useNewFactorTable)
+		{
+			return new NewFactorTable(outputSet, domains);
+		}
+		else
+		{
+			FactorTable table = new FactorTable(domains);
+			int[] directedTo = new int[outputSet.cardinality()];
+			int[] directedFrom = new int[domains.length - directedTo.length];
+			for (int i = 0, from = 0, to = 0, end = domains.length; i < end; ++i)
+			{
+				if (outputSet.get(i))
+				{
+					directedTo[to++] = i;
+				}
+				else
+				{
+					directedFrom[from++] = i;
+				}
+			}
+			table.setDirected(directedTo, directedFrom);
+			return table;
+		}
+	}
 
-	public static IFactorTable create(int[][] indices,
+	private static IFactorTable create(
+		int[][] indices,
 		double[] weights,
 		boolean checkTable,
 		DiscreteDomain... domains)
@@ -506,8 +535,12 @@ public class FactorTable extends FactorTableBase
 			
 			for (int j = 0; j < indices[i].length; j++)
 			{
-				if (indices[i][j] < 0 || indices[i][j] >= domains[j].size())
-					throw new RuntimeException("index: " + indices[i][j] + " is larger than domain of variable number " + j);
+				int index = indices[i][j];
+				if (index < 0 || index >= domains[j].size())
+				{
+					throw new IndexOutOfBoundsException(
+						String.format("Index %d out of bounds for domain %d with size %d", index, j, domains[j].size()));
+				}
 			}
 
 		}

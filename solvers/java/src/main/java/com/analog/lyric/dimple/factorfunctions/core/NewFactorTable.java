@@ -15,6 +15,7 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
 import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 import com.analog.lyric.math.Utilities;
+import com.google.common.math.DoubleMath;
 
 @NotThreadSafe
 public class NewFactorTable extends NewFactorTableBase implements INewFactorTable, IFactorTable
@@ -68,6 +69,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	
 	private static final int DETERMINISTIC_COMPUTED = 0x01;
 	private static final int NORMALIZED = 0x02;
+	private static final int NORMALIZED_COMPUTED = 0x04;
 	private int _computedMask = 0;
 	
 	/*--------------
@@ -81,9 +83,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		_representation = SPARSE_ENERGY;
 	}
 	
-	public NewFactorTable(BitSet directedFrom, DiscreteDomain ... domains)
+	public NewFactorTable(BitSet directedTo, DiscreteDomain ... domains)
 	{
-		this(DiscreteDomainList.create(directedFrom, domains));
+		this(DiscreteDomainList.create(directedTo, domains));
 	}
 	
 	/**
@@ -185,6 +187,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		setRepresentation(representation);
+	}
+	
+	@Override
+	public NewFactorTable convert(DiscreteDomainListConverter converter)
+	{
+		return new NewFactorTable(this, converter);
 	}
 	
 	/*----------------
@@ -463,7 +471,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (isDirected() && _nonZeroWeights == _domains.getInputCardinality())
 		{
 			// Table can only be deterministic if there is exactly one
-			// valid output for each possible input.
+			// valid output for each possible input and all outputs have the
+			// same weight.
 			final int[] sparseToJoint = computeSparseToJointIndexMap();
 			deterministic = true;
 			final int outputSize = _domains.getOutputCardinality();
@@ -478,7 +487,45 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				}
 				prevInputIndex = inputIndex;
 			}
-		
+
+			if (deterministic)
+			{
+				final double tolerance = 1e-12;
+				if (hasSparseEnergies())
+				{
+					deterministic = ArrayUtil.allFuzzyEqual(_sparseEnergies, tolerance);
+				}
+				else if (hasSparseWeights())
+				{
+					deterministic = ArrayUtil.allFuzzyEqual(_sparseWeights, tolerance);
+				}
+				else if (hasDenseEnergies())
+				{
+					double first = _denseEnergies[sparseToJoint[0]];
+					for (int i = 1, end = sparseToJoint.length; i < end; ++i)
+					{
+						if (!DoubleMath.fuzzyEquals(first, _denseEnergies[sparseToJoint[i]], tolerance))
+						{
+							deterministic = false;
+							break;
+						}
+					}
+				}
+				else
+				{
+					assert(hasDenseWeights());
+					double first = _denseWeights[sparseToJoint[0]];
+					for (int i = 1, end = sparseToJoint.length; i < end; ++i)
+					{
+						if (!DoubleMath.fuzzyEquals(first, _denseWeights[sparseToJoint[i]], tolerance))
+						{
+							deterministic = false;
+							break;
+						}
+					}
+				}
+			}
+			
 			if (deterministic)
 			{
 				_sparseIndexToJointIndex = sparseToJoint;
@@ -497,6 +544,11 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public final boolean isNormalized()
 	{
+		if ((_computedMask & NORMALIZED_COMPUTED) == 0)
+		{
+			normalizeInternal(true);
+			_computedMask |= NORMALIZED_COMPUTED;
+		}
 		return (_computedMask & NORMALIZED) != 0;
 	}
 	
@@ -571,94 +623,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize()
 	{
-		if ((_computedMask & NORMALIZED) != 0)
-		{
-			return;
-		}
-			
-		if (_domains.isDirected())
-		{
-			normalize(_domains.getInputSet());
-			return;
-		}
-		
-		double total = 0.0;
-		switch (_representation)
-		{
-		case DETERMINISTIC:
-			break;
-			
-		case ALL:
-		case ALL_WEIGHT:
-		case ALL_SPARSE:
-		case NOT_DENSE_WEIGHT:
-		case NOT_SPARSE_ENERGY:
-		case DENSE_ENERGY_SPARSE_WEIGHT:
-		case NOT_DENSE_ENERGY:
-		case SPARSE_WEIGHT:
-			for (double w : _sparseWeights)
-			{
-				total += w;
-			}
-			break;
-			
-		case ALL_ENERGY:
-		case SPARSE_ENERGY:
-		case NOT_SPARSE_WEIGHT:
-		case SPARSE_ENERGY_DENSE_WEIGHT:
-			// TODO: if sparse size is large enough, it would be faster to iterate over the dense weights
-			for (double e: _sparseEnergies)
-			{
-				total += energyToWeight(e);
-			}
-			break;
-			
-		case ALL_DENSE:
-		case DENSE_WEIGHT:
-			for (double w : _denseWeights)
-			{
-				total += w;
-			}
-			break;
-			
-		case DENSE_ENERGY:
-			for (double e : _denseEnergies)
-			{
-				total += energyToWeight(e);
-			}
-			break;
-		}
-		
-		if (total != 0.0)
-		{
-			for (int i = _sparseWeights.length; --i>=0;)
-			{
-				_sparseWeights[i] /= total;
-			}
-			if (_sparseWeights != _denseWeights)
-			{
-				for (int i = _denseWeights.length; --i>=0;)
-				{
-					_denseWeights[i] /= total;
-				}
-			}
-			final double logTotal = Math.log(total);
-			for (int i = _sparseEnergies.length; --i>=0;)
-			{
-				_sparseEnergies[i] += logTotal;
-			}
-			if (_sparseEnergies != _denseEnergies)
-			{
-				for (int i = _denseEnergies.length; --i>=0;)
-				{
-					_denseEnergies[i] += logTotal;
-				}
-			}
-		}
-
-		_computedMask |= NORMALIZED;
+		normalizeInternal(false);
 	}
-
+	
 	@Override
 	public final int sparseSize()
 	{
@@ -700,65 +667,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	public final NewFactorTableRepresentation getRepresentation()
 	{
 		return NewFactorTableRepresentation.forOrdinal(_representation);
-	}
-	
-	protected void normalize(BitSet directedFrom)
-	{
-		BitSet inputSet = _domains.getInputSet();
-		boolean canonical = inputSet != null && inputSet.equals(directedFrom);
-		
-		if (canonical && (_computedMask & NORMALIZED) != 0)
-		{
-			return;
-		}
-		
-		_computedMask &= ~NORMALIZED;
-		
-		final int nDomains = getDimensions();
-		final int[] oldToFromMap = new int[nDomains];
-		final int[] directedFromProducts = computeDomainSubsetInfo(_domains, directedFrom, oldToFromMap);
-		final int nDirectedFrom = directedFromProducts.length - 1;
-		
-		final int [] fromToOldMap = new int[nDirectedFrom];
-		for (int oldi = nDomains; --oldi >=0;)
-		{
-			int fromi = oldToFromMap[oldi];
-			if (fromi >= 0)
-			{
-				fromToOldMap[fromi] = oldi;
-			}
-		}
-		
-		final double[] normalizers = new double[directedFromProducts[directedFromProducts.length - 1]];
-		final int[] indices = new int[nDomains];
-		final int[] directedFromIndices = new int[nDirectedFrom];
-		for (int i = 0, endi = sparseSize(); i < endi; ++i)
-		{
-			sparseIndexToIndices(i, indices);
-			for (int j = 0, endj = nDirectedFrom; j < endj; ++j)
-			{
-				directedFromIndices[j] = indices[fromToOldMap[j]];
-			}
-			int index = locationFromIndices(directedFromIndices,directedFromProducts);
-			normalizers[index] += getWeightForSparseIndex(i);
-		}
-		
-		for (int i = 0, endi = sparseSize(); i < endi; ++i)
-		{
-			sparseIndexToIndices(i, indices);
-			for (int j = 0, endj = nDirectedFrom; j < endj; ++j)
-			{
-				directedFromIndices[j] = indices[fromToOldMap[j]];
-			}
-			int index = locationFromIndices(directedFromIndices, directedFromProducts);
-			final double normalizer = normalizers[index];
-			if (normalizer != 0.0)
-			{
-				setWeightForSparseIndex(getWeightForSparseIndex(i) / normalizers[index], i);
-			}
-		}
-		
-		_computedMask |= NORMALIZED;
 	}
 	
 	/**
@@ -1556,12 +1464,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				toDomains[permutation[i]] = _domains.get(i);
 			}
-			converter = createPermuter(_domains, null, DiscreteDomainList.create(toDomains), null, permutation);
+			converter = createPermuter(_domains, DiscreteDomainList.create(toDomains), permutation);
 		}
 		
 		if (converter != null)
 		{
-			converter.combineWith(createJoiner(converter.getToDomains(), unjoinedSize, joinedSize));
+			converter = converter.combineWith(createJoiner(converter.getToDomains(), unjoinedSize, joinedSize));
 		}
 		else
 		{
@@ -1574,15 +1482,22 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		BitSet fromSet = BitSetUtil.bitsetFromIndices(getDimensions(), directedTo);
-		fromSet.flip(0, fromSet.size());
-		normalize(fromSet);
+		// TODO: eventually get rid of normalize w/ directed arguments, but in the meantime allow
+		// if arguments matches domain list.
+		
+		BitSet toSet = BitSetUtil.bitsetFromIndices(_domains.size(), directedTo);
+		if (!toSet.equals(_domains.getOutputSet()))
+		{
+			throw DimpleException.unsupportedMethod(getClass(), "normalize(int[] directedTo)");
+		}
+	
+		normalize();
 	}
 
 	@Override
 	public void normalize(int[] directedTo, int[] directedFrom)
 	{
-		normalize(directedFrom);
+		normalize(directedTo);
 	}
 
 	@Override
@@ -1700,38 +1615,264 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		return map;
 	}
 	
-	/**
-	 * Computes
-	 * 
-	 * @param domains is an ordered non-empty list of discrete domains
-	 * @param domainSubset specifies the indexes of a subset of {@code domains}
-	 * @param oldToNewMap is an array with the same length as {@code domains} whose entries
-	 * will be set by this function. For each entry in this array: if the domain with
-	 * the corresponding index is the nth domain in {@code domainSubset} then this will
-	 * contain {@code n}, otherwise if the domain is the nth domain not in {@code domainSubset}
-	 * this will contain {@code -n - 1}.
-	 * 
-	 * @return array of cumulative products of the domain sizes in {@code domainSubset}
-	 * where the first entry is 1 and the last entry will be the product of all of the
-	 * subset domain sizes.
-	 */
-	static int[] computeDomainSubsetInfo(DiscreteDomainList domains, BitSet domainSubset, int[] oldToNewMap)
+	private boolean normalizeDirected(boolean justCheck)
 	{
-		int nTrue = BitSetUtil.bitsetToIndexMap(domainSubset, oldToNewMap);
+		final int inputSize = _domains.getInputCardinality();
+		final int outputSize = _domains.getOutputCardinality();
+		final boolean hasSparseToJoint = _sparseIndexToJointIndex.length > 0;
 		
-		int[] products = new int[nTrue + 1];
-		products[0] = 1;
+		boolean computeNormalizedTotal = justCheck;
+		double normalizedTotal = 1.0;
+		double totalForInput = 0.0;
 		
-		for (int i = 0, end = domains.size(); i < end; ++i)
+		// We represent the joint index such that the outputs for the same
+		// input are stored consecutively, so we only need to walk through
+		// the values in order.
+		//
+		// When just checking, we allow total to equal something other than one
+		// as long as they are all the same.
+		
+		switch (_representation)
 		{
-			int j = oldToNewMap[i];
-			if (j >= 0)
+		case DETERMINISTIC:
+			break;
+			
+		case ALL:
+		case ALL_WEIGHT:
+		case ALL_SPARSE:
+		case NOT_DENSE_WEIGHT:
+		case NOT_SPARSE_ENERGY:
+		case DENSE_ENERGY_SPARSE_WEIGHT:
+		case NOT_DENSE_ENERGY:
+		case SPARSE_WEIGHT:
+			for (int si = 0, nextsi = 0, size = _sparseWeights.length; si < size; si = nextsi)
 			{
-				products[j+1] = products[j] * domains.get(i).size();
+				final int ji = hasSparseToJoint ? _sparseIndexToJointIndex[si] : si;
+				final int ii = _domains.inputIndexFromJointIndex(ji);
+				final int maxji = _domains.jointIndexFromInputOutputIndices(ii, outputSize-1);
+				
+				totalForInput = _sparseWeights[si];
+				
+				for (nextsi = si + 1;
+					nextsi < size && maxji >= (hasSparseToJoint ? _sparseIndexToJointIndex[nextsi] : nextsi);
+					++nextsi)
+				{
+					totalForInput += _sparseWeights[nextsi];
+				}
+				
+				if (computeNormalizedTotal)
+				{
+					normalizedTotal = totalForInput;
+					computeNormalizedTotal = false;
+				}
+				else if (!DoubleMath.fuzzyEquals(totalForInput, normalizedTotal, 1e-12))
+				{
+					if (justCheck)
+					{
+						return false;
+					}
+					for (int si2 = si; si2 < nextsi; ++si2)
+					{
+						setWeightForSparseIndex(_sparseWeights[si2] / totalForInput, si2);
+					}
+				}
 			}
+			break;
+			
+		case ALL_ENERGY:
+		case SPARSE_ENERGY:
+		case NOT_SPARSE_WEIGHT:
+		case SPARSE_ENERGY_DENSE_WEIGHT:
+			// TODO: if sparse size is large enough, it would be faster to iterate over the dense weights
+			for (int si = 0, nextsi = 0, size = _sparseEnergies.length; si < size; si = nextsi)
+			{
+				final int ji = hasSparseToJoint ? _sparseIndexToJointIndex[si] : si;
+				final int ii = _domains.inputIndexFromJointIndex(ji);
+				final int maxji = _domains.jointIndexFromInputOutputIndices(ii, outputSize-1);
+				
+				totalForInput = energyToWeight(_sparseEnergies[si]);
+				
+				for (nextsi = si + 1;
+					nextsi < size && maxji >= (hasSparseToJoint ? _sparseIndexToJointIndex[nextsi] : nextsi);
+					++nextsi)
+				{
+					totalForInput += energyToWeight(_sparseEnergies[nextsi]);
+				}
+				
+				if (computeNormalizedTotal)
+				{
+					normalizedTotal = totalForInput;
+					computeNormalizedTotal = false;
+				}
+				else if (!DoubleMath.fuzzyEquals(totalForInput, normalizedTotal, 1e-12))
+				{
+					if (justCheck)
+					{
+						return false;
+					}
+					double logTotalForInput = Math.log(totalForInput);
+					for (int si2 = si; si2 < nextsi; ++si2)
+					{
+						setEnergyForSparseIndex(_sparseEnergies[si2] + logTotalForInput, si2);
+					}
+				}
+			}
+			break;
+			
+			
+		case ALL_DENSE:
+		case DENSE_WEIGHT:
+			for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
+			{
+				totalForInput = 0.0;
+				for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+				{
+					totalForInput += _denseWeights[jointIndex + outputIndex];
+				}
+				if (computeNormalizedTotal)
+				{
+					normalizedTotal = totalForInput;
+					computeNormalizedTotal = false;
+				}
+				else if (!DoubleMath.fuzzyEquals(totalForInput, normalizedTotal, 1e-12))
+				{
+					if (justCheck)
+					{
+						return false;
+					}
+					for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+					{
+						int ji = jointIndex + outputIndex;
+						setWeightForJointIndex(_denseWeights[ji] / totalForInput, ji);
+					}
+				}
+			}
+			break;
+			
+		case DENSE_ENERGY:
+			for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
+			{
+				totalForInput = 0.0;
+				for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+				{
+					totalForInput += energyToWeight(_denseEnergies[jointIndex + outputIndex]);
+				}
+				if (computeNormalizedTotal)
+				{
+					normalizedTotal = totalForInput;
+					computeNormalizedTotal = false;
+				}
+				else if (!DoubleMath.fuzzyEquals(totalForInput, normalizedTotal, 1e-12))
+				{
+					if (justCheck)
+					{
+						return false;
+					}
+					double logTotalForInput = Math.log(totalForInput);
+					for (int outputIndex = 0; outputIndex < outputSize; ++outputIndex)
+					{
+						int ji = jointIndex + outputIndex;
+						setEnergyForJointIndex(_denseEnergies[ji] + logTotalForInput, ji);
+					}
+				}
+			}
+			break;
 		}
 		
-		return products;
+		_computedMask |= NORMALIZED;
+		return true;
+	}
+	
+	private boolean normalizeInternal(boolean justCheck)
+	{
+		if ((_computedMask & NORMALIZED) != 0)
+		{
+			return true;
+		}
+			
+		if (_domains.isDirected())
+		{
+			return normalizeDirected(justCheck);
+		}
+		
+		double total = 0.0;
+		switch (_representation)
+		{
+		case ALL:
+		case ALL_WEIGHT:
+		case ALL_SPARSE:
+		case NOT_DENSE_WEIGHT:
+		case NOT_SPARSE_ENERGY:
+		case DENSE_ENERGY_SPARSE_WEIGHT:
+		case NOT_DENSE_ENERGY:
+		case SPARSE_WEIGHT:
+			for (double w : _sparseWeights)
+			{
+				total += w;
+			}
+			break;
+			
+		case ALL_ENERGY:
+		case SPARSE_ENERGY:
+		case NOT_SPARSE_WEIGHT:
+		case SPARSE_ENERGY_DENSE_WEIGHT:
+			// TODO: if sparse size is large enough, it would be faster to iterate over the dense weights
+			for (double e: _sparseEnergies)
+			{
+				total += energyToWeight(e);
+			}
+			break;
+			
+		case ALL_DENSE:
+		case DENSE_WEIGHT:
+			for (double w : _denseWeights)
+			{
+				total += w;
+			}
+			break;
+			
+		case DENSE_ENERGY:
+			for (double e : _denseEnergies)
+			{
+				total += energyToWeight(e);
+			}
+			break;
+		}
+		
+		if (!DoubleMath.fuzzyEquals(total, 1.0, 1e-12))
+		{
+			if (justCheck)
+			{
+				return false;
+			}
+			
+			for (int i = _sparseWeights.length; --i>=0;)
+			{
+				_sparseWeights[i] /= total;
+			}
+			if (_sparseWeights != _denseWeights)
+			{
+				for (int i = _denseWeights.length; --i>=0;)
+				{
+					_denseWeights[i] /= total;
+				}
+			}
+			final double logTotal = Math.log(total);
+			for (int i = _sparseEnergies.length; --i>=0;)
+			{
+				_sparseEnergies[i] += logTotal;
+			}
+			if (_sparseEnergies != _denseEnergies)
+			{
+				for (int i = _denseEnergies.length; --i>=0;)
+				{
+					_denseEnergies[i] += logTotal;
+				}
+			}
+		}
+
+		_computedMask |= NORMALIZED;
+		return true;
 	}
 
 	private void setDenseValues(double[] values, int representation)

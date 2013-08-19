@@ -219,7 +219,7 @@ public abstract class DiscreteDomain extends Domain
 		}
 		
 		DiscreteDomain that = (DiscreteDomain)thatObj;
-		if (size() != that.size())
+		if (size() != that.size() || _hashCode != that._hashCode)
 		{
 			return false;
 		}

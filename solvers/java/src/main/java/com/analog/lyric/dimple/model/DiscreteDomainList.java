@@ -1,11 +1,7 @@
 package com.analog.lyric.dimple.model;
 
-import java.io.Serializable;
-import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
-import java.util.RandomAccess;
 
 import net.jcip.annotations.Immutable;
 
@@ -16,9 +12,7 @@ import com.analog.lyric.collect.BitSetUtil;
  * {@link DiscreteDomain} for use in implementing discrete factor tables and messages.
  */
 @Immutable
-public class DiscreteDomainList
-	extends AbstractList<DiscreteDomain>
-	implements List<DiscreteDomain>, RandomAccess, Serializable
+public class DiscreteDomainList extends DomainList<DiscreteDomain>
 {
 	/*-------
 	 * State
@@ -26,7 +20,6 @@ public class DiscreteDomainList
 	
 	private static final long serialVersionUID = 1L;
 	
-	final DiscreteDomain[] _domains;
 	private final int[] _products;
 	private final int _cardinality;
 	private final int _hashCode;
@@ -37,13 +30,13 @@ public class DiscreteDomainList
 	
 	DiscreteDomainList(int hashCode, DiscreteDomain[] domains)
 	{
+		super(domains);
+		
 		_hashCode = hashCode;
 		if (domains.length == 0)
 		{
 			throw new DimpleException("Empty domain list");
 		}
-		
-		_domains = domains;
 		
 		final int nDomains = domains.length;
 		
@@ -62,18 +55,18 @@ public class DiscreteDomainList
 		this(Arrays.hashCode(domains), domains);
 	}
 	
-	private static DiscreteDomainList lookupOrCreate(BitSet inputs, DiscreteDomain[] domains, boolean cloneDomains)
+	private static DiscreteDomainList lookupOrCreate(BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
 	{
 		// TODO: implement cache...
 		
 		if (cloneDomains)
 		{
-			domains = domains.clone();
+			domains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
 		}
 		
-		if (inputs != null)
+		if (outputs != null)
 		{
-			return new DirectedDiscreteDomainList(inputs, domains);
+			return new DirectedDiscreteDomainList(outputs, domains);
 		}
 		else
 		{
@@ -81,44 +74,31 @@ public class DiscreteDomainList
 		}
 	}
 	
-	public static DiscreteDomainList create(BitSet inputs, DiscreteDomain ... domains)
+	static DiscreteDomainList lookupOrCreate(int[] outputIndices, DiscreteDomain[] domains, boolean cloneDomains)
 	{
-		return lookupOrCreate(inputs, domains, true);
+		BitSet outputs = null;
+		
+		if (outputIndices != null)
+		{
+			outputs = BitSetUtil.bitsetFromIndices(domains.length, outputIndices);
+		}
+		
+		return lookupOrCreate(outputs, domains, cloneDomains);
+	}
+
+	public static DiscreteDomainList create(BitSet outputs, DiscreteDomain ... domains)
+	{
+		return lookupOrCreate(outputs, domains, true);
 	}
 	
 	public static DiscreteDomainList create(DiscreteDomain ... domains)
 	{
-		return lookupOrCreate(null, domains, true);
+		return lookupOrCreate((BitSet)null, domains, true);
 	}
 	
-	public static DiscreteDomainList create(int[] inputIndices, DiscreteDomain[] domains)
+	public static DiscreteDomainList create(int[] outputIndices, DiscreteDomain[] domains)
 	{
-		BitSet inputs = null;
-		
-		if (inputIndices != null && inputIndices.length > 0)
-		{
-			inputs = BitSetUtil.bitsetFromIndices(domains.length, inputIndices);
-		}
-		
-		return lookupOrCreate(inputs, domains, true);
-	}
-	
-	public static DiscreteDomainList create(int[] inputIndices, List<VariableBase> variables)
-	{
-		final int size = variables.size();
-		DiscreteDomain[] domains = new DiscreteDomain[size];
-		for (int i = 0; i < size; ++i)
-		{
-			domains[i] = variables.get(i).asDiscreteVariable().getDomain();
-		}
-		
-		BitSet inputs = null;
-		if (inputIndices != null && inputIndices.length > 0)
-		{
-			inputs = BitSetUtil.bitsetFromIndices(domains.length, inputIndices);
-		}
-		
-		return lookupOrCreate(inputs, domains, false);
+		return lookupOrCreate(outputIndices, domains, true);
 	}
 	
 	/**
@@ -145,18 +125,18 @@ public class DiscreteDomainList
 			domains[size1 + i] = domains2.get(i);
 		}
 		
-		BitSet inputs = null;
+		BitSet outputs = null;
 
 		if (domains1.isDirected() && domains2.isDirected())
 		{
-			inputs = domains1.getInputSet();
-			for (int i : domains2.getInputIndices())
+			outputs = domains1.getOutputSet();
+			for (int i : domains2.getOutputIndices())
 			{
-				inputs.set(size1 + i);
+				outputs.set(size1 + i);
 			}
 		}
 		
-		return DiscreteDomainList.create(inputs, domains);
+		return DiscreteDomainList.create(outputs, domains);
 	}
 	
 	/*----------------
@@ -186,68 +166,25 @@ public class DiscreteDomainList
 		return _hashCode;
 	}
 	
-	/*--------------
-	 * List methods
+	/*--------------------
+	 * DomainList methods
 	 */
 	
 	@Override
-	public DiscreteDomain get(int i)
+	public DiscreteDomainList asDiscreteDomainList()
 	{
-		return _domains[i];
+		return this;
 	}
-
+	
 	@Override
-	public int size()
+	public boolean isDiscrete()
 	{
-		return _domains.length;
+		return true;
 	}
-
+	
 	/*----------------------------
 	 * DiscreteDomainList methods
 	 */
-	
-	public double[] combineWeights(double[] ... subdomainWeights)
-	{
-		double[] weights = new double[_cardinality];
-		Arrays.fill(weights, 1.0);
-		
-		// Validate dimensions
-		//   This simply validates that the joint cardinality matches. It does not
-		//   actually compare against the subdomains. Ideally we should do that but
-		//   allowing for "drilling down" into subdomains that are joint domains.
-		int cardinality = 1;
-		for (double[] array : subdomainWeights)
-		{
-			cardinality *= array.length;
-		}
-		if (cardinality != _cardinality)
-		{
-			throw new DimpleException("Joint cardinality of input arrays is %d instead of %d",
-				cardinality, _cardinality);
-		}
-		
-		int inner = 1, outer = cardinality;
-		for (double[] subweights : subdomainWeights)
-		{
-			final int size = subweights.length;
-			int i = 0;
-			
-			outer /= size;
-			for (int o = 0; o < outer; ++o)
-			{
-				for (double weight : subweights)
-				{
-					for (int r = 0; r < inner; ++r)
-					{
-						weights[i++] *= weight;
-					}
-				}
-			}
-			inner *= size;
-		}
-		
-		return weights;
-	}
 	
 	/**
 	 * The number of possible combinations of all domain elements. Equal to the product of
@@ -388,6 +325,17 @@ public class DiscreteDomainList
 		return false;
 	}
 	
+	/**
+	 * True if not {@link #isDirected()}. Otherwise,
+	 * if {@link #isDirected()}, then this is true if all the
+	 * output domains in {@link #getOutputSet()} are at the front
+	 * of the list.
+	 */
+	public boolean hasCanonicalDomainOrder()
+	{
+		return true;
+	}
+	
 	public int inputIndexFromElements(Object ... elements)
 	{
 		return 0;
@@ -398,19 +346,17 @@ public class DiscreteDomainList
 		return 0;
 	}
 	
+	public int inputIndexFromJointIndex(int jointIndex)
+	{
+		return 0;
+	}
+	
 	public void inputIndexToElements(int inputIndex, Object[] elements)
 	{
 	}
 	
 	public void inputIndexToIndices(int inputIndex, int[] indices)
 	{
-	}
-	
-	public double[] jointWeights(double[] ... weightsPerSubdomain)
-	{
-		double[] weights = new double[getCardinality()];
-		
-		return weights;
 	}
 	
 	/**
@@ -482,6 +428,11 @@ public class DiscreteDomainList
 	public int outputIndexFromIndices(int ... indices)
 	{
 		return undirectedJointIndexFromIndices(indices);
+	}
+	
+	public int outputIndexFromJointIndex(int jointIndex)
+	{
+		return jointIndex;
 	}
 	
 	public void outputIndexToElements(int outputIndex, Object[] elements)
@@ -572,13 +523,13 @@ public class DiscreteDomainList
 				String.format("Wrong number of indices: %d instead of %d", indices.length, length));
 		}
 		
-		for (int i = length; --i>=0;)
+		for (int i = 0; i < length; ++i)
 		{
 			final int index = indices[i];
 			if (index < 0 || index >= domains[i].size())
 			{
 				throw new IndexOutOfBoundsException(
-					String.format("Index %d out of bounds for domain with size %d", index, domains[i].size()));
+					String.format("Index %d out of bounds for domain %d with size %d", index, i, domains[i].size()));
 			}
 		}
 	}

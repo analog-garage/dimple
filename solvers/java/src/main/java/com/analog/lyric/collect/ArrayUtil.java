@@ -2,6 +2,8 @@ package com.analog.lyric.collect;
 
 import java.lang.reflect.Array;
 
+import com.google.common.math.DoubleMath;
+
 public abstract class ArrayUtil
 {
 	/**
@@ -14,6 +16,29 @@ public abstract class ArrayUtil
 	 */
 	public static final int[] EMPTY_INT_ARRAY = new int[0];
 
+	/**
+	 * True if all values in {@code array} are {@link DoubleMath#fuzzyEquals}
+	 * to each other with given {@code tolerance}. Returns true for arrays
+	 * of less than length 2.
+	 */
+	public static boolean allFuzzyEqual(double[] array, double tolerance)
+	{
+		if (array.length > 1)
+		{
+			final double first = array[0];
+
+			for (int i = 1, end = array.length; i < end ; ++i)
+			{
+				if (!DoubleMath.fuzzyEquals(first,  array[i], tolerance))
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	public static double[] cloneArray(double[] array)
 	{
 		if (array == null)

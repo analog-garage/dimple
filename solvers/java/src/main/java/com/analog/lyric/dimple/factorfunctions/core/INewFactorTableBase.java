@@ -5,6 +5,7 @@ import java.util.BitSet;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 
 public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<NewFactorTableEntry>
 {
@@ -38,6 +39,11 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * to the number of entries with non-zero weight (or non-infinite energy).
 	 */
 	public int computeMinSparseSize();
+	
+	/**
+	 * Returns a new factor table converted from this one using the specified converter.
+	 */
+	public INewFactorTableBase convert(DiscreteDomainListConverter converter);
 	
 	/**
 	 * Deterministically computed output arguments from input arguments.

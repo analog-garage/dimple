@@ -21,20 +21,20 @@ import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 
-public class RealStream extends VariableStreamBase 
+public class RealStream extends VariableStreamBase
 {
-	public RealStream()  
+	public RealStream()
 	{
-		this(new RealDomain());
+		this(RealDomain.full());
 	}
 
-	public RealStream(RealDomain domain)  
+	public RealStream(RealDomain domain)
 	{
 		super(domain);
 	}
 
 	@Override
-	protected VariableBase instantiateVariable(Domain domain)  
+	protected VariableBase instantiateVariable(Domain domain)
 	{
 		return new Real((RealDomain)domain);
 	}

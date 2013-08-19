@@ -1,6 +1,7 @@
 package com.analog.lyric.dimple.model;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -16,9 +17,16 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	 * State
 	 */
 	
-	final int _hashCode;
-	final int[] _oldToNewIndex;
-	final DiscreteDomainListPermuter _inverse;
+	private static final int APPEND = 1;
+	private static final int PREPEND = 2;
+	private static final int REMOVE_FROM_FRONT = 3;
+	private static final int REMOVE_FROM_BACK = 4;
+	
+	final private int[] _oldToNewIndex;
+	final private int _hashCode;
+	final private DiscreteDomainListPermuter _inverse;
+	final private boolean _maintainsOrder;
+	final private int _jointIndexConversionType;
 	
 	/*---------------
 	 * Construction
@@ -34,14 +42,15 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	{
 		super(fromDomains, addedDomains, toDomains, removedDomains);
 		
+		final int fromSize = fromDomains.size();
+		final int addedSize = addedDomains == null ? 0 : addedDomains.size();
+		final int toSize = toDomains.size();
+		final int removedSize = removedDomains == null ? 0 : removedDomains.size();
+		
+		final int size = fromSize + addedSize;
+		
 		if (inverse == null)
 		{
-			final int fromSize = fromDomains.size();
-			final int addedSize = addedDomains == null ? 0 : addedDomains.size();
-			final int toSize = toDomains.size();
-			final int removedSize = removedDomains == null ? 0 : removedDomains.size();
-			
-			final int size = fromSize + addedSize;
 			
 			if (size != toSize + removedSize)
 			{
@@ -90,6 +99,87 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 		_hashCode = computeHashCode();
 		_oldToNewIndex = oldToNewIndex;
 		_inverse = inverse;
+		
+		// In theory, we could perform these optimization on directed domains with non-canonical
+		// domain order, but it is not worth the trouble at this time.
+		
+		boolean maintainsOrder = false;
+		int jointIndexType = 0;
+
+		if (_fromDomains.hasCanonicalDomainOrder() && _toDomains.hasCanonicalDomainOrder())
+		{
+			maintainsOrderCheck:
+			do
+			{
+				// Order is only maintained if domains are only removed from front of
+				// list, added to the end of the list, and relative order of domains is maintained.
+				for (int i = 0; i < removedSize; ++i)
+				{
+					if (oldToNewIndex[i] != (toSize + i))
+					{
+						break maintainsOrderCheck;
+					}
+				}
+				for (int i = removedSize; i < size; ++i)
+				{
+					if (oldToNewIndex[i] != i - removedSize)
+					{
+						break maintainsOrderCheck;
+					}
+				}
+				maintainsOrder = true;
+			} while (false);
+		
+			if (maintainsOrder)
+			{
+				if (_addedDomains != null && _removedDomains == null)
+				{
+					jointIndexType = APPEND;
+				}
+				else if (_addedDomains == null && _removedDomains != null)
+				{
+					jointIndexType = REMOVE_FROM_FRONT;
+				}
+			}
+			else
+			{
+				if (_addedDomains != null && _removedDomains == null)
+				{
+					jointIndexType = PREPEND;
+					for (int i = 0; i < fromSize; ++i)
+					{
+						if (oldToNewIndex[i] != addedSize + i)
+						{
+							jointIndexType = 0;
+							break;
+						}
+					}
+					for (int i = 0; i < addedSize; ++i)
+					{
+						if (oldToNewIndex[fromSize + i] != i)
+						{
+							jointIndexType = 0;
+							break;
+						}
+					}
+				}
+				else if (_addedDomains == null && _removedDomains != null)
+				{
+					jointIndexType = REMOVE_FROM_BACK;
+					for (int i = 0; i < size; ++i)
+					{
+						if (i != oldToNewIndex[i])
+						{
+							jointIndexType = 0;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		_maintainsOrder = maintainsOrder;
+		_jointIndexConversionType = jointIndexType;
 	}
 
 	DiscreteDomainListPermuter(
@@ -182,11 +272,113 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 		}
 	}
 
+	// TODO: implement hasFastJointIndexConversion()
+	// Cases:
+	// prepend domains:
+	//
+	//   addedJointIndex + addedCardinality * oldJointIndex
+	//
+	// append domains:
+	//
+	//   oldJointIndex + oldCardinality * addedJointIndex
+	//
+	// insert domains at position k:
+	//
+	//   oldJointIndex - oldJointIndex/kCardinality +
+	//   kCardinality * addedJointIndex +
+	//   kCardinality * addedCardinality * oldJointIndex/kCardinality
+	//
+	// remove domains from front:
+	//
+	//   oldJointIndex / removedCardinality
+	//
+	// remove domains from back:
+	//
+	//  oldJointIndex % remainingCardinality
+	//
+	// remove domains at position k
+	//
+	//
+	
+	@Override
+	public int convertJointIndex(int jointIndex, int addedJointIndex)
+	{
+		switch (_jointIndexConversionType)
+		{
+		case PREPEND:
+			return addedJointIndex + _addedDomains.getCardinality() * jointIndex;
+			
+		case APPEND:
+			return jointIndex + _fromDomains.getCardinality() * addedJointIndex;
+			
+		case REMOVE_FROM_FRONT:
+			return jointIndex / _removedDomains.getCardinality();
+			
+		case REMOVE_FROM_BACK:
+			return jointIndex % _toDomains.getCardinality();
+			
+		default:
+			return super.convertJointIndex(jointIndex, addedJointIndex);
+		}
+	}
+	
+	@Override
+	public int convertJointIndex(int jointIndex, int addedJointIndex, AtomicInteger removedJointIndexRef)
+	{
+		switch (_jointIndexConversionType)
+		{
+		case PREPEND:
+			return addedJointIndex + _addedDomains.getCardinality() * jointIndex;
+			
+		case APPEND:
+			return jointIndex + _fromDomains.getCardinality() * addedJointIndex;
+			
+		case REMOVE_FROM_FRONT:
+			if (removedJointIndexRef == null)
+			{
+				return jointIndex / _removedDomains.getCardinality();
+			}
+			else
+			{
+				final int removedCardinality =  _removedDomains.getCardinality();
+				final int newJointIndex = jointIndex / removedCardinality;
+				removedJointIndexRef.set(jointIndex - newJointIndex * removedCardinality);
+				return newJointIndex;
+			}
+			
+		case REMOVE_FROM_BACK:
+			if (removedJointIndexRef == null)
+			{
+				return jointIndex % _toDomains.getCardinality();
+			}
+			else
+			{
+				final int toCardinality =  _toDomains.getCardinality();
+				final int removedJointIndex = jointIndex / toCardinality;
+				removedJointIndexRef.set(removedJointIndex);
+				return jointIndex - removedJointIndex * toCardinality;
+			}
+			
+		default:
+			return super.convertJointIndex(jointIndex, addedJointIndex, removedJointIndexRef);
+		}
+	}
+	
 	@Override
 	public DiscreteDomainListPermuter getInverse()
 	{
 		return _inverse;
 	}
 
-	// TODO: implement hasFastJointIndexConversion() and maintainsJointIndexOrder()
+	@Override
+	public boolean hasFastJointIndexConversion()
+	{
+		return _jointIndexConversionType != 0;
+	}
+
+	@Override
+	protected boolean maintainsJointIndexOrder()
+	{
+		return _maintainsOrder;
+	}
 }

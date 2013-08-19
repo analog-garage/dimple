@@ -295,7 +295,7 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 	}
 
 	@Override
-	public boolean maintainsJointIndexOrder()
+	protected boolean maintainsJointIndexOrder()
 	{
 		return _maintainsJointIndexOrder;
 	}

@@ -35,7 +35,7 @@ public class TestPDomain
 		assertInvariants(pr);
 		assertSame(r, pr.getModelerObject());
 		
-		RealDomain r2 = new RealDomain();
+		RealDomain r2 = RealDomain.full();
 		assertInvariants(new PRealDomain(r2));
 		
 		PDomain pr2 = PHelpers.wrapDomain(r2);
@@ -47,7 +47,7 @@ public class TestPDomain
 		Object pr3 = new PRealDomain(r3);
 		assertInvariants((PDomain)pr3);
 		
-		RealJointDomain rj = new RealJointDomain(r,r2,r3);
+		RealJointDomain rj = RealJointDomain.create(r, r2, r3);
 		PRealJointDomain prj = new PRealJointDomain(rj);
 		assertInvariants(prj);
 		assertSame(rj, prj.getModelerObject());

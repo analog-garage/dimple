@@ -150,6 +150,39 @@ public abstract class DiscreteDomainListConverter
 	}
 	
 	/**
+	 * Creates a converter that implements a permutation of the domains
+	 * in {@code fromDomains} to those in {@code toDomains}.
+	 * <p>
+	 * This simply invokes
+	 * {@link #createPermuter(DiscreteDomainList, DiscreteDomainList, DiscreteDomainList, DiscreteDomainList, int[])}
+	 * with nulls for {@code addedDomains} and {@code removedDomains}.
+	 */
+	public static DiscreteDomainListConverter createPermuter(
+		DiscreteDomainList fromDomains,
+		DiscreteDomainList toDomains,
+		int[] oldToNewIndex)
+	{
+		return createPermuter(fromDomains, null, toDomains, null, oldToNewIndex);
+	}
+	
+	/**
+	 * Creates a converter to convert {@code fromDomains} to {@code toDomains}
+	 * while maintaining the same domain order. This can be used to convert between
+	 * domain lists with different input/output domain sets.
+	 */
+	public static DiscreteDomainListConverter createPermuter(
+		DiscreteDomainList fromDomains,
+		DiscreteDomainList toDomains)
+	{
+		int[] oldToNew = new int[fromDomains.size()];
+		for (int i = oldToNew.length; --i>=0;)
+		{
+			oldToNew[i] = i;
+		}
+		return createPermuter(fromDomains, toDomains, oldToNew);
+	}
+	
+	/**
 	 * Creates a converter that inserts a number of {@code addedDomains} at the given {@code offset}
 	 * within {@code fromDomains}.
 	 */
@@ -518,9 +551,9 @@ public abstract class DiscreteDomainListConverter
 		final int[] sparseToJoint = new int[oldSparseToJointIndex.length * getAddedCardinality()];
 		
 		int i = 0;
-		for (int oldJoint : oldSparseToJointIndex)
+		for (int added = 0, maxAdded = getAddedCardinality(); added < maxAdded; ++added)
 		{
-			for (int added = getAddedCardinality(); --added >=0; )
+			for (int oldJoint : oldSparseToJointIndex)
 			{
 				sparseToJoint[i++] = convertJointIndex(oldJoint, added);
 			}
@@ -618,19 +651,7 @@ public abstract class DiscreteDomainListConverter
 		return _removedDomains == null ? 1 : _removedDomains.getCardinality();
 	}
 
-	public boolean hasFastJointIndexConversion()
-	{
-		return false;
-	}
-	
-	/**
-	 * True if converter maintains the same order of joint indexes such that if
-	 * oldA <= oldB, then newA <= newB.
-	 */
-	public boolean maintainsJointIndexOrder()
-	{
-		return false;
-	}
+	public abstract boolean hasFastJointIndexConversion();
 	
 	/*-------------------
 	 * Protected methods
@@ -655,6 +676,16 @@ public abstract class DiscreteDomainListConverter
 		
 		return hash;
 	}
+	
+	/**
+	 * True if converter maintains the same order of joint indexes such that if
+	 * oldA <= oldB, then newA <= newB. Used to avoid sorting when converting
+	 * sparse indices.
+	 * <p>
+	 * True only if all removals are at front of list, additions are at end of
+	 * list and relative order of domains is otherwise maintained.
+	 */
+	protected abstract boolean maintainsJointIndexOrder();
 	
 	/*-----------------
 	 * Private methods

@@ -19,6 +19,9 @@ package com.analog.lyric.dimple.model;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class RealJointDomain extends Domain
 {
 	/*-------
@@ -27,28 +30,70 @@ public class RealJointDomain extends Domain
 	
 	private static final long serialVersionUID = 1L;
 	
-	private RealDomain [] _domains;
+	private final RealDomain [] _domains;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public RealJointDomain(int size)
+	RealJointDomain(int size)
 	{
 		_domains = new RealDomain[size];
 		
 		for (int i = 0; i < size; i++)
-			_domains[i] = new RealDomain();
+			_domains[i] = RealDomain.full();
 	}
 	
-	public RealJointDomain(RealDomain ... domains)
+	private RealJointDomain(RealDomain ... domains)
 	{
 		_domains = domains.clone();
+	}
+
+	public static RealJointDomain create(int size)
+	{
+		return new RealJointDomain(size);
+	}
+
+	public static RealJointDomain create(RealDomain... domains)
+	{
+		return new RealJointDomain(domains);
+	}
+
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(this._domains);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+
+		if (!(obj instanceof RealJointDomain))
+			return false;
+
+		RealJointDomain other = (RealJointDomain) obj;
+		if (!Arrays.equals(this._domains, other._domains))
+			return false;
+		return true;
 	}
 	
 	/*----------------
 	 * Domain methods
 	 */
+
+	@Override
+	public final RealJointDomain asRealJoint()
+	{
+		return this;
+	}
 	
 	/**
 	 * @returns true if value is an array of length matching {@link #getNumVars()} and whose
@@ -74,9 +119,9 @@ public class RealJointDomain extends Domain
 	}
 	
 	@Override
-	public boolean isDiscrete()
+	public final boolean isJoint()
 	{
-		return false;
+		return true;
 	}
 	
 	/*-------------------------
@@ -96,34 +141,6 @@ public class RealJointDomain extends Domain
 	public int getNumVars()
 	{
 		return _domains.length;
-	}
-	
-	@Override
-	public boolean isJoint()
-	{
-		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this._domains);
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-
-		if (!(obj instanceof RealJointDomain))
-			return false;
-
-		RealJointDomain other = (RealJointDomain) obj;
-		if (!Arrays.equals(this._domains, other._domains))
-			return false;
-		return true;
 	}
 	
 	// Utility to check if a value is in the domain or not

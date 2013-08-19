@@ -24,6 +24,7 @@ public abstract class Domain implements Serializable
 
 	public DiscreteDomain asDiscrete() { return null; }
 	public RealDomain asReal() { return null; }
+	public RealJointDomain asRealJoint() { return null; }
 	
 	public boolean isDiscrete() { return false; }
 	public boolean isJoint() { return false; }

@@ -29,20 +29,36 @@ public class RealDomain extends Domain
 	
 	private final double _lowerBound;
 	private final double _upperBound;
+	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public RealDomain() { this(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); }
-	public RealDomain(double[] domain)  {this(domain[0], domain[1]);}
+	RealDomain() { this(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); }
+
+	RealDomain(double[] domain)  {this(domain[0], domain[1]);}
+
 	public RealDomain(double lower, double upper)
 	{
 		if (lower > upper) throw new DimpleException("Upper bound must be greater than lower bound");
 		_lowerBound = lower;
 		_upperBound = upper;
+		_hashCode = computeHashCode(lower, upper);
 	}
 	
+	private static int computeHashCode(double lowerBound, double upperBound)
+	{
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(lowerBound);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(upperBound);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
 	/**
 	 * Returns domain with given lower and upper bounds. May return a previously
 	 * interned instance.
@@ -111,6 +127,31 @@ public class RealDomain extends Domain
 	}
 	
 	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		if (this == other)
+			return true;
+
+		if (!(other instanceof RealDomain))
+			return false;
+
+		RealDomain rother = (RealDomain)other;
+		
+		return _lowerBound == rother._lowerBound && _upperBound == rother._upperBound;
+		
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _hashCode;
+	}
+
+	/*----------------
 	 * Domain methods
 	 */
 	
@@ -145,32 +186,6 @@ public class RealDomain extends Domain
 		return (value >= _lowerBound) && (value <= _upperBound);
 	}
 	
-	@Override
-	public boolean equals(Object other)
-	{
-		if (this == other)
-			return true;
-
-		if (!(other instanceof RealDomain))
-			return false;
-
-		RealDomain rother = (RealDomain)other;
-		
-		return _lowerBound == rother._lowerBound && _upperBound == rother._upperBound;
-		
-	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(this._lowerBound);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(this._upperBound);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
-	}
 	
 	@Override
 	public String toString()

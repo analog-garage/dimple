@@ -14,7 +14,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	
 	private static final long serialVersionUID = 1L;
 	
-	final BitSet _inputSet;
+	final BitSet _outputSet;
 	final int _inputCardinality;
 	final int[] _inputIndices;
 	final int[] _inputProducts;
@@ -22,23 +22,24 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	final int[] _outputIndices;
 	final int[] _outputProducts;
 	final int[] _directedProducts;
+	final private boolean _canonicalOrder;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	DirectedDiscreteDomainList(BitSet inputs, DiscreteDomain ... domains)
+	DirectedDiscreteDomainList(BitSet outputs, DiscreteDomain ... domains)
 	{
-		super(computeHashCode(inputs, domains), domains);
-		_inputSet = inputs;
+		super(computeHashCode(outputs, domains), domains);
+		_outputSet = outputs;
 		
 		final int nDomains = domains.length;
-		final int nInputs = inputs.cardinality();
-		final int nOutputs = nDomains - nInputs;
+		final int nOutputs = outputs.cardinality();
+		final int nInputs = nDomains - nOutputs;
 		
-		if (nOutputs == 0 || inputs.length() > nDomains)
+		if (outputs.length() > nDomains)
 		{
-			throw new DimpleException("Illegal input set for domain list");
+			throw new DimpleException("Illegal output set for domain list");
 		}
 		
 		final int[] inputIndices = new int[nInputs];
@@ -54,25 +55,30 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		{
 			final int size = domains[i].size();
 
-			if (inputs.get(i))
-			{
-				inputIndices[curInput] = i;
-				inputProducts[i] = inputProduct;
-				inputProduct *= size;
-				++curInput;
-			}
-			else
+			if (outputs.get(i))
 			{
 				outputIndices[curOutput] = i;
 				outputProducts[i] = outputProduct;
 				outputProduct *= size;
 				++curOutput;
 			}
+			else
+			{
+				inputIndices[curInput] = i;
+				inputProducts[i] = inputProduct;
+				inputProduct *= size;
+				++curInput;
+			}
 		}
 		
+		boolean canonicalOrder = true;
 		for (int i = 0; i < nOutputs; ++i)
 		{
 			int j = outputIndices[i];
+			if (i != j)
+			{
+				canonicalOrder = false;
+			}
 			directedProducts[j] = outputProducts[j];
 		}
 		for (int i = 0; i < nInputs; ++i)
@@ -89,6 +95,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		_outputIndices = outputIndices;
 		_outputProducts = outputProducts;
 		_directedProducts = directedProducts;
+		_canonicalOrder = canonicalOrder;
 	}
 	
 	/*----------------
@@ -106,7 +113,8 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 		if (that instanceof DirectedDiscreteDomainList)
 		{
 			DirectedDiscreteDomainList thatDiscrete = (DirectedDiscreteDomainList)that;
-			return Arrays.equals(_domains, thatDiscrete._domains) && _inputSet.equals(thatDiscrete._inputSet);
+			return Arrays.equals(_domains, thatDiscrete._domains)
+				&& _outputSet.equals(thatDiscrete._outputSet);
 		}
 		
 		return false;
@@ -137,7 +145,9 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public BitSet getInputSet()
 	{
-		return (BitSet) _inputSet.clone();
+		BitSet set = getOutputSet();
+		set.flip(0, size());
+		return set;
 	}
 	
 	@Override
@@ -167,9 +177,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	@Override
 	public BitSet getOutputSet()
 	{
-		BitSet set = getInputSet();
-		set.flip(0, size());
-		return set;
+		return (BitSet) _outputSet.clone();
 	}
 
 	@Override
@@ -182,6 +190,12 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	public boolean isDirected()
 	{
 		return true;
+	}
+	
+	@Override
+	public boolean hasCanonicalDomainOrder()
+	{
+		return _canonicalOrder;
 	}
 	
 	@Override
@@ -211,6 +225,12 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 			joint += indices[i] * _inputProducts[i];
 		}
 		return joint;
+	}
+	
+	@Override
+	public int inputIndexFromJointIndex(int jointIndex)
+	{
+		return jointIndex / _outputCardinality;
 	}
 	
 	@Override
@@ -308,6 +328,12 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	@Override
+	public int outputIndexFromJointIndex(int jointIndex)
+	{
+		return jointIndex % _outputCardinality;
+	}
+	
+	@Override
 	public void outputIndexToElements(int outputIndex, Object[] elements)
 	{
 		locationToElements(outputIndex, elements, _outputIndices, _outputProducts);
@@ -342,7 +368,6 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	private static void locationToIndices(int location, int[] indices, int[] subindices, int[] products)
 	{
-		assert(location >= 0);
 		int product, index;
 		for (int i = subindices.length; --i >= 0;)
 		{

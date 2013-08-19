@@ -69,10 +69,9 @@ public class TestFactorTable
 		assertEquals(NewFactorTableRepresentation.SPARSE_WEIGHT, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
-		BitSet xor3Input = new BitSet(3);
-		xor3Input.set(0);
-		xor3Input.set(2);
-		NewFactorTable xor2 = new NewFactorTable(xor3Input, domain2, domain2, domain2);
+		BitSet xor3Output = new BitSet(3);
+		xor3Output.set(1);
+		NewFactorTable xor2 = new NewFactorTable(xor3Output, domain2, domain2, domain2);
 		assertInvariants(xor2);
 		assertTrue(xor2.isDirected());
 		assertFalse(xor2.isDeterministicDirected());
@@ -244,7 +243,7 @@ public class TestFactorTable
 		
 		while (--nOperations >= 0)
 		{
-			if (nOperations == 9810)
+			if (nOperations == 9999)
 			{
 				Math.log(1);
 			}

@@ -196,7 +196,7 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 	}
 
 	@Override
-	public boolean maintainsJointIndexOrder()
+	protected boolean maintainsJointIndexOrder()
 	{
 		return true;
 	}

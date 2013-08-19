@@ -40,7 +40,7 @@ public class PRealJointDomain extends PDomain
 	 */
 	public PRealJointDomain(Object [] domains)
 	{
-		super(new RealJointDomain(unwrapRealDomains(domains)));
+		super(RealJointDomain.create(unwrapRealDomains(domains)));
 	}
 	
 	/*-----------------

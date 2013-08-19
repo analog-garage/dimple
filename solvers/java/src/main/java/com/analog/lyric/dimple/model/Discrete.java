@@ -158,7 +158,7 @@ public class Discrete extends VariableBase
 
     	final JointDiscreteDomain jointDomain = DiscreteDomain.joint(domains);
     	final Discrete jointVar =  new Discrete(jointDomain);
-    	jointVar.setInput(jointDomain.getDomainList().combineWeights(subdomainWeights));
+    	jointVar.setInput(joinWeights(subdomainWeights));
     	return jointVar;
     }
 	
@@ -204,5 +204,44 @@ public class Discrete extends VariableBase
 			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
 		setFixedValueIndex(index);
 	}
+
+	private double[] joinWeights(double[] ... subdomainWeights)
+	{
+		// Validate dimensions
+		//   This simply validates that the joint cardinality matches. It does not
+		//   actually compare against the subdomains. Ideally we should do that but
+		//   allowing for "drilling down" into subdomains that are joint domains.
+		int cardinality = 1;
+		for (double[] array : subdomainWeights)
+		{
+			cardinality *= array.length;
+		}
+		
+		double[] weights = new double[cardinality];
+		Arrays.fill(weights, 1.0);
+		
+		int inner = 1, outer = cardinality;
+		for (double[] subweights : subdomainWeights)
+		{
+			final int size = subweights.length;
+			int i = 0;
+			
+			outer /= size;
+			for (int o = 0; o < outer; ++o)
+			{
+				for (double weight : subweights)
+				{
+					for (int r = 0; r < inner; ++r)
+					{
+						weights[i++] *= weight;
+					}
+				}
+			}
+			inner *= size;
+		}
+		
+		return weights;
+	}
+	
 
 }

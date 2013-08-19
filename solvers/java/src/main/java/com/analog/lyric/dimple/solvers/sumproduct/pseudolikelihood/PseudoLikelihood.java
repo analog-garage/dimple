@@ -283,9 +283,9 @@ public class PseudoLikelihood extends ParameterEstimator
 		double y1 = calculatePseudoLikelihood();
 		double oldval = table.getWeights()[weight];
 		double newval = oldval * Math.exp(delta);
-		table.getWeights()[weight] = newval;
+		table.changeWeight(weight, newval);
 		double y2 = calculatePseudoLikelihood();
-		table.getWeights()[weight] = oldval;
+		table.changeWeight(weight, oldval);
 		return (y2-y1)/delta;
 	}
 
