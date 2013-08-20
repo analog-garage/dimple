@@ -101,6 +101,11 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		return lookupOrCreate(outputIndices, domains, true);
 	}
 	
+	public static DiscreteDomainList create(BitSet outputs, DiscreteDomainList domains)
+	{
+		return lookupOrCreate(outputs, domains._domains, false);
+	}
+	
 	/**
 	 * Returns a new domain list that concatenates the domains of this list
 	 * with {@code that}. Only produces a directed list if both lists are directed.
@@ -127,7 +132,7 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		
 		BitSet outputs = null;
 
-		if (domains1.isDirected() && domains2.isDirected())
+		if (domains1.isDirected() & domains2.isDirected())
 		{
 			outputs = domains1.getOutputSet();
 			for (int i : domains2.getOutputIndices())

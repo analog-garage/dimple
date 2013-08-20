@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -54,10 +53,7 @@ public class TableFactorFunction extends FactorFunction
     		{
     			if (_factorTable instanceof INewFactorTable)
     			{
-    				INewFactorTable oldTable = (INewFactorTable)_factorTable;
-    				DiscreteDomainListConverter converter =
-    					DiscreteDomainListConverter.createPermuter(oldDomains, newDomains);
-    				_factorTable = oldTable.convert(converter);
+					((INewFactorTable)_factorTable).setDirected(newDomains.getOutputSet());
     			}
     			else
     			{

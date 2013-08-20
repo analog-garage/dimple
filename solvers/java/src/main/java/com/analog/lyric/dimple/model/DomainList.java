@@ -95,6 +95,14 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	}
 	
 	/**
+	 * True if domains in this and {@code that} object are the same and in the same order.
+	 */
+	public boolean domainsEqual(DomainList<D> that)
+	{
+		return Arrays.equals(_domains, that._domains);
+	}
+	
+	/**
 	 * True if all domains are discrete and therefore this is an instance of
 	 * {@link DiscreteDomainList}.
 	 * @see #asDiscreteDomainList()

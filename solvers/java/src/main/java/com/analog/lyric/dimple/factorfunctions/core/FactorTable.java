@@ -336,12 +336,6 @@ public class FactorTable extends FactorTableBase
 		}
 	}
 	
-	@Override
-	public boolean supportsSetDirected()
-	{
-		return true;
-	}
-	
 	//TODO: this could be massive slow down if called from every factor.
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{

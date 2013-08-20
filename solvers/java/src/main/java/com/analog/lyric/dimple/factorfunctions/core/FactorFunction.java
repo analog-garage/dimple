@@ -28,7 +28,6 @@ import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
 import com.analog.lyric.dimple.model.Factor;
@@ -77,12 +76,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     			{
     				if (table instanceof INewFactorTable)
     				{
-    					INewFactorTable oldTable = (INewFactorTable)table;
-    					DiscreteDomainListConverter converter =
-    						DiscreteDomainListConverter.createPermuter(oldDomains, newDomains);
-    					INewFactorTable newTable = oldTable.convert(converter);
-    					tables.put(newDomains, newTable);
-    					converted = true;
+    					((INewFactorTable)table).setDirected(newDomains.getOutputSet());
     				}
     				else
     				{

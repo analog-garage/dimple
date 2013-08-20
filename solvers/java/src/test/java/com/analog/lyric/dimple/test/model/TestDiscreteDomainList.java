@@ -19,6 +19,7 @@ import com.analog.lyric.dimple.model.DiscreteDomainList;
 import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
+import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestDiscreteDomainList
@@ -46,6 +47,19 @@ public class TestDiscreteDomainList
 		}
 		catch (NullPointerException ex)
 		{
+		}
+		try
+		{
+			BitSet bitset = new BitSet();
+			bitset.set(0);
+			bitset.set(1);
+			bitset.set(2);
+			DiscreteDomainList.create(bitset, d2, d3);
+			fail("expected DimpleException");
+		}
+		catch (DimpleException ex)
+		{
+			assertThat(ex.getMessage(), containsString("Illegal output set for domain list"));
 		}
 		
 		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
@@ -79,12 +93,37 @@ public class TestDiscreteDomainList
 		DiscreteDomainList dl2by2a = DiscreteDomainList.concat(dl2, dl2);
 		testInvariants(dl2by2a);
 		assertEquals(dl2by2, dl2by2a);
+		
+		DiscreteDomainList dlfoo = DiscreteDomainList.concat(dl2to3, dl2from3);
+		testInvariants(dlfoo);
+		assertTrue(dlfoo.isDirected());
+		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputIndices());
+		assertArrayEquals(new Object[] { d2, d3, d2, d3}, dlfoo.toArray());
+		
+		DiscreteDomainList dlbar = DiscreteDomainList.create((BitSet)null, dlfoo);
+		assertTrue(dlfoo.domainsEqual(dlbar));
+		assertFalse(dlbar.isDirected());
+		testInvariants(dlbar);
+		
+		//
+		// Test DomainList
+		//
+		
+		DomainList<?> mixed = DomainList.create(d2, RealDomain.full());
+		assertFalse(mixed.isDiscrete());
+		assertNull(mixed.asDiscreteDomainList());
+		assertFalse(DomainList.allDiscrete(d2, RealDomain.full()));
+		assertTrue(DomainList.allDiscrete(new DiscreteDomain[] { d2, d3 }));
 	}
 	
 	public static void testInvariants(DiscreteDomainList domainList)
 	{
 		assertTrue(domainList.equals(domainList));
 		assertFalse(domainList.equals("foo"));
+		
+		assertTrue(domainList.isDiscrete());
+		assertTrue(DomainList.allDiscrete(domainList.toArray(new Domain[domainList.size()])));
+		assertSame(domainList, domainList.asDiscreteDomainList());
 		
 		final int size = domainList.size();
 		assertTrue(size > 0);

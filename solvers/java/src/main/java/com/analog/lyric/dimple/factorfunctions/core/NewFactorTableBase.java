@@ -3,10 +3,13 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.BitSet;
 import java.util.Random;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteDomainList;
 
+@NotThreadSafe
 public abstract class NewFactorTableBase implements INewFactorTableBase, IFactorTable
 {
 	/*--------
@@ -15,9 +18,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	
 	private static final long serialVersionUID = 1L;
 
-	protected final DiscreteDomainList _domains;
-
-	
+	private DiscreteDomainList _domains;
 	
 	/*--------------
 	 * Construction
@@ -75,6 +76,15 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	public final DiscreteDomainList getDomainList()
 	{
 		return _domains;
+	}
+	
+	protected final void setDomainList(DiscreteDomainList newDomains)
+	{
+		if (!_domains.domainsEqual(newDomains))
+		{
+			throw new IllegalArgumentException("setDomainList called with incompatible new domains");
+		}
+		_domains = newDomains;
 	}
 	
 	@Override
@@ -306,9 +316,9 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public void setDirected(int[] directedTo, int[] directedFrom)
 	{
-		throw DimpleException.unsupported("setDirected");
+		throw DimpleException.unsupportedMethod(getClass(), "setDirected");
 	}
-
+	
 	/*--------------------------
 	 * Protected helper methods
 	 */
