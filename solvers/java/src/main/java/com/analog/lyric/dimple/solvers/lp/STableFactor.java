@@ -240,7 +240,6 @@ public class STableFactor extends STableFactorBase
 		{
 			_lpVarIndex = start;
 
-			final double totalWeight = _totalWeight;
 			final DiscreteFactor factor = getModelObject();
 			final IFactorTable factorTable = factor.getFactorTable();
 			final double[] weights = factorTable.getWeights();
@@ -252,7 +251,7 @@ public class STableFactor extends STableFactorBase
 				{
 					break;
 				}
-				objectiveFunction[start++] = Math.log(weights[i] / totalWeight);
+				objectiveFunction[start++] = Math.log(weights[i]);
 			}
 		}
 		
