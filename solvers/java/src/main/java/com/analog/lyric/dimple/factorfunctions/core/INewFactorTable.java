@@ -7,6 +7,16 @@ import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
 
 public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 {
+	/**
+	 * Removes entries from sparse representation of table that have zero weights.
+	 * <p>
+	 * This may affect the {@link #sparseSize()} and the relationship between sparse and
+	 * joint indexes.
+	 * <p>
+	 * @return the number of sparse entries that were removed.
+	 */
+	public int compact();
+	
 	@Override
 	public INewFactorTable convert(DiscreteDomainListConverter converter);
 	

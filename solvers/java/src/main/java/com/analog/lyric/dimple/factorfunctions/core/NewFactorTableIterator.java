@@ -142,7 +142,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 			return false;
 		}
 		
-		if (_table.hasSparseRepresentation())
+		if (_table.sparseSize() > 0)
 		{
 			if (_sparseIndex >= _table.sparseSize())
 			{
@@ -169,7 +169,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		}
 		else
 		{
-			_sparseIndex = -1;
+			_sparseIndex = _table.hasSparseRepresentation() ? 0 : -1;
 			_energy = _table.getEnergyForJointIndex(ji);
 			_weight = _table.getWeightForJointIndex(ji);
 		}

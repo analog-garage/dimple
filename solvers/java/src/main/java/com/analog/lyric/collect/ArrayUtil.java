@@ -20,6 +20,8 @@ public abstract class ArrayUtil
 	 * True if all values in {@code array} are {@link DoubleMath#fuzzyEquals}
 	 * to each other with given {@code tolerance}. Returns true for arrays
 	 * of less than length 2.
+	 * 
+	 * @see #subsetFuzzyEqual(double[], int[], double)
 	 */
 	public static boolean allFuzzyEqual(double[] array, double tolerance)
 	{
@@ -30,6 +32,34 @@ public abstract class ArrayUtil
 			for (int i = 1, end = array.length; i < end ; ++i)
 			{
 				if (!DoubleMath.fuzzyEquals(first,  array[i], tolerance))
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * True if all values in {@code array} whose indices are in {@code arraySubindices}
+	 * are {@link DoubleMath#fuzzyEquals} to each other with given {@code tolerance}. Returns true if
+	 * length of {@code arraySubindices} is less than length 2.
+	 * 
+	 * @param arraySubindices must be no larger than {@code array} and should contain indexes in the
+	 * range [0,array.length-1].
+	 * 
+	 * @see #allFuzzyEqual(double[], double)
+	 */
+	public static boolean subsetFuzzyEqual(double[] array, int[] arraySubindices, double tolerance)
+	{
+		if (arraySubindices.length > 1)
+		{
+			final double first = array[arraySubindices[0]];
+
+			for (int i = 1, end = arraySubindices.length; i < end ; ++i)
+			{
+				if (!DoubleMath.fuzzyEquals(first,  array[arraySubindices[i]], tolerance))
 				{
 					return false;
 				}

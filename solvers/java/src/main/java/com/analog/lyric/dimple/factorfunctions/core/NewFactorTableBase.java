@@ -67,6 +67,12 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	 */
 
 	@Override
+	public final double density()
+	{
+		return (double)countNonZeroWeights() / (double)jointSize();
+	}
+	
+	@Override
 	public final int getDimensions()
 	{
 		return _domains.size();
@@ -80,10 +86,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	
 	protected final void setDomainList(DiscreteDomainList newDomains)
 	{
-		if (!_domains.domainsEqual(newDomains))
-		{
-			throw new IllegalArgumentException("setDomainList called with incompatible new domains");
-		}
+		assert(_domains.domainsEqual(newDomains));
 		_domains = newDomains;
 	}
 	
@@ -311,27 +314,5 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	public void set(int[] indices, double value)
 	{
 		setWeightForIndices(value, indices);
-	}
-
-	@Override
-	public void setDirected(int[] directedTo, int[] directedFrom)
-	{
-		throw DimpleException.unsupportedMethod(getClass(), "setDirected");
-	}
-	
-	/*--------------------------
-	 * Protected helper methods
-	 */
-
-	protected static int locationFromIndices(int[] indices, int[] products)
-	{
-		int location = 0;
-		
-		for (int i = 0, end = products.length - 1; i < end; ++i)
-		{
-			location += products[i] * indices[i];
-		}
-		
-		return location;
 	}
 }

@@ -35,15 +35,20 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract INewFactorTableBase clone();
 
 	/**
-	 * Computes the minimum number of entries in sparse representation of table, which is equal
-	 * to the number of entries with non-zero weight (or non-infinite energy).
+	 * Computes the number of entries in the table with non-zero weight (or non-infinite energy).
 	 */
-	public int computeMinSparseSize();
+	public int countNonZeroWeights();
 	
 	/**
 	 * Returns a new factor table converted from this one using the specified converter.
 	 */
 	public INewFactorTableBase convert(DiscreteDomainListConverter converter);
+	
+	/**
+	 * That ratio of non-zero weights to {@link #jointSize()}. Will be 1.0 if table contains
+	 * no entries with zero weight.
+	 */
+	public double density();
 	
 	/**
 	 * Deterministically computed output arguments from input arguments.
