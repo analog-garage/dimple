@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.test.FactorFunctions.core;
 
+import static com.analog.lyric.math.Utilities.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -232,6 +233,18 @@ public class TestFactorTable
 		assertTrue(xor2.isDeterministicDirected());
 
 		testRandomOperations(xor2, 10000);
+		
+		// Test automatic representation changes by get* methods
+		xor2.setRepresentation(NewFactorTableRepresentation.SPARSE_ENERGY);
+		xor2.setEnergyForSparseIndex(2.3, 0);
+		assertEquals(energyToWeight(2.3), xor2.getWeightForSparseIndex(0), 1e-12);
+		assertEquals(NewFactorTableRepresentation.SPARSE_ENERGY, xor2.getRepresentation());
+		xor2.setRepresentation(NewFactorTableRepresentation.DENSE_WEIGHT);
+		assertEquals(energyToWeight(2.3), xor2.getWeightForSparseIndex(0), 1e-12);
+		assertEquals(NewFactorTableRepresentation.ALL_WEIGHT, xor2.getRepresentation());
+		xor2.setRepresentation(NewFactorTableRepresentation.DENSE_ENERGY);
+		assertEquals(energyToWeight(2.3), xor2.getWeightForSparseIndex(0), 1e-12);
+		assertEquals(NewFactorTableRepresentation.ALL_ENERGY, xor2.getRepresentation());
 		
 		NewFactorTable t2x2x2 = xor2.clone();
 		assertBaseEqual(t2x2x2, xor2);

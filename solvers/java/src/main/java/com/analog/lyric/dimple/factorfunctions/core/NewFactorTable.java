@@ -676,7 +676,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public final int sparseIndexToJointIndex(int sparseIndex)
 	{
-		if ((_representation & ALL_SPARSE) == 0)
+		if (!hasSparseRepresentation())
 		{
 			setRepresentation(_representation | SPARSE_ENERGY);
 		}
