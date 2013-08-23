@@ -50,6 +50,13 @@ public class RealJointDomain extends Domain
 		}
 		return new RealJointDomain(domains.clone());
 	}
+	
+	public static RealJointDomain create(int size)
+	{
+		RealDomain[] domains = new RealDomain[size];
+		Arrays.fill(domains, RealDomain.unbounded());
+		return create(domains);
+	}
 
 	/*----------------
 	 * Object methods
