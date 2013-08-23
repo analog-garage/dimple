@@ -67,7 +67,7 @@ public class ModelFactory
 
 	public PDiscreteDomain createDiscreteDomain(Object [] elements)
 	{
-		return new PDiscreteDomain(DiscreteDomain.fromElements(elements));
+		return new PDiscreteDomain(DiscreteDomain.create(elements));
 	}
 
 	public PRealDomain createRealDomain(double lowerBound, double upperBound)

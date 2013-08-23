@@ -267,9 +267,9 @@ public class TestFactorTable
 		FactorTable.useNewFactorTable = false;
 		
 		Random rand = new Random(13);
-		DiscreteDomain domain10 = DiscreteDomain.intRangeFromSize(10);
-		DiscreteDomain domain20 = DiscreteDomain.intRangeFromSize(20);
-		DiscreteDomain domain5 = DiscreteDomain.intRangeFromSize(5);
+		DiscreteDomain domain10 = DiscreteDomain.range(0,9);
+		DiscreteDomain domain20 = DiscreteDomain.range(0,19);
+		DiscreteDomain domain5 = DiscreteDomain.range(0,4);
 
 		NewFactorTable newTable = new NewFactorTable(domain10, domain20, domain5);
 		newTable.setRepresentation(NewFactorTableRepresentation.DENSE_WEIGHT);

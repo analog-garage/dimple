@@ -20,7 +20,7 @@ public class TestPDomain
 	@Test
 	public void test()
 	{
-		DiscreteDomain abc = DiscreteDomain.fromElements('a','b','c');
+		DiscreteDomain abc = DiscreteDomain.create('a','b','c');
 		PDiscreteDomain pabc = new PDiscreteDomain(abc);
 		assertInvariants(pabc);
 		assertSame(abc, pabc.getModelerObject());
@@ -35,7 +35,7 @@ public class TestPDomain
 		assertInvariants(pr);
 		assertSame(r, pr.getModelerObject());
 		
-		RealDomain r2 = RealDomain.full();
+		RealDomain r2 = RealDomain.unbounded();
 		assertInvariants(new PRealDomain(r2));
 		
 		PDomain pr2 = PHelpers.wrapDomain(r2);
@@ -75,7 +75,7 @@ public class TestPDomain
 		Domain mdomain = pdomain.getModelerObject();
 		assertNotNull(mdomain);
 		assertEquals(pdomain.isDiscrete(), mdomain.isDiscrete());
-		assertEquals(pdomain.isJoint(), mdomain.isJoint());
+		assertEquals(pdomain.isJoint(), mdomain.isRealJoint());
 		assertEquals(pdomain.isReal(), mdomain.isReal());
 		
 		if (pdomain.isDiscrete())

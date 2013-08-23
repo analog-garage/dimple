@@ -141,7 +141,7 @@ public class SolverNamesTest extends TestCase {
 		Arrays.fill(dummyValues, 1.0);
 		
 		TableFactorFunction factorFunc = new TableFactorFunction("table",
-				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.fromElements(0,1), DiscreteDomain.fromElements(0,1), DiscreteDomain.fromElements(0,1)));
+				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.create(0,1), DiscreteDomain.create(0,1), DiscreteDomain.create(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
 		assertTrue(fn.getName().equals(fn.getUUID().toString()));
@@ -359,7 +359,7 @@ public class SolverNamesTest extends TestCase {
 	//@Test
 	public void test_getObjectByType()
 	{
-		DiscreteDomain domain2 = DiscreteDomain.intRangeFromSize(2);
+		DiscreteDomain domain2 = DiscreteDomain.range(0,1);
 		
 		Discrete variables[] = new Discrete[]
   		{

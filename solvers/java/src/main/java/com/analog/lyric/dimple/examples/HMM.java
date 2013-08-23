@@ -93,7 +93,7 @@ public class HMM
 	{
 		FactorGraph HMM = new FactorGraph();
 		
-		DiscreteDomain domain = DiscreteDomain.fromElements("sunny","rainy");
+		DiscreteDomain domain = DiscreteDomain.create("sunny","rainy");
 		Discrete MondayWeather = new Discrete(domain);
 		Discrete TuesdayWeather = new Discrete(domain);
 		Discrete WednesdayWeather = new Discrete(domain);

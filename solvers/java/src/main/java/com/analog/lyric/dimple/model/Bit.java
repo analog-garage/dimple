@@ -20,7 +20,7 @@ public class Bit extends Discrete
 {
 
 	public Bit()  {
-		super(DiscreteDomain.forBit(), "Bit");
+		super(DiscreteDomain.bit(), "Bit");
 	}
 	
 	public double getP1()

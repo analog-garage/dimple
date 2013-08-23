@@ -77,7 +77,7 @@ public class FactorFunctionTest {
 		
 		Discrete[] discretes = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
 		Discrete[] discretes6 = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1),new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
-		DiscreteDomain[] domains = new DiscreteDomain[]{DiscreteDomain.forBit(),  DiscreteDomain.forBit(), DiscreteDomain.forBit()};
+		DiscreteDomain[] domains = new DiscreteDomain[]{DiscreteDomain.bit(),  DiscreteDomain.bit(), DiscreteDomain.bit()};
 		DiscreteDomain[] vDomains = new DiscreteDomain[]{discretes[0].getDiscreteDomain(), discretes[1].getDiscreteDomain(), discretes[2].getDiscreteDomain()};
 		
 		XorDelta xorFF = new XorDelta();
@@ -173,9 +173,9 @@ public class FactorFunctionTest {
 		}
 		
 		DiscreteDomain[] domains6 = new DiscreteDomain[6];
-		Arrays.fill(domains6, DiscreteDomain.forBit());
+		Arrays.fill(domains6, DiscreteDomain.bit());
 		
-		DiscreteDomain domainThreeEntries = DiscreteDomain.doubleRangeFromSize(3);
+		DiscreteDomain domainThreeEntries = DiscreteDomain.range(0.0, 2.0);
 		
 		IFactorTable ftThreeBinary = xorFF.getFactorTable(domains);
 		IFactorTable ftThreeBinary2 = xorFF.getFactorTable(vDomains);

@@ -1,38 +1,49 @@
 package com.analog.lyric.dimple.model;
 
+/**
+ * A discrete domain defined by a range of integers separated by a constant positive interval.
+ * <p>
+ * @see DiscreteDomain#range(int, int)
+ * @see DiscreteDomain#range(int, int, int)
+ */
 public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 {
 	private static final long serialVersionUID = 1L;
 	
-	private final int _first;
-	private final int _interval;
+	private final int _lowerBound;
+	private final int _upperBound;
 	private final int _size;
+	private final int _interval;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	IntRangeDomain(int size, int first, int interval)
+	IntRangeDomain(int lowerBound, int upperBound, int interval)
 	{
-		super(computeHashCode(size, first, interval));
-		_first = first;
-		_size = size;
+		super(computeHashCode(lowerBound, upperBound, interval));
+		
+		if (interval < 1)
+		{
+			throw new IllegalArgumentException(
+				String.format("Non-positive interval '%d' for integer range domain", interval));
+		}
+		
+		if (upperBound < lowerBound)
+		{
+			throw new IllegalArgumentException(
+				String.format("Bad integer range [%d,%d]: upper bound lower than lower bound", lowerBound, upperBound));
+		}
+		
+		_lowerBound = lowerBound;
+		_upperBound = upperBound;
+		_size = (interval + upperBound - lowerBound) / interval;
 		_interval = interval;
 	}
 		
-	IntRangeDomain(int size, int first)
+	private static int computeHashCode(int lowerBound, int upperBound, int interval)
 	{
-		this(size, first, 1);
-	}
-	
-	IntRangeDomain(int size)
-	{
-		this(size, 0, 1);
-	}
-	
-	private static int computeHashCode(int size, int first, int interval)
-	{
-		return first + size * 11 + interval * 13;
+		return lowerBound + (upperBound * 11 + interval) * 13;
 	}
 	
 	/*----------------
@@ -50,7 +61,10 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 		if (that instanceof IntRangeDomain)
 		{
 			IntRangeDomain thatRange = (IntRangeDomain)that;
-			return _size == thatRange._size && _first == thatRange._first && _interval == thatRange._interval;
+			return
+				_lowerBound == thatRange._lowerBound &&
+				_upperBound == thatRange._upperBound &&
+				_interval == thatRange._interval;
 		}
 		
 		return false;
@@ -60,6 +74,11 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 	 * DiscreteDomain methods
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Use {@link #getIntElement(int)} instead of this method to avoid allocating an {@link Integer} object.
+	 */
 	@Override
 	public Integer getElement(int i)
 	{
@@ -79,6 +98,10 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 		return elements;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see #getIndex(int)
+	 */
 	@Override
 	public int getIndex(Object value)
 	{
@@ -88,16 +111,21 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 			int i = number.intValue();
 			if (i == number.doubleValue())
 			{
-				i -= _first;
-				i /= _interval;
-				if (i < _size)
-				{
-					return i;
-				}
+				return getIndex(i);
 			}
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * Same as {@link #getIndex(Object)} but taking an int.
+	 */
+	public int getIndex(int value)
+	{
+		value -= _lowerBound;
+		value /= _interval;
+		return value < _size ? value : -1;
 	}
 
 	@Override
@@ -110,8 +138,44 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 	 * IntRangeDomain methods
 	 */
 	
+	/**
+	 * Same as {@link #getElement(int)} but returning an unboxed int.
+	 */
 	public int getIntElement(int i)
 	{
-		return _first + i * _interval;
+		assertIndexInBounds(i, _size);
+		return _lowerBound + i * _interval;
+	}
+	
+	/**
+	 * The interval separating consecutive elements of the domain.
+	 * <p>
+	 * Guaranteed to be positive.
+	 */
+	public int getInterval()
+	{
+		return _interval;
+	}
+	
+	/**
+	 * Returns the lower bound for the domain which is also the same as the first element.
+	 * <p>
+	 * @see #getUpperBound()
+	 */
+	public int getLowerBound()
+	{
+		return _lowerBound;
+	}
+	
+	/**
+	 * Returns the upper bound for the domain. This will only be a member of the domain if it can be expressed
+	 * as an exact multiple of the interval added to the lower bound.
+	 * <p>
+	 * @see #getInterval()
+	 * @see #getLowerBound()
+	 */
+	public int getUpperBound()
+	{
+		return _upperBound;
 	}
 }

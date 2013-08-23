@@ -42,7 +42,7 @@ public class BadNBitXor
 	public static void main(String[] args)
 	{
 		FactorGraph fourBitXor = new FactorGraph();
-		DiscreteDomain domain = DiscreteDomain.forBit();
+		DiscreteDomain domain = DiscreteDomain.bit();
 		Discrete b1 = new Discrete(domain);
 		Discrete b2 = new Discrete(domain);
 		Discrete b3 = new Discrete(domain);

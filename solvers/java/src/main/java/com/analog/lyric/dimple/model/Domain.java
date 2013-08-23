@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -18,16 +18,76 @@ package com.analog.lyric.dimple.model;
 
 import java.io.Serializable;
 
+/**
+ * Base class for variable domains, which specify a set of valid values for
+ * a variable type.
+ */
 public abstract class Domain implements Serializable
 {
+	/*-------
+	 * State
+	 */
+	
 	private static final long serialVersionUID = 1L;
-
+	private final int _hashCode;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	Domain(int hashCode)
+	{
+		_hashCode = hashCode;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public final int hashCode()
+	{
+		return _hashCode;
+	}
+	
+	/*----------------
+	 * Domain methods
+	 */
+	
+	/**
+	 * If domain {@link #isDiscrete()} returns object cast to {@link DiscreteDomain},
+	 * otherwise returns null.
+	 */
 	public DiscreteDomain asDiscrete() { return null; }
+	
+	/**
+	 * If domain {@link #isReal()} returns object cast to {@link RealDomain},
+	 * otherwise returns null.
+	 */
 	public RealDomain asReal() { return null; }
+	
+	/**
+	 * If domain {@link #isRealJoint()} returns object cast to {@link RealJointDomain},
+	 * otherwise returns null.
+	 */
 	public RealJointDomain asRealJoint() { return null; }
 	
+	/**
+	 * True if domain is an instance of {@link Discrete}.
+	 * @see #asDiscrete()
+	 */
 	public boolean isDiscrete() { return false; }
-	public boolean isJoint() { return false; }
+	
+	/**
+	 * True if domain is an instance of {@link RealJoint}
+	 * @see #asRealJoint()
+	 */
+	public boolean isRealJoint() { return false; }
+	
+	/**
+	 * True if domain is an instance of {@link RealDomain}.
+	 * @see #asReal()
+	 */
 	public boolean isReal() { return false; }
 	
 	/**

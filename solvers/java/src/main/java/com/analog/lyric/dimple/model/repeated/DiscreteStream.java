@@ -30,7 +30,7 @@ public class DiscreteStream extends VariableStreamBase
 	}
 	public DiscreteStream(Object ... domain)
 	{
-		this(DiscreteDomain.fromElements(domain));
+		this(DiscreteDomain.create(domain));
 	}
 	@Override
 	protected VariableBase instantiateVariable(Domain domain)

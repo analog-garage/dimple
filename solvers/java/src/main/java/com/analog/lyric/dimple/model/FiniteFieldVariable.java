@@ -27,7 +27,7 @@ public class FiniteFieldVariable extends Discrete
         //domain = 0:2^(length(poly)-1)-1;
 		int max = (int)Math.pow(2,dpoly.length-1)-1;
 		
-		return DiscreteDomain.doubleRangeFromSize(max+1);
+		return DiscreteDomain.range(0.0, max);
 	}
 	
 	public FiniteFieldVariable(int poly)

@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.test.model;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Array;
@@ -16,6 +17,7 @@ import com.analog.lyric.dimple.model.EnumDomain;
 import com.analog.lyric.dimple.model.IntRangeDomain;
 import com.analog.lyric.dimple.model.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.TypedDiscreteDomain;
 
 public class TestDomain
@@ -32,19 +34,20 @@ public class TestDomain
 		// Test reals
 		//
 		
-		assertReal(RealDomain.full(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-		assertSame(RealDomain.full(), RealDomain.create(Double.NEGATIVE_INFINITY,  Double.POSITIVE_INFINITY));
+		assertReal(RealDomain.unbounded(), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+		assertSame(RealDomain.unbounded(), RealDomain.create(Double.NEGATIVE_INFINITY,  Double.POSITIVE_INFINITY));
 		assertReal(RealDomain.nonNegative(), 0.0, Double.POSITIVE_INFINITY);
 		assertSame(RealDomain.nonNegative(), RealDomain.create(0.0, Double.POSITIVE_INFINITY));
 		assertReal(RealDomain.nonPositive(), Double.NEGATIVE_INFINITY, 0.0);
 		assertSame(RealDomain.nonPositive(), RealDomain.create(Double.NEGATIVE_INFINITY, 0.0));
-		assertReal(RealDomain.probability(), 0.0, 1.0);
-		assertSame(RealDomain.probability(), RealDomain.create(0.0, 1.0));
 		
-		assertNotEquals(RealDomain.full(), RealDomain.nonNegative());
-		assertNotEquals(RealDomain.full(), RealDomain.nonPositive());
+		assertNotEquals(RealDomain.unbounded(), RealDomain.nonNegative());
+		assertNotEquals(RealDomain.unbounded(), RealDomain.nonPositive());
 		
-		assertNotEquals(RealDomain.full().hashCode(), RealDomain.nonNegative().hashCode());
+		assertNotEquals(RealDomain.unbounded().hashCode(), RealDomain.nonNegative().hashCode());
+		
+		RealDomain unit = RealDomain.create(0.0, 1.0);
+		assertReal(unit, 0.0, 1.0);
 		
 		RealDomain percentile = RealDomain.create(0.0, 100.0);
 		assertReal(percentile, 0.0, 100.0);
@@ -53,27 +56,51 @@ public class TestDomain
 		// Test discretes
 		//
 		
-		IntRangeDomain bit = DiscreteDomain.forBit();
+		IntRangeDomain bit = DiscreteDomain.bit();
 		assertInvariants(bit);
 		assertEquals(2, bit.size());
 		assertEquals(0, bit.getIntElement(0));
 		assertEquals(1, bit.getIntElement(1));
-		assertEquals(bit, DiscreteDomain.fromElements(0, 1));
+		assertEquals(bit, DiscreteDomain.create(0, 1));
 		
-		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.forBoolean();
+		TypedDiscreteDomain<Integer> reverseBit = DiscreteDomain.create(1, 0);
+		assertNotEquals(bit, reverseBit);
+		assertInvariants(reverseBit);
+		
+		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.bool();
 		assertInvariants(bool);
 		assertEquals(2, bool.size());
 		assertFalse(bool.getElement(0));
 		assertTrue(bool.getElement(1));
 		assertNotEquals(bit, bool);
 		assertNotEquals(bit.hashCode(), bool.hashCode());
-		assertEquals(bool, DiscreteDomain.fromElements(false, true));
-		assertNotEquals(bool, DiscreteDomain.fromElements(true, false));
+		assertEquals(bool, DiscreteDomain.create(false, true));
+		assertNotEquals(bool, DiscreteDomain.create(true, false));
 		
 		EnumDomain<E> e = DiscreteDomain.forEnum(E.class);
 		assertInvariants(e);
 		assertNotEquals(e, DiscreteDomain.forEnum(Bogus.class));
-		assertEquals(e, DiscreteDomain.fromElements(E.A, E.B, E.C));
+		assertEquals(e, DiscreteDomain.create(E.A, E.B, E.C));
+		
+		try
+		{
+			DiscreteDomain.range(1,2,0);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("Non-positive interval"));
+		}
+		
+		try
+		{
+			DiscreteDomain.range(2,1);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("upper bound lower than lower bound"));
+		}
 		
 		IntRangeDomain r1to5 = DiscreteDomain.range(1,5);
 		assertInvariants(r1to5);
@@ -83,9 +110,9 @@ public class TestDomain
 		{
 			assertEquals(i + 1, r1to5.getIntElement(i));
 		}
-		assertEquals(r1to5, DiscreteDomain.fromElements(1,2,3,4,5));
+		assertEquals(r1to5, DiscreteDomain.create(1,2,3,4,5));
 		
-		IntRangeDomain r0to4 = DiscreteDomain.intRangeFromSize(5);
+		IntRangeDomain r0to4 = DiscreteDomain.range(0,4);
 		assertInvariants(r0to4);
 		assertEquals(5, r0to4.size());
 		assertNotEquals(r0to4, r1to5);
@@ -94,9 +121,9 @@ public class TestDomain
 		{
 			assertEquals(i, r0to4.getIndex(i));
 		}
-		assertEquals(r0to4, DiscreteDomain.fromElements(0, 1, 2, 3, 4));
+		assertEquals(r0to4, DiscreteDomain.create(0, 1, 2, 3, 4));
 		
-		IntRangeDomain evenDigits = DiscreteDomain.intRangeFromSizeStartAndInterval(5, 0, 2);
+		IntRangeDomain evenDigits = DiscreteDomain.range(0, 8, 2);
 		assertInvariants(evenDigits);
 		assertEquals(5, evenDigits.size());
 		assertNotEquals(evenDigits, r0to4);
@@ -105,20 +132,73 @@ public class TestDomain
 			assertEquals(i*2, evenDigits.getIntElement(i));
 			assertEquals(i, evenDigits.getIndex(i*2));
 		}
-		assertEquals(evenDigits, DiscreteDomain.fromElements(0,2,4,6,8));
+		assertEquals(evenDigits, DiscreteDomain.create(0,2,4,6,8));
 		
-		IntRangeDomain r0to3 = DiscreteDomain.intRangeFromSizeAndStart(4, 0);
+		IntRangeDomain r0to3 = DiscreteDomain.range(0, 3);
 		assertInvariants(r0to3);
 		assertNotEquals(r0to3, r0to4);
-		assertEquals(r0to3, DiscreteDomain.fromElements(0,1,2,3));
-		assertNotEquals(r0to3, DiscreteDomain.fromElements(0,1.0,2,3));
+		assertEquals(r0to3, DiscreteDomain.create(0,1,2,3));
+		assertNotEquals(r0to3, DiscreteDomain.create(0,1.0,2,3));
 		
-		DoubleRangeDomain halves = DiscreteDomain.doubleRangeFromSizeStartAndInterval(6,  0.0, .5);
+		TypedDiscreteDomain<Integer> r3to0 = DiscreteDomain.create(3,2,1,0);
+		assertInvariants(r3to0);
+		assertNotEquals(r0to3, r3to0);
+		
+		try
+		{
+			DiscreteDomain.range(1.0, 2.0, 0.0);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("Non-positive interval"));
+		}
+		
+		try
+		{
+			DiscreteDomain.range(2.0,1.0);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("upper bound lower than lower bound"));
+		}
+		
+		try
+		{
+			DiscreteDomain.range(1.0, 5.0, 1.0, .5);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("too large for interval"));
+		}
+		
+		try
+		{
+			DiscreteDomain.range(1.0, 5.0, 1.0, -1);
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("Negative tolerance"));
+		}
+
+		DoubleRangeDomain halves = DiscreteDomain.range(0.0, 2.5, .5);
 		assertInvariants(halves);
-		assertEquals(halves, DiscreteDomain.fromElements(0.0, 0.5, 1.0, 1.5, 2.0, 2.5));
+		assertEquals(halves, DiscreteDomain.create(0.0, 0.5, 1.0, 1.5, 2.0, 2.5));
 		
-		DoubleRangeDomain d0to3 = DiscreteDomain.doubleRangeFromSize(4);
+		DoubleRangeDomain d0to3 = DiscreteDomain.range(0.0, 3.0);
 		assertInvariants(d0to3);
+		assertNotEquals(d0to3, halves);
+		
+		DoubleRangeDomain d0to3Loose = DiscreteDomain.range(0.0, 3.0, 1.0, .3);
+		assertInvariants(d0to3Loose);
+		assertNotEquals(d0to3, d0to3Loose);
+		
+		TypedDiscreteDomain<Double> d3to0 = DiscreteDomain.create(3.0, 2.0, 1.0);
+		assertInvariants(d3to0);
+		assertNotEquals(d0to3, d3to0);
 		
 		JointDiscreteDomain joint1 = DiscreteDomain.joint(e, evenDigits);
 		assertInvariants(joint1);
@@ -132,18 +212,45 @@ public class TestDomain
 		assertEquals(0, joint3.getIndex(new int[] { 1, 0 }));
 		assertEquals(-1, joint3.getIndex(new int[] { 0, 1 }));
 		
-		DiscreteDomain primes = DiscreteDomain.fromElements(2,3,5,7,11,13);
+		DiscreteDomain primes = DiscreteDomain.create(2,3,5,7,11,13);
 		assertInvariants(primes);
 		
 		// Test for -0.0
-		DiscreteDomain doublesWithZero = DiscreteDomain.fromElements(0.0, 1.0, 3.0);
+		DiscreteDomain doublesWithZero = DiscreteDomain.create(0.0, 1.0, 3.0);
 		assertInvariants(doublesWithZero);
 		assertEquals(0, doublesWithZero.getIndex(0.0));
 		assertEquals(0, doublesWithZero.getIndex(-0.0));
-		DiscreteDomain floatsWithZero = DiscreteDomain.fromElements((float)0.0, (float)1.0, (float)3.0);
+		DiscreteDomain floatsWithZero = DiscreteDomain.create((float)0.0, (float)1.0, (float)3.0);
 		assertInvariants(floatsWithZero);
 		assertEquals(0, floatsWithZero.getIndex((float)0.0));
 		assertEquals(0, floatsWithZero.getIndex((float)-0.0));
+		
+		//
+		// Test RealJoint
+		//
+		
+		try
+		{
+			RealJointDomain.create(RealDomain.unbounded());
+			fail("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("requires at least two domains"));
+		}
+		
+		
+		RealJointDomain realPlane = RealJointDomain.create(RealDomain.unbounded(), RealDomain.unbounded());
+		assertInvariants(realPlane);
+		
+		RealJointDomain realPlane2 = RealJointDomain.create(RealDomain.unbounded(), RealDomain.unbounded());
+		assertEquals(realPlane, realPlane2);
+		
+		RealJointDomain unitCube = RealJointDomain.create(unit, unit, unit);
+		assertInvariants(unitCube);
+		assertNotEquals(unitCube, realPlane);
+		assertFalse(unitCube.inDomain(.5, 0.0, 1.5));
+		assertFalse(unitCube.inDomain(new Object[] { .5, 0.0, 1.5}));
 	}
 	
 	public static void assertReal(RealDomain real, double lower, double upper)
@@ -165,7 +272,7 @@ public class TestDomain
 		if (domain.isReal())
 		{
 			assertFalse(domain.isDiscrete());
-			assertFalse(domain.isJoint());
+			assertFalse(domain.isRealJoint());
 			assertTrue(domain instanceof RealDomain);
 			RealDomain real = (RealDomain)domain;
 			
@@ -195,7 +302,7 @@ public class TestDomain
 		
 		if (domain.isDiscrete())
 		{
-			assertFalse(domain.isJoint());
+			assertFalse(domain.isRealJoint());
 			assertTrue(domain instanceof DiscreteDomain);
 			DiscreteDomain discrete = (DiscreteDomain)domain;
 			
@@ -253,6 +360,34 @@ public class TestDomain
 				}
 			}
 			
+			if (discrete instanceof IntRangeDomain)
+			{
+				IntRangeDomain range = (IntRangeDomain)discrete;
+				assertTrue(range.getLowerBound() <= range.getUpperBound());
+				assertEquals(range.getLowerBound(), range.getIntElement(0));
+				assertTrue((range.size()-1) * range.getInterval() + range.getLowerBound() <= range.getUpperBound());
+				assertTrue(range.size() * range.getInterval() + range.getLowerBound() > range.getUpperBound());
+			}
+			
+			if (discrete instanceof DoubleRangeDomain)
+			{
+				DoubleRangeDomain range = (DoubleRangeDomain)discrete;
+				assertTrue(range.getLowerBound() <= range.getUpperBound());
+				assertEquals(range.getLowerBound(), range.getDoubleElement(0), 0.0);
+				assertTrue(range.getTolerance() > 0.0);
+				assertTrue(range.getTolerance() < range.getInterval()/2);
+				assertTrue((range.size()-1) * range.getInterval() + range.getLowerBound() <= range.getUpperBound());
+				assertTrue(range.size() * range.getInterval() + range.getLowerBound() > range.getUpperBound());
+				for (int i = range.size(); --i>=0;)
+				{
+					double d = range.getDoubleElement(i);
+					assertEquals(i, range.getIndex(d));
+					assertEquals(i, range.getIndex(d + range.getTolerance()/2));
+					assertEquals(i, range.getIndex(d - range.getTolerance()/2));
+					assertEquals(-1, range.getIndex(d + range.getInterval()/2));
+				}
+			}
+
 			if (discrete instanceof EnumDomain)
 			{
 				EnumDomain<?> e = (EnumDomain<?>)discrete;
@@ -296,6 +431,39 @@ public class TestDomain
 				Arrays.fill(indices, joint.size());
 				assertFalse(joint.containsValueWithRepresentation(indices));
 			}
+		}
+		
+		if (domain instanceof RealJointDomain)
+		{
+			RealJointDomain realJoint = (RealJointDomain)domain;
+			assertTrue(realJoint.isRealJoint());
+			assertFalse(realJoint.isReal());
+			assertFalse(realJoint.isDiscrete());
+			assertSame(realJoint, domain.asRealJoint());
+			
+			int size = realJoint.getDimensions();
+			assertTrue(size > 1);
+			assertEquals(size, realJoint.getRealDomains().length);
+			assertEquals(size, realJoint.getNumVars());
+			
+			double[] lower = new double[size];
+			double[] upper = new double[size];
+			for (int i = realJoint.getDimensions(); --i>=0;)
+			{
+				RealDomain subdomain = realJoint.getRealDomain(i);
+				assertSame(realJoint.getRealDomains()[i], subdomain);
+				lower[i] = subdomain.getLowerBound();
+				upper[i] = subdomain.getUpperBound();
+			}
+			
+			assertTrue(domain.inDomain(lower));
+			assertTrue(domain.inDomain(upper));
+			assertTrue(realJoint.inDomain(lower));
+			assertTrue(realJoint.inDomain(upper));
+			
+			double[] lowerTooLong = Arrays.copyOf(lower, lower.length + 1);
+			assertFalse(domain.inDomain(lowerTooLong));
+			assertFalse(realJoint.inDomain(lowerTooLong));
 		}
 	}
 	

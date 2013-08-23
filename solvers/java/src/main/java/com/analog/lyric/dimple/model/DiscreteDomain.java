@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -20,11 +20,18 @@ import net.jcip.annotations.Immutable;
 
 import com.google.common.math.DoubleMath;
 
+/**
+ * Domain for discrete variables that can take on a values from a predefined finite set
+ * in a specified order.
+ * <p>
+ * While from a set-theoretic perspective two domains with the same elements in different order
+ * are equivalent, these objects are only considered equal if the elements occur in the same
+ * order because the order is intrinsic in the representation of variable values using the domain.
+ */
 @Immutable
 public abstract class DiscreteDomain extends Domain
 {
 	private static final long serialVersionUID = 1L;
-	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
@@ -32,20 +39,34 @@ public abstract class DiscreteDomain extends Domain
 	
 	DiscreteDomain(int hashCode)
 	{
-		_hashCode = hashCode;
+		super(hashCode);
 	}
 	
-	public static TypedDiscreteDomain<Boolean> forBoolean()
+	/**
+	 * Domain consisting of the integers 0 and 1, which is the domain of {@link Bit} variables.
+	 */
+	public static IntRangeDomain bit()
+	{
+		return range(0,1);
+	}
+	
+	/**
+	 * Domain consisting of the values false and true.
+	 */
+	public static TypedDiscreteDomain<Boolean> bool()
 	{
 		return new ArrayDiscreteDomain<Boolean>(false, true);
 	}
 	
-	public static IntRangeDomain forBit()
-	{
-		return intRangeFromSize(2);
-	}
-	
-	public static <T> TypedDiscreteDomain<T> fromElements(T ... elements)
+	/**
+	 * Returns a discrete domain consisting of the specified elements in the specified order.
+	 * <p>
+	 * 
+	 * <p>
+	 * @param elements must either be immutable or must implement {@link Object#equals(Object)} and
+	 * {@link Object#hashCode()} methods that do not depend on any mutable state.
+	 */
+	public static <T> TypedDiscreteDomain<T> create(T ... elements)
 	{
 		int size = elements.length;
 		Object firstElt = elements[0];
@@ -80,30 +101,34 @@ public abstract class DiscreteDomain extends Domain
 				int first = ((Integer)firstElt).intValue();
 				int prev = ((Integer)elements[1]).intValue();
 				int interval = prev - first;
-				boolean useIntRangeDomain = true;
 				
-				for (int i = 2; i < size; ++i)
+				if (interval > 0)
 				{
-					Object element = elements[i];
-					if (element instanceof Integer)
+					boolean useIntRangeDomain = true;
+
+					for (int i = 2; i < size; ++i)
 					{
-						int next = prev + interval;
-						if (next == ((Integer)element).intValue())
+						Object element = elements[i];
+						if (element instanceof Integer)
 						{
-							prev = next;
-							continue;
+							int next = prev + interval;
+							if (next == ((Integer)element).intValue())
+							{
+								prev = next;
+								continue;
+							}
 						}
+						useIntRangeDomain = false;
+						break;
 					}
-					useIntRangeDomain = false;
-					break;
-				}
-				
-				if (useIntRangeDomain)
-				{
-					@SuppressWarnings("unchecked")
-					TypedDiscreteDomain<T> domain =
-						(TypedDiscreteDomain<T>) intRangeFromSizeStartAndInterval(size, first, interval);
-					return domain;
+
+					if (useIntRangeDomain)
+					{
+						@SuppressWarnings("unchecked")
+						TypedDiscreteDomain<T> domain =
+						(TypedDiscreteDomain<T>) range(first, prev, interval);
+						return domain;
+					}
 				}
 			}
 		}
@@ -114,31 +139,35 @@ public abstract class DiscreteDomain extends Domain
 				double first = ((Double)firstElt).doubleValue();
 				double prev = ((Double)elements[1]).doubleValue();
 				double interval = prev - first;
-				double tolerance = DoubleRangeDomain.defaultToleranceForInterval(interval);
-				boolean useDoubleRangeDomain = true;
 				
-				for (int i = 2; i < size; ++i)
+				if (interval > 0.0)
 				{
-					Object element = elements[i];
-					if (element instanceof Double)
+					double tolerance = DoubleRangeDomain.defaultToleranceForInterval(interval);
+					boolean useDoubleRangeDomain = true;
+
+					for (int i = 2; i < size; ++i)
 					{
-						double next = prev + interval;
-						if (DoubleMath.fuzzyEquals(next, (Double)element, tolerance))
+						Object element = elements[i];
+						if (element instanceof Double)
 						{
-							prev = next;
-							continue;
+							double next = prev + interval;
+							if (DoubleMath.fuzzyEquals(next, (Double)element, tolerance))
+							{
+								prev = next;
+								continue;
+							}
 						}
+						useDoubleRangeDomain = false;
+						break;
 					}
-					useDoubleRangeDomain = false;
-					break;
-				}
-				
-				if (useDoubleRangeDomain)
-				{
-					@SuppressWarnings("unchecked")
-					TypedDiscreteDomain<T> domain =
-						(TypedDiscreteDomain<T>) doubleRangeFromSizeStartAndInterval(size, first, interval);
-					return domain;
+
+					if (useDoubleRangeDomain)
+					{
+						@SuppressWarnings("unchecked")
+						TypedDiscreteDomain<T> domain =
+						(TypedDiscreteDomain<T>) range(first, prev, interval, tolerance);
+						return domain;
+					}
 				}
 			}
 		}
@@ -163,37 +192,27 @@ public abstract class DiscreteDomain extends Domain
 	
 	public static IntRangeDomain range(int low, int high)
 	{
-		return new IntRangeDomain(1 + high - low, low);
+		return new IntRangeDomain(low, high, 1);
 	}
 	
-	public static IntRangeDomain intRangeFromSize(int size)
+	public static IntRangeDomain range(int low, int high, int interval)
 	{
-		return new IntRangeDomain(size);
+		return new IntRangeDomain(low, high, interval);
+	}
+
+	public static DoubleRangeDomain range(double low, double high)
+	{
+		return DoubleRangeDomain.create(low, high, 1.0, Double.NaN);
 	}
 	
-	public static IntRangeDomain intRangeFromSizeAndStart(int size, int start)
+	public static DoubleRangeDomain range(double low, double high, double interval)
 	{
-		return new IntRangeDomain(size, start);
+		return DoubleRangeDomain.create(low, high, interval, Double.NaN);
 	}
-	
-	public static IntRangeDomain intRangeFromSizeStartAndInterval(int size, int start, int interval)
+
+	public static DoubleRangeDomain range(double low, double high, double interval, double tolerance)
 	{
-		return new IntRangeDomain(size, start, interval);
-	}
-	
-	public static DoubleRangeDomain doubleRangeFromSize(int size)
-	{
-		return new DoubleRangeDomain(size, 0.0, 1.0);
-	}
-	
-	public static DoubleRangeDomain doubleRangeFromSizeAndStart(int size, double start)
-	{
-		return new DoubleRangeDomain(size, start, 1.0);
-	}
-	
-	public static DoubleRangeDomain doubleRangeFromSizeStartAndInterval(int size, double start, double interval)
-	{
-		return new DoubleRangeDomain(size, start, interval);
+		return DoubleRangeDomain.create(low, high, interval, tolerance);
 	}
 
 	/*----------------
@@ -219,7 +238,7 @@ public abstract class DiscreteDomain extends Domain
 		}
 		
 		DiscreteDomain that = (DiscreteDomain)thatObj;
-		if (size() != that.size() || _hashCode != that._hashCode)
+		if (size() != that.size() || hashCode() != that.hashCode())
 		{
 			return false;
 		}
@@ -239,12 +258,6 @@ public abstract class DiscreteDomain extends Domain
 		}
 		
 		return true;
-	}
-	
-	@Override
-	public final int hashCode()
-	{
-		return _hashCode;
 	}
 	
 	/*----------------
@@ -361,5 +374,24 @@ public abstract class DiscreteDomain extends Domain
 	public boolean isElementOf(Object value)
 	{
 		return (getIndex(value) >= 0);
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	/**
+	 * Verifies that {@code index} is in the range [0,size-1].
+	 * @throws IndexOutOfBoundsException if index is not in range.
+	 */
+	protected static void assertIndexInBounds(int index, int size)
+	{
+		// We want this check to be fast. This converts index to a long and masks the low-32 bits.
+		// As a result, all negative index values are going to end up as large positive numbers
+		// allowing us to do this in a single compare.
+		if ((index & 0xFFFFFFFFL) >= size)
+		{
+			throw new IndexOutOfBoundsException(String.format("Index '%d' is not in range [%d,%d]", index, 0, size -1));
+		}
 	}
 }

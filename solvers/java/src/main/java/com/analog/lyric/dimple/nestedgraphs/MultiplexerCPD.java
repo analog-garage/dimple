@@ -93,7 +93,7 @@ public class MultiplexerCPD extends FactorGraph
 	{
 		DiscreteDomain [] domains = new DiscreteDomain[zDomains.length];
 		for (int i = 0; i < domains.length; i++)
-			domains[i] = DiscreteDomain.fromElements(zDomains[i]);
+			domains[i] = DiscreteDomain.create(zDomains[i]);
 		
 		return create(domains,oneBased,aAsDouble);
 	}
@@ -295,6 +295,6 @@ public class MultiplexerCPD extends FactorGraph
 
 	public static DiscreteDomain [] buildDomains(Object [] domain, int numZs)
 	{
-		return buildDomains(DiscreteDomain.fromElements(domain), numZs);
+		return buildDomains(DiscreteDomain.create(domain), numZs);
 	}
 }

@@ -127,7 +127,7 @@ public class Deserializer
 			{
 				Domain[i] = Double.parseDouble(DomainStrings[i]);
 			}
-			dd = DiscreteDomain.fromElements(Domain);
+			dd = DiscreteDomain.create(Domain);
 
 		}
 		else
@@ -226,7 +226,7 @@ public class Deserializer
 				objs[j] = domainValueString;
 			}
 		}
-		return DiscreteDomain.fromElements(objs);
+		return DiscreteDomain.create(objs);
 
 	}
 	

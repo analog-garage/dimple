@@ -867,7 +867,7 @@ public class Helpers
 		Arrays.fill(dummyValues, 1.0);
 		
 		DiscreteDomain[] domains = new DiscreteDomain[columns];
-		Arrays.fill(domains, DiscreteDomain.forBit());
+		Arrays.fill(domains, DiscreteDomain.bit());
 		
   		return new TableFactorFunction("silly", dummyTable, dummyValues, domains);
 	}

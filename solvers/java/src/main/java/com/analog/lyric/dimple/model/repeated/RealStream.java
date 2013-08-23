@@ -25,7 +25,7 @@ public class RealStream extends VariableStreamBase
 {
 	public RealStream()
 	{
-		this(RealDomain.full());
+		this(RealDomain.unbounded());
 	}
 
 	public RealStream(RealDomain domain)

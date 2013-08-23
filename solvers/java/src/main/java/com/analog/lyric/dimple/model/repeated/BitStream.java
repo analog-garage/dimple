@@ -22,7 +22,7 @@ public class BitStream extends DiscreteStream
 {
 	public BitStream()
 	{
-		super(DiscreteDomain.forBit());
+		super(DiscreteDomain.bit());
 	}
 
 }

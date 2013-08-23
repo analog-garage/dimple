@@ -47,7 +47,7 @@ public class RandomSchedulerTest
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
-		DiscreteDomain bit = DiscreteDomain.forBit();
+		DiscreteDomain bit = DiscreteDomain.bit();
 		Discrete a = new Discrete(bit);
 		Discrete b = new Discrete(bit);
 		Discrete c = new Discrete(bit);
@@ -102,7 +102,7 @@ public class RandomSchedulerTest
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
-		DiscreteDomain bit = DiscreteDomain.forBit();
+		DiscreteDomain bit = DiscreteDomain.bit();
 		Discrete a = new Discrete(bit);
 		Discrete b = new Discrete(bit);
 		Discrete c = new Discrete(bit);

@@ -68,7 +68,7 @@ public class TestParameters
 	
 	public static enum Alpha implements IParameterKey
 	{
-		alpha(0, RealDomain.full());
+		alpha(0, RealDomain.unbounded());
 		
 		 private final double _defaultValue;
 		 private final RealDomain _domain;

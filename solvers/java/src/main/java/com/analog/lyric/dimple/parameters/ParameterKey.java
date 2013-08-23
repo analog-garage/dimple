@@ -64,12 +64,12 @@ public class ParameterKey extends OptionKey<Double> implements IParameterKey
 
 	public ParameterKey(int ordinal, Class<?> declaringClass, String name, double defaultValue)
 	{
-		this(ordinal, declaringClass, name, defaultValue, RealDomain.full());
+		this(ordinal, declaringClass, name, defaultValue, RealDomain.unbounded());
 	}
 
 	public ParameterKey(int ordinal, Class<?> declaringClass, String name)
 	{
-		this(ordinal, declaringClass, name, 0.0, RealDomain.full());
+		this(ordinal, declaringClass, name, 0.0, RealDomain.unbounded());
 	}
 	
 	/*-----------------------

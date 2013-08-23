@@ -24,7 +24,7 @@ public class Real extends VariableBase
 	// Constructors...
 	public Real()
 	{
-		this(RealDomain.full(), "Real");
+		this(RealDomain.unbounded(), "Real");
 	}
 	public Real(double lower, double upper)
 	{

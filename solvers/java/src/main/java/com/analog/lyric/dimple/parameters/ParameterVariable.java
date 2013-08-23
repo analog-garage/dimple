@@ -59,7 +59,7 @@ public abstract class ParameterVariable extends Real
 		
 		public WithIndex(int index)
 		{
-			super(RealDomain.full());
+			super(RealDomain.unbounded());
 			_index = index;
 		}
 		

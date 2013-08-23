@@ -29,7 +29,6 @@ public class RealDomain extends Domain
 	
 	private final double _lowerBound;
 	private final double _upperBound;
-	private final int _hashCode;
 	
 	/*--------------
 	 * Construction
@@ -41,10 +40,10 @@ public class RealDomain extends Domain
 
 	public RealDomain(double lower, double upper)
 	{
+		super(computeHashCode(lower, upper));
 		if (lower > upper) throw new DimpleException("Upper bound must be greater than lower bound");
 		_lowerBound = lower;
 		_upperBound = upper;
-		_hashCode = computeHashCode(lower, upper);
 	}
 	
 	private static int computeHashCode(double lowerBound, double upperBound)
@@ -80,11 +79,19 @@ public class RealDomain extends Domain
 	}
 	
 	/**
+	 * Same as #unbounded()
+	 */
+	public static RealDomain create()
+	{
+		return StandardDomain.UNBOUNDED.domain;
+	}
+	
+	/**
 	 * Domain including the entire real number line: [-infinity, +infinity]
 	 */
-	public static RealDomain full()
+	public static RealDomain unbounded()
 	{
-		return StandardDomain.FULL.domain;
+		return StandardDomain.UNBOUNDED.domain;
 	}
 	
 	/**
@@ -103,18 +110,9 @@ public class RealDomain extends Domain
 		return StandardDomain.NON_POSITIVE.domain;
 	}
 
-	/**
-	 * Probability domain numbers between zero and one: [0.0, 1.0]
-	 */
-	public static RealDomain probability()
-	{
-		return StandardDomain.PROBABILITY.domain;
-	}
-	
 	private static enum StandardDomain
 	{
-		FULL(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-		PROBABILITY(0.0, 1.0),
+		UNBOUNDED(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
 		NON_NEGATIVE(0.0, Double.POSITIVE_INFINITY),
 		NON_POSITIVE(Double.NEGATIVE_INFINITY, 0.0);
 		
@@ -145,12 +143,6 @@ public class RealDomain extends Domain
 		
 	}
 	
-	@Override
-	public int hashCode()
-	{
-		return _hashCode;
-	}
-
 	/*----------------
 	 * Domain methods
 	 */
@@ -180,7 +172,9 @@ public class RealDomain extends Domain
 	public double getLowerBound() {return _lowerBound;}
 	public double getUpperBound() {return _upperBound;}
 	
-	// Utility to check if a value is in the domain or not
+	/**
+	 * True if {@code value} is in the range [{@link #getLowerBound()}, {@link #getUpperBound()}].
+	 */
 	public boolean inDomain(double value)
 	{
 		return (value >= _lowerBound) && (value <= _upperBound);

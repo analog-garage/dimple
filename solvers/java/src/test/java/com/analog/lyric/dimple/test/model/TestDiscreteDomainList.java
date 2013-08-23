@@ -29,8 +29,8 @@ public class TestDiscreteDomainList
 	@Test
 	public void test()
 	{
-		DiscreteDomain d2 = DiscreteDomain.intRangeFromSize(2);
-		DiscreteDomain d3 = DiscreteDomain.intRangeFromSize(3);
+		DiscreteDomain d2 = DiscreteDomain.range(0,1);
+		DiscreteDomain d3 = DiscreteDomain.range(0,2);
 	
 		try
 		{
@@ -109,10 +109,10 @@ public class TestDiscreteDomainList
 		// Test DomainList
 		//
 		
-		DomainList<?> mixed = DomainList.create(d2, RealDomain.full());
+		DomainList<?> mixed = DomainList.create(d2, RealDomain.unbounded());
 		assertFalse(mixed.isDiscrete());
 		assertNull(mixed.asDiscreteDomainList());
-		assertFalse(DomainList.allDiscrete(d2, RealDomain.full()));
+		assertFalse(DomainList.allDiscrete(d2, RealDomain.unbounded()));
 		assertTrue(DomainList.allDiscrete(new DiscreteDomain[] { d2, d3 }));
 	}
 	
@@ -362,10 +362,10 @@ public class TestDiscreteDomainList
 	@Test
 	public void testConverter()
 	{
-		DiscreteDomain d2 = DiscreteDomain.intRangeFromSize(2);
-		DiscreteDomain d3 = DiscreteDomain.intRangeFromSize(3);
-		DiscreteDomain d4 = DiscreteDomain.intRangeFromSize(4);
-		DiscreteDomain d5 = DiscreteDomain.intRangeFromSize(5);
+		DiscreteDomain d2 = DiscreteDomain.range(0,1);
+		DiscreteDomain d3 = DiscreteDomain.range(0,2);
+		DiscreteDomain d4 = DiscreteDomain.range(0,3);
+		DiscreteDomain d5 = DiscreteDomain.range(0,4);
 		
 		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
 		DiscreteDomainList dl3 = DiscreteDomainList.create(d3);
