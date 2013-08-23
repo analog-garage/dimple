@@ -16,10 +16,26 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import org.apache.commons.math.random.MersenneTwister;
 import org.apache.commons.math.random.RandomGenerator;
+
+import cern.jet.random.engine.RandomEngine;
+
 
 public class SolverRandomGenerator
 {
-	public static final RandomGenerator rand = new MersenneTwister();
+	public static final RandomGenerator rand = new org.apache.commons.math.random.MersenneTwister();
+	
+	// Other random number generators not supported by the Apache framework
+	public static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister();
+	public static cern.jet.random.Gamma randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
+	
+	
+	public static void setSeed(long seed)
+	{
+		rand.setSeed(seed);
+		
+		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
+		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
+		randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
+	}
 }

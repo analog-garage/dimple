@@ -19,16 +19,16 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 
-public class SliceSampler implements IRealSampler
+public class SliceSampler implements IRealMCMCSampler
 {
 	private double _initialSliceWidth = 1;	// Default value
 	private double _maximumDoublings = 10;	// Default value
 	
 	@Override
-	public double nextSample(double currentSampleValue, ISampleScorer sampleScorer)
+	public double nextSample(ISampleScorer sampleScorer)
 	{
 		double y = sampleVerticalSlice(sampleScorer);
-		double x = sampleHorizontalSlice(currentSampleValue, y, sampleScorer);
+		double x = sampleHorizontalSlice(sampleScorer.getCurrentSampleValue(), y, sampleScorer);
 		return x;
 	}
 

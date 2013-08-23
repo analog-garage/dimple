@@ -25,11 +25,11 @@ import com.analog.lyric.dimple.model.DimpleException;
 public class FactorFunctionWithConstants extends FactorFunction 
 {
 	private FactorFunctionBase _factorFunction;
-	private Object [] _constants;
-	private int [] _constantIndices;
+	private Object[] _constants;
+	private int[] _constantIndices;
 	
 	public FactorFunctionWithConstants(FactorFunctionBase factorFunction,
-			Object [] constants, int [] constantIndices) 
+			Object[] constants, int[] constantIndices) 
 	{
 		super(factorFunction.getName());
 		_factorFunction = factorFunction;
@@ -48,16 +48,31 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 
-	public Object [] getConstants()
+	public Object[] getConstants()
 	{
 		return _constants;
 	}
 	
-	public int [] getConstantIndices()
+	public int[] getConstantIndices()
 	{
 		return _constantIndices;
 	}
 	
+	public boolean isConstantIndex(int index)
+	{
+		for (int i = 0; i < _constantIndices.length; i++)
+			if (_constantIndices[i] == index)
+				return true;
+		return false;
+	}
+	
+	public Object getConstantByIndex(int index)
+	{
+		for (int i = 0; i < _constantIndices.length; i++)
+			if (_constantIndices[i] == index)
+				return _constants[i];
+		return null;
+	}
 	
 
 	// Wrap the methods of the actual factor function...
@@ -117,6 +132,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	
 	// Expand list of inputs to include the constants
+	// Assumes constant index list is already sorted
 	protected Object[] expandInputList(Object... input)
 	{
 		Object [] expandedInputs = new Object[input.length + _constantIndices.length];
@@ -192,5 +208,10 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	
+	// Get the contained factor function
+	public FactorFunctionBase getContainedFactorFunction()
+	{
+		return _factorFunction;
+	}
 
 }

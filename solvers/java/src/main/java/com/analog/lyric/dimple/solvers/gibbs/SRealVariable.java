@@ -17,21 +17,25 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.SRealConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.sample.RealSample;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.DefaultRealSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.MHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
@@ -46,19 +50,24 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISampleScorer
 {
-	protected Real _varReal;
-	protected RealSample _outputMsg;
-	protected double _sampleValue = 0;
-	protected double _initialSampleValue = 0;
-	protected FactorFunction _input;
-	protected RealDomain _domain;
-	protected IRealSampler _sampler = new DefaultRealSampler();
-	protected ArrayList<Double> _sampleArray;
-	protected double _bestSampleValue;
-	protected double _beta = 1;
-	protected boolean _holdSampleValue = false;
-	protected boolean _isDeterministicDepdentent = false;
-	protected boolean _hasDeterministicDependents = false;
+	public static final String DEFAULT_REAL_SAMPLER_NAME = "SliceSampler";
+	
+	private Real _varReal;
+	private RealSample _outputMsg;
+	private double _sampleValue = 0;
+	private double _initialSampleValue = 0;
+	private FactorFunction _input;
+	private RealDomain _domain;
+	private String _defaultSamplerName = DEFAULT_REAL_SAMPLER_NAME;
+	private IRealMCMCSampler _sampler = null;
+	private IRealConjugateSampler _conjugateSampler = null;
+	private boolean _samplerSpecificallySpecified = false;
+	private ArrayList<Double> _sampleArray;
+	private double _bestSampleValue;
+	private double _beta = 1;
+	private boolean _holdSampleValue = false;
+	private boolean _isDeterministicDepdentent = false;
+	private boolean _hasDeterministicDependents = false;
 
 
 	// Primary constructor
@@ -101,25 +110,59 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_var.hasFixedValue()) return;
 
 		// Get the next sample value from the sampler
-		double nextSampleValue = _sampler.nextSample(_sampleValue, this);
+		double nextSampleValue;
+		if (_conjugateSampler == null)
+		{
+			// Use MCMC sampler
+			nextSampleValue = _sampler.nextSample(this);
+		}
+		else
+		{
+			// Use conjugate sampler, first update the messages from all factors
+			// Factor messages represent the current distribution parameters from each factor
+			ArrayList<INode> siblings = _var.getSiblings();
+			int numPorts = siblings.size();
+			Port[] ports = new Port[numPorts];
+			for (int portIndex = 0; portIndex < numPorts; portIndex++)
+			{
+				INode factorNode = siblings.get(portIndex);
+				ISolverNode factor = factorNode.getSolver();
+				int factorPortNumber = factorNode.getPortNum(_var);
+				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
+				((SRealFactor)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+			}
+			nextSampleValue = _conjugateSampler.nextSample(ports, _input);
+		}
 		if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
 			setCurrentSample(nextSampleValue);
 	}
 	
 	
+	// ISampleScorer methods...
+	// The following methods are for the ISampleScorer interface, meant to be called by a sampler
+	// These are not intended for other purposes
 	@Override
-	public double getCurrentSampleScore()
+	public final double getSampleScore(double sampleValue)
+	{
+		// WARNING: Side effect is that the current sample value changes to this sample value
+		// Could change back but less efficient to do this, since we'll be updating the sample value anyway
+		setCurrentSample(sampleValue);
+
+		return getCurrentSampleScore();
+	}
+	@Override
+	public final double getCurrentSampleScore()
 	{
 		if (!_domain.inDomain(_sampleValue))
 			return Double.POSITIVE_INFINITY;		// Outside the domain
 			
-		int numPorts = _var.getSiblings().size();
 		double potential = 0;
 
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
 			potential = _input.evalEnergy(new Object[]{_sampleValue});
 		ArrayList<INode> siblings = _var.getSiblings();
+		int numPorts = siblings.size();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
 			INode factorNode = siblings.get(portIndex);
@@ -130,19 +173,19 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		
 		return potential * _beta;	// Incorporate current temperature
 	}
-
-
 	@Override
-	public double getSampleScore(double sampleValue)
+	public final double getCurrentSampleValue()
 	{
-		// WARNING: Side effect is that the current sample value changes to this sample value
-		// Could change back but less efficient to do this, since we'll be updating the sample value anyway
-		setCurrentSample(sampleValue);
-
-		return getCurrentSampleScore();
+		return _sampleValue;
 	}
 
-
+	
+	// For conjugate samplers
+	public final IRealConjugateSampler getConjugateSampler()
+	{
+		return _conjugateSampler;
+	}
+	
 
 	public void randomRestart()
 	{
@@ -378,15 +421,25 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 	// Set/get the sampler to be used for this variable
-	public final void setSampler(IRealSampler sampler)
+	public final void setDefaultSampler(String samplerName)
+	{
+		_defaultSamplerName = samplerName;
+	}
+	public final String getDefaultSamplerName()
+	{
+		return _defaultSamplerName;
+	}
+	public final void setSampler(IRealMCMCSampler sampler)
 	{
 		_sampler = sampler;
+		_samplerSpecificallySpecified = true;
 	}
 	public final void setSampler(String samplerName)
 	{
 		_sampler = RealSamplerRegistry.get(samplerName);
+		_samplerSpecificallySpecified = true;
 	}
-	public final IRealSampler getSampler()
+	public final IRealMCMCSampler getSampler()
 	{
 		return _sampler;
 	}
@@ -480,6 +533,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		super.initialize();
 
+		// Unless this is a dependent of a deterministic factor, then set the starting sample value
 		if (!_isDeterministicDepdentent)
 		{
 			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
@@ -487,8 +541,19 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 				setCurrentSample(initialSampleValue);
 		}
 		
+		// Clear out sample state
 		_bestSampleValue = _sampleValue;
 		if (_sampleArray != null) _sampleArray.clear();
+		
+		// Determine which sampler to use
+		if (_samplerSpecificallySpecified)
+			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)s
+		else
+		{
+			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
+			if (_conjugateSampler == null)
+				_sampler = RealSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
+		}
 	}
 
 	@Override
@@ -513,9 +578,49 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
+		_defaultSamplerName = ovar._defaultSamplerName;
 		_sampler = ovar._sampler;
+		_conjugateSampler = ovar._conjugateSampler;
+		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
 		_holdSampleValue = ovar._holdSampleValue;
     }
+	
+	
+	public IRealConjugateSampler findConjugateSampler()
+	{
+		// Check all the adjacent factors to see if they all support a common cojugate factor
+		ArrayList<INode> siblings = _var.getSiblings();
+		int numPorts = siblings.size();
+		ArrayList<IRealConjugateSamplerFactory> commonSamplers = new ArrayList<IRealConjugateSamplerFactory>();
+		for (int portIndex = 0; portIndex < numPorts; portIndex++)
+		{
+			INode factorNode = siblings.get(portIndex);
+			ISolverNode factor = factorNode.getSolver();
+			if (!(factor instanceof SRealConjugateFactor))
+				return null;	// At least one connected factor does not support conjugate sampling
+			int factorPortNumber = factorNode.getPortNum(_var);
+			Collection<IRealConjugateSamplerFactory> availableSamplers = ((SRealConjugateFactor)factor).getAvailableSamplers(factorPortNumber);
+			if (commonSamplers.isEmpty())  // First time through
+				commonSamplers.addAll(availableSamplers);
+			else
+			{
+				// Remove any samplers not supported by this factor
+				for (IRealConjugateSamplerFactory sampler : commonSamplers)
+					if (!availableSamplers.contains(sampler))
+						commonSamplers.remove(sampler);
+			}
+			if (commonSamplers.isEmpty())
+				return null;	// No common samplers found
+		}
+		
+		// Next, check that this conjugate sampler is also compatible with the input and the domain of this variable
+		for (IRealConjugateSamplerFactory sampler : commonSamplers)
+			if (sampler.isCompatible(_input) && sampler.isCompatible(_domain))
+				return sampler.create();	// Create and return the sampler
+		
+		// Input wasn't compatible with any of the samplers supported by adjacent factors
+		return null;
+	}
 
 
 }

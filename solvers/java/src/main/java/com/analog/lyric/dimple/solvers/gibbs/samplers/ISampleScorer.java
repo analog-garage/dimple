@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
 public interface ISampleScorer
 {
-	public double getCurrentSampleScore();
 	public double getSampleScore(double sampleValue);
+	public double getCurrentSampleScore();
+	public double getCurrentSampleValue();
 }

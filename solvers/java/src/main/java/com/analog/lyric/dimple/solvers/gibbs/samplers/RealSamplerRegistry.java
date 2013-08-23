@@ -19,12 +19,12 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers;
 public class RealSamplerRegistry
 {
 	// Get a proposal sampler by name; assumes it is located in this package
-	public static IRealSampler get(String samplerName)
+	public static IRealMCMCSampler get(String samplerName)
 	{
 		String fullQualifiedName = RealSamplerRegistry.class.getPackage().getName() + "." + samplerName;
 		try
 		{
-			IRealSampler proposalKernel = (IRealSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			IRealMCMCSampler proposalKernel = (IRealMCMCSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
 			return proposalKernel;
 		}
 		catch (Exception e)

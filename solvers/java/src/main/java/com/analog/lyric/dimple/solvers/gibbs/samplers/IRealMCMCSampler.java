@@ -14,8 +14,9 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public class DefaultProposalKernel extends NormalProposalKernel
+public interface IRealMCMCSampler
 {
+	public double nextSample(ISampleScorer sampleScorer);
 }

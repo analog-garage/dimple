@@ -85,10 +85,10 @@ dtrace(debugPrint, ['bExpectedMean: ' num2str(bExpectedMean)]);
 dtrace(debugPrint, ['aBest: ' num2str(sa.getBestSample())]);
 dtrace(debugPrint, ['bBest: ' num2str(sb.getBestSample())]);
 
-assertElementsAlmostEqual(aMean, 0.792879057903163);
-assertElementsAlmostEqual(bMean, -0.191990090745458);
-assertElementsAlmostEqual(sa.getBestSample(), 0.802141054731400);
-assertElementsAlmostEqual(sb.getBestSample(), -0.203519682518134);
+assertElementsAlmostEqual(aMean, 0.804057266039960);
+assertElementsAlmostEqual(bMean, -0.199354184041185);
+assertElementsAlmostEqual(sa.getBestSample(), 0.794061902195994);
+assertElementsAlmostEqual(sb.getBestSample(), -0.208405053266348);
 
 
 % Test 2 - real and discrete variables
