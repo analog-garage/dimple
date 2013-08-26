@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.sample.RealSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealMCMCSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.MHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
@@ -239,7 +240,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	@Override
 	public void postAddFactor(Factor f)
 	{
+		// Update the direction information
 		updateDirectedCache();
+		
+		// Set the fixed value is there is one
 		if (_var.hasFixedValue())
 		{
 			setCurrentSample((Double)_var.getFixedValueObject());
@@ -249,6 +253,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			setCurrentSample(_sampleValue);
 		}
 		
+		// Get the default sampler
+		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
 	
@@ -439,13 +445,26 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_sampler = RealSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
-	public final IRealMCMCSampler getSampler()
+	public final IRealSampler getSampler()
 	{
-		return _sampler;
+		if (_samplerSpecificallySpecified)
+			return _sampler;
+		else
+		{
+			initialize();	// To determine the appropriate sampler
+			if (_conjugateSampler == null)
+				return _sampler;
+			else
+				return _conjugateSampler;
+		}
 	}
 	public final String getSamplerName()
 	{
-		return _sampler.getClass().getSimpleName();
+		IRealSampler sampler = getSampler();
+		if (sampler != null)
+			return sampler.getClass().getSimpleName();
+		else
+			return "";
 	}
 
 	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}

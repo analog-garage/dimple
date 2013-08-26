@@ -74,7 +74,7 @@ public class GammaSampler implements IRealConjugateSampler
 		@Override
 		public boolean isCompatible(RealDomain domain)
 		{
-			return (domain.getLowerBound() <= 0) || (domain.getUpperBound() == Double.POSITIVE_INFINITY);
+			return (domain.getLowerBound() <= 0) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
 		}
 
 	};

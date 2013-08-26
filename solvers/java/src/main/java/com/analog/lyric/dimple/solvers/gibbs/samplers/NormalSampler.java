@@ -86,7 +86,7 @@ public class NormalSampler implements IRealConjugateSampler
 		@Override
 		public boolean isCompatible(RealDomain domain)
 		{
-			return (domain.getLowerBound() == Double.NEGATIVE_INFINITY) || (domain.getUpperBound() == Double.POSITIVE_INFINITY);
+			return (domain.getLowerBound() == Double.NEGATIVE_INFINITY) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
 		}
 	};
 	

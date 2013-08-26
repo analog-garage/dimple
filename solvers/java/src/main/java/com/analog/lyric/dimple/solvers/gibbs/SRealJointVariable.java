@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.sample.RealJointSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealMCMCSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.MHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
@@ -231,15 +232,21 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	@Override
 	public void postAddFactor(Factor f)
 	{
+		// Update the direction information
 		updateDirectedCache();
+		
+		// Set the fixed value is there is one
 		if (_var.hasFixedValue())
 		{
-			setCurrentSample(_var.getFixedValueObject());
+			setCurrentSample((Double)_var.getFixedValueObject());
 		}
 		else
 		{
 			setCurrentSample(_sampleValue);
 		}
+		
+		// Get the default sampler
+		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
 	
@@ -469,13 +476,29 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_sampler = RealSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
-	public final IRealMCMCSampler getSampler()
+	public final IRealSampler getSampler()
 	{
-		return _sampler;
+		if (_samplerSpecificallySpecified)
+			return _sampler;
+		else if (_var.hasParentGraph())
+		{
+			
+			initialize();	// To determine the appropriate sampler
+			if (_conjugateSampler == null)
+				return _sampler;
+			else
+				return _conjugateSampler;
+		}
+		else
+			return null;
 	}
 	public final String getSamplerName()
 	{
-		return _sampler.getClass().getSimpleName();
+		IRealSampler sampler = getSampler();
+		if (sampler != null)
+			return sampler.getClass().getSimpleName();
+		else
+			return "";
 	}
 
 	public final void setInitialSampleValue(double[] initialSampleValue) {_initialSampleValue = initialSampleValue;}

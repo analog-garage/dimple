@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Port;
 
-public interface IRealConjugateSampler
+public interface IRealConjugateSampler extends IRealSampler
 {
 	public double nextSample(Port[] ports, FactorFunction input);
 }

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers;
 
-public interface IRealMCMCSampler
+public interface IRealMCMCSampler extends IRealSampler
 {
 	public double nextSample(ISampleScorer sampleScorer);
 }
