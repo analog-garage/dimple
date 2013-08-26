@@ -28,6 +28,7 @@ test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
 test7(debugPrint, repeatable);
+test8(debugPrint, repeatable);
 
 
 dtrace(debugPrint, '--testComplexVariables');
@@ -360,7 +361,7 @@ end
 
 
 
-% Log-normal
+% Log-normal test mean parameter
 function test7(debugPrint, repeatable)
 
 priorMean = 3;
@@ -402,3 +403,52 @@ assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
 
 end
 
+
+
+% LogNormal test Gamma prior on precision
+function test8(debugPrint, repeatable)
+
+priorAlpha = 1;
+pPriorBeta = 2;
+dataMean = 10;
+dataPrecision = .001;
+numDatapoints = 100;
+data = exp(dataMean + randn(1,numDatapoints) * dataPrecision);
+expectedAlpha = priorAlpha + numDatapoints / 2;
+expectedBeta = pPriorBeta + sum((log(data) - dataMean).^2) / 2;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+x = Real(1,numDatapoints);
+
+p.Input = FactorFunction('Gamma',priorAlpha,pPriorBeta);
+x.FixedValue = data;
+
+fg.addFactor('LogNormal', dataMean, p, x);
+
+assert(strcmp(p.Solver.getSamplerName,'GammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples;
+
+% Estimate the parameters (see Wikipedia page on Gamma distribution)
+s = log(sum(ps)/numSamples) - sum(log(ps))/numSamples;
+alphaEst = (3 - s + sqrt((s-3)^2 + 24*s)) / (12 * s);
+betaEst = alphaEst * numSamples / sum(ps);
+
+assertElementsAlmostEqual(alphaEst, expectedAlpha, 'absolute', 2.5);
+assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
+
+end
