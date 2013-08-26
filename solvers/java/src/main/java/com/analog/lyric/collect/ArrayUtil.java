@@ -4,6 +4,9 @@ import java.lang.reflect.Array;
 
 import com.google.common.math.DoubleMath;
 
+/**
+ * Contains static utility methods pertaining to arrays.
+ */
 public abstract class ArrayUtil
 {
 	/**
@@ -59,14 +62,18 @@ public abstract class ArrayUtil
 	{
 		if (array.length > 1)
 		{
-			final double first = array[0];
+			double min , max;
+			min = max = array[0];
 
 			for (int i = 1, end = array.length; i < end ; ++i)
 			{
-				if (!DoubleMath.fuzzyEquals(first,  array[i], tolerance))
-				{
-					return false;
-				}
+				final double d = array[i];
+				min = Math.min(min, d);
+				max = Math.max(max, d);
+			}
+			if (!DoubleMath.fuzzyEquals(min, max, tolerance))
+			{
+				return false;
 			}
 		}
 		
@@ -87,20 +94,28 @@ public abstract class ArrayUtil
 	{
 		if (arraySubindices.length > 1)
 		{
-			final double first = array[arraySubindices[0]];
+			double min , max;
+			min = max = array[arraySubindices[0]];
 
 			for (int i = 1, end = arraySubindices.length; i < end ; ++i)
 			{
-				if (!DoubleMath.fuzzyEquals(first,  array[arraySubindices[i]], tolerance))
-				{
-					return false;
-				}
+				final double d = array[arraySubindices[i]];
+				min = Math.min(min, d);
+				max = Math.max(max, d);
+			}
+			if (!DoubleMath.fuzzyEquals(min, max, tolerance))
+			{
+				return false;
 			}
 		}
 		
 		return true;
 	}
 	
+	/**
+	 * Returns a copy of {@code array} returning null if {@code array}
+	 * is null and returns {@link #EMPTY_DOUBLE_ARRAY} if empty.
+	 */
 	public static double[] cloneArray(double[] array)
 	{
 		if (array == null)
@@ -117,6 +132,10 @@ public abstract class ArrayUtil
 		}
 	}
 
+	/**
+	 * Returns a copy of {@code array} returning null if {@code array}
+	 * is null and returns {@link #EMPTY_INT_ARRAY} if empty.
+	 */
 	public static int[] cloneArray(int[] array)
 	{
 		if (array == null)
@@ -132,13 +151,16 @@ public abstract class ArrayUtil
 			return array.clone();
 		}
 	}
+	
+	/**
+	 * Returns a copy of {@code array} but with space for insertion of {@code insertLength}
+	 * values at offset {@code insertionPoint}.
+	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
+	 * [0, array.length].
+	 */
 	public static double[] copyArrayForInsert(double[] array, int insertionPoint, int insertLength)
 	{
 		int curSize = array == null ? 0 : array.length;
-		
-		assert(insertionPoint >= 0 && insertionPoint <= curSize);
-		assert(insertLength >= 0);
-		
 		
 		double[] newArray = new double[curSize + insertLength];
 		
@@ -153,13 +175,16 @@ public abstract class ArrayUtil
 		
 		return newArray;
 	}
+
+	/**
+	 * Returns a copy of {@code array} but with space for insertion of {@code insertLength}
+	 * values at offset {@code insertionPoint}.
+	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
+	 * [0, array.length].
+	 */
 	public static int[] copyArrayForInsert(int[] array, int insertionPoint, int insertLength)
 	{
 		int curSize = array == null ? 0 : array.length;
-		
-		assert(insertionPoint >= 0 && insertionPoint <= curSize);
-		assert(insertLength >= 0);
-		
 		
 		int[] newArray = new int[curSize + insertLength];
 		
@@ -175,23 +200,6 @@ public abstract class ArrayUtil
 		return newArray;
 	}
 	
-	public static double[] repeat(double[] array, int multiplier)
-	{
-		if (array.length > 0)
-		{
-			final double[] newArray = new double[array.length * multiplier];
-			for (int i = 0, m = 0; m < multiplier; ++m)
-			{
-				for (double value : array)
-				{
-					newArray[i++] = value;
-				}
-			}
-			array = newArray;
-		}
-		return array;
-	}
-
 	public static Object[] toArray(Object value)
 	{
 		if (value instanceof Object[])
