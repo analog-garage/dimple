@@ -56,25 +56,25 @@ public class CustomLogNormal extends SRealConjugateFactor
 
 			double[] outputMsg = _outputMsgs[outPortNum];
 				
-				// Start with the ports to variable outputs
-				ArrayList<INode> siblings = _factor.getSiblings();
-				double sum = 0;
-				for (int port = _numParameterEdges; port < _numPorts; port++)
-					sum += ((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample();
-				int count = _numOutputEdges;
-				
-				// Include any constant outputs also
-				if (_hasConstantOutputs)
-				{
-					sum += _constantOutputSum;
-					count += _constantOutputCount;
-				}
-				
-				// Get the current precision
-				double precision = _hasConstantPrecision ? _constantPrecisionValue : _precisionVariable.getCurrentSample();
-				
-				outputMsg[0] = sum / count;			// Sample mean
-				outputMsg[1] = precision * count;	// Sample precision
+			// Start with the ports to variable outputs
+			ArrayList<INode> siblings = _factor.getSiblings();
+			double sum = 0;
+			for (int port = _numParameterEdges; port < _numPorts; port++)
+				sum += Math.log(((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample());
+			int count = _numOutputEdges;
+
+			// Include any constant outputs also
+			if (_hasConstantOutputs)
+			{
+				sum += _constantOutputSum;
+				count += _constantOutputCount;
+			}
+
+			// Get the current precision
+			double precision = _hasConstantPrecision ? _constantPrecisionValue : _precisionVariable.getCurrentSample();
+
+			outputMsg[0] = sum / count;			// Sample mean
+			outputMsg[1] = precision * count;	// Sample precision
 		}
 		else if (conjugateSampler instanceof GammaSampler)
 		{

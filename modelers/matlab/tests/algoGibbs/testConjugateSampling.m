@@ -27,6 +27,7 @@ test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
+test7(debugPrint, repeatable);
 
 
 dtrace(debugPrint, '--testComplexVariables');
@@ -356,3 +357,48 @@ assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.2);
 
 
 end
+
+
+
+% Log-normal
+function test7(debugPrint, repeatable)
+
+priorMean = 3;
+priorPrecision = 0.01;
+dataMean = 10;
+dataPrecision = .001;
+numDatapoints = 100;
+data = exp(dataMean + randn(1,numDatapoints) * dataPrecision);
+expectedPrecision = priorPrecision + numDatapoints * dataPrecision;
+expectedMean = (priorMean * priorPrecision + sum(log(data)) * dataPrecision) / expectedPrecision;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+m = Real();
+x = Real(1,numDatapoints);
+
+m.Input = FactorFunction('Normal',priorMean,priorPrecision);
+x.FixedValue = data;
+
+fg.addFactor('LogNormal', m, dataPrecision, x);    % Fixed precision
+
+assert(strcmp(m.Solver.getSamplerName,'NormalSampler'));
+
+fg.Solver.setNumSamples(1000);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ms = m.Solver.getAllSamples;
+
+assertElementsAlmostEqual(mean(ms), expectedMean, 'absolute', 0.01);
+assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
+
+end
+
