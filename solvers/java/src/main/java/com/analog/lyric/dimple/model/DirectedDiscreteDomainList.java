@@ -277,7 +277,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	@Override
-	public Object[] jointIndexToElements(int jointIndex, Object[] elements)
+	public <T> T[] jointIndexToElements(int jointIndex, T[] elements)
 	{
 		elements = allocateElements(elements);
 		final int inputIndex = jointIndex / _outputCardinality;

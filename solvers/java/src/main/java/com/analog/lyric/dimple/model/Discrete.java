@@ -156,7 +156,7 @@ public class Discrete extends VariableBase
     		subdomainWeights[i] = var.getInput();
     	}
 
-    	final JointDiscreteDomain jointDomain = DiscreteDomain.joint(domains);
+    	final JointDiscreteDomain<?> jointDomain = DiscreteDomain.joint(domains);
     	final Discrete jointVar =  new Discrete(jointDomain);
     	jointVar.setInput(joinWeights(subdomainWeights));
     	return jointVar;

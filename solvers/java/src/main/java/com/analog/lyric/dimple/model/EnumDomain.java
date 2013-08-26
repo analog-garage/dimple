@@ -55,6 +55,12 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	/*------------------------
 	 * DiscreteDomain methods
 	 */
+
+	@Override
+	public Class<E> getElementClass()
+	{
+		return _enumClass;
+	}
 	
 	@Override
 	public final E getElement(int i)
@@ -65,7 +71,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	@Override
 	public final E[] getElements()
 	{
-		return _enumConstants;
+		return _enumConstants.clone();
 	}
 
 	@Override
@@ -85,12 +91,4 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 		return -1;
 	}
 
-	/**
-	 * EnumDomain methods
-	 */
-	
-	public Class<E> getEnumClass()
-	{
-		return _enumClass;
-	}
 }

@@ -19,7 +19,7 @@ import com.analog.lyric.collect.ArrayUtil;
  * {@link DiscreteDomain#joint(DiscreteDomainList)}.
  */
 @Immutable
-public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
+public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 {
 	/*-------
 	 * State
@@ -28,6 +28,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	private static final long serialVersionUID = 1L;
 	
 	private final DiscreteDomainList _domains;
+	private final Class<Element[]> _elementClass;
 	
 	/*--------------
 	 * Construction
@@ -37,6 +38,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	{
 		super(domains.hashCode());
 		_domains = domains;
+		_elementClass = (Class<Element[]>) Array.newInstance(domains.getElementClass(), 0).getClass();
 	}
 	
 	/*----------------
@@ -53,7 +55,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	
 		if (that instanceof JointDiscreteDomain)
 		{
-			return ((JointDiscreteDomain)that)._domains.equals(_domains);
+			return ((JointDiscreteDomain<?>)that)._domains.equals(_domains);
 		}
 		
 		return false;
@@ -139,6 +141,12 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 		return false;
 	}
 
+	@Override
+	public final Class<Element[]> getElementClass()
+	{
+		return _elementClass;
+	}
+	
 	/**
 	 * Returns ith element in domain.
 	 * <p>
@@ -146,21 +154,9 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	 * @param i must be in the range [0, {@link #size()}-1].
 	 */
 	@Override
-	public Object[] getElement(int i)
+	public Element[] getElement(int i)
 	{
 		return getElement(i, null);
-	}
-
-	@Override
-	public Object[][] getElements()
-	{
-		final int size = size();
-		Object[][] elements = new Object[size][];
-		for (int i = 0; i < size; ++i)
-		{
-			elements[i] = getElement(i);
-		}
-		return elements;
 	}
 
 	@Override
@@ -234,7 +230,7 @@ public class JointDiscreteDomain extends TypedDiscreteDomain<Object[]>
 	 * @see #getElement(int)
 	 * @see #getElementIndices(int, int[])
 	 */
-	public Object[] getElement(int i, Object[] array)
+	public <T> T[] getElement(int i, T[] array)
 	{
 		return _domains.jointIndexToElements(i, array);
 	}

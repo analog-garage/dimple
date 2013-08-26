@@ -16,6 +16,38 @@ public abstract class ArrayUtil
 	 */
 	public static final int[] EMPTY_INT_ARRAY = new int[0];
 
+	
+	/**
+	 * Returns an array with length at least {@code minSize} and with component type
+	 * compatible with {@code type}.
+	 * <p>
+	 * If {@code array} fits the above description, it will simply be returned.
+	 * If {@code array} is too short but has a compatible component type, this will
+	 * return a new array with length equal to {@code minSize} and component type
+	 * the same as {@code array}. Otherwise returns a new array with component
+	 * type same as {@code type}.
+	 */
+	public static <T> T[] allocateArrayOfType(Class<?> type, T[] array, int minSize)
+	{
+		if (array != null)
+		{
+			Class<? extends T> componentType = (Class<? extends T>) array.getClass().getComponentType();
+			if (componentType.isAssignableFrom(type))
+			{
+				if (array.length >= minSize)
+				{
+					return array;
+				}
+				else
+				{
+					type = componentType;
+				}
+			}
+		}
+		
+		return (T[])Array.newInstance(type, minSize);
+	}
+	
 	/**
 	 * True if all values in {@code array} are {@link DoubleMath#fuzzyEquals}
 	 * to each other with given {@code tolerance}. Returns true for arrays

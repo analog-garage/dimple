@@ -70,8 +70,6 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
-	private double _totalWeight = Double.NaN;
-	
 	/*--------------
 	 * Construction
 	 */
@@ -173,7 +171,6 @@ public class STableFactor extends STableFactorBase
 		final double[] weights = factorTable.getWeights();
 		final SVariable[] svariables = getSVariables();
 
-		double totalWeight = 0.0;
 		int cardinality = 0;
 	
 		boolean hasNonFixedVariable = true;
@@ -220,13 +217,11 @@ public class STableFactor extends STableFactorBase
 				}
 				else
 				{
-					totalWeight += weight;
 					++cardinality;
 				}
 			}
 		}
 		
-		_totalWeight = totalWeight;
 		_nLpVars = cardinality;
 		
 		return cardinality;
@@ -347,7 +342,6 @@ public class STableFactor extends STableFactorBase
 	{
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
-		_totalWeight = Double.NaN;
 	}
 	
 	/**

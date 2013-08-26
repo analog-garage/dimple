@@ -11,7 +11,7 @@ import com.google.common.primitives.Doubles;
  * @see DiscreteDomain#range(double, double)
  * @see DiscreteDomain#range(double, double, double)
  */
-public class DoubleRangeDomain extends TypedDiscreteDomain<Double>
+public class DoubleRangeDomain extends DoubleDiscreteDomain
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -107,54 +107,16 @@ public class DoubleRangeDomain extends TypedDiscreteDomain<Double>
 	 * DiscreteDomain methods
 	 */
 
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Use {@link #getDoubleElement(int)} instead of this method to avoid allocating an {@link Double} object.
-	 */
 	@Override
-	public Double getElement(int i)
-	{
-		return getDoubleElement(i);
-	}
-
-	@Override
-	public Double[] getElements()
-	{
-		Double[] elements = new Double[_size];
-		
-		for (int i = 0; i < _size; ++i)
-		{
-			elements[i] = getDoubleElement(i);
-		}
-		
-		return elements;
-	}
-
-	@Override
-	public int size()
+	public final int size()
 	{
 		return _size;
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * @see #getIndex(double)
-	 */
-	@Override
-	public int getIndex(Object value)
-	{
-		if (value instanceof Number)
-		{
-			return getIndex(((Number)value).doubleValue());
-		}
-		
-		return -1;
-	}
-	
-	/**
 	 * Same as {@link #getIndex(Object)} but taking a double.
 	 */
+	@Override
 	public int getIndex(double value)
 	{
 		int index = (int)Math.rint((value - _lowerBound) / _interval);
@@ -168,6 +130,7 @@ public class DoubleRangeDomain extends TypedDiscreteDomain<Double>
 	/**
 	 * Same as {@link #getElement(int)} but returning an unboxed double.
 	 */
+	@Override
 	public double getDoubleElement(int i)
 	{
 		assertIndexInBounds(i, _size);

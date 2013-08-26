@@ -3,7 +3,9 @@ package com.analog.lyric.dimple.model;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
+import com.analog.lyric.collect.Supers;
+
+public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 {
 	/*-------
 	 * State
@@ -11,18 +13,18 @@ public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final T[] _elements;
+	private final Element[] _elements;
 	private final HashMap<Object,Integer> _elementToIndex;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	ArrayDiscreteDomain(T ... elements)
+	ArrayDiscreteDomain(Element ... elements)
 	{
 		super(computeHashCode(elements));
 		
-		_elements = elements;
+		_elements = Supers.narrowArrayOf(elements);
 
 		_elementToIndex = new HashMap<Object,Integer>(elements.length);
 		for (int i = 0, end = elements.length; i < end; ++i)
@@ -74,15 +76,21 @@ public class ArrayDiscreteDomain<T> extends TypedDiscreteDomain<T>
 	 */
 
 	@Override
-	public T getElement(int i)
+	public final Class<? extends Element> getElementClass()
+	{
+		return (Class<? extends Element>) _elements.getClass().getComponentType();
+	}
+	
+	@Override
+	public Element getElement(int i)
 	{
 		return _elements[i];
 	}
 
 	@Override
-	public final T[] getElements()
+	public final Element[] getElements()
 	{
-		return _elements;
+		return _elements.clone();
 	}
 
 	// Find the list of elements corresponding to the value; return -1 if not a valid value

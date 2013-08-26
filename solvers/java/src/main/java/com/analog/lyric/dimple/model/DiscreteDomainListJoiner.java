@@ -80,7 +80,7 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 
 	private static DiscreteDomainList makeToDomains(DiscreteDomainList fromDomains, int offset)
 	{
-		DiscreteDomainList joinedDomainList = ((JointDiscreteDomain)fromDomains.get(offset)).getDomainList();
+		DiscreteDomainList joinedDomainList = ((JointDiscreteDomain<?>)fromDomains.get(offset)).getDomainList();
 		final int length = joinedDomainList.size();
 		final int fromSize = fromDomains.size();
 		final int toSize = fromSize - 1 + length;

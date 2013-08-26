@@ -3,7 +3,7 @@ package com.analog.lyric.dimple.model;
 import java.util.Iterator;
 
 // REFACTOR: I think this should eventually be folded up into DiscreteDomain.
-public abstract class TypedDiscreteDomain<T> extends DiscreteDomain implements Iterable<T>
+public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implements Iterable<Element>
 {
 	private static final long serialVersionUID = 1L;
 
@@ -13,15 +13,16 @@ public abstract class TypedDiscreteDomain<T> extends DiscreteDomain implements I
 	}
 	
 	@Override
-	public abstract T getElement(int i);
+	public abstract Element getElement(int i);
 
-	@Override
-	public abstract T[] getElements();
+	/*------------------
+	 * Iterable methods
+	 */
 	
 	@Override
-	public Iterator<T> iterator()
+	public Iterator<Element> iterator()
 	{
-		return new Iterator<T>() {
+		return new Iterator<Element>() {
 
 			private volatile int _next = 0;
 			
@@ -32,7 +33,7 @@ public abstract class TypedDiscreteDomain<T> extends DiscreteDomain implements I
 			}
 
 			@Override
-			public T next()
+			public Element next()
 			{
 				return getElement(_next++);
 			}

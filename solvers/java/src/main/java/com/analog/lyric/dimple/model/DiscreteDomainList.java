@@ -5,7 +5,9 @@ import java.util.BitSet;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.collect.Supers;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -23,6 +25,7 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 	private final int[] _products;
 	private final int _cardinality;
 	private final int _hashCode;
+	private final Class<?> _elementClass;
 	
 	/*--------------
 	 * Construction
@@ -48,6 +51,13 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 			product *= domains[i].size();
 		}
 		_cardinality = product;
+		
+		Class<?> elementClass = domains[0].getElementClass();
+		for (int i = domains.length; --i >= 1; )
+		{
+			elementClass = Supers.nearestCommonSuperClass(elementClass, domains[i].getElementClass());
+		}
+		_elementClass = elementClass;
 	}
 	
 	private DiscreteDomainList(DiscreteDomain[] domains)
@@ -209,6 +219,14 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 	public final int getDomainSize(int i)
 	{
 		return _domains[i].size();
+	}
+	
+	/**
+	 * Returns nearest common superclass for elements in all domains.
+	 */
+	public final Class<?> getElementClass()
+	{
+		return _elementClass;
 	}
 	
 	/**
@@ -406,7 +424,7 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 	 * @see #jointIndexToIndices(int, int[])
 	 * @see #jointIndexFromElements(Object...)
 	 */
-	public Object[] jointIndexToElements(int jointIndex, Object[] elements)
+	public <T> T[] jointIndexToElements(int jointIndex, T[] elements)
 	{
 		return undirectedJointIndexToElements(jointIndex, elements);
 	}
@@ -473,7 +491,7 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		return joint;
 	}
 	
-	public final Object[] undirectedJointIndexToElements(int jointIndex, Object[] elements)
+	public final <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements)
 	{
 		final DiscreteDomain[] domains = _domains;
 		final int[] products = _products;
@@ -484,7 +502,7 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		for (int i = products.length; --i >= 0;)
 		{
 			final int index = jointIndex / (product = products[i]);
-			elements[i] = domains[i].getElement(index);
+			elements[i] = (T) domains[i].getElement(index);
 			jointIndex -= index * product;
 		}
 		return elements;
@@ -542,14 +560,21 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 	/*-----------------
 	 * Package methods
 	 */
-	
-	final Object[] allocateElements(Object [] elements)
+
+	/**
+	 * Returns an array with length at least {@link #size()} and with component type
+	 * compatible with elements of all domains in list (i.e. a superclass of type specified
+	 * by {@link #getElementClass()}.
+	 * <p>
+	 * If {@code elements} fits the above description, it will simply be returned.
+	 * If {@code elements} is too short but has a compatible component type, this will
+	 * return a new array with length equal to {@link #size()} and component type
+	 * the same as {@code elements}. Otherwise returns a new array with component
+	 * type same as {@link #getElementClass()}.
+	 */
+	final <T> T[] allocateElements(T [] elements)
 	{
-		if (elements == null || elements.length < _domains.length)
-		{
-			elements = new Object[_domains.length];
-		}
-		return elements;
+		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
 	}
 
 	final int[] allocateIndices(int [] indices)

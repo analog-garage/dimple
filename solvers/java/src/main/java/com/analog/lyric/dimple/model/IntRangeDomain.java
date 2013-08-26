@@ -6,7 +6,7 @@ package com.analog.lyric.dimple.model;
  * @see DiscreteDomain#range(int, int)
  * @see DiscreteDomain#range(int, int, int)
  */
-public class IntRangeDomain extends TypedDiscreteDomain<Integer>
+public class IntRangeDomain extends IntDiscreteDomain
 {
 	private static final long serialVersionUID = 1L;
 	
@@ -75,52 +75,9 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 	 */
 	
 	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Use {@link #getIntElement(int)} instead of this method to avoid allocating an {@link Integer} object.
-	 */
-	@Override
-	public Integer getElement(int i)
-	{
-		return getIntElement(i);
-	}
-
-	@Override
-	public Integer[] getElements()
-	{
-		Integer[] elements = new Integer[_size];
-		
-		for (int i = 0; i < _size; ++i)
-		{
-			elements[i] = getIntElement(i);
-		}
-		
-		return elements;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see #getIndex(int)
-	 */
-	@Override
-	public int getIndex(Object value)
-	{
-		if (value instanceof Number)
-		{
-			Number number = (Number)value;
-			int i = number.intValue();
-			if (i == number.doubleValue())
-			{
-				return getIndex(i);
-			}
-		}
-		
-		return -1;
-	}
-	
-	/**
 	 * Same as {@link #getIndex(Object)} but taking an int.
 	 */
+	@Override
 	public int getIndex(int value)
 	{
 		value -= _lowerBound;
@@ -141,6 +98,7 @@ public class IntRangeDomain extends TypedDiscreteDomain<Integer>
 	/**
 	 * Same as {@link #getElement(int)} but returning an unboxed int.
 	 */
+	@Override
 	public int getIntElement(int i)
 	{
 		assertIndexInBounds(i, _size);

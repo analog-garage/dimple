@@ -200,27 +200,27 @@ public class TestDomain
 		assertInvariants(d3to0);
 		assertNotEquals(d0to3, d3to0);
 		
-		JointDiscreteDomain joint1 = DiscreteDomain.joint(e, evenDigits);
+		JointDiscreteDomain<?> joint1 = DiscreteDomain.joint(e, evenDigits);
 		assertInvariants(joint1);
 		
-		JointDiscreteDomain joint2 = DiscreteDomain.joint(e, e);
+		JointDiscreteDomain<E> joint2 = DiscreteDomain.joint(e, e);
 		assertInvariants(joint2);
 		assertNotEquals(joint1, joint2);
 
-		JointDiscreteDomain joint3 = DiscreteDomain.joint(r1to5, r0to3);
+		JointDiscreteDomain<Integer> joint3 = DiscreteDomain.joint(r1to5, r0to3);
 		assertInvariants(joint2);
 		assertEquals(0, joint3.getIndex(new int[] { 1, 0 }));
 		assertEquals(-1, joint3.getIndex(new int[] { 0, 1 }));
 		
-		DiscreteDomain primes = DiscreteDomain.create(2,3,5,7,11,13);
+		TypedDiscreteDomain<Integer> primes = DiscreteDomain.create(2,3,5,7,11,13);
 		assertInvariants(primes);
 		
 		// Test for -0.0
-		DiscreteDomain doublesWithZero = DiscreteDomain.create(0.0, 1.0, 3.0);
+		TypedDiscreteDomain<Double> doublesWithZero = DiscreteDomain.create(0.0, 1.0, 3.0);
 		assertInvariants(doublesWithZero);
 		assertEquals(0, doublesWithZero.getIndex(0.0));
 		assertEquals(0, doublesWithZero.getIndex(-0.0));
-		DiscreteDomain floatsWithZero = DiscreteDomain.create((float)0.0, (float)1.0, (float)3.0);
+		TypedDiscreteDomain<Float> floatsWithZero = DiscreteDomain.create((float)0.0, (float)1.0, (float)3.0);
 		assertInvariants(floatsWithZero);
 		assertEquals(0, floatsWithZero.getIndex((float)0.0));
 		assertEquals(0, floatsWithZero.getIndex((float)-0.0));
@@ -391,7 +391,7 @@ public class TestDomain
 			if (discrete instanceof EnumDomain)
 			{
 				EnumDomain<?> e = (EnumDomain<?>)discrete;
-				Class<?> eclass = e.getEnumClass();
+				Class<?> eclass = e.getElementClass();
 				assertTrue(eclass.isEnum());
 				Object[] evalues = eclass.getEnumConstants();
 				assertEquals(evalues.length, e.size());
@@ -404,7 +404,7 @@ public class TestDomain
 			
 			if (discrete instanceof JointDiscreteDomain)
 			{
-				JointDiscreteDomain joint = (JointDiscreteDomain)discrete;
+				JointDiscreteDomain<?> joint = (JointDiscreteDomain<?>)discrete;
 				assertEquals(joint.getDomainList().size(), joint.getDimensions());
 				
 				Object[] element = new Object[joint.getDimensions()];

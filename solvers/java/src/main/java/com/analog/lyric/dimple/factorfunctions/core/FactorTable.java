@@ -53,7 +53,7 @@ public class FactorTable extends FactorTableBase
 	 * When true, the various {@code create*} methods of {@link FactorTable} will return
 	 * {@link NewFactorTable} instances.
 	 */
-	public static volatile boolean useNewFactorTable = true;
+	public static volatile boolean useNewFactorTable = false;
 	
 
 	private FactorTable(int [][] indices, double [] weights, Discrete... variables)

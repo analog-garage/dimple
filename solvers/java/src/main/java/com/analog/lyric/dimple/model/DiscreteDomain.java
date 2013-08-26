@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -125,8 +126,7 @@ public abstract class DiscreteDomain extends Domain
 					if (useIntRangeDomain)
 					{
 						@SuppressWarnings("unchecked")
-						TypedDiscreteDomain<T> domain =
-						(TypedDiscreteDomain<T>) range(first, prev, interval);
+						TypedDiscreteDomain<T> domain = (TypedDiscreteDomain<T>) range(first, prev, interval);
 						return domain;
 					}
 				}
@@ -164,8 +164,7 @@ public abstract class DiscreteDomain extends Domain
 					if (useDoubleRangeDomain)
 					{
 						@SuppressWarnings("unchecked")
-						TypedDiscreteDomain<T> domain =
-						(TypedDiscreteDomain<T>) range(first, prev, interval, tolerance);
+						TypedDiscreteDomain<T> domain = (TypedDiscreteDomain<T>) range(first, prev, interval, tolerance);
 						return domain;
 					}
 				}
@@ -180,16 +179,21 @@ public abstract class DiscreteDomain extends Domain
 		return new EnumDomain<E>(enumClass);
 	}
 	
-	public static JointDiscreteDomain joint(DiscreteDomainList domains)
+	public static <T> JointDiscreteDomain<T> joint(DiscreteDomainList domains)
 	{
-		return new JointDiscreteDomain(domains);
+		return new JointDiscreteDomain<T>(domains);
 	}
 	
-	public static JointDiscreteDomain joint(DiscreteDomain ... domains)
+	public static <T> JointDiscreteDomain<T> joint(TypedDiscreteDomain<? extends T>... domains)
 	{
 		return joint(DiscreteDomainList.create(domains));
 	}
 	
+	public static JointDiscreteDomain<?> joint(DiscreteDomain ... domains)
+	{
+		return joint(DiscreteDomainList.create(domains));
+	}
+
 	public static IntRangeDomain range(int low, int high)
 	{
 		return new IntRangeDomain(low, high, 1);
@@ -304,6 +308,11 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	
 	/**
+	 * Common superclass of all elements.
+	 */
+	public abstract Class<?> getElementClass();
+	
+	/**
 	 * Returns the value of the ith element in the domain.
 	 * @param i must be in the range [0,{@link #size()}-1].
 	 */
@@ -315,8 +324,39 @@ public abstract class DiscreteDomain extends Domain
 	 * Because this allocates memory and costs linear time to compute, it is usually better to use
 	 * {@link #getElement(int)} to access elements one at a time and {@link #size()} to get the
 	 * number of elements.
+	 * <p>
+	 * @see #getElements(Object[])
 	 */
-	public abstract Object[] getElements();
+	public Object[] getElements()
+	{
+		return getElements(null);
+	}
+	
+	/**
+	 * Returns an array containing all of the elements of the domain in their canonical
+	 * order using provided {@code array} if possible.
+	 * <p>
+	 * If {@code array} has a component type compatible with {@link #getElementClass()} and
+	 * length at least as large as {@link #size()} it will be filled in with the domain elements
+	 * and returned. If {@code array} has a compatible type but is not long enough, a new
+	 * array will be returned with the same component type as {@code array}. Otherwise a new
+	 * array will be returned with component type same as {@link #getElementClass()}.
+	 */
+	public <T> T[] getElements(T[] array)
+	{
+		final int length = size();
+		
+		array = ArrayUtil.allocateArrayOfType(getElementClass(), array, length);
+		
+		for (int i = 0; i < length; ++i)
+		{
+			@SuppressWarnings("unchecked")
+			T element = (T) getElement(i);
+			array[i] = element;
+		}
+		
+		return array;
+	}
 
 	/**
 	 * The number of elements in the domain.
