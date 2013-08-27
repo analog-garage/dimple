@@ -72,7 +72,7 @@ class Builder:
         parser = optparse.OptionParser(self.usage(scriptName),version="%prog 1.0")
         parser.add_option('-t', '--test', action = 'store_true', help = 'unzip and test', default=False)
         parser.add_option('-u', '--unzip', action = 'store_true', help = 'unzip', default=False)
-        parser.add_option('-d', '--developer', action = 'store_true', help="developer", default=False)
+        parser.add_option('-d', '--developer', action = 'store_true', help="developer", default=True)
 	parser.add_option('-r', '--reuse',action='store_true',help="reuse",default=False)
         parser.add_option('-n', '--no_doc',action='store_true',default=False)
         (opt, args_left_after_parse) = parser.parse_args(args)
