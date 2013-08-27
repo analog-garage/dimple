@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.TypedDiscreteDomain;
 import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 
@@ -37,7 +38,7 @@ public class RealVariableParticleBPTest
 	protected static boolean repeatable = true;
 	
 	@Test
-	public void basicTest1() 
+	public void basicTest1()
 	{
 		if (debugPrint) System.out.println("== basicTest1 ==");
 
@@ -118,7 +119,7 @@ public class RealVariableParticleBPTest
 		double[] aUniformPointSet = new double[aNumPoints];
 		for (int i = 0; i < aNumPoints; i++)
 			aUniformPointSet[i] = aLower + i*(aUpper-aLower)/aNumPoints;
-		double[] aUniformBelief = (double[])sa.getBelief(aUniformPointSet);
+		double[] aUniformBelief = sa.getBelief(aUniformPointSet);
 
 		int bNumPoints = 500;
 		double bLower = -3;
@@ -126,7 +127,7 @@ public class RealVariableParticleBPTest
 		double[] bUniformPointSet = new double[bNumPoints];
 		for (int i = 0; i < bNumPoints; i++)
 			bUniformPointSet[i] = bLower + i*(bUpper-bLower)/bNumPoints;
-		double[] bUniformBelief = (double[])sb.getBelief(bUniformPointSet);
+		double[] bUniformBelief = sb.getBelief(bUniformPointSet);
 
 		if (debugPrint)
 		{
@@ -174,7 +175,7 @@ public class RealVariableParticleBPTest
 	
 	
 	@Test
-	public void basicTest2() 
+	public void basicTest2()
 	{
 		// Test a combination of real and discrete variables connected to a single factor
 		if (debugPrint) System.out.println("== basicTest2 ==");
@@ -226,11 +227,11 @@ public class RealVariableParticleBPTest
 		double[] aUniformPointSet = new double[aNumPoints];
 		for (int i = 0; i < aNumPoints; i++)
 			aUniformPointSet[i] = aLower + i*(aUpper-aLower)/aNumPoints;
-		double[] aUniformBelief = (double[])sa.getBelief(aUniformPointSet);
+		double[] aUniformBelief = sa.getBelief(aUniformPointSet);
 		double[] aBelief = (double[])a.getBeliefObject();
 		double[] bBelief = (double[])b.getBeliefObject();
 		double[] aParticles = sa.getParticleValues();
-		Object[] bDomain = b.getDiscreteDomain().getElements();
+		TypedDiscreteDomain<Integer> bDomain = (TypedDiscreteDomain<Integer>) b.getDiscreteDomain();
 		if (debugPrint)
 		{
 			System.out.print("aUniformBelief = [");
@@ -264,7 +265,7 @@ public class RealVariableParticleBPTest
 		double aSolverMean = 0;
 		for (int i = 0; i < aUniformPointSet.length; i++) aSolverMean += aUniformPointSet[i] * aUniformBelief[i];
 		double bSolverMean = 0;
-		for (int i = 0; i < bDomain.length; i++) bSolverMean += (Integer)(bDomain[i]) * bBelief[i];
+		for (int i = 0; i < bDomain.size(); i++) bSolverMean += bDomain.getElement(i) * bBelief[i];
 		if (debugPrint) System.out.println("aSolverMean: " + aSolverMean);
 		if (debugPrint) System.out.println("bSolverMean: " + bSolverMean);
 
@@ -281,7 +282,7 @@ public class RealVariableParticleBPTest
 	
 	
 	@Test
-	public void basicTest3() 
+	public void basicTest3()
 	{
 		// Test particle initialization based on the domain and setInitialParticleRange, which should override the domain
 		if (debugPrint) System.out.println("== basicTest3 ==");
@@ -352,11 +353,11 @@ public class RealVariableParticleBPTest
 		assertTrue(nearlyEquals(cParticles[numParticlesPerRealVariable-1],20));
 		assertTrue(nearlyEquals(dParticles[0],0));
 		assertTrue(nearlyEquals(dParticles[numParticlesPerRealVariable-1],0));
-	}	
+	}
 	
 	
 	@Test
-	public void basicTest4() 
+	public void basicTest4()
 	{
 		// Test tempering
 		if (debugPrint) System.out.println("== basicTest4 ==");
@@ -466,7 +467,7 @@ public class RealVariableParticleBPTest
 		double[] aUniformPointSet = new double[aNumPoints];
 		for (int i = 0; i < aNumPoints; i++)
 			aUniformPointSet[i] = aLower + i*(aUpper-aLower)/aNumPoints;
-		double[] aUniformBelief = (double[])sa.getBelief(aUniformPointSet);
+		double[] aUniformBelief = sa.getBelief(aUniformPointSet);
 
 		int bNumPoints = 500;
 		double bLower = -4;
@@ -474,7 +475,7 @@ public class RealVariableParticleBPTest
 		double[] bUniformPointSet = new double[bNumPoints];
 		for (int i = 0; i < bNumPoints; i++)
 			bUniformPointSet[i] = bLower + i*(bUpper-bLower)/bNumPoints;
-		double[] bUniformBelief = (double[])sb.getBelief(bUniformPointSet);
+		double[] bUniformBelief = sb.getBelief(bUniformPointSet);
 
 		int cNumPoints = 500;
 		double cLower = -4;
@@ -482,7 +483,7 @@ public class RealVariableParticleBPTest
 		double[] cUniformPointSet = new double[cNumPoints];
 		for (int i = 0; i < cNumPoints; i++)
 			cUniformPointSet[i] = cLower + i*(cUpper-cLower)/cNumPoints;
-		double[] cUniformBelief = (double[])sc.getBelief(cUniformPointSet);
+		double[] cUniformBelief = sc.getBelief(cUniformPointSet);
 
 		
 		if (debugPrint)

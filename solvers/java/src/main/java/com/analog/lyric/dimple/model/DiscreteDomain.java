@@ -308,6 +308,15 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	
 	/**
+	 * If this is a {@link TypedDiscreteDomain} with element type that extends {@code elementClass}
+	 * returns this object, otherwise null.
+	 */
+	public <T> TypedDiscreteDomain<T> asTypedDomain(Class<T> elementClass)
+	{
+		return null;
+	}
+	
+	/**
 	 * Common superclass of all elements.
 	 */
 	public abstract Class<?> getElementClass();

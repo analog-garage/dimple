@@ -83,7 +83,7 @@ public class Discrete extends VariableBase
     	Object tmp = super.getInputObject();
     	
     	if (tmp == null)
-    		return getDefaultPriors(getDiscreteDomain().getElements());
+    		return getDefaultPriors(getDiscreteDomain());
     	else
     		return tmp;
     }
@@ -119,10 +119,11 @@ public class Discrete extends VariableBase
     }
 
     
-	private double [] getDefaultPriors(Object [] domain)
+	private double [] getDefaultPriors(DiscreteDomain domain)
 	{
-		double [] retval = new double[domain.length];
-		double val = 1.0/domain.length;
+		final int length = domain.size();
+		double [] retval = new double[length];
+		double val = 1.0/length;
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = val;
 		return retval;

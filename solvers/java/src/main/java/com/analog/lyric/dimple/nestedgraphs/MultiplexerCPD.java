@@ -107,10 +107,10 @@ public class MultiplexerCPD extends FactorGraph
 		for (int i = 0; i < zDomains.length; i++)
 		{
 			Zs[i] = new Discrete(zDomains[i]);
-			zasize += zDomains[i].getElements().length;
+			zasize += zDomains[i].size();
 			for (int j = 0; j < zDomains[i].size(); j++)
 			{
-				yDomainValues.add(zDomains[i].getElements()[j]);
+				yDomainValues.add(zDomains[i].getElement(j));
 			}
 		}
 		
@@ -128,8 +128,9 @@ public class MultiplexerCPD extends FactorGraph
 		Y.setLabel("Y");
 		
 		java.util.Hashtable<Object, Integer> yDomainObj2index = new java.util.Hashtable<Object, Integer>();
-		for (int i = 0; i < Y.getDiscreteDomain().size(); i++)
-			yDomainObj2index.put(Y.getDiscreteDomain().getElements()[i], i);
+		final DiscreteDomain yDomain = Y.getDiscreteDomain();
+		for (int i = 0, end = yDomain.size(); i < end; i++)
+			yDomainObj2index.put(yDomain.getElement(i), i);
 		
 		
 		//Create a variable
@@ -183,7 +184,7 @@ public class MultiplexerCPD extends FactorGraph
 			for (int j = 0; j < Zs[i].getDiscreteDomain().size(); j++)
 			{
 				indices[index][0] = index;
-				indices[index][1] = yDomainObj2index.get(Zs[i].getDiscreteDomain().getElements()[j]);
+				indices[index][1] = yDomainObj2index.get(Zs[i].getDiscreteDomain().getElement(j));
 				
 				weights[index] = 1;
 				

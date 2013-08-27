@@ -45,4 +45,15 @@ public abstract class TypedDiscreteDomain<Element> extends DiscreteDomain implem
 			}
 		};
 	}
+	
+	/*------------------------
+	 * DiscreteDomain methods
+	 */
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> TypedDiscreteDomain<T> asTypedDomain(Class<T> elementClass)
+	{
+		return (TypedDiscreteDomain<T>) (elementClass.isAssignableFrom(getElementClass()) ? this : null) ;
+	}
 }
