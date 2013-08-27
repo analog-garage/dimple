@@ -306,6 +306,18 @@ public class TestDomain
 			assertTrue(domain instanceof DiscreteDomain);
 			DiscreteDomain discrete = (DiscreteDomain)domain;
 			
+			TypedDiscreteDomain<Object> discreteObj = discrete.asTypedDomain(Object.class);
+			assertSame(discreteObj, discrete);
+			TypedDiscreteDomain<Number> discreteNum = discrete.asTypedDomain(Number.class);
+			if (Number.class.isAssignableFrom(discrete.getElementClass()))
+			{
+				assertSame(discrete, discreteNum);
+			}
+			else
+			{
+				assertNull(discreteNum);
+			}
+			
 			final int size = discrete.size();
 			assertTrue(size >= 0);
 			final Object[] elements = discrete.getElements();
@@ -358,6 +370,23 @@ public class TestDomain
 				catch (UnsupportedOperationException ex)
 				{
 				}
+			}
+			
+			try
+			{
+				discrete.getElement(-1);
+				fail("expected exception");
+			}
+			catch (IndexOutOfBoundsException ex)
+			{
+			}
+			try
+			{
+				discrete.getElement(size);
+				fail("expected exception");
+			}
+			catch (IndexOutOfBoundsException ex)
+			{
 			}
 			
 			if (discrete instanceof IntRangeDomain)
