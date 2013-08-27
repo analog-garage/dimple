@@ -243,13 +243,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public final double getDenseEnergyForIndices(int ... indices)
+	public final double getEnergyForIndicesDense(int ... indices)
 	{
 		return _denseEnergies[getDomainList().jointIndexFromIndices(indices)];
 	}
 
 	@Override
-	public final double getDenseWeightForIndices(int ... indices)
+	public final double getWeightForIndicesDense(int ... indices)
 	{
 		return _denseWeights[getDomainList().jointIndexFromIndices(indices)];
 	}
@@ -852,13 +852,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public void setDenseEnergies(double[] energies)
+	public void setEnergiesDense(double[] energies)
 	{
 		setDenseValues(energies, DENSE_ENERGY);
 	}
 	
 	@Override
-	public void setDenseWeights(double[] weights)
+	public void setWeightsDense(double[] weights)
 	{
 		setDenseValues(weights, DENSE_WEIGHT);
 	}
@@ -919,13 +919,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public void setSparseEnergies(int[] jointIndices, double[] energies)
+	public void setEnergiesSparse(int[] jointIndices, double[] energies)
 	{
 		setSparseValues(jointIndices, energies, SPARSE_ENERGY);
 	}
 	
 	@Override
-	public void setSparseWeights(int[] jointIndices, double[] weights)
+	public void setWeightsSparse(int[] jointIndices, double[] weights)
 	{
 		setSparseValues(jointIndices, weights, SPARSE_WEIGHT);
 	}

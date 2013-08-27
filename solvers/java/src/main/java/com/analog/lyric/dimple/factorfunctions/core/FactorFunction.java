@@ -215,11 +215,11 @@ public abstract class FactorFunction extends FactorFunctionBase
         		
         		if (indexes.size() == maxJoint)
         		{
-        			table.setDenseEnergies(Arrays.copyOf(energies.elements(), maxJoint));
+        			table.setEnergiesDense(Arrays.copyOf(energies.elements(), maxJoint));
         		}
         		else
         		{
-        			table.setSparseEnergies(Arrays.copyOf(indexes.elements(), indexes.size()),
+        			table.setEnergiesSparse(Arrays.copyOf(indexes.elements(), indexes.size()),
         				Arrays.copyOf(energies.elements(), indexes.size()));
         		}
         	}

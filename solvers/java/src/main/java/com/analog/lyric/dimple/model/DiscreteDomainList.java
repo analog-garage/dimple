@@ -429,6 +429,11 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		return undirectedJointIndexToElements(jointIndex, elements);
 	}
 	
+	public final Object[] jointIndexToElements(int jointIndex)
+	{
+		return jointIndexToElements(jointIndex, null);
+	}
+	
 	/**
 	 * Computes domain indices corresponding to given joint index.
 	 * <p>
@@ -441,6 +446,11 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 	public int[] jointIndexToIndices(int jointIndex, int[] indices)
 	{
 		return undirectedJointIndexToIndices(jointIndex, indices);
+	}
+	
+	public final int[] jointIndexToIndices(int jointIndex)
+	{
+		return jointIndexToIndices(jointIndex, null);
 	}
 	
 	public int outputIndexFromElements(Object ... elements)
@@ -507,6 +517,11 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 		}
 		return elements;
 	}
+	
+	public final Object[] undirectedJointIndexToElements(int jointIndex)
+	{
+		return undirectedJointIndexToElements(jointIndex, null);
+	}
 
 	public final int[] undirectedJointIndexToIndices(int jointIndex, int[] indices)
 	{
@@ -522,6 +537,11 @@ public class DiscreteDomainList extends DomainList<DiscreteDomain>
 			jointIndex -= index * product;
 		}
 		return indices;
+	}
+	
+	public final int[] undirectedJointIndexToIndices(int jointIndex)
+	{
+		return undirectedJointIndexToIndices(jointIndex, null);
 	}
 	
 	/**

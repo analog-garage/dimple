@@ -175,7 +175,9 @@ public class TestDiscreteDomainList
 			assertSame(indices, domainList.undirectedJointIndexToIndices(i, indices));
 			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i, null));
 			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i, new int[0]));
+			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i));
 			assertSame(elements, domainList.undirectedJointIndexToElements(i, elements));
+			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i));
 			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i, null));
 			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i, new Object[0]));
 			for (int j = 0; j < size; ++ j)
@@ -212,8 +214,12 @@ public class TestDiscreteDomainList
 			Arrays.fill(elements2, null);
 			assertSame(indices2, domainList.jointIndexToIndices(ji, indices2));
 			assertArrayEquals(indices, indices2);
+			assertArrayEquals(indices, domainList.jointIndexToIndices(ji));
 			assertSame(elements2, domainList.jointIndexToElements(ji, elements2));
 			assertArrayEquals(elements, elements2);
+			
+			Object[] elements3 = domainList.jointIndexToElements(ji);
+			assertArrayEquals(elements, elements3);
 			
 			if (!domainList.isDirected())
 			{

@@ -85,9 +85,9 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * or table does not have dense energies.
 	 * @see #hasDenseEnergies()
 	 * @see #getEnergyForIndices(int...)
-	 * @see #getDenseWeightForIndices(int...)
+	 * @see #getWeightForIndicesDense(int...)
 	 */
-	public double getDenseEnergyForIndices(int ... indices);
+	public double getEnergyForIndicesDense(int ... indices);
 
 	/**
 	 * Returns weight for given set of indices assuming that the table has a dense
@@ -97,9 +97,9 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * or table does not have dense weights.
 	 * @see #hasDenseWeights()
 	 * @see #getWeightForIndices(int...)
-	 * @see #getDenseEnergyForIndices(int...)
+	 * @see #getEnergyForIndicesDense(int...)
 	 */
-	public double getDenseWeightForIndices(int ... indices);
+	public double getWeightForIndicesDense(int ... indices);
 
 	public abstract DiscreteDomainList getDomainList();
 	

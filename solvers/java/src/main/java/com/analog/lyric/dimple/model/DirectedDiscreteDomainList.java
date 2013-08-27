@@ -14,15 +14,15 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	
 	private static final long serialVersionUID = 1L;
 	
-	final BitSet _outputSet;
-	final int _inputCardinality;
-	final int[] _inputIndices;
-	final int[] _inputProducts;
-	final int _outputCardinality;
-	final int[] _outputIndices;
-	final int[] _outputProducts;
-	final int[] _directedProducts;
-	final private boolean _canonicalOrder;
+	private final BitSet _outputSet;
+	private final int _inputCardinality;
+	private final int[] _inputIndices;
+	private final int[] _inputProducts;
+	private final int _outputCardinality;
+	private final int[] _outputIndices;
+	private final int[] _outputProducts;
+	private final int[] _directedProducts;
+	private final boolean _canonicalOrder;
 	
 	/*--------------
 	 * Construction

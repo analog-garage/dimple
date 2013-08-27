@@ -147,7 +147,7 @@ public class FactorTablePerformanceTester
 			 {
 				 for (int[] indices : rows)
 				 {
-					 total += newTable.getDenseWeightForIndices(indices);
+					 total += newTable.getWeightForIndicesDense(indices);
 				 }
 			 }
 		 }

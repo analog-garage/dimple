@@ -28,7 +28,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * @param energies specifies the energies of the table in dense joint-index order. Must have length
 	 * equal to {@link #getDomainList()}.getCardinality().
 	 */
-	public void setDenseEnergies(double[] energies);
+	public void setEnergiesDense(double[] energies);
 	
 	/**
 	 * Sets representation to {@link NewFactorTableRepresentation#DENSE_WEIGHT} with
@@ -36,7 +36,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * @param weights specifies the weights of the table in dense joint-index order. Must have length
 	 * equal to {@link #getDomainList()}.getCardinality().
 	 */
-	public void setDenseWeights(double[] weights);
+	public void setWeightsDense(double[] weights);
 
 	public void setDirected(BitSet outputSet);
 	
@@ -51,7 +51,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * @throws IllegalArgumentException if {@code jointIndices} and {@code energies} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
 	 */
-	public void setSparseEnergies(int[] jointIndices, double[] energies);
+	public void setEnergiesSparse(int[] jointIndices, double[] energies);
 	
 	/**
 	 * Sets representation to {@link NewFactorTableRepresentation#SPARSE_WEIGHT} with
@@ -62,5 +62,5 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * @throws IllegalArgumentException if {@code jointIndices} and {@code energies} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
 	 */
-	public void setSparseWeights(int[] jointIndices, double[] weights);
+	public void setWeightsSparse(int[] jointIndices, double[] weights);
 }

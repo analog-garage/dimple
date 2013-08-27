@@ -77,7 +77,7 @@ public class TestFactorTable
 		
 		try
 		{
-			t2x3.setDenseWeights(new double[] { 1,2,3 });
+			t2x3.setWeightsDense(new double[] { 1,2,3 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -86,14 +86,14 @@ public class TestFactorTable
 		}
 		try
 		{
-			t2x3.setDenseEnergies(new double[] { 1,2,3 });
+			t2x3.setEnergiesDense(new double[] { 1,2,3 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
 		{
 			assertThat(ex.getMessage(), containsString("Bad dense length"));
 		}
-		t2x3.setDenseWeights(new double[] { 1, 2, 3, 4, 5, 6});
+		t2x3.setWeightsDense(new double[] { 1, 2, 3, 4, 5, 6});
 		assertEquals(NewFactorTableRepresentation.DENSE_WEIGHT, t2x3.getRepresentation());
 		for (int ji = 0; ji < 6; ++ji)
 		{
@@ -101,7 +101,7 @@ public class TestFactorTable
 		}
 		assertInvariants(t2x3);
 
-		t2x3.setDenseEnergies(new double[] { 2,4,6,8, 10, 12});
+		t2x3.setEnergiesDense(new double[] { 2,4,6,8, 10, 12});
 		assertEquals(NewFactorTableRepresentation.DENSE_ENERGY, t2x3.getRepresentation());
 		for (int ji = 0; ji < 6; ++ji)
 		{
@@ -111,7 +111,7 @@ public class TestFactorTable
 		
 		try
 		{
-			t2x3.setSparseWeights(new int[] {1}, new double[] {2,3});
+			t2x3.setWeightsSparse(new int[] {1}, new double[] {2,3});
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -120,7 +120,7 @@ public class TestFactorTable
 		}
 		try
 		{
-			t2x3.setSparseWeights(new int[] {1, 6}, new double[] {2,3});
+			t2x3.setWeightsSparse(new int[] {1, 6}, new double[] {2,3});
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -129,7 +129,7 @@ public class TestFactorTable
 		}
 		try
 		{
-			t2x3.setSparseWeights(new int[] {1, -1}, new double[] {2,3});
+			t2x3.setWeightsSparse(new int[] {1, -1}, new double[] {2,3});
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -139,7 +139,7 @@ public class TestFactorTable
 
 		try
 		{
-			t2x3.setSparseWeights(new int[] {1, 2, 1}, new double[] {2,3,4});
+			t2x3.setWeightsSparse(new int[] {1, 2, 1}, new double[] {2,3,4});
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -147,7 +147,7 @@ public class TestFactorTable
 			assertThat(ex.getMessage(), containsString("Duplicate joint index 1"));
 		}
 
-		t2x3.setSparseWeights(new int[] { 1,2,3}, new double[] { 1,2,3});
+		t2x3.setWeightsSparse(new int[] { 1,2,3}, new double[] { 1,2,3});
 		assertEquals(3, t2x3.sparseSize());
 		assertEquals(NewFactorTableRepresentation.SPARSE_WEIGHT, t2x3.getRepresentation());
 		for (int i = 0; i < 3; ++i)
@@ -156,7 +156,7 @@ public class TestFactorTable
 			assertEquals(i+1, t2x3.getWeightForJointIndex(i+1), 0.0);
 		}
 		assertInvariants(t2x3);
-		t2x3.setSparseWeights(new int[] { 3,1,2}, new double[] { 3,1,2});
+		t2x3.setWeightsSparse(new int[] { 3,1,2}, new double[] { 3,1,2});
 		assertEquals(3, t2x3.sparseSize());
 		assertEquals(NewFactorTableRepresentation.SPARSE_WEIGHT, t2x3.getRepresentation());
 		for (int i = 0; i < 3; ++i)
@@ -165,7 +165,7 @@ public class TestFactorTable
 			assertEquals(i+1, t2x3.getWeightForJointIndex(i+1), 0.0);
 		}
 		assertInvariants(t2x3);
-		t2x3.setSparseEnergies(new int[] { 1,2,3}, new double[] { 1,2,3});
+		t2x3.setEnergiesSparse(new int[] { 1,2,3}, new double[] { 1,2,3});
 		assertEquals(3, t2x3.sparseSize());
 		assertEquals(NewFactorTableRepresentation.SPARSE_ENERGY, t2x3.getRepresentation());
 		for (int i = 0; i < 3; ++i)
@@ -815,11 +815,11 @@ public class TestFactorTable
 				}
 				if (table.hasDenseEnergies())
 				{
-					assertEquals(entry.energy(), table.getDenseEnergyForIndices(entry.indices()), 1e-12);
+					assertEquals(entry.energy(), table.getEnergyForIndicesDense(entry.indices()), 1e-12);
 				}
 				if (table.hasDenseWeights())
 				{
-					assertEquals(entry.weight(), table.getDenseWeightForIndices(entry.indices()), 1e-12);
+					assertEquals(entry.weight(), table.getWeightForIndicesDense(entry.indices()), 1e-12);
 				}
 				++i;
 			}

@@ -111,7 +111,7 @@ public class Equality extends FactorFunction
         	}
         	
         	NewFactorTable table = new NewFactorTable(domains);
-        	table.setSparseEnergies(jointIndices, energies);
+        	table.setEnergiesSparse(jointIndices, energies);
         	return table;
     	}
     	else
