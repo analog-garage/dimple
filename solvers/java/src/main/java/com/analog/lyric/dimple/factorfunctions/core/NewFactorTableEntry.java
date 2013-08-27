@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 /**
  * Holds the information for one factor table entry from a {@link NewFactorTableIterator}
@@ -14,7 +14,7 @@ public final class NewFactorTableEntry implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	private final DiscreteDomainList _domains;
+	private final JointDomainIndexer _domains;
 	private final int _sparseIndex;
 	private final int _jointIndex;
 	private final double _energy;
@@ -24,7 +24,7 @@ public final class NewFactorTableEntry implements Serializable
 	 * Construction
 	 */
 	
-	public NewFactorTableEntry(DiscreteDomainList domains, int sparseIndex, int jointIndex, double energy, double weight)
+	public NewFactorTableEntry(JointDomainIndexer domains, int sparseIndex, int jointIndex, double energy, double weight)
 	{
 		_domains = domains;
 		_sparseIndex = sparseIndex;
@@ -37,7 +37,7 @@ public final class NewFactorTableEntry implements Serializable
 	 * Methods
 	 */
 	
-	public DiscreteDomainList domains()
+	public JointDomainIndexer domains()
 	{
 		return _domains;
 	}

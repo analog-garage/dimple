@@ -7,7 +7,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 @NotThreadSafe
 public abstract class NewFactorTableBase implements INewFactorTableBase, IFactorTable
@@ -18,20 +18,20 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	
 	private static final long serialVersionUID = 1L;
 
-	private DiscreteDomainList _domains;
+	private JointDomainIndexer _domains;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	protected NewFactorTableBase(DiscreteDomainList domains)
+	protected NewFactorTableBase(JointDomainIndexer domains)
 	{
 		_domains = domains;
 	}
 	
 	protected NewFactorTableBase(BitSet directedTo, DiscreteDomain ... domains)
 	{
-		_domains = DiscreteDomainList.create(directedTo, domains);
+		_domains = JointDomainIndexer.create(directedTo, domains);
 	}
 	
 	protected NewFactorTableBase(NewFactorTableBase that)
@@ -79,12 +79,12 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public final DiscreteDomainList getDomainList()
+	public final JointDomainIndexer getDomainIndexer()
 	{
 		return _domains;
 	}
 	
-	protected final void setDomainList(DiscreteDomainList newDomains)
+	protected final void setDomainIndexer(JointDomainIndexer newDomains)
 	{
 		assert(_domains.domainsEqual(newDomains));
 		_domains = newDomains;
@@ -259,13 +259,13 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[] getDirectedFrom()
 	{
-		return _domains.getInputIndices();
+		return _domains.getInputDomainIndices();
 	}
 
 	@Override
 	public int[] getDirectedTo()
 	{
-		return _domains.getOutputIndices();
+		return _domains.getOutputDomainIndices();
 	}
 
 	@Override

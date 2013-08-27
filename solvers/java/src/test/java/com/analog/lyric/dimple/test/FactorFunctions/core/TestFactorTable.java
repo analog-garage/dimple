@@ -23,8 +23,8 @@ import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableIterator;
 import com.analog.lyric.dimple.factorfunctions.core.NewFactorTableRepresentation;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.util.misc.Misc;
 import com.google.common.base.Stopwatch;
 
@@ -40,8 +40,8 @@ public class TestFactorTable
 	{
 		NewFactorTable t2x3 = new NewFactorTable(domain2, domain3);
 		assertEquals(2, t2x3.getDimensions());
-		assertEquals(domain2, t2x3.getDomainList().get(0));
-		assertEquals(domain3, t2x3.getDomainList().get(1));
+		assertEquals(domain2, t2x3.getDomainIndexer().get(0));
+		assertEquals(domain3, t2x3.getDomainIndexer().get(1));
 		assertFalse(t2x3.getRepresentation().hasDense());
 		assertFalse(t2x3.isDirected());
 		assertEquals(NewFactorTableRepresentation.SPARSE_ENERGY, t2x3.getRepresentation());
@@ -515,7 +515,7 @@ public class TestFactorTable
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.getDomainList().jointIndexToIndices(jointIndex, indices);
+				table.getDomainIndexer().jointIndexToIndices(jointIndex, indices);
 				table.setWeightForIndices(weight, indices);
 				assertWeight(table, weight, jointIndex);
 
@@ -525,19 +525,19 @@ public class TestFactorTable
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.getDomainList().jointIndexToIndices(jointIndex, indices);
+				table.getDomainIndexer().jointIndexToIndices(jointIndex, indices);
 				table.setEnergyForIndices(-Math.log(weight), indices);
 				assertWeight(table, weight, jointIndex);
 
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.getDomainList().jointIndexToElements(jointIndex, arguments);
+				table.getDomainIndexer().jointIndexToElements(jointIndex, arguments);
 				table.setWeightForArguments(weight, arguments);
 				assertWeight(table, weight, jointIndex);
 				
 				jointIndex = rand.nextInt(table.jointSize());
 				weight = rand.nextDouble();
-				table.getDomainList().jointIndexToElements(jointIndex, arguments);
+				table.getDomainIndexer().jointIndexToElements(jointIndex, arguments);
 				table.setEnergyForArguments(-Math.log(weight), arguments);
 				assertWeight(table, weight, jointIndex);
 			}
@@ -560,11 +560,11 @@ public class TestFactorTable
 			assertEquals(weight, table.getWeightForSparseIndex(sparseIndex), 1e-12);
 		}
 
-		int[] indices = table.getDomainList().jointIndexToIndices(jointIndex, null);
+		int[] indices = table.getDomainIndexer().jointIndexToIndices(jointIndex, null);
 		assertEquals(energy, table.getEnergyForIndices(indices), 1e-12);
 		assertEquals(weight, table.getWeightForIndices(indices), 13-12);
 		
-		Object[] arguments = table.getDomainList().jointIndexToElements(jointIndex, null);
+		Object[] arguments = table.getDomainIndexer().jointIndexToElements(jointIndex, null);
 		assertEquals(energy, table.getEnergyForArguments(arguments), 1e-12);
 		assertEquals(weight, table.getWeightForArguments(arguments), 13-12);
 	}
@@ -580,12 +580,12 @@ public class TestFactorTable
 		assertEquals(representation, table.getRepresentation());
 		
 		// Ok to setDirected if it doesn't change anything.
-		BitSet outputSet = table.getDomainList().getOutputSet();
+		BitSet outputSet = table.getDomainIndexer().getOutputSet();
 		table.setDirected(outputSet);
-		assertEquals(outputSet, table.getDomainList().getOutputSet());
+		assertEquals(outputSet, table.getDomainIndexer().getOutputSet());
 		
-		DiscreteDomainListConverter nullConverter =
-			DiscreteDomainListConverter.createPermuter(table.getDomainList(), table.getDomainList());
+		JointDomainReindexer nullConverter =
+			JointDomainReindexer.createPermuter(table.getDomainIndexer(), table.getDomainIndexer());
 
 		NewFactorTable table2 = table.convert(nullConverter);
 		assertBaseEqual(table, table2);
@@ -730,7 +730,7 @@ public class TestFactorTable
 		int nDomains = table.getDimensions();
 		assertTrue(nDomains >= 0);
 		
-		DiscreteDomainList domains = table.getDomainList();
+		JointDomainIndexer domains = table.getDomainIndexer();
 		assertEquals(nDomains, domains.size());
 		
 		int expectedJointSize = 1;
@@ -972,8 +972,8 @@ public class TestFactorTable
 		int nDomains = table1.getDimensions();
 		for (int i = 0; i < nDomains; ++i)
 		{
-			assertEquals(table1.getDomainList().getDomainSize(i), table2.getDomainList().getDomainSize(i));
-			assertSame(table1.getDomainList().get(i), table2.getDomainList().get(i));
+			assertEquals(table1.getDomainIndexer().getDomainSize(i), table2.getDomainIndexer().getDomainSize(i));
+			assertSame(table1.getDomainIndexer().get(i), table2.getDomainIndexer().get(i));
 		}
 		
 		assertEquals(table1.isDirected(), table2.isDirected());

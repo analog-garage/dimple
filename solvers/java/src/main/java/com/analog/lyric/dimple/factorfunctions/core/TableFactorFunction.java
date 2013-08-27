@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -43,7 +43,7 @@ public class TableFactorFunction extends FactorFunction
 	
 
     @Override
-	public boolean convertFactorTable(DiscreteDomainList oldDomains, DiscreteDomainList newDomains)
+	public boolean convertFactorTable(JointDomainIndexer oldDomains, JointDomainIndexer newDomains)
     {
     	boolean converted = false;
     	
@@ -57,7 +57,7 @@ public class TableFactorFunction extends FactorFunction
     			}
     			else
     			{
-    				_factorTable.setDirected(newDomains.getOutputIndices(), newDomains.getInputIndices());
+    				_factorTable.setDirected(newDomains.getOutputDomainIndices(), newDomains.getInputDomainIndices());
     			}
 				converted = true;
     		}
@@ -67,7 +67,7 @@ public class TableFactorFunction extends FactorFunction
     }
 
     @Override
-	public boolean factorTableExists(DiscreteDomainList domains)
+	public boolean factorTableExists(JointDomainIndexer domains)
 	{
     	if (domains.size() != _factorTable.getDomains().length)
     	{
@@ -93,7 +93,7 @@ public class TableFactorFunction extends FactorFunction
 	}
 	
     @Override
-	public IFactorTable getFactorTable(DiscreteDomainList domains)
+	public IFactorTable getFactorTable(JointDomainIndexer domains)
     {
     	//first step, convert domains to DiscreteDOmains
     	//make sure domain lists match
@@ -105,7 +105,7 @@ public class TableFactorFunction extends FactorFunction
     }
     
     @Override
-	public IFactorTable getFactorTableIfExists(DiscreteDomainList domains)
+	public IFactorTable getFactorTableIfExists(JointDomainIndexer domains)
     {
     	return factorTableExists(domains) ? _factorTable : null;
     }

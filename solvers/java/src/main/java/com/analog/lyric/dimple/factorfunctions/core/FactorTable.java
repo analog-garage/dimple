@@ -24,7 +24,7 @@ import java.util.HashSet;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.util.misc.IndexCounter;
 import com.analog.lyric.util.misc.Misc;
 
@@ -142,7 +142,7 @@ public class FactorTable extends FactorTableBase
 		return create((int[][])result[0], (double[])result[1], false, domains);
 	}
 
-	public static IFactorTable create(DiscreteDomainList domains)
+	public static IFactorTable create(JointDomainIndexer domains)
 	{
 		if (useNewFactorTable)
 		{

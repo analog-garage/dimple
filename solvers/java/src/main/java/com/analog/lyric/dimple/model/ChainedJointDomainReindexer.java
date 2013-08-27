@@ -3,15 +3,15 @@ package com.analog.lyric.dimple.model;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class ChainedDiscreteDomainListConverter extends DiscreteDomainListConverter
+public final class ChainedJointDomainReindexer extends JointDomainReindexer
 {
 	/*-------
 	 * State
 	 */
 	
 	private int _hashCode;
-	private final DiscreteDomainListConverter[] _converters;
-	private volatile ChainedDiscreteDomainListConverter _inverse;
+	private final JointDomainReindexer[] _converters;
+	private volatile ChainedJointDomainReindexer _inverse;
 	private final boolean _hasFastJointIndexConversion;
 	private final boolean _maintainsJointIndexOrder;
 	
@@ -19,12 +19,12 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 	 * Construction
 	 */
 	
-	private ChainedDiscreteDomainListConverter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList addedDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainList removedDomains,
-		DiscreteDomainListConverter ... converters
+	private ChainedJointDomainReindexer(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer addedDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexer removedDomains,
+		JointDomainReindexer ... converters
 		)
 	{
 		super(fromDomains, addedDomains, toDomains, removedDomains);
@@ -33,7 +33,7 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 		
 		boolean fastJointIndex = true;
 		boolean maintainsOrder = true;
-		for (DiscreteDomainListConverter converter : converters)
+		for (JointDomainReindexer converter : converters)
 		{
 			fastJointIndex &= converter.hasFastJointIndexConversion();
 			maintainsOrder &= converter.maintainsJointIndexOrder();
@@ -42,7 +42,7 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 		_maintainsJointIndexOrder = maintainsOrder;
 	}
 		
-	static DiscreteDomainListConverter create(DiscreteDomainListConverter ... converters)
+	static JointDomainReindexer create(JointDomainReindexer ... converters)
 	{
 		switch (converters.length)
 		{
@@ -67,11 +67,11 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 		
 		// Flatten out nested chains
 		int size = 0;
-		for (DiscreteDomainListConverter converter : converters)
+		for (JointDomainReindexer converter : converters)
 		{
-			if (converter instanceof ChainedDiscreteDomainListConverter)
+			if (converter instanceof ChainedJointDomainReindexer)
 			{
-				ChainedDiscreteDomainListConverter subchain = (ChainedDiscreteDomainListConverter)converter;
+				ChainedJointDomainReindexer subchain = (ChainedJointDomainReindexer)converter;
 				size += subchain._converters.length;
 			}
 			else
@@ -81,14 +81,14 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 		}
 		if (converters.length != size)
 		{
-			DiscreteDomainListConverter[] flattenedConverters = new DiscreteDomainListConverter[size];
+			JointDomainReindexer[] flattenedConverters = new JointDomainReindexer[size];
 			for (int to = 0, from = 0; from < converters.length; ++from)
 			{
-				DiscreteDomainListConverter converter = converters[from];
-				if (converter instanceof ChainedDiscreteDomainListConverter)
+				JointDomainReindexer converter = converters[from];
+				if (converter instanceof ChainedJointDomainReindexer)
 				{
-					ChainedDiscreteDomainListConverter subchain = (ChainedDiscreteDomainListConverter)converter;
-					for (DiscreteDomainListConverter subconverter : subchain._converters)
+					ChainedJointDomainReindexer subchain = (ChainedJointDomainReindexer)converter;
+					for (JointDomainReindexer subconverter : subchain._converters)
 					{
 						flattenedConverters[to++] = subconverter;
 					}
@@ -101,19 +101,19 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 			converters = flattenedConverters;
 		}
 		
-		DiscreteDomainList addedDomains = null;
-		for (DiscreteDomainListConverter converter : converters)
+		JointDomainIndexer addedDomains = null;
+		for (JointDomainReindexer converter : converters)
 		{
-			addedDomains = DiscreteDomainList.concat(addedDomains, converter._addedDomains);
+			addedDomains = JointDomainIndexer.concat(addedDomains, converter._addedDomains);
 		}
 		
-		DiscreteDomainList removedDomains = null;
+		JointDomainIndexer removedDomains = null;
 		for (int i = converters.length; --i>=0;)
 		{
-			removedDomains = DiscreteDomainList.concat(removedDomains, converters[i]._removedDomains);
+			removedDomains = JointDomainIndexer.concat(removedDomains, converters[i]._removedDomains);
 		}
 		
-		return new ChainedDiscreteDomainListConverter(
+		return new ChainedJointDomainReindexer(
 			converters[0]._fromDomains,
 			addedDomains,
 			converters[size-1]._toDomains,
@@ -139,9 +139,9 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 			return true;
 		}
 		
-		if (other instanceof ChainedDiscreteDomainListConverter)
+		if (other instanceof ChainedJointDomainReindexer)
 		{
-			ChainedDiscreteDomainListConverter that = (ChainedDiscreteDomainListConverter)other;
+			ChainedJointDomainReindexer that = (ChainedJointDomainReindexer)other;
 			return Arrays.equals(_converters, that._converters);
 		}
 		
@@ -155,23 +155,23 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 	}
 
 	/*--------------------------------------
-	 * DiscreteDomainListConverter methods
+	 * JointDomainReindexer methods
 	 */
 	
 	@Override
-	public ChainedDiscreteDomainListConverter getInverse()
+	public ChainedJointDomainReindexer getInverse()
 	{
-		ChainedDiscreteDomainListConverter inverse = _inverse;
+		ChainedJointDomainReindexer inverse = _inverse;
 		
 		if (inverse == null)
 		{
 			final int size = _converters.length;
-			DiscreteDomainListConverter[] converters = new DiscreteDomainListConverter[size];
+			JointDomainReindexer[] converters = new JointDomainReindexer[size];
 			for (int from = 0, to = size - 1; from < size; ++from, --to)
 			{
 				converters[to] = _converters[from].getInverse();
 			}
-			inverse = _inverse = new ChainedDiscreteDomainListConverter(
+			inverse = _inverse = new ChainedJointDomainReindexer(
 				_toDomains, _removedDomains, _fromDomains, _addedDomains, converters);
 		}
 		
@@ -183,7 +183,7 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 	{
 		int addOffset = 0, removeOffset = indices.removedIndices.length;
 		Indices prev = null;
-		for (DiscreteDomainListConverter converter : _converters)
+		for (JointDomainReindexer converter : _converters)
 		{
 			final Indices scratch = converter.getScratch();
 			
@@ -229,17 +229,17 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 	{
 		if (_addedDomains == null)
 		{
-			for (DiscreteDomainListConverter converter : _converters)
+			for (JointDomainReindexer converter : _converters)
 			{
 				jointIndex = converter.convertJointIndex(jointIndex, addedJointIndex);
 			}
 		}
 		else
 		{
-			for (DiscreteDomainListConverter converter : _converters)
+			for (JointDomainReindexer converter : _converters)
 			{
 				int localAddedJointIndex = 0;
-				DiscreteDomainList localAddedDomains = converter._addedDomains;
+				JointDomainIndexer localAddedDomains = converter._addedDomains;
 				if (localAddedDomains != null)
 				{
 					int card = localAddedDomains.getCardinality();
@@ -264,7 +264,7 @@ public final class ChainedDiscreteDomainListConverter extends DiscreteDomainList
 		
 		int removedJointIndex = 0;
 			
-		for (DiscreteDomainListConverter converter : _converters)
+		for (JointDomainReindexer converter : _converters)
 		{
 			int localAddedJointIndex = 0;
 			if (converter._addedDomains != null)

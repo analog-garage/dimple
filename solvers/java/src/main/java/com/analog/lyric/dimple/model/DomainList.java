@@ -7,8 +7,6 @@ import java.util.RandomAccess;
 
 /**
  * An immutable ordered list of {@link Domain}.
- * <p>
- * If all domains are discrete, then object will be a {@link DiscreteDomainList}.
  */
 public class DomainList<D extends Domain> extends AbstractList<D> implements RandomAccess, Serializable
 {
@@ -25,12 +23,20 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 		_domains = domains;
 	}
 	
+	/**
+	 * Creates a new domain list containing the specified domains in given order.
+	 * <p>
+	 * If all the domains are instances of {@link DiscreteDomain}, then this will return
+	 * a {@link JointDomainIndexer}, which will be directed if {@code outputIndices} is non-null.
+	 * <p>
+	 * May return a previously cached value.
+	 */
 	public static DomainList<?> create(int[] outputIndices, Domain ... domains)
 	{
 		if (allDiscrete(domains))
 		{
 			DiscreteDomain[] discreteDomains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
-			return DiscreteDomainList.lookupOrCreate(outputIndices, discreteDomains, false);
+			return JointDomainIndexer.lookupOrCreate(outputIndices, discreteDomains, false);
 		}
 	
 		// TODO: implement cache
@@ -40,6 +46,14 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 		return new DomainList<Domain>(domains);
 	}
 	
+	/**
+	 * Creates a new domain list containing the specified domains in given order.
+	 * <p>
+	 * If all the domains are instances of {@link DiscreteDomain}, then this will return
+	 * an undirected {@link JointDomainIndexer}.
+	 * <p>
+	 * May return a previously cached value.
+	 */
 	public static DomainList<?> create(Domain ... domains)
 	{
 		return create(null, domains);
@@ -87,9 +101,9 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	}
 	
 	/**
-	 * Casts this object to {@link DiscreteDomainList} or else returns null.
+	 * Casts this object to {@link JointDomainIndexer} or else returns null.
 	 */
-	public DiscreteDomainList asDiscreteDomainList()
+	public JointDomainIndexer asJointDomainIndexer()
 	{
 		return null;
 	}
@@ -104,8 +118,8 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	
 	/**
 	 * True if all domains are discrete and therefore this is an instance of
-	 * {@link DiscreteDomainList}.
-	 * @see #asDiscreteDomainList()
+	 * {@link JointDomainIndexer}.
+	 * @see #asJointDomainIndexer()
 	 */
 	public boolean isDiscrete()
 	{

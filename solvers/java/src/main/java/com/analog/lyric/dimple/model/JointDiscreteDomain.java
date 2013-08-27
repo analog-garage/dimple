@@ -11,12 +11,12 @@ import com.analog.lyric.collect.ArrayUtil;
  * Its elements are Java Object[] arrays with the nth element holding an element
  * of the nth component domain.
  * <p>
- * It is represented efficiently using a {@link DiscreteDomainList}, so the full
+ * It is represented efficiently using a {@link JointDomainIndexer}, so the full
  * combinatoric list of elements does not need to be produced unless someone
  * calls {@link #getElements()}.
  * <p>
  * Construct instances using {@link DiscreteDomain#joint(DiscreteDomain...)} or
- * {@link DiscreteDomain#joint(DiscreteDomainList)}.
+ * {@link DiscreteDomain#joint(JointDomainIndexer)}.
  */
 @Immutable
 public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
@@ -27,14 +27,14 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final DiscreteDomainList _domains;
+	private final JointDomainIndexer _domains;
 	private final Class<Element[]> _elementClass;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	JointDiscreteDomain(DiscreteDomainList domains)
+	JointDiscreteDomain(JointDomainIndexer domains)
 	{
 		super(domains.hashCode());
 		_domains = domains;
@@ -205,7 +205,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 
 	/**
 	 * Returns the number of dimensions, or subdomains that make up this joint domain.
-	 * Same as size of {@link #getDomainList()}.
+	 * Same as size of {@link #getDomainIndexer()}.
 	 */
 	public final int getDimensions()
 	{
@@ -213,9 +213,9 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	}
 	
 	/**
-	 * Returns the underlying {@link DiscreteDomainList} that represents this domain.
+	 * Returns the underlying {@link JointDomainIndexer} that represents this domain.
 	 */
-	public final DiscreteDomainList getDomainList()
+	public final JointDomainIndexer getDomainIndexer()
 	{
 		return _domains;
 	}
@@ -253,7 +253,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	 * Writes the individual subdomain indexes for the ith element in this domain into
 	 * provided {@code array} and returns it.
 	 * <p>
-	 * This is equivalent to calling {@link #getDomainList()}.jointIndexToIndices(i, array)
+	 * This is equivalent to calling {@link #getDomainIndexer()}.jointIndexToIndices(i, array)
 	 * <p>
 	 * @param i must be in the range [0, {@link #size()}-1].
 	 * @param array must be at least {@link #size()} long or else a new array will be allocated.

@@ -27,7 +27,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
 import com.analog.lyric.dimple.model.Factor;
@@ -40,8 +40,8 @@ public abstract class FactorFunction extends FactorFunctionBase
 	 */
 	
 	// Cache of factor tables for this function by domain.
-	private AtomicReference<ConcurrentMap<DiscreteDomainList, IFactorTable>> _factorTables =
-		new AtomicReference<ConcurrentMap<DiscreteDomainList, IFactorTable>>();
+	private AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>> _factorTables =
+		new AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>>();
 	
 	/*--------------
 	 * Construction
@@ -61,13 +61,13 @@ public abstract class FactorFunction extends FactorFunctionBase
      * FactorFunction methods
      */
     
-    public boolean convertFactorTable(DiscreteDomainList oldDomains, DiscreteDomainList newDomains)
+    public boolean convertFactorTable(JointDomainIndexer oldDomains, JointDomainIndexer newDomains)
     {
     	boolean converted = false;
     	
     	if (oldDomains != null && newDomains != null)
     	{
-    		ConcurrentMap<DiscreteDomainList, IFactorTable> tables = _factorTables.get();
+    		ConcurrentMap<JointDomainIndexer, IFactorTable> tables = _factorTables.get();
     		
     		if (tables != null)
     		{
@@ -80,7 +80,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     				}
     				else
     				{
-    					table.setDirected(newDomains.getOutputIndices(), newDomains.getInputIndices());
+    					table.setDirected(newDomains.getOutputDomainIndices(), newDomains.getInputDomainIndices());
     				}
     			}
     		}
@@ -89,12 +89,12 @@ public abstract class FactorFunction extends FactorFunctionBase
     	return converted;
     }
     
-    public boolean factorTableExists(DiscreteDomainList domains)
+    public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;
     	if (domains != null)
     	{
-    		ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    		ConcurrentMap<JointDomainIndexer, IFactorTable> factorTables = _factorTables.get();
     		exists = factorTables != null && factorTables.containsKey(domains);
     	}
     	return exists;
@@ -102,26 +102,26 @@ public abstract class FactorFunction extends FactorFunctionBase
     
 	public boolean factorTableExists(Factor factor)
 	{
-		return factorTableExists(factor.getDomainList().asDiscreteDomainList());
+		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 	
     @Override
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
-    	return getFactorTable(DomainList.create(domains).asDiscreteDomainList());
+    	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
     }
     
-    public IFactorTable getFactorTable(DiscreteDomainList domains)
+    public IFactorTable getFactorTable(JointDomainIndexer domains)
     {
     	if (domains == null)
     	{
     		throw new DimpleException("only support getFactorTable for discrete domains");
     	}
 
-    	ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    	ConcurrentMap<JointDomainIndexer, IFactorTable> factorTables = _factorTables.get();
     	if (factorTables == null)
     	{
-    		_factorTables.compareAndSet(null, new ConcurrentHashMap<DiscreteDomainList, IFactorTable>());
+    		_factorTables.compareAndSet(null, new ConcurrentHashMap<JointDomainIndexer, IFactorTable>());
     		factorTables = _factorTables.get();
     	}
 
@@ -142,15 +142,15 @@ public abstract class FactorFunction extends FactorFunctionBase
     
     public IFactorTable getFactorTable(Factor factor)
     {
-    	return getFactorTable(factor.getDomainList().asDiscreteDomainList());
+    	return getFactorTable(factor.getDomainList().asJointDomainIndexer());
     }
 
-    public IFactorTable getFactorTableIfExists(DiscreteDomainList domains)
+    public IFactorTable getFactorTableIfExists(JointDomainIndexer domains)
     {
     	IFactorTable factorTable = null;
     	if (domains != null)
     	{
-    		ConcurrentMap<DiscreteDomainList, IFactorTable> factorTables = _factorTables.get();
+    		ConcurrentMap<JointDomainIndexer, IFactorTable> factorTables = _factorTables.get();
     		if (factorTables != null)
     		{
     			factorTable = factorTables.get(domains);
@@ -161,7 +161,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     
     public IFactorTable getFactorTableIfExists(Factor factor)
     {
-    	return getFactorTableIfExists(factor.getDomainList().asDiscreteDomainList());
+    	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
     }
 
     /*-------------------
@@ -171,10 +171,10 @@ public abstract class FactorFunction extends FactorFunctionBase
     /**
      * Generate a factor table for this function over the given domains.
      * <p>
-     * Invoked implicitly by {@link #getFactorTable(DiscreteDomainList)} the first time
+     * Invoked implicitly by {@link #getFactorTable(JointDomainIndexer)} the first time
      * a factor table is needed for specified domains.
      */
-    protected IFactorTable createTableForDomains(DiscreteDomainList domains)
+    protected IFactorTable createTableForDomains(JointDomainIndexer domains)
     {
     	if (FactorTable.useNewFactorTable)
     	{

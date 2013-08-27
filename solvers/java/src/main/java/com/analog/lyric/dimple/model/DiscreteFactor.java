@@ -51,7 +51,7 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Override
-	public DiscreteDomainList getDomainList()
+	public JointDomainIndexer getDomainList()
 	{
 		VariableList variables = getVariables();
 		int numVariables = variables.size();
@@ -63,7 +63,7 @@ public class DiscreteFactor extends Factor
 			domains[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
 		}
 		
-		return DiscreteDomainList.create(_directedTo, domains);
+		return JointDomainIndexer.create(_directedTo, domains);
 		
 	}
 

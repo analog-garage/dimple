@@ -434,7 +434,7 @@ public class TestDomain
 			if (discrete instanceof JointDiscreteDomain)
 			{
 				JointDiscreteDomain<?> joint = (JointDiscreteDomain<?>)discrete;
-				assertEquals(joint.getDomainList().size(), joint.getDimensions());
+				assertEquals(joint.getDomainIndexer().size(), joint.getDimensions());
 				
 				Object[] element = new Object[joint.getDimensions()];
 				int[] indices = new int[joint.getDimensions()];

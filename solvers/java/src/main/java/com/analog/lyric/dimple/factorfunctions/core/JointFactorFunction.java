@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 public class JointFactorFunction extends FactorFunction
 {
@@ -90,7 +90,7 @@ public class JointFactorFunction extends FactorFunction
 	}
 
 	@Override
-	protected IFactorTable createTableForDomains(DiscreteDomainList domains)
+	protected IFactorTable createTableForDomains(JointDomainIndexer domains)
 	{
 		// TODO: provide a more efficient implementation
 		return super.createTableForDomains(domains);

@@ -2,7 +2,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.BitSet;
 
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 
 
 public interface INewFactorTable extends INewFactorTableBase, IFactorTable
@@ -18,7 +18,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	public int compact();
 	
 	@Override
-	public INewFactorTable convert(DiscreteDomainListConverter converter);
+	public INewFactorTable convert(JointDomainReindexer converter);
 	
 	public NewFactorTableRepresentation getRepresentation();
 
@@ -26,7 +26,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * Sets representation to {@link NewFactorTableRepresentation#DENSE_ENERGY} with
 	 * provided energies.
 	 * @param energies specifies the energies of the table in dense joint-index order. Must have length
-	 * equal to {@link #getDomainList()}.getCardinality().
+	 * equal to {@link #getDomainIndexer()}.getCardinality().
 	 */
 	public void setEnergiesDense(double[] energies);
 	
@@ -34,7 +34,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * Sets representation to {@link NewFactorTableRepresentation#DENSE_WEIGHT} with
 	 * provided weights.
 	 * @param weights specifies the weights of the table in dense joint-index order. Must have length
-	 * equal to {@link #getDomainList()}.getCardinality().
+	 * equal to {@link #getDomainIndexer()}.getCardinality().
 	 */
 	public void setWeightsDense(double[] weights);
 

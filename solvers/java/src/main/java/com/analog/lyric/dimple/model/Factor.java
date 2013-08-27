@@ -417,7 +417,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		getVariables();
 
-		final DiscreteDomainList curDomains = getDomainList().asDiscreteDomainList();
+		final JointDomainIndexer curDomains = getDomainList().asJointDomainIndexer();
 
 		HashSet<Integer> hs = new HashSet<Integer>();
 		
@@ -444,7 +444,7 @@ public class Factor extends FactorBase implements Cloneable
 		
 		if (curDomains != null)
 		{
-			DiscreteDomainList newDomains = getDomainList().asDiscreteDomainList();
+			JointDomainIndexer newDomains = getDomainList().asJointDomainIndexer();
 			if (!curDomains.equals(newDomains))
 			{
 				getFactorFunction().convertFactorTable(curDomains, newDomains);

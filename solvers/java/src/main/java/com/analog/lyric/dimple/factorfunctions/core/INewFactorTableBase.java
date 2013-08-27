@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.BitSet;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 
 public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<NewFactorTableEntry>
 {
@@ -42,7 +42,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns a new factor table converted from this one using the specified converter.
 	 */
-	public INewFactorTableBase convert(DiscreteDomainListConverter converter);
+	public INewFactorTableBase convert(JointDomainReindexer converter);
 	
 	/**
 	 * That ratio of non-zero weights to {@link #jointSize()}. Will be 1.0 if table contains
@@ -64,7 +64,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * The number of dimensions in the table.
 	 * <p>
-	 * The same as {@link #getDomainList()}.size().
+	 * The same as {@link #getDomainIndexer()}.size().
 	 */
 	public abstract int getDimensions();
 	
@@ -101,7 +101,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public double getWeightForIndicesDense(int ... indices);
 
-	public abstract DiscreteDomainList getDomainList();
+	public abstract JointDomainIndexer getDomainIndexer();
 	
 	/**
 	 * Returns energy of factor table entry for given {@code arguments}.
@@ -191,7 +191,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 
 	/**
 	 * The number of possible combinations of the values of all the domains in this table.
-	 * Same as {@link DiscreteDomainList#getCardinality()} of {@link #getDomainList()}.
+	 * Same as {@link JointDomainIndexer#getCardinality()} of {@link #getDomainIndexer()}.
 	 * @see #sparseSize()
 	 */
 	public abstract int jointSize();

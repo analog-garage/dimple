@@ -15,14 +15,14 @@ import org.junit.Test;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.util.test.SerializationTester;
 
-public class TestDiscreteDomainList
+public class TestJointDomainIndexer
 {
 	private Random rand = new Random(1323);
 	
@@ -34,7 +34,7 @@ public class TestDiscreteDomainList
 	
 		try
 		{
-			DiscreteDomainList.create();
+			JointDomainIndexer.create();
 			fail("should not get here");
 		}
 		catch (DimpleException ex)
@@ -42,7 +42,7 @@ public class TestDiscreteDomainList
 		}
 		try
 		{
-			DiscreteDomainList.create((DiscreteDomain[])null);
+			JointDomainIndexer.create((DiscreteDomain[])null);
 			fail("should not get here");
 		}
 		catch (NullPointerException ex)
@@ -54,7 +54,7 @@ public class TestDiscreteDomainList
 			bitset.set(0);
 			bitset.set(1);
 			bitset.set(2);
-			DiscreteDomainList.create(bitset, d2, d3);
+			JointDomainIndexer.create(bitset, d2, d3);
 			fail("expected DimpleException");
 		}
 		catch (DimpleException ex)
@@ -62,45 +62,45 @@ public class TestDiscreteDomainList
 			assertThat(ex.getMessage(), containsString("Illegal output set for domain list"));
 		}
 		
-		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
+		JointDomainIndexer dl2 = JointDomainIndexer.create(d2);
 		testInvariants(dl2);
-		DiscreteDomainList dl3 = DiscreteDomainList.create(d3);
+		JointDomainIndexer dl3 = JointDomainIndexer.create(d3);
 		testInvariants(dl3);
 		
-		DiscreteDomainList dl2by3 = DiscreteDomainList.create(d2, d3);
+		JointDomainIndexer dl2by3 = JointDomainIndexer.create(d2, d3);
 		testInvariants(dl2by3);
-		assertEquals(dl2by3, DiscreteDomainList.create(d2, d3));
-		assertNotEquals(dl2by3, DiscreteDomainList.create(d3, d2));
+		assertEquals(dl2by3, JointDomainIndexer.create(d2, d3));
+		assertNotEquals(dl2by3, JointDomainIndexer.create(d3, d2));
 		
-		DiscreteDomainList dl2to3 = DiscreteDomainList.create(new int[] { 1 }, new DiscreteDomain[] {d2, d3 });
+		JointDomainIndexer dl2to3 = JointDomainIndexer.create(new int[] { 1 }, new DiscreteDomain[] {d2, d3 });
 		testInvariants(dl2to3);
 		assertNotEquals(dl2by3, dl2to3);
 		assertNotEquals(dl2to3, dl2by3);
 		assertNotEquals(dl2by3.hashCode(), dl2to3.hashCode());
 		
-		DiscreteDomainList dl2from3 = DiscreteDomainList.create(new int[] { 0 }, new DiscreteDomain[] { d2, d3 });
+		JointDomainIndexer dl2from3 = JointDomainIndexer.create(new int[] { 0 }, new DiscreteDomain[] { d2, d3 });
 		testInvariants(dl2from3);
 		assertNotEquals(dl2to3, dl2from3);
 		assertNotEquals(dl2to3.hashCode(), dl2from3.hashCode());
 		
 		DomainList<?> dl2by2 = DomainList.create(new Domain[] { d2, d2 });
 		assertTrue(dl2by2.isDiscrete());
-		testInvariants(dl2by2.asDiscreteDomainList());
+		testInvariants(dl2by2.asJointDomainIndexer());
 		
 		// Test concat
-		assertSame(dl2, DiscreteDomainList.concat(dl2, null));
-		assertSame(dl2, DiscreteDomainList.concat(null, dl2));
-		DiscreteDomainList dl2by2a = DiscreteDomainList.concat(dl2, dl2);
+		assertSame(dl2, JointDomainIndexer.concat(dl2, null));
+		assertSame(dl2, JointDomainIndexer.concat(null, dl2));
+		JointDomainIndexer dl2by2a = JointDomainIndexer.concat(dl2, dl2);
 		testInvariants(dl2by2a);
 		assertEquals(dl2by2, dl2by2a);
 		
-		DiscreteDomainList dlfoo = DiscreteDomainList.concat(dl2to3, dl2from3);
+		JointDomainIndexer dlfoo = JointDomainIndexer.concat(dl2to3, dl2from3);
 		testInvariants(dlfoo);
 		assertTrue(dlfoo.isDirected());
-		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputIndices());
+		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputDomainIndices());
 		assertArrayEquals(new Object[] { d2, d3, d2, d3}, dlfoo.toArray());
 		
-		DiscreteDomainList dlbar = DiscreteDomainList.create((BitSet)null, dlfoo);
+		JointDomainIndexer dlbar = JointDomainIndexer.create((BitSet)null, dlfoo);
 		assertTrue(dlfoo.domainsEqual(dlbar));
 		assertFalse(dlbar.isDirected());
 		testInvariants(dlbar);
@@ -111,19 +111,19 @@ public class TestDiscreteDomainList
 		
 		DomainList<?> mixed = DomainList.create(d2, RealDomain.unbounded());
 		assertFalse(mixed.isDiscrete());
-		assertNull(mixed.asDiscreteDomainList());
+		assertNull(mixed.asJointDomainIndexer());
 		assertFalse(DomainList.allDiscrete(d2, RealDomain.unbounded()));
 		assertTrue(DomainList.allDiscrete(new DiscreteDomain[] { d2, d3 }));
 	}
 	
-	public static void testInvariants(DiscreteDomainList domainList)
+	public static void testInvariants(JointDomainIndexer domainList)
 	{
 		assertTrue(domainList.equals(domainList));
 		assertFalse(domainList.equals("foo"));
 		
 		assertTrue(domainList.isDiscrete());
 		assertTrue(DomainList.allDiscrete(domainList.toArray(new Domain[domainList.size()])));
-		assertSame(domainList, domainList.asDiscreteDomainList());
+		assertSame(domainList, domainList.asJointDomainIndexer());
 		
 		final int size = domainList.size();
 		assertTrue(size > 0);
@@ -161,8 +161,8 @@ public class TestDiscreteDomainList
 		BitSet inSet = domainList.getInputSet();
 		BitSet outSet = domainList.getOutputSet();
 		
-		int[] inIndices = domainList.getInputIndices();
-		int[] outIndices = domainList.getOutputIndices();
+		int[] inIndices = domainList.getInputDomainIndices();
+		int[] outIndices = domainList.getOutputDomainIndices();
 
 		final int[] indices = new int[size], indices2 = new int[size];
 		final Object[] elements = new Object[size], elements2 = new Object[size];
@@ -281,12 +281,12 @@ public class TestDiscreteDomainList
 			
 			for (int j = outIndices.length; --j>=0;)
 			{
-				assertEquals(outIndices[j], domainList.getOutputIndex(j));
+				assertEquals(outIndices[j], domainList.getOutputDomainIndex(j));
 				assertTrue(outSet.get(outIndices[j]));
 			}
 			for (int j = inIndices.length; --j>=0;)
 			{
-				assertEquals(inIndices[j], domainList.getInputIndex(j));
+				assertEquals(inIndices[j], domainList.getInputDomainIndex(j));
 				assertTrue(inSet.get(inIndices[j]));
 			}
 		}
@@ -301,12 +301,12 @@ public class TestDiscreteDomainList
 			
 			for (i = 0; i < size; ++i)
 			{
-				assertEquals(i, domainList.getOutputIndex(i));
+				assertEquals(i, domainList.getOutputDomainIndex(i));
 			}
 			
 			try
 			{
-				domainList.getInputIndex(0);
+				domainList.getInputDomainIndex(0);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -314,7 +314,7 @@ public class TestDiscreteDomainList
 			}
 			try
 			{
-				domainList.getOutputIndex(-1);
+				domainList.getOutputDomainIndex(-1);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -322,7 +322,7 @@ public class TestDiscreteDomainList
 			}
 			try
 			{
-				domainList.getOutputIndex(size);
+				domainList.getOutputDomainIndex(size);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -360,62 +360,62 @@ public class TestDiscreteDomainList
 		{
 		}
 		
-		DiscreteDomainList domainList2 = SerializationTester.clone(domainList);
+		JointDomainIndexer domainList2 = SerializationTester.clone(domainList);
 		assertEquals(domainList, domainList2);
 		assertEquals(domainList.hashCode(), domainList2.hashCode());
 	}
 	
 	@Test
-	public void testConverter()
+	public void testReindexer()
 	{
 		DiscreteDomain d2 = DiscreteDomain.range(0,1);
 		DiscreteDomain d3 = DiscreteDomain.range(0,2);
 		DiscreteDomain d4 = DiscreteDomain.range(0,3);
 		DiscreteDomain d5 = DiscreteDomain.range(0,4);
 		
-		DiscreteDomainList dl2 = DiscreteDomainList.create(d2);
-		DiscreteDomainList dl3 = DiscreteDomainList.create(d3);
-		DiscreteDomainList dl4 = DiscreteDomainList.create(d4);
-		DiscreteDomainList dl2by3 = DiscreteDomainList.create(d2, d3);
-		DiscreteDomainList dl3by2 = DiscreteDomainList.create(d3, d2);
-		DiscreteDomainList dl3by4 = DiscreteDomainList.create(d3, d4);
-		DiscreteDomainList dl4by2 = DiscreteDomainList.create(d4, d2);
+		JointDomainIndexer dl2 = JointDomainIndexer.create(d2);
+		JointDomainIndexer dl3 = JointDomainIndexer.create(d3);
+		JointDomainIndexer dl4 = JointDomainIndexer.create(d4);
+		JointDomainIndexer dl2by3 = JointDomainIndexer.create(d2, d3);
+		JointDomainIndexer dl3by2 = JointDomainIndexer.create(d3, d2);
+		JointDomainIndexer dl3by4 = JointDomainIndexer.create(d3, d4);
+		JointDomainIndexer dl4by2 = JointDomainIndexer.create(d4, d2);
 		
-		DiscreteDomainList dl2to3 = DiscreteDomainList.create(new int[] {1}, new DiscreteDomain[] {d2, d3});
-		DiscreteDomainList dl2from3 = DiscreteDomainList.create(new int[] {0}, new DiscreteDomain[] {d2, d3});
+		JointDomainIndexer dl2to3 = JointDomainIndexer.create(new int[] {1}, new DiscreteDomain[] {d2, d3});
+		JointDomainIndexer dl2from3 = JointDomainIndexer.create(new int[] {0}, new DiscreteDomain[] {d2, d3});
 		
 		// A simple permutation
-		DiscreteDomainListConverter dl2by3_to_dl3by2 =
-			DiscreteDomainListConverter.createPermuter(dl2by3, null,  dl3by2,  null, new int[] { 1, 0});
+		JointDomainReindexer dl2by3_to_dl3by2 =
+			JointDomainReindexer.createPermuter(dl2by3, null,  dl3by2,  null, new int[] { 1, 0});
 		assertSame(dl2by3, dl2by3_to_dl3by2.getFromDomains());
 		assertSame(dl3by2, dl2by3_to_dl3by2.getToDomains());
 		testInvariants(dl2by3_to_dl3by2);
 		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3by2.getInverse());
 		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3by2.getInverse().hashCode());
 		
-		DiscreteDomainListConverter dl3by2_to_dl2by3 =
-			DiscreteDomainListConverter.createPermuter(dl3by2, null,  dl2by3,  null, new int[] { 1, 0});
+		JointDomainReindexer dl3by2_to_dl2by3 =
+			JointDomainReindexer.createPermuter(dl3by2, null,  dl2by3,  null, new int[] { 1, 0});
 		testInvariants(dl3by2_to_dl2by3);
 		assertEquals(dl2by3_to_dl3by2, dl3by2_to_dl2by3.getInverse());
 		assertEquals(dl3by2_to_dl2by3, dl2by3_to_dl3by2.getInverse());
 		assertEquals(dl2by3_to_dl3by2.hashCode(), dl3by2_to_dl2by3.getInverse().hashCode());
 		
 		// Remove a domain
-		DiscreteDomainListConverter dl2by3_to_dl3 = DiscreteDomainListConverter.createRemover(dl2by3, 0);
+		JointDomainReindexer dl2by3_to_dl3 = JointDomainReindexer.createRemover(dl2by3, 0);
 		assertSame(dl2by3, dl2by3_to_dl3.getFromDomains());
 		assertEquals(dl2, dl2by3_to_dl3.getRemovedDomains());
 		testInvariants(dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3.hashCode());
 		
-		DiscreteDomainListConverter dl2by3_to_dl2 = DiscreteDomainListConverter.createRemover(dl2by3, 1);
+		JointDomainReindexer dl2by3_to_dl2 = JointDomainReindexer.createRemover(dl2by3, 1);
 		assertSame(dl2by3, dl2by3_to_dl2.getFromDomains());
 		assertEquals(dl2, dl2by3_to_dl2.getToDomains());
 		testInvariants(dl2by3_to_dl2);
 		
-		DiscreteDomainList dl2by3by4by5 = DiscreteDomainList.create(d2, d3, d4, d5);
-		DiscreteDomainListConverter dl2by3by4by5_to_dl2by = DiscreteDomainListConverter.createJoiner(dl2by3by4by5, 1, 2);
-		DiscreteDomainList dl2by12by5 = dl2by3by4by5_to_dl2by.getToDomains();
+		JointDomainIndexer dl2by3by4by5 = JointDomainIndexer.create(d2, d3, d4, d5);
+		JointDomainReindexer dl2by3by4by5_to_dl2by = JointDomainReindexer.createJoiner(dl2by3by4by5, 1, 2);
+		JointDomainIndexer dl2by12by5 = dl2by3by4by5_to_dl2by.getToDomains();
 		testInvariants(dl2by3by4by5_to_dl2by);
 		assertEquals(3, dl2by12by5.size());
 		assertEquals(12, dl2by12by5.getDomainSize(1));
@@ -424,20 +424,20 @@ public class TestDiscreteDomainList
 		assertNotEquals(dl2by3by4by5_to_dl2by, dl2by3by4by5_to_dl2by.getInverse());
 		assertNotEquals(dl2by3by4by5_to_dl2by.hashCode(), dl2by3by4by5_to_dl2by.getInverse().hashCode());
 		
-		DiscreteDomainListConverter dl2by12by5_to_dl2by3by4by5 = DiscreteDomainListConverter.createSplitter(dl2by12by5, 1);
+		JointDomainReindexer dl2by12by5_to_dl2by3by4by5 = JointDomainReindexer.createSplitter(dl2by12by5, 1);
 		testInvariants(dl2by12by5_to_dl2by3by4by5);
 		assertEquals(dl2by3by4by5_to_dl2by, dl2by12by5_to_dl2by3by4by5.getInverse());
 		
-		DiscreteDomainListConverter dl2by3_to_dl3by4 =
-			DiscreteDomainListConverter.createPermuter(dl2by3, dl4, dl3by4, dl2, new int [] { 2, 0, 1 });
+		JointDomainReindexer dl2by3_to_dl3by4 =
+			JointDomainReindexer.createPermuter(dl2by3, dl4, dl3by4, dl2, new int [] { 2, 0, 1 });
 		testInvariants(dl2by3_to_dl3by4);
 		
-		DiscreteDomainListConverter dl2by3_to_dl4by2 =
-			DiscreteDomainListConverter.createPermuter(dl2by3, dl4, dl4by2, dl3, new int [] { 1, 2, 0 });
+		JointDomainReindexer dl2by3_to_dl4by2 =
+			JointDomainReindexer.createPermuter(dl2by3, dl4, dl4by2, dl3, new int [] { 1, 2, 0 });
 		testInvariants(dl2by3_to_dl4by2);
 		
 		// Chain
-		DiscreteDomainListConverter dl3by2_to_dl3 = dl3by2_to_dl2by3.combineWith(dl2by3_to_dl3);
+		JointDomainReindexer dl3by2_to_dl3 = dl3by2_to_dl2by3.combineWith(dl2by3_to_dl3);
 		testInvariants(dl3by2_to_dl3);
 		
 		try
@@ -450,12 +450,12 @@ public class TestDiscreteDomainList
 		}
 		
 		// Directed conversion
-		DiscreteDomainListConverter dl3by2_to_dl3to2 =
-			DiscreteDomainListConverter.createPermuter(dl2by3, dl2to3);
+		JointDomainReindexer dl3by2_to_dl3to2 =
+			JointDomainReindexer.createPermuter(dl2by3, dl2to3);
 		testInvariants(dl3by2_to_dl3to2);
 
-		DiscreteDomainListConverter dl3by2_to_dl3from2 =
-			DiscreteDomainListConverter.createPermuter(dl2by3, dl2from3);
+		JointDomainReindexer dl3by2_to_dl3from2 =
+			JointDomainReindexer.createPermuter(dl2by3, dl2from3);
 		testInvariants(dl3by2_to_dl3from2);
 		
 		//
@@ -464,7 +464,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, dl3, dl3, null, new int[] { 0, 1 });
+			JointDomainReindexer.createPermuter(dl2, dl3, dl3, null, new int[] { 0, 1 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -474,7 +474,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, null, dl2, null, new int[] { 0, 1, 2 });
+			JointDomainReindexer.createPermuter(dl2, null, dl2, null, new int[] { 0, 1, 2 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -484,7 +484,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, null, dl2, null, new int[] { -1 });
+			JointDomainReindexer.createPermuter(dl2, null, dl2, null, new int[] { -1 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -494,7 +494,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, null, dl2, null, new int[] { 2 });
+			JointDomainReindexer.createPermuter(dl2, null, dl2, null, new int[] { 2 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -504,7 +504,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, dl3, dl2by3, null, new int[] { 0, 0 });
+			JointDomainReindexer.createPermuter(dl2, dl3, dl2by3, null, new int[] { 0, 0 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -514,7 +514,7 @@ public class TestDiscreteDomainList
 		
 		try
 		{
-			DiscreteDomainListConverter.createPermuter(dl2, null, dl3, null, new int[] { 0 });
+			JointDomainReindexer.createPermuter(dl2, null, dl3, null, new int[] { 0 });
 			fail("expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -524,19 +524,19 @@ public class TestDiscreteDomainList
 
 	}
 	
-	public void testInvariants(DiscreteDomainListConverter converter)
+	public void testInvariants(JointDomainReindexer converter)
 	{
 		testInvariants(converter, true);
 	}
 	
-	private void testInvariants(DiscreteDomainListConverter converter, boolean testInverse)
+	private void testInvariants(JointDomainReindexer converter, boolean testInverse)
 	{
 		assertEquals(converter, converter);
 
-		DiscreteDomainListConverter inverse = converter.getInverse();
+		JointDomainReindexer inverse = converter.getInverse();
 		assertEquals(converter, inverse.getInverse());
 		
-		DiscreteDomainListConverter.Indices indices = converter.getScratch();
+		JointDomainReindexer.Indices indices = converter.getScratch();
 		assertSame(converter, indices.converter);
 		assertEquals(converter.getFromDomains().size(), indices.fromIndices.length);
 		assertEquals(converter.getToDomains().size(), indices.toIndices.length);

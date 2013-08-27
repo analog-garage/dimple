@@ -1,6 +1,6 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import static com.analog.lyric.dimple.model.DiscreteDomainListConverter.*;
+import static com.analog.lyric.dimple.model.JointDomainReindexer.*;
 import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
@@ -12,8 +12,8 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
-import com.analog.lyric.dimple.model.DiscreteDomainListConverter;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
 import com.google.common.math.DoubleMath;
 
@@ -76,7 +76,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * Construction
 	 */
 	
-	public NewFactorTable(DiscreteDomainList domains)
+	public NewFactorTable(JointDomainIndexer domains)
 	{
 		super(domains);
 		_nonZeroWeights = 0;
@@ -85,7 +85,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	
 	public NewFactorTable(BitSet directedTo, DiscreteDomain ... domains)
 	{
-		this(DiscreteDomainList.create(directedTo, domains));
+		this(JointDomainIndexer.create(directedTo, domains));
 	}
 	
 	/**
@@ -117,7 +117,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * Constructs a new table by converting the contents of {@code other} table using
 	 * {@code converter} whose "from" domains must match {@code other}'s domains.
 	 */
-	public NewFactorTable(NewFactorTable other, DiscreteDomainListConverter converter)
+	public NewFactorTable(NewFactorTable other, JointDomainReindexer converter)
 	{
 		super(converter.getToDomains());
 		_representation = other._representation;
@@ -129,7 +129,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * "from" domains must match {@code other}'s domains and whose "to" domains must match
 	 * this table's domains.
 	 */
-	public void convertFrom(NewFactorTable other, DiscreteDomainListConverter converter)
+	public void convertFrom(NewFactorTable other, JointDomainReindexer converter)
 	{
 		final int representation = _representation;
 		
@@ -187,9 +187,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			_nonZeroWeights = other._nonZeroWeights * converter.getAddedCardinality();
 		}
-		else if (other._nonZeroWeights == other.getDomainList().getCardinality())
+		else if (other._nonZeroWeights == other.getDomainIndexer().getCardinality())
 		{
-			_nonZeroWeights = getDomainList().getCardinality();
+			_nonZeroWeights = getDomainIndexer().getCardinality();
 		}
 		else
 		{
@@ -201,7 +201,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public NewFactorTable convert(DiscreteDomainListConverter converter)
+	public NewFactorTable convert(JointDomainReindexer converter)
 	{
 		return new NewFactorTable(this, converter);
 	}
@@ -234,7 +234,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			throw new DimpleException("Table is not deterministic");
 		}
 		
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		int outputSize = domains.getOutputCardinality();
 		int inputIndex = domains.inputIndexFromElements(arguments);
 		int jointIndex = _sparseIndexToJointIndex[inputIndex];
@@ -245,13 +245,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public final double getEnergyForIndicesDense(int ... indices)
 	{
-		return _denseEnergies[getDomainList().jointIndexFromIndices(indices)];
+		return _denseEnergies[getDomainIndexer().jointIndexFromIndices(indices)];
 	}
 
 	@Override
 	public final double getWeightForIndicesDense(int ... indices)
 	{
-		return _denseWeights[getDomainList().jointIndexFromIndices(indices)];
+		return _denseWeights[getDomainIndexer().jointIndexFromIndices(indices)];
 	}
 	
 	@Override
@@ -268,7 +268,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		switch (_representation)
 		{
 		case DETERMINISTIC:
-			final int expectedJoint = _sparseIndexToJointIndex[jointIndex /  getDomainList().getOutputCardinality()];
+			final int expectedJoint = _sparseIndexToJointIndex[jointIndex /  getDomainIndexer().getOutputCardinality()];
 			return expectedJoint == jointIndex ? 0.0 : Double.POSITIVE_INFINITY;
 			
 		case ALL:
@@ -354,7 +354,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		switch (_representation)
 		{
 		case DETERMINISTIC:
-			final int expectedJoint = _sparseIndexToJointIndex[jointIndex /  getDomainList().getOutputCardinality()];
+			final int expectedJoint = _sparseIndexToJointIndex[jointIndex /  getDomainIndexer().getOutputCardinality()];
 			return expectedJoint == jointIndex ? 1.0 : 0.0;
 
 		case ALL:
@@ -489,7 +489,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		boolean deterministic = false;
 		
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		if (isDirected() && _nonZeroWeights == domains.getInputCardinality())
 		{
 			// Table can only be deterministic if there is exactly one
@@ -704,7 +704,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			// Optimize deterministic case. Since there is exactly one entry per distinct
 			// set of outputs, we can simply check to see if the jointIndex is found at
 			// the corresponding location for the output indices.
-			sparseIndex /= getDomainList().getOutputCardinality();
+			sparseIndex /= getDomainIndexer().getOutputCardinality();
 			final int prevJointIndex = _sparseIndexToJointIndex[sparseIndex];
 			if (prevJointIndex != jointIndex)
 			{
@@ -869,12 +869,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	 * <p>
 	 * @param outputIndices any array mapping input indices, representing the joint value of all input
 	 * values, to output indices, representing the joint value of all outputs. The length of the array
-	 * must be equal to the value of {@link DiscreteDomainList#getInputCardinality()} on {@link #getDomainList()}.
+	 * must be equal to the value of {@link JointDomainIndexer#getInputCardinality()} on {@link #getDomainIndexer()}.
 	 * @throws UnsupportedOperationException if not {@link #isDirected()}.
 	 */
 	public void setDeterministicOuputIndices(int[] outputIndices)
 	{
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		final int size = domains.getInputCardinality();
 		
 		if (!isDirected())
@@ -1278,7 +1278,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return;
 		}
 		
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		
 		// Encode indices as array of jointIndex/weightIndex tuples with the
 		// jointIndex in the high-order 32-bits so that we can order it trivially
@@ -1399,7 +1399,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			return;
 		}
 
-		if (!Arrays.equals(getDomainList().toArray(), that.getDomains()))
+		if (!Arrays.equals(getDomainIndexer().toArray(), that.getDomains()))
 		{
 			throw new DimpleException("Cannot copy from factor table with different domains");
 		}
@@ -1438,9 +1438,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public NewFactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
 	{
-		DiscreteDomainList domains = getDomainList();
-		DiscreteDomainListConverter converter =
-			DiscreteDomainListConverter.createAdder(domains, domains.size(), additionalDomains);
+		JointDomainIndexer domains = getDomainIndexer();
+		JointDomainReindexer converter =
+			JointDomainReindexer.createAdder(domains, domains.size(), additionalDomains);
 
 		return new NewFactorTable(this, converter);
 	}
@@ -1468,7 +1468,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		DiscreteDomain[] allDomains,
 		DiscreteDomain jointDomain)
 	{
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		assert(Arrays.equals(allDomains, domains.toArray()));
 		assert(varIndices.length == indexToJointIndex.length);
 		
@@ -1507,7 +1507,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 		}
 		
-		DiscreteDomainListConverter converter = null;
+		JointDomainReindexer converter = null;
 		if (!identityMap)
 		{
 			DiscreteDomain[] toDomains = new DiscreteDomain[permutation.length];
@@ -1515,7 +1515,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				toDomains[permutation[i]] = domains.get(i);
 			}
-			converter = createPermuter(domains, DiscreteDomainList.create(toDomains), permutation);
+			converter = createPermuter(domains, JointDomainIndexer.create(toDomains), permutation);
 		}
 		
 		if (converter != null)
@@ -1533,7 +1533,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		BitSet toSet = BitSetUtil.bitsetFromIndices(domains.size(), directedTo);
 		if (!toSet.equals(domains.getOutputSet()))
 		{
@@ -1552,7 +1552,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void setDirected(int[] directedTo, int[] directedFrom)
 	{
-		setDirected(BitSetUtil.bitsetFromIndices(getDomainList().size(), directedTo));
+		setDirected(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo));
 	}
 	
 	/*-----------------
@@ -1670,7 +1670,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	
 	private boolean normalizeDirected(boolean justCheck)
 	{
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		final int inputSize = domains.getInputCardinality();
 		final int outputSize = domains.getOutputCardinality();
 		final boolean hasSparseToJoint = _sparseIndexToJointIndex.length > 0;
@@ -1988,7 +1988,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 
 	private void setDenseValues(double[] values, int representation)
 	{
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		if (values.length != domains.getCardinality())
 		{
 			throw new IllegalArgumentException(String.format("Bad dense length: was %d, expected %d",
@@ -2020,8 +2020,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 
 	private void setDirected(BitSet outputSet, boolean assertNormalized)
 	{
-		final DiscreteDomainList oldDomains = getDomainList();
-		final DiscreteDomainList newDomains = DiscreteDomainList.create(outputSet, oldDomains);
+		final JointDomainIndexer oldDomains = getDomainIndexer();
+		final JointDomainIndexer newDomains = JointDomainIndexer.create(outputSet, oldDomains);
 		if (oldDomains.equals(newDomains))
 		{
 			return;
@@ -2039,12 +2039,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		try
 		{
 			_computedMask = 0;
-			setDomainList(newDomains);
+			setDomainIndexer(newDomains);
 
 			if (!oldDomains.hasCanonicalDomainOrder() | !newDomains.hasCanonicalDomainOrder())
 			{
-				DiscreteDomainListConverter converter =
-					DiscreteDomainListConverter.createPermuter(oldDomains, newDomains);
+				JointDomainReindexer converter =
+					JointDomainReindexer.createPermuter(oldDomains, newDomains);
 
 				if (hasDenseEnergies())
 				{
@@ -2114,7 +2114,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		double[] values2 = null;
 		
 		boolean doSort = false;
-		final DiscreteDomainList domains = getDomainList();
+		final JointDomainIndexer domains = getDomainIndexer();
 		int cardinality = domains.getCardinality();
 		for (int i = size; --i>=1;)
 		{

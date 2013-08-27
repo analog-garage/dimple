@@ -100,7 +100,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		
 		if (_jointIndex < _table.jointSize())
 		{
-			entry = new NewFactorTableEntry(_table.getDomainList(), _sparseIndex, _jointIndex, _energy, _weight);
+			entry = new NewFactorTableEntry(_table.getDomainIndexer(), _sparseIndex, _jointIndex, _energy, _weight);
 		}
 		
 		return entry;

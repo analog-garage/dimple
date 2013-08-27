@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.ThreadSafe;
 
 /**
- * {@link DiscreteDomainListConverter} implementation that permutes the domain order
+ * {@link JointDomainReindexer} implementation that permutes the domain order
  * including added and removed domains in the permutation.
  */
 @ThreadSafe
-public final class DiscreteDomainListPermuter extends DiscreteDomainListConverter
+public final class JointDomainIndexPermuter extends JointDomainReindexer
 {
 
 	/*-------
@@ -24,7 +24,7 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	
 	final private int[] _oldToNewIndex;
 	final private int _hashCode;
-	final private DiscreteDomainListPermuter _inverse;
+	final private JointDomainIndexPermuter _inverse;
 	final private boolean _maintainsOrder;
 	final private int _jointIndexConversionType;
 	
@@ -32,13 +32,13 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	 * Construction
 	 */
 	
-	private DiscreteDomainListPermuter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList addedDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainList removedDomains,
+	private JointDomainIndexPermuter(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer addedDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexer removedDomains,
 		int[] oldToNewIndex,
-		DiscreteDomainListPermuter inverse)
+		JointDomainIndexPermuter inverse)
 	{
 		super(fromDomains, addedDomains, toDomains, removedDomains);
 		
@@ -92,7 +92,7 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 				newToOldIndex[to] = from;
 			}
 			
-			inverse = new DiscreteDomainListPermuter(toDomains, removedDomains,
+			inverse = new JointDomainIndexPermuter(toDomains, removedDomains,
 				fromDomains, addedDomains, newToOldIndex, this);
 		}
 
@@ -182,11 +182,11 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 		_jointIndexConversionType = jointIndexType;
 	}
 
-	DiscreteDomainListPermuter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList addedDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainList removedDomains,
+	JointDomainIndexPermuter(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer addedDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexer removedDomains,
 		int[] oldToNewIndex)
 	{
 		this(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex, null);
@@ -210,9 +210,9 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 			return true;
 		}
 		
-		if (other instanceof DiscreteDomainListPermuter && super.equals(other))
+		if (other instanceof JointDomainIndexPermuter && super.equals(other))
 		{
-			return Arrays.equals(_oldToNewIndex, ((DiscreteDomainListPermuter)other)._oldToNewIndex);
+			return Arrays.equals(_oldToNewIndex, ((JointDomainIndexPermuter)other)._oldToNewIndex);
 		}
 		
 		return false;
@@ -225,7 +225,7 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	}
 	
 	/*-------------------------------------
-	 * DiscreteDomainListConverter methods
+	 * JointDomainReindexer methods
 	 */
 	
 	@Override
@@ -365,7 +365,7 @@ public final class DiscreteDomainListPermuter extends DiscreteDomainListConverte
 	}
 	
 	@Override
-	public DiscreteDomainListPermuter getInverse()
+	public JointDomainIndexPermuter getInverse()
 	{
 		return _inverse;
 	}

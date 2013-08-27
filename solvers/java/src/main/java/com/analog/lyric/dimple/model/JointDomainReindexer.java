@@ -16,10 +16,10 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.google.common.base.Objects;
 
 /**
- * Supports conversion of indexes between two {@link DiscreteDomainList}s.
+ * Supports conversion of indexes between two {@link JointDomainIndexer}s.
  */
 @ThreadSafe
-public abstract class DiscreteDomainListConverter
+public abstract class JointDomainReindexer
 {
 	/*----------------
 	 * Nested classes
@@ -29,19 +29,19 @@ public abstract class DiscreteDomainListConverter
 	 * A set of domain indexes sized appropriately for a single {@link #converter} for use
 	 * in conversion computation.
 	 * 
-	 * @see DiscreteDomainListConverter#getScratch()
-	 * @see DiscreteDomainListConverter#convertIndices(Indices)
+	 * @see JointDomainReindexer#getScratch()
+	 * @see JointDomainReindexer#convertIndices(Indices)
 	 */
 	@NotThreadSafe
 	public static class Indices
 	{
-		public final DiscreteDomainListConverter converter;
+		public final JointDomainReindexer converter;
 		public final int[] fromIndices;
 		public final int[] toIndices;
 		public final int[] addedIndices;
 		public final int[] removedIndices;
 		
-		private Indices(DiscreteDomainListConverter converter)
+		private Indices(JointDomainReindexer converter)
 		{
 			this.converter = converter;
 			fromIndices = new int[converter._fromDomains.size()];
@@ -55,7 +55,7 @@ public abstract class DiscreteDomainListConverter
 		/**
 		 * Fills in {@link #fromIndices} from {@code fromJointIndex} and
 		 * {@link #addedIndices} from {@code addedJointIndex}. If {@code #converter}
-		 * has null for {@link DiscreteDomainListConverter#getAddedDomains()}, then
+		 * has null for {@link JointDomainReindexer#getAddedDomains()}, then
 		 * {@code addedJointIndex} will be ignored.
 		 */
 		public void writeIndices(int fromJointIndex, int addedJointIndex)
@@ -70,7 +70,7 @@ public abstract class DiscreteDomainListConverter
 		/**
 		 * Returns joint index computed from {@code #toIndices} and if
 		 * {@code removedJointIndexRef} is non-null and {@code #converter}
-		 * has non-null for {@link DiscreteDomainListConverter#getRemovedDomains()},
+		 * has non-null for {@link JointDomainReindexer#getRemovedDomains()},
 		 * this will compute a joint index from {@code #removedIndices} and set
 		 * it in that {@code removedJiontIndexRef}.
 		 */
@@ -98,10 +98,10 @@ public abstract class DiscreteDomainListConverter
 	 * State
 	 */
 	
-	protected final DiscreteDomainList _addedDomains;
-	protected final DiscreteDomainList _fromDomains;
-	protected final DiscreteDomainList _removedDomains;
-	protected final DiscreteDomainList _toDomains;
+	protected final JointDomainIndexer _addedDomains;
+	protected final JointDomainIndexer _fromDomains;
+	protected final JointDomainIndexer _removedDomains;
+	protected final JointDomainIndexer _toDomains;
 	
 	private final AtomicReference<Indices> _scratch = new AtomicReference<Indices>();
 	
@@ -109,11 +109,11 @@ public abstract class DiscreteDomainListConverter
 	 * Construction
 	 */
 	
-	protected DiscreteDomainListConverter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList addedDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainList removedDomains)
+	protected JointDomainReindexer(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer addedDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexer removedDomains)
 	{
 		_fromDomains = fromDomains;
 		_addedDomains = addedDomains;
@@ -139,14 +139,14 @@ public abstract class DiscreteDomainListConverter
 	 * {@code removeDomains} are in the range [0, toSize-1] and [toSize, totalSize - 1]. The mapping must not
 	 * omit or repeat elements and may not map domains of different sizes.
 	 */
-	public static DiscreteDomainListConverter createPermuter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList addedDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainList removedDomains,
+	public static JointDomainReindexer createPermuter(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer addedDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexer removedDomains,
 		int[] oldToNewIndex)
 	{
-		return new DiscreteDomainListPermuter(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex);
+		return new JointDomainIndexPermuter(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex);
 	}
 	
 	/**
@@ -154,12 +154,12 @@ public abstract class DiscreteDomainListConverter
 	 * in {@code fromDomains} to those in {@code toDomains}.
 	 * <p>
 	 * This simply invokes
-	 * {@link #createPermuter(DiscreteDomainList, DiscreteDomainList, DiscreteDomainList, DiscreteDomainList, int[])}
+	 * {@link #createPermuter(JointDomainIndexer, JointDomainIndexer, JointDomainIndexer, JointDomainIndexer, int[])}
 	 * with nulls for {@code addedDomains} and {@code removedDomains}.
 	 */
-	public static DiscreteDomainListConverter createPermuter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList toDomains,
+	public static JointDomainReindexer createPermuter(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer toDomains,
 		int[] oldToNewIndex)
 	{
 		return createPermuter(fromDomains, null, toDomains, null, oldToNewIndex);
@@ -170,9 +170,9 @@ public abstract class DiscreteDomainListConverter
 	 * while maintaining the same domain order. This can be used to convert between
 	 * domain lists with different input/output domain sets.
 	 */
-	public static DiscreteDomainListConverter createPermuter(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList toDomains)
+	public static JointDomainReindexer createPermuter(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer toDomains)
 	{
 		int[] oldToNew = new int[fromDomains.size()];
 		for (int i = oldToNew.length; --i>=0;)
@@ -186,22 +186,22 @@ public abstract class DiscreteDomainListConverter
 	 * Creates a converter that inserts a number of {@code addedDomains} at the given {@code offset}
 	 * within {@code fromDomains}.
 	 */
-	public static DiscreteDomainListConverter createAdder(
-		DiscreteDomainList fromDomains,
+	public static JointDomainReindexer createAdder(
+		JointDomainIndexer fromDomains,
 		int offset,
 		DiscreteDomain ... addedDomains)
 	{
-		return createAdder(fromDomains, offset, DiscreteDomainList.create(addedDomains));
+		return createAdder(fromDomains, offset, JointDomainIndexer.create(addedDomains));
 	}
 	
 	/**
 	 * Creates a converter that inserts the {@code addedDomains} at the given {@code offset}
 	 * within {@code fromDomains}.
 	 */
-	public static DiscreteDomainListConverter createAdder(
-		DiscreteDomainList fromDomains,
+	public static JointDomainReindexer createAdder(
+		JointDomainIndexer fromDomains,
 		int offset,
-		DiscreteDomainList addedDomains)
+		JointDomainIndexer addedDomains)
 	{
 		final int fromSize = fromDomains.size();
 		final int addedSize = addedDomains.size();
@@ -230,25 +230,25 @@ public abstract class DiscreteDomainListConverter
 			oldToNewIndex[i] = to;
 		}
 		
-		return createPermuter(fromDomains, addedDomains, DiscreteDomainList.create(toDomains), null, oldToNewIndex);
+		return createPermuter(fromDomains, addedDomains, JointDomainIndexer.create(toDomains), null, oldToNewIndex);
 	}
 	
 	/**
 	 * Creates a converter that joins {@code length} adjacent domains at given {@code offset} in
 	 * {@code fromDomains} into a single {@link JointDiscreteDomain}.
 	 * <p>
-	 * @see #createSplitter(DiscreteDomainList, int)
+	 * @see #createSplitter(JointDomainIndexer, int)
 	 */
-	public static DiscreteDomainListConverter createJoiner(DiscreteDomainList fromDomains, int offset, int length)
+	public static JointDomainReindexer createJoiner(JointDomainIndexer fromDomains, int offset, int length)
 	{
-		return DiscreteDomainListJoiner.createJoiner(fromDomains, offset, length);
+		return JointDomainIndexJoiner.createJoiner(fromDomains, offset, length);
 	}
 	
 	/**
 	 * Creates a converter that removes the domains specified by {@code removedIndices}
 	 * from {@code fromDomains}.
 	 */
-	public static DiscreteDomainListConverter createRemover(DiscreteDomainList fromDomains, BitSet removedIndices)
+	public static JointDomainReindexer createRemover(JointDomainIndexer fromDomains, BitSet removedIndices)
 	{
 		final int fromSize = fromDomains.size();
 		final int removedSize = removedIndices.cardinality();
@@ -275,15 +275,15 @@ public abstract class DiscreteDomainListConverter
 			}
 		}
 		
-		return createPermuter(fromDomains, null, DiscreteDomainList.create(toDomains),
-			DiscreteDomainList.create(removedDomains), oldToNewIndex);
+		return createPermuter(fromDomains, null, JointDomainIndexer.create(toDomains),
+			JointDomainIndexer.create(removedDomains), oldToNewIndex);
 	}
 		
 	/**
 	 * Creates a converter that removes the domains specified by {@code removedIndices}
 	 * from {@code fromDomains}.
 	 */
-	public static DiscreteDomainListConverter createRemover(DiscreteDomainList fromDomains, int ... removedIndices)
+	public static JointDomainReindexer createRemover(JointDomainIndexer fromDomains, int ... removedIndices)
 	{
 		return createRemover(fromDomains, BitSetUtil.bitsetFromIndices(fromDomains.size(), removedIndices));
 	}
@@ -292,16 +292,16 @@ public abstract class DiscreteDomainListConverter
 	 * Creates a converter that splits a {@link JointDiscreteDomain} at given {@code offset} in
 	 * {@code fromDomains} into its constituent subdomains.
 	 * <p>
-	 * @see #createJoiner(DiscreteDomainList, int, int)
+	 * @see #createJoiner(JointDomainIndexer, int, int)
 	 */
-	public static DiscreteDomainListJoiner createSplitter(DiscreteDomainList fromDomains, int offset)
+	public static JointDomainIndexJoiner createSplitter(JointDomainIndexer fromDomains, int offset)
 	{
-		return DiscreteDomainListJoiner.createSplitter(fromDomains, offset);
+		return JointDomainIndexJoiner.createSplitter(fromDomains, offset);
 	}
 	
-	public DiscreteDomainListConverter combineWith(DiscreteDomainListConverter that)
+	public JointDomainReindexer combineWith(JointDomainReindexer that)
 	{
-		return ChainedDiscreteDomainListConverter.create(this, that);
+		return ChainedJointDomainReindexer.create(this, that);
 	}
 	
 	/*----------------
@@ -316,9 +316,9 @@ public abstract class DiscreteDomainListConverter
 			return true;
 		}
 		
-		if (other instanceof DiscreteDomainListConverter)
+		if (other instanceof JointDomainReindexer)
 		{
-			DiscreteDomainListConverter that = (DiscreteDomainListConverter)other;
+			JointDomainReindexer that = (JointDomainReindexer)other;
 			return _fromDomains.equals(that._fromDomains) &&
 				_toDomains.equals(that._toDomains) &&
 				Objects.equal(_addedDomains, that._addedDomains) &&
@@ -332,22 +332,22 @@ public abstract class DiscreteDomainListConverter
 	public abstract int hashCode();
 
 	/*-------------------------------------
-	 * DiscreteDomainListConverter methods
+	 * JointDomainReindexer methods
 	 */
 
-	public final DiscreteDomainList getAddedDomains()
+	public final JointDomainIndexer getAddedDomains()
 	{
 		return _addedDomains;
 	}
 	
-	public abstract DiscreteDomainListConverter getInverse();
+	public abstract JointDomainReindexer getInverse();
 	
-	public final DiscreteDomainList getRemovedDomains()
+	public final JointDomainIndexer getRemovedDomains()
 	{
 		return _removedDomains;
 	}
 	
-	public final DiscreteDomainList getFromDomains()
+	public final JointDomainIndexer getFromDomains()
 	{
 		return _fromDomains;
 	}
@@ -364,7 +364,7 @@ public abstract class DiscreteDomainListConverter
 		return scratch != null ? scratch : new Indices(this);
 	}
 	
-	public final DiscreteDomainList getToDomains()
+	public final JointDomainIndexer getToDomains()
 	{
 		return _toDomains;
 	}

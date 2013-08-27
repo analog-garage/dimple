@@ -5,8 +5,11 @@ import java.util.BitSet;
 
 import net.jcip.annotations.Immutable;
 
+/**
+ * Directed implementation of {@link JointDomainIndexer}.
+ */
 @Immutable
-public final class DirectedDiscreteDomainList extends DiscreteDomainList
+final class DirectedJointDomainIndexer extends JointDomainIndexer
 {
 	/*-------
 	 * State
@@ -28,7 +31,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	 * Construction
 	 */
 	
-	DirectedDiscreteDomainList(BitSet outputs, DiscreteDomain ... domains)
+	DirectedJointDomainIndexer(BitSet outputs, DiscreteDomain ... domains)
 	{
 		super(computeHashCode(outputs, domains), domains);
 		_outputSet = outputs;
@@ -110,9 +113,9 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 			return true;
 		}
 		
-		if (that instanceof DirectedDiscreteDomainList)
+		if (that instanceof DirectedJointDomainIndexer)
 		{
-			DirectedDiscreteDomainList thatDiscrete = (DirectedDiscreteDomainList)that;
+			DirectedJointDomainIndexer thatDiscrete = (DirectedJointDomainIndexer)that;
 			return Arrays.equals(_domains, thatDiscrete._domains)
 				&& _outputSet.equals(thatDiscrete._outputSet);
 		}
@@ -121,7 +124,7 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	/*----------------------------
-	 * DiscreteDomainList methods
+	 * JointDomainIndexer methods
 	 */
 	
 	@Override
@@ -131,13 +134,13 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	@Override
-	public int[] getInputIndices()
+	public int[] getInputDomainIndices()
 	{
 		return _inputIndices.clone();
 	}
 	
 	@Override
-	public int getInputIndex(int i)
+	public int getInputDomainIndex(int i)
 	{
 		return _inputIndices[i];
 	}
@@ -163,13 +166,13 @@ public final class DirectedDiscreteDomainList extends DiscreteDomainList
 	}
 	
 	@Override
-	public int getOutputIndex(int i)
+	public int getOutputDomainIndex(int i)
 	{
 		return _outputIndices[i];
 	}
 	
 	@Override
-	public int[] getOutputIndices()
+	public int[] getOutputDomainIndices()
 	{
 		return _outputIndices.clone();
 	}

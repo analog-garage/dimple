@@ -2,54 +2,54 @@ package com.analog.lyric.dimple.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
+public final class JointDomainIndexJoiner extends JointDomainReindexer
 {
 	/*-------
 	 * State
 	 */
 	
 	private final int _hashCode;
-	private final DiscreteDomainListJoiner _inverse;
+	private final JointDomainIndexJoiner _inverse;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public static DiscreteDomainListJoiner createJoiner(DiscreteDomainList fromDomains, int offset, int length)
+	public static JointDomainIndexJoiner createJoiner(JointDomainIndexer fromDomains, int offset, int length)
 	{
-		return new DiscreteDomainListJoiner(fromDomains, offset, length);
+		return new JointDomainIndexJoiner(fromDomains, offset, length);
 	}
 	
-	public static DiscreteDomainListJoiner createSplitter(DiscreteDomainList fromDomains, int offset)
+	public static JointDomainIndexJoiner createSplitter(JointDomainIndexer fromDomains, int offset)
 	{
-		return new DiscreteDomainListJoiner(fromDomains, offset);
+		return new JointDomainIndexJoiner(fromDomains, offset);
 	}
 	
-	private DiscreteDomainListJoiner(
-		DiscreteDomainList fromDomains,
-		DiscreteDomainList toDomains,
-		DiscreteDomainListJoiner inverse)
+	private JointDomainIndexJoiner(
+		JointDomainIndexer fromDomains,
+		JointDomainIndexer toDomains,
+		JointDomainIndexJoiner inverse)
 	{
 		super(fromDomains, null, toDomains, null);
 		_hashCode = computeHashCode();
 		_inverse = inverse;
 	}
 	
-	private DiscreteDomainListJoiner(DiscreteDomainList fromDomains, int offset)
+	private JointDomainIndexJoiner(JointDomainIndexer fromDomains, int offset)
 	{
 		super(fromDomains, null, makeToDomains(fromDomains, offset), null);
 		_hashCode = computeHashCode();
-		_inverse = new DiscreteDomainListJoiner(_toDomains, fromDomains, this);
+		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, this);
 	}
 		
-	private DiscreteDomainListJoiner(DiscreteDomainList fromDomains, int offset, int length)
+	private JointDomainIndexJoiner(JointDomainIndexer fromDomains, int offset, int length)
 	{
 		super(fromDomains, null, makeToDomains(fromDomains, offset, length), null);
 		_hashCode = computeHashCode();
-		_inverse = new DiscreteDomainListJoiner(_toDomains, fromDomains, this);
+		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, this);
 	}
 	
-	private static DiscreteDomainList makeToDomains(DiscreteDomainList fromDomains, int offset, int length)
+	private static JointDomainIndexer makeToDomains(JointDomainIndexer fromDomains, int offset, int length)
 	{
 		final int fromSize = fromDomains.size();
 		final int toSize = fromSize + 1 - length;
@@ -75,12 +75,12 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 			toDomains[to] = fromDomains.get(from);
 		}
 		
-		return DiscreteDomainList.create(toDomains);
+		return JointDomainIndexer.create(toDomains);
 	}
 
-	private static DiscreteDomainList makeToDomains(DiscreteDomainList fromDomains, int offset)
+	private static JointDomainIndexer makeToDomains(JointDomainIndexer fromDomains, int offset)
 	{
-		DiscreteDomainList joinedDomainList = ((JointDiscreteDomain<?>)fromDomains.get(offset)).getDomainList();
+		JointDomainIndexer joinedDomainList = ((JointDiscreteDomain<?>)fromDomains.get(offset)).getDomainIndexer();
 		final int length = joinedDomainList.size();
 		final int fromSize = fromDomains.size();
 		final int toSize = fromSize - 1 + length;
@@ -105,7 +105,7 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 			toDomains[to] = fromDomains.get(from);
 		}
 		
-		return DiscreteDomainList.create(toDomains);
+		return JointDomainIndexer.create(toDomains);
 	}
 
 	/*----------------
@@ -120,9 +120,9 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 			return true;
 		}
 		
-		if (other instanceof DiscreteDomainListJoiner)
+		if (other instanceof JointDomainIndexJoiner)
 		{
-			DiscreteDomainListJoiner that = (DiscreteDomainListJoiner)other;
+			JointDomainIndexJoiner that = (JointDomainIndexJoiner)other;
 			return _fromDomains.equals(that._fromDomains) && _toDomains.equals(that._toDomains);
 		}
 		
@@ -136,11 +136,11 @@ public final class DiscreteDomainListJoiner extends DiscreteDomainListConverter
 	}
 	
 	/*-------------------------------------
-	 * DiscreteDomainListConverter methods
+	 * JointDomainReindexer methods
 	 */
 	
 	@Override
-	public DiscreteDomainListJoiner getInverse()
+	public JointDomainIndexJoiner getInverse()
 	{
 		return _inverse;
 	}

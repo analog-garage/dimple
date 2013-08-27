@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 /**
  * Deterministic equality constraint.  Values must be numeric or boolean.
@@ -84,7 +84,7 @@ public class Equality extends FactorFunction
     }
     
     @Override
-    protected IFactorTable createTableForDomains(DiscreteDomainList domains)
+    protected IFactorTable createTableForDomains(JointDomainIndexer domains)
     {
     	final DiscreteDomain domain = domains.get(0);
     	for (int i = 1; i < domains.size(); ++ i)

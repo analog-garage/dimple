@@ -179,19 +179,19 @@ public abstract class DiscreteDomain extends Domain
 		return new EnumDomain<E>(enumClass);
 	}
 	
-	public static <T> JointDiscreteDomain<T> joint(DiscreteDomainList domains)
+	public static <T> JointDiscreteDomain<T> joint(JointDomainIndexer domains)
 	{
 		return new JointDiscreteDomain<T>(domains);
 	}
 	
 	public static <T> JointDiscreteDomain<T> joint(TypedDiscreteDomain<? extends T>... domains)
 	{
-		return joint(DiscreteDomainList.create(domains));
+		return joint(JointDomainIndexer.create(domains));
 	}
 	
 	public static JointDiscreteDomain<?> joint(DiscreteDomain ... domains)
 	{
-		return joint(DiscreteDomainList.create(domains));
+		return joint(JointDomainIndexer.create(domains));
 	}
 
 	public static IntRangeDomain range(int low, int high)
