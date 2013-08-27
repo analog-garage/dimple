@@ -798,6 +798,22 @@ b = Discrete(domain, 1, 10);
 z = a + b;					
 \end{lstlisting}
 
+In cases where the user wishes to use operator overloading with nested graphs, it may be necessary to use the FactorGraph's addBoundaryVariables method.  For instance, if they create a nested graph such that $y = a+b$ and the user requires y to be a boundary variable, the addBoundaryVariables method must be used.  For example:
+
+\begin{lstlisting}
+ng = FactorGraph();
+a = Bit();
+b = Bit();
+y = a+b;
+ng.addBoundaryVariables(y,a,b);
+
+fg = FactorGraph();
+a2 = Bit();
+b2 = Bit();
+y2 = Discrete([0 1 2]);
+fg.addFactor(ng,y2,a2,b2);
+\end{lstlisting}
+
 The specific set of operators supported is given in section~\ref{sec:overloaded}.
 
 \fi
