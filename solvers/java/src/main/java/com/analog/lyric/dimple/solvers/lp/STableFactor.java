@@ -70,7 +70,7 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
-	private double _totalWeight = Double.NaN;
+//	private double _totalWeight = Double.NaN;
 	
 	/*--------------
 	 * Construction
@@ -226,7 +226,6 @@ public class STableFactor extends STableFactorBase
 			}
 		}
 		
-		_totalWeight = totalWeight;
 		_nLpVars = cardinality;
 		
 		return cardinality;
@@ -347,7 +346,6 @@ public class STableFactor extends STableFactorBase
 	{
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
-		_totalWeight = Double.NaN;
 	}
 	
 	/**
