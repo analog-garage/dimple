@@ -32,18 +32,20 @@ function result = wrapProxyObject(proxyObject)
             end
             
         elseif proxyObject.isVariable()
-            if proxyObject.isDiscrete()
+            if proxyObject.getDomain().isDiscrete()
                 domain = cell(proxyObject.getDomain().getElements());
                 indices = 0:(proxyObject.size()-1);
                 result = Discrete(domain,'existing',proxyObject,indices:(proxyObject.size()-1));
-            elseif proxyObject.isJoint()
+            elseif proxyObject.getDomain().isJoint()
                 domain = RealJointDomain(proxyObject.getDomain().getNumVars());
                 indices = 0:(proxyObject.size()-1);
                 result = RealJoint(domain,'existing',proxyObject,indices);
-            else
+            elseif proxyObject.getDomain().isReal()
                 domain = RealDomain(proxyObject.getDomain().getLowerBound(),proxyObject.getDomain().getUpperBound);
                 indices = 0:(proxyObject.size()-1);
                 result = Real(domain,'existing',proxyObject,indices);
+            else
+                error('Invlaid variable type');
             end
             
         elseif proxyObject.isDomain()

@@ -63,7 +63,6 @@ public class SVariable extends SDiscreteVariableBase
 	 */
 	private int _nValidAssignments = -1;
 	
-	private double _totalWeight = Double.NaN;
 	
 	private boolean _fixedValue;
 	private double[] _inputs = null;
@@ -289,7 +288,6 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		final double[] inputWeights = _inputs;
 
-		double totalWeight = 0.0;
 
 		int cardinality = 0;
 		int domlength = getModelObject().getDomain().size();
@@ -308,12 +306,10 @@ public class SVariable extends SDiscreteVariableBase
 				}
 				else
 				{
-					totalWeight += w;
 					++cardinality;
 				}
 			}
 
-			_totalWeight = totalWeight;
 			_nValidAssignments = cardinality;
 
 			return cardinality > 1 ? cardinality : 0;
@@ -323,7 +319,6 @@ public class SVariable extends SDiscreteVariableBase
 		
 			_invalidAssignments = new BitSet(domlength);
 			_nValidAssignments = domlength;
-			_totalWeight = 1.0/((float) domlength);
 			return domlength;
 
 		}
@@ -347,13 +342,12 @@ public class SVariable extends SDiscreteVariableBase
 		{
 			_lpVarIndex = start;
 
-			final double totalWeight = _totalWeight;
 
 			for (double weight : getModelObject().getInput())
 			{
 				if (weight != 0.0)
 				{
-					objectiveFunction[start++] = Math.log(weight / totalWeight);
+					objectiveFunction[start++] = Math.log(weight);
 				}
 			}
 		}
@@ -447,7 +441,6 @@ public class SVariable extends SDiscreteVariableBase
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
 		_nValidAssignments = -1;
-		_totalWeight = Double.NaN;
 	}
 	
 	double getInput(int index)

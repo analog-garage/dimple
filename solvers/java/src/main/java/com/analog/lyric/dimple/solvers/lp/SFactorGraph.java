@@ -463,6 +463,22 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 	@Matlab
+	public double[][] getMatlabConstraintArrays()
+	{
+		MatlabConstraintTermIterator termIter = getMatlabSparseConstraints();
+		int numel = termIter.size();
+		double[][] result= new double[numel][3];
+		int ct=0;
+		while (termIter.advance())
+		{
+			result[ct][0]=termIter.getRow();
+			result[ct][1]=termIter.getVariable();
+			result[ct][2]=termIter.getCoefficient();
+			ct++;
+		}
+		return result;
+	}
+	@Matlab
 	public String getLPSolverName()
 	{
 		return _lpSolverName;
