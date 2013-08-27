@@ -26,7 +26,6 @@ import net.sf.javailp.Operator;
 import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
 import net.sf.javailp.SolverFactory;
-
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
@@ -93,6 +92,8 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Name of external LP solver to be used to do the actual solving.
 	 */
 	private String _lpSolverName = "";
+	private String _lpMatlabSolver = ""; // TODO: merge lpSolverName and lpSolver.
+	
 	
 	/*--------------
 	 * Construction
@@ -462,11 +463,37 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 	@Matlab
+	public double[][] getMatlabConstraintArrays()
+	{
+		MatlabConstraintTermIterator termIter = getMatlabSparseConstraints();
+		int numel = termIter.size();
+		double[][] result= new double[numel][3];
+		int ct=0;
+		while (termIter.advance())
+		{
+			result[ct][0]=termIter.getRow();
+			result[ct][1]=termIter.getVariable();
+			result[ct][2]=termIter.getCoefficient();
+			ct++;
+		}
+		return result;
+	}
+	@Matlab
 	public String getLPSolverName()
 	{
 		return _lpSolverName;
 	}
-	
+
+	@Matlab
+	public String getMatlabLPSolver()
+	{
+		return _lpMatlabSolver;
+	}
+	@Matlab
+	public void setMatlabLPSolver(String name)
+	{
+		_lpMatlabSolver = name != null ? name : "";
+	}
 	@Matlab
 	public void setLPSolverName(String name)
 	{
@@ -561,6 +588,7 @@ public class SFactorGraph extends SFactorGraphBase
 		// Create solver variables, if not already created
 		for (VariableBase var : model.getVariables())
 		{
+
 			SVariable svar = createVariable(var, true);
 			nLPVars += svar.computeValidAssignments();
 		}

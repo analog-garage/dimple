@@ -63,7 +63,6 @@ public class SVariable extends SDiscreteVariableBase
 	 */
 	private int _nValidAssignments = -1;
 	
-	private double _totalWeight = Double.NaN;
 	
 	private boolean _fixedValue;
 	private double[] _inputs = null;
@@ -289,31 +288,43 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		final double[] inputWeights = _inputs;
 
-		double totalWeight = 0.0;
+
 		int cardinality = 0;
-		for (int i = inputWeights.length; --i >=0 ;)
+		int domlength = getModelObject().getDomain().size();
+		if (_inputs != null)
 		{
-			double w = inputWeights[i];
-			if (w == 0.0)
+			for (int i = inputWeights.length; --i >=0 ;)
 			{
-				if (_invalidAssignments == null)
+				double w = inputWeights[i];
+				if (w == 0.0)
 				{
-					_invalidAssignments = new BitSet(i);
+					if (_invalidAssignments == null)
+					{
+						_invalidAssignments = new BitSet(i);
+					}
+					_invalidAssignments.set(i, true);
 				}
-				_invalidAssignments.set(i, true);
+				else
+				{
+					++cardinality;
+				}
 			}
-			else
-			{
-				totalWeight += w;
-				++cardinality;
-			}
+
+			_nValidAssignments = cardinality;
+
+			return cardinality > 1 ? cardinality : 0;
 		}
+		else
+		{	
 		
-		_totalWeight = totalWeight;
-		_nValidAssignments = cardinality;
-		
-		return cardinality > 1 ? cardinality : 0;
+			_invalidAssignments = new BitSet(domlength);
+			_nValidAssignments = domlength;
+			return domlength;
+
+		}
+
 	}
+
 	
 	/**
 	 * Compute the objective function parameters for this variable. This is simply
@@ -331,13 +342,12 @@ public class SVariable extends SDiscreteVariableBase
 		{
 			_lpVarIndex = start;
 
-			final double totalWeight = _totalWeight;
 
 			for (double weight : getModelObject().getInput())
 			{
 				if (weight != 0.0)
 				{
-					objectiveFunction[start++] = Math.log(weight / totalWeight);
+					objectiveFunction[start++] = Math.log(weight);
 				}
 			}
 		}
@@ -431,7 +441,6 @@ public class SVariable extends SDiscreteVariableBase
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
 		_nValidAssignments = -1;
-		_totalWeight = Double.NaN;
 	}
 	
 	double getInput(int index)
@@ -439,6 +448,10 @@ public class SVariable extends SDiscreteVariableBase
 		return _inputs[index];
 	}
 	
+	double[] getInputs()
+	{
+		return _inputs;
+	}
 	/**
 	 * Returns the index of the first LP variable associated with the values of this variable.
 	 * Returns negative value if not yet computed or if there are no associated LP variables

@@ -26,6 +26,7 @@ test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
+test6(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -472,5 +473,26 @@ assert(all(max(bs) < [maxr maxi]));
 assert(all(min(cs) > [2*minr 2*mini]));
 assert(all(max(cs) < [2*maxr 2*maxi]));
 
+
+end
+
+
+% Test mixing Discrete, Real, and Complex in the same graph
+% (there were some bugs with this)
+function test6(debugPrint, repeatable)
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+r1 = Real;
+r2 = Real;
+c1 = Complex;
+d = Discrete(1:10);
+
+b1 = r1 < r2;
+b2 = d < r2;
+c2 = c1 + r1;
+
+vars = fg.Variables;    % This used to fail
 
 end

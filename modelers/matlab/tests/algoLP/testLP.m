@@ -26,9 +26,9 @@ function testLP()
     fg.addFactor(notbothone,X,Y);
     fg.addFactor(notbothone,Y,Z);
     fg.addFactor(notbothone,X,Z);
-    X.Input=[0.3;0.7];
-    Y.Input=[0.2;0.8];
-    Z.Input=[0.6;0.3];
+    
+    Y.Input=[0.1;0.9];
+    Z.Input=[0.7;0.3];
 
     fg.solve();
     

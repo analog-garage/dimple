@@ -70,7 +70,7 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
-	private double _totalWeight = Double.NaN;
+//	private double _totalWeight = Double.NaN;
 	
 	/*--------------
 	 * Construction
@@ -201,7 +201,8 @@ public class STableFactor extends STableFactorBase
 					for (int j = 0, endj = indices.length; j < endj; ++j)
 					{
 						SVariable svar = svariables[j];
-						if (0.0 == svar.getInput(indices[j]))
+						double[] allinputs = svar.getInputs();
+						if (allinputs != null && 0.0 == svar.getInput(indices[j]))
 						{
 							skipEntry = true;
 							break;
@@ -225,7 +226,6 @@ public class STableFactor extends STableFactorBase
 			}
 		}
 		
-		_totalWeight = totalWeight;
 		_nLpVars = cardinality;
 		
 		return cardinality;
@@ -239,7 +239,6 @@ public class STableFactor extends STableFactorBase
 		{
 			_lpVarIndex = start;
 
-			final double totalWeight = _totalWeight;
 			final DiscreteFactor factor = getModelObject();
 			final FactorTable factorTable = factor.getFactorTable();
 			final double[] weights = factorTable.getWeights();
@@ -251,7 +250,7 @@ public class STableFactor extends STableFactorBase
 				{
 					break;
 				}
-				objectiveFunction[start++] = Math.log(weights[i] / totalWeight);
+				objectiveFunction[start++] = Math.log(weights[i]);
 			}
 		}
 		
@@ -347,7 +346,6 @@ public class STableFactor extends STableFactorBase
 	{
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
-		_totalWeight = Double.NaN;
 	}
 	
 	/**
