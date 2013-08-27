@@ -41,9 +41,9 @@ public class GammaSampler implements IRealConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			double[] message = (double[])(ports[port].getOutputMsg());
-			alpha += message[0];
-			beta += message[1];
+			GammaParameters message = (GammaParameters)(ports[port].getOutputMsg());
+			alpha += message.getAlpha();
+			beta += message.getBeta();
 		}
 		
 		return nextSample(alpha, beta);

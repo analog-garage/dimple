@@ -13,15 +13,17 @@ import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.NormalSampler;
 
 public class CustomLogNormal extends SRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
-	private double[][] _outputMsgs;
+	private Object[] _outputMsgs;
 	private SRealVariable _meanVariable;
 	private SRealVariable _precisionVariable;
 	private boolean _hasConstantMean;
@@ -54,7 +56,7 @@ public class CustomLogNormal extends SRealConjugateFactor
 			// Output port must be the mean-parameter input of LogNormal
 			// Determine sample mean and precision
 
-			double[] outputMsg = _outputMsgs[outPortNum];
+			NormalParameters outputMsg = (NormalParameters)_outputMsgs[outPortNum];
 				
 			// Start with the ports to variable outputs
 			ArrayList<INode> siblings = _factor.getSiblings();
@@ -73,15 +75,15 @@ public class CustomLogNormal extends SRealConjugateFactor
 			// Get the current precision
 			double precision = _hasConstantPrecision ? _constantPrecisionValue : _precisionVariable.getCurrentSample();
 
-			outputMsg[0] = sum / count;			// Sample mean
-			outputMsg[1] = precision * count;	// Sample precision
+			outputMsg.setMean(sum / count);				// Sample mean
+			outputMsg.setPrecision(precision * count);	// Sample precision
 		}
 		else if (conjugateSampler instanceof GammaSampler)
 		{
 			// Output port is precision-parameter input of LogNormal
 			// Determine sample alpha and beta
 			
-			double[] outputMsg = _outputMsgs[outPortNum];
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
 			
 			// Get the current mean
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
@@ -105,8 +107,8 @@ public class CustomLogNormal extends SRealConjugateFactor
 				count += _constantOutputCount;
 			}
 			
-			outputMsg[0] = 0.5 * count;		// Sample alpha
-			outputMsg[1] = 0.5 * sum;		// Sample beta
+			outputMsg.setAlpha(0.5 * count);		// Sample alpha
+			outputMsg.setBeta(0.5 * sum);			// Sample beta
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -301,7 +303,12 @@ public class CustomLogNormal extends SRealConjugateFactor
 	public void createMessages() 
 	{
 		super.createMessages();
-		_outputMsgs = new double[_numPorts][NUM_PARAMETERS];
+		_outputMsgs = new Object[_numPorts];
+		for (int i = 0; i < _numPorts; i++)
+			if (isPortPrecisionParameter(i))
+				_outputMsgs[i] = new GammaParameters();
+			else
+				_outputMsgs[i] = new NormalParameters();
 	}
 	
 	@Override

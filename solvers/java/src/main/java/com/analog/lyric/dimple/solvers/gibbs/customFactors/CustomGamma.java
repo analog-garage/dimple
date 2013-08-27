@@ -13,6 +13,7 @@ import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
@@ -21,7 +22,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.NormalSampler;
 public class CustomGamma extends SRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
-	private double[][] _outputMsgs;
+	private Object[] _outputMsgs;
 	private SRealVariable _alphaVariable;
 	private SRealVariable _betaVariable;
 	private boolean _hasConstantAlpha;
@@ -50,12 +51,12 @@ public class CustomGamma extends SRealConjugateFactor
 			super.updateEdgeMessage(outPortNum);
 		else if (conjugateSampler instanceof GammaSampler)
 		{
-			double[] outputMsg = _outputMsgs[outPortNum];
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
 			if (outPortNum >= _numParameterEdges)
 			{
 				// Output port is directed output of Gamma
-				outputMsg[0] = _hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample();
-				outputMsg[1] = _hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample();
+				outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
+				outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
 			}
 			else
 			{
@@ -79,8 +80,8 @@ public class CustomGamma extends SRealConjugateFactor
 				// Get the current alpha value
 				double alpha = _hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample();
 				
-				outputMsg[0] = count * alpha;			// Sample alpha
-				outputMsg[1] = sum;						// Sample beta
+				outputMsg.setAlpha(count * alpha);			// Sample alpha
+				outputMsg.setBeta(sum);						// Sample beta
 			}
 		}
 		else
@@ -234,7 +235,9 @@ public class CustomGamma extends SRealConjugateFactor
 	public void createMessages() 
 	{
 		super.createMessages();
-		_outputMsgs = new double[_numPorts][NUM_PARAMETERS];
+		_outputMsgs = new Object[_numPorts];
+		for (int i = 0; i < _numPorts; i++)
+			_outputMsgs[i] = new GammaParameters();
 	}
 	
 	@Override

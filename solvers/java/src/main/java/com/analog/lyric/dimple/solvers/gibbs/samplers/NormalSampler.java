@@ -45,9 +45,9 @@ public class NormalSampler implements IRealConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (mean, precision)
-			double[] message = (double[])(ports[port].getOutputMsg());
-			double mean = message[0];
-			double precision = message[1];
+			NormalParameters message = (NormalParameters)(ports[port].getOutputMsg());
+			double mean = message.getMean();
+			double precision = message.getPrecision();
 			
 			totalMeanPrecisionProduct += mean * precision;
 			totalPrecision += precision;
