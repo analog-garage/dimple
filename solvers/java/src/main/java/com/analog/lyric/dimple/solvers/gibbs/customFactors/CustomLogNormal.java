@@ -156,10 +156,10 @@ public class CustomLogNormal extends SRealConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		LogNormal normalFactorFunction = (LogNormal)(factorFunction);
+		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
 
 		// Test whether or not the specified port is the precision parameter
-		if (normalFactorFunction.hasConstantParameters())
+		if (logNormalFactorFunction.hasConstantParameters())
 		{
 			return false;	// Port must be an output since all parameters are constant
 		}
@@ -185,16 +185,16 @@ public class CustomLogNormal extends SRealConjugateFactor
 		FactorFunctionBase factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Normal factor function within
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the LogNormal factor function within
 		{
 			hasFactorFunctionConstants = true;
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		LogNormal normalFactorFunction = (LogNormal)(factorFunction);
+		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
 
 		// Test whether or not the specified port is the precision parameter
-		if (normalFactorFunction.hasConstantParameters())
+		if (logNormalFactorFunction.hasConstantParameters())
 		{
 			return false;	// Port must be an output since all parameters are constant
 		}
@@ -235,28 +235,28 @@ public class CustomLogNormal extends SRealConjugateFactor
 		}
 		
 		
-		// Get the Normal factor function and related state
+		// Get the LogNormal factor function and related state
 		FactorFunctionBase factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Normal factor function within
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the LogNormal factor function within
 		{
 			hasFactorFunctionConstants = true;
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		LogNormal normalFactorFunction = (LogNormal)(factorFunction);
+		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
 		
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = normalFactorFunction.hasConstantParameters();
+		boolean hasFactorFunctionConstructorConstants = logNormalFactorFunction.hasConstantParameters();
 		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantMean = true;
 			_hasConstantPrecision = true;
-			_constantMeanValue = normalFactorFunction.getMean();
-			_constantPrecisionValue = normalFactorFunction.getPrecision();
+			_constantMeanValue = logNormalFactorFunction.getMean();
+			_constantPrecisionValue = logNormalFactorFunction.getPrecision();
 			_numParameterEdges = 0;
 		}
 		else // Variable or constant parameters

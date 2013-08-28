@@ -33,7 +33,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.NormalSampler;
 
 public class CustomGamma extends SRealConjugateFactor
 {
@@ -77,7 +76,7 @@ public class CustomGamma extends SRealConjugateFactor
 			else
 			{
 				// Output port must be the beta-parameter input of Gamma
-				// Determine sample mean and precision
+				// Determine sample alpha and beta parameters
 				
 				// Start with the ports to variable outputs
 				ArrayList<INode> siblings = _factor.getSiblings();
@@ -110,7 +109,7 @@ public class CustomGamma extends SRealConjugateFactor
 	{
 		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
 		if (!isPortAlphaParameter(portNumber))				// No supported conjugate sampler for alpha parameter
-			availableSamplers.add(NormalSampler.factory);	// Either beta parameter or output, which have Gamma distribution
+			availableSamplers.add(GammaSampler.factory);	// Either beta parameter or output, which have Gamma distribution
 		return availableSamplers;
 	}
 	
@@ -128,10 +127,10 @@ public class CustomGamma extends SRealConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		Gamma normalFactorFunction = (Gamma)(factorFunction);
+		Gamma gammaFactorFunction = (Gamma)(factorFunction);
 
 		// Test whether or not the specified port is the alpha parameter
-		if (normalFactorFunction.hasConstantParameters())
+		if (gammaFactorFunction.hasConstantParameters())
 		{
 			return false;	// Port must be an output since all parameters are constant
 		}
@@ -170,28 +169,28 @@ public class CustomGamma extends SRealConjugateFactor
 		}
 		
 		
-		// Get the Normal factor function and related state
+		// Get the Gamma factor function and related state
 		FactorFunctionBase factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Normal factor function within
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Gamma factor function within
 		{
 			hasFactorFunctionConstants = true;
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		Gamma normalFactorFunction = (Gamma)(factorFunction);
+		Gamma gammaFactorFunction = (Gamma)(factorFunction);
 		
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = normalFactorFunction.hasConstantParameters();
+		boolean hasFactorFunctionConstructorConstants = gammaFactorFunction.hasConstantParameters();
 		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
 			_hasConstantBeta = true;
-			_constantAlphaValue = normalFactorFunction.getAlpha();
-			_constantBetaValue = normalFactorFunction.getBeta();
+			_constantAlphaValue = gammaFactorFunction.getAlpha();
+			_constantBetaValue = gammaFactorFunction.getBeta();
 			_numParameterEdges = 0;
 		}
 		else // Variable or constant parameters
