@@ -28,8 +28,8 @@ public class TestSupers
 	@Test
 	public void testNarrowArrayOf()
 	{
-		narrowArrayOfTestCase(A.class, new B(), new C());
-		narrowArrayOfTestCase(E.class, new E(), new E());
+		narrowArrayOfTestCase(A.class, new Object[] {new B(), new C()});
+		narrowArrayOfTestCase(E.class, new Object[] {new E(), new E()});
 		
 		A[] a = (A[]) Supers.narrowArrayOf(A.class, 0, new Object[0]);
 		assertEquals(A.class, a.getClass().getComponentType());
@@ -37,7 +37,7 @@ public class TestSupers
 		assertSame(a, a2);
 	}
 	
-	private <T> void narrowArrayOfTestCase(Class<?> expectedComponentType, T...elements)
+	private <T> void narrowArrayOfTestCase(Class<?> expectedComponentType, T[] elements)
 	{
 		T[] copy = Supers.narrowArrayOf(elements);
 		assertArrayEquals(elements, copy);
@@ -75,7 +75,6 @@ public class TestSupers
 		assertEquals(A.class, Supers.nearestCommonSuperClass(F.class, D.class));
 		assertEquals(Object.class, Supers.nearestCommonSuperClass(D.class, A[].class));
 		
-		assertEquals(Object.class, Supers.nearestCommonSuperClass());
 		assertEquals(Object.class, Supers.nearestCommonSuperClass(new Integer[0]));
 		assertEquals(B.class, Supers.nearestCommonSuperClass(new A[] {new B()} ));
 		assertEquals(Object.class, Supers.nearestCommonSuperClass(new Object[] { null, null, null }));
