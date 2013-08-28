@@ -27,10 +27,10 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
 import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 @ThreadSafe
 public abstract class FactorFunction extends FactorFunctionBase
@@ -76,7 +76,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     			{
     				if (table instanceof INewFactorTable)
     				{
-    					((INewFactorTable)table).setDirected(newDomains.getOutputSet());
+    					((INewFactorTable)table).setConditional(newDomains.getOutputSet());
     				}
     				else
     				{

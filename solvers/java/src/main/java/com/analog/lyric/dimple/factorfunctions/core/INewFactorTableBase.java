@@ -180,12 +180,27 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract boolean isDeterministicDirected();
 	
 	/**
-	 * True if table is directed, in which case {@link #getInputSet()} will be non-null.
+	 * True if table is in form appropriate for conditional distribution, i.e. if it is directed and the
+	 * sum of the weights of entries for any given combination of input elements is a constant.
+	 * <p>
+	 * @see #isDirected()
+	 * @see #normalizeConditional()
+	 */
+	public abstract boolean isConditional();
+	
+	/**
+	 * True if table has designated input/output domains directed, in which case
+	 * {@link #getInputSet()} will be non-null.
+	 * <p>
+	 * For most applications the table should have weights normalized so that {@link #isConditional()}
+	 * also is true.
 	 */
 	public abstract boolean isDirected();
 	
 	/**
-	 * True if the table has been normalized by {@link #normalize()} or the equivalent.
+	 * True if the table is not directed and its weights add up to 1.0
+	 * <p>
+	 * @see #isDirected()
 	 */
 	public abstract boolean isNormalized();
 
@@ -267,14 +282,24 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract int[] sparseIndexToIndices(int sparseIndex, int[] indices);
 
 	/**
-	 * Normalizes the weights/energies of the table.
+	 * Normalizes the weights/energies of the table by dividing by a constant to ensure that
+	 * weights add up to one.
 	 * <p>
-	 * If not {@link #isDirected()}, then this simply modifies the weights/energies of the
-	 * table so that the weights add up to one. If table is directed then this instead
-	 * makes sure that the weights of all entries with the same set of input indices
-	 * adds up to one.
+	 * @throws UnsupportedOperationException if {@link #isDirected()}, use {@link #normalizeConditional()} instead.
+	 * <p>
+	 * @see #isNormalized()
 	 */
 	public abstract void normalize();
+	
+	/**
+	 * Normalizes the weights/energies of directed table to ensure that weights applicable to any
+	 * combination of input elements add up to one.
+	 * <p>
+	 * @throws UnsupportedOperationException if not {@link #isDirected()}, use {@link #normalize()} instead.
+	 * <p>
+	 * @see #isConditional()
+	 */
+	public abstract void normalizeConditional();
 
 	public void setEnergyForArguments(double energy, Object ... arguments);
 	public void setEnergyForIndices(double energy, int ... indices);

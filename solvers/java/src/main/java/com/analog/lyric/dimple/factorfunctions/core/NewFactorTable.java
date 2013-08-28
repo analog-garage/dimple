@@ -70,6 +70,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	private static final int DETERMINISTIC_COMPUTED = 0x01;
 	private static final int NORMALIZED = 0x02;
 	private static final int NORMALIZED_COMPUTED = 0x04;
+	private static final int CONDITIONAL = 0x08;
+	private static final int CONDITIONAL_COMPUTED = 0x10;
 	private int _computedMask = 0;
 	
 	/*--------------
@@ -475,6 +477,25 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 
 	@Override
+	public final boolean isConditional()
+	{
+		if ((_computedMask & CONDITIONAL_COMPUTED) == 0)
+		{
+			if (isDirected())
+			{
+				normalizeDirected(true);
+			}
+			if ((_computedMask & CONDITIONAL) == 0)
+			{
+				// If its not conditional, it cannot be deterministic directed.
+				_computedMask |= DETERMINISTIC_COMPUTED;
+			}
+			_computedMask |= CONDITIONAL_COMPUTED;
+		}
+		return (_computedMask & CONDITIONAL) != 0;
+	}
+	
+	@Override
 	public boolean isDeterministicDirected()
 	{
 		if (_representation == DETERMINISTIC)
@@ -510,8 +531,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				prevInputIndex = inputIndex;
 			}
 
-			if (deterministic)
+			if (deterministic && (_computedMask & CONDITIONAL) == 0)
 			{
+				// Ensure that weights are the same. No need to do this if CONDITIONAL.
 				final double tolerance = 1e-12;
 				if (hasSparseEnergies())
 				{
@@ -539,6 +561,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				_denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 				_denseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 				_representation = DETERMINISTIC;
+				// deterministic directed is a special case of conditional
+				_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
 			}
 		}
 		_computedMask |= DETERMINISTIC_COMPUTED;
@@ -551,7 +575,10 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	{
 		if ((_computedMask & NORMALIZED_COMPUTED) == 0)
 		{
-			normalizeInternal(true);
+			if (!isDirected())
+			{
+				normalizeUndirected(true);
+			}
 			_computedMask |= NORMALIZED_COMPUTED;
 		}
 		return (_computedMask & NORMALIZED) != 0;
@@ -744,7 +771,25 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize()
 	{
-		normalizeInternal(false);
+		if (isDirected())
+		{
+			throw new UnsupportedOperationException(
+				"normalize() not supported for directed factor table. Use normalizeConditional() instead");
+		}
+
+		normalizeUndirected(false);
+	}
+	
+	@Override
+	public void normalizeConditional()
+	{
+		if (!isDirected())
+		{
+			throw new UnsupportedOperationException(
+				"normalizeConditional() not supported for undirected factor table. Use normalize() instead");
+		}
+
+		normalizeDirected(false);
 	}
 	
 	@Override
@@ -913,9 +958,30 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
+	public void setConditional(BitSet outputSet)
+	{
+		if (outputSet == null)
+		{
+			throw new IllegalArgumentException("setConditional(BitSet) requires non-null argument");
+		}
+		setDirected(outputSet, true);
+	}
+	
+	@Override
+	public void setConditionalAndNormalize(BitSet outputSet)
+	{
+		if (outputSet == null)
+		{
+			throw new IllegalArgumentException("setConditionalAndNroa(BitSet) requires non-null argument");
+		}
+		setDirected(outputSet, false);
+		normalizeConditional();
+	}
+
+	@Override
 	public void setDirected(BitSet outputSet)
 	{
-		setDirected(outputSet, true);
+		setDirected(outputSet, false);
 	}
 	
 	@Override
@@ -1533,14 +1599,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		final JointDomainIndexer domains = getDomainIndexer();
-		BitSet toSet = BitSetUtil.bitsetFromIndices(domains.size(), directedTo);
-		if (!toSet.equals(domains.getOutputSet()))
-		{
-			setDirected(toSet, false);
-		}
-	
-		normalize();
+		setConditional(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo));
 	}
 
 	@Override
@@ -1552,7 +1611,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void setDirected(int[] directedTo, int[] directedFrom)
 	{
-		setDirected(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo));
+		setDirected(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo), true);
 	}
 	
 	/*-----------------
@@ -1580,6 +1639,14 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		return sparseIndex;
+	}
+	
+	private void assertIsConditional()
+	{
+		 if (!isConditional())
+		 {
+			 throw new DimpleException("weights must be normalized correctly for directed factors");
+		 }
 	}
 	
 	private void computeNonZeroWeights()
@@ -1881,7 +1948,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			break;
 		}
 		
-		_computedMask |= NORMALIZED|NORMALIZED_COMPUTED;
+		_computedMask |= CONDITIONAL|CONDITIONAL_COMPUTED;
 		return true;
 	}
 	
@@ -1894,16 +1961,11 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		return false;
 	}
 
-	private boolean normalizeInternal(boolean justCheck)
+	private boolean normalizeUndirected(boolean justCheck)
 	{
 		if ((_computedMask & NORMALIZED) != 0)
 		{
 			return true;
-		}
-			
-		if (isDirected())
-		{
-			return normalizeDirected(justCheck);
 		}
 		
 		double total = 0.0;
@@ -2018,12 +2080,16 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		computeNonZeroWeights();
 	}
 
-	private void setDirected(BitSet outputSet, boolean assertNormalized)
+	private void setDirected(BitSet outputSet, boolean assertConditional)
 	{
 		final JointDomainIndexer oldDomains = getDomainIndexer();
 		final JointDomainIndexer newDomains = JointDomainIndexer.create(outputSet, oldDomains);
 		if (oldDomains.equals(newDomains))
 		{
+			if (assertConditional)
+			{
+				assertIsConditional();
+			}
 			return;
 		}
 		
@@ -2079,9 +2145,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 					_representation = SPARSE_ENERGY;
 				}
 			}
-			else if (assertNormalized && !isNormalized())
+			else if (assertConditional)
 			{
-				throw new DimpleException("weights must be normalized correctly for directed factors");
+				assertIsConditional();
 			}
 			
 			ok = true;

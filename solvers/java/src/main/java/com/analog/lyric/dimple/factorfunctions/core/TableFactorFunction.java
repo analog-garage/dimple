@@ -53,7 +53,7 @@ public class TableFactorFunction extends FactorFunction
     		{
     			if (_factorTable instanceof INewFactorTable)
     			{
-					((INewFactorTable)_factorTable).setDirected(newDomains.getOutputSet());
+					((INewFactorTable)_factorTable).setConditional(newDomains.getOutputSet());
     			}
     			else
     			{

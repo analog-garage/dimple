@@ -197,8 +197,8 @@ public class TestFactorTable
 		assertFalse(xor2.isDirected());
 		assertInvariants(xor2);
 		
-		xor2.setDirected(xor3Output);
-		assertTrue(xor2.isDirected());
+		xor2.setConditional(xor3Output);
+		assertTrue(xor2.isConditional());
 		assertTrue(xor2.isDeterministicDirected());
 		xor2.setEnergyForSparseIndex(23.0, 1);
 		assertEquals(23.0, xor2.getEnergyForSparseIndex(1), 0.0);
@@ -214,7 +214,22 @@ public class TestFactorTable
 		xor2.setWeightForSparseIndex(23.0, 1);
 		assertEquals(23.0, xor2.getWeightForSparseIndex(1), 0.0);
 		assertFalse(xor2.isDeterministicDirected());
-		xor2.setWeightForSparseIndex(1.0, 1);
+		assertFalse(xor2.isConditional());
+		try
+		{
+			xor2.setConditional(xor2.getDomainIndexer().getOutputSet());
+			fail("expected exception");
+		}
+		catch (DimpleException ex)
+		{
+			assertThat(ex.getMessage(), containsString("weights must be normalized correctly for directed"));
+		}
+		xor2.normalizeConditional();
+		assertTrue(xor2.isConditional());
+		assertTrue(xor2.isDeterministicDirected());
+		assertEquals(1.0, xor2.getWeightForSparseIndex(1), 0.0);
+		xor2.setWeightForSparseIndex(23.0, 1);
+		xor2.setConditionalAndNormalize(xor2.getDomainIndexer().getOutputSet());
 		assertTrue(xor2.isDeterministicDirected());
 		
 		xor2.setRepresentation(NewFactorTableRepresentation.DENSE_ENERGY);
@@ -257,6 +272,25 @@ public class TestFactorTable
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
 		testRandomOperations(t2x3x4, 10000);
+		
+		try
+		{
+			xor2.setConditional(null);
+			fail("expected exception");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("requires non-null argument"));
+		}
+		try
+		{
+			xor2.setConditionalAndNormalize(null);
+			fail("expected exception");
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("requires non-null argument"));
+		}
 	}
 	
 	@Test
@@ -402,7 +436,7 @@ public class TestFactorTable
 		
 		while (--nOperations >= 0)
 		{
-			if (nOperations == 4026)
+			if (nOperations == 9996)
 			{
 				Misc.breakpoint();
 			}
@@ -461,10 +495,26 @@ public class TestFactorTable
 					table.normalize();
 					assertTrue(table.isNormalized());
 				}
+				catch (UnsupportedOperationException ex)
+				{
+					assertTrue(table.isDirected());
+					assertFalse(table.isNormalized());
+					assertThat(ex.getMessage(), containsString("not supported for directed factor table"));
+				}
+				try
+				{
+					table.normalizeConditional();
+					assertTrue(table.isConditional());
+				}
+				catch (UnsupportedOperationException ex)
+				{
+					assertFalse(table.isConditional());
+					assertFalse(table.isDirected());
+				}
 				catch (DimpleException ex)
 				{
 					assertThat(ex.getMessage(), containsString("Cannot normalize directed factor table with zero"));
-					assertFalse(table.isNormalized());
+					assertFalse(table.isConditional());
 				}
 				break;
 				
@@ -828,16 +878,29 @@ public class TestFactorTable
 			assertEquals((double)nonZeroCount/(double)i, table.density(), 1e-12);
 			if (table.isNormalized())
 			{
-				if (table.isDirected())
+				assertFalse(table.isDirected());
+				if (totalWeight != 0.0)
 				{
-					// TODO
+					assertEquals(1.0, totalWeight, 1e-12);
 				}
-				else
+			}
+			if (table.isConditional())
+			{
+				assertTrue(table.isDirected());
+				double totalWeightForPrevInput = 0.0;
+				for (int ii = 0, isize = domains.getInputCardinality(); ii < isize; ++ii)
 				{
-					if (totalWeight != 0.0)
+					double totalWeightForInput = 0.0;
+					for (int oi = 0, osize = domains.getOutputCardinality(); oi < osize; ++oi)
 					{
-						assertEquals(1.0, totalWeight, 1e-12);
+						int ji = domains.jointIndexFromInputOutputIndices(ii, oi);
+						totalWeightForInput += table.getWeightForJointIndex(ji);
 					}
+					if (ii > 0)
+					{
+						assertEquals(totalWeightForPrevInput, totalWeightForInput, 1e-12);
+					}
+					totalWeightForPrevInput = totalWeightForInput;
 				}
 			}
 			
