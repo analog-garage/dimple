@@ -849,5 +849,21 @@ The functions called from the switchyard all make calls on the static DimpleMana
 
 As noted earlier in this document, the C++ code also makes calls back to MATLAB to build the CombinationTables from the delta functions. It does so by calling the C++ mexCallMATLAB function, which takes the MATLAB function name as an argument.
 
+\subsubsection{LP Solver}
+\paragraph{Objective Function}
+\[
+\sum_{f \in F} f(v) p(v) + \sum_{v \in V} input(v) p(v)
+\]
+
+\paragraph{Constraints}
+
+for each factor and variable
+\[
+\sum_{y} \sum_{z} p(x,y,z) = p(x)
+\]
+
+\paragraph{IP}
+When solving exactly, we make the previous equations an IP by constraining p(V=v) to be 0 or 1 and 
+$ \sum_{v \in V}p(v) = 1 $
 
 \end{document}  

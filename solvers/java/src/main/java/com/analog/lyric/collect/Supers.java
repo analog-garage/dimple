@@ -84,7 +84,7 @@ public abstract class Supers
 	 * Returns a new array containing {@code elements} with component type set to the nearest common superclass
 	 * {@link #nearestCommonSuperClass(Object...)} of the objects it contains.
 	 */
-	public static <T extends Object> T[] narrowArrayOf(T...elements)
+	public static <T> T[] narrowArrayOf(T[] elements)
 	{
 		return narrowArrayOf(Object.class, Integer.MAX_VALUE, elements);
 	}
@@ -97,10 +97,11 @@ public abstract class Supers
 	 * @see #narrowArrayOf(Object...)
 	 * @see #copyOf(Class, Object...)
 	 */
-	public static <T extends Object> T[] narrowArrayOf(
+	
+	public static <T> T[] narrowArrayOf(
 		Class<? extends Object> rootClass,
 		int maxRelativeClassDepth,
-		T...elements)
+		T[] elements)
 	{
 		if (elements.length == 0)
 		{
@@ -133,7 +134,7 @@ public abstract class Supers
 	 * @see #narrowArrayOf(T...)
 	 * @see #copyOf(Class, T...)
 	 */
-	public static <T extends Object> T[] copyOf(Class<?> componentType, T...elements)
+	public static <T> T[] copyOf(Class<?> componentType, T[] elements)
 	{
 		final int n = elements.length;
 		T[] array = (T[])Array.newInstance(componentType, n);
@@ -204,9 +205,22 @@ public abstract class Supers
 
 	/**
 	 * Returns the nearest common superclass (not interface) for all of the objects.
+	 */
+	public static <T> Class<?> nearestCommonSuperClass(T obj, Object ... moreObjects)
+	{
+		Class<?> superclass = nearestCommonSuperClass(moreObjects);
+		if (obj != null)
+		{
+			superclass = nearestCommonSuperClass(superclass, obj.getClass());
+		}
+		return superclass;
+	}
+	
+	/**
+	 * Returns the nearest common superclass (not interface) for all of the objects.
 	 * Returns {@link Object} if array contains no objects.
 	 */
-	public static <T> Class<?> nearestCommonSuperClass(T...objects)
+	public static <T> Class<?> nearestCommonSuperClass(T[] objects)
 	{
 		int n = objects.length;
 		if (n == 0)

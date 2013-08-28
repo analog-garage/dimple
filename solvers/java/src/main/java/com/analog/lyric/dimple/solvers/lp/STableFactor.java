@@ -70,6 +70,10 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
+
+
+
+
 	/*--------------
 	 * Construction
 	 */
