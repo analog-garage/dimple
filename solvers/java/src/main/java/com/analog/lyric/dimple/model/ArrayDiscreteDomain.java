@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.model;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -20,11 +21,19 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 	 * Construction
 	 */
 	
-	ArrayDiscreteDomain(Element ... elements)
+	@SuppressWarnings("unchecked")
+	ArrayDiscreteDomain(Element firstElement, int offset, Object ... moreElements)
 	{
-		super(computeHashCode(elements));
+		super(computeHashCode(firstElement, moreElements));
 		
-		_elements = Supers.narrowArrayOf(elements);
+		Class<?> eltClass = Supers.nearestCommonSuperClass(firstElement, moreElements);
+		Object[] elements = (Object[]) Array.newInstance(eltClass,  moreElements.length + 1 - offset);
+		elements[0] = firstElement;
+		for (int i = moreElements.length; --i>=offset;)
+		{
+			elements[i+1-offset] = moreElements[i];
+		}
+		_elements = (Element[])elements;
 
 		_elementToIndex = new HashMap<Object,Integer>(elements.length);
 		for (int i = 0, end = elements.length; i < end; ++i)
@@ -53,7 +62,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 		}
 	}
 	
-	private static int computeHashCode(Object[] elements)
+	private static int computeHashCode(Object firstElement, Object[] elements)
 	{
 		final int prime = 31;
 		int result = 1;

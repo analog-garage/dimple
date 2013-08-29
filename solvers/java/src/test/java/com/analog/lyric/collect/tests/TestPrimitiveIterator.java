@@ -134,7 +134,7 @@ public class TestPrimitiveIterator
 		Long
 	}
 	
-	private <T extends Number> void testIterable(PrimitiveIterable<T> iterable, T ... expected)
+	private final <T extends Number> void testIterable(PrimitiveIterable<T> iterable, T ... expected)
 	{
 		PrimitiveIterator<T> iterator = iterable.iterator();
 		assertNotNull(iterator);
@@ -145,7 +145,7 @@ public class TestPrimitiveIterator
 		testPrimitiveIterator(iterator, expected);
 	}
 	
-	private <T extends Number> void testNumberIterator(PrimitiveIterator<T> iterator, T ... expected)
+	private final <T extends Number> void testNumberIterator(PrimitiveIterator<T> iterator, T ... expected)
 	{
 		int i = 0;
 		for (; iterator.hasNext(); ++i)
@@ -157,7 +157,7 @@ public class TestPrimitiveIterator
 		assertEquals(expected.length, i);
 	}
 
-	private <T extends Number> void testPrimitiveIterator(PrimitiveIterator<T> iterator, T ... expected)
+	private final <T extends Number> void testPrimitiveIterator(PrimitiveIterator<T> iterator, T ... expected)
 	{
 		
 		Class<?> numberClass = expected.getClass().getComponentType();

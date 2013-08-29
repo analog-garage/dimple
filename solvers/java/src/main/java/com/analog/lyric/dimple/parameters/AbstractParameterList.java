@@ -118,7 +118,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
-	public void setAll(Parameter<Key> ... values)
+	public void setAll(Iterable<Parameter<Key>> values)
 	{
 		for (Parameter<Key> value : values)
 		{

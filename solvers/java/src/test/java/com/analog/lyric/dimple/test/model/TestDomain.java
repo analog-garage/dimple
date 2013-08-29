@@ -26,7 +26,6 @@ public class TestDomain
 	
 	enum E { A, B, C }
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void test()
 	{

@@ -56,30 +56,37 @@ public abstract class DiscreteDomain extends Domain
 	 */
 	public static TypedDiscreteDomain<Boolean> bool()
 	{
-		return new ArrayDiscreteDomain<Boolean>(false, true);
+		return create(false, true);
 	}
 	
 	/**
 	 * Returns a discrete domain consisting of the specified elements in the specified order.
 	 * <p>
-	 * 
-	 * <p>
 	 * @param elements must either be immutable or must implement {@link Object#equals(Object)} and
 	 * {@link Object#hashCode()} methods that do not depend on any mutable state.
 	 */
-	public static <T> TypedDiscreteDomain<T> create(T ... elements)
+	public static <T> TypedDiscreteDomain<T> create(T[] elements)
 	{
-		int size = elements.length;
-		Object firstElt = elements[0];
+		return create(elements[0], 1, elements);
+	}
+	
+	public static <T> TypedDiscreteDomain<T> create(T firstElement, Object ... moreElements)
+	{
+		return create(firstElement, 0, moreElements);
+	}
+	
+	private static <T> TypedDiscreteDomain<T> create(T firstElt, int offset, Object[] moreElements)
+	{
+		int size = moreElements.length;
 		Class<?> eltClass = firstElt.getClass();
 		
-		if (eltClass.isEnum())
+		if (eltClass.isEnum() && ((Enum<?>)firstElt).ordinal() == 0)
 		{
 			boolean useEnumDomain = true;
-			for (int i = 0; i < size; ++i)
+			for (int i = offset; i < size; ++i)
 			{
-				Object elt = elements[i];
-				if (elt.getClass() != eltClass || ((Enum<?>)elt).ordinal() != i)
+				Object elt = moreElements[i];
+				if (elt.getClass() != eltClass || ((Enum<?>)elt).ordinal() != (i + 1))
 				{
 					useEnumDomain = false;
 					break;
@@ -97,19 +104,19 @@ public abstract class DiscreteDomain extends Domain
 		{
 			// We could eliminate the instanceof checks if the component type of the 'elements'
 			// array is Integer...
-			if (size > 1 && elements[1] instanceof Integer)
+			if (size > offset && moreElements[offset] instanceof Integer)
 			{
 				int first = ((Integer)firstElt).intValue();
-				int prev = ((Integer)elements[1]).intValue();
+				int prev = ((Integer)moreElements[offset]).intValue();
 				int interval = prev - first;
 				
 				if (interval > 0)
 				{
 					boolean useIntRangeDomain = true;
 
-					for (int i = 2; i < size; ++i)
+					for (int i = offset+1; i < size; ++i)
 					{
-						Object element = elements[i];
+						Object element = moreElements[i];
 						if (element instanceof Integer)
 						{
 							int next = prev + interval;
@@ -134,10 +141,10 @@ public abstract class DiscreteDomain extends Domain
 		}
 		else if (Double.class.isAssignableFrom(eltClass))
 		{
-			if (size > 1 && elements[1] instanceof Double)
+			if (size > offset && moreElements[offset] instanceof Double)
 			{
 				double first = ((Double)firstElt).doubleValue();
-				double prev = ((Double)elements[1]).doubleValue();
+				double prev = ((Double)moreElements[offset]).doubleValue();
 				double interval = prev - first;
 				
 				if (interval > 0.0)
@@ -145,9 +152,9 @@ public abstract class DiscreteDomain extends Domain
 					double tolerance = DoubleRangeDomain.defaultToleranceForInterval(interval);
 					boolean useDoubleRangeDomain = true;
 
-					for (int i = 2; i < size; ++i)
+					for (int i = 1+offset; i < size; ++i)
 					{
-						Object element = elements[i];
+						Object element = moreElements[i];
 						if (element instanceof Double)
 						{
 							double next = prev + interval;
@@ -171,7 +178,7 @@ public abstract class DiscreteDomain extends Domain
 			}
 		}
 		
-		return new ArrayDiscreteDomain<T>(elements);
+		return new ArrayDiscreteDomain<T>(firstElt, offset, moreElements);
 	}
 	
 	public static <E extends Enum<E>> EnumDomain<E> forEnum(Class<E> enumClass)
@@ -184,7 +191,7 @@ public abstract class DiscreteDomain extends Domain
 		return new JointDiscreteDomain<T>(domains);
 	}
 	
-	public static <T> JointDiscreteDomain<T> joint(TypedDiscreteDomain<? extends T>... domains)
+	public static <T> JointDiscreteDomain<T> joint(TypedDiscreteDomain<?>... domains)
 	{
 		return joint(JointDomainIndexer.create(domains));
 	}

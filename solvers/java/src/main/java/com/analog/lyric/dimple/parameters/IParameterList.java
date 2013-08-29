@@ -137,7 +137,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * <p>
 	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
 	 * @see #set(IParameterKey, double)
-	 * @see #setAll(Parameter...)
+	 * @see #setAll(Iterable)
 	 */
 	public void set(int index, double value);
 	
@@ -148,7 +148,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * @throws IndexOutOfBoundsException if index of a value is negative or not less than {@link #size()}.
 	 * @see #setAll(double...)
 	 */
-	public void setAll(Parameter<Key> ... values);
+	public void setAll(Iterable<Parameter<Key>> values);
 	
 	/**
 	 * Sets corresponding parameters from specified array of {@code values}, where each parameter is
