@@ -45,8 +45,12 @@ public class CustomLogNormal extends SRealConjugateFactor
 	private boolean _hasConstantMean;
 	private boolean _hasConstantPrecision;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstants;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private int _numOutputEdges;
 	private int _numParameterEdges;
+	private int _meanParameterPort = -1;
+	private int _precisionParameterPort = -1;
 	private int _constantOutputCount;
 	private double _constantMeanValue;
 	private double _constantPrecisionValue;
@@ -55,7 +59,8 @@ public class CustomLogNormal extends SRealConjugateFactor
 	private static final int NUM_PARAMETERS = 2;
 	private static final int MEAN_PARAMETER_INDEX = 0;
 	private static final int PRECISION_PARAMETER_INDEX = 1;
-	
+	private static final int NO_PORT = -1;
+
 	public CustomLogNormal(Factor factor)
 	{
 		super(factor);
@@ -69,7 +74,7 @@ public class CustomLogNormal extends SRealConjugateFactor
 			super.updateEdgeMessage(outPortNum);
 		else if (conjugateSampler instanceof NormalSampler)
 		{
-			// Output port must be the mean-parameter input of LogNormal
+			// Output port must be the mean-parameter input
 			// Determine sample mean and precision
 
 			NormalParameters outputMsg = (NormalParameters)_outputMsgs[outPortNum];
@@ -96,7 +101,7 @@ public class CustomLogNormal extends SRealConjugateFactor
 		}
 		else if (conjugateSampler instanceof GammaSampler)
 		{
-			// Output port is precision-parameter input of LogNormal
+			// Output port is precision-parameter input
 			// Determine sample alpha and beta
 			
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
@@ -144,74 +149,14 @@ public class CustomLogNormal extends SRealConjugateFactor
 	
 	public boolean isPortMeanParameter(int portNumber)
 	{
-		// This doesn't use the state values set up in initialize() since this may be called prior to initialize
-		
-		// Get the LogNormal factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Normal factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
-
-		// Test whether or not the specified port is the precision parameter
-		if (logNormalFactorFunction.hasConstantParameters())
-		{
-			return false;	// Port must be an output since all parameters are constant
-		}
-		else if (hasFactorFunctionConstants)
-		{
-			if (constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
-				return false;	// Mean parameter is constant, so it can't be a port
-			else
-				return (portNumber == MEAN_PARAMETER_INDEX);	// Mean is not constant so true if this is the alpha index
-		}
-		else if (portNumber == MEAN_PARAMETER_INDEX)
-		{
-			return true;	// No parameters are constant, so this is the right port
-		}
-		return false;		// No constants, but the specified port is not the precision port
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		return (portNumber == _meanParameterPort);
 	}
 	
 	public boolean isPortPrecisionParameter(int portNumber)
 	{
-		// This doesn't use the state values set up in initialize() since this may be called prior to initialize
-		
-		// Get the LogNormal factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the LogNormal factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
-
-		// Test whether or not the specified port is the precision parameter
-		if (logNormalFactorFunction.hasConstantParameters())
-		{
-			return false;	// Port must be an output since all parameters are constant
-		}
-		else if (hasFactorFunctionConstants)
-		{
-			if (constantFactorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
-				return false;	// Precision parameter is constant, so it can't be a port
-			else if (constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
-				return (portNumber == (PRECISION_PARAMETER_INDEX - 1));	// This is precision only if port is precision parameter shifted by one since mean parameter is constant
-			else if (portNumber == PRECISION_PARAMETER_INDEX)
-				return true;	// This is the precision parameter since mean is also a port
-		}
-		else if (portNumber == PRECISION_PARAMETER_INDEX)
-		{
-			return true;	// No parameters are constant, so this is the right port
-		}
-		return false;		// No constants, but the specified port is not the precision port
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		return (portNumber == _precisionParameterPort);
 	}
 
 	
@@ -235,66 +180,15 @@ public class CustomLogNormal extends SRealConjugateFactor
 		}
 		
 		
-		// Get the LogNormal factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the LogNormal factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		LogNormal logNormalFactorFunction = (LogNormal)(factorFunction);
-		
-		
-		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = logNormalFactorFunction.hasConstantParameters();
-		if (hasFactorFunctionConstructorConstants)
-		{
-			// The factor function has fixed parameters provided in the factor-function constructor
-			_hasConstantMean = true;
-			_hasConstantPrecision = true;
-			_constantMeanValue = logNormalFactorFunction.getMean();
-			_constantPrecisionValue = logNormalFactorFunction.getPrecision();
-			_numParameterEdges = 0;
-		}
-		else // Variable or constant parameters
-		{
-			_numParameterEdges = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
-			{
-				_hasConstantMean = true;
-				_constantMeanValue = (Double)constantFactorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX);
-				_meanVariable = null;
-			}
-			else
-			{
-				_hasConstantMean = false;
-				int meanEdgeIndex = _numParameterEdges++;
-				_meanVariable = (SRealVariable)(((VariableBase)siblings.get(meanEdgeIndex)).getSolver());
-			}
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
-			{
-				_hasConstantPrecision = true;
-				_constantPrecisionValue = (Double)constantFactorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX);
-				_precisionVariable = null;
-			}
-			else
-			{
-				_hasConstantPrecision = false;
-				int precisionEdgeIndex = _numParameterEdges++;
-				_precisionVariable = (SRealVariable)(((VariableBase)siblings.get(precisionEdgeIndex)).getSolver());
-			}
-		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
+		// Determine what parameters are constants or edges, and save the state
+		determineParameterConstantsAndEdges();
 		
 		
 		// Pre-compute statistics associated with any constant output values
 		_hasConstantOutputs = false;
-		if (hasFactorFunctionConstants)
+		if (_hasFactorFunctionConstants)
 		{
+			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
 			Object[] constantValues = constantFactorFunction.getConstants();
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
 			_constantOutputCount = 0;
@@ -302,7 +196,7 @@ public class CustomLogNormal extends SRealConjugateFactor
 			_constantOutputSumOfSquares = 0;
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					double outputValue = Math.log((Double)constantValues[i]);
 					_constantOutputSum += outputValue;
@@ -315,6 +209,69 @@ public class CustomLogNormal extends SRealConjugateFactor
 	}
 	
 	
+	private void determineParameterConstantsAndEdges()
+	{
+		// Get the factor function and related state
+		FactorFunctionBase factorFunction = _factor.getFactorFunction();
+		FactorFunctionWithConstants constantFactorFunction = null;
+		_hasFactorFunctionConstants = false;
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
+		{
+			_hasFactorFunctionConstants = true;
+			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
+			factorFunction = constantFactorFunction.getContainedFactorFunction();
+		}
+		LogNormal specificFactorFunction = (LogNormal)factorFunction;
+		
+		
+		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			// The factor function has fixed parameters provided in the factor-function constructor
+			_hasConstantMean = true;
+			_hasConstantPrecision = true;
+			_meanParameterPort = NO_PORT;
+			_precisionParameterPort = NO_PORT;
+			_constantMeanValue = specificFactorFunction.getMean();
+			_constantPrecisionValue = specificFactorFunction.getPrecision();
+			_numParameterEdges = 0;
+		}
+		else // Variable or constant parameters
+		{
+			_numParameterEdges = 0;
+			ArrayList<INode> siblings = _factor.getSiblings();
+			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
+			{
+				_hasConstantMean = true;
+				_meanParameterPort = NO_PORT;
+				_constantMeanValue = (Double)constantFactorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX);
+				_meanVariable = null;
+			}
+			else
+			{
+				_hasConstantMean = false;
+				_meanParameterPort = _numParameterEdges++;
+				_meanVariable = (SRealVariable)(((VariableBase)siblings.get(_meanParameterPort)).getSolver());
+			}
+			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
+			{
+				_hasConstantPrecision = true;
+				_precisionParameterPort = NO_PORT;
+				_constantPrecisionValue = (Double)constantFactorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX);
+				_precisionVariable = null;
+			}
+			else
+			{
+				_hasConstantPrecision = false;
+				_precisionParameterPort = _numParameterEdges++;
+				_precisionVariable = (SRealVariable)(((VariableBase)siblings.get(_precisionParameterPort)).getSolver());
+			}
+		}
+		_numOutputEdges = _numPorts - _numParameterEdges;
+	}
+	
+
 	@Override
 	public void createMessages() 
 	{
@@ -332,7 +289,6 @@ public class CustomLogNormal extends SRealConjugateFactor
 	{
 		return _outputMsgs[portIndex];
 	}
-
 	
 
 }

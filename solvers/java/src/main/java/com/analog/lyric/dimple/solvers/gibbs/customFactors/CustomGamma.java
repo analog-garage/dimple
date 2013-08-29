@@ -43,8 +43,12 @@ public class CustomGamma extends SRealConjugateFactor
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstants;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private int _numOutputEdges;
 	private int _numParameterEdges;
+	private int _alphaParameterPort = -1;
+	private int _betaParameterPort = -1;
 	private int _constantOutputCount;
 	private double _constantAlphaValue;
 	private double _constantBetaValue;
@@ -52,7 +56,8 @@ public class CustomGamma extends SRealConjugateFactor
 	private static final int NUM_PARAMETERS = 2;
 	private static final int ALPHA_PARAMETER_INDEX = 0;
 	private static final int BETA_PARAMETER_INDEX = 1;
-	
+	private static final int NO_PORT = -1;
+
 	public CustomGamma(Factor factor)
 	{
 		super(factor);
@@ -115,37 +120,8 @@ public class CustomGamma extends SRealConjugateFactor
 	
 	public boolean isPortAlphaParameter(int portNumber)
 	{
-		// This doesn't use the state values set up in initialize() since this may be called prior to initialize
-		
-		// Get the Gamma factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Gamma factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Gamma gammaFactorFunction = (Gamma)(factorFunction);
-
-		// Test whether or not the specified port is the alpha parameter
-		if (gammaFactorFunction.hasConstantParameters())
-		{
-			return false;	// Port must be an output since all parameters are constant
-		}
-		else if (hasFactorFunctionConstants)
-		{
-			if (constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
-				return false;	// Alpha parameter is constant, so it can't be a port
-			else
-				return (portNumber == ALPHA_PARAMETER_INDEX);	// Alpha is not constant so true if this is the alpha index
-		}
-		else if (portNumber == ALPHA_PARAMETER_INDEX)
-		{
-			return true;	// No parameters are constant, so this is the right port
-		}
-		return false;		// No constants, but the specified port is not the precision port
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		return (portNumber == _alphaParameterPort);
 	}
 
 	
@@ -169,73 +145,22 @@ public class CustomGamma extends SRealConjugateFactor
 		}
 		
 		
-		// Get the Gamma factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the Gamma factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Gamma gammaFactorFunction = (Gamma)(factorFunction);
-		
-		
-		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = gammaFactorFunction.hasConstantParameters();
-		if (hasFactorFunctionConstructorConstants)
-		{
-			// The factor function has fixed parameters provided in the factor-function constructor
-			_hasConstantAlpha = true;
-			_hasConstantBeta = true;
-			_constantAlphaValue = gammaFactorFunction.getAlpha();
-			_constantBetaValue = gammaFactorFunction.getBeta();
-			_numParameterEdges = 0;
-		}
-		else // Variable or constant parameters
-		{
-			_numParameterEdges = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
-			{
-				_hasConstantAlpha = true;
-				_constantAlphaValue = (Double)constantFactorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = null;
-			}
-			else
-			{
-				_hasConstantAlpha = false;
-				int alphaEdgeIndex = _numParameterEdges++;
-				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(alphaEdgeIndex)).getSolver());
-			}
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(BETA_PARAMETER_INDEX))
-			{
-				_hasConstantBeta = true;
-				_constantBetaValue = (Double)constantFactorFunction.getConstantByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = null;
-			}
-			else
-			{
-				_hasConstantBeta = false;
-				int betaEdgeIndex = _numParameterEdges++;
-				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(betaEdgeIndex)).getSolver());
-			}
-		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
+		// Determine what parameters are constants or edges, and save the state
+		determineParameterConstantsAndEdges();
 		
 		
 		// Pre-compute statistics associated with any constant output values
 		_hasConstantOutputs = false;
-		if (hasFactorFunctionConstants)
+		if (_hasFactorFunctionConstants)
 		{
+			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
 			Object[] constantValues = constantFactorFunction.getConstants();
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
 			_constantOutputCount = 0;
 			_constantOutputSum = 0;
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					_constantOutputSum += (Double)constantValues[i];
 					_constantOutputCount++;
@@ -243,6 +168,69 @@ public class CustomGamma extends SRealConjugateFactor
 			}
 			_hasConstantOutputs = true;
 		}
+	}
+	
+	
+	private void determineParameterConstantsAndEdges()
+	{
+		// Get the factor function and related state
+		FactorFunctionBase factorFunction = _factor.getFactorFunction();
+		FactorFunctionWithConstants constantFactorFunction = null;
+		_hasFactorFunctionConstants = false;
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
+		{
+			_hasFactorFunctionConstants = true;
+			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
+			factorFunction = constantFactorFunction.getContainedFactorFunction();
+		}
+		Gamma specificFactorFunction = (Gamma)factorFunction;
+		
+		
+		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			// The factor function has fixed parameters provided in the factor-function constructor
+			_hasConstantAlpha = true;
+			_hasConstantBeta = true;
+			_alphaParameterPort = NO_PORT;
+			_betaParameterPort = NO_PORT;
+			_constantAlphaValue = specificFactorFunction.getAlpha();
+			_constantBetaValue = specificFactorFunction.getBeta();
+			_numParameterEdges = 0;
+		}
+		else // Variable or constant parameters
+		{
+			_numParameterEdges = 0;
+			ArrayList<INode> siblings = _factor.getSiblings();
+			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
+			{
+				_hasConstantAlpha = true;
+				_alphaParameterPort = NO_PORT;
+				_constantAlphaValue = (Double)constantFactorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX);
+				_alphaVariable = null;
+			}
+			else
+			{
+				_hasConstantAlpha = false;
+				_alphaParameterPort = _numParameterEdges++;
+				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(_alphaParameterPort)).getSolver());
+			}
+			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(BETA_PARAMETER_INDEX))
+			{
+				_hasConstantBeta = true;
+				_betaParameterPort = NO_PORT;
+				_constantBetaValue = (Double)constantFactorFunction.getConstantByIndex(BETA_PARAMETER_INDEX);
+				_betaVariable = null;
+			}
+			else
+			{
+				_hasConstantBeta = false;
+				_betaParameterPort = _numParameterEdges++;
+				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(_betaParameterPort)).getSolver());
+			}
+		}
+		_numOutputEdges = _numPorts - _numParameterEdges;
 	}
 	
 	
