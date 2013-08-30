@@ -436,7 +436,7 @@ public class TestFactorTable
 		
 		while (--nOperations >= 0)
 		{
-			if (nOperations == 9996)
+			if (nOperations == 9863)
 			{
 				Misc.breakpoint();
 			}
@@ -475,11 +475,26 @@ public class TestFactorTable
 			case 1:
 				// Randomly set the representation
 				NewFactorTableRepresentation oldRep = table.getRepresentation();
-				NewFactorTableRepresentation newRep = NewFactorTableRepresentation.values()[rand.nextInt(16)];
+				NewFactorTableRepresentation newRep = NewFactorTableRepresentation.values()[rand.nextInt(32)];
 				try
 				{
 					table.setRepresentation(newRep);
-					assertEquals(newRep, table.getRepresentation());
+					NewFactorTableRepresentation actualNewRep = table.getRepresentation();
+					switch (newRep)
+					{
+					case DENSE_ENERGY_WITH_INDICES:
+						assertEquals(NewFactorTableRepresentation.DENSE_ENERGY, actualNewRep);
+						break;
+					case DENSE_WEIGHT_WITH_INDICES:
+						assertEquals(NewFactorTableRepresentation.DENSE_WEIGHT, actualNewRep);
+						break;
+					case ALL_DENSE_WITH_INDICES:
+						assertEquals(NewFactorTableRepresentation.ALL_DENSE, actualNewRep);
+						break;
+					default:
+						assertEquals(newRep, actualNewRep);
+						break;
+					}
 				}
 				catch (DimpleException ex)
 				{

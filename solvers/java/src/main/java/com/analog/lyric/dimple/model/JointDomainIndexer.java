@@ -290,6 +290,31 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 */
 	
 	/**
+	 * Returns an array with length at least {@link #size()} and with component type
+	 * compatible with elements of all domains in list (i.e. a superclass of type specified
+	 * by {@link #getElementClass()}.
+	 * <p>
+	 * If {@code elements} fits the above description, it will simply be returned.
+	 * If {@code elements} is too short but has a compatible component type, this will
+	 * return a new array with length equal to {@link #size()} and component type
+	 * the same as {@code elements}. Otherwise returns a new array with component
+	 * type same as {@link #getElementClass()}.
+	 */
+	public final <T> T[] allocateElements(T [] elements)
+	{
+		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
+	}
+
+	public final int[] allocateIndices(int [] indices)
+	{
+		if (indices == null || indices.length < _domains.length)
+		{
+			indices = new int[_domains.length];
+		}
+		return indices;
+	}
+
+	/**
 	 * The number of possible combinations of all domain elements. Equal to the product of
 	 * all of the domain sizes.
 	 * <p>
@@ -802,32 +827,4 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 	}
 	
-	/*-----------------
-	 * Package methods
-	 */
-
-	/**
-	 * Returns an array with length at least {@link #size()} and with component type
-	 * compatible with elements of all domains in list (i.e. a superclass of type specified
-	 * by {@link #getElementClass()}.
-	 * <p>
-	 * If {@code elements} fits the above description, it will simply be returned.
-	 * If {@code elements} is too short but has a compatible component type, this will
-	 * return a new array with length equal to {@link #size()} and component type
-	 * the same as {@code elements}. Otherwise returns a new array with component
-	 * type same as {@link #getElementClass()}.
-	 */
-	final <T> T[] allocateElements(T [] elements)
-	{
-		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
-	}
-
-	final int[] allocateIndices(int [] indices)
-	{
-		if (indices == null || indices.length < _domains.length)
-		{
-			indices = new int[_domains.length];
-		}
-		return indices;
-	}
 }

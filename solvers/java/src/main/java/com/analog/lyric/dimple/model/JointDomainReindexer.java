@@ -546,6 +546,19 @@ public abstract class JointDomainReindexer
 		
 		return values;
 	}
+	
+	public int[][] convertSparseIndices(
+		int[][] oldSparseIndices, int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		final int sparseSize = sparseIndexToJointIndex.length;
+		final int[][] indices = new int[sparseSize][];
+		for (int si = 0; si < sparseSize; ++si)
+		{
+			indices[si] = _toDomains.jointIndexToIndices(sparseIndexToJointIndex[si]);
+		}
+		return indices;
+	}
+	
 	public int[] convertSparseToJointIndex(int[] oldSparseToJointIndex)
 	{
 		final int[] sparseToJoint = new int[oldSparseToJointIndex.length * getAddedCardinality()];

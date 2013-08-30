@@ -19,6 +19,10 @@ public abstract class ArrayUtil
 	 */
 	public static final int[] EMPTY_INT_ARRAY = new int[0];
 
+	/**
+	 * Canonical empty int[][].
+	 */
+	public static final int[][] EMPTY_INT_ARRAY_ARRAY = new int[0][];
 	
 	/**
 	 * Returns an array with length at least {@code minSize} and with component type
@@ -153,6 +157,27 @@ public abstract class ArrayUtil
 	}
 	
 	/**
+	 * Returns a copy of {@code array} returning null if {@code array}
+	 * is null and returns {@link #EMPTY_INT_ARRAY_ARRAY} if empty.
+	 * Note that this does not make a deep copy of the array elements.
+	 */
+	public static int[][] cloneArray(int[][] array)
+	{
+		if (array == null)
+		{
+			return null;
+		}
+		else if (array.length == 0)
+		{
+			return EMPTY_INT_ARRAY_ARRAY;
+		}
+		else
+		{
+			return array.clone();
+		}
+	}
+
+	/**
 	 * Returns a copy of {@code array} but with space for insertion of {@code insertLength}
 	 * values at offset {@code insertionPoint}.
 	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
@@ -160,18 +185,17 @@ public abstract class ArrayUtil
 	 */
 	public static double[] copyArrayForInsert(double[] array, int insertionPoint, int insertLength)
 	{
-		int curSize = array == null ? 0 : array.length;
+		if (array == null)
+		{
+			return new double[insertLength];
+		}
+		
+		int curSize = array.length;
 		
 		double[] newArray = new double[curSize + insertLength];
 		
-		for (int i = 0; i < insertionPoint; ++i)
-		{
-			newArray[i] = array[i];
-		}
-		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
-		{
-			newArray[j] = array[i];
-		}
+		System.arraycopy(array, 0, newArray, 0, insertionPoint);
+		System.arraycopy(array, insertionPoint, newArray, insertionPoint + insertLength, curSize - insertionPoint);
 		
 		return newArray;
 	}
@@ -184,22 +208,42 @@ public abstract class ArrayUtil
 	 */
 	public static int[] copyArrayForInsert(int[] array, int insertionPoint, int insertLength)
 	{
-		int curSize = array == null ? 0 : array.length;
+		if (array == null)
+		{
+			return new int[insertLength];
+		}
+		int curSize = array.length;
 		
 		int[] newArray = new int[curSize + insertLength];
 		
-		for (int i = 0; i < insertionPoint; ++i)
-		{
-			newArray[i] = array[i];
-		}
-		for (int i = insertionPoint, j = insertionPoint + insertLength; i < curSize; ++i, ++j)
-		{
-			newArray[j] = array[i];
-		}
+		System.arraycopy(array, 0, newArray, 0, insertionPoint);
+		System.arraycopy(array, insertionPoint, newArray, insertionPoint + insertLength, curSize - insertionPoint);
 		
 		return newArray;
 	}
 	
+	/**
+	 * Returns a copy of {@code array} but with space for insertion of {@code insertLength}
+	 * values at offset {@code insertionPoint}. Note that this does not make a deep copy of the array elements.
+	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
+	 * [0, array.length].
+	 */
+	public static int[][] copyArrayForInsert(int[][] array, int insertionPoint, int insertLength)
+	{
+		if (array == null)
+		{
+			return new int[insertLength][];
+		}
+		int curSize = array.length;
+		
+		int[][] newArray = new int[curSize + insertLength][];
+		
+		System.arraycopy(array, 0, newArray, 0, insertionPoint);
+		System.arraycopy(array, insertionPoint, newArray, insertionPoint + insertLength, curSize - insertionPoint);
+		
+		return newArray;
+	}
+
 	public static Object[] toArray(Object value)
 	{
 		if (value instanceof Object[])

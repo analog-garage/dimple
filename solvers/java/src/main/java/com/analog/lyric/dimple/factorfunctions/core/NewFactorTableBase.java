@@ -5,6 +5,7 @@ import java.util.Random;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
@@ -140,7 +141,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	}
 	
 	@Override
-	public final int[] sparseIndexToIndices(int sparseIndex, int[] indices)
+	public int[] sparseIndexToIndices(int sparseIndex, int[] indices)
 	{
 		return _domains.jointIndexToIndices(sparseIndexToJointIndex(sparseIndex), indices);
 	}
@@ -227,8 +228,14 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int[][] getIndices()
 	{
-		int[][] indices = new int[sparseSize()][];
-		for (int i = 0, end = sparseSize(); i < end; ++i)
+		final int size = sparseSize();
+		if (size == 0)
+		{
+			return ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
+		}
+		
+		int[][] indices = new int[size][];
+		for (int i = 0; i < size; ++i)
 		{
 			indices[i] = getRow(i);
 		}

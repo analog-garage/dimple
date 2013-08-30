@@ -177,6 +177,13 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	}
 	
 	@Override
+	public int[][] convertSparseIndices(
+		int[][] oldSparseIndices, int[] oldSparseIndexToJointIndex, int[] sparseIndexToJointIndex)
+	{
+		return oldSparseIndices.clone();
+	}
+
+	@Override
 	public int[] convertSparseToJointIndex(int[] oldSparseToJointIndex)
 	{
 		return oldSparseToJointIndex.clone();

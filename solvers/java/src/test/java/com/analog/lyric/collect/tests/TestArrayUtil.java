@@ -59,6 +59,14 @@ public class TestArrayUtil
 		int[] i2 = ArrayUtil.cloneArray(i);
 		assertNotSame(i, i2);
 		assertArrayEquals(i, i2);
+		
+		assertNull(ArrayUtil.cloneArray((int[][])null));
+		assertSame(ArrayUtil.EMPTY_INT_ARRAY_ARRAY, ArrayUtil.cloneArray(new int[0][]));
+		int ii[][] = new int[][] { new int[] { 1, 2}, new int[] { 3, 4} };
+		int ii2[][] = ArrayUtil.cloneArray(ii);
+		assertArrayEquals(ii, ii2);
+		assertNotSame(ii, ii2);
+		assertSame(ii[0], ii2[0]);
 	}
 
 	@Test
@@ -81,6 +89,11 @@ public class TestArrayUtil
 		assertArrayEquals(d, ArrayUtil.copyArrayForInsert(d, 2, 0), 0.0);
 		assertArrayEquals(new double[] { 1, 2, 0, 0, 0, 3, 4}, ArrayUtil.copyArrayForInsert(d, 2, 3), 0.0);
 		assertArrayEquals(new double[] { 0, 0 }, ArrayUtil.copyArrayForInsert((double[])null, 0, 2), 0.0);
+		
+		int ii[][] = new int[][] { new int[] {1}, new int[] {2,3}, new int[] {4, 5, 6} };
+		assertArrayEquals(ii, ArrayUtil.copyArrayForInsert(ii, 2, 0));
+		assertArrayEquals(new int[][] { ii[0], null, null, ii[1], ii[2] }, ArrayUtil.copyArrayForInsert(ii, 1, 2));
+		assertArrayEquals(new int[][] { null, null }, ArrayUtil.copyArrayForInsert((int[][])null, 0, 2));
 	}
 	
 	@Test
