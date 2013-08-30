@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -129,6 +130,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("Gamma"))
 			return true;
+		else if (factorName.equals("NegativeExpGamma"))
+			return true;
 		else if (factorName.equals("LogNormal"))
 			return true;
 		else
@@ -142,6 +145,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomNormal(factor);
 		else if (funcName.equals("Gamma"))
 			return new CustomGamma(factor);
+		else if (funcName.equals("NegativeExpGamma"))
+			return new CustomNegativeExpGamma(factor);
 		else if (funcName.equals("LogNormal"))
 			return new CustomLogNormal(factor);
 		else

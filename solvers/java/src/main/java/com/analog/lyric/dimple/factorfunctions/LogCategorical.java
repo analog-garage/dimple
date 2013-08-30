@@ -23,27 +23,28 @@ import com.analog.lyric.dimple.model.DimpleException;
 
 /**
  * Parameterized categorical distribution, which corresponds to p(x | alpha),
- * where alpha is a vector of *unnormalized* probabilities
+ * where alpha is a vector of probabilities that are parameterized as energy values
+ * (-log of unnormalized probabilities).
  * 
  * Representing alpha as described, the conjugate prior for alpha is such that
  * each entry of alpha is independently distributed according to
- * a Gamma distribution, all with a common Beta parameter.
+ * a negative exp-Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
  * 
  * The variables in the argument list are ordered as follows:
  * 
- * 1..N) Alpha: Vector of unnormalized probabilities
+ * 1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
  * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
  */
-public class Categorical extends FactorFunction
+public class LogCategorical extends FactorFunction
 {
 	protected int _dimension;
 	protected double[] _alpha;
 	int _firstDirectedToIndex;
 
-	public Categorical(int dimension)
+	public LogCategorical(int dimension)
 	{
 		super();
 		_dimension = dimension;
@@ -59,16 +60,12 @@ public class Categorical extends FactorFunction
     	
     	int index = 0;
     	for (int i = 0; i < _dimension; i++)
-    	{
-    		double a = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
-    		if (a < 0) return Double.POSITIVE_INFINITY;
-    		_alpha[i] = a;
-    	}
+    		_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
     	
     	// Get the normalization value
     	double normalizationValue = 0;
     	for (int i = 0; i < _dimension; i++)
-    		normalizationValue += _alpha[i];
+    		normalizationValue += Math.exp(-_alpha[i]);
     	
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables
@@ -76,7 +73,7 @@ public class Categorical extends FactorFunction
     	for (; index < length; index++)
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining inputs are Categorical variables
-    		sum += -Math.log(_alpha[x]);
+    		sum += _alpha[x];
     	}    	
     	return sum + N * Math.log(normalizationValue);
 	}

@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 /**
  * Parameterized discrete transition factor, which corresponds to p(y | x, A),
  * where A is a matrix of transition probabilities that are
- * parameterized as *unnormalized* probabilities.
+ * parameterized as energy values (-log of unnormalized probabilities).
  * The transition matrix is organized such that columns correspond to
  * the output distribution for each input state. That is, the transition
  * matrix multiplies on the left.  The domain of x and y do not need to be
@@ -32,7 +32,7 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * Representing A as described, the conjugate prior for A is such that
  * each entry of the A matrix is independently distributed according to
- * a Gamma distribution, all with a common Beta parameter.
+ * a negative exp-Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
  * 
@@ -40,17 +40,17 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * y: Discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * x: Discrete input variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * A: Matrix of transition matrix values
+ * A: Matrix of transition energy values
  * 
  */
-public class DiscreteTransition extends FactorFunction
+public class LogDiscreteTransition extends FactorFunction
 {
 	protected int _yDimension;
 	protected int _xDimension;
 	protected double[][] _A;
 	
-	public DiscreteTransition(int dimension) {this(dimension, dimension);}	// Square transition matrix
-	public DiscreteTransition(int yDimension, int xDimension)
+	public LogDiscreteTransition(int dimension) {this(dimension, dimension);}	// Square transition matrix
+	public LogDiscreteTransition(int yDimension, int xDimension)
 	{
 		super();
 		_yDimension = yDimension;
@@ -70,20 +70,14 @@ public class DiscreteTransition extends FactorFunction
     	int x = FactorFunctionUtilities.toInteger(arguments[index++]);			// Second argument is x (input variable)
 
     	for (int col = 0; col < _xDimension; col++)		// Matrix is scanned by columns
-    	{
     		for (int row = 0; row < _yDimension; row++)
-    		{
-    			double a = FactorFunctionUtilities.toDouble(arguments[index++]);
-    			if (a < 0) return Double.POSITIVE_INFINITY;
-    			_A[row][col] = a;
-    		}
-    	}
+    			_A[row][col] = FactorFunctionUtilities.toDouble(arguments[index++]);
     	
     	double sum = 0;									// Normalize over column selected by conditioning value
     	for (int row = 0; row < _yDimension; row++)
-    		sum += _A[row][x];
+    		sum += Math.exp(-_A[row][x]);
     	
-    	return -Math.log(_A[y][x]) + Math.log(sum);
+    	return _A[y][x] + Math.log(sum);
 	}
     
     

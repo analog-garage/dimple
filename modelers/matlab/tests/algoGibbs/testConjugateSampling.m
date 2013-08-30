@@ -126,7 +126,10 @@ assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
 
 m.Solver.setSampler('SliceSampler');
 
-fg.Solver.setNumSamples(1000);
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+fg.Solver.setNumSamples(2000);
 fg.solve();
 
 mss = m.Solver.getAllSamples;
@@ -141,13 +144,18 @@ assertElementsAlmostEqual(std(mss), 1/sqrt(expectedPrecision), 'absolute', 0.1);
 
 m.Solver.setSampler('MHSampler');
 
+if (repeatable)
+    fg.Solver.setSeed(2);					% Make this repeatable
+end
+fg.Solver.setScansPerSample(10);
+fg.Solver.setNumSamples(1000);
 fg.solve();
 
 msmh = m.Solver.getAllSamples;
 
 assert(strcmp(m.Solver.getSamplerName,'MHSampler'));
 assert(strcmp(x(1).Solver.getSamplerName,'NormalSampler'));
-assertElementsAlmostEqual(mean(msmh), expectedMean, 'absolute', 0.1);
+assertElementsAlmostEqual(mean(msmh), expectedMean, 'absolute', 0.25);
 assertElementsAlmostEqual(std(msmh), 1/sqrt(expectedPrecision), 'absolute', 0.25);
 
 
@@ -293,7 +301,7 @@ fg.addFactor('Normal', m, dataPrecision, x);    % Fixed precision
 assert(strcmp(m.Solver.getSamplerName,'MHSampler'));
 assert(strcmp(x(1).Solver.getSamplerName,'NormalSampler'));
 
-fg.Solver.setNumSamples(1000);
+fg.Solver.setNumSamples(4000);
 fg.Solver.saveAllSamples();
 fg.Solver.saveAllScores();
 

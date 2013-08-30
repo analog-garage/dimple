@@ -23,8 +23,8 @@ import com.analog.lyric.dimple.model.DimpleException;
 /**
  * Gamma distribution. The variables in the argument list are ordered as follows:
  * 
- * 1) Alpha: Alpha parameter of the Gamma distribution (non-negative)
- * 2) Beta: Beta parameter of the Gamma distribution (non-negative)
+ * 1) Alpha: Alpha parameter of the Beta distribution (non-negative)
+ * 2) Beta: Beta parameter of the Beta distribution (non-negative)
  * 3...) An arbitrary number of real variables
  * 
  * Alpha and Beta parameters may optionally be specified as constants in the constructor.

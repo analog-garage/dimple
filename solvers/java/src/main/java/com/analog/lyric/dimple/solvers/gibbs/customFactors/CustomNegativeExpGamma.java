@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Factor;
@@ -33,8 +33,9 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.NegativeExpGammaSampler;
 
-public class CustomGamma extends SRealConjugateFactor
+public class CustomNegativeExpGamma extends SRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -58,7 +59,7 @@ public class CustomGamma extends SRealConjugateFactor
 	private static final int BETA_PARAMETER_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomGamma(Factor factor)
+	public CustomNegativeExpGamma(Factor factor)
 	{
 		super(factor);
 	}
@@ -69,40 +70,38 @@ public class CustomGamma extends SRealConjugateFactor
 		IRealConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
 		if (conjugateSampler == null)
 			super.updateEdgeMessage(outPortNum);
+		else if (conjugateSampler instanceof NegativeExpGammaSampler)
+		{
+			// Output port is directed output
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
+			outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
+			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
+		}
 		else if (conjugateSampler instanceof GammaSampler)
 		{
+			// Output port must be the beta-parameter input
+			// Determine sample alpha and beta parameters
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
-			if (outPortNum >= _numParameterEdges)
+
+			// Start with the ports to variable outputs
+			ArrayList<INode> siblings = _factor.getSiblings();
+			double sum = 0;
+			for (int port = _numParameterEdges; port < _numPorts; port++)
+				sum += Math.exp(-((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample());
+			int count = _numOutputEdges;
+
+			// Include any constant outputs also
+			if (_hasConstantOutputs)
 			{
-				// Output port is directed output
-				outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
-				outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
+				sum += _constantOutputSum;
+				count += _constantOutputCount;
 			}
-			else
-			{
-				// Output port must be the beta-parameter input
-				// Determine sample alpha and beta parameters
-				
-				// Start with the ports to variable outputs
-				ArrayList<INode> siblings = _factor.getSiblings();
-				double sum = 0;
-				for (int port = _numParameterEdges; port < _numPorts; port++)
-					sum += ((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample();
-				int count = _numOutputEdges;
-				
-				// Include any constant outputs also
-				if (_hasConstantOutputs)
-				{
-					sum += _constantOutputSum;
-					count += _constantOutputCount;
-				}
-				
-				// Get the current alpha value
-				double alpha = _hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample();
-				
-				outputMsg.setAlpha(count * alpha);			// Sample alpha
-				outputMsg.setBeta(sum);						// Sample beta
-			}
+
+			// Get the current alpha value
+			double alpha = _hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample();
+
+			outputMsg.setAlpha(count * alpha);			// Sample alpha
+			outputMsg.setBeta(sum);						// Sample beta
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -113,8 +112,10 @@ public class CustomGamma extends SRealConjugateFactor
 	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
 	{
 		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
-		if (!isPortAlphaParameter(portNumber))				// No supported conjugate sampler for alpha parameter
-			availableSamplers.add(GammaSampler.factory);	// Either beta parameter or output, which have Gamma distribution
+		if (isPortBetaParameter(portNumber))				// Port is beta parameter, which has a conjugate Gamma distribution
+			availableSamplers.add(GammaSampler.factory);
+		else if (!isPortAlphaParameter(portNumber))				// No supported conjugate sampler for alpha parameter
+			availableSamplers.add(NegativeExpGammaSampler.factory);	// So port is output, which has a NegativeExpGamma distribution
 		return availableSamplers;
 	}
 	
@@ -124,6 +125,11 @@ public class CustomGamma extends SRealConjugateFactor
 		return (portNumber == _alphaParameterPort);
 	}
 
+	public boolean isPortBetaParameter(int portNumber)
+	{
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		return (portNumber == _betaParameterPort);
+	}
 	
 	
 	@Override
@@ -162,7 +168,7 @@ public class CustomGamma extends SRealConjugateFactor
 			{
 				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
-					_constantOutputSum += (Double)constantValues[i];
+					_constantOutputSum += Math.exp(-(Double)constantValues[i]);
 					_constantOutputCount++;
 				}
 			}
@@ -183,7 +189,7 @@ public class CustomGamma extends SRealConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		Gamma specificFactorFunction = (Gamma)factorFunction;
+		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction;
 		
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable

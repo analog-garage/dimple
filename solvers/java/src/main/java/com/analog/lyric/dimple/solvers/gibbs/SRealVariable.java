@@ -39,7 +39,8 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampleScorer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.MHSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.RealSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.RealConjugateSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.RealMCMCSamplerRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -200,11 +201,31 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return;
 		}
 
-		// TODO -- sample from the prior if specified, not just the bounds
+		// If there are inputs, see if there's an available conjugate sampler
+		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
+		if (_input != null)
+			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(_input);
+
+		// Determine if there are bounds
 		double hi = _domain.getUpperBound();
 		double lo = _domain.getLowerBound();
-		if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-			setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+
+		if (inputConjugateSampler != null)
+		{
+			// Sample from the input if there's an available sampler
+			double sampleValue = inputConjugateSampler.nextSample(new Port[0], _input);
+			
+			// If there are also bounds, clip at the bounds
+			if (sampleValue > hi) sampleValue = hi;
+			if (sampleValue < lo) sampleValue = lo;
+			setCurrentSample(sampleValue);
+		}
+		else
+		{
+			// No input or no available sampler, so if bounded, sample uniformly from the bounds
+			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+				setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+		}
 	}
 
 	public void updateBelief()
@@ -442,7 +463,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	public final void setSampler(String samplerName)
 	{
-		_sampler = RealSamplerRegistry.get(samplerName);
+		_sampler = RealMCMCSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
 	public final IRealSampler getSampler()
@@ -571,7 +592,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
 			if (_conjugateSampler == null)
-				_sampler = RealSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
+				_sampler = RealMCMCSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
 		}
 	}
 
@@ -640,6 +661,5 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Input wasn't compatible with any of the samplers supported by adjacent factors
 		return null;
 	}
-
 
 }
