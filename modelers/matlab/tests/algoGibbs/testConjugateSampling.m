@@ -29,7 +29,7 @@ test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
 test7(debugPrint, repeatable);
 test8(debugPrint, repeatable);
-
+test9(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -273,9 +273,75 @@ assert(~any(ps3 == ps4));   % No samples should be exactly equal
 end
 
 
+% Gamma prior on precision, using separate factor
+function test5(debugPrint, repeatable)
+
+priorAlpha = 1;
+pPriorBeta = 2;
+dataMean = 10;
+dataPrecision = .001;
+numDatapoints = 100;
+data = dataMean + randn(1,numDatapoints) * dataPrecision;
+expectedAlpha = priorAlpha + numDatapoints / 2;
+expectedBeta = pPriorBeta + sum((data - dataMean).^2) / 2;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+x = Real(1,numDatapoints);
+
+x.FixedValue = data;
+
+fg.addFactor(FactorFunction('Gamma',priorAlpha,pPriorBeta), p);
+fg.addFactor('Normal', dataMean, p, x);
+
+assert(strcmp(p.Solver.getSamplerName,'GammaSampler'));
+assert(strcmp(x(1).Solver.getSamplerName,'NormalSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples;
+
+% Estimate the parameters (see Wikipedia page on Gamma distribution)
+s = log(sum(ps)/numSamples) - sum(log(ps))/numSamples;
+alphaEst = (3 - s + sqrt((s-3)^2 + 24*s)) / (12 * s);
+betaEst = alphaEst * numSamples / sum(ps);
+
+assertElementsAlmostEqual(alphaEst, expectedAlpha, 'absolute', 2.5);
+assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
+
+% Test repeatablibility with reset seed
+fg.Solver.setSeed(1);
+fg.solve();
+ps2 = p.Solver.getAllSamples;
+
+fg.Solver.setSeed(1);
+fg.solve();
+ps3 = p.Solver.getAllSamples;
+
+assertEqual(ps2, ps3);      % All samples should be equal
+
+% Test non-repeatabilibity without resetting the seed
+fg.solve();
+ps4 = p.Solver.getAllSamples;
+assert(~any(ps3 == ps4));   % No samples should be exactly equal
+
+end
+
+
 
 % Test the default sampler
-function test5(debugPrint, repeatable)
+function test6(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -323,7 +389,7 @@ end
 % Test the slice sampler with poor initial sample
 % THIS TEST IS ONLY REALLY NEEDED UNTIL RANDOMRESTART IS GIVES IMPROVED
 % INITIAL SAMPLE
-function test6(debugPrint, repeatable)
+function test7(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -370,7 +436,7 @@ end
 
 
 % Log-normal test mean parameter
-function test7(debugPrint, repeatable)
+function test8(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -414,7 +480,7 @@ end
 
 
 % LogNormal test Gamma prior on precision
-function test8(debugPrint, repeatable)
+function test9(debugPrint, repeatable)
 
 priorAlpha = 1;
 pPriorBeta = 2;
@@ -460,3 +526,5 @@ assertElementsAlmostEqual(alphaEst, expectedAlpha, 'absolute', 2.5);
 assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
 
 end
+
+
