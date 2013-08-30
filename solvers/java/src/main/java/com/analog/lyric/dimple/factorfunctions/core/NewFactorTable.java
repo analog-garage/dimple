@@ -69,6 +69,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	private double[] _sparseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private double[] _sparseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	
+	
 	/**
 	 * Count of table entries with non-zero weight/non-infinite energy.
 	 * <p>
@@ -983,9 +984,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 				final boolean hasIndices = hasSparseIndices();
 				final int[][] sparseIndices = hasIndices ? new int[_nonZeroWeights][] : ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
 				
-				// TODO: instead of copying individually, find next zero weight and do bulk copies of contiguous
-				// non-compacted ranges using System.arraycopy.
-				
 				if (hasWeight)
 				{
 					for (int i = 0, j = 0; i < curSparseSize; ++i)
@@ -1033,6 +1031,24 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		return nRemoved;
+	}
+	
+	@Override
+	public final double[] getEnergiesSparseUnsafe()
+	{
+		return _sparseEnergies;
+	}
+	
+	@Override
+	public final double[] getWeightsSparseUnsafe()
+	{
+		return _sparseWeights;
+	}
+	
+	@Override
+	public final int[][] getIndicesSparseUnsafe()
+	{
+		return _sparseIndices;
 	}
 	
 	@Override
@@ -1644,6 +1660,27 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 	}
 
+	@Override
+	public int getEntry(int row, int column)
+	{
+		if (hasSparseIndices())
+		{
+			return _sparseIndices[row][column];
+		}
+		
+		return super.getEntry(row, column);
+	}
+
+	@Override
+	public int[][] getIndices()
+	{
+		if (hasSparseRepresentation())
+		{
+			setRepresentation(_representation | SPARSE_INDICES);
+		}
+		return super.getIndices();
+	}
+	
 	@Override
 	public double[] getWeights()
 	{

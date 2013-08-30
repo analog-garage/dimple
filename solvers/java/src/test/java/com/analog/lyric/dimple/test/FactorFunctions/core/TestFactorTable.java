@@ -332,6 +332,10 @@ public class TestFactorTable
 		oldNs = oldTester.testEvalAsFactorFunction();
 		newNs = newTester.testEvalAsFactorFunction();
 		
+		newTable.setRepresentation(NewFactorTableRepresentation.ALL_WEIGHT_WITH_INDICES);
+		oldNs = oldTester.testSumProductUpdate();
+		newNs = newTester.testSumProductUpdate();
+
 		System.out.println("==== sparse 10x20x5 table ==== ");
 		
 		// Randomly sparsify the tables
@@ -356,6 +360,11 @@ public class TestFactorTable
 		oldNs = oldTester.testGetWeightForIndices();
 		newNs = newTester.testGetWeightForIndices();
 		
+		newTable.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
+		oldNs = oldTester.testSumProductUpdate();
+		newNs = newTester.testSumProductUpdate();
+		
+		System.out.println("==== DONE ====");
 	}
 	
 	/**

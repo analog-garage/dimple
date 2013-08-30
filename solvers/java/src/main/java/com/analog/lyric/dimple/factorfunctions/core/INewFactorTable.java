@@ -24,6 +24,30 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	public NewFactorTableRepresentation getRepresentation();
 
 	/**
+	 * Returns the underlying array of sparse energies without copying for speed.
+	 * <p>
+	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
+	 * an invalid state. This should be treated as a read-only value.
+	 */
+	public double[] getEnergiesSparseUnsafe();
+
+	/**
+	 * Returns the underlying array of sparse weights without copying for speed.
+	 * <p>
+	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
+	 * an invalid state. This should be treated as a read-only value.
+	 */
+	public double[] getWeightsSparseUnsafe();
+	
+	/**
+	 * Returns the underlying array of sparse element indices.
+	 * <p>
+	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
+	 * an invalid state. This should be treated as a read-only value.
+	 */
+	public int[][] getIndicesSparseUnsafe();
+	
+	/**
 	 * Sets representation to {@link NewFactorTableRepresentation#DENSE_ENERGY} with
 	 * provided energies.
 	 * @param energies specifies the energies of the table in dense joint-index order. Must have length

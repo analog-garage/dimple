@@ -627,6 +627,21 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Computes element index for a single domain from a joint index.
+	 * <p>
+	 * This is like {@link #jointIndexToIndices} but only computes one element index.
+	 * <p>
+	 * @param jointIndex must be in range [0, {@link #getCardinality()}-1].
+	 * @param domainIndex must be in range [0, {@link #size()}-1].
+	 * <p>
+	 * @see #undirectedJointIndexToElementIndex(int, int)
+	 */
+	public int jointIndexToElementIndex(int jointIndex, int domainIndex)
+	{
+		return undirectedJointIndexToElementIndex(jointIndex, domainIndex);
+	}
+	
+	/**
 	 * Computes domain indices corresponding to given joint index.
 	 * <p>
 	 * @param jointIndex a unique joint table index in the range [0,{@link #getCardinality()}).
@@ -634,6 +649,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #jointIndexToElements(int, Object[])
 	 * @see #jointIndexFromIndices(int...)
+	 * @see #jointIndexToElementIndex(int, int)
 	 */
 	public int[] jointIndexToIndices(int jointIndex, int[] indices)
 	{
@@ -773,6 +789,22 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return undirectedJointIndexToElements(jointIndex, null);
 	}
 
+	/**
+	 * Computes element index for a single domain from a joint index using undirected ordering
+	 * of domains.
+	 * <p>
+	 * This is like {@link #undirectedJointIndexToIndices} but only computes one element index.
+	 * <p>
+	 * @param jointIndex must be in range [0, {@link #getCardinality()}-1].
+	 * @param domainIndex must be in range [0, {@link #size()}-1].
+	 * <p>
+	 * @see #jointIndexToElementIndex(int, int)
+	 */
+	public int undirectedJointIndexToElementIndex(int jointIndex, int domainIndex)
+	{
+		return (jointIndex / _products[domainIndex]) % _domains[domainIndex].size();
+	}
+	
 	public final int[] undirectedJointIndexToIndices(int jointIndex, int[] indices)
 	{
 		final int[] products = _products;

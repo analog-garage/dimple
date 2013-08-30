@@ -291,6 +291,12 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	}
 	
 	@Override
+	public int jointIndexToElementIndex(int jointIndex, int domainIndex)
+	{
+		return (jointIndex / _directedProducts[domainIndex]) % _domains[domainIndex].size();
+	}
+
+	@Override
 	public int[] jointIndexToIndices(int jointIndex, int[] indices)
 	{
 		indices = allocateIndices(indices);

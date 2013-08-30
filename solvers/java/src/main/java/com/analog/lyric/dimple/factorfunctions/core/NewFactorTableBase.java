@@ -278,7 +278,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public int getEntry(int row, int column)
 	{
-		return getRow(row)[column];
+		return _domains.jointIndexToElementIndex(sparseIndexToJointIndex(row), column);
 	}
 
 	@Override
