@@ -136,8 +136,8 @@ dtrace(debugPrint,'Gibbs estimate for A:'); if(debugPrint); disp(Aoutput); end;
 % based on the estimated transition and observation matrices.  Because
 % there is ambiguity in the actual matrices, only this value should be
 % consistent with the values from the source model.
-expectedObsDistribution = obsMatrix * ((transMatrix^10000)*[1;0]);
-estimatedObsDistribution = Ooutput * ((Aoutput^10000)*[1;0]);
+expectedObsDistribution = obsMatrix * ((transMatrix^10000)*[1;zeros(numStates-1,1)]);
+estimatedObsDistribution = Ooutput * ((Aoutput^10000)*[1;zeros(numStates-1,1)]);
 dtrace(debugPrint,'Expected observation distribution:'); if(debugPrint); disp(expectedObsDistribution); end;
 dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(estimatedObsDistribution); end;
 KLDivergenceObsDistribution = kLDivergence(expectedObsDistribution, estimatedObsDistribution);
@@ -204,7 +204,7 @@ dtrace(debugPrint,'Baum-Welch estimate for A:'); if(debugPrint); disp(Aoutput2);
 % based on the estimated transition and observation matrices.  Because
 % there is ambiguity in the actual matrices, only this value should be
 % consistent with the values from the source model.
-estimatedObsDistribution2 = Ooutput2 * ((Aoutput2^10000)*[1;0]);
+estimatedObsDistribution2 = Ooutput2 * ((Aoutput2^10000)*[1;zeros(numStates-1,1)]);
 dtrace(debugPrint,'Expected observation distribution:'); if(debugPrint); disp(expectedObsDistribution); end;
 dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(estimatedObsDistribution2); end;
 KLDivergenceObsDistribution2 = kLDivergence(expectedObsDistribution, estimatedObsDistribution2);
@@ -328,8 +328,8 @@ dtrace(debugPrint,'Gibbs estimate for A:'); if(debugPrint); disp(Aoutput); end;
 % based on the estimated transition and observation matrices.  Because
 % there is ambiguity in the actual matrices, only this value should be
 % consistent with the values from the source model.
-expectedObsDistribution = obsMatrix * ((transMatrix^10000)*[1;0]);
-estimatedObsDistribution = Ooutput * ((Aoutput^10000)*[1;0]);
+expectedObsDistribution = obsMatrix * ((transMatrix^10000)*[1;zeros(numStates-1,1)]);
+estimatedObsDistribution = Ooutput * ((Aoutput^10000)*[1;zeros(numStates-1,1)]);
 dtrace(debugPrint,'Expected observation distribution:'); if(debugPrint); disp(expectedObsDistribution); end;
 dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(estimatedObsDistribution); end;
 KLDivergenceObsDistribution = kLDivergence(expectedObsDistribution, estimatedObsDistribution);
@@ -396,7 +396,7 @@ dtrace(debugPrint,'Baum-Welch estimate for A:'); if(debugPrint); disp(Aoutput2);
 % based on the estimated transition and observation matrices.  Because
 % there is ambiguity in the actual matrices, only this value should be
 % consistent with the values from the source model.
-estimatedObsDistribution2 = Ooutput2 * ((Aoutput2^10000)*[1;0]);
+estimatedObsDistribution2 = Ooutput2 * ((Aoutput2^10000)*[1;zeros(numStates-1,1)]);
 dtrace(debugPrint,'Expected observation distribution:'); if(debugPrint); disp(expectedObsDistribution); end;
 dtrace(debugPrint,'Estimated observation distribution:'); if(debugPrint); disp(estimatedObsDistribution2); end;
 KLDivergenceObsDistribution2 = kLDivergence(expectedObsDistribution, estimatedObsDistribution2);
