@@ -130,7 +130,6 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final int sparseIndexFromIndices(int ... indices)
 	{
-		_domains.validateIndices(indices);
 		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
@@ -203,8 +202,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public double evalAsFactorFunction(Object... arguments)
 	{
-		final int sparseIndex = sparseIndexFromJointIndex(_domains.jointIndexFromElements(arguments));
-		return sparseIndex >= 0 ? getWeightForSparseIndex(sparseIndex) : 0.0 ;
+		return getWeightForArguments(arguments);
 	}
 
 	@Override
@@ -298,8 +296,7 @@ public abstract class NewFactorTableBase implements INewFactorTableBase, IFactor
 	@Override
 	public final int getWeightIndexFromTableIndices(int[] indices)
 	{
-		_domains.validateIndices(indices);
-		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
+		return sparseIndexFromIndices(indices);
 	}
 
 	@Override

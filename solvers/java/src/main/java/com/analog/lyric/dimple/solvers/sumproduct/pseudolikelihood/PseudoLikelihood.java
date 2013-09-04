@@ -358,7 +358,7 @@ public class PseudoLikelihood extends ParameterEstimator
 						}
 						
 						//multiply in that term.
-						product *=  f.getFactorTable().getWeights()[f.getFactorTable().getWeightIndexFromTableIndices(indices)];
+						product *=  f.getFactorTable().getWeightForIndices(indices);
 					}
 					
 					//add terms together.

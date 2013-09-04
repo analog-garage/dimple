@@ -5,6 +5,7 @@ import java.util.Random;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDiscreteDomain;
 
+// REFACTOR: replace with INewFactorTable and rename that when done. See comments below for each method.
 public interface IFactorTable
 {
 	//==============
@@ -12,34 +13,34 @@ public interface IFactorTable
 	//
 	
 	// Used only by PFactorTable/MATLAB
-	public void change(int [][] indices, double [] weights);
-	public void changeIndices(int [][] indices);
-	public double get(int [] indices);
-	public void set(int [] indices, double value);
+	public void change(int [][] indices, double [] weights); // REFACTOR: => setWeightsSparse
+	public void changeIndices(int [][] indices); // REFACTOR: => replaceIndicesSparse
+	public double get(int [] indices); // REFACTOR: => getWeightForIndices
+	public void set(int [] indices, double value); // REFACTOR: => setWeightForIndices
 
 	//
 	// Used by PFactorTable and other
 	//
 	
-	public void changeWeights(double [] values);
-	public DiscreteDomain[] getDomains();
-	public int [][] getIndices();
-	public double[] getWeights();
+	public void changeWeights(double [] values); // REFACTOR: => replaceWeightsSparse
+	public DiscreteDomain[] getDomains(); // REFACTOR: => getDomainIndexer
+	public int [][] getIndices(); // REFACTOR: => getIndicesSparseUnsafe
+	public double[] getWeights(); // REFACTOR: => getWeightsSparseUnsafe
 	
-	public void normalize(int [] directedTo);
+	public void normalize(int [] directedTo); // REFACTOR: => setConditionalAndNormalize
 
 	//
 	// Others
 	//
 	
 	// Only used by GradientDescent.runStep
-	public void changeWeight(int index, double weight);
+	public void changeWeight(int index, double weight); // REFACTOR: => setWeightForSparseIndex
 	
 	// Only used only by ParameterEstimator.saveFactorTables
-	public IFactorTable copy();
+	public IFactorTable copy(); // REFACTOR: => clone
 	
 	// Used in FactorTableBase & ParameterEstimator.run
-	public void copy(IFactorTable that);
+	public void copy(IFactorTable that); // REFACTOR: keep (for now)
 	
 	/**
 	 * Creates a new factor table based on this one, with {@code newDomains} added to the
@@ -47,43 +48,43 @@ public interface IFactorTable
 	 * combinations of the new domain values.
 	 */
 	// Only used by DiscreteFactor.replaceVariablesWithJoint
-	public IFactorTable createTableWithNewVariables(DiscreteDomain[] newDomains);
+	public IFactorTable createTableWithNewVariables(DiscreteDomain[] newDomains); // REFACTOR: keep (for now)
 
 	// Only used by TableFactorFunction.eval
-	public double evalAsFactorFunction(Object ... arguments);
+	public double evalAsFactorFunction(Object ... arguments); // REFACTOR: => getWeightForArguments (Elements?)
 
 	// Only used by TableFactorFunction.evalDeterministicFunction
-	public void evalDeterministicFunction(Object ... arguments);
+	public void evalDeterministicFunction(Object ... arguments); // REFACTOR: => evalDeterministic
 	
 	// Only used in test
-	public int[] getColumnCopy(int column);
+	public int[] getColumnCopy(int column); // REFACTOR: => eliminate?
 	
 	// multiple users
-	public int getColumns();
+	public int getColumns(); // REFACTOR: => getDimensions
 	
 	// Only used by FactorTable.copy
-	public int [] getDirectedFrom();
-	public int [] getDirectedTo();
+	public int [] getDirectedFrom(); // REFACTOR: => getDomainIndexer().getInputDomainIndices()
+	public int [] getDirectedTo(); // REFACTOR: => getDomainIndexer().getOutputDomainIndices()
 	
 	// Only used by FactorTableBase.getColumnCopy and test
-	public int getEntry(int row, int column);
+	public int getEntry(int row, int column); // REFACTOR: => getDomainIndexer().jointIndexToElementIndex(...)
 	
 	// Multiple users
-	public double[] getPotentials();
+	public double[] getPotentials(); // REFACTOR: => getEnergiesSparseUnsafe
 	
 	// Only used by lp.STableFactor.computeValidAssignments and test
-	public int[] getRow(int row);
+	public int[] getRow(int row); // REFACTOR: => sparseIndexToIndices
 	
 	// Multiple users
-	public int getRows();
+	public int getRows(); // REFACTOR: => sparseSize
 	
 	// Multiple users
-	public int getWeightIndexFromTableIndices(int[] indices);
+	public int getWeightIndexFromTableIndices(int[] indices); // REFACTOR: => sparseIndexFromTableIndices
 	
 	// Only used by TableFactorFunction.isDeterministicDirected
-	public boolean isDeterministicDirected();
+	public boolean isDeterministicDirected(); // REFACTOR: keep
 	
-	public boolean isDirected();
+	public boolean isDirected(); // REFACTOR: keep
 	
 	/**
 	 * Creates a new factor table that replaces two or more of its domains with
@@ -103,24 +104,24 @@ public interface IFactorTable
 		int [] varIndices,
 		int [] indexToJointIndex,
 		DiscreteDomain [] allDomains,
-		DiscreteDomain jointDomain);
+		DiscreteDomain jointDomain); // REFACTOR: keep (for now)
 	
-	public void normalize();
+	public void normalize(); // REFACTOR: => keep
 	
 	// Is this just an optimization? Can directedTo != getDirectedTo()?
-	public void normalize(int [] directedTo, int [] directedFrom);
+	public void normalize(int [] directedTo, int [] directedFrom); // REFACTOR: => setConditionalAndNormalize
 	
 	// Only used by ParameterEstimator.run
-	public void randomizeWeights(Random rand);
+	public void randomizeWeights(Random rand); // REFACTOR: keep?
 	
 	// only used by test
-	public void serializeToXML(String serializeName, String targetDirectory);
+	public void serializeToXML(String serializeName, String targetDirectory); // REFACTOR: => eliminate
 	
 	// Only called from Factor.setDirectedTo
-	public void setDirected(int[] directedTo, int[] directedFrom);
+	public void setDirected(int[] directedTo, int[] directedFrom); // REFACTOR: => setDirected(BitSet)
 	
 	//
-	// New
+	// From INewFactorTable*
 	//
 	
 	/**

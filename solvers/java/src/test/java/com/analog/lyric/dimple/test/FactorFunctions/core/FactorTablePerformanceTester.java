@@ -271,79 +271,131 @@ public class FactorTablePerformanceTester
 					{
 						final int[][] table = ftable.getIndicesSparseUnsafe();
 						final int tableLength = table.length;
-						final double value = ftable.getWeightSparseIfConstant();
 						
-						if (!Double.isNaN(value) || true)
+						final double[] values = ftable.getWeightsSparseUnsafe();
+
+						for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
 						{
-							final double[] values = ftable.getWeightsSparseUnsafe();
+							double[] outputMsgs = outMsgs[outPortNum];
 
-							for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
+							int outputMsgLength = outputMsgs.length;
+							Arrays.fill(outputMsgs, 0);
+
+							for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
 							{
-								double[] outputMsgs = outMsgs[outPortNum];
+								double prob = values[tableIndex];
+								int[] tableRow = table[tableIndex];
+								int outputIndex = tableRow[outPortNum];
 
-								int outputMsgLength = outputMsgs.length;
-								Arrays.fill(outputMsgs, 0);
-
-								for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-								{
-									double prob = values[tableIndex];
-									int[] tableRow = table[tableIndex];
-									int outputIndex = tableRow[outPortNum];
-
-									for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
-										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-									for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
-										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-									outputMsgs[outputIndex] += prob;
-								}
-
-								double sum = 0;
-								for (double w : outputMsgs)
-									sum += w;
-
-								for (int i = 0; i < outputMsgLength; ++i)
-									outputMsgs[i] /= sum;
+								for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
+									prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+								for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+									prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+								outputMsgs[outputIndex] += prob;
 							}
+
+							double sum = 0;
+							for (double w : outputMsgs)
+								sum += w;
+
+							for (int i = 0; i < outputMsgLength; ++i)
+								outputMsgs[i] /= sum;
 						}
-//						else
-//						{
-//							// Surprisingly, this version appears to be slower than the above version
-//							// on my x64 Windows machine even though it lacks an array access in the middle loop!
-//							// TODO: try to look at generated x64 assembly to see what is going on here.
-//							for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
-//							{
-//								double[] outputMsgs = outMsgs[outPortNum];
-//
-//								int outputMsgLength = outputMsgs.length;
-//								Arrays.fill(outputMsgs, 0);
-//
-//								for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
-//								{
-//									double prob = value;
-//									int[] tableRow = table[tableIndex];
-//									int outputIndex = tableRow[outPortNum];
-//
-//									for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
-//										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-//									for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
-//										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-//									outputMsgs[outputIndex] += prob;
-//								}
-//
-//								double sum = 0;
-//								for (double w : outputMsgs)
-//									sum += w;
-//
-//								for (int i = 0; i < outputMsgLength; ++i)
-//									outputMsgs[i] /= sum;
-//							}
-//						}
 					}
 				}
 			};
 
 			runTest("sumProductUpdateNew", "call", 42, unsafeIndices);
 		}
+	}
+	
+	public void testGibbsUpdateMessage()
+	{
+		final DiscreteDomain[] domains = _table.getDomains();
+		final int numPorts_ = domains.length;
+		final double[][] outMsgs_ = new double[domains.length][];
+		final int[] inMsgs_ = new int[domains.length];
+		
+		for (int i = 0; i < numPorts_; ++i)
+		{
+			int domainSize = domains[i].size();
+			outMsgs_[i] = new double[domainSize];
+			inMsgs_[i] = _random.nextInt(domainSize);
+		}
+
+		// Modified version of gibbs.STableFactor.updateEdgeMessage(int)
+		Runnable original = new Runnable() {
+			@Override
+			public void run()
+			{
+				final int numPorts = numPorts_;
+				final double[][] outMsgs = outMsgs_;
+				final int[] inMsgs = inMsgs_;
+				final IFactorTable factorTable = _table;
+				
+				for (int iteration = _iterations; --iteration>=0;)
+				{
+					for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
+					{
+						double[] outMessage = outMsgs[outPortNum];
+						int outputMsgLength = outMessage.length;
+
+						double[] factorTableWeights = factorTable.getPotentials();
+
+						int[] inPortMsgs = new int[numPorts];
+						for (int port = 0; port < numPorts; port++)
+							inPortMsgs[port] = inMsgs[port];
+
+						for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
+						{
+							inPortMsgs[outPortNum] = outIndex;
+
+							int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
+							if (weightIndex >= 0)
+								outMessage[outIndex] = factorTableWeights[weightIndex];
+							else
+								outMessage[outIndex] = Double.POSITIVE_INFINITY;
+
+						}
+					}
+				}
+			}
+		};
+		
+		runTest("gibbsUpdateMessageOriginal", numPorts_, "call", 42, original);
+
+		Runnable modified = new Runnable() {
+			@Override
+			public void run()
+			{
+				final int numPorts = numPorts_;
+				final double[][] outMsgs = outMsgs_;
+				final int[] inMsgs = inMsgs_;
+				final IFactorTable factorTable = _table;
+				
+				for (int iteration = _iterations; --iteration>=0;)
+				{
+					for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
+					{
+						double[] outMessage = outMsgs[outPortNum];
+						int outputMsgLength = outMessage.length;
+
+						int[] inPortMsgs = new int[numPorts];
+						for (int port = 0; port < numPorts; port++)
+							inPortMsgs[port] = inMsgs[port];
+
+						for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
+						{
+							inPortMsgs[outPortNum] = outIndex;
+							outMessage[outIndex] = factorTable.getWeightForIndices(inPortMsgs);
+						}
+					}
+				}
+			}
+		};
+		
+		runTest("gibbsUpdateMessageModified", numPorts_, "call", 42, modified);
+
 	}
 	
 	/*-----------------

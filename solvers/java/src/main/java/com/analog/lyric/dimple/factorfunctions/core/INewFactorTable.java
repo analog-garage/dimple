@@ -49,6 +49,9 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 */
 	public int[][] getIndicesSparseUnsafe();
 	
+	public void replaceEnergiesSparse(double[] energies);
+	public void replaceWeightsSparse(double[] weights);
+	
 	/**
 	 * Sets representation to {@link NewFactorTableRepresentation#DENSE_ENERGY} with
 	 * provided energies.
@@ -79,7 +82,7 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * Equivalent to calling {@link #setDirected(BitSet)} followed by {@link #normalizeConditional()}
 	 * but requires that {@code outputSet} is non-null.
 	 */
-	public void setConditionalAndNormalize(BitSet outputSet);
+	public void makeConditional(BitSet outputSet);
 	
 	/**
 	 * Designates directionality of factor table by specifying which of its domains are outputs.
@@ -115,6 +118,19 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	 * @param weights specifies the weights of the table in the same order as {@code jointIndices}.
 	 * @throws IllegalArgumentException if {@code jointIndices} and {@code energies} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
+	 * @see #setWeightsSparse(int[][], double[])
 	 */
 	public void setWeightsSparse(int[] jointIndices, double[] weights);
+	
+	/**
+	 * Sets representation to {@link NewFactorTableRepresentation#SPARSE_WEIGHT_WITH_INDICES} with
+	 * provided weights for each set of indices.
+	 * <p>
+	 * @param indices are the combined element indices of the entries to put in the table.
+	 * @param weights specifies the weights of the table in the same order as {@code indices}.
+	 * @throws IllegalArgumentException if {@code indices} and {@code energies} have different lengths,
+	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
+	 * @see #setWeightsSparse(int[], double[])
+	 */
+	public void setWeightsSparse(int[][] indices, double[] weights);
 }

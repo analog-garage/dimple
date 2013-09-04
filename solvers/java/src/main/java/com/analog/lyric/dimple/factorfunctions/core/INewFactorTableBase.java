@@ -136,15 +136,6 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract double getEnergyForIndices(int ... indices);
 	
 	/**
-	 * If this method returns a value that is not a NaN, it is the energy of all sparse entries
-	 * in the table.
-	 * 
-	 * @see Double#isNaN()
-	 * @see #getEnergyForSparseIndex(int)
-	 */
-	public abstract double getEnergySparseIfConstant();
-	
-	/**
 	 * Returns energy of factor table entry for given {@code arguments}.
 	 * <p>
 	 * @see #getWeightForIndices(int...)
@@ -174,15 +165,6 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public abstract double getWeightForIndices(int ... indices);
 
-	/**
-	 * If this method returns a value that is not a NaN, it is the weight of all sparse entries
-	 * in the table.
-	 * 
-	 * @see Double#isNaN()
-	 * @see #getWeightForSparseIndex(int)
-	 */
-	public abstract double getWeightSparseIfConstant();
-	
 	public abstract boolean hasDenseRepresentation();
 	public abstract boolean hasDenseEnergies();
 	public abstract boolean hasDenseWeights();

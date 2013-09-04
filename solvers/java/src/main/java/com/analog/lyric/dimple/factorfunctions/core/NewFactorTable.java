@@ -958,6 +958,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		return 0;
 	}
 	
+	
 	/*--------------------------
 	 * INewFactorTable methods
 	 */
@@ -1036,12 +1037,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public final double getEnergySparseIfConstant()
-	{
-		return hasDeterministicRepresentation() ? 0.0 : Double.NaN;
-	}
-	
-	@Override
 	public final double[] getEnergiesSparseUnsafe()
 	{
 		if (_sparseEnergies.length == 0 && !hasSparseEnergies())
@@ -1056,12 +1051,6 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			}
 		}
 		return _sparseEnergies;
-	}
-	
-	@Override
-	public final double getWeightSparseIfConstant()
-	{
-		return hasDeterministicRepresentation() ? 1.0 : Double.NaN;
 	}
 	
 	@Override
@@ -1109,6 +1098,38 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	public boolean hasDeterministicRepresentation()
 	{
 		return (_representation & ALL) == DETERMINISTIC;
+	}
+	
+	@Override
+	public void replaceEnergiesSparse(double[] energies)
+	{
+		final int size = energies.length;
+		if (size != sparseSize())
+		{
+			throw new IllegalArgumentException(
+				String.format("Array size (%d) does not match sparse size (%d).", size, sparseSize()));
+		}
+	
+		for (int si = 0; si < size; ++si)
+		{
+			setEnergyForSparseIndex(energies[si], si);
+		}
+	}
+	
+	@Override
+	public void replaceWeightsSparse(double[] weights)
+	{
+		final int size = weights.length;
+		if (size != sparseSize())
+		{
+			throw new IllegalArgumentException(
+				String.format("Array size (%d) does not match sparse size (%d).", size, sparseSize()));
+		}
+	
+		for (int si = 0; si < size; ++si)
+		{
+			setWeightForSparseIndex(weights[si], si);
+		}
 	}
 	
 	@Override
@@ -1183,7 +1204,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
-	public void setConditionalAndNormalize(BitSet outputSet)
+	public void makeConditional(BitSet outputSet)
 	{
 		if (outputSet == null)
 		{
@@ -1211,6 +1232,19 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		setSparseValues(jointIndices, weights, SPARSE_WEIGHT);
 	}
 	
+	@Override
+	public void setWeightsSparse(int[][] indices, double[] weights)
+	{
+		final JointDomainIndexer domains = getDomainIndexer();
+		final int[] jointIndices = new int[indices.length];
+		for (int i = indices.length; --i>=0;)
+		{
+			jointIndices[i] = domains.jointIndexFromIndices(indices[i]);
+		}
+		setWeightsSparse(jointIndices, weights);
+		return;
+	}
+
 	@Override
 	public void setRepresentation(final NewFactorTableRepresentation newRep)
 	{
@@ -1580,129 +1614,13 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void change(int[][] indices, double[] weights)
 	{
-		_computedMask = 0;
-		int newSize = indices.length;
-		
-		if (indices.length != weights.length)
-		{
-			throw new IllegalArgumentException(
-				String.format("indices and weights lenghts differ (%d vs %d)", indices.length, weights.length));
-		}
-		
-		Arrays.fill(_denseEnergies, Double.POSITIVE_INFINITY);
-		Arrays.fill(_denseWeights, 0.0);
-		_sparseEnergies = _sparseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-		_sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
-		_sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
-		_nonZeroWeights = 0;
-
-		final boolean hasSparseIndices = this.hasSparseIndices();
-		if ((_representation & DETERMINISTIC) != 0)
-		{
-			_representation = hasSparseIndices ? SPARSE_WEIGHT_WITH_INDICES : SPARSE_WEIGHT;
-		}
-		
-		if (indices.length == 0)
-		{
-			return;
-		}
-		
-		final JointDomainIndexer domains = getDomainIndexer();
-		
-		// Encode indices as array of jointIndex/weightIndex tuples with the
-		// jointIndex in the high-order 32-bits so that we can order it trivially
-		// with standard sort.
-		long[] jointTuples = new long[newSize];
-		for (int i = 0; i < newSize; ++i)
-		{
-			final int[] row = indices[i];
-			domains.validateIndices(row);
-			long joint = domains.jointIndexFromIndices(row);
-			jointTuples[i] = (joint << 32) | i;
-		}
-		Arrays.sort(jointTuples);
-		
-		int prevJoint = -1, nNonZero = 0;
-		int[] jointIndexes = new int[newSize];
-		double[] orderedWeights = new double[newSize];
-		int[][] orderedIndices = hasSparseIndices? new int[newSize][] : ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
-		for (int i = 0; i < newSize; ++i)
-		{
-			long jointTuple = jointTuples[i];
-			int joint = (int)(jointTuple >>> 32);
-			int oldi = (int)jointTuple;
-			double weight = weights[oldi];
-			if (joint == prevJoint)
-			{
-				throw new DimpleException("Table Factor contains multiple rows with same set of indices.");
-			}
-			if (weight != 0.0)
-			{
-				++nNonZero;
-			}
-			prevJoint = joint;
-			jointIndexes[i] = joint;
-			orderedWeights[i] = weight;
-			if (hasSparseIndices)
-			{
-				orderedIndices[i] = indices[oldi].clone();
-			}
-		}
-		
-		_nonZeroWeights = nNonZero;
-		
-		if ((_representation & ALL_SPARSE) != 0)
-		{
-			_sparseIndexToJointIndex = jointIndexes;
-			_sparseIndices = orderedIndices;
-			
-			if ((_representation & SPARSE_WEIGHT) != 0)
-			{
-				_sparseWeights = orderedWeights;
-			}
-			if ((_representation & SPARSE_ENERGY) != 0)
-			{
-				_sparseEnergies = new double[newSize];
-				for (int i = 0; i < newSize; ++i)
-				{
-					_sparseEnergies[i] = weightToEnergy(orderedWeights[i]);
-				}
-			}
-		}
-		
-		if ((_representation & DENSE_WEIGHT) != 0)
-		{
-			for (int i = 0; i < newSize; ++i)
-			{
-				_denseWeights[jointIndexes[i]] = orderedWeights[i];
-			}
-		}
-		if ((_representation & DENSE_ENERGY) != 0)
-		{
-			if ((_representation & SPARSE_ENERGY) != 0)
-			{
-				for (int i = 0; i < newSize; ++i)
-				{
-					_denseEnergies[jointIndexes[i]] = _sparseEnergies[i];
-				}
-			}
-			else
-			{
-				for (int i = 0; i < newSize; ++i)
-				{
-					_denseEnergies[jointIndexes[i]] = weightToEnergy(orderedWeights[i]);
-				}
-			}
-		}
+		setWeightsSparse(indices, weights);
 	}
-
+	
 	@Override
-	public void changeWeights(double[] values)
+	public void changeWeights(double[] weights)
 	{
-		for (int si = sparseSize(); --si>=0;)
-		{
-			setWeightForSparseIndex(values[si], si);
-		}
+		replaceWeightsSparse(weights);
 	}
 
 	@Override
@@ -1729,17 +1647,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public double[] getWeights()
 	{
-		if (_representation == DETERMINISTIC)
-		{
-			double[] weights = new double[sparseSize()];
-			Arrays.fill(weights, 1.0);
-			return weights;
-		}
-		else
-		{
-			setRepresentation(_representation | SPARSE_WEIGHT);
-			return _sparseWeights.clone();
-		}
+		return getWeightsSparseUnsafe();
 	}
 
 	@Override
@@ -1807,15 +1715,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public double[] getPotentials()
 	{
-		if (_representation == DETERMINISTIC)
-		{
-			return new double[sparseSize()];
-		}
-		else
-		{
-			setRepresentation(_representation | SPARSE_ENERGY);
-			return _sparseEnergies.clone();
-		}
+		return getEnergiesSparseUnsafe();
 	}
 
 	// FIXME: what to do if table is directed? Should we assert that the joined

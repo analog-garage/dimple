@@ -230,7 +230,7 @@ public class TestFactorTable
 		assertTrue(xor2.isDeterministicDirected());
 		assertEquals(1.0, xor2.getWeightForSparseIndex(1), 0.0);
 		xor2.setWeightForSparseIndex(23.0, 1);
-		xor2.setConditionalAndNormalize(xor2.getDomainIndexer().getOutputSet());
+		xor2.makeConditional(xor2.getDomainIndexer().getOutputSet());
 		assertTrue(xor2.isDeterministicDirected());
 		
 		xor2.setRepresentation(NewFactorTableRepresentation.DENSE_ENERGY);
@@ -285,7 +285,7 @@ public class TestFactorTable
 		}
 		try
 		{
-			xor2.setConditionalAndNormalize(null);
+			xor2.makeConditional(null);
 			fail("expected exception");
 		}
 		catch (IllegalArgumentException ex)
@@ -332,6 +332,9 @@ public class TestFactorTable
 		oldTester.testEvalAsFactorFunction();
 		newTester.testEvalAsFactorFunction();
 		
+		oldTester.testGibbsUpdateMessage();
+		newTester.testGibbsUpdateMessage();
+		
 		newTable.setRepresentation(NewFactorTableRepresentation.ALL_WEIGHT_WITH_INDICES);
 		oldTester.testSumProductUpdate();
 		newTester.testSumProductUpdate();
@@ -358,6 +361,9 @@ public class TestFactorTable
 		newTester.testGetWeightIndexFromTableIndices();
 		oldTester.testGetWeightForIndices();
 		newTester.testGetWeightForIndices();
+		
+		oldTester.testGibbsUpdateMessage();
+		newTester.testGibbsUpdateMessage();
 		
 		newTable.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
 		oldTester.testSumProductUpdate();
@@ -758,7 +764,7 @@ public class TestFactorTable
 			{
 				arguments[col] = domains[col].getElement(rowValues[col]);
 			}
-			assertEquals(table.getWeights()[row], table.evalAsFactorFunction(arguments), 0.0);
+			assertEquals(table.getWeights()[row], table.evalAsFactorFunction(arguments), 1e-12);
 		}
 		
 		if (table.getRows() != indices.length)

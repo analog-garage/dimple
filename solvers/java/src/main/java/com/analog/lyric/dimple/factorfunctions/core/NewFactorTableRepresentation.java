@@ -1,5 +1,24 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
+/**
+ * Enumerates internal representations for {@link NewFactorTable}.
+ * <p>
+ * The underlying representation can have (at least) the following elements:
+ * <ul>
+ * <li>A dense array of weights with entries for every joint index.
+ * <li>A dense array of energies with entries for every joint index.
+ * <li>A sparse array of weights with entries for every sparse index.
+ * <li>A sparse array of energies with entries for every sparse index.
+ * <li>A mapping of sparse indexes to joint indexes. This array is used
+ * for all sparse representations including deterministic.
+ * <li>An array of sparse element indices. This has the same information as the
+ * sparse to joint index map but represents joint indexes as an array of element
+ * indices.
+ * </ul>
+ * <p>
+ * @see NewFactorTable#getRepresentation()
+ * @see NewFactorTable#setRepresentation(NewFactorTableRepresentation)
+ */
 public enum NewFactorTableRepresentation
 {
 	DETERMINISTIC(NewFactorTable.DETERMINISTIC),
