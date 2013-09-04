@@ -849,21 +849,45 @@ The functions called from the switchyard all make calls on the static DimpleMana
 
 As noted earlier in this document, the C++ code also makes calls back to MATLAB to build the CombinationTables from the delta functions. It does so by calling the C++ mexCallMATLAB function, which takes the MATLAB function name as an argument.
 
-\subsubsection{LP Solver}
-\paragraph{Objective Function}
+\subsubsection{LP and IP Solver}
+
+\paragraph{How to express a Factor Graph as an LP or IP}
+
+Inference on Factor Graphs can be expressed as a Linear Program or an Integer Program.  Expressed as an Integer program, inference will be exact but slower than BP.   The following math describes how to specify an objective function and constraints.
+
+\subparagraph{Objective Function}
+
+In the following, $F$ is the set of all factors and $V$ is the set of all variables.  $V_f$ is the set of all variables associated with factor $f$.  $\phi_f$ is the factor function for factor f.
+
 \[
-\sum_{f \in F} f(v) p(v) + \sum_{v \in V} input(v) p(v)
+\sum_{f \in F} \phi_f(V_f) p(v) + \sum_{v \in V} input(v) p(v)
 \]
 
-\paragraph{Constraints}
+\subparagraph{Constraints}
 
-for each factor and variable
+First we introduce some shorthand notation.  $ \sum_{\sim v} $ is a sum over all variables that are not v.  
+
+For all pairs of f,v such that v is connected to f:
+
 \[
-\sum_{y} \sum_{z} p(x,y,z) = p(x)
+\sum_{ \sim v} p(V_f) = p(v)
 \]
 
-\paragraph{IP}
-When solving exactly, we make the previous equations an IP by constraining p(V=v) to be 0 or 1 and 
-$ \sum_{v \in V}p(v) = 1 $
+also, for all v
+
+\[
+\sum_{v} p(v) = 1
+\]
+
+And finally
+
+for all f
+
+\[
+p(V_f) \ge 0
+\]
+
+\subparagraph{Additional Constraint to Make this an IP}
+When solving exactly, we make the previous equations an IP by constraining p(V=v) to be 0 or 1.
 
 \end{document}  
