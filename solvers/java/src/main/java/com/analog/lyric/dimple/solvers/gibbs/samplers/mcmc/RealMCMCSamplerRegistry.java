@@ -14,23 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
 
-public class GammaParameters
+public class RealMCMCSamplerRegistry
 {
-	private double _alpha = 1;
-	private double _beta = 1;
-	
-	public GammaParameters() {}
-	public GammaParameters(double alpha, double beta)
+	// Get a sampler by name; assumes it is located in this package
+	public static IRealMCMCSampler get(String samplerName)
 	{
-		_alpha = alpha;
-		_beta = beta;
+		String fullQualifiedName = RealMCMCSamplerRegistry.class.getPackage().getName() + "." + samplerName;
+		try
+		{
+			IRealMCMCSampler sampler = (IRealMCMCSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			return sampler;
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
 	}
-	
-	public final double getAlpha() {return _alpha;}
-	public final double getBeta() {return _beta;}
-
-	public final void setAlpha(double alpha) {_alpha = alpha;}
-	public final void setBeta(double beta) {_beta = beta;}
 }

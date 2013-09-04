@@ -32,10 +32,10 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
 public class CustomDiscreteTransition extends SRealConjugateFactor
 {

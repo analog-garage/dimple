@@ -14,12 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 
-public interface IRealConjugateSampler extends IRealSampler
+public interface IRealMCMCSampler extends IRealSampler
 {
-	public double nextSample(Port[] ports, FactorFunction input);
+	public double nextSample(ISampleScorer sampleScorer);
 }

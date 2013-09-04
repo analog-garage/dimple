@@ -14,11 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-public interface ISampleScorer
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.RealDomain;
+
+public interface IRealConjugateSamplerFactory
 {
-	public double getSampleScore(double sampleValue);
-	public double getCurrentSampleScore();
-	public double getCurrentSampleValue();
+	public IRealConjugateSampler create();
+	public boolean isCompatible(FactorFunction factorFunction);
+	public boolean isCompatible(RealDomain domain);
 }

@@ -14,22 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
 
-public class RealMCMCSamplerRegistry
+public interface ISampleScorer
 {
-	// Get a sampler by name; assumes it is located in this package
-	public static IRealMCMCSampler get(String samplerName)
-	{
-		String fullQualifiedName = RealMCMCSamplerRegistry.class.getPackage().getName() + "." + samplerName;
-		try
-		{
-			IRealMCMCSampler sampler = (IRealMCMCSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return sampler;
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
+	public double getSampleScore(double sampleValue);
+	public double getCurrentSampleScore();
+	public double getCurrentSampleValue();
 }

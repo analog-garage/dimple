@@ -20,7 +20,7 @@ import java.util.Collection;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
 
 public abstract class SRealConjugateFactor extends SRealFactor

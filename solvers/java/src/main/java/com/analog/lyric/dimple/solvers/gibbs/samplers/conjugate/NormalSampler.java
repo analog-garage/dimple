@@ -14,58 +14,70 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
-
-public class GammaSampler implements IRealConjugateSampler
+public class NormalSampler implements IRealConjugateSampler
 {
+	private final double MAX_SIGMA = 1e12;
+	
 	@Override
 	public double nextSample(Port[] ports, FactorFunction input)
 	{
-		double alpha = 0;
-		double beta = 0;
+		double totalPrecision = 0;
+		double totalMeanPrecisionProduct = 0;
 		
 		if (input != null)
 		{
-			alpha += ((Gamma)input).getAlpha();
-			beta += ((Gamma)input).getBeta();
+			double mean = ((Normal)input).getMean();
+			double precision = ((Normal)input).getPrecision();
+			
+			totalMeanPrecisionProduct += mean * precision;
+			totalPrecision += precision;
 		}
 		
 		int numPorts = ports.length;
 		for (int port = 0; port < numPorts; port++)
 		{
-			// The message from each neighboring factor is an array with elements (alpha, beta)
-			GammaParameters message = (GammaParameters)(ports[port].getOutputMsg());
-			alpha += message.getAlpha();
-			beta += message.getBeta();
+			// The message from each neighboring factor is an array with elements (mean, precision)
+			NormalParameters message = (NormalParameters)(ports[port].getOutputMsg());
+			double mean = message.getMean();
+			double precision = message.getPrecision();
+			
+			totalMeanPrecisionProduct += mean * precision;
+			totalPrecision += precision;
 		}
 		
-		return nextSample(alpha, beta);
-	}
-
-	public double nextSample(double alpha, double beta)
-	{
-		return SolverRandomGenerator.randGamma.nextDouble(alpha, beta);
+		double finalMean = (totalPrecision > 0) ? totalMeanPrecisionProduct / totalPrecision : 0;
+		
+		return nextSample(finalMean, totalPrecision);
 	}
 	
+	public double nextSample(double mean, double precision)
+	{
+		if (precision > 0)
+			return mean + SolverRandomGenerator.rand.nextGaussian() / Math.sqrt(precision);
+		else
+			return mean + SolverRandomGenerator.rand.nextGaussian() * MAX_SIGMA;
+	}
+
 	// A static factory that creates a sampler of this type
 	public static final IRealConjugateSamplerFactory factory = new IRealConjugateSamplerFactory()
 	{
 		@Override
-		public IRealConjugateSampler create() {return new GammaSampler();}
+		public IRealConjugateSampler create() {return new NormalSampler();}
 		
 		@Override
 		public boolean isCompatible(FactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
-			else if (factorFunction instanceof Gamma)
+			else if (factorFunction instanceof Normal)
 				return true;
 			else
 				return false;
@@ -74,8 +86,8 @@ public class GammaSampler implements IRealConjugateSampler
 		@Override
 		public boolean isCompatible(RealDomain domain)
 		{
-			return (domain.getLowerBound() <= 0) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
+			return (domain.getLowerBound() == Double.NEGATIVE_INFINITY) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
 		}
-
 	};
+	
 }
