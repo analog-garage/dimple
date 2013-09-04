@@ -581,7 +581,7 @@ public class SVariable extends SDiscreteVariableBase
     public void updateDerivative(int outPortNum)
     {
     	SFactorGraph sfg = (SFactorGraph)getRootGraph();
-    	int numWeights = sfg.getCurrentFactorTable().getWeights().length;
+    	int numWeights = sfg.getCurrentFactorTable().getRows();
     	
     	for (int wn = 0; wn < numWeights; wn++)
     	{

@@ -483,6 +483,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case ALL_DENSE_WITH_INDICES:
 		case DENSE_WEIGHT_WITH_INDICES:
 			setRepresentation(_representation | SPARSE_WEIGHT);
+			return _sparseWeights[sparseIndex];
 			// $FALL-THROUGH$
 		case ALL:
 		case ALL_WEIGHT:
@@ -506,6 +507,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY_WITH_INDICES:
 			setRepresentation(_representation | SPARSE_ENERGY);
 			// $FALL-THROUGH$
+			return energyToWeight(_sparseEnergies[sparseIndex]);
 		case ALL_ENERGY:
 		case SPARSE_ENERGY:
 		case NOT_SPARSE_WEIGHT:
@@ -1034,20 +1036,66 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	}
 	
 	@Override
+	public final double getEnergySparseIfConstant()
+	{
+		return hasDeterministicRepresentation() ? 0.0 : Double.NaN;
+	}
+	
+	@Override
 	public final double[] getEnergiesSparseUnsafe()
 	{
+		if (_sparseEnergies.length == 0 && !hasSparseEnergies())
+		{
+			if (hasDeterministicRepresentation())
+			{
+				_sparseEnergies = new double[getDomainIndexer().getInputCardinality()];
+			}
+			else
+			{
+				setRepresentation(_representation | SPARSE_ENERGY);
+			}
+		}
 		return _sparseEnergies;
+	}
+	
+	@Override
+	public final double getWeightSparseIfConstant()
+	{
+		return hasDeterministicRepresentation() ? 1.0 : Double.NaN;
 	}
 	
 	@Override
 	public final double[] getWeightsSparseUnsafe()
 	{
+		if (_sparseWeights.length == 0 && !hasSparseWeights())
+		{
+			if (hasDeterministicRepresentation())
+			{
+				_sparseWeights = new double[getDomainIndexer().getInputCardinality()];
+				Arrays.fill(_sparseWeights, 1.0);
+			}
+			else
+			{
+				setRepresentation(_representation | SPARSE_WEIGHT);
+			}
+		}
 		return _sparseWeights;
 	}
 	
 	@Override
 	public final int[][] getIndicesSparseUnsafe()
 	{
+		if (!hasSparseIndices())
+		{
+			if (hasSparseRepresentation())
+			{
+				setRepresentation(_representation | SPARSE_INDICES);
+			}
+			else
+			{
+				setRepresentation(_representation | SPARSE_WEIGHT_WITH_INDICES);
+			}
+		}
 		return _sparseIndices;
 	}
 	
@@ -1055,6 +1103,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	public final NewFactorTableRepresentation getRepresentation()
 	{
 		return NewFactorTableRepresentation.forOrdinal(_representation);
+	}
+	
+	@Override
+	public boolean hasDeterministicRepresentation()
+	{
+		return (_representation & ALL) == DETERMINISTIC;
 	}
 	
 	@Override
@@ -1176,7 +1230,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// Disallow non-sparse rep combined with sparse indices
 		//
 		
-		if ((newRep & ALL_DENSE_WITH_INDICES) == newRep)
+		if ((newRep & ALL_DENSE_WITH_INDICES) == newRep && (newRep & ALL) != DETERMINISTIC)
 		{
 			newRep &= ALL_DENSE;
 		}
@@ -1191,6 +1245,15 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			{
 				throw new DimpleException("Cannot set representation to DETERMINISTIC*");
 			}
+			if ((newRep & SPARSE_INDICES) != 0)
+			{
+				_sparseIndices = computeSparseIndices();
+			}
+			else
+			{
+				_sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
+			}
+			_representation = newRep;
 			return;
 		}
 		
@@ -1324,26 +1387,8 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		if ((newRep & SPARSE_INDICES) != 0 && (oldRep & SPARSE_INDICES) == 0)
 		{
-			final int sparseSize = this.sparseSize();
-			final int[][] sparseIndices = new int[sparseSize][];
-			final JointDomainIndexer indexer = getDomainIndexer();
-
-			if (sparseSize < jointSize)
-			{
-				for (int si = 0; si < sparseSize; ++si)
-				{
-					sparseIndices[si] = indexer.jointIndexToIndices(sparseToJoint[si]);
-				}
-			}
-			else
-			{
-				for (int ji = 0; ji < jointSize; ++ji)
-				{
-					sparseIndices[ji] = indexer.jointIndexToIndices(ji);
-				}
-			}
 			
-			_sparseIndices = sparseIndices;
+			_sparseIndices = computeSparseIndices();
 			oldRep |= SPARSE_INDICES;
 		}
 		
@@ -1948,6 +1993,31 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		_nonZeroWeights = count;
+	}
+	
+	private int[][] computeSparseIndices()
+	{
+		final JointDomainIndexer indexer = getDomainIndexer();
+		final int jointSize = indexer.getCardinality();
+		final int sparseSize = this.sparseSize();
+		final int[] sparseToJoint = _sparseIndexToJointIndex;
+		final int[][] sparseIndices = new int[sparseSize][];
+
+		if (sparseSize < jointSize)
+		{
+			for (int si = 0; si < sparseSize; ++si)
+			{
+				sparseIndices[si] = indexer.jointIndexToIndices(sparseToJoint[si]);
+			}
+		}
+		else
+		{
+			for (int ji = 0; ji < jointSize; ++ji)
+			{
+				sparseIndices[ji] = indexer.jointIndexToIndices(ji);
+			}
+		}
+		return sparseIndices;
 	}
 	
 	private int[] computeSparseToJointIndexMap()

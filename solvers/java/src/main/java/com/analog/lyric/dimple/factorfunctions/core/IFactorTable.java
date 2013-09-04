@@ -127,4 +127,6 @@ public interface IFactorTable
 	 * Returns the energy of factor table entry with given {@code indices}.
 	 */
 	public abstract double getEnergyForIndices(int ... indices);
+	public abstract double getWeightForIndices(int ... indices);
+	
 }

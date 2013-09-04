@@ -33,7 +33,16 @@ public class FactorTablePerformanceTester
 	 * Test cases
 	 */
 	
-	public double testEvalAsFactorFunction()
+	public void testAll()
+	{
+		testEvalAsFactorFunction();
+		testGet();
+		testGetWeightIndexFromTableIndices();
+		testGetWeightForIndices();
+		testSumProductUpdate();
+	}
+	
+	public void testEvalAsFactorFunction()
 	{
 		_random.setSeed(23);
 		final Object [][] argrows = new Object[_iterations][];
@@ -53,10 +62,10 @@ public class FactorTablePerformanceTester
 			}
 		};
 		
-		return runTest("evalAsFactorFunction", test);
+		runTest("evalAsFactorFunction", test);
 	}
 	
-	public double testGet()
+	public void testGet()
 	{
 		_random.setSeed(42);
 		final int [][] rows = new int[_iterations][];
@@ -76,10 +85,10 @@ public class FactorTablePerformanceTester
 			}
 		};
 		
-		return runTest("get", test);
+		runTest("get", test);
 	}
 
-	public double testGetWeightIndexFromTableIndices()
+	public void testGetWeightIndexFromTableIndices()
 	{
 		_random.setSeed(42);
 		final int [][] rows = new int[_iterations][];
@@ -99,10 +108,10 @@ public class FactorTablePerformanceTester
 			}
 		};
 		
-		 return runTest("getWeightIndexFromTableIndices", test);
+		 runTest("getWeightIndexFromTableIndices", test);
 	}
 	
-	public double testGetWeightForIndices()
+	public void testGetWeightForIndices()
 	{
 		_random.setSeed(43);
 		final int [][] rows = new int[500][];
@@ -118,51 +127,21 @@ public class FactorTablePerformanceTester
 			@Override
 			public void run()
 			{
-				final NewFactorTable newTable = getNewTable();
-				
-				if (newTable != null)
-				{
-					runNewTable(newTable);
-				}
-				else
-				{
-					runOldTable(_table);
-				}
-			}
-			
-			private void runNewTable(NewFactorTable newTable)
-			{
 				for (int i = _iterations; --i>=0;)
 				{
 					for (int[] indices : rows)
 					{
-//						int ji = newTable.getDomainIndexer().jointIndexFromIndices(indices);
-//						total += newTable.getWeightForJointIndex(ji);
-						total += newTable.getWeightForIndices(indices);
-					}
-				}
-			}
-
-			private void runOldTable(IFactorTable table)
-			{
-				for (int i = _iterations; --i>=0;)
-				{
-					double[] weights = table.getWeights();
-					for (int[] indices : rows)
-					{
-						total += weights[table.getWeightIndexFromTableIndices(indices)];
+						total += _table.getWeightForIndices(indices);
 					}
 				}
 			}
 		};
 		
-		 return runTest("getWeightForIndices", rows.length, "call", 42, test);
+		 runTest("getWeightForIndices", rows.length, "call", 42, test);
 	}
 	
-	public double testSumProductUpdate()
+	public void testSumProductUpdate()
 	{
-		double ns = 0.0;
-		
 		final DiscreteDomain[] domains = _table.getDomains();
 		final int numPorts_ = domains.length;
 		final double[][] outMsgs_ = new double[domains.length][];
@@ -227,7 +206,7 @@ public class FactorTablePerformanceTester
 				}
 			};
 
-			ns += runTest("sumProductUpdateOriginal", "call", 42, original);
+			runTest("sumProductUpdateOriginal", "call", 42, original);
 
 			Runnable faster = new Runnable() {
 				@Override
@@ -274,7 +253,7 @@ public class FactorTablePerformanceTester
 				}
 			};
 
-			ns += runTest("sumProductUpdateFaster", "call", 42, faster);
+			runTest("sumProductUpdateFaster", "call", 42, faster);
 		}
 
 		if (getNewTable() != null)
@@ -291,44 +270,80 @@ public class FactorTablePerformanceTester
 					for (int iteration = _iterations; --iteration>=0;)
 					{
 						final int[][] table = ftable.getIndicesSparseUnsafe();
-						final double[] values = ftable.getWeightsSparseUnsafe();
 						final int tableLength = table.length;
-
-						for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
+						final double value = ftable.getWeightSparseIfConstant();
+						
+						if (!Double.isNaN(value) || true)
 						{
-							double[] outputMsgs = outMsgs[outPortNum];
+							final double[] values = ftable.getWeightsSparseUnsafe();
 
-							int outputMsgLength = outputMsgs.length;
-							Arrays.fill(outputMsgs, 0);
-
-							for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
+							for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
 							{
-								double prob = values[tableIndex];
-								int[] tableRow = table[tableIndex];
-								int outputIndex = tableRow[outPortNum];
+								double[] outputMsgs = outMsgs[outPortNum];
 
-								for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
-									prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-								for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
-									prob *= inMsgs[inPortNum][tableRow[inPortNum]];
-								outputMsgs[outputIndex] += prob;
+								int outputMsgLength = outputMsgs.length;
+								Arrays.fill(outputMsgs, 0);
+
+								for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
+								{
+									double prob = values[tableIndex];
+									int[] tableRow = table[tableIndex];
+									int outputIndex = tableRow[outPortNum];
+
+									for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
+										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+									for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+									outputMsgs[outputIndex] += prob;
+								}
+
+								double sum = 0;
+								for (double w : outputMsgs)
+									sum += w;
+
+								for (int i = 0; i < outputMsgLength; ++i)
+									outputMsgs[i] /= sum;
 							}
-
-							double sum = 0;
-							for (double w : outputMsgs)
-								sum += w;
-
-							for (int i = 0; i < outputMsgLength; ++i)
-								outputMsgs[i] /= sum;
 						}
+//						else
+//						{
+//							// Surprisingly, this version appears to be slower than the above version
+//							// on my x64 Windows machine even though it lacks an array access in the middle loop!
+//							// TODO: try to look at generated x64 assembly to see what is going on here.
+//							for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
+//							{
+//								double[] outputMsgs = outMsgs[outPortNum];
+//
+//								int outputMsgLength = outputMsgs.length;
+//								Arrays.fill(outputMsgs, 0);
+//
+//								for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
+//								{
+//									double prob = value;
+//									int[] tableRow = table[tableIndex];
+//									int outputIndex = tableRow[outPortNum];
+//
+//									for (int inPortNum = 0; inPortNum < outPortNum; ++inPortNum)
+//										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+//									for (int inPortNum = outPortNum + 1; inPortNum < numPorts; inPortNum++)
+//										prob *= inMsgs[inPortNum][tableRow[inPortNum]];
+//									outputMsgs[outputIndex] += prob;
+//								}
+//
+//								double sum = 0;
+//								for (double w : outputMsgs)
+//									sum += w;
+//
+//								for (int i = 0; i < outputMsgLength; ++i)
+//									outputMsgs[i] /= sum;
+//							}
+//						}
 					}
 				}
 			};
 
-			ns += runTest("sumProductUpdateNew", "call", 42, unsafeIndices);
+			runTest("sumProductUpdateNew", "call", 42, unsafeIndices);
 		}
-
-		return ns;
 	}
 	
 	/*-----------------

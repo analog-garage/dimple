@@ -224,6 +224,13 @@ public abstract class FactorTableBase implements IFactorTable
 	}
 	
 	@Override
+	public double getWeightForIndices(int ... indices)
+	{
+		final int index = getWeightIndexFromTableIndices(indices);
+		return index < 0 ? 0.0 :  _weights[index];
+	}
+
+	@Override
 	public double [] getPotentials()
 	{
 		if (_potentials == null)

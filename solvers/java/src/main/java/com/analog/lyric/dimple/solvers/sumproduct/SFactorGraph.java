@@ -241,10 +241,10 @@ public class SFactorGraph extends SFactorGraphBase
 				
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.getWeights().length);
+			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.getRows());
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
-			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.getWeights().length);
+			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.getRows());
 		
 		setCalculateDerivative(true);
 		

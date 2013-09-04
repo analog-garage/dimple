@@ -23,6 +23,8 @@ public interface INewFactorTable extends INewFactorTableBase, IFactorTable
 	
 	public NewFactorTableRepresentation getRepresentation();
 
+	public boolean hasDeterministicRepresentation();
+	
 	/**
 	 * Returns the underlying array of sparse energies without copying for speed.
 	 * <p>

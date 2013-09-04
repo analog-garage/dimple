@@ -352,7 +352,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double calculateDerivativeOfBeliefDenomenatorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
 		double sum = 0;
-		for (int i = 0; i < getFactor().getFactorTable().getWeights().length; i++)
+		for (int i = 0, end = getFactor().getFactorTable().getRows(); i < end; i++)
 			sum += calculateDerivativeOfBeliefNumeratorWithRespectToWeight(weightIndex,i,isFactorOfInterest);
 		return sum;
 	}
@@ -414,7 +414,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		double sum = 0;
 		int [][] indices = ft.getIndices();
 		
-		for (int i = 0; i < ft.getWeights().length; i++)
+		for (int i = 0, end = ft.getRows(); i < end; i++)
 			if (indices[i][outPortNum] == domainValue)
 				sum += calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,i);
 		
@@ -511,7 +511,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		SFactorGraph sfg = (SFactorGraph)getRootGraph();
 		IFactorTable ft = sfg.getCurrentFactorTable();
-		int numWeights = ft.getWeights().length;
+		int numWeights = ft.getRows();
 		
 		for (int wn = 0; wn < numWeights; wn++)
 		{

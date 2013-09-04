@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import cern.colt.map.OpenIntIntHashMap;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.INewFactorTableBase;
@@ -296,7 +297,7 @@ public class TestFactorTable
 	@Test
 	public void performanceComparison()
 	{
-		int iterations = 100000;
+		int iterations = 10000;
 		
 		FactorTable.useNewFactorTable = false;
 		
@@ -304,6 +305,8 @@ public class TestFactorTable
 		DiscreteDomain domain10 = DiscreteDomain.range(0,9);
 		DiscreteDomain domain20 = DiscreteDomain.range(0,19);
 		DiscreteDomain domain5 = DiscreteDomain.range(0,4);
+		DiscreteDomain oneDie = DiscreteDomain.range(1,6);
+		DiscreteDomain twoDice = DiscreteDomain.range(2,12);
 
 		NewFactorTable newTable = new NewFactorTable(domain10, domain20, domain5);
 		newTable.setRepresentation(NewFactorTableRepresentation.DENSE_WEIGHT);
@@ -315,28 +318,25 @@ public class TestFactorTable
 		FactorTablePerformanceTester oldTester = new FactorTablePerformanceTester(oldTable, iterations);
 		FactorTablePerformanceTester newTester = new FactorTablePerformanceTester(newTable, iterations);
 
-		@SuppressWarnings("unused")
-		double oldNs, newNs;
-
 		System.out.println("==== dense 10x20x5 table ==== ");
 		
-		oldNs = oldTester.testGet();
-		newNs = newTester.testGet();
+		oldTester.testGet();
+		newTester.testGet();
 		
-		oldNs = oldTester.testGetWeightIndexFromTableIndices();
-		newNs = newTester.testGetWeightIndexFromTableIndices();
+		oldTester.testGetWeightIndexFromTableIndices();
+		newTester.testGetWeightIndexFromTableIndices();
 
-		oldNs = oldTester.testGetWeightForIndices();
-		newNs = newTester.testGetWeightForIndices();
+		oldTester.testGetWeightForIndices();
+		newTester.testGetWeightForIndices();
 
-		oldNs = oldTester.testEvalAsFactorFunction();
-		newNs = newTester.testEvalAsFactorFunction();
+		oldTester.testEvalAsFactorFunction();
+		newTester.testEvalAsFactorFunction();
 		
 		newTable.setRepresentation(NewFactorTableRepresentation.ALL_WEIGHT_WITH_INDICES);
-		oldNs = oldTester.testSumProductUpdate();
-		newNs = newTester.testSumProductUpdate();
+		oldTester.testSumProductUpdate();
+		newTester.testSumProductUpdate();
 
-		System.out.println("==== sparse 10x20x5 table ==== ");
+		System.out.println("\n==== sparse 10x20x5 table ==== ");
 		
 		// Randomly sparsify the tables
 		for (int i = newTable.jointSize() / 2; --i>=0;)
@@ -346,25 +346,59 @@ public class TestFactorTable
 		newTable.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT);
 		oldTable.change(newTable.getIndices(), newTable.getWeights());
 		
-		oldNs = oldTester.testGet();
-		newNs = newTester.testGet();
+		oldTester.testGet();
+		newTester.testGet();
 
-		oldNs = oldTester.testEvalAsFactorFunction();
-		newNs = newTester.testEvalAsFactorFunction();
+		oldTester.testEvalAsFactorFunction();
+		newTester.testEvalAsFactorFunction();
 		
 		newTable.setRepresentation(NewFactorTableRepresentation.ALL_WEIGHT);
 		
-		oldNs = oldTester.testGetWeightIndexFromTableIndices();
-		newNs = newTester.testGetWeightIndexFromTableIndices();
-
-		oldNs = oldTester.testGetWeightForIndices();
-		newNs = newTester.testGetWeightForIndices();
+		oldTester.testGetWeightIndexFromTableIndices();
+		newTester.testGetWeightIndexFromTableIndices();
+		oldTester.testGetWeightForIndices();
+		newTester.testGetWeightForIndices();
 		
 		newTable.setRepresentation(NewFactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
-		oldNs = oldTester.testSumProductUpdate();
-		newNs = newTester.testSumProductUpdate();
+		oldTester.testSumProductUpdate();
+		newTester.testSumProductUpdate();
 		
-		System.out.println("==== DONE ====");
+		System.out.println("\n==== deterministic 11x6x6 table ====");
+		
+		newTable = new NewFactorTable(BitSetUtil.bitsetFromIndices(3, 0), twoDice, oneDie, oneDie);
+		JointDomainIndexer indexer = newTable.getDomainIndexer();
+		int[] deterministicIndices = new int[indexer.getInputCardinality()];
+		int[] indices = indexer.allocateIndices(null);
+		for (int ii = 0, iiend = indexer.getInputCardinality(); ii < iiend; ++ii)
+		{
+			indexer.inputIndexToIndices(ii, indices);
+			deterministicIndices[ii] = indices[1] + indices[2];
+		}
+		newTable.setDeterministicOuputIndices(deterministicIndices);
+		assertTrue(newTable.isDeterministicDirected());
+		
+		oldTable = FactorTable.create(indexer.getOutputSet(), twoDice, oneDie, oneDie);
+		oldTable.change(newTable.getIndices(), newTable.getWeights());
+		assertTrue(oldTable.isDeterministicDirected());
+		
+		oldTester = new FactorTablePerformanceTester(oldTable, iterations);
+		newTester = new FactorTablePerformanceTester(newTable, iterations);
+		
+		oldTester.testGetWeightIndexFromTableIndices();
+		newTester.testGetWeightIndexFromTableIndices();
+
+		oldTester.testGetWeightForIndices();
+		newTester.testGetWeightForIndices();
+
+		oldTester.testEvalAsFactorFunction();
+		newTester.testEvalAsFactorFunction();
+
+		newTable.setRepresentation(NewFactorTableRepresentation.DETERMINISTIC_WITH_INDICES);
+		newTable.getWeightsSparseUnsafe();
+		oldTester.testSumProductUpdate();
+		newTester.testSumProductUpdate();
+		
+		System.out.println("\n==== DONE ====");
 	}
 	
 	/**
