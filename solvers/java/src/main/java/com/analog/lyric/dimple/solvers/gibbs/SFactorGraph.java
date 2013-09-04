@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
@@ -139,6 +140,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("LogDiscreteTransition"))
 			return true;
+		else if (factorName.equals("Categorical"))
+			return true;
+		else if (factorName.equals("LogCategorical"))
+			return true;
 		else
 			return false;	
 	}
@@ -158,6 +163,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomDiscreteTransition(factor);
 		else if (funcName.equals("LogDiscreteTransition"))
 			return new CustomDiscreteTransition(factor);
+		else if (funcName.equals("Categorical"))
+			return new CustomCategorical(factor);
+		else if (funcName.equals("LogCategorical"))
+			return new CustomCategorical(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}

@@ -19,8 +19,8 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.analog.lyric.dimple.factorfunctions.DiscreteTransition;
-import com.analog.lyric.dimple.factorfunctions.LogDiscreteTransition;
+import com.analog.lyric.dimple.factorfunctions.Categorical;
+import com.analog.lyric.dimple.factorfunctions.LogCategorical;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -37,31 +37,18 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealConjugateSamplerFactory;
 
-public class CustomDiscreteTransition extends SRealConjugateFactor
+public class CustomCategorical extends SRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
-	private SDiscreteVariable _yVariable;
-	private SDiscreteVariable _xVariable;
-	private boolean _hasConstantY;
-	private boolean _hasConstantX;
-	private int _xDimension;
-	private int _yDimension;
 	private int _numParameters;
 	private int _numParameterEdges;
-	private int _startingParameterEdge;
-	private int _yPort = -1;
-	private int _xPort = -1;
-	private int _constantYValue;
-	private int _constantXValue;
-	private int[] _parameterXIndices;
-	private int[] _parameterYIndices;
-	private static final int NUM_DISCRETE_VARIABLES = 2;
-	private static final int Y_INDEX = 0;
-	private static final int X_INDEX = 1;
-	private static final int NO_PORT = -1;
-
-	public CustomDiscreteTransition(Factor factor)
+	private int[] _parameterIndices;
+	private int[] _constantOutputCounts;
+	private boolean _hasConstantParameters;
+	private boolean _hasConstantOutputs;
+	
+	public CustomCategorical(Factor factor)
 	{
 		super(factor);
 	}
@@ -76,32 +63,30 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 		{
 			// Output port must be a parameter input
 			// Determine sample alpha and beta parameters
-			// NOTE: This class works for either DiscreteTransition or LogDiscreteTransition factor functions
+			// NOTE: This class works for either Categorical or LogCategorical factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
-			
-			// Get the parameter coordinates
-			int parameterIndex = outPortNum - _startingParameterEdge;
-			int parameterXIndex = _parameterXIndices[parameterIndex];
-			int parameterYIndex = _parameterYIndices[parameterIndex];
-			
-			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
-			int xIndex = _hasConstantX ? _constantXValue : _xVariable.getCurrentSampleIndex();
-			int yIndex = _hasConstantY ? _constantYValue : _yVariable.getCurrentSampleIndex();
-			
-			if (xIndex == parameterXIndex && yIndex == parameterYIndex)
+
+			// The parameter being updated corresponds to this value
+			int parameterIndex = _hasConstantParameters ? _parameterIndices[outPortNum] : outPortNum;
+
+			// Start with the ports to variable outputs
+			int count = 0;
+			ArrayList<INode> siblings = _factor.getSiblings();
+			for (int port = _numParameterEdges; port < _numPorts; port++)
 			{
-				// This edge corresponds to the current state, so count is 1
-				outputMsg.setAlpha(1);			// Sample alpha
-				outputMsg.setBeta(0);			// Sample beta
+				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
+				if (outputIndex == parameterIndex)
+					count++;
 			}
-			else
-			{
-				// This edge does not correspond to the current state
-				outputMsg.setAlpha(0);			// Sample alpha
-				outputMsg.setBeta(0);			// Sample beta
-			}
+			
+			// Include any constant outputs also
+			if (_hasConstantOutputs)
+				count += _constantOutputCounts[parameterIndex];
+			
+			outputMsg.setAlpha(count);		// Sample alpha
+			outputMsg.setBeta(0);			// Sample beta
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -120,7 +105,7 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 	public boolean isPortParameter(int portNumber)
 	{
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		return (portNumber >= _startingParameterEdge);
+		return (portNumber < _numParameterEdges);
 	}
 
 	
@@ -146,6 +131,25 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
+		
+		
+		// Pre-compute statistics associated with any constant output values
+		_constantOutputCounts = null;
+		if (_hasConstantOutputs)
+		{
+			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
+			Object[] constantValues = constantFactorFunction.getConstants();
+			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			_constantOutputCounts = new int[_numParameters];
+			for (int i = 0; i < constantIndices.length; i++)
+			{
+				if (constantIndices[i] >= _numParameters)
+				{
+					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
+				}
+			}
+		}
 	}
 	
 	
@@ -161,123 +165,48 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		if (factorFunction instanceof DiscreteTransition)
+		if (factorFunction instanceof Categorical)
 		{
-			DiscreteTransition specificFactorFunction = (DiscreteTransition)factorFunction;
-			_xDimension = specificFactorFunction.getXDimension();
-			_yDimension = specificFactorFunction.getYDimension();
-			_numParameters = specificFactorFunction.getNumParameters();
+			Categorical specificFactorFunction = (Categorical)factorFunction;
+			_numParameters = specificFactorFunction.getDimension();
 		}
-		else	// LogDiscreteTransition
+		else	// LogCategorical
 		{
-			LogDiscreteTransition specificFactorFunction = (LogDiscreteTransition)factorFunction;
-			_xDimension = specificFactorFunction.getXDimension();
-			_yDimension = specificFactorFunction.getYDimension();
-			_numParameters = specificFactorFunction.getNumParameters();
+			LogCategorical specificFactorFunction = (LogCategorical)factorFunction;
+			_numParameters = specificFactorFunction.getDimension();
 		}
-
+		
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_numParameterEdges = _numParameters;
-		_startingParameterEdge = 0;
-		ArrayList<INode> siblings = _factor.getSiblings();
+		_hasConstantParameters = false;
+		_hasConstantOutputs = false;
+		_parameterIndices = null;
 		if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			Object[] constantValues = constantFactorFunction.getConstants();
 			int numConstants = constantIndices.length;
-			_hasConstantY = false;
-			_hasConstantX = false;
-			_yPort = NO_PORT;
-			_xPort = NO_PORT;
+			int numConstantParameters = 0;
 			for (int i = 0; i < numConstants; i++)
 			{
-				if (constantIndices[i] == 0)
-				{
-					_hasConstantY = true;
-					_constantYValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else if (constantIndices[i] == 1)
-				{
-					_hasConstantX = true;
-					_constantXValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else	// Parameter is constant
-				{
-					_numParameterEdges--;
-				}
+				if (constantIndices[i] < _numParameters)
+					numConstantParameters++;		// Constant is a parameter
+				else
+					_hasConstantOutputs = true;		// Constant is an output
 			}
+			_numParameterEdges = _numParameters - numConstantParameters;
 			
-			if (_hasConstantY)
+			if (numConstantParameters > 0)
 			{
-				_yPort = NO_PORT;
-				_yVariable = null;
-			}
-			else	// Y is a variable
-			{
-				_yPort = Y_INDEX;
-				_yVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_yPort)).getSolver());
-				_startingParameterEdge++;
-			}
-			
-			if (_hasConstantX)
-			{
-				_xPort = NO_PORT;
-				_xVariable = null;
-			}
-			else	// X is a variable
-			{
-				_xPort = _hasConstantY ? X_INDEX - 1 : X_INDEX;
-				_xVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_xPort)).getSolver());
-				_startingParameterEdge++;
-			}
-			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array 
-			_parameterXIndices = new int[_numParameterEdges];
-			_parameterYIndices = new int[_numParameterEdges];
-			int constantIndex = 0;
-			int parameterEdgeIndex = 0; 
-			for (int x = 0; x < _xDimension; x++)	// Column scan order
-			{
-				for (int y = 0; y < _yDimension; y++)
+				// There are constant parameters, so create a mapping from edges to indices for the remaining variable parameters
+				_hasConstantParameters = true;
+				for (int i = 0, constantIndex = 0, variableIndex = 0; i < _numParameters; i++)
 				{
-					int parameterIndex = x*_yDimension + y;
-					if (constantIndices[constantIndex] - NUM_DISCRETE_VARIABLES == parameterIndex)
-					{
-						// Parameter is constant
+					if (constantIndices[constantIndex] == i)
 						constantIndex++;
-					}
 					else
-					{
-						// Parameter is variable
-						_parameterXIndices[parameterEdgeIndex] = x;
-						_parameterYIndices[parameterEdgeIndex] = y;
-						parameterEdgeIndex++;
-					}
-				}
-			}
-		}
-		else	// Factor function has no constants
-		{
-			_hasConstantY = false;
-			_hasConstantX = false;
-			_yPort = Y_INDEX;
-			_xPort = X_INDEX;
-			_yVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_yPort)).getSolver());
-			_xVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_xPort)).getSolver());
-			_numParameterEdges = _numParameters;
-			_startingParameterEdge = NUM_DISCRETE_VARIABLES;
-			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array 
-			_parameterXIndices = new int[_numParameterEdges];
-			_parameterYIndices = new int[_numParameterEdges];
-			for (int x = 0, parameterEdgeIndex = 0; x < _xDimension; x++)	// Column scan order
-			{
-				for (int y = 0; y < _yDimension; y++, parameterEdgeIndex++)
-				{
-					_parameterXIndices[parameterEdgeIndex] = x;
-					_parameterYIndices[parameterEdgeIndex] = y;
+						_parameterIndices[i] = variableIndex++;
 				}
 			}
 		}
@@ -290,7 +219,8 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 		super.createMessages();
 		_outputMsgs = new Object[_numPorts];
 		for (int i = 0; i < _numPorts; i++)
-			_outputMsgs[i] = new GammaParameters();
+			if (isPortParameter(i))
+				_outputMsgs[i] = new GammaParameters();
 	}
 	
 	@Override
@@ -298,5 +228,6 @@ public class CustomDiscreteTransition extends SRealConjugateFactor
 	{
 		return _outputMsgs[portIndex];
 	}
+	
 
 }

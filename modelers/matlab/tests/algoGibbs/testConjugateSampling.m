@@ -21,6 +21,13 @@ repeatable = true;
 
 dtrace(debugPrint, '++testComplexVariables');
 
+if (repeatable)
+    seed = 1;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
+
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
@@ -30,12 +37,15 @@ test6(debugPrint, repeatable);
 test7(debugPrint, repeatable);
 test8(debugPrint, repeatable);
 test9(debugPrint, repeatable);
+test10(debugPrint, repeatable);
+test11(debugPrint, repeatable);
+test12(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
 end
 
-% Basic test
+% Basic test, Normal sampler
 function test1(debugPrint, repeatable)
 
 priorMean = 3;
@@ -80,8 +90,51 @@ end
 
 
 
-% Setting samplers
+% Basic test, Normal sampler, constant data
 function test2(debugPrint, repeatable)
+
+priorMean = 3;
+priorPrecision = 0.01;
+dataMean = 10;
+dataPrecision = .001;
+numDatapoints = 100;
+data = dataMean + randn(1,numDatapoints) * dataPrecision;
+expectedPrecision = priorPrecision + numDatapoints * dataPrecision;
+expectedMean = (priorMean * priorPrecision + sum(data) * dataPrecision) / expectedPrecision;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+m = Real();
+
+m.Input = FactorFunction('Normal',priorMean,priorPrecision);
+
+dataTemp = num2cell(data);
+fg.addFactor('Normal', m, dataPrecision, dataTemp{:});    % Fixed precision
+
+assert(strcmp(m.Solver.getSamplerName,'NormalSampler'));
+
+fg.Solver.setNumSamples(1000);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ms = m.Solver.getAllSamples;
+
+assertElementsAlmostEqual(mean(ms), expectedMean, 'absolute', 0.01);
+assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
+
+end
+
+
+
+% Setting samplers
+function test3(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -163,7 +216,7 @@ end
 
 
 % Basic test; prior using factor instead of input
-function test3(debugPrint, repeatable)
+function test4(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -208,16 +261,16 @@ end
 
 
 % Gamma prior on precision
-function test4(debugPrint, repeatable)
+function test5(debugPrint, repeatable)
 
 priorAlpha = 1;
-pPriorBeta = 2;
+priorBeta = 2;
 dataMean = 10;
 dataPrecision = .001;
 numDatapoints = 100;
 data = dataMean + randn(1,numDatapoints) * dataPrecision;
 expectedAlpha = priorAlpha + numDatapoints / 2;
-expectedBeta = pPriorBeta + sum((data - dataMean).^2) / 2;
+expectedBeta = priorBeta + sum((data - dataMean).^2) / 2;
 
 fg = FactorGraph();
 fg.Solver = 'Gibbs';
@@ -225,7 +278,7 @@ fg.Solver = 'Gibbs';
 p = Real();
 x = Real(1,numDatapoints);
 
-p.Input = FactorFunction('Gamma',priorAlpha,pPriorBeta);
+p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
 x.FixedValue = data;
 
 fg.addFactor('Normal', dataMean, p, x);
@@ -274,16 +327,16 @@ end
 
 
 % Gamma prior on precision, using separate factor
-function test5(debugPrint, repeatable)
+function test6(debugPrint, repeatable)
 
 priorAlpha = 1;
-pPriorBeta = 2;
+priorBeta = 2;
 dataMean = 10;
 dataPrecision = .001;
 numDatapoints = 100;
 data = dataMean + randn(1,numDatapoints) * dataPrecision;
 expectedAlpha = priorAlpha + numDatapoints / 2;
-expectedBeta = pPriorBeta + sum((data - dataMean).^2) / 2;
+expectedBeta = priorBeta + sum((data - dataMean).^2) / 2;
 
 fg = FactorGraph();
 fg.Solver = 'Gibbs';
@@ -293,7 +346,7 @@ x = Real(1,numDatapoints);
 
 x.FixedValue = data;
 
-fg.addFactor(FactorFunction('Gamma',priorAlpha,pPriorBeta), p);
+fg.addFactor(FactorFunction('Gamma',priorAlpha,priorBeta), p);
 fg.addFactor('Normal', dataMean, p, x);
 
 assert(strcmp(p.Solver.getSamplerName,'GammaSampler'));
@@ -341,7 +394,7 @@ end
 
 
 % Test the default sampler
-function test6(debugPrint, repeatable)
+function test7(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -389,7 +442,7 @@ end
 % Test the slice sampler with poor initial sample
 % THIS TEST IS ONLY REALLY NEEDED UNTIL RANDOMRESTART IS GIVES IMPROVED
 % INITIAL SAMPLE
-function test7(debugPrint, repeatable)
+function test8(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -436,7 +489,7 @@ end
 
 
 % Log-normal test mean parameter
-function test8(debugPrint, repeatable)
+function test9(debugPrint, repeatable)
 
 priorMean = 3;
 priorPrecision = 0.01;
@@ -480,16 +533,16 @@ end
 
 
 % LogNormal test Gamma prior on precision
-function test9(debugPrint, repeatable)
+function test10(debugPrint, repeatable)
 
 priorAlpha = 1;
-pPriorBeta = 2;
+priorBeta = 2;
 dataMean = 10;
 dataPrecision = .001;
 numDatapoints = 100;
 data = exp(dataMean + randn(1,numDatapoints) * dataPrecision);
 expectedAlpha = priorAlpha + numDatapoints / 2;
-expectedBeta = pPriorBeta + sum((log(data) - dataMean).^2) / 2;
+expectedBeta = priorBeta + sum((log(data) - dataMean).^2) / 2;
 
 fg = FactorGraph();
 fg.Solver = 'Gibbs';
@@ -497,7 +550,7 @@ fg.Solver = 'Gibbs';
 p = Real();
 x = Real(1,numDatapoints);
 
-p.Input = FactorFunction('Gamma',priorAlpha,pPriorBeta);
+p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
 x.FixedValue = data;
 
 fg.addFactor('LogNormal', dataMean, p, x);
@@ -528,3 +581,142 @@ assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
 end
 
 
+
+% Gamma prior on Categorical distribution
+function test11(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+discreteDomainSize = 10;
+discreteDomain = 0:discreteDomainSize-1;
+distribution = randSimplex(discreteDomainSize);
+numDatapoints = 100;
+data = discreteSample(distribution, numDatapoints);
+expectedAlpha = priorAlpha + sum(bsxfun(@eq, data, discreteDomain'),2);
+expectedBeta = priorBeta;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real(1, discreteDomainSize);
+x = Discrete(discreteDomain, 1, numDatapoints);
+
+p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
+x.FixedValue = data;
+
+fg.addFactor(FactorFunction('Categorical',discreteDomainSize), p, x);
+
+assert(strcmp(p(1).Solver.getSamplerName,'GammaSampler'));
+assert(strcmp(p(2).Solver.getSamplerName,'GammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+% Estimate the parameters (see Wikipedia page on Gamma distribution)
+for i=1:discreteDomainSize
+    s = log(sum(ps{i})/numSamples) - sum(log(ps{i}))/numSamples;
+    alphaEst = (3 - s + sqrt((s-3)^2 + 24*s)) / (12 * s);
+    betaEst = alphaEst * numSamples / sum(ps{i});
+    
+    assertElementsAlmostEqual(alphaEst/expectedAlpha(i), 1, 'absolute', 0.10);
+    assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
+end
+
+
+end
+
+
+% Gamma prior on Categorical distribution, values constant
+function test12(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+discreteDomainSize = 10;
+discreteDomain = 0:discreteDomainSize-1;
+distribution = randSimplex(discreteDomainSize);
+numDatapoints = 100;
+data = discreteSample(distribution, numDatapoints);
+expectedAlpha = priorAlpha + sum(bsxfun(@eq, data, discreteDomain'),2);
+expectedBeta = priorBeta;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real(1, discreteDomainSize);
+
+p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
+
+dataTemp = num2cell(data);
+fg.addFactor(FactorFunction('Categorical',discreteDomainSize), p, dataTemp{:});
+
+assert(strcmp(p(1).Solver.getSamplerName,'GammaSampler'));
+assert(strcmp(p(2).Solver.getSamplerName,'GammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(6);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+% Estimate the parameters (see Wikipedia page on Gamma distribution)
+for i=1:discreteDomainSize
+    s = log(sum(ps{i})/numSamples) - sum(log(ps{i}))/numSamples;
+    alphaEst = (3 - s + sqrt((s-3)^2 + 24*s)) / (12 * s);
+    betaEst = alphaEst * numSamples / sum(ps{i});
+    
+    assertElementsAlmostEqual(alphaEst/expectedAlpha(i), 1, 'absolute', 0.10);
+    assertElementsAlmostEqual(betaEst, expectedBeta, 'absolute', 0.1);
+end
+
+end
+
+
+
+% Given a column vector x in R^k contained in the standard (k-1)-simplex,
+% choose n in {0,...,k-1} according to the categorical distribution x
+% Optional dimension arguments create an array of samples using the same
+% distribution
+function n = discreteSample(x,varargin)
+	n = squeeze(1+sum(bsxfun(@lt, cumsum(vec(x)), rand(1,varargin{:})),1)) - 1;
+end
+
+% Choose a column vector in R^k uniformly from the standard (k-1)-simplex
+function x = randSimplex(k)
+	x = normalize(randExp([k,1]));
+end
+
+% Standard exponential random variables
+function x = randExp(varargin)
+	x = -log(rand(varargin{:}));
+end
+
+% Normalize a vector
+function out = normalize(in)
+	out = in/sum(in);
+end
+
+% Count instances
+function out = count(domain, in)
+    in = reshape(in, 1, []);
+    domain = reshape(domain, [], 1);
+    out = sum(bsxfun(@eq, domain, in), 2);
+end
