@@ -14,7 +14,7 @@ public interface IFactorTable
 	
 	// Used only by PFactorTable/MATLAB
 	public void change(int [][] indices, double [] weights); // REFACTOR: => setWeightsSparse
-	public void changeIndices(int [][] indices); // REFACTOR: => replaceIndicesSparse
+	public void changeIndices(int [][] indices); // REFACTOR: eliminate
 	public double get(int [] indices); // REFACTOR: => getWeightForIndices
 	public void set(int [] indices, double value); // REFACTOR: => setWeightForIndices
 
@@ -57,7 +57,7 @@ public interface IFactorTable
 	public void evalDeterministicFunction(Object ... arguments); // REFACTOR: => evalDeterministic
 	
 	// Only used in test
-	public int[] getColumnCopy(int column); // REFACTOR: => eliminate?
+	public int[] getColumnCopy(int column); // REFACTOR: eliminate
 	
 	// multiple users
 	public int getColumns(); // REFACTOR: => getDimensions
@@ -115,7 +115,7 @@ public interface IFactorTable
 	public void randomizeWeights(Random rand); // REFACTOR: keep?
 	
 	// only used by test
-	public void serializeToXML(String serializeName, String targetDirectory); // REFACTOR: => eliminate
+	public void serializeToXML(String serializeName, String targetDirectory); // REFACTOR: eliminate
 	
 	// Only called from Factor.setDirectedTo
 	public void setDirected(int[] directedTo, int[] directedFrom); // REFACTOR: => setDirected(BitSet)

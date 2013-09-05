@@ -739,15 +739,6 @@ public class TestFactorTable
 			assertEquals(weights[row], table.get(rowValues), 1e-12);
 		}
 		
-		for (int col = 0; col < nCols; ++col)
-		{
-			int[] colValues = table.getColumnCopy(col);
-			for (int row = 0; row < nRows; ++row)
-			{
-				assertEquals(indices[row][col], colValues[row]);
-			}
-		}
-
 		double[] energies = table.getPotentials();
 		assertEquals(nRows, energies.length);
 		for (int row = 0; row < nRows; ++row)

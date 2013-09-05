@@ -116,11 +116,6 @@ public class PFactorTable extends PObject
 		_table.changeWeights(values);
 	}
 	
-	public void changeIndices(int [][] indices)
-	{
-		_table.changeIndices(indices);
-	}
-	
 	public void change(int [][] indices, double [] weights)
 	{
 		_table.change(indices,weights);

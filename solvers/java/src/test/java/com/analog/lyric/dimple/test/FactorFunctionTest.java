@@ -148,25 +148,16 @@ public class FactorFunctionTest {
 			int[] xorFTRow = xorFT.getRow(i);
 			for(int j = 0; j < ftVar.getColumns(); ++j)
 			{
-				int[] ftVarColumn = ftVar.getColumnCopy(j);
-				int[] xorFTColumn = xorFT.getColumnCopy(j);
-				
 				assertEquals(ftVar.getEntry(i, j), xorFT.getEntry(i, j));
 				assertEquals(ftVar.getEntry(i, j), ftVarRow[j]);
 				assertEquals(ftVar.getEntry(i, j), xorFTRow[j]);
 				
-				assertEquals(ftVar.getEntry(i, j), ftVarColumn[i]);
-				assertEquals(ftVar.getEntry(i, j), xorFTColumn[i]);
-				
 				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getEntry(i, j));
 				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getColumnCopy(j)[i]);
 				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getEntry(i, j));
 				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getColumnCopy(j)[i]);
 				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getEntry(i, j));
 				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getColumnCopy(j)[i]);
 			}
 			
 			

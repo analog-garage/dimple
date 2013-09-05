@@ -60,7 +60,7 @@ function testChangeComboTable()
 
     %Now we try changing the indices.  This is basically an inverted
     %xor.
-    f1.FactorTable.Indices = ~indices;
+    f1.FactorTable.change(~indices, f1.FactorTable.Weights);
     fg.solve();
 
     %we expect the probabilities to be inverted.
