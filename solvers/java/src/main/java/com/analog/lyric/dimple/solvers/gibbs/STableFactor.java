@@ -93,22 +93,16 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		int outputMsgLength = outMessage.length;
 
 		IFactorTable factorTable = getFactorTable();
-		double[] factorTableWeights = factorTable.getPotentials();
 
-		int[] inPortMsgs = new int[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
+		final int numPorts = _numPorts;
+		int[] inPortMsgs = new int[numPorts];
+		for (int port = 0; port < numPorts; port++)
 			inPortMsgs[port] = _inPortMsgs[port].getIndex();
 
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 		{
 			inPortMsgs[outPortNum] = outIndex;
-		
-			int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
-			if (weightIndex >= 0)
-				outMessage[outIndex] = factorTableWeights[weightIndex];
-			else
-				outMessage[outIndex] = Double.POSITIVE_INFINITY;
-			
+			outMessage[outIndex] = factorTable.getEnergyForIndices(inPortMsgs);
 		}
 	}
 	
@@ -126,12 +120,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	public double getPotential(int[] inputs)
 	{
-		IFactorTable factorTable = getFactorTable();
-		int weightIndex = factorTable.getWeightIndexFromTableIndices(inputs);
-		if (weightIndex >= 0)
-			return factorTable.getPotentials()[weightIndex];
-		else
-			return Double.POSITIVE_INFINITY;
+		return getFactorTable().getEnergyForIndices(inputs);
 	}
 		
 	

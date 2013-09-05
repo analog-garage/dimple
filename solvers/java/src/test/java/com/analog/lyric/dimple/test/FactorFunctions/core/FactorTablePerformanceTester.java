@@ -387,7 +387,7 @@ public class FactorTablePerformanceTester
 						for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 						{
 							inPortMsgs[outPortNum] = outIndex;
-							outMessage[outIndex] = factorTable.getWeightForIndices(inPortMsgs);
+							outMessage[outIndex] = factorTable.getEnergyForIndices(inPortMsgs);
 						}
 					}
 				}

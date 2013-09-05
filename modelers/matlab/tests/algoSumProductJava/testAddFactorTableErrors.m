@@ -22,7 +22,7 @@ function testAddFactorTableErrors()
     try
         table = fg.createTable([0 0; 0 0; 1 1],[1 1 1],DiscreteDomain({1,0}),DiscreteDomain({1,0}));
     catch E
-        assertTrue(findstr(E.message,'Table Factor contains multiple rows with same set of indices') > 0);
+        assertTrue(findstr(E.message,'with same set of indices') > 0);
         fail = true;
     end
 

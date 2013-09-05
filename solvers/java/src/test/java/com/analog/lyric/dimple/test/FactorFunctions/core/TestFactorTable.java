@@ -332,6 +332,7 @@ public class TestFactorTable
 		oldTester.testEvalAsFactorFunction();
 		newTester.testEvalAsFactorFunction();
 		
+		newTable.setRepresentation(NewFactorTableRepresentation.DENSE_ENERGY);
 		oldTester.testGibbsUpdateMessage();
 		newTester.testGibbsUpdateMessage();
 		
@@ -362,6 +363,7 @@ public class TestFactorTable
 		oldTester.testGetWeightForIndices();
 		newTester.testGetWeightForIndices();
 		
+		newTable.setRepresentation(NewFactorTableRepresentation.ALL_ENERGY);
 		oldTester.testGibbsUpdateMessage();
 		newTester.testGibbsUpdateMessage();
 		
