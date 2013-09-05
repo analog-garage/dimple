@@ -37,7 +37,7 @@ public enum NewFactorTableRepresentation
 	ALL_SPARSE(NewFactorTable.ALL_SPARSE),
 	NOT_DENSE_WEIGHT(NewFactorTable.NOT_DENSE_WEIGHT),
 	NOT_DENSE_ENERGY(NewFactorTable.NOT_DENSE_ENERGY),
-	ALL(NewFactorTable.ALL),
+	ALL_VALUES(NewFactorTable.ALL_VALUES),
 	DETERMINISTIC_WITH_INDICES(NewFactorTable.DETERMINISTIC_WITH_INDICES),
 	DENSE_ENERGY_WITH_INDICES(NewFactorTable.DENSE_ENERGY_WITH_INDICES),
 	DENSE_WEIGHT_WITH_INDICES(NewFactorTable.DENSE_WEIGHT_WITH_INDICES),
@@ -53,7 +53,7 @@ public enum NewFactorTableRepresentation
 	ALL_SPARSE_WITH_INDICES(NewFactorTable.ALL_SPARSE_WITH_INDICES),
 	NOT_DENSE_WEIGHT_WITH_INDICES(NewFactorTable.NOT_DENSE_WEIGHT_WITH_INDICES),
 	NOT_DENSE_ENERGY_WITH_INDICES(NewFactorTable.NOT_DENSE_ENERGY_WITH_INDICES),
-	ALL_WITH_INDICES(NewFactorTable.ALL_WITH_INDICES),
+	ALL(NewFactorTable.ALL),
 	;
 
 	private final int _mask;
@@ -132,6 +132,6 @@ public enum NewFactorTableRepresentation
 	
 	public boolean isDeterministic()
 	{
-		return (_mask & ALL._mask) == 0;
+		return (_mask & ALL_VALUES._mask) == 0;
 	}
 }

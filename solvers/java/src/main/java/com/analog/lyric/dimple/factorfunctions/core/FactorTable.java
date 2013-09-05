@@ -53,7 +53,7 @@ public class FactorTable extends FactorTableBase
 	 * When true, the various {@code create*} methods of {@link FactorTable} will return
 	 * {@link NewFactorTable} instances.
 	 */
-	public static volatile boolean useNewFactorTable = false;
+	public static volatile boolean useNewFactorTable = true;
 	
 
 	private FactorTable(int [][] indices, double [] weights, Discrete... variables)
@@ -450,6 +450,12 @@ public class FactorTable extends FactorTableBase
 		{
 			normalize(_directedTo);
 		}
+	}
+	
+	@Override
+	public void normalizeConditional()
+	{
+		normalize();
 	}
 	
 	@Override

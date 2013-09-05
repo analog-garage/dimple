@@ -129,5 +129,6 @@ public interface IFactorTable
 	 */
 	public abstract double getEnergyForIndices(int ... indices);
 	public abstract double getWeightForIndices(int ... indices);
+	public abstract void normalizeConditional();
 	
 }

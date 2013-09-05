@@ -837,7 +837,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @throws IllegalArgumentException if wrong number of indices
 	 * @throws IndexOutOfBoundsException if any index is out of range for its domain.
 	 */
-	public void validateIndices(int ... indices)
+	public int[] validateIndices(int ... indices)
 	{
 		final DiscreteDomain[] domains = _domains;
 		final int length = domains.length;
@@ -857,6 +857,8 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 					String.format("Index %d out of bounds for domain %d with size %d", index, i, domains[i].size()));
 			}
 		}
+		
+		return indices;
 	}
 	
 }

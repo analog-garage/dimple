@@ -65,8 +65,8 @@ public class TestFactorTable
 		assertEquals(1.0, t2x3.density(), 0.0);
 		
 		assertEquals(NewFactorTableRepresentation.ALL_ENERGY, t2x3.getRepresentation());
-		t2x3.setRepresentation(NewFactorTableRepresentation.ALL);
-		assertEquals(NewFactorTableRepresentation.ALL, t2x3.getRepresentation());
+		t2x3.setRepresentation(NewFactorTableRepresentation.ALL_VALUES);
+		assertEquals(NewFactorTableRepresentation.ALL_VALUES, t2x3.getRepresentation());
 		assertInvariants(t2x3);
 		
 		t2x3.normalize();
@@ -145,7 +145,7 @@ public class TestFactorTable
 		}
 		catch (IllegalArgumentException ex)
 		{
-			assertThat(ex.getMessage(), containsString("Duplicate joint index 1"));
+			assertThat(ex.getMessage(), containsString("Multiple entries with same set of indices [1, 0]"));
 		}
 
 		t2x3.setWeightsSparse(new int[] { 1,2,3}, new double[] { 1,2,3});

@@ -30,11 +30,19 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	static final int DENSE_WEIGHT = 0x2;
 	static final int SPARSE_ENERGY = 0x4;
 	static final int SPARSE_WEIGHT = 0x8;
+	static final int SPARSE_INDICES = 0x10;
+	
 	static final int ALL_DENSE = DENSE_ENERGY | DENSE_WEIGHT;
 	static final int ALL_SPARSE = SPARSE_ENERGY | SPARSE_WEIGHT;
 	static final int ALL_WEIGHT = DENSE_WEIGHT | SPARSE_WEIGHT;
 	static final int ALL_ENERGY = DENSE_ENERGY | SPARSE_ENERGY;
-	static final int ALL = ALL_DENSE | ALL_SPARSE;
+	static final int ALL_VALUES = ALL_DENSE | ALL_SPARSE;
+	static final int ALL_DENSE_WITH_INDICES = ALL_DENSE | SPARSE_INDICES; // Invalid?
+	static final int ALL_SPARSE_WITH_INDICES = ALL_SPARSE | SPARSE_INDICES;
+	static final int ALL_WEIGHT_WITH_INDICES = ALL_WEIGHT | SPARSE_INDICES;
+	static final int ALL_ENERGY_WITH_INDICES = ALL_ENERGY | SPARSE_INDICES;
+	static final int ALL = ALL_VALUES | SPARSE_INDICES;
+	
 	static final int SPARSE_ENERGY_DENSE_WEIGHT = SPARSE_ENERGY | DENSE_WEIGHT;
 	static final int DENSE_ENERGY_SPARSE_WEIGHT = DENSE_ENERGY | SPARSE_WEIGHT;
 	static final int NOT_SPARSE_WEIGHT = ALL_ENERGY | DENSE_WEIGHT;
@@ -42,17 +50,11 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	static final int NOT_DENSE_WEIGHT = ALL_ENERGY | SPARSE_WEIGHT;
 	static final int NOT_DENSE_ENERGY = ALL_WEIGHT | SPARSE_ENERGY;
 	
-	static final int SPARSE_INDICES = 0x10;
 	static final int DETERMINISTIC_WITH_INDICES = SPARSE_INDICES;
 	static final int DENSE_ENERGY_WITH_INDICES = DENSE_ENERGY | SPARSE_INDICES; // Invalid?
 	static final int DENSE_WEIGHT_WITH_INDICES = DENSE_WEIGHT | SPARSE_INDICES; // Invalid?
 	static final int SPARSE_ENERGY_WITH_INDICES = SPARSE_ENERGY | SPARSE_INDICES;
 	static final int SPARSE_WEIGHT_WITH_INDICES = SPARSE_WEIGHT | SPARSE_INDICES;
-	static final int ALL_DENSE_WITH_INDICES = ALL_DENSE | SPARSE_INDICES; // Invalid?
-	static final int ALL_SPARSE_WITH_INDICES = ALL_SPARSE | SPARSE_INDICES;
-	static final int ALL_WEIGHT_WITH_INDICES = ALL_WEIGHT | SPARSE_INDICES;
-	static final int ALL_ENERGY_WITH_INDICES = ALL_ENERGY | SPARSE_INDICES;
-	static final int ALL_WITH_INDICES = ALL | SPARSE_INDICES;
 	static final int SPARSE_ENERGY_DENSE_WEIGHT_WITH_INDICES = SPARSE_ENERGY_DENSE_WEIGHT | SPARSE_INDICES;
 	static final int DENSE_ENERGY_SPARSE_WEIGHT_WITH_INDICES = DENSE_ENERGY_SPARSE_WEIGHT | SPARSE_INDICES;
 	static final int NOT_SPARSE_WEIGHT_WITH_INDICES = NOT_SPARSE_WEIGHT | SPARSE_INDICES;
@@ -299,7 +301,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			final int expectedJoint = _sparseIndexToJointIndex[getDomainIndexer().inputIndexFromJointIndex(jointIndex)];
 			return expectedJoint == jointIndex ? 0.0 : Double.POSITIVE_INFINITY;
 			
-		case ALL:
+		case ALL_VALUES:
 		case ALL_DENSE:
 		case ALL_ENERGY:
 		case DENSE_ENERGY:
@@ -307,7 +309,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case NOT_SPARSE_ENERGY:
 		case DENSE_ENERGY_SPARSE_WEIGHT:
 		case NOT_SPARSE_WEIGHT:
-		case ALL_WITH_INDICES:
+		case ALL:
 		case ALL_DENSE_WITH_INDICES:
 		case ALL_ENERGY_WITH_INDICES:
 		case DENSE_ENERGY_WITH_INDICES:
@@ -366,7 +368,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY_WITH_INDICES:
 			setRepresentation(_representation | SPARSE_ENERGY);
 			// $FALL-THROUGH$
-		case ALL:
+		case ALL_VALUES:
 		case ALL_ENERGY:
 		case ALL_SPARSE:
 		case NOT_DENSE_WEIGHT:
@@ -374,7 +376,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case SPARSE_ENERGY:
 		case NOT_SPARSE_WEIGHT:
 		case SPARSE_ENERGY_DENSE_WEIGHT:
-		case ALL_WITH_INDICES:
+		case ALL:
 		case ALL_ENERGY_WITH_INDICES:
 		case ALL_SPARSE_WITH_INDICES:
 		case NOT_DENSE_WEIGHT_WITH_INDICES:
@@ -417,7 +419,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			final int expectedJoint = _sparseIndexToJointIndex[jointIndex /  getDomainIndexer().getOutputCardinality()];
 			return expectedJoint == jointIndex ? 1.0 : 0.0;
 
-		case ALL:
+		case ALL_VALUES:
 		case ALL_DENSE:
 		case ALL_WEIGHT:
 		case NOT_SPARSE_ENERGY:
@@ -425,7 +427,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case NOT_DENSE_ENERGY:
 		case NOT_SPARSE_WEIGHT:
 		case SPARSE_ENERGY_DENSE_WEIGHT:
-		case ALL_WITH_INDICES:
+		case ALL:
 		case ALL_DENSE_WITH_INDICES:
 		case ALL_WEIGHT_WITH_INDICES:
 		case NOT_SPARSE_ENERGY_WITH_INDICES:
@@ -485,7 +487,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			setRepresentation(_representation | SPARSE_WEIGHT);
 			return _sparseWeights[sparseIndex];
 			// $FALL-THROUGH$
-		case ALL:
+		case ALL_VALUES:
 		case ALL_WEIGHT:
 		case ALL_SPARSE:
 		case NOT_SPARSE_ENERGY:
@@ -493,7 +495,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case DENSE_ENERGY_SPARSE_WEIGHT:
 		case NOT_DENSE_ENERGY:
 		case SPARSE_WEIGHT:
-		case ALL_WITH_INDICES:
+		case ALL:
 		case ALL_WEIGHT_WITH_INDICES:
 		case ALL_SPARSE_WITH_INDICES:
 		case NOT_SPARSE_ENERGY_WITH_INDICES:
@@ -597,7 +599,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public boolean isDeterministicDirected()
 	{
-		if ((_representation & ALL) == DETERMINISTIC)
+		if ((_representation & ALL_VALUES) == DETERMINISTIC)
 		{
 			return true;
 		}
@@ -690,7 +692,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (prevEnergy != energy)
 		{
 			_computedMask = 0;
-			if ((_representation & ALL) == DETERMINISTIC)
+			if ((_representation & ALL_VALUES) == DETERMINISTIC)
 			{
 				// If we have sparse indices, then presumably a sparse representation is still wanted.
 				setRepresentation(hasSparseIndices() ? ALL_ENERGY_WITH_INDICES : DENSE_ENERGY);
@@ -720,7 +722,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (prevEnergy != energy)
 		{
 			_computedMask = 0;
-			if ((_representation & ALL) == DETERMINISTIC)
+			if ((_representation & ALL_VALUES) == DETERMINISTIC)
 			{
 				setRepresentation(_representation | SPARSE_ENERGY);
 				_sparseEnergies[sparseIndex] = energy;
@@ -749,7 +751,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (prevWeight != weight)
 		{
 			_computedMask = 0;
-			if ((_representation & ALL) == DETERMINISTIC)
+			if ((_representation & ALL_VALUES) == DETERMINISTIC)
 			{
 				// If we have sparse indices, then presumably a sparse representation is still wanted.
 				setRepresentation(hasSparseIndices() ? ALL_WEIGHT_WITH_INDICES : DENSE_WEIGHT);
@@ -779,7 +781,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		if (prevWeight != weight)
 		{
 			_computedMask = 0;
-			if ((_representation & ALL) == DETERMINISTIC)
+			if ((_representation & ALL_VALUES) == DETERMINISTIC)
 			{
 				setRepresentation(_representation | SPARSE_WEIGHT);
 				_sparseWeights[sparseIndex] = weight;
@@ -842,7 +844,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 
 		int sparseIndex = jointIndex;
 		
-		switch (_representation & ALL)
+		switch (_representation & ALL_VALUES)
 		{
 		case DETERMINISTIC:
 			// Optimize deterministic case. Since there is exactly one entry per distinct
@@ -866,7 +868,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			setRepresentation(_representation | SPARSE_ENERGY);
 			// $FALL-THROUGH$
 
-		case ALL:
+		case ALL_VALUES:
 		case ALL_SPARSE:
 		case ALL_ENERGY:
 		case ALL_WEIGHT:
@@ -933,7 +935,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case ALL_SPARSE:
 		case NOT_DENSE_WEIGHT:
 		case NOT_DENSE_ENERGY:
-		case ALL:
+		case ALL_VALUES:
 		case SPARSE_ENERGY_WITH_INDICES:
 		case ALL_ENERGY_WITH_INDICES:
 		case SPARSE_ENERGY_DENSE_WEIGHT_WITH_INDICES:
@@ -941,7 +943,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case ALL_SPARSE_WITH_INDICES:
 		case NOT_DENSE_WEIGHT_WITH_INDICES:
 		case NOT_DENSE_ENERGY_WITH_INDICES:
-		case ALL_WITH_INDICES:
+		case ALL:
 			return _sparseEnergies.length;
 			
 		case SPARSE_WEIGHT:
@@ -1097,7 +1099,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public boolean hasDeterministicRepresentation()
 	{
-		return (_representation & ALL) == DETERMINISTIC;
+		return (_representation & ALL_VALUES) == DETERMINISTIC;
 	}
 	
 	@Override
@@ -1239,7 +1241,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		final int[] jointIndices = new int[indices.length];
 		for (int i = indices.length; --i>=0;)
 		{
-			jointIndices[i] = domains.jointIndexFromIndices(indices[i]);
+			jointIndices[i] = domains.jointIndexFromIndices(domains.validateIndices(indices[i]));
 		}
 		setWeightsSparse(jointIndices, weights);
 		return;
@@ -1264,7 +1266,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// Disallow non-sparse rep combined with sparse indices
 		//
 		
-		if ((newRep & ALL_DENSE_WITH_INDICES) == newRep && (newRep & ALL) != DETERMINISTIC)
+		if ((newRep & ALL_DENSE_WITH_INDICES) == newRep && (newRep & ALL_VALUES) != DETERMINISTIC)
 		{
 			newRep &= ALL_DENSE;
 		}
@@ -1273,7 +1275,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// Special cases for deterministic conversions
 		//
 		
-		if ((newRep & ALL) == DETERMINISTIC)
+		if ((newRep & ALL_VALUES) == DETERMINISTIC)
 		{
 			if (!isDeterministicDirected())
 			{
@@ -1293,7 +1295,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		
 		final int jointSize = jointSize();
 		
-		if ((oldRep & ALL) == DETERMINISTIC)
+		if ((oldRep & ALL_VALUES) == DETERMINISTIC)
 		{
 			if ((newRep & SPARSE_WEIGHT) != 0)
 			{
@@ -1792,7 +1794,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	@Override
 	public void normalize(int[] directedTo)
 	{
-		setConditional(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo));
+		makeConditional(BitSetUtil.bitsetFromIndices(getDomainIndexer().size(), directedTo));
 	}
 
 	@Override
@@ -1850,7 +1852,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 	private void computeNonZeroWeights()
 	{
 		int count = 0;
-		switch (_representation & ALL)
+		switch (_representation & ALL_VALUES)
 		{
 		case DETERMINISTIC:
 			_nonZeroWeights = _sparseIndexToJointIndex.length;
@@ -1863,7 +1865,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		case ALL_SPARSE:
 		case NOT_DENSE_ENERGY:
 		case NOT_DENSE_WEIGHT:
-		case ALL:
+		case ALL_VALUES:
 			for (double w : _sparseWeights)
 				if (w != 0)
 					++count;
@@ -1978,12 +1980,12 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		// When just checking, we allow total to equal something other than one
 		// as long as they are all the same.
 		
-		switch (_representation & ALL)
+		switch (_representation & ALL_VALUES)
 		{
 		case DETERMINISTIC:
 			break;
 			
-		case ALL:
+		case ALL_VALUES:
 		case ALL_WEIGHT:
 		case ALL_SPARSE:
 		case NOT_DENSE_WEIGHT:
@@ -2192,9 +2194,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		}
 		
 		double total = 0.0;
-		switch (_representation & ALL)
+		switch (_representation & ALL_VALUES)
 		{
-		case ALL:
+		case ALL_VALUES:
 		case ALL_WEIGHT:
 		case ALL_SPARSE:
 		case NOT_DENSE_WEIGHT:
@@ -2369,7 +2371,7 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 			
 			if (outputSet == null)
 			{
-				if ((_representation & ALL) == DETERMINISTIC)
+				if ((_representation & ALL_VALUES) == DETERMINISTIC)
 				{
 					// If direction removed, then convert DETERMINISTIC format to SPARSE_ENERGY.
 					_sparseEnergies = new double[_sparseIndexToJointIndex.length];
@@ -2458,7 +2460,9 @@ public class NewFactorTable extends NewFactorTableBase implements INewFactorTabl
 		{
 			if (jointIndex == prev)
 			{
-				throw new IllegalArgumentException(String.format("Duplicate joint index %d", jointIndex));
+				throw new IllegalArgumentException(String.format(
+					"Multiple entries with same set of indices %s (joint index %d)",
+					Arrays.toString(domains.jointIndexToIndices(jointIndex)), jointIndex));
 			}
 			prev = jointIndex;
 		}

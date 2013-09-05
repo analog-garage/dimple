@@ -107,7 +107,7 @@ public abstract class ParameterEstimator
 				{
 					_tables[j].randomizeWeights(_r);
 					if (_tables[j].isDirected())
-						_tables[j].normalize();
+						_tables[j].normalizeConditional();
 				}
 
 			//for numSteps
