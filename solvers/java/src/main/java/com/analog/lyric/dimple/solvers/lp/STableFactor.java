@@ -173,7 +173,6 @@ public class STableFactor extends STableFactorBase
 		final double[] weights = factorTable.getWeights();
 		final SVariable[] svariables = getSVariables();
 
-		double totalWeight = 0.0;
 		int cardinality = 0;
 	
 		boolean hasNonFixedVariable = true;
@@ -220,7 +219,6 @@ public class STableFactor extends STableFactorBase
 				}
 				else
 				{
-					totalWeight += weight;
 					++cardinality;
 				}
 			}
