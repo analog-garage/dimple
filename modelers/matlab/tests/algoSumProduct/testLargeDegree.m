@@ -21,7 +21,7 @@ function testLargeDegree()
     g = FactorGraph();
     b = Variable([1; 0]);
     c = Variable([1; 0]);
-    for i = 1:3000
+    for i = 1:250
         g.addFactor(@xorDelta,[b c]);
     end
     %Unrelated BUG we found at same time: fg.iterate(1), at least
@@ -30,11 +30,11 @@ function testLargeDegree()
     % without NumInterations being set. 
 
     beliefs = b.Belief;
-    assertEqual(beliefs,[.5 .5]);
+    assertEqual(beliefs,[.5 .5]');
 
     g.solve();
     beliefs = b.Belief;
-    assertEqual(beliefs,[.5 .5]);
+    assertEqual(beliefs,[.5 .5]');
     
     tDiff = toc;
     dtrace(bLog, '--testLargeDegree toc:%u', tDiff);

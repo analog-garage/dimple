@@ -33,8 +33,8 @@ function testDataSource
     fg = FactorGraph();
     fg.addFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
-    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]');
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]');
 
     %ability to set data source after first graph built
     dataSource = DoubleArrayDataSource(data);
@@ -48,13 +48,13 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
-    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]');
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]');
 
     b.DataSource = dataSource;
 
-    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
-    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]');
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]');
 
 
     %ability to set data source after we've already progressed
@@ -69,21 +69,21 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
-    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]');
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]');
 
     fg.advance();
 
 
-    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]);
-    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]);
+    assertElementsAlmostEqual(b.get(1).Input,[.5 .5]');
+    assertElementsAlmostEqual(b.get(2).Input,[.5 .5]');
 
     %fg.reset();
     
     b.DataSource = dataSource;
 
-    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
-    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]');
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]');
 
 
 
@@ -100,19 +100,19 @@ function testDataSource
     fg = FactorGraph();
     fg.addRepeatedFactor(ng,b,b.getSlice(2));
 
-    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
-    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]');
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]');
 
     fg.advance();
-    assertElementsAlmostEqual(b.get(1).Input,[.2 .8]);
-    assertElementsAlmostEqual(b.get(2).Input,[.3 .7]);
+    assertElementsAlmostEqual(b.get(1).Input,[.2 .8]');
+    assertElementsAlmostEqual(b.get(2).Input,[.3 .7]');
 
     dataSource = DoubleArrayDataSource(data);
     %fg.reset();
     b.DataSource = dataSource;
 
-    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]);
-    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]);
+    assertElementsAlmostEqual(b.get(1).Input,[.1 .9]');
+    assertElementsAlmostEqual(b.get(2).Input,[.2 .8]');
     
     
     %not enough data when set in advance    

@@ -45,6 +45,6 @@ function testAddBoundaryVariables
     fg.solve();
 
     assertEqual(y.Value,1);
-    assertElementsAlmostEqual(y.Belief, [0 1 0])
+    assertElementsAlmostEqual(y.Belief, [0 1 0]')
     
 end
