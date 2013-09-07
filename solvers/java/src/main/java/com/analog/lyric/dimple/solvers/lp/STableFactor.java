@@ -58,7 +58,7 @@ public class STableFactor extends STableFactorBase
 	
 	/**
 	 * Represents the invalid joint assignments of the variables input to the factor table
-	 * as an index into a factor table's {@link FactorTableBase#getWeights()} array. An assignment is invalid
+	 * as an index into a factor table's {@link FactorTableBase#getWeightsSparseUnsafe()} array. An assignment is invalid
 	 * either if the weight in the table is zero (which normally would only happen if it was explicitly
 	 * set to zero after the table was constructed) or if one of the input parameters has a zero input
 	 * probability.
@@ -172,7 +172,7 @@ public class STableFactor extends STableFactorBase
 	{
 		final DiscreteFactor factor = getModelObject();
 		final IFactorTable factorTable = factor.getFactorTable();
-		final double[] weights = factorTable.getWeights();
+		final double[] weights = factorTable.getWeightsSparseUnsafe();
 		final SVariable[] svariables = getSVariables();
 
 		int cardinality = 0;
@@ -198,7 +198,7 @@ public class STableFactor extends STableFactorBase
 					// If any of the variable input weights for these values
 					// is zero, then we can skip this entry.
 					skipEntry = false;
-					final int[] indices = factorTable.getRow(i);
+					final int[] indices = factorTable.sparseIndexToIndices(i);
 					for (int j = 0, endj = indices.length; j < endj; ++j)
 					{
 						SVariable svar = svariables[j];
@@ -241,7 +241,7 @@ public class STableFactor extends STableFactorBase
 
 			final DiscreteFactor factor = getModelObject();
 			final IFactorTable factorTable = factor.getFactorTable();
-			final double[] weights = factorTable.getWeights();
+			final double[] weights = factorTable.getWeightsSparseUnsafe();
 			final int nWeights = weights.length;
 
 			for (int i = 0; i < nWeights; ++i)
@@ -286,7 +286,7 @@ public class STableFactor extends STableFactorBase
 		
 		final DiscreteFactor factor = getModelObject();
 		final IFactorTable factorTable = factor.getFactorTable();
-		final int[][] rows = factorTable.getIndices();
+		final int[][] rows = factorTable.getIndicesSparseUnsafe();
 		final int nRows = rows.length;
 
 		final SVariable[] svariables = getSVariables();
@@ -372,7 +372,7 @@ public class STableFactor extends STableFactorBase
 
 		final DiscreteFactor factor = getModelObject();
 		final IFactorTable factorTable = factor.getFactorTable();
-		final int[][] rows = factorTable.getIndices();
+		final int[][] rows = factorTable.getIndicesSparseUnsafe();
 		final int nRows = rows.length;
 
 		// Build array of solver variables for input variables.

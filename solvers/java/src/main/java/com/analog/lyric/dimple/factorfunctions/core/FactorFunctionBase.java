@@ -76,7 +76,7 @@ public abstract class FactorFunctionBase
 	
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
-	public void evalDeterministicFunction(Object... arguments){ }
+	public void evalDeterministicFunction(Object[] arguments){ }
 	
 	// For deterministic factors that have exactly one return argument (the first argument), this provides
 	// an alternative access method that returns the result instead of modifying the argument

@@ -29,7 +29,7 @@ public class KBestFactorTableEngine extends KBestFactorEngine
 	protected double getFactorFunctionValueForIndices(int [] inputIndices, Object [][] domains)
 	{
 
-		int index = getIKBestFactor().getFactorTable().getWeightIndexFromTableIndices(inputIndices);
+		int index = getIKBestFactor().getFactorTable().sparseIndexFromIndices(inputIndices);
 		if (index < 0)
 			return Double.POSITIVE_INFINITY;
 		else

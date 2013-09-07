@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
+import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.matlabproxy.repeated.IPVariableStreamSlice;
 import com.analog.lyric.dimple.matlabproxy.repeated.PFactorGraphStream;
 import com.analog.lyric.dimple.model.DimpleException;

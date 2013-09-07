@@ -16,24 +16,92 @@
 
 package com.analog.lyric.dimple.model.serializerdetails;
 
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 class xmlsFactorTable
 {
 	public String _functionName;
 	public int _ephemeralId;
 	public int[][] _indices;
-	public double[] _values;
-	public DiscreteDomain[] _domains;
+	public int[] _jointIndices;
+	public double[] _weights;
+	public JointDomainIndexer _domains;
 	
 	public xmlsFactorTable(){}
-	public xmlsFactorTable(String functionName, int ephemeralId, int[][] indices, double[] values,DiscreteDomain [] domains)
+	public xmlsFactorTable(
+		String functionName, int ephemeralId, int[] jointIndices, double[] weights, JointDomainIndexer domains)
+	{
+		_functionName = functionName;
+		_ephemeralId = ephemeralId;
+		_jointIndices = jointIndices;
+		_weights = weights;
+		_domains = domains;
+	}
+
+	public xmlsFactorTable(
+		String functionName, int ephemeralId, int[][] indices, double[] weights)
 	{
 		_functionName = functionName;
 		_ephemeralId = ephemeralId;
 		_indices = indices;
-		_values = values;
-		_domains = domains;
+		_weights = weights;
+	}
+
+	public xmlsFactorTable(String functionName, int ephemeralId, IFactorTable factorTable)
+	{
+		_functionName = functionName;
+		_ephemeralId = ephemeralId;
+		_domains = factorTable.getDomainIndexer();
+
+		final boolean sparse = factorTable.hasSparseRepresentation();
+		final int size = sparse? factorTable.sparseSize() : factorTable.jointSize();
+		
+		final int[] jointIndices = new int[size];
+		final double[] weights = new double[size];
+		
+		if (sparse)
+		{
+			for (int si = 0; si < size; ++si)
+			{
+				jointIndices[si] = factorTable.sparseIndexToJointIndex(si);
+				weights[si] = factorTable.getWeightForSparseIndex(si);
+			}
+		}
+		else
+		{
+			for (int ji = 0; ji < size; ++ji)
+			{
+				jointIndices[ji] = ji;
+				weights[ji] = factorTable.getWeightForJointIndex(ji);
+			}
+		}
+		
+		_jointIndices = jointIndices;
+		_weights = weights;
+	}
+
+	public IFactorTable makeTable()
+	{
+		IFactorTable table = FactorTable.create(_domains);
+		table.setWeightsSparse(_jointIndices, _weights);
+		return table;
+	}
+	
+	public IFactorTable makeTable(DiscreteDomain[] domains)
+	{
+		if (_jointIndices != null)
+		{
+			IFactorTable table = FactorTable.create(domains);
+			table.setWeightsSparse(_jointIndices, _weights);
+			return table;
+		}
+		else
+		{
+			return FactorTable.create(_indices, _weights, domains);
+		}
 	}
 }
 

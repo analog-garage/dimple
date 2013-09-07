@@ -87,10 +87,10 @@ public class TableFactorTest {
 		assertTrue(!tf.equals(otf2));
 		
 		
-		assertTrue(tf.getFactorTable().getIndices() != null);
-		assertTrue(tf.getFactorTable().getWeights()!= null);
-		assertTrue(tf.getFactorTable().getIndices().length == 4);
-		assertTrue(tf.getFactorTable().getIndices()[0].length == 3);
+		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe() != null);
+		assertTrue(tf.getFactorTable().getWeightsSparseUnsafe()!= null);
+		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe().length == 4);
+		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe()[0].length == 3);
 	}
 	
 	@Test

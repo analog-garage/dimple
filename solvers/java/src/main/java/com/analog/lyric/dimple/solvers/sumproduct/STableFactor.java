@@ -171,8 +171,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double [] getUnormalizedBelief()
 	{
 		
-		int [][] table = getFactorTable().getIndices();
-		double [] values = getFactorTable().getWeights();
+		int [][] table = getFactorTable().getIndicesSparseUnsafe();
+		double [] values = getFactorTable().getWeightsSparseUnsafe();
 		double [] retval = new double[table.length];
 		
 		
@@ -244,7 +244,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double getFactorTableValue(int index)
 	{
-		return getFactorTable().getWeights()[index];
+		return getFactorTable().getWeightsSparseUnsafe()[index];
 	}
 
 	@Override
@@ -265,7 +265,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		double sum = 0;
 		for (int i = 0; i < belief.length; i++)
 		{
-			double tmp = - Math.log(getFactorTable().getWeights()[i]);
+			double tmp = - Math.log(getFactorTable().getWeightsSparseUnsafe()[i]);
 			if (tmp != 0 && belief[i] != 0)
 				sum += belief[i] * tmp;
 		}
@@ -294,7 +294,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		
 		boolean isFactorOfInterest = sfg.getCurrentFactorTable() == getFactor().getFactorTable();
 		
-		double [] weights = _factor.getFactorTable().getWeights();
+		double [] weights = _factor.getFactorTable().getWeightsSparseUnsafe();
 		//TODO: avoid recompute
 		double [] beliefs = getBelief();
 		
@@ -322,8 +322,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 	public double calculateDerivativeOfBeliefNumeratorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
-		double [] weights = _factor.getFactorTable().getWeights();
-		int [][] indices = _factor.getFactorTable().getIndices();
+		double [] weights = _factor.getFactorTable().getWeightsSparseUnsafe();
+		int [][] indices = _factor.getFactorTable().getIndicesSparseUnsafe();
 		
 		//calculate product of messages and phi
 		double prod = weights[index];
@@ -352,7 +352,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double calculateDerivativeOfBeliefDenomenatorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
 		double sum = 0;
-		for (int i = 0, end = getFactor().getFactorTable().getRows(); i < end; i++)
+		for (int i = 0, end = getFactor().getFactorTable().sparseSize(); i < end; i++)
 			sum += calculateDerivativeOfBeliefNumeratorWithRespectToWeight(weightIndex,i,isFactorOfInterest);
 		return sum;
 	}
@@ -388,8 +388,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double calculateMessageForDomainValueAndTableIndex(int domainValue, int outPortNum, int tableIndex)
 	{
 		IFactorTable ft = getFactor().getFactorTable();
-		int [][] indices = ft.getIndices();
-		double [] weights = ft.getWeights();
+		int [][] indices = ft.getIndicesSparseUnsafe();
+		double [] weights = ft.getWeightsSparseUnsafe();
 
 		if (indices[tableIndex][outPortNum] == domainValue)
 		{
@@ -412,9 +412,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		IFactorTable ft = getFactor().getFactorTable();
 		double sum = 0;
-		int [][] indices = ft.getIndices();
+		int [][] indices = ft.getIndicesSparseUnsafe();
 		
-		for (int i = 0, end = ft.getRows(); i < end; i++)
+		for (int i = 0, end = ft.sparseSize(); i < end; i++)
 			if (indices[i][outPortNum] == domainValue)
 				sum += calculateMessageForDomainValueAndTableIndex(domainValue,outPortNum,i);
 		
@@ -426,8 +426,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		IFactorTable ft = getFactor().getFactorTable();
 		double sum = 0;
-		int [][] indices = ft.getIndices();
-		double [] weights = ft.getWeights();
+		int [][] indices = ft.getIndicesSparseUnsafe();
+		double [] weights = ft.getWeightsSparseUnsafe();
 		
 		for (int i = 0; i < indices.length; i++)
 		{
@@ -511,7 +511,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		SFactorGraph sfg = (SFactorGraph)getRootGraph();
 		IFactorTable ft = sfg.getCurrentFactorTable();
-		int numWeights = ft.getRows();
+		int numWeights = ft.sparseSize();
 		
 		for (int wn = 0; wn < numWeights; wn++)
 		{

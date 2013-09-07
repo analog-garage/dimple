@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -59,7 +60,7 @@ public abstract class ParameterEstimator
 	{
 		IFactorTable [] savedFts = new IFactorTable[fts.length];
 		for (int i = 0; i < fts.length; i++)
-			savedFts[i] = fts[i].copy();
+			savedFts[i] = fts[i].clone();
 		return savedFts;
 	}
 
@@ -188,7 +189,7 @@ public abstract class ParameterEstimator
 				//Calculate the average of the FactorTable beliefs
 				ArrayList<Factor> factors = getTable2Factors().get(ft);
 
-				double [] sum = new double[ft.getRows()];
+				double [] sum = new double[ft.sparseSize()];
 
 				for (Factor f : factors)
 				{
@@ -205,12 +206,13 @@ public abstract class ParameterEstimator
 
 
 				//Get first directionality
-				int [] directedTo = factors.get(0).getDirectedTo();
-				int [] directedFrom = factors.get(0).getDirectedFrom();
+				Factor firstFactor = factors.get(0);
+				int [] directedTo = firstFactor.getDirectedTo();
+				int [] directedFrom = firstFactor.getDirectedFrom();
 
 				//Set the weights to that
-				ft.changeWeights(sum);
-				ft.normalize(directedTo, directedFrom);
+				ft.replaceWeightsSparse(sum);
+				ft.makeConditional(BitSetUtil.bitsetFromIndices(directedTo.length + directedFrom.length, directedTo));
 	}
 		}
 	}

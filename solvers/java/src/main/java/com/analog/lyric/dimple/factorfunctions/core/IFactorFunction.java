@@ -100,7 +100,7 @@ public interface IFactorFunction
 	
 	// REFACTOR: Do we need this on all factor functions?
 	// Should this just be a special case of getParameters()?
-	public abstract FactorTable getFactorTable(Domain[] domainList);
+	public abstract IFactorTable getFactorTable(Domain[] domainList);
 
 	// REFACTOR: does this need a variant that takes a domain list?
 	public abstract IParameterList<?> getParameters();

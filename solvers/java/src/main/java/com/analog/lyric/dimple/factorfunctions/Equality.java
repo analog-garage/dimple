@@ -20,9 +20,8 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 
@@ -98,38 +97,19 @@ public class Equality extends FactorFunction
     	// Special case for all domains the same
 
 		final int size = domains.size();
-    	if (FactorTable.useNewFactorTable)
-    	{
-        	final double[] energies = new double[size];
-        	final int[] jointIndices = new int[size];
-        	final int[] indices = new int[domains.size()];
-        	
-        	for (int i = 0; i < size; ++i)
-        	{
-        		Arrays.fill(indices, i);
-        		jointIndices[i] = domains.jointIndexFromIndices(indices);
-        	}
-        	
-        	NewFactorTable table = new NewFactorTable(domains);
-        	table.setEnergiesSparse(jointIndices, energies);
-        	return table;
-    	}
-    	else
-    	{
-    		final double[] weights = new double[size];
-    		Arrays.fill(weights, 1.0);
-    		final int [][] indices = new int[size][];
+		final double[] energies = new double[size];
+		final int[] jointIndices = new int[size];
+		final int[] indices = new int[domains.size()];
 
-    		for (int i = 0; i < size; i++)
-    		{
-    			indices[i] = new int[size];
-    			Arrays.fill(indices[i], i);
-    		}
+		for (int i = 0; i < size; ++i)
+		{
+			Arrays.fill(indices, i);
+			jointIndices[i] = domains.jointIndexFromIndices(indices);
+		}
 
-    		IFactorTable table = FactorTable.create(domains);
-    		table.change(indices, weights);
-    		return table;
-    	}
+		FactorTable table = new FactorTable(domains);
+		table.setEnergiesSparse(jointIndices, energies);
+		return table;
     }
     
 }

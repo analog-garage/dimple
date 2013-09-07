@@ -51,7 +51,7 @@ public class Or extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	boolean orValue = false;
     	for(int i = 1; i < arguments.length; ++i)

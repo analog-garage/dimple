@@ -79,7 +79,7 @@ public class ConstantProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	arguments[0] = _constant * FactorFunctionUtilities.toDouble(arguments[1]);		// Replace the output value
     }

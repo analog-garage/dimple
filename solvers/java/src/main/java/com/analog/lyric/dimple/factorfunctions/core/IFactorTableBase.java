@@ -7,7 +7,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.JointDomainReindexer;
 
-public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<NewFactorTableEntry>
+public interface IFactorTableBase extends Cloneable, Serializable, Iterable<FactorTableEntry>
 {
 	/*------------------
 	 * Iterator methods
@@ -18,12 +18,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * of sparse/joint index.
 	 */
 	@Override
-	public abstract NewFactorTableIterator iterator();
+	public abstract FactorTableIterator iterator();
 	
 	/**
 	 * Returns an iterator over the joint indexes in the table in increasing order.
 	 */
-	public abstract NewFactorTableIterator fullIterator();
+	public abstract FactorTableIterator fullIterator();
 	
 	/*-------------
 	 * New methods
@@ -32,7 +32,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns a deep copy of this factor table.
 	 */
-	public abstract INewFactorTableBase clone();
+	public abstract IFactorTableBase clone();
 
 	/**
 	 * Computes the number of entries in the table with non-zero weight (or non-infinite energy).
@@ -42,7 +42,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns a new factor table converted from this one using the specified converter.
 	 */
-	public INewFactorTableBase convert(JointDomainReindexer converter);
+	public IFactorTableBase convert(JointDomainReindexer converter);
 	
 	/**
 	 * That ratio of non-zero weights to {@link #jointSize()}. Will be 1.0 if table contains
@@ -104,12 +104,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	public abstract JointDomainIndexer getDomainIndexer();
 	
 	/**
-	 * Returns energy of factor table entry for given {@code arguments}.
+	 * Returns energy of factor table entry for given {@code elements}.
 	 * <p>
 	 * @see #getEnergyForIndices(int...)
-	 * @see #getWeightForArguments(Object...)
+	 * @see #getWeightForElements(Object...)
 	 */
-	public abstract double getEnergyForArguments(Object ... arguments);
+	public abstract double getEnergyForElements(Object ... elements);
 	
 	public abstract double getEnergyForJointIndex(int jointIndex);
 
@@ -129,19 +129,19 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns the energy of factor table entry with given {@code indices}.
 	 * <p>
-	 * @see #getEnergyForArguments(Object...)
+	 * @see #getEnergyForElements(Object...)
 	 * @see #getEnergyForSparseIndex(int)
 	 * @see #getWeightForIndices(int...)
 	 */
 	public abstract double getEnergyForIndices(int ... indices);
 	
 	/**
-	 * Returns energy of factor table entry for given {@code arguments}.
+	 * Returns energy of factor table entry for given {@code elements}.
 	 * <p>
 	 * @see #getWeightForIndices(int...)
-	 * @see #getEnergyForArguments(Object...)
+	 * @see #getEnergyForElements(Object...)
 	 */
-	public abstract double getWeightForArguments(Object ... arguments);
+	public abstract double getWeightForElements(Object ... elements);
 
 	public abstract double getWeightForJointIndex(int jointIndex);
 	
@@ -159,7 +159,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Returns the weight of factor table entry with given {@code indices}.
 	 * <p>
-	 * @see #getWeightForArguments(Object...)
+	 * @see #getWeightForElements(Object...)
 	 * @see #getWeightForSparseIndex(int)
 	 * @see #getEnergyForIndices(int...)
 	 */
@@ -214,12 +214,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	/**
 	 * Computes sparse index for the table entry associated with the specified arguments.
 	 * <p>
-	 * @param arguments must have length equal to {@link #getDimensions()} and each argument must
+	 * @param elements must have length equal to {@link #getDimensions()} and each argument must
 	 * be an element of the corresponding domain.
 	 * @see #sparseIndexFromIndices(int ... )
-	 * @see #sparseIndexFromArguments(Object...)
+	 * @see #sparseIndexFromElements(Object...)
 	 */
-	public abstract int sparseIndexFromArguments(Object ... arguments);
+	public abstract int sparseIndexFromElements(Object ... elements);
 	
 	/**
 	 * Computes a sparse index for the table entry associated with the specified {@code indices}.
@@ -227,7 +227,7 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * @param indices must have length equal to {@link #getDimensions()} and each index must be a non-negative
 	 * value less than the corresponding domain size otherwise the function could return an
 	 * incorrect result.
-	 * @see #sparseIndexFromArguments
+	 * @see #sparseIndexFromElements
 	 * @see #sparseIndexToIndices
 	 */
 	public abstract int sparseIndexFromIndices(int... indices);
@@ -246,12 +246,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * Computes domain values corresponding to given joint index.
 	 * <p>
 	 * @param sparseIndex index in the range [0,{@link #sparseSize}).
-	 * @param arguments if this is an array of length {@link #getDimensions()}, the computed values will
+	 * @param elements if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
 	 * @see #sparseIndexToIndices(int, int[])
-	 * @see #sparseIndexFromArguments(Object...)
+	 * @see #sparseIndexFromElements(Object...)
 	 */
-	public abstract Object[] sparseIndexToArguments(int sparseIndex, Object[] arguments);
+	public abstract Object[] sparseIndexToElements(int sparseIndex, Object[] elements);
 	
 	/**
 	 * Converts sparse index (one per table entry) to joint index (one per valid combination
@@ -276,10 +276,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 * @param sparseIndex index in range [0,{@link #sparseSize}).
 	 * @param indices if this is an array of length {@link #getDimensions()}, the computed values will
 	 * be placed in this array, otherwise a new array will be allocated.
-	 * @see #sparseIndexToArguments(int, Object[])
+	 * @see #sparseIndexToElements(int, Object[])
 	 * @see #sparseIndexFromIndices(int...)
 	 */
 	public abstract int[] sparseIndexToIndices(int sparseIndex, int[] indices);
+	
+	public abstract int[] sparseIndexToIndices(int sparseIndex);
 
 	/**
 	 * Normalizes the weights/energies of the table by dividing by a constant to ensure that
@@ -301,12 +303,12 @@ public interface INewFactorTableBase extends Cloneable, Serializable, Iterable<N
 	 */
 	public abstract void normalizeConditional();
 
-	public void setEnergyForArguments(double energy, Object ... arguments);
+	public void setEnergyForElements(double energy, Object ... elements);
 	public void setEnergyForIndices(double energy, int ... indices);
 	public void setEnergyForSparseIndex(double energy, int sparseIndex);
 	public void setEnergyForJointIndex(double energy, int jointIndex);
 
-	public void setWeightForArguments(double weight, Object ... arguments);
+	public void setWeightForElements(double weight, Object ... elements);
 	public void setWeightForIndices(double weight, int ... indices);
 	public void setWeightForSparseIndex(double weight, int sparseIndex);
 	public void setWeightForJointIndex(double weight, int jointIndex);

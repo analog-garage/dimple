@@ -35,7 +35,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -43,6 +42,7 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
@@ -260,7 +260,7 @@ public class Deserializer
 		}
 
 		int[][] indices = new int[rows][columns];
-		double[] values = new double[rows];
+		double[] weights = new double[rows];
 		
 		for(int i = 0; i < lEntry.getLength(); ++i)
 		{
@@ -280,7 +280,7 @@ public class Deserializer
     		int row 	= Integer.parseInt(attributes.getNamedItem("row").getNodeValue());
     		double value= Double.parseDouble(attributes.getNamedItem("value").getNodeValue());
     		
-    		values[row] = value;
+    		weights[row] = value;
 		}
    		
    		NamedNodeMap factorTableAttributes = factorTableElement.getAttributes();
@@ -306,7 +306,22 @@ public class Deserializer
    			domains[i] = getDomainFromElement(n);
    		}
    		
-   		return new xmlsFactorTable(functionName, id, indices, values,domains);
+   		if (domains.length > 0)
+   		{
+   			JointDomainIndexer indexer = JointDomainIndexer.create(domains);
+
+   			int[] jointIndices = new int[rows];
+   			for (int row = 0; row < rows; ++row)
+   			{
+   				jointIndices[row] = indexer.jointIndexFromIndices(indices[row]);
+   			}
+
+   			return new xmlsFactorTable(functionName, id, jointIndices, weights,JointDomainIndexer.create(domains));
+   		}
+   		else
+   		{
+   			return new xmlsFactorTable(functionName, id, indices, weights);
+   		}
 	}
 	protected void deserializeFromXMLToMemory(String docName) throws ParserConfigurationException, SAXException, IOException
 	{
@@ -503,8 +518,8 @@ public class Deserializer
 		    		DiscreteDomain [] domains = new DiscreteDomain[arguments.length];
 		    		for (int i = 0; i < domains.length; i++)
 		    			domains[i] = (DiscreteDomain)arguments[i].getDomain();
-		    		ff = new TableFactorFunction(xct._functionName,
-		    				FactorTable.create(xct._indices, xct._values, domains));
+		    		IFactorTable ft = xct.makeTable(domains);
+		    		ff = new TableFactorFunction(xct._functionName, ft);
 		    		factorFunctions.put(xct,ff);
 		    	}
 		    	
@@ -533,7 +548,7 @@ public class Deserializer
     		Element DocElement = document.getDocumentElement();
 
     		xmlsFactorTable xct = deserializeFactorTableFromXML(DocElement);
-    		ct = FactorTable.create(xct._indices, xct._values, xct._domains);
+    		ct = xct.makeTable();
         }
 		catch (FactoryConfigurationError e)
 		{

@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
@@ -77,48 +79,49 @@ public class PFactorTable extends PObject
 	
 	public void normalize(int [] directedTo)
 	{
-		getModelerObject().normalize(directedTo);
+		_table.makeConditional(BitSetUtil.bitsetFromIndices(_table.getDimensions(), directedTo));
 	}
 	
 	public PDiscreteDomain [] getDomains()
 	{
-		PDiscreteDomain [] pdomains = new PDiscreteDomain[_table.getDomains().length];
+		JointDomainIndexer domains = _table.getDomainIndexer();
+		PDiscreteDomain [] pdomains = new PDiscreteDomain[domains.size()];
 		
-		for (int i = 0; i < _table.getDomains().length; i++)
+		for (int i = 0; i < pdomains.length; i++)
 		{
-			pdomains[i] = new PDiscreteDomain(_table.getDomains()[i]);
+			pdomains[i] = new PDiscreteDomain(domains.get(i));
 		}
 		return pdomains;
 	}
 
 	public int [][] getIndices()
 	{
-		return _table.getIndices();
+		return _table.getIndicesSparseUnsafe();
 	}
 	
 	public double [] getWeights()
 	{
-		return _table.getWeights();
+		return _table.getWeightsSparseUnsafe();
 	}
 	
 	public double get(int [] indices)
 	{
-		return _table.get(indices);
+		return _table.getWeightForIndices(indices);
 	}
 	
 	public void set(int [] indices, double value)
 	{
-		_table.set(indices, value);
+		_table.setWeightForIndices(value, indices);
 	}
 	
 	public void changeWeights(double [] values)
 	{
-		_table.changeWeights(values);
+		_table.replaceWeightsSparse(values);
 	}
 	
 	public void change(int [][] indices, double [] weights)
 	{
-		_table.change(indices,weights);
+		_table.setWeightsSparse(indices,weights);
 	}
 
 }

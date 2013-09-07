@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 
 
@@ -82,8 +83,8 @@ public class FactorFunctionTest {
 		
 		XorDelta xorFF = new XorDelta();
 		IFactorTable xorFT = xorFF.getFactorTable(domains);
-		int[][] xorIndices = xorFT.getIndices();
-		double[] xorWeights = xorFT.getWeights();
+		int[][] xorIndices = xorFT.getIndicesSparseUnsafe();
+		double[] xorWeights = xorFT.getWeightsSparseUnsafe();
 		
 		int[][] table = new int[xorIndices.length][];
 		double[] weights = new double[xorWeights.length];
@@ -127,40 +128,29 @@ public class FactorFunctionTest {
 		assertTrue(fVar.getFactorTable().hashCode() != fDomain.getFactorTable().hashCode());
 		assertTrue(fxd.getFactorTable().hashCode() != fxd6.getFactorTable().hashCode());
 		
-		for(int i = 0; i < ftVar.getDomains().length; ++i)
+		JointDomainIndexer ftDomains = ftVar.getDomainIndexer();
+		for(int i = 0; i < ftDomains.size(); ++i)
 		{
-			for(int j = 0; j < ftVar.getDomains()[i].size(); ++j)
+			DiscreteDomain idomain = ftDomains.get(i);
+			for(int j = 0; j < idomain.size(); ++j)
 			{
-				assertEquals(ftVar.getDomains()[i].getElement(j),ftVDomain.getDomains()[i].getElement(j));
-				assertEquals(ftVar.getDomains()[i].getElement(j),ftDomain.getDomains()[i].getElement(j));
-				assertEquals(ftVar.getDomains()[i].getElement(j),tffVar.getFactorTable(domains).getDomains()[i].getElement(j));
-				assertEquals(ftVar.getDomains()[i].getElement(j),tffDVar.getFactorTable(domains).getDomains()[i].getElement(j));
-				assertEquals(ftVar.getDomains()[i].getElement(j),tffVDomain.getFactorTable(domains).getDomains()[i].getElement(j));
-				assertEquals(ftVar.getDomains()[i].getElement(j),tffDomain.getFactorTable(domains).getDomains()[i].getElement(j));
+				Object ijelt = idomain.getElement(j);
+				assertEquals(ijelt ,ftVDomain.getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, ftDomain.getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffVar.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffDVar.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffVDomain.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffDomain.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
 				
-				assertEquals(ftVar.getDomains()[i].getElement(j),fVar2.getFactorTable().getDomains()[i].getElement(j));
+				assertEquals(ijelt, fVar2.getFactorTable().getDomainIndexer().get(i).getElement(j));
 			}
 		}
 		
-		for(int i = 0; i < ftVar.getRows(); ++i)
+		for(int i = 0; i < ftVar.sparseSize(); ++i)
 		{
-			int[] ftVarRow = ftVar.getRow(i);
-			int[] xorFTRow = xorFT.getRow(i);
-			for(int j = 0; j < ftVar.getColumns(); ++j)
-			{
-				assertEquals(ftVar.getEntry(i, j), xorFT.getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), ftVarRow[j]);
-				assertEquals(ftVar.getEntry(i, j), xorFTRow[j]);
-				
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getRow(i)[j]);
-			}
-			
-			
+			int[] ftVarRow = ftVar.sparseIndexToIndices(i);
+			int[] xorFTRow = xorFT.sparseIndexToIndices(i);
+			assertArrayEquals(ftVarRow, xorFTRow);
 		}
 		
 		DiscreteDomain[] domains6 = new DiscreteDomain[6];

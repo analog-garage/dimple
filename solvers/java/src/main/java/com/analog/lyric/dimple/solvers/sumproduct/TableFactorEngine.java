@@ -40,8 +40,8 @@ public class TableFactorEngine
 	public void updateEdge(int outPortNum)
 	{
 		ArrayList<INode> siblings = _factor.getSiblings();
-	    int[][] table = _tableFactor.getFactorTable().getIndices();
-	    double[] values = _tableFactor.getFactorTable().getWeights();
+	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    double[] values = _tableFactor.getFactorTable().getWeightsSparseUnsafe();
 	    int tableLength = table.length;
 	    int numPorts = siblings.size();
 	    
@@ -108,8 +108,8 @@ public class TableFactorEngine
 
 		
 		ArrayList<INode> ports = _factor.getSiblings();
-	    int[][] table = _tableFactor.getFactorTable().getIndices();
-	    double[] values = _tableFactor.getFactorTable().getWeights();
+	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    double[] values = _tableFactor.getFactorTable().getWeightsSparseUnsafe();
 	    int tableLength = table.length;
 	    int numPorts = ports.size();
 	    

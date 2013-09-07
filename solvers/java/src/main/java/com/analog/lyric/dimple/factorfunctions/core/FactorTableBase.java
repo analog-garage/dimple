@@ -1,315 +1,203 @@
-/*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
-
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import static com.analog.lyric.math.Utilities.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.BitSet;
 import java.util.Random;
 
+import net.jcip.annotations.NotThreadSafe;
 
-public abstract class FactorTableBase implements IFactorTable
+import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+
+@NotThreadSafe
+public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 {
-	private int [][] _indices = null;
-	private double[] _weights = null;
-	
-	/**
-	 * The negative log of the corresponding values from {@link #_weights}.
-	 * Must be changed when values in weights changed or nulled out to force
-	 * recomputation.
+	/*--------
+	 * State
 	 */
-	private double [] _potentials = null;
 	
-	protected FactorTableBase()
-	{
-		
-	}
+	private static final long serialVersionUID = 1L;
 
-	@Override
-	public void copy(IFactorTable copy)
-	{
-		_indices = copy.getIndices().clone();
-		_weights = copy.getWeights().clone();
-		//maybe clone potentials if they're not null
-		_potentials = null;
-		
-	}
+	private JointDomainIndexer _domains;
 	
-	protected FactorTableBase(FactorTableBase copy)
-	{
-		copy(copy);
-	}
-	
-	@Override
-	public void changeWeight(int index, double weight)
-	{
-		_weights[index] = weight;
-		//TODO: maybe just recompute potential if it exists.
-		_potentials = null;
-	}
-	
-	public FactorTableBase(int [][] table, double [] probs)
-	{
-		this(table,probs,true);
-	}
-	
-	public FactorTableBase(int [][] table, double [] probs,boolean checkTable)
-	{
-		//Allow some calls to avoid checking the table.
-		//We really only need it to be checked when the user modifies it.
-		if (checkTable)
-			check(table,probs);
-		
-		_indices = table;
-		_weights = probs;
-	}
-	
-	@Override
-	public int [][] getIndices()
-	{
-		return _indices;
-	}
-	
-	@Override
-	public double [] getWeights()
-	{
-		return _weights;
-	}
-	@Override
-	public int getRows()
-	{
-		return getIndices().length;
-	}
-	@Override
-	public int getColumns()
-	{
-		return getIndices()[0].length;
-	}
-	@Override
-	public int getEntry(int row, int column)
-	{
-		return getIndices()[row][column];
-	}
-	@Override
-	public int[] getRow(int row)
-	{
-		return getIndices()[row];
-	}
-	@Override
-	public int[] getColumnCopy(int column)
-	{
-		int[] copy = new int[getRows()];
-		for(int i = 0; i < getRows(); ++i)
-		{
-			copy[i] = getEntry(i, column);
-		}
-		return copy;
-	}
-	
-	@Override
-	public void changeIndices(int [][] indices)
-	{
-		check(indices,_weights);
-		_indices = indices;
-	}
-	
-	@Override
-	public void changeWeights(double [] probs)
-	{
-		check(_indices,probs);
-		_weights = probs;
-		_potentials = null;
-		
-	}
-	
-	
-	private int findLocationFromIndices(int [] indices)
-	{
-		if (indices.length != _indices[0].length)
-			throw new RuntimeException("number of indices is incorrect");
-		
-		for (int i = 0; i < _indices.length; i++)
-		{
-			boolean found = true;
-			for (int j = 0; j < indices.length; j++)
-			{
-				if (indices[j] != _indices[i][j])
-				{
-					found = false;
-					break;
-				}
-			}
-			
-			if (found)
-			{
-				return i;
-			}
-		}
-		throw new RuntimeException("invalid indices.  Don't match the domains or were currently not in sparse table");
-	}
-	
-	@Override
-	public double get(int [] indices)
-	{
-		int loc = findLocationFromIndices(indices);
-		return _weights[loc];
-	}
-	
-	@Override
-	public void set(int [] indices, double value)
-	{
-		int loc = findLocationFromIndices(indices);
-		_weights[loc] = value;
-		if (_potentials != null)
-		{
-			_potentials[loc] = -Math.log(value);
-		}
-	}
-	
-	@Override
-	public void change(int [][] indices, double [] weights)
-	{
-		change(indices,weights,true);
-	}
-	
-	public void change(int [][] indices, double [] weights, boolean check)
-	{
-		if (check)
-			check(indices,weights);
-		
-		_indices = indices;
-		_weights = weights;
-		_potentials = null;
-		
-	}
-
-	//Used for getWeightIndexFromTableIndices
-	//private HashMap<ArrayList<Integer>,Integer> _indices2weightIndex = null;
-
-	
-	/**
-	 * Returns the energy of factor table entry with given {@code indices}.
+	/*--------------
+	 * Construction
 	 */
-	@Override
-	public double getEnergyForIndices(int ... indices)
+	
+	protected FactorTableBase(JointDomainIndexer domains)
 	{
-		final int index = getWeightIndexFromTableIndices(indices);
-		if (index < 0)
-		{
-			return Double.POSITIVE_INFINITY;
-		}
-		else if (_potentials != null)
-		{
-			return _potentials[index];
-		}
-		else
-		{
-			return weightToEnergy(_weights[index]);
-		}
+		_domains = domains;
 	}
 	
-	@Override
-	public double getWeightForIndices(int ... indices)
+	protected FactorTableBase(BitSet directedTo, DiscreteDomain ... domains)
 	{
-		final int index = getWeightIndexFromTableIndices(indices);
-		return index < 0 ? 0.0 :  _weights[index];
-	}
-
-	@Override
-	public double [] getPotentials()
-	{
-		if (_potentials == null)
-		{
-			_potentials = new double[_weights.length];
-			for (int i = 0; i < _weights.length; i++)
-			{
-				double potential = -Math.log(_weights[i]);
-				_potentials[i] = potential;
-			}
-		}
-		
-		return _potentials;
+		_domains = JointDomainIndexer.create(directedTo, domains);
 	}
 	
-	
-	protected void check(int[][] indices, double[] weights)
+	protected FactorTableBase(FactorTableBase that)
 	{
-		//Do some error checking
-		if (indices.length < 0)
-			throw new RuntimeException("combo table must have at least one row");
+		_domains = that._domains;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
 
-		if (indices.length != weights.length)
-			throw new RuntimeException("indices and values lengths must match");
-		
-		//Check that there are no duplicate rows
-		HashSet<ArrayList<Integer>> uniqueRows = new HashSet<ArrayList<Integer>>();
-
-
-		for (int i = 0; i < indices.length; i++)
-		{
-			ArrayList<Integer> key = new ArrayList<Integer>();
-			for (int j = 0; j < indices[i].length; j++)
-				key.add(indices[i][j]);
-
-			if (uniqueRows.contains(key))
-				throw new RuntimeException("Table Factor contains multiple rows with same set of indices.");
-			
-			uniqueRows.add(key);
-		}
+	@Override
+	public abstract FactorTableBase clone();
+	
+	/*------------------
+	 * Iterable methods
+	 */
+	
+	@Override
+	public FactorTableIterator iterator()
+	{
+		return new FactorTableIterator(this, false);
 	}
 	
 	@Override
-	public void randomizeWeights(Random r)
+	public FactorTableIterator fullIterator()
 	{
-		_potentials = null;
-		
-		for (int i = 0; i < _weights.length; i++)
-			_weights[i] = r.nextDouble();
-
+		return new FactorTableIterator(this, true);
 	}
 	
+	/*-----------------------------
+	 * INewFactorTableBase methods
+	 */
+
+	@Override
+	public final double density()
+	{
+		return (double)countNonZeroWeights() / (double)jointSize();
+	}
 	
 	@Override
-	public String toString()
+	public final int getDimensions()
 	{
-		StringBuilder s = new StringBuilder();
-		try
-		{
-			s.append(
-					String.format("FactorTable  r:%d  c:%d  w:%d\n"
-							,_indices.length
-							,_indices[0].length
-							,_weights.length));
-			for(int r = 0; r < _indices.length; ++r)
-			{
-				s.append("\t");
-				for(int c = 0; c < _indices[r].length; ++c)
-				{
-					s.append(String.format("  %d", _indices[r][c]));
-				}
-				s.append(String.format("   w: %f\n", _weights[r]));
-			}
-		}
-		catch(Exception e)
-		{
-			s.append("\nERROR caught exception making string.\n[\n" + e.getMessage() + "\n]\nTable probably malformed.");
-		}
-		return s.toString();
+		return _domains.size();
 	}
+	
+	@Override
+	public final JointDomainIndexer getDomainIndexer()
+	{
+		return _domains;
+	}
+	
+	protected final void setDomainIndexer(JointDomainIndexer newDomains)
+	{
+		assert(_domains.domainsEqual(newDomains));
+		_domains = newDomains;
+	}
+	
+	@Override
+	public final double getEnergyForElements(Object ... elements)
+	{
+		return getEnergyForJointIndex(_domains.jointIndexFromElements(elements));
+	}
+	
+	@Override
+	public final double getWeightForElements(Object ... elements)
+	{
+		return getWeightForJointIndex(_domains.jointIndexFromElements(elements));
+	}
+	
+	@Override
+	public final BitSet getInputSet()
+	{
+		return _domains.getInputSet();
+	}
+	
+	@Override
+	public final double getEnergyForIndices(int ... indices)
+	{
+		return getEnergyForJointIndex(_domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final double getWeightForIndices(int ... indices)
+	{
+		return getWeightForJointIndex(_domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final int sparseIndexFromElements(Object ... elements)
+	{
+		return sparseIndexFromJointIndex(_domains.jointIndexFromElements(elements));
+	}
+	
+	@Override
+	public final int sparseIndexFromIndices(int ... indices)
+	{
+		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public Object[] sparseIndexToElements(int sparseIndex, Object[] elements)
+	{
+		return _domains.jointIndexToElements(sparseIndexToJointIndex(sparseIndex), elements);
+	}
+	
+	@Override
+	public int[] sparseIndexToIndices(int sparseIndex, int[] indices)
+	{
+		return _domains.jointIndexToIndices(sparseIndexToJointIndex(sparseIndex), indices);
+	}
+	
+	@Override
+	public int[] sparseIndexToIndices(int sparseIndex)
+	{
+		return sparseIndexToIndices(sparseIndex, null);
+	}
+	
+	@Override
+	public boolean isDirected()
+	{
+		return _domains.isDirected();
+	}
+
+	@Override
+	public final int jointSize()
+	{
+		return _domains.getCardinality();
+	}
+	
+	@Override
+	public final void setEnergyForElements(double energy, Object ... elements)
+	{
+		setEnergyForJointIndex(energy, _domains.jointIndexFromElements(elements));
+	}
+
+	@Override
+	public final void setEnergyForIndices(double energy, int ... indices)
+	{
+		_domains.validateIndices(indices);
+		setEnergyForJointIndex(energy, _domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final void setWeightForElements(double weight, Object ... elements)
+	{
+		setWeightForJointIndex(weight, _domains.jointIndexFromElements(elements));
+	}
+
+	@Override
+	public final void setWeightForIndices(double weight, int ... indices)
+	{
+		_domains.validateIndices(indices);
+		setWeightForJointIndex(weight, _domains.jointIndexFromIndices(indices));
+	}
+	
+	/*-----------------------
+	 * IFactorTable methods
+	 */
+	
+	@Override
+	public void randomizeWeights(Random rand)
+	{
+		for (int i = jointSize(); --i >= 0;)
+		{
+			setWeightForJointIndex(rand.nextDouble(), i);
+		}
+	}
+
 }
-

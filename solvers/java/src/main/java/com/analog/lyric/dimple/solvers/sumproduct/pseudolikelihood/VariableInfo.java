@@ -171,7 +171,7 @@ public class VariableInfo extends NodeInfo
 					int index = getFactorTableIndex(f,i,domainValues);
 					
 					//retrieve the weight
-					double weight = f.getFactorTable().getWeights()[index];
+					double weight = f.getFactorTable().getWeightsSparseUnsafe()[index];
 										
 					//TODO: should probably do this in the log domain
 					//multiply it in
@@ -233,7 +233,7 @@ public class VariableInfo extends NodeInfo
 				indices[j] = domainVals[mapping[j]];
 		}
 		
-		int index = f.getFactorTable().getWeightIndexFromTableIndices(indices);
+		int index = f.getFactorTable().sparseIndexFromIndices(indices);
 		return index;
 	}
 	

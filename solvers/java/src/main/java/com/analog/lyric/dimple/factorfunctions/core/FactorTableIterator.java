@@ -7,17 +7,17 @@ import net.jcip.annotations.NotThreadSafe;
 import com.analog.lyric.dimple.model.DimpleException;
 
 /**
- * Iterator over entries in a {@link INewFactorTableBase}.
+ * Iterator over entries in a {@link IFactorTableBase}.
  */
 @NotThreadSafe
-public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
+public class FactorTableIterator implements Iterator<FactorTableEntry>
 {
 	/*-------
 	 * State
 	 */
 	
 	private final boolean _dense;
-	private final INewFactorTableBase _table;
+	private final IFactorTableBase _table;
 	private int _sparseIndex;
 	private int _jointIndex;
 	private double _energy;
@@ -27,7 +27,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	 * Construction
 	 */
 	
-	NewFactorTableIterator(INewFactorTableBase table, boolean dense)
+	FactorTableIterator(IFactorTableBase table, boolean dense)
 	{
 		_dense = dense;
 		_table = table;
@@ -58,7 +58,7 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 	}
 	
 	@Override
-	public NewFactorTableEntry next()
+	public FactorTableEntry next()
 	{
 		advance();
 		return getEntry();
@@ -94,13 +94,13 @@ public class NewFactorTableIterator implements Iterator<NewFactorTableEntry>
 		return _jointIndex >= _table.jointSize();
 	}
 	
-	public NewFactorTableEntry getEntry()
+	public FactorTableEntry getEntry()
 	{
-		NewFactorTableEntry entry = null;
+		FactorTableEntry entry = null;
 		
 		if (_jointIndex < _table.jointSize())
 		{
-			entry = new NewFactorTableEntry(_table.getDomainIndexer(), _sparseIndex, _jointIndex, _energy, _weight);
+			entry = new FactorTableEntry(_table.getDomainIndexer(), _sparseIndex, _jointIndex, _energy, _weight);
 		}
 		
 		return entry;

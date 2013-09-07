@@ -30,7 +30,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 3) SecondValue (double or integer)
  * 
  */
-public class GreaterThan extends FactorFunction 
+public class GreaterThan extends FactorFunction
 {
     @Override
     public double evalEnergy(Object... arguments)
@@ -53,7 +53,7 @@ public class GreaterThan extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
     	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);

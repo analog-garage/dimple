@@ -7,10 +7,10 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 /**
- * Holds the information for one factor table entry from a {@link NewFactorTableIterator}
+ * Holds the information for one factor table entry from a {@link FactorTableIterator}
  */
 @Immutable
-public final class NewFactorTableEntry implements Serializable
+public final class FactorTableEntry implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -24,7 +24,7 @@ public final class NewFactorTableEntry implements Serializable
 	 * Construction
 	 */
 	
-	public NewFactorTableEntry(JointDomainIndexer domains, int sparseIndex, int jointIndex, double energy, double weight)
+	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, int jointIndex, double energy, double weight)
 	{
 		_domains = domains;
 		_sparseIndex = sparseIndex;

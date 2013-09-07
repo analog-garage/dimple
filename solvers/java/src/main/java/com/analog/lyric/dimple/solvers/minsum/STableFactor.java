@@ -171,7 +171,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double getFactorTableValue(int index)
 	{
-		return getFactorTable().getPotentials()[index];
+		return getFactorTable().getEnergiesSparseUnsafe()[index];
 	}
 	
 	@Override

@@ -51,14 +51,7 @@ public class TableFactorFunction extends FactorFunction
     	{
     		if (_factorTable != null)
     		{
-    			if (_factorTable instanceof INewFactorTable)
-    			{
-					((INewFactorTable)_factorTable).setConditional(newDomains.getOutputSet());
-    			}
-    			else
-    			{
-    				_factorTable.setDirected(newDomains.getOutputDomainIndices(), newDomains.getInputDomainIndices());
-    			}
+    			_factorTable.setConditional(newDomains.getOutputSet());
 				converted = true;
     		}
     	}
@@ -69,7 +62,7 @@ public class TableFactorFunction extends FactorFunction
     @Override
 	public boolean factorTableExists(JointDomainIndexer domains)
 	{
-    	if (domains.size() != _factorTable.getDomains().length)
+    	if (domains.size() != _factorTable.getDimensions())
     	{
     		return false;
     	}
@@ -83,7 +76,7 @@ public class TableFactorFunction extends FactorFunction
 	@Override
 	public double eval(Object... input)
 	{
-		return _factorTable.evalAsFactorFunction(input);
+		return _factorTable.getWeightForElements(input);
 	}
 	
 
@@ -97,9 +90,9 @@ public class TableFactorFunction extends FactorFunction
     {
     	//first step, convert domains to DiscreteDOmains
     	//make sure domain lists match
-    	if (domains.size() != _factorTable.getDomains().length)
+    	if (domains.size() != _factorTable.getDimensions())
     		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domains.size() +
-    			" factorTable's domain size: " + _factorTable.getDomains().length);
+    			" factorTable's domain size: " + _factorTable.getDimensions());
     	    	
     	return _factorTable;
     }
@@ -114,7 +107,7 @@ public class TableFactorFunction extends FactorFunction
 	@Override
 	public boolean isDirected() {return _factorTable.isDirected();}
 	@Override
-	protected int[] getDirectedToIndices() {return _factorTable.getDirectedTo();}
+	protected int[] getDirectedToIndices() {return _factorTable.getDomainIndexer().getOutputDomainIndices();}
 	
 	// For deterministic directed factors...
 	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)
@@ -124,7 +117,7 @@ public class TableFactorFunction extends FactorFunction
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
 	@Override
-	public void evalDeterministicFunction(Object... arguments){_factorTable.evalDeterministicFunction(arguments);}
+	public void evalDeterministicFunction(Object[] arguments){_factorTable.evalDeterministic(arguments);}
 	
 	@Override
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)

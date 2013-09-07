@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,14 +73,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     			IFactorTable table = tables.get(oldDomains);
     			if (table != null)
     			{
-    				if (table instanceof INewFactorTable)
-    				{
-    					((INewFactorTable)table).setConditional(newDomains.getOutputSet());
-    				}
-    				else
-    				{
-    					table.setDirected(newDomains.getOutputDomainIndices(), newDomains.getInputDomainIndices());
-    				}
+    				table.setConditional(newDomains.getOutputSet());
     			}
     		}
     	}
@@ -176,79 +168,53 @@ public abstract class FactorFunction extends FactorFunctionBase
      */
     protected IFactorTable createTableForDomains(JointDomainIndexer domains)
     {
-    	if (FactorTable.useNewFactorTable)
-    	{
-    		final NewFactorTable table = new NewFactorTable(domains);
-    		
-        	final Object[] elements = new Object[domains.size()];
-        	
-        	if (isDeterministicDirected() && domains.isDirected())
-        	{
-        		final int maxInput = domains.getInputCardinality();
-        		final int[] outputs = new int[maxInput];
-        		
-        		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
-        		{
-        			domains.inputIndexToElements(inputIndex, elements);
-        			evalDeterministicFunction(elements);
-        			outputs[inputIndex] = domains.outputIndexFromElements(elements);
-        		}
-        		
-        		table.setDeterministicOuputIndices(outputs);
-        	}
-        	else
-        	{
-        		IntArrayList indexes = new IntArrayList();
-        		DoubleArrayList energies = new DoubleArrayList();
+    	final FactorTable table = new FactorTable(domains);
 
-        		final int maxJoint = domains.getCardinality();
-        		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
-        		{
-        			domains.jointIndexToElements(jointIndex, elements);
-        			double energy = evalEnergy(elements);
-        			if (!Double.isInfinite(energy))
-        			{
-        				indexes.add(jointIndex);
-        				energies.add(energy);
-        			}
-        		}
-        		
-        		if (indexes.size() == maxJoint)
-        		{
-        			table.setEnergiesDense(Arrays.copyOf(energies.elements(), maxJoint));
-        		}
-        		else
-        		{
-        			table.setEnergiesSparse(Arrays.copyOf(indexes.elements(), indexes.size()),
-        				Arrays.copyOf(energies.elements(), indexes.size()));
-        		}
-        	}
-        	
-        	return table;
+    	final Object[] elements = new Object[domains.size()];
+
+    	if (isDeterministicDirected() && domains.isDirected())
+    	{
+    		final int maxInput = domains.getInputCardinality();
+    		final int[] outputs = new int[maxInput];
+
+    		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
+    		{
+    			domains.inputIndexToElements(inputIndex, elements);
+    			evalDeterministicFunction(elements);
+    			outputs[inputIndex] = domains.outputIndexFromElements(elements);
+    		}
+
+    		table.setDeterministicOuputIndices(outputs);
     	}
     	else
     	{
-    		IFactorTable table = FactorTable.create(domains);
-    		ArrayList<int[]> indices = new ArrayList<int[]>();
-    		DoubleArrayList weights = new DoubleArrayList();
-        	final Object[] elements = new Object[domains.size()];
-    		
+    		IntArrayList indexes = new IntArrayList();
+    		DoubleArrayList energies = new DoubleArrayList();
+
     		final int maxJoint = domains.getCardinality();
     		for (int jointIndex = 0; jointIndex < maxJoint; ++ jointIndex)
     		{
     			domains.jointIndexToElements(jointIndex, elements);
-    			double weight = eval(elements);
-    			if (weight != 0)
+    			double energy = evalEnergy(elements);
+    			if (!Double.isInfinite(energy))
     			{
-    				indices.add(domains.jointIndexToIndices(jointIndex, null));
-    				weights.add(weight);
+    				indexes.add(jointIndex);
+    				energies.add(energy);
     			}
     		}
-    		
-    		table.change(indices.toArray(new int[indices.size()][]), Arrays.copyOf(weights.elements(), weights.size()));
-    		
-    		return table;
+
+    		if (indexes.size() == maxJoint)
+    		{
+    			table.setEnergiesDense(Arrays.copyOf(energies.elements(), maxJoint));
+    		}
+    		else
+    		{
+    			table.setEnergiesSparse(Arrays.copyOf(indexes.elements(), indexes.size()),
+    				Arrays.copyOf(energies.elements(), indexes.size()));
+    		}
     	}
+
+    	return table;
     }
-    
+
  }

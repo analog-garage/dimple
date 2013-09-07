@@ -5,8 +5,8 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.NewFactorTable;
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.google.common.base.Stopwatch;
 
 public class FactorTablePerformanceTester
@@ -33,15 +33,6 @@ public class FactorTablePerformanceTester
 	 * Test cases
 	 */
 	
-	public void testAll()
-	{
-		testEvalAsFactorFunction();
-		testGet();
-		testGetWeightIndexFromTableIndices();
-		testGetWeightForIndices();
-		testSumProductUpdate();
-	}
-	
 	public void testEvalAsFactorFunction()
 	{
 		_random.setSeed(23);
@@ -57,7 +48,7 @@ public class FactorTablePerformanceTester
 			{
 				for (Object[] args : argrows)
 				{
-					_table.evalAsFactorFunction(args);
+					_table.getWeightForElements(args);
 				}
 			}
 		};
@@ -65,29 +56,6 @@ public class FactorTablePerformanceTester
 		runTest("evalAsFactorFunction", test);
 	}
 	
-	public void testGet()
-	{
-		_random.setSeed(42);
-		final int [][] rows = new int[_iterations][];
-		for (int i = 0; i < _iterations; ++i)
-		{
-			rows[i] = randomIndices();
-		}
-		
-		Runnable test = new Runnable() {
-			@Override
-			public void run()
-			{
-				for (int[] indices : rows)
-				{
-					_table.get(indices);
-				}
-			}
-		};
-		
-		runTest("get", test);
-	}
-
 	public void testGetWeightIndexFromTableIndices()
 	{
 		_random.setSeed(42);
@@ -103,7 +71,7 @@ public class FactorTablePerformanceTester
 			{
 				for (int[] indices : rows)
 				{
-					_table.getWeightIndexFromTableIndices(indices);
+					_table.sparseIndexFromIndices(indices);
 				}
 			}
 		};
@@ -142,14 +110,14 @@ public class FactorTablePerformanceTester
 	
 	public void testSumProductUpdate()
 	{
-		final DiscreteDomain[] domains = _table.getDomains();
-		final int numPorts_ = domains.length;
-		final double[][] outMsgs_ = new double[domains.length][];
-		final double[][] inMsgs_ = new double[domains.length][];
+		final JointDomainIndexer domains = _table.getDomainIndexer();
+		final int numPorts_ = domains.size();
+		final double[][] outMsgs_ = new double[numPorts_][];
+		final double[][] inMsgs_ = new double[numPorts_][];
 		
-		for (int i = 0; i < domains.length; ++i)
+		for (int i = 0; i < numPorts_; ++i)
 		{
-			int domainSize = domains[i].size();
+			int domainSize = domains.getDomainSize(i);
 			outMsgs_[i] = new double[domainSize];
 			inMsgs_[i] = new double[domainSize];
 			for (int j = 0; j < domainSize; ++j)
@@ -171,8 +139,8 @@ public class FactorTablePerformanceTester
 
 					for (int iteration = _iterations; --iteration>=0;)
 					{
-						int[][] table = _table.getIndices();
-						double[] values = _table.getWeights();
+						int[][] table = _table.getIndicesSparseUnsafe();
+						double[] values = _table.getWeightsSparseUnsafe();
 						int tableLength = table.length;
 
 						for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
@@ -218,8 +186,8 @@ public class FactorTablePerformanceTester
 
 					for (int iteration = _iterations; --iteration>=0;)
 					{
-						final int[][] table = _table.getIndices();
-						final double[] values = _table.getWeights();
+						final int[][] table = _table.getIndicesSparseUnsafe();
+						final double[] values = _table.getWeightsSparseUnsafe();
 						final int tableLength = table.length;
 
 						for (int outPortNum = 0; outPortNum < numPorts; ++outPortNum)
@@ -262,7 +230,7 @@ public class FactorTablePerformanceTester
 				@Override
 				public void run()
 				{
-					final NewFactorTable ftable = getNewTable();
+					final FactorTable ftable = getNewTable();
 					final int numPorts = numPorts_;
 					final double[][] outMsgs = outMsgs_;
 					final double[][] inMsgs = inMsgs_;
@@ -311,14 +279,14 @@ public class FactorTablePerformanceTester
 	
 	public void testGibbsUpdateMessage()
 	{
-		final DiscreteDomain[] domains = _table.getDomains();
-		final int numPorts_ = domains.length;
-		final double[][] outMsgs_ = new double[domains.length][];
-		final int[] inMsgs_ = new int[domains.length];
+		final JointDomainIndexer domains = _table.getDomainIndexer();
+		final int numPorts_ = domains.size();
+		final double[][] outMsgs_ = new double[numPorts_][];
+		final int[] inMsgs_ = new int[numPorts_];
 		
 		for (int i = 0; i < numPorts_; ++i)
 		{
-			int domainSize = domains[i].size();
+			int domainSize = domains.getDomainSize(i);
 			outMsgs_[i] = new double[domainSize];
 			inMsgs_[i] = _random.nextInt(domainSize);
 		}
@@ -340,7 +308,7 @@ public class FactorTablePerformanceTester
 						double[] outMessage = outMsgs[outPortNum];
 						int outputMsgLength = outMessage.length;
 
-						double[] factorTableWeights = factorTable.getPotentials();
+						double[] factorTableWeights = factorTable.getEnergiesSparseUnsafe();
 
 						int[] inPortMsgs = new int[numPorts];
 						for (int port = 0; port < numPorts; port++)
@@ -350,7 +318,7 @@ public class FactorTablePerformanceTester
 						{
 							inPortMsgs[outPortNum] = outIndex;
 
-							int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
+							int weightIndex = factorTable.sparseIndexFromIndices(inPortMsgs);
 							if (weightIndex >= 0)
 								outMessage[outIndex] = factorTableWeights[weightIndex];
 							else
@@ -402,11 +370,11 @@ public class FactorTablePerformanceTester
 	 * Private methods
 	 */
 	
-	private NewFactorTable getNewTable()
+	private FactorTable getNewTable()
 	{
-		if (_table instanceof NewFactorTable)
+		if (_table instanceof FactorTable)
 		{
-			return (NewFactorTable)_table;
+			return (FactorTable)_table;
 		}
 		
 		return null;
@@ -414,11 +382,11 @@ public class FactorTablePerformanceTester
 	
 	private Object[] randomArguments()
 	{
-		DiscreteDomain[] domains = _table.getDomains();
-		Object[] arguments = new Object[domains.length];
-		for (int i = 0; i < domains.length; ++i)
+		JointDomainIndexer domains = _table.getDomainIndexer();
+		Object[] arguments = new Object[domains.size()];
+		for (int i = 0; i < arguments.length; ++i)
 		{
-			arguments[i] = domains[i].getElement(_random.nextInt(domains[i].size()));
+			arguments[i] = domains.get(i).getElement(_random.nextInt(domains.getDomainSize(i)));
 		}
 		
 		return arguments;
@@ -426,11 +394,11 @@ public class FactorTablePerformanceTester
 	
 	private int[] randomIndices()
 	{
-		DiscreteDomain[] domains = _table.getDomains();
-		int[] indices = new int[domains.length];
-		for (int i = 0; i < domains.length; ++i)
+		JointDomainIndexer domains = _table.getDomainIndexer();
+		int[] indices = new int[domains.size()];
+		for (int i = 0; i < indices.length; ++i)
 		{
-			indices[i] = _random.nextInt(domains[i].size());
+			indices[i] = _random.nextInt(domains.getDomainSize(i));
 		}
 		return indices;
 	}

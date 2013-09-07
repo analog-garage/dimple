@@ -171,8 +171,8 @@ public class PseudoLikelihood extends ParameterEstimator
 		for (int i = 0; i < tables.length; i++)
 		{
 			//cache some stuff.
-			double [] weights = tables[i].getWeights();
-			int [][] indices = tables[i].getIndices();
+			double [] weights = tables[i].getWeightsSparseUnsafe();
+			int [][] indices = tables[i].getIndicesSparseUnsafe();
 			int degree = indices[0].length;
 			
 			//TODO: avoid this new?
@@ -247,7 +247,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		// for each table
 		for (int i = 0; i < tables.length; i++)
 		{
-			double [] ws = tables[i].getWeights();
+			double [] ws = tables[i].getWeightsSparseUnsafe();
 			double normalizer = 0;
 			
 			//for each weight
@@ -267,7 +267,7 @@ public class PseudoLikelihood extends ParameterEstimator
 				ws[j] /= normalizer;
 			
 			//save the changed weights.
-			tables[i].changeWeights(ws);
+			tables[i].replaceWeightsSparse(ws);
 		}
 	}
 	
@@ -281,11 +281,11 @@ public class PseudoLikelihood extends ParameterEstimator
 		//numerical gradient = change of pseudo likelihood / change of parameter
 		
 		double y1 = calculatePseudoLikelihood();
-		double oldval = table.getWeights()[weight];
+		double oldval = table.getWeightsSparseUnsafe()[weight];
 		double newval = oldval * Math.exp(delta);
-		table.changeWeight(weight, newval);
+		table.setWeightForSparseIndex(newval, weight);
 		double y2 = calculatePseudoLikelihood();
-		table.changeWeight(weight, oldval);
+		table.setWeightForSparseIndex(oldval, weight);
 		return (y2-y1)/delta;
 	}
 

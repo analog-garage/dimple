@@ -67,17 +67,10 @@ public class xmlSerializer
 	{
 		return _serializer.serializeToXML(fg, FgName, targetDirectory);
 	}
-	public String serializeFactorTableToXML(int[][] indices, double[] values, DiscreteDomain[] domains,String ctName, String targetDirectory)
-	{
-		return _serializer.serializeFactorTableToXML(indices, values, domains, ctName, targetDirectory);
-	}
+
 	public String serializeFactorTableToXML(FactorTable ct, String ctName, String targetDirectory)
 	{
-		return serializeFactorTableToXML(ct.getIndices(),
-										ct.getWeights(),
-										ct.getDomains(),
-										ctName,
-										targetDirectory);
+		return _serializer.serializeFactorTableToXML(ct, ctName, targetDirectory);
 	}
 
 	public IFactorTable deserializeFactorTableFromXML(String docName)

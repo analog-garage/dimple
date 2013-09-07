@@ -185,7 +185,7 @@ public class SFactorGraph extends SFactorGraphBase
 			//_factorGraph.solve();
 			for (IFactorTable ft : getTables())
 			{
-				double [] weights = ft.getWeights();
+				double [] weights = ft.getWeightsSparseUnsafe();
 			      //for each weight
 				for (int i = 0; i < weights.length; i++)
 				{
@@ -193,7 +193,7 @@ public class SFactorGraph extends SFactorGraphBase
 					double derivative = calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(ft, i);
 					
 			        //move the weight in that direction scaled by epsilon
-					ft.changeWeight(i,weights[i] - weights[i]*derivative*_scaleFactor);
+					ft.setWeightForSparseIndex(weights[i] - weights[i]*derivative*_scaleFactor,i);
 				}
 			}
 		}
@@ -241,10 +241,10 @@ public class SFactorGraph extends SFactorGraphBase
 				
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.getRows());
+			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
-			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.getRows());
+			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		
 		setCalculateDerivative(true);
 		

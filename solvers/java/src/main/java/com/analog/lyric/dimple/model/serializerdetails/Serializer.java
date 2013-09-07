@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.xmlSerializer;
 
@@ -136,11 +137,7 @@ public class Serializer
 			int hash = ct.hashCode();
 			if(!factorTables.containsKey(hash))
 			{
-				xmlsFactorTable xct = new xmlsFactorTable(f.getModelerFunctionName(),
-													hash,
-													ct.getIndices(),
-													ct.getWeights(),
-													ct.getDomains());
+				xmlsFactorTable xct = new xmlsFactorTable(f.getModelerFunctionName(), hash, ct);
 				factorTables.put(hash, xct);
 			}
 			e.setAttribute("comboTable", Integer.toString(hash));
@@ -191,43 +188,50 @@ public class Serializer
 			 Document doc,
 			 Element parent)
 	{
+		final JointDomainIndexer domains = xct._domains;
+		final int[] jointIndices = xct._jointIndices;
+		final double[] weights = xct._weights;
+		final int columns = domains.size();
+		
 		Element elFactorTable = doc.createElement("ComboTable");
 		elFactorTable.setAttribute("id", Integer.toString(xct._ephemeralId));
 		elFactorTable.setAttribute("function", xct._functionName);
 		Element elFactorTable_size = doc.createElement("size");
-		elFactorTable_size.setAttribute("rows", String.format("%d", xct._indices.length));
-		elFactorTable_size.setAttribute("columns", String.format("%d", xct._indices[0].length));
+		elFactorTable_size.setAttribute("rows", String.format("%d", jointIndices.length));
+		elFactorTable_size.setAttribute("columns", String.format("%d", columns));
 		elFactorTable.appendChild(elFactorTable_size);
 		
 		Element elFactorTable_indices = doc.createElement("indices");
-		for(int row = 0; row <  xct._indices.length; ++row)
+		final int[] indices = xct._domains.allocateIndices(null);
+		for(int row = 0, rowend = jointIndices.length; row <  rowend; ++row)
 		{
-			for(int column = 0; column < xct._indices[row].length; ++column)
+			domains.jointIndexToIndices(jointIndices[row], indices);
+			for(int column = 0; column < columns; ++column)
 			{
 				Element elEntry = doc.createElement("entry");
-				elEntry.setAttribute("pretty", String.format("r:c:v [%d][%d][%d]", row, column, xct._indices[row][column]));
+				elEntry.setAttribute("pretty", String.format("r:c:v [%d][%d][%d]", row, column, indices[column]));
 				elEntry.setAttribute("row", String.format("%d", row));
 				elEntry.setAttribute("column", String.format("%d", column));
-				elEntry.setAttribute("value", String.format("%d", xct._indices[row][column]));
+				elEntry.setAttribute("value", String.format("%d", indices[column]));
 				elFactorTable_indices.appendChild(elEntry);
 			}
 		}
 		elFactorTable.appendChild(elFactorTable_indices);
 		
 		Element elValue = doc.createElement("values");
-		for(int row = 0; row <  xct._values.length; ++row)
+		for(int row = 0; row <  xct._weights.length; ++row)
 		{
 			Element value_entry = doc.createElement("value");
 			value_entry.setAttribute("row", String.format("%d", row));
-			value_entry.setAttribute("value", String.format("%f", xct._values[row]));
+			value_entry.setAttribute("value", String.format("%f", weights[row]));
 			elValue.appendChild(value_entry);
 		}
 		elFactorTable.appendChild(elValue);
 		
 		Element elDomains = doc.createElement("domains");
-		for (int i = 0; i < xct._domains.length; i++)
+		for (int i = 0, end = xct._domains.size(); i < end; i++)
 		{
-			appendDomainElement(xct._domains[i], doc, elDomains);
+			appendDomainElement(xct._domains.get(i), doc, elDomains);
 		}
 		elFactorTable.appendChild(elDomains);
 
@@ -359,7 +363,7 @@ public class Serializer
 	      trace(String.format("--serializeToXML [%s]", SerializedFileName));
 	      return SerializedFileName;
 	}
-	public String serializeFactorTableToXML(int[][] indices, double[] values, DiscreteDomain [] domains,String ctName, String targetDirectory)
+	public String serializeFactorTableToXML(IFactorTable factorTable, String ctName, String targetDirectory)
 	{
 		trace(String.format("++serializeComboTableToXML [%s] [%s]", ctName, targetDirectory));
 		String SerializedFileName = targetDirectory;
@@ -381,7 +385,7 @@ public class Serializer
 	        version.setAttribute("version", xmlSerializer.VERSION);
 	        root.appendChild(version);
 	       
-	        xmlsFactorTable xct = new xmlsFactorTable(ctName, 1, indices, values,domains);
+	        xmlsFactorTable xct = new xmlsFactorTable(ctName, 1, factorTable);
 	        
 	    	appendFactorTableElement(xct,
 	    							doc,

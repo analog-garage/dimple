@@ -43,6 +43,6 @@ public abstract class STableFactorBase extends SFactorBase
     @Override
     public int [][] getPossibleBeliefIndices()
     {
-            return getFactorTable().getIndices();
+            return getFactorTable().getIndicesSparseUnsafe();
     }
 }

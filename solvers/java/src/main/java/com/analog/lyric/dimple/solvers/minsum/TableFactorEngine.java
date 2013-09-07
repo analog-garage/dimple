@@ -39,8 +39,8 @@ public class TableFactorEngine
 	{
 		ArrayList<INode> siblings = _factor.getSiblings();
 		
-	    int[][] table = _tableFactor.getFactorTable().getIndices();
-	    double[] values = _tableFactor.getFactorTable().getPotentials();
+	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
 	    int tableLength = table.length;
 	    int numPorts = siblings.size();
 
@@ -110,8 +110,8 @@ public class TableFactorEngine
 	
 	public void update() 
 	{
-	    int[][] table = _tableFactor.getFactorTable().getIndices();
-	    double[] values = _tableFactor.getFactorTable().getPotentials();
+	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
+	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
 	    int tableLength = table.length;
 	    int numPorts = _factor.getSiblings().size();
 	    double [][] outPortMsgs = _tableFactor.getOutPortMsgs();

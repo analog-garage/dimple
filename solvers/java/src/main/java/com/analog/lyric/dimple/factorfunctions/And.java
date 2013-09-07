@@ -51,7 +51,7 @@ public class And extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	boolean andValue = true;
     	for(int i = 1; i < arguments.length; ++i)
