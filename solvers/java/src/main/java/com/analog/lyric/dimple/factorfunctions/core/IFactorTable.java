@@ -79,9 +79,25 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public int[][] getIndicesSparseUnsafe();
 	
+	/**
+	 * True if factor table supports {@link #getIndicesSparseUnsafe}.
+	 */
 	public boolean hasSparseIndices();
 	
+	/**
+	 * Replace the energies/weights of the table from the given array of {@code energies} in
+	 * order of sparse index.
+	 * <p>
+	 * @see #replaceWeightsSparse(double[])
+	 */
 	public void replaceEnergiesSparse(double[] energies);
+	
+	/**
+	 * Replace the energies/weights of the table from the given array of {@code weights} in
+	 * order of sparse index.
+	 * <p>
+	 * @see #replaceEnergiesSparse(double[])
+	 */
 	public void replaceWeightsSparse(double[] weights);
 	
 	/**
@@ -115,9 +131,17 @@ public interface IFactorTable extends IFactorTableBase
 	 * but requires that {@code outputSet} is non-null.
 	 */
 	public void makeConditional(BitSet outputSet);
-	
+
+	/**
+	 * Randomize the weights of the table depending on underlying representation.
+	 * <p>
+	 * If table {@link #hasDenseRepresentation()} this will randomly assign weights/energies
+	 * to entries for all joint indexes, otherwise it will only assign values for all sparse
+	 * indexes. Weights will be assigned uniformly from the range (0,1].
+	 */
 	public void randomizeWeights(Random rand);
 
+	@Deprecated
 	public void serializeToXML(String serializeName, String targetDirectory);
 	
 	/**

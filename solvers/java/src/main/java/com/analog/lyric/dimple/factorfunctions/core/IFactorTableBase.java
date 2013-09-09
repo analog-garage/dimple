@@ -51,7 +51,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public double density();
 	
 	/**
-	 * Deterministically computed output arguments from input arguments.
+	 * Deterministically compute output arguments from input arguments.
 	 * <p>
 	 * If table {@link #isDeterministicDirected()}, this method looks at the input arguments
 	 * designated by the set bits of {@link #getInputSet()} and sets the remaining output arguments
@@ -67,15 +67,6 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * The same as {@link #getDomainIndexer()}.size().
 	 */
 	public abstract int getDimensions();
-	
-	/**
-	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
-	 * that represent inputs or the "from" size of the directionality. Returns null if table is not
-	 * directed. The output set is simply the inverse of the input set (i.e. represented by the clear
-	 * bits instead of the set bits). The input set should contain at least one set bit and at least one
-	 * clear bit.
-	 */
-	public BitSet getInputSet();
 	
 	/**
 	 * Returns energy for given set of indices assuming that the table has a dense
@@ -101,6 +92,15 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public double getWeightForIndicesDense(int ... indices);
 
+	/**
+	 * The domain indexer for the table represents the domains of the table dimensions and denotes the
+	 * directionality of the table dimensions if table is directed.
+	 * <p>
+	 * It is used to map between different
+	 * representations identifying a table entry: i.e. array of elements of each respective domain,
+	 * array of discrete domain indices of each respective domain, or a single integer representing
+	 * the location of the entry in the dense representation of the table.
+	 */
 	public abstract JointDomainIndexer getDomainIndexer();
 	
 	/**
@@ -111,6 +111,11 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract double getEnergyForElements(Object ... elements);
 	
+	/**
+	 * Returns energy of factor table entry for given {@code jointIndex}.
+	 * <p>
+	 * @see #getWeightForJointIndex(int)
+	 */
 	public abstract double getEnergyForJointIndex(int jointIndex);
 
 	/**
@@ -136,13 +141,36 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public abstract double getEnergyForIndices(int ... indices);
 	
 	/**
-	 * Returns energy of factor table entry for given {@code elements}.
+	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
+	 * that represent inputs or the "from" size of the directionality. Returns null if table is not
+	 * directed. The output set is simply the inverse of the input set (i.e. represented by the clear
+	 * bits instead of the set bits).
+	 * @see #getOutputSet
+	 */
+	public BitSet getInputSet();
+	
+	/**
+	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
+	 * that represent outputs or the "to" size of the directionality. Returns null if table is not
+	 * directed. The input set is simply the inverse of the output set (i.e. represented by the clear
+	 * bits instead of the set bits).
+	 * @see #getInputSet()
+	 */
+	public BitSet getOutputSet();
+
+	/**
+	 * Returns weight of factor table entry for given {@code elements}.
 	 * <p>
 	 * @see #getWeightForIndices(int...)
 	 * @see #getEnergyForElements(Object...)
 	 */
 	public abstract double getWeightForElements(Object ... elements);
 
+	/**
+	 * Returns weight of factor table entry for given {@code jointIndex}.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int)
+	 */
 	public abstract double getWeightForJointIndex(int jointIndex);
 	
 	/**
@@ -165,11 +193,63 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract double getWeightForIndices(int ... indices);
 
+	/**
+	 * True if either {@link #hasDenseEnergies()} or {@link #hasDenseWeights()} is true.
+	 */
 	public abstract boolean hasDenseRepresentation();
+	
+	
+	/**
+	 * True if underlying representation of table values includes an array of energies
+	 * indexed by joint index.
+	 * <p>
+	 * This is the optimal representation for methods that get/set energy by joint index
+	 * or combined element indices.
+	 * <p>
+	 * @see #hasDenseWeights()
+	 * @see #hasSparseEnergies()
+	 */
 	public abstract boolean hasDenseEnergies();
+
+	/**
+	 * True if underlying representation of table values includes an array of weights
+	 * indexed by joint index.
+	 * <p>
+	 * This is the optimal representation for methods that get/set weight by joint index
+	 * or combined element indices.
+	 * <p>
+	 * @see #hasDenseEnergies()
+	 * @see #hasSparseWeights()
+	 */
 	public abstract boolean hasDenseWeights();
+
+	/**
+	 * True if underlying representation contains a sparse representation of non-zero weights.
+	 * <p>
+	 * True if {@link #hasSparseEnergies()}, {@link #hasSparseWeights()} or {@link #isDeterministicDirected()}.
+	 */
 	public abstract boolean hasSparseRepresentation();
+
+	/**
+	 * True if underlying representation of table values includes an array of energies
+	 * indexed by a sparse index and a second array that maps sparse indices to joint indices.
+	 * <p>
+	 * This is the optimal representation for methods that get/set energy by sparse index.
+	 * <p>
+	 * @see #hasSparseWeights()
+	 * @see #hasDenseEnergies()
+	 */
 	public abstract boolean hasSparseEnergies();
+
+	/**
+	 * True if underlying representation of table values includes an array of weights
+	 * indexed by a sparse index and a second array that maps sparse indices to joint indices.
+	 * <p>
+	 * This is the optimal representation for methods that get/set weight by sparse index.
+	 * <p>
+	 * @see #hasSparseEnergies()
+	 * @see #hasDenseWeights()
+	 */
 	public abstract boolean hasSparseWeights();
 	
 	/**
@@ -303,14 +383,78 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract void normalizeConditional();
 
+	/**
+	 * Sets the table value indexed by the specified {@code elements} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForElements(Object...)
+	 * @see #setEnergyForIndices(double, int...)
+	 * @see #setEnergyForJointIndex(double, int)
+	 * @see #setWeightForElements(double, Object...)
+	 */
 	public void setEnergyForElements(double energy, Object ... elements);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int jointIndex)
+	 * @see #setEnergyForSparseIndex(double, int)
+	 * @see #setWeightForJointIndex(double, int)
+	 */
 	public void setEnergyForIndices(double energy, int ... indices);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int jointIndex)
+	 * @see #setEnergyForSparseIndex(double, int)
+	 * @see #setWeightForJointIndex(double, int)
+	 */
 	public void setEnergyForSparseIndex(double energy, int sparseIndex);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int jointIndex)
+	 * @see #setEnergyForSparseIndex(double, int)
+	 * @see #setWeightForJointIndex(double, int)
+	 */
 	public void setEnergyForJointIndex(double energy, int jointIndex);
 
+	/**
+	 * Sets the table value indexed by the specified {@code elements} to the given {@code weight} value.
+	 * <p>
+	 * @see #getWeightForElements(Object...)
+	 * @see #setWeightForIndices(double, int...)
+	 * @see #setWeightForJointIndex(double, int)
+	 * @see #setEnergyForElements(double, Object...)
+	 */
 	public void setWeightForElements(double weight, Object ... elements);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code weight} value.
+	 * <p>
+	 * @see #getWeightForJointIndex(int jointIndex)
+	 * @see #setWeightForSparseIndex(double, int)
+	 * @see #setEnergyForJointIndex(double, int)
+	 */
 	public void setWeightForIndices(double weight, int ... indices);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code weight} value.
+	 * <p>
+	 * @see #getWeightForJointIndex(int jointIndex)
+	 * @see #setWeightForSparseIndex(double, int)
+	 * @see #setEnergyForJointIndex(double, int)
+	 */
 	public void setWeightForSparseIndex(double weight, int sparseIndex);
+
+	/**
+	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int jointIndex)
+	 * @see #setEnergyForSparseIndex(double, int)
+	 * @see #setWeightForJointIndex(double, int)
+	 */
 	public void setWeightForJointIndex(double weight, int jointIndex);
 	
 	/**

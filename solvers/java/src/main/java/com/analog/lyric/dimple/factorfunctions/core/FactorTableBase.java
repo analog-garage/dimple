@@ -108,6 +108,12 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
+	public final BitSet getOutputSet()
+	{
+		return _domains.getOutputSet();
+	}
+	
+	@Override
 	public final double getEnergyForIndices(int ... indices)
 	{
 		return getEnergyForJointIndex(_domains.jointIndexFromIndices(indices));
@@ -194,9 +200,20 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	@Override
 	public void randomizeWeights(Random rand)
 	{
-		for (int i = jointSize(); --i >= 0;)
+		if (hasDenseRepresentation())
 		{
-			setWeightForJointIndex(rand.nextDouble(), i);
+			for (int i = jointSize(); --i >= 0;)
+			{
+				// nextDouble() produces range [0,1). Subtract that from 1.0 to get (0,1].
+				setWeightForJointIndex(1.0 - rand.nextDouble(), i);
+			}
+		}
+		else
+		{
+			for (int i = sparseSize(); --i >= 0;)
+			{
+				setWeightForSparseIndex(1.0 - rand.nextDouble(), i);
+			}
 		}
 	}
 

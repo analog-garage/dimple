@@ -21,16 +21,48 @@ import com.google.common.math.DoubleMath;
 @NotThreadSafe
 public class FactorTable extends FactorTableBase implements IFactorTable
 {
-	/*-------
-	 * State
+	/*-----------
+	 * Constants
 	 */
 	
+	private static final long serialVersionUID = 1L;
+	
 	// _representation values
+	
+	/**
+	 * If the low-order four-bits are zero, then the table represents a directed deterministic
+	 * function, with non-zero entries indicated by the values in {@link #_sparseIndexToJointIndex}
+	 * but weights and values are not stored explicitly because all the non-zero weights will be one.
+	 * <p>
+	 * May be combined with {@link #SPARSE_INDICES}.
+	 */
 	static final int DETERMINISTIC = 0x0;
+	
+	/**
+	 * If set, the table stores energies in dense representation in {@link #_denseEnergies}.
+	 */
 	static final int DENSE_ENERGY = 0x1;
+	
+	/**
+	 * If set, the table stores weights in dense representation in {@link #_denseEnergies}.
+	 */
 	static final int DENSE_WEIGHT = 0x2;
+	
+	/**
+	 * If set, the table stores energies in sparse representation in {@link #_sparseEnergies}
+	 * and mapping from sparse to joint indices in {@link #_sparseIndexToJointIndex}.
+	 */
 	static final int SPARSE_ENERGY = 0x4;
+
+	/**
+	 * If set, the table stores weights in sparse representation in {@link #_sparseWeights}
+	 * and mapping from sparse to joint indices in {@link #_sparseIndexToJointIndex}.
+	 */
 	static final int SPARSE_WEIGHT = 0x8;
+	
+	/**
+	 * If set, the table stores mapping from sparse indices to joint table indices in {@link #_sparseIndices}.
+	 */
 	static final int SPARSE_INDICES = 0x10;
 	
 	static final int ALL_DENSE = DENSE_ENERGY | DENSE_WEIGHT;
@@ -62,9 +94,47 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	static final int NOT_SPARSE_ENERGY_WITH_INDICES = NOT_SPARSE_ENERGY | SPARSE_INDICES;
 	static final int NOT_DENSE_WEIGHT_WITH_INDICES = NOT_DENSE_WEIGHT | SPARSE_INDICES;
 	static final int NOT_DENSE_ENERGY_WITH_INDICES = NOT_DENSE_ENERGY | SPARSE_INDICES;
-	
-	private static final long serialVersionUID = 1L;
 
+	// _computedMask values
+	
+	/**
+	 * Set if {@link #isDeterministicDirected()} has been invoked since the last time the values or
+	 * representation of the table were changed.
+	 */
+	private static final int DETERMINISTIC_COMPUTED = 0x01;
+	
+	/**
+	 * Set if table is known to be in normalized form (all weights add up to one).
+	 */
+	private static final int NORMALIZED = 0x02;
+	
+	/**
+	 * Set if value of {@link #NORMALIZED} bit has been computed.
+	 */
+	private static final int NORMALIZED_COMPUTED = 0x04;
+	
+	/**
+	 * Set if table is directed and has been conditionally normalized (so that the total weight for any
+	 * two inputs is the same).
+	 */
+	private static final int CONDITIONAL = 0x08;
+	
+	/**
+	 * Set if value of {@link #CONDITIONAL} bit has been computed.
+	 */
+	private static final int CONDITIONAL_COMPUTED = 0x10;
+
+	/*-------
+	 * State
+	 */
+
+	/**
+	 * Bit mask indicating how the contents of the table are represented. Exposed
+	 * by {@link #getRepresentation()} and {@link #setRepresentation(FactorTableRepresentation)}.
+	 * <p>
+	 * This is a combination of the bits: {@link #DENSE_ENERGY}, {@link #DENSE_WEIGHT}, {@link #SPARSE_ENERGY},
+	 * {@link #SPARSE_WEIGHT}, {@link #SPARSE_INDICES}.
+	 */
 	private int _representation;
 	
 	private double[] _denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -89,13 +159,19 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 */
 	private int[] _sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
 	
+	/**
+	 * Same information as {@link #_sparseIndexToJointIndex} but instead of storing joint indices stores
+	 * arrays of element indices.
+	 */
 	private int[][] _sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
 	
-	private static final int DETERMINISTIC_COMPUTED = 0x01;
-	private static final int NORMALIZED = 0x02;
-	private static final int NORMALIZED_COMPUTED = 0x04;
-	private static final int CONDITIONAL = 0x08;
-	private static final int CONDITIONAL_COMPUTED = 0x10;
+	/**
+	 * Information computed about the table based on its values. This field is zeroed out whenever
+	 * table weights or energies are changed.
+	 * <p>
+	 * Consists of the bits {@link #DETERMINISTIC_COMPUTED}, {@link #NORMALIZED}, {@link #NORMALIZED_COMPUTED},
+	 * {@link #CONDITIONAL} and {@link #CONDITIONAL_COMPUTED}.
+	 */
 	private int _computedMask = 0;
 	
 	/*--------------
@@ -276,6 +352,10 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		setRepresentation(representation);
 	}
 	
+	/**
+	 * Returns a new table by converting this table using provided {@code converter}, which
+	 * must be compatible with this table's domains.
+	 */
 	@Override
 	public FactorTable convert(JointDomainReindexer converter)
 	{
@@ -286,12 +366,14 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * Serialization
 	 */
 	
+	@Deprecated
 	@Override
 	public void serializeToXML(String serializeName, String targetDirectory)
 	{
 		serializeToXML(this, serializeName, targetDirectory);
 	}
 	
+	@Deprecated
 	static public void serializeToXML(FactorTable ct, String serializeName, String targetDirectory)
 	{
 		com.analog.lyric.dimple.model.xmlSerializer toXML
@@ -302,6 +384,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 									   targetDirectory);
 	}
 
+	@Deprecated
 	public static IFactorTable deserializeFromXML(String docName)
 	{
 		com.analog.lyric.dimple.model.xmlSerializer x
