@@ -19,7 +19,7 @@ function testDiscrete()
     fg.Solver = 'particleBP';
     b = Bit(3,1);
     fg.addFactor(@xorDelta,b);
-    b(1:2).Input = .8;
+    b(1:2).Input = ones(2,1)*.8;
     fg.solve();
     belief1 = b(3).Belief;
     
@@ -27,7 +27,7 @@ function testDiscrete()
     fg.Solver = 'SumProduct';
     b = Bit(3,1);
     fg.addFactor(@xorDelta,b);
-    b(1:2).Input = .8;
+    b(1:2).Input = ones(2,1)*.8;
     fg.solve();
     belief2 = b(3).Belief;
     assertElementsAlmostEqual(belief1,belief2);

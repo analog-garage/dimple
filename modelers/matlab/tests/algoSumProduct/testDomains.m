@@ -50,7 +50,7 @@ function testDomainWithFunc
     g.addFactor(@domainDelta,v);
     g.Solver.setNumIterations(2);
     g.solve();
-    assertElementsAlmostEqual(v.Belief,[.5 .5 0]);
+    assertElementsAlmostEqual(v.Belief,[.5 .5 0]');
     
     
 function testMatrixDomainDef    

@@ -63,7 +63,11 @@ classdef DiscreteVariableBase < VariableBase
         %These methods are used instead of property accessors because
         %property accessors can not be overriden.
         function setInput(obj,b)
-            
+            v = obj.VectorIndices;
+            varids = reshape(v,numel(v),1);
+            input = MatrixObject.pack(b,obj.VectorIndices);
+            obj.VectorObject.setInput(varids,input)
+            %{
             d = obj.Domain.Elements;
             v = obj.VectorIndices;
             
@@ -99,10 +103,16 @@ classdef DiscreteVariableBase < VariableBase
             varids = reshape(v,numel(v),1);
             
             obj.VectorObject.setInput(varids,b);
-            
+            %}
         end
         
         function b = getInput(obj)
+            
+            varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
+            input = obj.VectorObject.getInput(varids);
+            b = MatrixObject.unpack(input,obj.VectorIndices);
+            %{
+            
             varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             input = obj.VectorObject.getInput(varids);
             
@@ -133,6 +143,7 @@ classdef DiscreteVariableBase < VariableBase
                 b = reshape(b,sz);
                 
             end
+            %}
         end
         
         function b = getBelief(obj)
@@ -141,6 +152,9 @@ classdef DiscreteVariableBase < VariableBase
             varids = reshape(v,numel(v),1);
             
             b = obj.VectorObject.getDiscreteBeliefs(varids);
+            b = MatrixObject.unpack(b,v);
+            
+            %{
             
             %1x1 - Leave priors as is
             %1xN - Transpose
@@ -161,6 +175,7 @@ classdef DiscreteVariableBase < VariableBase
                 b = reshape(b,sz);
                 
             end
+            %}
         end
         
         function values = getValue(obj)

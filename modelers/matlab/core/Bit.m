@@ -27,10 +27,12 @@ classdef Bit < DiscreteVariableBase
         function beliefs = getBelief(obj)
             beliefs = getBelief@DiscreteVariableBase(obj);
             
-            if size(obj.VectorIndices,1) == numel(obj.VectorIndices) && length(size(obj.VectorIndices)) == 2
+            if numel(obj.VectorIndices) == 1
+                beliefs = beliefs(2);
+            elseif size(obj.VectorIndices,1) == numel(obj.VectorIndices) && length(size(obj.VectorIndices)) == 2
                 beliefs = beliefs(:,2);     % Column vector
             elseif size(obj.VectorIndices,2) == numel(obj.VectorIndices) && length(size(obj.VectorIndices)) == 2
-                beliefs = beliefs(2,:);     % Row vector
+                beliefs = beliefs(:,:,2);     % Row vector
             else
                 btmp = reshape(beliefs,numel(beliefs),1);
                 btmp = btmp((numel(btmp)/2)+1:end);

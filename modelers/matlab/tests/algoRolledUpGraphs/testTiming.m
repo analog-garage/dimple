@@ -24,7 +24,7 @@ function testTiming
         fg = FactorGraph();
         b = Bit(N,1);
 
-        b.Input = P;
+        b.Input = repmat(P,N,1);
         fg.addFactorVectorized(@xorDelta,b(1:end-1),b(2:end));
 
         disp('first solve...');

@@ -73,9 +73,9 @@ b1Samples = b1.Solver.getAllSampleIndices();
 c1Samples = c1.Solver.getAllSampleIndices();
 z1Samples = z1.Solver.getAllSampleIndices();
 
-assert(abs(mean(aDomain(a1Samples+1)) - a2.Belief*(aDomain')) < 0.05);
-assert(abs(mean(bDomain(b1Samples+1)) - b2.Belief*(bDomain')) < 0.05);
-assert(abs(mean(cDomain(c1Samples+1)) - c2.Belief*(cDomain')) < 0.05);
+assert(abs(mean(aDomain(a1Samples+1)) - a2.Belief'*(aDomain')) < 0.05);
+assert(abs(mean(bDomain(b1Samples+1)) - b2.Belief'*(bDomain')) < 0.05);
+assert(abs(mean(cDomain(c1Samples+1)) - c2.Belief'*(cDomain')) < 0.05);
 assert(abs(mean(z1Samples) - z2.Belief) < 0.01);
 
 dtrace(debugPrint, '--testDeterministicDirectedFactors');

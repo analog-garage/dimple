@@ -20,7 +20,7 @@ function testVariable()
     domain = {1,0};
     A=Variable(domain,4,4);
     
-    assertEqual(A(1,1).Belief,[.5 .5]);
+    assertEqual(A(1,1).Belief,[.5; .5]);
     
     
     %test fliplr
