@@ -5,3 +5,5 @@ output
 *.log
 *.toc
 *.out
+.project
+.texlipse
