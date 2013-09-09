@@ -14,10 +14,10 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function var = Categorical(alphas, varargin)
+function var = Dirichlet(alpha, varargin)
 
 fg = getFactorGraph();            % By default, use the current factor graph
-outSize = {1};                    % By default, result is a single variable
+outSize = {1};                    % By default, result is a single (RealJoint) variable
 
 % Parse optional arguments
 for arg=varargin
@@ -29,22 +29,13 @@ for arg=varargin
     end
 end
 
+dimension = prod(size(alpha));    % numel not supported for variable arrays
+var = RealJoint(dimension, outSize{:});
 
-if (isa(alphas, 'RealJoint'))
-    % Joint parameters (suitable for Dirichlet prior)
-    N = alphas.Domain.NumElements;
-    discreteDomain = 0:N-1;           % Domain must be zero based integers
-    var = Discrete(discreteDomain, outSize{:});
-
-    fg.addFactor('Categorical', alphas, var);
+if (isa(alpha,'VariableBase'))
+    fg.addFactor('Dirichlet', alpha, var);     % Variable parameters
 else
-    % Independent parameters (suitable for Gamma priors)
-    N = prod(size(alphas));           % numel not supported for variable arrays
-    discreteDomain = 0:N-1;           % Domain must be zero based integers
-    var = Discrete(discreteDomain, outSize{:});
-
-    ff = FactorFunction('CategoricalIndependentParameters', N);
-    fg.addFactor(ff, alphas, var);
+    fg.addFactor({'Dirichlet', alpha}, var);   % Constant parameters (more efficient to fix in constructor)
 end
 
 end

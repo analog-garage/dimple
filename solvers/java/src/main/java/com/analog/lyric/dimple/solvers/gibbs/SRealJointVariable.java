@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -31,10 +32,14 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.SRealJointConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.sample.RealJointSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealJointConjugateSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.IRealMCMCSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.ISampleScorer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.MHSampler;
@@ -53,11 +58,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private RealJointSample _outputMsg;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
-	private FactorFunction[] _input;
+	private FactorFunction[] _inputArray;
+	private FactorFunction _inputJoint;
 	private RealJointDomain _domain;
 	private String _defaultSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private IRealMCMCSampler _sampler = null;
-	private IRealConjugateSampler _conjugateSampler = null;
+	private IRealJointConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
 	private ArrayList<double[]> _sampleArray;
 	private double[] _bestSampleValue;
@@ -111,12 +117,33 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		if (_var.hasFixedValue()) return;
 
 		// Get the next sample value from the sampler
-		for (int i = 0; i < _numRealVars; i++)
+		if (_conjugateSampler == null)
 		{
-			_tempIndex = i;		// Save this to be used by the call-back from sampler
-			double nextSampleValue = _sampler.nextSample(this);
-			if (nextSampleValue != _sampleValue[i])	// Would be exactly equal if not changed since last value tested
-				setCurrentSample(i, nextSampleValue);
+			// Use MCMC sampler
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				_tempIndex = i;		// Save this to be used by the call-back from sampler
+				double nextSampleValue = _sampler.nextSample(this);
+				if (nextSampleValue != _sampleValue[i])	// Would be exactly equal if not changed since last value tested
+					setCurrentSample(i, nextSampleValue);
+			}
+		}
+		else
+		{
+			// Use conjugate sampler, first update the messages from all factors
+			// Factor messages represent the current distribution parameters from each factor
+			ArrayList<INode> siblings = _var.getSiblings();
+			int numPorts = siblings.size();
+			Port[] ports = new Port[numPorts];
+			for (int portIndex = 0; portIndex < numPorts; portIndex++)
+			{
+				INode factorNode = siblings.get(portIndex);
+				ISolverNode factor = factorNode.getSolver();
+				int factorPortNumber = factorNode.getPortNum(_var);
+				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
+				((SRealFactor)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+			}
+			setCurrentSample(_conjugateSampler.nextSample(ports, _inputJoint));
 		}
 	}
 	
@@ -142,10 +169,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		double potential = 0;
 
 		// Sum up the potentials from the input and all connected factors
-		if (_input != null)
+		if (_inputJoint != null)
+			potential += _inputJoint.evalEnergy(_sampleValue);
+		else if (_inputArray != null)
 		{
 			for (int i = 0; i < _numRealVars; i++)
-				potential += _input[i].evalEnergy(_sampleValue[i]);
+				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
 		}
 		ArrayList<INode> siblings = _var.getSiblings();
 		int numPorts = siblings.size();
@@ -167,7 +196,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 	
 	// For conjugate samplers
-	public final IRealConjugateSampler getConjugateSampler()
+	public final IRealJointConjugateSampler getConjugateSampler()
 	{
 		return _conjugateSampler;
 	}
@@ -186,33 +215,88 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return;
 		}
 
-		for (int i = 0; i < _numRealVars; i++)
+		// If the variable has an input, sample from that (bounded by the domain)
+		if (_inputJoint != null)		// Input is a joint input
 		{
-			RealDomain realDomain = _domain.getRealDomain(i);
-			FactorFunction input = (_input != null) ? _input[i] : null;
-
-			// If there are inputs, see if there's an available conjugate sampler
-			IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-			if (input != null)
-				inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
-
-			// Determine if there are bounds
-			double hi = realDomain.getUpperBound();
-			double lo = realDomain.getLowerBound();
-
+			// Don't use the global conjugate sampler since other factors might not be conjugate
+			IRealJointConjugateSampler inputConjugateSampler = RealJointConjugateSamplerRegistry.findCompatibleSampler(_inputJoint);
 			if (inputConjugateSampler != null)
 			{
-				// Sample from the input if there's an available sampler
-				double sampleValue = inputConjugateSampler.nextSample(new Port[0], input);
+				double[] sampleValue = inputConjugateSampler.nextSample(new Port[0], _inputJoint);
+				
+				// Clip if necessary
+				for (int i = 0; i < _numRealVars; i++)
+				{
+					// Determine if there are bounds
+					RealDomain realDomain = _domain.getRealDomain(i);
+					double hi = realDomain.getUpperBound();
+					double lo = realDomain.getLowerBound();
 
-				// If there are also bounds, clip at the bounds
-				if (sampleValue > hi) sampleValue = hi;
-				if (sampleValue < lo) sampleValue = lo;
-				setCurrentSample(i, sampleValue);
+					// If there are also bounds, clip at the bounds
+					if (sampleValue[i] > hi) sampleValue[i] = hi;
+					if (sampleValue[i] < lo) sampleValue[i] = lo;
+				}
+				setCurrentSample(sampleValue);
 			}
-			else
+			else	// No available conjugate sampler
 			{
-				// No input or no available sampler, so if bounded, sample uniformly from the bounds
+				for (int i = 0; i < _numRealVars; i++)
+				{
+					// Determine if there are bounds
+					RealDomain realDomain = _domain.getRealDomain(i);
+					double hi = realDomain.getUpperBound();
+					double lo = realDomain.getLowerBound();
+
+					// No available sampler, so if bounded, sample uniformly from the bounds
+					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+						setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+				}
+			}
+		}
+		else if (_inputArray != null)	// Input is an array of separate inputs
+		{
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				RealDomain realDomain = _domain.getRealDomain(i);
+				FactorFunction input = (_inputArray != null) ? _inputArray[i] : null;
+
+				// If there are inputs, see if there's an available conjugate sampler
+				IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
+				if (input != null)
+					inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
+
+				// Determine if there are bounds
+				double hi = realDomain.getUpperBound();
+				double lo = realDomain.getLowerBound();
+
+				if (inputConjugateSampler != null)
+				{
+					// Sample from the input if there's an available sampler
+					double sampleValue = inputConjugateSampler.nextSample(new Port[0], input);
+
+					// If there are also bounds, clip at the bounds
+					if (sampleValue > hi) sampleValue = hi;
+					if (sampleValue < lo) sampleValue = lo;
+					setCurrentSample(i, sampleValue);
+				}
+				else
+				{
+					// No available sampler, so if bounded, sample uniformly from the bounds
+					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
+						setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+				}
+			}
+		}
+		else	// There are no inputs
+		{
+			for (int i = 0; i < _numRealVars; i++)
+			{
+				// Determine if there are bounds
+				RealDomain realDomain = _domain.getRealDomain(i);
+				double hi = realDomain.getUpperBound();
+				double lo = realDomain.getLowerBound();
+
+				// If bounded, sample uniformly from the bounds, otherwise leave current sample value
 				if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
 					setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 			}
@@ -233,13 +317,24 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue) 
 	{
 		if (input == null)
-			_input = null;
-		else
 		{
-			_input = new FactorFunction[_numRealVars];
-			for (int i = 0; i < _numRealVars; i++)
-				_input[i] = (FactorFunction)((Object[])input)[i];
+			_inputArray = null;
+			_inputJoint = null;
 		}
+		else if (input instanceof FactorFunction)
+		{
+			_inputArray = null;
+			_inputJoint = (FactorFunction)input;
+		}
+		else if (input instanceof Object[])
+		{
+			_inputJoint = null;
+			_inputArray = new FactorFunction[_numRealVars];
+			for (int i = 0; i < _numRealVars; i++)
+				_inputArray[i] = (FactorFunction)((Object[])input)[i];
+		}
+		else
+			throw new DimpleException("Invalid input type");
 
 		if (hasFixedValue)
 			setCurrentSample(fixedValue);
@@ -277,20 +372,29 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	@Override
 	public final double getScore()
 	{
-		double[] value;
+		// If fixed value there's no input
 		if (_var.hasFixedValue())
 			return 0;
-		else if (_input == null)
-			return 0;
-		else if (_guessWasSet)
+		
+		// Which value to score
+		double[] value;
+		if (_guessWasSet)
 			value = _guessValue;
 		else
 			value = _sampleValue;
 		
-		double score = 0;
-		for (int i = 0; i < _numRealVars; i++)
-			score += _input[i].evalEnergy(value[i]);
-		return score;
+		// Get the score
+		if (_inputJoint != null)
+			return _inputJoint.evalEnergy(value);
+		else if (_inputArray != null)
+		{
+			double score = 0;
+			for (int i = 0; i < _numRealVars; i++)
+				score += _inputArray[i].evalEnergy(value[i]);
+			return score;
+		}
+		else
+			return 0;
 	}
 	
 	@Override
@@ -352,15 +456,17 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		if (_var.hasFixedValue())
 			return 0;
-		else if (_input == null)
-			return 0;
-		else
+		else if (_inputJoint != null)
+			return _inputJoint.evalEnergy(_sampleValue);
+		else if (_inputArray != null)
 		{
 			double potential = 0;
 			for (int i = 0; i < _numRealVars; i++)
-				potential += _input[i].evalEnergy(_sampleValue[i]);
+				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
 			return potential;
 		}
+		else
+			return 0;
 	}
 
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
@@ -661,10 +767,49 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_holdSampleValue = ovar._holdSampleValue;
 		_numRealVars = ovar._numRealVars;
     }
+	
+	// Get the dimension of the joint variable
+	public int getDimension()
+	{
+		return _numRealVars;
+	}
 
 	
-	public IRealConjugateSampler findConjugateSampler()
+	public IRealJointConjugateSampler findConjugateSampler()
 	{
-		return null; // TODO make this work for RealJoint
+		// Check all the adjacent factors to see if they all support a common cojugate factor
+		ArrayList<INode> siblings = _var.getSiblings();
+		int numPorts = siblings.size();
+		ArrayList<IRealJointConjugateSamplerFactory> commonSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
+		for (int portIndex = 0; portIndex < numPorts; portIndex++)
+		{
+			INode factorNode = siblings.get(portIndex);
+			ISolverNode factor = factorNode.getSolver();
+			if (!(factor instanceof SRealJointConjugateFactor))
+				return null;	// At least one connected factor does not support conjugate sampling
+			int factorPortNumber = factorNode.getPortNum(_var);
+			Collection<IRealJointConjugateSamplerFactory> availableSamplers = ((SRealJointConjugateFactor)factor).getAvailableSamplers(factorPortNumber);
+			if (commonSamplers.isEmpty())  // First time through
+				commonSamplers.addAll(availableSamplers);
+			else
+			{
+				// Remove any samplers not supported by this factor
+				ArrayList<IRealJointConjugateSamplerFactory> unavailableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
+				for (IRealJointConjugateSamplerFactory sampler : commonSamplers)
+					if (!availableSamplers.contains(sampler))
+						unavailableSamplers.add(sampler);
+				commonSamplers.removeAll(unavailableSamplers);
+			}
+			if (commonSamplers.isEmpty())
+				return null;	// No common samplers found
+		}
+		
+		// Next, check that this conjugate sampler is also compatible with the input and the domain of this variable
+		for (IRealJointConjugateSamplerFactory sampler : commonSamplers)
+			if (sampler.isCompatible(_inputJoint) && sampler.isCompatible(_domain))
+				return sampler.create();	// Create and return the sampler
+		
+		// Input wasn't compatible with any of the samplers supported by adjacent factors
+		return null;
 	}
 }

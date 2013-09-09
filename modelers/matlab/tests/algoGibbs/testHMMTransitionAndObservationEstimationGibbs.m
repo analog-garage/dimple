@@ -87,10 +87,10 @@ O.Input = FactorFunction('Gamma',1,1);
 
 
 % Add transition factors
-fg.addFactorVectorized({'DiscreteTransition',numStates}, state(2:end), state(1:end-1), {A,[]});
+fg.addFactorVectorized({'DiscreteTransitionIndependentParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
-fg.addFactorVectorized({'DiscreteTransition',numObsValues, numStates}, obs, state, {O,[]});
+fg.addFactorVectorized({'DiscreteTransitionIndependentParameters',numObsValues, numStates}, obs, state, {O,[]});
 
 % Add observations
 obsInputs = zeros(hmmLength, numObsValues);
@@ -275,10 +275,10 @@ O.Input = FactorFunction('NegativeExpGamma',1,1);
 
 
 % Add transition factors
-fg.addFactorVectorized({'LogDiscreteTransition',numStates}, state(2:end), state(1:end-1), {A,[]});
+fg.addFactorVectorized({'DiscreteTransitionEnergyParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
-fg.addFactorVectorized({'LogDiscreteTransition',numObsValues, numStates}, obs, state, {O,[]});
+fg.addFactorVectorized({'DiscreteTransitionEnergyParameters',numObsValues, numStates}, obs, state, {O,[]});
 
 % Add observations
 obsInputs = zeros(hmmLength, numObsValues);

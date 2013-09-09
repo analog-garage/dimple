@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -43,41 +43,40 @@ import com.analog.lyric.dimple.model.DimpleException;
  * A: Matrix of transition energy values
  * 
  */
-public class LogDiscreteTransition extends FactorFunction
+public class DiscreteTransitionEnergyParameters extends FactorFunction
 {
 	protected int _yDimension;
 	protected int _xDimension;
-	protected double[][] _A;
-	
-	public LogDiscreteTransition(int dimension) {this(dimension, dimension);}	// Square transition matrix
-	public LogDiscreteTransition(int yDimension, int xDimension)
+	protected double[] _Acol;
+	private final static int NUM_DATA_ARGUMENTS = 2;
+
+	public DiscreteTransitionEnergyParameters(int dimension) {this(dimension, dimension);}	// Square transition matrix
+	public DiscreteTransitionEnergyParameters(int yDimension, int xDimension)
 	{
 		super();
 		_yDimension = yDimension;
 		_xDimension = xDimension;
-		_A = new double[yDimension][xDimension];
+		_Acol = new double[yDimension];
 	}
 	
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length != _xDimension*_yDimension + 2)
+    	if (arguments.length != _xDimension*_yDimension + NUM_DATA_ARGUMENTS)
     		throw new DimpleException("Incorrect number of arguments.");
     	
-    	int index = 0;
-    	
-    	int y = FactorFunctionUtilities.toInteger(arguments[index++]);			// First argument is y (output variable)
-    	int x = FactorFunctionUtilities.toInteger(arguments[index++]);			// Second argument is x (input variable)
+    	int y = FactorFunctionUtilities.toInteger(arguments[0]);			// First argument is y (output variable)
+    	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
 
-    	for (int col = 0; col < _xDimension; col++)		// Matrix is scanned by columns
-    		for (int row = 0; row < _yDimension; row++)
-    			_A[row][col] = FactorFunctionUtilities.toDouble(arguments[index++]);
-    	
-    	double sum = 0;									// Normalize over column selected by conditioning value
+    	int index = x * _yDimension + NUM_DATA_ARGUMENTS;	// Beginning of the column for the given value of x (matrix is scanned by columns)
     	for (int row = 0; row < _yDimension; row++)
-    		sum += Math.exp(-_A[row][x]);
+    		_Acol[row] = FactorFunctionUtilities.toDouble(arguments[index++]);
     	
-    	return _A[y][x] + Math.log(sum);
+    	double sum = 0;										// Normalize over column selected by the value of x
+    	for (int row = 0; row < _yDimension; row++)
+    		sum += Math.exp(-_Acol[row]);
+    	
+    	return _Acol[y] + Math.log(sum);
 	}
     
     

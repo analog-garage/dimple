@@ -33,7 +33,10 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalIndependentOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionIndependentOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
@@ -125,7 +128,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 
 	// This is like customFactorExists, but is not the public one since for these factors, we still want the MATLAB
 	// code to create a regular factor with the specified factorfunction, which we still need (instead of creating a
-	// factor with a NOPFactorFunction.
+	// factor with a NOPFactorFunction).
 	private boolean privateCustomFactorExists(String factorName) 
 	{
 		if (factorName.equals("Normal"))
@@ -138,11 +141,17 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("DiscreteTransition"))
 			return true;
-		else if (factorName.equals("LogDiscreteTransition"))
+		else if (factorName.equals("DiscreteTransitionIndependentParameters"))
+			return true;
+		else if (factorName.equals("DiscreteTransitionEnergyParameters"))
 			return true;
 		else if (factorName.equals("Categorical"))
 			return true;
-		else if (factorName.equals("LogCategorical"))
+		else if (factorName.equals("CategoricalIndependentParameters"))
+			return true;
+		else if (factorName.equals("CategoricalEnergyParameters"))
+			return true;
+		else if (factorName.equals("Dirichlet"))
 			return true;
 		else
 			return false;	
@@ -161,12 +170,18 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomLogNormal(factor);
 		else if (funcName.equals("DiscreteTransition"))
 			return new CustomDiscreteTransition(factor);
-		else if (funcName.equals("LogDiscreteTransition"))
-			return new CustomDiscreteTransition(factor);
+		else if (funcName.equals("DiscreteTransitionIndependentParameters"))
+			return new CustomDiscreteTransitionIndependentOrEnergyParameters(factor);
+		else if (funcName.equals("DiscreteTransitionEnergyParameters"))
+			return new CustomDiscreteTransitionIndependentOrEnergyParameters(factor);
 		else if (funcName.equals("Categorical"))
 			return new CustomCategorical(factor);
-		else if (funcName.equals("LogCategorical"))
-			return new CustomCategorical(factor);
+		else if (funcName.equals("CategoricalIndependentParameters"))
+			return new CustomCategoricalIndependentOrEnergyParameters(factor);
+		else if (funcName.equals("CategoricalEnergyParameters"))
+			return new CustomCategoricalIndependentOrEnergyParameters(factor);
+		else if (funcName.equals("Dirichlet"))
+			return new CustomDirichlet(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}

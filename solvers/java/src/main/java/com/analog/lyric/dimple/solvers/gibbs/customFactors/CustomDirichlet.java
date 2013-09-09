@@ -17,34 +17,32 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
+import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
-public class CustomCategorical extends SRealJointConjugateFactor
+public class CustomDirichlet extends SRealJointConjugateFactor
 {
 	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
-	private int _parameterDimension;
+	private double[] _alpha;
+	private SRealJointVariable _alphaVariable;
+	private int _dimension;
 	private int _numParameterEdges;
-	private int[] _constantOutputCounts;
-	private boolean _hasConstantOutputs;
-	private static final int NUM_PARAMETERS = 1;
+	private boolean _hasConstantParameters;
 	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomCategorical(Factor factor)
+	public CustomDirichlet(Factor factor)
 	{
 		super(factor);
 	}
@@ -57,29 +55,14 @@ public class CustomCategorical extends SRealJointConjugateFactor
 			super.updateEdgeMessage(outPortNum);
 		else if (conjugateSampler instanceof DirichletSampler)
 		{
-			// Output port must be a joint parameter input
-			// Determine sample alpha vector of the conjugate Dirichlet distribution
-			// Note: This case works for the Categorical factor function (which has joint parameters)
-			
+			// Output port must be an output variable
+
 			double[] outputMsg = (double[])_outputMsgs[outPortNum];
 			
-			// Clear the output counts
-			Arrays.fill(outputMsg, 0);
-			
-			// Start with the ports to variable outputs
-			ArrayList<INode> siblings = _factor.getSiblings();
-			for (int port = _numParameterEdges; port < _numPorts; port++)
-			{
-				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
-				outputMsg[outputIndex]++;	// Increment the statistics
-			}
-
-			// Include any constant outputs also
-			if (_hasConstantOutputs)
-			{
-				for (int i = 0; i < _constantOutputCounts.length; i++)
-					outputMsg[i] += _constantOutputCounts[i];
-			}			
+			if (_hasConstantParameters)
+				System.arraycopy(_alpha, 0, outputMsg, 0, _dimension);
+			else	// Variable parameters
+				System.arraycopy(_alphaVariable.getCurrentSample(), 0, outputMsg, 0, _dimension);
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -90,15 +73,15 @@ public class CustomCategorical extends SRealJointConjugateFactor
 	public Collection<IRealJointConjugateSamplerFactory> getAvailableSamplers(int portNumber)
 	{
 		Collection<IRealJointConjugateSamplerFactory> availableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
-		if (isPortParameter(portNumber))						// Conjugate sampler if edge is a parameter input
-			availableSamplers.add(DirichletSampler.factory);	// Parameter inputs have conjugate Dirichlet distribution
+		if (isPortOutputVariable(portNumber))
+			availableSamplers.add(DirichletSampler.factory);	// Output variables have conjugate Dirichlet distribution
 		return availableSamplers;
 	}
 	
-	public boolean isPortParameter(int portNumber)
+	public boolean isPortOutputVariable(int portNumber)
 	{
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		return (portNumber < _numParameterEdges);
+		return (portNumber >= _numParameterEdges);
 	}
 
 	
@@ -122,25 +105,6 @@ public class CustomCategorical extends SRealJointConjugateFactor
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
-		
-		
-		// Pre-compute statistics associated with any constant output values
-		_constantOutputCounts = null;
-		if (_hasConstantOutputs)
-		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			_constantOutputCounts = new int[_parameterDimension];
-			for (int i = 0; i < constantIndices.length; i++)
-			{
-				if (constantIndices[i] >= NUM_PARAMETERS)
-				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
-				}
-			}
-		}
 	}
 	
 	
@@ -156,41 +120,38 @@ public class CustomCategorical extends SRealJointConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-
+		Dirichlet specificFactorFunction = (Dirichlet)factorFunction;
+				
 		
-		// Pre-determine whether or not the parameters are constant
-		boolean hasConstantParameters = false;
-		if (hasFactorFunctionConstants)
+		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		if (hasFactorFunctionConstructorConstants)
 		{
-			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			int numConstants = constantIndices.length;
-			for (int i = 0; i < numConstants; i++)
+			_hasConstantParameters = true;
+			_numParameterEdges = 0;
+			_alpha = specificFactorFunction.getParameters();
+			_alphaVariable = null;
+			_dimension = _alpha.length;
+		}
+		else // Variable or constant parameter
+		{
+			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PARAMETER_INDEX))
 			{
-				if (constantIndices[i] < NUM_PARAMETERS)
-					hasConstantParameters = true;	// Constant is a parameter
-				else
-					_hasConstantOutputs = true;		// Constant is an output
+				_hasConstantParameters = true;
+				_numParameterEdges = 0;
+				_alpha = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_alphaVariable = null;
+				_dimension = _alpha.length;
 			}
-			_numParameterEdges = hasConstantParameters ? 0 : NUM_PARAMETERS;
-			
-		}
-		else	// No constants
-		{
-			_numParameterEdges = NUM_PARAMETERS;
-			_hasConstantOutputs = false;
-		}
-		
-		// Determine the dimension of the parameter vector
-		if (hasConstantParameters)
-		{
-			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
-			_parameterDimension = constantParameters.length;
-		}
-		else
-		{
-			ArrayList<INode> siblings = _factor.getSiblings();
-			_parameterDimension = (((RealJoint)siblings.get(PARAMETER_INDEX))).getRealDomain().getNumVars();
+			else	// Parameter is a variable
+			{
+				_hasConstantParameters = false;
+				_numParameterEdges = 1;
+				_alpha = null;
+				ArrayList<INode> siblings = _factor.getSiblings();
+				_alphaVariable = (SRealJointVariable)(((VariableBase)siblings.get(PARAMETER_INDEX)).getSolver());
+				_dimension = _alphaVariable.getDimension();
+			}
 		}
 	}
 	
@@ -201,9 +162,9 @@ public class CustomCategorical extends SRealJointConjugateFactor
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-			if (isPortParameter(i))
-				_outputMsgs[i] = new double[_parameterDimension];
+		for (int i = _numParameterEdges; i < _numPorts; i++)
+			if (isPortOutputVariable(i))
+				_outputMsgs[i] = new double[_dimension];
 	}
 	
 	@Override

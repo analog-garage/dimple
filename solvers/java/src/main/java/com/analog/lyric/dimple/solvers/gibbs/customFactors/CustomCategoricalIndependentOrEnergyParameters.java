@@ -17,34 +17,36 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
+import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.CategoricalIndependentParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.RealJoint;
+import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
-public class CustomCategorical extends SRealJointConjugateFactor
+public class CustomCategoricalIndependentOrEnergyParameters extends SRealConjugateFactor
 {
-	private IRealJointConjugateSampler[] _conjugateSampler;
+	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
-	private int _parameterDimension;
+	private int _numParameters;
 	private int _numParameterEdges;
+	private int[] _parameterIndices;
 	private int[] _constantOutputCounts;
+	private boolean _hasConstantParameters;
 	private boolean _hasConstantOutputs;
-	private static final int NUM_PARAMETERS = 1;
-	private static final int PARAMETER_INDEX = 0;
 	
-	public CustomCategorical(Factor factor)
+	public CustomCategoricalIndependentOrEnergyParameters(Factor factor)
 	{
 		super(factor);
 	}
@@ -52,34 +54,37 @@ public class CustomCategorical extends SRealJointConjugateFactor
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		IRealJointConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
+		IRealConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
 		if (conjugateSampler == null)
 			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof DirichletSampler)
+		else if (conjugateSampler instanceof GammaSampler)
 		{
-			// Output port must be a joint parameter input
-			// Determine sample alpha vector of the conjugate Dirichlet distribution
-			// Note: This case works for the Categorical factor function (which has joint parameters)
-			
-			double[] outputMsg = (double[])_outputMsgs[outPortNum];
-			
-			// Clear the output counts
-			Arrays.fill(outputMsg, 0);
-			
+			// Output port must be a parameter input
+			// Determine sample alpha and beta parameters
+			// NOTE: This case works for either CategoricalIndependentParameters or CategoricalEnergyParameters factor functions
+			// since the actual parameter value doesn't come into play in determining the message in this direction
+
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
+
+			// The parameter being updated corresponds to this value
+			int parameterIndex = _hasConstantParameters ? _parameterIndices[outPortNum] : outPortNum;
+
 			// Start with the ports to variable outputs
+			int count = 0;
 			ArrayList<INode> siblings = _factor.getSiblings();
 			for (int port = _numParameterEdges; port < _numPorts; port++)
 			{
 				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
-				outputMsg[outputIndex]++;	// Increment the statistics
+				if (outputIndex == parameterIndex)
+					count++;
 			}
-
+			
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
-			{
-				for (int i = 0; i < _constantOutputCounts.length; i++)
-					outputMsg[i] += _constantOutputCounts[i];
-			}			
+				count += _constantOutputCounts[parameterIndex];
+			
+			outputMsg.setAlpha(count);		// Sample alpha
+			outputMsg.setBeta(0);			// Sample beta
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -87,11 +92,11 @@ public class CustomCategorical extends SRealJointConjugateFactor
 	
 	
 	@Override
-	public Collection<IRealJointConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
 	{
-		Collection<IRealJointConjugateSamplerFactory> availableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
-		if (isPortParameter(portNumber))						// Conjugate sampler if edge is a parameter input
-			availableSamplers.add(DirichletSampler.factory);	// Parameter inputs have conjugate Dirichlet distribution
+		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
+		if (isPortParameter(portNumber))					// Conjugate sampler if edge is a parameter input
+			availableSamplers.add(GammaSampler.factory);	// Parameter inputs have conjugate Gamma distribution
 		return availableSamplers;
 	}
 	
@@ -109,12 +114,12 @@ public class CustomCategorical extends SRealJointConjugateFactor
 		super.initialize();
 		
 		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
+		_conjugateSampler = new IRealConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
 			INode var = _factor.getSiblings().get(port);
-			if (var instanceof RealJoint)
-				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
+			if (var instanceof Real)
+				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
 			else
 				_conjugateSampler[port] = null;
 		}
@@ -131,10 +136,10 @@ public class CustomCategorical extends SRealJointConjugateFactor
 			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
 			Object[] constantValues = constantFactorFunction.getConstants();
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			_constantOutputCounts = new int[_parameterDimension];
+			_constantOutputCounts = new int[_numParameters];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (constantIndices[i] >= NUM_PARAMETERS)
+				if (constantIndices[i] >= _numParameters)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
@@ -156,41 +161,50 @@ public class CustomCategorical extends SRealJointConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-
+		if (factorFunction instanceof CategoricalIndependentParameters)
+		{
+			CategoricalIndependentParameters specificFactorFunction = (CategoricalIndependentParameters)factorFunction;
+			_numParameters = specificFactorFunction.getDimension();
+		}
+		else	// Energy parameters
+		{
+			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)factorFunction;
+			_numParameters = specificFactorFunction.getDimension();
+		}
 		
-		// Pre-determine whether or not the parameters are constant
-		boolean hasConstantParameters = false;
+		
+		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		_numParameterEdges = _numParameters;
+		_hasConstantParameters = false;
+		_hasConstantOutputs = false;
+		_parameterIndices = null;
 		if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
 			int numConstants = constantIndices.length;
+			int numConstantParameters = 0;
 			for (int i = 0; i < numConstants; i++)
 			{
-				if (constantIndices[i] < NUM_PARAMETERS)
-					hasConstantParameters = true;	// Constant is a parameter
+				if (constantIndices[i] < _numParameters)
+					numConstantParameters++;		// Constant is a parameter
 				else
 					_hasConstantOutputs = true;		// Constant is an output
 			}
-			_numParameterEdges = hasConstantParameters ? 0 : NUM_PARAMETERS;
+			_numParameterEdges = _numParameters - numConstantParameters;
 			
-		}
-		else	// No constants
-		{
-			_numParameterEdges = NUM_PARAMETERS;
-			_hasConstantOutputs = false;
-		}
-		
-		// Determine the dimension of the parameter vector
-		if (hasConstantParameters)
-		{
-			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
-			_parameterDimension = constantParameters.length;
-		}
-		else
-		{
-			ArrayList<INode> siblings = _factor.getSiblings();
-			_parameterDimension = (((RealJoint)siblings.get(PARAMETER_INDEX))).getRealDomain().getNumVars();
+			if (numConstantParameters > 0)
+			{
+				// There are constant parameters, so create a mapping from edges to indices for the remaining variable parameters
+				_hasConstantParameters = true;
+				for (int i = 0, constantIndex = 0, variableIndex = 0; i < _numParameters; i++)
+				{
+					if (constantIndices[constantIndex] == i)
+						constantIndex++;
+					else
+						_parameterIndices[i] = variableIndex++;
+				}
+			}
 		}
 	}
 	
@@ -199,11 +213,10 @@ public class CustomCategorical extends SRealJointConjugateFactor
 	public void createMessages() 
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int i = 0; i < _numPorts; i++)
 			if (isPortParameter(i))
-				_outputMsgs[i] = new double[_parameterDimension];
+				_outputMsgs[i] = new GammaParameters();
 	}
 	
 	@Override

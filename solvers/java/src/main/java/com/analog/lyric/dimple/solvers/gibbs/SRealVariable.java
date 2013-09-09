@@ -645,9 +645,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			else
 			{
 				// Remove any samplers not supported by this factor
+				ArrayList<IRealConjugateSamplerFactory> unavailableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
 				for (IRealConjugateSamplerFactory sampler : commonSamplers)
 					if (!availableSamplers.contains(sampler))
-						commonSamplers.remove(sampler);
+						unavailableSamplers.add(sampler);
+				commonSamplers.removeAll(unavailableSamplers);
 			}
 			if (commonSamplers.isEmpty())
 				return null;	// No common samplers found

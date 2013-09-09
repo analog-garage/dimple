@@ -25,9 +25,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
@@ -173,8 +171,6 @@ public class CustomLogNormal extends SRealConjugateFactor
 			INode var = _factor.getSiblings().get(port);
 			if (var instanceof Real)
 				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
-			else if (var instanceof RealJoint)
-				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
 			else
 				_conjugateSampler[port] = null;
 		}

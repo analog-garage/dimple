@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -38,13 +38,13 @@ import com.analog.lyric.dimple.model.DimpleException;
  * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
  */
-public class LogCategorical extends FactorFunction
+public class CategoricalEnergyParameters extends FactorFunction
 {
-	protected int _dimension;
-	protected double[] _alpha;
-	int _firstDirectedToIndex;
+	private int _dimension;
+	private double[] _alpha;
+	private int _firstDirectedToIndex;
 
-	public LogCategorical(int dimension)
+	public CategoricalEnergyParameters(int dimension)
 	{
 		super();
 		_dimension = dimension;
@@ -72,7 +72,7 @@ public class LogCategorical extends FactorFunction
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining inputs are Categorical variables
+    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
     		sum += _alpha[x];
     	}    	
     	return sum + N * Math.log(normalizationValue);

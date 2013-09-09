@@ -14,7 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function var = Categorical(alphas, varargin)
+function var = CategoricalEnergyParameters(alphas, varargin)
 
 fg = getFactorGraph();            % By default, use the current factor graph
 outSize = {1};                    % By default, result is a single variable
@@ -29,22 +29,12 @@ for arg=varargin
     end
 end
 
+N = prod(size(alphas));           % numel not supported for variable arrays
+discreteDomain = 0:N-1;           % Domain must be zero based integers
+var = Discrete(discreteDomain, outSize{:});
 
-if (isa(alphas, 'RealJoint'))
-    % Joint parameters (suitable for Dirichlet prior)
-    N = alphas.Domain.NumElements;
-    discreteDomain = 0:N-1;           % Domain must be zero based integers
-    var = Discrete(discreteDomain, outSize{:});
-
-    fg.addFactor('Categorical', alphas, var);
-else
-    % Independent parameters (suitable for Gamma priors)
-    N = prod(size(alphas));           % numel not supported for variable arrays
-    discreteDomain = 0:N-1;           % Domain must be zero based integers
-    var = Discrete(discreteDomain, outSize{:});
-
-    ff = FactorFunction('CategoricalIndependentParameters', N);
-    fg.addFactor(ff, alphas, var);
-end
+% Independent energy parameters (suitable for NegativeExpGamma priors)
+ff = FactorFunction('CategoricalEnergyParameters', N);
+fg.addFactor(ff, alphas, var);
 
 end

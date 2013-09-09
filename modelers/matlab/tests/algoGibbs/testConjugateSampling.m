@@ -40,6 +40,8 @@ test9(debugPrint, repeatable);
 test10(debugPrint, repeatable);
 test11(debugPrint, repeatable);
 test12(debugPrint, repeatable);
+test13(debugPrint, repeatable);
+test14(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -599,12 +601,12 @@ fg = FactorGraph();
 fg.Solver = 'Gibbs';
 
 p = Real(1, discreteDomainSize);
-x = Discrete(discreteDomain, 1, numDatapoints);
 
 p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
-x.FixedValue = data;
 
-fg.addFactor(FactorFunction('Categorical',discreteDomainSize), p, x);
+% Use the built-in constructor
+x = Categorical(p, [1, numDatapoints]);
+x.FixedValue = data;
 
 assert(strcmp(p(1).Solver.getSamplerName,'GammaSampler'));
 assert(strcmp(p(2).Solver.getSamplerName,'GammaSampler'));
@@ -658,7 +660,7 @@ p = Real(1, discreteDomainSize);
 p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
 
 dataTemp = num2cell(data);
-fg.addFactor(FactorFunction('Categorical',discreteDomainSize), p, dataTemp{:});
+fg.addFactor(FactorFunction('CategoricalIndependentParameters',discreteDomainSize), p, dataTemp{:});
 
 assert(strcmp(p(1).Solver.getSamplerName,'GammaSampler'));
 assert(strcmp(p(2).Solver.getSamplerName,'GammaSampler'));
@@ -691,12 +693,110 @@ end
 
 
 
+% Dirichlet prior on Categorical distribution
+function test13(debugPrint, repeatable)
+
+discreteDomainSize = 10;
+priorAlpha = ones(discreteDomainSize,1);
+discreteDomain = 0:discreteDomainSize-1;
+distribution = randSimplex(discreteDomainSize);
+numDatapoints = 100;
+data = discreteSample(distribution, numDatapoints);
+expectedAlpha = priorAlpha + sum(bsxfun(@eq, data, discreteDomain'),2);
+expectedAlpha = expectedAlpha/sum(expectedAlpha);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = RealJoint(discreteDomainSize);
+
+p.Input = FactorFunction('Dirichlet',priorAlpha);
+
+% Use built-in constructor
+x = Categorical(p, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(p.Solver.getSamplerName,'DirichletSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+alphaEst = sum(ps,1);
+alphaEst = alphaEst/sum(alphaEst);
+for i=1:discreteDomainSize
+    assertElementsAlmostEqual(alphaEst(i)/expectedAlpha(i), 1, 'absolute', 0.02);
+end
+
+end
+
+
+
+% Dirichlet prior on Categorical distribution, values constant
+function test14(debugPrint, repeatable)
+
+discreteDomainSize = 10;
+priorAlpha = ones(discreteDomainSize,1);
+discreteDomain = 0:discreteDomainSize-1;
+distribution = randSimplex(discreteDomainSize);
+numDatapoints = 100;
+data = discreteSample(distribution, numDatapoints);
+expectedAlpha = priorAlpha + sum(bsxfun(@eq, data, discreteDomain'),2);
+expectedAlpha = expectedAlpha/sum(expectedAlpha);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = RealJoint(discreteDomainSize);
+
+p.Input = FactorFunction('Dirichlet',priorAlpha);
+
+dataTemp = num2cell(data);
+fg.addFactor('Categorical', p, dataTemp{:});
+
+assert(strcmp(p.Solver.getSamplerName,'DirichletSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+alphaEst = sum(ps,1);
+alphaEst = alphaEst/sum(alphaEst);
+for i=1:discreteDomainSize
+    assertElementsAlmostEqual(alphaEst(i)/expectedAlpha(i), 1, 'absolute', 0.02);
+end
+
+end
+
+
+
+
 % Given a column vector x in R^k contained in the standard (k-1)-simplex,
 % choose n in {0,...,k-1} according to the categorical distribution x
 % Optional dimension arguments create an array of samples using the same
 % distribution
 function n = discreteSample(x,varargin)
-	n = squeeze(1+sum(bsxfun(@lt, cumsum(vec(x)), rand(1,varargin{:})),1)) - 1;
+	n = squeeze(1+sum(bsxfun(@lt, cumsum(x(:)), rand(1,varargin{:})),1)) - 1;
 end
 
 % Choose a column vector in R^k uniformly from the standard (k-1)-simplex

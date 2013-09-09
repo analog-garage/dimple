@@ -24,16 +24,15 @@ import com.analog.lyric.dimple.model.DimpleException;
 /**
  * Parameterized discrete transition factor, which corresponds to p(y | x, A),
  * where A is a matrix of transition probabilities that are
- * parameterized as (not necessarily normalized) probabilities.
- * The transition matrix is organized such that each column is represented as
- * a single RealJoint variable that corresponds to
+ * parameterized as *unnormalized* probabilities.
+ * The transition matrix is organized such that columns correspond to
  * the output distribution for each input state. That is, the transition
  * matrix multiplies on the left.  The domain of x and y do not need to be
  * the same.
  * 
  * Representing A as described, the conjugate prior for A is such that
- * each column vector of the A matrix is distributed according to
- * a Dirichlet distribution.
+ * each entry of the A matrix is independently distributed according to
+ * a Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
  * 
@@ -41,35 +40,61 @@ import com.analog.lyric.dimple.model.DimpleException;
  * 
  * y: Discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * x: Discrete input variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * A: Matrix of transition matrix values (1D vector of RealJoint variables)
+ * A: Matrix of transition matrix values
  * 
  */
-public class DiscreteTransition extends FactorFunction
+public class DiscreteTransitionIndependentParameters extends FactorFunction
 {
+	protected int _yDimension;
+	protected int _xDimension;
+	protected double[] _Acol;
 	private final static int NUM_DATA_ARGUMENTS = 2;
+
+	public DiscreteTransitionIndependentParameters(int dimension) {this(dimension, dimension);}	// Square transition matrix
+	public DiscreteTransitionIndependentParameters(int yDimension, int xDimension)
+	{
+		super();
+		_yDimension = yDimension;
+		_xDimension = xDimension;
+		_Acol = new double[yDimension];
+	}
 	
-	@Override
+    @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length < NUM_DATA_ARGUMENTS + 1)
-    		throw new DimpleException("Insufficient number of arguments.");
+    	if (arguments.length != _xDimension*_yDimension + NUM_DATA_ARGUMENTS)
+    		throw new DimpleException("Incorrect number of arguments.");
     	
     	int y = FactorFunctionUtilities.toInteger(arguments[0]);			// First argument is y (output variable)
     	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
-
-    	double[] Acol = (double[])arguments[x + NUM_DATA_ARGUMENTS];		// Choose column of A indexed by input variable x
-    	double yDimension = Acol.length;
     	
-    	double sum = 0;									// Normalize over column selected by input variable x
-    	for (int row = 0; row < yDimension; row++)
+    	int index = x * _yDimension + NUM_DATA_ARGUMENTS;	// Beginning of the column for the given value of x (matrix is scanned by columns)
+    	for (int row = 0; row < _yDimension; row++)
     	{
-    		double a = Acol[row];
-    		if (a < 0)
-    			return Double.POSITIVE_INFINITY;
-    		sum += a;
+    		double a = FactorFunctionUtilities.toDouble(arguments[index++]);
+    		if (a < 0) return Double.POSITIVE_INFINITY;
+    		_Acol[row] = a;
     	}
     	
-    	return -Math.log(Acol[y]) + Math.log(sum);
+    	double sum = 0;										// Normalize over column selected by the value of x
+    	for (int row = 0; row < _yDimension; row++)
+    		sum += _Acol[row];
+    	
+    	return -Math.log(_Acol[y]) + Math.log(sum);
 	}
-
+    
+    
+    // Factor-specific methods
+    public final int getXDimension()
+    {
+    	return _xDimension;
+    }
+    public final int getYDimension()
+    {
+    	return _yDimension;
+    }
+    public final int getNumParameters()
+    {
+    	return _xDimension * _yDimension;
+    }
 }
