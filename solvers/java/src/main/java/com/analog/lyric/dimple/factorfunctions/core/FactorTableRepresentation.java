@@ -39,9 +39,6 @@ public enum FactorTableRepresentation
 	NOT_DENSE_ENERGY(FactorTable.NOT_DENSE_ENERGY),
 	ALL_VALUES(FactorTable.ALL_VALUES),
 	DETERMINISTIC_WITH_INDICES(FactorTable.DETERMINISTIC_WITH_INDICES),
-	DENSE_ENERGY_WITH_INDICES(FactorTable.DENSE_ENERGY_WITH_INDICES),
-	DENSE_WEIGHT_WITH_INDICES(FactorTable.DENSE_WEIGHT_WITH_INDICES),
-	ALL_DENSE_WITH_INDICES(FactorTable.ALL_DENSE_WITH_INDICES),
 	SPARSE_ENERGY_WITH_INDICES(FactorTable.SPARSE_ENERGY_WITH_INDICES),
 	ALL_ENERGY_WITH_INDICES(FactorTable.ALL_ENERGY_WITH_INDICES),
 	SPARSE_ENERGY_DENSE_WEIGHT_WITH_INDICES(FactorTable.SPARSE_ENERGY_DENSE_WEIGHT_WITH_INDICES),
@@ -58,16 +55,24 @@ public enum FactorTableRepresentation
 
 	private final int _mask;
 	private static final FactorTableRepresentation[] _values = FactorTableRepresentation.values();
+	private static final FactorTableRepresentation[] _valuesByMask = new FactorTableRepresentation[FactorTable.ALL+1];
 	
 	private FactorTableRepresentation(int mask)
 	{
 		_mask = mask;
 	}
 	
-	private static FactorTableRepresentation forMask(int mask)
+	static FactorTableRepresentation forMask(int mask)
 	{
 		// NOTE: assumes ordinal() == _mask
-		return _values[mask];
+		if (_valuesByMask[FactorTable.DETERMINISTIC] == null)
+		{
+			for (FactorTableRepresentation rep : _values)
+			{
+				_valuesByMask[rep._mask] = rep;
+			}
+		}
+		return _valuesByMask[mask];
 	}
 	
 	public static FactorTableRepresentation forOrdinal(int ordinal)

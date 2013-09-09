@@ -15,12 +15,12 @@ import org.junit.Test;
 import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.BitSetUtil;
-import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.IFactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableEntry;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableIterator;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTableBase;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
@@ -492,27 +492,15 @@ public class TestFactorTable
 				
 			case 1:
 				// Randomly set the representation
+				int nReps = FactorTableRepresentation.values().length;
 				FactorTableRepresentation oldRep = table.getRepresentation();
-				FactorTableRepresentation newRep = FactorTableRepresentation.values()[rand.nextInt(32)];
+				
+				FactorTableRepresentation newRep = FactorTableRepresentation.values()[rand.nextInt(nReps)];
 				try
 				{
 					table.setRepresentation(newRep);
 					FactorTableRepresentation actualNewRep = table.getRepresentation();
-					switch (newRep)
-					{
-					case DENSE_ENERGY_WITH_INDICES:
-						assertEquals(FactorTableRepresentation.DENSE_ENERGY, actualNewRep);
-						break;
-					case DENSE_WEIGHT_WITH_INDICES:
-						assertEquals(FactorTableRepresentation.DENSE_WEIGHT, actualNewRep);
-						break;
-					case ALL_DENSE_WITH_INDICES:
-						assertEquals(FactorTableRepresentation.ALL_DENSE, actualNewRep);
-						break;
-					default:
-						assertEquals(newRep, actualNewRep);
-						break;
-					}
+					assertEquals(newRep, actualNewRep);
 				}
 				catch (DimpleException ex)
 				{

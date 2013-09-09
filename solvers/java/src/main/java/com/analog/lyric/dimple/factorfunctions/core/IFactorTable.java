@@ -3,6 +3,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.BitSet;
 import java.util.Random;
 
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
@@ -31,6 +32,25 @@ public interface IFactorTable extends IFactorTableBase
 
 	public IFactorTable createTableWithNewVariables(DiscreteDomain[] newDomains);
 
+	/**
+	 * Returns an enum indicating the underlying representation of the factor table.
+	 * <p>
+	 * The representation may be changed via {@link #setRepresentation(FactorTableRepresentation)} but
+	 * can also be changed implicitly as a side effect of certain other methods:
+	 * <ul>
+	 * <li>{@link #getEnergiesSparseUnsafe()}
+	 * <li>{@link #getEnergyForSparseIndex(int)}
+	 * <li>{@link #getIndicesSparseUnsafe()}
+	 * <li>{@link #getWeightForSparseIndex(int)}
+	 * <li>{@link #getWeightsSparseUnsafe()}
+	 * <li>{@link #setEnergyForJointIndex(double, int)}
+	 * <li>{@link #setEnergyForSparseIndex(double, int)}
+	 * <li>{@link #setWeightForJointIndex(double, int)}
+	 * <li>{@link #setWeightForSparseIndex(double, int)}
+	 * <li>{@link #sparseIndexFromJointIndex(int)}
+	 * <li>{@link #sparseIndexToJointIndex(int)}
+	 * </ul>
+	 */
 	public FactorTableRepresentation getRepresentation();
 
 	/**
@@ -86,7 +106,7 @@ public interface IFactorTable extends IFactorTableBase
 	
 	/**
 	 * Replace the energies/weights of the table from the given array of {@code energies} in
-	 * order of sparse index.
+	 * order of sparse index. This does not alter the sparse to joint index mapping.
 	 * <p>
 	 * @see #replaceWeightsSparse(double[])
 	 */
@@ -94,7 +114,7 @@ public interface IFactorTable extends IFactorTableBase
 	
 	/**
 	 * Replace the energies/weights of the table from the given array of {@code weights} in
-	 * order of sparse index.
+	 * order of sparse index. This does not alter the sparse to joint index mapping.
 	 * <p>
 	 * @see #replaceEnergiesSparse(double[])
 	 */
@@ -102,7 +122,7 @@ public interface IFactorTable extends IFactorTableBase
 	
 	/**
 	 * Sets representation to {@link FactorTableRepresentation#DENSE_ENERGY} with
-	 * provided energies.
+	 * provided energies replacing the existing contents of the table.
 	 * @param energies specifies the energies of the table in dense joint-index order. Must have length
 	 * equal to {@link #getDomainIndexer()}.getCardinality().
 	 */
@@ -110,7 +130,7 @@ public interface IFactorTable extends IFactorTableBase
 	
 	/**
 	 * Sets representation to {@link FactorTableRepresentation#DENSE_WEIGHT} with
-	 * provided weights.
+	 * provided weights replacing the existing contents of the table.
 	 * @param weights specifies the weights of the table in dense joint-index order. Must have length
 	 * equal to {@link #getDomainIndexer()}.getCardinality().
 	 */
@@ -157,6 +177,12 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public void setDirected(BitSet outputSet);
 	
+	/**
+	 * Sets the underlying representation of the table to the specified value.
+	 * <p>
+	 * @throws DimpleException If setting representation to a deterministic representation, this method will throw an
+	 * exception if the table cannot be represented as deterministic (see {@link #isDeterministicDirected()}).
+	 */
 	public void setRepresentation(FactorTableRepresentation representation);
 	
 	/**

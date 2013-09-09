@@ -1243,9 +1243,13 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 			{
 				setRepresentation(_representation | SPARSE_INDICES);
 			}
-			else
+			else if (hasDenseWeights())
 			{
 				setRepresentation(_representation | SPARSE_WEIGHT_WITH_INDICES);
+			}
+			else
+			{
+				setRepresentation(_representation | SPARSE_ENERGY_WITH_INDICES);
 			}
 		}
 		return _sparseIndices;
@@ -1254,7 +1258,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	@Override
 	public final FactorTableRepresentation getRepresentation()
 	{
-		return FactorTableRepresentation.forOrdinal(_representation);
+		return FactorTableRepresentation.forMask(_representation);
 	}
 	
 	@Override
@@ -1411,7 +1415,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	@Override
 	public void setRepresentation(final FactorTableRepresentation newRep)
 	{
-		setRepresentation(newRep.ordinal());
+		setRepresentation(newRep.mask());
 	}
 	
 	private void setRepresentation(int newRep)
