@@ -1020,6 +1020,12 @@ a = fg.addFactorVectorized(@factor,c(:,:,1),c(:,:,2),c(:,:,3),c(:,:,4));
 f.DirectedTo = {a(:,:,1), a(:,:,2)};
 \end{lstlisting}
 
-TODO: When we do c = a.DirectedTo, do we return a cell array of vectors?  Or do we try to combine vectors?
+Here we retrieve the value of the property.
+
+\begin{lstlisting}
+c = a.DirectedTo;
+\end{lstlisting}
+
+In the case where each Factor is directed to multiple variables, Dimple will return a cell array containing as many elements as there are variables per factor.  Each of the entries will contain a variable array equal in dimensions to the factor array.
 
 \end{document}  
