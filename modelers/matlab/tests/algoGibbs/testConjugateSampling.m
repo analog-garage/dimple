@@ -42,6 +42,8 @@ test11(debugPrint, repeatable);
 test12(debugPrint, repeatable);
 test13(debugPrint, repeatable);
 test14(debugPrint, repeatable);
+test15(debugPrint, repeatable);
+test16(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -790,6 +792,94 @@ end
 
 
 
+% Beta prior on Bernoulli distribution
+function test15(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+pData = rand();
+numDatapoints = 100;
+data = discreteSample([1-pData pData], numDatapoints);
+expectedP = (priorAlpha + sum(data))/(priorAlpha + priorBeta + numDatapoints);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+
+p.Input = FactorFunction('Beta',priorAlpha,priorBeta);
+
+% Use built-in constructor
+x = Bernoulli(p, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+pEst = mean(ps);
+assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
+
+end
+
+
+
+% Beta prior on Bernoulli distribution, values constant
+function test16(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+pData = rand();
+numDatapoints = 100;
+data = discreteSample([1-pData pData], numDatapoints);
+expectedP = (priorAlpha + sum(data))/(priorAlpha + priorBeta + numDatapoints);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+
+p.Input = FactorFunction('Beta',priorAlpha,priorBeta);
+
+dataTemp = num2cell(data);
+fg.addFactor('Bernoulli', p, dataTemp{:});
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+
+pEst = mean(ps);
+assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
+
+end
+
+
+
+%********* UTILITIES ***************************************
 
 % Given a column vector x in R^k contained in the standard (k-1)-simplex,
 % choose n in {0,...,k-1} according to the categorical distribution x

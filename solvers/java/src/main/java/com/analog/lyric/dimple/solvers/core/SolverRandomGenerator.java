@@ -28,6 +28,7 @@ public class SolverRandomGenerator
 	// Other random number generators not supported by the Apache framework
 	private static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister(rand.nextInt());
 	public static cern.jet.random.Gamma randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
+	public static cern.jet.random.Beta randBeta = new cern.jet.random.Beta(1, 1, randEngine);
 	
 	
 	public static void setSeed(long seed)
@@ -41,5 +42,6 @@ public class SolverRandomGenerator
 		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
 		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);
 		randGamma = new cern.jet.random.Gamma(1, 1, randEngine);
+		randBeta = new cern.jet.random.Beta(1, 1, randEngine);
 	}
 }

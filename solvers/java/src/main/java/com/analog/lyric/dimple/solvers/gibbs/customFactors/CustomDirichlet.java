@@ -74,7 +74,7 @@ public class CustomDirichlet extends SRealJointConjugateFactor
 	{
 		Collection<IRealJointConjugateSamplerFactory> availableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
 		if (isPortOutputVariable(portNumber))
-			availableSamplers.add(DirichletSampler.factory);	// Output variables have conjugate Dirichlet distribution
+			availableSamplers.add(DirichletSampler.factory);	// Output variables have Dirichlet distribution
 		return availableSamplers;
 	}
 	

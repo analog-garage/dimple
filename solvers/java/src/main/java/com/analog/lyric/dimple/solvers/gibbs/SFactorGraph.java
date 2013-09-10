@@ -32,6 +32,8 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBeta;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalIndependentOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
@@ -153,6 +155,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("Dirichlet"))
 			return true;
+		else if (factorName.equals("Beta"))
+			return true;
+		else if (factorName.equals("Bernoulli"))
+			return true;
 		else
 			return false;	
 	}
@@ -182,6 +188,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomCategoricalIndependentOrEnergyParameters(factor);
 		else if (funcName.equals("Dirichlet"))
 			return new CustomDirichlet(factor);
+		else if (funcName.equals("Beta"))
+			return new CustomBeta(factor);
+		else if (funcName.equals("Bernoulli"))
+			return new CustomBernoulli(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
