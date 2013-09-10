@@ -11,6 +11,7 @@ public class RealConjugateSamplerRegistry
 		NormalSampler.factory,
 		GammaSampler.factory,
 		NegativeExpGammaSampler.factory,
+		BetaSampler.factory,
 	};
 	
 
