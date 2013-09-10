@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.util.misc.Misc;
+import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 
 public class TestFactorTable
@@ -36,7 +37,7 @@ public class TestFactorTable
 	final DiscreteDomain domain5 = DiscreteDomain.range(0,5);
 	
 	@Test
-	public void testNewFactorTable()
+	public void testFactorTable()
 	{
 		FactorTable t2x3 = new FactorTable(domain2, domain3);
 		assertEquals(2, t2x3.getDimensions());
@@ -892,26 +893,41 @@ public class TestFactorTable
 		
 		IFactorTableBase table2 = table.clone();
 		assertBaseEqual(table, table2);
+		
+		IFactorTableBase table3 = SerializationTester.clone(table);
+		assertBaseEqual(table, table3);
 	}
 	
-	public static void assertOldEqual(IFactorTable table1, IFactorTable table2)
+	public static void assertEqual(IFactorTable table1, IFactorTable table2)
 	{
-		if (table1 instanceof IFactorTableBase && table2 instanceof IFactorTableBase)
+		assertEqualImpl(table1, table2, true);
+	}
+	
+	private static void assertEqualImpl(IFactorTable table1, IFactorTable table2, boolean checkBaseEqual)
+	{
+		if (checkBaseEqual)
 		{
 			assertBaseEqual(table1, table2);
 		}
-		else
+		assertEquals(table1.sparseSize(), table2.sparseSize());
+		assertEquals(table1.getDimensions(), table2.getDimensions());
+		assertEquals(table1.getRepresentation(), table2.getRepresentation());
+		if (table1.hasSparseIndices())
 		{
-			assertEquals(table1.sparseSize(), table2.sparseSize());
-			assertEquals(table1.getDimensions(), table2.getDimensions());
-			assertArrayEquals(table1.getWeightsSparseUnsafe(), table2.getWeightsSparseUnsafe(), 1e-12);
+			int[][] indices1 = table1.getIndicesSparseUnsafe();
+			int[][] indices2 = table2.getIndicesSparseUnsafe();
+			assertEquals(indices1.length, indices2.length);
+			for (int i = indices1.length; --i>=0;)
+			{
+				assertArrayEquals(indices1[i], indices2[i]);
+			}
 		}
 	}
 	
 	public static void assertBaseEqual(IFactorTableBase table1, IFactorTableBase table2)
 	{
 		assertEquals(table1.getClass(), table2.getClass());
-		
+
 		assertEquals(table1.isDirected(), table2.isDirected());
 		assertEquals(table1.isDeterministicDirected(), table2.isDeterministicDirected());
 		
@@ -922,7 +938,7 @@ public class TestFactorTable
 		for (int i = 0; i < nDomains; ++i)
 		{
 			assertEquals(table1.getDomainIndexer().getDomainSize(i), table2.getDomainIndexer().getDomainSize(i));
-			assertSame(table1.getDomainIndexer().get(i), table2.getDomainIndexer().get(i));
+			assertEquals(table1.getDomainIndexer().get(i), table2.getDomainIndexer().get(i));
 		}
 		
 		assertEquals(table1.isDirected(), table2.isDirected());
@@ -948,6 +964,14 @@ public class TestFactorTable
 		{
 			assertEquals(table1.getWeightForJointIndex(ji), table2.getWeightForJointIndex(ji), 1e-12);
 			assertEquals(table1.getEnergyForJointIndex(ji), table2.getEnergyForJointIndex(ji), 1e-12);
+		}
+		
+		assertEquals(table1.countNonZeroWeights(), table2.countNonZeroWeights());
+		assertEquals(table1.density(), table2.density(), 1e-12);
+		
+		if (table1 instanceof IFactorTable)
+		{
+			assertEqualImpl((IFactorTable)table1, (IFactorTable)table2, false);
 		}
 	}
 }

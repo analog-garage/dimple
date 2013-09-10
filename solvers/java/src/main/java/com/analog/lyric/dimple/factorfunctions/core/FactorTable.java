@@ -3,6 +3,9 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import static com.analog.lyric.dimple.model.JointDomainReindexer.*;
 import static com.analog.lyric.math.Utilities.*;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -365,6 +368,138 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	/*---------------
 	 * Serialization
 	 */
+	
+	/**
+	 * Override the default serialization to decrease size of serialized representation.
+	 */
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		out.writeInt(_representation);
+		out.writeInt(_nonZeroWeights);
+		out.writeInt(_computedMask);
+		
+		// Choose transmission representation
+		int transmitRep = -1;
+		double[] values = null;
+		
+		if (hasSparseRepresentation())
+		{
+			if (hasSparseWeights())
+			{
+				transmitRep = SPARSE_WEIGHT;
+				values = _sparseWeights;
+			}
+			else if (hasSparseEnergies())
+			{
+				transmitRep = SPARSE_ENERGY;
+				values = _sparseEnergies;
+			}
+			else
+			{
+				transmitRep = DETERMINISTIC;
+			}
+		}
+		else
+		{
+			if (hasDenseWeights())
+			{
+				transmitRep = DENSE_WEIGHT;
+				values = _denseWeights;
+			}
+			else if (hasDenseEnergies())
+			{
+				transmitRep = DENSE_ENERGY;
+				values = _denseEnergies;
+			}
+		}
+		
+		assert(transmitRep >= 0);
+		
+		out.writeInt(transmitRep);
+		
+		if (values != null)
+		{
+			out.writeInt(values.length);
+			for (double d : values)
+			{
+				out.writeDouble(d);
+			}
+		}
+		else
+		{
+			out.writeInt(sparseSize());
+		}
+		
+		if (_sparseIndexToJointIndex.length < jointSize())
+		{
+			for (int i : _sparseIndexToJointIndex)
+			{
+				out.writeInt(i);
+			
+			}
+		}
+	}
+	
+	private void readObject(ObjectInputStream in) throws IOException
+	{
+		_sparseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_sparseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_denseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
+		_sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
+		
+		int representation = in.readInt();
+		_nonZeroWeights = in.readInt();
+		_computedMask = in.readInt();
+		_representation = in.readInt();
+		int size = in.readInt();
+		
+		double[] values = null;
+		
+		if (!hasDeterministicRepresentation())
+		{
+			values = new double[size];
+			for (int i = 0; i < size; ++i)
+			{
+				values[i] = in.readDouble();
+			}
+		}
+		
+		if (hasSparseRepresentation() && size < jointSize())
+		{
+			// Read sparse to joint index map
+			_sparseIndexToJointIndex = new int[size];
+			for (int si = 0; si < size; ++si)
+			{
+				_sparseIndexToJointIndex[si] = in.readInt();
+			}
+		}
+		
+		switch (_representation)
+		{
+		case DETERMINISTIC:
+			break;
+		case DENSE_ENERGY:
+			_denseEnergies = values;
+			break;
+		case DENSE_WEIGHT:
+			_denseWeights = values;
+			break;
+		case SPARSE_ENERGY:
+			_sparseEnergies = values;
+			break;
+		case SPARSE_WEIGHT:
+			_sparseWeights = values;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+		
+		// Switch to the real representation.
+		setRepresentation(representation);
+	}
 	
 	@Deprecated
 	@Override
