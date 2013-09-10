@@ -9,7 +9,6 @@ import com.analog.lyric.dimple.model.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.JointDomainReindexer;
 
-
 public interface IFactorTable extends IFactorTableBase
 {
 	@Override
@@ -73,6 +72,12 @@ public interface IFactorTable extends IFactorTableBase
 		DiscreteDomain [] allDomains,
 		DiscreteDomain jointDomain); // REFACTOR: keep (for now)
 
+	/**
+	 * True if table currently has a deterministic directed representation (either
+	 * {@link FactorTableRepresentation#DETERMINISTIC} or {@link FactorTableRepresentation#DETERMINISTIC_WITH_INDICES}).
+	 * Unlike invoking {@link #isDeterministicDirected()}, this will not check the values of the table
+	 * or change the representation.
+	 */
 	public boolean hasDeterministicRepresentation();
 	
 	/**
@@ -80,27 +85,53 @@ public interface IFactorTable extends IFactorTableBase
 	 * <p>
 	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
 	 * an invalid state. This should be treated as a read-only value.
+	 * <p>
+	 * If necessary, this method will implicitly modify the representation to include sparse energies
+	 * (@link {@link #hasSparseEnergies()}).
+	 * <p>
+	 * @see #getWeightsSparseUnsafe()
 	 */
 	public double[] getEnergiesSparseUnsafe();
 
-	/**
-	 * Returns the underlying array of sparse weights without copying for speed.
-	 * <p>
-	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
-	 * an invalid state. This should be treated as a read-only value.
-	 */
-	public double[] getWeightsSparseUnsafe();
-	
 	/**
 	 * Returns the underlying array of sparse element indices.
 	 * <p>
 	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
 	 * an invalid state. This should be treated as a read-only value.
+	 * <p>
+	 * If necessary, this method will implicitly modify the representation to include sparse indices
+	 * (@link {@link #hasSparseIndices()}) and if the table did not previously only had a dense value
+	 * representation (@{link {@link #hasDenseRepresentation()}) it will implicitly add a sparse
+	 * representation introducing sparse weights if the table had dense weights and otherwise introducing
+	 * sparse energies.
 	 */
 	public int[][] getIndicesSparseUnsafe();
 	
 	/**
-	 * True if factor table supports {@link #getIndicesSparseUnsafe}.
+	 * {@inheritDoc}
+	 * <p>
+	 * If necessary, this method will implicitly modify the representation to include a sparse
+	 * form if it previously only held dense values; in this case, if the table only held dense energies, then
+	 * sparse energies will be added, otherwise sparse weights will be added.
+	 */
+	@Override
+	public double getWeightForSparseIndex(int sparseIndex);
+	
+	/**
+	 * Returns the underlying array of sparse weights without copying for speed.
+	 * <p>
+	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
+	 * an invalid state. This should be treated as a read-only value.
+	 * <p>
+	 * If necessary, this method will implicitly modify the representation to include sparse weights
+	 * (@link {@link #hasSparseEnergies()}).
+	 * <p>
+	 * @see #getEnergiesSparseUnsafe()
+	 */
+	public double[] getWeightsSparseUnsafe();
+	
+	/**
+	 * True if the current factor table representation supports {@link #getIndicesSparseUnsafe}.
 	 */
 	public boolean hasSparseIndices();
 	
@@ -177,6 +208,47 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public void setDirected(BitSet outputSet);
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * If the representation started out as deterministic ({@link #hasDeterministicRepresentation()})
+	 * and the energy changed, it will be
+	 * implicitly converted to {@link FactorTableRepresentation#DENSE_ENERGY} and if
+	 * {@link FactorTableRepresentation#DETERMINISTIC_WITH_INDICES} it will be converted to
+	 * {@link FactorTableRepresentation#ALL_ENERGY_WITH_INDICES}.
+	 */
+	@Override
+	public void setEnergyForJointIndex(double energy, int jointIndex);
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * If the representation started out as deterministic ({@link #hasDeterministicRepresentation()})
+	 * and the energy changed, it will be converted to sparse energies (retaining sparse indices if they exist).
+	 */
+	@Override
+	public void setEnergyForSparseIndex(double energy, int sparseIndex);
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * If the representation started out as {@link FactorTableRepresentation#DETERMINISTIC}, it will be
+	 * and the weight changed, it will be implicitly converted to {@link FactorTableRepresentation#DENSE_WEIGHT} and if
+	 * {@link FactorTableRepresentation#DETERMINISTIC_WITH_INDICES} it will be converted to
+	 * {@link FactorTableRepresentation#ALL_WEIGHT_WITH_INDICES}.
+	 */
+	@Override
+	public void setWeightForJointIndex(double weight, int jointIndex);
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * If the representation started out as deterministic ({@link #hasDeterministicRepresentation()})
+	 * and the weight changed, it will be converted to sparse weights (retaining sparse indices if they exist).
+	 */
+	@Override
+	public void setWeightForSparseIndex(double energy, int sparseIndex);
+
 	/**
 	 * Sets the underlying representation of the table to the specified value.
 	 * <p>

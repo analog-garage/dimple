@@ -403,7 +403,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public void setEnergyForIndices(double energy, int ... indices);
 
 	/**
-	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * Sets the table value indexed by the specified {@code sparseIndex} to the given {@code energy} value.
 	 * <p>
 	 * @see #getEnergyForJointIndex(int jointIndex)
 	 * @see #setEnergyForSparseIndex(double, int)
@@ -440,7 +440,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public void setWeightForIndices(double weight, int ... indices);
 
 	/**
-	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code weight} value.
+	 * Sets the table value indexed by the specified {@code sparseIndex} to the given {@code weight} value.
 	 * <p>
 	 * @see #getWeightForJointIndex(int jointIndex)
 	 * @see #setWeightForSparseIndex(double, int)

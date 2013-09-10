@@ -985,7 +985,14 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	{
 		if (!hasSparseRepresentation())
 		{
-			setRepresentation(_representation | SPARSE_ENERGY);
+			if (hasDenseWeights())
+			{
+				setRepresentation(_representation | SPARSE_WEIGHT);
+			}
+			else
+			{
+				setRepresentation(_representation | SPARSE_ENERGY);
+			}
 		}
 		
 		if (sparseIndex < _sparseIndexToJointIndex.length)
