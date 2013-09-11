@@ -17,7 +17,8 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -26,13 +27,14 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
-public class CustomBeta extends SRealConjugateFactor
+public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -75,9 +77,9 @@ public class CustomBeta extends SRealConjugateFactor
 	
 	
 	@Override
-	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
-		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
+		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
 		if (isPortOutputVariable(portNumber))
 			availableSamplers.add(BetaSampler.factory);		// Output variables have Beta distribution
 		return availableSamplers;
@@ -179,9 +181,10 @@ public class CustomBeta extends SRealConjugateFactor
 	public void createMessages() 
 	{
 		super.createMessages();
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-			_outputMsgs[i] = new BetaParameters();
+		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
+			_outputMsgs[port] = new BetaParameters();
 	}
 	
 	@Override

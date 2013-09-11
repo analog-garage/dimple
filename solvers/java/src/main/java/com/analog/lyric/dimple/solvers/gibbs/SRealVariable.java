@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -31,7 +31,7 @@ import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.SRealConjugateFactor;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.sample.RealSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -636,10 +636,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			INode factorNode = siblings.get(portIndex);
 			ISolverNode factor = factorNode.getSolver();
-			if (!(factor instanceof SRealConjugateFactor))
+			if (!(factor instanceof IRealConjugateFactor))
 				return null;	// At least one connected factor does not support conjugate sampling
 			int factorPortNumber = factorNode.getPortNum(_var);
-			Collection<IRealConjugateSamplerFactory> availableSamplers = ((SRealConjugateFactor)factor).getAvailableSamplers(factorPortNumber);
+			Set<IRealConjugateSamplerFactory> availableSamplers = ((IRealConjugateFactor)factor).getAvailableRealConjugateSamplers(factorPortNumber);
 			if (commonSamplers.isEmpty())  // First time through
 				commonSamplers.addAll(availableSamplers);
 			else

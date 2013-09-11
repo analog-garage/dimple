@@ -17,7 +17,8 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -26,6 +27,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
@@ -33,7 +35,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
-public class CustomNegativeExpGamma extends SRealConjugateFactor
+public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -107,12 +109,12 @@ public class CustomNegativeExpGamma extends SRealConjugateFactor
 	
 	
 	@Override
-	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
-		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
-		if (isPortBetaParameter(portNumber))				// Port is beta parameter, which has a conjugate Gamma distribution
+		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		if (isPortBetaParameter(portNumber))						// Port is beta parameter, which has a conjugate Gamma distribution
 			availableSamplers.add(GammaSampler.factory);
-		else if (!isPortAlphaParameter(portNumber))				// No supported conjugate sampler for alpha parameter
+		else if (!isPortAlphaParameter(portNumber))					// No supported conjugate sampler for alpha parameter
 			availableSamplers.add(NegativeExpGammaSampler.factory);	// So port is output, which has a NegativeExpGamma distribution
 		return availableSamplers;
 	}
@@ -240,9 +242,11 @@ public class CustomNegativeExpGamma extends SRealConjugateFactor
 	public void createMessages() 
 	{
 		super.createMessages();
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-			_outputMsgs[i] = new GammaParameters();
+		for (int port = 0; port < _numPorts; port++)
+			if (port != _alphaParameterPort)
+				_outputMsgs[port] = new GammaParameters();
 	}
 	
 	@Override

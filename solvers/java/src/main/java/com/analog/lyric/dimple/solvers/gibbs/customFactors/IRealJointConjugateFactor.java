@@ -16,22 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.Collection;
+import java.util.Set;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
 
-public abstract class SRealConjugateFactor extends SRealFactor
+public interface IRealJointConjugateFactor
 {
-	public SRealConjugateFactor(Factor factor)
-	{
-		super(factor);
-	}
-
-	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
-	{
-		return null;
-	}
+	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber);
 }

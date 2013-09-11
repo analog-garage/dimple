@@ -17,7 +17,8 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -26,12 +27,13 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
-public class CustomDirichlet extends SRealJointConjugateFactor
+public class CustomDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
 	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -70,9 +72,9 @@ public class CustomDirichlet extends SRealJointConjugateFactor
 	
 	
 	@Override
-	public Collection<IRealJointConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber)
 	{
-		Collection<IRealJointConjugateSamplerFactory> availableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
+		Set<IRealJointConjugateSamplerFactory> availableSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
 		if (isPortOutputVariable(portNumber))
 			availableSamplers.add(DirichletSampler.factory);	// Output variables have Dirichlet distribution
 		return availableSamplers;
@@ -162,9 +164,8 @@ public class CustomDirichlet extends SRealJointConjugateFactor
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = _numParameterEdges; i < _numPorts; i++)
-			if (isPortOutputVariable(i))
-				_outputMsgs[i] = new double[_dimension];
+		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
+			_outputMsgs[port] = new double[_dimension];
 	}
 	
 	@Override

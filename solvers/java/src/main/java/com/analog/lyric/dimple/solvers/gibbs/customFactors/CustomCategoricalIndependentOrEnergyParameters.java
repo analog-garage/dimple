@@ -17,7 +17,8 @@
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.CategoricalIndependentParameters;
@@ -29,13 +30,14 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Real;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
-public class CustomCategoricalIndependentOrEnergyParameters extends SRealConjugateFactor
+public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -92,9 +94,9 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealConjuga
 	
 	
 	@Override
-	public Collection<IRealConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
-		Collection<IRealConjugateSamplerFactory> availableSamplers = new ArrayList<IRealConjugateSamplerFactory>();
+		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
 		if (isPortParameter(portNumber))					// Conjugate sampler if edge is a parameter input
 			availableSamplers.add(GammaSampler.factory);	// Parameter inputs have conjugate Gamma distribution
 		return availableSamplers;
@@ -213,10 +215,10 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealConjuga
 	public void createMessages() 
 	{
 		super.createMessages();
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-			if (isPortParameter(i))
-				_outputMsgs[i] = new GammaParameters();
+		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
+			_outputMsgs[port] = new GammaParameters();
 	}
 	
 	@Override

@@ -18,7 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -29,12 +30,13 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 
-public class CustomDiscreteTransition extends SRealJointConjugateFactor
+public class CustomDiscreteTransition extends SRealFactor implements IRealJointConjugateFactor
 {
 	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -96,9 +98,9 @@ public class CustomDiscreteTransition extends SRealJointConjugateFactor
 	
 	
 	@Override
-	public Collection<IRealJointConjugateSamplerFactory> getAvailableSamplers(int portNumber)
+	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber)
 	{
-		Collection<IRealJointConjugateSamplerFactory> availableSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
+		Set<IRealJointConjugateSamplerFactory> availableSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
 		if (isPortParameter(portNumber))						// Conjugate sampler if edge is a parameter input
 			availableSamplers.add(DirichletSampler.factory);	// Parameter inputs have conjugate Dirichlet distribution
 		return availableSamplers;
@@ -247,8 +249,8 @@ public class CustomDiscreteTransition extends SRealJointConjugateFactor
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
-		for (int i = 0; i < _numPorts; i++)
-			_outputMsgs[i] = new double[_yDimension];
+		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
+			_outputMsgs[port] = new double[_yDimension];
 	}
 	
 	@Override
