@@ -39,7 +39,9 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
+	private SDiscreteVariable[] _outputVariables;
 	private int _numParameterEdges;
+	private int _numOutputEdges;
 	private int _constantOutputZeroCount;
 	private int _constantOutputOneCount;
 	private boolean _hasConstantOutputs;
@@ -65,10 +67,9 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 
 			// Start with the ports to variable outputs
 			int numZeros = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
-			for (int port = _numParameterEdges; port < _numPorts; port++)
+			for (int i = 0; i < _numOutputEdges; i++)
 			{
-				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
+				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				if (outputIndex == 0)
 					numZeros++;
 			}
@@ -180,6 +181,14 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 					_hasConstantOutputs = true;			// Constant is an output
 			}
 		}
+		_numOutputEdges = _numPorts - _numParameterEdges;
+
+		
+		// Save output variables
+		ArrayList<INode> siblings = _factor.getSiblings();
+		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		for (int i = 0; i < _numOutputEdges; i++)
+			_outputVariables[i] = (SDiscreteVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

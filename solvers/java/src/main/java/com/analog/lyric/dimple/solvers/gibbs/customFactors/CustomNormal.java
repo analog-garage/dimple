@@ -40,6 +40,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
+	private SRealVariable[] _outputVariables;
 	private SRealVariable _meanVariable;
 	private SRealVariable _precisionVariable;
 	private boolean _hasConstantMean;
@@ -87,10 +88,9 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 				// Determine sample mean and precision
 				
 				// Start with the ports to variable outputs
-				ArrayList<INode> siblings = _factor.getSiblings();
 				double sum = 0;
-				for (int port = _numParameterEdges; port < _numPorts; port++)
-					sum += ((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample();
+				for (int i = 0; i < _numOutputEdges; i++)
+					sum += _outputVariables[i].getCurrentSample();
 				int count = _numOutputEdges;
 				
 				// Include any constant outputs also
@@ -226,6 +226,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		ArrayList<INode> siblings = _factor.getSiblings();
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
@@ -240,7 +241,6 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		else // Variable or constant parameters
 		{
 			_numParameterEdges = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
 			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
 			{
 				_hasConstantMean = true;
@@ -269,6 +269,11 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			}
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;
+		
+		// Save output variables
+		_outputVariables = new SRealVariable[_numOutputEdges];
+		for (int i = 0; i < _numOutputEdges; i++)
+			_outputVariables[i] = (SRealVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

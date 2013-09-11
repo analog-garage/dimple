@@ -39,6 +39,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
+	private SRealVariable[] _outputVariables;
 	private SRealVariable _alphaVariable;
 	private SRealVariable _betaVariable;
 	private boolean _hasConstantAlpha;
@@ -84,10 +85,9 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
 
 			// Start with the ports to variable outputs
-			ArrayList<INode> siblings = _factor.getSiblings();
 			double sum = 0;
-			for (int port = _numParameterEdges; port < _numPorts; port++)
-				sum += Math.exp(-((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample());
+			for (int i = 0; i < _numOutputEdges; i++)
+				sum += Math.exp(_outputVariables[i].getCurrentSample());
 			int count = _numOutputEdges;
 
 			// Include any constant outputs also
@@ -192,6 +192,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		ArrayList<INode> siblings = _factor.getSiblings();
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
@@ -206,7 +207,6 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 		else // Variable or constant parameters
 		{
 			_numParameterEdges = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
 			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
 			{
 				_hasConstantAlpha = true;
@@ -235,6 +235,11 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 			}
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;
+		
+		// Save output variables
+		_outputVariables = new SRealVariable[_numOutputEdges];
+		for (int i = 0; i < _numOutputEdges; i++)
+			_outputVariables[i] = (SRealVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

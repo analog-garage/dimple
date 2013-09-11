@@ -39,8 +39,10 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 {
 	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
+	private SDiscreteVariable[] _outputVariables;
 	private int _parameterDimension;
 	private int _numParameterEdges;
+	private int _numOutputEdges;
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantOutputs;
 	private static final int NUM_PARAMETERS = 1;
@@ -69,10 +71,9 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			Arrays.fill(outputMsg, 0);
 			
 			// Start with the ports to variable outputs
-			ArrayList<INode> siblings = _factor.getSiblings();
-			for (int port = _numParameterEdges; port < _numPorts; port++)
+			for (int i = 0; i < _numOutputEdges; i++)
 			{
-				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
+				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				outputMsg[outputIndex]++;	// Increment the statistics
 			}
 
@@ -182,8 +183,10 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			_numParameterEdges = NUM_PARAMETERS;
 			_hasConstantOutputs = false;
 		}
-		
+		_numOutputEdges = _numPorts - _numParameterEdges;
+
 		// Determine the dimension of the parameter vector
+		ArrayList<INode> siblings = _factor.getSiblings();
 		if (hasConstantParameters)
 		{
 			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
@@ -191,9 +194,13 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		}
 		else
 		{
-			ArrayList<INode> siblings = _factor.getSiblings();
 			_parameterDimension = (((RealJoint)siblings.get(PARAMETER_INDEX))).getRealDomain().getNumVars();
 		}
+		
+		// Save output variables
+		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		for (int i = 0; i < _numOutputEdges; i++)
+			_outputVariables[i] = (SDiscreteVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

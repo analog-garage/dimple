@@ -41,8 +41,10 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
+	private SDiscreteVariable[] _outputVariables;
 	private int _numParameters;
 	private int _numParameterEdges;
+	private int _numOutputEdges;
 	private int[] _parameterIndices;
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantParameters;
@@ -73,10 +75,9 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 
 			// Start with the ports to variable outputs
 			int count = 0;
-			ArrayList<INode> siblings = _factor.getSiblings();
-			for (int port = _numParameterEdges; port < _numPorts; port++)
+			for (int i = 0; i < _numOutputEdges; i++)
 			{
-				int outputIndex = ((SDiscreteVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSampleIndex();
+				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				if (outputIndex == parameterIndex)
 					count++;
 			}
@@ -208,6 +209,13 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 				}
 			}
 		}
+		_numOutputEdges = _numPorts - _numParameterEdges;
+	
+		// Save output variables
+		ArrayList<INode> siblings = _factor.getSiblings();
+		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		for (int i = 0; i < _numOutputEdges; i++)
+			_outputVariables[i] = (SDiscreteVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	
