@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
 public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
@@ -49,7 +50,8 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantParameters;
 	private boolean _hasConstantOutputs;
-	
+	private boolean _useEnergyParameters;
+
 	public CustomCategoricalIndependentOrEnergyParameters(Factor factor)
 	{
 		super(factor);
@@ -99,7 +101,10 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 	{
 		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
 		if (isPortParameter(portNumber))					// Conjugate sampler if edge is a parameter input
-			availableSamplers.add(GammaSampler.factory);	// Parameter inputs have conjugate Gamma distribution
+			if (_useEnergyParameters)
+				availableSamplers.add(NegativeExpGammaSampler.factory);	// Parameter inputs have conjugate negative exp-Gamma distribution
+			else
+				availableSamplers.add(GammaSampler.factory);			// Parameter inputs have conjugate Gamma distribution
 		return availableSamplers;
 	}
 	
@@ -168,11 +173,13 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 		{
 			CategoricalIndependentParameters specificFactorFunction = (CategoricalIndependentParameters)factorFunction;
 			_numParameters = specificFactorFunction.getDimension();
+			_useEnergyParameters = false;
 		}
 		else	// Energy parameters
 		{
 			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)factorFunction;
 			_numParameters = specificFactorFunction.getDimension();
+			_useEnergyParameters = true;
 		}
 		
 		

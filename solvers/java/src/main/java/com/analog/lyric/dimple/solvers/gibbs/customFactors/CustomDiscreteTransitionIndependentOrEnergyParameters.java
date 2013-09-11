@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
 public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
@@ -46,6 +47,7 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 	private SDiscreteVariable _xVariable;
 	private boolean _hasConstantY;
 	private boolean _hasConstantX;
+	private boolean _useEnergyParameters;
 	private int _xDimension;
 	private int _yDimension;
 	private int _numParameters;
@@ -114,7 +116,10 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 	{
 		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
 		if (isPortParameter(portNumber))					// Conjugate sampler if edge is a parameter input
-			availableSamplers.add(GammaSampler.factory);	// Parameter inputs have conjugate Gamma distribution
+			if (_useEnergyParameters)
+				availableSamplers.add(NegativeExpGammaSampler.factory);	// Parameter inputs have conjugate negative exp-Gamma distribution
+			else
+				availableSamplers.add(GammaSampler.factory);			// Parameter inputs have conjugate Gamma distribution
 		return availableSamplers;
 	}
 	
@@ -166,6 +171,7 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 			_xDimension = specificFactorFunction.getXDimension();
 			_yDimension = specificFactorFunction.getYDimension();
 			_numParameters = specificFactorFunction.getNumParameters();
+			_useEnergyParameters = false;
 		}
 		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
 		{
@@ -173,6 +179,7 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 			_xDimension = specificFactorFunction.getXDimension();
 			_yDimension = specificFactorFunction.getYDimension();
 			_numParameters = specificFactorFunction.getNumParameters();
+			_useEnergyParameters = true;
 		}
 		else
 			throw new DimpleException("Invalid factor function");
