@@ -29,7 +29,7 @@ for arg=varargin
     end
 end
 
-dimension = prod(size(alpha));    % numel not supported for variable arrays
+dimension = alpha.Domain.NumElements;
 var = RealJoint(dimension, outSize{:});
 
 if (isa(alpha,'VariableBase'))
