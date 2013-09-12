@@ -206,6 +206,7 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 			if (numConstantParameters > 0)
 			{
 				// There are constant parameters, so create a mapping from edges to indices for the remaining variable parameters
+				_parameterIndices = new int[_numParameterEdges];
 				_hasConstantParameters = true;
 				for (int i = 0, constantIndex = 0, variableIndex = 0; i < _numParameters; i++)
 				{

@@ -44,7 +44,17 @@ else
     var = Discrete(discreteDomain, outSize{:});
 
     ff = FactorFunction('CategoricalIndependentParameters', N);
-    fg.addFactor(ff, alphas, var);
+    
+    if (isa(alphas, 'Real'))
+        fg.addFactor(ff, alphas, var);
+    elseif (iscell(alphas))
+        fg.addFactor(ff, alphas{:}, var);
+    elseif (isnumeric(alphas))
+        tmp = num2cell(alphas);
+        fg.addFactor(ff, tmp{:}, var);
+    else
+        error('Invalid parameter type');
+    end
 end
 
 end

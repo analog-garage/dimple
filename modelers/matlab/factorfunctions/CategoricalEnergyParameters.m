@@ -29,12 +29,22 @@ for arg=varargin
     end
 end
 
+% Energy parameters (suitable for NegativeExpGamma priors)
 N = prod(size(alphas));           % numel not supported for variable arrays
 discreteDomain = 0:N-1;           % Domain must be zero based integers
 var = Discrete(discreteDomain, outSize{:});
 
-% Independent energy parameters (suitable for NegativeExpGamma priors)
 ff = FactorFunction('CategoricalEnergyParameters', N);
-fg.addFactor(ff, alphas, var);
+
+if (isa(alphas, 'Real'))
+    fg.addFactor(ff, alphas, var);
+elseif (iscell(alphas))
+    fg.addFactor(ff, alphas{:}, var);
+elseif (isnumeric(alphas))
+    tmp = num2cell(alphas);
+    fg.addFactor(ff, tmp{:}, var);
+else
+    error('Invalid parameter type');
+end
 
 end
