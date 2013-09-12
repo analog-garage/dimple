@@ -56,11 +56,7 @@ classdef TableFactorFunction < handle
         end
         
         function set.Indices(obj,indices)
-            if ~isempty(obj.ITableFactorFunction)
-                obj.ITableFactorFunction.getFactorTable().changeIndices(indices);
-            else
-                obj.Indices = indices;
-            end
+        	error('Cannot directly set FactorTable.Indices. Use change(indices,weights) instead.');
         end
         
         function values = get.Weights(obj)

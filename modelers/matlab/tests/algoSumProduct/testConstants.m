@@ -21,7 +21,7 @@ function testConstants()
     g.addFactor(@constantDelta,v,4);
     g.Solver.setNumIterations(2);
     g.solve;
-    assertElementsAlmostEqual(v.Belief,[.5 0 .5 0 0]);    
+    assertElementsAlmostEqual(v.Belief,[.5 0 .5 0 0]');    
     %disp(sprintf('\t\t--testConstants'));
 end
 

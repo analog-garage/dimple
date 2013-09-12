@@ -16,18 +16,31 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.util.misc.Matlab;
 
 public interface ISolverFactorGraph extends ISolverNode
 {
+	/**
+	 * Returns the factor graph represented by this solver graph.
+	 */
 	@Override
 	public FactorGraph getModelObject();
 	
+	/**
+	 * Create a new solver-specific variable representing the given model variable.
+	 */
 	public ISolverVariable createVariable(VariableBase var);
+	
+	/**
+	 * @return solver-specific variable representing the given model variable or else null.
+	 */
+	public ISolverVariable getSolverVariable(VariableBase var);
+
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
 	public boolean customFactorExists(String funcName);
@@ -50,8 +63,8 @@ public interface ISolverFactorGraph extends ISolverNode
 	public double getInternalEnergy();
 	@Override
 	public double getBetheEntropy();
-	public void estimateParameters(FactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
-	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps);
+	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor);
+	public void baumWelch(IFactorTable[] tables,int numRestarts,int numSteps);
 	public void moveMessages(ISolverNode other);
 	public void postAdvance();
 	public void postAddFactor(Factor f);
@@ -65,5 +78,6 @@ public interface ISolverFactorGraph extends ISolverNode
 	 * 
 	 * @return name of MATLAB function used to do actual solve in MATLAB interface or null if there is none.
 	 */
+	@Matlab
 	public String getMatlabSolveWrapper();
 }

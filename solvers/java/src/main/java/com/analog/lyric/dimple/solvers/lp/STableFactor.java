@@ -22,8 +22,8 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.VariableList;
@@ -58,7 +58,7 @@ public class STableFactor extends STableFactorBase
 	
 	/**
 	 * Represents the invalid joint assignments of the variables input to the factor table
-	 * as an index into a factor table's {@link FactorTableBase#getWeights()} array. An assignment is invalid
+	 * as an index into a factor table's {@link FactorTableBase#getWeightsSparseUnsafe()} array. An assignment is invalid
 	 * either if the weight in the table is zero (which normally would only happen if it was explicitly
 	 * set to zero after the table was constructed) or if one of the input parameters has a zero input
 	 * probability.
@@ -70,8 +70,10 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
-	private double _totalWeight = Double.NaN;
-	
+
+
+
+
 	/*--------------
 	 * Construction
 	 */
@@ -169,11 +171,10 @@ public class STableFactor extends STableFactorBase
 	int computeValidAssignments()
 	{
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
-		final double[] weights = factorTable.getWeights();
+		final IFactorTable factorTable = factor.getFactorTable();
+		final double[] weights = factorTable.getWeightsSparseUnsafe();
 		final SVariable[] svariables = getSVariables();
 
-		double totalWeight = 0.0;
 		int cardinality = 0;
 	
 		boolean hasNonFixedVariable = true;
@@ -197,7 +198,7 @@ public class STableFactor extends STableFactorBase
 					// If any of the variable input weights for these values
 					// is zero, then we can skip this entry.
 					skipEntry = false;
-					final int[] indices = factorTable.getRow(i);
+					final int[] indices = factorTable.sparseIndexToIndices(i);
 					for (int j = 0, endj = indices.length; j < endj; ++j)
 					{
 						SVariable svar = svariables[j];
@@ -220,13 +221,11 @@ public class STableFactor extends STableFactorBase
 				}
 				else
 				{
-					totalWeight += weight;
 					++cardinality;
 				}
 			}
 		}
 		
-		_totalWeight = totalWeight;
 		_nLpVars = cardinality;
 		
 		return cardinality;
@@ -241,8 +240,8 @@ public class STableFactor extends STableFactorBase
 			_lpVarIndex = start;
 
 			final DiscreteFactor factor = getModelObject();
-			final FactorTable factorTable = factor.getFactorTable();
-			final double[] weights = factorTable.getWeights();
+			final IFactorTable factorTable = factor.getFactorTable();
+			final double[] weights = factorTable.getWeightsSparseUnsafe();
 			final int nWeights = weights.length;
 
 			for (int i = 0; i < nWeights; ++i)
@@ -286,8 +285,8 @@ public class STableFactor extends STableFactorBase
 		}
 		
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
-		final int[][] rows = factorTable.getIndices();
+		final IFactorTable factorTable = factor.getFactorTable();
+		final int[][] rows = factorTable.getIndicesSparseUnsafe();
 		final int nRows = rows.length;
 
 		final SVariable[] svariables = getSVariables();
@@ -347,7 +346,6 @@ public class STableFactor extends STableFactorBase
 	{
 		_lpVarIndex = -1;
 		_invalidAssignments = null;
-		_totalWeight = Double.NaN;
 	}
 	
 	/**
@@ -373,8 +371,8 @@ public class STableFactor extends STableFactorBase
 		final int lpVar = lpVars[0];
 
 		final DiscreteFactor factor = getModelObject();
-		final FactorTable factorTable = factor.getFactorTable();
-		final int[][] rows = factorTable.getIndices();
+		final IFactorTable factorTable = factor.getFactorTable();
+		final int[][] rows = factorTable.getIndicesSparseUnsafe();
 		final int nRows = rows.length;
 
 		// Build array of solver variables for input variables.
@@ -390,7 +388,7 @@ public class STableFactor extends STableFactorBase
 				Discrete var = svar.getModelObject();
 				String varName = var.getName();
 				int varValueIndex = svar.lpVarToDomainIndex(lpVar);
-				Object varValue = var.getDomain().getElements()[varValueIndex];
+				Object varValue = var.getDomain().getElement(varValueIndex);
 				out.format("-p(%s=%s)", varName, varValue);
 				break;
 			}

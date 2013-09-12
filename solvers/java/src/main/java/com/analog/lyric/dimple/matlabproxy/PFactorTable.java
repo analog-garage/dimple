@@ -16,13 +16,16 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
 public class PFactorTable extends PObject
 {
-	private FactorTable _table;
+	private IFactorTable _table;
 	
 	/*--------------
 	 * Construction
@@ -30,20 +33,20 @@ public class PFactorTable extends PObject
 	
 	public PFactorTable(PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(PHelpers.convertDomains(domains));
+		_table = FactorTable.create(PHelpers.convertDomains(domains));
 	}
 	
 	public PFactorTable(Object table, PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(table, PHelpers.convertDomains(domains));
+		_table = FactorTable.create(table, PHelpers.convertDomains(domains));
 	}
 	
 	public PFactorTable(int [][] indices, double [] values, PDiscreteDomain [] domains)
 	{
-		_table = new FactorTable(indices,values,PHelpers.convertDomains(domains));
+		_table = FactorTable.create(indices, values, PHelpers.convertDomains(domains));
 	}
 	
-	public PFactorTable(FactorTable table)
+	public PFactorTable(IFactorTable table)
 	{
 		_table = table;
 	}
@@ -53,7 +56,7 @@ public class PFactorTable extends PObject
 	 */
 	
 	@Override
-	public FactorTable getModelerObject()
+	public IFactorTable getModelerObject()
 	{
 		return _table;
 	}
@@ -76,53 +79,49 @@ public class PFactorTable extends PObject
 	
 	public void normalize(int [] directedTo)
 	{
-		getModelerObject().normalize(directedTo);
+		_table.makeConditional(BitSetUtil.bitsetFromIndices(_table.getDimensions(), directedTo));
 	}
 	
 	public PDiscreteDomain [] getDomains()
 	{
-		PDiscreteDomain [] pdomains = new PDiscreteDomain[_table.getDomains().length];
+		JointDomainIndexer domains = _table.getDomainIndexer();
+		PDiscreteDomain [] pdomains = new PDiscreteDomain[domains.size()];
 		
-		for (int i = 0; i < _table.getDomains().length; i++)
+		for (int i = 0; i < pdomains.length; i++)
 		{
-			pdomains[i] = new PDiscreteDomain(_table.getDomains()[i]);
+			pdomains[i] = new PDiscreteDomain(domains.get(i));
 		}
 		return pdomains;
 	}
 
 	public int [][] getIndices()
 	{
-		return _table.getIndices();
+		return _table.getIndicesSparseUnsafe();
 	}
 	
 	public double [] getWeights()
 	{
-		return _table.getWeights();
+		return _table.getWeightsSparseUnsafe();
 	}
 	
 	public double get(int [] indices)
 	{
-		return _table.get(indices);
+		return _table.getWeightForIndices(indices);
 	}
 	
 	public void set(int [] indices, double value)
 	{
-		_table.set(indices, value);
+		_table.setWeightForIndices(value, indices);
 	}
 	
 	public void changeWeights(double [] values)
 	{
-		_table.changeWeights(values);
-	}
-	
-	public void changeIndices(int [][] indices)
-	{
-		_table.changeIndices(indices);
+		_table.replaceWeightsSparse(values);
 	}
 	
 	public void change(int [][] indices, double [] weights)
 	{
-		_table.change(indices,weights);
+		_table.setWeightsSparse(indices,weights);
 	}
 
 }

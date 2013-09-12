@@ -81,7 +81,7 @@ function testJoinFactor()
 
     f3 = fg.join(f1,f2);
     assertEqual(double(f3.FactorTable.Indices),[1 0; 0 1; 1 1]);
-    assertEqual(f3.FactorTable.Weights,[3 4 12]');
+    assertElementsAlmostEqual(f3.FactorTable.Weights,[3 4 12]');
    
     %Test mulitple factors
     b = Bit(4,1);

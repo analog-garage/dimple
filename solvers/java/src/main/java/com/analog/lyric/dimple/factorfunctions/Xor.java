@@ -32,7 +32,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * is treated as the directed output.
  * 
  */
-public class Xor extends FactorFunction 
+public class Xor extends FactorFunction
 {
 	public Xor() {super();}
 	public Xor(String name)	{super(name);}
@@ -55,12 +55,12 @@ public class Xor extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	boolean total = false;
     	for(int i = 1; i < arguments.length; ++i)
     		total ^= FactorFunctionUtilities.toBoolean(arguments[i]);
     	
-    	arguments[0] = total;		// Replace the output value
+    	arguments[0] = FactorFunctionUtilities.booleanToClass(total, arguments[1].getClass());
     }
 }

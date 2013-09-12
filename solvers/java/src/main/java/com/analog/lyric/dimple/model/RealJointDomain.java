@@ -16,76 +16,100 @@
 
 package com.analog.lyric.dimple.model;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class RealJointDomain extends Domain
 {
-	private RealDomain[] _domains;
+	/*-------
+	 * State
+	 */
 	
-	public RealJointDomain(int size)
-	{
-		_domains = new RealDomain[size];
-		
-		for (int i = 0; i < size; i++)
-			_domains[i] = new RealDomain();
-	}
+	private static final long serialVersionUID = 1L;
 	
-	public RealJointDomain(RealDomain ... domains)
-	{
-		_domains = domains.clone();
-	}
+	private final RealDomain [] _domains;
 	
-	@Override
-	public boolean isDiscrete()
-	{
-		return false;
-	}
+	/*--------------
+	 * Construction
+	 */
 	
-	public RealDomain[] getRealDomains()
+	RealJointDomain(RealDomain[] domains)
 	{
-		return _domains;
-	}
-	
-	public RealDomain getRealDomain(int dimension)
-	{
-		return _domains[dimension];
-	}
-	
-	public int getNumVars()
-	{
-		return _domains.length;
-	}
-	
-	@Override
-	public boolean isJoint()
-	{
-		return true;
+		super(Arrays.hashCode(domains) * 3 + 31);
+		_domains = domains;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(this._domains);
-		return result;
+	public static RealJointDomain create(RealDomain... domains)
+	{
+		if (domains.length < 2)
+		{
+			throw new IllegalArgumentException("RealJointDomain requires at least two domains");
+		}
+		return new RealJointDomain(domains.clone());
+	}
+	
+	public static RealJointDomain create(int size)
+	{
+		RealDomain[] domains = new RealDomain[size];
+		Arrays.fill(domains, RealDomain.unbounded());
+		return create(domains);
 	}
 
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 
-		if (!(obj instanceof RealJointDomain))
-			return false;
-
-		RealJointDomain other = (RealJointDomain) obj;
-		if (!Arrays.equals(this._domains, other._domains))
-			return false;
-		return true;
+		if ((obj instanceof RealJointDomain))
+		{
+			RealJointDomain other = (RealJointDomain) obj;
+			return Arrays.equals(this._domains, other._domains);
+		}
+		
+		return false;
 	}
 	
-	// Utility to check if a value is in the domain or not
-	public boolean inDomain(double[] value)
+	/*----------------
+	 * Domain methods
+	 */
+
+	@Override
+	public final RealJointDomain asRealJoint()
+	{
+		return this;
+	}
+	
+	/**
+	 * @returns true if value is an array of length matching {@link #getNumVars()} and whose
+	 * elements are contained in the correspond {@link RealDomain} in {@link #getRealDomains()}.
+	 */
+	@Override
+	public boolean inDomain(Object value)
+	{
+		if (value.getClass().isArray() && Array.getLength(value) == _domains.length)
+		{
+			for (int i = 0, end = _domains.length; i < end; ++i)
+			{
+				if (! _domains[i].inDomain(Array.get(value, i)))
+				{
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean inDomain(double ... value)
 	{
 		int size = value.length;
 		if (size != _domains.length)
@@ -97,5 +121,37 @@ public class RealJointDomain extends Domain
 		
 		return true;
 	}
+
+	@Override
+	public final boolean isRealJoint()
+	{
+		return true;
+	}
 	
+	/*-------------------------
+	 * RealJointDomain methods
+	 */
+	
+	/**
+	 * Returns the number of dimensions, or subdomains that make up this joint domain.
+	 */
+	public final int getDimensions()
+	{
+		return _domains.length;
+	}
+	
+	public RealDomain [] getRealDomains()
+	{
+		return _domains.clone();
+	}
+	
+	public RealDomain getRealDomain(int dimension)
+	{
+		return _domains[dimension];
+	}
+	
+	public int getNumVars()
+	{
+		return _domains.length;
+	}
 }

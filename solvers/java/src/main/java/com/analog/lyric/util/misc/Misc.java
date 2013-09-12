@@ -19,10 +19,10 @@ package com.analog.lyric.util.misc;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
-import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INameable;
@@ -37,8 +37,18 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
-public class Misc 
+public class Misc
 {
+	/**
+	 * A do-nothing function you can use for in-code conditional breakpoints when debugging.
+	 * <p>
+	 * Just set a method breakpoint on this method in Eclipse and leave it there and
+	 * insert this
+	 */
+	public static void breakpoint()
+	{
+	}
+	
 	public static Object [] nDimensionalArray2indicesAndValues(Object obj)
 	{
 		Object tmpObj = obj;
@@ -114,18 +124,18 @@ public class Misc
 	}
 
 	
-	public static FactorGraph 	makeXorGraphFromMatrix(byte[][] matrix, IFactorGraphFactory solver) 
+	public static FactorGraph 	makeXorGraphFromMatrix(byte[][] matrix, IFactorGraphFactory solver)
     {
     	return makeGraphFromMatrix(matrix,
     							   new Double[]{0.0, 1.0},
     							   new XorDelta(),
-    							   solver);	
+    							   solver);
     }
 	
-    public static FactorGraph 	makeGraphFromMatrix(byte[][] matrix, 
-    												Object[] domain, 
-    												FactorFunction f, 
-    												IFactorGraphFactory solver) 
+    public static FactorGraph 	makeGraphFromMatrix(byte[][] matrix,
+    												Object[] domain,
+    												FactorFunction f,
+    												IFactorGraphFactory solver)
     {
     	
     	//Make all variables first
@@ -139,14 +149,14 @@ public class Misc
     	fg.setSolverFactory(solver);
     	fg.addVariables(variables);
 	
-    	//Now go function by function (row by row) 
+    	//Now go function by function (row by row)
     	Object[] oneFactorsArgs = null;
     	for(int i = 0; i < matrix.length; ++i)
     	{
     		//###########################################################
     		//## Variables for this function
     		//###########################################################
-    		//First build up array of the variable args to the function. 
+    		//First build up array of the variable args to the function.
     		//count args for *this* factor (this row)
     		int numArgs = 0;
     		for(int j = 0; j < matrix[i].length; ++j)
@@ -156,12 +166,12 @@ public class Misc
     				numArgs++;
     			}
     		}
-    		//if num args is different than last iteration, 
+    		//if num args is different than last iteration,
     		//make a new array with appropriate size
     		if(oneFactorsArgs == null ||
     		   numArgs != oneFactorsArgs.length)
     		{
-        		oneFactorsArgs = new Discrete[numArgs];     			
+        		oneFactorsArgs = new Discrete[numArgs];
     		}
     		//Actually store the variable args
     		int nextArgIdx = 0;
@@ -171,7 +181,7 @@ public class Misc
     			{
     				oneFactorsArgs[nextArgIdx] = variables[j];
     				nextArgIdx++;
-    			}   			
+    			}
     		}
     		
     		//###########################################################
@@ -182,7 +192,7 @@ public class Misc
     	
     	return fg;
     }
-	static public double[][] getBeliefs(FactorGraph fg) 
+	static public double[][] getBeliefs(FactorGraph fg)
 	{
 		VariableList vs = fg.getVariablesFlat();
 		ArrayList<VariableBase> vbs = (ArrayList<VariableBase>)vs.values();
@@ -191,14 +201,14 @@ public class Misc
 		{
 			beliefs[i] = ((Discrete)vbs.get(i)).getBelief();
 		}
-		return beliefs;		
+		return beliefs;
 	}
 
-	static public BatchSchedule trivialBatchify(ISchedule schedule) 
+	static public BatchSchedule trivialBatchify(ISchedule schedule)
 	{
 		return trivialBatchify(schedule, 0, 0);
 	}
-	static public FixedSchedule trivialDeBatchify(FixedSchedule mightBeBatchSchedule) 
+	static public FixedSchedule trivialDeBatchify(FixedSchedule mightBeBatchSchedule)
 	{
 		FixedSchedule fs = new FixedSchedule();
 		for(IScheduleEntry entry :  mightBeBatchSchedule)
@@ -218,7 +228,7 @@ public class Misc
 		}
 		return fs;
 	}
-	static public BatchSchedule trivialBatchify(ISchedule schedule, int maxVariableBatchSize, int maxFactorBatchSize) 
+	static public BatchSchedule trivialBatchify(ISchedule schedule, int maxVariableBatchSize, int maxFactorBatchSize)
 	{
 		FixedSchedule deBatchifiedSchedule = trivialDeBatchify((FixedSchedule) schedule);
 		
@@ -241,14 +251,14 @@ public class Misc
 			}
 			
 			boolean first = bs.getCurrentBatch() == null;
-			boolean switchType = currBatchVariable != currNodeVariable; 
-			boolean variableTooBig = !first && maxVariableBatchSize > 0 && bs.getCurrentBatch().size() >= maxVariableBatchSize; 
-			boolean factorTooBig = !first && maxFactorBatchSize > 0 && bs.getCurrentBatch().size() >= maxFactorBatchSize; 
-			boolean tooBig = !first && 
-							 !switchType && 
+			boolean switchType = currBatchVariable != currNodeVariable;
+			boolean variableTooBig = !first && maxVariableBatchSize > 0 && bs.getCurrentBatch().size() >= maxVariableBatchSize;
+			boolean factorTooBig = !first && maxFactorBatchSize > 0 && bs.getCurrentBatch().size() >= maxFactorBatchSize;
+			boolean tooBig = !first &&
+							 !switchType &&
 							 ((currNodeVariable && variableTooBig) ||
 							  (!currNodeVariable && factorTooBig))
-							  ; 
+							  ;
 			
 			if(first || switchType || tooBig)
 			{
@@ -270,7 +280,7 @@ public class Misc
 		}
 		for(Factor f : fg.getNonGraphFactorsFlat().values())
 		{
-			fs.add(new NodeScheduleEntry(f));			
+			fs.add(new NodeScheduleEntry(f));
 		}
 		return fs;
 	}

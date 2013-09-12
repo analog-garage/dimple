@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.FactorGraph;
 
-public class BadNBitXor 
+public class BadNBitXor
 {
 
 	public static class BadNBitXorFactor extends FactorFunction
@@ -39,10 +39,10 @@ public class BadNBitXor
 		}
 	}
 	
-	public static void main(String[] args) 
+	public static void main(String[] args)
 	{
 		FactorGraph fourBitXor = new FactorGraph();
-		DiscreteDomain domain = new DiscreteDomain(0,1);
+		DiscreteDomain domain = DiscreteDomain.bit();
 		Discrete b1 = new Discrete(domain);
 		Discrete b2 = new Discrete(domain);
 		Discrete b3 = new Discrete(domain);

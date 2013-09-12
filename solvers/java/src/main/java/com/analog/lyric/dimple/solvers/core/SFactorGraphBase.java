@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorBase;
@@ -61,6 +61,20 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The default implementation simply returns {@link VariableBase#getSolver()}, which
+	 * assumes that the {@code variable}'s model is currenty attached to this solver graph.
+	 * Subclasses may override this to return a more precise type or to support solvers that
+	 * can still be used when they are detached from the model.
+	 */
+	@Override
+	public ISolverVariable getSolverVariable(VariableBase variable)
+	{
+		return variable.getSolver();
+	}
+	
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
@@ -218,14 +232,14 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 	
 	@Override
-	public void estimateParameters(FactorTable[] tables, int numRestarts,
+	public void estimateParameters(IFactorTable[] tables, int numRestarts,
 			int numSteps, double stepScaleFactor) {
 		throw new DimpleException("not supported by this solver");
 		
 	}
 	
 	@Override
-	public void baumWelch(FactorTable [] tables,int numRestarts,int numSteps)
+	public void baumWelch(IFactorTable [] tables,int numRestarts,int numSteps)
 	{
 		throw new DimpleException("not supported by this solver");
 	}

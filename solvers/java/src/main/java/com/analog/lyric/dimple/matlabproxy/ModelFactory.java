@@ -45,17 +45,17 @@ public class ModelFactory
 		return new MultivariateMsg(means, covar);
 	}
 
-	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls) 
+	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)
 	{
 		return new PRealJointVariableVector(className, domain, numEls);
 	}
 
-	public PDiscreteVariableVector createDiscreteVariableVector(String className, PDiscreteDomain domain, int numEls) 
+	public PDiscreteVariableVector createDiscreteVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
 		return new PDiscreteVariableVector(className,domain,numEls);
 	}
 	// For backwards compatibility with MATLAB
-	public PDiscreteVariableVector createVariableVector(String className, PDiscreteDomain domain, int numEls) 
+	public PDiscreteVariableVector createVariableVector(String className, PDiscreteDomain domain, int numEls)
 	{
 		return new PDiscreteVariableVector(className,domain,numEls);
 	}
@@ -67,25 +67,25 @@ public class ModelFactory
 
 	public PDiscreteDomain createDiscreteDomain(Object [] elements)
 	{
-		return new PDiscreteDomain(new DiscreteDomain(elements));
+		return new PDiscreteDomain(DiscreteDomain.create(elements));
 	}
 
-	public PRealDomain createRealDomain(double lowerBound, double upperBound) 
+	public PRealDomain createRealDomain(double lowerBound, double upperBound)
 	{
 		return new PRealDomain(new RealDomain(lowerBound,upperBound));
 	}
 
-	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain, double numVars) 
+	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain, double numVars)
 	{
 		return new PDiscreteStream(domain,(int)numVars);
 	}
 
-	public PVariableStreamBase createRealStream(PRealDomain domain, int numVars) 
+	public PVariableStreamBase createRealStream(PRealDomain domain, int numVars)
 	{
 		return new PRealStream(domain,numVars);
 	}
 
-	public PVariableStreamBase createRealJointStream(PRealJointDomain domain, int numVars) 
+	public PVariableStreamBase createRealJointStream(PRealJointDomain domain, int numVars)
 	{
 		return new PRealJointStream(domain, numVars);
 	}
@@ -147,7 +147,7 @@ public class ModelFactory
 
 
 	// Create graph
-	public PFactorGraphVector createGraph(Object [] vector) 
+	public PFactorGraphVector createGraph(Object [] vector)
 	{
 		ArrayList<VariableBase> alVars = new ArrayList<VariableBase>();
 
@@ -169,7 +169,7 @@ public class ModelFactory
 
 	// Set solver
 
-	public void setSolver(IFactorGraphFactory solver) 
+	public void setSolver(IFactorGraphFactory solver)
 	{
 		Model.getInstance().setDefaultGraphFactory(solver);
 	}

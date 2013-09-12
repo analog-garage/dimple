@@ -32,7 +32,7 @@ public class Discrete extends VariableBase
 
 	public Discrete(Object... domain)
 	{
-		this(new DiscreteDomain(domain), "Discrete");
+		this(DiscreteDomain.create(domain),"Discrete");
 
 		if (domain.length < 1)
 			throw new DimpleException(String.format("ERROR Variable domain length %d must be at least 2", domain.length));
@@ -83,7 +83,7 @@ public class Discrete extends VariableBase
     	Object tmp = super.getInputObject();
     	
     	if (tmp == null)
-    		return getDefaultPriors(getDiscreteDomain().getElements());
+    		return getDefaultPriors(getDiscreteDomain());
     	else
     		return tmp;
     }
@@ -119,48 +119,48 @@ public class Discrete extends VariableBase
     }
 
     
-	private double [] getDefaultPriors(Object [] domain)
+	private double [] getDefaultPriors(DiscreteDomain domain)
 	{
-		double [] retval = new double[domain.length];
-		double val = 1.0/domain.length;
+		final int length = domain.size();
+		double [] retval = new double[length];
+		double val = 1.0/length;
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = val;
 		return retval;
 	}
 	
-	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * All {@code variables} must be of type {@link Discrete}. The domain of the returned
+	 * variable will be a {@link JointDiscreteDomain} with the subdomains in the same order
+	 * as {@code variables}.
+	 */
     @Override
-	protected VariableBase createJointNoFactors(VariableBase otherVariable)
+	protected VariableBase createJointNoFactors(VariableBase ... variables)
     {
-    	if (! (otherVariable instanceof Discrete))
+    	final boolean thisIsFirst = (variables[0] == this);
+    	final int dimensions = thisIsFirst ? variables.length: variables.length + 1;
+    	final DiscreteDomain[] domains = new DiscreteDomain[dimensions];
+    	final double[][] subdomainWeights = new double[dimensions][];
+    	domains[0] = getDomain();
+    	subdomainWeights[0] = getInput();
+    	
+    	for (int i = thisIsFirst ? 1 : 0; i < dimensions; ++i)
     	{
-    		throw new DimpleException("Not currently supported");
-    		
-    	}
-    	
-    	Discrete dOtherVar = (Discrete)otherVariable;
-    	
-    	//First, create domain
-    	int newDomainLength = this.getDiscreteDomain().size()*dOtherVar.getDiscreteDomain().size();
-    	
-    	Object [] newDomain = new Object[newDomainLength];
-    	double [] inputs = new double[newDomainLength];
-    	
-    	int index = 0;
-		for (int j = 0; j <  dOtherVar.getDiscreteDomain().size(); j++)
-		{
-	    	for (int i = 0; i < getDiscreteDomain().size(); i++)
-	    	{
-    			Object [] pair = new Object[] {this.getDiscreteDomain().getElements()[i],dOtherVar.getDiscreteDomain().getElements()[j]};
-    			newDomain[index] = pair;
-    			inputs[index] = this.getInput()[i]*dOtherVar.getInput()[j];
-    			index++;
+    		final Discrete var = variables[i].asDiscreteVariable();
+    		if (var == null)
+    		{
+    			throw new DimpleException("Discrete.createJointNoFactors does not support non-discrete variables");
     		}
+    		domains[i] = var.getDomain();
+    		subdomainWeights[i] = var.getInput();
     	}
-    	
-    	Discrete retval =  new Discrete(newDomain);
-    	retval.setInput(inputs);
-    	return retval;
+
+    	final JointDiscreteDomain<?> jointDomain = DiscreteDomain.joint(domains);
+    	final Discrete jointVar =  new Discrete(jointDomain);
+    	jointVar.setInput(joinWeights(subdomainWeights));
+    	return jointVar;
     }
 	
 	public void setInput(double ... value)
@@ -185,7 +185,7 @@ public class Discrete extends VariableBase
 		if (index == null)
 			throw new DimpleException("Fixed value not set");
 		
-		return getDomain().getElements()[index];
+		return getDomain().getElement(index);
 	}
 	public void setFixedValueIndex(int fixedValueIndex)
 	{
@@ -205,5 +205,44 @@ public class Discrete extends VariableBase
 			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
 		setFixedValueIndex(index);
 	}
+
+	private double[] joinWeights(double[] ... subdomainWeights)
+	{
+		// Validate dimensions
+		//   This simply validates that the joint cardinality matches. It does not
+		//   actually compare against the subdomains. Ideally we should do that but
+		//   allowing for "drilling down" into subdomains that are joint domains.
+		int cardinality = 1;
+		for (double[] array : subdomainWeights)
+		{
+			cardinality *= array.length;
+		}
+		
+		double[] weights = new double[cardinality];
+		Arrays.fill(weights, 1.0);
+		
+		int inner = 1, outer = cardinality;
+		for (double[] subweights : subdomainWeights)
+		{
+			final int size = subweights.length;
+			int i = 0;
+			
+			outer /= size;
+			for (int o = 0; o < outer; ++o)
+			{
+				for (double weight : subweights)
+				{
+					for (int r = 0; r < inner; ++r)
+					{
+						weights[i++] *= weight;
+					}
+				}
+			}
+			inner *= size;
+		}
+		
+		return weights;
+	}
+	
 
 }

@@ -84,7 +84,7 @@ public class ComplexExp extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
 		double[] in = ((double[])arguments[1]);
 		double rIn = in[0];

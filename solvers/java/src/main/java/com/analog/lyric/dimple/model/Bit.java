@@ -16,11 +16,11 @@
 
 package com.analog.lyric.dimple.model;
 
-public class Bit extends Discrete 
+public class Bit extends Discrete
 {
-	public Bit()  
-	{
-	    super(new DiscreteDomain(new Object[]{new Integer(0),new Integer(1)}),"Bit");
+
+	public Bit()  {
+		super(DiscreteDomain.bit(), "Bit");
 	}
 	
 	public double getP1()

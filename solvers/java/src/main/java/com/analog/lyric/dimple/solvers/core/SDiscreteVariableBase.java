@@ -50,7 +50,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	public Object getValue()
 	{
 		int index = getValueIndex();
-		return ((Discrete)_var).getDiscreteDomain().getElements()[index];
+		return ((Discrete)_var).getDiscreteDomain().getElement(index);
 	}
 	
 	public int getValueIndex()
@@ -78,7 +78,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	public Object getGuess()
 	{
 		int index = getGuessIndex();
-		return ((DiscreteDomain)_var.getDomain()).getElements()[index];
+		return ((DiscreteDomain)_var.getDomain()).getElement(index);
 	}
 	
 	@Override

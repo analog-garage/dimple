@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.model;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -30,33 +33,30 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.io.IOException;
-import java.io.StringWriter;
-
 import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
 import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.serializerdetails.Deserializer;
 import com.analog.lyric.dimple.model.serializerdetails.Serializer;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
-public class xmlSerializer 
+public class xmlSerializer
 {
 	public static final String VERSION_ONE = "01.00.00";
 	public static final String VERSION_ONE_010001 = "01.00.01";
 	public static final String VERSION_TWO = "02.00.00";
 	
-	public static final String VERSION = VERSION_TWO; 
+	public static final String VERSION = VERSION_TWO;
 
 	private boolean _dbg;
 	private Deserializer _deserializer;
 	private Serializer _serializer;
 	
-	public xmlSerializer() 
+	public xmlSerializer()
 	{
 		_dbg = false;
 		_deserializer = new Deserializer(_dbg);
@@ -67,39 +67,32 @@ public class xmlSerializer
 	{
 		return _serializer.serializeToXML(fg, FgName, targetDirectory);
 	}
-	public String serializeFactorTableToXML(int[][] indices, double[] values, DiscreteDomain[] domains,String ctName, String targetDirectory)
-	{
-		return _serializer.serializeFactorTableToXML(indices, values, domains, ctName, targetDirectory);
-	}	
+
 	public String serializeFactorTableToXML(FactorTable ct, String ctName, String targetDirectory)
 	{
-		return serializeFactorTableToXML(ct.getIndices(),
-										ct.getWeights(),
-										ct.getDomains(),
-										ctName,
-										targetDirectory);
+		return _serializer.serializeFactorTableToXML(ct, ctName, targetDirectory);
 	}
 
-	public FactorTable deserializeFactorTableFromXML(String docName) 
+	public IFactorTable deserializeFactorTableFromXML(String docName)
 	{
 		return _deserializer.deserializeFactorTableFromXML(docName);
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException 
+	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		return _deserializer.deserializeFromXML(docName, solver);
 	}
 	
 		
-	static public String prettyFormat(Document document) 
+	static public String prettyFormat(Document document)
 	{
        DOMImplementation domImplementation = document.getImplementation();
-       if (domImplementation.hasFeature("LS", "3.0") && domImplementation.hasFeature("Core", "2.0")) 
+       if (domImplementation.hasFeature("LS", "3.0") && domImplementation.hasFeature("Core", "2.0"))
        {
            DOMImplementationLS domImplementationLS = (DOMImplementationLS) domImplementation.getFeature("LS", "3.0");
            LSSerializer lsSerializer = domImplementationLS.createLSSerializer();
            DOMConfiguration domConfiguration = lsSerializer.getDomConfig();
-           if (domConfiguration.canSetParameter("format-pretty-print", Boolean.TRUE)) 
+           if (domConfiguration.canSetParameter("format-pretty-print", Boolean.TRUE))
            {
               lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
               LSOutput lsOutput = domImplementationLS.createLSOutput();
@@ -108,8 +101,8 @@ public class xmlSerializer
               lsOutput.setCharacterStream(stringWriter);
               lsSerializer.write(document, lsOutput);
              return stringWriter.toString();
-          } 
-          else 
+          }
+          else
           {
               throw new RuntimeException("DOMConfiguration 'format-pretty-print' parameter isn't settable.");
           }
@@ -117,7 +110,7 @@ public class xmlSerializer
           throw new RuntimeException("DOM 3.0 LS and/or DOM 2.0 Core not supported.");
       }
 	}
-	public void setDbg(boolean dbg) 
+	public void setDbg(boolean dbg)
 	{
 		_dbg = dbg;
 		if(_deserializer != null)
@@ -151,33 +144,33 @@ public class xmlSerializer
     		System.out.println("==========================================================");
     			
         }
-      catch (FactoryConfigurationError e) { 
-	        System.out.println("Could not locate a JAXP factory class"); 
+      catch (FactoryConfigurationError e) {
+	        System.out.println("Could not locate a JAXP factory class");
 	      }
-	      catch (ParserConfigurationException e) { 
+	      catch (ParserConfigurationException e) {
 	        System.out.println(
 	          "Could not locate a JAXP DocumentBuilder class"
-	        ); 
+	        );
 	      }
 	      catch (DOMException e) {
-	        System.out.println("exception: " + e.getMessage()); 
+	        System.out.println("exception: " + e.getMessage());
 	      }
 	      catch(Exception e)
 	      {
-	        	System.out.println("exception: " + e.getMessage());	    	  
-	      }		
+	        	System.out.println("exception: " + e.getMessage());
+	      }
 	}
-	public static void DBG_printNode(Node node, String indent) 
+	public static void DBG_printNode(Node node, String indent)
 	{
-		switch (node.getNodeType()) 
+		switch (node.getNodeType())
 		{
 		case Node.DOCUMENT_NODE:
 			System.out.println(indent + "Document node");
 			NodeList nodes = node.getChildNodes();
 
-			if (nodes != null) 
+			if (nodes != null)
 			{
-				for (int i = 0; i < nodes.getLength(); i++) 
+				for (int i = 0; i < nodes.getLength(); i++)
 				{
 					DBG_printNode(nodes.item(i), "");
 				}
@@ -192,7 +185,7 @@ public class xmlSerializer
 
 			NamedNodeMap attributes = node.getAttributes();
 
-			for (int i = 0; i < attributes.getLength(); i++) 
+			for (int i = 0; i < attributes.getLength(); i++)
 			{
 				Node current = attributes.item(i);
 				System.out.println(indent + " " + current.getNodeName() +
@@ -201,10 +194,10 @@ public class xmlSerializer
 
 			NodeList children = node.getChildNodes();
 
-			if (children != null) 
+			if (children != null)
 			{
 				for (int i = 0; i < children.getLength();
-					        i++) 
+					        i++)
 				{
 					DBG_printNode(children.item(i),
 					        indent + "  ");
@@ -239,7 +232,7 @@ public class xmlSerializer
 			{
 				System.out.print("PUBLIC \"" +
 				        docType.getPublicId() + "\"");
-			} 
+			}
 			else
 			{
 				System.out.print(" SYSTEM ");

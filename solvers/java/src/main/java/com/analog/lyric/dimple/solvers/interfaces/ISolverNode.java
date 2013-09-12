@@ -20,12 +20,13 @@
 package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.options.IOptionHolder;
 
 /**
  * @author schweitz
  *
  */
-public interface ISolverNode
+public interface ISolverNode extends IOptionHolder
 {
 	//Update all outgoing messages
 	public void update() ;

@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.UUID;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
@@ -39,9 +39,9 @@ import com.analog.lyric.dimple.model.NodeId;
 //JUnit3
 public class SolverNamesTest extends TestCase {
 	
-	//JUnit4	
+	//JUnit4
 	//@BeforeClass
-	//public static void setUpBeforeClass()  
+	//public static void setUpBeforeClass()
 	//{
 	//}
 
@@ -52,18 +52,20 @@ public class SolverNamesTest extends TestCase {
 	
 	//JUnit4
 	//@Before
-	public void setUp()  
+	@Override
+	public void setUp()
 	{
 	}
 
 	//JUnit4
 	//@After
+	@Override
 	public void tearDown()  {
 	}
 
 	//JUnit4
 	//@Test
-	public void test_simpleNameStuff() 
+	public void test_simpleNameStuff()
 	{
 		Discrete variable = new Discrete(NodeId.getNext(), new Object[]{0.0, 1.0}, "Variable");
 		
@@ -81,12 +83,12 @@ public class SolverNamesTest extends TestCase {
 		
 		String variableNameSet = "VariableGraphName";
 		variable.setName(variableNameSet);
-		assertTrue(variable.getName().equals(variableNameSet));		
+		assertTrue(variable.getName().equals(variableNameSet));
 	}
 
 	//JUnit4
 	//@Test
-	public void test_parentGraphNameStuff() 
+	public void test_parentGraphNameStuff()
 	{
 		//3 new variables
 		Discrete variables[] = new Discrete[]
@@ -132,14 +134,14 @@ public class SolverNamesTest extends TestCase {
  			
   			for(int j = 0; j < dummyTable[i].length; ++j)
   			{
-  				dummyTable[i][j] = bits.get(j) ? 0 : 1; 
+  				dummyTable[i][j] = bits.get(j) ? 0 : 1;
   			}
   		}
 		double[] dummyValues = new double[3];
 		Arrays.fill(dummyValues, 1.0);
 		
-		TableFactorFunction factorFunc = new TableFactorFunction("table", 
-				new FactorTable(dummyTable,dummyValues,new DiscreteDomain(0,1),new DiscreteDomain(0,1),new DiscreteDomain(0,1)));
+		TableFactorFunction factorFunc = new TableFactorFunction("table",
+				FactorTable.create(dummyTable, dummyValues, DiscreteDomain.create(0,1), DiscreteDomain.create(0,1), DiscreteDomain.create(0,1)));
 		//fg.createTable(dummyTable, dummyValues,);
 		Factor fn = fg.addFactor(factorFunc, variables);
 		assertTrue(fn.getName().equals(fn.getUUID().toString()));
@@ -166,12 +168,12 @@ public class SolverNamesTest extends TestCase {
 			Discrete vFoundUUID = (Discrete) fg.getObjectByUUID(variables[i].getUUID());
 			assertTrue(vNotFound == null);
 			assertTrue(vFound == variables[i]);
-			assertTrue(vFoundUUID == variables[i]);			
+			assertTrue(vFoundUUID == variables[i]);
 		}
 		
 		
 		//verify can add name
-		//also test qualified names		
+		//also test qualified names
 		String fgNameSet = "fgName";
 		fg.setName(fgNameSet);
 		assertTrue(fg.getName().equals(fgNameSet));
@@ -193,11 +195,11 @@ public class SolverNamesTest extends TestCase {
 		String variableBaseName = "vName";
 		for(int i = 0; i < variableIds.length; ++i)
 		{
-			String VariableName = variableBaseName + Integer.toString(i); 
-			variables[i].setName(VariableName);	
+			String VariableName = variableBaseName + Integer.toString(i);
+			variables[i].setName(VariableName);
 			assertTrue(variables[i].getName().equals(VariableName));
 			String qualifiedName = fg.getName() + "." + VariableName;
-			String variableQualifiedName = variables[i].getQualifiedName(); 
+			String variableQualifiedName = variables[i].getQualifiedName();
 			assertTrue(variableQualifiedName.equals(qualifiedName));
 			
 			Discrete vNotFound = (Discrete) fg.getObjectByName(variables[i].getUUID().toString());
@@ -205,7 +207,7 @@ public class SolverNamesTest extends TestCase {
 			Discrete vFoundQualified = (Discrete) fg.getObjectByName(variables[i].getQualifiedName());
 			assertTrue(vNotFound == null);
 			assertTrue(vFound == variables[i]);
-			assertTrue(vFoundQualified == variables[i]);						
+			assertTrue(vFoundQualified == variables[i]);
 		}
 		
 		//invalid names
@@ -271,7 +273,7 @@ public class SolverNamesTest extends TestCase {
 		Discrete vFoundUUID = (Discrete) fg.getObjectByUUID(variables[0].getUUID());
 		assertTrue(vNotFound == null);
 		assertTrue(vFound == variables[0]);
-		assertTrue(vFoundUUID == variables[0]);			
+		assertTrue(vFoundUUID == variables[0]);
 	}
 	
 	void typeByName(FactorGraph fg, Object expected, boolean equals, String id, String type)
@@ -288,7 +290,7 @@ public class SolverNamesTest extends TestCase {
 		}
 		else if(type.equals("graph"))
 		{
-			got = fg.getGraphByName(id);			
+			got = fg.getGraphByName(id);
 		}
 		if(got == null)
 		{
@@ -327,7 +329,7 @@ public class SolverNamesTest extends TestCase {
 		}
 		else if(type.equals("graph"))
 		{
-			got = fg.getGraphByUUID(id);			
+			got = fg.getGraphByUUID(id);
 		}
 		if(got == null)
 		{
@@ -355,8 +357,9 @@ public class SolverNamesTest extends TestCase {
 	
 	//JUnit4
 	//@Test
-	public void test_getObjectByType() 
+	public void test_getObjectByType()
 	{
+		DiscreteDomain domain2 = DiscreteDomain.range(0,1);
 		
 		Discrete variables[] = new Discrete[]
   		{
@@ -385,14 +388,13 @@ public class SolverNamesTest extends TestCase {
  			
   			for(int j = 0; j < dummyTable[i].length; ++j)
   			{
-  				dummyTable[i][j] = bits.get(j) ? 0 : 1; 
+  				dummyTable[i][j] = bits.get(j) ? 0 : 1;
   			}
   		}
   		double[] dummyValues = new double[3];
 		Arrays.fill(dummyValues, 1.0);
 		
-		TableFactorFunction factorFunc = new TableFactorFunction("table", new FactorTable(dummyTable,dummyValues,
-				new DiscreteDomain(0,1),new DiscreteDomain(0,1),new DiscreteDomain(0,1)));
+		TableFactorFunction factorFunc = new TableFactorFunction("table", FactorTable.create(dummyTable, dummyValues, domain2, domain2, domain2));
   		//fg.createTable(dummyTable, dummyValues);
   		Factor fn = fg.addFactor(factorFunc,variables);
 
@@ -425,14 +427,13 @@ public class SolverNamesTest extends TestCase {
  			
   			for(int j = 0; j < dummyTableSub[i].length; ++j)
   			{
-  				dummyTableSub[i][j] = bits.get(j) ? 0 : 1; 
+  				dummyTableSub[i][j] = bits.get(j) ? 0 : 1;
   			}
   		}
 		Arrays.fill(dummyValuesSub, 1.0);
 		
 		
-		TableFactorFunction otherFactorFunc = new TableFactorFunction("table", new FactorTable(dummyTableSub,dummyValuesSub,
-				new DiscreteDomain(0,1),new DiscreteDomain(0,1),new DiscreteDomain(0,1)));
+		TableFactorFunction otherFactorFunc = new TableFactorFunction("table", FactorTable.create(dummyTableSub, dummyValuesSub, domain2, domain2, domain2));
 		
 		fgSub.addFactor(otherFactorFunc, variablesSub);
  		

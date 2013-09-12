@@ -19,8 +19,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableList;
@@ -32,9 +32,9 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 
 	private FiniteFieldVariable _ffVar;
 	private int [] _portIndex2bitIndex;
-	private int [] _bit2port; 
+	private int [] _bit2port;
 	
-	public FiniteFieldProjection(Factor factor)  
+	public FiniteFieldProjection(Factor factor)
 	{
 		super(factor);
 		
@@ -83,7 +83,7 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 			//get Variable and make sure it's a bit.
 			Discrete bit = (Discrete)variables.getByIndex(i);
 			
-			Object [] bitDomain = (Object[])bit.getDiscreteDomain().getElements();
+			Object [] bitDomain = bit.getDiscreteDomain().getElements();
 			if (bitDomain.length != 2 || (Double)bitDomain[0] != 0 || (Double)bitDomain[1] != 1)
 				throw new DimpleException("expected bit");
 			
@@ -92,7 +92,8 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 		}
 	}
 
-	public void updateEdge(int outPortNum) 
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
 			updateFiniteField();
@@ -121,7 +122,7 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 		//Multiply bit probabilities
 		double sum = 0;
 		
-		for (int i = 0; i < ((Discrete)_ffVar.getVariable()).getDiscreteDomain().getElements().length; i++)
+		for (int i = 0, end = ((Discrete)_ffVar.getVariable()).getDiscreteDomain().size(); i < end; i++)
 		{
 			prod = 1;
 			for (int j = 0; j < numBits; j++)
@@ -153,10 +154,10 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 	}
 	
 	public void updateBit(int portNum)
-	{	
+	{
 		
 		//get output msg for bit
-		double [] outputs = (double[])_outputMsgs[portNum];
+		double [] outputs = _outputMsgs[portNum];
 		
 		//init to 1 for each
 		outputs[0] = 0;
@@ -165,7 +166,7 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 		int bit = _portIndex2bitIndex[portNum];
 		
 		//Iterate each value of finite field
-		double [] inputs = (double[])_inputMsgs[0];
+		double [] inputs = _inputMsgs[0];
 		
 		for (int i = 0; i < inputs.length; i++)
 		{

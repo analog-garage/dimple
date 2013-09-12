@@ -21,7 +21,7 @@ import java.util.HashSet;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -77,11 +77,16 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 
-	public FactorTable getFactorTable()
+	public IFactorTable getFactorTable()
 	{
-		return getFactorFunction().getFactorTable(getDomains());
+		return getFactorFunction().getFactorTable(this);
 	}
 	
+	public boolean hasFactorTable()
+	{
+		return getFactorFunction().factorTableExists(this);
+	}
+
 	public boolean isDiscrete()
 	{
 		for (INode p : getSiblings())
@@ -167,19 +172,20 @@ public class Factor extends FactorBase implements Cloneable
 		_siblings.set(index, newVariable);
 	}
 	
-	public Domain [] getDomains()
+	public DomainList<?> getDomainList()
 	{
 		VariableList variables = getVariables();
 		int numVariables = variables.size();
 		
-		Domain [] retval = new Domain[numVariables];
+		Domain [] domains = new Domain[numVariables];
 		
 		for (int i = 0; i < numVariables; i++)
 		{
-			retval[i] = variables.getByIndex(i).getDomain();
+			domains[i] = variables.getByIndex(i).getDomain();
 		}
 		
-		return retval;
+		// FIXME: do we need to ensure that _directedTo has been set?
+		return DomainList.create(_directedTo, domains);
 	}
 	
 
@@ -363,11 +369,13 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public int [] getDirectedTo()
 	{
+		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedTo;
 	}
 	public int [] getDirectedFrom()
 	{
+		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedFrom;
 	}
@@ -408,7 +416,9 @@ public class Factor extends FactorBase implements Cloneable
 	public void setDirectedTo(int [] directedTo)
 	{
 		getVariables();
-		
+
+		final JointDomainIndexer curDomains = getDomainList().asJointDomainIndexer();
+
 		HashSet<Integer> hs = new HashSet<Integer>();
 		
 		_directedFrom = new int[_variables.size()-directedTo.length];
@@ -432,11 +442,15 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_directedTo = directedTo;
 		
-		if (getFactorFunction().factorTableExists(getDomains()))
+		if (curDomains != null)
 		{
-			getFactorTable().setDirected(directedTo, _directedFrom);
+			JointDomainIndexer newDomains = getDomainList().asJointDomainIndexer();
+			if (!curDomains.equals(newDomains))
+			{
+				getFactorFunction().convertFactorTable(curDomains, newDomains);
+			}
 		}
-		
+
 		if (_solverFactor != null)
 		{
 			_solverFactor.setDirectedTo(directedTo);

@@ -23,6 +23,7 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -383,12 +384,12 @@ public class SVariable extends SDiscreteVariableBase
 	{
 		final Discrete mvar = getModelObject();
 		final String varName = mvar.getName();
-		final Object[] values = mvar.getDomain().getElements();
+		DiscreteDomain domain = mvar.getDomain();
 		final BitSet invalidAssignments = _invalidAssignments;
 		
 		boolean first = true;
 		
-		for (int i = 0, end = values.length; i < end; ++i)
+		for (int i = 0, end = domain.size(); i < end; ++i)
 		{
 			if (invalidAssignments != null)
 			{
@@ -404,7 +405,7 @@ public class SVariable extends SDiscreteVariableBase
 				out.print(" + ");
 			}
 			
-			out.format("p(%s=%s)", varName, values[i]);
+			out.format("p(%s=%s)", varName, domain.getElement(i));
 		}
 		
 		out.println(" = 1");

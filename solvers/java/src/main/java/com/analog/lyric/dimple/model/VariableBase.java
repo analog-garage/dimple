@@ -430,7 +430,16 @@ public abstract class VariableBase extends Node implements Cloneable
     }
     
     
-    VariableBase createJointNoFactors(VariableBase otherVariable)
+    /**
+     * Creates a new variable that combines the domains of this variable with additional {@code variables}.
+     * <p>
+     * For use by {@link FactorGraph#join(VariableBase...)}. Currently only supported for {@link Discrete}
+     * variables.
+     * <p>
+     * @param variables specifies at least one additional variables to join with this one. As a convenience, this
+     * may begin with this variable, in which case there must be at least one other variable.
+     */
+    VariableBase createJointNoFactors(VariableBase ... variables)
     {
     	throw new DimpleException("not implemented");
     }

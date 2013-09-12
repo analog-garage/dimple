@@ -16,15 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 
 public abstract class STableFactorBase extends SFactorBase
 {
-	private FactorTable _factorTable = null;
+	private IFactorTable _factorTable = null;
 
-	public STableFactorBase(Factor factor) 
+	public STableFactorBase(Factor factor)
 	{
 		super(factor);
 		
@@ -33,16 +33,16 @@ public abstract class STableFactorBase extends SFactorBase
 		
 	}
 	
-	public final FactorTable getFactorTable()
+	public final IFactorTable getFactorTable()
 	{
 		if (_factorTable==null)
-			_factorTable = getFactor().getFactorFunction().getFactorTable(getFactor().getDomains());
+			_factorTable = getFactor().getFactorTable();
 		return this._factorTable;
 	}
 
     @Override
-    public int [][] getPossibleBeliefIndices() 
+    public int [][] getPossibleBeliefIndices()
     {
-            return getFactorTable().getIndices();
+            return getFactorTable().getIndicesSparseUnsafe();
     }
 }

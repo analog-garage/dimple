@@ -216,7 +216,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else
 		{
 			double[] vals = (double[])input;
-			if (vals.length != _varDiscrete.getDiscreteDomain().getElements().length)
+			if (vals.length != _varDiscrete.getDiscreteDomain().size())
 				throw new DimpleException("Prior size must match domain length");
 			
 			// Convert to energy values
@@ -324,7 +324,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 		// Send the sample value to all output ports
 		_outputMsg.setIndex(index);
-		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElements()[index]);
+		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElement(index));
 				
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
@@ -341,7 +341,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     
     public final Object getCurrentSample()
     {
-    	return _varDiscrete.getDiscreteDomain().getElements()[_sampleIndex];
+    	return _varDiscrete.getDiscreteDomain().getElement(_sampleIndex);
     }
     public final int getCurrentSampleIndex()
     {
@@ -350,7 +350,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     
     public final Object getBestSample()
     {
-    	return _varDiscrete.getDiscreteDomain().getElements()[_bestSampleIndex];
+    	return _varDiscrete.getDiscreteDomain().getElement(_bestSampleIndex);
     }
     public final int getBestSampleIndex()
     {
@@ -362,10 +362,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (_sampleIndexArray == null)
 			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
 		int length = _sampleIndexArray.size();
-    	Object[] domain = _varDiscrete.getDiscreteDomain().getElements();
+    	DiscreteDomain domain = _varDiscrete.getDiscreteDomain();
     	Object[] retval = new Object[length];
     	for (int i = 0; i < length; i++)
-    		retval[i] = domain[_sampleIndexArray.get(i)];
+    		retval[i] = domain.getElement(_sampleIndexArray.get(i));
     	return retval;
     }
     public final int[] getAllSampleIndices()
@@ -522,7 +522,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	    if (_sampleIndexArray != null)
 			saveAllSamples();
 
-		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().getElements().length];
+		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().size()];
 		_bestSampleIndex = -1;
 	
 
@@ -551,7 +551,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public double [] createDefaultMessage()
 	{
-		double[] retVal = new double[((Discrete)_var).getDiscreteDomain().getElements().length];
+		double[] retVal = new double[((Discrete)_var).getDiscreteDomain().size()];
 		return (double[])resetInputMessage(retVal);
 	}
 
@@ -568,7 +568,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		DiscreteSample ds = (DiscreteSample)message;
 		ds.setIndex(_var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
-		ds.setObject(_varDiscrete.getDiscreteDomain().getElements()[ds.getIndex()]);
+		ds.setObject(_varDiscrete.getDiscreteDomain().getElement(ds.getIndex()));
 		return ds;
 	}
 
@@ -629,7 +629,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		super.initialize();
 		
 		_bestSampleIndex = -1;
-		int messageLength = _varDiscrete.getDiscreteDomain().getElements().length;
+		int messageLength = _varDiscrete.getDiscreteDomain().size();
 		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;
 		

@@ -22,14 +22,14 @@ import java.util.Arrays;
 import com.analog.lyric.dimple.model.DimpleException;
 
 
-public class FactorFunctionWithConstants extends FactorFunction 
+public class FactorFunctionWithConstants extends FactorFunction
 {
 	private FactorFunctionBase _factorFunction;
-	private Object[] _constants;
-	private int[] _constantIndices;
+	private Object [] _constants;
+	private int [] _constantIndices;
 	
 	public FactorFunctionWithConstants(FactorFunctionBase factorFunction,
-			Object[] constants, int[] constantIndices) 
+			Object [] constants, int [] constantIndices)
 	{
 		super(factorFunction.getName());
 		_factorFunction = factorFunction;
@@ -48,12 +48,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 
-	public Object[] getConstants()
+	public Object [] getConstants()
 	{
 		return _constants;
 	}
 	
-	public int[] getConstantIndices()
+	public int [] getConstantIndices()
 	{
 		return _constantIndices;
 	}
@@ -73,13 +73,13 @@ public class FactorFunctionWithConstants extends FactorFunction
 				return _constants[i];
 		return null;
 	}
-	
+
 
 	// Wrap the methods of the actual factor function...
 
 	@Override
 	public double evalEnergy(Object... arguments)
-	{		
+	{
 		return _factorFunction.evalEnergy(expandInputList(arguments));
 	}
 	
@@ -111,7 +111,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public void evalDeterministicFunction(Object... arguments)
+	public void evalDeterministicFunction(Object[] arguments)
 	{
 		Object[] expandedArgumentList = expandInputList(arguments);
 		_factorFunction.evalDeterministicFunction(expandedArgumentList);

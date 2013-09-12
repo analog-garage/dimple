@@ -72,7 +72,7 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 		{
 			double [] vals = (double[])input;
 	
-			int len = _varDiscrete.getDiscreteDomain().getElements().length;
+			int len = _varDiscrete.getDiscreteDomain().size();
 			
 			if (vals.length != len)
 				throw new DimpleException("length of priors does not match domain");

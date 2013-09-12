@@ -52,6 +52,9 @@ public class PDiscreteDomain extends PDomain
 	
 	public Object [] getElements()
 	{
-		return getModelerObject().getElements();
+		DiscreteDomain domain = getModelerObject();
+		// For some reason MATLAB cares about the component type of the array and for example will
+		// implicitly convert strings from an Object[] but not a String[]!
+		return domain.getElements(new Object[domain.size()]);
 	}
 }

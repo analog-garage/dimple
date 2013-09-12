@@ -35,13 +35,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
+import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
@@ -52,19 +53,19 @@ public class Deserializer
 	protected xmlsFactorGraph _xFg = new xmlsFactorGraph();
 	protected FactorGraph _fg;
 	
-	public Deserializer(boolean dbg) 
+	public Deserializer(boolean dbg)
 	{
 		_dbg = dbg;
 		clear();
 	}
 	
-	protected void clear() 
+	protected void clear()
 	{
 		_xFg = new xmlsFactorGraph();
-		_fg = new FactorGraph();			
+		_fg = new FactorGraph();
 	}
 	
-	protected void addVariable(Node EdgeNode, NamedNodeMap Attributes) 
+	protected void addVariable(Node EdgeNode, NamedNodeMap Attributes)
 	{
 		
 		String UUIDString = Attributes.getNamedItem("id").getNodeValue();
@@ -84,7 +85,7 @@ public class Deserializer
 			throw new DimpleException(String.format("ERROR missing required attribute: class-[%s] input[%s] UUID[%s]"
 					, ModelerClass
 					, InputString
-					, UUIDString));				
+					, UUIDString));
 		}
 		/*
 		String[] DomainStrings = DomainString.split("\\s");
@@ -126,7 +127,7 @@ public class Deserializer
 			{
 				Domain[i] = Double.parseDouble(DomainStrings[i]);
 			}
-			dd = new DiscreteDomain(Domain);
+			dd = DiscreteDomain.create(Domain);
 
 		}
 		else
@@ -157,12 +158,12 @@ public class Deserializer
 		
 		_xFg._variables.put(uuid, v);
 	}
-	protected void addFunction(Node FunctionNode, NamedNodeMap Attributes) 
+	protected void addFunction(Node FunctionNode, NamedNodeMap Attributes)
 	{
 		xmlsFactor xF = new xmlsFactor();
 		xF.setModelerClass(Attributes.getNamedItem("class").getNodeValue());
 		xF.setExplicitName(Attributes.getNamedItem("explicitName").getNodeValue());
-		UUID uuid = java.util.UUID.fromString(Attributes.getNamedItem("id").getNodeValue()); 
+		UUID uuid = java.util.UUID.fromString(Attributes.getNamedItem("id").getNodeValue());
 		xF.setUUID(uuid);
 		if(_xFg._factors.containsKey(uuid))
 		{
@@ -179,27 +180,27 @@ public class Deserializer
 		_xFg._factors.put(uuid, xF);
 	}
 	
-	protected void addEdge(Node n) 
+	protected void addEdge(Node n)
 	{
 		NamedNodeMap Attributes = n.getAttributes();
 		String factorUUIDString = Attributes.getNamedItem("source").getNodeValue();
 		String variableUUIDString = Attributes.getNamedItem("target").getNodeValue();
 		int edgeIdx = Integer.parseInt(Attributes.getNamedItem("srcIdx").getNodeValue());
-		UUID factorUUID = java.util.UUID.fromString(factorUUIDString); 
-		UUID variableUUID = java.util.UUID.fromString(variableUUIDString); 
+		UUID factorUUID = java.util.UUID.fromString(factorUUIDString);
+		UUID variableUUID = java.util.UUID.fromString(variableUUIDString);
 		xmlsFactor f = _xFg._factors.get(factorUUID);
 		VariableBase v = _xFg._variables.get(variableUUID);
 		
 		if(edgeIdx >= f.getNumEdges())
 		{
-			throw new DimpleException("ERROR: edgeIdx, " + Integer.toString(edgeIdx) + 
-								" >= num edges in factor " + Integer.toString(f.getNumEdges()) + 
+			throw new DimpleException("ERROR: edgeIdx, " + Integer.toString(edgeIdx) +
+								" >= num edges in factor " + Integer.toString(f.getNumEdges()) +
 								"  factor uuid:" + f.getUUID().toString());
 		}
 		ArrayList<VariableBase> fvariables = f.getVariables();
 		if(fvariables.get(edgeIdx) != null)
 		{
-			throw new DimpleException("ERROR: edgeIdx, " + Integer.toString(edgeIdx) + 
+			throw new DimpleException("ERROR: edgeIdx, " + Integer.toString(edgeIdx) +
 					" already has a variable " +
 					"  factor uuid:" + f.getUUID().toString());
 		}
@@ -225,11 +226,11 @@ public class Deserializer
 				objs[j] = domainValueString;
 			}
 		}
-		return new DiscreteDomain(objs);
+		return DiscreteDomain.create(objs);
 
 	}
 	
-	private static xmlsFactorTable deserializeFactorTableFromXML(Element factorTableElement) 
+	private static xmlsFactorTable deserializeFactorTableFromXML(Element factorTableElement)
 	{
 		org.w3c.dom.NodeList lSize = factorTableElement.getElementsByTagName("size");
 		org.w3c.dom.NodeList lEntry = factorTableElement.getElementsByTagName("entry");
@@ -249,17 +250,17 @@ public class Deserializer
 		{
 			throw new DimpleException(String.format("ERROR expected expected %d indices elements, found %d"
 					, rows * columns
-					, lEntry.getLength()));    			
+					, lEntry.getLength()));
 		}
 		if(lValue.getLength() != rows)
 		{
 			throw new DimpleException(String.format("ERROR expected expected %d values elements, found %d"
 					, rows
-					, lValue.getLength()));    			
+					, lValue.getLength()));
 		}
 
 		int[][] indices = new int[rows][columns];
-		double[] values = new double[rows];
+		double[] weights = new double[rows];
 		
 		for(int i = 0; i < lEntry.getLength(); ++i)
 		{
@@ -279,7 +280,7 @@ public class Deserializer
     		int row 	= Integer.parseInt(attributes.getNamedItem("row").getNodeValue());
     		double value= Double.parseDouble(attributes.getNamedItem("value").getNodeValue());
     		
-    		values[row] = value;
+    		weights[row] = value;
 		}
    		
    		NamedNodeMap factorTableAttributes = factorTableElement.getAttributes();
@@ -294,7 +295,7 @@ public class Deserializer
    		if(node != null)
    		{
    			id = Integer.parseInt(node.getNodeValue());
-   		}   		
+   		}
    		
    		DiscreteDomain [] domains = new DiscreteDomain[lDomain.getLength()];
    		
@@ -305,9 +306,24 @@ public class Deserializer
    			domains[i] = getDomainFromElement(n);
    		}
    		
-   		return new xmlsFactorTable(functionName, id, indices, values,domains);
+   		if (domains.length > 0)
+   		{
+   			JointDomainIndexer indexer = JointDomainIndexer.create(domains);
+
+   			int[] jointIndices = new int[rows];
+   			for (int row = 0; row < rows; ++row)
+   			{
+   				jointIndices[row] = indexer.jointIndexFromIndices(indices[row]);
+   			}
+
+   			return new xmlsFactorTable(functionName, id, jointIndices, weights,JointDomainIndexer.create(domains));
+   		}
+   		else
+   		{
+   			return new xmlsFactorTable(functionName, id, indices, weights);
+   		}
 	}
-	protected void deserializeFromXMLToMemory(String docName) throws ParserConfigurationException, SAXException, IOException 
+	protected void deserializeFromXMLToMemory(String docName) throws ParserConfigurationException, SAXException, IOException
 	{
 		//init
 		clear();
@@ -355,17 +371,17 @@ public class Deserializer
 			String type = attributes.getNamedItem("type").getNodeValue();
 			if(type.compareTo("Function") == 0)
 			{
-    			addFunction(n, attributes); 				
+    			addFunction(n, attributes);
 			}
 			else if(type.compareTo("Variable") == 0)
 			{
-    			addVariable(n, attributes);    				
+    			addVariable(n, attributes);
 			}
 			else
 			{
 				throw new DimpleException(String.format("Unknown node type [%s]", type));
-			}				
-		}    		
+			}
+		}
 		trace(String.format("%d variables:", _xFg._variables.size()));
 		if(_dbg)
 		{
@@ -415,9 +431,9 @@ public class Deserializer
 		TableFactorFunction factorFunc;
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException 
+	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
-		deserializeFromXMLToMemory(docName);			
+		deserializeFromXMLToMemory(docName);
 		
 		VariableBase[] boundaryVariables = new VariableBase[_xFg._boundaryVariables.size()];
 		for(int i = 0; i < _xFg._boundaryVariables.size(); ++i)
@@ -453,7 +469,7 @@ public class Deserializer
 			//HACK. Fix to use actual qualified class name and only append if qualification
 			//missing
 			
-			String prefix = "com.lyricsemi.dimple.FactorFunctions.";
+			String prefix = "com.lyricsemi.dimple.factorfunctions.";
 			String lastPart = xF.getModelerClass();
 			String qualifiedHack = prefix + lastPart;
 			
@@ -480,16 +496,16 @@ public class Deserializer
 			catch(NoClassDefFoundError e){}
 		    
 		    Factor f = null;
-		    //If we have that class, build with that class. 
+		    //If we have that class, build with that class.
 		    if(classExists)
 		    {
-				f = _fg.addFactor((FactorFunction)factorFunctionClass.newInstance(), 
+				f = _fg.addFactor((FactorFunction)factorFunctionClass.newInstance(),
 			 			arguments);
 		    	
 		    }
-		    //If it doesn't exist, but it has a combo table, 
+		    //If it doesn't exist, but it has a combo table,
 		    //build with that combo table
-		    else if (xF.isDiscrete())  
+		    else if (xF.isDiscrete())
 		    {
 		    	
 		    	xmlsFactorTable xct = _xFg._factorTables.get(xF.getFactorTableId());
@@ -502,8 +518,8 @@ public class Deserializer
 		    		DiscreteDomain [] domains = new DiscreteDomain[arguments.length];
 		    		for (int i = 0; i < domains.length; i++)
 		    			domains[i] = (DiscreteDomain)arguments[i].getDomain();
-		    		ff = new TableFactorFunction(xct._functionName, 
-		    				new FactorTable(xct._indices, xct._values, domains));
+		    		IFactorTable ft = xct.makeTable(domains);
+		    		ff = new TableFactorFunction(xct._functionName, ft);
 		    		factorFunctions.put(xct,ff);
 		    	}
 		    	
@@ -521,9 +537,9 @@ public class Deserializer
 		return _fg;
 	}
 	
-	public FactorTable deserializeFactorTableFromXML(String docName)
+	public IFactorTable deserializeFactorTableFromXML(String docName)
 	{
-		FactorTable ct = null;
+		IFactorTable ct = null;
 		try
         {
     		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -532,30 +548,30 @@ public class Deserializer
     		Element DocElement = document.getDocumentElement();
 
     		xmlsFactorTable xct = deserializeFactorTableFromXML(DocElement);
-    		ct = new FactorTable(xct._indices, xct._values,xct._domains);
+    		ct = xct.makeTable();
         }
 		catch (FactoryConfigurationError e)
-		{ 
-	        System.out.println("Could not locate a JAXP factory class"); 
+		{
+	        System.out.println("Could not locate a JAXP factory class");
 	    }
-	    catch (ParserConfigurationException e) 
-	    { 
+	    catch (ParserConfigurationException e)
+	    {
 	        System.out.println(
 	          "Could not locate a JAXP DocumentBuilder class"
-	        ); 
+	        );
 	     }
-	     catch (DOMException e) 
+	     catch (DOMException e)
 	     {
-	        System.out.println("ERROR in deserialize to XML: " + e.toString()); 
+	        System.out.println("ERROR in deserialize to XML: " + e.toString());
 	     }
 	     catch(Exception e)
 	     {
-	        System.out.println("ERROR in deserialize to XML : " + e.toString());	    	  
-	     }		
-	  return ct;			
-	}			
+	        System.out.println("ERROR in deserialize to XML : " + e.toString());
+	     }
+	  return ct;
+	}
 	
-	static public String getDocVersion(String docName) throws ParserConfigurationException, SAXException, IOException 
+	static public String getDocVersion(String docName) throws ParserConfigurationException, SAXException, IOException
 	{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = factory.newDocumentBuilder();

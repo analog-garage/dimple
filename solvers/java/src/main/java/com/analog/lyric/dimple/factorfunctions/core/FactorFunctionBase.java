@@ -18,17 +18,18 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.Domain;
 
-public abstract class FactorFunctionBase 
+public abstract class FactorFunctionBase
 {
-	private String _name;
+	private final String _name;
 
-	public FactorFunctionBase()
+	protected FactorFunctionBase()
 	{
-		_name = this.getClass().getSimpleName();
+		this(null);
 	}
-	public FactorFunctionBase(String name)
+
+	protected FactorFunctionBase(String name)
 	{
-		_name = name;
+		_name = name != null ? name : getClass().getSimpleName();
 	}
 
 	public String getName()
@@ -51,7 +52,7 @@ public abstract class FactorFunctionBase
 	}
 	
 	
-	public abstract FactorTable getFactorTable(Domain [] domainList);
+	public abstract IFactorTable getFactorTable(Domain [] domainList);
 	
 	
 	// For directed factors...
@@ -75,7 +76,7 @@ public abstract class FactorFunctionBase
 	
 	// For deterministic directed factors, evaluate the deterministic function output(s) given only the inputs
 	// The arguments are in the same order as eval and evalEnergy, but in this case the output values should be overridden by new values
-	public void evalDeterministicFunction(Object... arguments){ }
+	public void evalDeterministicFunction(Object[] arguments){ }
 	
 	// For deterministic factors that have exactly one return argument (the first argument), this provides
 	// an alternative access method that returns the result instead of modifying the argument

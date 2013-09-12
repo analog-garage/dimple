@@ -429,6 +429,50 @@ Name & Values & Description \\
 
 \fi
 
+\para{addBoundaryVariables}
+\begin{lstlisting}
+fg.addBoundaryVariables([factorList]);
+\end{lstlisting}
+
+This method takes a comma separated list of variables. The listed variables can then be used as boundary variables in a nested graph.
+
+\ifmatlab
+\begin{lstlisting}
+
+ng = FactorGraph();
+a = Bit(2,1);
+y = a(1) + a(2);
+ng.addBoundaryVariables(y,a);
+
+fg = FactorGraph(); 
+y = Discrete(0:2);
+a = Bit(2,1);
+fg.addFactor(ng,y,a);
+a.Input = [1 0];
+fg.solve();
+
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+FactorGraph ng = new FactorGraph();
+Bit a = new Bit();
+Bit b = new Bit();
+		
+Equals eq = new Equals();
+		
+ng.addFactor(eq,a,b);
+		
+ng.addBoundaryVariables(a,b);
+		
+FactorGraph fg = new FactorGraph();
+Bit a2 = new Bit();
+Bit b2 = new Bit();
+fg.addFactor(ng,a2,b2);
+\end{lstlisting}
+\fi
+
 \subsubsection{Introspection}
 
 The FactorGraph class provides several feature for inspecting aspects of the graph.  The ability to nest graphs complicates things a bit.  Nested FactorGraphs can be considered Factors.  All of the introspection features allow the user to view nested graphs as leaf factors or to descend into them and operate on the children of the nested graphs.  Each feature provides several methods:

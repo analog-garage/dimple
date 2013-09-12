@@ -32,10 +32,10 @@ function testLP()
 
     fg.solve();
     
-    X.Belief
-    assertTrue(abs(sum(X.Belief - [1 0])) < 1e-12);
-    assertTrue(abs(sum(Y.Belief - [0 1])) < 1e-12);
-    assertTrue(abs(sum(Z.Belief - [1 0])) < 1e-12);
+    %X.Belief
+    assertTrue(abs(sum(X.Belief - [1 0]')) < 1e-12);
+    assertTrue(abs(sum(Y.Belief - [0 1]')) < 1e-12);
+    assertTrue(abs(sum(Z.Belief - [1 0]')) < 1e-12);
     
     dtrace(bLog, '--testMinSum');
 end

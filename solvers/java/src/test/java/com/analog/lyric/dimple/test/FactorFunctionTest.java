@@ -17,19 +17,27 @@
 package com.analog.lyric.dimple.test;
 
 
-import org.junit.* ;
+import static org.junit.Assert.*;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
+import java.util.Arrays;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.DiscreteFactor;
 import com.analog.lyric.dimple.model.FactorGraph;
-
-import static org.junit.Assert.* ;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 
 
@@ -53,9 +61,9 @@ public class FactorFunctionTest {
 	
 	
 	@Test(expected=Exception.class)
-	public void test_simpleStuff() 
+	public void test_simpleStuff()
 	{
-		String name = "name";	
+		String name = "name";
 		FactorFunction ff = new NopFactorFunction(name);
 		assertTrue(ff.getName() == name);
 		//should kaboom
@@ -63,20 +71,20 @@ public class FactorFunctionTest {
 	}
 	
 	@Test
-	public void test_variable_constructor() 
+	public void test_variable_constructor()
 	{
-//		public FactorTable(int [][] indices, double [] weights, Discrete... variables) 
-//		public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains) 
+//		public FactorTable(int [][] indices, double [] weights, Discrete... variables)
+//		public FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains)
 		
-		Discrete[] discretes = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)};
-		Discrete[] discretes6 = new Discrete[]{new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0),new Discrete(0.0, 1.0), new Discrete(0.0, 1.0), new Discrete(0.0, 1.0)}; 
-		DiscreteDomain[] domains = new DiscreteDomain[]{new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0)};
+		Discrete[] discretes = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
+		Discrete[] discretes6 = new Discrete[]{new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1),new Discrete(0, 1), new Discrete(0, 1), new Discrete(0, 1)};
+		DiscreteDomain[] domains = new DiscreteDomain[]{DiscreteDomain.bit(),  DiscreteDomain.bit(), DiscreteDomain.bit()};
 		DiscreteDomain[] vDomains = new DiscreteDomain[]{discretes[0].getDiscreteDomain(), discretes[1].getDiscreteDomain(), discretes[2].getDiscreteDomain()};
 		
 		XorDelta xorFF = new XorDelta();
-		FactorTable xorFT = xorFF.getFactorTable(domains);
-		int[][] xorIndices = xorFT.getIndices();
-		double[] xorWeights = xorFT.getWeights();
+		IFactorTable xorFT = xorFF.getFactorTable(domains);
+		int[][] xorIndices = xorFT.getIndicesSparseUnsafe();
+		double[] xorWeights = xorFT.getWeightsSparseUnsafe();
 		
 		int[][] table = new int[xorIndices.length][];
 		double[] weights = new double[xorWeights.length];
@@ -90,9 +98,9 @@ public class FactorFunctionTest {
 			weights[i] = xorWeights[i];
 		}
 		
-		FactorTable ftVar = new FactorTable(table, weights, discretes);
-		FactorTable ftVDomain = new FactorTable(table, weights, vDomains);
-		FactorTable ftDomain = new FactorTable(table, weights, domains);
+		IFactorTable ftVar = FactorTable.create(table, weights, discretes);
+		IFactorTable ftVDomain = FactorTable.create(table, weights, vDomains);
+		IFactorTable ftDomain = FactorTable.create(table, weights, domains);
 		
 		TableFactorFunction tffVar = new TableFactorFunction("tffVar", table, weights, discretes);
 		TableFactorFunction tffDVar = new TableFactorFunction("tffDVar", ftVar);
@@ -120,62 +128,45 @@ public class FactorFunctionTest {
 		assertTrue(fVar.getFactorTable().hashCode() != fDomain.getFactorTable().hashCode());
 		assertTrue(fxd.getFactorTable().hashCode() != fxd6.getFactorTable().hashCode());
 		
-		for(int i = 0; i < ftVar.getDomains().length; ++i)
+		JointDomainIndexer ftDomains = ftVar.getDomainIndexer();
+		for(int i = 0; i < ftDomains.size(); ++i)
 		{
-			for(int j = 0; j < ftVar.getDomains()[i].getElements().length; ++j)
+			DiscreteDomain idomain = ftDomains.get(i);
+			for(int j = 0; j < idomain.size(); ++j)
 			{
-				assertEquals(ftVar.getDomains()[i].getElements()[j],ftVDomain.getDomains()[i].getElements()[j]); 
-				assertEquals(ftVar.getDomains()[i].getElements()[j],ftDomain.getDomains()[i].getElements()[j]); 
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffVar.getFactorTable(domains).getDomains()[i].getElements()[j]); 
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffDVar.getFactorTable(domains).getDomains()[i].getElements()[j]); 
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffVDomain.getFactorTable(domains).getDomains()[i].getElements()[j]); 
-				assertEquals(ftVar.getDomains()[i].getElements()[j],tffDomain.getFactorTable(domains).getDomains()[i].getElements()[j]);
+				Object ijelt = idomain.getElement(j);
+				assertEquals(ijelt ,ftVDomain.getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, ftDomain.getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffVar.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffDVar.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffVDomain.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
+				assertEquals(ijelt, tffDomain.getFactorTable(domains).getDomainIndexer().get(i).getElement(j));
 				
-				assertEquals(ftVar.getDomains()[i].getElements()[j],fVar2.getFactorTable().getDomains()[i].getElements()[j]); 
+				assertEquals(ijelt, fVar2.getFactorTable().getDomainIndexer().get(i).getElement(j));
 			}
 		}
 		
-		for(int i = 0; i < ftVar.getRows(); ++i)
+		for(int i = 0; i < ftVar.sparseSize(); ++i)
 		{
-			int[] ftVarRow = ftVar.getRow(i);
-			int[] xorFTRow = xorFT.getRow(i);
-			for(int j = 0; j < ftVar.getColumns(); ++j)
-			{
-				int[] ftVarColumn = ftVar.getColumnCopy(j);
-				int[] xorFTColumn = xorFT.getColumnCopy(j);
-				
-				assertEquals(ftVar.getEntry(i, j), xorFT.getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), ftVarRow[j]);
-				assertEquals(ftVar.getEntry(i, j), xorFTRow[j]);
-				
-				assertEquals(ftVar.getEntry(i, j), ftVarColumn[i]);
-				assertEquals(ftVar.getEntry(i, j), xorFTColumn[i]);
-				
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fVar.getFactorTable().getColumnCopy(j)[i]);
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fVar2.getFactorTable().getColumnCopy(j)[i]);
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getEntry(i, j));
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getRow(i)[j]);
-				assertEquals(ftVar.getEntry(i, j), fxd.getFactorTable().getColumnCopy(j)[i]);
-			}
-			
-			
+			int[] ftVarRow = ftVar.sparseIndexToIndices(i);
+			int[] xorFTRow = xorFT.sparseIndexToIndices(i);
+			assertArrayEquals(ftVarRow, xorFTRow);
 		}
 		
-		DiscreteDomain[] domains6 = new DiscreteDomain[]{new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0),
-													     new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0), new DiscreteDomain(0.0, 1.0)};
+		DiscreteDomain[] domains6 = new DiscreteDomain[6];
+		Arrays.fill(domains6, DiscreteDomain.bit());
 		
-		DiscreteDomain domainThreeEntries = new DiscreteDomain(0.0, 1.0, 2.0);
+		DiscreteDomain domainThreeEntries = DiscreteDomain.range(0.0, 2.0);
 		
-		FactorTable ftThreeBinary = xorFF.getFactorTable(domains); 
-		FactorTable ftThreeBinary2 = xorFF.getFactorTable(vDomains);
+		IFactorTable ftThreeBinary = xorFF.getFactorTable(domains);
+		IFactorTable ftThreeBinary2 = xorFF.getFactorTable(vDomains);
+		assertSame(ftThreeBinary, ftThreeBinary2);
 		assertEquals(ftThreeBinary.hashCode(), ftThreeBinary2.hashCode());
-		FactorTable xor6FT = xorFF.getFactorTable(domains6);
-		FactorTable xor3AryFT = xorFF.getFactorTable(new DiscreteDomain[]{domains[0], domains[1], domainThreeEntries});
+		IFactorTable xor6FT = xorFF.getFactorTable(domains6);
+		IFactorTable xor3AryFT = xorFF.getFactorTable(new DiscreteDomain[]{domains[0], domains[1], domainThreeEntries});
+		assertNotSame(ftThreeBinary, xor6FT);
 		assertTrue(ftThreeBinary.hashCode() != xor6FT.hashCode());
+		assertNotSame(ftThreeBinary, xor3AryFT);
 		assertTrue(ftThreeBinary.hashCode() != xor3AryFT.hashCode());
 		
 		

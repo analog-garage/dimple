@@ -25,7 +25,7 @@ public class RealJointStream extends VariableStreamBase
 {
 	public RealJointStream(int numVars)  
 	{
-		super(new RealJointDomain(numVars));
+		super(RealJointDomain.create(numVars));
 	}
 
 	public RealJointStream(RealJointDomain domain)  

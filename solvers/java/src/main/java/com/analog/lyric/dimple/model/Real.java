@@ -21,30 +21,36 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
 public class Real extends VariableBase
 {
-    // Constructors...
-	public Real()  
+	// Constructors...
+	public Real()
 	{
-		this(new RealDomain(), "Real");
+		this(RealDomain.unbounded(), "Real");
 	}
 	public Real(double lower, double upper)
 	{
-		this(new RealDomain(lower,upper));
+		this(RealDomain.create(lower,upper));
 	}
-	public Real(RealDomain domain)  
+	public Real(RealDomain domain)
 	{
 		this(domain, "Real");
 	}
-	public Real(RealDomain domain, String modelerClassName) 
+	public Real(RealDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);
 	}
 
+	@Override
+	public RealDomain getDomain()
+	{
+		return (RealDomain)super.getDomain();
+	}
 	
 	public RealDomain getRealDomain()
 	{
-		return (RealDomain)getDomain();
+		return getDomain();
 	}
-	public Object getInput() 
+	
+	public Object getInput()
 	{
 		return getInputObject();
 	}
@@ -65,10 +71,10 @@ public class Real extends VariableBase
 			return (Double)tmp;
 	}
 	
-	public void setFixedValue(double fixedValue) 
+	public void setFixedValue(double fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
-		if (!((RealDomain)getDomain()).inDomain(fixedValue))
+		if (!getDomain().inDomain(fixedValue))
 			throw new DimpleException("Attempt to set fixed value outside of variable domain.");
 	
 		setFixedValueObject(fixedValue);

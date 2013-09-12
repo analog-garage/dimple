@@ -31,7 +31,14 @@ public class CollectionTester<T>
 		assertEquals(collection.size() == 0, collection.isEmpty());
 		
 		Object obj = new Object() {};
-		assertFalse(collection.contains(obj));
+		try
+		{
+			assertFalse(collection.contains(obj));
+		}
+		catch (ClassCastException ex)
+		{
+			// Ignore - collection may throw cast exception for mismatched type.
+		}
 		
 		List<Object> all = new ArrayList<Object>(collection.size());
 		int size = 0;
@@ -47,7 +54,14 @@ public class CollectionTester<T>
 		assertTrue(collection.containsAll(all));
 		
 		all.add(obj);
-		assertFalse(collection.containsAll(all));
+		try
+		{
+			assertFalse(collection.containsAll(all));
+		}
+		catch (ClassCastException ex)
+		{
+			// Ignore - collection does not have to support wrong key type.
+		}
 		
 		Object[] all2 = collection.toArray();
 		assertEquals(all2.length, collection.size());
@@ -56,6 +70,20 @@ public class CollectionTester<T>
 			assertTrue(collection.contains(elt));
 		}
 		
-		assertFalse(collection.remove(obj));
+		try
+		{
+			assertFalse(collection.remove(obj));
+		}
+		catch (UnsupportedOperationException ex)
+		{
+			// Ignore - ok for collection to not implement remove.
+		}
+	}
+	
+	public void assertCollectionEquals(Collection<T> c1, Collection<T> c2)
+	{
+		assertEquals(c1.size(), c2.size());
+		assertTrue(c1.containsAll(c2));
+		assertTrue(c2.containsAll(c1));
 	}
 }

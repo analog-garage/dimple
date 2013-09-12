@@ -22,7 +22,7 @@ function testAddFactorTableErrors()
     try
         table = fg.createTable([0 0; 0 0; 1 1],[1 1 1],DiscreteDomain({1,0}),DiscreteDomain({1,0}));
     catch E
-        assertTrue(findstr(E.message,'Table Factor contains multiple rows with same set of indices') > 0);
+        assertTrue(findstr(E.message,'with same set of indices') > 0);
         fail = true;
     end
 
@@ -35,7 +35,7 @@ function testAddFactorTableErrors()
     try
         table = fg.createTable([0 0; 2 2; 1 1],[1 1 1],DiscreteDomain({1,0}),DiscreteDomain({1,0}));
     catch E
-        assertTrue(findstr(E.message,'index: 2 is larger than domain of variable number 0')>0);
+        assertTrue(findstr(E.message,'Index 2 out of bounds for domain 0 with size 2')>0);
         fail = true;
     end
 

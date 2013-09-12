@@ -31,4 +31,20 @@ function testAddBoundaryVariables
     fg.solve();
     assertEqual(b.Belief,0.8);
     
+    % 
+    ng = FactorGraph();
+    a = Bit(2,1);
+    y = a(1) + a(2);
+    ng.addBoundaryVariables(y,a);
+
+    fg = FactorGraph(); 
+    y = Discrete(0:2);
+    a = Bit(2,1);
+    fg.addFactor(ng,y,a);
+    a.Input = [1 0];
+    fg.solve();
+
+    assertEqual(y.Value,1);
+    assertElementsAlmostEqual(y.Belief, [0 1 0]')
+    
 end

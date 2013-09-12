@@ -23,7 +23,7 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.FactorGraph;
 
-public class HMM 
+public class HMM
 {
 
 	public static class TransitionFactorFunction extends FactorFunction
@@ -93,7 +93,7 @@ public class HMM
 	{
 		FactorGraph HMM = new FactorGraph();
 		
-		DiscreteDomain domain = new DiscreteDomain("sunny","rainy");
+		DiscreteDomain domain = DiscreteDomain.create("sunny","rainy");
 		Discrete MondayWeather = new Discrete(domain);
 		Discrete TuesdayWeather = new Discrete(domain);
 		Discrete WednesdayWeather = new Discrete(domain);

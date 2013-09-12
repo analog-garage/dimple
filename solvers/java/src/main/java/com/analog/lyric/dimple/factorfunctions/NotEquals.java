@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 2...) Arbitrary length list of values (double or integer)
  * 
  */
-public class NotEquals extends FactorFunction 
+public class NotEquals extends FactorFunction
 {
     @Override
     public double evalEnergy(Object... arguments)
@@ -57,7 +57,7 @@ public class NotEquals extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	if (arguments.length <= 2)										// One value, must be equal
     	{

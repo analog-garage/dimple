@@ -23,6 +23,6 @@ function testNormalization()
         fg = FactorGraph();
         fg.addFactor(@xorDelta,x);
         b = x.Belief;
-        assertElementsAlmostEqual([.2 .8],b);
+        assertElementsAlmostEqual([.2 .8]',b);
     end
 end

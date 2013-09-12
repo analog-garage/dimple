@@ -849,5 +849,183 @@ The functions called from the switchyard all make calls on the static DimpleMana
 
 As noted earlier in this document, the C++ code also makes calls back to MATLAB to build the CombinationTables from the delta functions. It does so by calling the C++ mexCallMATLAB function, which takes the MATLAB function name as an argument.
 
+\subsubsection{LP and IP Solver}
+
+\paragraph{How to express a Factor Graph as an LP or IP}
+
+Inference on Factor Graphs can be expressed as a Linear Program or an Integer Program.  Expressed as an Integer program, inference will be exact but slower than BP.   The following math describes how to specify an objective function and constraints.
+
+\subparagraph{Objective Function}
+
+In the following, $F$ is the set of all factors and $V$ is the set of all variables.  $V_f$ is the set of all variables associated with factor $f$.  $\phi_f$ is the factor function for factor f.
+
+\[
+\sum_{f \in F} \phi_f(V_f) p(v) + \sum_{v \in V} input(v) p(v)
+\]
+
+\subparagraph{Constraints}
+
+First we introduce some shorthand notation.  $ \sum_{\sim v} $ is a sum over all variables that are not v.  
+
+For all pairs of f,v such that v is connected to f:
+
+\[
+\sum_{ \sim v} p(V_f) = p(v)
+\]
+
+also, for all v
+
+\[
+\sum_{v} p(v) = 1
+\]
+
+And finally
+
+for all f
+
+\[
+p(V_f) \ge 0
+\]
+
+\subparagraph{Additional Constraint to Make this an IP}
+When solving exactly, we make the previous equations an IP by constraining p(V=v) to be 0 or 1.
+
+\subsubsection{Setting and Getting Properties on MATLAB Vectorized Objects}
+
+Because looping in MATLAB is very slow, Dimple supports vectorized Factor, FactorGraph, and Variable objects.  This section discusses how getting and setting properties on these classes (which all inherit from MatrixObject) should behave.
+
+We will discuss setting properties:
+
+\begin{lstlisting}
+a.b = c
+\end{lstlisting}
+
+a will always be a MATLAB object that inherits from the MatrixObject type.  MatrixObjects consist of a collection of underlying Java objects that inherit from the Node type.  c might be a MATLAB scalar, vector, matrix or tensor, a cell array, a MatrixObject, or a cell array of MatrixObjects.
+
+We will also discussing getting properties:
+
+\begin{lstlisting}
+c = a.b
+\end{lstlisting}
+
+\paragraph{Numeric}
+
+Somer properties take  and return numeric values.  For instance, discrete variable Node Belief and Input properties are arrays of numbers.  
+
+\subparagraph{set}
+
+When the underlying MatrixObject is a scalar, the dimension of a is [1 1].  This case is straightforward as c is simply passed on to the single Node.
+
+\begin{lstlisting}
+d = Discrete(0:2);
+d.Input = ones(3,1);
+d.Input = ones(1,3);
+\end{lstlisting}
+
+When a is a column vector, the size of a would be of the form [n 1].  The size of c will be [n y] where y can be a vector of numbers.  In the following case y = [3].  The a(i) Node will be assigned c(i,:);
+
+\begin{lstlisting}
+a = Discrete(0:2, 4, 1);
+c = ones(4,3);
+a.Input = c;
+\end{lstlisting}
+
+Here is another case where y = [2 3].  The a(i) Node will be assigned c(i,:,:);
+
+\begin{lstlisting}
+a = Discrete(0:2, 4, 1);
+c = ones(4,2,3);
+a.SomeProperty = c;
+\end{lstlisting}
+
+Finally, in the most general case where a is a row vector, matrix, or tensor, the size of a can be described by a vector x and the size of c can be described by a vector [x y] where x and y are both vectors.  When a.b is assigned c, each Node indexed by x will be assigned the tensor with dimensions y
+
+Here is an example with a row vector:
+
+\begin{lstlisting}
+a = Discrete(0:2,1,4);
+c = ones(1,4,3);
+a.Input = c;
+\end{lstlisting}
+
+And an example with a tensor:
+
+\begin{lstlisting}
+a = Discrete(0:2,3,4,5);
+c = ones(3,4,5,6,7);
+a.SomeProperty = c;
+\end{lstlisting}
+
+In this case, each a(i,j,k) is assigned a 6x7 matrix.
+
+\subparagraph{get}
+
+In the case where a is a scalar and c is an array, c = a.b will return a column vector.  When c is a multi dimensional array, c = a.b will return the multidimensional array a a matrix or tensor.
+
+In the case where a is a column vector with size [n 1], c = a.b will return a matrix or tensor with size [n y] where y is the dimensions of the Node object's property.
+
+\begin{lstlisting}
+a = Discrete(0:2,4,1);
+c = a.Belief;
+size(c)
+
+ans = 
+       4   3 
+\end{lstlisting}
+
+In the case where a is a row vector, a matrix or tensor with size x, c = a.b will return an object with size [x y], where y is the dimensions of the Node object's property.
+
+\begin{lstlisting}
+a = Discrete(0:2,3,4,5);
+c = a.SomeProperty;
+%assuming someProperty has size [6 7]
+size(c)
+
+ans = 
+    3  4  5  6  7
+    \end{lstlisting}
+
+\paragraph{Cell Array}
+When c is a cell array of objects it behaves almost the same as the Numerical case except except that arrays of objects are passed to the underlying Node objects rather than arrays of doubles.
+
+The only special case occurs when a is a scalar.  In this case the object being returned and passed does not need to be contained within a cell array.
+
+\paragraph{MatrixObject}
+In some cases, c might also be a MatrixObject.  This is true in the case of the Factor DirectedTo property.  In such a case, the same rules apply as in the Numerical case except that multidimensional arrays of Nodes will be passed to the Nodes behind a rather than arrays of doubles.  
+
+In the following example we pass a(i,j) to f(i,j).DirectedTo:
+
+\begin{lstlisting}
+a = Discrete(0:2,3,4);
+b = Discrete(0:2,3,4);
+c = Discrete(0:2,3,4);
+d = Discrete(0:2,3,4);
+f = fg.addFactorVectorized(@factor,a,b,c,d);
+f.DirectedTo = a;
+\end{lstlisting}
+
+Here we pass [a(i,j,1) a(i,j,2)] to f(i,j).DirectedTo:
+
+\begin{lstlisting}
+c = Discrete(0:2,3,4,4);
+a = fg.addFactorVectorized(@factor,c(:,:,1),c(:,:,2),c(:,:,3),c(:,:,4));
+f.DirectedTo = a(:,:,1:2);
+\end{lstlisting}
+
+And here we pass {a(i,j,1), a(i,j,2)} to f(i,j):
+
+\begin{lstlisting}
+c = Discrete(0:2,3,4,4);
+a = fg.addFactorVectorized(@factor,c(:,:,1),c(:,:,2),c(:,:,3),c(:,:,4));
+f.DirectedTo = {a(:,:,1), a(:,:,2)};
+\end{lstlisting}
+
+Here we retrieve the value of the property.
+
+\begin{lstlisting}
+c = a.DirectedTo;
+\end{lstlisting}
+
+In the case where each Factor is directed to multiple variables, Dimple will return a cell array containing as many elements as there are variables per factor.  Each of the entries will contain a variable array equal in dimensions to the factor array.
 
 \end{document}  

@@ -46,7 +46,7 @@ function testAllVariants()
             kvars = Discrete(1:D,NumVars,1);
             kf = kfg.addFactor(factorFunction,kvars);
             kf.Solver.setK(K);
-            kvars.Input = fliplr(1:D);
+            kvars.Input = repmat(fliplr(1:D),NumVars,1);
             kfg.solve();
 
             %Now, we do the same thing without kbest and compare
@@ -56,15 +56,15 @@ function testAllVariants()
 
             %If we set only the kbest inputs to their values and everything else to 0,
             %this should be equivalent to kbest.
-            vars.Input = fliplr([zeros(1,D-K) (1:K)+D-K]);
+            vars.Input = repmat(fliplr([zeros(1,D-K) (1:K)+D-K]),NumVars,1);
             fg.solve();
-            vars.Input = fliplr(1:D);
+            vars.Input = repmat(fliplr(1:D),NumVars,1);
 
             diff = kvars.Belief-vars.Belief;
             assertTrue(norm(diff(:)) < 1e-13);
 
             %Now make sure they're different
-            vars.Input = fliplr(1:D);
+            vars.Input = repmat(fliplr(1:D),NumVars,1);
             fg.solve();
 
             diff = kvars.Belief-vars.Belief;

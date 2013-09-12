@@ -83,7 +83,7 @@ public class Power extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object ... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	Double power = FactorFunctionUtilities.toDouble(arguments[2]);

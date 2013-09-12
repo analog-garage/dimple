@@ -21,7 +21,7 @@ public class Complex extends RealJoint
 	// Constructors...
 	public Complex() 
 	{
-		this(new RealJointDomain(2));
+		this(RealJointDomain.create(2));
 	}
 	public Complex(RealJointDomain domain)
 	{

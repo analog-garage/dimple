@@ -22,6 +22,6 @@ function testAddFactorNDimensions()
     f = fg.addFactor(myfac,b);
     ft = f.FactorTable;
     assertEqual(length(ft.Weights),2^8-1);
-    assertTrue(all(sum(ft.Indices,2)==ft.Weights));
+    assertElementsAlmostEqual(sum(ft.Indices,2), ft.Weights);
     
 end

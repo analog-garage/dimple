@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableList;
 
@@ -33,7 +33,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 	private DoubleFFT_1D _fft;
 	
 	
-	public FiniteFieldMult(Factor factor)  
+	public FiniteFieldMult(Factor factor)
 	{
 		super(factor);
 		if (factor.getSiblings().size() != 3)
@@ -45,7 +45,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 		//TODO: error check
 		int poly = ((FiniteFieldVariable)variables.getByIndex(0).getSolver()).getTables().getPoly();
 		for (int i = 1; i < 3; i++)
-		{			
+		{
 			if (((FiniteFieldVariable)variables.getByIndex(i).getSolver()).getTables().getPoly() != poly)
 			{
 				//TODO: better error message
@@ -54,14 +54,14 @@ public class FiniteFieldMult extends FiniteFieldFactor
 		}
 		
 		//((Discrete)variables.getByIndex(0));
-		_fft = new DoubleFFT_1D(((Discrete)variables.getByIndex(0)).getDiscreteDomain().getElements().length-1);
+		_fft = new DoubleFFT_1D(((Discrete)variables.getByIndex(0)).getDiscreteDomain().size()-1);
 
 	}
 
 	@Override
-	public void update() 
+	public void update()
 	{
-		updateToZ();		
+		updateToZ();
 		updateToX();
 		updateToY();
 	}
@@ -70,7 +70,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 	{
 
 		double [] xOutput = _outputMsgs[0];
-		double [] yInput = _inputMsgs[1];		
+		double [] yInput = _inputMsgs[1];
 		double [] zInput = _inputMsgs[2];
 		
 		updateBackward(yInput,zInput,xOutput);
@@ -79,7 +79,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 	public void updateToY()
 	{
 		double [] yOutput = _outputMsgs[1];
-		double [] xInput = _inputMsgs[0];		
+		double [] xInput = _inputMsgs[0];
 		double [] zInput = _inputMsgs[2];
 		
 		updateBackward(xInput,zInput,yOutput);
@@ -134,7 +134,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 			if (dlogx[i] > 0)
 				val = dlogx[i];
 
-			xOutput[powTable[i/2]] = val + yInput[0]*zInput[0]; 			  
+			xOutput[powTable[i/2]] = val + yInput[0]*zInput[0];
 			sum += val;
 		}
 	
@@ -152,7 +152,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 
 		
 		double [] xInput = _inputMsgs[0];
-		double [] yInput = _inputMsgs[1];		
+		double [] yInput = _inputMsgs[1];
 		double [] zOutput = _outputMsgs[2];
 
 		
@@ -205,7 +205,7 @@ public class FiniteFieldMult extends FiniteFieldFactor
 			if (dlogz[i] > 0)
 				val = dlogz[i];
 
-			zOutput[powTable[i/2]] = val; 			  
+			zOutput[powTable[i/2]] = val;
 			sum += val;
 		}
 	
@@ -217,7 +217,8 @@ public class FiniteFieldMult extends FiniteFieldFactor
 
 	}
 	
-	public void updateEdge(int outPortNum)  
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
 			updateToX();

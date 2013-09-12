@@ -90,11 +90,7 @@ classdef FactorTable < handle
         end
         
         function set.Indices(obj,indices)
-            if ~isempty(obj.ITable)
-                obj.ITable.changeIndices(indices);
-            else
-                obj.Indices = indices;
-            end
+        	error('Cannot directly set FactorTable.Indices. Use change(indices,weights) instead.');
         end
         
         function values = get.Weights(obj)

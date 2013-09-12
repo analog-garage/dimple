@@ -16,12 +16,14 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
 
 /**
  * Deterministic equality constraint.  Values must be numeric or boolean.
@@ -37,7 +39,7 @@ import com.analog.lyric.dimple.model.Domain;
  * 1...) Arbitrary length list of values (double, integer, or boolean)
  * 
  */
-public class Equality extends FactorFunction 
+public class Equality extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
@@ -80,55 +82,34 @@ public class Equality extends FactorFunction
     	}
     }
     
-    
     @Override
-    public FactorTable getFactorTable(Domain [] domainList)
+    protected IFactorTable createTableForDomains(JointDomainIndexer domains)
     {
-    	boolean allsame = true;
-    	DiscreteDomain first = null;
-    	DiscreteDomain [] discreteDomains = new DiscreteDomain[domainList.length];
-    	
-    	for (int i = 0; i < domainList.length; i++)
+    	final DiscreteDomain domain = domains.get(0);
+    	for (int i = 1; i < domains.size(); ++ i)
     	{
-    		if (i == 0)
+    		if (!domain.equals(domains.get(i)))
     		{
-    			if (!domainList[0].isDiscrete())
-    				throw new DimpleException("Variables must be discrete");
-    			
-    			first = (DiscreteDomain)domainList[0];
-    		}
-    		else
-    		{
-    			if (!first.equals(domainList[i]))
-    			{
-    				allsame = false;
-    				break;
-    			}
-    		}
-    		
-    		discreteDomains[i] = (DiscreteDomain)domainList[i];
-    		
-    	}
-    	
-    	if (!allsame)
-    		return super.getFactorTable(domainList);
-    	
-    	
-    	int [][] indices = new int[first.getElements().length][];
-    	double [] probs = new double[indices.length];
-    	
-    	for (int i = 0; i < indices.length; i++)
-    	{
-    		indices[i] = new int[domainList.length];
-    		
-    		for (int j = 0; j < indices[i].length; j++)
-    		{
-    			indices[i][j] = i;
-    			probs[i] = 1;
+    			return super.createTableForDomains(domains);
     		}
     	}
     	
-    	return new FactorTable(indices,probs, discreteDomains);
+    	// Special case for all domains the same
+
+		final int size = domains.size();
+		final double[] energies = new double[size];
+		final int[] jointIndices = new int[size];
+		final int[] indices = new int[domains.size()];
+
+		for (int i = 0; i < size; ++i)
+		{
+			Arrays.fill(indices, i);
+			jointIndices[i] = domains.jointIndexFromIndices(indices);
+		}
+
+		FactorTable table = new FactorTable(domains);
+		table.setEnergiesSparse(jointIndices, energies);
+		return table;
     }
     
 }

@@ -21,19 +21,19 @@ import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.VariableBase;
 
-public class DiscreteStream extends VariableStreamBase 
+public class DiscreteStream extends VariableStreamBase
 {
 
-	public DiscreteStream(DiscreteDomain domain)  
+	public DiscreteStream(DiscreteDomain domain)
 	{
 		super(domain);
 	}
-	public DiscreteStream(Object ... domain)  
+	public DiscreteStream(Object ... domain)
 	{
-		this(new DiscreteDomain(domain));
+		this(DiscreteDomain.create(domain));
 	}
 	@Override
-	protected VariableBase instantiateVariable(Domain domain)  
+	protected VariableBase instantiateVariable(Domain domain)
 	{
 		return new Discrete((DiscreteDomain)domain);
 	}

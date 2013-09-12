@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
@@ -30,14 +30,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
-{	
+{
     protected DiscreteSample[] _inPortMsgs = null;
     protected double[][] _outPortMsgs = null;
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
 
     
-	public STableFactor(Factor factor) 
+	public STableFactor(Factor factor)
 	{
 		super(factor);
 		_isDeterministicDirected = _factor.getFactorFunction().isDeterministicDirected();
@@ -92,29 +92,24 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		double[] outMessage = _outPortMsgs[outPortNum];
 		int outputMsgLength = outMessage.length;
 
-		FactorTable factorTable = getFactorTable();
-		double[] factorTableWeights = factorTable.getPotentials();
+		IFactorTable factorTable = getFactorTable();
 
-		int[] inPortMsgs = new int[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
+		final int numPorts = _numPorts;
+		int[] inPortMsgs = new int[numPorts];
+		for (int port = 0; port < numPorts; port++)
 			inPortMsgs[port] = _inPortMsgs[port].getIndex();
 
 		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
 		{
 			inPortMsgs[outPortNum] = outIndex;
-		
-			int weightIndex = factorTable.getWeightIndexFromTableIndices(inPortMsgs);
-			if (weightIndex >= 0)
-				outMessage[outIndex] = factorTableWeights[weightIndex];
-			else
-				outMessage[outIndex] = Double.POSITIVE_INFINITY;
-			
+			outMessage[outIndex] = factorTable.getEnergyForIndices(inPortMsgs);
 		}
 	}
 	
 	
 	
 
+	@Override
 	public double getPotential()
 	{
 	    int[] inPortMsgs = new int[_numPorts];
@@ -125,18 +120,14 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	public double getPotential(int[] inputs)
 	{
-		FactorTable factorTable = getFactorTable();
-		int weightIndex = factorTable.getWeightIndexFromTableIndices(inputs);
-		if (weightIndex >= 0)
-			return factorTable.getPotentials()[weightIndex];
-		else
-			return Double.POSITIVE_INFINITY;
+		return getFactorTable().getEnergyForIndices(inputs);
 	}
 		
 	
 	// Set the value of a neighboring variable
 	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
 	// then re-compute the directed outputs and propagate the result to the directed-to variables
+	@Override
 	public void updateNeighborVariableValue(int portIndex)
 	{
 		if (!_isDeterministicDirected) return;
@@ -161,7 +152,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
     	int size = _factor.getSiblings().size();
     	_numPorts= size;
@@ -187,28 +178,28 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 
 	}
 
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outPortMsgs[portIndex];
 	}
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		STableFactor tf = (STableFactor)other;
 		this._inPortMsgs[thisPortNum] = tf._inPortMsgs[otherPortNum];

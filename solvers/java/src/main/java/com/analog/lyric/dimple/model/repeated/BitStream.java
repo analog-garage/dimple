@@ -18,11 +18,11 @@ package com.analog.lyric.dimple.model.repeated;
 
 import com.analog.lyric.dimple.model.DiscreteDomain;
 
-public class BitStream extends DiscreteStream 
+public class BitStream extends DiscreteStream
 {
 	public BitStream()
 	{
-		super(new DiscreteDomain(0,1));
+		super(DiscreteDomain.bit());
 	}
 
 }

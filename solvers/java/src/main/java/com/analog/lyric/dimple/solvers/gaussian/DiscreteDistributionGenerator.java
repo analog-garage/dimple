@@ -17,10 +17,10 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistr
 public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGenerator
 {
 
-	public DiscreteDistributionGenerator(Port p) 
+	public DiscreteDistributionGenerator(Port p)
 	{
 		super(p);
 	
@@ -37,24 +37,15 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		if (!(n instanceof Discrete))
 			throw new DimpleException("expected Discrete");
 		
-		Discrete d = (Discrete)n;
-		Object [] domain = d.getDiscreteDomain().getElements();
-		
-		_domain2index = new HashMap<Object, Integer>();
-		
-		for (int i = 0; i < domain.length; i++)
-		{
-			_domain2index.put(domain[i],i);
-		}
-
+		_domain = ((Discrete)n).getDomain();
 	}
 
 	private double [] _msg;
-	private HashMap<Object,Integer> _domain2index;
+	private final DiscreteDomain _domain;
 	
 
 	@Override
-	public void generateDistributionInPlace(ArrayList<Object> input) 
+	public void generateDistributionInPlace(ArrayList<Object> input)
 	{
 	
 		for (int i = 0; i < _msg.length; i++)
@@ -64,7 +55,7 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 		
 		for (int i = 0; i < input.size(); i++)
 		{
-			_msg[_domain2index.get(input)] = _msg[_domain2index.get(input)]+1;
+			_msg[_domain.getIndex(input)] = _msg[_domain.getIndex(input)]+1;
 		}
 		
 		//normalize
@@ -74,7 +65,7 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	}
 
 	@Override
-	public void initialize()  
+	public void initialize()
 	{
 		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
 		_msg = (double[])var.resetInputMessage(_msg);
@@ -82,12 +73,12 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	}
 
 	@Override
-	public void createMessage(Object msg) 
+	public void createMessage(Object msg)
 	{
-		_msg = (double[])msg;		
+		_msg = (double[])msg;
 	}
 	
-	@Override 
+	@Override
 	public Object getOutputMsg()
 	{
 		return _msg;
@@ -95,13 +86,13 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 
 
 	@Override
-	public void setOutputMsg(Object message) 
+	public void setOutputMsg(Object message)
 	{
 		_msg = (double[])message;
 	}
 
 	@Override
-	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	public void moveMessages(HybridSampledBPDistributionGenerator other)
 	{
 		_msg = ((DiscreteDistributionGenerator)other)._msg;
 		

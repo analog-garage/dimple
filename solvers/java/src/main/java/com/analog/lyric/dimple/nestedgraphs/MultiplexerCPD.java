@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 
-public class MultiplexerCPD extends FactorGraph 
+public class MultiplexerCPD extends FactorGraph
 {
 
 	private Discrete _y;
@@ -93,7 +93,7 @@ public class MultiplexerCPD extends FactorGraph
 	{
 		DiscreteDomain [] domains = new DiscreteDomain[zDomains.length];
 		for (int i = 0; i < domains.length; i++)
-			domains[i] = new DiscreteDomain(zDomains[i]);
+			domains[i] = DiscreteDomain.create(zDomains[i]);
 		
 		return create(domains,oneBased,aAsDouble);
 	}
@@ -107,10 +107,10 @@ public class MultiplexerCPD extends FactorGraph
 		for (int i = 0; i < zDomains.length; i++)
 		{
 			Zs[i] = new Discrete(zDomains[i]);
-			zasize += zDomains[i].getElements().length;
+			zasize += zDomains[i].size();
 			for (int j = 0; j < zDomains[i].size(); j++)
 			{
-				yDomainValues.add(zDomains[i].getElements()[j]);
+				yDomainValues.add(zDomains[i].getElement(j));
 			}
 		}
 		
@@ -128,8 +128,9 @@ public class MultiplexerCPD extends FactorGraph
 		Y.setLabel("Y");
 		
 		java.util.Hashtable<Object, Integer> yDomainObj2index = new java.util.Hashtable<Object, Integer>();
-		for (int i = 0; i < Y.getDiscreteDomain().size(); i++)
-			yDomainObj2index.put(Y.getDiscreteDomain().getElements()[i], i);
+		final DiscreteDomain yDomain = Y.getDiscreteDomain();
+		for (int i = 0, end = yDomain.size(); i < end; i++)
+			yDomainObj2index.put(yDomain.getElement(i), i);
 		
 		
 		//Create a variable
@@ -142,7 +143,7 @@ public class MultiplexerCPD extends FactorGraph
 			else
 				adomain[i] = (int)val;
 		}
-		Discrete A = new Discrete(adomain);		
+		Discrete A = new Discrete(adomain);
 		A.setLabel("A");
 		
 		addBoundaryVariables(Y);
@@ -183,7 +184,7 @@ public class MultiplexerCPD extends FactorGraph
 			for (int j = 0; j < Zs[i].getDiscreteDomain().size(); j++)
 			{
 				indices[index][0] = index;
-				indices[index][1] = yDomainObj2index.get(Zs[i].getDiscreteDomain().getElements()[j]);
+				indices[index][1] = yDomainObj2index.get(Zs[i].getDiscreteDomain().getElement(j));
 				
 				weights[index] = 1;
 				
@@ -216,7 +217,7 @@ public class MultiplexerCPD extends FactorGraph
 		f = this.addFactor(indices,weights,ZA,A);
 		f.setLabel("ZA2A");
 		
-		//Create ZA Z* factors		
+		//Create ZA Z* factors
 		//Create Z* Z factors
 		
 		for (int a = 0; a < Zs.length; a++)
@@ -295,6 +296,6 @@ public class MultiplexerCPD extends FactorGraph
 
 	public static DiscreteDomain [] buildDomains(Object [] domain, int numZs)
 	{
-		return buildDomains(new DiscreteDomain(domain), numZs);
+		return buildDomains(DiscreteDomain.create(domain), numZs);
 	}
 }

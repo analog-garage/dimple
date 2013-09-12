@@ -43,10 +43,10 @@ function testFactorTable
         ft = FactorTable(values,dd,dd);
         d = Discrete(dd,2,1);
         f = fg.addFactor(ft,d);
-        assertEqual(f.FactorTable.get('rain','rain'),.8);
-        assertEqual(f.FactorTable.get('no rain','rain'),.2);
-        assertEqual(f.FactorTable.get('rain','no rain'),.3);
-        assertEqual(f.FactorTable.get('no rain','no rain'),.7);
+        assertElementsAlmostEqual(f.FactorTable.get('rain','rain'),.8);
+        assertElementsAlmostEqual(f.FactorTable.get('no rain','rain'),.2);
+        assertElementsAlmostEqual(f.FactorTable.get('rain','no rain'),.3);
+        assertElementsAlmostEqual(f.FactorTable.get('no rain','no rain'),.7);
 
         %test errors
 
@@ -60,7 +60,7 @@ function testFactorTable
         ft.set('no rain','rain',.9);
         ft.set('rain','rain',.3);
         ft.set('no rain','rain',.7);
-        assertEqual(ft.get('rain','no rain'),.1);
+        assertElementsAlmostEqual(ft.get('rain','no rain'),.1);
         fg = FactorGraph();
         d = Discrete(dd,2,1);
         fg.addFactor(ft,d);
@@ -104,10 +104,10 @@ function testFactorTable
         values = [.8 .3; ...
                   .2 .7];
         f = fg.addFactor(values,d);
-        assertEqual(f.FactorTable.get('rain','rain'),.8);
-        assertEqual(f.FactorTable.get('no rain','rain'),.2);
-        assertEqual(f.FactorTable.get('rain','no rain'),.3);
-        assertEqual(f.FactorTable.get('no rain','no rain'),.7);
+        assertElementsAlmostEqual(f.FactorTable.get('rain','rain'),.8);
+        assertElementsAlmostEqual(f.FactorTable.get('no rain','rain'),.2);
+        assertElementsAlmostEqual(f.FactorTable.get('rain','no rain'),.3);
+        assertElementsAlmostEqual(f.FactorTable.get('no rain','no rain'),.7);
     end
     %test errors
 end

@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 
 public class DiscreteFactor extends Factor
@@ -28,9 +28,8 @@ public class DiscreteFactor extends Factor
 	 * Construction
 	 */
 	
-	public DiscreteFactor(int id, FactorFunction factorFunc,
-			VariableBase[] variables)
-			{
+	public DiscreteFactor(int id, FactorFunction factorFunc, VariableBase[] variables)
+	{
 		super(id, factorFunc, variables);
 		
 		if (!isDiscrete())
@@ -52,12 +51,22 @@ public class DiscreteFactor extends Factor
 	 */
 	
 	@Override
-	public FactorTable getFactorTable()
+	public JointDomainIndexer getDomainList()
 	{
-		return getFactorFunction().getFactorTable(getDomains());
+		VariableList variables = getVariables();
+		int numVariables = variables.size();
+		
+		DiscreteDomain[] domains = new DiscreteDomain[numVariables];
+		
+		for (int i = 0; i < numVariables; i++)
+		{
+			domains[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
+		}
+		
+		return JointDomainIndexer.create(_directedTo, domains);
+		
 	}
 
-	
 	public int[][] getPossibleBeliefIndices()
 	{
 		return _solverFactor.getPossibleBeliefIndices();
@@ -98,7 +107,7 @@ public class DiscreteFactor extends Factor
 		if (newDomains.length > 0)
 		{
 			//getFactorFunction();
-			FactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
+			IFactorTable newTable = getFactorTable().createTableWithNewVariables(newDomains);
 			setFactorFunction(new TableFactorFunction(getFactorFunction().getName(), newTable));
 			
 			for (VariableBase v : newVariables)
@@ -132,7 +141,7 @@ public class DiscreteFactor extends Factor
 			allDomains[i] = getConnectedNodeFlat(i).getDiscreteDomain();
 		
 		//Create the new combo table
-		FactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable(
+		IFactorTable newTable2 =  getFactorTable().joinVariablesAndCreateNewTable(
 				factorVarIndices,
 				indexToJointIndex,
 				allDomains,

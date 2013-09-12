@@ -16,33 +16,117 @@
 
 package com.analog.lyric.dimple.model;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class RealDomain extends Domain
 {
-	protected double _lowerBound = Double.NEGATIVE_INFINITY;
-	protected double _upperBound = Double.POSITIVE_INFINITY;
+	/*-------
+	 * State
+	 */
 	
-	public RealDomain() {}
-	public RealDomain(double[] domain)  {this(domain[0], domain[1]);}
+	private static final long serialVersionUID = 1L;
+	
+	private final double _lowerBound;
+	private final double _upperBound;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	RealDomain() { this(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY); }
+
+	RealDomain(double[] domain)  {this(domain[0], domain[1]);}
+
 	public RealDomain(double lower, double upper)
 	{
+		super(computeHashCode(lower, upper));
 		if (lower > upper) throw new DimpleException("Upper bound must be greater than lower bound");
 		_lowerBound = lower;
 		_upperBound = upper;
 	}
-	public double getLowerBound() {return _lowerBound;}
-	public double getUpperBound() {return _upperBound;}
 	
-	// Utility to check if a value is in the domain or not
-	public boolean inDomain(double value)
+	private static int computeHashCode(double lowerBound, double upperBound)
 	{
-		return (value >= _lowerBound) && (value <= _upperBound);
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(lowerBound);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(upperBound);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	/**
+	 * Returns domain with given lower and upper bounds. May return a previously
+	 * interned instance.
+	 */
+	public static RealDomain create(double lower, double upper)
+	{
+		for (StandardDomain standard : StandardDomain.values())
+		{
+			RealDomain domain = standard.domain;
+			if (domain.getLowerBound() == lower && domain.getUpperBound() == upper)
+			{
+				return domain;
+			}
+		}
+		
+		// TODO: cache other domains as well...
+		
+		return new RealDomain(lower, upper);
 	}
 	
-	@Override
-	public boolean isReal()
+	/**
+	 * Same as #unbounded()
+	 */
+	public static RealDomain create()
 	{
-		return true;
+		return StandardDomain.UNBOUNDED.domain;
 	}
+	
+	/**
+	 * Domain including the entire real number line: [-infinity, +infinity]
+	 */
+	public static RealDomain unbounded()
+	{
+		return StandardDomain.UNBOUNDED.domain;
+	}
+	
+	/**
+	 * Domain consisting of zero plus all positive numbers: [0.0, +infinity]
+	 */
+	public static RealDomain nonNegative()
+	{
+		return StandardDomain.NON_NEGATIVE.domain;
+	}
+	
+	/**
+	 * Domain consisting of zero plus all negative numbers: [-infinity, 0.0]
+	 */
+	public static RealDomain nonPositive()
+	{
+		return StandardDomain.NON_POSITIVE.domain;
+	}
+
+	private static enum StandardDomain
+	{
+		UNBOUNDED(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+		NON_NEGATIVE(0.0, Double.POSITIVE_INFINITY),
+		NON_POSITIVE(Double.NEGATIVE_INFINITY, 0.0);
+		
+		private final RealDomain domain;
+		
+		private StandardDomain(double lower, double upper)
+		{
+			domain = new RealDomain(lower, upper);
+		}
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
 	
 	@Override
 	public boolean equals(Object other)
@@ -59,22 +143,48 @@ public class RealDomain extends Domain
 		
 	}
 	
+	/*----------------
+	 * Domain methods
+	 */
+	
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(this._lowerBound);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(this._upperBound);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
+	public final RealDomain asReal()
+	{
+		return this;
 	}
+	
+	@Override
+	public boolean inDomain(Object value)
+	{
+		return value instanceof Number && inDomain(((Number)value).doubleValue());
+	}
+	
+	@Override
+	public boolean isReal()
+	{
+		return true;
+	}
+	
+	/*--------------------
+	 * RealDomain methods
+	 */
+	
+	public double getLowerBound() {return _lowerBound;}
+	public double getUpperBound() {return _upperBound;}
+	
+	/**
+	 * True if {@code value} is in the range [{@link #getLowerBound()}, {@link #getUpperBound()}].
+	 */
+	public boolean inDomain(double value)
+	{
+		return (value >= _lowerBound) && (value <= _upperBound);
+	}
+	
 	
 	@Override
 	public String toString()
 	{
-		return "RealDomain: " + _lowerBound + ", " + _upperBound;
+		return "RealDomain: [" + _lowerBound + ", " + _upperBound + "]";
 	}
 
 }

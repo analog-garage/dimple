@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 1) Output (Output = Base^Power)
  * 2) Base (double or integer)
  * 
- * Note: This factor is not compatible with negative values of Base with 
+ * Note: This factor is not compatible with negative values of Base with
  * fractional values of Power, which would result in a complex output.
  * 
  */
@@ -85,7 +85,7 @@ public class ConstantPower extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object... arguments)
+	public final void evalDeterministicFunction(Object[] arguments)
     {
     	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	arguments[0] = Math.pow(base, _power);		// Replace the output value
