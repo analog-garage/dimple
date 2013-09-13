@@ -702,13 +702,13 @@ The behavior of the list of dimensions is identical to that for Discrete variabl
 \ifjava
 \begin{lstlisting}
 Complex()
-Complex(RealJointDomain domain)
+Complex(ComplexDomain domain)
 \end{lstlisting}
 
 The arguments are defined as follows:
 
 \begin{itemize}
-\item domain specifies the domain of the Complex variable using a RealJointDomain object (see \ref{sec:RealJointDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.  For a Complex variable, the number of dimensions of the RealJointDomain must equal 2.
+\item domain specifies the domain of the Complex variable using a ComplexDomain object (see \ref{sec:ComplexDomain}).  Using this version of the constructor allows bounds to be specified in some or all dimensions of the domain.
 \end{itemize}
 \fi
 
@@ -869,7 +869,7 @@ Read-only.  This property returns the value of the upper bound.  The default val
 \subsubsection{RealJointDomain}
 \label{sec:RealJointDomain}
 
-The RealJointDomain class is used to refer to the domain of RealJoint (or Complex) variables.
+The RealJointDomain class is used to refer to the domain of RealJoint variables.
 
 \para{Constructor}
 
@@ -926,15 +926,76 @@ Returns the collection of RealDomains that correspond to each dimension of the R
 \subpara{getRealDomain}
 
 \begin{lstlisting}
-domain.getRealDomains(dimensionIndex);
+domain.getRealDomain(dimensionIndex);
 \end{lstlisting}
 
 Returns the RealDomain that correspond to the dimension corresponding to the specified \texttt{dimensionIndex}.
 
+\fi
+
+
+\subsubsection{ComplexDomain}
+\label{sec:ComplexDomain}
+
+The ComplexDomain class, a subclass of the RealJointDomain class, is used to refer to the domain of Complex variables.
+
+\para{Constructor}
+
+\ifmatlab
+\begin{lstlisting}
+ComplexDomain([listOfRealDomains]);
+\end{lstlisting}
+
+\begin{itemize}
+\item listOfRealDomains comma-separated list of exactly two RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain for the corresponding dimension of the Complex variable (real followed by imaginary).  If no listOfRealDomains is specified, then both dimensions are assumed to be unbounded.
+\end{itemize}
+\fi
+
+\ifjava
+\begin{lstlisting}
+ComplexDomain()
+ComplexDomain(RealDomain... domains)
+\end{lstlisting}
+
+\begin{itemize}
+\item domains is a list or array of RealDomain objects, one for each dimension.  Each RealDomain in the list indicates the domain of the corresponding dimension of the Complex variable (real followed by imaginary).  If no domains argument is specified, then both dimensions are assumed to be unbounded.
+\end{itemize}
+\fi
+
+\ifmatlab
+\para{Properties}
+
+\subpara{NumElements}
+
+Read-only.  Indicates the number of elements in the ComplexDomain, which should always equal two.
+\fi
+
+\ifjava
+\para{Methods}
+
+\subpara{getNumVars}
+
+\begin{lstlisting}
+domain.getNumVars();
+\end{lstlisting}
+
+Returns the number of elements in the ComplexDomain, which should always equal two.
+
+\subpara{getRealDomains}
+
+\begin{lstlisting}
+domain.getRealDomains();
+\end{lstlisting}
+
+Returns the collection of RealDomains that correspond to each dimension of the ComplexDomain (real followed by imaginary).
 
 \subpara{getRealDomain}
 
+\begin{lstlisting}
+domain.getRealDomain(dimensionIndex);
+\end{lstlisting}
 
+Returns the RealDomain that correspond to the dimension corresponding to the specified \texttt{dimensionIndex}.
 
 \fi
 
