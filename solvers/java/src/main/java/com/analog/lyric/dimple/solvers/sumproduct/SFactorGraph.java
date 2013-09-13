@@ -16,18 +16,33 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Callable;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.FactorList;
+import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.MapList;
 
 public class SFactorGraph extends SFactorGraphBase
 {
@@ -39,6 +54,286 @@ public class SFactorGraph extends SFactorGraphBase
 		super(factorGraph);
 		
 	}
+	
+	public void solve2(int method)
+	{
+		getModelObject().initialize();
+		
+		FactorList factors = getModelObject().getFactors();
+		VariableList variables = getModelObject().getVariables();
+		
+		int numThreads = getNumThreads();
+		int iters = getNumIterations();
+		
+		ExecutorService service = Executors.newFixedThreadPool(numThreads);
+		
+		System.out.println("updating method: " + method);
+		
+		for (int i = 0; i < iters; i++)
+		{
+			switch (method)
+			{
+			case 1:
+				throw new DimpleException("nah");
+			case 2:
+				updateNodes2(service,variables,numThreads);
+				updateNodes2(service,factors,numThreads);
+				break;
+			case 3:
+				updateNodes3(service,variables,numThreads);
+				updateNodes3(service,factors,numThreads);
+				break;
+			case 4:
+				updateNodes4(service,variables,numThreads,false);
+				updateNodes4(service,factors,numThreads,false);
+				break;
+			case 5:
+				updateNodes4(service,variables,numThreads,true);
+				updateNodes4(service,factors,numThreads,true);
+				break;
+			default:
+				throw new DimpleException("not supported: "+ i);
+			}
+		}
+		
+		
+		//solve();
+	}
+	
+	public class UpdateSegmentDeque implements Callable
+	{
+		private ConcurrentLinkedQueue<Node> [] _deques;
+		private int _which;
+		private MapList _nodes;
+		private boolean _stealing;
+		
+		public UpdateSegmentDeque(MapList nodes, int which, ConcurrentLinkedQueue<Node> [] deques, boolean stealing)
+		{
+			_which = which;
+			_deques = deques;
+			_nodes= nodes;
+			_stealing = stealing;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{			
+			int which = _which;
+			int nodesPerThread = _nodes.size() / _deques.length;
+			int first = _which*nodesPerThread;
+			int last = first + nodesPerThread - 1;
+			if (which == _deques.length - 1)
+				last = _nodes.size()-1;
+			
+			for (int i = first; i <= last; i++)
+			{
+				Object tmp = _nodes.getByIndex(i);
+				Node ntmp = (Node)tmp;
+				_deques[which].add(ntmp);
+			}
+			
+			Node n = _deques[which].poll();
+			
+		
+			while (n != null)
+			{	
+				n.update();
+				
+				n = _deques[which].poll();
+				
+				if (n == null && _stealing)
+				{
+					for (int i = 0; i < _deques.length; i++)
+					{
+						n = _deques[i].poll();
+						if (n != null)
+							break;
+					}
+				}
+				
+			}	
+			return null;
+		}
+		
+	}
+	
+	public void updateNodes4(ExecutorService service, MapList nodes, int numThreads, boolean stealing)
+	{
+		ConcurrentLinkedQueue<Node> [] deques = new ConcurrentLinkedQueue[numThreads];
+		for (int i = 0; i < deques.length; i++)
+			deques[i] = new ConcurrentLinkedQueue<Node>();
+		
+		//for (int i = 0; i < deques.length; )
+		//Add stuff to the deques
+		int numNodes = nodes.size();
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			ll.add(new UpdateSegmentDeque(nodes, i, deques, stealing));
+		}
+				
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+	}
+
+
+	public void updateNodes3(ExecutorService service, MapList nodes, int numThreads)
+	{
+		ConcurrentLinkedQueue<Node> q = new ConcurrentLinkedQueue<Node>();
+		
+		for (Object o : nodes)
+		{
+			q.add((Node)o);
+		}
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			ll.add(new DoStuffFromQueue(q));
+		}
+		
+
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+		
+		
+	}
+	
+	public class DoStuffFromQueue implements Callable
+	{
+
+		private ConcurrentLinkedQueue<Node> _queue;
+		
+		public DoStuffFromQueue(ConcurrentLinkedQueue<Node> queue)
+		{
+			_queue = queue;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			Node n = _queue.poll();
+			
+			while (n != null)
+			{
+				n.update();
+				n = _queue.poll();
+			}
+			return null;
+		}
+		
+	}
+	
+	public void updateNodes1(ExecutorService service, MapList nodes, int numThreads)
+	{
+		
+	}
+
+	
+	/*
+	 * 1) Units of work.  No faster.
+	 */
+	public void updateNodes2(ExecutorService service, MapList nodes, int numThreads)
+	{
+		//1) Units of work?
+		//2) Divided up by thread
+		//3) Single linked blocing queue
+		//4) Multiple liked blocking dequeues?
+		//First try single LinkBlockingQueue since it's easier
+		
+		//Add stuff to the deques
+		int numNodes = nodes.size();
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			int first = i*nodesPerThread;
+			
+			if (i == numThreads-1)
+				ll.add(new UpdateSegment(nodes, first, nodes.size()-1));
+			else
+				ll.add(new UpdateSegment(nodes, first, first + nodesPerThread - 1));
+		}
+		
+		
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+		
+		//service.invokeAll(ll);
+		
+		//Start the threads
+		//Each thread goes on until it runs out of stuff
+		//Search the other dequeues
+		//If nothing found tell the barrier it's done
+		//This thread will wait on the barrier
+		//When barrier is reached, add more work to the dequeus
+		//repeat until done
+		
+	}
+	
+	public class UpdateSegment implements Callable
+	{
+		private MapList _mapList;
+		private int _first;
+		private int _last;
+		
+		public UpdateSegment(MapList list,int first, int last)
+		{
+			_mapList = list;
+			_first = first;
+			_last = last;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			for (int i = _first; i <= _last; i++)
+				((Node)_mapList.getByIndex(i)).update();
+			//_node.update();
+			return null;
+		}
+		
+	}
+	
+	public class UpdateNode implements Callable
+	{
+		private Node _node;
+		public UpdateNode(Node n)
+		{
+			_node = n;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			_node.update();
+			return null;
+		}
+		
+	}
+	
 
 	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)
 	{
