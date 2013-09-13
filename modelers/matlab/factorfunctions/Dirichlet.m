@@ -29,12 +29,13 @@ for arg=varargin
     end
 end
 
-dimension = alpha.Domain.NumElements;
-var = RealJoint(dimension, outSize{:});
-
 if (isa(alpha,'VariableBase'))
+    dimension = alpha.Domain.NumElements;
+    var = RealJoint(dimension, outSize{:});
     fg.addFactor('Dirichlet', alpha, var);     % Variable parameters
 else
+    dimension = numel(alpha);
+    var = RealJoint(dimension, outSize{:});
     fg.addFactor({'Dirichlet', alpha}, var);   % Constant parameters (more efficient to fix in constructor)
 end
 

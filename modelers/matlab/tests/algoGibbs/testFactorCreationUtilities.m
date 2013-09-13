@@ -97,7 +97,7 @@ for testCase = 1:3
         case 3  % RealJoint parameters
             p = {RealJoint(n)};
             pAlt = {RealJoint(n)};
-            pConst = [];
+            pConst = {rand(1,n)};
             pMixed = [];
             
     end
