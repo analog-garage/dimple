@@ -37,13 +37,13 @@ import com.analog.lyric.dimple.model.DimpleException;
  * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
  */
-public class CategoricalIndependentParameters extends FactorFunction
+public class CategoricalUnnormalizedParameters extends FactorFunction
 {
 	private int _dimension;
 	private double[] _alpha;
 	private int _firstDirectedToIndex;
 
-	public CategoricalIndependentParameters(int dimension)
+	public CategoricalUnnormalizedParameters(int dimension)
 	{
 		super();
 		_dimension = dimension;

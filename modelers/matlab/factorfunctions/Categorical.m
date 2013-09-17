@@ -38,12 +38,12 @@ if (isa(alphas, 'RealJoint'))
 
     fg.addFactor('Categorical', alphas, var);
 else
-    % Independent parameters (suitable for Gamma priors)
+    % Unnormalized parameters (suitable for Gamma priors)
     N = prod(size(alphas));           % numel not supported for variable arrays
     discreteDomain = 0:N-1;           % Domain must be zero based integers
     var = Discrete(discreteDomain, outSize{:});
 
-    ff = FactorFunction('CategoricalIndependentParameters', N);
+    ff = FactorFunction('CategoricalUnnormalizedParameters', N);
     
     if (isa(alphas, 'Real'))
         fg.addFactor(ff, alphas, var);

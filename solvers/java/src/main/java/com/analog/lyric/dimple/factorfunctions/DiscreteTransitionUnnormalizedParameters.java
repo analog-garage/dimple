@@ -43,15 +43,15 @@ import com.analog.lyric.dimple.model.DimpleException;
  * A: Matrix of transition matrix values
  * 
  */
-public class DiscreteTransitionIndependentParameters extends FactorFunction
+public class DiscreteTransitionUnnormalizedParameters extends FactorFunction
 {
 	protected int _yDimension;
 	protected int _xDimension;
 	protected double[] _Acol;
 	private final static int NUM_DATA_ARGUMENTS = 2;
 
-	public DiscreteTransitionIndependentParameters(int dimension) {this(dimension, dimension);}	// Square transition matrix
-	public DiscreteTransitionIndependentParameters(int yDimension, int xDimension)
+	public DiscreteTransitionUnnormalizedParameters(int dimension) {this(dimension, dimension);}	// Square transition matrix
+	public DiscreteTransitionUnnormalizedParameters(int yDimension, int xDimension)
 	{
 		super();
 		_yDimension = yDimension;

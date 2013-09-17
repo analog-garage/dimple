@@ -662,7 +662,7 @@ p = Real(1, discreteDomainSize);
 p.Input = FactorFunction('Gamma',priorAlpha,priorBeta);
 
 dataTemp = num2cell(data);
-fg.addFactor(FactorFunction('CategoricalIndependentParameters',discreteDomainSize), p, dataTemp{:});
+fg.addFactor(FactorFunction('CategoricalUnnormalizedParameters',discreteDomainSize), p, dataTemp{:});
 
 assert(strcmp(p(1).Solver.getSamplerName,'GammaSampler'));
 assert(strcmp(p(2).Solver.getSamplerName,'GammaSampler'));

@@ -30,7 +30,7 @@ dtrace(debugPrint, '--testHMMParameterEstimationGibbs');
 end
 
 
-% Use DiscreteTransitionMatrix with Gamma prior
+% Use DiscreteTransitionUnnormalizedParameters with Gamma prior
 function test1(debugPrint, repeatable)
 
 numStates = 2;
@@ -87,10 +87,10 @@ O.Input = FactorFunction('Gamma',1,1);
 
 
 % Add transition factors
-fg.addFactorVectorized({'DiscreteTransitionIndependentParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
+fg.addFactorVectorized({'DiscreteTransitionUnnormalizedParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
-fg.addFactorVectorized({'DiscreteTransitionIndependentParameters',numObsValues, numStates}, obs, state, {O,[]});
+fg.addFactorVectorized({'DiscreteTransitionUnnormalizedParameters',numObsValues, numStates}, obs, state, {O,[]});
 
 % Add observations
 obsInputs = zeros(hmmLength, numObsValues);
@@ -218,7 +218,7 @@ end
 
 
 
-% Use LogDiscreteTransitionMatrix with NegativeExpGamma prior
+% Use DiscreteTransitionEnergyParameters with NegativeExpGamma prior
 function test2(debugPrint, repeatable)
 
 numStates = 2;

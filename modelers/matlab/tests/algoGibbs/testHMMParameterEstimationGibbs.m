@@ -30,7 +30,7 @@ dtrace(debugPrint, '--testHMMParameterEstimationGibbs');
 end
 
 
-% Use DiscreteTransitionMatrix with Dirichlet prior
+% Use UnnormalizedParametersMatrix with Dirichlet prior
 function test1(debugPrint, repeatable)
 
 numStates = 2;
@@ -161,7 +161,7 @@ end
 
 
 
-% Use DiscreteTransitionMatrix with Gamma prior
+% Use DiscreteTransitionUnnormalizedParameters with Gamma prior
 function test2(debugPrint, repeatable)
 
 numStates = 2;
@@ -218,7 +218,7 @@ A.Input = FactorFunction('Gamma',1,1);
 
 
 % Add transition factors
-fg.addFactorVectorized({'DiscreteTransitionIndependentParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
+fg.addFactorVectorized({'DiscreteTransitionUnnormalizedParameters',numStates}, state(2:end), state(1:end-1), {A,[]});
 
 % Add observation factors
 state.Input = obsMatrix(obsRealization,:);
@@ -291,7 +291,7 @@ assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
 end
 
 
-% Use LogDiscreteTransitionMatrix with NegativeExpGamma prior
+% Use DiscreteTransitionEnergyParameters with NegativeExpGamma prior
 function test3(debugPrint, repeatable)
 
 numStates = 2;

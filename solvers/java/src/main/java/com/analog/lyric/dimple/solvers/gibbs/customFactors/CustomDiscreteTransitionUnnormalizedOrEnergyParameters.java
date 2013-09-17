@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
-import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionIndependentParameters;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -39,7 +39,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
-public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
+public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -64,7 +64,7 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 	private static final int X_INDEX = 1;
 	private static final int NO_PORT = -1;
 
-	public CustomDiscreteTransitionIndependentOrEnergyParameters(Factor factor)
+	public CustomDiscreteTransitionUnnormalizedOrEnergyParameters(Factor factor)
 	{
 		super(factor);
 	}
@@ -165,9 +165,9 @@ public class CustomDiscreteTransitionIndependentOrEnergyParameters extends SReal
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		if (factorFunction instanceof DiscreteTransitionIndependentParameters)
+		if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
-			DiscreteTransitionIndependentParameters specificFactorFunction = (DiscreteTransitionIndependentParameters)factorFunction;
+			DiscreteTransitionUnnormalizedParameters specificFactorFunction = (DiscreteTransitionUnnormalizedParameters)factorFunction;
 			_xDimension = specificFactorFunction.getXDimension();
 			_yDimension = specificFactorFunction.getYDimension();
 			_numParameters = specificFactorFunction.getNumParameters();

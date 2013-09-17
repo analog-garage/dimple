@@ -35,10 +35,10 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBeta;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalIndependentOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionIndependentOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
@@ -143,13 +143,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("DiscreteTransition"))
 			return true;
-		else if (factorName.equals("DiscreteTransitionIndependentParameters"))
+		else if (factorName.equals("DiscreteTransitionUnnormalizedParameters"))
 			return true;
 		else if (factorName.equals("DiscreteTransitionEnergyParameters"))
 			return true;
 		else if (factorName.equals("Categorical"))
 			return true;
-		else if (factorName.equals("CategoricalIndependentParameters"))
+		else if (factorName.equals("CategoricalUnnormalizedParameters"))
 			return true;
 		else if (factorName.equals("CategoricalEnergyParameters"))
 			return true;
@@ -176,16 +176,16 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomLogNormal(factor);
 		else if (funcName.equals("DiscreteTransition"))
 			return new CustomDiscreteTransition(factor);
-		else if (funcName.equals("DiscreteTransitionIndependentParameters"))
-			return new CustomDiscreteTransitionIndependentOrEnergyParameters(factor);
+		else if (funcName.equals("DiscreteTransitionUnnormalizedParameters"))
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
 		else if (funcName.equals("DiscreteTransitionEnergyParameters"))
-			return new CustomDiscreteTransitionIndependentOrEnergyParameters(factor);
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
 		else if (funcName.equals("Categorical"))
 			return new CustomCategorical(factor);
-		else if (funcName.equals("CategoricalIndependentParameters"))
-			return new CustomCategoricalIndependentOrEnergyParameters(factor);
+		else if (funcName.equals("CategoricalUnnormalizedParameters"))
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
 		else if (funcName.equals("CategoricalEnergyParameters"))
-			return new CustomCategoricalIndependentOrEnergyParameters(factor);
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
 		else if (funcName.equals("Dirichlet"))
 			return new CustomDirichlet(factor);
 		else if (funcName.equals("Beta"))

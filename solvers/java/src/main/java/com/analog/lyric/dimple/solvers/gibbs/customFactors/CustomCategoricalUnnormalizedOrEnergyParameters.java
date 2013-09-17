@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
-import com.analog.lyric.dimple.factorfunctions.CategoricalIndependentParameters;
+import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 
-public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
+public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
 	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
@@ -52,7 +52,7 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 	private boolean _hasConstantOutputs;
 	private boolean _useEnergyParameters;
 
-	public CustomCategoricalIndependentOrEnergyParameters(Factor factor)
+	public CustomCategoricalUnnormalizedOrEnergyParameters(Factor factor)
 	{
 		super(factor);
 	}
@@ -67,7 +67,7 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 		{
 			// Output port must be a parameter input
 			// Determine sample alpha and beta parameters
-			// NOTE: This case works for either CategoricalIndependentParameters or CategoricalEnergyParameters factor functions
+			// NOTE: This case works for either CategoricalUnnormalizedParameters or CategoricalEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
@@ -169,9 +169,9 @@ public class CustomCategoricalIndependentOrEnergyParameters extends SRealFactor 
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		if (factorFunction instanceof CategoricalIndependentParameters)
+		if (factorFunction instanceof CategoricalUnnormalizedParameters)
 		{
-			CategoricalIndependentParameters specificFactorFunction = (CategoricalIndependentParameters)factorFunction;
+			CategoricalUnnormalizedParameters specificFactorFunction = (CategoricalUnnormalizedParameters)factorFunction;
 			_numParameters = specificFactorFunction.getDimension();
 			_useEnergyParameters = false;
 		}

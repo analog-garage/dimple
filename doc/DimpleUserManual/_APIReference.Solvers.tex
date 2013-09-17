@@ -221,7 +221,7 @@ For discrete variables, the Gibbs solver directly samples from the conditional d
 
 In cases where the factors of the graph support a conjugate distribution, the solver will automatically determine this and use the appropriate conjugate sampler.  The following table lists the supported conjugate samplers and the corresponding factors that support them.  The corresponding sampler will be used for a given variable if all of the edges connected to that variable support the same sampler\footnote{Additionally, for the conjugate sampler to be used, the domain of the variable must not be bounded to a range smaller than the natural range of the corresponding distribution.}.
 
-\begin{longtable} {l p{7cm} p{2.5cm}}
+\begin{longtable} {l p{7.1cm} p{2.5cm}}
 Sampler & Built-in Factor & Edge \\
 \hline
 \endhead
@@ -234,8 +234,8 @@ GammaSampler & Gamma & value, $\beta$ \\
  & NegativeExpGamma & $\beta$ \\
  & Normal & $\tau$ \\
  & LogNormal & $\tau$ \\
- & CategoricalIndependentParameters & $\tau$ \\
- & DiscreteTransitionIndependentParameters & $\alpha$ \\
+ & CategoricalUnnormalizedParameters & $\tau$ \\
+ & DiscreteTransitionUnnormalizedParameters & $\alpha$ \\
 NegativeExpGammaSampler & NegativeExpGamma & value \\
  & CategoricalEnergyParameters & $\alpha$ \\ 
  & DiscreteTransitionEnergyParameters & $\alpha$ \\ 
