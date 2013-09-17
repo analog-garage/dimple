@@ -138,6 +138,7 @@ public class TableFactorEngine
 	    
 	    double [][] inPortMsgs = _tableFactor.getInPortMsgs();
 
+	    
 	    // Run through each row of the function table
 	    for (int tableIndex = 0; tableIndex < tableLength; tableIndex++)
 	    {

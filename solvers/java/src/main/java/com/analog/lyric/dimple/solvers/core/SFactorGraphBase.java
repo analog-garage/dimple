@@ -500,7 +500,9 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 
 		// If there was an exception in any of the sub-threads, pass it along
 		if (_subThreadException != null)
-			throw new DimpleException(_subThreadException.getMessage());
+		{
+			throw new DimpleException(_subThreadException);
+		}
 	}
 
 	// Callback from the threads; must be synchronized
@@ -585,7 +587,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 				while(!_wasSignalled)
 				{
 					try{_monitorObject.wait();}
-					catch(InterruptedException e){throw new DimpleException(e.getMessage());}
+					catch(InterruptedException e){throw new DimpleException(e);}
 				}
 				_wasSignalled = false;
 			}
