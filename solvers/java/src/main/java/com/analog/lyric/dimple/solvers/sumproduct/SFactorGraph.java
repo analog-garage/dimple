@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -36,13 +37,19 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.MapList;
+import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
 public class SFactorGraph extends SFactorGraphBase
 {
@@ -52,6 +59,359 @@ public class SFactorGraph extends SFactorGraphBase
 	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph)
 	{
 		super(factorGraph);
+		
+	}
+	
+	public void solve3()
+	{
+		//initialize
+		getModelObject().initialize();
+		
+		//figure out dependency graph
+		DependencyGraph dg = createDependencyGraph();
+		//dg.print();
+
+		//create thread pool
+		int numThreads = getNumThreads();
+		int iters = getNumIterations();		
+		ExecutorService service = Executors.newFixedThreadPool(numThreads);		
+		
+		for (int i = 0; i < iters; i++)
+		{
+			doOneIteration(numThreads, service,dg);
+		}
+		
+		//One thread puts items on the blocking queues
+		//Other threads take items off of the blocking queues
+	}
+	
+	
+	public class Solve3Worker implements Callable
+	{
+		private LinkedBlockingQueue<DependencyGraphNode> _doneQueue;
+		private LinkedBlockingQueue<DependencyGraphNode> _workQueue;
+		
+		public Solve3Worker(LinkedBlockingQueue<DependencyGraphNode> doneQueue,
+				LinkedBlockingQueue<DependencyGraphNode> workQueue
+				)
+		{
+			_workQueue = workQueue;
+			_doneQueue = doneQueue;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			while (true)
+			{
+				DependencyGraphNode dgn = _workQueue.take();
+				//System.out.println("worker found: " + dgn);
+
+				
+				if (dgn instanceof Poison)
+					break;
+				
+				dgn.scheduleEntry.update();
+				_doneQueue.add(dgn);
+			}
+			return null;
+		}
+	}
+	
+	public class Poison extends DependencyGraphNode
+	{
+
+		
+	}
+	
+	public void doOneIteration(int numThreads, ExecutorService service,DependencyGraph dg)
+	{
+		LinkedBlockingQueue<DependencyGraphNode> doneQueue = new LinkedBlockingQueue<SFactorGraph.DependencyGraphNode>();
+		int totalItemsOfWork = dg.getNumNodes();
+		int executedItems = 0;
+		LinkedBlockingQueue<DependencyGraphNode> [] workQueues = new LinkedBlockingQueue[numThreads];
+		for (int i = 0; i < workQueues.length; i++)
+		{
+			workQueues[i] = new LinkedBlockingQueue<SFactorGraph.DependencyGraphNode>();
+		}
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			service.submit(new Solve3Worker(doneQueue, workQueues[i]));
+		}
+		
+		ArrayList<DependencyGraphNode> dgns = dg.getInitialEntries();
+		
+		for (int i = 0; i < dgns.size(); i++)
+		{
+			workQueues[i%numThreads].add(dgns.get(i));
+		}
+		
+		while (true)
+		{
+			DependencyGraphNode current = null;
+			try {
+				current = doneQueue.take();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			current.numDependenciesLeft = current.numDependencies;
+			
+			executedItems++;
+			if (executedItems == totalItemsOfWork)
+			{
+				//add poison;
+				for (int i = 0; i < workQueues.length; i++)
+					workQueues[i].add(new Poison());
+				break;
+			}
+
+			
+			for (int i = 0; i < current.dependents.size(); i++)
+			{
+				DependencyGraphNode d = current.dependents.get(i);
+				d.numDependenciesLeft--;
+				if (d.numDependenciesLeft == 0)
+				{
+					//add to the work queues
+					int minSize = Integer.MAX_VALUE;
+					int minIndex = 0;
+					for (int j= 0; j < workQueues.length; j++)
+					{
+						int sz = workQueues[j].size() ;
+						if (sz < minSize)
+						{
+							minSize = sz;
+							minIndex = j;
+						}
+					}
+					workQueues[minIndex].add(d);
+				}
+			}
+		}
+		
+		//TODO: Wait for all work queues.
+		
+	}
+	
+	public class NodeLastUpdates
+	{
+		public INode node;
+		public DependencyGraphNode lastUpdate;
+		public DependencyGraphNode [] lastInputUpdates;
+		public DependencyGraphNode [] lastOutputUpdates;
+		
+		public NodeLastUpdates(INode n)
+		{
+			node = n;
+			int sz = n.getSiblings().size();
+			lastInputUpdates = new DependencyGraphNode[sz];
+			lastOutputUpdates = new DependencyGraphNode[sz];
+			lastUpdate = null;
+		}
+	}
+	
+
+	public class DependencyGraphNode
+	{
+		public INode node;
+		public ArrayList<DependencyGraphNode> dependents = new ArrayList<SFactorGraph.DependencyGraphNode>();
+		public  int numDependencies;
+		public int numDependenciesLeft;
+		public IScheduleEntry scheduleEntry;
+		public ArrayList<Integer> inports = new ArrayList<Integer>();
+		public ArrayList<Integer> outports = new ArrayList<Integer>();
+		
+		
+		public void print()
+		{
+			System.out.println("node: " + node.toString());
+		}
+		
+		public DependencyGraphNode()
+		{
+			
+		}
+		
+		public DependencyGraphNode(IScheduleEntry scheduleEntry,
+				LastUpdateGraph lastUpdateGraph)
+		{
+			this.scheduleEntry = scheduleEntry;
+			
+			ArrayList<Integer> inputports = new ArrayList<Integer>();
+			ArrayList<Integer> outputports = new ArrayList<Integer>();
+			
+			if (scheduleEntry instanceof NodeScheduleEntry)
+			{
+				NodeScheduleEntry nse = (NodeScheduleEntry)scheduleEntry;
+				this.node = nse.getNode();
+				for (int i = 0; i < this.node.getSiblings().size(); i++)
+				{
+					inputports.add(i);
+					outputports.add(i);
+				}
+			}
+			else if (scheduleEntry instanceof EdgeScheduleEntry)
+			{
+				EdgeScheduleEntry ese = (EdgeScheduleEntry)scheduleEntry;
+				this.node = ese.getNode();
+				outputports.add(ese.getPortNum());
+				for (int i = 0; i < this.node.getSiblings().size(); i++)
+				{
+					if (i != ese.getPortNum())
+					{
+						inputports.add(i);
+					}
+				}
+			}
+			else
+			{
+				throw new DimpleException("ack");
+			}
+			
+			NodeLastUpdates nlu =  lastUpdateGraph.getNodeLastUpdates(this.node);
+			
+			DependencyGraphNode dgn = null;
+			
+			int numDependencies = 0;
+			
+			//Update dependents
+			//for each input
+			for (int i = 0; i < inputports.size(); i++)
+			{
+				//  get the last guy to update this
+				//  add me to dependent list (increment num dependencies)
+				int portNum = inputports.get(i);
+				dgn  = nlu.lastInputUpdates[portNum];
+				
+				if (dgn != null)
+				{
+					dgn.dependents.add(this);
+					
+					numDependencies++;
+				}
+				
+			}
+			
+			//for each output
+			//  get the last guy to use this
+			//  add me to the dependent list (increment num dependencies)
+			for (int i = 0; i < outputports.size(); i++)
+			{
+				int portNum = outputports.get(i);
+				dgn = nlu.lastOutputUpdates[portNum];
+				
+				if (dgn != null)
+				{
+					dgn.dependents.add(this);					
+					numDependencies++;
+				}
+			}
+			
+			//for the last guy to update this node
+			//  add me to the dependent list (increment num dependencies)
+			//nlu.lastUpdate = this;
+			this.numDependencies = numDependencies;
+			this.numDependenciesLeft = numDependencies;
+			this.inports = inputports;
+			this.outports = outputports;
+		}
+		
+		
+	}
+	
+	public class LastUpdateGraph
+	{
+		private HashMap<INode,NodeLastUpdates> _node2updates = new HashMap<INode, SFactorGraph.NodeLastUpdates>();
+		
+		public LastUpdateGraph(FactorGraph fg)
+		{
+			MapList<INode> nodes = fg.getNodes();
+			//TODO: hashtable
+		
+			for (INode n : nodes)
+			{
+				_node2updates.put(n, new NodeLastUpdates(n));
+			}
+
+		}
+		
+		public NodeLastUpdates getNodeLastUpdates(INode n)
+		{
+			return _node2updates.get(n);
+		}
+		
+		public void update(DependencyGraphNode dgn)
+		{
+			NodeLastUpdates nlu = _node2updates.get(dgn.node);
+			nlu.lastUpdate = dgn;
+			
+			for (int i = 0; i < dgn.inports.size(); i++)
+			{
+				int portnum = dgn.inports.get(i);
+				INode sibling = dgn.node.getSiblings().get(portnum);
+				int siblingportnum = sibling.getPortNum(dgn.node);
+				getNodeLastUpdates(sibling).lastOutputUpdates[siblingportnum] = dgn;
+			}
+			
+			for (int i = 0; i < dgn.outports.size(); i++)
+			{
+				int portnum = dgn.outports.get(i);
+				INode sibling = dgn.node.getSiblings().get(portnum);
+				int siblingportnum = sibling.getPortNum(dgn.node);
+				getNodeLastUpdates(sibling).lastInputUpdates[siblingportnum] = dgn;
+			}
+			
+		}
+	}
+	
+	public class DependencyGraph
+	{
+		private int _numNodes;
+		private ArrayList<DependencyGraphNode> _initialEntries;
+		
+		public DependencyGraph(FactorGraph fg)
+		{
+			LastUpdateGraph lug = new LastUpdateGraph(fg);
+			ArrayList<DependencyGraphNode> initialEntries = new ArrayList<DependencyGraphNode>();
+			
+			ISchedule schedule = getModelObject().getSchedule();
+			for (IScheduleEntry se : schedule)
+			{
+				DependencyGraphNode dgn = new DependencyGraphNode(se,lug);
+				lug.update(dgn);
+				_numNodes++;
+				
+				if (dgn.numDependencies == 0)
+					initialEntries.add(dgn);
+			}
+			
+			_initialEntries = initialEntries;
+		}
+		
+		public int getNumNodes()
+		{
+			return _numNodes;
+		}
+		
+		public ArrayList<DependencyGraphNode> getInitialEntries()
+		{
+			return _initialEntries;
+		}
+		
+		public void print()
+		{
+			System.out.println("initial entries: ");
+			for (int i = 0; i < _initialEntries.size(); i++)
+				_initialEntries.get(i).print();
+			
+		}
+	}
+	
+	public DependencyGraph createDependencyGraph()
+	{
+		return new DependencyGraph(getModelObject());
 		
 	}
 	

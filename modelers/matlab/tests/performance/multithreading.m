@@ -10,7 +10,7 @@ rand('seed',1);
 fg.addFactorVectorized(@(a,b) rand(), b(:,1:N-1), b(:,2:N));
 fg.addFactorVectorized(@(a,b) rand(), b(1:M-1,:), b(2:M,:));
 
-ITERS = 4000;
+ITERS = 100;
 
 fg.NumIterations = 1;
 
@@ -33,7 +33,7 @@ fg.Solver.setNumThreads(5);
 
 %fg.NumIterations = 100000;
 
-for method = 2:5
+for method = 5
     fprintf('method: %d\n',method);
     tic
     fg.Solver.solve2(method);
