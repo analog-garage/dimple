@@ -162,6 +162,7 @@ fg.setName('string');
 
 Read-write.  All variables and factors in a Factor Graph must have unique names.  However, sometimes it's desirable to have variables or factors share similar strings when being plotted or printed.  Users can set the Label property to set the name for display.  If the Label is not set, the Name will be used for display.  Once the label is set, the label will be used for display.
 
+
 \para{Score}
 \label{sec:FactorGraph.Score}
 
@@ -170,6 +171,60 @@ Read-only.  When read, computes and returns the score (energy) of the graph give
 The value of each variable used when computing the Score is the Guess value for that variable (see section~\ref{sec:Variable.Guess}).  If no Guess had yet been specified for a given variable, the value with the most likely belief (which corresponds to the Value property of the variable) is used\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
 
 For a rolled-up graph, the Score property represents only the score for only the portion of the graph in the current buffer.
+
+
+\para{BetheFreeEnergy}
+\label{sec:FactorGraph.BetheFreeEnergy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read returns:
+
+\[
+BetheFreeEnergy = InternalEnergy - BetheEntropy
+\]
+
+\ifjava
+\begin{lstlisting}
+double bfe = fg.getBetheFreeEnergy();
+\end{lstlisting}
+\fi
+
+\para{Internal Energy}
+\label{sec:FactorGraph.InternalEnergy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read returns:
+
+\[
+InternalEnergy = \sum_{a \in F }InternalEnergy(a) + \sum_{i \in V}InternalEnergy(i)
+\]
+
+Where F is the set of all Factors and V is the set of all variables.  If Dimple treated inputs as single node Factors, this method would only sum over factors.
+
+For a definition of a Factor's InternalEnergy, see sections~\ref{sec:Factor.InternalEnergy}.  For a definition of a Variable's InternalEnergy, see section~\ref{sec:Variable.InternalEnergy}.
+
+\ifjava
+\begin{lstlisting}
+double ie = fg.getInternalEnergy();
+\end{lstlisting}
+\fi
+
+\para{Bethe Entropy}
+\label{sec:FactorGraph.BetheEntropy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read returns:
+
+\[
+ BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}BetheEntropy(i) 
+ \]
+
+Where F is the set of all Factors and V is the set of all variables.
+
+For a definition of a Factor's BetheEntropy, see sections~\ref{sec:Factor.BetheEntropy}.  For a definition of a Variable's InternalEnergy, see section~\ref{sec:Variable.BetheEntropy}.
+
+\ifjava
+\begin{lstlisting}
+be = fg.getBetheEntropy();
+\end{lstlisting}
+\fi
 
 
 \subsubsection{Methods}

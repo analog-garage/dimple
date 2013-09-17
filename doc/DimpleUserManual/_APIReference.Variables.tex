@@ -70,12 +70,50 @@ Read-write.  Specifies a value from the variable to be used when computing the S
 
 If the Guess had not yet been set, its value defaults to the most likely belief (which corresponds to the Value property of the variable)\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
 
+
 \subpara{Score}
 \label{sec:Variable.Score}
 
 Read-only.  When read, computes and returns the score (energy) of the Input to this variable, which is treated as a single-edge factors, given a specified value for the variable.  The score value is relative, and may be arbitrarily normalized by an additive constant.
 
 The value of the variable used when computing the Score is the Guess value for this variable (see section~\ref{sec:Variable.Guess}).  If no Guess had yet been specified, the value with the most likely belief (which corresponds to the Value property of the variable) is used\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
+
+
+\subpara{Internal Energy}
+\label{sec:Variable.InternalEnergy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read, returns:
+
+\[
+InternalEnergy(i) = \sum_{d \in D}B_i(d)*(-log(Input(d))) 
+\]
+
+Read-only.  When read returns:
+
+Where D is variable i's domain and Input is the variable's input.
+
+\ifjava
+\begin{lstlisting}
+double ie = v.getInternalEnergy();
+\end{lstlisting}
+\fi
+
+\subpara{Bethe Entropy}
+\label{sec:Variable.BetheEntropy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read, returns:
+
+\[
+BentheEntropy(i) = - \sum{d \in D}B_i(d)*log(B_i(d))
+\]
+
+Where D is variable i's domain.
+
+\ifjava
+\begin{lstlisting}
+double be = v.getBetheEntropy();
+\end{lstlisting}
+\fi
 
 
 \subpara{Ports}
