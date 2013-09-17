@@ -92,4 +92,19 @@ public class LogNormal extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    
+    // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double getMean()
+    {
+    	return _mean;
+    }
+    public final double getPrecision()
+    {
+    	return _precision;
+    }
 }

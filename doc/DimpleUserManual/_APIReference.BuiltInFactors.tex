@@ -1,9 +1,9 @@
 \subsection{List of Built-in Factors}
 \label{sec:builtInFactors}
 
-The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or vector of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B~=~Bit, D~=~Discrete, R~=~Real, C~=~Complex).
+The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or array of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B~=~Bit, D~=~Discrete, R~=~Real, C~=~Complex, RJ~=~RealJoint).
 
-\begin{longtable} {l p{2.2cm} p{2cm} p{7cm}}
+\begin{longtable} {p{3.5cm} p{2.2cm} p{2cm} p{7cm}}
 Name & Variables & Constructor & Description \\
 \hline
 \endhead
@@ -20,11 +20,21 @@ ASin & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-sine function
 %
 ATan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic arc-tangent function, where out = atan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
+Bernoulli & $\rho$(R) \newline x...(B) & - & Bernoulli distribution, $p(x|\rho)$, where $\rho$ is a parameter indicating the probability of one, and x is an array of Bit variables.  There can be any number of x variables, all associated with the same parameter value. The conjugate prior for the parameter, $\rho$, is a Beta distribution\footnote{\label{ftn:conugatePrior}It is not necessary to use the conjugate prior, but in some cases there may be a benefit.}. \\
+%
 Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Beta distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
-Categorical & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is a vector of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
-The $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
-In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+Categorical & $\alpha$...(RJ)  \newline x...(D) & - & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ must equal the domain size of x.  There can be any number of x variables, all associated with the same parameter values.  \newline
+The $\alpha$ parameters are represented as a (not necessarily normalized) probability vector. The conjugate prior for this representation is a Dirichlet distribution\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\footnote{\label{ftn:zeroBaseRestriction}This limitation may be lifted in a future version.}. \\
+%
+Categorical\newline EnergyParameters & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
+In this alternative version of the Categorical distribution, the $\alpha$ parameters are represented as energy values, that is, $\alpha = -\log(\rho)$, where $\rho$ are unnormalized probabilities. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
+%
+Categorical\newline Unnormalized\newline Parameters & $\alpha$...(R)  \newline x...(D) & N & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ and the domain size of x must equal the value of the constructor argument, N.  There can be any number of x variables, all associated with the same parameter values.  \newline
+In this alternative version of the Categorical distribution, the $\alpha$ parameters are represented as a vector of unnormalized probability values. The conjugate prior for this representation is such that each entry of $\alpha$ is independently distributed according to a Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
 %
 ComplexConjugate & out(C) \newline in(C,R) & [smoothing] & Deterministic complex conjugate function, where out = in$^{*}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -50,10 +60,22 @@ Cos & out(D,R) \newline in(D,R) & [smoothing] & Deterministic cosine function, w
 %
 Cosh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-cosine function, where out = cosh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
-DiscreteTransition & y(D) \newline x(D) \newline A(R) & $N_{y}, N_{x} | \newline N$ & 
+Dirichlet & [$\alpha$](RJ) \newline value...(RJ) & [$\alpha$] & Dirichlet distribution.  There can be any number of value variables, all associated with the same parameter values.  Parameter vector $\alpha$ can be a RealJoint variable or a constant specified in the constructor.  The dimension of $\alpha$ and each of the value variables must be identical. \\
+%
+DiscreteTransition & y(D) \newline x(D) \newline A...(RJ) & - & 
+Parameterized discrete transition factor, $p(y | x, A)$, where x and y are discrete variables, and $A$ is a matrix of transition probabilities. The transition matrix is organized such that columns correspond to the output distribution for each input state. That is, the transition matrix multiplies on the left. Each column of A corresponds to a RealJoint variable. The number of columns in A must equal the domain size of x, and the dimension of each element of A  must equal the domain size of y. \newline
+Each element of A corresponds to a (not necessarily normalized) probability vector.  The conjugate prior for this representation is such that each element of A is distributed according to a Dirichlet distribution\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
+%
+DiscreteTransition\newline EnergyParameters & y(D) \newline x(D) \newline A...(R) & $N_{y}, N_{x} | \newline N$ & 
 Parameterized discrete transition factor, $p(y | x, A)$, where x and y are discrete variables, and $A$ is a matrix of transition probabilities. The transition matrix is organized such that columns correspond to the output distribution for each input state. That is, the transition matrix multiplies on the left. The number of columns in A and the domain size of x must equal the value of the constructor argument, $N_{x}$ and the number of rows in A and the domain size of y must equal the value of the constructor argument $N_{y}$.  If $N_{x}$ and $N_{y}$ are equal, a single constructor argument, $N$, may be used.  \newline
-The elements of the matrix A are represented as energy values, that is, $A_{i,j} = -\log(\rho_{i,j})$, where $\rho$ is an unnormalized transition probability matrix.  The conjugate prior for this representation is such that each entry of A is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter (it is not necessary to use the conjugate prior, but in some cases there may be a benefit).  \newline
-In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$ (this limitation may be lifted in a future version). \\
+The elements of the matrix A are represented as energy values, that is, $A_{i,j} = -\log(\rho_{i,j})$, where $\rho$ is an unnormalized transition probability matrix.  The conjugate prior for this representation is such that each entry of A is independently distributed according to a negative exp-Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
+%
+DiscreteTransition\newline Unnormalized\newline Parameters & y(D) \newline x(D) \newline A...(R) & $N_{y}, N_{x} | \newline N$ & 
+Parameterized discrete transition factor, $p(y | x, A)$, where x and y are discrete variables, and $A$ is a matrix of transition probabilities. The transition matrix is organized such that columns correspond to the output distribution for each input state. That is, the transition matrix multiplies on the left. The number of columns in A and the domain size of x must equal the value of the constructor argument, $N_{x}$ and the number of rows in A and the domain size of y must equal the value of the constructor argument $N_{y}$.  If $N_{x}$ and $N_{y}$ are equal, a single constructor argument, $N$, may be used.  \newline
+The elements of the matrix A are represented as unnormalized probability values.  The conjugate prior for this representation is such that each entry of A is independently distributed according to a Gamma distribution, all with a common $\beta$ parameter\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
+In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\textsuperscript{\ref{ftn:zeroBaseRestriction}}. \\
 %
 Divide & quotient(D,R) \newline dividend(D,R) \newline divisor(D,R) & [smoothing] & Deterministic divide function, where $\mathrm{quotient} = \frac{\mathrm{dividend}}{\mathrm{divisor}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -149,15 +171,18 @@ CustomXor & MinSum & Same as the Xor factor described above, but with a signific
 Dimple includes some helper functions to create other built-in factors using a similar syntax to the overloaded MATLAB functions described in section~\ref{sec:overloaded}.  As for other overloaded functions, above, Dimple automatically creates the factors as well as the output variable(s).  Such helper functions are defined for the following built-in distributions:
 
 \begin{itemize}
+\item Bernoulli
 \item Beta
+\item Categorical\footnote{This utility can be used to create either a Categorical or CategoricalUnnormalizedParameters factor, depending on whether the first argument is a RealJoint variable or an array of Real variables.}
+\item CategoricalEnergyParameters
+\item Dirichlet
 \item Gamma
 \item InverseGamma
+\item LogNormal
 \item NegativeExpGamma
 \item Normal
-\item LogNormal
-\item VonMises
 \item Rayleigh
-\item Categorical
+\item VonMises
 \end{itemize}
 
 For each, the arguments are the parameters of the distribution.  For example:
@@ -170,7 +195,7 @@ Z = Rayleigh(sigma);
 \end{lstlisting}
 
 
-The parameters can be variables, constants, or some of each.
+The parameters can be variables, constants, or some of each\footnote{For cases where a parameter is a vector of real values, the parameter may be a Real variable array, a cell-arrays that may mix Real variables and constants, or an array of constants.}.
 
 By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
 

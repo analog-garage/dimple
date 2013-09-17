@@ -91,4 +91,19 @@ public class NegativeExpGamma extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    
+    // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double getAlpha()
+    {
+    	return _alpha;
+    }
+    public final double getBeta()
+    {
+    	return _beta;
+    }
 }

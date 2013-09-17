@@ -167,7 +167,7 @@ public class SFactorGraph extends SFactorGraphBase
 	// Sets the random seed for the Particle BP solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		SolverRandomGenerator.rand.setSeed(seed);
+		SolverRandomGenerator.setSeed(seed);
 	}
 	
 

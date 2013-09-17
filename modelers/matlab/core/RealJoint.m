@@ -118,6 +118,8 @@ classdef RealJoint < VariableBase
             
             if isa(input,'Msg')
                 input = input.IMsg;
+            elseif (isa(input, 'FactorFunction'))
+                input = input.get();
             elseif iscell(input)
                 if (isa(input{1}, 'FactorFunction'))
                     for i=1:length(input)
@@ -127,6 +129,8 @@ classdef RealJoint < VariableBase
                     for i=1:length(input)
                         input{i} = FactorFunction(input{i}{:}).get();
                     end
+                elseif (isstring(input{1}))
+                    input = FactorFunction(input).get();
                 end
             end
             

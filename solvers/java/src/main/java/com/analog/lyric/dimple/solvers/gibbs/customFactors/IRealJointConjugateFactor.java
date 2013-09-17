@@ -14,8 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-public class DefaultRealSampler extends SliceSampler
+import java.util.Set;
+
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
+
+
+public interface IRealJointConjugateFactor
 {
+	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber);
 }

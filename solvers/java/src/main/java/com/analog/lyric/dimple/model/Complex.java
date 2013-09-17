@@ -21,17 +21,14 @@ public class Complex extends RealJoint
 	// Constructors...
 	public Complex() 
 	{
-		this(RealJointDomain.create(2));
+		this(ComplexDomain.create());
 	}
-	public Complex(RealJointDomain domain)
+	public Complex(ComplexDomain domain)
 	{
 		this(domain, "Complex");
 	}
-	public Complex(RealJointDomain domain, String modelerClassName) 
+	public Complex(ComplexDomain domain, String modelerClassName) 
 	{
 		super(domain, modelerClassName);
-		
-		if (domain.getNumVars() != 2)
-			throw new DimpleException("Complex domain must have exactly two components");
 	}
 }

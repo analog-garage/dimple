@@ -26,8 +26,8 @@ import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -37,7 +37,7 @@ public class SRealVariable extends SRealVariableBase
 	protected Double[] _particleValues;
 	protected int _numParticles = 1;
 	protected int _resamplingUpdatesPerSample = 1;
-	protected IProposalKernel _proposalKernel = new DefaultProposalKernel();
+	protected IProposalKernel _proposalKernel = new NormalProposalKernel();	// Normal proposal kernel by default
 	protected double _resamplingProposalStdDev = 1;
 	protected double _initialParticleMin = 0;
 	protected double _initialParticleMax = 0;
