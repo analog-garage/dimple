@@ -90,7 +90,7 @@ InternalEnergy(i) = \sum_{d \in D}B_i(d)*(-log(Input(d)))
 
 Read-only.  When read returns:
 
-Where D is variable i's domain and Input is the variable's input.
+Where D is variable i's domain, Input is the variable's input, and $B_i$ is the variable Belief.
 
 \ifjava
 \begin{lstlisting}
@@ -104,10 +104,10 @@ double ie = v.getInternalEnergy();
 Read-only.  (Only applies to the Sum Product Solver).  When read, returns:
 
 \[
-BentheEntropy(i) = - \sum{d \in D}B_i(d)*log(B_i(d))
+BetheEntropy(i) = - \sum{d \in D}B_i(d)*log(B_i(d))
 \]
 
-Where D is variable i's domain.
+Where D is variable i's domain and $B_i$ is the variable Belief.
 
 \ifjava
 \begin{lstlisting}

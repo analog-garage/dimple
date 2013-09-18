@@ -213,10 +213,10 @@ double ie = fg.getInternalEnergy();
 Read-only.  (Only applies to the Sum Product Solver).  When read returns:
 
 \[
- BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}BetheEntropy(i) 
+ BetheEntropy = \sum_{a \in F}BetheEntropy(a) - \sum_{i \in V}(d_i-1) BetheEntropy(i) 
  \]
 
-Where F is the set of all Factors and V is the set of all variables.
+Where F is the set of all Factors, V is the set of all variables, and $d_i$ is the degree of variable $i$ (i.e. the number of factors $i$ is connected to).
 
 For a definition of a Factor's BetheEntropy, see sections~\ref{sec:Factor.BetheEntropy}.  For a definition of a Variable's InternalEnergy, see section~\ref{sec:Variable.BetheEntropy}.
 
