@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -62,6 +63,43 @@ public class SFactorGraph extends SFactorGraphBase
 		
 	}
 	
+	public void solve4()
+	{
+		
+		getModelObject().initialize();
+
+		//create dependency graph
+		DependencyGraph dg = createDependencyGraph();
+		ArrayList<MapList> phases = dg.getPhases();
+		
+//		for (int i = 0; i < phases.size(); i++)
+//		{
+//			System.out.println("phase: " + i);
+//			for (int j = 0; j < phases.get(i).size(); j++)
+//			{
+//				System.out.println(phases.get(i).getByIndex(j));
+//			}
+//		}
+		
+		int numThreads = getNumThreads();
+		int iters = getNumIterations();
+		
+		ExecutorService service = Executors.newFixedThreadPool(numThreads);
+
+		for (int i = 0; i < iters; i++)
+		{
+			for (int j = 0; j < phases.size(); j++)
+			{				
+				
+				updateNodes4(service, phases.get(j), numThreads, true);
+			}
+		}
+		
+		//Figure out discrete steps
+		//for each iteration
+		//    walk through the steps and do the work stealing multi threading solution
+	}
+	
 	public void solve3()
 	{
 		//initialize
@@ -88,32 +126,57 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	public class Solve3Worker implements Callable
 	{
-		private LinkedBlockingQueue<DependencyGraphNode> _doneQueue;
-		private LinkedBlockingQueue<DependencyGraphNode> _workQueue;
+		//private LinkedBlockingDeque<DependencyGraphNode> [] _doneQueues;
+		private LinkedBlockingDeque<DependencyGraphNode> [] _workQueues;
+		private int _me;
+		private AtomicInteger _numNodes;
 		
-		public Solve3Worker(LinkedBlockingQueue<DependencyGraphNode> doneQueue,
-				LinkedBlockingQueue<DependencyGraphNode> workQueue
+		public Solve3Worker(LinkedBlockingDeque<DependencyGraphNode> [] workQueues,
+				int me //,
+//				AtomicInteger numNodes
 				)
 		{
-			_workQueue = workQueue;
-			_doneQueue = doneQueue;
+			_workQueues = workQueues;
+			_me = me;
+	//		_numNodes = numNodes;
 		}
 		
 		@Override
 		public Object call() throws Exception 
 		{
-			while (true)
+			DependencyGraphNode dgn = _workQueues[_me].poll();
+
+			while (dgn != null)
 			{
-				DependencyGraphNode dgn = _workQueue.take();
-				//System.out.println("worker found: " + dgn);
+				//DependencyGraphNode dgn = _workQueue.take();
 
 				
 				if (dgn instanceof Poison)
 					break;
 				
+//				int value = _numNodes.decrementAndGet();
+//				
+//				if (value == 0)
+//				{
+//					for (int i = 0; i < _workQueues.length; i++)
+//						_workQueues[i].add(new Poison());
+//				}
+				
 				dgn.scheduleEntry.update();
-				_doneQueue.add(dgn);
+				
+				for (int i = 0; i < dgn.dependents.size(); i++)
+				{
+//					DependencyGraphNode dependent = dgn.dependents.get(i);
+//					if (dependent.decrementAndCheckReady())
+//					{
+//						_workQueues[_me].add(dgn.dependents.get(i));
+//					}
+				}
+				//_doneQueue.add(dgn);
+				dgn = _workQueues[_me].poll();
 			}
+			
+			
 			return null;
 		}
 	}
@@ -126,71 +189,97 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	public void doOneIteration(int numThreads, ExecutorService service,DependencyGraph dg)
 	{
-		LinkedBlockingQueue<DependencyGraphNode> doneQueue = new LinkedBlockingQueue<SFactorGraph.DependencyGraphNode>();
+		LinkedBlockingDeque<DependencyGraphNode> doneQueue = new LinkedBlockingDeque<SFactorGraph.DependencyGraphNode>();
 		int totalItemsOfWork = dg.getNumNodes();
 		int executedItems = 0;
-		LinkedBlockingQueue<DependencyGraphNode> [] workQueues = new LinkedBlockingQueue[numThreads];
+		LinkedBlockingDeque<DependencyGraphNode> [] workQueues = new LinkedBlockingDeque[numThreads];
 		for (int i = 0; i < workQueues.length; i++)
 		{
-			workQueues[i] = new LinkedBlockingQueue<SFactorGraph.DependencyGraphNode>();
+			workQueues[i] = new LinkedBlockingDeque<SFactorGraph.DependencyGraphNode>();
 		}
 		
-		for (int i = 0; i < numThreads; i++)
-		{
-			service.submit(new Solve3Worker(doneQueue, workQueues[i]));
-		}
+//		for (int i = 0; i < numThreads; i++)
+//		{
+//			service.submit(new Solve3Worker(doneQueue, workQueues[i]));
+//		}
 		
 		ArrayList<DependencyGraphNode> dgns = dg.getInitialEntries();
 		
+		ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();
+				
 		for (int i = 0; i < dgns.size(); i++)
 		{
 			workQueues[i%numThreads].add(dgns.get(i));
 		}
-		
-		while (true)
+		for (int i = 0; i < workQueues.length; i++)
 		{
-			DependencyGraphNode current = null;
-			try {
-				current = doneQueue.take();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			current.numDependenciesLeft = current.numDependencies;
-			
-			executedItems++;
-			if (executedItems == totalItemsOfWork)
-			{
-				//add poison;
-				for (int i = 0; i < workQueues.length; i++)
-					workQueues[i].add(new Poison());
-				break;
-			}
-
-			
-			for (int i = 0; i < current.dependents.size(); i++)
-			{
-				DependencyGraphNode d = current.dependents.get(i);
-				d.numDependenciesLeft--;
-				if (d.numDependenciesLeft == 0)
-				{
-					//add to the work queues
-					int minSize = Integer.MAX_VALUE;
-					int minIndex = 0;
-					for (int j= 0; j < workQueues.length; j++)
-					{
-						int sz = workQueues[j].size() ;
-						if (sz < minSize)
-						{
-							minSize = sz;
-							minIndex = j;
-						}
-					}
-					workQueues[minIndex].add(d);
-				}
-			}
+			workers.add(new Solve3Worker(workQueues,i));
+			//workQueues[i].add(new Poison());
 		}
 		
+		//TODO: need way to determine when to add poison.
+//		
+		try {
+			service.invokeAll(workers);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+//		for (int i = 0; i < dgns.size(); i++)
+//		{
+//			DependencyGraphNode dgn = dgns.get(i);
+//			for (int j = 0; j < dgn.dependents.size(); j++)
+//			{
+//				dgn.dependents.get(j).numDependenciesLeft--;
+//			}
+//		}
+		
+//		while (true)
+//		{
+//			DependencyGraphNode current = null;
+//			try {
+//				current = doneQueue.take();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			
+//			current.numDependenciesLeft = current.numDependencies;
+//			
+//			executedItems++;
+//			if (executedItems == totalItemsOfWork)
+//			{
+//				//add poison;
+//				for (int i = 0; i < workQueues.length; i++)
+//					workQueues[i].add(new Poison());
+//				break;
+//			}
+//
+//			
+//			for (int i = 0; i < current.dependents.size(); i++)
+//			{
+//				DependencyGraphNode d = current.dependents.get(i);
+//				d.numDependenciesLeft--;
+//				if (d.numDependenciesLeft == 0)
+//				{
+//					//add to the work queues
+//					int minSize = Integer.MAX_VALUE;
+//					int minIndex = 0;
+//					for (int j= 0; j < workQueues.length; j++)
+//					{
+//						int sz = workQueues[j].size() ;
+//						if (sz < minSize)
+//						{
+//							minSize = sz;
+//							minIndex = j;
+//						}
+//					}
+//					workQueues[minIndex].add(d);
+//				}
+//			}
+//		}
+//		
 		//TODO: Wait for all work queues.
 		
 	}
@@ -232,6 +321,28 @@ public class SFactorGraph extends SFactorGraphBase
 		public DependencyGraphNode()
 		{
 			
+		}
+		
+		public ArrayList<DependencyGraphNode> pretendUpdateAndReturnAvailableDependencies()
+		{
+			ArrayList<DependencyGraphNode> retval = new ArrayList<SFactorGraph.DependencyGraphNode>();
+	
+			for (int i = 0; i < dependents.size(); i++)
+			{
+				dependents.get(i).numDependenciesLeft--;
+				
+				if (dependents.get(i).numDependenciesLeft == 0)
+					retval.add(dependents.get(i));
+				
+				if (dependents.get(i).numDependenciesLeft < 0)
+				{
+					System.out.println("Ack");
+					throw new DimpleException("Ack");
+				}
+				
+			}
+			
+			return retval;
 		}
 		
 		public DependencyGraphNode(IScheduleEntry scheduleEntry,
@@ -370,6 +481,7 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		private int _numNodes;
 		private ArrayList<DependencyGraphNode> _initialEntries;
+		private ArrayList<ArrayList<DependencyGraphNode>> _phases;
 		
 		public DependencyGraph(FactorGraph fg)
 		{
@@ -388,6 +500,51 @@ public class SFactorGraph extends SFactorGraphBase
 			}
 			
 			_initialEntries = initialEntries;
+		}
+		
+		public ArrayList<MapList> getPhases()
+		{
+			_phases = new ArrayList<ArrayList<DependencyGraphNode>>();
+			
+			_phases.add(new ArrayList<SFactorGraph.DependencyGraphNode>());
+			
+			for (int i = 0; i < _initialEntries.size(); i++)
+			{
+				_phases.get(0).add(_initialEntries.get(i));
+			}
+			
+			int numNodesDone = _initialEntries.size();
+			
+			ArrayList<DependencyGraphNode> justFinished = _phases.get(0);
+			
+			while (numNodesDone != _numNodes)
+			{
+				ArrayList<DependencyGraphNode> newStuff = new ArrayList<SFactorGraph.DependencyGraphNode>();
+				
+				for (DependencyGraphNode n : justFinished)
+				{
+					ArrayList<DependencyGraphNode> tmp = n.pretendUpdateAndReturnAvailableDependencies();
+					newStuff.addAll(tmp);
+				}
+				
+				_phases.add(newStuff);
+				justFinished = newStuff;
+				numNodesDone += newStuff.size();
+			}
+				
+			ArrayList<MapList> realRetval = new ArrayList<MapList>();
+			
+			for (int i = 0; i < _phases.size(); i++)
+			{
+				MapList ml = new MapList();
+				for (DependencyGraphNode dgn : _phases.get(i))
+				{
+					ml.add(dgn.node);
+				}
+				realRetval.add(ml);
+			}
+			
+			return realRetval;
 		}
 		
 		public int getNumNodes()
