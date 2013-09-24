@@ -17,12 +17,12 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class MultivariateVariable extends SVariableBase 
 {
@@ -48,13 +48,6 @@ public class MultivariateVariable extends SVariableBase
 			_input = (MultivariateMsg) createDefaultMessage();
 		else
 			_input = (MultivariateMsg)input;
-	}
-	
-	//TODO: remove this when I fix it for real.
-	public void moveInputs(ISolverVariable other)
-	{
-		_input = ((MultivariateVariable)other)._input;
-		
 	}
 	
 

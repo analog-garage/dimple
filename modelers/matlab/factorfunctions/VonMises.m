@@ -34,7 +34,7 @@ var = Real(outSize{:});
 if (isa(mean,'VariableBase') || isa(precision,'VariableBase'))
     fg.addFactor('VonMises', mean, precision, var);     % At least one variable parameter
 else
-    fg.addFactor({'VonMises', mean, precision}, var);   % Constant parameters (more efficient to fix in constructor)
+    var.Input = FactorFunction('VonMises', mean, precision);   % Constant parameters (more efficient to fix in constructor and set as Input)
 end
 
 end

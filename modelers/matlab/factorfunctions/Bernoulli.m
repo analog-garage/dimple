@@ -30,6 +30,11 @@ for arg=varargin
 end
 
 var = Bit(outSize{:});
-fg.addFactor('Bernoulli', p, var);
+
+if (isa(p,'VariableBase'))
+    fg.addFactor('Bernoulli', p, var);     % Variable parameter
+else
+    var.Input = repmat(p, cell2mat(outSize));  % Constant parameter (more efficient to just set the Input)
+end
 
 end
