@@ -63,15 +63,67 @@ public class SFactorGraph extends SFactorGraphBase
 		
 	}
 	
+	public void solve5()
+	{
+		getModelObject().initialize();
+		MapList nodes = getModelObject().getNodes();
+	}
+	
+	public void solverepeated(int num)
+	{
+		for (int i = 0; i < num; i++)
+		{
+			solve();
+		}
+	}
+	
+	public void solve4repeated(int num)
+	{
+		for (int i = 0; i < num; i++)
+		{
+			solve4();
+		}
+	}
+	
+	private long _cacheVersionId = -2;
+	private DependencyGraph _cachedDependencyGraph;
+	ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
+	
+	@Override
+	public void setNumThreads(int numThreads)
+	{
+		super.setNumThreads(numThreads);
+		if (_service != null)
+			_service.shutdown();
+		_service = Executors.newFixedThreadPool(_numThreads);
+	}
+
+	public void printPhases(ArrayList<MapList> phases)
+	{
+		for (int i = 0; i < phases.size(); i++)
+		{
+			System.out.println("phase: " + i);
+			for (int j = 0; j < phases.get(i).size(); j++)
+			{
+				System.out.println(phases.get(i).getByIndex(j));
+			}
+		}
+	}
+	
 	public void solve4()
 	{
 		
 		getModelObject().initialize();
 
+		long id = getModelObject().getVersionId();
 		//create dependency graph
-		DependencyGraph dg = createDependencyGraph();
-		ArrayList<MapList> phases = dg.getPhases();
-		
+		if (id != _cacheVersionId)
+		{
+			_cacheVersionId = id;
+			_cachedDependencyGraph = createDependencyGraph();
+		}
+		ArrayList<MapList> phases = _cachedDependencyGraph.getPhases();
+		printPhases(phases);
 //		for (int i = 0; i < phases.size(); i++)
 //		{
 //			System.out.println("phase: " + i);
@@ -84,17 +136,18 @@ public class SFactorGraph extends SFactorGraphBase
 		int numThreads = getNumThreads();
 		int iters = getNumIterations();
 		
-		ExecutorService service = Executors.newFixedThreadPool(numThreads);
 
 		for (int i = 0; i < iters; i++)
 		{
 			for (int j = 0; j < phases.size(); j++)
 			{				
 				
-				updateNodes4(service, phases.get(j), numThreads, true);
+				updateNodes4(_service, phases.get(j), numThreads, true);
 			}
 		}
 		
+		
+		//service.shutdown();
 		//Figure out discrete steps
 		//for each iteration
 		//    walk through the steps and do the work stealing multi threading solution
@@ -462,7 +515,7 @@ public class SFactorGraph extends SFactorGraphBase
 			{
 				int portnum = dgn.inports.get(i);
 				INode sibling = dgn.node.getSiblings().get(portnum);
-				int siblingportnum = sibling.getPortNum(dgn.node);
+				int siblingportnum = dgn.node.getSiblingPortIndex(portnum);
 				getNodeLastUpdates(sibling).lastOutputUpdates[siblingportnum] = dgn;
 			}
 			
@@ -470,7 +523,7 @@ public class SFactorGraph extends SFactorGraphBase
 			{
 				int portnum = dgn.outports.get(i);
 				INode sibling = dgn.node.getSiblings().get(portnum);
-				int siblingportnum = sibling.getPortNum(dgn.node);
+				int siblingportnum = dgn.node.getSiblingPortIndex(portnum);
 				getNodeLastUpdates(sibling).lastInputUpdates[siblingportnum] = dgn;
 			}
 			
@@ -481,7 +534,7 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		private int _numNodes;
 		private ArrayList<DependencyGraphNode> _initialEntries;
-		private ArrayList<ArrayList<DependencyGraphNode>> _phases;
+		private ArrayList<MapList> _phases;
 		
 		public DependencyGraph(FactorGraph fg)
 		{
@@ -504,47 +557,51 @@ public class SFactorGraph extends SFactorGraphBase
 		
 		public ArrayList<MapList> getPhases()
 		{
-			_phases = new ArrayList<ArrayList<DependencyGraphNode>>();
-			
-			_phases.add(new ArrayList<SFactorGraph.DependencyGraphNode>());
-			
-			for (int i = 0; i < _initialEntries.size(); i++)
+			if (_phases == null)
 			{
-				_phases.get(0).add(_initialEntries.get(i));
-			}
-			
-			int numNodesDone = _initialEntries.size();
-			
-			ArrayList<DependencyGraphNode> justFinished = _phases.get(0);
-			
-			while (numNodesDone != _numNodes)
-			{
-				ArrayList<DependencyGraphNode> newStuff = new ArrayList<SFactorGraph.DependencyGraphNode>();
+				ArrayList<ArrayList<DependencyGraphNode>> tmpPhases = new ArrayList<ArrayList<DependencyGraphNode>>();
 				
-				for (DependencyGraphNode n : justFinished)
+				tmpPhases.add(new ArrayList<SFactorGraph.DependencyGraphNode>());
+				
+				for (int i = 0; i < _initialEntries.size(); i++)
 				{
-					ArrayList<DependencyGraphNode> tmp = n.pretendUpdateAndReturnAvailableDependencies();
-					newStuff.addAll(tmp);
+					tmpPhases.get(0).add(_initialEntries.get(i));
 				}
 				
-				_phases.add(newStuff);
-				justFinished = newStuff;
-				numNodesDone += newStuff.size();
-			}
+				int numNodesDone = _initialEntries.size();
 				
-			ArrayList<MapList> realRetval = new ArrayList<MapList>();
-			
-			for (int i = 0; i < _phases.size(); i++)
-			{
-				MapList ml = new MapList();
-				for (DependencyGraphNode dgn : _phases.get(i))
+				ArrayList<DependencyGraphNode> justFinished = tmpPhases.get(0);
+				
+				while (numNodesDone != _numNodes)
 				{
-					ml.add(dgn.node);
+					ArrayList<DependencyGraphNode> newStuff = new ArrayList<SFactorGraph.DependencyGraphNode>();
+					
+					for (DependencyGraphNode n : justFinished)
+					{
+						ArrayList<DependencyGraphNode> tmp = n.pretendUpdateAndReturnAvailableDependencies();
+						newStuff.addAll(tmp);
+					}
+					
+					tmpPhases.add(newStuff);
+					justFinished = newStuff;
+					numNodesDone += newStuff.size();
 				}
-				realRetval.add(ml);
+					
+				ArrayList<MapList> realRetval = new ArrayList<MapList>();
+				
+				for (int i = 0; i < tmpPhases.size(); i++)
+				{
+					MapList ml = new MapList();
+					for (DependencyGraphNode dgn : tmpPhases.get(i))
+					{
+						ml.add(dgn.node);
+					}
+					realRetval.add(ml);
+				}
+				_phases = realRetval;
 			}
 			
-			return realRetval;
+			return _phases;
 		}
 		
 		public int getNumNodes()
