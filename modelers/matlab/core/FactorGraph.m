@@ -544,6 +544,7 @@ classdef FactorGraph < Node
         function set.Scheduler(obj,scheduler)
             obj.setScheduler(scheduler);
         end
+
         
         function set.Schedule(obj,schedule)
             %Make sure schedule is a cell array

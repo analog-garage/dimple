@@ -52,7 +52,7 @@ project.ext.myjars = [
     "junit:junit:4.11",
     "net.jcip:jcip-annotations:1.0",
 	files('../non-maven-jars/javailp-1.2a.jar'),
-	"org.kohsuke:graphviz-api:1.1"
+	"net.sf.jung:jung2:2.0.1"
   ]
 
 //Set up all the external dependencies for dimple

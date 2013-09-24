@@ -16,8 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +59,15 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.util.misc.MapList;
+
+import edu.uci.ics.jung.graph.ArchetypeGraph;
+import edu.uci.ics.jung.graph.Edge;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.Vertex;
+import edu.uci.ics.jung.graph.event.GraphEventListener;
+import edu.uci.ics.jung.graph.event.GraphEventType;
+import edu.uci.ics.jung.utils.UserDataContainer;
+import edu.uci.ics.jung.utils.UserDataContainer.CopyAction;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
@@ -1048,6 +1066,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		public IScheduleEntry scheduleEntry;
 		public ArrayList<Integer> inports = new ArrayList<Integer>();
 		public ArrayList<Integer> outports = new ArrayList<Integer>();
+		public int id = -1;
 		
 		
 		public void print()
@@ -1086,9 +1105,10 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 		
 		public NewDependencyGraphNode(IScheduleEntry scheduleEntry,
-				LastUpdateGraph lastUpdateGraph)
+				LastUpdateGraph lastUpdateGraph, int id)
 		{
 			this.scheduleEntry = scheduleEntry;
+			this.id = id;
 			
 			ArrayList<Integer> inputports = new ArrayList<Integer>();
 			ArrayList<Integer> outputports = new ArrayList<Integer>();
@@ -1222,6 +1242,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		private int _numNodes;
 		private ArrayList<NewDependencyGraphNode> _initialEntries;
 		private ArrayList<MapList> _phases;
+		private int _nextNodeId = 0;
 		
 		public NewDependencyGraph(FactorGraph fg)
 		{
@@ -1229,17 +1250,77 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			ArrayList<NewDependencyGraphNode> initialEntries = new ArrayList<NewDependencyGraphNode>();
 			
 			ISchedule schedule = getModelObject().getSchedule();
+			System.out.println("constructing...");
 			for (IScheduleEntry se : schedule)
 			{
-				NewDependencyGraphNode dgn = new NewDependencyGraphNode(se,lug);
+				NewDependencyGraphNode dgn = new NewDependencyGraphNode(se,lug,_nextNodeId);
+				_nextNodeId++;
 				lug.update(dgn);
 				_numNodes++;
+				System.out.println(dgn.node);
+				
 				
 				if (dgn.numDependencies == 0)
+				{
+					System.out.println("adding to initial entries");
 					initialEntries.add(dgn);
+				}
 			}
 			
 			_initialEntries = initialEntries;
+		}
+		
+		public void createDotFile(String fileName)
+		{
+			String str = createDotString();
+			PrintWriter writer;
+			try {
+				writer = new PrintWriter(fileName, "UTF-8");
+				writer.write(str);
+				writer.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new DimpleException(e);
+			}
+			
+		}
+		
+		public String createDotString()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append("digraph graphname {\n");
+			
+			HashSet<Integer> foundIds = new HashSet<Integer>();
+			LinkedList<NewDependencyGraphNode> nodes = new LinkedList<SFactorGraphBase.NewDependencyGraphNode>();
+			
+			System.out.println("initial");
+			for (int i = 0; i < _initialEntries.size(); i++)
+			{
+				nodes.push(_initialEntries.get(i));
+				System.out.println(_initialEntries.get(i).node);
+				foundIds.add(_initialEntries.get(i).id);
+			}
+			
+			while (! nodes.isEmpty())
+			{
+				NewDependencyGraphNode node = nodes.pop();
+				sb.append(node.id + "[label=\"" + node.node.getLabel() + "\"];\n");
+				System.out.println("got node: " + node.node);
+				for (int i = 0; i  < node.dependents.size(); i++)
+				{
+					NewDependencyGraphNode nextNode = node.dependents.get(i);
+					System.out.println("points to: " + nextNode.node);
+					sb.append(node.id + " -> " + nextNode.id + ";\n");
+					if (!foundIds.contains(nextNode.id))
+					{
+						nodes.add(nextNode);
+						foundIds.add(nextNode.id);
+					}
+				}
+			}
+			
+			sb.append("}\n");
+			return sb.toString();
 		}
 		
 		public ArrayList<MapList> getPhases()
@@ -1645,6 +1726,20 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 
+	public void saveDependencyGraph(String fileName)
+	{
+		NewDependencyGraph dg = getDependencyGraph();
+		dg.createDotFile(fileName);
+ 
+//		
+//		Graph g;
+//		Layout l = new FRLayout( g );
+//		Renderer r = new PluggableRenderer();
+//		VisualizationViewer vv = new VisualizationViewer( layout, renderer );
+//		JFrame jf = new JFrame();
+//		jf.getContentPane().add ( vv );
+	}
+	
 //	
 //	public void solve4()
 //	{

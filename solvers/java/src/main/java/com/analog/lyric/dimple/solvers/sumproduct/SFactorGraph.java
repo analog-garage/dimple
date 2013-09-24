@@ -320,7 +320,18 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 
-
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		for (Factor f : getModelObject().getFactors())
+		{
+			STableFactor tf = (STableFactor)(f.getSolver());
+			tf.getFactorTable().getIndicesSparseUnsafe();
+			tf.getFactorTable().getWeightsSparseUnsafe();
+		}
+		
+	}
 	
 
 
