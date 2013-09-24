@@ -17,22 +17,36 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.FactorList;
+import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.MapList;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
@@ -450,12 +464,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 
 	
 	
-	@Override
-	public void setNumThreads(int numThreads)
-	{
-		if (numThreads != 1)
-			throw new DimpleException("Multithreading is not currently supported by this solver.");
-	}
+//	@Override
+//	public void setNumThreads(int numThreads)
+//	{
+////		if (numThreads != 1)
+////			throw new DimpleException("Multithreading is not currently supported by this solver.");
+//		
+//		//TODO:  HMM
+//		
+//	}
 
 	// 'Iterations' are not defined for Gibbs since that term is ambiguous.  Instead, set the number of samples using setNumSamples().
 	@Override
@@ -482,5 +499,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 
+	
+	
 	
 }

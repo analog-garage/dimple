@@ -16,7 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -25,11 +33,13 @@ import com.analog.lyric.dimple.model.FactorBase;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.FactorList;
 import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.Node;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -38,6 +48,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.util.misc.MapList;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
@@ -449,8 +461,16 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void setNumThreads(int numThreads)
 	{
 		_numThreads = numThreads;
+		
+		if (_service != null)
+			_service.shutdown();
+		_service = Executors.newFixedThreadPool(_numThreads);
+
+
 	}
 
+	
+	
 	// When running with multiple threads, prepares the dependency graph ahead of calling solve or iterate
 	// Primarily for testing: allows testing execution time of solve or iterate without including the time to create the dependency graph
 	// When called with no arguments, uses the current _numIterations (used by solve); otherwise can specify a number of iterations (for using iterate)
@@ -472,9 +492,43 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		}
 	}
 
+ 	protected void iterateMultiThreaded3(int numIters)
+ 	{
+ 		NewDependencyGraph dg = getDependencyGraph();
+ 		
+ 		for (int j = 0; j < numIters; j++)
+ 		{
+	 		
+	 		//protected LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>> _workQueue = new LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>>();
+	 		LinkedBlockingQueue<NewDependencyGraphNode> workQueue = new LinkedBlockingQueue<SFactorGraphBase.NewDependencyGraphNode>();
+	 		for (NewDependencyGraphNode dgn : dg.getInitialEntries())
+	 		{
+	 			workQueue.add(dgn);
+	 		}
+	 		
+	 		int numThreads = getNumThreads();
+	 		
+			ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();
+	
+			AtomicInteger nodesLeft = new AtomicInteger(dg.getNumNodes());
+	 		for (int i = 0; i < numThreads; i++)
+	 		{
+	 			
+	 			workers.add(new SFactorGraphThread2(workQueue, dg.getNumNodes(), nodesLeft));
+	 		}
+	 		
+	 		try {
+				_service.invokeAll(workers);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+ 		}
+ 	}
+ 	
 
 	// Run iterations using multi-threading (called by iterate if multi-threading is in use)
-	protected void iterateMultiThreaded(int numIters)
+	protected void iterateMultiThreaded2(int numIters)
 	{
 		prepareForMultiThreading(numIters);	// Create _scheduleDependencyGraph if not already up-to-date
 		_numScheduleEntriesRemaining = _scheduleDependencyGraph.size();
@@ -530,6 +584,85 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 
+	private class SFactorGraphThread2 implements Callable
+	{
+
+		private LinkedBlockingQueue<NewDependencyGraphNode> _workQueue;
+		private int _numNodes;
+		private AtomicInteger _nodesDone;
+		
+		public SFactorGraphThread2(LinkedBlockingQueue<NewDependencyGraphNode> 
+			workQueue,
+			int numNodes,
+			AtomicInteger nodesDone)
+		{
+			_workQueue = workQueue;
+			_numNodes = numNodes;
+			_nodesDone = nodesDone;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			while(true)
+			{
+				NewDependencyGraphNode entry = _workQueue.take();	// Pull the next entry from the work queue (blocking if there are none)
+				
+				if (entry instanceof Poison)
+				{
+					_workQueue.add(entry);
+					break;
+				}
+				
+				entry.node.update();
+				
+				int nodesLeft = _nodesDone.decrementAndGet();
+				
+				if (nodesLeft == 0)
+				{
+					_workQueue.add(new Poison());
+					break;
+				}
+				
+				//if count is zero,
+					//interrupt all the other threads and return
+				
+				for (int i = 0; i < entry.dependents.size(); i++)
+				{
+					NewDependencyGraphNode dependent = entry.dependents.get(i);
+					synchronized (dependent)
+					{
+						dependent.numDependenciesLeft--;
+						if (dependent.numDependenciesLeft == 0)
+						{
+							_workQueue.add(dependent);
+							dependent.numDependenciesLeft = dependent.numDependencies;
+							
+						}
+					}
+					
+				}
+				//for each dependency
+				   //decrement
+					//if zero
+						//add to queue
+				
+//				IScheduleEntry scheduleEntry = entry.getObject();
+//				INode node = (scheduleEntry instanceof NodeScheduleEntry) ? ((NodeScheduleEntry)scheduleEntry).getNode() : ((EdgeScheduleEntry)scheduleEntry).getNode();
+//				synchronized (node)												// Synchronize on the node: don't allow updating the same node in more than one thread at the same time
+//				{
+//					scheduleEntry.update();										// Run it
+//				}
+				//_parentGraph.scheduleEntryCompleted(entry);						// Tell the main thread that it's done
+				
+				
+			}
+			return null;
+
+		}
+		
+	}
+	
 	// This is the class defining the sub-threads
 	private class SFactorGraphThread implements Runnable
 	{
@@ -657,4 +790,903 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return null;
 	}
 
+	
+
+	
+
+	public void solve5()
+	{
+		getModelObject().initialize();
+		MapList nodes = getModelObject().getNodes();
+	}
+	
+	public void solverepeated(int num)
+	{
+		for (int i = 0; i < num; i++)
+		{
+			solve();
+		}
+	}
+	
+//	public void solve4repeated(int num)
+//	{
+//		for (int i = 0; i < num; i++)
+//		{
+//			solve4();
+//		}
+//	}
+	
+	
+//	@Override
+//	public void setNumThreads(int numThreads)
+//	{
+//		super.setNumThreads(numThreads);
+//	}
+
+	public void printPhases(ArrayList<MapList> phases)
+	{
+		for (int i = 0; i < phases.size(); i++)
+		{
+			System.out.println("phase: " + i);
+			for (int j = 0; j < phases.get(i).size(); j++)
+			{
+				System.out.println(phases.get(i).getByIndex(j));
+			}
+		}
+	}
+	
+	
+	
+	public void solve3()
+	{
+		//initialize
+		getModelObject().initialize();
+		
+		//figure out dependency graph
+		NewDependencyGraph dg = createDependencyGraph();
+		//dg.print();
+
+		//create thread pool
+		int numThreads = getNumThreads();
+		int iters = getNumIterations();		
+		ExecutorService service = Executors.newFixedThreadPool(numThreads);		
+		
+		for (int i = 0; i < iters; i++)
+		{
+			doOneIteration(numThreads, service,dg);
+		}
+		
+		//One thread puts items on the blocking queues
+		//Other threads take items off of the blocking queues
+	}
+	
+	
+	public class Solve3Worker implements Callable
+	{
+		//private LinkedBlockingDeque<DependencyGraphNode> [] _doneQueues;
+		private LinkedBlockingDeque<NewDependencyGraphNode> [] _workQueues;
+		private int _me;
+		private AtomicInteger _numNodes;
+		
+		public Solve3Worker(LinkedBlockingDeque<NewDependencyGraphNode> [] workQueues,
+				int me //,
+//				AtomicInteger numNodes
+				)
+		{
+			_workQueues = workQueues;
+			_me = me;
+	//		_numNodes = numNodes;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			NewDependencyGraphNode dgn = _workQueues[_me].poll();
+
+			while (dgn != null)
+			{
+				//DependencyGraphNode dgn = _workQueue.take();
+
+				
+				if (dgn instanceof Poison)
+					break;
+				
+//				int value = _numNodes.decrementAndGet();
+//				
+//				if (value == 0)
+//				{
+//					for (int i = 0; i < _workQueues.length; i++)
+//						_workQueues[i].add(new Poison());
+//				}
+				
+				dgn.scheduleEntry.update();
+				
+				for (int i = 0; i < dgn.dependents.size(); i++)
+				{
+//					DependencyGraphNode dependent = dgn.dependents.get(i);
+//					if (dependent.decrementAndCheckReady())
+//					{
+//						_workQueues[_me].add(dgn.dependents.get(i));
+//					}
+				}
+				//_doneQueue.add(dgn);
+				dgn = _workQueues[_me].poll();
+			}
+			
+			
+			return null;
+		}
+	}
+	
+	public class Poison extends NewDependencyGraphNode
+	{
+
+		
+	}
+	
+	public void doOneIteration(int numThreads, ExecutorService service,NewDependencyGraph dg)
+	{
+		LinkedBlockingDeque<NewDependencyGraphNode> doneQueue = new LinkedBlockingDeque<SFactorGraph.NewDependencyGraphNode>();
+		int totalItemsOfWork = dg.getNumNodes();
+		int executedItems = 0;
+		LinkedBlockingDeque<NewDependencyGraphNode> [] workQueues = new LinkedBlockingDeque[numThreads];
+		for (int i = 0; i < workQueues.length; i++)
+		{
+			workQueues[i] = new LinkedBlockingDeque<SFactorGraph.NewDependencyGraphNode>();
+		}
+		
+//		for (int i = 0; i < numThreads; i++)
+//		{
+//			service.submit(new Solve3Worker(doneQueue, workQueues[i]));
+//		}
+		
+		ArrayList<NewDependencyGraphNode> dgns = dg.getInitialEntries();
+		
+		ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();
+				
+		for (int i = 0; i < dgns.size(); i++)
+		{
+			workQueues[i%numThreads].add(dgns.get(i));
+		}
+		for (int i = 0; i < workQueues.length; i++)
+		{
+			workers.add(new Solve3Worker(workQueues,i));
+			//workQueues[i].add(new Poison());
+		}
+		
+		//TODO: need way to determine when to add poison.
+//		
+		try {
+			service.invokeAll(workers);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+//		for (int i = 0; i < dgns.size(); i++)
+//		{
+//			DependencyGraphNode dgn = dgns.get(i);
+//			for (int j = 0; j < dgn.dependents.size(); j++)
+//			{
+//				dgn.dependents.get(j).numDependenciesLeft--;
+//			}
+//		}
+		
+//		while (true)
+//		{
+//			DependencyGraphNode current = null;
+//			try {
+//				current = doneQueue.take();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			
+//			current.numDependenciesLeft = current.numDependencies;
+//			
+//			executedItems++;
+//			if (executedItems == totalItemsOfWork)
+//			{
+//				//add poison;
+//				for (int i = 0; i < workQueues.length; i++)
+//					workQueues[i].add(new Poison());
+//				break;
+//			}
+//
+//			
+//			for (int i = 0; i < current.dependents.size(); i++)
+//			{
+//				DependencyGraphNode d = current.dependents.get(i);
+//				d.numDependenciesLeft--;
+//				if (d.numDependenciesLeft == 0)
+//				{
+//					//add to the work queues
+//					int minSize = Integer.MAX_VALUE;
+//					int minIndex = 0;
+//					for (int j= 0; j < workQueues.length; j++)
+//					{
+//						int sz = workQueues[j].size() ;
+//						if (sz < minSize)
+//						{
+//							minSize = sz;
+//							minIndex = j;
+//						}
+//					}
+//					workQueues[minIndex].add(d);
+//				}
+//			}
+//		}
+//		
+		//TODO: Wait for all work queues.
+		
+	}
+	
+	public class NodeLastUpdates
+	{
+		public INode node;
+		public NewDependencyGraphNode lastUpdate;
+		public NewDependencyGraphNode [] lastInputUpdates;
+		public NewDependencyGraphNode [] lastOutputUpdates;
+		
+		public NodeLastUpdates(INode n)
+		{
+			node = n;
+			int sz = n.getSiblings().size();
+			lastInputUpdates = new NewDependencyGraphNode[sz];
+			lastOutputUpdates = new NewDependencyGraphNode[sz];
+			lastUpdate = null;
+		}
+	}
+	
+
+	public class NewDependencyGraphNode
+	{
+		public INode node;
+		public ArrayList<NewDependencyGraphNode> dependents = new ArrayList<SFactorGraph.NewDependencyGraphNode>();
+		public  int numDependencies;
+		public int numDependenciesLeft;
+		public IScheduleEntry scheduleEntry;
+		public ArrayList<Integer> inports = new ArrayList<Integer>();
+		public ArrayList<Integer> outports = new ArrayList<Integer>();
+		
+		
+		public void print()
+		{
+			System.out.println("node: " + node.toString());
+		}
+		
+		public NewDependencyGraphNode()
+		{
+			
+		}
+		
+		public ArrayList<NewDependencyGraphNode> pretendUpdateAndReturnAvailableDependencies()
+		{
+			ArrayList<NewDependencyGraphNode> retval = new ArrayList<SFactorGraph.NewDependencyGraphNode>();
+	
+			for (int i = 0; i < dependents.size(); i++)
+			{
+				dependents.get(i).numDependenciesLeft--;
+				
+				if (dependents.get(i).numDependenciesLeft == 0)
+				{
+					retval.add(dependents.get(i));
+					dependents.get(i).numDependenciesLeft = dependents.get(i).numDependencies;
+				}
+				
+				if (dependents.get(i).numDependenciesLeft < 0)
+				{
+					System.out.println("Ack");
+					throw new DimpleException("Ack");
+				}
+				
+			}
+			
+			return retval;
+		}
+		
+		public NewDependencyGraphNode(IScheduleEntry scheduleEntry,
+				LastUpdateGraph lastUpdateGraph)
+		{
+			this.scheduleEntry = scheduleEntry;
+			
+			ArrayList<Integer> inputports = new ArrayList<Integer>();
+			ArrayList<Integer> outputports = new ArrayList<Integer>();
+			
+			if (scheduleEntry instanceof NodeScheduleEntry)
+			{
+				NodeScheduleEntry nse = (NodeScheduleEntry)scheduleEntry;
+				this.node = nse.getNode();
+				for (int i = 0; i < this.node.getSiblings().size(); i++)
+				{
+					inputports.add(i);
+					outputports.add(i);
+				}
+			}
+			else if (scheduleEntry instanceof EdgeScheduleEntry)
+			{
+				EdgeScheduleEntry ese = (EdgeScheduleEntry)scheduleEntry;
+				this.node = ese.getNode();
+				outputports.add(ese.getPortNum());
+				for (int i = 0; i < this.node.getSiblings().size(); i++)
+				{
+					if (i != ese.getPortNum())
+					{
+						inputports.add(i);
+					}
+				}
+			}
+			else
+			{
+				throw new DimpleException("ack");
+			}
+			
+			NodeLastUpdates nlu =  lastUpdateGraph.getNodeLastUpdates(this.node);
+			
+			NewDependencyGraphNode dgn = null;
+			
+			int numDependencies = 0;
+			
+			//Update dependents
+			//for each input
+			for (int i = 0; i < inputports.size(); i++)
+			{
+				//  get the last guy to update this
+				//  add me to dependent list (increment num dependencies)
+				int portNum = inputports.get(i);
+				dgn  = nlu.lastInputUpdates[portNum];
+				
+				if (dgn != null)
+				{
+					dgn.dependents.add(this);
+					
+					numDependencies++;
+				}
+				
+			}
+			
+			//for each output
+			//  get the last guy to use this
+			//  add me to the dependent list (increment num dependencies)
+			for (int i = 0; i < outputports.size(); i++)
+			{
+				int portNum = outputports.get(i);
+				dgn = nlu.lastOutputUpdates[portNum];
+				
+				if (dgn != null)
+				{
+					dgn.dependents.add(this);					
+					numDependencies++;
+				}
+			}
+			
+			//for the last guy to update this node
+			//  add me to the dependent list (increment num dependencies)
+			//nlu.lastUpdate = this;
+			this.numDependencies = numDependencies;
+			this.numDependenciesLeft = numDependencies;
+			this.inports = inputports;
+			this.outports = outputports;
+		}
+		
+		
+	}
+	
+	public class LastUpdateGraph
+	{
+		private HashMap<INode,NodeLastUpdates> _node2updates = new HashMap<INode, SFactorGraph.NodeLastUpdates>();
+		
+		public LastUpdateGraph(FactorGraph fg)
+		{
+			MapList<INode> nodes = fg.getNodes();
+			//TODO: hashtable
+		
+			for (INode n : nodes)
+			{
+				_node2updates.put(n, new NodeLastUpdates(n));
+			}
+
+		}
+		
+		public NodeLastUpdates getNodeLastUpdates(INode n)
+		{
+			return _node2updates.get(n);
+		}
+		
+		public void update(NewDependencyGraphNode dgn)
+		{
+			NodeLastUpdates nlu = _node2updates.get(dgn.node);
+			nlu.lastUpdate = dgn;
+			
+			for (int i = 0; i < dgn.inports.size(); i++)
+			{
+				int portnum = dgn.inports.get(i);
+				INode sibling = dgn.node.getSiblings().get(portnum);
+				int siblingportnum = dgn.node.getSiblingPortIndex(portnum);
+				getNodeLastUpdates(sibling).lastOutputUpdates[siblingportnum] = dgn;
+			}
+			
+			for (int i = 0; i < dgn.outports.size(); i++)
+			{
+				int portnum = dgn.outports.get(i);
+				INode sibling = dgn.node.getSiblings().get(portnum);
+				int siblingportnum = dgn.node.getSiblingPortIndex(portnum);
+				getNodeLastUpdates(sibling).lastInputUpdates[siblingportnum] = dgn;
+			}
+			
+		}
+	}
+	
+	public class NewDependencyGraph
+	{
+		private int _numNodes;
+		private ArrayList<NewDependencyGraphNode> _initialEntries;
+		private ArrayList<MapList> _phases;
+		
+		public NewDependencyGraph(FactorGraph fg)
+		{
+			LastUpdateGraph lug = new LastUpdateGraph(fg);
+			ArrayList<NewDependencyGraphNode> initialEntries = new ArrayList<NewDependencyGraphNode>();
+			
+			ISchedule schedule = getModelObject().getSchedule();
+			for (IScheduleEntry se : schedule)
+			{
+				NewDependencyGraphNode dgn = new NewDependencyGraphNode(se,lug);
+				lug.update(dgn);
+				_numNodes++;
+				
+				if (dgn.numDependencies == 0)
+					initialEntries.add(dgn);
+			}
+			
+			_initialEntries = initialEntries;
+		}
+		
+		public ArrayList<MapList> getPhases()
+		{
+			if (_phases == null)
+			{
+				ArrayList<ArrayList<NewDependencyGraphNode>> tmpPhases = new ArrayList<ArrayList<NewDependencyGraphNode>>();
+				
+				tmpPhases.add(new ArrayList<SFactorGraph.NewDependencyGraphNode>());
+				
+				for (int i = 0; i < _initialEntries.size(); i++)
+				{
+					tmpPhases.get(0).add(_initialEntries.get(i));
+				}
+				
+				int numNodesDone = _initialEntries.size();
+				
+				ArrayList<NewDependencyGraphNode> justFinished = tmpPhases.get(0);
+				
+				while (numNodesDone != _numNodes)
+				{
+					ArrayList<NewDependencyGraphNode> newStuff = new ArrayList<SFactorGraph.NewDependencyGraphNode>();
+					
+					for (NewDependencyGraphNode n : justFinished)
+					{
+						ArrayList<NewDependencyGraphNode> tmp = n.pretendUpdateAndReturnAvailableDependencies();
+						newStuff.addAll(tmp);
+					}
+					
+					tmpPhases.add(newStuff);
+					justFinished = newStuff;
+					numNodesDone += newStuff.size();
+				}
+					
+				ArrayList<MapList> realRetval = new ArrayList<MapList>();
+				
+				for (int i = 0; i < tmpPhases.size(); i++)
+				{
+					MapList ml = new MapList();
+					for (NewDependencyGraphNode dgn : tmpPhases.get(i))
+					{
+						ml.add(dgn.node);
+					}
+					realRetval.add(ml);
+				}
+				_phases = realRetval;
+			}
+			
+			return _phases;
+		}
+		
+		public int getNumNodes()
+		{
+			return _numNodes;
+		}
+		
+		public ArrayList<NewDependencyGraphNode> getInitialEntries()
+		{
+			return _initialEntries;
+		}
+		
+		public void print()
+		{
+			System.out.println("initial entries: ");
+			for (int i = 0; i < _initialEntries.size(); i++)
+				_initialEntries.get(i).print();
+			
+		}
+	}
+	
+
+	
+	public void solve2(int method)
+	{
+		getModelObject().initialize();
+		
+		FactorList factors = getModelObject().getFactors();
+		VariableList variables = getModelObject().getVariables();
+		
+		int numThreads = getNumThreads();
+		int iters = getNumIterations();
+		
+		ExecutorService service = Executors.newFixedThreadPool(numThreads);
+		
+		System.out.println("updating method: " + method);
+		
+		for (int i = 0; i < iters; i++)
+		{
+			switch (method)
+			{
+			case 1:
+				throw new DimpleException("nah");
+			case 2:
+				updateNodes2(service,variables,numThreads);
+				updateNodes2(service,factors,numThreads);
+				break;
+			case 3:
+				updateNodes3(service,variables,numThreads);
+				updateNodes3(service,factors,numThreads);
+				break;
+			case 4:
+				updateNodes4(service,variables,numThreads,false);
+				updateNodes4(service,factors,numThreads,false);
+				break;
+			case 5:
+				updateNodes4(service,variables,numThreads,true);
+				updateNodes4(service,factors,numThreads,true);
+				break;
+			default:
+				throw new DimpleException("not supported: "+ i);
+			}
+		}
+		
+		
+		//solve();
+	}
+	
+	public class UpdateSegmentDeque implements Callable
+	{
+		private ConcurrentLinkedQueue<Node> [] _deques;
+		private int _which;
+		private MapList _nodes;
+		private boolean _stealing;
+		
+		public UpdateSegmentDeque(MapList nodes, int which, ConcurrentLinkedQueue<Node> [] deques, boolean stealing)
+		{
+			_which = which;
+			_deques = deques;
+			_nodes= nodes;
+			_stealing = stealing;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{			
+			int which = _which;
+			int nodesPerThread = _nodes.size() / _deques.length;
+			int first = _which*nodesPerThread;
+			int last = first + nodesPerThread - 1;
+			
+			if (which == _deques.length - 1)
+				last = _nodes.size()-1;
+			
+			for (int i = first; i <= last; i++)
+			{
+				Object tmp = _nodes.getByIndex(i);
+				Node ntmp = (Node)tmp;
+				_deques[which].add(ntmp);
+			}
+			
+			Node n = _deques[which].poll();
+			
+		
+			while (n != null)
+			{	
+				n.update();
+				
+				n = _deques[which].poll();
+				
+				if (n == null && _stealing)
+				{
+					for (int i = 0; i < _deques.length; i++)
+					{
+						//n = _deques[i].poll();
+						n = _deques[(_which + i) % _deques.length].poll();
+						
+						if (n != null)
+							break;
+					}
+				}
+				
+			}	
+			return null;
+		}
+		
+	}
+	
+	public void updateNodes4(ExecutorService service, MapList nodes, int numThreads, boolean stealing)
+	{
+		ConcurrentLinkedQueue<Node> [] deques = new ConcurrentLinkedQueue[numThreads];
+		for (int i = 0; i < deques.length; i++)
+			deques[i] = new ConcurrentLinkedQueue<Node>();
+		
+		//for (int i = 0; i < deques.length; )
+		//Add stuff to the deques
+		int numNodes = nodes.size();
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			ll.add(new UpdateSegmentDeque(nodes, i, deques, stealing));
+		}
+				
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+	}
+
+
+	public void updateNodes3(ExecutorService service, MapList nodes, int numThreads)
+	{
+		ConcurrentLinkedQueue<Node> q = new ConcurrentLinkedQueue<Node>();
+		
+		for (Object o : nodes)
+		{
+			q.add((Node)o);
+		}
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			ll.add(new DoStuffFromQueue(q));
+		}
+		
+
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+		
+		
+	}
+	
+	public class DoStuffFromQueue implements Callable
+	{
+
+		private ConcurrentLinkedQueue<Node> _queue;
+		
+		public DoStuffFromQueue(ConcurrentLinkedQueue<Node> queue)
+		{
+			_queue = queue;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			Node n = _queue.poll();
+			
+			while (n != null)
+			{
+				n.update();
+				n = _queue.poll();
+			}
+			return null;
+		}
+		
+	}
+	
+	public void updateNodes1(ExecutorService service, MapList nodes, int numThreads)
+	{
+		
+	}
+
+	
+	/*
+	 * 1) Units of work.  No faster.
+	 */
+	public void updateNodes2(ExecutorService service, MapList nodes, int numThreads)
+	{
+		//1) Units of work?
+		//2) Divided up by thread
+		//3) Single linked blocing queue
+		//4) Multiple liked blocking dequeues?
+		//First try single LinkBlockingQueue since it's easier
+		
+		//Add stuff to the deques
+		int numNodes = nodes.size();
+		
+		ArrayList<Callable<Object>> ll = new ArrayList<Callable<Object>>(numThreads);
+		int nodesPerThread = nodes.size() / numThreads;
+		
+		for (int i = 0; i < numThreads; i++)
+		{
+			int first = i*nodesPerThread;
+			
+			if (i == numThreads-1)
+				ll.add(new UpdateSegment(nodes, first, nodes.size()-1));
+			else
+				ll.add(new UpdateSegment(nodes, first, first + nodesPerThread - 1));
+		}
+		
+		
+		try {
+			service.invokeAll(ll);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+		
+		//service.invokeAll(ll);
+		
+		//Start the threads
+		//Each thread goes on until it runs out of stuff
+		//Search the other dequeues
+		//If nothing found tell the barrier it's done
+		//This thread will wait on the barrier
+		//When barrier is reached, add more work to the dequeus
+		//repeat until done
+		
+	}
+	
+	public class UpdateSegment implements Callable
+	{
+		private MapList _mapList;
+		private int _first;
+		private int _last;
+		
+		public UpdateSegment(MapList list,int first, int last)
+		{
+			_mapList = list;
+			_first = first;
+			_last = last;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			for (int i = _first; i <= _last; i++)
+				((Node)_mapList.getByIndex(i)).update();
+			//_node.update();
+			return null;
+		}
+		
+	}
+	
+	public class UpdateNode implements Callable
+	{
+		private Node _node;
+		public UpdateNode(Node n)
+		{
+			_node = n;
+		}
+		
+		@Override
+		public Object call() throws Exception 
+		{
+			_node.update();
+			return null;
+		}
+		
+	}
+	
+	public NewDependencyGraph getDependencyGraph()
+	{
+		long id = getModelObject().getVersionId();
+		//create dependency graph
+		if (id != _cacheVersionId)
+		{
+			_cacheVersionId = id;
+			_cachedDependencyGraph = createDependencyGraph();
+		}
+		
+		return _cachedDependencyGraph;
+	}
+	
+	public ArrayList<MapList> getPhases()
+	{
+		return getDependencyGraph().getPhases();
+	}
+	
+	
+	private int _multiThreadMode = 1;
+	
+	public void setMultiThreadMode(int mode)
+	{
+		_multiThreadMode = mode;
+	}
+
+	public void iterateMultiThreaded(int numIters)
+	{
+		if (_multiThreadMode == 0)
+		{
+			ArrayList<MapList> phases = getPhases();
+			int numThreads = getNumThreads();
+			
+			for (int i = 0; i < numIters; i++)
+			{
+				for (int j = 0; j < phases.size(); j++)
+				{				
+					updateNodes4(_service, phases.get(j), numThreads, true);
+				}
+			}
+		}
+		else if (_multiThreadMode == 1)
+		{
+			iterateMultiThreaded2(numIters);
+		}
+		else
+		{
+			iterateMultiThreaded3(numIters);
+		}
+	}
+
+//	
+//	public void solve4()
+//	{
+//		
+//		getModelObject().initialize();
+//
+//		
+//		iterateMultiThreaded(numIters);
+//		//printPhases(phases);
+////		for (int i = 0; i < phases.size(); i++)
+////		{
+////			System.out.println("phase: " + i);
+////			for (int j = 0; j < phases.get(i).size(); j++)
+////			{
+////				System.out.println(phases.get(i).getByIndex(j));
+////			}
+////		}
+//		
+//		int numThreads = getNumThreads();
+//		int iters = getNumIterations();
+//		
+//
+//
+//		
+//		
+//		//service.shutdown();
+//		//Figure out discrete steps
+//		//for each iteration
+//		//    walk through the steps and do the work stealing multi threading solution
+//	}
+//	
+	
+
+
+	private long _cacheVersionId = -2;
+	private NewDependencyGraph _cachedDependencyGraph;
+	ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
+
+	public NewDependencyGraph createDependencyGraph()
+	{
+		return new NewDependencyGraph(getModelObject());
+		
+	}	
+	
 }
