@@ -9,6 +9,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 
 
 public class StaticDependencyGraph 
@@ -26,27 +27,39 @@ public class StaticDependencyGraph
 		
 		ISchedule schedule = fg.getSchedule();
 		
+		buildFromSchedule(schedule,lug);
+
+		
+	}
+	
+	private void buildFromSchedule(ISchedule schedule,LastUpdateGraph lug)
+	{
 		for (IScheduleEntry se : schedule)
 		{
-			StaticDependencyGraphNode dgn = new StaticDependencyGraphNode(se,lug,_nextNodeId);
-			_nextNodeId++;
-			_numScheduleEntries++;
-			
-			int phase = dgn.getPhase();
-			
-			while (_phases.size() <= phase)
+			if (se instanceof SubScheduleEntry)
 			{
-				_phases.add(new ArrayList<IScheduleEntry>());
+				buildFromSchedule(((SubScheduleEntry)se).getSchedule(), lug);
 			}
-			
-			_phases.get(phase).add(dgn.getScheduleEntry());
-			
-			if (phase == 0)
-				_initialEntries.add(dgn);
-			
+			else
+			{
+				StaticDependencyGraphNode dgn = new StaticDependencyGraphNode(se,lug,_nextNodeId);
+				_nextNodeId++;
+				_numScheduleEntries++;
+				
+				int phase = dgn.getPhase();
+				
+				while (_phases.size() <= phase)
+				{
+					_phases.add(new ArrayList<IScheduleEntry>());
+				}
+				
+				_phases.get(phase).add(dgn.getScheduleEntry());
+				
+				if (phase == 0)
+					_initialEntries.add(dgn);
+			}
 
 		}
-		
 	}
 	
 	public ArrayList<ArrayList<IScheduleEntry>> getPhases()

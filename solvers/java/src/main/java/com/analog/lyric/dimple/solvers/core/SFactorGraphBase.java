@@ -756,22 +756,10 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	
 	public void setNumThreads(int numThreads)
 	{
-		//_numThreads = numThreads;
 		_multithreader.setNumThreads(numThreads);
-//		if (_service != null)
-//			_service.shutdown();
-//		_service = Executors.newFixedThreadPool(_numThreads);
-//
 
 	}
-	
-//
-//	public void solve5()
-//	{
-//		getModelObject().initialize();
-//		MapList nodes = getModelObject().getNodes();
-//	}
-//	
+		
 	public void solverepeated(int num)
 	{
 		for (int i = 0; i < num; i++)
