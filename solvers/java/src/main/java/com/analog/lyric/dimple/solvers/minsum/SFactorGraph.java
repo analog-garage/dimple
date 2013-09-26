@@ -56,11 +56,17 @@ public class SFactorGraph extends SFactorGraphBase
 	public void initialize()
 	{
 		super.initialize();
+		
+		//TODO: Should only do this if preparing for multithreading.  
+		//      Should have a prepare for multithreading command
 		for (Factor f : getModelObject().getFactors())
 		{
-			STableFactor tf = (STableFactor)(f.getSolver());
-			tf.getFactorTable().getIndicesSparseUnsafe();
-			tf.getFactorTable().getWeightsSparseUnsafe();
+			if (f.getSolver() instanceof STableFactor)
+			{
+				STableFactor tf = (STableFactor)(f.getSolver());
+				tf.getFactorTable().getIndicesSparseUnsafe();
+				tf.getFactorTable().getWeightsSparseUnsafe();
+			}
 		}
 		
 	}

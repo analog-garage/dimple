@@ -6,6 +6,7 @@ seed = 1;
 scheduler = 'FloodingScheduler';
 addlabels = false;
 presolve = true;
+solver = 'sumproduct';
 
 modes = [0 2 0];
 threads = [16 16 1];
@@ -25,7 +26,7 @@ for i = 1:length(modes)
     titles{1} = 'M,N = 200, Domain=2';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     time_results{i} = [total_time];
     results{i}{1} = results1;
     
@@ -39,7 +40,7 @@ for i = 1:length(modes)
     titles{2} = 'M,N=4, Domain=75';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     
     time_results{i}(2) = [total_time];
     results{i}{2} = results1;
@@ -55,7 +56,7 @@ for i = 1:length(modes)
     titles{3} = 'M,N=4, Domain=200';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     
     time_results{i}(3) = [total_time];
     results{i}{3} = results1;
@@ -72,7 +73,7 @@ for i = 1:length(modes)
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     time_results{i}(4) = [total_time];
     results{i}{4} = results1;
     
@@ -88,7 +89,7 @@ for i = 1:length(modes)
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     
     time_results{i}(5) = [total_time];
     results{i}{5} = results1;
@@ -104,7 +105,7 @@ for i = 1:length(modes)
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
-        threadMode,presolve);
+        threadMode,presolve,solver);
     
     time_results{i}(6) = [total_time];
     results{i}{6} = results1;
@@ -121,6 +122,7 @@ end
 %Time dependency graph creation
 
 %Threading mode - Off, Bill, Jeff, Jeff w Shawn Dependency graph
+%%
 
 lines = {'r*-','g*-','b*-'};
 
@@ -135,6 +137,8 @@ for i = 1:length(time_results)
     set(gca,'xticklabel',titles);
 end
 legend('bill','jeff','single');
+ylabel('X times better than single threaded');
+xlabel('experiment');
 
 %%
 modeNames = {'bill','jeff','single'};

@@ -326,9 +326,12 @@ public class SFactorGraph extends SFactorGraphBase
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
-			STableFactor tf = (STableFactor)(f.getSolver());
-			tf.getFactorTable().getIndicesSparseUnsafe();
-			tf.getFactorTable().getWeightsSparseUnsafe();
+			if (f.getSolver() instanceof STableFactor)
+			{
+				STableFactor tf = (STableFactor)(f.getSolver());
+				tf.getFactorTable().getIndicesSparseUnsafe();
+				tf.getFactorTable().getWeightsSparseUnsafe();
+			}
 		}
 		
 	}
