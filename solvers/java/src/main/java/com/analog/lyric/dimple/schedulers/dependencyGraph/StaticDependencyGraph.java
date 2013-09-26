@@ -20,9 +20,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGraph;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
@@ -166,6 +168,11 @@ public class StaticDependencyGraph
 	 */
 	private void buildFromSchedule(ISchedule schedule,LastUpdateGraph lug)
 	{
+		if (! (schedule instanceof FixedSchedule))
+		{
+			throw new DimpleException("Cannot currently create dependency graph of Dynamic Schedule");
+		}
+		
 		//For each entry in the schedule
 		for (IScheduleEntry se : schedule)
 		{

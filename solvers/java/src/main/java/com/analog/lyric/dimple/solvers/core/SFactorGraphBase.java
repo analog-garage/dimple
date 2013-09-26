@@ -379,12 +379,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			System.out.println(">>> Interrupting solver");
 			_thread.interrupt();
 
-			//TODO:
-//			// See if there are any running sub-threads; in which case, interrupt those too
-//			if (_solverSubThreads != null)
-//				for (Thread thread : _solverSubThreads)
-//					if (thread != null)
-//						thread.interrupt();
 		}
 	}
 	@Override
