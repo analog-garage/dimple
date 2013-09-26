@@ -1,13 +1,14 @@
 
-iters = 1;
+iters = 10;
 numSolves = 1;
-domainSize = 70;
+domainSize = 2;
 seed = 1;
-scheduler = 'FloodingScheduler';
-M = 100;
-N = 100;
-addlabels = false;
-threadMode = 0;
+scheduler = 'TreeOrSequentialScheduler';
+%scheduler = 'FloodingScheduler';
+M = 2;
+N = 2;
+addlabels = true;
+threadMode = 2;
 presolve = true;
 numThreads = 1;
 
@@ -30,3 +31,6 @@ total_time2
 total_time1/total_time2
 
 norm(results1(:)-results2(:))
+
+
+fg1.Solver.saveDependencyGraph('mygraph.dot');

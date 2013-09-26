@@ -52,7 +52,11 @@ public class MultiThreadingManager
 		
 		_numThreads = numThreads;
 		if (_service != null)
-			_service.shutdown();
+		{
+			_service.shutdownNow();
+			//_service.awaitTermination(100);
+			//_service.shutdown();
+		}
 		if (numThreads != 1)
 		{
 			_service = Executors.newFixedThreadPool(_numThreads);

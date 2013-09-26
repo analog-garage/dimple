@@ -21,8 +21,6 @@ public class JeffShawnMultithreadingAlgorithm extends MultithreadingAlgorithm
  		for (int j = 0; j < numIters; j++)
  		{
 	 		
-	 		//protected LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>> _workQueue = new LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>>();
- 			
 	 		LinkedBlockingQueue<StaticDependencyGraphNode> workQueue = new LinkedBlockingQueue<StaticDependencyGraphNode>();
 	 		
 	 		for (StaticDependencyGraphNode dgn : dg.getInitialEntries())

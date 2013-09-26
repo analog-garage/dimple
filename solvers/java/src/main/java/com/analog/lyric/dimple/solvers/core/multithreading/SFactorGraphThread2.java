@@ -33,7 +33,7 @@ public class SFactorGraphThread2 implements Callable
 				break;
 			}
 			
-			entry.getNode().update();
+			entry.getScheduleEntry().update();
 			
 			int nodesLeft = _nodesDone.decrementAndGet();
 			
@@ -53,6 +53,8 @@ public class SFactorGraphThread2 implements Callable
 					int numDepsLeft = dependent.getNumDependenciesLeft();
 					numDepsLeft--;
 					dependent.setNumDependenciesLeft(numDepsLeft);
+					
+					//TODO: can move outside synchronized I think
 					if (numDepsLeft == 0)
 					{
 						_workQueue.add(dependent);
