@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -28,11 +29,10 @@ public class SFactorGraph extends SFactorGraphBase
 {
 	protected double _damping = 0;
 
-	//private HashMap<double[],double[]> _old2newValues = new HashMap<double[],double[]>();
-
 	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
 	{
 		super(factorGraph);
+		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 
 	public ISolverVariable createVariable(com.analog.lyric.dimple.model.VariableBase var)  

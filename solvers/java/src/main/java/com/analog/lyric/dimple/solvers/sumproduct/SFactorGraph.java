@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Random;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
@@ -25,6 +26,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -36,7 +38,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph)
 	{
 		super(factorGraph);
-		
+		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 	
 

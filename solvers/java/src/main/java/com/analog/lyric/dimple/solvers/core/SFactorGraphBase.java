@@ -44,7 +44,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		super(fg);
 		_factorGraph = fg;
-		_multithreader = new MultiThreadingManager(fg);
 	}
 
 	public FactorGraph getModel()
@@ -417,26 +416,42 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
-	//protected int _numThreads = 1;			// Default number of CPU threads to run on
 
 	public int getNumThreads()
 	{
-		return _multithreader.getNumThreads();
+		if (_multithreader == null)
+			return 1;
+		else
+			return _multithreader.getNumThreads();
 	}
-
+	
+	public void setMultithreadingManager(MultiThreadingManager manager)
+	{
+		_multithreader = manager;
+	}
+	
 	public MultiThreadingManager getMultithreadingManager()
 	{
-		return _multithreader;
+		if (_multithreader == null)
+			throw new DimpleException("Multithreading is not currently supported by this solver.");		
+		else
+			return _multithreader;
 	} 	 	
 	
 	public void setNumThreads(int numThreads)
 	{
-		_multithreader.setNumThreads(numThreads);
+		if (_multithreader == null)
+			throw new DimpleException("Multithreading is not currently supported by this solver.");		
+		else
+			_multithreader.setNumThreads(numThreads);
 	}
 	
 	public void setMultiThreadMode(int mode)
 	{
-		_multithreader.setThreadingMode(mode);
+		if (_multithreader == null)
+			throw new DimpleException("Multithreading is not currently supported by this solver.");		
+		else
+			_multithreader.setThreadingMode(mode);
 	}
 
 

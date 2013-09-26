@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
@@ -51,6 +52,10 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 	// Add one-iterations worth of schedule entries to the schedule dependency graph
 	protected void createOneIterationOfScheduleDependencyGraph(ISchedule schedule, HashMap<Port, List<Integer>> portToScheduleMap, HashMap<IScheduleEntry, DependencyGraphNode<IScheduleEntry>> scheduleEntryMap) 
 	{
+		if (! (schedule instanceof FixedSchedule))
+			throw new DimpleException("Cannot currently create dependency graph of Dynamic Schedule");
+
+		
 		for (IScheduleEntry entry : schedule)
 		{
 			if (entry instanceof NodeScheduleEntry)

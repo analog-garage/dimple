@@ -169,9 +169,7 @@ public class StaticDependencyGraph
 	private void buildFromSchedule(ISchedule schedule,LastUpdateGraph lug)
 	{
 		if (! (schedule instanceof FixedSchedule))
-		{
 			throw new DimpleException("Cannot currently create dependency graph of Dynamic Schedule");
-		}
 		
 		//For each entry in the schedule
 		for (IScheduleEntry se : schedule)

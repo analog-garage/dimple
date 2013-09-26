@@ -551,19 +551,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 				throw new DimpleException("Invalid variable class");
 		}
 	}
-
 	
-	
-//	@Override
-//	public void setNumThreads(int numThreads)
-//	{
-////		if (numThreads != 1)
-////			throw new DimpleException("Multithreading is not currently supported by this solver.");
-//		
-//		//TODO:  HMM
-//		
-//	}
-
 	// 'Iterations' are not defined for Gibbs since that term is ambiguous.  Instead, set the number of samples using setNumSamples().
 	@Override
 	public void setNumIterations(int numIter)
