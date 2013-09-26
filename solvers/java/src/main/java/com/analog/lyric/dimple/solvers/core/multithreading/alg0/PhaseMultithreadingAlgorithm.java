@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.multithreading.alg0;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;

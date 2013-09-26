@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core.multithreading;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
@@ -32,13 +34,16 @@ import com.analog.lyric.dimple.solvers.core.multithreading.alg2.SingleQueueMutli
 public class MultiThreadingManager 
 {
 	private int _numThreads;
-	private ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
 	private FactorGraph _factorGraph;
 	private long _cachedVersionId = -1;
 	private StaticDependencyGraph _cachedDependencyGraph;
 	private MultithreadingAlgorithm [] _algorithms;
 	private int _whichAlg = 0;
 	private int _numAlgs = 3;
+
+	//IMPORTANT! We make this static so that we do not get thread leaks.
+	private static ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
+
 	
 	public MultiThreadingManager(FactorGraph fg)
 	{
@@ -73,13 +78,17 @@ public class MultiThreadingManager
 		if (numThreads < 1)
 			throw new DimpleException("can't set this less than 1");
 		
-		_numThreads = numThreads;
+		cleanupService();
 		
-		if (_service != null)
-			_service.shutdownNow();
-		if (numThreads != 1)
+		_numThreads = numThreads;
+
+		if (_numThreads != 1)
+		{
+			_numThreads = numThreads;			
 			_service = Executors.newFixedThreadPool(_numThreads);
+		}				
 	}
+	
 	
 	public int getNumThreads()
 	{
@@ -131,6 +140,25 @@ public class MultiThreadingManager
 		}
 		
 		return _algorithms[mode];
+	}
+	
+	
+	/*
+	 * Avoid thread leaks
+	 */
+	private void cleanupService()
+	{
+		if (_service != null)
+		{
+			
+			_service.shutdown();
+			try {
+				_service.awaitTermination(1,TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				throw new DimpleException("Failed to shutdown multithreading service");
+			}				
+		}
+		
 	}
 
 }
