@@ -1,6 +1,6 @@
 function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
                   seed,scheduler,M,N,addlabels,numThreads,...
-              threadMode,presolve)
+              threadMode,presolve,solver)
           
     fprintf('running iters: %d solves: %d domainSize: %d ',...
         iters,numSolves,domainSize);
@@ -11,6 +11,7 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
     
     fg = FactorGraph();
     fg.Scheduler = scheduler;
+    fg.Solver = solver;
     b = Discrete(1:domainSize,M,N);
 
 
