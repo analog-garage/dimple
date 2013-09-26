@@ -14,22 +14,23 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-public class RealSamplerRegistry
+public class GammaParameters
 {
-	// Get a proposal sampler by name; assumes it is located in this package
-	public static IRealSampler get(String samplerName)
+	private double _alpha = 1;
+	private double _beta = 1;
+	
+	public GammaParameters() {}
+	public GammaParameters(double alpha, double beta)
 	{
-		String fullQualifiedName = RealSamplerRegistry.class.getPackage().getName() + "." + samplerName;
-		try
-		{
-			IRealSampler proposalKernel = (IRealSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return proposalKernel;
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
+		_alpha = alpha;
+		_beta = beta;
 	}
+	
+	public final double getAlpha() {return _alpha;}
+	public final double getBeta() {return _beta;}
+
+	public final void setAlpha(double alpha) {_alpha = alpha;}
+	public final void setBeta(double beta) {_beta = beta;}
 }

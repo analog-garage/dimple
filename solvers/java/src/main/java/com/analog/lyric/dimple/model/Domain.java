@@ -73,10 +73,22 @@ public abstract class Domain implements Serializable
 	public RealJointDomain asRealJoint() { return null; }
 	
 	/**
+	 * If domain {@link #isComplex()} returns object cast to {@link ComplexDomain},
+	 * otherwise returns null.
+	 */
+	public ComplexDomain asComplex() { return null; }
+	
+	/**
 	 * True if domain is an instance of {@link Discrete}.
 	 * @see #asDiscrete()
 	 */
 	public boolean isDiscrete() { return false; }
+	
+	/**
+	 * True if domain is an instance of {@link RealDomain}.
+	 * @see #asReal()
+	 */
+	public boolean isReal() { return false; }
 	
 	/**
 	 * True if domain is an instance of {@link RealJoint}
@@ -85,10 +97,10 @@ public abstract class Domain implements Serializable
 	public boolean isRealJoint() { return false; }
 	
 	/**
-	 * True if domain is an instance of {@link RealDomain}.
-	 * @see #asReal()
+	 * True if domain is an instance of {@link Complex}
+	 * @see #asComplex()
 	 */
-	public boolean isReal() { return false; }
+	public boolean isComplex() { return false; }
 	
 	/**
 	 * @return true if {@code value} is a valid member of the domain. Implementors

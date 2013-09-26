@@ -102,6 +102,63 @@ Read-only.  When read, computes and returns the score (energy) of the factor giv
 
 The value of each variable used when computing the Score is the Guess value for that variable (see section~\ref{sec:Variable.Guess}).  If no Guess had yet been specified for a given variable, the value with the most likely belief (which corresponds to the Value property of the variable) is used\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
 
+The variable energy is normalized by the maximum input probability.
+
+\subpara{InternalEnergy}
+\label{sec:Factor.InternalEnergy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read returns:
+
+\[
+InternalEnergy(a) = \sum_{\vec{x} \in \vec{X}}B_a(\vec{x})*(-log(Weight(\vec{x})))
+\]
+
+Where a is an instance of a Factor, X is the set of variables connected to a, Weight is the FactorTable entry for the specified set of variable values, and $B_a$ is the belief of that factor node.
+
+\ifjava
+\begin{lstlisting}
+double ie = f.getInternalEnergy();
+\end{lstlisting}
+\fi
+
+\subpara{Bethe Entropy}
+\label{sec:Factor.BetheEntropy}
+
+Read-only.  (Only applies to the Sum Product Solver).  When read returns:
+
+\[
+BetheEntropy(a) = - \sum_{\vec{x} \in domain(\vec{X})}B_a(\vec{x})*log(B_a(\vec{x})) 
+\]
+
+Where a is an instance of a Factor, X is the set of variables connected to a, and $B_a$ is the belief of that factor node.
+\ifmatlab
+\begin{lstlisting}
+double be = f.getBetheEntropy();
+\end{lstlisting}
+\fi
+
+\subpara{Belief}
+\label{sec:Factor.Belief}
+
+Read-only.  (Only applies to the Sum Product Solver). To support the Bethe Free Energy property, Dimple provides getBelief associated with a Factor.
+
+\[
+Belief_a(\vec{x}) = Weight(\vec{x})\prod_{i=0}^N \mu_{X_i \rightarrow a}(x_i)
+\]
+
+Where $ \vec{x} \in domain(\vec{X}) $ and $ \vec{X} $ is the set of variables connected to the factor a.
+
+\ifmatlab
+\begin{lstlisting}
+b = f.Belief;
+\end{lstlisting}
+\fi
+\ifjava
+\begin{lstlisting}
+double b = f.getBelief();
+\end{lstlisting}
+\fi
+
 
 \subpara{Ports}
 
@@ -276,7 +333,7 @@ An example using the second method is:
 \begin{lstlisting}
 a = Discrete({'red','green','blue'});
 b = Bit;
-ft = FactorTable([.5 .4 .3; .1 0 .4], a.Domain, b.Domain);
+ft = FactorTable([.5 .4; .3 .1; 0 .4], a.Domain, b.Domain);
 \end{lstlisting}
 
 \fi

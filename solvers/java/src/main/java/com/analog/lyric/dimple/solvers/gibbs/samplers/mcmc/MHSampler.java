@@ -14,21 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
 
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
-import com.analog.lyric.dimple.solvers.core.proposalKernels.DefaultProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 
-public class MHSampler implements IRealSampler
+public class MHSampler implements IRealMCMCSampler
 {
-	protected IProposalKernel _proposalKernel = new DefaultProposalKernel();
+	protected IProposalKernel _proposalKernel = new NormalProposalKernel();		// Normal proposal kernel by default
 
 	@Override
-	public double nextSample(double currentSampleValue, ISampleScorer sampleScorer)
+	public double nextSample(ISampleScorer sampleScorer)
 	{
+		double currentSampleValue = sampleScorer.getCurrentSampleValue();
 		Proposal proposal = _proposalKernel.next(currentSampleValue);
 		double proposalValue = (Double)proposal.value;
 

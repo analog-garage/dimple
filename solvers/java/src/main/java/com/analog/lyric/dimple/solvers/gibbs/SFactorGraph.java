@@ -29,9 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.FactorList;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.dimple.model.Real;
+import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -43,31 +42,44 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBeta;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.MapList;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
 {
-	protected ISchedule _schedule;
-	protected Iterator<IScheduleEntry> _scheduleIterator;
-	protected int _numSamples;
-	protected int _updatesPerSample;
-	protected int _burnInUpdates;
-	protected int _scansPerSample = 1;
-	protected int _burnInScans = -1;
-	protected int _numRandomRestarts = 0;
-	protected boolean _temper = false;
-	protected double _initialTemperature;
-	protected double _temperingDecayConstant;
-	protected double _temperature;
-	protected double _minPotential = Double.MAX_VALUE;
-	protected boolean _firstSample = true;
-	protected boolean _saveAllScores = false;
-	protected ArrayList<Double> _scoreArray;
-	protected final double LOG2 = Math.log(2);
+	private ISchedule _schedule;
+	private Iterator<IScheduleEntry> _scheduleIterator;
+	private int _numSamples;
+	private int _updatesPerSample;
+	private int _burnInUpdates;
+	private int _scansPerSample = 1;
+	private int _burnInScans = -1;
+	private int _numRandomRestarts = 0;
+	private boolean _temper = false;
+	private double _initialTemperature;
+	private double _temperingDecayConstant;
+	private double _temperature;
+	private double _minPotential = Double.MAX_VALUE;
+	private boolean _firstSample = true;
+	private boolean _saveAllScores = false;
+	private ArrayList<Double> _scoreArray;
+	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
+	private final double LOG2 = Math.log(2);
 	
 	
 	// Arguments for the constructor
@@ -98,6 +110,105 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
+	public ISolverVariable createVariable(VariableBase var)
+	{
+		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
+			return new SRealJointVariable(var);
+		if (var.getModelerClassName().equals("Real"))
+			return new SRealVariable(var);
+		else
+			return new SDiscreteVariable(var);
+	}
+	
+	@Override
+	public ISolverFactor createFactor(Factor factor)
+	{
+		String factorName = factor.getFactorFunction().getName();
+		if (customFactorExists(factorName))
+			return createCustomFactor(factor);
+		if (privateCustomFactorExists(factorName))
+			return createCustomFactor(factor);
+		else if (factor.isDiscrete())
+			return new STableFactor(factor);
+		else
+			return new SRealFactor(factor);
+	}
+	
+	@Override
+	public boolean customFactorExists(String funcName)
+	{
+		return false;
+	}
+
+	// This is like customFactorExists, but is not the public one since for these factors, we still want the MATLAB
+	// code to create a regular factor with the specified factorfunction, which we still need (instead of creating a
+	// factor with a NOPFactorFunction).
+	private boolean privateCustomFactorExists(String factorName) 
+	{
+		if (factorName.equals("Normal"))
+			return true;
+		else if (factorName.equals("Gamma"))
+			return true;
+		else if (factorName.equals("NegativeExpGamma"))
+			return true;
+		else if (factorName.equals("LogNormal"))
+			return true;
+		else if (factorName.equals("DiscreteTransition"))
+			return true;
+		else if (factorName.equals("DiscreteTransitionUnnormalizedParameters"))
+			return true;
+		else if (factorName.equals("DiscreteTransitionEnergyParameters"))
+			return true;
+		else if (factorName.equals("Categorical"))
+			return true;
+		else if (factorName.equals("CategoricalUnnormalizedParameters"))
+			return true;
+		else if (factorName.equals("CategoricalEnergyParameters"))
+			return true;
+		else if (factorName.equals("Dirichlet"))
+			return true;
+		else if (factorName.equals("Beta"))
+			return true;
+		else if (factorName.equals("Bernoulli"))
+			return true;
+		else
+			return false;	
+	}
+
+	public ISolverFactor createCustomFactor(Factor factor)  
+	{
+		String funcName = factor.getFactorFunction().getName();
+		if (funcName.equals("Normal"))
+			return new CustomNormal(factor);
+		else if (funcName.equals("Gamma"))
+			return new CustomGamma(factor);
+		else if (funcName.equals("NegativeExpGamma"))
+			return new CustomNegativeExpGamma(factor);
+		else if (funcName.equals("LogNormal"))
+			return new CustomLogNormal(factor);
+		else if (funcName.equals("DiscreteTransition"))
+			return new CustomDiscreteTransition(factor);
+		else if (funcName.equals("DiscreteTransitionUnnormalizedParameters"))
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+		else if (funcName.equals("DiscreteTransitionEnergyParameters"))
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+		else if (funcName.equals("Categorical"))
+			return new CustomCategorical(factor);
+		else if (funcName.equals("CategoricalUnnormalizedParameters"))
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+		else if (funcName.equals("CategoricalEnergyParameters"))
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+		else if (funcName.equals("Dirichlet"))
+			return new CustomDirichlet(factor);
+		else if (funcName.equals("Beta"))
+			return new CustomBeta(factor);
+		else if (funcName.equals("Bernoulli"))
+			return new CustomBernoulli(factor);
+		else
+			throw new DimpleException("Not implemented");
+	}
+
+	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
 	{
 		//TODO: catch case where the factor is directed
@@ -110,30 +221,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new RealFactorBlastFromThePast(factor);
 	}
 	
-	@Override
-	public ISolverFactor createFactor(Factor factor)
-	{
-	
-		if (factor.isDiscrete())
-		{
-			return new STableFactor(factor);
-		}
-		else
-		{
-			return new SRealFactor(factor);
-		}
-	}
-
-	@Override
-	public ISolverVariable createVariable(VariableBase var)
-	{
-		if (var.getModelerClassName().equals("RealJoint") || var.getModelerClassName().equals("Complex"))
-			return new SRealJointVariable(var);
-		if (var.getModelerClassName().equals("Real"))
-			return new SRealVariable(var);
-		else
-			return new SDiscreteVariable(var);
-	}
 
 	@Override
 	public void initialize()
@@ -337,7 +424,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// Sets the random seed for the Gibbs solver.  This allows runs of the solver to be repeatable.
 	public void setSeed(long seed)
 	{
-		SolverRandomGenerator.rand.setSeed(seed);
+		SolverRandomGenerator.setSeed(seed);
 	}
 	
 	// Set/get the number of samples to be run when solving the graph (post burn-in)
@@ -377,6 +464,20 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	// Set the number of scans for burn-in as an alternative means of specifying the burn-in period
 	public void setBurnInScans(int burnInScans) {_burnInScans = burnInScans;}
+	
+	// Set the default sampler for Real (and RealJoint) variables
+	public void setDefaultRealSampler(String samplerName)
+	{
+		_defaultRealSamplerName = samplerName;
+		for (VariableBase v : _factorGraph.getVariables())
+		{
+			if (v instanceof Real)
+				((SRealVariable)v.getSolver()).setDefaultSampler(samplerName);
+			else if (v instanceof RealJoint)
+				((SRealJointVariable)v.getSolver()).setDefaultSampler(samplerName);
+		}
+	}
+	public String getDefaultRealSampler() {return _defaultRealSamplerName;}
 
 	// Set/get the initial temperature when using tempering
 	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
@@ -497,6 +598,37 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		{
 			((ISolverVariableGibbs)vb.getSolver()).postAddFactor(null);
 		}
+	}
+
+	@Override
+	public String getMatlabSolveWrapper() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void resetEdgeMessages(int portNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getInputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum,
+			int otherPortNum) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

@@ -217,7 +217,32 @@ The Gibbs solver supports both discrete and real variables.
 
 This solver performs Gibbs sampling on a factor graph.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
 
-For discrete variables, the Gibbs solver directly samples from the conditional distribution of each variable using a variation of the CDF sampling method.  For real variables, the Gibbs solver uses Slice sampling by default.  Optionally, the Metropolis-Hastings algorithm may be used instead.  In future versions of Dimple, other sampling methods will also be provided.
+For discrete variables, the Gibbs solver directly samples from the conditional distribution of each variable using a variation of the CDF sampling method.  For real variables, the Gibbs solver uses Slice sampling by default.  Optionally, the Metropolis-Hastings algorithm may be used instead.
+
+In cases where the factors of the graph support a conjugate distribution, the solver will automatically determine this and use the appropriate conjugate sampler.  The following table lists the supported conjugate samplers and the corresponding factors that support them.  The corresponding sampler will be used for a given variable if all of the edges connected to that variable support the same sampler\footnote{Additionally, for the conjugate sampler to be used, the domain of the variable must not be bounded to a range smaller than the natural range of the corresponding distribution.}.
+
+\begin{longtable} {l p{7.1cm} p{2.5cm}}
+Sampler & Built-in Factor & Edge \\
+\hline
+\endhead
+BetaSampler & Beta & value \\
+ & Binomial & $\rho$ \\
+DirichletSampler & Dirichlet & value \\
+ & Categorical & $\alpha$ \\
+ & DiscreteTransition & $\alpha$ \\
+GammaSampler & Gamma & value, $\beta$ \\
+ & NegativeExpGamma & $\beta$ \\
+ & Normal & $\tau$ \\
+ & LogNormal & $\tau$ \\
+ & CategoricalUnnormalizedParameters & $\tau$ \\
+ & DiscreteTransitionUnnormalizedParameters & $\alpha$ \\
+NegativeExpGammaSampler & NegativeExpGamma & value \\
+ & CategoricalEnergyParameters & $\alpha$ \\ 
+ & DiscreteTransitionEnergyParameters & $\alpha$ \\ 
+NormalSampler & Normal & value, $\mu$ \\
+ & LogNormal & $\mu$ \\
+\end{longtable}
+
 
 The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  
 
@@ -338,6 +363,33 @@ graph.getSolver().getNumRestarts()
 \fi
 
 Set/get the number of random restarts (zero by default, which means run once and don't restart).  For a value greater than zero, the after running the specified number of samples, the solver is restarted with the variable values randomized, and re-run (including burn-in).  The sample values (the best sample value, or all samples, if requested) are extracted across all runs.
+
+Variable initialization (both on the first run and subsequent restarts) is randomized whenever possible.  For a discrete variable, the value is sampled from the Input (uniform if an input is not specified).  For a real variable, if an Input is specified and the Input supports one of the conjugate samplers listed above, that sampler is used to initialize the variable.  If bounds are also specified for the variable domain, the values is truncated to fall within the bounds.  If only bounds are specified (which are finite above and below), then the value is uniformly sampled from within the bounds.  If no finite bounds are specified and there is no input, the variable is initialized to zero (or the value specified by setInitialSampleValue) on the initial run, and left at the final value of the previous run on restart.
+
+
+\ifmatlab
+\begin{lstlisting}
+graph.Solver.setDefaultRealSampler(samplerName);
+graph.Solver.getDefaultRealSampler();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setDefaultRealSampler(samplerName);
+graph.getSolver().getDefaultRealSampler();
+\end{lstlisting}
+\fi
+
+Set/get the default sampler for Real, Complex, and RealJoint variables.  The default sampler can only be set to one of the generic MCMC samplers.  In the current version of Dimple, the available MCMC samplers are:
+
+\begin{itemize}
+\item 'SliceSampler'
+\item 'MHSampler'
+\end{itemize}
+
+The SliceSampler is the default sampler unless overridden by this method.
+
 
 \ifmatlab
 \begin{lstlisting}
@@ -615,6 +667,7 @@ The following methods apply to Real, RealJoint, and Complex variables when using
 \begin{lstlisting}
 variable.Solver.setSampler(samplerName);
 variable.Solver.getSampler();
+variable.Solver.getSamplerName();
 \end{lstlisting}
 \fi
 
@@ -622,17 +675,18 @@ variable.Solver.getSampler();
 \begin{lstlisting}
 variable.getSolver().setSampler(samplerName);
 variable.getSolver().getSampler();
+variable.getSolver().getSamplerName();
 \end{lstlisting}
 \fi
 
-Set/get the sampler to be used for this variable.  The following samplers are available in the current version of Dimple:
+Set/get the sampler to be used for this variable.  The sampler can only be set to one of the generic MCMC samplers (not a conjugate sampler, which will be used automatically if the conditions are met).  Setting the sampler for a given variable overrides any conjugate sampler that might otherwise be used.  In the current version of Dimple, the available MCMC samplers are:
 
 \begin{itemize}
 \item 'SliceSampler'
 \item 'MHSampler'
 \end{itemize}
 
-The SliceSampler is used by default.
+The SliceSampler is used by default, unless the default is overridden for the graph using the setDefaultRealSampler method.
 
 The MHSampler uses the Metropolis-Hastings algorithm.  For the MHSampler, the Gaussian proposal distribution is used, with a standard deviation that can be set using the following method:
 
@@ -666,7 +720,7 @@ variable.getSolver().getInitialSampleValue()
 \end{lstlisting}
 \fi
 
-Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).
+Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).  This value is used only on the first run (not subsequent restarts) and only if it is not possible to generate a random starting value.
 
 \subpara{Factor Methods}
 
@@ -1593,8 +1647,15 @@ Use of the linear programming (LP) solver is specified by calling:
 fg.Solver = 'LP';
 \end{lstlisting}
 
+The LP solver transforms a factor graph MAP estimation problem into an equivalent linear program, which is solved using a linear programming software package. The solver can either be a linear programming solver (in which case the MAP is estimated using an LP relaxation, with no guarantees of correctness), or by an integer linear programming (ILP) solver, in which case the solution is guaranteed to be the MAP. 
 
-The LP solver transforms a factor graph into an equivalent linear program, which is solved using a linear programming software package.  The current version of Dimple uses the MATLAB linear programming function for this purpose.  As a result, use of Dimple's LP solver requires the MATLAB Optimization Toolbox\footnote{This restriction may be lifted in a future version of Dimple.}.
+The choice of the LP solver package used to solve the problem is specified by calling:
+\begin{lstlisting}
+fg.Solver.setMatlabLPSolver(solvername);
+\end{lstlisting}
+where solvername is a string containing the solver name. The choices for the string solvername are `matlab', `glpk', `glpkIP', `gurobi', and `gurobiIP'. The `matlab', `glpk', and `gurobi' solvers are linear programming solvers, while `glpkIP' and `gurobiIP' are ILP solvers.
+
+Using the matlab LP solver requires the the MATLAB Optimization Toolbox; using `glpk' or `glpkIP' requires glpkmex to be in the matlab path, and `gurobi' and `gurobiIP' require the gurobi matlab interface to be in the matlab path.\footnote{GLPK and Gurobi are not included in dimple}
 
 The LP solver supports only discrete variables.
 

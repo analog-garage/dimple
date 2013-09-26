@@ -14,8 +14,13 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.proposalKernels;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-public class DefaultProposalKernel extends NormalProposalKernel
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+
+public interface IRealJointConjugateSampler extends IRealSampler
 {
+	public double[] nextSample(Port[] ports, FactorFunction input);
 }

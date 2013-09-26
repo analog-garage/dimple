@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -23,57 +23,50 @@ import com.analog.lyric.dimple.model.DimpleException;
 
 /**
  * Parameterized categorical distribution, which corresponds to p(x | alpha),
- * where alpha is a vector of probabilities that are parameterized as energy values
- * (-log of unnormalized probabilities).
+ * where alpha is a RealJoint variable vector of (not necessarily normalized) probabilities.
  * 
- * Representing alpha as described, the conjugate prior for alpha is such that
- * each entry of alpha is independently distributed according to
- * a negative exp-Gamma distribution, all with a common Beta parameter.
+ * Representing alpha as described, the conjugate prior for alpha is
+ * a Dirichlet distribution.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
  * 
  * The variables in the argument list are ordered as follows:
  * 
- * 1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
- * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
- * 
+ * 1) Alpha: RealJoint variable containing probabilities
+ * 2...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
+ *
  */
 public class Categorical extends FactorFunction
 {
-	protected int _dimension;
-	protected double[] _alpha;
-	int _firstDirectedToIndex;
+	private static final int _firstDirectedToIndex = 1;
 
-	public Categorical(int dimension)
-	{
-		super();
-		_dimension = dimension;
-		_firstDirectedToIndex = dimension;
-		_alpha = new double[dimension];
-	}
-	
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length <= _dimension)
+    	if (arguments.length <= 2)
     		throw new DimpleException("Insufficient number of arguments.");
-    	
+
     	int index = 0;
-    	for (int i = 0; i < _dimension; i++)
-    		_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
+    	double[] alpha = (double[])arguments[index++];		// First argument is the parameter vector
+    	int dimension = alpha.length;
+
     	
     	// Get the normalization value
     	double normalizationValue = 0;
-    	for (int i = 0; i < _dimension; i++)
-    		normalizationValue += Math.exp(-_alpha[i]);
+    	for (int i = 0; i < dimension; i++)
+    	{
+    		if (alpha[i] < 0)
+    			return Double.POSITIVE_INFINITY;
+    		normalizationValue += alpha[i];
+    	}
     	
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining inputs are Categorical variables
-    		sum += _alpha[x];
+    		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
+    		sum += -Math.log(alpha[x]);
     	}    	
     	return sum + N * Math.log(normalizationValue);
 	}

@@ -58,7 +58,22 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return _constantIndices;
 	}
 	
+	public boolean isConstantIndex(int index)
+	{
+		for (int i = 0; i < _constantIndices.length; i++)
+			if (_constantIndices[i] == index)
+				return true;
+		return false;
+	}
 	
+	public Object getConstantByIndex(int index)
+	{
+		for (int i = 0; i < _constantIndices.length; i++)
+			if (_constantIndices[i] == index)
+				return _constants[i];
+		return null;
+	}
+
 
 	// Wrap the methods of the actual factor function...
 
@@ -117,6 +132,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	
 	// Expand list of inputs to include the constants
+	// Assumes constant index list is already sorted
 	protected Object[] expandInputList(Object... input)
 	{
 		Object [] expandedInputs = new Object[input.length + _constantIndices.length];
@@ -192,5 +208,10 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	
+	// Get the contained factor function
+	public FactorFunctionBase getContainedFactorFunction()
+	{
+		return _factorFunction;
+	}
 
 }

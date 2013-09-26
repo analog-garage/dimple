@@ -447,7 +447,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void setNumThreads(int numThreads)
 	{
 		_multithreader.setNumThreads(numThreads);
-
 	}
 	
 	public void setMultiThreadMode(int mode)

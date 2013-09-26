@@ -34,7 +34,7 @@ var = Real(outSize{:});
 if (isa(sigma,'VariableBase'))
     fg.addFactor('Rayleigh', sigma, var);     % Variable parameter
 else
-    fg.addFactor({'Rayleigh', sigma}, var);   % Constant parameter (more efficient to fix in constructor)
+    var.Input = FactorFunction('Rayleigh', sigma);   % Constant parameters (more efficient to fix in constructor and set as Input)
 end
 
 end
