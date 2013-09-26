@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,8 +22,16 @@ import com.analog.lyric.dimple.model.Factor;
 
 public abstract class STableFactorBase extends SFactorBase
 {
+	/*-------
+	 * State
+	 */
+	
 	private IFactorTable _factorTable = null;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public STableFactorBase(Factor factor)
 	{
 		super(factor);
@@ -33,16 +41,25 @@ public abstract class STableFactorBase extends SFactorBase
 		
 	}
 	
-	public final IFactorTable getFactorTable()
+	/*---------------------
+	 * SFactorBase methods
+	 */
+	
+    @Override
+    public int [][] getPossibleBeliefIndices()
+    {
+            return getFactorTable().getIndicesSparseUnsafe();
+    }
+
+    /*----------------------
+     * STableFactor methods
+     */
+    
+    public final IFactorTable getFactorTable()
 	{
 		if (_factorTable==null)
 			_factorTable = getFactor().getFactorTable();
 		return this._factorTable;
 	}
 
-    @Override
-    public int [][] getPossibleBeliefIndices()
-    {
-            return getFactorTable().getIndicesSparseUnsafe();
-    }
 }
