@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testMinSumMultithreaded()
-%{
+
     bLog = false;
     dtrace(bLog, '++testMinSum');
     
@@ -64,5 +64,5 @@ function testMinSumMultithreaded()
     assertTrue(diff < epsilon);
 
     dtrace(bLog, '--testMinSum');
-%}
+
 end
