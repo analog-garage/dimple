@@ -227,6 +227,13 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    
 	}
 	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		getFactorTable().getIndicesSparseUnsafe();
+		getFactorTable().getWeightsSparseUnsafe();
+	}
 
 }
 

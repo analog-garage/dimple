@@ -35,14 +35,6 @@ public class SFactorGraph extends SFactorGraphBase
 		super(factorGraph);
 	}
 
-
-	/*
-	public ISolverTableFactor createTableFactor(com.lyricsemi.dimple.model.TableFactor factor)  
-	{
-		return new STableFactor(factor);
-	}
-	*/
-
 	public ISolverVariable createVariable(com.analog.lyric.dimple.model.VariableBase var)  
 	{
 		if (!var.getDomain().isDiscrete())
@@ -51,25 +43,6 @@ public class SFactorGraph extends SFactorGraphBase
 		return new SVariable(var);
 	}
 
-
-	@Override
-	public void initialize()
-	{
-		super.initialize();
-		
-		//TODO: Should only do this if preparing for multithreading.  
-		//      Should have a prepare for multithreading command
-		for (Factor f : getModelObject().getFactors())
-		{
-			if (f.getSolver() instanceof STableFactor)
-			{
-				STableFactor tf = (STableFactor)(f.getSolver());
-				tf.getFactorTable().getIndicesSparseUnsafe();
-				tf.getFactorTable().getWeightsSparseUnsafe();
-			}
-		}
-		
-	}
 
 	@Override
 	public ISolverFactor createFactor(Factor factor)  

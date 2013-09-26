@@ -578,6 +578,14 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 	    
 	}
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		getFactorTable().getIndicesSparseUnsafe();
+		getFactorTable().getWeightsSparseUnsafe();
+	}
 
 
 }

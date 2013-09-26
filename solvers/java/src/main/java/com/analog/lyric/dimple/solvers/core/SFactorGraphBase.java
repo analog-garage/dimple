@@ -107,11 +107,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return false;
 	}
 
-	@Override
-	public void initialize()
-	{
-
-	}
 
 	@Override
 	public void setNumIterations(int numIter)
