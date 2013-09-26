@@ -16,10 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
@@ -38,13 +36,14 @@ public class MultiThreadingManager
 	private FactorGraph _factorGraph;
 	private long _cachedVersionId = -1;
 	private StaticDependencyGraph _cachedDependencyGraph;
-	private ArrayList<MultithreadingAlgorithm> _algorithms;
+	private MultithreadingAlgorithm [] _algorithms;
 	private int _whichAlg = 0;
+	private int _numAlgs = 3;
 	
 	public MultiThreadingManager(FactorGraph fg)
 	{
 		_numThreads = 1;
-		_algorithms = new ArrayList<MultithreadingAlgorithm>(3);
+		_algorithms = new MultithreadingAlgorithm[_numAlgs];
 		_factorGraph = fg;
 		
 	}
@@ -56,7 +55,7 @@ public class MultiThreadingManager
 	
 	public void setThreadingMode(int mode)
 	{
-		if (mode < 0 || mode > _algorithms.size()-1)
+		if (mode < 0 || mode >= _numAlgs)
 			throw new DimpleException("invalid mode");
 		_whichAlg = mode;
 	}
@@ -113,25 +112,25 @@ public class MultiThreadingManager
 	 */
 	private MultithreadingAlgorithm getAlgorithm(int mode)
 	{
-		if (_algorithms.get(mode) == null)
+		if (_algorithms[mode] == null)
 		{
 			switch (mode)
 			{
 			case 0:
-				_algorithms.set(mode,new PhaseMultithreadingAlgorithm(this));
+				_algorithms[mode] = new PhaseMultithreadingAlgorithm(this);
 				break;
 			case 1:
-				_algorithms.set(mode,new SingleQueueCrossIterationMultithreadingAlgorithm(this));
+				_algorithms[mode] = new SingleQueueCrossIterationMultithreadingAlgorithm(this);
 				break;
 			case 2:
-				_algorithms.set(mode,new SingleQueueMutlithreadingAlgorithm(this));
+				_algorithms[mode] = new SingleQueueMutlithreadingAlgorithm(this);
 				break;
 			default:
 				throw new DimpleException("unsupported mode");
 			}
 		}
 		
-		return _algorithms.get(mode);
+		return _algorithms[mode];
 	}
 
 }

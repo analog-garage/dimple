@@ -1,3 +1,19 @@
+/*******************************************************************************
+*   Copyright 2013 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
 package com.analog.lyric.dimple.solvers.core.multithreading.alg1;
 
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,6 +26,11 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultithreadingAlgorithm;
 
+/*
+ * This is the original algorithm written for multithreading Dimple.  It unrolls across iterations,
+ * builds a dependency graph, and then uses a single work queue to get work items.
+ * It could probably be sped up by using the newer dependency graph classes which can be constructed much more quickly.
+ */
 public class SingleQueueCrossIterationMultithreadingAlgorithm extends MultithreadingAlgorithm 
 {
 	protected ScheduleDependencyGraph _scheduleDependencyGraph;
@@ -45,9 +66,13 @@ public class SingleQueueCrossIterationMultithreadingAlgorithm extends Multithrea
 	}
 
 
+	/*
+	 * Performs the work
+	 */
 	@Override
 	public void iterate(int numIters) 
 	{
+		//Build the dependency graph if it hasn't already been built.
 		prepareForMultiThreading(numIters);	// Create _scheduleDependencyGraph if not already up-to-date
 		_numScheduleEntriesRemaining = _scheduleDependencyGraph.size();
 		_scheduleDependencyGraph.initialize();
@@ -61,7 +86,7 @@ public class SingleQueueCrossIterationMultithreadingAlgorithm extends Multithrea
 		_solverSubThreads = new Thread[getManager().getNumThreads()];
 		for (int i = 0; i < getManager().getNumThreads(); i++)
 		{
-			_solverSubThreads[i] = new Thread(new SFactorGraphThread(this));
+			_solverSubThreads[i] = new Thread(new SingleQueueWorker(this));
 			_solverSubThreads[i].start();
 		}
 
