@@ -139,9 +139,7 @@ legend('bill','jeff','single');
 %%
 modeNames = {'bill','jeff','single'};
 for i = 1:length(results)-1
-    i
     for j = 1:length(results{i})
-        j
         a = results{i}{j};
         b = results{end}{j};
         diff = norm(a(:)-b(:));
