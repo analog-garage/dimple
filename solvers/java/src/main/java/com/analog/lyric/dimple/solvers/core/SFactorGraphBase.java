@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.VariableList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
-import com.analog.lyric.dimple.solvers.core.multithreading.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -430,15 +429,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		return _multithreader.getNumThreads();
 	}
-	
- 	
-	//TODO: put this somewhere else
- 	public void saveDependencyGraph(String fileName)
- 	{
- 		StaticDependencyGraph dg = new StaticDependencyGraph(getModelObject());
- 		dg.createDotFile(fileName);
- 	}
- 	
+
+	public MultiThreadingManager getMultithreadingManager()
+	{
+		return _multithreader;
+	} 	 	
 	
 	public void setNumThreads(int numThreads)
 	{
@@ -457,6 +452,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
+	@Override
+	public void initialize()
+	{
+		
+	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)

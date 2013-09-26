@@ -1,13 +1,14 @@
-package com.analog.lyric.dimple.solvers.core.multithreading;
+package com.analog.lyric.dimple.solvers.core.multithreading.alg2;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SFactorGraphThread2 implements Callable
+import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
+
+public class SFactorGraphThread2 implements Callable<Object>
 {
 	private LinkedBlockingQueue<StaticDependencyGraphNode> _workQueue;
-	private int _numNodes;
 	private AtomicInteger _nodesDone;
 	
 	public SFactorGraphThread2(LinkedBlockingQueue<StaticDependencyGraphNode> 
@@ -16,7 +17,6 @@ public class SFactorGraphThread2 implements Callable
 		AtomicInteger nodesDone)
 	{
 		_workQueue = workQueue;
-		_numNodes = numNodes;
 		_nodesDone = nodesDone;
 	}
 	

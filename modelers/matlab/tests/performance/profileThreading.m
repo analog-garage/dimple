@@ -14,7 +14,10 @@ time_results = cell(length(modes),1);
 results = cell(length(modes),1);
 titles = {};
 
+
 for i = 1:length(modes)
+    experimentNum = 1;
+    
     scheduler = 'FloodingScheduler';
     %Big graph, small domain
     M = 200;
@@ -27,8 +30,9 @@ for i = 1:length(modes)
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
-    time_results{i} = [total_time];
-    results{i}{1} = results1;
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+    experimentNum = experimentNum+1;
     
     %Small graph, bigger domain
     M = 4;
@@ -42,9 +46,10 @@ for i = 1:length(modes)
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
     
-    time_results{i}(2) = [total_time];
-    results{i}{2} = results1;
-    
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+      experimentNum = experimentNum+1;
+  
     
     %Small graph, big domain
     M = 4;
@@ -58,9 +63,10 @@ for i = 1:length(modes)
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
     
-    time_results{i}(3) = [total_time];
-    results{i}{3} = results1;
-    
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+     experimentNum = experimentNum+1;
+   
     
     %Sequential Schedule
     M = 40;
@@ -74,8 +80,9 @@ for i = 1:length(modes)
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
-    time_results{i}(4) = [total_time];
-    results{i}{4} = results1;
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+    experimentNum = experimentNum+1;
     
     
     %Sequential Schedule
@@ -91,9 +98,10 @@ for i = 1:length(modes)
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
     
-    time_results{i}(5) = [total_time];
-    results{i}{5} = results1;
-    
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+     experimentNum = experimentNum+1;
+   
     %Sequential Schedule
     M = 2;
     N = 2;
@@ -107,10 +115,10 @@ for i = 1:length(modes)
         seed,scheduler,M,N,addlabels,numThreads,...
         threadMode,presolve,solver);
     
-    time_results{i}(6) = [total_time];
-    results{i}{6} = results1;
-    
-    
+    time_results{i}(experimentNum) = [total_time];
+    results{i}{experimentNum} = results1;
+    experimentNum = experimentNum+1;
+        
 end
 
 %Flooding

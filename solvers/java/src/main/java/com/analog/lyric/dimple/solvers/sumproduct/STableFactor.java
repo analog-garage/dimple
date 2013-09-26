@@ -137,7 +137,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		
 		if (_kIsSmallerThanDomain)
-			//TODO: damping
 			_kbestFactorEngine.update();
 		else
 			_tableFactorEngine.update();

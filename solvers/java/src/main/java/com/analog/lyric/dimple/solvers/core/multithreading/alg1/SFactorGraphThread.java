@@ -1,19 +1,18 @@
-package com.analog.lyric.dimple.solvers.core.multithreading;
+package com.analog.lyric.dimple.solvers.core.multithreading.alg1;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
+import com.analog.lyric.dimple.schedulers.dependencyGraph.crossiteration.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 
 public class SFactorGraphThread implements Runnable
 {
-	JeffMultithreadingAlgorithm _alg;
+	SingleQueueCrossIterationMultithreadingAlgorithm _alg;
 
-	public SFactorGraphThread(JeffMultithreadingAlgorithm alg)
+	public SFactorGraphThread(SingleQueueCrossIterationMultithreadingAlgorithm alg)
 	{
 		_alg = alg;
 	}

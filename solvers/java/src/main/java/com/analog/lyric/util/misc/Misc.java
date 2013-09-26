@@ -28,10 +28,8 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.INameable;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.VariableList;
-import com.analog.lyric.dimple.schedulers.schedule.BatchSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BatchScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -204,73 +202,6 @@ public class Misc
 		return beliefs;
 	}
 
-	static public BatchSchedule trivialBatchify(ISchedule schedule)
-	{
-		return trivialBatchify(schedule, 0, 0);
-	}
-	static public FixedSchedule trivialDeBatchify(FixedSchedule mightBeBatchSchedule)
-	{
-		FixedSchedule fs = new FixedSchedule();
-		for(IScheduleEntry entry :  mightBeBatchSchedule)
-		{
-			if(entry instanceof BatchScheduleEntry)
-			{
-				BatchScheduleEntry batch = (BatchScheduleEntry) entry;
-				for(IScheduleEntry singleEntry : batch.getEntries())
-				{
-					fs.add(singleEntry);
-				}
-			}
-			else
-			{
-				fs.add(entry);
-			}
-		}
-		return fs;
-	}
-	static public BatchSchedule trivialBatchify(ISchedule schedule, int maxVariableBatchSize, int maxFactorBatchSize)
-	{
-		FixedSchedule deBatchifiedSchedule = trivialDeBatchify((FixedSchedule) schedule);
-		
-		BatchSchedule bs = new BatchSchedule();
-		boolean currBatchVariable = true;
-		boolean currNodeVariable = true;
-		for(IScheduleEntry entry : deBatchifiedSchedule)
-		{
-			if(entry instanceof NodeScheduleEntry)
-			{
-				currNodeVariable = ((NodeScheduleEntry)entry).getNode() instanceof VariableBase;
-			}
-			else if(entry instanceof EdgeScheduleEntry)
-			{
-				currNodeVariable = ((EdgeScheduleEntry)entry).getNode() instanceof VariableBase;
-			}
-			else
-			{
-				throw new DimpleException(String.format("trivialBatchify does not support schedule entry of type %s", entry.getClass()));
-			}
-			
-			boolean first = bs.getCurrentBatch() == null;
-			boolean switchType = currBatchVariable != currNodeVariable;
-			boolean variableTooBig = !first && maxVariableBatchSize > 0 && bs.getCurrentBatch().size() >= maxVariableBatchSize;
-			boolean factorTooBig = !first && maxFactorBatchSize > 0 && bs.getCurrentBatch().size() >= maxFactorBatchSize;
-			boolean tooBig = !first &&
-							 !switchType &&
-							 ((currNodeVariable && variableTooBig) ||
-							  (!currNodeVariable && factorTooBig))
-							  ;
-			
-			if(first || switchType || tooBig)
-			{
-				bs.newBatch();
-				currBatchVariable = currNodeVariable;
-			}
-			
-			bs.addToCurrentBatch(entry);
-		}
-		return bs;
-	}
-	
 	static public FixedSchedule nodeFloodingSchedule(FactorGraph fg)
 	{
 		FixedSchedule fs = new FixedSchedule();

@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 
-package com.analog.lyric.dimple.schedulers.dependencyGraph;
+package com.analog.lyric.dimple.schedulers.dependencyGraph.crossiteration;
 
 
 import java.util.ArrayList;
@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.Port;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.BatchScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -144,14 +143,6 @@ public class ScheduleDependencyGraph extends BasicDependencyGraph<IScheduleEntry
 					addDependency(node, thisNodeLastIteration);
 				}
 				scheduleEntryMap.put(entry, node);
-			}
-			else if (entry instanceof BatchScheduleEntry)
-			{
-				// A poor way to handle batch entries, but at least it runs
-				FixedSchedule subSchedule = new FixedSchedule();
-				for(IScheduleEntry singleEntry : ((BatchScheduleEntry)entry).getEntries())
-					subSchedule.add(singleEntry);
-				createOneIterationOfScheduleDependencyGraph(subSchedule, portToScheduleMap, scheduleEntryMap);	// Recurse to the sub-graph
 			}
 			else if (entry instanceof SubScheduleEntry)
 				createOneIterationOfScheduleDependencyGraph(((SubScheduleEntry)entry).getSchedule(), portToScheduleMap, scheduleEntryMap);	// Recurse to the sub-graph

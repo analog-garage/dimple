@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2012 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,24 +14,35 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.multithreading;
+package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
+
+import com.analog.lyric.dimple.model.INode;
 
 /*
- * Abstract base class for a multithreading algorithm.
+ * Utility class used by LastUpdateGraph and StaticDependencyGraphNodes for
+ * tracking the last schedule entry to affect an edge.
  */
-public abstract class MultithreadingAlgorithm 
+public class Edge 
 {
-	private MultiThreadingManager _manager;
+	public INode from;
+	public INode to;
 	
-	public MultithreadingAlgorithm(MultiThreadingManager manager)
+	public Edge(INode f, INode t)
 	{
-		_manager = manager;
+		from = f;
+		to = t;
 	}
 	
-	public MultiThreadingManager getManager()
+	@Override
+	public int hashCode()
 	{
-		return _manager;
+		return from.hashCode()+to.hashCode();
 	}
 	
-	public abstract void iterate(int numIters);
+	@Override
+	public boolean equals(Object other)
+	{
+		Edge otherEdge = (Edge)other;
+		return otherEdge.from == from && otherEdge.to == to;
+	}
 }

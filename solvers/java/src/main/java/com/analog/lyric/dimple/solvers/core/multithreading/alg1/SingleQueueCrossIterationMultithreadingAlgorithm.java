@@ -1,14 +1,16 @@
-package com.analog.lyric.dimple.solvers.core.multithreading;
+package com.analog.lyric.dimple.solvers.core.multithreading.alg1;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
-import com.analog.lyric.dimple.schedulers.dependencyGraph.ScheduleDependencyGraph;
+import com.analog.lyric.dimple.schedulers.dependencyGraph.crossiteration.DependencyGraphNode;
+import com.analog.lyric.dimple.schedulers.dependencyGraph.crossiteration.ScheduleDependencyGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultithreadingAlgorithm;
 
-public class JeffMultithreadingAlgorithm extends MultithreadingAlgorithm 
+public class SingleQueueCrossIterationMultithreadingAlgorithm extends MultithreadingAlgorithm 
 {
 	protected ScheduleDependencyGraph _scheduleDependencyGraph;
 	protected long _graphVersionIdWhenLastBuilt = -1;
@@ -21,7 +23,7 @@ public class JeffMultithreadingAlgorithm extends MultithreadingAlgorithm
 	protected Exception _subThreadException = null;
 
 
-	public JeffMultithreadingAlgorithm(MultiThreadingManager manager) 
+	public SingleQueueCrossIterationMultithreadingAlgorithm(MultiThreadingManager manager) 
 	{
 		super(manager);
 	}

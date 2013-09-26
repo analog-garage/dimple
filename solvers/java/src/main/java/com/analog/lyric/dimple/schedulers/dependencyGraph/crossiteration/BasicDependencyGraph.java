@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.schedulers.dependencyGraph;
+package com.analog.lyric.dimple.schedulers.dependencyGraph.crossiteration;
 import java.util.ArrayList;
 
 

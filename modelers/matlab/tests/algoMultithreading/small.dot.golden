@@ -1,0 +1,7 @@
+digraph graphname {
+1[label="[b2] -> 0 -> [f]",color="red"];
+1 -> 2;
+0[label="[b1] -> 0 -> [f]",color="red"];
+0 -> 2;
+2[label="[f]",color="blue"];
+}

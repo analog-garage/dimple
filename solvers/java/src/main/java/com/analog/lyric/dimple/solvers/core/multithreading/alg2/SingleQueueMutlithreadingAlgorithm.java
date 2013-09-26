@@ -1,14 +1,19 @@
-package com.analog.lyric.dimple.solvers.core.multithreading;
+package com.analog.lyric.dimple.solvers.core.multithreading.alg2;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JeffShawnMultithreadingAlgorithm extends MultithreadingAlgorithm
+import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
+import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultithreadingAlgorithm;
+
+public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 {
 
-	public JeffShawnMultithreadingAlgorithm(MultiThreadingManager manager) 
+	public SingleQueueMutlithreadingAlgorithm(MultiThreadingManager manager) 
 	{
 		super(manager);
 	}

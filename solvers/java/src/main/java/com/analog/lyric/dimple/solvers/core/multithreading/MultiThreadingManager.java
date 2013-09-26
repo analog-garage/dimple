@@ -1,3 +1,19 @@
+/*******************************************************************************
+*   Copyright 2013 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
 import java.util.ArrayList;
@@ -6,8 +22,15 @@ import java.util.concurrent.Executors;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
+import com.analog.lyric.dimple.solvers.core.multithreading.alg0.PhaseMultithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.core.multithreading.alg1.SingleQueueCrossIterationMultithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.core.multithreading.alg2.SingleQueueMutlithreadingAlgorithm;
 
+/*
+ * The MultiThreading Manager handles the collection of multithreading algorithms
+ * Dimple currently supports.
+ */
 public class MultiThreadingManager 
 {
 	private int _numThreads;
@@ -21,11 +44,9 @@ public class MultiThreadingManager
 	public MultiThreadingManager(FactorGraph fg)
 	{
 		_numThreads = 1;
-		_algorithms = new ArrayList<MultithreadingAlgorithm>();
+		_algorithms = new ArrayList<MultithreadingAlgorithm>(3);
 		_factorGraph = fg;
-		_algorithms.add(new BillMultithreadingAlgorithm(this));
-		_algorithms.add(new JeffMultithreadingAlgorithm(this));
-		_algorithms.add(new JeffShawnMultithreadingAlgorithm(this));
+		
 	}
 	
 	public ExecutorService getService()
@@ -45,22 +66,20 @@ public class MultiThreadingManager
 		return _factorGraph;
 	}
 	
+	/*
+	 * Create the threads in the thread pool.
+	 */
 	public void setNumThreads(int numThreads)
 	{
 		if (numThreads < 1)
 			throw new DimpleException("can't set this less than 1");
 		
 		_numThreads = numThreads;
+		
 		if (_service != null)
-		{
 			_service.shutdownNow();
-			//_service.awaitTermination(100);
-			//_service.shutdown();
-		}
 		if (numThreads != 1)
-		{
 			_service = Executors.newFixedThreadPool(_numThreads);
-		}
 	}
 	
 	public int getNumThreads()
@@ -68,16 +87,18 @@ public class MultiThreadingManager
 		return _numThreads;
 	}
 	
+	
 	public void iterate(int numIters)
 	{
-		_algorithms.get(_whichAlg).iterate(numIters);
+		getAlgorithm(_whichAlg).iterate(numIters);
 	}
 	
-	
+	/*
+	 * Provide dependency graph caching.
+	 */
 	public StaticDependencyGraph getDependencyGraph()
 	{
 		long id = _factorGraph.getVersionId();
-		//create dependency graph
 		if (id != _cachedVersionId)
 		{
 			_cachedVersionId = id;
@@ -87,9 +108,30 @@ public class MultiThreadingManager
 		return _cachedDependencyGraph;
 	}
 	
-	public ArrayList<ArrayList<IScheduleEntry>> getPhases()
+	/*
+	 * Lazily create the algorithm.
+	 */
+	private MultithreadingAlgorithm getAlgorithm(int mode)
 	{
-		return getDependencyGraph().getPhases();
+		if (_algorithms.get(mode) == null)
+		{
+			switch (mode)
+			{
+			case 0:
+				_algorithms.set(mode,new PhaseMultithreadingAlgorithm(this));
+				break;
+			case 1:
+				_algorithms.set(mode,new SingleQueueCrossIterationMultithreadingAlgorithm(this));
+				break;
+			case 2:
+				_algorithms.set(mode,new SingleQueueMutlithreadingAlgorithm(this));
+				break;
+			default:
+				throw new DimpleException("unsupported mode");
+			}
+		}
+		
+		return _algorithms.get(mode);
 	}
 
 }
