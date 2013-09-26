@@ -14,5 +14,5 @@ public abstract class MultithreadingAlgorithm
 		return _manager;
 	}
 	
-	public abstract void iterate(int numIter);
+	public abstract void iterate(int numIters);
 }

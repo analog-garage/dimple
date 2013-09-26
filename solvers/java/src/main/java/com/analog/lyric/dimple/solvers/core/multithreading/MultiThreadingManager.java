@@ -25,6 +25,7 @@ public class MultiThreadingManager
 		_factorGraph = fg;
 		_algorithms.add(new BillMultithreadingAlgorithm(this));
 		_algorithms.add(new JeffMultithreadingAlgorithm(this));
+		_algorithms.add(new JeffShawnMultithreadingAlgorithm(this));
 	}
 	
 	public ExecutorService getService()

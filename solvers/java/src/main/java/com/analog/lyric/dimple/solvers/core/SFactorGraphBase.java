@@ -199,7 +199,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		else
 		{
 			// *** Multiple threads
-			iterateMultiThreaded(numIters);
+			_multithreader.iterate(numIters);
 		}
 	}
 	
@@ -652,47 +652,8 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 //		}
 //		
 //	}
-//	
-//	// This is the class defining the sub-threads
-//	private class SFactorGraphThread implements Runnable
-//	{
-//		SFactorGraphBase _parentGraph;
-//
-//		public SFactorGraphThread(SFactorGraphBase graph)
-//		{
-//			_parentGraph = graph;
-//		}
-//
-//		@Override
-//		public void run()
-//		{
-//			LinkedBlockingQueue<DependencyGraphNode<IScheduleEntry>> workQueue = _parentGraph.getWorkQueue();
-//			try
-//			{
-//				while(true)
-//				{
-//					DependencyGraphNode<IScheduleEntry> entry = workQueue.take();	// Pull the next entry from the work queue (blocking if there are none)
-//					IScheduleEntry scheduleEntry = entry.getObject();
-//					INode node = (scheduleEntry instanceof NodeScheduleEntry) ? ((NodeScheduleEntry)scheduleEntry).getNode() : ((EdgeScheduleEntry)scheduleEntry).getNode();
-//					synchronized (node)												// Synchronize on the node: don't allow updating the same node in more than one thread at the same time
-//					{
-//						scheduleEntry.update();										// Run it
-//					}
-//					_parentGraph.scheduleEntryCompleted(entry);						// Tell the main thread that it's done
-//				}
-//			}
-//			catch (InterruptedException e) {return;}
-//			catch (Exception e)
-//			{
-//				_subThreadException = e;
-//				_waitNotify.doNotify();		// Notify the parent thread that we're done (not really done, but it's an exception)
-//				Thread.currentThread().interrupt();
-//				return;
-//			}
-//		}
-//	}
-//
 
+ 	
 	// Notifier, to notify from the thread that completes the final entry to the main task to tell it that we're done
 	// Adapted from http://tutorials.jenkov.com/java-concurrency/thread-signaling.html
 
@@ -1102,31 +1063,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		_multithreader.setThreadingMode(mode);
 	}
 
-	public void iterateMultiThreaded(int numIters)
-	{
-		_multithreader.iterate(numIters);
-//		if (_multiThreadMode == 0)
-//		{
-//			ArrayList<MapList> phases = getPhases();
-//			int numThreads = getNumThreads();
-//			
-//			for (int i = 0; i < numIters; i++)
-//			{
-//				for (int j = 0; j < phases.size(); j++)
-//				{				
-//					updateNodes4(_service, phases.get(j), numThreads, true);
-//				}
-//			}
-//		}
-//		else if (_multiThreadMode == 1)
-//		{
-//			iterateMultiThreaded2(numIters);
-//		}
-//		else
-//		{
-//			iterateMultiThreaded3(numIters);
-//		}
-	}
+
 //
 //	public void saveDependencyGraph(String fileName)
 //	{
@@ -1174,16 +1111,5 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 //	}
 //	
 	
-//
-//
-//	private long _cacheVersionId = -2;
-//	private NewDependencyGraph _cachedDependencyGraph;
-//	ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
-//
-//	public NewDependencyGraph createDependencyGraph()
-//	{
-//		return new NewDependencyGraph(getModelObject());
-//		
-//	}	
-//	
+
 }

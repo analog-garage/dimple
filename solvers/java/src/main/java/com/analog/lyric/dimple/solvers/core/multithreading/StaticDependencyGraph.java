@@ -175,15 +175,17 @@ public class StaticDependencyGraph
 //		return _phases;
 //	}
 //	
-//	public int getNumNodes()
-//	{
-//		return _numNodes;
-//	}
-//	
-//	public ArrayList<NewDependencyGraphNode> getInitialEntries()
-//	{
-//		return _initialEntries;
-//	}
+	public int getNumNodes()
+	{
+		return _numScheduleEntries;
+	}
+	
+	public ArrayList<StaticDependencyGraphNode> getInitialEntries()
+	{
+		return _initialEntries;
+	}
+	
+	
 //	
 //	public void print()
 //	{

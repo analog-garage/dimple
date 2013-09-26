@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.schedulers.dependencyGraph.DependencyGraphNode;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -17,16 +16,8 @@ public class StaticDependencyGraphNode
 	private  int _numDependencies;
 	private int _numDependenciesLeft;
 	private IScheduleEntry _scheduleEntry;
-//	public ArrayList<Integer> inports = new ArrayList<Integer>();
-//	public ArrayList<Integer> outports = new ArrayList<Integer>();
 	private int _id = -1;
-	
-	
-//	public void print()
-//	{
-//		System.out.println("node: " + node.toString());
-//	}
-	
+		
 	public void addDependent(StaticDependencyGraphNode node)
 	{
 		_dependents.add(node);
@@ -124,6 +115,21 @@ public class StaticDependencyGraphNode
 	public int getPhase()
 	{
 		return _phase;
+	}
+	
+	public int getNumDependenciesLeft()
+	{
+		return _numDependenciesLeft;
+	}
+	
+	public void setNumDependenciesLeft(int num)
+	{
+		_numDependenciesLeft = num;
+	}
+	
+	public int getNumDependencies()
+	{
+		return _numDependencies;
 	}
 	
 	@Override
