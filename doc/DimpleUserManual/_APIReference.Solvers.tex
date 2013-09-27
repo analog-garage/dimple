@@ -54,6 +54,55 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 \fi
 
+\subsubsection{Common Methods}
+
+\para{setNumThreads}
+
+Some solvers support multithreading.  The following method can be used to set the number of threads to use:
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver.setNumThreads(8);
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.getSolver().setNumThreads(8);
+\end{lstlisting}
+\fi
+
+By default, number of threads is set to 1 which is equivalent to the multithreading mode being turned off.  Once number of threads is set to something larger than 1, users can simply call solve and, for large enough graphs, see a reduced solve time.
+
+\para{getNumThreads}
+
+Users can retrieve the currently set number of threads with the getNumThreads() method.
+
+\para{setMultithreadingMode}
+
+Dimple currently supports two modes of multithreading.  Users can select between these with:
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver.setMultithreadingMode(mode);
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+fg.getSolver().setMultithreadingMode(mode);
+\end{lstlisting}
+\fi
+
+The mode argument is an integer and can take on the values:
+
+\begin{itemize}
+\item 0 - (Default mode) 
+\item 1 
+\end{itemize}
+
+Users can try both modes for their problem to determine which works better for their model.  The developer documentation describes the details of these modes in more detail.
+
 \subsubsection{Sum-Product Solver}
 
 Use of the sum-product solver is specified by calling:

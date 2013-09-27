@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.multithreading.alg0;
+package com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;

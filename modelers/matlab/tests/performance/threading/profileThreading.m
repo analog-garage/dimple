@@ -23,7 +23,7 @@ addlabels = false;
 presolve = true;
 solver = 'sumproduct';
 
-modes = [0 2 0];
+modes = [0 1 0];
 threads = [16 16 1];
 time_results = cell(length(modes),1);
 results = cell(length(modes),1);
@@ -136,16 +136,7 @@ for i = 1:length(modes)
         
 end
 
-%Flooding
-%Sequential
 
-%one iteration
-%many iterations
-
-%Time dependency graph creation
-
-%Threading mode - Off, Bill, Jeff, Jeff w Shawn Dependency graph
-%%
 
 lines = {'r*-','g*-','b*-'};
 
@@ -159,12 +150,11 @@ for i = 1:length(time_results)
     set(gca,'xtick',1:length(tmpResults));
     set(gca,'xticklabel',titles);
 end
-legend('bill','jeff','single');
+legend('phase','oneQueue','single');
 ylabel('X times better than single threaded');
 xlabel('experiment');
 
-%%
-modeNames = {'bill','jeff','single'};
+modeNames = {'phase','oneQueue','single'};
 for i = 1:length(results)-1
     for j = 1:length(results{i})
         a = results{i}{j};

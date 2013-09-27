@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.multithreading.alg1;
+package com.analog.lyric.dimple.solvers.core.multithreading.singlequeuecrossiterationalgorithm;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

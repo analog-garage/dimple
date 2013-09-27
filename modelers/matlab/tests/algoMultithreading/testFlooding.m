@@ -29,7 +29,7 @@ function testFlooding()
 
     for i = 0:2
        fg.Solver.setNumThreads(8);
-       fg.Solver.setMultiThreadMode(i);
+       fg.Solver.setMultithreadingMode(i);
        fg.solve();
        y = b.Belief;
        assertTrue(norm(x(:)-y(:)) == 0);

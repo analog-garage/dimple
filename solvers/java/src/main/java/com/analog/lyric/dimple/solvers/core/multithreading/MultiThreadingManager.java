@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
-import com.analog.lyric.dimple.solvers.core.multithreading.alg0.PhaseMultithreadingAlgorithm;
-import com.analog.lyric.dimple.solvers.core.multithreading.alg1.SingleQueueCrossIterationMultithreadingAlgorithm;
-import com.analog.lyric.dimple.solvers.core.multithreading.alg2.SingleQueueMutlithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
+import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuecrossiterationalgorithm.SingleQueueCrossIterationMultithreadingAlgorithm;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
@@ -129,10 +129,10 @@ public class MultiThreadingManager
 				_algorithms[mode] = new PhaseMultithreadingAlgorithm(this);
 				break;
 			case 1:
-				_algorithms[mode] = new SingleQueueCrossIterationMultithreadingAlgorithm(this);
+				_algorithms[mode] = new SingleQueueMutlithreadingAlgorithm(this);
 				break;
 			case 2:
-				_algorithms[mode] = new SingleQueueMutlithreadingAlgorithm(this);
+				_algorithms[mode] = new SingleQueueCrossIterationMultithreadingAlgorithm(this);
 				break;
 			default:
 				throw new DimpleException("unsupported mode");

@@ -62,7 +62,7 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
     m = fg.VectorObject.getModelerNode(0);
     fg.NumIterations = iters;
     fg.Solver.setNumThreads(numThreads);
-    fg.Solver.setMultiThreadMode(threadMode);
+    fg.Solver.setMultithreadingMode(threadMode);
 
     if presolve
         fg.solve();

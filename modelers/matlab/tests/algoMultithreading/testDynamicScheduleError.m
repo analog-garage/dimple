@@ -26,7 +26,7 @@ function testDynamicScheduleError()
         b.Input = rand(N,N);
         fg.NumIterations = 5;    
         numThreads = 16;
-        fg.Solver.setMultiThreadMode(mode);
+        fg.Solver.setMultithreadingMode(mode);
         fg.Solver.setNumThreads(numThreads);
 
         m = '';
