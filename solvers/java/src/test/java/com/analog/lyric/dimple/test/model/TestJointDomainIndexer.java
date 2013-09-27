@@ -15,10 +15,10 @@ import org.junit.Test;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
-import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.dimple.model.Domain;
 import com.analog.lyric.dimple.model.DomainList;
+import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.JointDomainReindexer;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -116,53 +116,59 @@ public class TestJointDomainIndexer
 		assertTrue(DomainList.allDiscrete(new DiscreteDomain[] { d2, d3 }));
 	}
 	
-	public static void testInvariants(JointDomainIndexer domainList)
+	public static void testInvariants(JointDomainIndexer indexer)
 	{
-		assertTrue(domainList.equals(domainList));
-		assertFalse(domainList.equals("foo"));
+		assertTrue(indexer.equals(indexer));
+		assertFalse(indexer.equals("foo"));
 		
-		assertTrue(domainList.isDiscrete());
-		assertTrue(DomainList.allDiscrete(domainList.toArray(new Domain[domainList.size()])));
-		assertSame(domainList, domainList.asJointDomainIndexer());
+		assertTrue(indexer.isDiscrete());
+		assertTrue(DomainList.allDiscrete(indexer.toArray(new Domain[indexer.size()])));
+		assertSame(indexer, indexer.asJointDomainIndexer());
 		
-		final int size = domainList.size();
+		final int size = indexer.size();
 		assertTrue(size > 0);
 		
-		final int inSize = domainList.getInputSize();
+		final int inSize = indexer.getInputSize();
 		assertTrue(inSize >= 0);
 		assertTrue(inSize < size);
 		
-		final int outSize = domainList.getOutputSize();
+		final int outSize = indexer.getOutputSize();
 		assertTrue(outSize >= 0);
 		assertTrue(outSize <= size);
 		assertEquals(size, inSize + outSize);
 		
-		final int cardinality = domainList.getCardinality();
+		final int cardinality = indexer.getCardinality();
 		assertTrue(cardinality > 1);
 		
-		final int inCardinality = domainList.getInputCardinality();
+		final int inCardinality = indexer.getInputCardinality();
 		assertTrue(inCardinality >= 1);
 		assertTrue(inCardinality <= cardinality);
 		
-		final int outCardinality = domainList.getOutputCardinality();
+		final int outCardinality = indexer.getOutputCardinality();
 		assertTrue(outCardinality >= 1);
 		assertTrue(outCardinality <= cardinality);
 		assertEquals(cardinality, inCardinality * outCardinality);
 		
-		int i = 0;
-		for (DiscreteDomain domain : domainList)
+		int i = 0, expectedStride = 1;
+		for (DiscreteDomain domain : indexer)
 		{
-			assertSame(domain, domainList.get(i));
-			assertEquals(domain.size(), domainList.getDomainSize(i));
+			assertEquals(expectedStride, indexer.getUndirectedStride(i));
+			if (indexer.hasCanonicalDomainOrder())
+			{
+				assertEquals(indexer.getStride(i), indexer.getUndirectedStride(i));
+			}
+			expectedStride *= domain.size();
+			assertSame(domain, indexer.get(i));
+			assertEquals(domain.size(), indexer.getDomainSize(i));
 			++i;
 		}
 		assertEquals(size, i);
 		
-		BitSet inSet = domainList.getInputSet();
-		BitSet outSet = domainList.getOutputSet();
+		BitSet inSet = indexer.getInputSet();
+		BitSet outSet = indexer.getOutputSet();
 		
-		int[] inIndices = domainList.getInputDomainIndices();
-		int[] outIndices = domainList.getOutputDomainIndices();
+		int[] inIndices = indexer.getInputDomainIndices();
+		int[] outIndices = indexer.getOutputDomainIndices();
 
 		final int[] indices = new int[size], indices2 = new int[size];
 		final Object[] elements = new Object[size], elements2 = new Object[size];
@@ -172,69 +178,69 @@ public class TestJointDomainIndexer
 		
 		for (i = 0; i < cardinality; ++i)
 		{
-			assertSame(indices, domainList.undirectedJointIndexToIndices(i, indices));
-			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i, null));
-			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i, new int[0]));
-			assertArrayEquals(indices, domainList.undirectedJointIndexToIndices(i));
-			assertSame(elements, domainList.undirectedJointIndexToElements(i, elements));
-			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i));
-			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i, null));
-			assertArrayEquals(elements, domainList.undirectedJointIndexToElements(i, new Object[0]));
+			assertSame(indices, indexer.undirectedJointIndexToIndices(i, indices));
+			assertArrayEquals(indices, indexer.undirectedJointIndexToIndices(i, null));
+			assertArrayEquals(indices, indexer.undirectedJointIndexToIndices(i, new int[0]));
+			assertArrayEquals(indices, indexer.undirectedJointIndexToIndices(i));
+			assertSame(elements, indexer.undirectedJointIndexToElements(i, elements));
+			assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i));
+			assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i, null));
+			assertArrayEquals(elements, indexer.undirectedJointIndexToElements(i, new Object[0]));
 			for (int j = 0; j < size; ++ j)
 			{
 				assertTrue(indices[j] >= 0);
-				assertTrue(indices[j] < domainList.getDomainSize(j));
-				assertEquals(elements[j], domainList.get(j).getElement(indices[j]));
+				assertTrue(indices[j] < indexer.getDomainSize(j));
+				assertEquals(elements[j], indexer.get(j).getElement(indices[j]));
 			}
 			
-			domainList.validateIndices(indices);
+			indexer.validateIndices(indices);
 			
-			assertEquals(i, domainList.undirectedJointIndexFromElements(elements));
-			assertEquals(i, domainList.undirectedJointIndexFromIndices(indices));
+			assertEquals(i, indexer.undirectedJointIndexFromElements(elements));
+			assertEquals(i, indexer.undirectedJointIndexFromIndices(indices));
 			
-			int ji = domainList.jointIndexFromIndices(indices);
-			assertEquals(ji, domainList.jointIndexFromElements(elements));
+			int ji = indexer.jointIndexFromIndices(indices);
+			assertEquals(ji, indexer.jointIndexFromElements(elements));
 			
 			if (i == ji)
 			{
 				++canonicalCount;
 			}
 			
-			int in = domainList.inputIndexFromIndices(indices);
-			assertEquals(in, domainList.inputIndexFromElements(elements));
-			assertEquals(in, domainList.inputIndexFromJointIndex(ji));
+			int in = indexer.inputIndexFromIndices(indices);
+			assertEquals(in, indexer.inputIndexFromElements(elements));
+			assertEquals(in, indexer.inputIndexFromJointIndex(ji));
 			
-			int out = domainList.outputIndexFromIndices(indices);
-			assertEquals(out, domainList.outputIndexFromElements(elements));
-			assertEquals(out, domainList.outputIndexFromJointIndex(ji));
+			int out = indexer.outputIndexFromIndices(indices);
+			assertEquals(out, indexer.outputIndexFromElements(elements));
+			assertEquals(out, indexer.outputIndexFromJointIndex(ji));
 			
-			assertEquals(ji, domainList.jointIndexFromInputOutputIndices(in, out));
+			assertEquals(ji, indexer.jointIndexFromInputOutputIndices(in, out));
 			
 			Arrays.fill(indices2, -1);
 			Arrays.fill(elements2, null);
-			assertSame(indices2, domainList.jointIndexToIndices(ji, indices2));
+			assertSame(indices2, indexer.jointIndexToIndices(ji, indices2));
 			assertArrayEquals(indices, indices2);
-			assertArrayEquals(indices, domainList.jointIndexToIndices(ji));
-			assertSame(elements2, domainList.jointIndexToElements(ji, elements2));
+			assertArrayEquals(indices, indexer.jointIndexToIndices(ji));
+			assertSame(elements2, indexer.jointIndexToElements(ji, elements2));
 			assertArrayEquals(elements, elements2);
 			
-			Object[] elements3 = domainList.jointIndexToElements(ji);
+			Object[] elements3 = indexer.jointIndexToElements(ji);
 			assertArrayEquals(elements, elements3);
 			
-			if (!domainList.isDirected())
+			if (!indexer.isDirected())
 			{
 				assertEquals(ji, i);
 			}
 			
-			assertEquals(out + in * domainList.getOutputCardinality(), ji);
+			assertEquals(out + in * indexer.getOutputCardinality(), ji);
 			
 			Arrays.fill(indices2, -1);
 			Arrays.fill(elements2, null);
-			domainList.inputIndexToIndices(in, indices2);
-			assertEquals(in, domainList.inputIndexFromIndices(indices2));
-			domainList.inputIndexToElements(in, elements2);
-			assertEquals(in, domainList.inputIndexFromElements(elements2));
-			if (domainList.isDirected())
+			indexer.inputIndexToIndices(in, indices2);
+			assertEquals(in, indexer.inputIndexFromIndices(indices2));
+			indexer.inputIndexToElements(in, elements2);
+			assertEquals(in, indexer.inputIndexFromElements(elements2));
+			if (indexer.isDirected())
 			{
 			}
 			else
@@ -247,11 +253,11 @@ public class TestJointDomainIndexer
 			
 			Arrays.fill(indices2, -1);
 			Arrays.fill(elements2, null);
-			domainList.outputIndexToIndices(out, indices2);
-			assertEquals(out, domainList.outputIndexFromIndices(indices2));
-			domainList.outputIndexToElements(out, elements2);
-			assertEquals(out, domainList.outputIndexFromElements(elements2));
-			if (domainList.isDirected())
+			indexer.outputIndexToIndices(out, indices2);
+			assertEquals(out, indexer.outputIndexFromIndices(indices2));
+			indexer.outputIndexToElements(out, elements2);
+			assertEquals(out, indexer.outputIndexFromElements(elements2));
+			if (indexer.isDirected())
 			{
 			}
 			else
@@ -263,31 +269,36 @@ public class TestJointDomainIndexer
 			}
 		}
 		
-		assertEquals(domainList.hasCanonicalDomainOrder(), canonicalCount == cardinality);
+		assertEquals(indexer.hasCanonicalDomainOrder(), canonicalCount == cardinality);
 		
-		if (domainList.isDirected())
+		if (indexer.isDirected())
 		{
 			assertFalse(inSet.intersects(outSet));
 			assertEquals(size, inSet.cardinality(), outSet.cardinality());
-			assertNotSame(inSet, domainList.getInputSet());
-			assertEquals(inSet, domainList.getInputSet());
-			assertNotSame(outSet, domainList.getOutputSet());
-			assertEquals(outSet, domainList.getOutputSet());
+			assertNotSame(inSet, indexer.getInputSet());
+			assertEquals(inSet, indexer.getInputSet());
+			assertNotSame(outSet, indexer.getOutputSet());
+			assertEquals(outSet, indexer.getOutputSet());
 			
 			assertEquals(inIndices.length, inSet.cardinality());
 			assertEquals(outIndices.length, outSet.cardinality());
-			assertEquals(inIndices.length, domainList.getInputSize());
-			assertEquals(outIndices.length, domainList.getOutputSize());
+			assertEquals(inIndices.length, indexer.getInputSize());
+			assertEquals(outIndices.length, indexer.getOutputSize());
 			
-			for (int j = outIndices.length; --j>=0;)
+			expectedStride = 1;
+			for (int j = 0; j < outIndices.length; ++j)
 			{
-				assertEquals(outIndices[j], domainList.getOutputDomainIndex(j));
+				assertEquals(outIndices[j], indexer.getOutputDomainIndex(j));
 				assertTrue(outSet.get(outIndices[j]));
+				assertEquals(expectedStride, indexer.getStride(outIndices[j]));
+				expectedStride *= indexer.getDomainSize(outIndices[j]);
 			}
-			for (int j = inIndices.length; --j>=0;)
+			for (int j = 0; j < inIndices.length; ++j)
 			{
-				assertEquals(inIndices[j], domainList.getInputDomainIndex(j));
+				assertEquals(inIndices[j], indexer.getInputDomainIndex(j));
 				assertTrue(inSet.get(inIndices[j]));
+				assertEquals(expectedStride, indexer.getStride(inIndices[j]));
+				expectedStride *= indexer.getDomainSize(inIndices[j]);
 			}
 		}
 		else
@@ -301,12 +312,12 @@ public class TestJointDomainIndexer
 			
 			for (i = 0; i < size; ++i)
 			{
-				assertEquals(i, domainList.getOutputDomainIndex(i));
+				assertEquals(i, indexer.getOutputDomainIndex(i));
 			}
 			
 			try
 			{
-				domainList.getInputDomainIndex(0);
+				indexer.getInputDomainIndex(0);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -314,7 +325,7 @@ public class TestJointDomainIndexer
 			}
 			try
 			{
-				domainList.getOutputDomainIndex(-1);
+				indexer.getOutputDomainIndex(-1);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -322,7 +333,7 @@ public class TestJointDomainIndexer
 			}
 			try
 			{
-				domainList.getOutputDomainIndex(size);
+				indexer.getOutputDomainIndex(size);
 				fail("should not get here");
 			}
 			catch (ArrayIndexOutOfBoundsException ex)
@@ -332,7 +343,7 @@ public class TestJointDomainIndexer
 		
 		try
 		{
-			domainList.validateIndices();
+			indexer.validateIndices();
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
@@ -343,7 +354,7 @@ public class TestJointDomainIndexer
 		{
 			Arrays.fill(indices, 0);
 			indices[0] = -1;
-			domainList.validateIndices(indices);
+			indexer.validateIndices(indices);
 			fail("Expected IndiexOutOfBoundsException");
 		}
 		catch (IndexOutOfBoundsException ex)
@@ -352,17 +363,17 @@ public class TestJointDomainIndexer
 		try
 		{
 			Arrays.fill(indices, 0);
-			indices[0] = domainList.getDomainSize(0);
-			domainList.validateIndices(indices);
+			indices[0] = indexer.getDomainSize(0);
+			indexer.validateIndices(indices);
 			fail("Expected IndiexOutOfBoundsException");
 		}
 		catch (IndexOutOfBoundsException ex)
 		{
 		}
 		
-		JointDomainIndexer domainList2 = SerializationTester.clone(domainList);
-		assertEquals(domainList, domainList2);
-		assertEquals(domainList.hashCode(), domainList2.hashCode());
+		JointDomainIndexer domainList2 = SerializationTester.clone(indexer);
+		assertEquals(indexer, domainList2);
+		assertEquals(indexer.hashCode(), domainList2.hashCode());
 	}
 	
 	@Test

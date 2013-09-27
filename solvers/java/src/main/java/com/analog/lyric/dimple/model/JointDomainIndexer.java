@@ -473,7 +473,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 */
 	public int getStride(int i)
 	{
-		return getUndirectedStride(i);
+		return _products[i];
 	}
 	
 	/**
@@ -601,7 +601,15 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 
 	/**
 	 * Computes a unique joint index associated with the specified {@code indices}.
-	 * 
+	 * <p>
+	 * The joint index is equivalent the inner product of the vector of stride values and {@code indices}.
+	 * That is:
+	 * <pre>
+	 *       int jointIndex = 0;
+	 *       for (int i = 0; i < getDimensions(); ++i)
+	 *          jointIndex += getStride(i) * indices[i];
+	 * </pre>
+	 * <p>
 	 * @param indices must have length equal to {@link #size()} and each index must be a non-negative
 	 * value less than the size of the corresponding domain otherwise the function could return an
 	 * incorrect result.
