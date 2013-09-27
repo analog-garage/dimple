@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteFactor;
@@ -70,10 +71,6 @@ public class STableFactor extends STableFactorBase
 	 */
 	private BitSet _invalidAssignments = null;
 	
-
-
-
-
 	/*--------------
 	 * Construction
 	 */
@@ -158,6 +155,16 @@ public class STableFactor extends STableFactorBase
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
+	}
+	
+	/*--------------------------
+	 * STableFactorBase methods
+	 */
+	
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
+		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
 	}
 	
 	/*-------------------------

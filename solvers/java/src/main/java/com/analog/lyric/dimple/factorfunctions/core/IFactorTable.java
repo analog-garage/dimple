@@ -94,6 +94,35 @@ public interface IFactorTable extends IFactorTableBase
 	public double[] getEnergiesSparseUnsafe();
 
 	/**
+	 * Returns an array of energies for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * <p>
+	 * Same as {@link #getEnergySlice(double[], int, int[])} but always allocates a new array.
+	 * <p>
+	 * @see #getWeightSlice(int, int ...)
+	 */
+	public double[] getEnergySlice(int sliceDimension, int ... indices);
+	
+	/**
+	 * Returns an array of energies for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * 
+	 * @param sliceDimension is an integer in the range [0, {@link #getDimensions()}-1] that identifies which
+	 * domain the slice is for.
+	 * @param indices specifies the element indices that are to be fixed. The element index at position
+	 * {@code sliceDimension} will be ignored.
+	 * @param slice if non-null and large enough to accommodate the values will be used as the return value,
+	 * otherwise a new array will be allocated.
+	 * @return an array of energy values with size equal to the size of the {@code sliceDimension} of
+	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the energy values
+	 * from the table
+	 * <p>
+	 * @see #getEnergySlice(int, int ...)
+	 * @see #getWeightSlice(double[], int, int ...)
+	 */
+	public double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices);
+	
+	/**
 	 * Returns the underlying array of sparse element indices.
 	 * <p>
 	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
@@ -129,6 +158,35 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getEnergiesSparseUnsafe()
 	 */
 	public double[] getWeightsSparseUnsafe();
+	
+	/**
+	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * <p>
+	 * Same as {@link #getWeightSlice(double[], int, int ...)} but always allocates a new array.
+	 * <p>
+	 * @see #getEnergySlice(int, int ...)
+	 */
+	public double[] getWeightSlice(int sliceDimension, int ... indices);
+	
+	/**
+	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
+	 * dimensions fixed to provided values.
+	 * 
+	 * @param sliceDimension is an integer in the range [0, {@link #getDimensions()}-1] that identifies which
+	 * domain the slice is for.
+	 * @param indices specifies the element indices that are to be fixed. The element index at position
+	 * {@code sliceDimension} will be ignored.
+	 * @param slice if non-null and large enough to accommodate the values will be used as the return value,
+	 * otherwise a new array will be allocated.
+	 * @return an array of weight values with size equal to the size of the {@code sliceDimension} of
+	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the weight values
+	 * from the table
+	 * <p>
+	 * @see #getWeightSlice(int, int ...)
+	 * @see #getEnergySlice(double[], int, int ...)
+	 */
+	public double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices);
 	
 	/**
 	 * True if the current factor table representation supports {@link #getIndicesSparseUnsafe}.
@@ -247,7 +305,7 @@ public interface IFactorTable extends IFactorTableBase
 	 * and the weight changed, it will be converted to sparse weights (retaining sparse indices if they exist).
 	 */
 	@Override
-	public void setWeightForSparseIndex(double energy, int sparseIndex);
+	public void setWeightForSparseIndex(double weight, int sparseIndex);
 
 	/**
 	 * Sets the underlying representation of the table to the specified value.

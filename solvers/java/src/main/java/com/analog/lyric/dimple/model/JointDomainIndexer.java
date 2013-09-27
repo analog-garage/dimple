@@ -463,6 +463,34 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Returns amount by which joint index returned by {@link #jointIndexFromIndices(int...)} changes
+	 * when ith element index changes by 1.
+	 * <p>
+	 * This can be used to iterate over the joint indexes for one dimension for fixed values of all of
+	 * the other dimensions.
+	 * <p>
+	 * @see #getUndirectedStride(int)
+	 */
+	public int getStride(int i)
+	{
+		return _products[i];
+	}
+	
+	/**
+	 * Returns amount by which joint index returned by {@link #undirectedJointIndexFromIndices(int...)} changes
+	 * when ith element index changes by 1.
+	 * <p>
+	 * This can be used to iterate over the joint indexes for one dimension for fixed values of all of
+	 * the other dimensions.
+	 * <p>
+	 * @see #getStride(int)
+	 */
+	public final int getUndirectedStride(int i)
+	{
+		return _products[i];
+	}
+	
+	/**
 	 * True if domain list is partitioned into inputs and outputs.
 	 */
 	public boolean isDirected()
@@ -573,7 +601,15 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 
 	/**
 	 * Computes a unique joint index associated with the specified {@code indices}.
-	 * 
+	 * <p>
+	 * The joint index is equivalent the inner product of the vector of stride values and {@code indices}.
+	 * That is:
+	 * <pre>
+	 *       int jointIndex = 0;
+	 *       for (int i = 0; i < getDimensions(); ++i)
+	 *          jointIndex += getStride(i) * indices[i];
+	 * </pre>
+	 * <p>
 	 * @param indices must have length equal to {@link #size()} and each index must be a non-negative
 	 * value less than the size of the corresponding domain otherwise the function could return an
 	 * incorrect result.

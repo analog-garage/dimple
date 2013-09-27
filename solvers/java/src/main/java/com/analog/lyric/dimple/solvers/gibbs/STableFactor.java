@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -31,11 +32,18 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 {
+	/*-------
+	 * State
+	 */
+	
     protected DiscreteSample[] _inPortMsgs = null;
     protected double[][] _outPortMsgs = null;
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
 
+    /*--------------
+     * Construction
+     */
     
 	public STableFactor(Factor factor)
 	{
@@ -90,8 +98,6 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		if (_isDeterministicDirected) throw new DimpleException("Invalid call to updateEdge");
 		
 		double[] outMessage = _outPortMsgs[outPortNum];
-		int outputMsgLength = outMessage.length;
-
 		IFactorTable factorTable = getFactorTable();
 
 		final int numPorts = _numPorts;
@@ -99,11 +105,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		for (int port = 0; port < numPorts; port++)
 			inPortMsgs[port] = _inPortMsgs[port].getIndex();
 
-		for (int outIndex = 0; outIndex < outputMsgLength; outIndex++)
-		{
-			inPortMsgs[outPortNum] = outIndex;
-			outMessage[outIndex] = factorTable.getEnergyForIndices(inPortMsgs);
-		}
+		inPortMsgs[outPortNum] = 0;
+		factorTable.getEnergySlice(outMessage, outPortNum, inPortMsgs);
 	}
 	
 	
@@ -214,5 +217,21 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();
 		}
 	}
+	
+	/*--------------------------
+	 * STableFactorBase methods
+	 */
 
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
+		if (_isDeterministicDirected)
+		{
+			table.setRepresentation(FactorTableRepresentation.DETERMINISTIC);
+		}
+		else
+		{
+			table.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
+		}
+	}
 }

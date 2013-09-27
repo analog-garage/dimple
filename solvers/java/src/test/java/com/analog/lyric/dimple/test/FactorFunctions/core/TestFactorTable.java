@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import cern.colt.map.OpenIntIntHashMap;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableEntry;
@@ -25,7 +26,6 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.JointDomainIndexer;
 import com.analog.lyric.dimple.model.JointDomainReindexer;
-import com.analog.lyric.util.misc.Misc;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 
@@ -401,11 +401,9 @@ public class TestFactorTable
 	{
 		Random rand = new Random(123);
 		int[] array = new int[size];
-//		OpenIntIntHashMap map = new OpenIntIntHashMap(size * 2);
 		for (int i = 0; i < size; ++i)
 		{
 			array[i] = rand.nextInt();
-//			map.put(array[i], i);
 		}
 		
 		Stopwatch timer = new Stopwatch();
@@ -455,11 +453,12 @@ public class TestFactorTable
 		
 		while (--nOperations >= 0)
 		{
-			if (nOperations == 9863)
-			{
-				Misc.breakpoint();
-			}
-			int operation = rand.nextInt(10);
+			int operation = rand.nextInt(11);
+// For debugging:
+//			if (nOperations == 9863)
+//			{
+//				Misc.breakpoint();
+//			}
 //			System.out.format("operation %d\n", operation);
 			switch (operation)
 			{
@@ -548,6 +547,48 @@ public class TestFactorTable
 				assertEquals(expectedCompacted, actualCompacted);
 				assertEquals(0, table.compact());
 				break;
+				
+			case 5:
+			{
+				// Test get*Slice methods
+				// Randomly select a set of indices to condition on.
+				JointDomainIndexer indexer = table.getDomainIndexer();
+				indexer.jointIndexToIndices(rand.nextInt(table.jointSize()), indices);
+				for (int i = 0; i < indices.length; ++i)
+				{
+					final int domainSize = indexer.getDomainSize(i);
+					int saved = indices[i];
+					
+					double[] slice1 = table.getEnergySlice(i, indices);
+					for (int j = 0; j < domainSize; ++j)
+					{
+						indices[i] = j;
+						assertEquals(slice1[j], table.getEnergyForIndices(indices), 0.0);
+					}
+					double[] slice2 = table.getWeightSlice(slice1, i, indices);
+					assertSame(slice1, slice2);
+					for (int j = 0; j < domainSize; ++j)
+					{
+						indices[i] = j;
+						assertEquals(slice2[j], table.getWeightForIndices(indices), 0.0);
+					}
+					slice2 = table.getWeightSlice(i, indices);
+					assertNotSame(slice1, slice2);
+					assertArrayEquals(slice1, slice2, 0.0);
+					slice2 = table.getWeightSlice(ArrayUtil.EMPTY_DOUBLE_ARRAY, i, indices);
+					assertArrayEquals(slice1, slice2, 0.0);
+					slice1 = table.getEnergySlice(ArrayUtil.EMPTY_DOUBLE_ARRAY, i, indices);
+					for (int j = 0; j < domainSize; ++j)
+					{
+						indices[i] = j;
+						assertEquals(slice1[j], table.getEnergyForIndices(indices), 0.0);
+					}
+					assertSame(slice1, table.getEnergySlice(slice1, i, indices));
+					
+					indices[i] = saved;
+				}
+				break;
+			}
 				
 			default:
 				// Random assignments

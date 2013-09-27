@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,8 +22,16 @@ import com.analog.lyric.dimple.model.Factor;
 
 public abstract class STableFactorBase extends SFactorBase
 {
+	/*-------
+	 * State
+	 */
+	
 	private IFactorTable _factorTable = null;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public STableFactorBase(Factor factor)
 	{
 		super(factor);
@@ -33,16 +41,48 @@ public abstract class STableFactorBase extends SFactorBase
 		
 	}
 	
-	public final IFactorTable getFactorTable()
-	{
-		if (_factorTable==null)
-			_factorTable = getFactor().getFactorTable();
-		return this._factorTable;
-	}
-
+	/*---------------------
+	 * SFactorBase methods
+	 */
+	
     @Override
     public int [][] getPossibleBeliefIndices()
     {
             return getFactorTable().getIndicesSparseUnsafe();
     }
+    
+    @Override
+    public void initialize()
+    {
+    	super.initialize();
+    	if (_factorTable != null)
+    	{
+    		setTableRepresentation(_factorTable);
+    	}
+    }
+
+    /*--------------------------
+     * STableFactorBase methods
+     */
+    
+    public final IFactorTable getFactorTable()
+	{
+		if (_factorTable==null)
+		{
+			_factorTable = getFactor().getFactorTable();
+			setTableRepresentation(_factorTable);
+		}
+		return this._factorTable;
+	}
+
+    /**
+     * Sets representation of {@code table} for optimal performance for particular
+     * solver implementation.
+     * <p>
+     * Called by {@link STableFactorBase#getFactorTable()} the first time it is called
+     * on this object, and is also called by {@link STableFactorBase#initialize()}.
+     * <p>
+     * @param table
+     */
+    protected abstract void setTableRepresentation(IFactorTable table);
 }

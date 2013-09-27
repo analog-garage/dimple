@@ -1359,6 +1359,85 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
+	public final double[] getEnergySlice(int sliceDimension, int ... indices)
+	{
+		return getEnergySlice(null, sliceDimension, indices);
+	}
+	
+	@Override
+	public final double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices)
+	{
+		JointDomainIndexer indexer = getDomainIndexer();
+		int size = indexer.getDomainSize(sliceDimension);
+		
+		if (slice == null || slice.length < size)
+		{
+			slice = new double[size];
+		}
+		
+		final int stride = indexer.getStride(sliceDimension);
+		
+		indices[sliceDimension] = 0;
+		final int start = indexer.jointIndexFromIndices(indices);
+		
+		if (hasDenseEnergies())
+		{
+			for (int i = 0, ji = start; i < size; ++i, ji += stride)
+			{
+				slice[i] = _denseEnergies[ji];
+			}
+		}
+		else
+		{
+			for (int i = 0, ji = start; i < size; ++i, ji += stride)
+			{
+				slice[i] = getEnergyForJointIndex(ji);
+			}
+		}
+		
+		return slice;
+	}
+	
+	@Override
+	public final double[] getWeightSlice(int sliceDimension, int ... indices)
+	{
+		return getWeightSlice(null, sliceDimension, indices);
+	}
+	
+	@Override
+	public final double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices)
+	{
+		JointDomainIndexer indexer = getDomainIndexer();
+		int size = indexer.getDomainSize(sliceDimension);
+		
+		if (slice == null || slice.length < size)
+		{
+			slice = new double[size];
+		}
+		
+		final int stride = indexer.getStride(sliceDimension);
+		
+		indices[sliceDimension] = 0;
+		
+		if (hasDenseWeights())
+		{
+			for (int i = 0, ji = indexer.jointIndexFromIndices(indices); i < size; ++i, ji += stride)
+			{
+				slice[i] = _denseWeights[ji];
+			}
+		}
+		else
+		{
+			for (int i = 0, ji = indexer.jointIndexFromIndices(indices); i < size; ++i, ji += stride)
+			{
+				slice[i] = getWeightForJointIndex(ji);
+			}
+		}
+		
+		return slice;
+	}
+	
+	@Override
 	public final double[] getWeightsSparseUnsafe()
 	{
 		if (_sparseWeights.length == 0 && !hasSparseWeights())
