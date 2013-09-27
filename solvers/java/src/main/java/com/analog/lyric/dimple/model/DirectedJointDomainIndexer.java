@@ -190,6 +190,12 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	}
 	
 	@Override
+	public int getStride(int i)
+	{
+		return _directedProducts[i];
+	}
+
+	@Override
 	public boolean isDirected()
 	{
 		return true;

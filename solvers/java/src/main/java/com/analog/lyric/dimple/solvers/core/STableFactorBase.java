@@ -50,16 +50,39 @@ public abstract class STableFactorBase extends SFactorBase
     {
             return getFactorTable().getIndicesSparseUnsafe();
     }
+    
+    @Override
+    public void initialize()
+    {
+    	super.initialize();
+    	if (_factorTable != null)
+    	{
+    		setTableRepresentation(_factorTable);
+    	}
+    }
 
-    /*----------------------
-     * STableFactor methods
+    /*--------------------------
+     * STableFactorBase methods
      */
     
     public final IFactorTable getFactorTable()
 	{
 		if (_factorTable==null)
+		{
 			_factorTable = getFactor().getFactorTable();
+			setTableRepresentation(_factorTable);
+		}
 		return this._factorTable;
 	}
 
+    /**
+     * Sets representation of {@code table} for optimal performance for particular
+     * solver implementation.
+     * <p>
+     * Called by {@link STableFactorBase#getFactorTable()} the first time it is called
+     * on this object, and is also called by {@link STableFactorBase#initialize()}.
+     * <p>
+     * @param table
+     */
+    protected abstract void setTableRepresentation(IFactorTable table);
 }

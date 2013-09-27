@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
@@ -154,6 +155,16 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		for (int i = 0; i < retval.length; i++)
 			retval[i] /= sum;
 		return retval;
+	}
+	
+	/*--------------------------
+	 * STableFactorBase methods
+	 */
+	
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
+		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
 	}
 	
 	/*-------------

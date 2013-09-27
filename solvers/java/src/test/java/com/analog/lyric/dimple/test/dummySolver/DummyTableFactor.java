@@ -16,24 +16,26 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class DummyTableFactor extends STableFactorBase
-{	
-	public DummyTableFactor(Factor factor)  
+{
+	public DummyTableFactor(Factor factor)
 	{
 		super(factor);
 	}
 
+	@Override
 	public void updateEdge(int outPortNum)
 	{
 	}
 		
 	@Override
 	public void update()
-	{		
+	{
 	}
 
 	@Override
@@ -63,4 +65,8 @@ public class DummyTableFactor extends STableFactorBase
 	{
 	}
 
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
+	}
 }

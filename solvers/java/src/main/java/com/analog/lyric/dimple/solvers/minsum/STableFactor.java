@@ -20,6 +20,8 @@ import java.util.Arrays;
 
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
@@ -132,6 +134,16 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    setK(Integer.MAX_VALUE);
 	}
 
+	/*--------------------------
+	 * STableFactorBase methods
+	 */
+	
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
+		table.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY_WITH_INDICES);
+	}
+	
 	/*----------------------
 	 * IKBestFactor methods
 	 */

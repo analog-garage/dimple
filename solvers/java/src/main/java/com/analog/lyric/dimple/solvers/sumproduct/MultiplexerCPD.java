@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
@@ -124,6 +125,11 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 			updateToA();
 		else
 			updateToZ(outPortNum-2);
+	}
+	
+	@Override
+	protected void setTableRepresentation(IFactorTable table)
+	{
 	}
 
 	public void updateToA()
