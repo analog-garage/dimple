@@ -141,7 +141,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void iterate(int numIters)
 	{
-		if (_multithreader.getNumThreads() == 1)
+		if (_multithreader == null || _multithreader.getNumThreads() == 1)
 		{
 			// *** Single thread
 			for (int iterNum = 0; iterNum < numIters; iterNum++)
