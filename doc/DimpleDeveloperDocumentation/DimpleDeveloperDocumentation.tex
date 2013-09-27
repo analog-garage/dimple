@@ -1028,4 +1028,44 @@ c = a.DirectedTo;
 
 In the case where each Factor is directed to multiple variables, Dimple will return a cell array containing as many elements as there are variables per factor.  Each of the entries will contain a variable array equal in dimensions to the factor array.
 
+\subsubsection{Multithreading}
+
+Dimple uses multithreading for two purposes.  The first is a mechanism for handling Ctrl+C from MATLAB.  The second is for accelerating inference by N where N is the number of cores in the user's machine.  Here we describe the architecture behind the latter multithreading.
+
+Dimple currently provides three variants of multithreading inference.  All three variants take advantage of multiple cores by executing ScheduleEntry updates concurrently.  In the future, Dimple could be modified to also parallelize updating a single factor.
+
+\paragraph{Brief review of API}
+
+Users can run in the multithreaded mode simply by setting numThreads to a value larger than 1.
+
+\begin{lstlisting}
+fg.Solver.setNumThreads(8);
+\end{lstlisting}
+
+Users can select between various multithreaded modes using the setMultithreadingMode method:
+
+\begin{lstlisting}
+fg.Solver.setMultithreadingMode(1);
+\end{lstlisting}
+
+\paragraph{Class structure}
+
+\paragraph{Dependency Graph}
+Description of dependency graph and dependency graph construction algorithm.
+Also describe how to spit out the dot file.
+
+\paragraph{Runtime algorithms}
+\subparagraph{Phase}
+\subparagraph{One Queue}
+\subparagraph{One Queuecross iter}
+Describe three different algorithms.
+
+\paragraph{Profiling}
+directory
+
+\paragraph{Gotchas}
+ (Thread Pool Leak
+
+\paragraph{Future Direction}
+
 \end{document}  
