@@ -1050,22 +1050,151 @@ fg.Solver.setMultithreadingMode(1);
 
 \paragraph{Class structure}
 
+The following UMLish diagram represents the multithreading class structure.
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{images/multithreading_classes.png}
+
+\begin{itemize}
+\item SFactorGraphBase - This class is contained with in the com.analog.dimple.solvers.core package.  It contains a pointer to the MultithreadingManager and is the class the user interacts with to set the number of threads.
+\item sumproduct.SFactorGraph - The sumproduct.SFactorGraph class inherits from the SFactorGraphBase class.  It is responsible for instantiating the MultithreadingManager class.  If it does not instantiate and set this class on it's parent, the SFactorGraphBase class will assume this specific solver does not support multithreading.
+\item MultithreadingManager - This class is responsible for switching between various MultithreadingAlgorithms.
+\item MultithreadingAlgorithm - This is an abstract class that contains an abstract iterate method.
+\item DependencyGraph - This will be described in more detail in the next paragraph.  It contains nodes that represent schedule entries.  It also contains directed edges from Node to Node indicating which schedule entries must be completed before updating a particular schedule entry.
+\item DepdendencyGraphNode - Contains a one to one mapping to an IScheduleEntry
+\item LastUpdateGraph and Edge - These classes are used by the DependencyGraph initialization code.  
+\item Phase - One of the runtime algorithms.  Described in more detail in a later section.
+\item OneQueue - One of the runtime algorithms.  Described in more detail in a later section.
+\item OneQueueCross - One of the runtime algorithms.  Described in more detail in a later section.
+\end{itemize}
+
 \paragraph{Dependency Graph}
-Description of dependency graph and dependency graph construction algorithm.
-Also describe how to spit out the dot file.
+
+Multithreading algorithms require knowledge of the Dimple Schedule.  From a Dimple schedule, we can build a DependencyGraph.  For each ScheduleEntry in a Dimple Schedule, the DependencyGraph contains a list of other ScheduleEntries that must be completed first.
+
+To clarify, we can examine a small graph and its dependency graph.  The following code creates a small FactorGraph with four variables and four factors.
+
+\begin{lstlisting}
+
+N = 2;
+fg = FactorGraph();
+fg.Scheduler='TreeOrSequentialScheduler';
+b = Bit(N);
+fh = fg.addFactorVectorized(@(a,b) rand(), b(:,1:end-1),b(:,2:end));
+fv = fg.addFactorVectorized(@(a,b) rand(), b(1:end-1,:),b(2:end,:));
+for i=1:N
+    for j=1:N
+        b(i,j).Name = sprintf('B%i_%i',i,j);
+    end
+end
+for i = 1:size(fh,1)
+    for j = 1:size(fh,2)
+        fh(i,j).Name = sprintf('fh%d_%d',i,j);
+    end
+end
+for i = 1:size(fv,1)
+    for j = 1:size(fv,2)
+        fv(i,j).Name = sprintf('fv%d_%d',i,j);
+    end
+end
+fg.Solver.getMultithreadingManager().getDependencyGraph().createDotFile('stuff.dot');
+fg.Solver.getModelObject().getSchedule()
+\end{lstlisting}
+
+We use the TreeOrSequentialScheduler which will produce a more interesting schedule and dependency graph than the FloodingScheduler.  The previous code will display the schedule:
+
+\begin{lstlisting}
+ans =
+ 
+FixedSchedule 12
+	IScheduleEntry [B1_1] -> 0 -> [fh1_1]
+	IScheduleEntry [B1_2] -> 0 -> [fh1_1]
+	IScheduleEntry [fh1_1]
+	IScheduleEntry [B2_1] -> 0 -> [fh2_1]
+	IScheduleEntry [B2_2] -> 0 -> [fh2_1]
+	IScheduleEntry [fh2_1]
+	IScheduleEntry [B1_1] -> 1 -> [fv1_1]
+	IScheduleEntry [B2_1] -> 1 -> [fv1_1]
+	IScheduleEntry [fv1_1]
+	IScheduleEntry [B1_2] -> 1 -> [fv1_2]
+	IScheduleEntry [B2_2] -> 1 -> [fv1_2]
+	IScheduleEntry [fv1_2]
+
+ 
+\end{lstlisting}
+
+From this schedule, the Dependency graph is built:
+
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{images/DependencyGraph.png}
+
+Note that the ScheduleEntry for b11 to fh11 has two dependents: fv11 and fh11.  This is because fv11 provides the input to this update and fh11 receives the output from this update.
+
+In addition to building up the list of dependencies, the Dependency Graph will create "phases" (colored red, blue, green and pink in this image).  These phases are used by the PhaseMultithreadingAlgorithm.
+
+\subparagraph{Constructing the DependencyGraph}
+
+The DependendcyGraph uses the LastUpdateGraph and Edge classes to aid in construction.  The following is pseudocode for constructing the DependencyGraph
+
+\begin{lstlisting}
+for each entry in schedule
+    create new DependencyGraphNode
+    for each edge involved in the update
+    	see if a previous DependencyGraphNode has read or written this edge (using the LastUpdateEdge)
+	if it has
+		add this guy to the list of dependents for that guy
+		Increment the number of dependencies this guy has
+	add this guy to the edge as the last DependencyGraphNode to update the edge
+\end{lstlisting}
+
 
 \paragraph{Runtime algorithms}
-\subparagraph{Phase}
-\subparagraph{One Queue}
-\subparagraph{One Queuecross iter}
-Describe three different algorithms.
+
+Dimple currently provides three multithreading algorithms.
+\subparagraph{PhaseMultithreadingAlgorithm}
+As previously mentioned, the DependencyGraph contains a list of lists of DependencyGraph nodes.  Each list is known as a phase.  Each phase contains a list of DependencyGraphNodes that contain completely independent IScheduleEntries.  The PhaseMultithreadingAlgorithm operates as:
+
+\begin{lstlisting}
+for each phase
+	Kick of N threads (user sets N)
+	each thread
+		pick off num entries in phase / N
+		update all of these entries
+		when out, try to steal from other queues
+		for each other queue
+			try to pick off work from that queue
+		if no work left, end execution for this thread
+\end{lstlisting}
+
+The work stealing improves performance quite a bit.  Also, each thread having its own queue often provides better performance than the SingleQueue algorithms discussed below.  Specifically, when there are many small factors, this algorithm works much better than the following two algorithms.
+	
+\subparagraph{SingleQueueMultithreadingAlgorithm}
+This algorithm uses a single work queue that is initialized with all schedule entries with no dependencies. 
+
+\begin{lstlisting}
+for each thread
+	take something from the queue (block until we get something)
+	if the something is "Poison"
+		we're done
+		add Poison back to the queue for other threads
+		quit this thread
+	else
+		update the schedule entry
+		for each dependent
+			decrement the number of dependencies (synchronized)
+			if num dependencies is now 0
+				add the new DependencyGraphNode to the queue
+\end{lstlisting}
+
+This algorithm is slower than the Phase based algorithm in many cases, but does tend to be faster with large factors and a more complex dependency graph.
+
+\subparagraph{SingleQueueCrossIterationMultithreadingAlgorithm}
+This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower.  
 
 \paragraph{Profiling}
-directory
-
-\paragraph{Gotchas}
- (Thread Pool Leak
+Dimple contains a few MATLAB profiling scripts in: /dimple/modelers/matlab/tests/performance/threading.  These can be run to determine if multithreading changes affect performance.
 
 \paragraph{Future Direction}
+Currently multithreading must be turned on by the user.  In addition, the user is responsible for selecting the algorithm.  In the future it would be good to turn on multithreading by default and allow Dimple to auto tune the threading.
+
+Additionally, we should explore different directions with the threading.  One possibility is to use graph coloring to select subset of phases that would allow one thread to progress into the next phase before the previous phase is complete.
 
 \end{document}  

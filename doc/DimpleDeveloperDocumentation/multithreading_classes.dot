@@ -1,0 +1,105 @@
+digraph G {
+	SFactorGraphBase [
+		shape="record"
+		label="core.SFactorGraphBase"
+	]
+	MultithreadingManager 
+	[
+		shape="record"		  
+	]
+	SFactorGraphBase -> MultithreadingManager 
+	[
+		headlabel="1"
+		taillabel="1"
+	]
+	SFactorGraph
+	[
+		shape="record"
+		label="sumproduct.SFactorGraph"
+	]
+	SFactorGraph -> SFactorGraphBase
+	[
+		arrowhead="empty"
+	]
+	SFactorGraph->MultithreadingManager
+	[
+		style="dashed"
+		label="instantiates"
+	]
+	MultithreadingAlgorithm
+	[
+		shape="record"
+	]
+	MultithreadingManager -> MultithreadingAlgorithm
+	[
+		headlabel="*"
+		taillabel="1"
+	]
+	Phase
+	[
+		shape="record"
+	]
+	Phase -> MultithreadingAlgorithm
+	[
+		arrowhead="empty"
+	]
+	OneQueue
+	[
+		shape="record"
+	]
+	OneQueue -> MultithreadingAlgorithm
+	[
+		arrowhead="empty"
+	]
+	OneQueueCross
+	[
+		shape="record"
+	]
+	OneQueueCross -> MultithreadingAlgorithm
+	[
+		arrowhead="empty"
+	]
+	DependencyGraph
+	[
+		shape="record"
+	]
+	MultithreadingManager -> DependencyGraph
+	[
+		taillabel="1"
+		headlabel="1"
+	]
+	DependencyGraphNode
+	[
+		shape="record"
+	]
+	DependencyGraph -> DependencyGraphNode
+	[
+		headlabel="*"
+		taillabel="1"
+	]
+	LastUpdateGraph
+	[
+		shape="record"
+	]
+	AnEdge
+	[
+		label="Edge"
+		shape="record"
+	]
+	LastUpdateGraph -> AnEdge
+	[
+		taillabel="1"
+		headlabel="*"
+	]
+	DependencyGraph -> LastUpdateGraph
+	[
+		style="dashed"
+		label="used for construction"
+	]
+	DependencyGraphNode -> LastUpdateGraph
+	[
+		style="dashed"
+		label="used for construction"
+	]
+	
+}
