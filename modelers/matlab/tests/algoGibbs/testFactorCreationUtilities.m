@@ -29,6 +29,7 @@ if (repeatable)
 end
 
 test1(debugPrint, repeatable);
+test2(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -140,4 +141,53 @@ for testCase = 1:3
 end
 
 end
+
+
+% Test constant parameter Bernoulli, Categorical, and CategoricalEnergyParameters
+% These shouldn't create factors at all, but should set the inputs
+% to discrete arrays
+function test2(debugPrint, repeatable)
+
+fg = FactorGraph();
+
+% Single Bernoulli
+b = Bernoulli(0.8);
+assertElementsAlmostEqual(b.Input, [0.2; 0.8]);
+
+% Array of Bernoullis
+bv = Bernoulli(0.8, [2,3,4]);
+assertElementsAlmostEqual(bv(1,2,3).Input, [0.2; 0.8]);
+assertElementsAlmostEqual(bv(2,3,4).Input, [0.2; 0.8]);
+
+% Single Categorical
+dist = rand(19,1);
+c = Categorical(dist);
+assertElementsAlmostEqual(c.Input, dist);
+
+% Array of Categoricals
+cv = Categorical(dist, [2,3,4]);
+assertElementsAlmostEqual(cv(1,2,3).Input, dist);
+assertElementsAlmostEqual(cv(2,3,4).Input, dist);
+
+% Single CategoricalEnergyParameters
+energyDist = randn(11,1);
+e = CategoricalEnergyParameters(energyDist);
+diff = -log(e.Input) - energyDist;
+assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
+assertElementsAlmostEqual(sum(e.Input),1);              % Utility makes inputs sum to 1
+
+% Array of CategoricalEnergyParameters
+ev = CategoricalEnergyParameters(energyDist, [2,3,4]);
+diff = -log(ev(1,2,3).Input) - energyDist;
+assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
+assertElementsAlmostEqual(sum(ev(1,2,3).Input),1);      % Utility makes inputs sum to 1
+diff = -log(ev(2,3,4).Input) - energyDist;
+assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
+assertElementsAlmostEqual(sum(ev(2,3,4).Input),1);      % Utility makes inputs sum to 1
+
+assert(isempty(fg.Factors));    % Shouldn't have added any factors
+assert(isempty(fg.Variables));  % Shouldn't have added any variables
+
+end
+
 

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableBase;
@@ -53,14 +54,26 @@ public class SVariable extends SRealVariableBase
     		_input = (double[]) createDefaultMessage();
     	else
     	{
-	    	double [] vals = (double[])input;
-	    	if (vals.length != 2)
-	    		throw new DimpleException("expect priors to be a vector of mean and sigma");
-	    	
-	    	if (vals[1] < 0)
-	    		throw new DimpleException("expect sigma to be >= 0");
-	    	
-	    	_input = vals.clone();
+    		if (input instanceof Normal)	// Input is a Normal factor function with fixed parameters
+    		{
+    			Normal normalInput = (Normal)input;
+    			if (!normalInput.hasConstantParameters())
+    				throw new DimpleException("Normal factor function used as Input must have constant parameters");
+    			_input = new double[2];
+    			_input[0] = normalInput.getMean();
+    			_input[1] = 1/Math.sqrt(normalInput.getPrecision());	// Input parameterization uses standard-deviation rather than precision
+    		}
+    		else	// Input is array in the form [mean, standard deviation]
+    		{
+    			double [] vals = (double[])input;
+    			if (vals.length != 2)
+    				throw new DimpleException("expect priors to be a vector of mean and sigma");
+
+    			if (vals[1] < 0)
+    				throw new DimpleException("expect sigma to be >= 0");
+
+    			_input = vals.clone();
+    		}
     	}
     	
     }

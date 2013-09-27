@@ -195,7 +195,7 @@ Z = Rayleigh(sigma);
 \end{lstlisting}
 
 
-The parameters can be variables, constants, or some of each\footnote{For cases where a parameter is a vector of real values, the parameter may be a Real variable array, a cell-arrays that may mix Real variables and constants, or an array of constants.}.
+The parameters can be variables, constants\footnote{If \emph{all} parameter inputs are constants, then instead of creating both variables and factors, the variables are created, and the Input to each variable is set accordingly.}, or some of each\footnote{For cases where a parameter is a vector of real values, the parameter may be a Real variable array, a cell-arrays that may mix Real variables and constants, or an array of constants.}.
 
 By default, calling one of these functions creates a single output variable, and the factor is added to the most-recently created graph. ÊBut, optional arguments allow you to specify the dimensions of the array of output variables, or to specify the factor graph. ÊThese arguments can be in either order after the parameters. ÊFor example:
 

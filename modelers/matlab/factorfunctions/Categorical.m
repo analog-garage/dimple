@@ -43,15 +43,15 @@ else
     discreteDomain = 0:N-1;           % Domain must be zero based integers
     var = Discrete(discreteDomain, outSize{:});
 
-    ff = FactorFunction('CategoricalUnnormalizedParameters', N);
-    
     if (isa(alphas, 'Real'))
-        fg.addFactor(ff, alphas, var);
+        fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas, var);
     elseif (iscell(alphas))
-        fg.addFactor(ff, alphas{:}, var);
-    elseif (isnumeric(alphas))
-        tmp = num2cell(alphas);
-        fg.addFactor(ff, tmp{:}, var);
+        fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas{:}, var);
+    elseif (isnumeric(alphas))  % Constant parameter (more efficient to just set the Input)
+        alphas = alphas(:);
+        outSizeExt = [1 cell2mat(outSize)];
+        dims = length(outSizeExt);
+        var.Input = permute(repmat(alphas, outSizeExt), [2:dims, 1]);
     else
         error('Invalid parameter type');
     end
