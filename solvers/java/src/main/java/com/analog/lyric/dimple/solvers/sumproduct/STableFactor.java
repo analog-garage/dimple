@@ -598,6 +598,15 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		return _outputMsgs;
 	}
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		//We retrieve the factor table on initialize in order to avoid race conditions
+		//when multithreading 
+		getFactorTable();
+	}
 
 	
 }
