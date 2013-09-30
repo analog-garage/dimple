@@ -29,6 +29,11 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldAdd;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldConstMult;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldMult;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldProjection;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.MultiplexerCPD;
 
 public class SFactorGraph extends SFactorGraphBase
 {
@@ -72,7 +77,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public ISolverVariable createVariable(VariableBase var)
 	{
 		if (var.getModelerClassName().equals("FiniteFieldVariable"))
-			return new FiniteFieldVariable(var);
+			return new SFiniteFieldVariable(var);
 		else
 			return new SVariable(var);
 	}

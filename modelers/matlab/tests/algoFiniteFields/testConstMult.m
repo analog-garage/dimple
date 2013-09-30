@@ -53,7 +53,7 @@ function testConstMult()
                 f = fg.addFactor(@finiteFieldMult,yint,ff1,ff2);
             end
 
-            assertEqual(class(f.Solver),'com.analog.lyric.dimple.solvers.sumproduct.FiniteFieldConstMult');
+            assertEqual(class(f.Solver),'com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldConstMult');
 
             %Iterate values for the variables
             for xindex = 1:length(tmp)

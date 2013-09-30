@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 public class NormalParameters
 {
-	private double _mean = 1;
-	private double _precision = 1;
+	private double _mean = 0;
+	private double _precision = 0;
 	
 	public NormalParameters() {}
 	public NormalParameters(double mean, double precision)

@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 {
@@ -192,5 +193,11 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	{
 		return _outputMsgs[portIndex];
 	}
-
+	
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		super.moveMessages(other, thisPortNum, otherPortNum);
+		_outputMsgs[thisPortNum] = ((CustomBeta)other)._outputMsgs[otherPortNum];
+	}
 }

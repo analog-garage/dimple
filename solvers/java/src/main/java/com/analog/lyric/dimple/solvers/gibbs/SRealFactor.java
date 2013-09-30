@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.util.ArrayList;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
@@ -189,17 +188,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		throw new DimpleException("not supported");
+		return null;	// No output message by default (except for custom factors)
 	}
 
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
-		//protected ObjectSample [] _inputMsgs;
 		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
-
-		//throw new DimpleException("not supported");
 	}
 
 	@Override

@@ -14,12 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian;
+package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateFactorBase;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
 public class MultivariateGaussianConstMult extends MultivariateFactorBase 
 {

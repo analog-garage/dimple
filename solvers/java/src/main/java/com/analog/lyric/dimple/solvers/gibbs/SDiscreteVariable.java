@@ -514,18 +514,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-			_outputMsg = new DiscreteSample(0, 0);
-			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
-			_sampleIndex = 0;
-		
-		//TODO: Is this the right thing to do?
-	    if (_sampleIndexArray != null)
+		_outputMsg = new DiscreteSample(0, 0);
+		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+		_sampleIndex = 0;
+
+		if (_sampleIndexArray != null)
 			saveAllSamples();
 
 		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().size()];
 		_bestSampleIndex = -1;
-	
-
 	}
 	
 	@Override
@@ -535,16 +532,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	_numPorts= Math.max(portNum+1, _numPorts);
     	
 	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, _numPorts);
-	    
     	_inPortMsgs[portNum] = createDefaultMessage();
-    	
     	
 	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
 	    _samplerScratch = new double[_lengthRoundedUp];
 	    _conditional = new double[_input.length];
-	    
-		
-		
 		
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
 	}
@@ -596,7 +588,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		_inPortMsgs[portIndex] = (double[])obj;
-		
 	}
 
 	@Override
@@ -618,9 +609,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_samplerScratch = ovar._samplerScratch;
 		_bestSampleIndex = ovar._bestSampleIndex;
 		_lengthRoundedUp = ovar._lengthRoundedUp;
-		
     }
-
 	
 
 	@Override
@@ -632,8 +621,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int messageLength = _varDiscrete.getDiscreteDomain().size();
 		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;
-		
 	}
-
 	
 }

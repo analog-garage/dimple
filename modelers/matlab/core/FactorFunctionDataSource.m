@@ -25,6 +25,15 @@ classdef FactorFunctionDataSource < GenericDataSource
             dataSource = modeler.getFactorFunctionDataSource(sz);
         end
         
+        function add(obj,data)
+            packedData = MatrixObject.pack(data.get,obj.Indices);
+            if length(size(packedData)) == 3
+                obj.IDataSource.addMultiple(packedData);
+            else
+                obj.IDataSource.add(packedData);
+            end
+        end
+        
     end
     
 end

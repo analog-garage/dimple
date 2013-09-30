@@ -26,6 +26,12 @@ import com.analog.lyric.dimple.model.RealJointDomain;
 import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.GaussianAdd;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.GaussianConstMult;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.GaussianLinear;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.MultivariateGaussianAdd;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.MultivariateGaussianConstMult;
+import com.analog.lyric.dimple.solvers.gaussian.customFactors.Polynomial;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 

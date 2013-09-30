@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 {
@@ -296,5 +297,10 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		return _outputMsgs[portIndex];
 	}
 	
-
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		super.moveMessages(other, thisPortNum, otherPortNum);
+		_outputMsgs[thisPortNum] = ((CustomNormal)other)._outputMsgs[otherPortNum];
+	}
 }
