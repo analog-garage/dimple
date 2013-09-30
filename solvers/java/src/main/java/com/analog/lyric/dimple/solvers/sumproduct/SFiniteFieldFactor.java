@@ -21,13 +21,13 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 *   limitations under the License.
 ********************************************************************************/
 
-public abstract class FiniteFieldFactor extends SFactorBase
+public abstract class SFiniteFieldFactor extends SFactorBase
 {
 
 	protected double [][] _inputMsgs;
 	protected double [][] _outputMsgs;
 	
-	public FiniteFieldFactor(Factor factor) 
+	public SFiniteFieldFactor(Factor factor) 
 	{
 		super(factor);
 		// TODO Auto-generated constructor stub
@@ -77,7 +77,7 @@ public abstract class FiniteFieldFactor extends SFactorBase
 			int otherPortNum) 
 	{
 
-		FiniteFieldFactor sother = (FiniteFieldFactor)other;
+		SFiniteFieldFactor sother = (SFiniteFieldFactor)other;
 	    _inputMsgs[thisPortNum] = sother._inputMsgs[otherPortNum];
 	    _outputMsgs[thisPortNum] = sother._outputMsgs[otherPortNum];
 	}

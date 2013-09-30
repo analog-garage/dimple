@@ -14,22 +14,24 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 
 
 
-public class FiniteFieldConstMult extends FiniteFieldFactor
+public class FiniteFieldConstMult extends SFiniteFieldFactor
 {
 	
 	private int _constant;
 	private int _dlogConstant;
-	private FiniteFieldVariable _varInput;
-	private FiniteFieldVariable _varOutput;
+	private SFiniteFieldVariable _varInput;
+	private SFiniteFieldVariable _varOutput;
 	//private Port _varInputPort;
 	//private Port _varOutputPort;
 	
@@ -53,10 +55,10 @@ public class FiniteFieldConstMult extends FiniteFieldFactor
 		
 		//ArrayList<Port> ports = _factor.getPorts();
 
-		_varInput = (FiniteFieldVariable)variables.getByIndex(0).getSolver();
+		_varInput = (SFiniteFieldVariable)variables.getByIndex(0).getSolver();
 		//_varInputPort = ports.get(0);
 
-		_varOutput = (FiniteFieldVariable)variables.getByIndex(1).getSolver();
+		_varOutput = (SFiniteFieldVariable)variables.getByIndex(1).getSolver();
 		
 		//_varOutputPort = ports.get(1);
 		assignConstant((int)(double)(Double)constants[0]);

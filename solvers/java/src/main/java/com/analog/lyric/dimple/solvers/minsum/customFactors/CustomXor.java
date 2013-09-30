@@ -1,4 +1,4 @@
-package com.analog.lyric.dimple.solvers.minsum;
+package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;

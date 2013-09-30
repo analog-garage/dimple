@@ -14,12 +14,13 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian;
+package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.RealJoint;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorBase;
 
 
 public class GaussianAdd extends GaussianFactorBase
