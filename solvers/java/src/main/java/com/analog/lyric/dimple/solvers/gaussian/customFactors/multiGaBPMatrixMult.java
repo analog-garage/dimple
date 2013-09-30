@@ -14,9 +14,10 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian;
+package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 import com.analog.lyric.math.LyricSingularValueDecomposition;
 
 public class multiGaBPMatrixMult 

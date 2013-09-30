@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import java.util.ArrayList;
 
@@ -24,13 +24,15 @@ import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.INode;
 import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 
 
 
-public class FiniteFieldProjection extends FiniteFieldFactor
+public class FiniteFieldProjection extends SFiniteFieldFactor
 {
 
-	private FiniteFieldVariable _ffVar;
+	private SFiniteFieldVariable _ffVar;
 	private int [] _portIndex2bitIndex;
 	private int [] _bit2port;
 	
@@ -45,7 +47,7 @@ public class FiniteFieldProjection extends FiniteFieldFactor
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
-		_ffVar = (FiniteFieldVariable)variables.getByIndex(0).getSolver();
+		_ffVar = (SFiniteFieldVariable)variables.getByIndex(0).getSolver();
 		_portIndex2bitIndex = new int[ports.size()];
 		
 		for (int i = 0; i < ports.size(); i++)

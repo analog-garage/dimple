@@ -14,13 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 
 
 
-public class FiniteFieldAdd extends FiniteFieldFactor
+public class FiniteFieldAdd extends SFiniteFieldFactor
 {
 	
 	public FiniteFieldAdd(com.analog.lyric.dimple.model.Factor factor) 
