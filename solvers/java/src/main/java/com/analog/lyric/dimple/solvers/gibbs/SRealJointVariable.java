@@ -141,7 +141,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
-				((SRealFactor)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(_conjugateSampler.nextSample(ports, _inputJoint));
 		}
@@ -748,6 +748,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		_outputMsg = createDefaultMessage();
 		_sampleValue = _outputMsg.getValue();
+	    _bestSampleValue = _sampleValue;
+	    if (_sampleArray != null)
+			saveAllSamples();
 	}
 	
 	@Override

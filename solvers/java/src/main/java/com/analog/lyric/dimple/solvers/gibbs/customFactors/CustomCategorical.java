@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomCategorical extends SRealFactor implements IRealJointConjugateFactor
 {
@@ -220,5 +221,10 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		return _outputMsgs[portIndex];
 	}
 	
-
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		super.moveMessages(other, thisPortNum, otherPortNum);
+		_outputMsgs[thisPortNum] = ((CustomCategorical)other)._outputMsgs[otherPortNum];
+	}
 }

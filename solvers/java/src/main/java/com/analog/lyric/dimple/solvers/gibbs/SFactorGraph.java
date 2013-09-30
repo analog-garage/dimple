@@ -205,9 +205,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			throw new DimpleException("not yet supported");
 		
 		if (factor.isDiscrete())
-			return new TableFactorBlastFromThePast(factor);
+			return new STableFactorBlastFromThePast(factor);
 		else
-			return new RealFactorBlastFromThePast(factor);
+			return new SRealFactorBlastFromThePast(factor);
 	}
 	
 

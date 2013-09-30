@@ -23,14 +23,14 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 
-public class TableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
+public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
 {
     protected DiscreteSample[] _inPortMsgs = null;
     protected int _numPorts;
 	private double [] _outputMsg;
 	private DiscreteSample _inputMsg;
 
-	public TableFactorBlastFromThePast(BlastFromThePastFactor f) 
+	public STableFactorBlastFromThePast(BlastFromThePastFactor f) 
 	{
 		super(f);
 	}

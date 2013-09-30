@@ -51,6 +51,17 @@ public class BlastFromThePastFactor extends Factor
 	{
 		((ISolverBlastFromThePastFactor)_solverFactor).advance();
 	}
+	
+	
+	@Override
+	public void initialize()
+	{
+		if (_solverFactor != null)
+			_solverFactor.initialize();
+		
+		// Specifically remove from super class things that have to do with directedness
+	}
+
 		
 	
 }

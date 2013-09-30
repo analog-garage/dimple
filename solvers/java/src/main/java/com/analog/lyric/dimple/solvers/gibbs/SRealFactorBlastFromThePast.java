@@ -24,11 +24,13 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 
-public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
+public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
 {
 	private ObjectSample [] _inputMsgs;
+	private Object[] _outputMsgs;
+
 	
-	public RealFactorBlastFromThePast(BlastFromThePastFactor f) 
+	public SRealFactorBlastFromThePast(BlastFromThePastFactor f) 
 	{
 		super(f);
 	}
@@ -47,12 +49,12 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 		Factor f = (Factor)vb.getSiblings().get(index);
 		int numEdges = f.getSiblings().size();
 		_inputMsgs = new ObjectSample[numEdges];
+		_outputMsgs = new Object[numEdges];
 		for (int i = 0; i < numEdges; i++)
 		{
-			ObjectSample msg = (ObjectSample)f.getSolver().getInputMsg(i);
-			_inputMsgs[i] = msg;
+			_inputMsgs[i] = (ObjectSample)f.getSolver().getInputMsg(i);
+			_outputMsgs[i] = f.getSolver().getOutputMsg(i);
 		}
-		
 	}
 	
 	@Override
@@ -94,7 +96,13 @@ public class RealFactorBlastFromThePast extends SBlastFromThePast implements ISo
 	@Override
 	public void updateEdgeMessage(int portIndex) 
 	{
-		throw new DimpleException("Not supported");
+		// Do nothing
+	}
+	
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outputMsgs[portIndex];
 	}
 
 }
