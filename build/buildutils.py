@@ -1,5 +1,5 @@
 ################################################################################
-#   Copyright 2012 Analog Devices, Inc.
+#   Copyright 2012-2013 Analog Devices, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -55,12 +55,13 @@ def uncompress_kit(dest):
 
 def builddoc():
     #if exists ../doc/builddoc.py
+    print "building documentation"
+    p = os.getcwd()
+    os.chdir(p)
     if os.path.exists('../doc/builddoc.py'):
-        print "building documentation"
-        p = os.getcwd()
         os.chdir('../doc')
         os.system('python builddoc.py -c -u')
-        os.chdir(p)
+    os.chdir(p)
 
 class Builder:
     def __init__(self):
@@ -131,6 +132,11 @@ class Builder:
             
             self.copy_files_to_destination(fexcludes,rexcludes,dest,copyRoot)
             
+            javadocBuildDir = javaBuildDir + '/build/docs/javadoc'
+            if not no_doc and os.path.exists(javadocBuildDir):
+                javadocDestDir = dest + '/doc/javadoc'
+                self.make_dest_directory(javadocDestDir)
+                self.copy_files_to_destination([],[],javadocDestDir,javadocBuildDir)
 
             if not developer:
                 self.convert_mfiles_to_pfiles(mfiles_to_keep,dest,pFileToCheck)
