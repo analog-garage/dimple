@@ -142,7 +142,7 @@ Discrete v4 = new Discrete(new double [][] {
 						new double [] {5,6,7},
 						new double [] {8,9,10}},
 					3.7);
-Discrete v5 = new Discrete(new DiscreteDomain(1,2,3));
+Discrete v5 = new Discrete(DiscreteDomain.range(1,3));
 \end{lstlisting}
 
 WARNING:  The following code:
@@ -193,7 +193,7 @@ In this case, the myDomain object has properties that can be queried, such as ``
 
 \ifjava
 \begin{lstlisting}
-DiscreteDomain myDomain =  new DiscreteDomain(1,2,3);
+DiscreteDomain myDomain =  DiscreteDomain.range(1,3);
 ...
 Discrete myVariable = new Discrete(myDomain);
 \end{lstlisting}
@@ -258,7 +258,7 @@ The Domain property of a Real variable returns in this case a RealDomain object,
 Real r1 = new Real();
 Real r2 = new Real(0.0,Double.POSITIVE_INFINITY);
 Real r3 = new Real(-Math.PI,Math.PI);
-RealDomain myDomain = new RealDomain(-2.6,12.4);
+RealDomain myDomain = RealDomain.create(-2.6,12.4);
 Real r4 = new Real(myDomain);
 \end{lstlisting}
 
@@ -861,7 +861,7 @@ Just like Variables, Factors also support the notion of a Label, which can be us
 
 \para{Removing a Factor}
 
-It’s possible to remove a Factor from an existing FactorGraph:
+It is possible to remove a Factor from an existing FactorGraph:
 
 \ifmatlab
 

@@ -80,7 +80,7 @@ IMPORTANT: In the above, had we used the declaration Domain=['sunny','rainy'] in
 \ifjava
 
 \begin{lstlisting}
-DiscreteDomain domain = new DiscreteDomain("sunny", "rainy");
+DiscreteDomain domain = DiscreteDomain.create("sunny", "rainy");
 Discrete MondayWeather = new Discrete(domain);
 Discrete TuesdayWeather = new Discrete(domain);
 Discrete WednesdayWeather = new Discrete(domain);
@@ -538,7 +538,7 @@ Note that the MATLAB BadNBitXorDelta\_Tutorial is a function which takes only ON
 
 \begin{lstlisting}
 FactorGraph fourBitXor = new FactorGraph();
-DiscreteDomain domain = new DiscreteDomain(0,1);
+DiscreteDomain domain = DiscreteDomain.bit();
 Discrete b1 = new Discrete(domain);
 Discrete b2 = new Discrete(domain);
 Discrete b3 = new Discrete(domain);
