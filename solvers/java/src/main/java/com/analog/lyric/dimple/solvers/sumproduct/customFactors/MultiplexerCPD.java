@@ -128,6 +128,12 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 	}
 	
 	@Override
+	protected boolean createFactorTableOnInit()
+	{
+		return false;
+	}
+	
+	@Override
 	protected void setTableRepresentation(IFactorTable table)
 	{
 	}
