@@ -71,17 +71,17 @@ This document contains:
 
 \section{Dimple Functionality}
 
-Dimple is intended as a tool for quickly prototyping algorithms that can be described with Factor Graphs.  In its current form Dimple provides “clients” and “solvers”.  Users create Factor Graphs using the clients and then perform inference using the solvers.  There is currently a MATLAB and Java client.  Dimple is a set of classes and function calls and so MATLAB Dimple client code is similar to but not compatible with Java Dimple client code.  Both the MATLAB and Java Dimple clients can use the same Java solver but currently only the MATLAB client can use the C++ solver. 
+Dimple is intended as a tool for quickly prototyping algorithms that can be described with Factor Graphs.  In its current form Dimple provides ``clients'' and ``solvers''.  Users create Factor Graphs using the clients and then perform inference using the solvers.  There is currently a MATLAB and Java client.  Dimple is a set of classes and function calls and so MATLAB Dimple client code is similar to but not compatible with Java Dimple client code.  Both the MATLAB and Java Dimple clients can use the same Java solver but currently only the MATLAB client can use the C++ solver. 
 
 Specific features
 
 \begin{itemize}
 \item Existing 
 \begin{itemize}
-\item See ‘Dimple User Documentation.pdf’
+\item See `Dimple User Documentation.pdf’
 extended with new user created solvers.
 \item Multiple methods of specifying schedules.
-\item Specify arbitrary function node implementations – It might be valuable for users to override the Function Node implementation.  (To simulate hardware non-idealities).  
+\item Specify arbitrary function node implementations – It might be valuable for users to override the Function Node implementation.  (To simulate hardware non-idealities)....
 \item Debugging support – Dimple provides ways to view the messages and information about each factor and variable.
 \item Multiple Solvers – Dimple currently provides SumProduct, MinSum, Gibbs, and other solvers.
 \item Continuous Variables - Dimple has some support for continuous variables.
@@ -90,7 +90,7 @@ extended with new user created solvers.
 
 \section{Detailed API Documentation}
 
-See ‘DimpleUserDocumentation.pdf'
+See `DimpleUserDocumentation.pdf'
 
 
 \section{Architecture}
@@ -126,7 +126,7 @@ As either of the references will mention, Factor Graphs are bipartite graphs of 
 
 The optimal scheduling of the Sum-Product algorithm on trees is understood and well defined but Dimple supports loopy graphs (our LDPC is a loopy graph) and the optimal scheduling on loopy graphs is not well understood.  Dimple provides multiple schedulers as well as hooks for developing new schedulers.  Existing schedulers include TreeAndFloodingScheduler which will pick an optimal schedule for a tree graph or a flooding schedule for a non tree graph.
 
-Let’s now examine how messages are computed for Function and Variable nodes.  
+Let’s now examine how messages are computed for Function and Variable nodes....
 
 \paragraph{Function Nodes}
 
@@ -175,7 +175,7 @@ Math for equals belief:
 
 \paragraph{Tables}
 
-Looking at the Function Node pseudo-code you can see the line that says “for each combination of Y and Z”.  Legal combinations can be discovered using Delta Functions provided by the user.  
+Looking at the Function Node pseudo-code you can see the line that says ``for each combination of Y and Z''.  Legal combinations can be discovered using Delta Functions provided by the user.  
 
 In the case of the XOR, the Delta function can be written:
 
@@ -303,7 +303,7 @@ b = Bit(3,1);
 \end{lstlisting}
 
 \begin{enumerate}
-\item Bit and Variable both inherit from VariableBase.  The object diagram hides this complexity and represents this entire class structure with a single “Variable” box.
+\item Bit and Variable both inherit from VariableBase.  The object diagram hides this complexity and represents this entire class structure with a single ``Variable'' box.
 \item The VariableBase class calls getModeler()
 \item It calls createVariableVector on the resulting ModelFactory
 \begin{enumerate}
@@ -481,7 +481,7 @@ To understand how solver state is initialized and maintained, we look at several
 
 \paragraph{User Sets Solver}
 
-When the user sets the solver on the Factor Graph.  The factor graph creates solver objects and does a two way attachment from model to solver and vice versa.  When the variable solver objects are created, model properties are sent down to the variable solver objects.  
+When the user sets the solver on the Factor Graph.  The factor graph creates solver objects and does a two way attachment from model to solver and vice versa.  When the variable solver objects are created, model properties are sent down to the variable solver objects....
 
 Factor solver objects are created after all variable solver objects have been created.  As each factor solver object is created, it is told to create any needed messages.
 
@@ -760,7 +760,7 @@ Let’s examine sets of these classes in more detail.
 
 At the top of the class structure is the DimpleManager class.  This class is used as a singleton (there is only one instance).  It is instantiated as a static variable in the DimpleEntry.cpp file that contains the mexFunction.  Mex functions are described more in the MATLAB/C++ Interface sections of this document.  The DimpleManager is used to manage all instances of Factor Graphs and Variables.
 
-When creating new instances of Graphs and Variables, the DimpleManager class returns integer ids to be returned to the MATLAB code.  As far as I can tell, MATLAB objects cannot hold pointers to C++ objects.  As a result, all C++ objects must be accessed via integer ID through the DimpleEntry function calls.   
+When creating new instances of Graphs and Variables, the DimpleManager class returns integer ids to be returned to the MATLAB code.  As far as I can tell, MATLAB objects cannot hold pointers to C++ objects.  As a result, all C++ objects must be accessed via integer ID through the DimpleEntry function calls....
 
 Methods:
 
@@ -815,9 +815,9 @@ When the Factor Graph instance is created, it adds all Variables and Functions t
 
 \subsubsection{C++ interface}
 
-All calls from MATLAB to C++ go through a single MATLAB function called DimpleEntry.  This function is compiled from C++ code using MATLAB’s Mex technology.  I created a DimpleEntry.cpp file with a function called “mexFunction” as per MATLAB’s spec.  Compilation of the mex DimpleEntry.cpp file results in a DimpleEntry function.
+All calls from MATLAB to C++ go through a single MATLAB function called DimpleEntry.  This function is compiled from C++ code using MATLAB’s Mex technology.  I created a DimpleEntry.cpp file with a function called ``mexFunction'' as per MATLAB’s spec.  Compilation of the mex DimpleEntry.cpp file results in a DimpleEntry function.
 
-The mexFunction acts as a “switchyard”, routing commands to different functions based on the first argument.
+The mexFunction acts as a ``switchyard'', routing commands to different functions based on the first argument.
 
 \begin{lstlisting}
 static DimpleManager _dimple;
@@ -991,7 +991,7 @@ When c is a cell array of objects it behaves almost the same as the Numerical ca
 The only special case occurs when a is a scalar.  In this case the object being returned and passed does not need to be contained within a cell array.
 
 \paragraph{MatrixObject}
-In some cases, c might also be a MatrixObject.  This is true in the case of the Factor DirectedTo property.  In such a case, the same rules apply as in the Numerical case except that multidimensional arrays of Nodes will be passed to the Nodes behind a rather than arrays of doubles.  
+In some cases, c might also be a MatrixObject.  This is true in the case of the Factor DirectedTo property.  In such a case, the same rules apply as in the Numerical case except that multidimensional arrays of Nodes will be passed to the Nodes behind a rather than arrays of doubles....
 
 In the following example we pass a(i,j) to f(i,j).DirectedTo:
 
@@ -1187,7 +1187,7 @@ for each thread
 This algorithm is slower than the Phase based algorithm in many cases, but does tend to be faster with large factors and a more complex dependency graph.
 
 \subparagraph{SingleQueueCrossIterationMultithreadingAlgorithm}
-This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower.  
+This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower....
 
 \paragraph{Profiling}
 Dimple contains a few MATLAB profiling scripts in: /dimple/modelers/matlab/tests/performance/threading.  These can be run to determine if multithreading changes affect performance.
