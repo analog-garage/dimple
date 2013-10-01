@@ -616,7 +616,7 @@ int [][] indices = new int [][] {
 	new int [] {1,1}
 };
 double [] weights = new double [] {2.0,1.0};
-FactorTable ft = new FactorTable(indices, weights, a,b);
+FactorTable ft = FactorTable.create(indices, weights, a,b);
 fg.addFactor(ft,a,b);
 \end{lstlisting}
 \fi
