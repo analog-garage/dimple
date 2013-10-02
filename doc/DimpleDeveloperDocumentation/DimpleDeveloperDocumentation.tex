@@ -105,7 +105,6 @@ An early prototype of Dimple was written entirely in MATLAB.  This prototype's p
 Among the existing solvers are:
 
 \begin{itemize}
-\item C++ Solver - This solver supports nested graphs but is not currently as customizable as the Java solver.  It is currently only accessible from the MATLAB client.
 \item Java Solvers - There are java implementations of multiple solvers (including sum product, min sum, and gibbs).  These are the most feature rich of all the solvers.
 \item Python Solver - This solver is less flexible than the Java solvers.  It is at least 10x slower than the Java solver but is useful when performance is not an issue and Jython cannot be used.
 \end{itemize}
@@ -120,7 +119,7 @@ When executed, the user's program makes calls to MATLAB functions provided by th
 
 \subsubsection{Factor Graphs and the Sum-Product Algorithm}
 
-Before describing the C++, Java, Python and MATLAB architecture in more detail it is probably useful to describe some of the details of the Sum-Product algorithm here.  The two references at the beginning of this document provide more detail on the Sum-Product algorithm and are probably necessary reading to put the following descriptions in context.
+Before describing the Java, Python and MATLAB architecture in more detail it is probably useful to describe some of the details of the Sum-Product algorithm here.  The two references at the beginning of this document provide more detail on the Sum-Product algorithm and are probably necessary reading to put the following descriptions in context.
 
 As either of the references will mention, Factor Graphs are bipartite graphs of Variable Nodes and Function Nodes.  The bipartite-ness means that there are two sets of nodes (in this case Variable and Function) and nodes from one set connect only to nodes of the other set.
 
@@ -235,7 +234,7 @@ Dimple now supports a Java client in addition to the MATLAB and Python clients. 
 
 In Java, we have a Client, Model, and Solver layer.  In addition we have a MATLAB proxy layer which exists to provide any features the MATLAB client expects that the Java Client does not implement.  VariableVectors are an example of such a feature.
 
-The MATLAB Dimple client can be connected to multiple Model Factories.  There are two such Model Factories right now.  One instantiates a set of MATLAB classes that are thin wrappers around the CSolver or any other solver that implements the legacy ISolver interface (described in the C sections of this document).  Another ModelFactor is provided in the Java MATLAB proxy layer and instantiates Java MATLAB Proxy classes.
+The MATLAB Dimple client can be connected to multiple Model Factories.  There is currently just one such factory right now: the Java MATLAB proxy layer and instantiates Java MATLAB Proxy classes.
 
 \includegraphics{images/ArchitectureLayers.png}
 
@@ -734,120 +733,7 @@ fg.advance()
 
 \end{lstlisting}
 
-\subsubsection{C++ Wrapper}
 
-The following sections describe the C++ Solver Architecture as it was originally designed in Dimple.  When Dimple was re-architected to include the concept of a Client, Modeler, and Solver, we left the C++ Solver architecture in place and created MATLAB Model classes to interface to the existing C++ Solver interface.  These class files live in modelers/matlab/modelfactory.
-
-
-subsubsection{C++ Solver Architecture}
-
-
-All MATLAB function calls and operations on classes result in calls into a single MATLAB function called DimpleEntry.  The underlying implementation of this function is written in C++ and compiled with MATLAB's Mex technology.
-
-The DimpleEntry function is the entry point for all Dimple calls from MATLAB to C++.  MATLAB provides a CSolver class that implements all of the Solver interface methods.  Internally, the CSolver class makes calls to the DimpleEntry function for each of these solver methods.  The DimpleEntry function makes reference to a static instance of the DimpleManager class.  Because this instance is static, it allows data to persist between calls to the DimpleEntry function.  The DimpleManager C++ class is responsible for maintaining all other C++ Dimple objects that represent the Variables, Factor Graph Instances, etc...
-
-
-Although users program Dimple using MATLAB or Python functions and classes, we'll start the detailed architecture section by describing the C++ class structure since this will provide a deeper understanding of the underlying data structures.
-
-The following class diagram shows all of the current Dimple C++ classes:
-
-\includegraphics{images/Cpp.png}
-
-
-Let's examine sets of these classes in more detail.
-
-\paragraph{DimpleManager}
-
-At the top of the class structure is the DimpleManager class.  This class is used as a singleton (there is only one instance).  It is instantiated as a static variable in the DimpleEntry.cpp file that contains the mexFunction.  Mex functions are described more in the MATLAB/C++ Interface sections of this document.  The DimpleManager is used to manage all instances of Factor Graphs and Variables.
-
-When creating new instances of Graphs and Variables, the DimpleManager class returns integer ids to be returned to the MATLAB code.  As far as I can tell, MATLAB objects cannot hold pointers to C++ objects.  As a result, all C++ objects must be accessed via integer ID through the DimpleEntry function calls.
-
-Methods:
-
-
-
-\begin{itemize}
-\item int NewVariable(int domainLength) - Creates a new Variable and returns a unique Id.
-\item Variable * GetVariable(int graphId, int varId) - Gets a Variable from its Graph/Variable Id.
-\item int NewGraph(vector<Variable*> \& variables) - Creates a new FactorGraph.
-\item FactorGraph * GetGraph(int id) - Gets a Graph from its Id.
-\item Vector<FactorGraph*> * GetGraphs() - Returns all Factor Graphs.
-\item int NewInstance(int graphDefId,vector<Variable*> \& args) - Returns a new isntance of a graph and returns a unique id.
-\item Domain * GetDomain(double * values,int numvalues) - Returns a Domain instance from an array of doubles.
-\item void Clear() - Clears all data structures.
-\end{itemize}
-
-
-
-\paragraph{Factor Graphs}
-
-FactorGraphs consist of Function Nodes, Variable Nodes, and Nested Factor Graphs.  All variables have a domainLength.  Function nodes will be associated with Combination Tables.  Function and Variable nodes will be connected to one another via Ports and both inherit from INode so that they can be initialized and Updated without regard for which type they are.  The Ports are necessary to provide connections as well as to store messages.  Each port contains an input Message for its parent node.  A message is just an array of doubles that must sum to one since they represent probabilities of a discrete finite variable. 
-
-The following object diagram shows the relationship between Function, Variables, Ports, and InputMsgs:
-
-\includegraphics{images/PortsAndNodes.png}
-
-When the Factor Graph instance is created, it adds all Variables and Functions to the parent Variable and Function lists.  As a result, each nested graph contains all Function and Variables associated with itself and its children.  This is somewhat wasteful of space but was easy to implement.
-
-
-
-\paragraph{Methods}
-
-
-
-\begin{itemize}
-\item FactorGraph(vector<Variable *> \& args) - Creates a Factor Graph and specifies a set of variables as arguments to that Factor Graph.  Factor Graph arguments are used when using a Factor Graph as a nested Factor Graph.  When calling addGraph, users have to specify a number of variables equal to the number of variables specified in this constructor.
-\item FactorGraph(vector<Variable *> \& args,bool isMaster) - This constructor is used when nesting a graph.
-\item ~FactorGraph(void) - The destructor cleans up.
-\item Variable * GetVariable(int id) - Retrieve a variable from an id.
-\item void AddGraph(FactorGraph * graph,vector<Variable*> \& graphArgs) - Add a nested factor graph.
-\item FactorGraph * NewInstance(vector<Variable*> \& args) - Create a new Instance of this graph.
-\item vector<Variable*> * GetVariables() - Retrieve a list of all variables associated with this Factor Graph.
-\item void SetNumIterations(int num) - Set the number of iterations to be used when solving.
-\item void Solve() - Runs sum product.
-\item void Initialize() - Sets all messages to uniform values.
-\item void Iterate(int numIter) - Run the specified number of iterations.
-\item void createTable(int tableId,vector<vector<int> > \& table, vector<double> \& values) - This function adds a table to the factor graph class.
-\item Function * createTableFunc(int tableId,vector<Variable*> \& varIds) - This method instantiates a table.
-\end{itemize}
-
-
-
-\subsubsection{C++ interface}
-
-All calls from MATLAB to C++ go through a single MATLAB function called DimpleEntry.  This function is compiled from C++ code using MATLAB's Mex technology.  I created a DimpleEntry.cpp file with a function called ``mexFunction'' as per MATLAB's spec.  Compilation of the mex DimpleEntry.cpp file results in a DimpleEntry function.
-
-The mexFunction acts as a ``switchyard'', routing commands to different functions based on the first argument.
-
-\begin{lstlisting}
-static DimpleManager _dimple;
-//a bunch of helper functions
-. . .
-//mexFunction
-
-void mexFunction(int nlhs, mxArray *plhs[],
-    int nrhs, const mxArray *prhs[]) 
-{
-		
-    char command[256];
-    mxGetString(prhs[0],command,256);
-		         
-    if ( strcmp(command,"newgraphdef") == 0)
-    {
-        newgraphdef(nlhs,plhs);
-    }
-    else if(strcmp(command,"newargdef") == 0)
-    {
-        newargdef(nlhs,plhs,nrhs,prhs);
-    }
-
-    etc...
-
-\end{lstlisting}
-
-The functions called from the switchyard all make calls on the static DimpleManager class instance \_dimple.
-
-As noted earlier in this document, the C++ code also makes calls back to MATLAB to build the CombinationTables from the delta functions. It does so by calling the C++ mexCallMATLAB function, which takes the MATLAB function name as an argument.
 
 \subsubsection{LP and IP Solver}
 

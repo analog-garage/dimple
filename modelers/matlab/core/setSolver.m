@@ -24,11 +24,7 @@ function setSolver(solver,varargin)
        solver = solver(varargin{:});
     end
     
-    if strcmp(class(solver),'CSolver')==1
-        g_dimpleModeler = ModelFactory();
-    else
-        g_dimpleModeler = com.analog.lyric.dimple.matlabproxy.ModelFactory();
-    end
+    g_dimpleModeler = com.analog.lyric.dimple.matlabproxy.ModelFactory();
     g_dimpleModeler.setSolver(solver);
     g_dimpleSolver = solver;
 end

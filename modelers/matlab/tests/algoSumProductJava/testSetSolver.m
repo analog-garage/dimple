@@ -62,11 +62,9 @@ function testSetSolver()
     for i = 1:length(names)
         name = names{i};
         
-        if ~isequal('csolver',name)
-            setSolver(name);
-            fg = FactorGraph();
-            solver = fg.Solver;
-        end
+        setSolver(name);
+        fg = FactorGraph();
+        solver = fg.Solver;
         %expectedSolverType = registry.get(name);
         %assertTrue(isa(solver,class(expectedSolverType())));
     end

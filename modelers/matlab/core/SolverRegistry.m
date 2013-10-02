@@ -27,7 +27,6 @@ classdef SolverRegistry < handle
         end
         
         function initializeSolvers(obj)
-            obj.register('CSolver',@CSolver);
             obj.register('particleBP',@com.analog.lyric.dimple.solvers.particleBP.Solver);
         end
         
