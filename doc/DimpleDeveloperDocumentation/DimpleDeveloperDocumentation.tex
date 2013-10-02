@@ -63,9 +63,9 @@ This document provides information about Dimple that will be useful to developer
 This document contains: 
 
 \begin{enumerate}
-\item Unreleased Dimple Functionality – Describe at a high level what problems Dimple is meant to solve.
+\item Unreleased Dimple Functionality - Describe at a high level what problems Dimple is meant to solve.
 \item Thoughts about possible future Dimple functionality.
-\item Dimple Architecture and Design – Provides details of the design for internal developers and patents. 
+\item Dimple Architecture and Design - Provides details of the design for internal developers and patents. 
 \end{enumerate}
 
 
@@ -78,12 +78,12 @@ Specific features
 \begin{itemize}
 \item Existing 
 \begin{itemize}
-\item See `Dimple User Documentation.pdf’
+\item See `Dimple User Documentation.pdf'
 extended with new user created solvers.
 \item Multiple methods of specifying schedules.
-\item Specify arbitrary function node implementations – It might be valuable for users to override the Function Node implementation.  (To simulate hardware non-idealities)....
-\item Debugging support – Dimple provides ways to view the messages and information about each factor and variable.
-\item Multiple Solvers – Dimple currently provides SumProduct, MinSum, Gibbs, and other solvers.
+\item Specify arbitrary function node implementations - It might be valuable for users to override the Function Node implementation.  (To simulate hardware non-idealities)....
+\item Debugging support - Dimple provides ways to view the messages and information about each factor and variable.
+\item Multiple Solvers - Dimple currently provides SumProduct, MinSum, Gibbs, and other solvers.
 \item Continuous Variables - Dimple has some support for continuous variables.
 \end{itemize}
 \end{itemize}
@@ -98,23 +98,23 @@ See `DimpleUserDocumentation.pdf'
 
 \subsection{High Level}
 
-Dimple currently provides both a MATLAB and Python client.  Coding with MATLAB allows users access to MATLAB’s data visualization tools, communications libraries, vector/matrix support, and general familiarity for hardware designers.  Coding in Python allows integration with FADL.
+Dimple currently provides both a MATLAB and Python client.  Coding with MATLAB allows users access to MATLAB's data visualization tools, communications libraries, vector/matrix support, and general familiarity for hardware designers.  Coding in Python allows integration with FADL.
 
-An early prototype of Dimple was written entirely in MATLAB.  This prototype’s performance was suboptimal.  As a result Dimple is now architected so that the user interface is MATLAB or Python while the internals are implemented using C++ or Java.
+An early prototype of Dimple was written entirely in MATLAB.  This prototype's performance was suboptimal.  As a result Dimple is now architected so that the user interface is MATLAB or Python while the internals are implemented using C++ or Java.
 
 Among the existing solvers are:
 
 \begin{itemize}
-\item C++ Solver – This solver supports nested graphs but is not currently as customizable as the Java solver.  It is currently only accessible from the MATLAB client.
-\item Java Solvers – There are java implementations of multiple solvers (including sum product, min sum, and gibbs).  These are the most feature rich of all the solvers.
-\item Python Solver – This solver is less flexible than the Java solvers.  It is at least 10x slower than the Java solver but is useful when performance is not an issue and Jython cannot be used.
+\item C++ Solver - This solver supports nested graphs but is not currently as customizable as the Java solver.  It is currently only accessible from the MATLAB client.
+\item Java Solvers - There are java implementations of multiple solvers (including sum product, min sum, and gibbs).  These are the most feature rich of all the solvers.
+\item Python Solver - This solver is less flexible than the Java solvers.  It is at least 10x slower than the Java solver but is useful when performance is not an issue and Jython cannot be used.
 \end{itemize}
 
 \includegraphics{images/DimpleHighLevelArchitecture.png}
 
 Users develop programs as described in the user manual section of this document.  Their programs can refer to user created delta functions or pre-made delta functions residing in the Dimple/lib directory (if Dimple is installed correctly)
 
-When executed, the user’s program makes calls to MATLAB functions provided by the Dimple installation. Dimple uses some MATLAB OOP features, so user defined Variables, Graphs, and Graph Definitions are all represented by MATLAB classes.
+When executed, the user's program makes calls to MATLAB functions provided by the Dimple installation. Dimple uses some MATLAB OOP features, so user defined Variables, Graphs, and Graph Definitions are all represented by MATLAB classes.
 
 \subsection{Detailed Architecture}
 
@@ -126,11 +126,11 @@ As either of the references will mention, Factor Graphs are bipartite graphs of 
 
 The optimal scheduling of the Sum-Product algorithm on trees is understood and well defined but Dimple supports loopy graphs (our LDPC is a loopy graph) and the optimal scheduling on loopy graphs is not well understood.  Dimple provides multiple schedulers as well as hooks for developing new schedulers.  Existing schedulers include TreeAndFloodingScheduler which will pick an optimal schedule for a tree graph or a flooding schedule for a non tree graph.
 
-Let’s now examine how messages are computed for Function and Variable nodes....
+Let's now examine how messages are computed for Function and Variable nodes.
 
 \paragraph{Function Nodes}
 
-Because Dimple currently only supports discrete m-ary variables (where m is finite), messages are simply double arrays where the elements of the array sum to 1 and map to elements of elements in the variable’s domain.  The messages are really PMFs (Probability Mass Functions) of the variables’ domains.  
+Because Dimple currently only supports discrete m-ary variables (where m is finite), messages are simply double arrays where the elements of the array sum to 1 and map to elements of elements in the variable's domain.  The messages are really PMFs (Probability Mass Functions) of the variables' domains.  
 
 The following equation can be used to describe how to compute one element of the Msg array for a given edge. 
 
@@ -216,7 +216,7 @@ If you look at the function node pseudo-code again, you will see that all non-va
 
 In order to minimize the number of computations, we generate the tables for all Delta Functions before running the Sum-Product algorithm.
 
-Now let’s get into the actual architecture.
+Now let's get into the actual architecture.
 
 
 
@@ -227,9 +227,9 @@ Dimple now supports a Java client in addition to the MATLAB and Python clients. 
 
 
 \begin{itemize}
-\item Client – These classes provide the UI and exist to hide unwanted details from the user.
-\item Model – The model layer is separated from the Solver layer so that users can build Factor Graphs and switch the solver without rebuilding their model.  The model layer should contain a  description of the connectivity of the graph, the combo tables, be able to store priors, etc…
-\item Solver – The solver layer implements the solve function, should take the graph, the inputs and produce beliefs.  A sumproduct solver will perform the Sum Product algorithm using BP.
+\item Client - These classes provide the UI and exist to hide unwanted details from the user.
+\item Model - The model layer is separated from the Solver layer so that users can build Factor Graphs and switch the solver without rebuilding their model.  The model layer should contain a  description of the connectivity of the graph, the combo tables, be able to store priors, etc...
+\item Solver - The solver layer implements the solve function, should take the graph, the inputs and produce beliefs.  A sumproduct solver will perform the Sum Product algorithm using BP.
 \end{itemize}
 
 
@@ -244,17 +244,17 @@ The MATLAB Dimple client can be connected to multiple Model Factories.  There ar
 
 \paragraph{Client, Model, and Solver relationships}
 
-Let’s now examine the MATLAB architecture when using a MATLAB client and Java Model and Solver.  The following graph is a simplified view of some of the class relationships.
+Let's now examine the MATLAB architecture when using a MATLAB client and Java Model and Solver.  The following graph is a simplified view of some of the class relationships.
 
 \includegraphics{images/DetailedLayers.png}
  
 The user interacts with the Client layer, which mostly consists of the FactorGraph, Variable, and Factor classes.  Both FactorGraphs and Variables retrieve a global ModelFactory object using the getModeler() function.  The ModelFactory object can be changed with the setModeler() function.  The architecture assumes that all Variables added to a FactorGraph will share the same ModeleFactory.
 
-All of the MATLAB classes contain pointers to corresponding Model classes.  The ModelFactory is responsible for instantiating the Model objects for FactorGraph and VariableVector.  In the diagram, these classes are called PFactorGraph and PVariableVector.  The P stands for Proxy.  The Java code provides a set of MATLAB proxy classes, which inherit from the Java client’s classes.  The proxy layer is necessary to provide  the appropriate methods for the MATLAB interface without cluttering the Java client.
+All of the MATLAB classes contain pointers to corresponding Model classes.  The ModelFactory is responsible for instantiating the Model objects for FactorGraph and VariableVector.  In the diagram, these classes are called PFactorGraph and PVariableVector.  The P stands for Proxy.  The Java code provides a set of MATLAB proxy classes, which inherit from the Java client's classes.  The proxy layer is necessary to provide  the appropriate methods for the MATLAB interface without cluttering the Java client.
 
 PFactor, PFactorGraph, and PVariable are all thin wrappers around the Java MFactor, MFactorGraph, and MVariable classes.  These classes provide the connectivity of the graph.  The MFactorGraph class contains a Scheduler and ultimately a schedule.  Schedules will describe the order that nodes and edges should be updated.  
 
-When the SolverFactory is passed to the FactorGraph, the FactorGraph will create Solver objects for each Factor Graph, Variable, and Factor.  When the Factor Graph’s solve method is called, the MFactorGraph class iterates the schedule and calls update on all of the objects provided by the schedule.  The update function on the Model objects is passed down to the solver objects.  
+When the SolverFactory is passed to the FactorGraph, the FactorGraph will create Solver objects for each Factor Graph, Variable, and Factor.  When the Factor Graph's solve method is called, the MFactorGraph class iterates the schedule and calls update on all of the objects provided by the schedule.  The update function on the Model objects is passed down to the solver objects.  
 
 \paragraph{Relationship between Model and Solver}
 
@@ -286,7 +286,7 @@ fg = FactorGraph
 \item It calls createGraph on the ModelFactory to create the PFactorGraph object
 \begin{enumerate}
 \item When the PFactorGraph object is created it instantiates an MFactorGraph object.
-\item It passes the ModelFactory’s Solver (SolverFactory) to the newly created MFactorGraph.  Although the architecture is meant to allow Models to exist without Solvers, it also ensures the Model is setup with a default Solver so that users don’t have to explicitly set a Solver.
+\item It passes the ModelFactory's Solver (SolverFactory) to the newly created MFactorGraph.  Although the architecture is meant to allow Models to exist without Solvers, it also ensures the Model is setup with a default Solver so that users don't have to explicitly set a Solver.
 \item The MFactorGraph setSolverFactory method will store the SolverFactory and also call createFactorGraph and store the SFactorGraph object that was created as a result of that call.
 \end{enumerate}
 \end{enumerate}
@@ -318,7 +318,7 @@ Now we have:
 
 \includegraphics{images/ObjectInstantiation3.png}
 
-Note that the MVariable doesn’t have an underlying Solver object yet.
+Note that the MVariable doesn't have an underlying Solver object yet.
 
 Next the user can call:
 
@@ -329,11 +329,11 @@ f = fg.addFactor(@xorDelta,b);
 
 
 \begin{enumerate}
-\item First we should note some architectural details not mentioned in the object diagram.  First, MATLAB provides both a Factor and TableFactor class.  The TableFactor class inherits from Factor and assumes that the Factor has a combination table.  Second, if a solver does not provide a custom factor, the Factor Graph will generate a combination table for each unique set of function handles and argument domains it encounters.  Currently there is a one to one mapping of FactorGraphs to CombinationTableFactories.  The CombinationTableFactory is responsible for generating combo tables as well as caching combo tables.  
+\item First we should note some architectural details not mentioned in the object diagram.  First, MATLAB provides both a Factor and TableFactor class.  The TableFactor class inherits from Factor and assumes that the Factor has a combination table.  Second, if a solver does not provide a custom factor, the Factor Graph will generate a combination table for each unique set of function handles and argument domains it encounters.  Currently there is a one to one mapping of FactorGraphs to CombinationTableFactories.  The CombinationTableFactory is responsible for generating combo tables as well as caching combo tables.
 \item FactorGraph calls customFactorExists on the PFactorGraph object.  This call is passed down to MFactorGraph and MFactorGraph returns false if no solver is set and otherwise passes the call down to SFactorGraph.  The Solver is responsible for returning true only in cases where it actually has a hand coded implementation of the specified factor.
 \item If a custom factor exists
 \begin{enumerate}
-\item createCustomFactor is called on the PFactorGraph object.  
+\item createCustomFactor is called on the PFactorGraph object.
 \begin{enumerate}
 \item This object calls createCustomFactor on the MFactorGraph object
 
@@ -442,9 +442,9 @@ fg.solve();
 \item Different schedulers will use different algorithms to create a schedule.  A TreeOrFloodingScheduler will try to update the fewest number of edges possible if the graph is a tree and otherwise create a fixed flooding schedule.
 \end{itemize}
 \end{itemize}
-\item It then calls update on every IScheduleEntry returned by the Schedule’s iterator.
+\item It then calls update on every IScheduleEntry returned by the Schedule's iterator.
 \begin{itemize}
-\item The iterator’s next function will return objects that implement the IScheduleEntry interface.  These will most likely be NodeScheduleEntry objects or EdgeScheduleEntry objects.  The former will call update on a Node (MVariable or MFactor) and the latter will call updateEdge on a Node.
+\item The iterator's next function will return objects that implement the IScheduleEntry interface.  These will most likely be NodeScheduleEntry objects or EdgeScheduleEntry objects.  The former will call update on a Node (MVariable or MFactor) and the latter will call updateEdge on a Node.
 \begin{itemize}
 \item The MVariable or MFactor update will call update on the corresponding SVariable or SFactor node.  The solver nodes are responsible for reading the messages (retrieved from the MVariable and MFactor ports) and writing the messages (retrieved from the same place).
 \end{itemize}
@@ -481,7 +481,7 @@ To understand how solver state is initialized and maintained, we look at several
 
 \paragraph{User Sets Solver}
 
-When the user sets the solver on the Factor Graph.  The factor graph creates solver objects and does a two way attachment from model to solver and vice versa.  When the variable solver objects are created, model properties are sent down to the variable solver objects....
+When the user sets the solver on the Factor Graph.  The factor graph creates solver objects and does a two way attachment from model to solver and vice versa.  When the variable solver objects are created, model properties are sent down to the variable solver objects.
 
 Factor solver objects are created after all variable solver objects have been created.  As each factor solver object is created, it is told to create any needed messages.
 
@@ -742,39 +742,39 @@ The following sections describe the C++ Solver Architecture as it was originally
 subsubsection{C++ Solver Architecture}
 
 
-All MATLAB function calls and operations on classes result in calls into a single MATLAB function called DimpleEntry.  The underlying implementation of this function is written in C++ and compiled with MATLAB’s Mex technology.
+All MATLAB function calls and operations on classes result in calls into a single MATLAB function called DimpleEntry.  The underlying implementation of this function is written in C++ and compiled with MATLAB's Mex technology.
 
 The DimpleEntry function is the entry point for all Dimple calls from MATLAB to C++.  MATLAB provides a CSolver class that implements all of the Solver interface methods.  Internally, the CSolver class makes calls to the DimpleEntry function for each of these solver methods.  The DimpleEntry function makes reference to a static instance of the DimpleManager class.  Because this instance is static, it allows data to persist between calls to the DimpleEntry function.  The DimpleManager C++ class is responsible for maintaining all other C++ Dimple objects that represent the Variables, Factor Graph Instances, etc...
 
 
-Although users program Dimple using MATLAB or Python functions and classes, we’ll start the detailed architecture section by describing the C++ class structure since this will provide a deeper understanding of the underlying data structures.
+Although users program Dimple using MATLAB or Python functions and classes, we'll start the detailed architecture section by describing the C++ class structure since this will provide a deeper understanding of the underlying data structures.
 
 The following class diagram shows all of the current Dimple C++ classes:
 
 \includegraphics{images/Cpp.png}
 
 
-Let’s examine sets of these classes in more detail.
+Let's examine sets of these classes in more detail.
 
 \paragraph{DimpleManager}
 
 At the top of the class structure is the DimpleManager class.  This class is used as a singleton (there is only one instance).  It is instantiated as a static variable in the DimpleEntry.cpp file that contains the mexFunction.  Mex functions are described more in the MATLAB/C++ Interface sections of this document.  The DimpleManager is used to manage all instances of Factor Graphs and Variables.
 
-When creating new instances of Graphs and Variables, the DimpleManager class returns integer ids to be returned to the MATLAB code.  As far as I can tell, MATLAB objects cannot hold pointers to C++ objects.  As a result, all C++ objects must be accessed via integer ID through the DimpleEntry function calls....
+When creating new instances of Graphs and Variables, the DimpleManager class returns integer ids to be returned to the MATLAB code.  As far as I can tell, MATLAB objects cannot hold pointers to C++ objects.  As a result, all C++ objects must be accessed via integer ID through the DimpleEntry function calls.
 
 Methods:
 
 
 
 \begin{itemize}
-\item int NewVariable(int domainLength) – Creates a new Variable and returns a unique Id.
-\item Variable * GetVariable(int graphId, int varId) – Gets a Variable from its Graph/Variable Id.
-\item int NewGraph(vector<Variable*> \& variables) – Creates a new FactorGraph.
-\item FactorGraph * GetGraph(int id) – Gets a Graph from its Id.
-\item Vector<FactorGraph*> * GetGraphs() – Returns all Factor Graphs.
-\item int NewInstance(int graphDefId,vector<Variable*> \& args) – Returns a new isntance of a graph and returns a unique id.
-\item Domain * GetDomain(double * values,int numvalues) – Returns a Domain instance from an array of doubles.
-\item void Clear() – Clears all data structures.
+\item int NewVariable(int domainLength) - Creates a new Variable and returns a unique Id.
+\item Variable * GetVariable(int graphId, int varId) - Gets a Variable from its Graph/Variable Id.
+\item int NewGraph(vector<Variable*> \& variables) - Creates a new FactorGraph.
+\item FactorGraph * GetGraph(int id) - Gets a Graph from its Id.
+\item Vector<FactorGraph*> * GetGraphs() - Returns all Factor Graphs.
+\item int NewInstance(int graphDefId,vector<Variable*> \& args) - Returns a new isntance of a graph and returns a unique id.
+\item Domain * GetDomain(double * values,int numvalues) - Returns a Domain instance from an array of doubles.
+\item void Clear() - Clears all data structures.
 \end{itemize}
 
 
@@ -787,7 +787,7 @@ The following object diagram shows the relationship between Function, Variables,
 
 \includegraphics{images/PortsAndNodes.png}
 
-When the Factor Graph instance is created, it adds all Variables and Functions to the parent Variable and Function lists.  As a result, each nested graph contains all Function and Variables associated with itself and its children.  This is somewhat wasteful of space but was easy to implement.  
+When the Factor Graph instance is created, it adds all Variables and Functions to the parent Variable and Function lists.  As a result, each nested graph contains all Function and Variables associated with itself and its children.  This is somewhat wasteful of space but was easy to implement.
 
 
 
@@ -796,26 +796,26 @@ When the Factor Graph instance is created, it adds all Variables and Functions t
 
 
 \begin{itemize}
-\item FactorGraph(vector<Variable *> \& args) – Creates a Factor Graph and specifies a set of variables as arguments to that Factor Graph.  Factor Graph arguments are used when using a Factor Graph as a nested Factor Graph.  When calling addGraph, users have to specify a number of variables equal to the number of variables specified in this constructor.
-\item FactorGraph(vector<Variable *> \& args,bool isMaster) – This constructor is used when nesting a graph.
-\item ~FactorGraph(void) – The destructor cleans up.
-\item Variable * GetVariable(int id) – Retrieve a variable from an id.
-\item void AddGraph(FactorGraph * graph,vector<Variable*> \& graphArgs) – Add a nested factor graph.
-\item FactorGraph * NewInstance(vector<Variable*> \& args) – Create a new Instance of this graph.
-\item vector<Variable*> * GetVariables() – Retrieve a list of all variables associated with this Factor Graph.
-\item void SetNumIterations(int num) – Set the number of iterations to be used when solving.
-\item void Solve() – Runs sum product.
-\item void Initialize() – Sets all messages to uniform values.
-\item void Iterate(int numIter) – Run the specified number of iterations.
-\item void createTable(int tableId,vector<vector<int> > \& table, vector<double> \& values) – This function adds a table to the factor graph class.
-\item Function * createTableFunc(int tableId,vector<Variable*> \& varIds) – This method instantiates a table.
+\item FactorGraph(vector<Variable *> \& args) - Creates a Factor Graph and specifies a set of variables as arguments to that Factor Graph.  Factor Graph arguments are used when using a Factor Graph as a nested Factor Graph.  When calling addGraph, users have to specify a number of variables equal to the number of variables specified in this constructor.
+\item FactorGraph(vector<Variable *> \& args,bool isMaster) - This constructor is used when nesting a graph.
+\item ~FactorGraph(void) - The destructor cleans up.
+\item Variable * GetVariable(int id) - Retrieve a variable from an id.
+\item void AddGraph(FactorGraph * graph,vector<Variable*> \& graphArgs) - Add a nested factor graph.
+\item FactorGraph * NewInstance(vector<Variable*> \& args) - Create a new Instance of this graph.
+\item vector<Variable*> * GetVariables() - Retrieve a list of all variables associated with this Factor Graph.
+\item void SetNumIterations(int num) - Set the number of iterations to be used when solving.
+\item void Solve() - Runs sum product.
+\item void Initialize() - Sets all messages to uniform values.
+\item void Iterate(int numIter) - Run the specified number of iterations.
+\item void createTable(int tableId,vector<vector<int> > \& table, vector<double> \& values) - This function adds a table to the factor graph class.
+\item Function * createTableFunc(int tableId,vector<Variable*> \& varIds) - This method instantiates a table.
 \end{itemize}
 
 
 
 \subsubsection{C++ interface}
 
-All calls from MATLAB to C++ go through a single MATLAB function called DimpleEntry.  This function is compiled from C++ code using MATLAB’s Mex technology.  I created a DimpleEntry.cpp file with a function called ``mexFunction'' as per MATLAB’s spec.  Compilation of the mex DimpleEntry.cpp file results in a DimpleEntry function.
+All calls from MATLAB to C++ go through a single MATLAB function called DimpleEntry.  This function is compiled from C++ code using MATLAB's Mex technology.  I created a DimpleEntry.cpp file with a function called ``mexFunction'' as per MATLAB's spec.  Compilation of the mex DimpleEntry.cpp file results in a DimpleEntry function.
 
 The mexFunction acts as a ``switchyard'', routing commands to different functions based on the first argument.
 
@@ -991,7 +991,7 @@ When c is a cell array of objects it behaves almost the same as the Numerical ca
 The only special case occurs when a is a scalar.  In this case the object being returned and passed does not need to be contained within a cell array.
 
 \paragraph{MatrixObject}
-In some cases, c might also be a MatrixObject.  This is true in the case of the Factor DirectedTo property.  In such a case, the same rules apply as in the Numerical case except that multidimensional arrays of Nodes will be passed to the Nodes behind a rather than arrays of doubles....
+In some cases, c might also be a MatrixObject.  This is true in the case of the Factor DirectedTo property.  In such a case, the same rules apply as in the Numerical case except that multidimensional arrays of Nodes will be passed to the Nodes behind a rather than arrays of doubles.
 
 In the following example we pass a(i,j) to f(i,j).DirectedTo:
 
@@ -1187,7 +1187,7 @@ for each thread
 This algorithm is slower than the Phase based algorithm in many cases, but does tend to be faster with large factors and a more complex dependency graph.
 
 \subparagraph{SingleQueueCrossIterationMultithreadingAlgorithm}
-This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower....
+This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower.
 
 \paragraph{Profiling}
 Dimple contains a few MATLAB profiling scripts in: /dimple/modelers/matlab/tests/performance/threading.  These can be run to determine if multithreading changes affect performance.
