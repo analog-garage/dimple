@@ -341,10 +341,10 @@ ft = FactorTable([.5 .4; .3 .1; 0 .4], a.Domain, b.Domain);
 \ifjava
 
 \begin{itemize}
-\item FactorTable(DiscreteDomain ... domains) - Creates a full table with with the specified domains.
-\item FactorTable(int [][] indices, double [] weights,DiscreteDomain ... domains) - Creates a table with the specified indices and weights with the specified domains
-\item FactorTable(int [][] indices, double [] weights, Discrete ... variables) - Same as the previous method but extracts the domains from the variables.
-\item FactorTable(Object table, DiscreteDomain [] domains) - Assumes table is a tensor (number of dimensions equal to number of domains).  
+\item FactorTable.create(DiscreteDomain ... domains) - Creates a full table with with the specified domains.
+\item FactorTable.create(int [][] indices, double [] weights,DiscreteDomain ... domains) - Creates a table with the specified indices and weights with the specified domains
+\item FactorTable.create(int [][] indices, double [] weights, Discrete ... variables) - Same as the previous method but extracts the domains from the variables.
+\item FactorTable.create(Object table, DiscreteDomain [] domains) - Assumes table is a tensor (number of dimensions equal to number of domains).  
 \end{itemize}
 
 A FactorTable is constructed by specifying the table values in one of two forms, or by creating an all-zeros FactorTable to be filled in later using the set method.  The first form, specifying an indexList and weightList, is useful for sparse factor tables in which many entires are zero and need not be included in the table.  The second form, specifying a weightMatrix, is useful for dense factor tables in which most or all of the entries are non-zero.

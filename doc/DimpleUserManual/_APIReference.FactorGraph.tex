@@ -160,7 +160,7 @@ fg.setName('string');
 
 \para{Label}
 
-Read-write.  All variables and factors in a Factor Graph must have unique names.  However, sometimes it's desirable to have variables or factors share similar strings when being plotted or printed.  Users can set the Label property to set the name for display.  If the Label is not set, the Name will be used for display.  Once the label is set, the label will be used for display.
+Read-write.  All variables and factors in a Factor Graph must have unique names.  However, sometimes it is desirable to have variables or factors share similar strings when being plotted or printed.  Users can set the Label property to set the name for display.  If the Label is not set, the Name will be used for display.  Once the label is set, the label will be used for display.
 
 
 \para{Score}
@@ -533,7 +533,7 @@ fg.addFactor(ng,a2,b2);
 The FactorGraph class provides several feature for inspecting aspects of the graph.  The ability to nest graphs complicates things a bit.  Nested FactorGraphs can be considered Factors.  All of the introspection features allow the user to view nested graphs as leaf factors or to descend into them and operate on the children of the nested graphs.  Each feature provides several methods:
 
 \begin{itemize}
-\item $<$FeatureName$>$(int relativeNestingDepth) -- The relativeNestingDepth specifies how deep to descend into the nested FactorGraphs before treating deeper NestedGraphs as Factors.  Specifying 0 will treat the top level nested Graphs as factors.  Specifying a large enough number will descend all the way to the leaf factors.  Specifying something between 0 and the FactorGraph’s maximum depth will descend as far as this parameter specifies before considering NestedGraphs to be factors.  The parameter contains the word “relative” because users can retrieve nested graphs.  They can call one of the feature’s methods on that nested graph.  
+\item $<$FeatureName$>$(int relativeNestingDepth) -- The relativeNestingDepth specifies how deep to descend into the nested FactorGraphs before treating deeper NestedGraphs as Factors.  Specifying 0 will treat the top level nested Graphs as factors.  Specifying a large enough number will descend all the way to the leaf factors.  Specifying something between 0 and the FactorGraph's maximum depth will descend as far as this parameter specifies before considering NestedGraphs to be factors.  The parameter contains the word ``relative'' because users can retrieve nested graphs.  They can call one of the feature's methods on that nested graph.  
 \item $<$FeatureName$>$Flat() -- equivalent of $<$FeatureName$>$(max int)
 \item $<$FeatureName$>$Top() -- equivalent of $<$FeatureName$>$(0)
 \item $<$FeatureName$>$() -- equivalent of $<$FeatureName$>$Flat().  It was thought that users will most often want to operate on the FactorGraph in its flattened form.
@@ -673,7 +673,7 @@ All of the following methods return a 2D int array A, where A is a square connec
 
 \begin{itemize}
 \item getAdjacencyMatrix(relativeNestingDepth,forceIncludeBoundaryVariables) -- relativeNestingDepth behaves the same as in other methods that take this parameter.  So does forceIncludeBoundaryVariables. forceIncludeBoundaryVariables has a default value of false.
-\item getAdjacencyMatrix(nodes,forceIncludeBoundaryVariables) -- Users can specify a specific subset of nodes in which they’re interested.  This method will return an adjacency matrix with only those nodes.  Nodes are considered connected only if there is an edge directly connecting them.
+\item getAdjacencyMatrix(nodes,forceIncludeBoundaryVariables) -- Users can specify a specific subset of nodes in which they are interested.  This method will return an adjacency matrix with only those nodes.  Nodes are considered connected only if there is an edge directly connecting them.
 \item getAdjacencyMatrixTop() -- equivalent to getAdjacencyMatrix(0,false)
 \item getAdjacencyMatrixFlat() -- equivalent to getAdjacencyMatrix(intmax,false)
 \end{itemize}
@@ -690,10 +690,10 @@ An example of getAdjacencyMatrix:
 \begin{lstlisting}
 fg = FactorGraph();
 b = Bit(2,1);
-b(1).Name = ‘b1’;
-b(2).Name = ‘b2’;
+b(1).Name = 'b1';
+b(2).Name = 'b2';
 f = fg.addFactor(@xorDelta,b);
-f.Name = ‘f’;
+f.Name = 'f';
 [A,labels] = fg.getAdjacencyMatrix();
 A =
 
@@ -770,7 +770,7 @@ f2.Name = 'f2';
 nodes = fg.depthFirstSearch(b(1),3);
 \end{lstlisting}
 
-calling fg.plot(‘color’,b(1),’g’,’labels’,true) reveals the following structure of this graph
+calling fg.plot('color',b(1),'g','labels',true) reveals the following structure of this graph
 
 \includegraphics{images/Introspection.png}
  

@@ -12,9 +12,9 @@ All java examples referenced in this section can be found in /solvers/java/src/m
 
 \subsection{A Hidden Markov Model}
 
-We consider a very simple hidden Markov model (HMM), the Rainy/Sunny HMM illustrated in the Wikipedia article about HMMs. Two friends who live far apart, Alice and Bob, have a daily phone conversation during which Bob mentions what he has been doing during the day. Alice knows that Bob’s activity on a given day depends solely on the weather on that day, and knows some general trends about the evolution of weather in Bob’s area.
+We consider a very simple hidden Markov model (HMM), the Rainy/Sunny HMM illustrated in the Wikipedia article about HMMs. Two friends who live far apart, Alice and Bob, have a daily phone conversation during which Bob mentions what he has been doing during the day. Alice knows that Bob's activity on a given day depends solely on the weather on that day, and knows some general trends about the evolution of weather in Bob's area.
 
-Alice believes she can model the weather in Bob’s area as a Markov chain with two states ‘Sunny’ and ‘Rainy’. She remembers hearing that on the first day of last week it was quite likely (70\% chance) that it was sunny in Bob’s town. She also knows that a sunny day follows another sunny day with 80\% chance, while a sunny day succeeds a rainy day with 50\% chance.
+Alice believes she can model the weather in Bob's area as a Markov chain with two states `Sunny' and `Rainy'. She remembers hearing that on the first day of last week it was quite likely (70\% chance) that it was sunny in Bob's town. She also knows that a sunny day follows another sunny day with 80\% chance, while a sunny day succeeds a rainy day with 50\% chance.
 
 She knows Bob pretty well, and knows that Bob only ever does one of three things: stay inside to read a book, go for a walk, or cook. She knows that if it is sunny, Bob will go for a walk with 70\% probability, cook with 20\% probability, and stay inside with 10\% probability. Conversely, if it is rainy, Bob will go for a walk with 20\% probability, cook with 40\% probability, and stay inside with 40\% probability. 
 
@@ -58,7 +58,7 @@ FactorGraph HMM = new FactorGraph();
 \fi
 
 \subsubsection*{Declaring Variables}
-Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather to SundayWeather. The syntax to create a variable is \ifjava new \fi Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values: Sunny and Rainy.\ifmatlab For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.\fi
+Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather to SundayWeather. The syntax to create a variable is  \ifjava new \fi Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values: Sunny and Rainy.\ifmatlab For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.\fi
 
 \ifmatlab
 
@@ -80,7 +80,7 @@ IMPORTANT: In the above, had we used the declaration Domain=['sunny','rainy'] in
 \ifjava
 
 \begin{lstlisting}
-DiscreteDomain domain = new DiscreteDomain("sunny", "rainy");
+DiscreteDomain domain = DiscreteDomain.create("sunny", "rainy");
 Discrete MondayWeather = new Discrete(domain);
 Discrete TuesdayWeather = new Discrete(domain);
 Discrete WednesdayWeather = new Discrete(domain);
@@ -438,7 +438,7 @@ IMPORTANT: One distinction between the solve and iterate methods is that all mes
 
 \subsection{A 4-bit XOR}
 
-The following example creates a simple factor graph with 4 variables tied through a 4-bit XOR, with ‘priors’ (we abuse language here and call ‘prior’ the probability distribution of each random variable if they were not tied through the 4-bit XOR).
+The following example creates a simple factor graph with 4 variables tied through a 4-bit XOR, with `priors' (we abuse language here and call `prior' the probability distribution of each random variable if they were not tied through the 4-bit XOR).
 
 Through this example, we will learn how to define arrays of random variables, see how to use MATLAB indexing within Dimple, see an example of a hard constraint in a factor graph, and see how to use the Bit type of random variable.
 
@@ -453,7 +453,7 @@ We consider a set of four random variables (B1,B2,B3,B4) taking values 0 or 1. T
 where the delta function   is equal to 1 if the underlying constraint is 
 satisfied, and 0 otherwise (this ensures that illegal assignment have 
 probability zero). The $P(B_i)$ are single variable factors which help model 
-which values of $ B_i $  are more likely to be taken (we call them ‘priors’, 
+which values of $ B_i $  are more likely to be taken (we call them `priors', 
 though, once again, this is an abuse of language. Typically, the factor
  will represent an observation of  $ O_i $ of variable  $ B_i $, and the factor 
 $ P(B_i) $  is 
@@ -538,7 +538,7 @@ Note that the MATLAB BadNBitXorDelta\_Tutorial is a function which takes only ON
 
 \begin{lstlisting}
 FactorGraph fourBitXor = new FactorGraph();
-DiscreteDomain domain = new DiscreteDomain(0,1);
+DiscreteDomain domain = DiscreteDomain.bit();
 Discrete b1 = new Discrete(domain);
 Discrete b2 = new Discrete(domain);
 Discrete b3 = new Discrete(domain);
@@ -556,7 +556,7 @@ System.out.println(Arrays.toString(b4.getBelief()));
 \fi
 
 
-IMPORTANT: We also introduce the Discrete method ‘Value’, which returns the most likely assignment of that random variable.
+IMPORTANT: We also introduce the Discrete method `Value', which returns the most likely assignment of that random variable.
 
 \ifmatlab
 
@@ -568,7 +568,7 @@ To create a multidimensional array of random variables in the MATLAB Dimple API,
 VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) 
 \end{lstlisting}
 
-creates an array of variables with domain ‘Domain’, and with dimensions [dimension1][dimension2]..[ dimensionk]. 
+creates an array of variables with domain `Domain', and with dimensions [dimension1][dimension2]..[ dimensionk]. 
 
 IMPORTANT: If only one dimension is specified, Dimple creates a square array.
 
@@ -588,7 +588,7 @@ Another way to create an array is, as above, to group the variables using square
 
 \begin{lstlisting}
 RowArray=[ B1 B2 B3 B4];
-ColumnArray=RowArray’;
+ColumnArray=RowArray';
 \end{lstlisting}
 
 IMPORTANT: The above method is a simple "grouping" (reference) of variables  ; it does not duplicate them.
@@ -732,7 +732,7 @@ Suppose we wish to use two 4-bit XORs from the previous example to create a 6-bi
 
 \includegraphics{images/NestedGraph.png}
 
-Dimple provides a way to replicate multiple copies of a Factor Graph and nest these instances in a containing Factor Graph. A nested Factor Graph can be seen as a special factor function between a set of variables (‘connector variables’), which, when ‘zoomed in,’ is in fact another factor graph, with factors involving both the connector variables, and other ‘internal variables.’ In the second version of the XOR example, we created a 4-bit XOR connected to 4 variables, by also creating an extra Bit C. What if we wanted to use that construction as a 4-bit XOR for potentially many different sets of 4 bits, overlapping or not, by replicating the factor graph as needed? Nested factor graphs provide an elegant solution to this problem.
+Dimple provides a way to replicate multiple copies of a Factor Graph and nest these instances in a containing Factor Graph. A nested Factor Graph can be seen as a special factor function between a set of variables (`connector variables'), which, when `zoomed in,' is in fact another factor graph, with factors involving both the connector variables, and other `internal variables.' In the second version of the XOR example, we created a 4-bit XOR connected to 4 variables, by also creating an extra Bit C. What if we wanted to use that construction as a 4-bit XOR for potentially many different sets of 4 bits, overlapping or not, by replicating the factor graph as needed? Nested factor graphs provide an elegant solution to this problem.
 
 A nestable factor graph is created by specifying first a set  of "connector" random variables, and instantiating a FactorGraph with these variables passed in to the constructor.
 

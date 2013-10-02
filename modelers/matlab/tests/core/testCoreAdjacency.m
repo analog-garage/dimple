@@ -22,8 +22,7 @@
 function testCoreAdjacency()
     %disp('++testCoreAdjacency')
     
-    if ~isequal('CSolver',class(getSolver())) && ...
-       ~isequal('com.analog.lyric.dimple.solvers.gaussian.Solver',class(getSolver()))
+    if ~isequal('com.analog.lyric.dimple.solvers.gaussian.Solver',class(getSolver()))
     
         a = Bit();
         b = Bit();

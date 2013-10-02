@@ -29,6 +29,12 @@ public class DummyTableFactor extends STableFactorBase
 	}
 
 	@Override
+	protected boolean createFactorTableOnInit()
+	{
+		return false;
+	}
+	
+	@Override
 	public void updateEdge(int outPortNum)
 	{
 	}

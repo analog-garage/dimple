@@ -55,10 +55,22 @@ public abstract class STableFactorBase extends SFactorBase
     public void initialize()
     {
     	super.initialize();
-    	if (_factorTable != null)
+    	if (createFactorTableOnInit())
     	{
-    		setTableRepresentation(_factorTable);
+    		getFactorTable();
     	}
+    }
+    
+    /**
+     * Indicate whether {@link #initialize()} should call {@link #getFactorTable()} to
+     * force factor table creation (e.g. to avoid lazy initialization for multithreading
+     * solvers.
+     * <p>
+     * The default implementation returns true.
+     */
+    protected boolean createFactorTableOnInit()
+    {
+    	return true;
     }
 
     /*--------------------------

@@ -30,10 +30,6 @@ function failed = testDimple(varargin)
     %
     %   >> testDimple('one_algo', 'SumProduct')
     %
-    %   OR
-    %
-    %   >> testDimple('csolver',1)
-    %       
     %   ==Installing==
     %
     %   - Install Matlab
@@ -102,12 +98,6 @@ function failed = testDimple(varargin)
     %
     %  What if not all solvers support all features?
     %       Hack it, at least for now. 
-    %       For exmaple, C++ Max Product solver supports nested graphs, 
-    %           but Java Max Product solver does not. 
-    %           For the moment, we hacked this by having those tests
-    %           check 'if strcmp(class(CSolver), class(getSolver())'
-    %           before running netsted tests. 
-    
     
     clc;
     
@@ -118,7 +108,6 @@ function failed = testDimple(varargin)
     parser = TrivialOptions();
     
     % Add options to parser.
-    parser.addFlag('csolver');
     parser.addFlag('exit');
     parser.addFlag('core_only');
     parser.addFlag('log');
@@ -133,7 +122,6 @@ function failed = testDimple(varargin)
     core_only     = options.core_only;
     general_only = options.general_only;
     bStoreAndExit = options.exit;
-    test_csolver  = options.csolver;
     
     global DIMPLE_TEST_VERBOSE;
     DIMPLE_TEST_VERBOSE = bLog;
@@ -154,11 +142,6 @@ function failed = testDimple(varargin)
     
     initial_dir = pwd;
     initial_solver = getSolver();
-    
-    if test_csolver
-       disp('building CSolver...');
-       makereturn; 
-    end
     
     dimple_matlab_start_dir = getenv('_Dimple_START_PATH');
     dimple_test_dir = [dimple_matlab_start_dir '/tests'];
@@ -187,7 +170,7 @@ function failed = testDimple(varargin)
         
         
         start_dir = pwd();
-        [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir, test_csolver,bLog);
+        [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir,bLog);
         cd(start_dir);
     elseif core_only
         [passed, failed, ran, faults] = test_core_only(core_dir, bLog);
@@ -196,7 +179,7 @@ function failed = testDimple(varargin)
     else
         dtrace(bLog, 'Starting tests from [%s]\n', dimple_test_dir);     
 
-        [passed, failed, ran, faults] = test_algorithms(dimple_test_dirs, core_dir, test_csolver,bLog);
+        [passed, failed, ran, faults] = test_algorithms(dimple_test_dirs, core_dir, bLog);
         
         [passed1, failed1, ran1, faults1] = testDir(general_dir);
         passed = passed + passed1;
@@ -301,7 +284,7 @@ function algo_dirs = get_algorithm_dirs(parent_dir, bLog)
     %dtrace(bLog, '--get_algorithm_dirs')
 end
 
-function [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir, test_csolver, bLog)
+function [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir, bLog)
 
     
     dtrace(bLog, '\n++test_algorithm~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -322,24 +305,18 @@ function [passed, failed, ran, faults] = test_algorithm(core_dir, algo_dir, test
     for idx = 1 : length(solvers)
         solver = solvers{idx};
 
-        if ~test_csolver && isequal(class(solver),'CSolver')
-            dtrace(bLog,'...skipping CSolver...');
-        else
+        [passed1, failed1, ran1, faults1] = test_solver(core_dir, algo_dir, solver, bLog);
 
-            
-            [passed1, failed1, ran1, faults1] = test_solver(core_dir, algo_dir, solver, bLog);
-
-            passed = passed + passed1;
-            failed = failed + failed1;
-            ran = ran + ran1;
-            faults = [faults faults1];
-        end
+        passed = passed + passed1;
+        failed = failed + failed1;
+        ran = ran + ran1;
+        faults = [faults faults1];
     end
     dtrace(bLog, '%d of %d tests passed, %d failed\n', passed, ran, failed);
     dtrace(bLog, '--test_algorithm~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 end
 
-function [passed, failed, ran, faults] = test_algorithms(parent_dirs, core_dir, test_csolver, bLog)
+function [passed, failed, ran, faults] = test_algorithms(parent_dirs, core_dir, bLog)
     passed = 0;
     failed = 0;
     ran = 0;
@@ -360,7 +337,7 @@ function [passed, failed, ran, faults] = test_algorithms(parent_dirs, core_dir, 
         for idx = 1 : length(algo_dirs)
             algo_dir = char(algo_dirs(idx));
 
-            [passed1, failed1, ran1, faults1] = test_algorithm(core_dir, algo_dir, test_csolver, bLog);
+            [passed1, failed1, ran1, faults1] = test_algorithm(core_dir, algo_dir, bLog);
 
             passed = passed + passed1;
             failed = failed + failed1;

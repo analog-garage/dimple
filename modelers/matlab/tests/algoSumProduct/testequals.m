@@ -37,7 +37,6 @@ function testequals()
     MyGraph2.addFactor(@myEqFunc,v);
     
     %BUG: this throws exception, of 'priors must sum to 1'
-    % we think Jeff discovered a tolerance in the CSolver
     v.Input =  [.7 .2 .1; .3 .6 .1; .6 .2 .2];
 
     MyGraph2.solve();

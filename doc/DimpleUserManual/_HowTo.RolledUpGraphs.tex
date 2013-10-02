@@ -145,7 +145,7 @@ Variable Streams represent infinite streams of variables.  When instantiating a 
 
 \ifjava
 \begin{itemize}
-\item new DiscreteStream(new DiscreteDomain(0,1,2));
+\item new DiscreteStream(DiscreteDomain.range(0,2));
 \item DiscreteStream(0,1,2); - equivalent to the previous example
 \item new DiscreteStream(0,1); - A stream of bits
 \item new BitStream(); - Shorthand for the previous example.
@@ -206,7 +206,7 @@ We see one factor and two instantiated variables.  If we set bufferSize to 5 and
 \includegraphics{images/BufferSize5.png}
 
 
-We see five factors and 6 variables.  After the first time we call “advance”, BlastFromThePast factors will be added to the oldest variable.  These factors contain messages from the past. 
+We see five factors and 6 variables.  After the first time we call `advance' BlastFromThePast factors will be added to the oldest variable.  These factors contain messages from the past. 
 There are two ways to set the BufferSize for a FactorGraph stream:
 
 \begin{itemize}
@@ -351,7 +351,7 @@ This code results in the following graph:
 
 \subsubsection{Real Variables}
 
-Rolled up graphs work with real variables as well.  Here we create another Markov Model.  We use the Gaussian solver that supports a custom factor called “constmult”.  We create a data source that only has information about the first variable.  The means beliefs are growing by 110\% as we iterate through the stream because the factor provides a constraint that each variable is 110\% of the previous variable.
+Rolled up graphs work with real variables as well.  Here we create another Markov Model.  We use the Gaussian solver that supports a custom factor called `constmult'.  We create a data source that only has information about the first variable.  The means beliefs are growing by 110\% as we iterate through the stream because the factor provides a constraint that each variable is 110\% of the previous variable.
 
 \ifmatlab
 \begin{lstlisting}
