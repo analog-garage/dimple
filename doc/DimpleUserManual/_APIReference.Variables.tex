@@ -118,7 +118,7 @@ double be = v.getBetheEntropy();
 
 \subpara{Ports}
 
-Read-only.  Retrieves a cell array containing a list of Ports connecting the variable to its neighboring factors.
+Read-only.  Retrieves \ifmatlab a cell array \fi \ifjava an array \fi containing a list of Ports connecting the variable to its neighboring factors.
 
 \ifmatlab
 \para{Methods}
@@ -679,7 +679,7 @@ For the Gaussian solver, \ifmatlab for a single RealJoint variable, \fi the valu
 For the Gibbs or ParticleBP solvers, for a single RealJoint variable, the value of this property must be a cell array of FactorFunction objects (see section~\ref{sec:FactorFunction}), one for each dimension of the RealJoint variable.  In the current version of Dimple, for these solvers, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
 \fi
 \ifjava
-For the Gibbs or ParticleBP solvers, the value of this property must be FactorFunction (see section~\ref{sec:FactorFunction}).  For an array of RealJoint variables, the value of this property must be a cell array of FactorFunctions, with dimensions equal to the dimensions of the array (or portion of the array) being set.
+For the Gibbs or ParticleBP solvers, the value of this property must be FactorFunction (see section~\ref{sec:FactorFunction}).  For an array of RealJoint variables, the value of this property must be an array of FactorFunctions, with dimensions equal to the dimensions of the array (or portion of the array) being set.
 \fi
 
 \subpara{FixedValue}
@@ -838,13 +838,19 @@ The DiscreteDomain class is used to refer to the domain of Discrete variables.
 DiscreteDomain(elementList)
 \end{lstlisting}
 
+\ifmatlab
 The elementList argument is either a cell array or array of domain elements.  Every entry of the array or cell array is considered an element of the domain, regardless of the number of dimensions it has.  For a cell array, each object in the cell array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
+\fi
+
+\ifjava
+The elementList argument is either an array or array of domain elements.  Every entry of the array is considered an element of the domain, regardless of the number of dimensions it has.  For an array of Objects, each object in the array is considered an element of the domain regardless of the object type.  For a numeric array, every entry in the array must be numeric.
+\fi
 
 \para{Properties}
 
 \subpara{Elements}
 
-Read-only.  This property returns the set of elements in the discrete domain in the form of a one-dimensional cell array.
+Read-only.  This property returns the set of elements in the discrete domain in the form of a one-dimensional \ifmatlab cell \fi array.
 
 
 

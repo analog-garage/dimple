@@ -14,6 +14,5 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-For documentation, see the doc directory.
+For installation instructions see http://dimple.probprog.org
 
