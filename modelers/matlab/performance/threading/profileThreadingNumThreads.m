@@ -23,7 +23,8 @@ addlabels = false;
 presolve = true;
 solver = 'sumproduct';
 
-modes = [0 1 0];
+
+modes = {'Phase','SingleQueue','Phase'};
 threads = [16 16 1];
 time_results = cell(length(modes),1);
 results = cell(length(modes),1);
@@ -41,7 +42,7 @@ for i = 1:length(modes)
         iters = 100;
         domainSize = 30;
         numThreads = threads(i);
-        threadMode = modes(i);
+        threadMode = modes{i};
         if numThreads ~= 1
            tmpThreads = numThreadsArray(j); 
         else
@@ -90,4 +91,4 @@ for i = 1:length(results)-1
     end
 end
 
-
+setDimpleNumThreadsToDefault();

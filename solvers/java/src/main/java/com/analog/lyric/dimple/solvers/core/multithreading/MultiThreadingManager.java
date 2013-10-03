@@ -36,7 +36,6 @@ public class MultiThreadingManager
 	private StaticDependencyGraph _cachedDependencyGraph;
 	private HashMap<MultithreadingMode,MultithreadingAlgorithm> _mode2alg = new HashMap<MultithreadingMode, MultithreadingAlgorithm>();
 	private MultithreadingMode _whichAlg = MultithreadingMode.Phase;
-	private int _numAlgs = 3;
 	private ExecutorService _service;
 
 	public MultiThreadingManager(FactorGraph fg, ExecutorService service)
@@ -51,12 +50,15 @@ public class MultiThreadingManager
 	
 	public MultiThreadingManager(FactorGraph fg)
 	{
-		this(fg,ThreadPool.getThreadPool());
+		this(fg,null);
 	}
 	
 	public ExecutorService getService()
 	{
-		return _service;
+		if (_service == null)
+			return ThreadPool.getThreadPool();
+		else
+			return _service;
 	}
 	
 	public MultithreadingMode [] getModes()

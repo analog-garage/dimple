@@ -21,7 +21,7 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
     fprintf('running iters: %d solves: %d domainSize: %d ',...
         iters,numSolves,domainSize);
     fprintf('scheduler: %s M: %d N: %d threads: %d ',scheduler,M,N,numThreads);
-    fprintf('threadMode: %d presolve: %d ... \n',threadMode,presolve);
+    fprintf('threadMode: %s presolve: %d ... \n',threadMode,presolve);
     rand('seed',seed);
     randn('seed',seed);
     

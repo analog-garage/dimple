@@ -55,7 +55,7 @@ for i = 1:length(modes)
     iters = 10;
     domainSize = 75;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i};
     titles{2} = 'M,N=4, Domain=75';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
@@ -72,7 +72,7 @@ for i = 1:length(modes)
     iters = 10;
     domainSize = 200;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i}
     titles{3} = 'M,N=4, Domain=200';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...
@@ -89,7 +89,7 @@ for i = 1:length(modes)
     iters = 10;
     domainSize = 75;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i};
     titles{4} = 'M,N=40, Domain=75, Sequential';
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
@@ -106,7 +106,7 @@ for i = 1:length(modes)
     iters = 10;
     domainSize = 75;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i};
     titles{5} = 'M,N=10, Domain=75, Sequential';
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
@@ -123,7 +123,7 @@ for i = 1:length(modes)
     iters = 1;
     domainSize = 2;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i};
     titles{6} = 'M,N=2, Domain=2, Sequential';
     scheduler = 'TreeOrSequentialScheduler';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
@@ -165,5 +165,7 @@ for i = 1:length(results)-1
         end
     end
 end
+
+setDimpleNumThreadsToDefault();
 
 
