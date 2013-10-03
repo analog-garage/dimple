@@ -20,7 +20,7 @@ function testNoThreadingError()
     fg.Solver = 'gaussian';
     m = '';
     try
-        fg.Solver.setNumThreads(2);
+        fg.Solver.setUseMultithreading(true);
     catch e
         m = e.message;
     end

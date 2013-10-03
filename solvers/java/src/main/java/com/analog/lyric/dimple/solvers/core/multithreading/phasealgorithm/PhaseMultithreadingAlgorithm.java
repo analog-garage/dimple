@@ -51,7 +51,7 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 	{
 		ArrayList<ArrayList<IScheduleEntry>> phases = getManager().getDependencyGraph().getPhases();
 		ExecutorService service = getManager().getService();
-		int numThreads = getManager().getNumThreads();
+		int numThreads = getManager().getNumWorkers();
 		
 		for (int i = 0; i < numIters; i++)
 		{

@@ -16,7 +16,11 @@
 
 function testDynamicScheduleError()
 
-    for mode = 0:2
+    fg = FactorGraph();
+    modes = fg.Solver.getMultithreadingManager().getModes();
+    
+    for mode_index = 1:length(modes)
+        mode = modes(mode_index);
         N = 2;
         b = Bit(N);
         fg = FactorGraph();
@@ -25,9 +29,8 @@ function testDynamicScheduleError()
         fg.addFactorVectorized(@(a,b) rand(), b(1:end-1,:),b(2:end,:));
         b.Input = rand(N,N);
         fg.NumIterations = 5;    
-        numThreads = 16;
-        fg.Solver.setMultithreadingMode(mode);
-        fg.Solver.setNumThreads(numThreads);
+        fg.Solver.setUseMultithreading(true);
+        fg.Solver.getMultithreadingManager().setMode(mode);
 
         m = '';
         try

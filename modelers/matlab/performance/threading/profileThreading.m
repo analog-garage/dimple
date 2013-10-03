@@ -23,7 +23,7 @@ addlabels = false;
 presolve = true;
 solver = 'sumproduct';
 
-modes = [0 1 0];
+modes = {'Phase','SingleQueue','Phase'};
 threads = [16 16 1];
 time_results = cell(length(modes),1);
 results = cell(length(modes),1);
@@ -40,7 +40,7 @@ for i = 1:length(modes)
     iters = 10;
     domainSize = 2;
     numThreads = threads(i);
-    threadMode = modes(i);
+    threadMode = modes{i};
     titles{1} = 'M,N = 200, Domain=2';
     [total_time,fg1,results1] = runGraph(iters,numSolves,domainSize,...
         seed,scheduler,M,N,addlabels,numThreads,...

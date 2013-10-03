@@ -21,7 +21,7 @@ package com.analog.lyric.dimple.solvers.core.multithreading;
  */
 public abstract class MultithreadingAlgorithm 
 {
-	private MultiThreadingManager _manager;
+	final private MultiThreadingManager _manager;
 	
 	public MultithreadingAlgorithm(MultiThreadingManager manager)
 	{

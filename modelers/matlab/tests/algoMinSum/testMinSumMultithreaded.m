@@ -29,7 +29,7 @@ function testMinSumMultithreaded()
     tic;
     graph = FactorGraph();
     graph.Solver = 'minsum';
-    graph.Solver.setNumThreads(8);
+    graph.Solver.setUseMultithreading(true);
     x = Variable(domain,rows,cols);
     for r = 2:rows-1
         for c = 2:cols-1

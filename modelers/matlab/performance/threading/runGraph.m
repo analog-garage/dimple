@@ -61,8 +61,15 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
 
     m = fg.VectorObject.getModelerNode(0);
     fg.NumIterations = iters;
-    fg.Solver.setNumThreads(numThreads);
-    fg.Solver.setMultithreadingMode(threadMode);
+    if numThreads == 1
+        fg.Solver.setUseMultithreading(false);
+    else
+        fg.Solver.setUseMultithreading(true);
+    end
+    
+    setDimpleNumThreads(numThreads);    
+    fg.Solver.getMultithreadingManager().setNumWorkers(numThreads);
+    fg.Solver.getMultithreadingManager().setMode(threadMode);
 
     if presolve
         fg.solve();

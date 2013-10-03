@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2012 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,36 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testNested()
-
-    a = Bit();
-    b = Bit();
-    ng = FactorGraph(a,b);
-    ng.addFactor(@(a,b) rand(),a,b);
-
-    fg = FactorGraph();
-
-
-    b = Bit(3,1);
-    fg.addFactor(ng,b(1),b(2));
-    fg.addFactor(ng,b(2),b(3));
-    fg.addFactor(@(a,b) rand(), b(1),b(2));
-
-    rand('seed',1);
-    b.Input = rand(3,1);
-
-    fg.solve();
-    x = b.Belief;
-
-   
-    
-    modes = fg.Solver.getMultithreadingManager().getModes();
-    for mode_index = 2:length(modes)
-        mode = modes(mode_index);
-        fg.Solver.setUseMultithreading(true);
-        fg.Solver.getMultithreadingManager().setMode(mode);
-        fg.solve();
-        y = b.Belief;
-        assertTrue(norm(x(:)-y(:))==0);
-    end
+function setDimpleNumThreadsToDefault()
+    m = getModeler();
+    m.setNumThreadsToDefault();
 end
