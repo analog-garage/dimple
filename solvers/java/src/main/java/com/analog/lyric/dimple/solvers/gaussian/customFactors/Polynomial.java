@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
-import org.apache.commons.math.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 
 import Jama.CholeskyDecomposition;
 import Jama.Matrix;

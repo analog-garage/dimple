@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.commons.math.random.RandomGenerator;
+import org.apache.commons.math3.random.RandomGenerator;
 
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;

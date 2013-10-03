@@ -16,14 +16,14 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import org.apache.commons.math.random.RandomGenerator;
+import org.apache.commons.math3.random.RandomGenerator;
 
 import cern.jet.random.engine.RandomEngine;
 
 
 public class SolverRandomGenerator
 {
-	public static RandomGenerator rand = new org.apache.commons.math.random.MersenneTwister();
+	public static RandomGenerator rand = new org.apache.commons.math3.random.MersenneTwister();
 	
 	// Other random number generators not supported by the Apache framework
 	private static RandomEngine randEngine = new cern.jet.random.engine.MersenneTwister(rand.nextInt());
@@ -37,7 +37,7 @@ public class SolverRandomGenerator
 		// Bug 723: https://issues.apache.org/jira/browse/MATH-723
 		// Can't just set the seed; must replace the object instead
 		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
-		rand = new org.apache.commons.math.random.MersenneTwister(seed);
+		rand = new org.apache.commons.math3.random.MersenneTwister(seed);
 		
 		// WARNING: setting the seed creates new objects; which will not be used if reference to original object is cached
 		randEngine = new cern.jet.random.engine.MersenneTwister((int)seed);

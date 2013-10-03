@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.special.Gamma;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
