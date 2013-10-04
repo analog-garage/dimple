@@ -56,6 +56,24 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 \subsubsection{Common Methods}
 
+\para{useMultithreading}
+
+Users can turn on and off multithreading with the useMultithreading method:
+
+\ifmatlab
+\begin{itemize}
+\item fg.Solver.useMultithreading(true);
+\item m = fg.Solver.useMultithreading();
+\end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item fg.getSolver().useMultithreading(true);
+\item m = fg.getSolver().useMultithreading();
+\end{itemize}
+\fi
+
 \para{getMultithreadingManager}
 
 Dimple users can retrieve a MultithreadingManager on which to perform additional actions.
@@ -74,7 +92,7 @@ fg.getSolver().getMultithreadingManager()
 
 Users can configure both the multithreading mode and the number of workers using the MultithreadingManager.
 
-\subparagraph(Multithreading Modes)
+\subparagraph{Multithreading Modes}
 
 Dimple provides various multithreading algorithms that have different speed advantages depending on the size of the user's graph and FactorTables.  In the future Dimple should be modified to automatically detect the best threading algorithm.  Currently, however, it defaults to the "Phase" multithreading mode and requires the user manually set the mode to change this.  For a given graph, users can try both modes and see which is faster.
 
