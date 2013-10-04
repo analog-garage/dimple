@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBeta;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBinomial;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
@@ -160,6 +161,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("Bernoulli"))
 			return true;
+		else if (factorName.equals("Binomial"))
+			return true;
 		else
 			return false;	
 	}
@@ -193,6 +196,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomBeta(factor);
 		else if (funcName.equals("Bernoulli"))
 			return new CustomBernoulli(factor);
+		else if (funcName.equals("Binomial"))
+			return new CustomBinomial(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
