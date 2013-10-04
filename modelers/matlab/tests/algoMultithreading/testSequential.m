@@ -31,10 +31,10 @@ function testSequential()
     modes = fg.Solver.getMultithreadingManager().getModes();
     for mode_index = 2:length(modes)
         mode = modes(mode_index);
-        fg.Solver.setUseMultithreading(true);
+        fg.Solver.useMultithreading(true);
         fg.Solver.getMultithreadingManager().setMode(mode);
         fg.solve();
         y = b.Belief;
         assertTrue(norm(x(:)-y(:)) == 0);
-end
+    end
 end

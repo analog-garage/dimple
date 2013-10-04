@@ -29,7 +29,9 @@ function testDynamicScheduleError()
         fg.addFactorVectorized(@(a,b) rand(), b(1:end-1,:),b(2:end,:));
         b.Input = rand(N,N);
         fg.NumIterations = 5;    
-        fg.Solver.setUseMultithreading(true);
+        assertFalse(fg.Solver.useMultithreading());
+        fg.Solver.useMultithreading(true);
+        assertTrue(fg.Solver.useMultithreading());
         fg.Solver.getMultithreadingManager().setMode(mode);
 
         m = '';

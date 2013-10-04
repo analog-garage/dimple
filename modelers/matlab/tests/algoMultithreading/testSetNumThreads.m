@@ -14,17 +14,17 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testNoThreadingError()
+function testSetNumThreads()
 
     fg = FactorGraph();
-    fg.Solver = 'gaussian';
-    m = '';
-    try
-        fg.Solver.useMultithreading(true);
-    catch e
-        m = e.message;
-    end
-
-    assertTrue(~isempty(findstr(m,'Multithreading is not currently supported by this solver.')));
+    b = Bit(2,1);
+    fg.addFactor(@(a,b) a==b,b(1),b(2));
+    setDimpleNumThreads(2);
+    fg.solve();
+    assertEqual(getDimpleNumThreads(),2);
+    setDimpleNumThreads(4);
+    fg.solve();
+    assertEqual(getDimpleNumThreads(),4);
+    setDimpleNumThreadsToDefault();
     
 end

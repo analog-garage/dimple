@@ -417,7 +417,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
-	public void setUseMultithreading(boolean use)
+	public void useMultithreading(boolean use)
 	{
 		if (_multithreader == null)
 			throw new DimpleException("Multithreading is not currently supported by this solver.");		
@@ -425,7 +425,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			_useMultithreading = true;
 	}
 	
-	public boolean getUseMultithreading()
+	public boolean useMultithreading()
 	{
 		return _useMultithreading;
 	}

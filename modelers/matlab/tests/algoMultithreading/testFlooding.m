@@ -32,7 +32,7 @@ function testFlooding()
     for mode_index = 2:length(modes)
         mode = modes(mode_index);
         fg.Solver.getMultithreadingManager().setMode(mode);
-        fg.Solver.setUseMultithreading(true);
+        fg.Solver.useMultithreading(true);
         fg.solve();
         y = b.Belief;
         assertTrue(norm(x(:)-y(:)) == 0);
