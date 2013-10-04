@@ -56,52 +56,31 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 \subsubsection{Common Methods}
 
-\para{setNumThreads}
+\para{getMultithreadingManager}
 
-Some solvers support multithreading.  The following method can be used to set the number of threads to use:
+Dimple users can retrieve a MultithreadingManager on which to perform additional actions.
 
 \ifmatlab
 \begin{lstlisting}
-fg.Solver.setNumThreads(8);
+fg.Solver.getMultithreadingManager()
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-fg.getSolver().setNumThreads(8);
+fg.getSolver().getMultithreadingManager()
 \end{lstlisting}
 \fi
 
-By default, number of threads is set to 1 which is equivalent to the multithreading mode being turned off.  Once number of threads is set to something larger than 1, users can simply call solve and, for large enough graphs, see a reduced solve time.
+Users can configure both the multithreading mode and the number of workers using the MultithreadingManager.
 
-\para{getNumThreads}
+\subparagraph(Multithreading Modes)
 
-Users can retrieve the currently set number of threads with the getNumThreads() method.
+Dimple provides various multithreading algorithms that have different speed advantages depending on the size of the user's graph and FactorTables.  In the future Dimple should be modified to automatically detect the best threading algorithm.  Currently, however, it defaults to the "Phase" multithreading mode.
 
-\para{setMultithreadingMode}
-
-Dimple currently supports two modes of multithreading.  Users can select between these with:
-
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setMultithreadingMode(mode);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-fg.getSolver().setMultithreadingMode(mode);
-\end{lstlisting}
-\fi
-
-The mode argument is an integer and can take on the values:
-
-\begin{itemize}
-\item 0 - (Default mode) 
-\item 1 
-\end{itemize}
-
-Users can try both modes for their problem to determine which works better for their model.  The developer documentation describes the details of these modes in more detail.
+getModes
+setMode(str)
+setMode(enum)
 
 \subsubsection{Sum-Product Solver}
 
