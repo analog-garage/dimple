@@ -77,7 +77,7 @@ public class InverseGamma extends FactorFunction
         	if (x < 0)
         		return Double.POSITIVE_INFINITY;
         	else
-        		sum += _beta/x - _alphaPlusOne * Math.log(x);
+        		sum += _beta/x + _alphaPlusOne * Math.log(x);
     	}
 		return sum + N * _logGammaAlphaMinusAlphaLogBeta;
 	}

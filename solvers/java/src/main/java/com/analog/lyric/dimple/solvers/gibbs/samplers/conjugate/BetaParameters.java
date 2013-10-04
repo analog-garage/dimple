@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 public class BetaParameters
 {
-	private double _alpha = 1;
-	private double _beta = 1;
+	private double _alpha = 0;
+	private double _beta = 0;
 	
 	public BetaParameters() {}
 	public BetaParameters(double alpha, double beta)
