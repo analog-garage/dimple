@@ -51,7 +51,7 @@ public class Binomial extends FactorFunction
 		this();
 		_N = N;
     	if (_N < 0) throw new DimpleException("N must be a non-negative value.");
-		_negativeLogFactorialN = -org.apache.commons.math.special.Gamma.logGamma((double)(_N + 1));
+		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
 		_NParameterConstant = true;
 		_firstDirectedToIndex = 1;
 	}
@@ -64,7 +64,7 @@ public class Binomial extends FactorFunction
     	if (!_NParameterConstant)
     	{
     		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
-    		_negativeLogFactorialN = -org.apache.commons.math.special.Gamma.logGamma((double)(_N + 1));
+    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
     		if (_N < 0) throw new DimpleException("Negative N value. Domain must be restricted to non-negative values.");
     	}
     	
@@ -89,8 +89,8 @@ public class Binomial extends FactorFunction
     	else
     		return -(numOnes * Math.log(p) + numZeros * Math.log(1-p))
     				+ _negativeLogFactorialN 
-    				+ org.apache.commons.math.special.Gamma.logGamma(numOnes + 1)
-    				+ org.apache.commons.math.special.Gamma.logGamma(numZeros + 1);
+    				+ org.apache.commons.math3.special.Gamma.logGamma(numOnes + 1)
+    				+ org.apache.commons.math3.special.Gamma.logGamma(numZeros + 1);
 	}
     
     @Override
