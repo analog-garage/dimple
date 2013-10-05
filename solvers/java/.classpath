@@ -22,9 +22,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/javailp-1.2a.jar"/>
-	<classpathentry kind="lib" path="build/external-libs/commons-math-2.2.jar">
+	<classpathentry kind="lib" path="build/external-libs/commons-math3-3.2.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-math/javadocs/api-2.2/"/>
+			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-math/javadocs/api-3.2/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/jama-1.0.2.jar"/>

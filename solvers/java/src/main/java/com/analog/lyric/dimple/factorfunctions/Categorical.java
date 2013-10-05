@@ -43,7 +43,7 @@ public class Categorical extends FactorFunction
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length <= 2)
+    	if (arguments.length < 2)
     		throw new DimpleException("Insufficient number of arguments.");
 
     	int index = 0;

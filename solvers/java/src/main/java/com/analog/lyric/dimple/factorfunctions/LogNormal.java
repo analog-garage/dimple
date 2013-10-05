@@ -36,10 +36,11 @@ public class LogNormal extends FactorFunction
 {
 	protected double _mean;
 	protected double _precision;
-	protected double _logPrecisionOverTwo;
+	protected double _logSqrtPrecisionOver2Pi;
 	protected double _precisionOverTwo;
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
+	protected static final double _logSqrt2pi = Math.log(2*Math.PI)*0.5;
 
 	public LogNormal() {super();}
 	public LogNormal(double mean, double precision)
@@ -47,7 +48,7 @@ public class LogNormal extends FactorFunction
 		this();
 		_mean = mean;
 		_precision = precision;
-		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
 		_precisionOverTwo = _precision*0.5;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
@@ -62,7 +63,7 @@ public class LogNormal extends FactorFunction
     	{
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
     		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
-    		_logPrecisionOverTwo = Math.log(_precision)*0.5;
+    		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
     		_precisionOverTwo = _precision*0.5;
     		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
@@ -81,7 +82,7 @@ public class LogNormal extends FactorFunction
         		sum += logX + relLogX*relLogX*_precisionOverTwo;
         	}
     	}
-    	return sum - N * _logPrecisionOverTwo;
+    	return sum - N * _logSqrtPrecisionOver2Pi;
 	}
     
     @Override

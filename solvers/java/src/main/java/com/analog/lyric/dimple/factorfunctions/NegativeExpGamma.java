@@ -52,7 +52,7 @@ public class NegativeExpGamma extends FactorFunction
 		_alpha = alpha;
 		_beta = beta;
 		_alphaMinusOne = _alpha - 1;
-		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
+		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
     	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
@@ -68,7 +68,7 @@ public class NegativeExpGamma extends FactorFunction
     		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
     		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
     		_alphaMinusOne = _alpha - 1;
-    		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
+    		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * Math.log(_beta);
     		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
     		if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
     	}

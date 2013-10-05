@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.special.Gamma;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -77,9 +77,10 @@ public class Dirichlet extends FactorFunction
 
     	double sum = 0;
     	int length = arguments.length;
+    	int N = length - index;			// Number of non-parameter variables
     	for (; index < length; index++)
     	{
-    		double[] x = (double[])arguments[index++];	// Remaining inputs are Dirichlet distributed random variable vectors
+    		double[] x = (double[])arguments[index];	// Remaining inputs are Dirichlet distributed random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		double xSum = 0;
@@ -96,7 +97,7 @@ public class Dirichlet extends FactorFunction
     			return Double.POSITIVE_INFINITY;
     	}
 
-    	return sum + _logBetaAlpha;
+    	return sum + N * _logBetaAlpha;
 	}
     
     
