@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -19,9 +19,15 @@ package com.analog.lyric.dimple.solvers.template;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
+/**
+ * The solver is essentially a factory responsible for creating FactorGraph solver objects.
+ */
 public class Solver extends SolverBase
 {
 
+	/**
+	 * This method creates a Solver FactorGraph object given the corresponding model object.
+	 */
 	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
 	{
 		return new SFactorGraph(factorGraph);

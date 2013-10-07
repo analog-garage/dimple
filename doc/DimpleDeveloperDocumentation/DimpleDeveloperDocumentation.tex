@@ -10,6 +10,10 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{longtable}
+\usepackage[titletoc]{appendix}		% titletoc adds 'Appendix' before the letter in the TOC
+\usepackage{hyperref}
+
  
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -52,9 +56,12 @@
 
 \maketitle
 
-\newpage
+\clearpage
+%\renewcommand{\contentsname}{Contents}
+\setcounter{tocdepth}{3}				% Include paragraphs and subparagraphs in TOC
 \tableofcontents
-\newpage
+
+\clearpage
 
 \section{Scope}
 
@@ -473,6 +480,16 @@ b.Beliefs
 The previous section talks a bit about the scheduler.  The following is a class diagram showing the relationships between Scheduler, Schedule, and ScheduleEntries.
 
 \includegraphics{images/Scheduler.png}
+
+\subsubsection{Creating a new Solver}
+
+
+
+correct namespace and it can just be added to path
+template
+Solver
+SFactor
+SVariable
 
 \subsubsection{Initializing solver state}
 
