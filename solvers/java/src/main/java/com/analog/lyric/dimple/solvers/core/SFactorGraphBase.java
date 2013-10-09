@@ -388,7 +388,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		{
 			Exception e = _exception;
 			_exception = null;				// Clear the exception; the exception should happen only once; no exception if this is called again
-			//System.out.println(e.getMessage());
 			throw new DimpleException(e);						// Pass the exception up to the client
 		}
 		else if (_thread != null)

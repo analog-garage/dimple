@@ -256,9 +256,13 @@ public class FactorGraph extends FactorBase
 	{
 
 		for (VariableStreamBase vs : _variableStreams)
+		{
 			vs.advanceState();
+		}
 		for (FactorGraphStream s : _factorGraphStreams)
+		{
 			s.advance();
+		}
 
 		getSolver().postAdvance();
 
