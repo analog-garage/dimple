@@ -325,7 +325,7 @@ FactorFunctionDataSource();
 dataSource.add(data);
 \end{lstlisting}
 
-This method appends the data source with the a single time-step of data (multiple time-steps must be added using successive calls to this method).The data argument is a multidimensional cell array, with dimension equal to the corresponding dimensions of the variable stream this will feed.  Each element is a FactorFunctions (see section~\ref{sec:FactorFunction}), which is to represent the Input of the corresponding variable.
+This method appends the data source with the a single time-step of data (multiple time-steps must be added using successive calls to this method).The data argument is a multidimensional \ifmatlab cell \fi array, with dimension equal to the corresponding dimensions of the variable stream this will feed.  Each element is a FactorFunctions (see section~\ref{sec:FactorFunction}), which is to represent the Input of the corresponding variable.
 
 
 \subsubsection{Data Sink Common Properties and Methods}

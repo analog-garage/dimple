@@ -35,9 +35,13 @@ function testNested()
     fg.solve();
     x = b.Belief;
 
-    for i = 0:2
-        fg.Solver.setNumThreads(16);
-        fg.Solver.setMultithreadingMode(i);
+   
+    
+    modes = fg.Solver.getMultithreadingManager().getModes();
+    for mode_index = 2:length(modes)
+        mode = modes(mode_index);
+        fg.Solver.useMultithreading(true);
+        fg.Solver.getMultithreadingManager().setMode(mode);
         fg.solve();
         y = b.Belief;
         assertTrue(norm(x(:)-y(:))==0);

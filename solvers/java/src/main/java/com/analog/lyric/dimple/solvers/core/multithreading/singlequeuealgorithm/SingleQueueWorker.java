@@ -24,8 +24,10 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphN
 
 /*
  * Object that retrieves data from the work queue until there is nothing left.
+ * 
+ * Package protected
  */
-public class SingleQueueWorker implements Callable<Object>
+class SingleQueueWorker implements Callable<Object>
 {
 	private LinkedBlockingQueue<StaticDependencyGraphNode> _workQueue;
 	private AtomicInteger _nodesDone;

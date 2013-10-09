@@ -651,11 +651,13 @@ myGraph.getSolver().iterate(5);
 
 For the Gibbs solver, a similar method allows running one or a specified number of samples at a time, skipping initialization as well as any burn-in or random restarts.  This is the sample method, which behaves the same as the iterate method.
 
-Some solvers can be run in a multithreaded mode.  For Solvers that support it, users can run in multithreaded mode simply by calling setNumThreads on the Solver.  For example
+\para{useMultithreading}
+
+Some solvers support multithreading.  The following method can be used to turn on multithreading:
 
 \ifmatlab
 \begin{lstlisting}
-fg.Solver.setNumThreads(8);
+fg.Solver.useMultithreading(true);
 \end{lstlisting}
 \fi
 
@@ -665,7 +667,8 @@ fg.getSolver().setNumThreads(8);
 \end{lstlisting}
 \fi
 
-For large graphs are graphs with compute intensive factor tables, multithreading should speedup solve time close to N times, where N is the number of cores in the user's machine.  For medium size graphs or small graphs, the multithreading mode might not accelerate solving.
+By default, multithreading is turned off.  Once multithreading is turned on, for large graphs or large factors, users can see acceleration up to N times where N is the number of cores in their machine.
+
 
 \subsubsection{Getting the Results of Inference}
 

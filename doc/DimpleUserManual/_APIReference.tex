@@ -1,6 +1,20 @@
 \section{API Reference}
 
-The following section describes the functions, classes, properties, and methods that comprise the Dimple API for \ifmatlab MATLAB. \fi \ifjava Java. \fi
+\ifmatlab
+The following section describes the functions, classes, properties, and methods that comprise the Dimple API for MATLAB. 
+\fi
+
+
+\ifjava
+The following section describes the classes, properties, and methods that comprise the Dimple API for Java. 
+
+The Java language does not provide a mechanism for creating getters and setters for properties.  When this document refers to a "property" Foo, it implies there is a setter and getter of the form:
+
+\begin{itemize}
+\item getter - Type getFoo();
+\item setter - void setFoo(Type value);
+\end{itemize}
+\fi
 
 \input{_APIReference.FactorGraph}
 \input{_APIReference.Variables}

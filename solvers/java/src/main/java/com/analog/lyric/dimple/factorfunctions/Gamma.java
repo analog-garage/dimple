@@ -50,7 +50,7 @@ public class Gamma extends FactorFunction
 		_beta = beta;
 		_alphaMinusOne = _alpha - 1;
 		_logBeta = Math.log(_beta);
-		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
+		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
     	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
@@ -89,7 +89,7 @@ public class Gamma extends FactorFunction
     		if (!_parametersConstant)
     		{
         		_alphaMinusOne = _alpha - 1;
-        		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
+        		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
     		}
         	for (; index < length; index++)
         	{

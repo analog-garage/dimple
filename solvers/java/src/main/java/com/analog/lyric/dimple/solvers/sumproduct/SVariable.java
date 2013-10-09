@@ -22,23 +22,20 @@ import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.DiscreteDomain;
 import com.analog.lyric.dimple.model.Factor;
 import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class SVariable extends SDiscreteVariableBase
+public class SVariable extends SDiscreteVariableDoubleArray
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double [][] _inPortMsgs = new double[0][];
     double [][] _logInPortMsgs = new double[0][];
-    protected double [][] _outMsgArray = new double[0][];
     double [][] _savedOutMsgArray = new double[0][];
     double [][] _outPortDerivativeMsgs = new double[0][];
     double [] _dampingParams = new double[0];
-    protected double [] _input;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
 
@@ -61,12 +58,6 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 
-	@Override
-	public void resetEdgeMessages(int portNum)
-	{
-		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
-		_outMsgArray[portNum] = (double[])resetOutputMessage(_outMsgArray[portNum]);
-	}
 	
 	
 	@Override
@@ -75,22 +66,6 @@ public class SVariable extends SDiscreteVariableBase
 		return -Math.log(_input[getGuessIndex()]);
 	}
 	
-	@Override
-    public void setInputOrFixedValue(Object priors,Object fixed, boolean hasFixedValue)
-    {
-    	if (priors == null)
-    	{
-    		_input = createDefaultMessage();
-    	}
-    	else
-    	{
-	    	double[] vals = (double[])priors;
-	    	if (vals.length != ((DiscreteDomain)_var.getDomain()).size())
-	    		throw new DimpleException("length of priors does not match domain");
-	    	
-	    	_input = vals;
-    	}
-    }
 	public void setDamping(int portIndex,double dampingVal)
 	{
 		if (portIndex >= _dampingParams.length)
@@ -109,9 +84,9 @@ public class SVariable extends SDiscreteVariableBase
 		
 		
 		_savedOutMsgArray = new double[_dampingParams.length][];
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMessages.length; i++)
 		{
-			int length = _inPortMsgs[i].length;
+			int length = _inputMessages[i].length;
 			_savedOutMsgArray[i] = new double[length];
 		}
 
@@ -135,7 +110,7 @@ public class SVariable extends SDiscreteVariableBase
         int D = _var.getSiblings().size();
         double maxLog = Double.NEGATIVE_INFINITY;
 
-        double[] outMsgs = _outMsgArray[outPortNum];
+        double[] outMsgs = _outputMessages[outPortNum];
 
         if (_dampingInUse)
         {
@@ -158,7 +133,7 @@ public class SVariable extends SDiscreteVariableBase
 	        {
 	        	if (d != outPortNum)		// For all ports except the output port
 	        	{
-	        		double tmp = _inPortMsgs[d][m];
+	        		double tmp = _inputMessages[d][m];
 	        		out += (tmp == 0) ? minLog : Math.log(tmp);
 	        	}
 	        }
@@ -214,7 +189,7 @@ public class SVariable extends SDiscreteVariableBase
 
         	for (int d = 0; d < D; d++)
 	        {
-	        	double tmp = _inPortMsgs[d][m];
+	        	double tmp = _inputMessages[d][m];
         		double logtmp = (tmp == 0) ? minLog : Math.log(tmp);
         		_logInPortMsgs[d][m] = logtmp;
         		alpha += logtmp;
@@ -226,7 +201,7 @@ public class SVariable extends SDiscreteVariableBase
         //Now compute output messages for each outgoing edge
 	    for (int out_d = 0; out_d < D; out_d++ )
 	    {
-            double[] outMsgs = _outMsgArray[out_d];
+            double[] outMsgs = _outputMessages[out_d];
             
 
             if (_dampingInUse)
@@ -283,7 +258,7 @@ public class SVariable extends SDiscreteVariableBase
 	    }
 	   
 	    if (_calculateDerivative)
-		    for (int i = 0; i < _inPortMsgs.length; i++)
+		    for (int i = 0; i < _inputMessages.length; i++)
 		    	updateDerivative(i);
 	    
     }
@@ -309,7 +284,7 @@ public class SVariable extends SDiscreteVariableBase
         	
 	        for (int d = 0; d < D; d++)
 	        {
-	        	double tmp = _inPortMsgs[d][m];
+	        	double tmp = _inputMessages[d][m];
 	        	out += (tmp == 0) ? minLog : Math.log(tmp);
 	        }
         	if (out > maxLog) maxLog = out;
@@ -356,11 +331,11 @@ public class SVariable extends SDiscreteVariableBase
 		for (int i = 0; i <  retval.length ; i++)
 			retval[i] = input[i];
 		
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMessages.length; i++)
 		{
 			for (int j=  0; j < retval.length; j++)
 			{
-				retval[j] *= _inPortMsgs[i][j];
+				retval[j] *= _inputMessages[i][j];
 			}
 		}
 		
@@ -414,10 +389,10 @@ public class SVariable extends SDiscreteVariableBase
 	public double calculatedf(double f, int weightIndex, int domain)
 	{
 		double sum = 0;
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMessages.length; i++)
 		{
 			STableFactor sft = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
-			double inputMsg = _inPortMsgs[i][domain];
+			double inputMsg = _inputMessages[i][domain];
 			double tmp = f / inputMsg;
 			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
 			tmp = tmp * der;
@@ -485,18 +460,18 @@ public class SVariable extends SDiscreteVariableBase
 			sum += dbelief * (Math.log(beliefd)) + dbelief;
 		}
 		
-		return -sum * (_inPortMsgs.length-1);
+		return -sum * (_inputMessages.length-1);
 	}
 
 
     private double calculateProdFactorMessagesForDomain(int outPortNum, int d)
     {
 		double f = getNormalizedInputs()[d];
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMessages.length; i++)
 		{
 			if (i != outPortNum)
 			{
-				f *= _inPortMsgs[i][d];
+				f *= _inputMessages[i][d];
 			}
 		}
 		return f;
@@ -543,7 +518,7 @@ public class SVariable extends SDiscreteVariableBase
 
 	public void initializeDerivativeMessages(int weights)
 	{
-		_outMessageDerivative = new double[weights][_inPortMsgs.length][_input.length];
+		_outMessageDerivative = new double[weights][_inputMessages.length][_input.length];
 	}
     
     public double [] getMessageDerivative(int wn, Factor f)
@@ -556,11 +531,11 @@ public class SVariable extends SDiscreteVariableBase
     {
     	double df = 0;
 		
-		for (int i = 0; i < _inPortMsgs.length; i++)
+		for (int i = 0; i < _inputMessages.length; i++)
 		{
 			if (i != outPortNum)
 			{
-				double thisMsg = _inPortMsgs[i][d];
+				double thisMsg = _inputMessages[i][d];
 				STableFactor stf = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
 				
@@ -592,24 +567,21 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public Object [] createMessages(ISolverFactor factor)
 	{
+		Object [] retval = super.createMessages(factor);
 		int portNum = _var.getPortNum(factor.getModelObject());
-		int newArraySize = Math.max(_inPortMsgs.length,portNum + 1);
-		_inPortMsgs = Arrays.copyOf(_inPortMsgs,newArraySize);
-		_inPortMsgs[portNum] = createDefaultMessage();
+		int newArraySize = _inputMessages.length;
 		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
-		_logInPortMsgs[portNum] = new double[_inPortMsgs[portNum].length];
-		_outMsgArray = Arrays.copyOf(_outMsgArray, newArraySize);
-		_outMsgArray[portNum] = createDefaultMessage();
+		_logInPortMsgs[portNum] = new double[_inputMessages[portNum].length];
 		
 		if (_dampingInUse)
 		{
 			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
-			_savedOutMsgArray[portNum] = new double[_inPortMsgs[portNum].length];
+			_savedOutMsgArray[portNum] = new double[_inputMessages[portNum].length];
 		}
 
 		_dampingParams = Arrays.copyOf(_dampingParams, newArraySize);
 		
-		return new Object [] {_inPortMsgs[portNum],_outMsgArray[portNum]};
+		return retval;
 	}
 	
 
@@ -626,21 +598,15 @@ public class SVariable extends SDiscreteVariableBase
 
 	}
 	
-	public double [] createDefaultMessage()
-	{
-		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
-		int domainLength = ((DiscreteDomain)_var.getDomain()).size();
-    	double[] retVal = new double[domainLength];
-    	return (double[])resetInputMessage(retVal);
-    }
+	
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
 	{
+		super.moveMessages(other, portNum, otherPortNum);
+		
 		SVariable sother = (SVariable)other;
-		_inPortMsgs[portNum] = sother._inPortMsgs[otherPortNum];
 		_logInPortMsgs[portNum] = sother._logInPortMsgs[otherPortNum];
-		_outMsgArray[portNum] = sother._outMsgArray[otherPortNum];
 		
 		if (_dampingInUse)
 		{
@@ -648,40 +614,6 @@ public class SVariable extends SDiscreteVariableBase
 		}
 	}
 
-	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		return _inPortMsgs[portIndex];
-	}
-
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outMsgArray[portIndex];
-	}
-
-	@Override
-	public void setInputMsg(int portIndex, Object obj)
-	{
-		_inPortMsgs[portIndex] = (double[])obj;
-		
-	}
-
-	@Override
-	public void setInputMsgValues(int portIndex, Object obj)
-	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_inPortMsgs[portIndex][i] = tmp[i];
-	}
-	
-	@Override
-	public void setOutputMsgValues(int portIndex, Object obj)
-	{
-		double [] tmp = (double[])obj;
-		for (int i = 0; i <tmp.length; i++)
-			_outMsgArray[portIndex][i] = tmp[i];
-	}
 
 	
 }

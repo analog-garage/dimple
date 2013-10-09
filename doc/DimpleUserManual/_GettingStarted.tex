@@ -25,7 +25,7 @@ Alice wants to know what the most likely weather is for every day of last week. 
 
 
 \subsubsection*{Creating the Factor Graph}
-The first command in a Dimple program, is to create a factor graph. This is easily done with the FactorGraph() command. 
+The first thing to do in many Dimple programs, is to create a factor graph. This is easily done by instantiating a FactorGraph. 
 
 \ifmatlab
 
@@ -58,7 +58,7 @@ FactorGraph HMM = new FactorGraph();
 \fi
 
 \subsubsection*{Declaring Variables}
-Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather… to SundayWeather. The command to create a variable is Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values `Sunny' and `Rainy'.\ifmatlab For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.\fi
+Once a Factor Graph has been defined, we can define the variables of the factor graph.  In our case, there will be seven variables, MondayWeather to SundayWeather. The syntax to create a variable is  \ifjava new \fi Discrete(domain,dimensions). In our case, the domain will consist of the two distinct values: Sunny and Rainy.\ifmatlab For now, we will not specify dimensions (this will be covered in 4 Bit XOR example). The domain should either be a cell, or a matrix of numbers.\fi
 
 \ifmatlab
 
@@ -94,11 +94,11 @@ Discrete SundayWeather = new Discrete(domain);
 
 \subsubsection*{Adding Factors}
 
-We now add the different factors of the factor graph. We will first add the factors corresponding to the Markov Chain structure. This is done with the command addFactor, which is a method of the factor graph previously defined. 
+We now add the different factors of the factor graph. We will first add the factors corresponding to the Markov Chain structure. This is done with addFactor, which is a method of the factor graph previously defined. 
 
 \ifmatlab
 
-The command has syntax addFactor(funchandle,arguments), where funchandle is the handle of a regular MATLAB function (which can be specified by the user), and the arguments are the variables involved in the factor being defined (in the same order as the inputs of the MATLAB function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
+The method has syntax addFactor(funchandle,arguments), where funchandle is the handle of a regular MATLAB function (which can be specified by the user), and the arguments are the variables involved in the factor being defined (in the same order as the inputs of the MATLAB function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
 
 
 In our case, we define a simple MC\_transition\_Tutorial(state1,state2) as follows (See /demos/12\_Tutorial/MC\_transition\_Tutorial.m):
@@ -125,7 +125,7 @@ end
 
 \ifjava
 
-The command has syntax addFactor(factorFunction,arguments), where factorFunction is an instance of a class that inherits from FactorFunction.  The arguments are the variables involved in the factor being defined (in the same order as the inputs of the veal function of the Factor Function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
+The method has syntax addFactor(factorFunction,arguments), where factorFunction is an instance of a class that inherits from FactorFunction.  The arguments are the variables involved in the factor being defined (in the same order as the inputs of the veal function of the Factor Function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
 
 In our case, we define a class called TransitionFactorFunction.
 
@@ -192,7 +192,7 @@ The java code first instantiates the factor function before connecting all of th
 
 \fi
 
-We now need to add factors corresponding to the observations of each day. As it happens, when using an addFactor command, the arguments need not be all random variables---some can be declared as constants. We see now how to use this fact to easily add the observations to each day. We first declare an observation function 
+We now need to add factors corresponding to the observations of each day. As it happens, when using an addFactor method, the arguments need not be all random variables---some can be declared as constants. We see now how to use this fact to easily add the observations to each day. We first declare an observation function 
 
 \ifmatlab
 
@@ -323,9 +323,9 @@ The previous code will create N xor factors across each of the N sets of 3 varia
 \subsubsection*{Specifying Inputs}
 
 
-The last step consists in adding the prior for the MondayWeather variable. We could, as above, use a factor with a single variable. Let us introduce a new command to easily add a single variable factor---the input method (on variables).
+The last step consists in adding the prior for the MondayWeather variable. We could, as above, use a factor with a single variable. Let us introduce a new property to easily add a single variable factor--- the input property (on variables).  \ifjava When referring to "properties" in java, this implies there is a setter and getter so, in the case of inputs setInput and getInput. \fi
 
-For a vector of probabilities (i.e., nonnegative numbers which sums up to one), the method \ifmatlab Variable.Input \fi \ifjava Variable.setInput \fi adds a single factor which depends on this variable only, with values equal to those given by the vector.
+For a vector of probabilities (i.e., nonnegative numbers which sums up to one), \ifmatlab Variable.Input \fi \ifjava Variable.setInput \fi adds a single factor which depends on this variable only, with values equal to those given by the vector.
 
 In our case, we do:
 
@@ -345,13 +345,13 @@ MondayWeather.setInput(0.7,0.3);
 
 \fi
 
-The Input command can be used in several different ways. Some notes of interest regarding the Input command:
+The Input property can be used in several different ways. Some notes of interest regarding the Input property:
 
 \begin{itemize}
-\item The Input command can typically be used for prior probabilities of the root variables in a Bayes Net, or for the initial node of a Markov Chain or HMM.
-\item The Input command can also be used for any factors with only one variable, for instance, for observation factors (see the introduction to factor graphs on how to remove observations and turn them into single node factors).
-\item The \ifmatlab observation\_function\_Tutorial \fi \ifjava ObservationFactorFunction \fi in the above example was not entirely required (see below)---we could have used the input command instead.
-\item IMPORTANT: Unlike the addFactor command, the Input command can be used only once for each variable. That is, once you have specified an input for a variable, re-specifying this input will destroy the previous factor and create a new one. In the example above, using only the Input command, it would not have been possible to separately incorporate both the prior on Monday's weather and the factor corresponding to Monday's observation. However, this feature is very useful when Input is used to specify external information, and when the user wants to see the effect of external information. Say for instance that Bob mentions to Alice that it rained on Wednesday. Alice can simply use the command \ifmatlab WednesdayWeather.Input=[0 1] \fi \ifjava WednesdayWeather.setInput(0,1)\fi. If Bob corrects himself and says he misremembered, and that it actually was sunny that day, Alice can correct the information using again the command \ifmatlab WednesdayWeather.Input=[1 0] \fi \ifjava WednesdayWeather.setInput(1,0)\fi.
+\item The Input method can typically be used for prior probabilities of the root variables in a Bayes Net, or for the initial node of a Markov Chain or HMM.
+\item The Input property can also be used for any factors with only one variable, for instance, for observation factors (see the introduction to factor graphs on how to remove observations and turn them into single node factors).
+\item The \ifmatlab observation\_function\_Tutorial \fi \ifjava ObservationFactorFunction \fi in the above example was not entirely required (see below)---we could have used the input property instead.
+\item IMPORTANT: Unlike the addFactor method, the Input property can be used only once for each variable. That is, once you have specified an input for a variable, re-specifying this input will destroy the previous factor and create a new one. In the example above, using only the Input property, it would not have been possible to separately incorporate both the prior on Monday's weather and the factor corresponding to Monday’s observation. However, this feature is very useful when Input is used to specify external information, and when the user wants to see the effect of external information. Say for instance that Bob mentions to Alice that it rained on Wednesday. Alice can simply use the call \ifmatlab WednesdayWeather.Input=[0 1] \fi \ifjava WednesdayWeather.setInput(0,1)\fi. If Bob corrects himself and says he misremembered, and that it actually was sunny that day, Alice can correct the information using again the call \ifmatlab WednesdayWeather.Input=[1 0] \fi \ifjava WednesdayWeather.setInput(1,0)\fi.
 \end{itemize}
 
 
@@ -359,7 +359,7 @@ The Input command can be used in several different ways. Some notes of interest 
 
 Finally, we explain how to solve the factor graph by using the solve, iterate, and NumIterations factor graph methods.
 
-The typical way of solving a factor graph will be by choosing the number of iterations and then running the solver for the desired number of iterations. In our case, this is simply done by typing the following commands:
+The typical way of solving a factor graph will be by choosing the number of iterations and then running the solver for the desired number of iterations. In our case, this is simply done by typing the following code:
 
 \ifmatlab
 
@@ -392,7 +392,7 @@ By default, the solver will use either a Flooding Schedule or a Tree Schedule de
 If the factor-graph is a tree (one that contains no cycles), the solver will automatically detect this and use a Tree Schedule by default.  In this schedule, each node is updated in an order that will result in the correct beliefs being computed after just one iteration.  In this case, NumIterations should be 1, which is its default value.
 
 \subsubsection*{Accessing Results}
-Once the solver has finished running, we can access the marginal distribution of each variable by using the Belief command
+Once the solver has finished running, we can access the marginal distribution of each variable by using the Belief property
 
 \ifmatlab
 
@@ -411,7 +411,7 @@ double [] belief = TuesdayWeather.getBelief();
 \fi
 
 This returns a vector of probability of the same length as the domain total size (i.e., the product of its dimensions), with the probability of each domain variable.
-Another way to solve the factor graph is to use the Solver.iterate(n) command, which runs the factor graph for n iterations (without arguments, it runs for 1 iteration).
+Another way to solve the factor graph is to use the Solver.iterate(n) method, which runs the factor graph for n iterations (without arguments, it runs for 1 iteration).
 
 \ifmatlab
 
@@ -431,9 +431,9 @@ HMM.getSolver().iterate(5);
 
 \fi
 
-IMPORTANT: The iterate command is useful to access intermediate results (i.e, see how beliefs change through the iterations).
+IMPORTANT: The iterate method is useful to access intermediate results (i.e, see how beliefs change through the iterations).
 
-IMPORTANT: One distinction between the solve and iterate commands is that all messages and beliefs are reinitialized when starting the solve command. Running solve twice in a row is therefore identical to running it once, unlike iterate.  When calling iterate() for the first time, first call initialize(), which reinitialize all messages.
+IMPORTANT: One distinction between the solve and iterate methods is that all messages and beliefs are reinitialized when starting the solve method. Running solve twice in a row is therefore identical to running it once, unlike iterate.  When calling iterate() for the first time, first call initialize(), which reinitialize all messages.
 
 
 \subsection{A 4-bit XOR}
@@ -562,7 +562,7 @@ IMPORTANT: We also introduce the Discrete method `Value', which returns the most
 
 The first remark above is rather important, as it highlights of the concept of arrays of random variables in the MATLAB Dimple API.  Dimple handles arrays of random variables in a very natural manner, and most array indexing operations of MATLAB are supported in Dimple in a similar fashion. 
 
-To create a multidimensional array of random variables in the MATLAB Dimple API, we use the Variable command where every argument after the first is a dimension of an array:
+To create a multidimensional array of random variables in the MATLAB Dimple API, we construct a Variable class instance where every constructor argument after the first is a dimension of an array:
 
 \begin{lstlisting}
 VarArray=Variable(Domain,dimension1,dimension2,.., dimensionk) 
@@ -591,7 +591,7 @@ RowArray=[ B1 B2 B3 B4];
 ColumnArray=RowArray';
 \end{lstlisting}
 
-IMPORTANT: The above command is a simple `grouping' (reference) of variables  ; it does not duplicate them.
+IMPORTANT: The above method is a simple "grouping" (reference) of variables  ; it does not duplicate them.
 
 Concatenation and subindexing of random arrays work in exactly the same fashion as MATLAB.
 
@@ -625,7 +625,7 @@ IMPORTANT: Since Beliefs or Inputs are arrays themselves, calling them on an arr
 
 \fi
 
-Often, we will find it useful to have random Bits. For that purpose, one can directly create random Bits with the command Bit. A Bit is simply a Discrete with Domain [0, 1]. Also, in order to simplify Input declarations, for a Bit variable named BitVar, BitVar.Input takes a single number, the probability of 1. 
+Often, we will find it useful to have random Bits. For that purpose, one can directly create random Bits with the Bit class. A Bit is simply a Discrete with Domain [0, 1]. Also, in order to simplify Input declarations, for a Bit variable named BitVar, BitVar.Input takes a single number, the probability of 1. 
 
 \ifmatlab
 Similarly, BitVar.Belief returns the marginal probability of BitVar being equal to 1.
@@ -734,9 +734,9 @@ Suppose we wish to use two 4-bit XORs from the previous example to create a 6-bi
 
 Dimple provides a way to replicate multiple copies of a Factor Graph and nest these instances in a containing Factor Graph. A nested Factor Graph can be seen as a special factor function between a set of variables (`connector variables'), which, when `zoomed in,' is in fact another factor graph, with factors involving both the connector variables, and other `internal variables.' In the second version of the XOR example, we created a 4-bit XOR connected to 4 variables, by also creating an extra Bit C. What if we wanted to use that construction as a 4-bit XOR for potentially many different sets of 4 bits, overlapping or not, by replicating the factor graph as needed? Nested factor graphs provide an elegant solution to this problem.
 
-A nestable factor graph is created by specifying first a set   of `connector' random variables, and invoking the command FactorGraph(S).
+A nestable factor graph is created by specifying first a set  of "connector" random variables, and instantiating a FactorGraph with these variables passed in to the constructor.
 
-IMPORTANT: The factor graph defined this way is still a proper factor graph, and in principle, we can run BP on it. However, in practice, it is used as a `helper' factor graph (and   are `helper' random variables), which will mostly be replicated in the actual factor graph of interest.
+IMPORTANT: The factor graph defined this way is still a proper factor graph, and in principle, we can run BP on it. However, in practice, it is used as a "helper" factor graph (and   are "helper" random variables), which will mostly be replicated in the actual factor graph of interest.
 
 The following code creates a nestable factor graph, with connector variables $ (B_1,B_2,B_3,B_4) $
 
@@ -783,9 +783,9 @@ IMPORTANT: In principle, variables attached to a Factor Graph can be defined bef
 
 \includegraphics{images/BoundaryVariables.png}
 
-Consider a nestable factor graph NestableFactorGraph(connectvar1, connectvar2,..,vark) with k connector variables. Consider also an actual factor graph of interest, FactorGraph, containing (among others) k variables of interest (var1,..,vark). By using the addGraph command, we can replicate the NestableFactorGraph and use it to connect the variables (var1,..,vark) in the same way the connector variables are connected in the nestable factor graph. The command is: FactorGraph.addGraph(NestableFactorGraph,var1,..,vark).
+Consider a nestable factor graph NestableFactorGraph(connectvar1, connectvar2,..,vark) with k connector variables. Consider also an actual factor graph of interest, FactorGraph, containing (among others) k variables of interest (var1,..,vark). By using the addGraph method, we can replicate the NestableFactorGraph and use it to connect the variables (var1,..,vark) in the same way the connector variables are connected in the nestable factor graph. The method is: FactorGraph.addGraph(NestableFactorGraph,var1,..,vark).
 
-In essence, the nestable factor graph represents a factor between the dummy connector variables, and the addGraph command is adding the factor to the desired actual variables.
+In essence, the nestable factor graph represents a factor between the dummy connector variables, and the addGraph method is adding the factor to the desired actual variables.
 
 IMPORTANT: Nested factor graphs support arbitrary levels of nesting.  That is, a nested factor graph can be composed of nested factor graphs.
 
@@ -816,7 +816,7 @@ disp(d.Value');
 
 
 
-IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) command above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addGraph call requires a single argument---an array of four random 
+IMPORTANT: Note the use of standard MATLAB array indexing in the d([1:3 5]) method above. Also, note that technically, our nestable factor graph declared above only had one argument (not four), an array of four random variables (as opposed to four separately declared random variables). As a result, the addGraph call requires a single argument---an array of four random 
 
 \fi
 

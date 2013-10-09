@@ -38,11 +38,12 @@ public class VonMises extends FactorFunction
 {
 	protected double _mean;
 	protected double _precision;
-	protected double _logBesseli0Precision;
+	protected double _log2piBesseli0Precision;
 	protected boolean _parametersConstant = false;
 	protected int _firstDirectedToIndex = 2;
-	protected static double PI = Math.PI;
-	protected static double MINUS_PI = -Math.PI;
+	protected static final double PI = Math.PI;
+	protected static final double MINUS_PI = -Math.PI;
+	protected static final double _log2pi = Math.log(2*Math.PI);
 
 	public VonMises() {super();}
 	public VonMises(double mean, double precision)
@@ -50,7 +51,7 @@ public class VonMises extends FactorFunction
 		this();
 		_mean = mean;
 		_precision = precision;
-		_logBesseli0Precision = Math.log(Bessel.i0(_precision));
+		_log2piBesseli0Precision = Math.log(Bessel.i0(_precision)) + _log2pi;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
     	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
@@ -64,7 +65,7 @@ public class VonMises extends FactorFunction
     	{
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
     		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
-    		_logBesseli0Precision = Math.log(Bessel.i0(_precision));
+    		_log2piBesseli0Precision = Math.log(Bessel.i0(_precision)) + _log2pi;
     		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
     	int length = arguments.length;
@@ -77,7 +78,7 @@ public class VonMises extends FactorFunction
     			return Double.POSITIVE_INFINITY;
         	sum -= Math.cos(x - _mean);
     	}
-    	return sum * _precision + N * _logBesseli0Precision;
+    	return sum * _precision + N * _log2piBesseli0Precision;
 	}
     
     @Override

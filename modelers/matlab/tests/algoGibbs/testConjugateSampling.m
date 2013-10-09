@@ -44,6 +44,7 @@ test13(debugPrint, repeatable);
 test14(debugPrint, repeatable);
 test15(debugPrint, repeatable);
 test16(debugPrint, repeatable);
+test17(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -732,7 +733,7 @@ end
 
 fg.solve();
 
-ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+ps = p.Solver.getAllSamples();
 
 alphaEst = sum(ps,1);
 alphaEst = alphaEst/sum(alphaEst);
@@ -780,7 +781,7 @@ end
 
 fg.solve();
 
-ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+ps = p.Solver.getAllSamples();
 
 alphaEst = sum(ps,1);
 alphaEst = alphaEst/sum(alphaEst);
@@ -827,7 +828,7 @@ end
 
 fg.solve();
 
-ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+ps = p.Solver.getAllSamples();
 
 pEst = mean(ps);
 assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
@@ -870,10 +871,55 @@ end
 
 fg.solve();
 
-ps = p.invokeSolverMethodWithReturnValue('getAllSamples');
+ps = p.Solver.getAllSamples();
 
 pEst = mean(ps);
 assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
+
+end
+
+
+
+% Beta prior on Binomial distribution, fixed N parameter
+function test17(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+pData = rand();
+numDatapoints = 100;
+data = discreteSample([1-pData pData], numDatapoints);
+expectedP = (priorAlpha + sum(data))/(priorAlpha + priorBeta + numDatapoints);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+N = 100;
+p = Real();
+
+p.Input = FactorFunction('Beta',priorAlpha,priorBeta);
+
+% Use built-in constructor
+x = Binomial(N, p);
+x.FixedValue = sum(data);
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples();
+
+pEst = mean(ps);
+assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.01);
 
 end
 

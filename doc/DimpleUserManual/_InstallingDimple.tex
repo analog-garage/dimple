@@ -3,6 +3,8 @@
 
 \subsection{Installing Binaries}
 
+Users can follow these instructions to install Dimple.
+
 \ifmatlab
 
 \begin{enumerate}
@@ -47,28 +49,43 @@ PASSED ALL TESTS
 
 \ifjava
 
-It is possible to use Dimple with only the Java API.  To do so, add all of the jar files in the following directories to their java class path:
-
 \begin{enumerate}
-\item \textless textjava directory\textgreater /solvers/lib
-\item \textless java directory\textgreater /solvers/non-maven-jars
+\item Download the latest version of Dimple from http://dimple.probprog.org.  The latest binaries can be found at http://dimple.probprog.org/download listed as "Dimple Binaries".
+\item Extract the Dimple  zip file
+\item If you are developing using Eclipse
+\begin{enumerate}
+\item If you don't already have a Java project, create one.
+\item Open Project-\textgreater Properties.
+\item Select Java Build Path
+\item Select Libraries
+\item Select "Add External JARs..."
+\item browse to \textless dimple directory\textgreater /solvers/lib, select all the jars and click open.
+\item browse to \textless dimple directory\textgreater /solvers/non-maven-jars, select all the jars and click open.
+\item You should now be able to instantiate and use Dimple classes in your project.
+\end{enumerate}
+\item If you are compiling from the command line, add the following directories to the JAVACLASSPATH
+\begin{itemize}
+\item \textless dimple directory\textgreater /solvers/lib
+\item \textless dimple directory\textgreater /solvers/non-maven-jars
+\end{itemize}
 \end{enumerate}
 
 \fi
 
 \subsection{Installing from Source}
 
+Developers interested in investigating Dimple source code, helping with bug fixes, or contributing to the source code can install Dimple from source.  Developers only interested in using Dimple should install from binaries (described in the previous section).
+
 \begin{enumerate}
 \item Download the source from https://github.com/AnalogDevicesLyricLabs/dimple
-\item Install gradle from http://www.gradle.org/.  (Gradle is a java build tool that pulls down jars from Maven repositories.)
+\item Install Gradle from http://www.gradle.org/.  (Gradle is a Java build tool that pulls down jars from Maven repositories.)
 \item Change to \textless dimple directory\textgreater /solvers/java 
 \item Run gradle by typing ``gradle''
 \end{enumerate}
 
-If you want to edit java files with eclipse:
+If you want to edit java files with Eclipse:
 
 \begin{enumerate}
-\item Execute ``gradle eclipse''.  This will create the appropriate references to all of the dependencies in the Eclipse .classpath file.
 \item From eclipse, Import-\textgreater Existing Projects Into Workspace
 \item Browse to the dimple directory, select sovers/java, and click Finish.
 \end{enumerate}

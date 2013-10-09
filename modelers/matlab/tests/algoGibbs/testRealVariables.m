@@ -57,15 +57,15 @@ assert(f.Domain.UB == 3.7);
 
 
 dtrace(debugPrint, ['c.Input.eval(0): ' num2str(c.Input.eval(0))]);
-assertElementsAlmostEqual(c.Input.eval(0), 1.0);
+assertElementsAlmostEqual(c.Input.eval(0), 1/sqrt(2*pi));
 
 dtrace(debugPrint, ['d.Input.eval(1): ' num2str(d.Input.eval(1))]);
-assertElementsAlmostEqual(d.Input.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d.Input.eval(1), exp(-0.5)/sqrt(2*pi));
 
 assert(isempty(a.Input));
 a.Input = com.analog.lyric.dimple.factorfunctions.Normal(0,1);
 dtrace(debugPrint, ['a.Input.eval(0): ' num2str(a.Input.eval(0))]);
-assertElementsAlmostEqual(a.Input.eval(0), 1.0);
+assertElementsAlmostEqual(a.Input.eval(0), 1/sqrt(2*pi));
 
 
 % Arrays
@@ -86,18 +86,18 @@ assert(d45.Domain.LB == -4);
 assert(d45.Domain.UB == 4);
 
 dtrace(debugPrint, ['d14.Input{1,4}.eval(1): ' num2str(d14.Input{1,4}.eval(1))]);
-assertElementsAlmostEqual(d14.Input{1,4}.eval(1), exp(-0.5));
-assertElementsAlmostEqual(d14.Input{4}.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d14.Input{1,4}.eval(1), exp(-0.5)/sqrt(2*pi));
+assertElementsAlmostEqual(d14.Input{4}.eval(1), exp(-0.5)/sqrt(2*pi));
 dtrace(debugPrint, ['d41.Input{4,1}.eval(1): ' num2str(d41.Input{4,1}.eval(1))]);
-assertElementsAlmostEqual(d41.Input{4,1}.eval(1), exp(-0.5));
-assertElementsAlmostEqual(d41.Input{4}.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d41.Input{4,1}.eval(1), exp(-0.5)/sqrt(2*pi));
+assertElementsAlmostEqual(d41.Input{4}.eval(1), exp(-0.5)/sqrt(2*pi));
 dtrace(debugPrint, ['d45.Input{4,5}.eval(1): ' num2str(d45.Input{4,5}.eval(1))]);
-assertElementsAlmostEqual(d45.Input{4,5}.eval(1), exp(-0.5));
+assertElementsAlmostEqual(d45.Input{4,5}.eval(1), exp(-0.5)/sqrt(2*pi));
 
 
 d45.Input = com.analog.lyric.dimple.factorfunctions.Normal(10,1);
 dtrace(debugPrint, ['d45.Input{4,5}.eval(10) (mean 10): ' num2str(d45.Input{4,5}.eval(10))]);
-assertElementsAlmostEqual(d45.Input{4,5}.eval(10), 1);
+assertElementsAlmostEqual(d45.Input{4,5}.eval(10), 1/sqrt(2*pi));
 
 
 dtrace(debugPrint, '--testRealVariables');

@@ -24,8 +24,10 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 /*
  * Responsible for picking of a chunk of schedule entries,
  * updating the entries, and then stealing work until there's nothing left.
+ * 
+ * Package protected
  */
-public class WorkerWithStealing implements Callable<Object>
+class WorkerWithStealing implements Callable<Object>
 {
 	private ConcurrentLinkedQueue<IScheduleEntry> [] _deques;
 	private int _which;

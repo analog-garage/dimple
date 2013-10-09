@@ -10,6 +10,10 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{longtable}
+\usepackage[titletoc]{appendix}		% titletoc adds 'Appendix' before the letter in the TOC
+\usepackage{hyperref}
+
  
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -52,9 +56,12 @@
 
 \maketitle
 
-\newpage
+\clearpage
+%\renewcommand{\contentsname}{Contents}
+\setcounter{tocdepth}{3}				% Include paragraphs and subparagraphs in TOC
 \tableofcontents
-\newpage
+
+\clearpage
 
 \section{Scope}
 
@@ -473,6 +480,30 @@ b.Beliefs
 The previous section talks a bit about the scheduler.  The following is a class diagram showing the relationships between Scheduler, Schedule, and ScheduleEntries.
 
 \includegraphics{images/Scheduler.png}
+
+\subsubsection{Creating a new Solver}
+
+Dimple provides a modular architecture which makes it relatively easy to create a new Solver.  To aid in the development of a new solver, Dimple provides a template located in the com.analog.lyric.dimple.solvers.template package.  Users can copy this template to speed up the creation of a new solver.
+
+To create a new solver, simply create a new namespace "com.analog.lyric.dimple.solvers.\textless Package Name\textgreater. 
+
+In this new package, the user has to create only four new classes:
+
+\begin{itemize}
+\item Solver - The Solver class must implement IFactorGraphFactory and can extend SolverBase. This class is responsible for instantiating SFactorGraph instances.
+\item SFactorGraph - This class can extend SFactorGraphBase which, in turn, extends SNode and implements ISolverFactorGraph.  It is responsible for instantiating variables and factors.
+\item SVariable - This class can extend SVariableBase or SDiscreteVariableBase.  Use the latter if your solver uses double arrays as messages.  The SVariable is responsible for calculating the variable message passing math. In addition it is responsible for initializing messages.
+\item SFactor - The SFactor class can extend STableFactorDoubleArray, STableFactorBase, or SFactorBase. The template inherits from STableFactorDoubleArray.  This class is responsible for calculating the Factor message passing math.
+\end{itemize}
+
+Assuming com.analog.lyric.dimple.solvers.\textless Package Name\textgreater.Solver exists, users can  use the following to instantiate their new solver:
+
+\begin{lstlisting}
+fg = FactorGraph();
+fg.Solver = '<Package Name>';
+\end{lstlisting}
+
+As long as their solver is in the correct namespace and on the java class path, MATLAB can instantiate the solver from the last portion of the namespace.
 
 \subsubsection{Initializing solver state}
 
@@ -918,20 +949,20 @@ In the case where each Factor is directed to multiple variables, Dimple will ret
 
 Dimple uses multithreading for two purposes.  The first is a mechanism for handling Ctrl+C from MATLAB.  The second is for accelerating inference by N where N is the number of cores in the user's machine.  Here we describe the architecture behind the latter multithreading.
 
-Dimple currently provides three variants of multithreading inference.  All three variants take advantage of multiple cores by executing ScheduleEntry updates concurrently.  In the future, Dimple could be modified to also parallelize updating a single factor.
+Dimple currently provides two variants of multithreading inference.  Both variants take advantage of multiple cores by executing ScheduleEntry updates concurrently.  In the future, Dimple could be modified to also parallelize updating a single factor.
 
 \paragraph{Brief review of API}
 
 Users can run in the multithreaded mode simply by setting numThreads to a value larger than 1.
 
 \begin{lstlisting}
-fg.Solver.setNumThreads(8);
+fg.Solver.useMultithreading(true);
 \end{lstlisting}
 
-Users can select between various multithreaded modes using the setMultithreadingMode method:
+Users can select between various multithreaded modes using the getMultithreadingManager().setMode method:
 
 \begin{lstlisting}
-fg.Solver.setMultithreadingMode(1);
+fg.Solver.getMultithreadingManager().setMode('Phase');
 \end{lstlisting}
 
 \paragraph{Class structure}
@@ -949,8 +980,7 @@ The following UMLish diagram represents the multithreading class structure.
 \item DepdendencyGraphNode - Contains a one to one mapping to an IScheduleEntry
 \item LastUpdateGraph and Edge - These classes are used by the DependencyGraph initialization code.  
 \item Phase - One of the runtime algorithms.  Described in more detail in a later section.
-\item OneQueue - One of the runtime algorithms.  Described in more detail in a later section.
-\item OneQueueCross - One of the runtime algorithms.  Described in more detail in a later section.
+\item SingleQueue - One of the runtime algorithms.  Described in more detail in a later section.
 \end{itemize}
 
 \paragraph{Dependency Graph}
@@ -1071,9 +1101,6 @@ for each thread
 \end{lstlisting}
 
 This algorithm is slower than the Phase based algorithm in many cases, but does tend to be faster with large factors and a more complex dependency graph.
-
-\subparagraph{SingleQueueCrossIterationMultithreadingAlgorithm}
-This algorithm is the same as the previous except that it unrolls iterations.  Furthermore, it uses a different legacy DependencyGraph code that is a bit slower.
 
 \paragraph{Profiling}
 Dimple contains a few MATLAB profiling scripts in: /dimple/modelers/matlab/tests/performance/threading.  These can be run to determine if multithreading changes affect performance.

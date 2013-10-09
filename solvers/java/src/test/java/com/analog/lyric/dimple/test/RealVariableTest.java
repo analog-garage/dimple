@@ -64,16 +64,18 @@ public class RealVariableTest
 		assertTrue(e.getRealDomain().getLowerBound() == 0);
 		assertTrue(e.getRealDomain().getUpperBound() == Double.POSITIVE_INFINITY);
 
+		final double oneOverSqrtTwoPi = 1/Math.sqrt(2*Math.PI);
+		
 		if (debugPrint) System.out.println("c.Input(0): " + ((FactorFunction)c.getInput()).eval(new Object[]{0d}));
-		assertTrue(nearlyEquals(((FactorFunction)c.getInput()).eval(new Object[]{0d}), 1.0));
+		assertTrue(nearlyEquals(((FactorFunction)c.getInput()).eval(new Object[]{0d}), oneOverSqrtTwoPi));
 		
 		if (debugPrint) System.out.println("d.Input(1): " + ((FactorFunction)d.getInput()).eval(new Object[]{1d}));
-		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-0.5)));
+		assertTrue(nearlyEquals(((FactorFunction)d.getInput()).eval(new Object[]{1d}), Math.exp(-0.5)*oneOverSqrtTwoPi));
 
 		assertTrue(a.getInputObject() == null);
 		a.setInputObject(new Normal(0,1));
 		if (debugPrint) System.out.println("a.Input(0): " + ((FactorFunction)a.getInput()).eval(new Object[]{0d}));
-		assertTrue(nearlyEquals(((FactorFunction)a.getInput()).eval(new Object[]{0d}), 1.0));
+		assertTrue(nearlyEquals(((FactorFunction)a.getInput()).eval(new Object[]{0d}), oneOverSqrtTwoPi));
 	}
 	
 	

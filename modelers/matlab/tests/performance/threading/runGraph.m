@@ -21,7 +21,7 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
     fprintf('running iters: %d solves: %d domainSize: %d ',...
         iters,numSolves,domainSize);
     fprintf('scheduler: %s M: %d N: %d threads: %d ',scheduler,M,N,numThreads);
-    fprintf('threadMode: %d presolve: %d ... \n',threadMode,presolve);
+    fprintf('threadMode: %s presolve: %d ... \n',threadMode,presolve);
     rand('seed',seed);
     randn('seed',seed);
     
@@ -61,8 +61,15 @@ function [total_time,fg,results] = runGraph(iters,numSolves,domainSize,...
 
     m = fg.VectorObject.getModelerNode(0);
     fg.NumIterations = iters;
-    fg.Solver.setNumThreads(numThreads);
-    fg.Solver.setMultithreadingMode(threadMode);
+    if numThreads == 1
+        fg.Solver.useMultithreading(false);
+    else
+        fg.Solver.useMultithreading(true);
+    end
+    
+    setDimpleNumThreads(numThreads);    
+    fg.Solver.getMultithreadingManager().setNumWorkers(numThreads);
+    fg.Solver.getMultithreadingManager().setMode(threadMode);
 
     if presolve
         fg.solve();

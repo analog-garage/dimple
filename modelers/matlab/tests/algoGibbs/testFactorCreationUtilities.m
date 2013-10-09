@@ -19,7 +19,7 @@ function testFactorCreationUtilities()
 debugPrint = false;
 repeatable = true;
 
-dtrace(debugPrint, '++testComplexVariables');
+dtrace(debugPrint, '++testFactorCreationUtilities');
 
 if (repeatable)
     seed = 1;
@@ -30,8 +30,9 @@ end
 
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
+test3(debugPrint, repeatable);
 
-dtrace(debugPrint, '--testComplexVariables');
+dtrace(debugPrint, '--testFactorCreationUtilities');
 
 end
 
@@ -187,6 +188,72 @@ assertElementsAlmostEqual(sum(ev(2,3,4).Input),1);      % Utility makes inputs s
 
 assert(isempty(fg.Factors));    % Shouldn't have added any factors
 assert(isempty(fg.Variables));  % Shouldn't have added any variables
+
+end
+
+
+% Test Binomial
+function test3(debugPrint, repeatable)
+
+fgAlt = FactorGraph();
+fgAlt.Solver = 'Gibbs';
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+maxN = 100;
+constN = 37;
+constP = 0.27;
+p = Real;
+N = Discrete(0:maxN);
+pAlt = Real;
+NAlt = Discrete(0:maxN);
+
+x1 = Binomial(N, p);
+x2 = Binomial(constN, p);
+x3 = Binomial(N, constP);
+x4 = Binomial(constN, constP);
+assert(isa(x1,'Discrete'));
+assert(isa(x2,'Discrete'));
+assert(isa(x3,'Discrete'));
+assert(isa(x4,'Discrete'));
+assert(all(cell2mat(x1.Domain.Elements) == 0:maxN));
+assert(all(cell2mat(x2.Domain.Elements) == 0:constN));
+assert(all(cell2mat(x3.Domain.Elements) == 0:maxN));
+assert(all(cell2mat(x4.Domain.Elements) == 0:constN));
+assert(all(size(x1)==[1,1]));
+assert(all(size(x2)==[1,1]));
+assert(all(size(x3)==[1,1]));
+assert(all(size(x4)==[1,1]));
+assert(x1.Solver.getParentGraph == fg.Solver);
+assert(x2.Solver.getParentGraph == fg.Solver);
+assert(x3.Solver.getParentGraph == fg.Solver);
+assert(x4.Solver.getParentGraph == fg.Solver);
+    
+x5 = Binomial(N, p, [2,4]);
+x6 = Binomial(constN, p, [2,4]);
+x7 = Binomial(N, constP, [2,4]);
+x8 = Binomial(constN, constP, [2,4]);
+assert(isa(x5,'Discrete'));
+assert(isa(x6,'Discrete'));
+assert(isa(x7,'Discrete'));
+assert(isa(x8,'Discrete'));
+assert(all(cell2mat(x5.Domain.Elements) == 0:maxN));
+assert(all(cell2mat(x6.Domain.Elements) == 0:constN));
+assert(all(cell2mat(x7.Domain.Elements) == 0:maxN));
+assert(all(cell2mat(x8.Domain.Elements) == 0:constN));
+assert(all(size(x5)==[2,4]));
+assert(all(size(x6)==[2,4]));
+assert(all(size(x7)==[2,4]));
+assert(all(size(x8)==[2,4]));
+assert(x5(1,1).Solver.getParentGraph == fg.Solver);
+assert(x6(1,1).Solver.getParentGraph == fg.Solver);
+assert(x7(1,1).Solver.getParentGraph == fg.Solver);
+assert(x8(1,1).Solver.getParentGraph == fg.Solver);
+
+x9 = Binomial(NAlt, pAlt, fgAlt);
+assert(x9.Solver.getParentGraph == fgAlt.Solver);
+assert(isa(x9,'Discrete'));
 
 end
 

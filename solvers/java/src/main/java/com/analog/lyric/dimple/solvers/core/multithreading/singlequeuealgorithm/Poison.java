@@ -20,8 +20,10 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphN
 
 /*
  * Sentinel object to be injected into the work queue to indicate that all work is done.
+ * 
+ * Package protected
  */
-public class Poison extends StaticDependencyGraphNode 
+class Poison extends StaticDependencyGraphNode 
 {
 
 }

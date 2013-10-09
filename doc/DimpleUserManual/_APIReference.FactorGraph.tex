@@ -12,11 +12,11 @@ FactorGraph([boundaryVariables])
 
 \ifjava
 \begin{lstlisting}
-FactorGraph(VariableBase ... boundaryVariables)
+new FactorGraph(VariableBase ... boundaryVariables)
 \end{lstlisting}
 \fi
 
-For a basic factor graph, the constructor is simply the command FactorGraph with no arguments.
+For a basic factor graph, the constructor can be called without arguments.
 
 For a nested factor graph (one that may be used as a sub-graph within another graph), the constructor must include a list of the boundary variables of the graph.  When used as a sub-graph, the boundary variables are dummy variables with the same specification as the variables in the outer graph that will ultimately connect to the sub-graph.  A graph defined with boundary variables may alternatively be used as a top-level graph, in which case the boundary variables are used directly.
 
@@ -414,7 +414,7 @@ This method has the following limitations:
 \item The Solver must be set to use the SumProduct solver (the default solver).
 \end{itemize}
 
-The factorList argument is either a single Factor or FactorTable, or a cell array of Factors or FactorTables.  The weight values in these factor tables are the parameters to be estimated.  All other factors in the graph remain fixed and unmodified.  When including a FactorTable, if that table is used in more than one factor in the graph, the entries in the table are tied, estimating them jointly for all factors containing that table.
+The factorList argument is either a single Factor or FactorTable, or \ifmatlab a cell \fi \ifjava an \fi array of Factors or FactorTables.  The weight values in these factor tables are the parameters to be estimated.  All other factors in the graph remain fixed and unmodified.  When including a FactorTable, if that table is used in more than one factor in the graph, the entries in the table are tied, estimating them jointly for all factors containing that table.
 
 The numRestarts argument indicates the number of times the EM process is repeated using distinct random restart values for the parameters.  When numRestarts is greater than 1, the EM process is repeated with different random initialization, and the final resulting parameter values are chosen from the run that resulted in the smallest Bethe free energy for the graph.
 
@@ -563,7 +563,7 @@ Users can retrieve Factors and/or NestedGraphs associated with a graph using the
 \end{itemize}
 \fi
 
-When the user specifies a relativeNestingDepth or calls FactorsTop, the resulting cell array will contain a mix of leaf factors and Nested Graphs.
+When the user specifies a relativeNestingDepth or calls FactorsTop, the resulting \ifmatlab cell \fi array will contain a mix of leaf factors and Nested Graphs.
 
 \para{Retrieving Factors but Not Nested Factor Graphs}
 
@@ -658,11 +658,18 @@ The FactorGraph class provides the following:
 \fi
 
 
-isTree -- Users can call <factor graph name>.isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf cells.  
+isTree -- Users can call \textless factor graph name\textgreater .isTree() to determine if a FactorGraph is a tree.  If the graph contains cycles, this method will return false. Like the other methods, the relativeNestingDepth determines at what point to consider NestedGraphs to be leaf nodes.  
 
 \para{Retrieving an Adjacency Matrix}
 
+\ifmatlab
 All of the following methods return a pair: [A, labels] where A is a square connectivity matrix and labels is a cell array of strings specifying the names of the nodes in A. 
+\fi
+
+\ifjava
+All of the following methods return a 2D int array A, where A is a square connectivity matrix.
+\fi
+
 
 \begin{itemize}
 \item getAdjacencyMatrix(relativeNestingDepth,forceIncludeBoundaryVariables) -- relativeNestingDepth behaves the same as in other methods that take this parameter.  So does forceIncludeBoundaryVariables. forceIncludeBoundaryVariables has a default value of false.
@@ -674,7 +681,7 @@ All of the following methods return a pair: [A, labels] where A is a square conn
 FactorGraph also provides an AdjacencyMatrix Property:
 
 \begin{itemize}
-\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat and only returns A (not the labels).  \ifmatlab MATLAB properties can only return one object. \fi
+\item AdjacencyMatrix -- equivalent to getAdjacencyMatrixFlat \ifmatlab and only returns A (not the labels).  MATLAB properties can only return one object. \fi
 \end{itemize}
 
 An example of getAdjacencyMatrix:
@@ -739,8 +746,8 @@ f
 \item depthFirstSearch(node, searchDepth, relativeNestingDepth) -- 
 \begin{itemize}
 \item node -- Specifies the node from which to initiate the search
-\item searchDepth -- specifies how far from ``node'' the search should go.
-\item relativeNestingDepth -- determines how deep to go down the NestedGraphs before considering NestedGraphs to be leaf cells. 
+\item searchDepth -- specifies how far from node the search should go.
+\item relativeNestingDepth -- determines how deep to go down the NestedGraphs before considering NestedGraphs to be leaf nodes. 
 \end{itemize}
 \item depthFirstSearchFlat(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,maxint)
 \item depthFirstSearchThop(node, searchDepth) -- equivalent of depthFirstSearch(node,searchDepth,0)

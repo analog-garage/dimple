@@ -47,7 +47,7 @@ public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 	{
 		//get the dependency graph.
  		StaticDependencyGraph dg = getManager().getDependencyGraph();
- 		
+ 		 		
  		//do each iteration.
  		for (int j = 0; j < numIters; j++)
  		{
@@ -56,14 +56,16 @@ public class SingleQueueMutlithreadingAlgorithm extends MultithreadingAlgorithm
 
 	 		//Add all entries with no dependencies.
 	 		for (StaticDependencyGraphNode dgn : dg.getInitialEntries())
+	 		{
 	 			workQueue.add(dgn);
+	 		}
 
 	 		//Keep track of how many nodes are left to update.
 			AtomicInteger nodesLeft = new AtomicInteger(dg.getNumNodes());
 
 	 		
 			//Instantiate the Callable objects.
-	 		int numThreads = getManager().getNumThreads();	 		
+	 		int numThreads = getManager().getNumWorkers();	 		
 			ArrayList<Callable<Object>> workers = new ArrayList<Callable<Object>>();			
 	 		for (int i = 0; i < numThreads; i++)	 			
 	 			workers.add(new SingleQueueWorker(workQueue, dg.getNumNodes(), nodesLeft));

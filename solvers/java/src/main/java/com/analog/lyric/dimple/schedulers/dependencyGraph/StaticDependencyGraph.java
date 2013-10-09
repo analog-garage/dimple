@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 
-/*
+/**
  * Creates a static dependency graph for a single iteration.  The crossiteration dependency graphs
  * unroll iterations.
  * 
@@ -42,11 +42,19 @@ public class StaticDependencyGraph
     private ArrayList<StaticDependencyGraphNode> _initialEntries;
 	private ArrayList<ArrayList<IScheduleEntry>> _phases = new ArrayList<ArrayList<IScheduleEntry>>();
 	private int _nextNodeId = 0;
-	
-	/*
-	 * Construct the graph.
+
+	/**
+	 * Construct the graph for one iteration
 	 */
 	public StaticDependencyGraph(FactorGraph fg)
+	{
+		this(fg,1);
+	}
+	
+	/**
+	 * Construct the graph.
+	 */
+	public StaticDependencyGraph(FactorGraph fg,int iters)
 	{
 		//Instantiate the data structure that keeps track of the last IScheduleEntry update to touch an edge.
 		LastUpdateGraph lug = new LastUpdateGraph();		
@@ -58,10 +66,12 @@ public class StaticDependencyGraph
 		ISchedule schedule = fg.getSchedule();
 		
 		//Do the work of building the dependency graph.
-		buildFromSchedule(schedule,lug);
+		//Allow building dependency graph for multiple iterations
+		for (int i = 0; i < iters; i++)
+			buildFromSchedule(schedule,lug);
 	}
 	
-	/*
+	/**
 	 * Multithreading can be done in phases of indepdent schedule entries.  Each phase
 	 * contains a list of scheduleEntries that can be updated concurrently.
 	 */
@@ -70,7 +80,7 @@ public class StaticDependencyGraph
 		return _phases;
 	}
 	
-	/*
+	/**
 	 * Produces a GraphViz file for viewing the dependency graph.
 	 * Naming variables and factors will result in a more readable dependency graph.
 	 */
@@ -174,6 +184,7 @@ public class StaticDependencyGraph
 		//For each entry in the schedule
 		for (IScheduleEntry se : schedule)
 		{
+			
 			//If this is a subscheduleEntry, recurse.
 			if (se instanceof SubScheduleEntry)
 			{

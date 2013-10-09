@@ -16,16 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
-import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuecrossiterationalgorithm.SingleQueueCrossIterationMultithreadingAlgorithm;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
@@ -33,35 +30,49 @@ import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuecrossitera
  */
 public class MultiThreadingManager 
 {
-	private int _numThreads;
+	private int _numWorkers;
 	private FactorGraph _factorGraph;
 	private long _cachedVersionId = -1;
 	private StaticDependencyGraph _cachedDependencyGraph;
-	private MultithreadingAlgorithm [] _algorithms;
-	private int _whichAlg = 0;
-	private int _numAlgs = 3;
+	private HashMap<MultithreadingMode,MultithreadingAlgorithm> _mode2alg = new HashMap<MultithreadingMode, MultithreadingAlgorithm>();
+	private MultithreadingMode _whichAlg = MultithreadingMode.Phase;
+	private ExecutorService _service;
 
-	//IMPORTANT! We make this static so that we do not get thread leaks.
-	private static ExecutorService _service; // = Executors.newFixedThreadPool(numThreads);
+	public MultiThreadingManager(FactorGraph fg, ExecutorService service)
+	{
+		_service = service;
+		setNumWorkersToDefault();
+		_mode2alg.put(MultithreadingMode.Phase,new PhaseMultithreadingAlgorithm(this));
+		_mode2alg.put(MultithreadingMode.SingleQueue,new SingleQueueMutlithreadingAlgorithm(this));
+		_factorGraph = fg;
+	}
 
 	
 	public MultiThreadingManager(FactorGraph fg)
 	{
-		_numThreads = 1;
-		_algorithms = new MultithreadingAlgorithm[_numAlgs];
-		_factorGraph = fg;
-		
+		this(fg,null);
 	}
 	
 	public ExecutorService getService()
 	{
-		return _service;
+		if (_service == null)
+			return ThreadPool.getThreadPool();
+		else
+			return _service;
 	}
 	
-	public void setThreadingMode(int mode)
+	public MultithreadingMode [] getModes()
 	{
-		if (mode < 0 || mode >= _numAlgs)
-			throw new DimpleException("invalid mode");
+		return MultithreadingMode.values();
+	}
+	
+	public void setMode(String mode)
+	{
+		setMode(MultithreadingMode.valueOf(mode));
+	}
+	
+	public void setMode(MultithreadingMode mode)
+	{
 		_whichAlg = mode;
 	}
 	
@@ -73,32 +84,28 @@ public class MultiThreadingManager
 	/*
 	 * Create the threads in the thread pool.
 	 */
-	public void setNumThreads(int numThreads)
+	public void setNumWorkers(int numWorkers)
 	{
-		if (numThreads < 1)
+		if (numWorkers < 1)
 			throw new DimpleException("can't set this less than 1");
 		
-		cleanupService();
-		
-		_numThreads = numThreads;
-
-		if (_numThreads != 1)
-		{
-			_numThreads = numThreads;			
-			_service = Executors.newFixedThreadPool(_numThreads);
-		}				
+		_numWorkers = numWorkers;
 	}
 	
-	
-	public int getNumThreads()
+	public void setNumWorkersToDefault()
 	{
-		return _numThreads;
+		_numWorkers = Runtime.getRuntime().availableProcessors();
 	}
 	
+	
+	public int getNumWorkers()
+	{
+		return _numWorkers;
+	}
 	
 	public void iterate(int numIters)
 	{
-		getAlgorithm(_whichAlg).iterate(numIters);
+		_mode2alg.get(_whichAlg).iterate(numIters);
 	}
 	
 	/*
@@ -116,49 +123,7 @@ public class MultiThreadingManager
 		return _cachedDependencyGraph;
 	}
 	
-	/*
-	 * Lazily create the algorithm.
-	 */
-	private MultithreadingAlgorithm getAlgorithm(int mode)
-	{
-		if (_algorithms[mode] == null)
-		{
-			switch (mode)
-			{
-			case 0:
-				_algorithms[mode] = new PhaseMultithreadingAlgorithm(this);
-				break;
-			case 1:
-				_algorithms[mode] = new SingleQueueMutlithreadingAlgorithm(this);
-				break;
-			case 2:
-				_algorithms[mode] = new SingleQueueCrossIterationMultithreadingAlgorithm(this);
-				break;
-			default:
-				throw new DimpleException("unsupported mode");
-			}
-		}
-		
-		return _algorithms[mode];
-	}
 	
 	
-	/*
-	 * Avoid thread leaks
-	 */
-	private void cleanupService()
-	{
-		if (_service != null)
-		{
-			
-			_service.shutdown();
-			try {
-				_service.awaitTermination(1,TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				throw new DimpleException("Failed to shutdown multithreading service");
-			}				
-		}
-		
-	}
 
 }
