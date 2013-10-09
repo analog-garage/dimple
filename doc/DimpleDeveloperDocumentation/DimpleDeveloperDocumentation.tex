@@ -483,7 +483,7 @@ The previous section talks a bit about the scheduler.  The following is a class 
 
 \subsubsection{Creating a new Solver}
 
-Dimple provides a modular architecture which makes it relatively easy to create a new Solver.  To aid in the development of a new solver, Dimple provides a template located in the com.analog.lyric.dimple.solvers.template package.
+Dimple provides a modular architecture which makes it relatively easy to create a new Solver.  To aid in the development of a new solver, Dimple provides a template located in the com.analog.lyric.dimple.solvers.template package.  Users can copy this template to speed up the creation of a new solver.
 
 To create a new solver, simply create a new namespace "com.analog.lyric.dimple.solvers.\textless Package Name\textgreater. 
 
@@ -496,14 +496,14 @@ In this new package, the user has to create only four new classes:
 \item SFactor - The SFactor class can extend STableFactorDoubleArray, STableFactorBase, or SFactorBase. The template inherits from STableFactorDoubleArray.  This class is responsible for calculating the Factor message passing math.
 \end{itemize}
 
-Assuming com.analog.lyric.dimple.solvers.\textless Package Name\textgreater.Solver exists, users can  use the following to instantiate your new  solver:
+Assuming com.analog.lyric.dimple.solvers.\textless Package Name\textgreater.Solver exists, users can  use the following to instantiate their new solver:
 
 \begin{lstlisting}
 fg = FactorGraph();
 fg.Solver = '<Package Name>';
 \end{lstlisting}
 
-As long as your solver is in the correct namespace and on the java class path, MATLAB can instantiate the solver from the last portion of the namespace.
+As long as their solver is in the correct namespace and on the java class path, MATLAB can instantiate the solver from the last portion of the namespace.
 
 \subsubsection{Initializing solver state}
 
