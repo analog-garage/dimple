@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
+
 import com.analog.lyric.dimple.matlabproxy.repeated.PDiscreteStream;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSink;
 import com.analog.lyric.dimple.matlabproxy.repeated.PDoubleArrayDataSource;
@@ -31,6 +32,7 @@ import com.analog.lyric.dimple.model.FactorGraph;
 import com.analog.lyric.dimple.model.Model;
 import com.analog.lyric.dimple.model.RealDomain;
 import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
@@ -215,5 +217,20 @@ public class ModelFactory
 	public PMultiplexerCPD getMultiplexerCPD(Object [] domain, double numZs)
 	{
 		return new PMultiplexerCPD(domain,(int)numZs);				
+	}
+
+	public void setNumThreadsToDefault()
+	{
+		ThreadPool.setNumThreadsToDefault();
+	}
+
+	
+	public void setNumThreads(int numThreads)
+	{
+		ThreadPool.setNumThreads(numThreads);
+	}
+	public int getNumThreads()
+	{
+		return ThreadPool.getNumThreads();
 	}
 }

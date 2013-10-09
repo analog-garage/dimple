@@ -14,16 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm;
+package com.analog.lyric.dimple.solvers.core.multithreading;
 
-import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
-
-/*
- * Sentinel object to be injected into the work queue to indicate that all work is done.
+/**
+ * Provides two multithreading options.
  * 
- * Package protected
+ * @author shershey
+ *
  */
-class Poison extends StaticDependencyGraphNode 
+public enum MultithreadingMode 
 {
-
+	Phase, SingleQueue;	
 }

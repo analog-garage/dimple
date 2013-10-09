@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2012 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testNoThreadingError()
-
-    fg = FactorGraph();
-    fg.Solver = 'gaussian';
-    m = '';
-    try
-        fg.Solver.useMultithreading(true);
-    catch e
-        m = e.message;
-    end
-
-    assertTrue(~isempty(findstr(m,'Multithreading is not currently supported by this solver.')));
-    
+function solvers = getSolvers()
+    solvers = {'sumproduct'};
 end

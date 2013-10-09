@@ -43,22 +43,15 @@ digraph G {
 	[
 		arrowhead="empty"
 	]
-	OneQueue
+	SingleQueue
 	[
 		shape="record"
 	]
-	OneQueue -> MultithreadingAlgorithm
+	SingleQueue -> MultithreadingAlgorithm
 	[
 		arrowhead="empty"
 	]
-	OneQueueCross
-	[
-		shape="record"
-	]
-	OneQueueCross -> MultithreadingAlgorithm
-	[
-		arrowhead="empty"
-	]
+
 	DependencyGraph
 	[
 		shape="record"

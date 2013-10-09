@@ -39,6 +39,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	protected FactorGraph _factorGraph;
 	protected int _numIterations = 1;		// Default number of iterations unless otherwise specified
 	private MultiThreadingManager _multithreader; // = new MultiThreadingManager();
+	private boolean _useMultithreading = false;
 
 	public SFactorGraphBase(FactorGraph fg)
 	{
@@ -141,7 +142,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void iterate(int numIters)
 	{
-		if (_multithreader == null || _multithreader.getNumThreads() == 1)
+		if (_multithreader == null || ! _useMultithreading)
 		{
 			// *** Single thread
 			for (int iterNum = 0; iterNum < numIters; iterNum++)
@@ -387,7 +388,6 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		{
 			Exception e = _exception;
 			_exception = null;				// Clear the exception; the exception should happen only once; no exception if this is called again
-			//System.out.println(e.getMessage());
 			throw new DimpleException(e);						// Pass the exception up to the client
 		}
 		else if (_thread != null)
@@ -416,19 +416,19 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
-
-	public int getNumThreads()
+	public void useMultithreading(boolean use)
 	{
 		if (_multithreader == null)
-			return 1;
+			throw new DimpleException("Multithreading is not currently supported by this solver.");		
 		else
-			return _multithreader.getNumThreads();
+			_useMultithreading = true;
 	}
 	
-	public void setMultithreadingManager(MultiThreadingManager manager)
+	public boolean useMultithreading()
 	{
-		_multithreader = manager;
+		return _useMultithreading;
 	}
+	
 	
 	public MultiThreadingManager getMultithreadingManager()
 	{
@@ -438,21 +438,11 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			return _multithreader;
 	} 	 	
 	
-	public void setNumThreads(int numThreads)
+	protected void setMultithreadingManager(MultiThreadingManager manager)
 	{
-		if (_multithreader == null)
-			throw new DimpleException("Multithreading is not currently supported by this solver.");		
-		else
-			_multithreader.setNumThreads(numThreads);
+		_multithreader = manager;
 	}
-	
-	public void setMultithreadingMode(int mode)
-	{
-		if (_multithreader == null)
-			throw new DimpleException("Multithreading is not currently supported by this solver.");		
-		else
-			_multithreader.setThreadingMode(mode);
-	}
+
 
 
 	/***********************************************

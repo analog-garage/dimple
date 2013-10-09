@@ -56,52 +56,114 @@ In this case, returnArray is a cell-array of the return values of the method, wi
 
 \subsubsection{Common Methods}
 
-\para{setNumThreads}
+\para{useMultithreading}
 
-Some solvers support multithreading.  The following method can be used to set the number of threads to use:
+Users can turn on and off multithreading with the useMultithreading method:
+
+\ifmatlab
+\begin{itemize}
+\item fg.Solver.useMultithreading(true);
+\item m = fg.Solver.useMultithreading();
+\end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item fg.getSolver().useMultithreading(true);
+\item m = fg.getSolver().useMultithreading();
+\end{itemize}
+\fi
+
+\para{getMultithreadingManager}
+
+Dimple users can retrieve a MultithreadingManager on which to perform additional actions.
 
 \ifmatlab
 \begin{lstlisting}
-fg.Solver.setNumThreads(8);
+fg.Solver.getMultithreadingManager()
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-fg.getSolver().setNumThreads(8);
+fg.getSolver().getMultithreadingManager()
 \end{lstlisting}
 \fi
 
-By default, number of threads is set to 1 which is equivalent to the multithreading mode being turned off.  Once number of threads is set to something larger than 1, users can simply call solve and, for large enough graphs, see a reduced solve time.
+Users can configure both the multithreading mode and the number of workers using the MultithreadingManager.
 
-\para{getNumThreads}
+\subparagraph{Multithreading Modes}
 
-Users can retrieve the currently set number of threads with the getNumThreads() method.
+Dimple provides various multithreading algorithms that have different speed advantages depending on the size of the user's graph and FactorTables.  In the future Dimple should be modified to automatically detect the best threading algorithm.  Currently, however, it defaults to the "Phase" multithreading mode and requires the user manually set the mode to change this.  For a given graph, users can try both modes and see which is faster.
 
-\para{setMultithreadingMode}
-
-Dimple currently supports two modes of multithreading.  Users can select between these with:
-
-\ifmatlab
-\begin{lstlisting}
-fg.Solver.setMultithreadingMode(mode);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-fg.getSolver().setMultithreadingMode(mode);
-\end{lstlisting}
-\fi
-
-The mode argument is an integer and can take on the values:
+The currently supported multithreading modes are:
 
 \begin{itemize}
-\item 0 - (Default mode) 
-\item 1 
+\item Phase - Divides the schedule into "phases" where each phase contains schedule entries that are entirely independent of one another.  These phases are then easy to parallelize.  
+\item SingleQueue - Uses a single queue and a dependency graph to pull off work for each thread on the fly.  
 \end{itemize}
 
-Users can try both modes for their problem to determine which works better for their model.  The developer documentation describes the details of these modes in more detail.
+The following methods can be used for getting and setting modes:
+
+
+\ifmatlab
+
+\begin{itemize}
+\item fg.Solver.getMultithreadingManager().getModes() - Returns a Java array of enums specifying the valid modes.
+\item fg.Solver.getMultithreadingManager().setMode(ModeName) - Allows users to set the mode by string.  Currently "Phase" or "SingleQueue" will work.
+\item fg.Solver.getMultithreadingManager().setMode(enum) - Allows users to set the mode by the enums returned by the getModes method.
+\end{itemize}
+
+\fi
+
+\ifjava
+\begin{itemize}
+\item fg.getSolver().getMultithreadingManager().getModes() - Returns an array of enums specifying the valid modes.
+\item fg.getSolver().getMultithreadingManager().setMode(ModeName) - Allows users to set the mode by string.  Currently "Phase" or "SingleQueue" will work.
+\item fg.getSolver().getMultithreadingManager().setMode(enum) - Allows users to set the mode by the enums returned by the getModes method or with MultithreadingMode.<PhaseName>.
+\end{itemize}
+\fi
+
+\subparagraph{Setting Number of Threads and Workers}
+
+Dimple provides a ThreadingPool as a singleton for multithreading.  It sets the number of threads in this pool to the number of virtual cores in the user's machine by default.  Users can override this default value.  In addition, Dimple allows users to specify the number of "workers" for a given FactorGraph.  This "NumWorkers" is also set to the number of virtual cores on the user's machine by default.  Whereas NumThreads specifies how many threads are in the threadPool, NumWorkers specifies how work is divided up across the graph.  These workers are run by the thread pool.  Best performance is achieved when NumWorkers and NumThreads are the same.  However, NumThreads is global and shared by all graphs where NumWorkers is specific to a given FactorGraph.
+
+The following methods can be used to change number of workers:
+
+\ifjava
+\begin{itemize}
+\item fg.getSolver().getMultithreadingManager().getNumWorkers()
+\item fg.getSolver().getMultithreadingManager().setNumWorkers(num)
+\item fg.getSolver().getMultithreadingManager().setNumWorkersToDefault()
+\end{itemize}
+\fi
+
+\ifmatlab
+\begin{itemize}
+\item fg.Solver.getMultithreadingManager().getNumWorkers()
+\item fg.Solver.getMultithreadingManager().setNumWorkers(num)
+\item fg.Solver.getMultithreadingManager().setNumWorkersToDefault()
+\end{itemize}
+\fi
+
+The following global methods can be used to set the number of threads in the ThreadPool
+
+\ifmatlab
+\begin{itemize}
+\item getDimpleNumThreads()
+\item setDimpleNumThreads(numThreads)
+\item setDimpleNumThreadsToDefault()
+\end{itemize}
+\fi
+
+\ifjava
+\begin{itemize}
+\item ThreadPool.getNumThreads()
+\item ThreadPool.setNumThreads(numThreads)
+\item ThreadPool.setNumThreadsToDefault()
+\end{itemize}
+\fi
+
 
 \subsubsection{Sum-Product Solver}
 

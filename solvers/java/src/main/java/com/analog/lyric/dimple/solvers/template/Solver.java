@@ -14,16 +14,24 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm;
+package com.analog.lyric.dimple.solvers.template;
 
-import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
-/*
- * Sentinel object to be injected into the work queue to indicate that all work is done.
- * 
- * Package protected
+/**
+ * The solver is essentially a factory responsible for creating FactorGraph solver objects.
  */
-class Poison extends StaticDependencyGraphNode 
+public class Solver extends SolverBase
 {
 
+	/**
+	 * This method creates a Solver FactorGraph object given the corresponding model object.
+	 */
+	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	{
+		return new SFactorGraph(factorGraph);
+	}
+	
+	
 }

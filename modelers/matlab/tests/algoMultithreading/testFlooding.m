@@ -27,11 +27,14 @@ function testFlooding()
     fg.solve();
     x = b.Belief;
 
-    for i = 0:2
-       fg.Solver.setNumThreads(8);
-       fg.Solver.setMultithreadingMode(i);
-       fg.solve();
-       y = b.Belief;
-       assertTrue(norm(x(:)-y(:)) == 0);
+    modes = fg.Solver.getMultithreadingManager().getModes();
+
+    for mode_index = 2:length(modes)
+        mode = modes(mode_index);
+        fg.Solver.getMultithreadingManager().setMode(mode);
+        fg.Solver.useMultithreading(true);
+        fg.solve();
+        y = b.Belief;
+        assertTrue(norm(x(:)-y(:)) == 0);
     end
 end
