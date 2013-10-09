@@ -1,4 +1,4 @@
-%function testTemplate()
+function testTemplate()
 
     %Test Factor and Belief
     fg = FactorGraph();
@@ -30,7 +30,7 @@
     fg.solve();
     assertTrue(all(outside(3).Belief() == (d1Input + d2Input + d3Input + inInput)'));
 
-    %Eventually add support for and test rolled up graphs
+    %test rolled up graphs
     a = Bit();
     b = Bit();
     ng = FactorGraph(a,b);
@@ -40,12 +40,13 @@
     fg.Solver = 'template';
     fs = fg.addFactor(ng,b,b.getSlice(2));
     fs.BufferSize = 1;
-    b.get(1).Input = [0.7 0.3];
+    input = [0.7 0.3];
+    b.get(1).Input = input;
     fg.initialize();
     fg.solveOneStep();
     fg.advance();
     fg.solveOneStep();
-    b.Variables(2).Belief
+    assertTrue(all(b.Variables(2).Belief==input'));
    
     
-%end
+end
