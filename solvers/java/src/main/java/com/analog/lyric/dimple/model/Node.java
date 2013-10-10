@@ -109,6 +109,8 @@ public abstract class Node implements INode, Cloneable
 		n._UUID = NodeId.getNextUUID();
 		n._parentGraph = null;
 		n._name = _name;
+		if (_label != null)
+			n._label = _label;
 		
 		return n;
 	}
