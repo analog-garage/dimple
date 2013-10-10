@@ -6,9 +6,9 @@ import static org.junit.matchers.JUnitMatchers.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.model.DimpleException;
 import com.analog.lyric.dimple.model.Discrete;
 import com.analog.lyric.dimple.model.DiscreteDomain;
@@ -215,6 +215,11 @@ public class TestLPSolver
 			"-p(c=Curly) + p(b=Moe,c=Curly) + p(b=Larry,c=Curly) = 0",
 		};
 		stoogeCase1.testLPState();
+		
+		// Regression case for bug 51
+		a.setInput(.5, .5, 0.0); // Not Curly
+		LPSolverTestCase bug51 = new LPSolverTestCase(fg2);
+		bug51.testLPState();
 	}
 
 
