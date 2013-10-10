@@ -316,7 +316,7 @@ public class SVariable extends SDiscreteVariableBase
 			return cardinality > 1 ? cardinality : 0;
 		}
 		else
-		{	
+		{
 		
 			_invalidAssignments = new BitSet(domlength);
 			_nValidAssignments = domlength;
@@ -393,7 +393,10 @@ public class SVariable extends SDiscreteVariableBase
 		{
 			if (invalidAssignments != null)
 			{
-				i = invalidAssignments.nextClearBit(i);
+				if ((i = invalidAssignments.nextClearBit(i)) >= end)
+				{
+					break;
+				}
 			}
 			
 			if (first)
@@ -425,7 +428,10 @@ public class SVariable extends SDiscreteVariableBase
 			{
 				if (invalidAssignments != null)
 				{
-					i = invalidAssignments.nextClearBit(i);
+					if ((i = invalidAssignments.nextClearBit(i)) >= beliefSize)
+					{
+						break;
+					}
 				}
 				beliefs[i] = solution[j];
 			}
