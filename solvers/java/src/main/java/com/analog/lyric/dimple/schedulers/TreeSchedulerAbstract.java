@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.analog.lyric.dimple.model.FactorGraph;
@@ -68,6 +69,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		
 		@SuppressWarnings("all")
 		MapList allIncludedNodes = g.getNodes();
+		ArrayList<INode> startingNodes = new ArrayList<INode>();
 
 		// For all nodes, set up the node update state
 		// Edges connected to nodes outside the graph have already been updated
@@ -75,87 +77,130 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		{
 			for (INode node : (MapList<INode>)allIncludedNodes)
 			{
-				NodeUpdateState nodeState = new NodeUpdateState(node.getSiblings().size());
-				for (int index = 0; index < node.getSiblings().size(); index++)
-					if (!allIncludedNodes.contains(node.getSiblings().get(index))) 
+				ArrayList<INode> siblings = node.getSiblings();
+				int numSiblings = siblings.size();
+				NodeUpdateState nodeState = new NodeUpdateState(numSiblings);
+				int numSiblingsInSubGraph = 0;
+				for (int index = 0; index < numSiblings; index++)
+					if (!allIncludedNodes.contains(siblings.get(index))) 
 						nodeState.inputUpdated(index);
+					else
+						numSiblingsInSubGraph++;
 				updateState.put(node.getId(), nodeState);
+				if (numSiblingsInSubGraph <= 1)
+					startingNodes.add(node);
 			}
 		}
 		else	// If there's no parent, then nothing has already been updated
 		{
 			for (INode node : (MapList<INode>)allIncludedNodes)
-				updateState.put(node.getId(), new NodeUpdateState(node.getSiblings().size()));
-		}
-
-
-		// Loop until all edges have been updated
-		boolean done = false;
-		while (!done)
-		{
-			done = true;
-			for (INode node : (MapList<INode>)allIncludedNodes)
 			{
-				NodeUpdateState nodeState = updateState.get(node.getId());
-				if (!nodeState.doneUpdatingAllOutputs())
-				{
-					done = false;
-					if (nodeState.readyToUpdateAllOutputs())
-					{
-						// Update all output edges that have not already been updated
-						if (nodeState.getNumOutputPortsNotUpdated() > _nodeUpdateThreshold)
-						{
-							// Use node update
-							schedule.add(new NodeScheduleEntry(node));
-							for (int index = 0; index < node.getSiblings().size(); index++)
-							{
-								if (!nodeState.isOutputUpdated(index))
-								{
-									nodeState.outputUpdated(index);
-									NodeUpdateState siblingNodeState = updateState.get(node.getSiblings().get(index).getId());
-									if (siblingNodeState != null)
-									{
-										siblingNodeState.inputUpdated(node.getSiblings().get(index).getPortNum(node));
-									}
-								}
-							}
-						}
-						else
-						{
-							// Use edge update
-							for (int index = 0; index < node.getSiblings().size(); index++)
-							{
-								if (!nodeState.isOutputUpdated(index))
-								{
-									schedule.add(new EdgeScheduleEntry(node, index));
-									nodeState.outputUpdated(index);
-									NodeUpdateState siblingNodeState = updateState.get(node.getSiblings().get(index).getId());
-									if (siblingNodeState != null)
-									{
-										siblingNodeState.inputUpdated(node.getSiblings().get(index).getPortNum(node));
-									}
-								}
-							}
-						}
-					}
-					else if (!nodeState.doneUpdatingSingleOutput() && nodeState.readyToUpdateSingleOutput())
-					{
-						// We're ready to update one output, so update that output
-						int portId = nodeState.outputToUpdate();
-						schedule.add(new EdgeScheduleEntry(node, portId));
-						nodeState.outputUpdated(portId);
-						//Port p = node.getPorts().get(portId);
-						NodeUpdateState siblingNodeState = updateState.get(node.getSiblings().get(portId).getId());
-						if (siblingNodeState != null)
-						{
-							INode n = node.getSiblings().get(portId);
-							siblingNodeState.inputUpdated(n.getPortNum(node));
-						}
-					}
-				}
+				int numSiblings = node.getSiblings().size();
+				updateState.put(node.getId(), new NodeUpdateState(numSiblings));
+				if (numSiblings <= 1)
+					startingNodes.add(node);
 			}
 		}
+
 		
+		// Start with leaf nodes
+		int numStartingNodes = startingNodes.size();
+		for (int i = 0; i < numStartingNodes; i++)
+		{
+			INode node = startingNodes.get(i);
+
+			boolean moreInThisPath = true;
+			while (moreInThisPath)
+			{
+				NodeUpdateState nodeState = updateState.get(node.getId());
+				INode nextNode = null;
+				if (!nodeState.doneUpdatingAllOutputs() && nodeState.readyToUpdateAllOutputs())
+				{
+					// Update all output edges that have not already been updated
+					if (nodeState.getNumOutputPortsNotUpdated() > _nodeUpdateThreshold)
+					{
+						// Use node update
+						schedule.add(new NodeScheduleEntry(node));
+						int nextNodeCount = 0;
+						ArrayList<INode> siblings = node.getSiblings();
+						int numSiblings = siblings.size();
+						for (int index = 0; index < numSiblings; index++)
+						{
+							if (!nodeState.isOutputUpdated(index))
+							{
+								nodeState.outputUpdated(index);
+								INode sibling = siblings.get(index);
+								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+								if (siblingNodeState != null)
+								{
+									siblingNodeState.inputUpdated(sibling.getPortNum(node));
+									if (nextNodeCount++ == 0)
+										nextNode = sibling;			// Do the first one next
+									else
+									{
+										startingNodes.add(sibling);	// Will need to come back and revisit these paths
+										numStartingNodes++;
+									}
+								}
+							}
+						}
+						if (nextNodeCount == 0)
+							moreInThisPath = false;	// No variables that aren't already done or boundary variables
+					}
+					else
+					{
+						// Use edge update
+						int nextNodeCount = 0;
+						ArrayList<INode> siblings = node.getSiblings();
+						int numSiblings = siblings.size();
+						for (int index = 0; index < numSiblings; index++)
+						{
+							if (!nodeState.isOutputUpdated(index))
+							{
+								schedule.add(new EdgeScheduleEntry(node, index));
+								nodeState.outputUpdated(index);
+								INode sibling = siblings.get(index);
+								NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+								if (siblingNodeState != null)
+								{
+									siblingNodeState.inputUpdated(sibling.getPortNum(node));
+									if (nextNodeCount++ == 0)
+										nextNode = sibling;			// Do the first one next
+									else
+									{
+										startingNodes.add(sibling);	// Will need to come back and revisit these paths
+										numStartingNodes++;
+									}
+								}
+							}
+						}
+						if (nextNodeCount == 0)
+							moreInThisPath = false;	// No variables that aren't already done or boundary variables
+					}
+				}
+				else if (!nodeState.doneUpdatingSingleOutput() && nodeState.readyToUpdateSingleOutput())
+				{
+					// We're ready to update one output, so update that output
+					int portId = nodeState.outputToUpdate();
+					schedule.add(new EdgeScheduleEntry(node, portId));
+					nodeState.outputUpdated(portId);
+					INode sibling = node.getSiblings().get(portId);
+					NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
+					if (siblingNodeState != null)
+					{
+						siblingNodeState.inputUpdated(sibling.getPortNum(node));
+						nextNode = sibling;
+					}
+					else	// No node state, must be a boundary variable
+						moreInThisPath = false;
+				}
+				else	// Next node isn't ready to update
+					moreInThisPath = false;
+				
+				node = nextNode;
+			}
+		}
+
 		return schedule;
 	}
 	
@@ -200,7 +245,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			}
 		}
 		
-		public void inputUpdated(int portId)
+		public final void inputUpdated(int portId)
 		{
 			if (!_inputUpdated[portId])		// Make sure it hasn't already been marked as updated
 			{
@@ -229,7 +274,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			}
 		}
 		
-		public void outputUpdated(int portId)
+		public final void outputUpdated(int portId)
 		{
 			if (!_outputUpdated[portId])		// Make sure it hasn't already been marked as updated
 			{
@@ -241,20 +286,20 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			}
 		}
 		
-		public int outputToUpdate() {return _outputToUpdate;}
-		public boolean readyToUpdateSingleOutput() {return _readyToUpdateSingleOutput;}
-		public boolean doneUpdatingSingleOutput() {return _doneUpdatingSingleOutput;}
-		public boolean readyToUpdateAllOutputs() {return _readyToUpdateAllOutputs;}
-		public boolean doneUpdatingAllOutputs() {return _doneUpdatingAllOutputs;}
+		public final int outputToUpdate() {return _outputToUpdate;}
+		public final boolean readyToUpdateSingleOutput() {return _readyToUpdateSingleOutput;}
+		public final boolean doneUpdatingSingleOutput() {return _doneUpdatingSingleOutput;}
+		public final boolean readyToUpdateAllOutputs() {return _readyToUpdateAllOutputs;}
+		public final boolean doneUpdatingAllOutputs() {return _doneUpdatingAllOutputs;}
 		
-		public boolean isInputUpdated(int portId) {return _inputUpdated[portId];}
-		public boolean isOutputUpdated(int portId) {return _outputUpdated[portId];}
+		public final boolean isInputUpdated(int portId) {return _inputUpdated[portId];}
+		public final boolean isOutputUpdated(int portId) {return _outputUpdated[portId];}
 		
-		public int getPortCount() {return _portCount;}
-		public int getInputUpdateCount() {return _inputUpdateCount;}
-		public int getOutputUpdateCount() {return _outputUpdateCount;}
-		public int getNumInputPortsNotUpdated() {return _portCount - _inputUpdateCount;}
-		public int getNumOutputPortsNotUpdated() {return _portCount - _outputUpdateCount;}
+		public final int getPortCount() {return _portCount;}
+		public final int getInputUpdateCount() {return _inputUpdateCount;}
+		public final int getOutputUpdateCount() {return _outputUpdateCount;}
+		public final int getNumInputPortsNotUpdated() {return _portCount - _inputUpdateCount;}
+		public final int getNumOutputPortsNotUpdated() {return _portCount - _outputUpdateCount;}
 	}
 
 }
