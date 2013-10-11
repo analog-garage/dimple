@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 
 public class FactorFunctionWithConstants extends FactorFunction

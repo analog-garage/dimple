@@ -2,7 +2,7 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.options.OptionKey;
 
 /**

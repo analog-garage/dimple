@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;

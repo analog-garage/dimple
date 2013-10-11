@@ -18,12 +18,12 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealJoint;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
 import com.analog.lyric.dimple.solvers.gaussian.customFactors.GaussianAdd;
@@ -41,7 +41,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private int _numSamples;
 	private int _maxNumTries;
 
-	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
 	{
 		super(factorGraph);
 		
@@ -95,7 +95,7 @@ public class SFactorGraph extends SFactorGraphBase
 		_numSamples = numSamples;
 	}
 	
-	private boolean isMultivariate(com.analog.lyric.dimple.model.Factor factor)
+	private boolean isMultivariate(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		
 		if (factor.getVariables().size() > 0 && (factor.getVariables().getByIndex(0) instanceof RealJoint))
@@ -104,7 +104,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return false;
 	}
 	
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)  
 	{
 		String funcName = factor.getModelerFunctionName();
 		if (funcName.equals("add"))

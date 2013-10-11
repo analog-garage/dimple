@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.template;
 
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 
 /**

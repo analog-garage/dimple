@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
+
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
 

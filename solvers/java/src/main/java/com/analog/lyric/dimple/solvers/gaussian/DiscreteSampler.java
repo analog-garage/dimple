@@ -18,11 +18,11 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
 public class DiscreteSampler extends HybridSampledBPSampler

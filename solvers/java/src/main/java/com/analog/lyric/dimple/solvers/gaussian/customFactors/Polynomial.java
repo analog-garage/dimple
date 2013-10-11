@@ -21,9 +21,9 @@ import org.apache.commons.math3.complex.Complex;
 import Jama.CholeskyDecomposition;
 import Jama.Matrix;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateFactorBase;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 

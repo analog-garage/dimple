@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 class xmlsFactorGraph
 {

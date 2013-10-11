@@ -13,13 +13,13 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.DomainList;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
-import com.analog.lyric.dimple.model.JointDomainReindexer;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DomainList;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestJointDomainIndexer

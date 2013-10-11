@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
 
-import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.core.INode;
 
 /*
  * Utility class used by LastUpdateGraph and StaticDependencyGraphNodes for

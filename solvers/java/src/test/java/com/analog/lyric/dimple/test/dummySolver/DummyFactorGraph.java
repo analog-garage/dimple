@@ -16,22 +16,22 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class DummyFactorGraph extends SFactorGraphBase
 {
-	public DummyFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph)
+	public DummyFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		super(factorGraph);
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		String funcName = factor.getModelerFunctionName();
 		if (funcName.equals("dummyCustomFactor"))
@@ -43,7 +43,7 @@ public class DummyFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public ISolverFactor createFactor(com.analog.lyric.dimple.model.Factor factor)
+	public ISolverFactor createFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		if (customFactorExists(factor.getFactorFunction().getName()))
 			return createCustomFactor(factor);

@@ -1,7 +1,7 @@
 package com.analog.lyric.dimple.parameters;
 
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.variables.Real;
 
 /**
  * A {@link Real} variable that implements a parameter of a parametric factor

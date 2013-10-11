@@ -9,10 +9,10 @@ import com.analog.lyric.dimple.matlabproxy.PDomain;
 import com.analog.lyric.dimple.matlabproxy.PHelpers;
 import com.analog.lyric.dimple.matlabproxy.PRealDomain;
 import com.analog.lyric.dimple.matlabproxy.PRealJointDomain;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 
 public class TestPDomain
 {

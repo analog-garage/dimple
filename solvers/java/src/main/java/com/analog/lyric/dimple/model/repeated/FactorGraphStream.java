@@ -19,9 +19,10 @@ package com.analog.lyric.dimple.model.repeated;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
+
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 /*
  * This class represents one stream of Nested Factor Graphs.

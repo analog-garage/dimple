@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public interface ISolverBlastFromThePastFactor extends ISolverFactor
 {

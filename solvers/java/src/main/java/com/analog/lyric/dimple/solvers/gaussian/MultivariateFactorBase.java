@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.*;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 
 
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 public class FiniteFieldAdd extends SFiniteFieldFactor
 {
 	
-	public FiniteFieldAdd(com.analog.lyric.dimple.model.Factor factor) 
+	public FiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor) 
 	{
 		super(factor);
 		

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.matlabproxy.repeated;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.repeated.DoubleArrayDataSource;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.math.Functions;

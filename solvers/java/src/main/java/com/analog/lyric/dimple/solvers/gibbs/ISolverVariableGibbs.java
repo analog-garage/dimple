@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.factors.Factor;
 
 public interface ISolverVariableGibbs
 {

@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
 public class JointFactorFunction extends FactorFunction
 {

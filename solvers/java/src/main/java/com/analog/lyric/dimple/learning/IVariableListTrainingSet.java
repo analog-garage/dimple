@@ -3,7 +3,7 @@ package com.analog.lyric.dimple.learning;
 import java.util.List;
 import java.util.RandomAccess;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 /**
  * A training set that provides an ordered list of all variables used in the samples.

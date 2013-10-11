@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 

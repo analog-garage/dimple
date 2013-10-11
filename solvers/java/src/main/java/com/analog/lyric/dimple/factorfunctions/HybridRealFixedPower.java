@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.HybridSampledBPFactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
 
 public class HybridRealFixedPower extends HybridSampledBPFactorFunction 
 {

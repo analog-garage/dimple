@@ -31,18 +31,18 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteFactor;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.FactorList;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.xmlSerializer;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.xmlSerializer;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.factors.DiscreteFactor;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.factors.FactorList;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
 public class Serializer
@@ -248,8 +248,8 @@ public class Serializer
 		String SerializedFileName = targetDirectory;
 		try {
 	        FactorList fl = fg.getNonGraphFactorsFlat();
-	        com.analog.lyric.dimple.model.VariableList vl = fg.getVariablesFlat();
-	        com.analog.lyric.dimple.model.VariableList bl = fg.getBoundaryVariables();
+	        com.analog.lyric.dimple.model.variables.VariableList vl = fg.getVariablesFlat();
+	        com.analog.lyric.dimple.model.variables.VariableList bl = fg.getBoundaryVariables();
 	        trace(String.format("%d Factors", fl.size()));
 	        trace(String.format("%d Variables", vl.size()));
 	        trace(String.format("%d Boundary Variables", bl.size()));
@@ -317,7 +317,7 @@ public class Serializer
 	        
 	        root.appendChild(graph);
 	        		        
-	        String out = com.analog.lyric.dimple.model.xmlSerializer.prettyFormat(doc);
+	        String out = com.analog.lyric.dimple.model.core.xmlSerializer.prettyFormat(doc);
 	        
 	        SerializedFileName += "/";
 	        SerializedFileName += FileName;
@@ -391,7 +391,7 @@ public class Serializer
 	    							doc,
 									root);
 
-	        String out = com.analog.lyric.dimple.model.xmlSerializer.prettyFormat(doc);
+	        String out = com.analog.lyric.dimple.model.core.xmlSerializer.prettyFormat(doc);
 	        
 	        SerializedFileName += "/";
 	        SerializedFileName += ctName;

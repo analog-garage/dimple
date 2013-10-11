@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.repeated;
 
 import java.util.LinkedList;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 public class GenericDataSource<Type> implements IDataSource 
 {

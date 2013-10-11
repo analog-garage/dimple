@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public interface ISolverVariable extends ISolverNode
 {

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.math;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;

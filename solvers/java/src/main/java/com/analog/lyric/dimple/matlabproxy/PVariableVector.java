@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.matlabproxy;
 import java.util.ArrayList;
 
 import com.analog.lyric.collect.Supers;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.FactorBase;
-import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
 
 

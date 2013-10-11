@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 
 public class BitStream extends DiscreteStream
 {

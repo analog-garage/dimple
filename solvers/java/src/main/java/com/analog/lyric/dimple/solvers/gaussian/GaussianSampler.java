@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
 public class GaussianSampler extends HybridSampledBPSampler 

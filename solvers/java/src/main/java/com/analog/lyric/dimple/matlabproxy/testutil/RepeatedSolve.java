@@ -1,6 +1,6 @@
 package com.analog.lyric.dimple.matlabproxy.testutil;
 
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public class RepeatedSolve 
 {

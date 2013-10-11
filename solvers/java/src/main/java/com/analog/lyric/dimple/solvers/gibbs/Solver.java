@@ -39,7 +39,7 @@ public class Solver extends SolverBase
 		_factorGraphConfig.temper = true;
 	}
 
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.FactorGraph graph)  
+	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph graph)  
 	{
 		return new SFactorGraph(graph, _factorGraphConfig);
 	}

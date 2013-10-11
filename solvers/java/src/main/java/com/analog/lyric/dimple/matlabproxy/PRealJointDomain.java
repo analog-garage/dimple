@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.util.misc.Matlab;
 
 @Immutable

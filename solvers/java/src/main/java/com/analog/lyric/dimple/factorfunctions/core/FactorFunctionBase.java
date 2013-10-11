@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.domains.Domain;
 
 public abstract class FactorFunctionBase
 {

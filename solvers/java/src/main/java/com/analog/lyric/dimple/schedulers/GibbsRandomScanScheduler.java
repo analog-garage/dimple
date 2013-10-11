@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers;
 
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.GibbsRandomScanSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 

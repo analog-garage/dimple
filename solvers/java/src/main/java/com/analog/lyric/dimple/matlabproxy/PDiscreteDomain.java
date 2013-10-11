@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.util.misc.Matlab;
 
 @Immutable

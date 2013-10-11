@@ -23,11 +23,11 @@ import org.junit.Test;
 import com.analog.lyric.dimple.factorfunctions.MixedNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.Sum;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.TypedDiscreteDomain;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.particleBP.SFactorGraph;
 import com.analog.lyric.dimple.solvers.particleBP.SRealVariable;
 

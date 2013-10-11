@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 
 public class TableFactorFunction extends FactorFunction
