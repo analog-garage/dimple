@@ -94,33 +94,12 @@ task(copyDimpleJar,type: Copy) {
   into(file('../lib'))
 }
 
-task(copyVERSION,type: Copy) {
-  from(file('../../VERSION'))
-  into(file('src/main/resources'))
-
-}
-
 task createVersionFile(type:Exec) {
-     commandLine 'git show --format=%ci'.split()
-     ext.versionFile = new File('src/main/resources/VERSION')
-     standardOutput = new ByteArrayOutputStream()
-
-     doLast {
-     	    versionFile.append(standardOutput.toString().trim())
-     }
+     workingDir '.'
+     commandLine 'python longver.py'.split()
 }
 
-task(copyLongVersion,type: Copy) {
-  from(file('src/main/resources/VERSION'))
-  into(file('../..'))
-  rename 'VERSION', 'LONG_VERSION'
-}
-
-createVersionFile.dependsOn copyVERSION
-
-copyLongVersion.dependsOn createVersionFile
-
-processResources.dependsOn copyLongVersion
+processResources.dependsOn createVersionFile
 
 //clean removes the build directory by default.  We also remove ../lib.
 clean {

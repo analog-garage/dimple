@@ -33,15 +33,10 @@ public class VersionTest {
 	{
 		String str = Model.getVersion();
 		System.out.println(str);
-		String pattern = "\\d+\\.\\d+ \\d+-\\d+-\\d+ \\d+:\\d+:\\d+ -\\d+";
+		String pattern = "\\d+\\.\\d+ [^\\s]+ \\d+-\\d+-\\d+ \\d+:\\d+:\\d+ -\\d+";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(str);
 		assertTrue(m.find());
 		
-		str = Model.getVersion(false);
-		pattern = "\\d+\\.\\d+$";
-		p = Pattern.compile(pattern);
-		m = p.matcher(str);
-		assertTrue(m.find());
 	}
 }

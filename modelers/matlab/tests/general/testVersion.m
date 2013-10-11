@@ -15,6 +15,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testVersion
-    assertTrue(length(regexp(dimpleVersion(),'\d+\.\d+ \d+-\d+-\d+ \d+:\d+:\d+ -\d+','match')) > 0);
-    assertTrue(length(regexp(dimpleVersion(0),'\d+\.\d+$','match')) > 0);
+    assertTrue(length(regexp(dimpleVersion(),'\d+\.\d+ [^\s]+ \d+-\d+-\d+ \d+:\d+:\d+ -\d+','match')) > 0);
 end

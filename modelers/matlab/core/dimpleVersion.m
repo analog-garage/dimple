@@ -14,11 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function version=dimpleVersion(longVersion)
-    if nargin < 1
-       longVersion = 1; 
-    end
-
+function version=dimpleVersion()
     p = mfilename('fullpath');
     s = strsplit(p,'/');
     s = s(1:end-1);
@@ -28,23 +24,13 @@ function version=dimpleVersion(longVersion)
     try
         
         f = fopen(filename);
-        part1 = strtrim(fgets(f));
-        part2 = strtrim(fgets(f));
+        version = strtrim(fgets(f));
 
-        if longVersion ~= 0
-            version = [part1 ' ' part2];
-        else
-            version = part1;
-        end
     catch e
        filename = [p '/../../../VERSION'];
         f = fopen(filename);
         part1 = strtrim(fgets(f));
 
-        if longVersion ~= 0
-            version = [part1 ' UNKNOWN'];
-        else
-            version = part1;
-        end
+        version = [part1 ' UNKNOWN'];
     end
 end
