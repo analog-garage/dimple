@@ -18,6 +18,35 @@ Model.getInstance().setDefaultGraphFactory(graphFactory);
 This function changes the default solver to the solver designated by the argument.   (see section~\ref{sec:FactorGraph.Solver} for the list of valid solver names, and section~\ref{sec:SolversAPI} for a description of each solver).  
 \fi
 
+\subsubsection{dimpleVersion}
+
+Dimple provides a method to return a string describing the current Dimple version.
+
+\ifmatlab
+\begin{lstlisting}
+version = dimpleVersion();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+version = Model.getVersion();
+\end{lstlisting}
+\fi
+
+This will produce something of the form:
+
+\begin{lstlisting}
+<Release Number> <Git Branch Name> YYY-MM-DD HH:MM:SS <Timezone Offset>
+\end{lstlisting}
+
+For example:
+
+\begin{lstlisting}
+0.04 master 2013-10-11 14:00:05 -0400
+\end{lstlisting}
+
+The date in the version string represents the last git commit date associated with the compiled code.
 
 % Removed for now, since these aren't currently working properly
 %\para{getSolverNames}
