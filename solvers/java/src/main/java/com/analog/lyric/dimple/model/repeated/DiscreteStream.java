@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public class DiscreteStream extends VariableStreamBase
 {

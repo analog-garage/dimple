@@ -15,8 +15,8 @@
 ********************************************************************************/
 
 package com.analog.lyric.util.misc;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.INameable;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.INameable;
 
 import java.util.Collection;
 import java.util.HashMap;

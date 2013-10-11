@@ -18,8 +18,9 @@ package com.analog.lyric.dimple.solvers.core.multithreading;
 
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.FactorGraph;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;

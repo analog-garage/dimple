@@ -19,11 +19,11 @@ package com.analog.lyric.dimple.nestedgraphs;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public class MultiplexerCPD extends FactorGraph
 {

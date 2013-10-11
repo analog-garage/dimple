@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * Iterator over entries in a {@link IFactorTableBase}.

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 
 public class GaussianDistributionGenerator extends HybridSampledBPDistributionGenerator 

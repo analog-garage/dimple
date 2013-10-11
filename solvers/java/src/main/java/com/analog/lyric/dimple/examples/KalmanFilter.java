@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.examples;
 
 import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.RealJoint;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 
 public class KalmanFilter 
 {

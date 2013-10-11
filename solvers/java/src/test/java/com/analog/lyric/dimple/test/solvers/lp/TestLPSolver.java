@@ -6,15 +6,15 @@ import static org.junit.matchers.JUnitMatchers.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Cos;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
 import com.analog.lyric.dimple.solvers.lp.Solver;
 

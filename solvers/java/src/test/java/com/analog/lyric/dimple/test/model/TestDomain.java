@@ -9,16 +9,16 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.DoubleRangeDomain;
-import com.analog.lyric.dimple.model.EnumDomain;
-import com.analog.lyric.dimple.model.IntRangeDomain;
-import com.analog.lyric.dimple.model.JointDiscreteDomain;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.TypedDiscreteDomain;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
+import com.analog.lyric.dimple.model.domains.EnumDomain;
+import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
 public class TestDomain
 {

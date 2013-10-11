@@ -16,16 +16,16 @@
 
 package com.analog.lyric.dimple.matlabproxy.repeated;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.matlabproxy.PHelpers;
 import com.analog.lyric.dimple.matlabproxy.PNodeVector;
 import com.analog.lyric.dimple.matlabproxy.PVariableVector;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.repeated.IDataSink;
 import com.analog.lyric.dimple.model.repeated.IDataSource;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public abstract class PVariableStreamBase implements IPVariableStreamSlice
 {

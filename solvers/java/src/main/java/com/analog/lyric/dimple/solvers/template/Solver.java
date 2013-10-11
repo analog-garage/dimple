@@ -28,7 +28,7 @@ public class Solver extends SolverBase
 	/**
 	 * This method creates a Solver FactorGraph object given the corresponding model object.
 	 */
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
 	{
 		return new SFactorGraph(factorGraph);
 	}

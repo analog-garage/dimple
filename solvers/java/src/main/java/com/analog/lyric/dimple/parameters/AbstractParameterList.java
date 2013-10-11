@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 @ThreadSafe
 public abstract class AbstractParameterList<Key extends IParameterKey> implements IParameterList<Key>

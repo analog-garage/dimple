@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public interface IFactorGraphFactory 
 {

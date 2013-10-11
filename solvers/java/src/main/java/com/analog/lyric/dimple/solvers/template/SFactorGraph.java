@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.template;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;

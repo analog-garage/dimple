@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.model.serializerdetails;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
 class xmlsFactorTable
 {

@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class NormalSampler implements IRealConjugateSampler

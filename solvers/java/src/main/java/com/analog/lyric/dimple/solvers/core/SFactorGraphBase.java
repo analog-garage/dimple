@@ -17,15 +17,15 @@
 package com.analog.lyric.dimple.solvers.core;
 
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorBase;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.FactorList;
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;

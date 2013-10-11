@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 
 public interface IRealJointConjugateSampler extends IRealSampler

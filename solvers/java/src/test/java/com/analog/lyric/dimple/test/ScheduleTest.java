@@ -22,11 +22,11 @@ package com.analog.lyric.dimple.test;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;

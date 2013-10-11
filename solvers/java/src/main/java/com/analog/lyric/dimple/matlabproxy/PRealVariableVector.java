@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
 
 

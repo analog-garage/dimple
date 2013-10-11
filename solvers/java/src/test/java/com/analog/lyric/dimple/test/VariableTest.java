@@ -16,12 +16,14 @@
 
 package com.analog.lyric.dimple.test;
 
-import com.analog.lyric.dimple.model.Bit;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 import org.junit.* ;
+
 import static org.junit.Assert.* ;
+
 import java.util.Arrays;
 
 

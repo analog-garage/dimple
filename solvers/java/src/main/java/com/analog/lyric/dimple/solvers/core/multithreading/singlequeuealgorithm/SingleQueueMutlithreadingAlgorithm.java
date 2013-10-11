@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;

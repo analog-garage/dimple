@@ -19,7 +19,7 @@ package com.analog.lyric.math;
 import Jama.Matrix;
 import Jama.SingularValueDecomposition;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 public class LyricSingularValueDecomposition extends SingularValueDecomposition 
 {

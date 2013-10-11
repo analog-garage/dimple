@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.model.DimpleException;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 @Immutable
 public abstract class OptionKey<T> implements IOptionKey<T>

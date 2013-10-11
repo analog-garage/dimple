@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.matlabproxy.PDiscreteDomain;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.repeated.DiscreteStream;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 

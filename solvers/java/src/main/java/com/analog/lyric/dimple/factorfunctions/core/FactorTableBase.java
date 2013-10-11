@@ -5,8 +5,8 @@ import java.util.Random;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
 @NotThreadSafe
 public abstract class FactorTableBase implements IFactorTableBase, IFactorTable

@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.matlabproxy.PHelpers;
 import com.analog.lyric.dimple.matlabproxy.PVariableVector;
-import com.analog.lyric.dimple.model.VariableBase;
 import com.analog.lyric.dimple.model.repeated.VariableStreamSlice;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public class PVariableStreamSlice implements IPVariableStreamSlice
 {

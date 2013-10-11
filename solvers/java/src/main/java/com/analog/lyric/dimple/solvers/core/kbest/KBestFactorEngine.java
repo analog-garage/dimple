@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core.kbest;
 
-import com.analog.lyric.dimple.model.Discrete;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.IndexCounter;
 
 /*

@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.HashMap;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
 /*

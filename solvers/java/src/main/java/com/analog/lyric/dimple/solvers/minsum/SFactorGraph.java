@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -30,13 +30,13 @@ public class SFactorGraph extends SFactorGraphBase
 {
 	protected double _damping = 0;
 
-	public SFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 
-	public ISolverVariable createVariable(com.analog.lyric.dimple.model.VariableBase var)  
+	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.VariableBase var)  
 	{
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only support discrete variables");
@@ -71,7 +71,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return false;	
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)  
 	{
 		String funcName = factor.getFactorFunction().getName();
 		if (funcName.equals("customXor"))

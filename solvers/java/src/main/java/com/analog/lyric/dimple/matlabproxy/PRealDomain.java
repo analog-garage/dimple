@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab

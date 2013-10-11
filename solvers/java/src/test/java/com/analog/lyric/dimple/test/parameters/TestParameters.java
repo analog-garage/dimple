@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.parameters.IParameterKey;
 import com.analog.lyric.dimple.parameters.IParameterList;
 import com.analog.lyric.dimple.parameters.Parameter;

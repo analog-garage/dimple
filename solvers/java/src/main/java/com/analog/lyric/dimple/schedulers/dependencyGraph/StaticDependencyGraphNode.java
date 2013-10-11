@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.schedulers.dependencyGraph;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.Edge;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGraph;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;

@@ -1,8 +1,8 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.parameters.IParameterKey;
 import com.analog.lyric.dimple.parameters.IParameterList;
 

@@ -3,9 +3,9 @@ package com.analog.lyric.dimple.factorfunctions.core;
 import java.io.Serializable;
 import java.util.BitSet;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
-import com.analog.lyric.dimple.model.JointDomainReindexer;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 
 public interface IFactorTableBase extends Cloneable, Serializable, Iterable<FactorTableEntry>
 {

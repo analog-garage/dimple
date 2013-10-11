@@ -21,12 +21,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.INameable;
-import com.analog.lyric.dimple.model.INode;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INameable;
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 
 
 

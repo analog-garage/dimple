@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.HybridSampledBPFactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;

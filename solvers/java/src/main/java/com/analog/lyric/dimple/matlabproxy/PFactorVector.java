@@ -18,12 +18,12 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Node;
-import com.analog.lyric.dimple.model.VariableBase;
-import com.analog.lyric.dimple.model.VariableList;
+import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab

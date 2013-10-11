@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
 
 public class NopFactorFunction extends FactorFunction 
 {

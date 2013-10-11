@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public class RealStream extends VariableStreamBase
 {

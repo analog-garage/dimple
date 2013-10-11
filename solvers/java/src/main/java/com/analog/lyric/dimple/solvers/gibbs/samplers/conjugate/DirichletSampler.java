@@ -16,12 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.RealDomain;
-import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 

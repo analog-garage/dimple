@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.DiscreteFactor;
-import com.analog.lyric.dimple.model.Node;
+import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab

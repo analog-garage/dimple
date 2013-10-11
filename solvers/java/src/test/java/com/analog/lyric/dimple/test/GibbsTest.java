@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;

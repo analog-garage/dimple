@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealJoint;
-import com.analog.lyric.dimple.model.RealJointDomain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public class RealJointStream extends VariableStreamBase 
 {

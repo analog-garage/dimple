@@ -22,10 +22,10 @@ import java.util.HashSet;
 import java.util.Random;
 
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.FactorGraph;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.util.misc.Misc;
 
 public abstract class ParameterEstimator

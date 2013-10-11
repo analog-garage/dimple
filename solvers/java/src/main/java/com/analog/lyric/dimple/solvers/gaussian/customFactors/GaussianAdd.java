@@ -16,10 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.RealJoint;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorBase;
 
 

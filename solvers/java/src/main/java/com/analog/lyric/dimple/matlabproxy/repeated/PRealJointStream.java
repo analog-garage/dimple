@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.matlabproxy.PRealJointDomain;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.RealJointDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.repeated.RealJointStream;
 import com.analog.lyric.dimple.model.repeated.VariableStreamBase;
 

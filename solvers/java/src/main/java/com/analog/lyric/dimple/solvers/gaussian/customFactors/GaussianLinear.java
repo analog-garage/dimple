@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.gaussian.customFactors;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorBase;
 
 public class GaussianLinear extends GaussianFactorBase

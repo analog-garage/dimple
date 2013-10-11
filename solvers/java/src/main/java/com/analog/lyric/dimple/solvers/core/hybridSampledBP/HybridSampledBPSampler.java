@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core.hybridSampledBP;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.Port;
+import com.analog.lyric.dimple.model.core.Port;
 
 public abstract class HybridSampledBPSampler 
 {

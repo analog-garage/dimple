@@ -25,11 +25,11 @@ import net.jcip.annotations.ThreadSafe;
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.DomainList;
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DomainList;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.factors.Factor;
 
 @ThreadSafe
 public abstract class FactorFunction extends FactorFunctionBase

@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.INode;
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.factors.Factor;
 
 /*
  * Provides the update and updateEdge logic for minsum

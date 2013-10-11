@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.matlabproxy;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab

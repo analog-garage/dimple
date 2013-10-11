@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.model.serializerdetails;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 class xmlsFactor
 {

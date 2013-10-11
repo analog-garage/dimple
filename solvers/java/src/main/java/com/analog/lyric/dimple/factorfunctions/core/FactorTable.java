@@ -1,6 +1,6 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import static com.analog.lyric.dimple.model.JointDomainReindexer.*;
+import static com.analog.lyric.dimple.model.domains.JointDomainReindexer.*;
 import static com.analog.lyric.math.Utilities.*;
 
 import java.io.IOException;
@@ -12,11 +12,11 @@ import java.util.BitSet;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
-import com.analog.lyric.dimple.model.JointDomainIndexer;
-import com.analog.lyric.dimple.model.JointDomainReindexer;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
 import com.google.common.math.DoubleMath;
@@ -511,8 +511,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	@Deprecated
 	static public void serializeToXML(FactorTable ct, String serializeName, String targetDirectory)
 	{
-		com.analog.lyric.dimple.model.xmlSerializer toXML
-			= new com.analog.lyric.dimple.model.xmlSerializer();
+		com.analog.lyric.dimple.model.core.xmlSerializer toXML
+			= new com.analog.lyric.dimple.model.core.xmlSerializer();
 		
 		toXML.serializeFactorTableToXML(ct,
 									   serializeName,
@@ -522,8 +522,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	@Deprecated
 	public static IFactorTable deserializeFromXML(String docName)
 	{
-		com.analog.lyric.dimple.model.xmlSerializer x
-			= new com.analog.lyric.dimple.model.xmlSerializer();
+		com.analog.lyric.dimple.model.core.xmlSerializer x
+			= new com.analog.lyric.dimple.model.core.xmlSerializer();
 		
 		IFactorTable mct = x.deserializeFactorTableFromXML(docName);
 		

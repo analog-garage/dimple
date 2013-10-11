@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.model.repeated;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.dimple.model.DimpleException;
-import com.analog.lyric.dimple.model.Domain;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
 {

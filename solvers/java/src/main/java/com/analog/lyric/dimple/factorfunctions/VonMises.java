@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import cern.jet.math.Bessel;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.DimpleException;
 
 
 /**

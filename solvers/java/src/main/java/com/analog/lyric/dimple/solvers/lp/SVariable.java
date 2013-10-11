@@ -22,8 +22,8 @@ import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.model.Discrete;
-import com.analog.lyric.dimple.model.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;

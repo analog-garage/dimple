@@ -7,10 +7,10 @@ import org.junit.Test;
 import com.analog.lyric.dimple.learning.ITrainingSet;
 import com.analog.lyric.dimple.learning.TrainingAssignment;
 import com.analog.lyric.dimple.learning.TrainingAssignmentType;
-import com.analog.lyric.dimple.model.Bit;
-import com.analog.lyric.dimple.model.FactorGraph;
-import com.analog.lyric.dimple.model.Real;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.test.dummySolver.DummySolver;
 import com.analog.lyric.util.test.SerializationTester;
 

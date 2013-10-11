@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core.kbest;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.model.Factor;
+import com.analog.lyric.dimple.model.factors.Factor;
 
 /*
  * Solver Factors that need to support kbest can implement this interface

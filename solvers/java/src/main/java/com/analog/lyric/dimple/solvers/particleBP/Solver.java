@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 public class Solver extends SolverBase
 {
 
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.FactorGraph factorGraph) 
+	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
 	{
 		return new SFactorGraph(factorGraph, null);
 	}

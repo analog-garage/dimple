@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.learning;
 
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
 /**

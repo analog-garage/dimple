@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.model.Factor;
-import com.analog.lyric.dimple.model.Port;
-import com.analog.lyric.dimple.model.VariableBase;
+import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPFactor;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
