@@ -16,20 +16,20 @@
 
 package com.analog.lyric.dimple.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.model.Model;
+import com.analog.lyric.dimple.model.core.Model;
 
 
 public class VersionTest {
 
 	@Test
-	public void test_version() 
+	public void test_version()
 	{
 		String str = Model.getVersion();
 		System.out.println(str);
