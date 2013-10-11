@@ -16,6 +16,10 @@
 
 package com.analog.lyric.dimple.model;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 public class Model
@@ -58,5 +62,39 @@ public class Model
 	public void setDefaultGraphFactory(IFactorGraphFactory graphFactory) 
 	{
 		_defaultGraphFactory = graphFactory;
+	}
+	
+	public static String getVersion()
+	{
+		return getVersion(true); 
+	}
+	
+	@SuppressWarnings("resource")
+	public static String getVersion(boolean longVersion)
+	{
+		InputStream in = System.class.getResourceAsStream("/VERSION");
+		if (in == null)
+		{
+			System.out.println("what?");
+			return "UNKNOWN";
+		}
+		
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		String version = "UNKNOWN";
+		
+		try
+		{
+			version = br.readLine();
+			if (longVersion)
+				version += " " + br.readLine();			
+			br.close();
+		}
+		catch (Exception e)
+		{
+			
+		}
+		
+		return version;
+
 	}
 }

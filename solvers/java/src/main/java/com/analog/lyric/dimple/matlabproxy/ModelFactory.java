@@ -233,4 +233,12 @@ public class ModelFactory
 	{
 		return ThreadPool.getNumThreads();
 	}
+	
+	public String getVersion(int longVersion)
+	{
+		if (longVersion == 0)
+			return Model.getVersion(false);
+		else
+			return Model.getVersion(true);
+	}
 }

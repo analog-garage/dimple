@@ -1,5 +1,6 @@
 \.gradle
 solvers/java/build
+LONG_VERSION
 *.pyc
 demo/02_LDPC/BerData/
 solvers/lib/
