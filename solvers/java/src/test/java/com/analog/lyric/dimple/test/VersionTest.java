@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.model.Model;
+import com.analog.lyric.dimple.model.core.Model;
 
 
 public class VersionTest {
