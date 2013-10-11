@@ -14,35 +14,37 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testMixedBoundaryVariableType
+function version=dimpleVersion(longVersion)
+    if nargin < 1
+       longVersion = 1; 
+    end
 
-% This simply tests that addFactor & addFactorVectorized don't blow up
-% when connecting a subgraph to boundary variables that are not all of
-% the same type.
+    p = mfilename('fullpath');
+    s = strsplit(p,'/');
+    s = s(1:end-1);
+    p = strjoin(s,'/');
+    filename = [p '/../../../LONG_VERSION'];
+    
+    try
+        
+        f = fopen(filename);
+        part1 = strtrim(fgets(f));
+        part2 = strtrim(fgets(f));
 
-setSolver('gibbs');
+        if longVersion ~= 0
+            version = [part1 ' ' part2];
+        else
+            version = part1;
+        end
+    catch e
+       filename = [p '/../../../VERSION'];
+        f = fopen(filename);
+        part1 = strtrim(fgets(f));
 
-a = Discrete(1:10);
-b = Real;
-x = Bit(2,2);
-mySubGraph = FactorGraph(a, b);
-mySubGraph.addFactor('EqualDelta', a, b);
-mySubGraph.addFactor('EqualDelta', b, x);
-
-% Non-vectorized version
-N = 5;
-fg = FactorGraph;
-P = Discrete(1:10, N, 1);
-Q = Real(N,1);
-for i = 1:N
-    fg.addFactor(mySubGraph, P(i), Q(i));
-end
-
-% Vectorized version
-N = 5;
-fg = FactorGraph;
-P = Discrete(1:10, N, 1);
-Q = Real(N,1);
-fg.addFactorVectorized(mySubGraph, P, Q);
-
+        if longVersion ~= 0
+            version = [part1 ' UNKNOWN'];
+        else
+            version = part1;
+        end
+    end
 end

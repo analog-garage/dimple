@@ -14,35 +14,26 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function testMixedBoundaryVariableType
+function testNestedLabels
 
-% This simply tests that addFactor & addFactorVectorized don't blow up
-% when connecting a subgraph to boundary variables that are not all of
-% the same type.
+    a = Bit();
+    b = Bit();
+    ng = FactorGraph(a,b);
+    c = Bit();
+    f = ng.addFactor(@xorDelta,a,b,c);
+    a.Label = 'a';
+    b.Label = 'b';
+    c.Label = 'c';
+    f.Label = 'f';
+    fg = FactorGraph();
+    g = Bit();
+    h = Bit();
+    g.Label = 'g';
+    h.Label = 'h';
+    fg.addFactor(ng,g,h);
 
-setSolver('gibbs');
-
-a = Discrete(1:10);
-b = Real;
-x = Bit(2,2);
-mySubGraph = FactorGraph(a, b);
-mySubGraph.addFactor('EqualDelta', a, b);
-mySubGraph.addFactor('EqualDelta', b, x);
-
-% Non-vectorized version
-N = 5;
-fg = FactorGraph;
-P = Discrete(1:10, N, 1);
-Q = Real(N,1);
-for i = 1:N
-    fg.addFactor(mySubGraph, P(i), Q(i));
-end
-
-% Vectorized version
-N = 5;
-fg = FactorGraph;
-P = Discrete(1:10, N, 1);
-Q = Real(N,1);
-fg.addFactorVectorized(mySubGraph, P, Q);
-
+    assertEqual(fg.Factors{1}.Label,'f');
+    assertEqual(fg.Variables{1}.Label,'g');
+    assertEqual(fg.Variables{2}.Label,'h');
+    assertEqual(fg.Variables{3}.Label,'c');
 end
