@@ -64,18 +64,13 @@ public class Model
 		_defaultGraphFactory = graphFactory;
 	}
 	
-	public static String getVersion()
-	{
-		return getVersion(true); 
-	}
 	
 	@SuppressWarnings("resource")
-	public static String getVersion(boolean longVersion)
+	public static String getVersion()
 	{
 		InputStream in = System.class.getResourceAsStream("/VERSION");
 		if (in == null)
 		{
-			System.out.println("what?");
 			return "UNKNOWN";
 		}
 		
@@ -85,8 +80,6 @@ public class Model
 		try
 		{
 			version = br.readLine();
-			if (longVersion)
-				version += " " + br.readLine();			
 			br.close();
 		}
 		catch (Exception e)
