@@ -16,9 +16,21 @@
 
 function version=dimpleVersion()
     p = mfilename('fullpath');
-    s = strsplit(p,'/');
+    %strsplit doesn't work in MATLAB 2012
+    s=textscan(p,'%s','delimiter','/');
+    s = s{1};
     s = s(1:end-1);
-    p = strjoin(s,'/');
+    %strjoin doesn't work in MATLAB 2012
+    c = cell(length(s) + length(s)-1);
+    index = 1;
+    for i = 1:length(s)
+       c{index} = s{i};
+       if i < length(s)
+           c{index+1} = '/';
+       end
+       index = index+2;
+    end
+    p = [c{:}];
     filename = [p '/../../../LONG_VERSION'];
     
     try
