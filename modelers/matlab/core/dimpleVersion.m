@@ -16,7 +16,7 @@
 
 function version=dimpleVersion()
     p = mfilename('fullpath');
-    s = strsplit(p,'/');
+    s=textscan(p,'%s','delimiter','/');
     s = s(1:end-1);
     p = strjoin(s,'/');
     filename = [p '/../../../LONG_VERSION'];
