@@ -3,15 +3,15 @@ package com.analog.lyric.dimple.model.domains;
 import java.util.Arrays;
 import java.util.BitSet;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
-
 import net.jcip.annotations.Immutable;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * Directed implementation of {@link JointDomainIndexer}.
  */
 @Immutable
-final class DirectedJointDomainIndexer extends JointDomainIndexer
+final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexer
 {
 	/*-------
 	 * State
@@ -33,7 +33,8 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	 * Construction
 	 */
 	
-	DirectedJointDomainIndexer(BitSet outputs, DiscreteDomain ... domains)
+	StandardDirectedJointDomainIndexer(BitSet outputs, DiscreteDomain ... domains)
+	
 	{
 		super(computeHashCode(outputs, domains), domains);
 		_outputSet = outputs;
@@ -115,9 +116,9 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 			return true;
 		}
 		
-		if (that instanceof DirectedJointDomainIndexer)
+		if (that instanceof StandardDirectedJointDomainIndexer)
 		{
-			DirectedJointDomainIndexer thatDiscrete = (DirectedJointDomainIndexer)that;
+			StandardDirectedJointDomainIndexer thatDiscrete = (StandardDirectedJointDomainIndexer)that;
 			return Arrays.equals(_domains, thatDiscrete._domains)
 				&& _outputSet.equals(thatDiscrete._outputSet);
 		}
@@ -365,11 +366,6 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	/*-----------------
 	 * Private methods
 	 */
-	
-	private static int computeHashCode(BitSet inputs, DiscreteDomain[] domains)
-	{
-		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
-	}
 	
 	private void locationToElements(int location, Object[] elements, int[] subindices, int[] products)
 	{

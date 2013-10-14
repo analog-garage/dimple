@@ -69,25 +69,13 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
  * @see #create(int[], Domain...)
  */
 @Immutable
-public class JointDomainIndexer extends DomainList<DiscreteDomain>
+public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 {
 	/*-------
 	 * State
 	 */
 	
 	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * Contains cumulative products of domain sizes, such that _products[0] == 1
-	 * and otherwise _products[i] == getDomainSize(i-1) * _products[i-1].
-	 */
-	private final int[] _products;
-	
-	/**
-	 * The joint cardinality of all of the domains: the product of all of the domain
-	 * sizes.
-	 */
-	private final int _cardinality;
 	
 	/**
 	 * Precomputed {@link #hashCode()}.
@@ -113,17 +101,6 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 			throw new DimpleException("Empty domain list");
 		}
 		
-		final int nDomains = domains.length;
-		
-		_products = new int[nDomains];
-		int product = 1;
-		for (int i = 0; i < nDomains; ++i)
-		{
-			_products[i] = product;
-			product *= domains[i].size();
-		}
-		_cardinality = product;
-		
 		Class<?> elementClass = domains[0].getElementClass();
 		for (int i = domains.length; --i >= 1; )
 		{
@@ -132,9 +109,9 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 		_elementClass = elementClass;
 	}
 	
-	private JointDomainIndexer(DiscreteDomain[] domains)
+	JointDomainIndexer(DiscreteDomain[] domains)
 	{
-		this(Arrays.hashCode(domains), domains);
+		this(computeHashCode(domains), domains);
 	}
 	
 	private static JointDomainIndexer lookupOrCreate(BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
@@ -146,13 +123,24 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 			domains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
 		}
 		
+		if (domainsTooLargeForJointIndex(domains))
+		{
+			if (outputs != null)
+			{
+				return new LargeJointDomainIndexer(outputs, domains);
+			}
+			else
+			{
+				return new LargeJointDomainIndexer(domains);
+			}
+		}
 		if (outputs != null)
 		{
-			return new DirectedJointDomainIndexer(outputs, domains);
+			return new StandardDirectedJointDomainIndexer(outputs, domains);
 		}
 		else
 		{
-			return new JointDomainIndexer(domains);
+			return new StandardJointDomainIndexer(domains);
 		}
 	}
 	
@@ -322,10 +310,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @see #getInputCardinality()
 	 * @see #getOutputCardinality()
 	 */
-	public final int getCardinality()
-	{
-		return _cardinality;
-	}
+	public abstract int getCardinality();
 	
 	/**
 	 * Returns the size of the ith domain in the list.
@@ -408,10 +393,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * all of the output domain sizes. Will be the same as {@link #getCardinality()} if not {@link #isDirected()}.
 	 * @see #getInputCardinality()
 	 */
-	public int getOutputCardinality()
-	{
-		return _cardinality;
-	}
+	public abstract int getOutputCardinality();
 	
 	/**
 	 * Returns the index of the ith output domain. If not {@link #isDirected()} this treats
@@ -472,10 +454,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * @see #getUndirectedStride(int)
 	 */
-	public int getStride(int i)
-	{
-		return _products[i];
-	}
+	public abstract int getStride(int i);
 	
 	/**
 	 * Returns amount by which joint index returned by {@link #undirectedJointIndexFromIndices(int...)} changes
@@ -486,10 +465,7 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * @see #getStride(int)
 	 */
-	public final int getUndirectedStride(int i)
-	{
-		return _products[i];
-	}
+	public abstract int getUndirectedStride(int i);
 	
 	/**
 	 * True if domain list is partitioned into inputs and outputs.
@@ -781,45 +757,11 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 		undirectedJointIndexToIndices(outputIndex, indices);
 	}
 	
-	public final int undirectedJointIndexFromElements(Object ... elements)
-	{
-		final DiscreteDomain[] domains = _domains;
-		final int[] products = _products;
-		int joint = domains[0].getIndexOrThrow(elements[0]);
-		for (int i = 1, end = products.length; i < end; ++i)
-		{
-			joint += products[i] * domains[i].getIndexOrThrow(elements[i]);
-		}
-		return joint;
-	}
+	public abstract int undirectedJointIndexFromElements(Object ... elements);
 
-	public final int undirectedJointIndexFromIndices(int ... indices)
-	{
-		final int length = indices.length;
-		int joint = indices[0]; // _products[0] is 1, so we can skip the multiply
-		for (int i = 1, end = length; i != end; ++i) // != is slightly faster than < comparison
-		{
-			joint += indices[i] * _products[i];
-		}
-		return joint;
-	}
+	public abstract int undirectedJointIndexFromIndices(int ... indices);
 	
-	public final <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements)
-	{
-		final DiscreteDomain[] domains = _domains;
-		final int[] products = _products;
-
-		elements = allocateElements(elements);
-		
-		int product;
-		for (int i = products.length; --i >= 0;)
-		{
-			final int index = jointIndex / (product = products[i]);
-			elements[i] = (T) domains[i].getElement(index);
-			jointIndex -= index * product;
-		}
-		return elements;
-	}
+	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements);
 	
 	public final Object[] undirectedJointIndexToElements(int jointIndex)
 	{
@@ -837,26 +779,9 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * @see #jointIndexToElementIndex(int, int)
 	 */
-	public int undirectedJointIndexToElementIndex(int jointIndex, int domainIndex)
-	{
-		return (jointIndex / _products[domainIndex]) % _domains[domainIndex].size();
-	}
+	public abstract int undirectedJointIndexToElementIndex(int jointIndex, int domainIndex);
 	
-	public final int[] undirectedJointIndexToIndices(int jointIndex, int[] indices)
-	{
-		final int[] products = _products;
-		
-		indices = allocateIndices(indices);
-		
-		int product;
-		for (int i = products.length; --i >= 0;)
-		{
-			final int index = jointIndex / (product = products[i]);
-			indices[i] = index;
-			jointIndex -= index * product;
-		}
-		return indices;
-	}
+	public abstract int[] undirectedJointIndexToIndices(int jointIndex, int[] indices);
 	
 	public final int[] undirectedJointIndexToIndices(int jointIndex)
 	{
@@ -896,6 +821,56 @@ public class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 		
 		return indices;
+	}
+	
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	protected static int computeHashCode(DiscreteDomain[] domains)
+	{
+		return Arrays.hashCode(domains);
+	}
+
+	static int computeHashCode(BitSet inputs, DiscreteDomain[] domains)
+	{
+		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
+	}
+	
+	static boolean domainsTooLargeForJointIndex(DiscreteDomain[] domains)
+	{
+		if (domains.length > 31)
+		{
+			return true;
+		}
+		
+		double logProduct = 0.0;
+		
+		for (DiscreteDomain domain : domains)
+		{
+			logProduct += Math.log(domain.size());
+		}
+		
+		double approxBits = logProduct / Math.log(2);
+		
+		if (approxBits >= 32)
+		{
+			return true;
+		}
+		else if (approxBits <= 30)
+		{
+			return false;
+		}
+		
+		// Compute product with longs to get exact answer when close to threshold.
+		long product = 1;
+		
+		for (DiscreteDomain domain : domains)
+		{
+			product *= domain.size();
+		}
+		
+		return product > Integer.MAX_VALUE;
 	}
 	
 }
