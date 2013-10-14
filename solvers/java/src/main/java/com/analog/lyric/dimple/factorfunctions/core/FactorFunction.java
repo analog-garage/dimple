@@ -184,7 +184,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     			outputs[inputIndex] = domains.outputIndexFromElements(elements);
     		}
 
-    		table.setDeterministicOuputIndices(outputs);
+    		table.setDeterministicOutputIndices(outputs);
     	}
     	else
     	{

@@ -181,14 +181,14 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * Construction
 	 */
 	
-	public FactorTable(JointDomainIndexer domains)
+	FactorTable(JointDomainIndexer domains)
 	{
 		super(domains);
 		_nonZeroWeights = 0;
 		_representation = SPARSE_ENERGY;
 	}
 	
-	public FactorTable(BitSet directedTo, DiscreteDomain ... domains)
+	FactorTable(BitSet directedTo, DiscreteDomain ... domains)
 	{
 		this(JointDomainIndexer.create(directedTo, domains));
 	}
@@ -196,7 +196,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	/**
 	 * Creates empty sparse factor table over given discrete domains.
 	 */
-	public FactorTable(DiscreteDomain ... domains)
+	FactorTable(DiscreteDomain ... domains)
 	{
 		this(null, domains);
 	}
@@ -204,7 +204,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	/**
 	 * Construct as a copy of another table instance.
 	 */
-	public FactorTable(FactorTable that)
+	FactorTable(FactorTable that)
 	{
 		super(that);
 		_nonZeroWeights = that._nonZeroWeights;
@@ -223,7 +223,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * Constructs a new table by converting the contents of {@code other} table using
 	 * {@code converter} whose "from" domains must match {@code other}'s domains.
 	 */
-	public FactorTable(FactorTable other, JointDomainReindexer converter)
+	FactorTable(FactorTable other, JointDomainReindexer converter)
 	{
 		super(converter.getToDomains());
 		_representation = other._representation;
@@ -1532,16 +1532,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		setDenseValues(weights, DENSE_WEIGHT);
 	}
 	
-	/**
-	 * Sets representation to {@link FactorTableRepresentation#DETERMINISTIC} with given set of
-	 * outputs.
-	 * <p>
-	 * @param outputIndices any array mapping input indices, representing the joint value of all input
-	 * values, to output indices, representing the joint value of all outputs. The length of the array
-	 * must be equal to the value of {@link JointDomainIndexer#getInputCardinality()} on {@link #getDomainIndexer()}.
-	 * @throws UnsupportedOperationException if not {@link #isDirected()}.
-	 */
-	public void setDeterministicOuputIndices(int[] outputIndices)
+	@Override
+	public void setDeterministicOutputIndices(int[] outputIndices)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
 		final int size = domains.getInputCardinality();

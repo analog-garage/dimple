@@ -39,7 +39,7 @@ public class TestFactorTable
 	@Test
 	public void testFactorTable()
 	{
-		FactorTable t2x3 = new FactorTable(domain2, domain3);
+		IFactorTable t2x3 = FactorTable.create(domain2, domain3);
 		assertEquals(2, t2x3.getDimensions());
 		assertEquals(domain2, t2x3.getDomainIndexer().get(0));
 		assertEquals(domain3, t2x3.getDomainIndexer().get(1));
@@ -178,7 +178,7 @@ public class TestFactorTable
 		
 		BitSet xor3Output = new BitSet(3);
 		xor3Output.set(1);
-		FactorTable xor2 = new FactorTable(xor3Output, domain2, domain2, domain2);
+		IFactorTable xor2 = FactorTable.create(xor3Output, domain2, domain2, domain2);
 		assertInvariants(xor2);
 		assertTrue(xor2.isDirected());
 		assertFalse(xor2.isDeterministicDirected());
@@ -262,13 +262,13 @@ public class TestFactorTable
 		assertEquals(energyToWeight(2.3), xor2.getWeightForSparseIndex(0), 1e-12);
 		assertEquals(FactorTableRepresentation.ALL_ENERGY, xor2.getRepresentation());
 		
-		FactorTable t2x2x2 = xor2.clone();
+		IFactorTable t2x2x2 = xor2.clone();
 		assertBaseEqual(t2x2x2, xor2);
 		t2x2x2.setWeightForIndices(.5, 1, 1, 1);
 		assertFalse(t2x2x2.isDeterministicDirected());
 		assertInvariants(t2x2x2);
 		
-		FactorTable t2x3x4 = new FactorTable(domain2, domain3, domain5);
+		IFactorTable t2x3x4 = FactorTable.create(domain2, domain3, domain5);
 		t2x3.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
@@ -306,7 +306,7 @@ public class TestFactorTable
 		DiscreteDomain oneDie = DiscreteDomain.range(1,6);
 		DiscreteDomain twoDice = DiscreteDomain.range(2,12);
 
-		FactorTable newTable = new FactorTable(domain10, domain20, domain5);
+		IFactorTable newTable = FactorTable.create(domain10, domain20, domain5);
 		newTable.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 		newTable.randomizeWeights(rand);
 		
@@ -350,7 +350,7 @@ public class TestFactorTable
 		
 		System.out.println("\n==== deterministic 11x6x6 table ====");
 		
-		newTable = new FactorTable(BitSetUtil.bitsetFromIndices(3, 0), twoDice, oneDie, oneDie);
+		newTable = FactorTable.create(BitSetUtil.bitsetFromIndices(3, 0), twoDice, oneDie, oneDie);
 		JointDomainIndexer indexer = newTable.getDomainIndexer();
 		int[] deterministicIndices = new int[indexer.getInputCardinality()];
 		int[] indices = indexer.allocateIndices(null);
@@ -359,7 +359,7 @@ public class TestFactorTable
 			indexer.inputIndexToIndices(ii, indices);
 			deterministicIndices[ii] = indices[1] + indices[2];
 		}
-		newTable.setDeterministicOuputIndices(deterministicIndices);
+		newTable.setDeterministicOutputIndices(deterministicIndices);
 		assertTrue(newTable.isDeterministicDirected());
 		
 		tester = new FactorTablePerformanceTester(newTable, iterations);
@@ -446,7 +446,7 @@ public class TestFactorTable
 		System.out.format("Size %d: BS %d vs HT %d ns/call\n", size, nsPerBS, nsPerHM);
 	}
 	
-	private void testRandomOperations(FactorTable table, int nOperations)
+	private void testRandomOperations(IFactorTable table, int nOperations)
 	{
 		int[] indices = new int[table.getDimensions()];
 		Object[] arguments = new Object[table.getDimensions()];
@@ -660,7 +660,7 @@ public class TestFactorTable
 		
 	}
 	
-	private static void assertWeight(FactorTable table, double weight, int jointIndex)
+	private static void assertWeight(IFactorTable table, double weight, int jointIndex)
 	{
 		double energy = -Math.log(weight);
 		assertEquals(energy, table.getEnergyForJointIndex(jointIndex), 1e-12);
@@ -682,7 +682,7 @@ public class TestFactorTable
 		assertEquals(weight, table.getWeightForElements(arguments), 13-12);
 	}
 	
-	public static void assertInvariants(FactorTable table)
+	public static void assertInvariants(IFactorTable table)
 	{
 		FactorTableRepresentation representation = table.getRepresentation();
 		assertBaseInvariants(table);
@@ -698,7 +698,7 @@ public class TestFactorTable
 		JointDomainReindexer nullConverter =
 			JointDomainReindexer.createPermuter(table.getDomainIndexer(), table.getDomainIndexer());
 
-		FactorTable table2 = table.convert(nullConverter);
+		IFactorTable table2 = table.convert(nullConverter);
 		assertBaseEqual(table, table2);
 	}
 	

@@ -254,6 +254,17 @@ public interface IFactorTable extends IFactorTableBase
 	public void serializeToXML(String serializeName, String targetDirectory);
 	
 	/**
+	 * Sets representation to {@link FactorTableRepresentation#DETERMINISTIC} with given set of
+	 * outputs.
+	 * <p>
+	 * @param outputIndices any array mapping input indices, representing the joint value of all input
+	 * values, to output indices, representing the joint value of all outputs. The length of the array
+	 * must be equal to the value of {@link JointDomainIndexer#getInputCardinality()} on {@link #getDomainIndexer()}.
+	 * @throws UnsupportedOperationException if not {@link #isDirected()}.
+	 */
+	public void setDeterministicOutputIndices(int[] outputIndices);
+
+	/**
 	 * Designates directionality of factor table by specifying which of its domains are outputs.
 	 * <p>
 	 * Note that this may change the indexing of the table's values in both sparse and dense formats.
