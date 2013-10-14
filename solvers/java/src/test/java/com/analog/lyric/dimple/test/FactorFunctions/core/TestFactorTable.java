@@ -359,7 +359,7 @@ public class TestFactorTable
 			indexer.inputIndexToIndices(ii, indices);
 			deterministicIndices[ii] = indices[1] + indices[2];
 		}
-		newTable.setDeterministicOuputIndices(deterministicIndices);
+		newTable.setDeterministicOutputIndices(deterministicIndices);
 		assertTrue(newTable.isDeterministicDirected());
 		
 		tester = new FactorTablePerformanceTester(newTable, iterations);

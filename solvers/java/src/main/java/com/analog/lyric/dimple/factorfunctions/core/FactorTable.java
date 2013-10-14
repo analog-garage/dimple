@@ -1541,7 +1541,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * must be equal to the value of {@link JointDomainIndexer#getInputCardinality()} on {@link #getDomainIndexer()}.
 	 * @throws UnsupportedOperationException if not {@link #isDirected()}.
 	 */
-	public void setDeterministicOuputIndices(int[] outputIndices)
+	public void setDeterministicOutputIndices(int[] outputIndices)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
 		final int size = domains.getInputCardinality();
