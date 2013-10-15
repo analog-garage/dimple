@@ -18,6 +18,7 @@ package com.analog.lyric.collect;
 
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -36,6 +37,29 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 			this.node = node;
 		}
 
+		@Override
+		public boolean equals(Object other)
+		{
+			if (this == other)
+			{
+				return true;
+			}
+			
+			if (other instanceof Entry)
+			{
+				Entry<?,?> that = (Entry<?,?>)other;
+				return node[0].equals(that.node[0]) && node[1].equals(that.node[1]);
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return Arrays.hashCode(node);
+		}
+		
 		@SuppressWarnings("unchecked")
 		@Override
 		public K getKey()
