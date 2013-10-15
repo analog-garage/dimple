@@ -1,0 +1,14 @@
+Dimple v0.05 Release notes
+==========================
+
+New Features since v0.04
+------------------------
+* Added dimpleVersion MATLAB function
+
+* Modified java model package structure
+
+* Added java solver template to aid in the design of new solvers
+
+
+Fixes since v0.04
+-----------------
