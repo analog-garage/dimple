@@ -19,8 +19,8 @@ import os
 import subprocess
 f = file('../../VERSION')
 version = f.readlines()[0].strip()
-branch = subprocess.check_output('git rev-parse --abbrev-ref HEAD'.split()).strip()
-date = subprocess.check_output('git log -n 1 --format=format:%ci'.split()).strip()
+branch = subprocess.Popen('git rev-parse --abbrev-ref HEAD'.split(),stdout=subprocess.PIPE).communicate()[0].strip()
+date = subprocess.Popen('git log -n 1 --format=format:%ci'.split(),stdout=subprocess.PIPE).communicate()[0].strip()
 f.close()
 
 f = file('src/main/resources/VERSION','w')
