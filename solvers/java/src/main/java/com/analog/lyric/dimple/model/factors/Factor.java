@@ -237,8 +237,9 @@ public class Factor extends FactorBase implements Cloneable
 		//Cache the variables for performance reasons
 		if (_variables == null)
 		{
-			_variables = new VariableList();
-			for (int i = 0; i < _siblings.size(); i++)
+			int nSiblings = _siblings.size();
+			_variables = new VariableList(nSiblings);
+			for (int i = 0; i < nSiblings; i++)
 				_variables.add((VariableBase)_siblings.get(i));
 		}
 		
@@ -394,14 +395,21 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		ensureDirectedToSet();
 		
-		VariableList vl = new VariableList();
+		VariableList vl = null;
+		
 		if (isDirected())
 		{
+			vl = new VariableList(_directedTo.length);
 			for (int i = 0; i < _directedTo.length; i++)
 			{
 				vl.add(getVariables().getByIndex(_directedTo[i]));
 			}
 		}
+		else
+		{
+			vl = new VariableList();
+		}
+		
 		return vl;
 
 	}
@@ -418,8 +426,8 @@ public class Factor extends FactorBase implements Cloneable
 
 	public void setDirectedTo(VariableBase ... variables)
 	{
-		VariableList vl = new VariableList();
-		vl.add(variables);
+		VariableList vl = new VariableList(variables.length);
+		vl.addAll(variables);
 		setDirectedTo(vl);
 	}
 	

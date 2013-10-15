@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 
 
 public interface INode  extends INameable
@@ -66,12 +66,12 @@ public interface INode  extends INameable
     public void connect(INode node);
     public boolean isConnected(INode node);
     public boolean isConnected(INode node, int portIndex);
-    public MapList<INode> getConnectedNodes();
+    public IMapList<INode> getConnectedNodes();
 	public INode getConnectedNodeFlat(int portNum);
     public INode getConnectedNode(int relativeNestingDepth, int portNum);
-    public MapList<INode> getConnectedNodes(int relativeNestingDepth);
-    public MapList<INode> getConnectedNodesFlat();
-    public MapList<INode> getConnectedNodesTop();
+    public IMapList<INode> getConnectedNodes(int relativeNestingDepth);
+    public IMapList<INode> getConnectedNodesFlat();
+    public IMapList<INode> getConnectedNodesTop();
 
     //TODO: should these only be on solver?
     public void update() ;

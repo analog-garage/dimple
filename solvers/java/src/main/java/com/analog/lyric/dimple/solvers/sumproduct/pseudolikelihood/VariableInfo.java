@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 
 /*
  * The VariableInfo object stores an empirical distribution of all variables that it is
@@ -240,7 +240,7 @@ public class VariableInfo extends NodeInfo
 	//uses a breadth first search to find all neighboring variables.
 	private static VariableBase [] getNeighbors(VariableBase var)
 	{
-		MapList<INode> ml = var.getRootGraph().depthFirstSearchFlat(var, 2);
+		IMapList<INode> ml = var.getRootGraph().depthFirstSearchFlat(var, 2);
 		HashSet<VariableBase> neighbors = new HashSet<VariableBase>();
 		for (INode n : ml)
 		{

@@ -20,4 +20,13 @@ import com.analog.lyric.util.misc.MapList;
 
 public class FactorList extends MapList<Factor>
 {
+	public FactorList()
+	{
+		super();
+	}
+	
+	public FactorList(int initialCapacity)
+	{
+		super(initialCapacity);
+	}
 }

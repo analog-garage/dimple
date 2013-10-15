@@ -18,99 +18,65 @@ package com.analog.lyric.util.misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import cern.colt.map.OpenIntObjectHashMap;
+
+// REFACTOR: move to com.analog.lyric.collect package
 
 /*
  * MapList is a collection that stores data in both a HashMap and
  * an ArrayList.  This preserves order and also allows objects to be indexed by Id.
  */
-public class MapList<T extends IGetId>  implements Collection<T>
+public class MapList<T extends IGetId>  implements IMapList<T>
 {
-	// FIXME: this class is very similar to the standard LinkedHashMap class.
-	// We should consider whether to use that instead. Or else in order to
-	// avoid boxing integer keys, we might instead want to implement a
-	// integer key version of LinkedHashMap using the GNU Trove library.
-	
-	private HashMap<Integer,T> _hashMap = new HashMap<Integer, T>();
-	private ArrayList<T> _arrayList = new ArrayList<T>();
+	private final OpenIntObjectHashMap _hashMap;
+	private final ArrayList<T> _arrayList;
 		
+	/*---------------
+	 * Construction
+	 */
+	
 	public MapList()
 	{
-		
+		this(16);
+	}
+	
+	public MapList(int initialCapacity)
+	{
+		_hashMap = new OpenIntObjectHashMap(initialCapacity);
+		_arrayList = new ArrayList<T>(initialCapacity);
 	}
 	
 	public MapList(Iterable<T> vars)
 	{
+		this();
 		for (T v : vars)
 			add(v);
 	}
 	
-	public T getByKey(int id)
-	{
-		
-		return _hashMap.get(id);
-	}
-	
-	public T getByIndex(int index)
-	{
-		return _arrayList.get(index);
-	}
+	/*--------------------
+	 * Collection methods
+	 */
 	
 	@Override
-	public int size()
+	public boolean add(T node)
 	{
-		return _arrayList.size();
-		//return _hashMap.size();
+		if (!_hashMap.containsKey(node.getId()))
+		{
+			_hashMap.put(node.getId(), node);
+			_arrayList.add(node);
+			return true;
+		}
+		return false;
 	}
 	
-	public List<T> values()
-	{
-		return _arrayList;
-	}
-	
-	public void add(MapList<T> nodes)
-	{
-		if (nodes != null) for (T n : nodes) add(n);
-	}
-	public void add(T[] nodes)
-	{
-		if (nodes != null) for (T n : nodes) add(n);
-	}
-	public void add(Collection<T> nodes)
-	{
-		if (nodes != null) for (T n : nodes) add(n);
-	}
-	public void add(HashMap<Integer,T> nodes)
-	{
-		if (nodes != null) for (T n : nodes.values()) add(n);
-	}
-
-	public boolean contains(IGetId node)
-	{
-		return  _hashMap.containsKey(node.getId());
-	}
-	
-	@Override
-	public Iterator<T> iterator()
-	{
-		//return _hashMap.values().iterator();
-		return _arrayList.iterator();
-	}
-	
-	@Override
-	public boolean remove(Object node)
-	{
-		@SuppressWarnings("unchecked")
-		T tnode = (T)node;
-		_hashMap.remove(tnode.getId());
-		return _arrayList.remove(node);
-	}
-
 	@Override
 	public boolean addAll(Collection<? extends T> arg0)
 	{
+		ensureCapacity(size() + arg0.size());
+		
 		boolean changed = false;
 		for (T t : arg0)
 		{
@@ -130,26 +96,50 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	@Override
 	public boolean contains(Object arg0)
 	{
-		if (arg0 instanceof IGetId)
-		{
-			arg0 = ((IGetId)arg0).getId();
-		}
-		
-		return _hashMap.containsKey(arg0);
+		return (arg0 instanceof IGetId) ? contains((IGetId)arg0) : false ;
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> arg0)
+	public boolean containsAll(Collection<?> objects)
 	{
-		return _arrayList.containsAll(arg0);
+		for (Object object : objects)
+		{
+			if (!contains(object))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
+	@Override
+	public Iterator<T> iterator()
+	{
+		return _arrayList.iterator();
+	}
+	
 	@Override
 	public boolean isEmpty()
 	{
 		return _arrayList.isEmpty();
 	}
 
+	@Override
+	public boolean remove(Object node)
+	{
+		boolean removed = false;
+		
+		if (node instanceof IGetId)
+		{
+			removed = _hashMap.removeKey(((IGetId)node).getId());
+			if (removed)
+			{
+				_arrayList.remove(node);
+			}
+		}
+		return removed;
+	}
 
 	@Override
 	public boolean removeAll(Collection<?> arg0)
@@ -164,15 +154,15 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> arg0)
+	public boolean retainAll(Collection<?> keep)
 	{
 		boolean changed = false;
-		for (Object o : _arrayList)
+		for (int i = _arrayList.size(); --i >= 0;)
 		{
-			if (!arg0.contains(o))
+			if (!keep.contains(_arrayList.get(i)))
 			{
-				if (remove(o))
-					changed = true;
+				_arrayList.remove(i);
+				changed = true;
 			}
 		}
 
@@ -181,28 +171,67 @@ public class MapList<T extends IGetId>  implements Collection<T>
 	}
 
 	@Override
+	public int size()
+	{
+		return _arrayList.size();
+		//return _hashMap.size();
+	}
+	
+	@Override
 	public Object[] toArray()
 	{
 		return _arrayList.toArray();
 	}
 
-	@SuppressWarnings("hiding")
 	@Override
-	public <T> T[] toArray(T[] arg0)
+	public <T2> T2[] toArray(T2[] array)
 	{
-		return _arrayList.toArray(arg0);
+		return _arrayList.toArray(array);
 	}
 
+	/*------------------
+	 * IMapList methods
+	 */
+	
 	@Override
-	public boolean add(T node)
+	public void addAll(T[] nodes)
 	{
-		if (!_hashMap.containsKey(node.getId()))
+		if (nodes != null)
 		{
-			_hashMap.put(node.getId(), node);
-			_arrayList.add(node);
-			return true;
+			ensureCapacity(size() + nodes.length);
+			for (T n : nodes) add(n);
 		}
-		return false;
 	}
 
+	@Override
+	public boolean contains(IGetId node)
+	{
+		return _hashMap.containsKey(node.getId());
+	}
+	
+	@Override
+	public void ensureCapacity(int minCapacity)
+	{
+		_hashMap.ensureCapacity(minCapacity);
+		_arrayList.ensureCapacity(minCapacity);
+	}
+
+	@Override
+	public T getByKey(int id)
+	{
+		return (T) _hashMap.get(id);
+	}
+	
+	@Override
+	public T getByIndex(int index)
+	{
+		return _arrayList.get(index);
+	}
+	
+	@Override
+	public List<T> values()
+	{
+		return _arrayList;
+	}
+	
 }

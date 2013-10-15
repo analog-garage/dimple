@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 
 /**
  * @author jeffb
@@ -68,14 +68,14 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		HashMap<Integer,NodeUpdateState> updateState = new HashMap<Integer,NodeUpdateState>();
 		
 		@SuppressWarnings("all")
-		MapList allIncludedNodes = g.getNodes();
+		IMapList allIncludedNodes = g.getNodes();
 		ArrayList<INode> startingNodes = new ArrayList<INode>();
 
 		// For all nodes, set up the node update state
 		// Edges connected to nodes outside the graph have already been updated
 		if (g.hasParentGraph())
 		{
-			for (INode node : (MapList<INode>)allIncludedNodes)
+			for (INode node : (IMapList<INode>)allIncludedNodes)
 			{
 				ArrayList<INode> siblings = node.getSiblings();
 				int numSiblings = siblings.size();
@@ -93,7 +93,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		}
 		else	// If there's no parent, then nothing has already been updated
 		{
-			for (INode node : (MapList<INode>)allIncludedNodes)
+			for (INode node : (IMapList<INode>)allIncludedNodes)
 			{
 				int numSiblings = node.getSiblings().size();
 				updateState.put(node.getId(), new NodeUpdateState(numSiblings));

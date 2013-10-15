@@ -20,6 +20,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
+
+import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 
 /**
@@ -349,7 +351,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * Returns collection of nodes that were visited by the walker so far.
 	 * @see #getVisitedNodesSize
 	 */
-	public final MapList<INode> getVisitedNodes()
+	public final IMapList<INode> getVisitedNodes()
 	{
 		this._visitedNodesWasExposed = true;
 		return this._visitedNodes;

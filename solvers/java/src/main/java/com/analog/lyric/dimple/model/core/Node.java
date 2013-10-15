@@ -23,6 +23,7 @@ import java.util.UUID;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 
 public abstract class Node implements INode, Cloneable
@@ -169,7 +170,7 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	@Override
-	public MapList<INode> getConnectedNodes()
+	public IMapList<INode> getConnectedNodes()
 	{
 		return getConnectedNodesFlat();
 	}
@@ -221,7 +222,7 @@ public abstract class Node implements INode, Cloneable
 
 	
 	@Override
-	public MapList<INode> getConnectedNodes(int relativeNestingDepth)
+	public IMapList<INode> getConnectedNodes(int relativeNestingDepth)
 	{
     	MapList<INode> list = new MapList<INode>();
 
@@ -264,13 +265,13 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public MapList<INode> getConnectedNodesFlat()
+	public IMapList<INode> getConnectedNodesFlat()
 	{
 		return getConnectedNodes(Integer.MAX_VALUE);
 	}
 	
 	@Override
-	public MapList<INode> getConnectedNodesTop()
+	public IMapList<INode> getConnectedNodesTop()
 	{
 		return getConnectedNodes(0);
 	}

@@ -24,9 +24,15 @@ public class VariableList extends MapList<VariableBase>
 	{
 		super();
 	}
+	
+	public VariableList(int initialCapacity)
+	{
+		super(initialCapacity);
+	}
 
 	public VariableList(VariableBase [] vars)
 	{
+		super(vars.length);
 		for (VariableBase v : vars)
 			add(v);
 	}

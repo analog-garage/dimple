@@ -56,6 +56,7 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
+import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 
@@ -1171,7 +1172,7 @@ public class FactorGraph extends FactorBase
 	public void remove(FactorGraph factorGraph)
 	{
 		VariableList varList = factorGraph.getVariablesFlat();
-		MapList<FactorBase> factors = factorGraph.getFactorsTop();
+		IMapList<FactorBase> factors = factorGraph.getFactorsTop();
 
 		VariableList boundary = factorGraph.getBoundaryVariables();
 
@@ -1288,8 +1289,8 @@ public class FactorGraph extends FactorBase
 		// First, for a list of all included nodes
 		@SuppressWarnings("rawtypes")
 		MapList allIncludedNodes = new MapList();
-		allIncludedNodes.add(allIncludedFunctions);
-		allIncludedNodes.add(allIncludedVariables);
+		allIncludedNodes.addAll(allIncludedFunctions);
+		allIncludedNodes.addAll(allIncludedVariables);
 
 		//If this graph has no variable or factors, let's consider it a tree.
 		if (allIncludedNodes.size() == 0)
@@ -1388,7 +1389,7 @@ public class FactorGraph extends FactorBase
 		INode node,
 		INode previousNode,
 		MapList<INode> foundNodes,
-		MapList<INode> nodeList,
+		IMapList<INode> nodeList,
 		int currentDepth,
 		int maxDepth,
 		int relativeNestingDepth)
@@ -1418,19 +1419,19 @@ public class FactorGraph extends FactorBase
 				if (nextNode != previousNode)					// Don't go backwards in the search
 					if (nodeList.contains(nextNode))			// Only edges that lead to nodes inside this graph
 						if (!foundNodes.contains(nextNode))		// If found-list doesn't already contain the next node
-							foundNodes.add(depthFirstSearchRecursive(nextNode, node, foundNodes, nodeList,currentDepth+1,maxDepth,newRelativeNestingDepth));
+							foundNodes.addAll(depthFirstSearchRecursive(nextNode, node, foundNodes, nodeList,currentDepth+1,maxDepth,newRelativeNestingDepth));
 			}
 		}
 		return foundNodes;
 	}
 
-	public MapList<INode> depthFirstSearch(INode root)
+	public IMapList<INode> depthFirstSearch(INode root)
 	{
 		return depthFirstSearchFlat(root);
 	}
 
 
-	public MapList<INode> depthFirstSearch(INode root, int searchDepth)
+	public IMapList<INode> depthFirstSearch(INode root, int searchDepth)
 	{
 		return depthFirstSearch(root,searchDepth,Integer.MAX_VALUE);
 	}
@@ -1455,7 +1456,7 @@ public class FactorGraph extends FactorBase
 			if (offset > 0 && relativeNestingDepth > 0 && newDepth < 0)
 				newDepth = Integer.MAX_VALUE;
 
-			MapList<INode> nodes = this.getNodes(newDepth);
+			IMapList<INode> nodes = this.getNodes(newDepth);
 
 			if (!nodes.contains(root))
 				throw new DimpleException("can't search from " + root.getLabel() + " it is not a member of the graph to the specified nesting depth");
@@ -1466,23 +1467,23 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	public MapList<INode> depthFirstSearchFlat(INode root, int searchDepth)
+	public IMapList<INode> depthFirstSearchFlat(INode root, int searchDepth)
 	{
 		return depthFirstSearch(root, searchDepth, Integer.MAX_VALUE);
 	}
 
-	public MapList<INode> depthFirstSearchFlat(INode root)
+	public IMapList<INode> depthFirstSearchFlat(INode root)
 	{
 		return 	depthFirstSearchFlat(root,Integer.MAX_VALUE);
 
 	}
 
-	public MapList<INode> depthFirstSearchTop(INode root, int searchDepth)
+	public IMapList<INode> depthFirstSearchTop(INode root, int searchDepth)
 	{
 		return depthFirstSearch(root, searchDepth, 0);
 	}
 
-	public MapList<INode> depthFirstSearchTop(INode root)
+	public IMapList<INode> depthFirstSearchTop(INode root)
 	{
 		return 	depthFirstSearchFlat(root,0);
 
@@ -1575,16 +1576,16 @@ public class FactorGraph extends FactorBase
 
 		//include boundary variables only if this is the root node
 		if (getParentGraph()==null || forceIncludeBoundaryVariables)
-			retval.add(_boundaryVariables);
+			retval.addAll(_boundaryVariables);
 
-		retval.add(_ownedVariables);
+		retval.addAll(_ownedVariables);
 
 		if (relativeNestingDepth > 0)
 		{
 			for (FactorGraph g : getNestedGraphs())
 			{
 				VariableList tmp = g.getVariables(relativeNestingDepth-1);
-				retval.add(tmp);
+				retval.addAll(tmp);
 			}
 		}
 
@@ -1655,7 +1656,7 @@ public class FactorGraph extends FactorBase
 			{
 				if (relativeNestingDepth > 0)
 				{
-					f.add((subgraph).getNonGraphFactors(relativeNestingDepth-1));
+					f.addAll((subgraph).getNonGraphFactors(relativeNestingDepth-1));
 				}
 			}
 			else
@@ -1731,7 +1732,7 @@ public class FactorGraph extends FactorBase
 			{
 				if (relativeNestingDepth > 0)
 				{
-					factors.add(subgraph.getFactors(relativeNestingDepth-1, factors));
+					factors.addAll(subgraph.getFactors(relativeNestingDepth-1, factors));
 				}
 				else
 				{
@@ -1758,7 +1759,7 @@ public class FactorGraph extends FactorBase
 		return getNonGraphFactorsFlat();
 	}
 
-	public MapList<FactorBase> getFactorsTop()
+	public IMapList<FactorBase> getFactorsTop()
 	{
 		return getFactors(0);
 	}
@@ -1796,14 +1797,14 @@ public class FactorGraph extends FactorBase
 		return node;
 	}
 
-	public MapList<INode> getNodes()
+	public IMapList<INode> getNodes()
 	{
 		return getNodesFlat();
 	}
 
 	public MapList<INode> getNodes(int relativeNestingDepth)
 	{
-		MapList<FactorBase> factors = getFactors(relativeNestingDepth);
+		IMapList<FactorBase> factors = getFactors(relativeNestingDepth);
 		VariableList vars = getVariables(relativeNestingDepth);
 
 		MapList<INode> retval = new MapList<INode>();
@@ -1817,12 +1818,12 @@ public class FactorGraph extends FactorBase
 		return retval;
 	}
 
-	public MapList<INode> getNodesFlat()
+	public IMapList<INode> getNodesFlat()
 	{
 		return getNodes(Integer.MAX_VALUE);
 	}
 
-	public MapList<INode> getNodesTop()
+	public IMapList<INode> getNodesTop()
 	{
 		return getNodes(0);
 	}
@@ -2355,7 +2356,7 @@ public class FactorGraph extends FactorBase
 		}
 
 		@SuppressWarnings("all")
-		MapList<INode> owned = getNodesTop();
+		IMapList<INode> owned = getNodesTop();
 		for(INode node : owned.values())
 		{
 			node.setName(null);
