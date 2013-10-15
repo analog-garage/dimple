@@ -15,31 +15,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function version=dimpleVersion()
-    p = mfilename('fullpath');
-    %strsplit doesn't work in MATLAB 2012
-    s=textscan(p,'%s','delimiter',filesep());
-    s = s{1};
-    s = s(1:end-1);
-    %strjoin doesn't work in MATLAB 2012
-    c = cell(length(s) + length(s)-1);
-    index = 1;
-    for i = 1:length(s)
-       c{index} = s{i};
-       if i < length(s)
-           c{index+1} = filesep();
-       end
-       index = index+2;
-    end
-    p = [c{:}];
-    filename = [p filesep() fullfile('..','..','..','LONG_VERSION')];
-    
+    firstpart = fileparts(mfilename('fullpath'));
+    filename = [firstpart filesep() fullfile('..','..','..','LONG_VERSION')];
+
     try
-        
         f = fopen(filename);
         version = strtrim(fgets(f));
-
     catch e
-       filename = [p filesep() fullfile('..','..','..','LONG_VERSION')];
         f = fopen(filename);
         part1 = strtrim(fgets(f));
 
