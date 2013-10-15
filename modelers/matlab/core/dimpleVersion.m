@@ -22,9 +22,8 @@ function version=dimpleVersion()
         f = fopen(filename);
         version = strtrim(fgets(f));
     catch e
+        filename = [firstpart filesep() fullfile('..','..','..','VERSION')];
         f = fopen(filename);
-        part1 = strtrim(fgets(f));
-
-        version = [part1 ' UNKNOWN'];
+        version = [strtrim(fgets(f)) ' UNKNOWN'];
     end
 end

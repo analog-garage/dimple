@@ -16,4 +16,10 @@
 
 function testVersion
     assertTrue(length(regexp(dimpleVersion(),'\d+\.\d+ [^\s]+ \d+-\d+-\d+ \d+:\d+:\d+ -\d+','match')) > 0);
+    firstpart = fileparts(mfilename('fullpath'));
+    filename = [firstpart filesep() fullfile('..','..','..','..','LONG_VERSION')];
+    movefile(filename,'LONG_VERSION_OLD');
+    dv = dimpleVersion();
+    movefile('LONG_VERSION_OLD',filename);
+    assertTrue(length(regexp(dv,'\d+\.\d+ UNKNOWN')) > 0);    
 end
