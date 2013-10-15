@@ -17,7 +17,7 @@
 function version=dimpleVersion()
     p = mfilename('fullpath');
     %strsplit doesn't work in MATLAB 2012
-    s=textscan(p,'%s','delimiter','/');
+    s=textscan(p,'%s','delimiter',filesep());
     s = s{1};
     s = s(1:end-1);
     %strjoin doesn't work in MATLAB 2012
@@ -26,12 +26,12 @@ function version=dimpleVersion()
     for i = 1:length(s)
        c{index} = s{i};
        if i < length(s)
-           c{index+1} = '/';
+           c{index+1} = filesep();
        end
        index = index+2;
     end
     p = [c{:}];
-    filename = [p '/../../../LONG_VERSION'];
+    filename = [p filesep() fullfile('..','..','..','LONG_VERSION')];
     
     try
         
@@ -39,7 +39,7 @@ function version=dimpleVersion()
         version = strtrim(fgets(f));
 
     catch e
-       filename = [p '/../../../VERSION'];
+       filename = [p filesep() fullfile('..','..','..','LONG_VERSION')];
         f = fopen(filename);
         part1 = strtrim(fgets(f));
 
