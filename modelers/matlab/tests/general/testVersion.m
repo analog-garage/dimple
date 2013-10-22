@@ -15,6 +15,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function testVersion
+    % NOTE: this can fail if LONG_VERSION is absent which can happen either
+    % because gradle was not run.
     assertTrue(length(regexp(dimpleVersion(),'\d+\.\d+ [^\s]+ \d+-\d+-\d+ \d+:\d+:\d+ -\d+','match')) > 0);
     firstpart = fileparts(mfilename('fullpath'));
     filename = [firstpart filesep() fullfile('..','..','..','..','LONG_VERSION')];
