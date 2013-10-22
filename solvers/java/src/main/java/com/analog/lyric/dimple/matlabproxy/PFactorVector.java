@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.IVariableMapList;
 import com.analog.lyric.util.misc.Matlab;
 
 @Matlab
@@ -86,7 +87,7 @@ public class PFactorVector extends PNodeVector
 		
 		for (Node v : getModelerNodes())
 		{
-			VariableList vars = ((Factor)v).getVariables();
+			IVariableMapList vars = ((Factor)v).getVariables();
 			for (VariableBase vb : vars)
 				retval.add(vb);
 		}

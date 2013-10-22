@@ -19,9 +19,9 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 
 
@@ -35,7 +35,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 	//private Port _varInputPort;
 	//private Port _varOutputPort;
 	
-	public FiniteFieldConstMult(Factor factor)  
+	public FiniteFieldConstMult(Factor factor)
 	{
 		super(factor);
 		
@@ -47,7 +47,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 
 		
 		
-		VariableList variables = factor.getVariables();
+		IVariableMapList variables = factor.getVariables();
 		
 		if (variables.size() != 2)
 			throw new DimpleException("finiteFieldMult expects two variable arguments");
@@ -74,7 +74,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 		//TODO: make sure this is possible before casting
 	}
 	
-	private void assignConstant(int val) 
+	private void assignConstant(int val)
 	{
 		//TODO: error check before casting
 		int poly = val;
@@ -93,7 +93,8 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 		return -1;
 	}
 	
-	public void updateEdge(int outPortNum) 
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		switch (outPortNum)
 		{
@@ -113,8 +114,8 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 	private void updateMultInputEdge()
 	{
 		//TODO: can I get rid of cast?
-		double [] inputMsg = (double[])_outputMsgs[0];
-		double [] outputMsg = (double[])_inputMsgs[1];
+		double [] inputMsg = _outputMsgs[0];
+		double [] outputMsg = _inputMsgs[1];
 		
 		int [] outputDlogTable = _varOutput.getTables().getDlogTable();
 		int [] inputPowerTable = _varInput.getTables().getPowerTable();
@@ -123,7 +124,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 		int length = inputMsg.length-1;
 		int index = 0;
 		
-		//TODO: special case multiplication by constant of zero.		
+		//TODO: special case multiplication by constant of zero.
 		//TODO: check same size?
 		
 		inputMsg[0] = outputMsg[0];
@@ -141,8 +142,8 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 	private void updateMultOutputEdge()
 	{
 		//TODO: can I get rid of cast?
-		double [] inputMsg = (double[])_inputMsgs[0];
-		double [] outputMsg = (double[])_outputMsgs[1];
+		double [] inputMsg = _inputMsgs[0];
+		double [] outputMsg = _outputMsgs[1];
 		int [] inputDlogTable = _varInput.getTables().getDlogTable();
 		int [] outputPowerTable = _varOutput.getTables().getPowerTable();
 		
@@ -150,13 +151,13 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 		int length = inputMsg.length-1;
 		int index = 0;
 		
-		//TODO: special case multiplication by constant of zero.		
+		//TODO: special case multiplication by constant of zero.
 		//TODO: check same size?
 		
 		outputMsg[0] = inputMsg[0];
 		
 		for (int i = 1; i < inputMsg.length; i++)
-		{			
+		{
 			dlogSum = (inputDlogTable[i]+_dlogConstant)%length;
 			index = outputPowerTable[dlogSum];
 			outputMsg[index] = inputMsg[i];
@@ -166,7 +167,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 	
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 		
 	}

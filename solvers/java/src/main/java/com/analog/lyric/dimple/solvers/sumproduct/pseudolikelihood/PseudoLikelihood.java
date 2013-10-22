@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm
@@ -187,7 +188,7 @@ public class PseudoLikelihood extends ParameterEstimator
 				for (int k = 0; k < factors.size(); k++)
 				{
 					Factor f = factors.get(k);
-					VariableList vl = f.getVariables();
+					IVariableMapList vl = f.getVariables();
 					FactorInfo fi = _factor2factorInfo.get(f);
 	
 					//for each weight
@@ -313,7 +314,7 @@ public class PseudoLikelihood extends ParameterEstimator
 				for (Factor f : v.getFactorsFlat())
 				{
 					//Build the indices associated with these variables
-					VariableList fvs = f.getVariables();
+					IVariableMapList fvs = f.getVariables();
 					int [] indices = new int[fvs.size()];
 					for (int i = 0; i < indices.length; i++)
 						indices[i] = _data[m][_var2index.get(fvs.getByIndex(i))];
@@ -346,7 +347,7 @@ public class PseudoLikelihood extends ParameterEstimator
 					for (Factor f : v.getFactorsFlat())
 					{
 						//build up the list of indices associated with that factor.
-						VariableList fvs = f.getVariables();
+						IVariableMapList fvs = f.getVariables();
 						int [] indices = new int[fvs.size()];
 						for (int i = 0; i < indices.length; i++)
 						{

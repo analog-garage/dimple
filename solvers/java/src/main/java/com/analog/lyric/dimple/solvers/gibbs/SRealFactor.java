@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
@@ -146,13 +147,16 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values
-		ArrayList<INode> siblings = _factor.getSiblings();
-	    for (int port = 0; port < _numPorts; port++)
-	    {
-	    	VariableBase v = (VariableBase)siblings.get(port);
-	    	if (_factor.isDirectedTo(v))
-	    		((ISolverVariableGibbs)v.getSolver()).setCurrentSample(values[port]);
-	    }
+		int[] directedTo = _factor.getDirectedTo();
+		if (directedTo != null)
+		{
+			IVariableMapList variables = _factor.getVariables();
+			for (int port : directedTo)
+			{
+				VariableBase variable = variables.getByIndex(port);
+				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(values[port]);
+			}
+		}
 	}
 
 

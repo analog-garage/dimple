@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import com.analog.lyric.util.misc.IVariableMapList;
 import com.analog.lyric.util.misc.MapList;
 
-public class VariableList extends MapList<VariableBase>
+public class VariableList extends MapList<VariableBase> implements IVariableMapList
 {
 	public VariableList()
 	{

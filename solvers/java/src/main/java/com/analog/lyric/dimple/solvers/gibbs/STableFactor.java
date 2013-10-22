@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
@@ -133,6 +134,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int portIndex)
 	{
+		// REFACTOR: implementation identical to SRealFactor, find a
+		// way to share it.
 		if (!_isDeterministicDirected) return;
 		if (_factor.isDirectedTo(portIndex)) return;
 		
@@ -143,13 +146,16 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values
-		ArrayList<INode> siblings = _factor.getSiblings();
-	    for (int port = 0; port < _numPorts; port++)
-	    {
-	    	VariableBase v = (VariableBase)siblings.get(port);
-	    	if (_factor.isDirectedTo(v))
-	    		((SDiscreteVariable)v.getSolver()).setCurrentSample(values[port]);
-	    }
+		int[] directedTo = _factor.getDirectedTo();
+		if (directedTo != null)
+		{
+			IVariableMapList variables = _factor.getVariables();
+			for (int port : directedTo)
+			{
+				VariableBase variable = variables.getByIndex(port);
+				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(values[port]);
+			}
+		}
 	}
 
 

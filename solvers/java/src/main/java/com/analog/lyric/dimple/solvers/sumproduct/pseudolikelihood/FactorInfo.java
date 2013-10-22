@@ -20,19 +20,19 @@ import java.util.HashMap;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The factor info is used to build an empirical distribution over the samples
  * connected to it.
  */
 public class FactorInfo extends NodeInfo
-{			
+{
 
 	//Given a variable-to-index map, create the indices of interest.
 	public static int [] getVarIndices(Factor f,HashMap<VariableBase,Integer> var2index )
 	{
-		VariableList vl = f.getVariables();
+		IVariableMapList vl = f.getVariables();
 		int [] retval = new int[vl.size()];
 		
 		for (int i = 0; i < retval.length; i++)
@@ -46,7 +46,7 @@ public class FactorInfo extends NodeInfo
 	public FactorInfo(Factor f, HashMap<VariableBase,Integer> var2index)
 	{
 		super(getVarIndices(f, var2index));
-	}		
+	}
 	
 }
 

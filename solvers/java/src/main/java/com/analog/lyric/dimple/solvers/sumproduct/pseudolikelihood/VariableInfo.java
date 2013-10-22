@@ -25,8 +25,8 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.util.misc.IMapList;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The VariableInfo object stores an empirical distribution of all variables that it is
@@ -74,7 +74,7 @@ public class VariableInfo extends NodeInfo
 		Factor [] fs = var.getFactorsFlat();
 		for (Factor f : fs)
 		{
-			VariableList vs = f.getVariables();
+			IVariableMapList vs = f.getVariables();
 			
 			int [] mapping = new int[vs.size()];
 			
