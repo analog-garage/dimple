@@ -137,37 +137,45 @@ public class MatrixVectorProduct extends FactorFunction
     {
     	int argIndex = _outLength;	// Skip the outputs
     	
+    	final int inLength = _inLength;
+    	final int outLength = _outLength;
+    	
+    	double[][] matrix = _matrix;
+    	
 		// Get the matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		_matrix = (double[][])arguments[argIndex++];
+    		_matrix = matrix = (double[][])arguments[argIndex++];
     	else
     	{
-    		for (int col = 0; col < _inLength; col++)
-    			for (int row = 0; row < _outLength; row++)
-    				_matrix[row][col] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    		for (int col = 0; col < inLength; col++)
+    			for (int row = 0; row < outLength; row++)
+    				matrix[row][col] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
     	}
     	
     	// Get the input vector values
+    	double[] inVector = _inVector;
     	if (arguments[argIndex] instanceof double[])	// Constant matrix is passed as a single argument
-    		_inVector = (double[])arguments[argIndex++];
+    		_inVector = inVector = (double[])arguments[argIndex++];
     	else
     	{
-    		for (int i = 0; i < _inLength; i++)
-    			_inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    		for (int i = 0; i < inLength; i++)
+    			inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
     	}
     	
     	// Compute the output
-    	for (int row = 0; row < _outLength; row++)
+    	double[] outVector = _outVector;
+    	for (int row = 0; row < outLength; row++)
     	{
     		double sum = 0;
-    		for (int col = 0; col < _inLength; col++)
-    			sum += _matrix[row][col] * _inVector[col];
-    		_outVector[row] = sum;
+    		double[] rowValues = matrix[row];
+    		for (int col = 0; col < inLength; col++)
+    			sum += rowValues[col] * inVector[col];
+    		outVector[row] = sum;
     	}
     	
     	// Replace the output values
     	int outIndex = 0;
-    	for (int i = 0; i < _outLength; i++)
-    		arguments[outIndex++] = _outVector[i];
+    	for (int i = 0; i < outLength; i++)
+    		arguments[outIndex++] = outVector[i];
     }
 }
