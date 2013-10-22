@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.Test;
 
 import com.analog.lyric.collect.tests.CollectionTester;
+import com.analog.lyric.util.misc.FlaggedMapList;
+import com.analog.lyric.util.misc.IFlaggedMapList;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -35,8 +37,14 @@ public class TestMapList
 	public void test()
 	{
 		MapList<Value> maplist = new MapList<Value>();
-		assertInvariants(maplist);
+		testMapList(maplist);
 		
+		FlaggedMapList<Value> fmaplist = new FlaggedMapList<Value>();
+		testMapList(fmaplist);
+	}
+	
+	private void testMapList(IMapList<Value> maplist)
+	{
 		final Value v1 = new Value(1);
 		final Value v2 = new Value(2);
 		final Value v3 = new Value(3);
@@ -80,7 +88,8 @@ public class TestMapList
 		assertSame(v1, maplist.getByIndex(1));
 		assertInvariants(maplist);
 		
-		maplist = new MapList<Value>(list);
+		maplist.clear();
+		maplist.addAll(list);
 		assertTrue(maplist.containsAll(list));
 		assertEquals(list.size(), maplist.size());
 		assertInvariants(maplist);
@@ -115,6 +124,18 @@ public class TestMapList
 			assertSame(value, maplist.getByIndex(i));
 			assertSame(value, maplist.getByKey(id));
 			assertTrue(maplist.contains(value));
+		}
+		
+		if (maplist instanceof IFlaggedMapList)
+		{
+			IFlaggedMapList<T> fmaplist = (IFlaggedMapList<T>)maplist;
+			
+			for (int i = 0, endi = values.size(); i <endi; ++ i)
+			{
+				T value = values.get(i);
+				
+				assertEquals(fmaplist.isFlagged(i), fmaplist.isFlagged(value));
+			}
 		}
 	}
 }
