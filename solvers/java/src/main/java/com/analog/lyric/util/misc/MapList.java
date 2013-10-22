@@ -21,14 +21,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntObjectHashMap;
-
-// REFACTOR: move to com.analog.lyric.collect package
 
 /*
  * MapList is a collection that stores data in both a HashMap and
  * an ArrayList.  This preserves order and also allows objects to be indexed by Id.
  */
+@NotThreadSafe
 public class MapList<T extends IGetId>  implements IMapList<T>
 {
 	private final OpenIntObjectHashMap _hashMap;
@@ -157,17 +157,17 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	public boolean retainAll(Collection<?> keep)
 	{
 		boolean changed = false;
-		for (int i = _arrayList.size(); --i >= 0;)
+		for (int i = size(); --i >= 0;)
 		{
-			if (!keep.contains(_arrayList.get(i)))
+			T value = getByIndex(i);
+			if (!keep.contains(value))
 			{
-				_arrayList.remove(i);
+				remove(value);
 				changed = true;
 			}
 		}
 
 		return changed;
-
 	}
 
 	@Override
