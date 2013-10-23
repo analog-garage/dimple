@@ -73,6 +73,7 @@ public class CollectionTester<T>
 		}
 		
 		assertArrayEquals(all2, all3);
+		assertArrayEquals(all2, collection.toArray(new Object[0]));
 		
 		try
 		{
