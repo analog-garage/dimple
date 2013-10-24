@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -62,19 +60,23 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getConditionalPotential(int portIndex)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		double result = getPotential();
 		
 		// If this is a deterministic directed factor, and the request is from a directed-from variable,
 		// Then propagate the request through the directed-to variables and sum up the results
 		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
 		{
-			ArrayList<INode> siblings = _factor.getSiblings();
-		    for (int port = 0; port < _numPorts; port++)
-		    {
-		    	VariableBase v = (VariableBase)siblings.get(port);
-		    	if (_factor.isDirectedTo(v))
+			int[] directedTo = _factor.getDirectedTo();
+			if (directedTo != null)
+			{
+				IVariableMapList variables = _factor.getVariables();
+				for (int port : directedTo)
+				{
+					VariableBase v = variables.getByIndex(port);
 		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
-		    }
+				}
+			}
 		}
 
 		return result;
@@ -117,6 +119,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getPotential()
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 	    int numPorts = _factor.getSiblings().size();
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
@@ -137,8 +140,18 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int portIndex)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
+		
 		if (!_isDeterministicDirected) return;
 		if (_factor.isDirectedTo(portIndex)) return;
+		
+		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, portIndex);
+	}
+	
+	@Override
+	public void updateNeighborVariableValuesNow()
+	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		
 		// Compute the output values of the deterministic factor function from the input values
 	    Object[] values = new Object[_numPorts];
@@ -205,6 +218,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void setDirectedTo(int [] indices)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		for (VariableBase vb : _factor.getVariables())
 		{
 			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();

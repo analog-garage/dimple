@@ -119,10 +119,11 @@ public abstract class Node implements INode, Cloneable
 		return n;
 	}
 	
+	@Override
 	public int getSiblingPortIndex(int index)
 	{
 		if (_siblingIndices.length <= index)
-		{		
+		{
 			_siblingIndices = Arrays.copyOf(_siblingIndices, index+1);
 			_siblingIndices[index] = _siblings.get(index).getPortNum(this);
 		}
@@ -157,6 +158,7 @@ public abstract class Node implements INode, Cloneable
 		return ancestor;
 	}
 	
+	@Override
 	public INode getConnectedNodeFlat(int portNum)
 	{
 		return _siblings.get(portNum);
@@ -175,6 +177,7 @@ public abstract class Node implements INode, Cloneable
 		return getConnectedNodesFlat();
 	}
 	
+	@Override
 	public INode getConnectedNode(int relativeDepth, int portNum)
 	{
 		if (relativeDepth < 0)
@@ -205,6 +208,7 @@ public abstract class Node implements INode, Cloneable
 		return node;
 	}
 
+	@Override
 	public ArrayList<INode> getConnectedNodeAndParents(int index)
 	{
 		ArrayList<INode> retval = new ArrayList<INode>();
@@ -283,7 +287,7 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	@Override
-	public void setParentGraph(FactorGraph parentGraph) 
+	public void setParentGraph(FactorGraph parentGraph)
 	{
 		_parentGraph = parentGraph;
 	}
@@ -335,7 +339,7 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public void setName(String name) 
+	public void setName(String name)
 	{
 		if(name != null && name.contains("."))
 		{
@@ -351,7 +355,7 @@ public abstract class Node implements INode, Cloneable
 	
 	
 	@Override
-	public void setLabel(String name) 
+	public void setLabel(String name)
 	{
 		_label = name;
 	}
@@ -372,7 +376,7 @@ public abstract class Node implements INode, Cloneable
 		return _UUID;
 	}
 	@Override
-	public void setUUID(UUID newUUID) 
+	public void setUUID(UUID newUUID)
 	{
 		if(_parentGraph != null)
 		{
@@ -435,8 +439,9 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public int getPortNum(INode node) 
+	public int getPortNum(INode node)
 	{
+		// REFACTOR: O(n) can be expensive if there are many siblings
 		for (int i = 0; i < _siblings.size(); i++)
 		{
 			if (isConnected(node,i))
@@ -453,8 +458,10 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	
+	@Override
 	public boolean isConnected(INode node)
 	{
+		// REFACTOR: O(n) can be expensive if there are many siblings
 		for (int i = 0; i < _siblings.size(); i++)
 		{
 			if (isConnected(node,i))

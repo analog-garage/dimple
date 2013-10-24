@@ -16,15 +16,22 @@
 
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import com.analog.lyric.dimple.model.factors.Factor;
+
 
 public interface ISolverFactor extends ISolverNode
 {
+	@Override
+	public Factor getModelObject();
+	
 	public Object getBelief() ;
+	@Override
 	public double getInternalEnergy();
+	@Override
 	public double getBetheEntropy();
 	
 	//This method is called on a solver factor when it is first created.
-	//This method should create messages to and from variables.  
+	//This method should create messages to and from variables.
 	public abstract void createMessages();
 	
 	//In order to support repeated graphs, this method must be implemented.
