@@ -18,6 +18,10 @@ package com.analog.lyric.dimple.test;
 
 import static org.junit.Assert.*;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,11 +36,25 @@ public class VersionTest {
 	public void test_version()
 	{
 		String str = Model.getVersion();
-		System.out.println(str);
-		String pattern = "\\d+\\.\\d+ [^\\s]+ \\d+-\\d+-\\d+ \\d+:\\d+:\\d+ -\\d+";
+//		System.out.println(str);
+		
+		// <version> <branch> <iso-date>
+		String pattern = "^\\d+\\.\\d+ [^\\s]+ (.*)$";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(str);
 		assertTrue(m.find());
-		
+	
+		// Validate the date portion
+		String dateStr = m.group(1);
+		DateFormat dateParser = new SimpleDateFormat("y-M-d h:m:s Z");
+		try
+		{
+			Date date = dateParser.parse(dateStr);
+			assertTrue(date.before(new Date()));
+		}
+		catch (ParseException ex)
+		{
+			fail(ex.getMessage());
+		}
 	}
 }
