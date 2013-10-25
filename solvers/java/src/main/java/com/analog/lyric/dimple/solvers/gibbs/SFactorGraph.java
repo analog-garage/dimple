@@ -254,6 +254,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	@Override
+	public void solve()
+	{
+		deferDeterministicUpdates();
+		super.solve();
+		processDeferredDeterministicUpdates();
+	}
+	
+	@Override
 	public void solveOneStep()
 	{
 		_minPotential = Double.POSITIVE_INFINITY;
