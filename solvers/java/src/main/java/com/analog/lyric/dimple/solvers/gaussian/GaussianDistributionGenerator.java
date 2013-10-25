@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPDistributionGenerator;
 
-public class GaussianDistributionGenerator extends HybridSampledBPDistributionGenerator 
+public class GaussianDistributionGenerator extends HybridSampledBPDistributionGenerator
 {
 
-	public GaussianDistributionGenerator(Port p) 
+	public GaussianDistributionGenerator(Port p)
 	{
 		super(p);
 		// TODO Auto-generated constructor stub
@@ -35,7 +35,7 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 
 
 	@Override
-	public void generateDistributionInPlace(ArrayList<Object> input) 
+	public void generateDistributionInPlace(ArrayList<Object> input)
 	{
 		double mean = 0;
 		
@@ -72,21 +72,21 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 
 	
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
-		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		SVariable var = (SVariable)_p.node.getSibling(_p.index).getSolver();
 		_msg = (double[])var.resetInputMessage(_msg);
 	}
 
 	@Override
-	public void createMessage(Object msg) 
+	public void createMessage(Object msg)
 	{
 		_msg = (double[])msg;
 	}
 
 
 	@Override
-	public void setOutputMsg(Object message) 
+	public void setOutputMsg(Object message)
 	{
 		_msg = (double[])message;
 		
@@ -94,12 +94,12 @@ public class GaussianDistributionGenerator extends HybridSampledBPDistributionGe
 
 
 	@Override
-	public void moveMessages(HybridSampledBPDistributionGenerator other) 
+	public void moveMessages(HybridSampledBPDistributionGenerator other)
 	{
 		_msg = ((GaussianDistributionGenerator)other)._msg;
 	}
 
-	@Override 
+	@Override
 	public Object getOutputMsg()
 	{
 		return _msg;

@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -87,13 +87,18 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _domain;
 	}
 	
-	
-	// Abstract methods
     public Object getInputObject()
     {
     	return _input;
     }
 
+    @Override
+    public FactorBase getSibling(int i)
+    {
+    	// Variables should only be connected to factors
+    	return (FactorBase)super.getSibling(i);
+    }
+    
     /**
      * Returns the solver-specific variable instance associated with this model variable if any.
      */
@@ -319,9 +324,10 @@ public abstract class VariableBase extends Node implements Cloneable
     
 	public FactorBase [] getFactors(int relativeNestingDepth)
 	{
-		FactorBase [] retval = new FactorBase[_siblings.size()];
+		int nSiblings = getSiblingCount();
+		FactorBase [] retval = new FactorBase[nSiblings];
 		
-		for (int i = 0; i < _siblings.size(); i++)
+		for (int i = 0; i < nSiblings; i++)
 		{
 			retval[i] = (FactorBase)getConnectedNode(relativeNestingDepth,i);
 		}
@@ -335,8 +341,9 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public Factor [] getFactorsFlat()
 	{
-		Factor [] retval = new Factor[_siblings.size()];
-		for (int i = 0; i < _siblings.size(); i++)
+		int nSiblings = getSiblingCount();
+		Factor [] retval = new Factor[nSiblings];
+		for (int i = 0; i < nSiblings; i++)
 		{
 			retval[i] = (Factor)getConnectedNodeFlat(i);
 		}
@@ -346,7 +353,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	
 	public void remove(Factor factor)
 	{
-		ArrayList<INode> siblings = getSiblings();
+		List<INode> siblings = getSiblings();
 		
 		boolean found=false;
 		
@@ -355,7 +362,7 @@ public abstract class VariableBase extends Node implements Cloneable
 			if (getConnectedNodeFlat(i) == factor)
 			{
 				found = true;
-				siblings.remove(i);
+				disconnect(i);
 				break;
 			}
 		}
@@ -411,14 +418,15 @@ public abstract class VariableBase extends Node implements Cloneable
     	//for each factor to be moved
     	for (int i = 0; i < factorsToBeMovedToCopy.length; i++)
     	{
+    		Factor factor = factorsToBeMovedToCopy[i];
     		//Replace the connection from this variable to the copy in the factor
-    		for (int j = 0; j < factorsToBeMovedToCopy[i].getSiblings().size(); j++)
+    		for (int j = 0, endj = factor.getSiblingCount(); j < endj; j++)
     		{
-    			if (factorsToBeMovedToCopy[i].getConnectedNodeFlat(j) == this)
+    			if (factor.getConnectedNodeFlat(j) == this)
     			{
-    				remove(factorsToBeMovedToCopy[i]);
-    				mycopy.connect(factorsToBeMovedToCopy[i]);
-    				factorsToBeMovedToCopy[i].replace(this,mycopy);
+    				remove(factor);
+    				mycopy.connect(factor);
+    				factor.replace(this,mycopy);
     			}
     		}
     		

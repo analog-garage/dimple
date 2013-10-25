@@ -46,7 +46,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	@Override
 	public void update()
 	{
-		for (int i = 0; i < _var.getSiblings().size(); i++)
+		for (int i = 0, end = _var.getSiblingCount(); i < end; i++)
 		{
 			updateEdge(i);
 		}

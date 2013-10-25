@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -117,7 +117,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 		_conjugateSampler = new IRealConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof Real)
 				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -186,7 +186,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Save output variables
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		_outputVariables = new SDiscreteVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
 			_outputVariables[i] = (SDiscreteVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
@@ -194,7 +194,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -204,7 +204,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

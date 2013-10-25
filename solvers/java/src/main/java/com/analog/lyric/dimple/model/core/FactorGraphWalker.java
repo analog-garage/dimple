@@ -17,9 +17,9 @@
 package com.analog.lyric.dimple.model.core;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -73,7 +73,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	private int _maxDepthSeen;
 	private INode _nextNode;
 	private int _cycleCount;
-	private Port _depthChangeSentinel = new Port(null,-42); 
+	private Port _depthChangeSentinel = new Port(null,-42);
 	
 
 	/*
@@ -407,7 +407,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			ArrayList<INode> siblingNodes = node.getSiblings();
+			List<INode> siblingNodes = node.getSiblings();
 			int nSiblings = siblingNodes.size();
 			if (nSiblings > 0)
 			{
@@ -473,7 +473,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			ArrayList<INode> portsOut = node.getSiblings();
+			List<INode> portsOut = node.getSiblings();
 			int nPortsOut = portsOut.size();
 			if (nPortsOut > 0)
 			{

@@ -107,7 +107,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblings().size();
+        int D = _var.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         double[] outMsgs = _outputMessages[outPortNum];
@@ -177,7 +177,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblings().size();
+        int D = _var.getSiblingCount();
         
         
         //Compute alphas
@@ -271,7 +271,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
         final double minLog = -100;
         double[] priors = _input;
         int M = priors.length;
-        int D = _var.getSiblings().size();
+        int D = _var.getSiblingCount();
         double maxLog = Double.NEGATIVE_INFINITY;
 
         

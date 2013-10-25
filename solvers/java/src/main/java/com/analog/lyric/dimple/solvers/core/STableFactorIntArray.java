@@ -19,8 +19,9 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.IVariableMapList;
 
-public abstract class STableFactorIntArray extends STableFactorBase 
+public abstract class STableFactorIntArray extends STableFactorBase
 {
 	protected int [][] _inputMsgs = new int[0][];
 	protected int [][] _outputMsgs;
@@ -35,20 +36,21 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void createMessages()
 	{
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 		
 	    _inputMsgs = new int[numPorts][];
 	    _outputMsgs = new int[numPorts][];
 	    
-	    for (int index = 0; index < _factor.getVariables().size(); index++)
+	    IVariableMapList variables = _factor.getVariables();
+	    for (int index = 0, end = variables.size(); index < end; index++)
 	    {
-	    	ISolverVariable is = _factor.getVariables().getByIndex(index).getSolver();
-	    	Object [] messages = is.createMessages(this);	    	
-	    	_outputMsgs[index] = (int[])messages[0]; 
+	    	ISolverVariable is = variables.getByIndex(index).getSolver();
+	    	Object [] messages = is.createMessages(this);
+	    	_outputMsgs[index] = (int[])messages[0];
 	    	_inputMsgs[index] = (int[])messages[1];
 	    }
 	    
-	}	
+	}
 
 
 	@Override
@@ -57,7 +59,7 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 
 		STableFactorIntArray sother = (STableFactorIntArray)other;
@@ -68,19 +70,19 @@ public abstract class STableFactorIntArray extends STableFactorBase
 
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 
 	@Override
-	public void setInputMsgValues(int portIndex, Object obj) 
+	public void setInputMsgValues(int portIndex, Object obj)
 	{
 		int [] tmp = (int[])obj;
 		for (int i = 0; i <tmp.length; i++)
@@ -88,7 +90,7 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	}
 	
 	@Override
-	public void setOutputMsgValues(int portIndex, Object obj) 
+	public void setOutputMsgValues(int portIndex, Object obj)
 	{
 		int [] tmp = (int[])obj;
 		for (int i = 0; i <tmp.length; i++)

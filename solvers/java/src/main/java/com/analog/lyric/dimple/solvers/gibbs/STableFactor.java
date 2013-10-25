@@ -173,15 +173,16 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public void createMessages()
 	{
-    	int size = _factor.getSiblings().size();
+    	int size = _factor.getSiblingCount();
     	_numPorts= size;
     	
 	    _inPortMsgs = new DiscreteSample[_numPorts];
 	    _outPortMsgs = new double[_numPorts][];
 	    
+	    IVariableMapList variables = _factor.getVariables();
 	    for (int port = 0; port < _numPorts; port++)
 	    {
-	    	ISolverVariable svar = _factor.getVariables().getByIndex(port).getSolver();
+	    	ISolverVariable svar = variables.getByIndex(port).getSolver();
 	    	Object [] messages = svar.createMessages(this);
 	    	_inPortMsgs[port] = (DiscreteSample)messages[1];
 	    	_outPortMsgs[port] = (double[])messages[0];

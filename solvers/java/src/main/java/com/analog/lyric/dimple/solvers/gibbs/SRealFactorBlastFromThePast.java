@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
@@ -46,14 +47,15 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	{
 		VariableBase vb = (VariableBase)_portForOtherVar.node;
 		int index = _portForOtherVar.index;
-		Factor f = (Factor)vb.getSiblings().get(index);
-		int numEdges = f.getSiblings().size();
+		Factor f = (Factor)vb.getSibling(index);
+		ISolverFactor sf = f.getSolver();
+		int numEdges = f.getSiblingCount();
 		_inputMsgs = new ObjectSample[numEdges];
 		_outputMsgs = new Object[numEdges];
 		for (int i = 0; i < numEdges; i++)
 		{
-			_inputMsgs[i] = (ObjectSample)f.getSolver().getInputMsg(i);
-			_outputMsgs[i] = f.getSolver().getOutputMsg(i);
+			_inputMsgs[i] = (ObjectSample)sf.getInputMsg(i);
+			_outputMsgs[i] = sf.getOutputMsg(i);
 		}
 	}
 	

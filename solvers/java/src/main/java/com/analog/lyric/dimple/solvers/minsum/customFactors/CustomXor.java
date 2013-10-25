@@ -61,7 +61,7 @@ public class CustomXor extends SFactorBase
 	    // Damping
 		if (_dampingInUse)
 		{
-			double damping = _dampingParams[outPortNum];	    	
+			double damping = _dampingParams[outPortNum];
 			if (damping != 0)
 			{
 				double[] outputMsgs = _outPortMsgs[outPortNum];
@@ -130,7 +130,7 @@ public class CustomXor extends SFactorBase
 		{
 			for (int port = 0; port < _numPorts; port++)
 			{
-				double damping = _dampingParams[port];	    	
+				double damping = _dampingParams[port];
 				if (damping != 0)
 				{
 					double[] outputMsgs = _outPortMsgs[port];
@@ -163,16 +163,16 @@ public class CustomXor extends SFactorBase
 
 
 	@Override
-	public void resetEdgeMessages(int i ) 
+	public void resetEdgeMessages(int i )
 	{
 
 	}
 
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 		
 	    _inPortMsgs = new double[numPorts][];
 	    _outPortMsgs = new double[numPorts][];
@@ -186,13 +186,13 @@ public class CustomXor extends SFactorBase
 			Object [] messages = sv.createMessages(this);
 			_outPortMsgs[i] = (double[])messages[0];
 			_inPortMsgs[i] = (double[])messages[1];
-		}	
+		}
 	}
 
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		CustomXor x = (CustomXor)other;
 		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];
@@ -202,13 +202,13 @@ public class CustomXor extends SFactorBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outPortMsgs[portIndex];
 	}

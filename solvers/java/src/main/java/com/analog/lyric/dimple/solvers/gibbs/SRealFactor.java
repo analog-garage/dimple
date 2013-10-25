@@ -86,7 +86,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		INode var = _factor.getSiblings().get(outPortNum);
+		INode var = _factor.getSibling(outPortNum);
 
 		if (var instanceof Discrete)
 		{
@@ -96,7 +96,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			// This should only be called if this factor is not a deterministic directed factor
 			DiscreteDomain outputVariableDomain = ((Discrete)var).getDiscreteDomain();
 			FactorFunction factorFunction = _realFactor.getFactorFunction();
-			int numPorts = _factor.getSiblings().size();
+			int numPorts = _factor.getSiblingCount();
 			
 			Object[] values = new Object[numPorts];
 			
@@ -120,7 +120,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public double getPotential()
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-	    int numPorts = _factor.getSiblings().size();
+	    int numPorts = _factor.getSiblingCount();
 	    Object[] inPortMsgs = new Object[numPorts];
 	    for (int port = 0; port < numPorts; port++)
 	    	inPortMsgs[port] = _inputMsgs[port].getObject();
@@ -178,11 +178,12 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void createMessages()
 	{
-		_numPorts = _factor.getSiblings().size();
+		_numPorts = _factor.getSiblingCount();
 		_inputMsgs = new ObjectSample[_numPorts];
+		IVariableMapList variables = _factor.getVariables();
 		for (int i = 0; i < _numPorts; i++)
 		{
-			Object [] messages = _factor.getVariables().getByIndex(i).getSolver().createMessages(this);
+			Object [] messages = variables.getByIndex(i).getSolver().createMessages(this);
 			_inputMsgs[i] = (ObjectSample)messages[1];
 		}
 	}

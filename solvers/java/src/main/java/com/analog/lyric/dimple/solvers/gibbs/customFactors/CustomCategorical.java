@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -83,7 +83,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			{
 				for (int i = 0; i < _constantOutputCounts.length; i++)
 					outputMsg[i] += _constantOutputCounts[i];
-			}			
+			}
 		}
 		else
 			super.updateEdgeMessage(outPortNum);
@@ -116,7 +116,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof RealJoint)
 				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -187,7 +187,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		_numOutputEdges = _numPorts - _numParameterEdges;
 
 		// Determine the dimension of the parameter vector
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		if (hasConstantParameters)
 		{
 			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
@@ -206,7 +206,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -216,7 +216,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

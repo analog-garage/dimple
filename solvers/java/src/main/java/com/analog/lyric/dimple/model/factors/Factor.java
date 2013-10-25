@@ -178,8 +178,7 @@ public class Factor extends FactorBase implements Cloneable
 	public void replace(VariableBase oldVariable, VariableBase newVariable)
 	{
 		_variables = null;
-		int index = _siblings.indexOf(oldVariable);
-		_siblings.set(index, newVariable);
+		replaceSibling(oldVariable, newVariable);
 	}
 	
 	public DomainList<?> getDomainList()
@@ -239,10 +238,10 @@ public class Factor extends FactorBase implements Cloneable
 		//Cache the variables for performance reasons
 		if (_variables == null)
 		{
-			int nSiblings = _siblings.size();
+			int nSiblings = getSiblingCount();
 			_variables = new FlaggedVariableMapList(nSiblings);
 			for (int i = 0; i < nSiblings; i++)
-				_variables.add((VariableBase)_siblings.get(i));
+				_variables.add(getSibling(i));
 			if (_directedTo != null)
 			{
 				_variables.setFlags(true, _directedTo);
@@ -287,9 +286,11 @@ public class Factor extends FactorBase implements Cloneable
 		//go through variables from first factor and
 		ArrayList<Integer> map1 = new ArrayList<Integer>();
 		
+		final int nSiblings = getSiblingCount();
+		final int nOtherSiblings = other.getSiblingCount();
 		
 		//First get a list of variables in common.
-		for (int i = 0; i < getSiblings().size(); i++)
+		for (int i = 0; i < nSiblings; i++)
 		{
 			map1.add(i);
 			varList.add(getConnectedNodeFlat(i));
@@ -300,11 +301,11 @@ public class Factor extends FactorBase implements Cloneable
 		
 		int newnuminputs = map1.size();
 		
-		for (int i = 0; i < other.getSiblings().size(); i++)
+		for (int i = 0; i < nOtherSiblings; i++)
 		{
 			boolean found = false;
 			
-			for (int j = 0; j < getSiblings().size(); j++)
+			for (int j = 0; j < nSiblings; j++)
 			{
 				
 				if (getConnectedNodeFlat(j) == other.getConnectedNodeFlat(i))

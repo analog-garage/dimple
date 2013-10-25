@@ -27,10 +27,10 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateFactorBase;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
-public class Polynomial extends MultivariateFactorBase 
+public class Polynomial extends MultivariateFactorBase
 {
 	private double [] _powers;
-	private Complex [] _coeffs;	
+	private Complex [] _coeffs;
 	private int _iterations;
 
 	/*
@@ -40,11 +40,11 @@ public class Polynomial extends MultivariateFactorBase
 	 * modify newton raphson to deal with complex coefficients
 	 * modify the code that calculates means and covariance
 	 */
-	public Polynomial(Factor factor)  
+	public Polynomial(Factor factor)
 	{
 		super(factor);
 
-		if (factor.getSiblings().size() != 2)
+		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("expected two complex numbers");
 
 		//TODO: throw error message if htis cast fails
@@ -58,8 +58,8 @@ public class Polynomial extends MultivariateFactorBase
 		
 		if (constants[0] instanceof Double)
 		{
-			powers = new double[]{(double)(Double)constants[0]};
-			rcoeffs = new double[]{(double)(Double)constants[1]};
+			powers = new double[]{(Double)constants[0]};
+			rcoeffs = new double[]{(Double)constants[1]};
 		}
 		else
 		{
@@ -99,14 +99,14 @@ public class Polynomial extends MultivariateFactorBase
 	}
 	
 	@Override
-	public void update() 
+	public void update()
 	{
 		updateToX();
 		updateToY();
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)  
+	public void updateEdge(int outPortNum)
 	{
 		//TODO: somehow avoid double computation.
 		//Maybe this is avoided when we have multivariate gaussian
@@ -114,10 +114,10 @@ public class Polynomial extends MultivariateFactorBase
 		if (outPortNum == 0)
 			updateToY();
 		else
-			updateToX();		
+			updateToX();
 	}
 
-	public void updateToX() 
+	public void updateToX()
 	{
 		
 		//get mu and sigma for complex numbers
@@ -144,7 +144,7 @@ public class Polynomial extends MultivariateFactorBase
 
 	}
 
-	public void updateToY() 
+	public void updateToY()
 	{
 		//get mu and sigma for complex numbers
 		MultivariateMsg y = _outputMsgs[0];
@@ -258,7 +258,7 @@ public class Polynomial extends MultivariateFactorBase
 		return retval;
 	}
 
-	public static double derivativeOfP1OverA(double a, double b,double [] powers, double [] coeffs) 
+	public static double derivativeOfP1OverA(double a, double b,double [] powers, double [] coeffs)
 	{
 		double sum = 0;
 		
@@ -280,7 +280,7 @@ public class Polynomial extends MultivariateFactorBase
 		return sum;
 	}
 	
-	private static double sharedDerivative(double a, double b, double [] powers, double [] coeffs) 
+	private static double sharedDerivative(double a, double b, double [] powers, double [] coeffs)
 	{
 		//sum i >=1 i *c_i*(a^2+b^2)*2ab
 		double sum = 0;
@@ -300,7 +300,7 @@ public class Polynomial extends MultivariateFactorBase
 		return sum;
 	}
 	
-	public static double derivativeOfP1OverB(double a, double b, double [] powers, double [] coeffs) 
+	public static double derivativeOfP1OverB(double a, double b, double [] powers, double [] coeffs)
 	{
 		double tmp =  sharedDerivative(a, b,  powers, coeffs);
 		if (Double.isNaN(tmp))
@@ -308,7 +308,7 @@ public class Polynomial extends MultivariateFactorBase
 		return tmp;
 	}
 	
-	public static double derivativeOfP2OverA(double a, double b, double [] powers, double [] coeffs) 
+	public static double derivativeOfP2OverA(double a, double b, double [] powers, double [] coeffs)
 	{
 		double tmp =  sharedDerivative(a, b,  powers, coeffs);
 		if (Double.isNaN(tmp))
@@ -316,7 +316,7 @@ public class Polynomial extends MultivariateFactorBase
 		return tmp;
 	}
 	
-	public static double derivativeOfP2OverB(double a, double b, double [] powers, double [] coeffs) 
+	public static double derivativeOfP2OverB(double a, double b, double [] powers, double [] coeffs)
 	{
 		double sum = 0;
 		
@@ -443,10 +443,10 @@ public class Polynomial extends MultivariateFactorBase
 	}
 
 	
-	public static Complex newtonRaphson(Complex input, int numIterations, double [] powers, 
-			Complex [] coeffs) 
+	public static Complex newtonRaphson(Complex input, int numIterations, double [] powers,
+			Complex [] coeffs)
 	{
-		//for some number of iterations		
+		//for some number of iterations
 		//initialize x to y;
 		Complex output = new Complex(input.getReal(),input.getImaginary());
 				

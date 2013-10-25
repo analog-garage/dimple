@@ -42,7 +42,8 @@ public class SubScheduleEntry implements IScheduleEntry
 		_subschedule = subschedule;
 	}
 	
-	public void update() 
+	@Override
+	public void update()
 	{
 		for (IScheduleEntry entry : _subschedule)
 		{
@@ -56,22 +57,25 @@ public class SubScheduleEntry implements IScheduleEntry
 		return _subschedule;
 	}
 	
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
-	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
 
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot) 
+	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot)
 	{
 		
 		FactorGraph newGraph = (FactorGraph)old2newObjs.get(this.getSchedule().getFactorGraph());
 		return new SubScheduleEntry(newGraph.getSchedule());
 	}
 
+	@Override
 	public Iterable<Port> getPorts()
 	{
 		//This is a subgraph.
@@ -86,7 +90,7 @@ public class SubScheduleEntry implements IScheduleEntry
 		//and add their ports.  subGraph getVariables does not return boundary variables.
 		for (VariableBase v : subGraph.getVariables())
 		{
-			for (int index = 0; index < v.getSiblings().size(); index++)
+			for (int index = 0, end = v.getSiblingCount(); index < end; index++)
 			
 				//whatsLeft.remove(p);
 				ports.add(new Port(v,index));
@@ -95,10 +99,10 @@ public class SubScheduleEntry implements IScheduleEntry
 		//Get all the factors associated with this subgraph and add the ports
 		for (Factor f : subGraph.getNonGraphFactors())
 		{
-			for (int index = 0; index < f.getSiblings().size(); index++)
+			for (int index = 0, end = f.getSiblingCount(); index < end; index++)
 				//whatsLeft.remove(p);
 				ports.add(new Port(f,index));
-		}	
+		}
 		return ports;
 		
 	}

@@ -38,7 +38,7 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 	public FiniteFieldMult(Factor factor)
 	{
 		super(factor);
-		if (factor.getSiblings().size() != 3)
+		if (factor.getSiblingCount() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 		
 		//TODO: check all have same prime poly

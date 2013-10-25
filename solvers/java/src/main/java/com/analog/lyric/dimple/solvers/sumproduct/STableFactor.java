@@ -56,7 +56,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		super(factor);
 		
-		_dampingParams = new double[_factor.getSiblings().size()];
+		_dampingParams = new double[_factor.getSiblingCount()];
 		_tableFactorEngine = new TableFactorEngine(this);
 		
 		
@@ -124,7 +124,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		super.createMessages();
 		
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 		
 	    
 	    if (_dampingInUse)

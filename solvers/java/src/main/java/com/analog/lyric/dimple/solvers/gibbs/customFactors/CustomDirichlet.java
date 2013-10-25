@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
@@ -98,7 +98,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof RealJoint)
 				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -151,7 +151,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 				_hasConstantParameters = false;
 				_numParameterEdges = 1;
 				_alpha = null;
-				ArrayList<INode> siblings = _factor.getSiblings();
+				List<INode> siblings = _factor.getSiblings();
 				_alphaVariable = (SRealJointVariable)(((VariableBase)siblings.get(PARAMETER_INDEX)).getSolver());
 				_dimension = _alphaVariable.getDimension();
 			}
@@ -160,7 +160,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -170,7 +170,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

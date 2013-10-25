@@ -23,16 +23,16 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateFactorBase;
 import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 
-public class MultivariateGaussianConstMult extends MultivariateFactorBase 
+public class MultivariateGaussianConstMult extends MultivariateFactorBase
 {
 	private double [][] _constant;
 	
-	public MultivariateGaussianConstMult(Factor factor)  
+	public MultivariateGaussianConstMult(Factor factor)
 	{
 		super(factor);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
-		if (factor.getSiblings().size() != 2)
+		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("factor must be of form a = b*c where b is a constant matrix");
 		
 		//TODO: alternatively, one of the ports could be a discrete variable with a single domain
@@ -42,7 +42,7 @@ public class MultivariateGaussianConstMult extends MultivariateFactorBase
 		if (ff.getConstants().length != 1)
 			throw new DimpleException("expected one constant");
 		
-		double [][] constant; 
+		double [][] constant;
 		if (ff.getConstants()[0] instanceof double [])
 		{
 			constant = new double[][] {(double[])ff.getConstants()[0]};
@@ -56,8 +56,8 @@ public class MultivariateGaussianConstMult extends MultivariateFactorBase
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		
-		VariableBase a = (VariableBase)_factor.getSiblings().get(0);
-		VariableBase b = (VariableBase)_factor.getSiblings().get(1);
+		VariableBase a = _factor.getSibling(0);
+		VariableBase b = _factor.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -67,7 +67,7 @@ public class MultivariateGaussianConstMult extends MultivariateFactorBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)  
+	public void updateEdge(int outPortNum)
 	{
 		multiGaBPMatrixMult matMult = new multiGaBPMatrixMult(_constant);
 		
@@ -77,7 +77,7 @@ public class MultivariateGaussianConstMult extends MultivariateFactorBase
 		else
 			direction = 'R';
 		
-		MultivariateMsg outMsg = _outputMsgs[outPortNum]; 
+		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		MultivariateMsg inMsg = _inputMsgs[1-outPortNum];
 		
 		matMult.ComputeMsg(inMsg, outMsg, direction);

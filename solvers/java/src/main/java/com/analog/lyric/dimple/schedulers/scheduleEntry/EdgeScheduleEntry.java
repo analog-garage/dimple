@@ -47,7 +47,8 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		_portNum = node.getPortNum(other);
 	}
 
-	public void update() 
+	@Override
+	public void update()
 	{
 		_node.updateEdge(_portNum);
 	}
@@ -63,12 +64,12 @@ public class EdgeScheduleEntry implements IScheduleEntry
 	}
 	
 	@Override
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs) 
+	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
 	@Override
-	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs) 
+	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
@@ -80,11 +81,11 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		
 		if (this.getNode() instanceof VariableBase)
 		{
-			isBoundaryVariable = this.getNode().getParentGraph().getBoundaryVariables().contains((VariableBase)this.getNode());
+			isBoundaryVariable = this.getNode().getParentGraph().getBoundaryVariables().contains(this.getNode());
 			
 			if(copyToRoot)
 			{
-				skip = isBoundaryVariable && 
+				skip = isBoundaryVariable &&
 				   this.getNode().getParentGraph().hasParentGraph();
 			}
 			else
@@ -102,6 +103,7 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		return null;
 	}
 	
+	@Override
 	public Iterable<Port> getPorts()
 	{
 		//This is just an edge, add the port.
@@ -110,11 +112,12 @@ public class EdgeScheduleEntry implements IScheduleEntry
 		return al;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return String.format("IScheduleEntry [%s] -> %d -> [%s]"
 				,getNode().getLabel()
 				,getPortNum()
-				,getNode().getSiblings().get(getPortNum()).getLabel());
+				,getNode().getSibling(getPortNum()).getLabel());
 	}
 }

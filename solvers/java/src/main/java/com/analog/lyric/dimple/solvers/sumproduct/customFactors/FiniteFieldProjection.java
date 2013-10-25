@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -43,7 +43,7 @@ public class FiniteFieldProjection extends SFiniteFieldFactor
 	
 		IVariableMapList variables = factor.getVariables();
 		
-		ArrayList<INode> ports = _factor.getSiblings();
+		List<INode> ports = _factor.getSiblings();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.

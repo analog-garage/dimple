@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -54,7 +54,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public void update()
 	{
-		for (int i = 0; i < _factor.getSiblings().size(); i++)
+		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++)
 			updateEdge(i);
 	}
 	
@@ -92,7 +92,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
     public double getScore()
     {
-		ArrayList<INode> ports = _factor.getSiblings();
+		List<INode> ports = _factor.getSiblings();
 		int numPorts = ports.size();
 	    Object[] values = new Object[numPorts];
 
@@ -126,17 +126,22 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
+		Factor factor = getModelObject();
+		INode otherFactor = other.getModelObject();
+		
+		int nSiblings = factor.getSiblingCount();
+		
+		if (nSiblings != otherFactor.getSiblingCount())
 			throw new DimpleException("cannot move messages on nodes with different numbers of ports");
 		
-		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		for (int i = 0; i < nSiblings; i++)
 		{
 			moveMessages(other, i,i);
 			
-			INode thisVariable = getModelObject().getSiblings().get(i);
-			INode otherVariable = other.getModelObject().getSiblings().get(i);
-			int thisIndex = getModelObject().getSiblingPortIndex(i);
-			int otherIndex = other.getModelObject().getSiblingPortIndex(i);
+			INode thisVariable = factor.getSibling(i);
+			INode otherVariable = otherFactor.getSibling(i);
+			int thisIndex = factor.getSiblingPortIndex(i);
+			int otherIndex = otherFactor.getSiblingPortIndex(i);
 			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
 		}
 	}

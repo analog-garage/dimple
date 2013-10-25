@@ -23,12 +23,13 @@ import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 public class MultivariateGaussianAdd extends MultivariateFactorBase
 {
 
-	public MultivariateGaussianAdd(Factor factor) 
+	public MultivariateGaussianAdd(Factor factor)
 	{
 		super(factor);
 	}
 
-	public void updateEdge(int outPortNum)  
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		MultivariateMsg outMsg = _outputMsgs[outPortNum];
 		
@@ -44,10 +45,10 @@ public class MultivariateGaussianAdd extends MultivariateFactorBase
 		for (int i = 0; i < matrix.length; i++)
 			matrix[i] = new double[size];
 		
-		for (int i = 0; i < _factor.getSiblings().size(); i++ )
+		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++ )
 		{
 			if (i != outPortNum)
-			{				
+			{
 				//_var.getInputObject();
 				MultivariateMsg inMsg = _inputMsgs[i];
 				
@@ -73,7 +74,7 @@ public class MultivariateGaussianAdd extends MultivariateFactorBase
 			}
 		}
 		
-		outMsg.setMeanAndCovariance(vector,matrix);	
+		outMsg.setMeanAndCovariance(vector,matrix);
 	}
 
 }

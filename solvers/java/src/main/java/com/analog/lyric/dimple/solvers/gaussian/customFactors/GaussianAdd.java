@@ -26,21 +26,22 @@ import com.analog.lyric.dimple.solvers.gaussian.GaussianFactorBase;
 public class GaussianAdd extends GaussianFactorBase
 {
 	
-	public GaussianAdd(Factor factor) 
+	public GaussianAdd(Factor factor)
 	{
 		super(factor);
 		
-		for (int i = 0; i < factor.getSiblings().size(); i++)
+		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
 		{
-			VariableBase v = (VariableBase)factor.getSiblings().get(i);
+			VariableBase v = factor.getSibling(i);
 			
 			if (v.getDomain().isDiscrete())
 				throw new DimpleException("Cannot connect discrete variable to the Gaussian add factor");
 		}
 
-	}	
+	}
 
-	public void updateEdge(int outPortNum) 
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		//TODO: express this as different functions if doing input or output
 		
@@ -78,7 +79,7 @@ public class GaussianAdd extends GaussianFactorBase
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 		
 	}
@@ -88,9 +89,9 @@ public class GaussianAdd extends GaussianFactorBase
 	public static boolean isFactorCompatible(Factor factor)
 	{
 		
-		for (int i = 0; i < factor.getSiblings().size(); i++)
+		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
-			VariableBase v = (VariableBase)factor.getSiblings().get(i);
+			VariableBase v = factor.getSibling(i);
 			
 			// Must be real
 			if (v.getDomain().isDiscrete())
