@@ -252,14 +252,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		randomRestart();
 	}
-	
-	@Override
-	public void solve()
-	{
-		deferDeterministicUpdates();
-		super.solve();
-		processDeferredDeterministicUpdates();
-	}
+
+	// FIXME
+//	@Override
+//	public void solve()
+//	{
+//		deferDeterministicUpdates();
+//		super.solve();
+//		processDeferredDeterministicUpdates();
+//	}
 	
 	@Override
 	public void solveOneStep()
