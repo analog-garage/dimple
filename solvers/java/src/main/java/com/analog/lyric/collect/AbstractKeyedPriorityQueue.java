@@ -15,6 +15,13 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.google.common.collect.Ordering;
 
+/**
+ * Abstract base class for priority queue with unique keys which can be computed
+ * from the elements themselves.
+ * 
+ * @since 0.05
+ * @author Christopher Barber
+ */
 @NotThreadSafe
 public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> implements Serializable
 {
@@ -196,6 +203,9 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		return _priorityComparator;
 	}
 	
+	/**
+	 * Returns the key for a given element.
+	 */
 	protected abstract K getKeyFromElement(E element);
 	
 	/**
@@ -206,6 +216,10 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		return _keyToEntry.containsKey(key);
 	}
 	
+	/**
+	 * Remove entry with given key from the queue.
+	 * @return false if queue did not contain element for the key.
+	 */
 	protected boolean removeKey(Object key)
 	{
 		Entry<E> entry = _keyToEntry.remove(key);
