@@ -55,7 +55,8 @@ public class Normal extends FactorFunction
 		_precisionOverTwo = _precision*0.5;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
+    	if (_precision < 0)
+    		throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 
     @Override
