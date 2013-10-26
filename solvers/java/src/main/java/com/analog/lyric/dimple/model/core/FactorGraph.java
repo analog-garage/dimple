@@ -56,6 +56,7 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph.InitializationPhase;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -1150,20 +1151,35 @@ public class FactorGraph extends FactorBase
 	@Override
 	public void initialize()
 	{
+		enterInitializationPhase(InitializationPhase.VARIABLES);
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
+		enterInitializationPhase(InitializationPhase.BOUNDARY);
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
 				v.initialize();
 
+		enterInitializationPhase(InitializationPhase.FACTORS);
 		for (Factor f : getNonGraphFactorsTop())
 			f.initialize();
+		enterInitializationPhase(InitializationPhase.SUBGRAPHS);
 		for (FactorGraph g : getNestedGraphs())
 			g.initialize();
 
+		enterInitializationPhase(InitializationPhase.SOLVER);
 
 		if (_solverFactorGraph != null)
 			_solverFactorGraph.initialize();
+		
+		enterInitializationPhase(InitializationPhase.DONE);
+	}
+	
+	private void enterInitializationPhase(InitializationPhase phase)
+	{
+		if (_solverFactorGraph != null)
+		{
+			_solverFactorGraph.enterInitializationPhase(phase);
+		}
 	}
 
 	private void checkSolverIsSet()

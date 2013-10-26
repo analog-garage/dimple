@@ -50,6 +50,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Internal;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
@@ -253,14 +254,20 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		randomRestart();
 	}
 
-	// FIXME
-//	@Override
-//	public void solve()
-//	{
-//		deferDeterministicUpdates();
-//		super.solve();
-//		processDeferredDeterministicUpdates();
-//	}
+	@Internal
+	@Override
+	public void enterInitializationPhase(InitializationPhase phase)
+	{
+		switch (phase)
+		{
+		case VARIABLES:
+			deferDeterministicUpdates();
+			break;
+		case FACTORS:
+			processDeferredDeterministicUpdates();
+			break;
+		}
+	}
 	
 	@Override
 	public void solveOneStep()
@@ -318,6 +325,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
 		{
+//			if (iterNum % 100 == 0)
+//			{
+//				System.out.println(iterNum);
+//				System.out.flush();
+//			}
+			
 			if (!_scheduleIterator.hasNext())
 				_scheduleIterator = _schedule.iterator();	// Wrap-around the schedule if reached the end
 

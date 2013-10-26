@@ -73,43 +73,53 @@ public class MatrixVectorProduct extends FactorFunction
     {
     	int argIndex = 0;
     	
+    	final int inLength = _inLength;
+    	final int outLength = _outLength;
+    	double[][] matrix = _matrix;
+
     	// Get the output vector values
-    	for (int i = 0; i < _outLength; i++)
-    		_outVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    	final double[] outVector = _outVector;
+    	for (int i = 0; i < outLength; i++)
+    		outVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
 
 		// Get the matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		_matrix = (double[][])arguments[argIndex++];
+    		matrix = _matrix = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int col = 0; col < _inLength; col++)
-    			for (int row = 0; row < _outLength; row++)
-    				_matrix[row][col] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    			for (int row = 0; row < outLength; row++)
+    				matrix[row][col] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
     	}
     	
     	// Get the input vector values
+    	double[] inVector = _inVector;
     	if (arguments[argIndex] instanceof double[])	// Constant matrix is passed as a single argument
-    		_inVector = (double[])arguments[argIndex++];
+    		inVector = _inVector = (double[])arguments[argIndex++];
     	else
     	{
-    		for (int i = 0; i < _inLength; i++)
-    			_inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
+    		for (int i = 0; i < inLength; i++)
+    			inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
     	}
     	
     	// Compute the expected output
-    	for (int row = 0; row < _outLength; row++)
+    	double[] expectedOutVector = _expectedOutVector;
+    	for (int row = 0; row < outLength; row++)
     	{
     		double sum = 0;
-    		for (int col = 0; col < _inLength; col++)
-    			sum += _matrix[row][col] * _inVector[col];
-    		_expectedOutVector[row] = sum;
+    		double[] rowValues = matrix[row];
+    		for (int col = 0; col < inLength; col++)
+    		{
+    			sum += rowValues[col] * inVector[col];
+    		}
+    		expectedOutVector[row] = sum;
     	}
 
     	// Compute the total squared error
     	double error = 0;
-    	for (int i = 0; i < _outLength; i++)
+    	for (int i = 0; i < outLength; i++)
     	{
-    		double diff = _outVector[i] - _expectedOutVector[i];
+    		double diff = outVector[i] - expectedOutVector[i];
     		error += diff*diff;
     	}
     	

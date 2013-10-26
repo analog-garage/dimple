@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Internal;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
@@ -133,6 +134,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		throw new DimpleException("Not supported");
 	}
 
+	@Override
 	public void iterate()
 	{
 		iterate(1);
@@ -419,7 +421,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public void useMultithreading(boolean use)
 	{
 		if (_multithreader == null)
-			throw new DimpleException("Multithreading is not currently supported by this solver.");		
+			throw new DimpleException("Multithreading is not currently supported by this solver.");
 		else
 			_useMultithreading = true;
 	}
@@ -433,29 +435,38 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	public MultiThreadingManager getMultithreadingManager()
 	{
 		if (_multithreader == null)
-			throw new DimpleException("Multithreading is not currently supported by this solver.");		
+			throw new DimpleException("Multithreading is not currently supported by this solver.");
 		else
 			return _multithreader;
-	} 	 	
+	}
 	
 	protected void setMultithreadingManager(MultiThreadingManager manager)
 	{
 		_multithreader = manager;
 	}
 
-
-
 	/***********************************************
 	 * 
-	 * Stuff for rolled up graphs
+	 * Initialization methods
 	 * 
 	 ***********************************************/
 
 	@Override
 	public void initialize()
 	{
-		
 	}
+	
+	@Override
+	@Internal
+	public void enterInitializationPhase(InitializationPhase phase)
+	{
+	}
+
+	/***********************************************
+	 * 
+	 * Stuff for rolled up graphs
+	 * 
+	 ***********************************************/
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)

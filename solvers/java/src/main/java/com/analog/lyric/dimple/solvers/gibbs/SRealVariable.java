@@ -69,7 +69,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
-	private boolean _isDeterministicDepdentent = false;
+	private boolean _isDeterministicDependent = false;
 	private boolean _hasDeterministicDependents = false;
 
 
@@ -106,7 +106,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDepdentent) return;
+		if (_isDeterministicDependent) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -261,7 +261,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void updateDirectedCache()
 	{
 		_hasDeterministicDependents = hasDeterministicDependents();
-		_isDeterministicDepdentent = isDeterministicDependent();
+		_isDeterministicDependent = isDeterministicDependent();
 	}
 	
 	@Override
@@ -588,7 +588,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		super.initialize();
 
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
-		if (!_isDeterministicDepdentent)
+		if (!_isDeterministicDependent)
 		{
 			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)

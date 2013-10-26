@@ -32,6 +32,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {
 	protected Factor _realFactor;
 	protected ObjectSample [] _inputMsgs;
+//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
 	
@@ -114,14 +115,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			}
 		}
 	}
-	
-	
+
 	@Override
 	public double getPotential()
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 	    int numPorts = _factor.getSiblingCount();
-	    Object[] inPortMsgs = new Object[numPorts];
+	    Object[] inPortMsgs = new Object[numPorts]; //_scratchValues;
 	    for (int port = 0; port < numPorts; port++)
 	    	inPortMsgs[port] = _inputMsgs[port].getObject();
 	    
@@ -154,9 +154,10 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		
 		// Compute the output values of the deterministic factor function from the input values
-	    Object[] values = new Object[_numPorts];
+	    Object[] values = new Object[_numPorts]; //_scratchValues;
+	    ObjectSample[] inputMsgs = _inputMsgs;
 	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = _inputMsgs[port].getObject();
+	    	values[port] = inputMsgs[port].getObject();
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values
@@ -180,6 +181,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	{
 		_numPorts = _factor.getSiblingCount();
 		_inputMsgs = new ObjectSample[_numPorts];
+//		_scratchValues = new Object[_numPorts];
 		IVariableMapList variables = _factor.getVariables();
 		for (int i = 0; i < _numPorts; i++)
 		{
