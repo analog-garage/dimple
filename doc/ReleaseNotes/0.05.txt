@@ -1,7 +1,7 @@
-Dimple v0.05 Release notes
+Dimple v0.05 Release Notes
 ==========================
 
-New Features since v0.04
+New Features Since v0.04 (Oct 5)
 ------------------------
 * Added dimpleVersion MATLAB function
 
@@ -10,5 +10,9 @@ New Features since v0.04
 * Added java solver template to aid in the design of new solvers
 
 
-Fixes since v0.04
+Fixes Since v0.04
 -----------------
+
+* Fix performance problem in tree scheduler for large graphs
+
+* Fix performance problem for large deterministic-directed factors

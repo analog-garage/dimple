@@ -1,21 +1,58 @@
-Dimple v0.04 Release notes (oct 5)
+Dimple v0.04 Release Notes (Oct 5)
 ==========================
 
-New Features since v0.03 (July 8)
+New Features Since v0.03 (July 8)
 ------------------------
-* Conjugate sampling support for Binomial factor
+* Added conjugate sampling support in Gibbs solver (see Gibbs Solver section of the user manual for a table of supported conjugate factors and associated samplers)
 
-* updated commons math library to commons-math3-3.2
+* Updated commons math library to commons-math3-3.2
 
 * Added multithreading support for MinSum and SumProduct
 
-* Add javadoc
+* Added Java version of user manual
 
-* Added Bernoulli distribution and conjugate sampling for Beta distribution
+* Added javadoc
 
 * Added LP Solver documentation
 
 * Added MultiplexerCPD support
 
-Fixes since v0.03
+* Modified Java API for DiscreteDomain
+
+* Modified Java API for factor tables and related classes
+
+* Can now add boundary variables to a nested graph after graph creation, allowing use of implicit factor creation in sub-graphs
+
+* Added built-in factor functions for Complex variables (ComplexSum, ComplexSubtract, ComplexNegate, ComplexConjugate, ComplexProduct, ComplexDivide, ComplexExp), and for MATLAB API added corresponding overloaded operators for Complex variables
+
+* Added support for RealJoint and Complex variables in Gibbs solver
+
+* Added ComplexDomain class in Java API (was already in MATLAB API)
+
+* Support Value property in Real and RealJoint variable in Gaussian solver
+
+* Support bounded domains in RealJoint and Complex variables
+
+* Support FixedValue property in RealJoint and Complex variables, and support FixedValue property in Gaussian solver (all variable types)
+
+* Added ComplexStream for rolled-up graphs with Complex variables
+
+* In Gibbs solver, initialization and restart sample from Input distribution if a corresponding sampler is available
+
+* In Gaussian solver, Input may now be set using a Normal factor function with fixed parameters (consistent with setting Inputs on real variables in other solvers); this allows Inputs to be set in a solver-neutral way
+
+* Added built-in Dirichlet factor function
+
+* Modified Categorical and DiscreteTransition factor functions to use RealJoint parameter, suitable for a Dirichlet prior; added two variants of each of these factor functions, one with an array of Real parameters, suitable for an array of Gamma priors, and one with an array of Real energy parameters, suitable for an array of NegativeExpGamma priors
+
+* Added built-in factor functions for Bernoulli and Binomial distributions
+
+* Added documentation for methods related to getting Beta free energy
+
+
+Fixes Since v0.03
 -----------------
+
+* Tests and demos that require an optional MATLAB toolbox check for presence before trying to run
+
+
