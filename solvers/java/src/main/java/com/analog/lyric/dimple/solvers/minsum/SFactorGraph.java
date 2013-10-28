@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
@@ -24,19 +25,21 @@ import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
+import com.analog.lyric.util.misc.IMapList;
 
 
-public class SFactorGraph extends SFactorGraphBase 
+public class SFactorGraph extends SFactorGraphBase
 {
 	protected double _damping = 0;
 
-	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
+	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 
-	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.VariableBase var)  
+	@Override
+	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.VariableBase var)
 	{
 		if (!var.getDomain().isDiscrete())
 			throw new DimpleException("only support discrete variables");
@@ -46,7 +49,7 @@ public class SFactorGraph extends SFactorGraphBase
 
 
 	@Override
-	public ISolverFactor createFactor(Factor factor)  
+	public ISolverFactor createFactor(Factor factor)
 	{
 		if (customFactorExists(factor.getFactorFunction().getName()))
 		{
@@ -63,20 +66,20 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	
 	@Override
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
 		if (funcName.equals("customXor"))
 			return true;
 		else
-			return false;	
+			return false;
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		String funcName = factor.getFactorFunction().getName();
 		if (funcName.equals("customXor"))
 		{
-			return new CustomXor(factor);    		
+			return new CustomXor(factor);
 		}
 		else
 			throw new DimpleException("Not implemented");
@@ -87,8 +90,8 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Set the global solver damping parameter.  We have to go through all factor graphs
 	 * and update the damping parameter on all existing table functions in that graph.
 	 */
-	public void setDamping(double damping) 
-	{		
+	public void setDamping(double damping)
+	{
 		_damping = damping;
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
@@ -109,17 +112,19 @@ public class SFactorGraph extends SFactorGraphBase
 	 */
 	protected void setDampingForTableFunction(STableFactor tf)
 	{
+		Factor factor = tf.getFactor();
+		IMapList<INode> nodes = factor.getConnectedNodesFlat();
 		
-		for (int i = 0; i < tf.getFactor().getSiblings().size(); i++)
+		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
 		{
 			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)tf.getFactor().getConnectedNodesFlat().getByIndex(i);
-			for (int j = 0; j < var.getSiblings().size(); j++)
+			VariableBase var = (VariableBase)nodes.getByIndex(i);
+			for (int j = 0, endj = var.getSiblingCount(); j < endj; j++)
 			{
 				SVariable svar = (SVariable)var.getSolver();
 				svar.setDamping(j,_damping);
 			}
-		}		
+		}
 
 	}
 

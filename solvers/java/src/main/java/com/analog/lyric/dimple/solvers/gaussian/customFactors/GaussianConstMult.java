@@ -31,12 +31,12 @@ public class GaussianConstMult extends GaussianFactorBase
 	private double _constant;
 	private int _varIndex;
 	
-	public GaussianConstMult(Factor factor) 
+	public GaussianConstMult(Factor factor)
 	{
 		super(factor);
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
-		if (factor.getSiblings().size() != 2)
+		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("Factor must be of form a = b*c where b or c is a constant");
 		
 		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
@@ -45,8 +45,8 @@ public class GaussianConstMult extends GaussianFactorBase
 		double constant = (Double)ff.getConstants()[0];
 		
 		
-		VariableBase a = (VariableBase)factor.getSiblings().get(0);
-		VariableBase b = (VariableBase)factor.getSiblings().get(1);
+		VariableBase a = factor.getSibling(0);
+		VariableBase b = factor.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
@@ -58,9 +58,10 @@ public class GaussianConstMult extends GaussianFactorBase
 		if (_constant == 0)
 			throw new DimpleException("Constant of 0 not supported");
 		
-	}	
+	}
 
-	public void updateEdge(int outPortNum) 
+	@Override
+	public void updateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
 		{
@@ -104,7 +105,7 @@ public class GaussianConstMult extends GaussianFactorBase
 	public static boolean isFactorCompatible(Factor factor)
 	{
 		// Must be of the form form a = b*c where either b or c is a constant.
-		if (factor.getSiblings().size() != 2)
+		if (factor.getSiblingCount() != 2)
 			return false;
 
 		// Must have exactly one constant
@@ -114,8 +115,8 @@ public class GaussianConstMult extends GaussianFactorBase
 		double constant = (Double)ff.getConstants()[0];
 		
 		// Variables must be real and univariate
-		VariableBase a = (VariableBase)factor.getSiblings().get(0);
-		VariableBase b = (VariableBase)factor.getSiblings().get(1);
+		VariableBase a = factor.getSibling(0);
+		VariableBase b = factor.getSibling(1);
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			return false;
 		if (a instanceof RealJoint || b instanceof RealJoint)

@@ -23,21 +23,22 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
-public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
+public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
 	private ObjectSample [] _inputMsgs;
 	private Object[] _outputMsgs;
 
 	
-	public SRealFactorBlastFromThePast(BlastFromThePastFactor f) 
+	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
 		super(f);
 	}
 	
 	@Override
 	public void createMessages(VariableBase var, Port port)
-	{		
+	{
 		super.createMessages(var,port);
 		getMessages();
 	}
@@ -46,14 +47,15 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	{
 		VariableBase vb = (VariableBase)_portForOtherVar.node;
 		int index = _portForOtherVar.index;
-		Factor f = (Factor)vb.getSiblings().get(index);
-		int numEdges = f.getSiblings().size();
+		Factor f = (Factor)vb.getSibling(index);
+		ISolverFactor sf = f.getSolver();
+		int numEdges = f.getSiblingCount();
 		_inputMsgs = new ObjectSample[numEdges];
 		_outputMsgs = new Object[numEdges];
 		for (int i = 0; i < numEdges; i++)
 		{
-			_inputMsgs[i] = (ObjectSample)f.getSolver().getInputMsg(i);
-			_outputMsgs[i] = f.getSolver().getOutputMsg(i);
+			_inputMsgs[i] = (ObjectSample)sf.getInputMsg(i);
+			_outputMsgs[i] = sf.getOutputMsg(i);
 		}
 	}
 	
@@ -65,7 +67,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public double getPotential() 
+	public double getPotential()
 	{
 	    int numPorts = _inputMsgs.length;
 	    Object[] inPortMsgs = new Object[numPorts];
@@ -81,9 +83,15 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public void updateNeighborVariableValue(int portIndex) 
+	public void updateNeighborVariableValue(int portIndex)
 	{
-		throw new DimpleException("Not supported");
+		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
+	}
+
+	@Override
+	public void updateNeighborVariableValuesNow()
+	{
+		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}
 
 	@Override
@@ -94,13 +102,13 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public void updateEdgeMessage(int portIndex) 
+	public void updateEdgeMessage(int portIndex)
 	{
 		// Do nothing
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

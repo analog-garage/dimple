@@ -45,6 +45,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
+import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
 
@@ -244,7 +245,7 @@ public class PFactorGraphVector extends PFactorVector
     	return getFactors(getGraph().getFactors(relativeNestingDepth));
     }
 
-    public PFactorVector getFactors(MapList<FactorBase> factors)
+    public PFactorVector getFactors(IMapList<FactorBase> factors)
     {
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
@@ -599,7 +600,7 @@ public class PFactorGraphVector extends PFactorVector
     	return getNonGraphFactors(getGraph().getNonGraphFactors(relativeNestingDepth));
     }
     
-    public PFactorVector [] getNonGraphFactors(MapList<Factor> factors)
+    public PFactorVector [] getNonGraphFactors(IMapList<Factor> factors)
     {
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");

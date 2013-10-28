@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -119,7 +119,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
 			
 			// Start with the ports to variable outputs
-			ArrayList<INode> siblings = _factor.getSiblings();
+			List<INode> siblings = _factor.getSiblings();
 			double sum = 0;
 			for (int port = _numParameterEdges; port < _numPorts; port++)
 			{
@@ -173,7 +173,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		_conjugateSampler = new IRealConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof Real)
 				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -227,7 +227,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
@@ -279,7 +279,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -292,7 +292,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

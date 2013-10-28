@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.schedulers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -25,7 +26,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 
 /**
  * @author jeffb
@@ -44,7 +45,8 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 	protected int _nodeUpdateThreshold = 1;		// Will use node-update if number of edges to update is greater than threshold, otherwise will use edge update
 	
 	
-	public ISchedule createSchedule(FactorGraph g) 
+	@Override
+	public ISchedule createSchedule(FactorGraph g)
 	{
 		if (g.isTree())		// The graph is a tree
 			return createTreeSchedule(g);
@@ -68,21 +70,21 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		HashMap<Integer,NodeUpdateState> updateState = new HashMap<Integer,NodeUpdateState>();
 		
 		@SuppressWarnings("all")
-		MapList allIncludedNodes = g.getNodes();
+		IMapList allIncludedNodes = g.getNodes();
 		ArrayList<INode> startingNodes = new ArrayList<INode>();
 
 		// For all nodes, set up the node update state
 		// Edges connected to nodes outside the graph have already been updated
 		if (g.hasParentGraph())
 		{
-			for (INode node : (MapList<INode>)allIncludedNodes)
+			for (INode node : (IMapList<INode>)allIncludedNodes)
 			{
-				ArrayList<INode> siblings = node.getSiblings();
+				List<INode> siblings = node.getSiblings();
 				int numSiblings = siblings.size();
 				NodeUpdateState nodeState = new NodeUpdateState(numSiblings);
 				int numSiblingsInSubGraph = 0;
 				for (int index = 0; index < numSiblings; index++)
-					if (!allIncludedNodes.contains(siblings.get(index))) 
+					if (!allIncludedNodes.contains(siblings.get(index)))
 						nodeState.inputUpdated(index);
 					else
 						numSiblingsInSubGraph++;
@@ -93,9 +95,9 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		}
 		else	// If there's no parent, then nothing has already been updated
 		{
-			for (INode node : (MapList<INode>)allIncludedNodes)
+			for (INode node : (IMapList<INode>)allIncludedNodes)
 			{
-				int numSiblings = node.getSiblings().size();
+				int numSiblings = node.getSiblingCount();
 				updateState.put(node.getId(), new NodeUpdateState(numSiblings));
 				if (numSiblings <= 1)
 					startingNodes.add(node);
@@ -122,7 +124,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 						// Use node update
 						schedule.add(new NodeScheduleEntry(node));
 						int nextNodeCount = 0;
-						ArrayList<INode> siblings = node.getSiblings();
+						List<INode> siblings = node.getSiblings();
 						int numSiblings = siblings.size();
 						for (int index = 0; index < numSiblings; index++)
 						{
@@ -151,7 +153,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 					{
 						// Use edge update
 						int nextNodeCount = 0;
-						ArrayList<INode> siblings = node.getSiblings();
+						List<INode> siblings = node.getSiblings();
 						int numSiblings = siblings.size();
 						for (int index = 0; index < numSiblings; index++)
 						{
@@ -184,7 +186,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 					int portId = nodeState.outputToUpdate();
 					schedule.add(new EdgeScheduleEntry(node, portId));
 					nodeState.outputUpdated(portId);
-					INode sibling = node.getSiblings().get(portId);
+					INode sibling = node.getSibling(portId);
 					NodeUpdateState siblingNodeState = updateState.get(sibling.getId());
 					if (siblingNodeState != null)
 					{

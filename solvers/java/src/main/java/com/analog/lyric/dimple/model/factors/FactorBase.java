@@ -60,5 +60,12 @@ public abstract class FactorBase extends Node
 		// Factors may only be connected to variables so this cast should be safe.
 		return (VariableBase)super.getConnectedNodeFlat(i);
 	}
+	
+	@Override
+	public VariableBase getSibling(int i)
+	{
+		// Factors may only be connected to variables so this cast should be safe.
+		return (VariableBase)super.getSibling(i);
+	}
 }
 

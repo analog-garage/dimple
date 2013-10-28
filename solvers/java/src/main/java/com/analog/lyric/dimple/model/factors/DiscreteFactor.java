@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.factors;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -27,7 +28,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 public class DiscreteFactor extends Factor
 {
@@ -53,6 +54,12 @@ public class DiscreteFactor extends Factor
 		return (Discrete)super.getConnectedNodeFlat(i);
 	}
 	
+	@Override
+	public Discrete getSibling(int i)
+	{
+		return (Discrete)super.getSibling(i);
+	}
+
 	/*----------------
 	 * Factor methods
 	 */
@@ -60,7 +67,7 @@ public class DiscreteFactor extends Factor
 	@Override
 	public JointDomainIndexer getDomainList()
 	{
-		VariableList variables = getVariables();
+		IVariableMapList variables = getVariables();
 		int numVariables = variables.size();
 		
 		DiscreteDomain[] domains = new DiscreteDomain[numVariables];
@@ -84,7 +91,7 @@ public class DiscreteFactor extends Factor
 	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
 	{
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
-		ArrayList<INode> ports = getSiblings();
+		List<INode> ports = getSiblings();
 		ArrayList<VariableBase> newVariables = new ArrayList<VariableBase>();
 		
 
@@ -155,11 +162,10 @@ public class DiscreteFactor extends Factor
 				((Discrete)newJoint).getDiscreteDomain());
 		setFactorFunction(new TableFactorFunction(getFactorFunction().getName(),newTable2));
 		
-		//Remove old ports.
-		for (int i = 0; i < factorVarIndices.length; i++)
+		//Remove old ports in descending order (they were added in ascending order above)
+		for (int i = factorVarIndices.length; --i>=0;)
 		{
-			index = factorVarIndices[factorVarIndices.length-1-i];
-			ports.remove(index);
+			disconnect(factorVarIndices[i]);
 		}
 		
 		//Add the new joint variable

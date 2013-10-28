@@ -33,7 +33,7 @@ public class DiscreteSampler extends HybridSampledBPSampler
 		super(p, random);
 		// TODO Auto-generated constructor stub
 		
-		INode n = _p.node.getSiblings().get(_p.index);
+		INode n = _p.node.getSibling(_p.index);
 		
 		if (! (n instanceof Discrete))
 			throw new DimpleException("expected Discrete");
@@ -75,7 +75,7 @@ public class DiscreteSampler extends HybridSampledBPSampler
 	@Override
 	public void initialize()
 	{
-		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		SVariable var = (SVariable)_p.node.getSibling(_p.index).getSolver();
 		_msg = (double[])var.resetInputMessage(_msg);
 		
 	}

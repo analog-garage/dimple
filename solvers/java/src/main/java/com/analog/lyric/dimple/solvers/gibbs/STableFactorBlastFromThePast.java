@@ -23,14 +23,14 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 
-public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs 
+public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
     protected DiscreteSample[] _inPortMsgs = null;
     protected int _numPorts;
 	private double [] _outputMsg;
 	private DiscreteSample _inputMsg;
 
-	public STableFactorBlastFromThePast(BlastFromThePastFactor f) 
+	public STableFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
 		super(f);
 	}
@@ -63,19 +63,25 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	}
 	
 	@Override
-	public void updateNeighborVariableValue(int portIndex) 
+	public void updateNeighborVariableValue(int portIndex)
 	{
-		throw new DimpleException("not implemented");		
+		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
 	}
 
 	@Override
-	public double getConditionalPotential(int portIndex) 
+	public void updateNeighborVariableValuesNow()
+	{
+		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
+	}
+
+	@Override
+	public double getConditionalPotential(int portIndex)
 	{
 		throw new DimpleException("not implemented");
 	}
 
 	@Override
-	public void updateEdgeMessage(int portIndex) 
+	public void updateEdgeMessage(int portIndex)
 	{
 		//NOP
 	}

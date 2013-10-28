@@ -16,9 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
@@ -124,7 +124,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof RealJoint)
 				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -154,7 +154,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_startingParameterEdge = 0;
 		int numParameterEdges = _numPorts - NUM_DISCRETE_VARIABLES;
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
@@ -183,10 +183,10 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 				}
 			}
 			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array 
+			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
 			_parameterXIndices = new int[numParameterEdges];
 			int constantIndex = 0;
-			int parameterEdgeIndex = 0; 
+			int parameterEdgeIndex = 0;
 			for (int x = 0; x < _xDimension; x++)	// Column scan order
 			{
 				int parameterIndex = x;
@@ -208,7 +208,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 			_hasConstantY = false;
 			_hasConstantX = false;
 			
-			// Create a mapping between the edge connecting parameters and the X coordinates in the parameter array 
+			// Create a mapping between the edge connecting parameters and the X coordinates in the parameter array
 			_parameterXIndices = new int[numParameterEdges];
 			for (int x = 0, parameterEdgeIndex = 0; x < numParameterEdges; x++)
 				_parameterXIndices[parameterEdgeIndex++] = x;
@@ -245,7 +245,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -255,7 +255,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

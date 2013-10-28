@@ -18,11 +18,18 @@ package com.analog.lyric.dimple.model.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.math.Utilities;
+import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 
 public abstract class Node implements INode, Cloneable
@@ -32,8 +39,20 @@ public abstract class Node implements INode, Cloneable
 	protected String _name;
 	protected String _label;
 	private FactorGraph _parentGraph;
-	protected ArrayList<INode> _siblings;
-	private int [] _siblingIndices = new int[0];
+	
+	private List<INode> _siblings;
+	
+	/**
+	 * Maps sibling index to the inverse index from the corresponding sibling
+	 * back to this node. Indices are stored by adding one, so that the value zero
+	 * can be used to indicate values that have not been initialized.
+	 */
+	private int [] _siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
+	
+	/**
+	 * Reverse mapping of sibling to its index. Created lazily as needed.
+	 */
+	private Map<INode,Integer> _siblingToIndex = null;
 
 	public Node()
 	{
@@ -118,15 +137,32 @@ public abstract class Node implements INode, Cloneable
 		return n;
 	}
 	
+	@Override
 	public int getSiblingPortIndex(int index)
 	{
+		INode sibling = _siblings.get(index);
+		
 		if (_siblingIndices.length <= index)
-		{		
-			_siblingIndices = Arrays.copyOf(_siblingIndices, index+1);
-			_siblingIndices[index] = _siblings.get(index).getPortNum(this);
+		{
+			// Round up to next power of two no larger than the sibling size to avoid
+			// thrashing if this is called for each index in order.
+			int newSize = Math.min(_siblings.size(), Utilities.nextPow2(index + 1));
+			_siblingIndices = Arrays.copyOf(_siblingIndices, newSize);
 		}
 		
-		return _siblingIndices[index];
+		// Zero values in _siblingIndices indicates not yet initialized, thus the offset by one.
+		
+		int reverseIndex = _siblingIndices[index] - 1;
+		
+		if (reverseIndex < 0 || sibling.getConnectedNodeFlat(reverseIndex) != this)
+		{
+			// Update reverse index if it was not yet initialized or it points to the wrong node,
+			// which can happen if nodes were removed.
+			reverseIndex = _siblings.get(index).getPortNum(this);
+			_siblingIndices[index] = reverseIndex + 1;
+		}
+		
+		return reverseIndex;
 	}
 	
 	@Override
@@ -156,6 +192,7 @@ public abstract class Node implements INode, Cloneable
 		return ancestor;
 	}
 	
+	@Override
 	public INode getConnectedNodeFlat(int portNum)
 	{
 		return _siblings.get(portNum);
@@ -163,17 +200,30 @@ public abstract class Node implements INode, Cloneable
 
 	
 	@Override
-	public ArrayList<INode> getSiblings()
+	public List<INode> getSiblings()
 	{
-		return _siblings;
+		return Collections.unmodifiableList(_siblings);
+	}
+	
+	@Override
+	public int getSiblingCount()
+	{
+		return _siblings.size();
+	}
+	
+	@Override
+	public INode getSibling(int i)
+	{
+		return _siblings.get(i);
 	}
 
 	@Override
-	public MapList<INode> getConnectedNodes()
+	public IMapList<INode> getConnectedNodes()
 	{
 		return getConnectedNodesFlat();
 	}
 	
+	@Override
 	public INode getConnectedNode(int relativeDepth, int portNum)
 	{
 		if (relativeDepth < 0)
@@ -204,6 +254,7 @@ public abstract class Node implements INode, Cloneable
 		return node;
 	}
 
+	@Override
 	public ArrayList<INode> getConnectedNodeAndParents(int index)
 	{
 		ArrayList<INode> retval = new ArrayList<INode>();
@@ -221,11 +272,11 @@ public abstract class Node implements INode, Cloneable
 
 	
 	@Override
-	public MapList<INode> getConnectedNodes(int relativeNestingDepth)
+	public IMapList<INode> getConnectedNodes(int relativeNestingDepth)
 	{
     	MapList<INode> list = new MapList<INode>();
 
-		for (int i = 0; i < getSiblings().size(); i++)
+		for (int i = 0, end = getSiblingCount(); i < end; i++)
 		{
 			list.add(getConnectedNode(relativeNestingDepth,i));
 		}
@@ -264,13 +315,13 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public MapList<INode> getConnectedNodesFlat()
+	public IMapList<INode> getConnectedNodesFlat()
 	{
 		return getConnectedNodes(Integer.MAX_VALUE);
 	}
 	
 	@Override
-	public MapList<INode> getConnectedNodesTop()
+	public IMapList<INode> getConnectedNodesTop()
 	{
 		return getConnectedNodes(0);
 	}
@@ -279,10 +330,33 @@ public abstract class Node implements INode, Cloneable
 	public void connect(INode node)
 	{
 		_siblings.add(node);
+		if (_siblingToIndex != null)
+		{
+			_siblingToIndex.put(node, _siblings.size() - 1);
+		}
+	}
+	
+	@Override
+	public void disconnect(int portNum)
+	{
+		_siblings.remove(portNum);
+		_siblingToIndex = null;
+		if (portNum < _siblingIndices.length)
+		{
+			// Shift values down into the missing slot.
+			System.arraycopy(_siblingIndices, portNum + 1, _siblingIndices, portNum,
+				_siblingIndices.length - portNum - 1);
+		}
+	}
+	
+	@Override
+	public void disconnect(INode node)
+	{
+		disconnect(getPortNum(node));
 	}
 
 	@Override
-	public void setParentGraph(FactorGraph parentGraph) 
+	public void setParentGraph(FactorGraph parentGraph)
 	{
 		_parentGraph = parentGraph;
 	}
@@ -334,7 +408,7 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public void setName(String name) 
+	public void setName(String name)
 	{
 		if(name != null && name.contains("."))
 		{
@@ -350,7 +424,7 @@ public abstract class Node implements INode, Cloneable
 	
 	
 	@Override
-	public void setLabel(String name) 
+	public void setLabel(String name)
 	{
 		_label = name;
 	}
@@ -371,7 +445,7 @@ public abstract class Node implements INode, Cloneable
 		return _UUID;
 	}
 	@Override
-	public void setUUID(UUID newUUID) 
+	public void setUUID(UUID newUUID)
 	{
 		if(_parentGraph != null)
 		{
@@ -434,14 +508,14 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public int getPortNum(INode node) 
+	public final int getPortNum(INode node)
 	{
-		for (int i = 0; i < _siblings.size(); i++)
+		int port = getPortNumNoThrow(node);
+		if (port < 0)
 		{
-			if (isConnected(node,i))
-				return i;
+			throw new DimpleException("Nodes are not connected: " + this + " and " + node);
 		}
-		throw new DimpleException("Nodes are not connected: " + this + " and " + node);
+		return port;
 	}
 	
 	@Override
@@ -452,24 +526,90 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	
-	public boolean isConnected(INode node)
+	@Override
+	public final boolean isConnected(INode node)
 	{
-		for (int i = 0; i < _siblings.size(); i++)
-		{
-			if (isConnected(node,i))
-				return true;
-		}
-		return false;
-		
+		return getPortNumNoThrow(node) >= 0;
+	}
+
+	/*-------------------
+	 * Protected methods
+	 */
+	
+	protected void clearSiblings()
+	{
+		_siblings.clear();
+		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
+		_siblingToIndex = null;
 	}
 	
-	@Override
-	public boolean isConnected(INode node, int portIndex)
+	protected void replaceSibling(INode oldNode, INode newNode)
+	{
+		if (oldNode != newNode)
+		{
+			int index = getPortNum(oldNode);
+			_siblings.set(index, newNode);
+			if (_siblingIndices.length > index)
+			{
+				_siblingIndices[index] = 0;
+			}
+			if (_siblingToIndex != null)
+			{
+				_siblingToIndex.remove(oldNode);
+				_siblingToIndex.put(newNode, index);
+			}
+		}
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+
+	private int getPortNumNoThrow(INode node)
+	{
+		int nSiblings = _siblings.size();
+		
+		if (_siblingToIndex == null && nSiblings > 10)
+		{
+			_siblingToIndex = new HashMap<INode,Integer>(nSiblings);
+			for (int i = 0; i < nSiblings; ++i)
+			{
+				_siblingToIndex.put(_siblings.get(i), i);
+			}
+		}
+		
+		if (_siblingToIndex != null)
+		{
+			Integer index =_siblingToIndex.get(node);
+			if (index != null)
+			{
+				return index.intValue();
+			}
+		}
+		else
+		{
+			for (int i = 0; i < _siblings.size(); i++)
+			{
+				// FIXME: isConnected walks up parent chain. I don't think that is what
+				// we want.
+				if (isConnected(node,i))
+					return i;
+			}
+		}
+		return -1;
+	}
+	
+	private boolean isConnected(INode node, int portIndex)
 	{
 		INode other = _siblings.get(portIndex);
 		
 		if (other == node)
 			return true;
+		
+		// FIXME: this logic does not seem right to me. This will return true if 'node' refers to a mutual
+		// parent graph of the current node and the sibling. Is that what we want? Shouldn't we instead
+		// have the caller of this method walk up this node's parent graphs and see if any of them are
+		// a direct sibling of 'node'?
 		
 		while (other.getParentGraph() != null)
 		{
@@ -481,5 +621,5 @@ public abstract class Node implements INode, Cloneable
 		
 		return false;
 	}
-
+	
 }

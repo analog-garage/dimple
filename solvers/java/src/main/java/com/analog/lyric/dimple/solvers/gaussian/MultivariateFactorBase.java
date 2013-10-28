@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.*;
+import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
@@ -28,21 +28,21 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	protected MultivariateMsg [] _inputMsgs;
 	protected MultivariateMsg [] _outputMsgs;
 	
-	public MultivariateFactorBase(Factor factor) 
+	public MultivariateFactorBase(Factor factor)
 	{
 		super(factor);
 	}
 
 
 	@Override
-	public void resetEdgeMessages(int i) 
+	public void resetEdgeMessages(int i)
 	{
 	}
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 	    _inputMsgs = new MultivariateMsg[numPorts];
 	    _outputMsgs = new MultivariateMsg[numPorts];
 
@@ -52,14 +52,14 @@ public abstract class MultivariateFactorBase extends SFactorBase
 		{
 			ISolverVariable sv = vb.getSolver();
 			Object [] messages = sv.createMessages(this);
-			_outputMsgs[index] = (MultivariateMsg)messages[0]; 
+			_outputMsgs[index] = (MultivariateMsg)messages[0];
 			_inputMsgs[index] = (MultivariateMsg)messages[1];
 			index++;
-		}		
+		}
 		
 	}
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		MultivariateFactorBase s = (MultivariateFactorBase)other;
 	
@@ -69,7 +69,7 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	}
 	
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}

@@ -5,6 +5,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.IVariableMapList;
 /*******************************************************************************
 *   Copyright 2013 Analog Devices, Inc.
 *
@@ -27,24 +28,26 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	protected double [][] _inputMsgs;
 	protected double [][] _outputMsgs;
 	
-	public SFiniteFieldFactor(Factor factor) 
+	public SFiniteFieldFactor(Factor factor)
 	{
 		super(factor);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 		
 	    _inputMsgs = new double[numPorts][];
 	    _outputMsgs = new double[numPorts][];
 	    
-	    for (int index = 0; index < _factor.getVariables().size(); index++)
+	    IVariableMapList variables = _factor.getVariables();
+	    
+	    for (int index = 0, end = variables.size(); index < end; index++)
 	    {
-	    	ISolverVariable svar =  _factor.getVariables().getByIndex(index).getSolver();
+	    	ISolverVariable svar =  variables.getByIndex(index).getSolver();
 	    	Object [] messages = svar.createMessages(this);
 	    	_outputMsgs[index] = (double[])messages[0];
 	    	_inputMsgs[index] = (double[])messages[1];
@@ -54,27 +57,27 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 
 
 	@Override
-	public void resetEdgeMessages(int i) 
+	public void resetEdgeMessages(int i)
 	{
-		SVariable sv = (SVariable)_factor.getSiblings().get(i).getSolver();
+		SVariable sv = (SVariable)_factor.getSibling(i).getSolver();
 		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+			int otherPortNum)
 	{
 
 		SFiniteFieldFactor sother = (SFiniteFieldFactor)other;

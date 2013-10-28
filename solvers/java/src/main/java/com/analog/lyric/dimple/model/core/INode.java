@@ -17,11 +17,13 @@
 package com.analog.lyric.dimple.model.core;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.IMapList;
 
 
 public interface INode  extends INameable
@@ -62,16 +64,67 @@ public interface INode  extends INameable
 	 */
 	public boolean isVariable();
 
-    public ArrayList<INode> getSiblings();
+	/**
+	 * Returns an unmodifiable list of sibling nodes attached to this node.
+	 * This may allocate a new object, so the caller should avoid calling
+	 * this repeatedly for the same node in a loop.
+	 * 
+	 * @see #getSiblingCount()
+	 * @see #getSibling(int)
+	 */
+    public List<INode> getSiblings();
+    
+    /**
+     * Returns the size of the {@link #getSiblings()} list but without
+     * allocating any temporary objects.
+     */
+    public int getSiblingCount();
+    
+    /**
+     * Returns the ith element of the {@link #getSiblings()} list but without
+     * allocating any temporary objects.
+     */
+    public INode getSibling(int i);
+
+    /**
+     * Adds {@code node} as a sibling of this node.
+     * <p>
+     * Note that this does not perform the converse operation so to connect two nodes to each
+     * other you need to invoke this on each of them:
+     * <pre>
+     *    node1.connect(node2);
+     *    node2.connect(node1);
+     * </pre>
+     */
     public void connect(INode node);
+    
+    /**
+     * Removes sibling node with given index from list of siblings.
+     * <p>
+     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
+     * 
+     * @throws ArrayIndexOutOfBoundsException if index is not in the range [0,{@link #getSiblingCount()}-1].
+     * @see #disconnect(INode)
+     */
+    public void disconnect(int index);
+    
+    /**
+     * Removes sibling node from list of siblings.
+     * <p>
+     * Note that as with {@link #connect(INode)}, this does not perform the converse operation.
+     * 
+     * @throws DimpleException if node is not a sibling of this node.
+     * @see #disconnect(int)
+     */
+    public void disconnect(INode node);
+    
     public boolean isConnected(INode node);
-    public boolean isConnected(INode node, int portIndex);
-    public MapList<INode> getConnectedNodes();
+    public IMapList<INode> getConnectedNodes();
 	public INode getConnectedNodeFlat(int portNum);
     public INode getConnectedNode(int relativeNestingDepth, int portNum);
-    public MapList<INode> getConnectedNodes(int relativeNestingDepth);
-    public MapList<INode> getConnectedNodesFlat();
-    public MapList<INode> getConnectedNodesTop();
+    public IMapList<INode> getConnectedNodes(int relativeNestingDepth);
+    public IMapList<INode> getConnectedNodesFlat();
+    public IMapList<INode> getConnectedNodesTop();
 
     //TODO: should these only be on solver?
     public void update() ;
@@ -126,7 +179,12 @@ public interface INode  extends INameable
 	public double getScore() ;
 	public double getInternalEnergy() ;
 	public double getBetheEntropy() ;
+	
+	// REFACTOR: give this a better name to make it clear this is returning the siblings index
+	// back to this node, e.g. getSiblingInversePortIndex. Also, wouldn't it be better to use the
+	// term "edge index" or "sibling index" instead?
 	public int getSiblingPortIndex(int index);
+	
 	public void initialize();
 	public void initialize(int portNum);
 

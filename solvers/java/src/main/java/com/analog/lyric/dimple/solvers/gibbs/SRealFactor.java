@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import java.util.ArrayList;
-
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -27,12 +25,14 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {
 	protected Factor _realFactor;
 	protected ObjectSample [] _inputMsgs;
+//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
 	
@@ -61,19 +61,23 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getConditionalPotential(int portIndex)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		double result = getPotential();
 		
 		// If this is a deterministic directed factor, and the request is from a directed-from variable,
 		// Then propagate the request through the directed-to variables and sum up the results
 		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
 		{
-			ArrayList<INode> siblings = _factor.getSiblings();
-		    for (int port = 0; port < _numPorts; port++)
-		    {
-		    	VariableBase v = (VariableBase)siblings.get(port);
-		    	if (_factor.isDirectedTo(v))
+			int[] directedTo = _factor.getDirectedTo();
+			if (directedTo != null)
+			{
+				IVariableMapList variables = _factor.getVariables();
+				for (int port : directedTo)
+				{
+					VariableBase v = variables.getByIndex(port);
 		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
-		    }
+				}
+			}
 		}
 
 		return result;
@@ -83,7 +87,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		INode var = _factor.getSiblings().get(outPortNum);
+		INode var = _factor.getSibling(outPortNum);
 
 		if (var instanceof Discrete)
 		{
@@ -93,7 +97,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			// This should only be called if this factor is not a deterministic directed factor
 			DiscreteDomain outputVariableDomain = ((Discrete)var).getDiscreteDomain();
 			FactorFunction factorFunction = _realFactor.getFactorFunction();
-			int numPorts = _factor.getSiblings().size();
+			int numPorts = _factor.getSiblingCount();
 			
 			Object[] values = new Object[numPorts];
 			
@@ -111,13 +115,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			}
 		}
 	}
-	
-	
+
 	@Override
 	public double getPotential()
 	{
-	    int numPorts = _factor.getSiblings().size();
-	    Object[] inPortMsgs = new Object[numPorts];
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
+	    int numPorts = _factor.getSiblingCount();
+	    Object[] inPortMsgs = new Object[numPorts]; //_scratchValues;
 	    for (int port = 0; port < numPorts; port++)
 	    	inPortMsgs[port] = _inputMsgs[port].getObject();
 	    
@@ -136,23 +140,37 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int portIndex)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
+		
 		if (!_isDeterministicDirected) return;
 		if (_factor.isDirectedTo(portIndex)) return;
 		
+		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, portIndex);
+	}
+	
+	@Override
+	public void updateNeighborVariableValuesNow()
+	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
+		
 		// Compute the output values of the deterministic factor function from the input values
-	    Object[] values = new Object[_numPorts];
+	    Object[] values = new Object[_numPorts]; //_scratchValues;
+	    ObjectSample[] inputMsgs = _inputMsgs;
 	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = _inputMsgs[port].getObject();
+	    	values[port] = inputMsgs[port].getObject();
 		_factor.getFactorFunction().evalDeterministicFunction(values);
 		
 		// Update the directed-to variables with the computed values
-		ArrayList<INode> siblings = _factor.getSiblings();
-	    for (int port = 0; port < _numPorts; port++)
-	    {
-	    	VariableBase v = (VariableBase)siblings.get(port);
-	    	if (_factor.isDirectedTo(v))
-	    		((ISolverVariableGibbs)v.getSolver()).setCurrentSample(values[port]);
-	    }
+		int[] directedTo = _factor.getDirectedTo();
+		if (directedTo != null)
+		{
+			IVariableMapList variables = _factor.getVariables();
+			for (int port : directedTo)
+			{
+				VariableBase variable = variables.getByIndex(port);
+				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(values[port]);
+			}
+		}
 	}
 
 
@@ -161,11 +179,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void createMessages()
 	{
-		_numPorts = _factor.getSiblings().size();
+		_numPorts = _factor.getSiblingCount();
 		_inputMsgs = new ObjectSample[_numPorts];
+//		_scratchValues = new Object[_numPorts];
+		IVariableMapList variables = _factor.getVariables();
 		for (int i = 0; i < _numPorts; i++)
 		{
-			Object [] messages = _factor.getVariables().getByIndex(i).getSolver().createMessages(this);
+			Object [] messages = variables.getByIndex(i).getSolver().createMessages(this);
 			_inputMsgs[i] = (ObjectSample)messages[1];
 		}
 	}
@@ -201,6 +221,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void setDirectedTo(int [] indices)
 	{
+		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		for (VariableBase vb : _factor.getVariables())
 		{
 			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();

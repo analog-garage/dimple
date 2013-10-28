@@ -47,7 +47,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	{
 
 		double[] priors = _input;
-		int numPorts = _var.getSiblings().size();
+		int numPorts = _var.getSiblingCount();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
@@ -102,7 +102,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	{
 
 		double[] priors = _input;
-		int numPorts = _var.getSiblings().size();
+		int numPorts = _var.getSiblingCount();
 		int numValue = priors.length;
 
 		// Compute the sum of all messages
@@ -171,7 +171,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		double[] priors = _input;
 		double[] outBelief = new double[priors.length];
 		int numValue = priors.length;
-		int numPorts = _var.getSiblings().size();
+		int numPorts = _var.getSiblingCount();
 
 
 		for (int i = 0; i < numValue; i++)

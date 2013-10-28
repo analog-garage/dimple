@@ -21,10 +21,10 @@ import java.util.Random;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.hybridSampledBP.HybridSampledBPSampler;
 
-public class GaussianSampler extends HybridSampledBPSampler 
+public class GaussianSampler extends HybridSampledBPSampler
 {
 
-	public GaussianSampler(Port p, Random random) 
+	public GaussianSampler(Port p, Random random)
 	{
 		super(p, random);
 	}
@@ -33,35 +33,35 @@ public class GaussianSampler extends HybridSampledBPSampler
 	
 
 	@Override
-	public Object generateSample() 
+	public Object generateSample()
 	{
 		return _random.nextGaussian()*_msg[1]+_msg[0];
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
-		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		SVariable var = (SVariable)_p.node.getSibling(_p.index).getSolver();
 		_msg = (double[])var.resetOutputMessage(_msg);
 	}
 
 	@Override
-	public void createMessage(Object msg) 
+	public void createMessage(Object msg)
 	{
 		_msg = (double[])msg;
 	}
 
 
 	@Override
-	public Object getInputMsg() 
+	public Object getInputMsg()
 	{
 		return _msg;
 	}
 
 	@Override
-	public void moveMessages(HybridSampledBPSampler other) 
+	public void moveMessages(HybridSampledBPSampler other)
 	{
-		_msg = ((GaussianSampler)other)._msg;		
+		_msg = ((GaussianSampler)other)._msg;
 	}
 	
 }

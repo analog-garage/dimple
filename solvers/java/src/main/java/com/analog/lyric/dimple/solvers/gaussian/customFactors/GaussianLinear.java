@@ -26,7 +26,7 @@ public class GaussianLinear extends GaussianFactorBase
 	private double [] _constants;
 	private double _total;
 
-	public GaussianLinear(Factor factor) 
+	public GaussianLinear(Factor factor)
 	{
 		super(factor);
 		
@@ -52,7 +52,7 @@ public class GaussianLinear extends GaussianFactorBase
 			_total = (Double)constants[1];
 		}
 		
-		if (factor.getSiblings().size() != _constants.length)
+		if (factor.getSiblingCount() != _constants.length)
 			throw new DimpleException("Length of constants must equal the size of the number of variables");
 		
 	}
@@ -60,7 +60,7 @@ public class GaussianLinear extends GaussianFactorBase
 	
 	
 	@Override
-	public void updateEdge(int outPortNum) 
+	public void updateEdge(int outPortNum)
 	{
 
 		double mu;

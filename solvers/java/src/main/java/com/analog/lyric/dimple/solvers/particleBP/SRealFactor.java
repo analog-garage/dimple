@@ -25,10 +25,11 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 
 public class SRealFactor extends SFactorBase
-{	
+{
 	protected Factor _realFactor;
 	protected int _numPorts;
 	protected double [][] _inPortMsgs;
@@ -54,7 +55,7 @@ public class SRealFactor extends SFactorBase
 	{
 		FactorFunction factorFunction = _realFactor.getFactorFunction();
 
-        double marginal = 0;        
+        double marginal = 0;
         initializeVariableCombinations();
 		_variableValues[outPortIndex] = value;	// Use the specified value for the output port
         while (true)
@@ -78,6 +79,7 @@ public class SRealFactor extends SFactorBase
 	}
 	
 	
+	@Override
 	public void updateEdge(int outPortNum)
 	{
 		FactorFunction factorFunction = _realFactor.getFactorFunction();
@@ -103,12 +105,13 @@ public class SRealFactor extends SFactorBase
         	if (!_moreCombinations) break;
         }
         
-        double sum = 0; 
+        double sum = 0;
     	for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
     	for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] /= sum;
 	}
 	
 	
+	@Override
 	public void update()
 	{
 		FactorFunction factorFunction = _realFactor.getFactorFunction();
@@ -136,7 +139,7 @@ public class SRealFactor extends SFactorBase
 				if (!_moreCombinations) break;
 			}
 
-			double sum = 0; 
+			double sum = 0;
 			for (int i = 0; i < outputMsgLength; i++) sum += outputMsgs[i];
 			for (int i = 0; i < outputMsgLength; i++) outputMsgs[i] /= sum;
 		}
@@ -223,16 +226,17 @@ public class SRealFactor extends SFactorBase
     	_beta = beta;
     }
 
-    public void initialize()  
+    @Override
+	public void initialize()
 	{
 		super.initialize();
 
 	}
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
-		_numPorts = _factor.getSiblings().size();
+		_numPorts = _factor.getSiblingCount();
     	_inPortMsgs = new double[_numPorts][];
     	_outMsgArray = new double[_numPorts][];
 		_variableDomains = new Object[_numPorts][];
@@ -241,10 +245,10 @@ public class SRealFactor extends SFactorBase
 		_variableDomainLengths = new int[_numPorts];
 		_realVariable = new boolean[_numPorts];
 
-		
+		IVariableMapList variables = _factor.getVariables();
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
-	    	VariableBase var = _factor.getVariables().getByIndex(iPort);
+	    	VariableBase var = variables.getByIndex(iPort);
 	    	Object [] messages = var.getSolver().createMessages(this);
 
 	    	// Is the variable connected to the port real or discrete
@@ -269,20 +273,20 @@ public class SRealFactor extends SFactorBase
 
 
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 	}
 
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outMsgArray[portIndex];
 	}
@@ -290,7 +294,7 @@ public class SRealFactor extends SFactorBase
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+			int otherPortNum)
 	{
 		throw new DimpleException("Not supported by this: " + this);
 		

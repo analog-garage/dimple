@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.model.core;
 
-public class Port 
+public class Port
 {
 	public INode node;
 	public int index;
@@ -44,14 +44,14 @@ public class Port
 	}
 	
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		return node.toString() + " index: " + index;
 	}
 	
 	public INode getConnectedNode()
 	{
-		return node.getSiblings().get(index);
+		return node.getSibling(index);
 	}
 
 	public void setInputMsgValues(Object obj)
@@ -66,7 +66,7 @@ public class Port
 	
 	public Object getInputMsg()
 	{
-		return node.getSolver().getInputMsg(index);			
+		return node.getSolver().getInputMsg(index);
 	}
 	public Object getOutputMsg()
 	{
@@ -74,7 +74,7 @@ public class Port
 	}
 	public INode getSibling()
 	{
-		return node.getSiblings().get(index);
+		return node.getSibling(index);
 	}
 	public Port getSiblingPort()
 	{

@@ -27,10 +27,10 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.IVariableMapList;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -267,7 +267,7 @@ public class STableFactor extends STableFactorBase
 	private SVariable[] getSVariables()
 	{
 		// Build array of solver variables for input variables.
-		final VariableList variables = getModelObject().getVariables();
+		final IVariableMapList variables = getModelObject().getVariables();
 		final SVariable[] svariables = new SVariable[variables.size()];
 		for (int i = svariables.length; --i >= 0;)
 		{

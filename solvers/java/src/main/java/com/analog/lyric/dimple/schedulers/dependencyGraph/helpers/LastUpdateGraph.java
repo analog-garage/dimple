@@ -29,9 +29,9 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 /*
  * The LastUpdateGraph data structure provides the ability to retrieve edges associated
  * with IScheduleEntry entries.  It also provides a mechanism to see the last StaticDependencyGraphNode
- * that touched an edge.  This is used by the StaticDependencyGraph when building the dependency graph.  
+ * that touched an edge.  This is used by the StaticDependencyGraph when building the dependency graph.
  */
-public class LastUpdateGraph 
+public class LastUpdateGraph
 {
 	private HashMap<Edge,StaticDependencyGraphNode> _edge2lastNode = new HashMap<Edge, StaticDependencyGraphNode>();
 	
@@ -83,7 +83,7 @@ public class LastUpdateGraph
 		for (INode other : n.getSiblings())
 		{
 			retval.add(new Edge(n,other));
-			retval.add(new Edge(other,n));				
+			retval.add(new Edge(other,n));
 		}
 		return retval;
 	}
@@ -94,17 +94,19 @@ public class LastUpdateGraph
 	 */
 	private ArrayList<Edge> getEdges(EdgeScheduleEntry ese)
 	{
-		ArrayList<Edge> retval = new ArrayList<Edge>();
-
 		INode n = ese.getNode();
+		int size = n.getSiblingCount();
 		int portNum = ese.getPortNum();
+		ArrayList<Edge> retval = new ArrayList<Edge>(size);
+
 		
-		for (int i = 0; i < n.getSiblings().size(); i++)
+		for (int i = 0; i < size; i++)
 		{
+			INode n2 = n.getSibling(i);
 			if (i == portNum)
-				retval.add(new Edge(n,n.getSiblings().get(i)));
+				retval.add(new Edge(n,n2));
 			else
-				retval.add(new Edge(n.getSiblings().get(i),n));
+				retval.add(new Edge(n2,n));
 		}
 		
 		return retval;

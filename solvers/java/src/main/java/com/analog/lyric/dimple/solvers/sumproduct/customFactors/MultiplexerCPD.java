@@ -23,8 +23,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
+import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The multiplexer CPD is a directed factor
@@ -53,7 +53,7 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 	{
 		super(factor);
 		
-		VariableList vl = factor.getVariables();
+		IVariableMapList vl = factor.getVariables();
 		
 		factor.setDirectedTo(vl.getByIndex(0));
 		

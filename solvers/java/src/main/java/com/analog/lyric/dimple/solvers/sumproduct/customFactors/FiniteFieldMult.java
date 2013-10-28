@@ -19,12 +19,9 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
-
-
-
+import com.analog.lyric.util.misc.IVariableMapList;
 
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
@@ -41,11 +38,11 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 	public FiniteFieldMult(Factor factor)
 	{
 		super(factor);
-		if (factor.getSiblings().size() != 3)
+		if (factor.getSiblingCount() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 		
-		//TODO: check all have same prim poly
-		VariableList variables = factor.getVariables();
+		//TODO: check all have same prime poly
+		IVariableMapList variables = factor.getVariables();
 		
 		//TODO: error check
 		int poly = ((SFiniteFieldVariable)variables.getByIndex(0).getSolver()).getTables().getPoly();

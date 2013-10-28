@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -90,7 +91,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
-			ArrayList<INode> siblings = _var.getSiblings();
+			List<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)
 			{
 				((ISolverFactorGibbs)siblings.get(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
@@ -116,7 +117,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else	// There are deterministic dependents, so must account for these
 		{
 			// TODO: SPEED UP
-			ArrayList<INode> siblings = _var.getSiblings();
+			List<INode> siblings = _var.getSiblings();
 			for (int index = 0; index < messageLength; index++)
 			{
 				setCurrentSampleIndex(index);
@@ -281,7 +282,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		ArrayList<INode> siblings = _var.getSiblings();
+		List<INode> siblings = _var.getSiblings();
 		for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
 				result += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
@@ -329,7 +330,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
 		{
-			ArrayList<INode> siblings = _var.getSiblings();
+			List<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
 				Factor f = (Factor)siblings.get(port);

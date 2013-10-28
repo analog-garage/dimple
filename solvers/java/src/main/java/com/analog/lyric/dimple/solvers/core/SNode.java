@@ -62,7 +62,7 @@ public abstract class SNode extends AbstractOptionHolder implements ISolverNode
 	@Override
 	public void initialize()
 	{
-		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		for (int i = 0, end = getModelObject().getSiblingCount(); i < end; i++)
 			resetEdgeMessages(i);
 	}
 	

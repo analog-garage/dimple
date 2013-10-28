@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -153,7 +153,7 @@ public class SBlastFromThePast extends AbstractOptionHolder implements ISolverBl
 	}
 
 	@Override
-	public INode getModelObject()
+	public Factor getModelObject()
 	{
 		return _factor;
 	}

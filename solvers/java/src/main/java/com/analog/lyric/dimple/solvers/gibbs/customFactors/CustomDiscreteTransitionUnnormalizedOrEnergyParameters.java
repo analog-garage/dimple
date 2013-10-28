@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -141,7 +141,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		_conjugateSampler = new IRealConjugateSampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
-			INode var = _factor.getSiblings().get(port);
+			INode var = _factor.getSibling(port);
 			if (var instanceof Real)
 				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
 			else
@@ -189,7 +189,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_numParameterEdges = _numParameters;
 		_startingParameterEdge = 0;
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
@@ -242,11 +242,11 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 				_startingParameterEdge++;
 			}
 			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array 
+			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
 			_parameterXIndices = new int[_numParameterEdges];
 			_parameterYIndices = new int[_numParameterEdges];
 			int constantIndex = 0;
-			int parameterEdgeIndex = 0; 
+			int parameterEdgeIndex = 0;
 			for (int x = 0; x < _xDimension; x++)	// Column scan order
 			{
 				for (int y = 0; y < _yDimension; y++)
@@ -278,7 +278,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			_numParameterEdges = _numParameters;
 			_startingParameterEdge = NUM_DISCRETE_VARIABLES;
 			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array 
+			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
 			_parameterXIndices = new int[_numParameterEdges];
 			_parameterYIndices = new int[_numParameterEdges];
 			for (int x = 0, parameterEdgeIndex = 0; x < _xDimension; x++)	// Column scan order
@@ -294,7 +294,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -304,7 +304,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}

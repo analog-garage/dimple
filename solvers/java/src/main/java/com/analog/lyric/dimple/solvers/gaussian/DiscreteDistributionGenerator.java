@@ -67,7 +67,7 @@ public class DiscreteDistributionGenerator extends HybridSampledBPDistributionGe
 	@Override
 	public void initialize()
 	{
-		SVariable var = (SVariable)_p.node.getSiblings().get(_p.index).getSolver();
+		SVariable var = (SVariable)_p.node.getSibling(_p.index).getSolver();
 		_msg = (double[])var.resetInputMessage(_msg);
 
 	}

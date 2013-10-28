@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 
+import com.analog.lyric.collect.UniquePriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -48,6 +50,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Internal;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
@@ -71,6 +74,19 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private final double LOG2 = Math.log(2);
 	
+	/**
+	 * Priority queue of deterministic factors whose outputs should be
+	 * reevaluated. Lazily created.
+	 */
+	private UniquePriorityQueue<ISolverFactorGibbs> _deferredDeterministicFactorUpdates = null;
+	
+	/**
+	 * The number of requests to defer update of deterministic directed factor outputs.
+	 * If greater than zero, {@link #scheduleDeterministicDirectedUpdate(ISolverFactorGibbs, int)} will
+	 * defer execution until later. This counter may be greater than one as a result of recursive
+	 * calls.
+	 */
+	private int _deferDeterministicFactorUpdatesCounter = 0;
 	
 	// Arguments for the constructor
 	public static class Arguments
@@ -133,7 +149,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// This is like customFactorExists, but is not the public one since for these factors, we still want the MATLAB
 	// code to create a regular factor with the specified factorfunction, which we still need (instead of creating a
 	// factor with a NOPFactorFunction).
-	private boolean privateCustomFactorExists(String factorName) 
+	private boolean privateCustomFactorExists(String factorName)
 	{
 		if (factorName.equals("Normal"))
 			return true;
@@ -164,10 +180,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		else if (factorName.equals("Binomial"))
 			return true;
 		else
-			return false;	
+			return false;
 	}
 
-	public ISolverFactor createCustomFactor(Factor factor)  
+	public ISolverFactor createCustomFactor(Factor factor)
 	{
 		String funcName = factor.getFactorFunction().getName();
 		if (funcName.equals("Normal"))
@@ -237,6 +253,21 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		randomRestart();
 	}
+
+	@Internal
+	@Override
+	public void enterInitializationPhase(InitializationPhase phase)
+	{
+		switch (phase)
+		{
+		case VARIABLES:
+			deferDeterministicUpdates();
+			break;
+		case FACTORS:
+			processDeferredDeterministicUpdates();
+			break;
+		}
+	}
 	
 	@Override
 	public void solveOneStep()
@@ -294,6 +325,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
 		{
+//			if (iterNum % 100 == 0)
+//			{
+//				System.out.println(iterNum);
+//				System.out.flush();
+//			}
+			
 			if (!_scheduleIterator.hasNext())
 				_scheduleIterator = _schedule.iterator();	// Wrap-around the schedule if reached the end
 
@@ -357,8 +394,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	public void randomRestart()
 	{
+		deferDeterministicUpdates();
+		
 		for (VariableBase v : _factorGraph.getVariables())
 			((ISolverVariableGibbs)v.getSolver()).randomRestart();
+		
+		processDeferredDeterministicUpdates();
 		
 		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
 	}
@@ -567,19 +608,27 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void postAddFactor(Factor f)
 	{
+		deferDeterministicUpdates();
+		
 		for (VariableBase vb : f.getVariables())
 		{
 			((ISolverVariableGibbs) vb.getSolver()).postAddFactor(f);
 		}
+		
+		processDeferredDeterministicUpdates();
 	}
 	
 	@Override
 	public void postSetSolverFactory()
 	{
+		deferDeterministicUpdates();
+
 		for(VariableBase vb : getModel().getVariablesFlat())
 		{
 			((ISolverVariableGibbs)vb.getSolver()).postAddFactor(null);
 		}
+
+		processDeferredDeterministicUpdates();
 	}
 
 	@Override
@@ -614,6 +663,68 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	
+	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex)
+	{
+		if (_deferDeterministicFactorUpdatesCounter > 0)
+		{
+			if (_deferredDeterministicFactorUpdates == null)
+			{
+				// TODO: Currently uses FIFO order. Instead calculate directed dependency order and use that.
+				Comparator<ISolverFactorGibbs> comparePriority = new Comparator<ISolverFactorGibbs>() {
+					// NOTE: we could have used Ordering.allEqual() from the guava library, but
+					// it fails in MATLAB because MATLAB includes an ancient version of the google
+					// library at the front of its class path that lacks this method. :-(
+					@Override
+					public int compare(ISolverFactorGibbs arg0, ISolverFactorGibbs arg1)
+					{
+						return 0;
+					}
+				};
+				_deferredDeterministicFactorUpdates =
+					new UniquePriorityQueue<ISolverFactorGibbs>(11, comparePriority);
+			}
+			_deferredDeterministicFactorUpdates.offer(sfactor);
+		}
+		else
+		{
+			deferDeterministicUpdates();
+			try
+			{
+				sfactor.updateNeighborVariableValuesNow();
+			}
+			finally
+			{
+				processDeferredDeterministicUpdates();
+			}
+		}
+	}
 	
+	void processDeferredDeterministicUpdates()
+	{
+		if (--_deferDeterministicFactorUpdatesCounter <= 0)
+		{
+			++_deferDeterministicFactorUpdatesCounter;
+			try
+			{
+				if (_deferredDeterministicFactorUpdates != null)
+				{
+					ISolverFactorGibbs sfactor = null;
+					while ((sfactor = _deferredDeterministicFactorUpdates.poll()) != null)
+					{
+						sfactor.updateNeighborVariableValuesNow();
+					}
+				}
+			}
+			finally
+			{
+				--_deferDeterministicFactorUpdatesCounter;
+			
+			}
+		}
+	}
 	
+	void deferDeterministicUpdates()
+	{
+		++_deferDeterministicFactorUpdatesCounter;
+	}
 }

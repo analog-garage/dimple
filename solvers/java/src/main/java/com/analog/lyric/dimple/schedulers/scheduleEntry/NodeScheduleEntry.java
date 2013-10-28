@@ -40,7 +40,8 @@ public class NodeScheduleEntry implements IScheduleEntry
 		_node = node;
 	}
 	
-	public void update() 
+	@Override
+	public void update()
 	{
 		_node.update();
 	}
@@ -50,11 +51,13 @@ public class NodeScheduleEntry implements IScheduleEntry
 		return _node;
 	}
 	
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
-	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
@@ -67,11 +70,11 @@ public class NodeScheduleEntry implements IScheduleEntry
 		
 		if (this.getNode() instanceof VariableBase)
 		{
-			isBoundaryVariable = this.getNode().getParentGraph().getBoundaryVariables().contains((VariableBase)this.getNode());
+			isBoundaryVariable = this.getNode().getParentGraph().getBoundaryVariables().contains(this.getNode());
 			
 			if(copyToRoot)
 			{
-				skip = isBoundaryVariable && 
+				skip = isBoundaryVariable &&
 				   this.getNode().getParentGraph().hasParentGraph();
 			}
 			else
@@ -90,18 +93,19 @@ public class NodeScheduleEntry implements IScheduleEntry
 	}
 
 	@Override
-	public Iterable<Port> getPorts() 
+	public Iterable<Port> getPorts()
 	{
 		ArrayList<Port> ports = new ArrayList<Port>();
 		
 		//Add each port of this node to the list.
-		for (int index = 0; index < _node.getSiblings().size(); index++)
+		for (int index = 0, end = _node.getSiblingCount(); index < end; index++)
 		{
 			ports.add(new Port(_node,index));
 		}
 		return ports;
 	}
 
+	@Override
 	public String toString()
 	{
 		return String.format("IScheduleEntry [%s]"

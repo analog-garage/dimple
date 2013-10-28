@@ -72,8 +72,9 @@ public class FixedSchedule extends ScheduleBase
 	 * all edges of the FactorGraph are updated at least once.  It also makes sure all nodes are valid
 	 * members of the FactorGraph whos schedule is being set.
 	 */
-	public void attach(FactorGraph factorGraph) 
-	{		
+	@Override
+	public void attach(FactorGraph factorGraph)
+	{
 		super.attach(factorGraph);
 		
 		
@@ -92,7 +93,7 @@ public class FixedSchedule extends ScheduleBase
 			//Add all factor's ports to the list of things that must be updated.
 			for (Factor f : factorGraph.getNonGraphFactors().values())
 			{
-				for (int index = 0; index < f.getSiblings().size(); index++)
+				for (int index = 0, end = f.getSiblingCount(); index < end; index++)
 				{
 					setOfAllPorts.add(new Port(f,index));
 					whatsLeft.add(new Port(f,index));
@@ -107,7 +108,7 @@ public class FixedSchedule extends ScheduleBase
 			//Add all variable's ports to things that can/must be updated.
 			for (VariableBase v : vl.values())
 			{
-				for (int index = 0; index < v.getSiblings().size(); index++)
+				for (int index = 0, end = v.getSiblingCount(); index < end; index++)
 				{
 					whatsLeft.add(new Port(v,index));
 					setOfAllPorts.add(new Port(v,index));
@@ -171,6 +172,7 @@ public class FixedSchedule extends ScheduleBase
 		add(s);
 	}
 	
+	@Override
 	public Iterator<IScheduleEntry> iterator()
 	{
 		return _schedule.iterator();
@@ -221,16 +223,18 @@ public class FixedSchedule extends ScheduleBase
 		if (s != null) _schedule.add(new SubScheduleEntry(s));
 	}
 	
-	public ISchedule copy(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public ISchedule copy(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
-	public ISchedule copyToRoot(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public ISchedule copyToRoot(HashMap<Object,Object> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
 	
-	public ISchedule copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot) 
+	public ISchedule copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot)
 	{
 		FactorGraph templateGraph = getFactorGraph();
 		
@@ -246,8 +250,8 @@ public class FixedSchedule extends ScheduleBase
 			{
 				IScheduleEntry entry = schedule.get(i);
 				
-				IScheduleEntry newEntry = copyToRoot ? 
-											entry.copyToRoot(old2newObjs) : 
+				IScheduleEntry newEntry = copyToRoot ?
+											entry.copyToRoot(old2newObjs) :
 											entry.copy(old2newObjs);
 				if (newEntry != null)
 					newSchedule.add(newEntry);
@@ -262,6 +266,7 @@ public class FixedSchedule extends ScheduleBase
 		}
 	}
 	
+	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("FixedSchedule ");

@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
@@ -34,6 +35,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldConst
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldProjection;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.MultiplexerCPD;
+import com.analog.lyric.util.misc.IMapList;
 
 public class SFactorGraph extends SFactorGraphBase
 {
@@ -154,12 +156,14 @@ public class SFactorGraph extends SFactorGraphBase
 	 */
 	protected void setDampingForTableFunction(STableFactor tf)
 	{
+		Factor factor = tf.getFactor();
+		IMapList<INode> nodes = factor.getConnectedNodesFlat();
 		
-		for (int i = 0; i < tf.getFactor().getSiblings().size(); i++)
+		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
 		{
 			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)tf.getFactor().getConnectedNodesFlat().getByIndex(i);
-			for (int j = 0; j < var.getSiblings().size(); j++)
+			VariableBase var = (VariableBase)nodes.getByIndex(i);
+			for (int j = 0, endj = var.getSiblingCount(); j < endj;j++)
 			{
 				SVariable svar = (SVariable)var.getSolver();
 				svar.setDamping(j,_damping);

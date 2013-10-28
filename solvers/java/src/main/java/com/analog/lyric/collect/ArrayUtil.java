@@ -10,6 +10,11 @@ import com.google.common.math.DoubleMath;
 public abstract class ArrayUtil
 {
 	/**
+	 * Canonical empty boolean array.
+	 */
+	public static final boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
+	
+	/**
 	 * Canonical empty double array.
 	 */
 	public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];

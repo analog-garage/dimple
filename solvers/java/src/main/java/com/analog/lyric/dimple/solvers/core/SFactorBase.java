@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -27,7 +27,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class SFactorBase extends SNode implements ISolverFactor 
+public abstract class SFactorBase extends SNode implements ISolverFactor
 {
 	protected Factor _factor;
 	
@@ -39,7 +39,12 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 		
 	}
 		
-		
+	@Override
+	public Factor getModelObject()
+	{
+		return _factor;
+	}
+	
 	public Factor getFactor()
 	{
 		return _factor;
@@ -47,14 +52,14 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 
 
 	@Override
-	public void update()  
+	public void update()
 	{
-		for (int i = 0; i < _factor.getSiblings().size(); i++)
+		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++)
 			updateEdge(i);
 	}
 	
 	@Override
-	public double [] getBelief() 
+	public double [] getBelief()
 	{
 		throw new DimpleException("not supported");
 	}
@@ -86,8 +91,8 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 
 	@Override
     public double getScore()
-    {    	
-		ArrayList<INode> ports = _factor.getSiblings();
+    {
+		List<INode> ports = _factor.getSiblings();
 		int numPorts = ports.size();
 	    Object[] values = new Object[numPorts];
 
@@ -101,7 +106,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
     }
 
 	@Override
-	public int[][] getPossibleBeliefIndices() 
+	public int[][] getPossibleBeliefIndices()
 	{
 		throw new DimpleException("not implemented");
 	}
@@ -115,22 +120,28 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public double getBetheEntropy()
 	{
-		throw new DimpleException("getBetheEntropy not yet supported");		
+		throw new DimpleException("getBetheEntropy not yet supported");
 	}
 	
+	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		if (getModelObject().getSiblings().size() != other.getModelObject().getSiblings().size())
-			throw new DimpleException("cannot move messages on nodes with different numbers of ports");			
+		Factor factor = getModelObject();
+		INode otherFactor = other.getModelObject();
 		
-		for (int i = 0; i < getModelObject().getSiblings().size(); i++)
+		int nSiblings = factor.getSiblingCount();
+		
+		if (nSiblings != otherFactor.getSiblingCount())
+			throw new DimpleException("cannot move messages on nodes with different numbers of ports");
+		
+		for (int i = 0; i < nSiblings; i++)
 		{
 			moveMessages(other, i,i);
 			
-			INode thisVariable = getModelObject().getSiblings().get(i);
-			INode otherVariable = other.getModelObject().getSiblings().get(i);
-			int thisIndex = getModelObject().getSiblingPortIndex(i);
-			int otherIndex = other.getModelObject().getSiblingPortIndex(i);
+			INode thisVariable = factor.getSibling(i);
+			INode otherVariable = otherFactor.getSibling(i);
+			int thisIndex = factor.getSiblingPortIndex(i);
+			int otherIndex = otherFactor.getSiblingPortIndex(i);
 			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
 		}
 	}

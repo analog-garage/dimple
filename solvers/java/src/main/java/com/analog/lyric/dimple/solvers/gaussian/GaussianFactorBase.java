@@ -22,12 +22,12 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public abstract class GaussianFactorBase extends SFactorBase 
+public abstract class GaussianFactorBase extends SFactorBase
 {
 	protected double [][] _inputMsgs;
 	protected double [][] _outputMsgs;
 	
-	public GaussianFactorBase(Factor factor) 
+	public GaussianFactorBase(Factor factor)
 	{
 		super(factor);
 		// TODO Auto-generated constructor stub
@@ -35,16 +35,16 @@ public abstract class GaussianFactorBase extends SFactorBase
 
 
 	@Override
-	public void resetEdgeMessages(int i ) 
+	public void resetEdgeMessages(int i )
 	{
 		
 	}
 
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 
-		int numPorts = _factor.getSiblings().size();
+		int numPorts = _factor.getSiblingCount();
 		
 	    _inputMsgs = new double[numPorts][];
 	    _outputMsgs = new double[numPorts][];
@@ -61,13 +61,13 @@ public abstract class GaussianFactorBase extends SFactorBase
 		
 	}
 
-	@Override 
+	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}
 
-	@Override 
+	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
@@ -75,7 +75,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		GaussianFactorBase s = (GaussianFactorBase)other;
 	

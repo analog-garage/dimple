@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.model.factors;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.BitSet;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -32,6 +32,8 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.FlaggedVariableMapList;
+import com.analog.lyric.util.misc.IVariableMapList;
 import com.analog.lyric.util.misc.Internal;
 
 public class Factor extends FactorBase implements Cloneable
@@ -39,7 +41,7 @@ public class Factor extends FactorBase implements Cloneable
 	private String _modelerFunctionName = "";
 	protected ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
-	protected VariableList _variables = null;
+	protected FlaggedVariableMapList _variables = null;
 	int [] _directedTo = null;
 	int [] _directedFrom = null;
 	
@@ -176,13 +178,12 @@ public class Factor extends FactorBase implements Cloneable
 	public void replace(VariableBase oldVariable, VariableBase newVariable)
 	{
 		_variables = null;
-		int index = _siblings.indexOf(oldVariable);
-		_siblings.set(index, newVariable);
+		replaceSibling(oldVariable, newVariable);
 	}
 	
 	public DomainList<?> getDomainList()
 	{
-		VariableList variables = getVariables();
+		IVariableMapList variables = getVariables();
 		int numVariables = variables.size();
 		
 		Domain [] domains = new Domain[numVariables];
@@ -232,14 +233,19 @@ public class Factor extends FactorBase implements Cloneable
 			setDirectedTo(_factorFunction.getDirectedToIndices((_variables == null) ? 0 : _variables.size()));
 	}
 	
-	public VariableList getVariables()
+	public IVariableMapList getVariables()
 	{
 		//Cache the variables for performance reasons
 		if (_variables == null)
 		{
-			_variables = new VariableList();
-			for (int i = 0; i < _siblings.size(); i++)
-				_variables.add((VariableBase)_siblings.get(i));
+			int nSiblings = getSiblingCount();
+			_variables = new FlaggedVariableMapList(nSiblings);
+			for (int i = 0; i < nSiblings; i++)
+				_variables.add(getSibling(i));
+			if (_directedTo != null)
+			{
+				_variables.setFlags(true, _directedTo);
+			}
 		}
 		
 		return _variables;
@@ -280,9 +286,11 @@ public class Factor extends FactorBase implements Cloneable
 		//go through variables from first factor and
 		ArrayList<Integer> map1 = new ArrayList<Integer>();
 		
+		final int nSiblings = getSiblingCount();
+		final int nOtherSiblings = other.getSiblingCount();
 		
 		//First get a list of variables in common.
-		for (int i = 0; i < getSiblings().size(); i++)
+		for (int i = 0; i < nSiblings; i++)
 		{
 			map1.add(i);
 			varList.add(getConnectedNodeFlat(i));
@@ -293,11 +301,11 @@ public class Factor extends FactorBase implements Cloneable
 		
 		int newnuminputs = map1.size();
 		
-		for (int i = 0; i < other.getSiblings().size(); i++)
+		for (int i = 0; i < nOtherSiblings; i++)
 		{
 			boolean found = false;
 			
-			for (int j = 0; j < getSiblings().size(); j++)
+			for (int j = 0; j < nSiblings; j++)
 			{
 				
 				if (getConnectedNodeFlat(j) == other.getConnectedNodeFlat(i))
@@ -394,14 +402,21 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		ensureDirectedToSet();
 		
-		VariableList vl = new VariableList();
+		VariableList vl = null;
+		
 		if (isDirected())
 		{
+			vl = new VariableList(_directedTo.length);
 			for (int i = 0; i < _directedTo.length; i++)
 			{
 				vl.add(getVariables().getByIndex(_directedTo[i]));
 			}
 		}
+		else
+		{
+			vl = new VariableList();
+		}
+		
 		return vl;
 
 	}
@@ -418,36 +433,38 @@ public class Factor extends FactorBase implements Cloneable
 
 	public void setDirectedTo(VariableBase ... variables)
 	{
-		VariableList vl = new VariableList();
-		vl.add(variables);
-		setDirectedTo(vl);
+		int [] directedTo = new int[variables.length];
+		for (int i = 0; i < directedTo.length; i++)
+			directedTo[i] = getPortNum(variables[i]);
+		setDirectedTo(directedTo);
 	}
 	
 	public void setDirectedTo(int [] directedTo)
 	{
 		getVariables();
+		_variables.clearFlags();
 
 		final JointDomainIndexer curDomains = getDomainList().asJointDomainIndexer();
 
-		HashSet<Integer> hs = new HashSet<Integer>();
+		BitSet toSet = new BitSet(directedTo.length);
 		
-		_directedFrom = new int[_variables.size()-directedTo.length];
+		final int nVariables = _variables.size();
+		_directedFrom = new int[nVariables-directedTo.length];
 		
-		for (int i = 0; i < directedTo.length; i++)
+		for (int toVarIndex : directedTo)
 		{
-			if (hs.contains(directedTo[i]) || directedTo[i] > _variables.size())
+			if (toSet.get(toVarIndex) || toVarIndex > nVariables)
 				throw new DimpleException("invalid edge");
-			hs.add(directedTo[i]);
+			toSet.set(toVarIndex);
 		}
+
+		_variables.setFlags(true,  directedTo);
 		
-		int index = 0;
-		for (int i = 0; i < _variables.size(); i++)
+		for (int i = 0, fromVarIndex = 0;
+			(fromVarIndex = toSet.nextClearBit(fromVarIndex)) < nVariables;
+			++fromVarIndex, ++i)
 		{
-			if (! hs.contains(i))
-			{
-				_directedFrom[index] = i;
-				index++;
-			}
+			_directedFrom[i] = fromVarIndex;
 		}
 		
 		_directedTo = directedTo;
@@ -475,7 +492,7 @@ public class Factor extends FactorBase implements Cloneable
 		if (_directedTo == null)
 			return false;
 		
-		return getDirectedToVariables().contains(variable);
+		return _variables.isFlagged(variable);
 	}
 	
 	public boolean isDirectedTo(int edge)

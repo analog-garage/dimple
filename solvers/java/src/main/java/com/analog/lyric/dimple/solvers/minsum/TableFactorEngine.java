@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 /*
  * Provides the update and updateEdge logic for minsum
  */
-public class TableFactorEngine 
+public class TableFactorEngine
 {
 	STableFactor _tableFactor;
 	Factor _factor;
@@ -35,9 +35,9 @@ public class TableFactorEngine
 		_factor = _tableFactor.getFactor();
 	}
 	
-	public void updateEdge(int outPortNum) 
+	public void updateEdge(int outPortNum)
 	{
-		ArrayList<INode> siblings = _factor.getSiblings();
+		List<INode> siblings = _factor.getSiblings();
 		
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
 	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
@@ -60,7 +60,7 @@ public class TableFactorEngine
         }
 
         
-        for (int i = 0; i < outputMsgLength; i++) 
+        for (int i = 0; i < outputMsgLength; i++)
         	outputMsgs[i] = Double.POSITIVE_INFINITY;
 
         double [][] inPortMsgs = _tableFactor.getInPortMsgs();
@@ -76,7 +76,7 @@ public class TableFactorEngine
         		if (inPortNum != outPortNum)
         			L += inPortMsgs[inPortNum][tableRow[inPortNum]];
         	
-        	if (L < outputMsgs[outputIndex]) 
+        	if (L < outputMsgs[outputIndex])
         		outputMsgs[outputIndex] = L;				// Use the minimum value
         }
 
@@ -86,7 +86,7 @@ public class TableFactorEngine
         for (int i = 0; i < outputMsgLength; i++)
         {
         	double msg = outputMsgs[i];
-        	if (msg < minPotential) 
+        	if (msg < minPotential)
         		minPotential = msg;
         }
         
@@ -103,17 +103,17 @@ public class TableFactorEngine
         }
         
 		// Normalize min value
-        for (int i = 0; i < outputMsgLength; i++) 
+        for (int i = 0; i < outputMsgLength; i++)
         	outputMsgs[i] -= minPotential;
 	}
 	
 	
-	public void update() 
+	public void update()
 	{
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
 	    double[] values = _tableFactor.getFactorTable().getEnergiesSparseUnsafe();
 	    int tableLength = table.length;
-	    int numPorts = _factor.getSiblings().size();
+	    int numPorts = _factor.getSiblingCount();
 	    double [][] outPortMsgs = _tableFactor.getOutPortMsgs();
 
 	    for (int port = 0; port < numPorts; port++)
@@ -132,7 +132,7 @@ public class TableFactorEngine
 	    		}
 	    	}
 
-	    	for (int i = 0; i < outputMsgLength; i++) 
+	    	for (int i = 0; i < outputMsgLength; i++)
 	    		outputMsgs[i] = Double.POSITIVE_INFINITY;
 	    }
 	    
@@ -145,7 +145,7 @@ public class TableFactorEngine
 	    	int[] tableRow = table[tableIndex];
 	    	
 	    	// Sum up the function value plus the messages on all ports
-	    	double L = values[tableIndex]; 
+	    	double L = values[tableIndex];
 	    	for (int port = 0; port < numPorts; port++)
 	    		L += inPortMsgs[port][tableRow[port]];
 
@@ -155,7 +155,7 @@ public class TableFactorEngine
 	    		double[] outputMsgs = outPortMsgs[outPortNum];
 	    		int outputIndex = tableRow[outPortNum];											// Index for the output value
 	    		double LThisPort = L - inPortMsgs[outPortNum][tableRow[outPortNum]];			// Subtract out the message from this output port
-	    		if (LThisPort < outputMsgs[outputIndex]) 
+	    		if (LThisPort < outputMsgs[outputIndex])
 	    			outputMsgs[outputIndex] = LThisPort;	// Use the minimum value
 	    	}
 	    }
@@ -185,15 +185,15 @@ public class TableFactorEngine
 	    {
     		double[] outputMsgs = outPortMsgs[port];
     		int outputMsgLength = outputMsgs.length;
-	    	double minPotential = Double.POSITIVE_INFINITY; 
+	    	double minPotential = Double.POSITIVE_INFINITY;
 	    	for (int i = 0; i < outputMsgLength; i++)
 	    	{
 	    		double msg = outputMsgs[i];
-	    		if (msg < minPotential) 
+	    		if (msg < minPotential)
 	    			minPotential = msg;
 	    	}
-	    	for (int i = 0; i < outputMsgLength; i++) 
+	    	for (int i = 0; i < outputMsgLength; i++)
 	    		outputMsgs[i] -= minPotential;			// Normalize min value
-	    }	    
+	    }
 	}
 }

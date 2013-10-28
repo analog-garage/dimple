@@ -55,7 +55,8 @@ public class Normal extends FactorFunction
 		_precisionOverTwo = _precision*0.5;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	if (_precision < 0) throw new DimpleException("Negative precision value. This must be a non-negative value.");
+    	if (_precision < 0)
+    		throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
 
     @Override
@@ -68,7 +69,8 @@ public class Normal extends FactorFunction
     		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
     		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
     		_precisionOverTwo = _precision*0.5;
-    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
+    		if (_precision < 0)
+    			throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
     	}
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables

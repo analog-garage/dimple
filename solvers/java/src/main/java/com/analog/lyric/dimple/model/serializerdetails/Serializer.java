@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.model.serializerdetails;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -126,7 +126,7 @@ public class Serializer
 		e.setAttribute("explicitName", explicitName);
 		e.setAttribute("class", f.getModelerFunctionName());
 			
-		ArrayList<INode> ports = f.getSiblings();
+		List<INode> ports = f.getSiblings();
 		e.setAttribute("numEdges", Integer.toString(ports.size()));
 
 		// * TODO TableFactor?

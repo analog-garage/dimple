@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -68,12 +69,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
-	private boolean _isDeterministicDepdentent = false;
+	private boolean _isDeterministicDependent = false;
 	private boolean _hasDeterministicDependents = false;
 
 
 	// Primary constructor
-	public SRealVariable(VariableBase var)  
+	public SRealVariable(VariableBase var)
 	{
 		super(var);
 
@@ -85,7 +86,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	// Alternative constructor for creating from a joint domain
-	public SRealVariable(VariableBase var, Real realVar, RealDomain domain)  
+	public SRealVariable(VariableBase var, Real realVar, RealDomain domain)
 	{
 		super(var);
 
@@ -95,15 +96,17 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	
 	
+	@Override
 	public void updateEdge(int outPortNum)
 	{
 		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 
+	@Override
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDepdentent) return;
+		if (_isDeterministicDependent) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -122,7 +125,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			ArrayList<INode> siblings = _var.getSiblings();
+			List<INode> siblings = _var.getSiblings();
 			int numPorts = siblings.size();
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
@@ -163,7 +166,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
 			potential = _input.evalEnergy(new Object[]{_sampleValue});
-		ArrayList<INode> siblings = _var.getSiblings();
+		List<INode> siblings = _var.getSiblings();
 		int numPorts = siblings.size();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
@@ -189,6 +192,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 
+	@Override
 	public void randomRestart()
 	{
 		// If the sample value is being held, don't modify the value
@@ -228,18 +232,20 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		}
 	}
 
+	@Override
 	public void updateBelief()
 	{
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
-	public Object getBelief() 
+	@Override
+	public Object getBelief()
 	{
 		return 0d;
 	}
 
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue) 
+	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 			_input = null;
@@ -247,15 +253,15 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			_input = (FactorFunction)input;
 
 		if (hasFixedValue)
-			setCurrentSample((Double)fixedValue);
+			setCurrentSample(fixedValue);
 	}
 
 	
-	@Override 
+	@Override
 	public void updateDirectedCache()
 	{
 		_hasDeterministicDependents = hasDeterministicDependents();
-		_isDeterministicDepdentent = isDeterministicDependent();
+		_isDeterministicDependent = isDeterministicDependent();
 	}
 	
 	@Override
@@ -267,7 +273,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Set the fixed value is there is one
 		if (_var.hasFixedValue())
 		{
-			setCurrentSample((Double)_var.getFixedValueObject());
+			setCurrentSample(_var.getFixedValueObject());
 		}
 		else
 		{
@@ -304,28 +310,32 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 
+	@Override
 	public final void saveAllSamples()
 	{
 		_sampleArray = new ArrayList<Double>();
 	}
 
+	@Override
 	public final void saveCurrentSample()
 	{
 		if (_sampleArray != null)
 			_sampleArray.add(_sampleValue);
 	}
 
+	@Override
 	public final void saveBestSample()
 	{
 		_bestSampleValue = _sampleValue;
 	}
 	
+	@Override
 	public double getConditionalPotential(int portIndex)
 	{
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		ArrayList<INode> siblings = _var.getSiblings();
+		List<INode> siblings = _var.getSiblings();
 		int numPorts = siblings.size();
 		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
@@ -334,6 +344,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return result;
 	}
 
+	@Override
 	public final double getPotential()
 	{
 		if (_var.hasFixedValue())
@@ -344,7 +355,8 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return _input.evalEnergy(new Object[]{_sampleValue});
 	}
 
-    public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
+    @Override
+	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(double value)
 	{
 		_sampleValue = value;
@@ -353,7 +365,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
 		{
-			ArrayList<INode> siblings = _var.getSiblings();
+			List<INode> siblings = _var.getSiblings();
 			int numPorts = siblings.size();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			{
@@ -492,6 +504,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public final double getInitialSampleValue() {return _initialSampleValue;}
 
 
+	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
 		_beta = beta;
@@ -524,7 +537,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 
 
-	public RealSample createDefaultMessage() 
+	public RealSample createDefaultMessage()
 	{
 		if (_var.hasFixedValue())
 			return new RealSample(_varReal.getFixedValue());
@@ -533,48 +546,49 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) 
+	public Object resetInputMessage(Object message)
 	{
 		((RealSample)message).setObject(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 		return message;
 	}
 
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
-		throw new DimpleException("Not supported by: " + this);	
+		throw new DimpleException("Not supported by: " + this);
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
-		return _outputMsg;	
+		return _outputMsg;
 	}
 
 	@Override
-	public void setInputMsg(int portIndex, Object obj) 
+	public void setInputMsg(int portIndex, Object obj)
 	{
 				
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum) 
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		
 	}
 	
 
+	@Override
 	public void initialize()
 	{
 		super.initialize();
 
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
-		if (!_isDeterministicDepdentent)
+		if (!_isDeterministicDependent)
 		{
 			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
@@ -597,11 +611,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public Object[] createMessages(ISolverFactor factor) 
+	public Object[] createMessages(ISolverFactor factor)
 	{
 		return new Object[] {null,_outputMsg};
 	}
 	
+	@Override
 	public void createNonEdgeSpecificState()
 	{
 		_outputMsg = createDefaultMessage();
@@ -632,7 +647,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public IRealConjugateSampler findConjugateSampler()
 	{
 		// Check all the adjacent factors to see if they all support a common cojugate factor
-		ArrayList<INode> siblings = _var.getSiblings();
+		List<INode> siblings = _var.getSiblings();
 		int numPorts = siblings.size();
 		ArrayList<IRealConjugateSamplerFactory> commonSamplers = new ArrayList<IRealConjugateSamplerFactory>();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)

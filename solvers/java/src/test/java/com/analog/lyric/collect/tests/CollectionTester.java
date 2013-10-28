@@ -64,11 +64,16 @@ public class CollectionTester<T>
 		}
 		
 		Object[] all2 = collection.toArray();
+		Object[] all3 = new Object[all2.length];
+		assertSame(all3, collection.toArray(all3));
 		assertEquals(all2.length, collection.size());
 		for (Object elt : all2)
 		{
 			assertTrue(collection.contains(elt));
 		}
+		
+		assertArrayEquals(all2, all3);
+		assertArrayEquals(all2, collection.toArray(new Object[0]));
 		
 		try
 		{

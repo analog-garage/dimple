@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.core;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -49,7 +50,7 @@ public class Model
 		return ModelerHolder.INSTANCE;
 	}
 	
-	public void restoreDefaultDefaultGraphFactory() 
+	public void restoreDefaultDefaultGraphFactory()
 	{
 		setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 	}
@@ -59,13 +60,12 @@ public class Model
 		return _defaultGraphFactory;
 	}
 
-	public void setDefaultGraphFactory(IFactorGraphFactory graphFactory) 
+	public void setDefaultGraphFactory(IFactorGraphFactory graphFactory)
 	{
 		_defaultGraphFactory = graphFactory;
 	}
 	
 	
-	@SuppressWarnings("resource")
 	public static String getVersion()
 	{
 		InputStream in = System.class.getResourceAsStream("/VERSION");
@@ -80,11 +80,20 @@ public class Model
 		try
 		{
 			version = br.readLine();
-			br.close();
 		}
 		catch (Exception e)
 		{
-			
+			// Ignore errors reading file.
+		}
+		finally
+		{
+			try
+			{
+				br.close();
+			}
+			catch (IOException ex)
+			{
+			}
 		}
 		
 		return version;

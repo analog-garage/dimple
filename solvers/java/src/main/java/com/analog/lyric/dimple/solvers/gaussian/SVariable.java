@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gaussian;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -29,17 +29,17 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
 
-public class SVariable extends SRealVariableBase 
+public class SVariable extends SRealVariableBase
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
-	 */	
+	 */
 	private double [] _input;
 	private double [][] _inputMsgs = new double[0][];
 	private double [][] _outputMsgs = new double[0][];
     
-	public SVariable(VariableBase var) 
+	public SVariable(VariableBase var)
     {
 		super(var);
 	}
@@ -51,7 +51,7 @@ public class SVariable extends SRealVariableBase
 		if (hasFixedValue)
 			_input = createFixedValueMessage((Double)fixedValue);
 		else if (input == null)
-    		_input = (double[]) createDefaultMessage();
+    		_input = createDefaultMessage();
     	else
     	{
     		if (input instanceof Normal)	// Input is a Normal factor function with fixed parameters
@@ -78,7 +78,8 @@ public class SVariable extends SRealVariableBase
     	
     }
 	
-    public void updateEdge(int outPortNum) 
+    @Override
+	public void updateEdge(int outPortNum)
     {
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
@@ -89,7 +90,7 @@ public class SVariable extends SRealVariableBase
         	return;
     	}
     	
-    	ArrayList<INode> ports = _var.getSiblings();
+    	List<INode> ports = _var.getSiblings();
     	
     	double R = 1/(_input[1]*_input[1]);
     	double Mu = _input[0]*R;
@@ -116,7 +117,7 @@ public class SVariable extends SRealVariableBase
     				if (!anyRisInfinite)
     				{
 	    				anyRisInfinite = true;
-	    				MuOfInf = msg[0];    					
+	    				MuOfInf = msg[0];
     				}
     				else
     				{
@@ -127,7 +128,7 @@ public class SVariable extends SRealVariableBase
     				}
     			}
     			else
-    			{	    			
+    			{
 	    			R += tmpR;
 	    			Mu += tmpR * msg[0];
     			}
@@ -159,7 +160,8 @@ public class SVariable extends SRealVariableBase
     
 
     
-    public Object getBelief() 
+    @Override
+	public Object getBelief()
     {
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue()) return _input.clone();
@@ -188,7 +190,7 @@ public class SVariable extends SRealVariableBase
 				if (!anyRisInfinite)
 				{
     				anyRisInfinite = true;
-    				MuOfInf = msg[0];    					
+    				MuOfInf = msg[0];
 				}
 				else
 				{
@@ -199,7 +201,7 @@ public class SVariable extends SRealVariableBase
 				}
 			}
 			else
-			{	    			
+			{
     			R += tmpR;
     			Mu += tmpR * msg[0];
 			}
@@ -243,7 +245,7 @@ public class SVariable extends SRealVariableBase
 	
 
 	@Override
-	public Object [] createMessages(ISolverFactor factor) 
+	public Object [] createMessages(ISolverFactor factor)
 	{
 		int portNum = _var.getPortNum(factor.getModelObject());
 		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
@@ -254,14 +256,14 @@ public class SVariable extends SRealVariableBase
 		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	public double [] createDefaultMessage() 
+	public double [] createDefaultMessage()
 	{
 		double [] message = new double[2];
 		return (double[])resetInputMessage(message);
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) 
+	public Object resetInputMessage(Object message)
 	{
 		double [] m = (double[])message;
 		m[0] = 0;
@@ -270,7 +272,7 @@ public class SVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void resetEdgeMessages(int i) 
+	public void resetEdgeMessages(int i)
 	{
 		_inputMsgs[i] = (double[])resetInputMessage(_inputMsgs[i]);
 		_outputMsgs[i] = (double[])resetOutputMessage(_outputMsgs[i]);
@@ -278,13 +280,13 @@ public class SVariable extends SRealVariableBase
 	}
     
     
-	@Override 
+	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}
 
-	@Override 
+	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
@@ -292,7 +294,7 @@ public class SVariable extends SRealVariableBase
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		SVariable s = (SVariable)other;
 	
