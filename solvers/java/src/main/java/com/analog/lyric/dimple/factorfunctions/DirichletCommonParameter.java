@@ -25,41 +25,44 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
 /**
  * Factor for an exchangeable set of Dirichlet distributed variables
- * associated with a variable or fixed parameter vector. The variables are
- * ordered as follows in the argument list:
+ * associated with a variable or fixed parameter vector. In this version,
+ * all of the parameter values are common and specified as a single real
+ * value.  The variables are ordered as follows in the argument list:
  * 
- * 1) Parameters (non-negative RealJoint variable).
+ * 1) Parameter (non-negative Real variable).
  * 2...) An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
  * 
- * The parameters may optionally be specified as constants in the constructor.
+ * The dimension of the Dirichlet variable must be specified in the constructor.
+ * 
+ * The parameter may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class Dirichlet extends FactorFunction
+public class DirichletCommonParameter extends FactorFunction
 {
 	private int _dimension;
-	private double[] _alpha;
+	private double _alpha;
 	private double _logBetaAlpha;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
 	private static final double SIMPLEX_THRESHOLD = 1e-12;
 	
 
-	public Dirichlet()		// Variable parameters
+	public DirichletCommonParameter(int dimension)		// Variable parameter
 	{
 		super();
+		_dimension = dimension;
 		_parametersConstant = false;
-		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
+		_firstDirectedToIndex = 1;
 	}
-	public Dirichlet(double[] alpha)	// Constant parameters
+	public DirichletCommonParameter(int dimension, double alpha)	// Constant parameter
 	{
 		super();
-		_dimension = alpha.length;
-		_alpha = alpha.clone();
+		_dimension = dimension;
+		_alpha = alpha;
 		_logBetaAlpha = logBeta(_alpha);
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	for (int i = 0; i < _dimension; i++)
-    		if (_alpha[i] < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
+		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
 	}
 	
     @Override
@@ -68,11 +71,9 @@ public class Dirichlet extends FactorFunction
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = (double[])arguments[index++];		// First variable is array of parameter values
+    		_alpha = (Double)arguments[index++];		// First variable is parameter value
     		_logBetaAlpha = logBeta(_alpha);
-    		_dimension = _alpha.length;
-    		for (int i = 0; i < _dimension; i++)
-    			if (_alpha[i] < 0) throw new DimpleException("Negative parameter value. Domain must be restricted to non-negative values.");
+    		if (_alpha < 0) throw new DimpleException("Negative parameter value. Domain must be restricted to non-negative values.");
     	}
 
     	double sum = 0;
@@ -89,7 +90,7 @@ public class Dirichlet extends FactorFunction
     			if (x[i] < 0)
     				return Double.POSITIVE_INFINITY;
     			else
-    				sum -= (_alpha[i]-1) * Math.log(x[i]);	// -log(x_i ^ (a_i-1))
+    				sum -= Math.log(x[i]);	// -log(x_i ^ (a_i-1))
     			xSum += x[i];
     		}
     		
@@ -97,22 +98,13 @@ public class Dirichlet extends FactorFunction
     			return Double.POSITIVE_INFINITY;
     	}
 
-    	return sum + N * _logBetaAlpha;
+    	return sum * (_alpha - 1) + N * _logBetaAlpha;
 	}
     
     
-    private final double logBeta(double[] alpha)
+    private final double logBeta(double alpha)
     {
-    	int dimension = alpha.length;
-    	double sumAlpha = 0;
-    	for (int i = 0; i < dimension; i++)
-    		sumAlpha += alpha[i];
-    	
-    	double sumLogGamma = 0;
-    	for (int i = 0; i < dimension; i++)
-    		sumLogGamma += Gamma.logGamma(alpha[i]);
-    	
-    	return sumLogGamma - Gamma.logGamma(sumAlpha);
+    	return (alpha - Gamma.logGamma(alpha)) * _dimension;
     }
     
     private final boolean almostEqual(double a, double b, double threshold)
@@ -135,7 +127,7 @@ public class Dirichlet extends FactorFunction
     {
     	return _parametersConstant;
     }
-    public final double[] getParameters()
+    public final double getAlpha()
     {
     	return _alpha;
     }
