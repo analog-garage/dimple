@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBinomial;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomExchangeableDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
@@ -173,6 +174,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("Dirichlet"))
 			return true;
+		else if (factorName.equals("ExchangeableDirichlet"))
+			return true;
 		else if (factorName.equals("Beta"))
 			return true;
 		else if (factorName.equals("Bernoulli"))
@@ -208,6 +211,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
 		else if (funcName.equals("Dirichlet"))
 			return new CustomDirichlet(factor);
+		else if (funcName.equals("ExchangeableDirichlet"))
+			return new CustomExchangeableDirichlet(factor);
 		else if (funcName.equals("Beta"))
 			return new CustomBeta(factor);
 		else if (funcName.equals("Bernoulli"))
@@ -258,6 +263,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void enterInitializationPhase(InitializationPhase phase)
 	{
+		// WARNING: This code currently assumes that variables are updated prior to factors
+		// A better way to do this may be to push the initialization of variables and factors into the solver's
+		// own initialization method instead of having the model do that
 		switch (phase)
 		{
 		case VARIABLES:
@@ -265,6 +273,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			break;
 		case FACTORS:
 			processDeferredDeterministicUpdates();
+			break;
+		default:
 			break;
 		}
 	}
@@ -325,12 +335,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
 		{
-//			if (iterNum % 100 == 0)
-//			{
-//				System.out.println(iterNum);
-//				System.out.flush();
-//			}
-			
 			if (!_scheduleIterator.hasNext())
 				_scheduleIterator = _schedule.iterator();	// Wrap-around the schedule if reached the end
 

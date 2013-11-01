@@ -231,6 +231,48 @@ for j = 1:10
     assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
 end
 
+% ExchangeableDirichlet (constant parameters)
+dim = randi(100) + 10;
+n = rand*20;
+alpha = rand(1) * n;
+f = FactorFunction('ExchangeableDirichlet', dim, alpha);
+for j = 1:10
+    x = rand(1,dim);
+    x = x/sum(x);
+    prob = prod(x.^(alpha-1)) / (prod(gamma(alpha)) / gamma(sum(alpha)));
+    assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
+end
+
+% ExchangeableDirichlet (variable parameters)
+dim = randi(100) + 10;
+n = rand*20;
+alpha = rand(1) * n;
+Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+f = FactorFunction('ExchangeableDirichlet', dim);
+for j = 1:10
+    x = rand(1,dim);
+    x = x/sum(x);
+    prob = prod(x.^(alpha-1)) * Z ;
+    assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), prob);
+end
+
+% ExchangeableDirichlet (multiple outputs, constant parameters)
+dim = randi(10) + 10;
+n = rand*20;
+alpha = rand(1) * n;
+Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+f = FactorFunction('ExchangeableDirichlet', dim, alpha);
+for j = 1:10
+    x = cell(1,4);
+    prob = 1;
+    for k=1:4
+        x{k} = rand(1,dim);
+        x{k} = x{k}/sum(x{k});
+        prob = prob * prod(x{k}.^(alpha-1)) * Z;
+    end
+    assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
+end
+
 % Gamma (constant parameters)
 alphas = [1 2 .1];
 betas = [1 .1 2];

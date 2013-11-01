@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Arrays;
+
 import org.apache.commons.math3.special.Gamma;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -37,7 +39,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * The parameter may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
  */
-public class DirichletCommonParameter extends FactorFunction
+public class ExchangeableDirichlet extends FactorFunction
 {
 	private int _dimension;
 	private double _alpha;
@@ -47,14 +49,14 @@ public class DirichletCommonParameter extends FactorFunction
 	private static final double SIMPLEX_THRESHOLD = 1e-12;
 	
 
-	public DirichletCommonParameter(int dimension)		// Variable parameter
+	public ExchangeableDirichlet(int dimension)		// Variable parameter
 	{
 		super();
 		_dimension = dimension;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;
 	}
-	public DirichletCommonParameter(int dimension, double alpha)	// Constant parameter
+	public ExchangeableDirichlet(int dimension, double alpha)	// Constant parameter
 	{
 		super();
 		_dimension = dimension;
@@ -130,5 +132,15 @@ public class DirichletCommonParameter extends FactorFunction
     public final double getAlpha()
     {
     	return _alpha;
+    }
+    public final double[] getParameters()	// Get parameters as if they were separate
+    {
+    	double[] parameterArray = new double[_dimension];
+    	Arrays.fill(parameterArray, _alpha);
+    	return parameterArray;
+    }
+    public final int getDimension()
+    {
+    	return _dimension;
     }
 }

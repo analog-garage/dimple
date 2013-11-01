@@ -139,4 +139,8 @@ public class Dirichlet extends FactorFunction
     {
     	return _alpha;
     }
+    public final int getDimension()
+    {
+    	return _dimension;
+    }
 }

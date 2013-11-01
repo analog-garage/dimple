@@ -85,6 +85,8 @@ Equality & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  A
 %
 Equals & out(B) \newline in...(B,D,R) & - & Deterministic equals function, where out~=~(in(1)~==~in(2)~== ... ). \\
 %
+ExchangeableDirichlet & [$\alpha$](R) \newline value...(RJ) & N, [$\alpha$] & Exchangeable Dirichlet distribution.  This is a variant of the Dirichlet distribution parameterized with a single common parameter for all dimensions.  There can be any number of value variables, all associated with the same parameter value.  Parameter $\alpha$ can be a Real variable or a constant specified in the constructor.  The dimension of each of the value variables must be identical and equal to the value of N, specified in the constructor. \\
+%
 Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
@@ -179,6 +181,7 @@ Dimple includes some helper functions to create other built-in factors using a s
 \item Categorical\footnote{This utility can be used to create either a Categorical or CategoricalUnnormalizedParameters factor, depending on whether the first argument is a RealJoint variable or an array of Real variables.}
 \item CategoricalEnergyParameters
 \item Dirichlet
+\item ExchangeableDirichlet
 \item Gamma
 \item InverseGamma
 \item LogNormal
@@ -193,8 +196,10 @@ For each, the arguments are the parameters of the distribution.  For example:
 \begin{lstlisting}
 W = Gamma(alpha, beta);
 X = Normal(mean, precision);
-Y = Categorical(alphaVector);
+Y = Categorical(alpha);
 Z = Rayleigh(sigma);
+D = Dirichlet(alpha);
+E = ExchangeableDirichlet(dimension, alpha);
 \end{lstlisting}
 
 
@@ -205,7 +210,7 @@ By default, calling one of these functions creates a single output variable, and
 \begin{lstlisting}
 W = Gamma(alpha, beta, altGraph);
 X = Normal(mean, precision, [100, 1]);
-Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Y = Categorical(alpha, [10, 10, 2], aGraph);
 Z = Rayleigh(sigma, myGraph, size(somethingElse));
 \end{lstlisting}
 

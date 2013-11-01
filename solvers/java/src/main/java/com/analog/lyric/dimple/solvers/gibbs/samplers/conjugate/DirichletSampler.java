@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
+import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -35,7 +36,10 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		if (numPorts > 0)
 			dimension = ((double[])(ports[0].getOutputMsg())).length;
 		else if (input != null)
-			dimension = ((Dirichlet)input).getParameters().length;
+			if (input instanceof Dirichlet)
+				dimension = ((Dirichlet)input).getDimension();
+			else // ExchangeableDirichlet
+				dimension = ((ExchangeableDirichlet)input).getDimension();
 		else
 			throw new DimpleException("Both port and input arguments are empty");
 		
@@ -44,7 +48,11 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		
 		if (input != null)
 		{
-			double[] inputParameters = ((Dirichlet)input).getParameters();
+			double[] inputParameters;
+			if (input instanceof Dirichlet)
+				inputParameters = ((Dirichlet)input).getParameters();
+			else // ExchangeableDirichlet
+				inputParameters = ((ExchangeableDirichlet)input).getParameters();
 			if (inputParameters.length != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
 			for (int i = 0; i < dimension; i++)
@@ -85,6 +93,8 @@ public class DirichletSampler implements IRealJointConjugateSampler
 			if (factorFunction == null)
 				return true;
 			else if (factorFunction instanceof Dirichlet)
+				return true;
+			else if (factorFunction instanceof ExchangeableDirichlet)
 				return true;
 			else
 				return false;

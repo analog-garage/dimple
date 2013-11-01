@@ -31,6 +31,7 @@ end
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testFactorCreationUtilities');
 
@@ -254,6 +255,45 @@ assert(x8(1,1).Solver.getParentGraph == fg.Solver);
 x9 = Binomial(NAlt, pAlt, fgAlt);
 assert(x9.Solver.getParentGraph == fgAlt.Solver);
 assert(isa(x9,'Discrete'));
+
+end
+
+
+% Test ExchangeableDirichlet
+function test4(debugPrint, repeatable)
+
+fgAlt = FactorGraph();
+fgAlt.Solver = 'Gibbs';
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+N = 37;
+constAlpha = 3.27;
+alpha = Real;
+alphaAlt = Real;
+
+x1 = ExchangeableDirichlet(N, alpha);
+x2 = ExchangeableDirichlet(N, constAlpha);
+assert(isa(x1,'RealJoint'));
+assert(isa(x2,'RealJoint'));
+assert(all(size(x1)==[1,1]));
+assert(all(size(x2)==[1,1]));
+assert(x1.Solver.getParentGraph == fg.Solver);
+assert(strcmp(x2.Input.getName, 'ExchangeableDirichlet'));
+    
+x3 = ExchangeableDirichlet(N, alpha, [2,4]);
+x4 = ExchangeableDirichlet(N, constAlpha, [2,4]);
+assert(isa(x3,'RealJoint'));
+assert(isa(x4,'RealJoint'));
+assert(all(size(x3)==[2,4]));
+assert(all(size(x4)==[2,4]));
+assert(x3(1,1).Solver.getParentGraph == fg.Solver);
+assert(strcmp(x4(1,1).Input.getName, 'ExchangeableDirichlet'));
+
+x5 = ExchangeableDirichlet(N, alphaAlt, fgAlt);
+assert(x5.Solver.getParentGraph == fgAlt.Solver);
+assert(isa(x5,'RealJoint'));
 
 end
 
