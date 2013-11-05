@@ -111,6 +111,8 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		super(comparator, (short)2);
 	}
 
+	// TODO: add following constructors: (), (Map), (SortedMap)
+	
 	/*----------------
 	 * Object methods
 	 */
