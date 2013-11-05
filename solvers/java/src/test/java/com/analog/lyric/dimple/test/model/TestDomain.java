@@ -183,6 +183,15 @@ public class TestDomain
 			assertThat(ex.getMessage(), containsString("Negative tolerance"));
 		}
 
+		try
+		{
+			DiscreteDomain.range(0, Integer.MAX_VALUE);
+		}
+		catch (IllegalArgumentException ex)
+		{
+			assertThat(ex.getMessage(), containsString("more than MAX_INTEGER"));
+		}
+		
 		DoubleRangeDomain halves = DiscreteDomain.range(0.0, 2.5, .5);
 		assertInvariants(halves);
 		assertEquals(halves, DiscreteDomain.create(0.0, 0.5, 1.0, 1.5, 2.0, 2.5));
