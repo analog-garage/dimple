@@ -111,6 +111,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		super(comparator, (short)2);
 	}
 
+	/*----------------
+	 * Object methods
+	 */
+	
+	// FIXME: implement equals() and hashCode() methods as specified in Map interface.
+	
 	/*
 	 * Map methods
 	 */

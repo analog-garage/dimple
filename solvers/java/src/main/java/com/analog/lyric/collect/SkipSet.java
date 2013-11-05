@@ -33,6 +33,12 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		super(comparator, (short)1);
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	// FIXME: implement equals() and hashCode() methods as specified in Set interface.
+	
     /*
      * Set methods
      */
