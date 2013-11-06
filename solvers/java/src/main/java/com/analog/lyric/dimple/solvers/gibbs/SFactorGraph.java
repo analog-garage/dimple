@@ -266,6 +266,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		case FACTORS:
 			processDeferredDeterministicUpdates();
 			break;
+		default:
 		}
 	}
 	
