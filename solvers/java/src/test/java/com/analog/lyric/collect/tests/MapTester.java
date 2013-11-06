@@ -19,6 +19,7 @@ package com.analog.lyric.collect.tests;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,10 +50,12 @@ public class MapTester<K,V>
 	{
 		assertTrue(map.size() >= 0);
 		assertEquals(map.size() == 0, map.isEmpty());
+		assertTrue(map.equals(map));
 		
 		Set<K> keySet = map.keySet();
 		this._keySetTester.validateSet(keySet);
 		assertEquals(keySet.size(), map.size());
+		assertFalse(map.equals(keySet));
 		
 		Set<Map.Entry<K,V>> entrySet = map.entrySet();
 		this._entrySetTester .validateSet(entrySet);
@@ -62,10 +65,17 @@ public class MapTester<K,V>
 		this._valueCollectionTester.validateCollection(values);
 		assertEquals(values.size(), map.size());
 	
+		int expectedHash = 0;
+		K key = null;
+		V value = null;
 		for (Map.Entry<K, V> entry : entrySet)
 		{
-			K key = entry.getKey();
-			V value = entry.getValue();
+			key = entry.getKey();
+			value = entry.getValue();
+			
+			assertEquals(key.hashCode() ^ value.hashCode(), entry.hashCode());
+			
+			expectedHash += entry.hashCode();
 			
 			assertEquals( value, map.get(key) );
 			assertTrue( map.containsKey(key) );
@@ -73,12 +83,28 @@ public class MapTester<K,V>
 			assertTrue( keySet.contains(key) );
 			assertTrue( values.contains(value) );
 		}
+		
+		assertEquals(expectedHash, map.hashCode());
+		
+		HashMap<K,V> map2 = new HashMap<K,V>(map);
+		assertTrue(map.equals(map2));
+		if (!map2.isEmpty())
+		{
+			if (value != null)
+			{
+				map2.put(key, null);
+				assertFalse(map.equals(map2));
+			}
+			map2.remove(key);
+			assertFalse(map.equals(map2));
+		}
 	}
 	
 	public void assertMapEquals(Map<K,V> map1, Map<K,V> map2)
 	{
 		assertEquals(map1.isEmpty(), map2.isEmpty());
 		assertEquals(map1.size(), map2.size());
+		assertTrue(map1.equals(map2));
 		
 		_entrySetTester.assertSetEquals(map1.entrySet(), map2.entrySet());
 		_keySetTester.assertSetEquals(map1.keySet(), map2.keySet());

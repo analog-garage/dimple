@@ -39,7 +39,48 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 	 * Object methods
 	 */
 	
-	// FIXME: implement equals() and hashCode() methods as specified in Set interface.
+	@Override
+	public boolean equals(Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Set)
+		{
+			Set<?> otherSet = (Set<?>)other;
+			
+			if (otherSet.size() == size())
+			{
+				// TODO: special case if other is a SkipSet or a SortedSet with the same comparator
+
+				for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
+				{
+					if (!otherSet.contains(node[0]))
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		// Implements computation described in Set.hashCode()
+		int hash = 0;
+		for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
+		{
+			hash += node[0].hashCode();
+		}
+		return hash;
+	}
 	
     /*
      * Set methods
