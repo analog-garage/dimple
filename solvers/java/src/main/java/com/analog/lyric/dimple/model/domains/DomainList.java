@@ -31,19 +31,19 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	 * <p>
 	 * May return a previously cached value.
 	 */
-	public static DomainList<?> create(int[] outputIndices, Domain ... domains)
+	public static <T extends Domain> DomainList<T> create(int[] outputIndices, T ... domains)
 	{
 		if (allDiscrete(domains))
 		{
 			DiscreteDomain[] discreteDomains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
-			return JointDomainIndexer.lookupOrCreate(outputIndices, discreteDomains, false);
+			return (DomainList<T>) JointDomainIndexer.lookupOrCreate(outputIndices, discreteDomains, false);
 		}
 	
 		// TODO: implement cache
 		
 		// TODO: do something with inputIndices for non-discrete case?
 		
-		return new DomainList<Domain>(domains);
+		return new DomainList<T>(domains);
 	}
 	
 	/**
@@ -54,7 +54,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	 * <p>
 	 * May return a previously cached value.
 	 */
-	public static DomainList<?> create(Domain ... domains)
+	public static <T extends Domain> DomainList<T> create(T ... domains)
 	{
 		return create(null, domains);
 	}
