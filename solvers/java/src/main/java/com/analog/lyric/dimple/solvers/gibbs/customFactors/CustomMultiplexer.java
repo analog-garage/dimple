@@ -96,6 +96,9 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
 		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		if (_incompatibleWithConjugateSampling)
+			return availableSamplers;
 		if (isPortInputVariable(portNumber))
 		{
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
