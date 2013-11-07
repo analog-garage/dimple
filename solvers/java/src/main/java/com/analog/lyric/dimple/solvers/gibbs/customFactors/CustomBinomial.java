@@ -25,19 +25,15 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
 public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 {
-	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SDiscreteVariable _outputVariable;
 	private SDiscreteVariable _NParameterVariable;
@@ -54,17 +50,14 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof BetaSampler)
+		if (portNum == _probabilityParameterEdge)
 		{
-			// Output port must be the probability-parameter input
+			// Port is the probability-parameter input
 			// Determine sample alpha and beta parameters
 
-			BetaParameters outputMsg = (BetaParameters)_outputMsgs[outPortNum];
+			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 
 			// Get the current values of N and the output count
 			int N = _hasConstantNParameter ? _constantNParameter : _NParameterVariable.getCurrentSampleIndex();
@@ -75,7 +68,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			outputMsg.setBeta(numZeros);		// Sample beta
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -100,19 +93,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	public void initialize()
 	{
 		super.initialize();
-		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof Real)
-				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
-		
+				
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
 	}

@@ -45,6 +45,7 @@ test14(debugPrint, repeatable);
 test15(debugPrint, repeatable);
 test16(debugPrint, repeatable);
 test17(debugPrint, repeatable);
+test18(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -922,6 +923,56 @@ pEst = mean(ps);
 assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.01);
 
 end
+
+
+% ExchangeableDirichlet prior on Categorical distribution
+function test18(debugPrint, repeatable)
+
+discreteDomainSize = 10;
+priorAlpha = 1;
+discreteDomain = 0:discreteDomainSize-1;
+distribution = randSimplex(discreteDomainSize);
+numDatapoints = 100;
+data = discreteSample(distribution, numDatapoints);
+expectedAlpha = priorAlpha + sum(bsxfun(@eq, data, discreteDomain'),2);
+expectedAlpha = expectedAlpha/sum(expectedAlpha);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+
+p = ExchangeableDirichlet(discreteDomainSize, priorAlpha);
+
+% Use built-in constructor
+x = Categorical(p, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(p.Solver.getSamplerName,'DirichletSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(2);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples();
+
+alphaEst = sum(ps,1);
+alphaEst = alphaEst/sum(alphaEst);
+for i=1:discreteDomainSize
+    assertElementsAlmostEqual(alphaEst(i)/expectedAlpha(i), 1, 'absolute', 0.03);
+end
+
+end
+
+
+
 
 
 

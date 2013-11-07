@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.analog.lyric.dimple.factorfunctions.Beta;
+import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
@@ -28,30 +28,22 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class CustomBeta extends SRealFactor implements IRealConjugateFactor
+public class CustomExchangeableDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
 	private Object[] _outputMsgs;
+	private double _alpha;
 	private SRealVariable _alphaVariable;
-	private SRealVariable _betaVariable;
-	private boolean _hasConstantAlpha;
-	private boolean _hasConstantBeta;
-	private boolean _hasFactorFunctionConstants;
-	private boolean _hasFactorFunctionConstructorConstants;
+	private int _dimension;
 	private int _numParameterEdges;
-	private int _alphaParameterPort = -1;
-	private int _betaParameterPort = -1;
-	private double _constantAlphaValue;
-	private double _constantBetaValue;
-	private static final int ALPHA_PARAMETER_INDEX = 0;
-	private static final int BETA_PARAMETER_INDEX = 1;
-	private static final int NO_PORT = -1;
-
-	public CustomBeta(Factor factor)
+	private boolean _hasConstantParameters;
+	private static final int PARAMETER_INDEX = 0;
+	
+	public CustomExchangeableDirichlet(Factor factor)
 	{
 		super(factor);
 	}
@@ -59,12 +51,16 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
-		if (portNum >= _numParameterEdges)
+		if (portNum > _numParameterEdges)
 		{
-			// Port is directed output
-			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
-			outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
-			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
+			// Output port must be an output variable
+
+			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
+			
+			if (_hasConstantParameters)
+				outputMsg.fill(_alpha);
+			else	// Variable parameters
+				outputMsg.fill(_alphaVariable.getCurrentSample());
 		}
 		else
 			super.updateEdgeMessage(portNum);
@@ -72,11 +68,11 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	
 	
 	@Override
-	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
+	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber)
 	{
-		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		Set<IRealJointConjugateSamplerFactory> availableSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
 		if (isPortOutputVariable(portNumber))
-			availableSamplers.add(BetaSampler.factory);		// Output variables have Beta distribution
+			availableSamplers.add(DirichletSampler.factory);	// Output variables have Dirichlet distribution
 		return availableSamplers;
 	}
 	
@@ -92,7 +88,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	public void initialize()
 	{
 		super.initialize();
-				
+		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
 	}
@@ -103,58 +99,42 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 		// Get the factor function and related state
 		FactorFunctionBase factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
-		_hasFactorFunctionConstants = false;
+		boolean hasFactorFunctionConstants = false;
 		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
 		{
-			_hasFactorFunctionConstants = true;
+			hasFactorFunctionConstants = true;
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		Beta specificFactorFunction = (Beta)factorFunction;
-		
+		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction;
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-		if (_hasFactorFunctionConstructorConstants)
+		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		_dimension = specificFactorFunction.getDimension();
+		if (hasFactorFunctionConstructorConstants)
 		{
-			// The factor function has fixed parameters provided in the factor-function constructor
-			_hasConstantAlpha = true;
-			_hasConstantBeta = true;
-			_alphaParameterPort = NO_PORT;
-			_betaParameterPort = NO_PORT;
-			_constantAlphaValue = specificFactorFunction.getAlpha();
-			_constantBetaValue = specificFactorFunction.getBeta();
+			_hasConstantParameters = true;
 			_numParameterEdges = 0;
+			_alpha = specificFactorFunction.getAlpha();
+			_alphaVariable = null;
 		}
-		else // Variable or constant parameters
+		else // Variable or constant parameter
 		{
-			_numParameterEdges = 0;
-			List<INode> siblings = _factor.getSiblings();
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
+			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PARAMETER_INDEX))
 			{
-				_hasConstantAlpha = true;
-				_alphaParameterPort = NO_PORT;
-				_constantAlphaValue = (Double)constantFactorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX);
+				_hasConstantParameters = true;
+				_numParameterEdges = 0;
+				_alpha = (Double)constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
 				_alphaVariable = null;
 			}
-			else
+			else	// Parameter is a variable
 			{
-				_hasConstantAlpha = false;
-				_alphaParameterPort = _numParameterEdges++;
-				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(_alphaParameterPort)).getSolver());
-			}
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(BETA_PARAMETER_INDEX))
-			{
-				_hasConstantBeta = true;
-				_betaParameterPort = NO_PORT;
-				_constantBetaValue = (Double)constantFactorFunction.getConstantByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = null;
-			}
-			else
-			{
-				_hasConstantBeta = false;
-				_betaParameterPort = _numParameterEdges++;
-				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(_betaParameterPort)).getSolver());
+				_hasConstantParameters = false;
+				_numParameterEdges = 1;
+				_alpha = 0;
+				List<INode> siblings = _factor.getSiblings();
+				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(PARAMETER_INDEX)).getSolver());
 			}
 		}
 	}
@@ -167,7 +147,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			_outputMsgs[port] = new BetaParameters();
+			_outputMsgs[port] = new DirichletParameters(_dimension);
 	}
 	
 	@Override
@@ -180,6 +160,6 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
-		_outputMsgs[thisPortNum] = ((CustomBeta)other)._outputMsgs[otherPortNum];
+		_outputMsgs[thisPortNum] = ((CustomExchangeableDirichlet)other)._outputMsgs[otherPortNum];
 	}
 }

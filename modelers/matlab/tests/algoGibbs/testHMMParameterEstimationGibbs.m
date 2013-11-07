@@ -24,13 +24,14 @@ dtrace(debugPrint, '++testHMMParameterEstimationGibbs');
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testHMMParameterEstimationGibbs');
 
 end
 
 
-% Use UnnormalizedParametersMatrix with Dirichlet prior
+% Use DiscreteTransition with Dirichlet prior
 function test1(debugPrint, repeatable)
 
 numStates = 2;
@@ -422,6 +423,153 @@ assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
 
 end
 
+
+
+% Use Multiplexer/Categorical with Dirichlet prior
+function test4(debugPrint, repeatable)
+
+numStates = 2;
+numObsValues = 2;
+hmmLength = 1000;
+numSamples = 100;
+updatesPerSample = (hmmLength + numStates^2);
+burnInUpdates = 1000;
+
+if (repeatable)
+    seed = 1;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
+
+
+
+% Sample from system to be estimated
+
+transMatrix = randStochasticStrongDiag(numStates, numStates, 2);
+obsMatrix = randStochasticStrongDiag(numObsValues, numStates, 10);
+
+% Run HMM to produce an output sequence.  The factor graph produced after
+% will try to infer the state realizations.
+stateRealization = zeros(hmmLength,1);
+obsRealization = zeros(hmmLength,1);
+initDist = randSimplex(numStates);
+stateRealization(1) = multinomialSample(initDist);
+obsRealization(1) = multinomialSample(obsMatrix(:,stateRealization(1)));
+for i = 2:hmmLength
+	stateRealization(i) = multinomialSample(transMatrix(:,stateRealization(i-1)));
+	obsRealization(i) = multinomialSample(obsMatrix(:,stateRealization(i)));
+end
+
+dtrace(debugPrint,'Observation matrix:'); if(debugPrint); disp(obsMatrix); end;
+dtrace(debugPrint,'Transition matrix:'); if(debugPrint); disp(transMatrix); end;
+
+
+% Sub-graph for discrete transition using separate Multiplexer and Categorical
+sg = FactorGraph();
+sg.Solver = 'gibbs';
+in = Discrete(0:numStates-1);
+out = Discrete(0:numStates-1);
+M = RealJoint(numStates, 1, numStates);
+h = RealJoint(numStates);
+sg.addBoundaryVariables(out, in, M);
+sg.addFactor('Multiplexer', h, in, M);
+sg.addFactor('Categorical', h, out);
+
+
+t = tic;
+fg = FactorGraph();
+fg.Solver = 'gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setUpdatesPerSample(updatesPerSample);
+fg.Solver.setBurnInUpdates(burnInUpdates);
+
+% Variables
+A = RealJoint(numStates, 1, numStates);
+state = Discrete(0:numStates-1,1,hmmLength);
+
+% Priors on A
+A.Input = FactorFunction('Dirichlet',ones(1,numStates));
+
+
+% Add transition factors
+fg.addFactorVectorized(sg, state(2:end), state(1:end-1), {A,[]});
+
+% Add observation factors
+state.Input = obsMatrix(obsRealization,:);
+ft = toc(t);
+if (debugPrint); fprintf('Graph creation time: %.2f seconds\n', ft); end;
+
+% Save the score for each sample
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(2);					% Make this repeatable
+end
+
+dtrace(debugPrint,'Starting Gibbs solve');
+t = tic;
+fg.solve();
+st = toc(t);
+if (debugPrint); fprintf('Solve time: %.2f seconds\n', st); end;
+
+
+output = cell2mat(arrayfun(@(a)(a.Solver.getBestSample()), A, 'UniformOutput', false));
+output = output./repmat(sum(output,1),numStates,1);
+dtrace(debugPrint,'Gibbs estimate:'); if(debugPrint); disp(output); end;
+
+
+% Compute the KL-divergence rate
+KLDivergenceRate = kLDivergenceRate(transMatrix, output);
+dtrace(debugPrint,'Gibbs KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate));
+
+score = fg.Solver.getAllScores;
+if (debugPrint); figure; plot(score); end;
+
+
+% Compare with Baum-Welch ============================================
+setSolver('sumproduct');
+fg2 = FactorGraph();
+fg2.Solver.setNumIterations(1);
+
+% Variables
+state2 = Discrete(0:numStates-1,1,hmmLength);
+
+% Add random transition factors
+transitionFactor2 = FactorTable(randStochasticMatrix(numStates, numStates),state2.Domain,state2.Domain);
+fg2.addFactorVectorized(transitionFactor2, state2(2:end), state2(1:end-1)).DirectedTo = state2(2:end);
+
+% Add observation factors
+state2.Input = obsMatrix(obsRealization,:);
+
+numReEstimations = 20;
+numRestarts = 20;
+dtrace(debugPrint,'Starting Baum-Welch solve');
+t2 = tic;
+fg2.baumWelch({transitionFactor2},numRestarts,numReEstimations);
+if (debugPrint); toc(t2); end;
+output2 = zeros(numStates,numStates);
+for i = 1:length(transitionFactor2.Weights)
+    output2(transitionFactor2.Indices(i,1)+1, transitionFactor2.Indices(i,2)+1) = transitionFactor2.Weights(i);
+end
+output2 = output2./repmat(sum(output2,1),numStates,1);
+dtrace(debugPrint,'Baum-Welch estimate:'); if(debugPrint); disp(output2); end;
+
+KLDivergenceRate2 = kLDivergenceRate(transMatrix, output2);
+dtrace(debugPrint,'Baum-Welch KL divergence rate:'); dtrace(debugPrint,num2str(KLDivergenceRate2));
+
+
+% Assertions
+assertTrue(KLDivergenceRate < 0.001);   % Gibbs accuracy
+assertTrue(KLDivergenceRate2 < 0.001);   % Baum-Welch accuracy
+
+end
+
+
+
+% ***********************************************************************
+% Utility functions
+% ***********************************************************************
 
 function KLDivergenceRate = kLDivergenceRate(baseMatrix, estimatedMatrix)
 numStates = size(baseMatrix,1);

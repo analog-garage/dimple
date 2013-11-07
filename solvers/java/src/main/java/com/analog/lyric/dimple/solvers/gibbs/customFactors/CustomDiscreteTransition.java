@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,19 +26,16 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomDiscreteTransition extends SRealFactor implements IRealJointConjugateFactor
 {
-	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SDiscreteVariable _yVariable;
 	private SDiscreteVariable _xVariable;
@@ -64,23 +60,20 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealJointConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof DirichletSampler)
+		if (portNum >= _startingParameterEdge)
 		{
-			// Output port must be a parameter input
+			// Port is a parameter input
 			// Determine sample alpha parameter vector for the current input x
 
-			double[] outputMsg = (double[])_outputMsgs[outPortNum];
+			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			// Clear the output counts
-			Arrays.fill(outputMsg, 0);
+			outputMsg.fill(0);
 
 			// Get the parameter coordinates
-			int parameterIndex = outPortNum - _startingParameterEdge;
+			int parameterIndex = portNum - _startingParameterEdge;
 			int parameterXIndex = _parameterXIndices[parameterIndex];
 			
 			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
@@ -90,11 +83,11 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 			if (xIndex == parameterXIndex)
 			{
 				// This edge corresponds to the current input state, so count is 1
-				outputMsg[yIndex] = 1;
+				outputMsg.increment(yIndex);
 			}
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -119,19 +112,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	public void initialize()
 	{
 		super.initialize();
-		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof RealJoint)
-				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
-		
+				
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
 	}
@@ -251,7 +232,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
-			_outputMsgs[port] = new double[_yDimension];
+			_outputMsgs[port] = new DirichletParameters(_yDimension);
 	}
 	
 	@Override

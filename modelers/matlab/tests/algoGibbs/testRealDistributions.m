@@ -17,19 +17,29 @@
 function testRealDistributions()
 
 % Skip this test if the Statistics Toolbox is unavailable.
-try
-    y = randg;
-catch e
+if (isempty(ver('stats')))
+    dtrace(true, 'WARNING: testRealDistributions was skipped because statistics toolbox not installed');
     return;
 end
 
+[hasLicense err] = license('checkout', 'statistics_toolbox');
+if ~hasLicense
+    dtrace(true, 'WARNING: testRealDistributions was skipped because statistics toolbox license could not be obtained');
+    return;
+end
+
+
 debugPrint = false;
 repeatable = true;
+
+dtrace(debugPrint, '++testRealDistributions');
 
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+
+dtrace(debugPrint, '--testRealDistributions');
 
 end
 
