@@ -120,4 +120,12 @@ public class Multiplexer extends FactorFunction
     	int selector = FactorFunctionUtilities.toInteger(arguments[1]);
     	arguments[0] = arguments[selector + 2];		// Replace the output value
     }
+    
+    
+    // Factor-specific methods
+    public final boolean hasSmoothing()
+    {
+    	return _smoothingSpecified;
+    }
+
 }

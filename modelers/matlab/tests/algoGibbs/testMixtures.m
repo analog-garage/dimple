@@ -16,14 +16,15 @@
 
 function testMixtures()
 
+% Skip this test if the Statistics Toolbox is unavailable.
 if (isempty(ver('stats')))
-    dtrace(true, 'WARNING: testDistributionFactorFunctions was skipped because statistics toolbox not installed');
+    dtrace(true, 'WARNING: testMixtures was skipped because statistics toolbox not installed');
     return;
 end
 
 [hasLicense err] = license('checkout', 'statistics_toolbox');
 if ~hasLicense
-    dtrace(true, 'WARNING: testDistributionFactorFunctions was skipped because statistics toolbox license could not be obtained');
+    dtrace(true, 'WARNING: testMixtures was skipped because statistics toolbox license could not be obtained');
     return;
 end
 
@@ -42,6 +43,7 @@ end
 
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
+test3(debugPrint, repeatable);
 dtrace(debugPrint, '--testMixtures');
 
 end
@@ -119,7 +121,7 @@ numComponents = 2;
 priorAlpha = ones(1,numElements)*0.2;
 dist = randg(repmat(priorAlpha, numComponents, 1));
 dist = dist./repmat(sum(dist,2), 1, numElements);
-mixtureWeights = [0.5 0.5]; %%%%%%%%%% rand(numComponents,1);
+mixtureWeights = [0.5 0.5];
 mixtureWeights = mixtureWeights/sum(mixtureWeights);
 numDataValues = 100;
 mixtureChoices = discreteSample(mixtureWeights,1,numDataValues);
@@ -158,16 +160,87 @@ fg.solve();
 % Ensure they match (checking for perfect match)
 sortedSelectorHistData = sort(sum(bsxfun(@eq, mixtureChoices, 0:numComponents-1), 1));
 sortedSelectorHistEst = sort(sum(bsxfun(@eq, Selector.Value', 0:numComponents-1), 1));
-% assertElementsAlmostEqual(sortedSelectorHistData, sortedSelectorHistEst, 'absolute', 2);
+assertElementsAlmostEqual(sortedSelectorHistData, sortedSelectorHistEst, 'absolute', 2);
 
-% Get the actual and estimated means and sort; ensure they approximately match
-% dist'
-% cell2mat(Dists.invokeSolverMethodWithReturnValue('getBestSample'))
+% The actual and estimated distributions don't really match very well
+% in this case, so we won't bother to assert anything for them
 
 assert(strcmp(Dists(1).Solver.getSamplerName,'DirichletSampler'));
 assert(strcmp(Dists(2).Solver.getSamplerName,'DirichletSampler'));
 
 end
+
+
+
+% Normal mixture with non-conjugate data distribution
+function test3(debugPrint, repeatable)
+
+% Generate data
+numComponents = 3;
+priorMean = 10;
+priorStd = 100;
+priorPrecision = 1/priorStd^2;
+sampledNormals = randn(1,numComponents)*priorStd + priorMean;
+dataStd = 2;
+dataPrecision = 1/dataStd^2;
+mixtureWeights = rand(numComponents,1);
+mixtureWeights = mixtureWeights/sum(mixtureWeights);
+numDataValues = 100;
+mixtureChoices = discreteSample(mixtureWeights,1,numDataValues);
+selectedNormal = sampledNormals(mixtureChoices + 1);
+dataMean = selectedNormal.^2; 
+data = randn(1,numDataValues)*dataStd + dataMean;
+
+
+% Create model
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+Normals = Normal(priorMean, priorPrecision, [1,numComponents]);
+Selector = Discrete(0:numComponents-1, 1, numDataValues);
+SelectedNormal = Real(1, numDataValues);
+
+fg.addFactorVectorized('Multiplexer', SelectedNormal, Selector, {Normals,[]});
+DataMean = SelectedNormal.^2;
+
+Data = Real(1, numDataValues);
+fg.addFactorVectorized('Normal', DataMean, dataPrecision, Data);
+Data.FixedValue = data;
+
+
+fg.Solver.setNumSamples(100);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+% Extract the selector assignments, and get the sorted number of each
+% Ensure they match (checking for perfect match)
+sortedSelectorHistData = sort(sum(bsxfun(@eq, mixtureChoices, 0:numComponents-1), 1));
+sortedSelectorHistEst = sort(sum(bsxfun(@eq, Selector.Value', 0:numComponents-1), 1));
+assertEqual(sortedSelectorHistData, sortedSelectorHistEst);
+
+% Get the actual and estimated normals and means and sort; ensure they approximately match
+sortedNormalData = sort(sampledNormals);
+sortedNormalEst = sort(cell2mat(Normals.invokeSolverMethodWithReturnValue('getBestSample')));
+assertElementsAlmostEqual(abs(sortedNormalEst), abs(sortedNormalData), 'absolute', 0.5);
+
+sortedMeansData = sort(dataMean);
+sortedMeansEst = sort(cell2mat(DataMean.invokeSolverMethodWithReturnValue('getBestSample')));
+assertElementsAlmostEqual(sortedMeansEst, sortedMeansData, 'absolute', 0.5);
+
+assert(strcmp(Normals(1).Solver.getSamplerName,'SliceSampler'));
+assert(strcmp(Normals(2).Solver.getSamplerName,'SliceSampler'));
+assert(strcmp(DataMean(1).Solver.getSamplerName,'SliceSampler'));
+assert(strcmp(DataMean(2).Solver.getSamplerName,'SliceSampler'));
+
+end
+
+
 
 
 

@@ -11,6 +11,8 @@ New Features Since v0.04 (Oct 5)
 
 * Added ExchangeableDirichlet factor function
 
+* Added Multiplexer factor function
+
 
 Fixes Since v0.04
 -----------------

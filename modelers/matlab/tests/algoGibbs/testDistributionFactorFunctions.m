@@ -16,6 +16,7 @@
 
 function testDistributionFactorFunctions()
 
+% Skip this test if the Statistics Toolbox is unavailable.
 if (isempty(ver('stats')))
     dtrace(true, 'WARNING: testDistributionFactorFunctions was skipped because statistics toolbox not installed');
     return;

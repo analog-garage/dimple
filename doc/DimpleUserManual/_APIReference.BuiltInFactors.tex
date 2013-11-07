@@ -108,6 +108,8 @@ MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline 
 %% Primarily for testing, need not be listed here.
 %MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
 %
+Multiplexer & out(any) \newline select \newline in...(any) & [smoothing] & Deterministic multiplexer.  The selector must be a discrete variable that selects one of the inputs to pass to the output.  The data type of all inputs must be identical to that of the output.  For RealJoint variables, the dimension of all inputs must equal that of the output.  The with domain of the selector variable must be zero-based contiguous integers, $0...N-1$, where $N$ is the number of input variables.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 NegativeExpGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Negative exp-Gamma distribution, which is a distribution over a variable whose negative exponential is Gamma distributed. That is, this is the negative log of a Gamma distributed variable. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor, and correspond to the parameters of the underlying Gamma distribution. \\
