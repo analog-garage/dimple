@@ -1,12 +1,16 @@
 package com.analog.lyric.collect;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Primitives;
 
 
 /**
@@ -78,6 +82,160 @@ public abstract class Supers
 	public static ImmutableList<Class<?>> superClasses(Class<?> c)
 	{
 		return _superClassCache.get(c);
+	}
+	
+	/**
+	 * Looks up and invokes method with given name and applicable to given object and arguments
+	 * using reflection.
+	 * 
+	 * WARNING: this is primarily intended for use in writing unit tests. Probably should
+	 * avoid using in production code.
+	 * 
+	 * @param object either the {@link Class} of static method to be called, or object on which
+	 * method should be invoked.
+	 * @param methodName is the name of the method to invoke.
+	 * @param args are the arguments to pass to the method.
+	 * @return return value from method.
+
+	 * @throws NoSuchMethodException if no method can be found with given name and matching the types
+	 * of the arguments.
+	 * @throws InvocationTargetException wraps exception thrown by reflectively invoked method.
+	 * @throws IllegalAccessException
+	 * @see #lookupMethod(Object, String, Object...)
+	 * 
+	 * @since 0.05
+	 */
+	public static Object invokeMethod(Object object, String methodName, Object ... args)
+		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+	{
+		Method method = lookupMethod(object, methodName, args);
+		
+		if (method.isVarArgs())
+		{
+			Class<?>[] declaredTypes = method.getParameterTypes();
+			int declaredSize = declaredTypes.length;
+			
+			int nArgs = args == null ? 0 : args.length;
+			if (nArgs != declaredSize || !declaredTypes[declaredSize - 1].isInstance(args[declaredSize - 1]))
+			{
+				Class<?> varArgType = declaredTypes[declaredSize - 1].getComponentType();
+
+				Object varargs = args == null ? null : Array.newInstance(varArgType, nArgs + 1 - declaredSize);
+				for (int i = 0, j = declaredSize - 1; j < nArgs; ++i, ++j)
+				{
+					Array.set(varargs, i, args[j]);
+				}
+
+				if (nArgs > 0)
+				{
+					args = Arrays.copyOf(args, declaredSize);
+				}
+				else
+				{
+					args = new Object[declaredSize];
+				}
+				args[declaredSize - 1] = varargs;
+			}
+		}
+		
+		return method.invoke(object,  args);
+	}
+	
+	/**
+	 * Looks up method with given name and that can be called with the given arguments.
+	 * 
+	 * WARNING: this is primarily intended for use in writing unit tests. Probably should
+	 * avoid using in production code.
+	 * 
+	 * @param object if this is a {@link Class}, this will look for match in that class, otherwise
+	 * it will look in its runtime class ({@link Object#getClass()}. Must not be null.
+	 * @param methodName is the name of the method to find.
+	 * @param args are the runtime arguments to the method.
+	 * @return {@link Method} which can be called with given arguments.
+	 * @throws NoSuchMethodException if no matching method is found.
+	 * 
+	 * @see #invokeMethod(Object, String, Object...)
+	 * 
+	 * @since 0.05
+	 */
+	public static Method lookupMethod(Object object, String methodName, Object ... args) throws NoSuchMethodException
+	{
+		Class<?> objClass = object instanceof Class ? (Class<?>)object : object.getClass();
+		
+		int nArgs = args == null ? 0 : args.length;
+		Class<?>[] argTypes = new Class<?>[nArgs];
+		for (int i = 0; i < nArgs; ++i)
+		{
+			argTypes[i] = args[i] == null ? null : Primitives.unwrap(args[i].getClass());
+		}
+		
+		// First try direct match:
+		try
+		{
+			return objClass.getMethod(methodName, argTypes);
+		}
+		catch (NoSuchMethodException ex)
+		{
+		}
+		
+		// Finally, walk through all the methods and return the first one that matches.
+		outer:
+		for (Method method : objClass.getMethods())
+		{
+			if (!methodName.equals(method.getName()))
+			{
+				continue outer;
+			}
+			
+			Class<?>[] declaredTypes = method.getParameterTypes();
+
+			int end = declaredTypes.length;
+			Class<?> varArgType = null;
+
+			if (method.isVarArgs())
+			{
+				--end;
+				varArgType = Primitives.unwrap(declaredTypes[end].getComponentType());
+				if (end > argTypes.length)
+				{
+					continue outer;
+				}
+			}
+			else if (end != argTypes.length)
+			{
+				continue outer;
+			}
+
+			for (int i = 0; i < end; ++i)
+			{
+				Class<?> declaredType = Primitives.unwrap(declaredTypes[i]);
+				if (argTypes[i] == null)
+				{
+					// null matches all non-primitive declared types (at least until
+					// java comes up with an actual non-null type declaration)
+					if (declaredType.isPrimitive())
+					{
+						continue outer;
+					}
+				}
+				else if (!declaredType.isAssignableFrom(argTypes[i]))
+				{
+					continue outer;
+				}
+			}
+			
+			for (int i = end; i < argTypes.length; ++i)
+			{
+				if (!varArgType.isAssignableFrom(argTypes[i]))
+				{
+					continue outer;
+				}
+			}
+			
+			return method;
+		}
+		
+		throw new NoSuchMethodException(); // FIXME message
 	}
 	
 	/**
