@@ -1,12 +1,16 @@
 package com.analog.lyric.dimple.model.domains;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Comparator;
+import java.util.Random;
 
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 
@@ -80,7 +84,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	/**
 	 * Precomputed {@link #hashCode()}.
 	 */
-	private final int _hashCode;
+	final int _hashCode;
 	
 	/**
 	 * Nearest common base class across all domains.
@@ -123,11 +127,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 			domains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
 		}
 		
-		if (domainsTooLargeForJointIndex(domains))
+		if (domainsTooLargeForIntegerIndex(domains))
 		{
 			if (outputs != null)
 			{
-				return new LargeJointDomainIndexer(outputs, domains);
+				return new LargeDirectedJointDomainIndexer(outputs, domains);
 			}
 			else
 			{
@@ -246,7 +250,9 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		if (that instanceof JointDomainIndexer)
 		{
 			JointDomainIndexer thatDiscrete = (JointDomainIndexer)that;
-			return !thatDiscrete.isDirected() && Arrays.equals(_domains, thatDiscrete._domains);
+			return thatDiscrete._hashCode == _hashCode &&
+				!thatDiscrete.isDirected() &&
+				Arrays.equals(_domains, thatDiscrete._domains);
 		}
 		
 		return false;
@@ -303,6 +309,36 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return indices;
 	}
 
+	public final int[] elementsToIndices(Object[] elements)
+	{
+		return elementsToIndices(elements, null);
+	}
+	
+	public final int[] elementsToIndices(Object[] elements, int indices[])
+	{
+		indices = allocateIndices(indices);
+		for (int i = 0, end = _domains.length; i < end; ++i)
+		{
+			indices[i] = _domains[i].getIndexOrThrow(elements[i]);
+		}
+		return indices;
+	}
+	
+	public final Object[] elementsFromIndices(int indices[])
+	{
+		return elementsFromIndices(indices, null);
+	}
+	
+	public final Object[] elementsFromIndices(int indices[], Object[] elements)
+	{
+		elements = allocateElements(elements);
+		for (int i = 0, end = _domains.length; i < end; ++i)
+		{
+			elements[i] = _domains[i].getElement(indices[i]);
+		}
+		return elements;
+	}
+	
 	/**
 	 * The number of possible combinations of all domain elements. Equal to the product of
 	 * all of the domain sizes.
@@ -326,6 +362,21 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public final Class<?> getElementClass()
 	{
 		return _elementClass;
+	}
+	
+	/**
+	 * Returns a comparator that orders indices arrays.
+	 * <p>
+	 * If {@link #supportsJointIndexing()}, this is guaranteed to produce the same order as
+	 * the natural order of the corresponding joint indexes. If not {@link #isDirected()} or
+	 * {@link #hasCanonicalDomainOrder()}, then the comparator implements a reverse lexicographical
+	 * ordering (see {@link Comparators#reverseLexicalIntArray()}).
+	 * <p>
+	 * The comparator is intended to be used with arrays of length {@link #size()}.
+	 */
+	public Comparator<int[]> getIndicesComparator()
+	{
+		return Comparators.reverseLexicalIntArray();
 	}
 	
 	/**
@@ -364,6 +415,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return null;
 	}
 	
+	/**
 	/**
 	 * Returns a copy of the {@link BitSet} representing the indexes of the input domains or
 	 * else null if not {@link #isDirected()}.
@@ -482,6 +534,16 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * of the list.
 	 */
 	public boolean hasCanonicalDomainOrder()
+	{
+		return true;
+	}
+	
+	/**
+	 * Returns true if two indices arrays have the same values at the
+	 * indexes specified by {@link #getInputDomainIndices()}. If
+	 * not {@link #isDirected()}, this will always return true.
+	 */
+	public boolean hasSameInputs(int[] indices1, int[] indices2)
 	{
 		return true;
 	}
@@ -787,6 +849,49 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	{
 		return undirectedJointIndexToIndices(jointIndex, null);
 	}
+
+	/**
+	 * Generates a random joint index value in the range [0, {@link #getCardinality()} - 1] using provided
+	 * random number generator. Will throw an exception if not {@link #supportsJointIndexing()}.
+	 * <p>
+	 * @see #randomIndices(Random, int[])
+	 */
+	public int randomJointIndex(Random rand)
+	{
+		return rand.nextInt(getCardinality());
+	}
+	
+	/**
+	 * Generates a random set of indices for the domains using the supplied random number generator.
+	 * 
+	 * @param indices if non-null and of length at least {@link #size()}, this indices will be written
+	 * into this array. Otherwise a new one will be allocated.
+	 * 
+	 * @see #randomJointIndex(Random)
+	 */
+	public int[] randomIndices(Random rand, int[] indices)
+	{
+		indices = allocateIndices(indices);
+		for (int i = 0; i < size(); ++i)
+		{
+			indices[i] = rand.nextInt(getDomainSize(i));
+		}
+		return indices;
+	}
+	
+	/**
+	 * Indicates whether class supports operations involving single integer jointIndex representation.
+	 * This will be false when the joint cardinality of the component domains is larger than 2<sup>31</sup>.
+	 */
+	public abstract boolean supportsJointIndexing();
+	
+	/**
+	 * Indicates whether class supports operations involving single integer output index representation
+	 * of the subset of domains identified by {@link #getOutputSet()}. This will be false when the
+	 * joint cardinality of the component output domains is larger than 2<sup>31</sup>.
+	 * Note that this can be true when {@link #supportsJointIndexing} is false.
+	 */
+	public abstract boolean supportsOutputIndexing();
 	
 	/**
 	 * Verifies that the provided {@code indices} are in the correct range for
@@ -837,7 +942,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
 	}
 	
-	static boolean domainsTooLargeForJointIndex(DiscreteDomain[] domains)
+	/**
+	 * Indicate whether the joint cardinality of the specified discrete domains
+	 * is too large to be represented in an {@code int}.
+	 * @see #domainSubsetTooLargeForIntegerIndex(DiscreteDomain[], int[])
+	 */
+	static boolean domainsTooLargeForIntegerIndex(DiscreteDomain[] domains)
 	{
 		if (domains.length > 31)
 		{
@@ -871,6 +981,138 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 		
 		return product > Integer.MAX_VALUE;
+	}
+	
+	/**
+	 * Indicate whether the joint cardinality of a subset of the specified discrete domains
+	 * is too large to be represented in an {@code int}.
+	 * 
+	 * @param subindexes specifies a unique set of indices into {@code domains}.
+	 * @see #domainSubsetTooLargeForIntegerIndex(DiscreteDomain[], int[])
+	 */
+	static boolean domainSubsetTooLargeForIntegerIndex(DiscreteDomain[] domains, int[] subindexes)
+	{
+		if (subindexes.length > 31)
+		{
+			return true;
+		}
+		
+		double logProduct = 0.0;
+		
+		for (int i : subindexes)
+		{
+			logProduct += Math.log(domains[i].size());
+		}
+		
+		double approxBits = logProduct / Math.log(2);
+		
+		if (approxBits >= 32)
+		{
+			return true;
+		}
+		else if (approxBits <= 30)
+		{
+			return false;
+		}
+		
+		// Compute product with longs to get exact answer when close to threshold.
+		long product = 1;
+		
+		for (int i : subindexes)
+		{
+			product *= domains[i].size();
+		}
+		
+		return product > Integer.MAX_VALUE;
+	}
+	
+	protected static boolean hasSameInputsImpl(int[] array1, int[] array2, int[] inputIndices)
+	{
+		for (int i : inputIndices)
+		{
+			if (array1[i] != array2[i])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+	void locationToElements(int location, Object[] elements, int[] subindices, int[] products)
+	{
+		final DiscreteDomain[] domains = _domains;
+		int product, index;
+		for (int i = subindices.length; --i >= 0;)
+		{
+			int j = subindices[i];
+			index = location / (product = products[j]);
+			elements[j] = domains[j].getElement(index);
+			location -= index * product;
+		}
+	}
+	
+	static void locationToIndices(int location, int[] indices, int[] subindices, int[] products)
+	{
+		int product, index;
+		for (int i = subindices.length; --i >= 0;)
+		{
+			int j = subindices[i];
+			indices[j] = index = location / (product = products[j]);
+			location -= index * product;
+		}
+	}
+	
+	/*---------------
+	 * Inner classes
+	 */
+	
+	/**
+	 * A comparator for integer arrays that compares them first by their input subindexes
+	 * in reverse lexicographical order (from back to front) and then their output subindexes.
+	 * This will order all index arrays such that the ones representing the same input will be adjacent.
+	 */
+	@Immutable
+	static class DirectedArrayComparator implements Comparator<int[]>, Serializable
+	{
+		private static final long serialVersionUID = 1L;
+		private final int[] _inputIndices;
+		private final int[] _outputIndices;
+		
+		DirectedArrayComparator(int[] inputIndices, int[] outputIndices)
+		{
+			_inputIndices = inputIndices;
+			_outputIndices = outputIndices;
+		}
+		
+		@Override
+		public int compare(int[] array1, int[] array2)
+		{
+			int diff = array1.length - array2.length;
+			if (diff == 0)
+			{
+				for (int i = _inputIndices.length; --i>=0;)
+				{
+					int j = _inputIndices[i];
+					int val1 = array1[j], val2 = array2[j];
+					if (val1 != val2)
+					{
+						return val1 < val2 ? -1 : 1;
+					}
+				}
+				for (int i = _outputIndices.length; --i>=0;)
+				{
+					int j = _outputIndices[i];
+					int val1 = array1[j], val2 = array2[j];
+					if (val1 != val2)
+					{
+						return val1 < val2 ? -1 : 1;
+					}
+				}
+			}
+			
+			return diff;
+		}
 	}
 	
 }

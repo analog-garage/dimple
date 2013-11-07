@@ -2,6 +2,9 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * A {@link JointDomainReindexer} that supports the splitting/joining of adjacent subdomains.
+ */
 public final class JointDomainIndexJoiner extends JointDomainReindexer
 {
 	/*-------
@@ -9,7 +12,10 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	 */
 	
 	private final int _hashCode;
+	private final int _offset;
+	private final int _length;
 	private final JointDomainIndexJoiner _inverse;
+	private final boolean _supportsJointIndexing;
 	
 	/*--------------
 	 * Construction
@@ -28,25 +34,36 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	private JointDomainIndexJoiner(
 		JointDomainIndexer fromDomains,
 		JointDomainIndexer toDomains,
+		int offset,
+		int length,
 		JointDomainIndexJoiner inverse)
 	{
 		super(fromDomains, null, toDomains, null);
 		_hashCode = computeHashCode();
+		_offset = offset;
+		_length = length;
 		_inverse = inverse;
+		_supportsJointIndexing = fromDomains.supportsJointIndexing() & toDomains.supportsJointIndexing();
 	}
 	
 	private JointDomainIndexJoiner(JointDomainIndexer fromDomains, int offset)
 	{
 		super(fromDomains, null, makeToDomains(fromDomains, offset), null);
 		_hashCode = computeHashCode();
-		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, this);
+		_offset = offset;
+		_length = _fromDomains.size() - _toDomains.size() - 1;
+		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, offset, -_length, this);
+		_supportsJointIndexing = fromDomains.supportsJointIndexing() & _toDomains.supportsJointIndexing();
 	}
 		
 	private JointDomainIndexJoiner(JointDomainIndexer fromDomains, int offset, int length)
 	{
 		super(fromDomains, null, makeToDomains(fromDomains, offset, length), null);
 		_hashCode = computeHashCode();
-		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, this);
+		_offset = offset;
+		_length = length;
+		_inverse = new JointDomainIndexJoiner(_toDomains, fromDomains, offset, -length, this);
+		_supportsJointIndexing = fromDomains.supportsJointIndexing() & _toDomains.supportsJointIndexing();
 	}
 	
 	private static JointDomainIndexer makeToDomains(JointDomainIndexer fromDomains, int offset, int length)
@@ -160,8 +177,46 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	@Override
 	public void convertIndices(Indices indices)
 	{
-		int index = _fromDomains.jointIndexFromIndices(indices.fromIndices);
-		_toDomains.jointIndexToIndices(index, indices.toIndices);
+		if (_supportsJointIndexing)
+		{
+			// When joint indexing is supported, conversion is simply mapping from the domain indices to
+			// the joint index and back again for the new domains.
+			int index = _fromDomains.jointIndexFromIndices(indices.fromIndices);
+			_toDomains.jointIndexToIndices(index, indices.toIndices);
+		}
+		else
+		{
+			// Otherwise direct subindex copying is required.
+			if (_length > 0)
+			{
+				System.arraycopy(indices.fromIndices, 0, indices.toIndices, 0, _length);
+			}
+			
+			int fromi, toi;
+			
+			if (_length > 0)
+			{
+				// Joining
+				JointDiscreteDomain<?> joinedDomains = (JointDiscreteDomain<?>)_toDomains.get(_offset);
+				System.arraycopy(indices.fromIndices, _offset, indices.joinedIndices, 0, _length);
+				indices.toIndices[_offset] = joinedDomains.getIndexFromIndices(indices.joinedIndices);
+				
+				fromi = _offset + _length;
+				toi = _offset + 1;
+			}
+			else
+			{
+				// Splitting
+				JointDiscreteDomain<?> joinedDomains = (JointDiscreteDomain<?>)_fromDomains.get(_offset);
+				joinedDomains.getElementIndices(indices.fromIndices[_offset], indices.joinedIndices);
+				System.arraycopy(indices.joinedIndices, 0, indices.toIndices, _offset, -_length);
+				
+				fromi = _offset + 1;
+				toi = _offset - _length;
+			}
+			
+			System.arraycopy(indices.fromIndices, fromi, indices.toIndices, toi, indices.toIndices.length - toi);
+		}
 	}
 
 	@Override

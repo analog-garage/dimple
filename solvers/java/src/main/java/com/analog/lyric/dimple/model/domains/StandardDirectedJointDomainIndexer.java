@@ -2,9 +2,11 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Comparator;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
@@ -29,6 +31,8 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	private final int[] _directedProducts;
 	private final boolean _canonicalOrder;
 	
+	private final Comparator<int[]> _indicesComparator;
+
 	/*--------------
 	 * Construction
 	 */
@@ -102,6 +106,8 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 		_outputProducts = outputProducts;
 		_directedProducts = directedProducts;
 		_canonicalOrder = canonicalOrder;
+		_indicesComparator = canonicalOrder ? Comparators.reverseLexicalIntArray() :
+			new DirectedArrayComparator(inputIndices, outputIndices);
 	}
 	
 	/*----------------
@@ -119,7 +125,9 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 		if (that instanceof StandardDirectedJointDomainIndexer)
 		{
 			StandardDirectedJointDomainIndexer thatDiscrete = (StandardDirectedJointDomainIndexer)that;
-			return Arrays.equals(_domains, thatDiscrete._domains)
+			return
+				_hashCode == thatDiscrete._hashCode
+				&& Arrays.equals(_domains, thatDiscrete._domains)
 				&& _outputSet.equals(thatDiscrete._outputSet);
 		}
 		
@@ -129,6 +137,12 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	/*----------------------------
 	 * JointDomainIndexer methods
 	 */
+	
+	@Override
+	public final Comparator<int[]> getIndicesComparator()
+	{
+		return _indicesComparator;
+	}
 	
 	@Override
 	public int getInputCardinality()
@@ -208,6 +222,12 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	public boolean hasCanonicalDomainOrder()
 	{
 		return _canonicalOrder;
+	}
+	
+	@Override
+	public boolean hasSameInputs(int[] indices1, int[] indices2)
+	{
+		return hasSameInputsImpl(indices1, indices2, _inputIndices);
 	}
 	
 	@Override
@@ -363,32 +383,4 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 		locationToIndices(outputIndex, indices, _outputIndices, _outputProducts);
 	}
 
-	/*-----------------
-	 * Private methods
-	 */
-	
-	private void locationToElements(int location, Object[] elements, int[] subindices, int[] products)
-	{
-		final DiscreteDomain[] domains = _domains;
-		int product, index;
-		for (int i = subindices.length; --i >= 0;)
-		{
-			int j = subindices[i];
-			index = location / (product = products[j]);
-			elements[j] = domains[j].getElement(index);
-			location -= index * product;
-		}
-	}
-	private static void locationToIndices(int location, int[] indices, int[] subindices, int[] products)
-	{
-		int product, index;
-		for (int i = subindices.length; --i >= 0;)
-		{
-			int j = subindices[i];
-			indices[j] = index = location / (product = products[j]);
-			location -= index * product;
-		}
-	}
-
-	
 }

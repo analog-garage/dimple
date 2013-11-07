@@ -40,6 +40,7 @@ public abstract class JointDomainReindexer
 		public final int[] toIndices;
 		public final int[] addedIndices;
 		public final int[] removedIndices;
+		public final int[] joinedIndices;
 		
 		private Indices(JointDomainReindexer converter)
 		{
@@ -50,6 +51,9 @@ public abstract class JointDomainReindexer
 				converter._addedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[converter._addedDomains.size()];
 			removedIndices =
 				converter._removedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[converter._removedDomains.size()];
+			int joinedSize =
+				Math.abs(fromIndices.length - toIndices.length) - Math.abs(addedIndices.length - removedIndices.length);
+			joinedIndices = joinedSize == 0 ? ArrayUtil.EMPTY_INT_ARRAY : new int[joinedSize];
 		}
 		
 		/**
@@ -335,6 +339,10 @@ public abstract class JointDomainReindexer
 	 * JointDomainReindexer methods
 	 */
 
+	/**
+	 * Returns {@link JointDomainIndexer} representing the subdomains to be added to
+	 * the factor table. This may be null if no dimensions are to be added.
+	 */
 	public final JointDomainIndexer getAddedDomains()
 	{
 		return _addedDomains;
@@ -342,11 +350,18 @@ public abstract class JointDomainReindexer
 	
 	public abstract JointDomainReindexer getInverse();
 	
+	/**
+	 * Returns {@link JointDomainIndexer} representing the subdomains to be removed from
+	 * the factor table. This may be null if no dimensions are to be removed.
+	 */
 	public final JointDomainIndexer getRemovedDomains()
 	{
 		return _removedDomains;
 	}
 	
+	/**
+	 * Returns {@link JointDomainIndexer} for factor table to be converted from. Will never be null.
+	 */
 	public final JointDomainIndexer getFromDomains()
 	{
 		return _fromDomains;
@@ -364,6 +379,9 @@ public abstract class JointDomainReindexer
 		return scratch != null ? scratch : new Indices(this);
 	}
 	
+	/**
+	 * Returns {@link JointDomainIndexer} for factor table to be converted to. Will never be null.
+	 */
 	public final JointDomainIndexer getToDomains()
 	{
 		return _toDomains;

@@ -1,7 +1,5 @@
 package com.analog.lyric.dimple.model.domains;
 
-import java.util.Arrays;
-
 import net.jcip.annotations.Immutable;
 
 @Immutable
@@ -48,27 +46,6 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	StandardJointDomainIndexer(DiscreteDomain[] domains)
 	{
 		this(computeHashCode(domains), domains);
-	}
-	
-	/*----------------
-	 * Object methods
-	 */
-	
-	@Override
-	public boolean equals(Object that)
-	{
-		if (this == that)
-		{
-			return true;
-		}
-		
-		if (that instanceof StandardJointDomainIndexer)
-		{
-			StandardJointDomainIndexer thatDiscrete = (StandardJointDomainIndexer)that;
-			return !thatDiscrete.isDirected() && Arrays.equals(_domains, thatDiscrete._domains);
-		}
-		
-		return false;
 	}
 	
 	/*----------------------------
@@ -220,5 +197,16 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		}
 		return indices;
 	}
+
+	@Override
+	public boolean supportsJointIndexing()
+	{
+		return true;
+	}
 	
+	@Override
+	public boolean supportsOutputIndexing()
+	{
+		return true;
+	}
 }

@@ -322,7 +322,9 @@ public interface IFactorTable extends IFactorTableBase
 	 * Sets the underlying representation of the table to the specified value.
 	 * <p>
 	 * @throws DimpleException If setting representation to a deterministic representation, this method will throw an
-	 * exception if the table cannot be represented as deterministic (see {@link #isDeterministicDirected()}).
+	 * exception if the table cannot be represented as deterministic (see {@link #isDeterministicDirected()}) or
+	 * table does not support joint indexing and a dense representation is requested
+	 * (see {@link #supportsJointIndexing()}.
 	 */
 	public void setRepresentation(FactorTableRepresentation representation);
 	
@@ -334,30 +336,47 @@ public interface IFactorTable extends IFactorTableBase
 	 * @param energies specifies the energies of the table in the same order as {@code jointIndices}.
 	 * @throws IllegalArgumentException if {@code jointIndices} and {@code energies} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
+	 * @see #setEnergiesSparse(int[][], double[])
+	 * @see #setWeightsSparse(int[], double[])
 	 */
 	public void setEnergiesSparse(int[] jointIndices, double[] energies);
 	
+	/**
+	 * Sets representation to {@link FactorTableRepresentation#SPARSE_ENERGY} with
+	 * provided weights for each set of indices.
+	 * <p>
+	 * @param indices are the combined element indices of the entries to put in the table.
+	 * @param energies specifies the energies of the table in the same order as {@code indices}.
+	 * @throws IllegalArgumentException if {@code indices} and {@code energies} have different lengths,
+	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
+	 * @see #setEnergiesSparse(int[], double[])
+	 * @see #setWeightsSparse(int[][], double[])
+	 */
+	public void setEnergiesSparse(int[][] indices, double[] energies);
+
 	/**
 	 * Sets representation to {@link FactorTableRepresentation#SPARSE_WEIGHT} with
 	 * provided weights for each joint index.
 	 * <p>
 	 * @param jointIndices are the joint indexes of the entries to put in the table.
 	 * @param weights specifies the weights of the table in the same order as {@code jointIndices}.
-	 * @throws IllegalArgumentException if {@code jointIndices} and {@code energies} have different lengths,
+	 * @throws IllegalArgumentException if {@code jointIndices} and {@code weights} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
 	 * @see #setWeightsSparse(int[][], double[])
+	 * @see #setEnergiesSparse(int[], double[])
 	 */
 	public void setWeightsSparse(int[] jointIndices, double[] weights);
 	
 	/**
-	 * Sets representation to {@link FactorTableRepresentation#SPARSE_WEIGHT_WITH_INDICES} with
+	 * Sets representation to {@link FactorTableRepresentation#SPARSE_WEIGHT} with
 	 * provided weights for each set of indices.
 	 * <p>
 	 * @param indices are the combined element indices of the entries to put in the table.
 	 * @param weights specifies the weights of the table in the same order as {@code indices}.
-	 * @throws IllegalArgumentException if {@code indices} and {@code energies} have different lengths,
+	 * @throws IllegalArgumentException if {@code indices} and {@code weights} have different lengths,
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
 	 * @see #setWeightsSparse(int[], double[])
+	 * @see #setEnergiesSparse(int[][], double[])
 	 */
 	public void setWeightsSparse(int[][] indices, double[] weights);
 }

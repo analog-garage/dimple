@@ -57,14 +57,38 @@ public class DimpleException extends RuntimeException implements IDimpleExceptio
 	
 	public static DimpleException unsupported(String operation)
 	{
-		return new DimpleException("Operation '%s' not supported", operation);
+		return new DimpleException(String.format("Operation '%s' not supported", operation));
 	}
 	
+	/**
+	 * Returns an exception indicating a method is not supported
+	 * 
+	 * @param cl is the class from which the exception was thrown. Usually it is sufficient to
+	 * use {@link Object#getClass()}.
+	 * @param name is the name of the method.
+	 * 
+	 * @see #unsupportedMethod(Class, String, String)
+	 */
 	public static DimpleException unsupportedMethod(Class<?> cl, String name)
 	{
-		return new DimpleException("Method '%s' not supported on '%s'", cl, name);
+		return new DimpleException(String.format("Method '%s.%s' is not supported.", cl.getSimpleName(), name));
 	}
 	
+	/**
+	 * Returns an exception indicating a method is not supported
+	 * 
+	 * @param cl is the class from which the exception was thrown. Usually it is sufficient to
+	 * use {@link Object#getClass()}.
+	 * @param name is the name of the method.
+	 * @param reason states the reason the method is unsupported in sentence form
+	 * 
+	 * @see #unsupportedMethod(Class, String)
+	 */
+	public static DimpleException unsupportedMethod(Class<?> cl, String name, String reason)
+	{
+		return new DimpleException(String.format("Method '%s.%s' is not supported: %s", cl.getSimpleName(), name, reason));
+	}
+
 	/**
 	 * Creates an exception stating that specified operation is not supported by a particular solver.
 	 */
