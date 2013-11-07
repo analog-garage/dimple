@@ -25,8 +25,17 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class GammaSampler implements IRealConjugateSampler
 {
+	private final GammaParameters _parameters = new GammaParameters();
+
 	@Override
-	public double nextSample(Port[] ports, FactorFunction input)
+	public final double nextSample(Port[] ports, FactorFunction input)
+	{
+		aggregateParameters(_parameters, ports, input);
+		return nextSample(_parameters);
+	}
+	
+	@Override
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
 	{
 		double alpha = 0;
 		double beta = 0;
@@ -46,13 +55,25 @@ public class GammaSampler implements IRealConjugateSampler
 			beta += message.getBeta();
 		}
 		
-		return nextSample(alpha, beta);
+		// Set the output
+		GammaParameters parameters = (GammaParameters)aggregateParameters;
+		parameters.setAlpha(alpha);
+		parameters.setBeta(beta);
 	}
 
-	public double nextSample(double alpha, double beta)
+	public final double nextSample(GammaParameters parameters)
 	{
+		double alpha = parameters.getAlpha();
+		double beta = parameters.getBeta();
 		return SolverRandomGenerator.randGamma.nextDouble(alpha, beta);
 	}
+	
+	@Override
+	public IParameterizedMessage createParameterMessage()
+	{
+		return new GammaParameters();
+	}
+
 	
 	// A static factory that creates a sampler of this type
 	public static final IRealConjugateSamplerFactory factory = new IRealConjugateSamplerFactory()

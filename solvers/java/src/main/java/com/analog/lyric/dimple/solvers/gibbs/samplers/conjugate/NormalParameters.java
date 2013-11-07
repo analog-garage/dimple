@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-public class NormalParameters
+public class NormalParameters implements IParameterizedMessage
 {
 	private double _mean = 0;
 	private double _precision = 0;
@@ -27,6 +27,11 @@ public class NormalParameters
 		_mean = mean;
 		_precision = precision;
 	}
+	public NormalParameters(NormalParameters other)		// Copy constructor
+	{
+		this(other._mean, other._precision);
+	}
+
 	
 	public final double getMean() {return _mean;}
 	public final double getPrecision() {return _precision;}
@@ -38,4 +43,10 @@ public class NormalParameters
 	public final void setVariance(double variance) {_precision = 1/variance;}
 	public final void setStandardDeviation(double standardDeviation) {_precision = 1/(standardDeviation*standardDeviation);}
 
+	@Override
+	public final void setNull()
+	{
+		_mean = 0;
+		_precision = 0;
+	}
 }

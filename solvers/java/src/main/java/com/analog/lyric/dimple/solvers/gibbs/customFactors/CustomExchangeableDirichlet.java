@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,19 +25,16 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomExchangeableDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
-	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private double _alpha;
 	private SRealVariable _alphaVariable;
@@ -53,24 +49,21 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealJointConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof DirichletSampler)
+		if (portNum > _numParameterEdges)
 		{
 			// Output port must be an output variable
 
-			double[] outputMsg = (double[])_outputMsgs[outPortNum];
+			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			if (_hasConstantParameters)
-				Arrays.fill(outputMsg, _alpha);
+				outputMsg.fill(_alpha);
 			else	// Variable parameters
-				Arrays.fill(outputMsg, _alphaVariable.getCurrentSample());
+				outputMsg.fill(_alphaVariable.getCurrentSample());
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -95,18 +88,6 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	public void initialize()
 	{
 		super.initialize();
-		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof RealJoint)
-				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
@@ -166,7 +147,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			_outputMsgs[port] = new double[_dimension];
+			_outputMsgs[port] = new DirichletParameters(_dimension);
 	}
 	
 	@Override

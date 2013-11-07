@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
-public class BetaParameters
+public class BetaParameters implements IParameterizedMessage
 {
 	private double _alpha = 0;
 	private double _beta = 0;
@@ -27,10 +27,21 @@ public class BetaParameters
 		_alpha = alpha;
 		_beta = beta;
 	}
+	public BetaParameters(BetaParameters other)		// Copy constructor
+	{
+		this(other._alpha, other._beta);
+	}
 	
 	public final double getAlpha() {return _alpha;}
 	public final double getBeta() {return _beta;}
 
 	public final void setAlpha(double alpha) {_alpha = alpha;}
 	public final void setBeta(double beta) {_beta = beta;}
+	
+	@Override
+	public final void setNull()
+	{
+		_alpha = 0;
+		_beta = 0;
+	}
 }

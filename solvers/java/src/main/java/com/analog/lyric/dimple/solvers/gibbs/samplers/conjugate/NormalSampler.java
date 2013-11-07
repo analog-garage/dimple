@@ -25,9 +25,17 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 public class NormalSampler implements IRealConjugateSampler
 {
 	private final double MAX_SIGMA = 1e12;
+	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public double nextSample(Port[] ports, FactorFunction input)
+	public final double nextSample(Port[] ports, FactorFunction input)
+	{
+		aggregateParameters(_parameters, ports, input);
+		return nextSample(_parameters);
+	}
+	
+	@Override
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
 	{
 		double totalPrecision = 0;
 		double totalMeanPrecisionProduct = 0;
@@ -54,18 +62,30 @@ public class NormalSampler implements IRealConjugateSampler
 		}
 		
 		double finalMean = (totalPrecision > 0) ? totalMeanPrecisionProduct / totalPrecision : 0;
-		
-		return nextSample(finalMean, totalPrecision);
+
+		// Set the output
+		NormalParameters parameters = (NormalParameters)aggregateParameters;
+		parameters.setMean(finalMean);
+		parameters.setPrecision(totalPrecision);
 	}
 	
-	public double nextSample(double mean, double precision)
+	public final double nextSample(NormalParameters parameters)
 	{
+		double mean = parameters.getMean();
+		double precision = parameters.getPrecision();
 		if (precision > 0)
 			return mean + SolverRandomGenerator.rand.nextGaussian() / Math.sqrt(precision);
 		else
 			return mean + SolverRandomGenerator.rand.nextGaussian() * MAX_SIGMA;
 	}
 
+	@Override
+	public IParameterizedMessage createParameterMessage()
+	{
+		return new NormalParameters();
+	}
+
+	
 	// A static factory that creates a sampler of this type
 	public static final IRealConjugateSamplerFactory factory = new IRealConjugateSamplerFactory()
 	{

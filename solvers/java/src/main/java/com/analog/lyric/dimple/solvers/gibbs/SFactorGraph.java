@@ -45,6 +45,7 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransit
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
@@ -182,6 +183,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return true;
 		else if (factorName.equals("Binomial"))
 			return true;
+		else if (factorName.equals("Multiplexer"))
+			return true;
 		else
 			return false;
 	}
@@ -219,6 +222,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomBernoulli(factor);
 		else if (funcName.equals("Binomial"))
 			return new CustomBinomial(factor);
+		else if (funcName.equals("Multiplexer"))
+			return new CustomMultiplexer(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
