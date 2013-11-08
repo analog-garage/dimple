@@ -20,14 +20,17 @@ import com.analog.lyric.dimple.model.factors.Factor;
 
 public interface ISolverVariableGibbs
 {
+	// External API
 	public void saveAllSamples();
 	public void saveCurrentSample();
     public void saveBestSample();
     public void setCurrentSample(Object value);
-	public void updateBelief();
 	public void setBeta(double beta);
 	public double getPotential();
+	
+	// Internal methods
 	public double getConditionalPotential(int portIndex);
+	public void updateBelief();
 	public void randomRestart();
 	public void postAddFactor(Factor f);
 	public void updateDirectedCache();

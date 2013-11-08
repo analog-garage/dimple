@@ -2,16 +2,18 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Arrays;
 import java.util.BitSet;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
+import java.util.Comparator;
 
 import net.jcip.annotations.Immutable;
+
+import com.analog.lyric.collect.Comparators;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * Directed implementation of {@link JointDomainIndexer}.
  */
 @Immutable
-final class DirectedJointDomainIndexer extends JointDomainIndexer
+final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexer
 {
 	/*-------
 	 * State
@@ -29,11 +31,14 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	private final int[] _directedProducts;
 	private final boolean _canonicalOrder;
 	
+	private final Comparator<int[]> _indicesComparator;
+
 	/*--------------
 	 * Construction
 	 */
 	
-	DirectedJointDomainIndexer(BitSet outputs, DiscreteDomain ... domains)
+	StandardDirectedJointDomainIndexer(BitSet outputs, DiscreteDomain ... domains)
+	
 	{
 		super(computeHashCode(outputs, domains), domains);
 		_outputSet = outputs;
@@ -101,6 +106,8 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 		_outputProducts = outputProducts;
 		_directedProducts = directedProducts;
 		_canonicalOrder = canonicalOrder;
+		_indicesComparator = canonicalOrder ? Comparators.reverseLexicalIntArray() :
+			new DirectedArrayComparator(inputIndices, outputIndices);
 	}
 	
 	/*----------------
@@ -115,10 +122,12 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 			return true;
 		}
 		
-		if (that instanceof DirectedJointDomainIndexer)
+		if (that instanceof StandardDirectedJointDomainIndexer)
 		{
-			DirectedJointDomainIndexer thatDiscrete = (DirectedJointDomainIndexer)that;
-			return Arrays.equals(_domains, thatDiscrete._domains)
+			StandardDirectedJointDomainIndexer thatDiscrete = (StandardDirectedJointDomainIndexer)that;
+			return
+				_hashCode == thatDiscrete._hashCode
+				&& Arrays.equals(_domains, thatDiscrete._domains)
 				&& _outputSet.equals(thatDiscrete._outputSet);
 		}
 		
@@ -128,6 +137,12 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	/*----------------------------
 	 * JointDomainIndexer methods
 	 */
+	
+	@Override
+	public final Comparator<int[]> getIndicesComparator()
+	{
+		return _indicesComparator;
+	}
 	
 	@Override
 	public int getInputCardinality()
@@ -207,6 +222,12 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 	public boolean hasCanonicalDomainOrder()
 	{
 		return _canonicalOrder;
+	}
+	
+	@Override
+	public boolean hasSameInputs(int[] indices1, int[] indices2)
+	{
+		return hasSameInputsImpl(indices1, indices2, _inputIndices);
 	}
 	
 	@Override
@@ -362,37 +383,4 @@ final class DirectedJointDomainIndexer extends JointDomainIndexer
 		locationToIndices(outputIndex, indices, _outputIndices, _outputProducts);
 	}
 
-	/*-----------------
-	 * Private methods
-	 */
-	
-	private static int computeHashCode(BitSet inputs, DiscreteDomain[] domains)
-	{
-		return Arrays.hashCode(domains) * 13 + inputs.hashCode();
-	}
-	
-	private void locationToElements(int location, Object[] elements, int[] subindices, int[] products)
-	{
-		final DiscreteDomain[] domains = _domains;
-		int product, index;
-		for (int i = subindices.length; --i >= 0;)
-		{
-			int j = subindices[i];
-			index = location / (product = products[j]);
-			elements[j] = domains[j].getElement(index);
-			location -= index * product;
-		}
-	}
-	private static void locationToIndices(int location, int[] indices, int[] subindices, int[] products)
-	{
-		int product, index;
-		for (int i = subindices.length; --i >= 0;)
-		{
-			int j = subindices[i];
-			indices[j] = index = location / (product = products[j]);
-			location -= index * product;
-		}
-	}
-
-	
 }

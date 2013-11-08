@@ -9,6 +9,10 @@ New Features Since v0.04 (Oct 5)
 
 * Added java solver template to aid in the design of new solvers
 
+* Added ExchangeableDirichlet factor function
+
+* Added Multiplexer factor function
+
 
 Fixes Since v0.04
 -----------------

@@ -28,21 +28,17 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
-	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SDiscreteVariable _yVariable;
 	private SDiscreteVariable _xVariable;
@@ -71,22 +67,19 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof GammaSampler)
+		if (portNum >= _startingParameterEdge)
 		{
-			// Output port must be a parameter input
+			// Port is a parameter input
 			// Determine sample alpha and beta parameters
 			// NOTE: This class works for either DiscreteTransitionIndepenentParameters or DiscreteTransitionEnergyParameters factor functions
 			// since the actual parameter value doesn't come into play in determining the message in this direction
 
-			GammaParameters outputMsg = (GammaParameters)_outputMsgs[outPortNum];
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
 			
 			// Get the parameter coordinates
-			int parameterIndex = outPortNum - _startingParameterEdge;
+			int parameterIndex = portNum - _startingParameterEdge;
 			int parameterXIndex = _parameterXIndices[parameterIndex];
 			int parameterYIndex = _parameterYIndices[parameterIndex];
 			
@@ -108,7 +101,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			}
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -136,18 +129,6 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	public void initialize()
 	{
 		super.initialize();
-		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof Real)
-				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();

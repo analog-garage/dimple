@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.sample.RealJointSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
@@ -53,10 +55,11 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
  *
  */
 
-public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISampleScorer
+public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, ISampleScorer
 {
 	private RealJoint _varReal;
 	private RealJointSample _outputMsg;
+	private Object[] _inputMsg = null;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
 	private FactorFunction[] _inputArray;
@@ -204,6 +207,25 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		return _conjugateSampler;
 	}
 
+	@Override
+	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, IRealSampler conjugateSampler)
+	{
+		int numPorts = _var.getSiblingCount();
+		Port[] ports = new Port[numPorts - 1];
+		List<INode> siblings = _var.getSiblings();
+		for (int port = 0, i = 0; port < numPorts; port++)
+		{
+			if (port != outPortNum)
+			{
+				INode factorNode = siblings.get(port);
+				ISolverNode factor = factorNode.getSolver();
+				int factorPortNumber = factorNode.getPortNum(_var);
+				ports[i++] = factorNode.getPorts().get(factorPortNumber);
+				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
+			}
+		}
+		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, ports, _inputJoint);
+	}
 
 
 	@Override
@@ -703,7 +725,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		throw new DimpleException("Not supported by: " + this);
+		return _inputMsg;
 	}
 
 	@Override
@@ -715,7 +737,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
-				
+		if (_inputMsg == null)
+			_inputMsg = new Object[_var.getSiblingCount()];
+		_inputMsg[portIndex] = obj;
 	}
 
 	@Override
@@ -793,21 +817,41 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 
 	
+	// Find a single conjugate sampler consistent with all neighboring factors and the Input
 	public IRealJointConjugateSampler findConjugateSampler()
 	{
+		Set<IRealJointConjugateSamplerFactory> availableSamplerFactories = findConjugateSamplerFactories();
+		if (availableSamplerFactories.isEmpty())
+			return null;	// No available conjugate sampler
+		else
+			return availableSamplerFactories.iterator().next().create();	// Get the first one and create the sampler
+	}
+
+	// Find the set of all available conjugate samplers, but don't create it yet
+	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories()
+	{
+		return findConjugateSamplerFactories(_var.getSiblings());
+	}
+	
+	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
+	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories(List<INode> factors)
+	{
+		Set<IRealJointConjugateSamplerFactory> commonSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
+
 		// Check all the adjacent factors to see if they all support a common cojugate factor
-		List<INode> siblings = _var.getSiblings();
-		int numPorts = siblings.size();
-		ArrayList<IRealJointConjugateSamplerFactory> commonSamplers = new ArrayList<IRealJointConjugateSamplerFactory>();
-		for (int portIndex = 0; portIndex < numPorts; portIndex++)
+		int numFactors = factors.size();
+		for (int i = 0; i < numFactors; i++)
 		{
-			INode factorNode = siblings.get(portIndex);
+			INode factorNode = factors.get(i);
 			ISolverNode factor = factorNode.getSolver();
 			if (!(factor instanceof IRealJointConjugateFactor))
-				return null;	// At least one connected factor does not support conjugate sampling
+			{
+				commonSamplers.clear();	// At least one connected factor does not support conjugate sampling
+				return commonSamplers;
+			}
 			int factorPortNumber = factorNode.getPortNum(_var);
 			Set<IRealJointConjugateSamplerFactory> availableSamplers = ((IRealJointConjugateFactor)factor).getAvailableRealJointConjugateSamplers(factorPortNumber);
-			if (commonSamplers.isEmpty())  // First time through
+			if (i == 0)  // First time through
 				commonSamplers.addAll(availableSamplers);
 			else
 			{
@@ -818,16 +862,13 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 						unavailableSamplers.add(sampler);
 				commonSamplers.removeAll(unavailableSamplers);
 			}
-			if (commonSamplers.isEmpty())
-				return null;	// No common samplers found
 		}
 		
-		// Next, check that this conjugate sampler is also compatible with the input and the domain of this variable
+		// Next, check conjugate samplers are also compatible with the input and the domain of this variable
 		for (IRealJointConjugateSamplerFactory sampler : commonSamplers)
-			if (sampler.isCompatible(_inputJoint) && sampler.isCompatible(_domain))
-				return sampler.create();	// Create and return the sampler
+			if (!sampler.isCompatible(_inputJoint) || !sampler.isCompatible(_domain))
+				commonSamplers.remove(sampler);	// Remove samplers not supported so remove it
 		
-		// Input wasn't compatible with any of the samplers supported by adjacent factors
-		return null;
+		return commonSamplers;
 	}
 }

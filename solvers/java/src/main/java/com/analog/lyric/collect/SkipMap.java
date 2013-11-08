@@ -18,10 +18,11 @@ package com.analog.lyric.collect;
 
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import com.google.common.base.Objects;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
 
@@ -48,7 +49,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 			if (other instanceof Entry)
 			{
 				Entry<?,?> that = (Entry<?,?>)other;
-				return node[0].equals(that.node[0]) && node[1].equals(that.node[1]);
+				return node[0].equals(that.node[0]) && Objects.equal(node[1], that.node[1]);
 			}
 			
 			return false;
@@ -57,7 +58,8 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		@Override
 		public int hashCode()
 		{
-			return Arrays.hashCode(node);
+			Object value = node[1];
+			return node[0].hashCode() ^ (value == null ? 0 : value.hashCode());
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -111,6 +113,56 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		super(comparator, (short)2);
 	}
 
+	// TODO: add following constructors: (), (Map), (SortedMap)
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Map)
+		{
+			Map<?,?> otherMap = (Map<?,?>)other;
+			if (otherMap.size() == size())
+			{
+				// TODO: special case if other is a SkipMap or a SortedMap with the same comparator
+
+				for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
+				{
+					Object key = node[0], value = node[1];
+					if (!Objects.equal(otherMap.get(key), value))
+					{
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		// Implements computation specified by Map.hashCode()
+		int hash = 0;
+		for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
+		{
+			Object key = node[0], value = node[1];
+			hash += key.hashCode() ^ (value == null ? 0 : value.hashCode());
+		}
+		return hash;
+	}
+	
 	/*
 	 * Map methods
 	 */
@@ -133,9 +185,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	@Override
 	public boolean containsValue(Object value)
 	{
-		for (Object[] node = this.head; node != null; node = this.getNextNode(node))
+		for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
 		{
-			if (this.getNodeValue(node) == value)
+			if (Objects.equal(this.getNodeValue(node), value))
 			{
 				return true;
 			}

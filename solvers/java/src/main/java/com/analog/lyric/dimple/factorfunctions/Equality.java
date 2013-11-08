@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
@@ -107,7 +107,7 @@ public class Equality extends FactorFunction
 			jointIndices[i] = domains.jointIndexFromIndices(indices);
 		}
 
-		FactorTable table = new FactorTable(domains);
+		IFactorTable table = FactorTable.create(domains);
 		table.setEnergiesSparse(jointIndices, energies);
 		return table;
     }

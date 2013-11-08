@@ -38,7 +38,6 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.serializerdetails.Deserializer;
 import com.analog.lyric.dimple.model.serializerdetails.Serializer;
@@ -68,7 +67,7 @@ public class xmlSerializer
 		return _serializer.serializeToXML(fg, FgName, targetDirectory);
 	}
 
-	public String serializeFactorTableToXML(FactorTable ct, String ctName, String targetDirectory)
+	public String serializeFactorTableToXML(IFactorTable ct, String ctName, String targetDirectory)
 	{
 		return _serializer.serializeFactorTableToXML(ct, ctName, targetDirectory);
 	}

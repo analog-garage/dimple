@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * associated with a variable or fixed parameter vector. The variables are
  * ordered as follows in the argument list:
  * 
- * 1) Parameters (non-negative RealJoint variable).  Dimension of this variable must be known and specified in the constructor.
+ * 1) Parameters (non-negative RealJoint variable).
  * 2...) An arbitrary number of RealJoint variables, each one a Dirichlet distributed random variable.
  * 
  * The parameters may optionally be specified as constants in the constructor.
@@ -138,5 +138,9 @@ public class Dirichlet extends FactorFunction
     public final double[] getParameters()
     {
     	return _alpha;
+    }
+    public final int getDimension()
+    {
+    	return _dimension;
     }
 }

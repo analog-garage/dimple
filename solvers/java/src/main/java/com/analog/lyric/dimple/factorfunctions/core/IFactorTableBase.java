@@ -18,12 +18,12 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * of sparse/joint index.
 	 */
 	@Override
-	public abstract FactorTableIterator iterator();
+	public abstract IFactorTableIterator iterator();
 	
 	/**
 	 * Returns an iterator over the joint indexes in the table in increasing order.
 	 */
-	public abstract FactorTableIterator fullIterator();
+	public abstract IFactorTableIterator fullIterator();
 	
 	/*-------------
 	 * New methods
@@ -224,6 +224,13 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public abstract boolean hasDenseWeights();
 
 	/**
+	 * True if table has {@link #density()} is 1.0 and there are no zero weights.
+	 * 
+	 * @since 0.05
+	 */
+	public abstract boolean hasMaximumDensity();
+	
+	/**
 	 * True if underlying representation contains a sparse representation of non-zero weights.
 	 * <p>
 	 * True if {@link #hasSparseEnergies()}, {@link #hasSparseWeights()} or {@link #isDeterministicDirected()}.
@@ -309,6 +316,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * incorrect result.
 	 * @see #sparseIndexFromElements
 	 * @see #sparseIndexToIndices
+	 * @return sparse index for table entry with given set of indices. Returns negative value if there is no such
+	 * entry.
 	 */
 	public abstract int sparseIndexFromIndices(int... indices);
 	
@@ -466,4 +475,9 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract int sparseSize();
 
+	/**
+	 * True if table supports operations involving {@code jointIndex} values or dense representation. If false,
+	 * then methods that return or use such arguments will throw an {@link UnsupportedOperationException}.
+	 */
+	public boolean supportsJointIndexing();
 }

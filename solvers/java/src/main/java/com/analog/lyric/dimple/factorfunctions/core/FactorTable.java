@@ -10,19 +10,21 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 import net.jcip.annotations.NotThreadSafe;
+import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
 import com.google.common.math.DoubleMath;
 
 @NotThreadSafe
-public class FactorTable extends FactorTableBase implements IFactorTable
+public class FactorTable extends SparseFactorTableBase
 {
 	/*-----------
 	 * Constants
@@ -104,55 +106,14 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * Set if {@link #isDeterministicDirected()} has been invoked since the last time the values or
 	 * representation of the table were changed.
 	 */
-	private static final int DETERMINISTIC_COMPUTED = 0x01;
+	static final int DETERMINISTIC_COMPUTED = 0x10;
 	
-	/**
-	 * Set if table is known to be in normalized form (all weights add up to one).
-	 */
-	private static final int NORMALIZED = 0x02;
-	
-	/**
-	 * Set if value of {@link #NORMALIZED} bit has been computed.
-	 */
-	private static final int NORMALIZED_COMPUTED = 0x04;
-	
-	/**
-	 * Set if table is directed and has been conditionally normalized (so that the total weight for any
-	 * two inputs is the same).
-	 */
-	private static final int CONDITIONAL = 0x08;
-	
-	/**
-	 * Set if value of {@link #CONDITIONAL} bit has been computed.
-	 */
-	private static final int CONDITIONAL_COMPUTED = 0x10;
-
 	/*-------
 	 * State
 	 */
 
-	/**
-	 * Bit mask indicating how the contents of the table are represented. Exposed
-	 * by {@link #getRepresentation()} and {@link #setRepresentation(FactorTableRepresentation)}.
-	 * <p>
-	 * This is a combination of the bits: {@link #DENSE_ENERGY}, {@link #DENSE_WEIGHT}, {@link #SPARSE_ENERGY},
-	 * {@link #SPARSE_WEIGHT}, {@link #SPARSE_INDICES}.
-	 */
-	private int _representation;
-	
 	private double[] _denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private double[] _denseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-	private double[] _sparseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-	private double[] _sparseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
-	
-	
-	/**
-	 * Count of table entries with non-zero weight/non-infinite energy.
-	 * <p>
-	 * When table has no sparse representation, this is returned as the {@link #sparseSize()}.
-	 */
-	private int _nonZeroWeights;
-	
 	/**
 	 * Maps sparse indexes to joint indexes. Empty if table is in dense form
 	 * (because in that case the location and joint index are the same).
@@ -160,129 +121,41 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	 * If not dense or deterministic (&directed) this lookup will require a
 	 * binary search.
 	 */
-	private int[] _sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
-	
-	/**
-	 * Same information as {@link #_sparseIndexToJointIndex} but instead of storing joint indices stores
-	 * arrays of element indices.
-	 */
-	private int[][] _sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
-	
-	/**
-	 * Information computed about the table based on its values. This field is zeroed out whenever
-	 * table weights or energies are changed.
-	 * <p>
-	 * Consists of the bits {@link #DETERMINISTIC_COMPUTED}, {@link #NORMALIZED}, {@link #NORMALIZED_COMPUTED},
-	 * {@link #CONDITIONAL} and {@link #CONDITIONAL_COMPUTED}.
-	 */
-	private int _computedMask = 0;
+	int[] _sparseIndexToJointIndex = ArrayUtil.EMPTY_INT_ARRAY;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public FactorTable(JointDomainIndexer domains)
+	FactorTable(JointDomainIndexer domains)
 	{
 		super(domains);
-		_nonZeroWeights = 0;
 		_representation = SPARSE_ENERGY;
-	}
-	
-	public FactorTable(BitSet directedTo, DiscreteDomain ... domains)
-	{
-		this(JointDomainIndexer.create(directedTo, domains));
-	}
-	
-	/**
-	 * Creates empty sparse factor table over given discrete domains.
-	 */
-	public FactorTable(DiscreteDomain ... domains)
-	{
-		this(null, domains);
 	}
 	
 	/**
 	 * Construct as a copy of another table instance.
 	 */
-	public FactorTable(FactorTable that)
+	FactorTable(FactorTable that)
 	{
 		super(that);
-		_nonZeroWeights = that._nonZeroWeights;
-		_computedMask = that._computedMask;
 		
-		_representation = that._representation;
 		_denseEnergies = ArrayUtil.cloneArray(that._denseEnergies);
 		_denseWeights = ArrayUtil.cloneArray(that._denseWeights);
-		_sparseEnergies = ArrayUtil.cloneArray(that._sparseEnergies);
-		_sparseWeights = ArrayUtil.cloneArray(that._sparseWeights);
 		_sparseIndexToJointIndex = ArrayUtil.cloneArray(that._sparseIndexToJointIndex);
-		_sparseIndices = ArrayUtil.cloneArray(that._sparseIndices);
 	}
 
 	/**
 	 * Constructs a new table by converting the contents of {@code other} table using
 	 * {@code converter} whose "from" domains must match {@code other}'s domains.
 	 */
-	public FactorTable(FactorTable other, JointDomainReindexer converter)
+	FactorTable(IFactorTable other, JointDomainReindexer converter)
 	{
 		super(converter.getToDomains());
-		_representation = other._representation;
-		convertFrom(other, converter);
-	}
-	
-	static IFactorTable create(
-		int[][] indices,
-		double[] weights,
-		boolean checkTable,
-		DiscreteDomain... domains)
-	{
-		IFactorTable table = new FactorTable(domains);
-		table.setWeightsSparse(indices, weights);
-		return table;
-	}
-
-	public static IFactorTable create(Object table, DiscreteDomain[] domains)
-	{
-		Object [] result = Misc.nDimensionalArray2indicesAndValues(table);
-		return FactorTable.create((int[][])result[0], (double[])result[1], false, domains);
-	}
-
-	public static IFactorTable create(int[][] indices, double[] weights, Discrete... variables)
-	{
-		DiscreteDomain[] domains = new DiscreteDomain[variables.length];
-		for(int i = 0; i < domains.length; ++i)
-		{
-			domains[i] = variables[i].getDiscreteDomain();
-		}
-		return create(indices, weights, domains);
-	}
-
-	public static IFactorTable create(int[][] indices, double[] weights, DiscreteDomain... domains)
-	{
-		return FactorTable.create(indices, weights, true, domains);
-	}
-
-	public static IFactorTable create(JointDomainIndexer domains)
-	{
-		return new FactorTable(domains);
-	}
-	public static IFactorTable create(DiscreteDomain... domains)
-	{
-		return new FactorTable(domains);
-	}
-	
-	public static IFactorTable create(BitSet outputSet, DiscreteDomain ... domains)
-	{
-		return new FactorTable(outputSet, domains);
-	}
-	
-	/**
-	 * Copies table values from {@code other} table using given {@code converter} whose
-	 * "from" domains must match {@code other}'s domains and whose "to" domains must match
-	 * this table's domains.
-	 */
-	public void convertFrom(FactorTable other, JointDomainReindexer converter)
-	{
+		final JointDomainIndexer domains = getDomainIndexer();
+		
+		_representation = other.getRepresentation().mask();
+		
 		final int representation = _representation;
 		
 		_denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -297,72 +170,154 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		// Convert using single representation, then switch to desired representation.
 		//
 		
-		if (other._representation == DETERMINISTIC)
+		if (other instanceof FactorTable)
 		{
-			_sparseIndexToJointIndex = converter.convertSparseToJointIndex(other._sparseIndexToJointIndex);
-			_representation = DETERMINISTIC;
-		}
-		else if ((other._representation & ALL_SPARSE) != 0)
-		{
-			_sparseIndexToJointIndex = converter.convertSparseToJointIndex(other._sparseIndexToJointIndex);
+			FactorTable ft = (FactorTable)other;
 			
-			boolean denseSparse = other.sparseSize() == other.jointSize();
-			
-			// FIXME - convert sparse indices
-			
-			if ((other._representation & SPARSE_WEIGHT) != 0)
+			if (ft._representation == DETERMINISTIC)
 			{
+				_sparseIndexToJointIndex = converter.convertSparseToJointIndex(ft._sparseIndexToJointIndex);
+				_representation = DETERMINISTIC;
+			}
+			else if ((ft._representation & ALL_SPARSE) != 0)
+			{
+				_sparseIndexToJointIndex = converter.convertSparseToJointIndex(ft._sparseIndexToJointIndex);
+
+				boolean denseSparse = ft.sparseSize() == ft.jointSize();
+
+				// FIXME - convert sparse indices
+
+				if ((ft._representation & SPARSE_WEIGHT) != 0)
+				{
 					_sparseWeights = denseSparse ?
-						converter.convertDenseWeights(other._sparseWeights) :
-						converter.convertSparseWeights(other._sparseWeights, other._sparseIndexToJointIndex,
-							_sparseIndexToJointIndex);
-				_representation = SPARSE_WEIGHT;
+						converter.convertDenseWeights(ft._sparseWeights) :
+							converter.convertSparseWeights(ft._sparseWeights, ft._sparseIndexToJointIndex,
+								_sparseIndexToJointIndex);
+						_representation = SPARSE_WEIGHT;
+				}
+				else // SPARSE_ENERGY
+				{
+					_sparseEnergies = denseSparse ?
+						converter.convertDenseEnergies(ft._sparseEnergies) :
+							converter.convertSparseEnergies(ft._sparseEnergies, ft._sparseIndexToJointIndex,
+								_sparseIndexToJointIndex);
+						_representation = SPARSE_ENERGY;
+				}
 			}
-			else // SPARSE_ENERGY
+			else if ((ft._representation & DENSE_WEIGHT) != 0)
 			{
-				_sparseEnergies = denseSparse ?
-					converter.convertDenseEnergies(other._sparseEnergies) :
-					converter.convertSparseEnergies(other._sparseEnergies, other._sparseIndexToJointIndex,
-						_sparseIndexToJointIndex);
-				_representation = SPARSE_ENERGY;
+				_denseWeights = converter.convertDenseWeights(ft._denseWeights);
+				_representation = DENSE_WEIGHT;
 			}
-		}
-		else if ((other._representation & DENSE_WEIGHT) != 0)
-		{
-			_denseWeights = converter.convertDenseWeights(other._denseWeights);
-			_representation = DENSE_WEIGHT;
-		}
-		else // DENSE_ENERGY
-		{
-			_denseEnergies = converter.convertDenseEnergies(other._denseEnergies);
-			_representation = DENSE_ENERGY;
-		}
-		
-		if (converter.getRemovedDomains() == null)
-		{
-			_nonZeroWeights = other._nonZeroWeights * converter.getAddedCardinality();
-		}
-		else if (other._nonZeroWeights == other.getDomainIndexer().getCardinality())
-		{
-			_nonZeroWeights = getDomainIndexer().getCardinality();
+			else // DENSE_ENERGY
+			{
+				_denseEnergies = converter.convertDenseEnergies(ft._denseEnergies);
+				_representation = DENSE_ENERGY;
+			}
+
+			if (converter.getRemovedDomains() == null)
+			{
+				_nonZeroWeights = ft.countNonZeroWeights() * converter.getAddedCardinality();
+			}
+			else if (ft.hasMaximumDensity())
+			{
+				_nonZeroWeights = domains.getCardinality();
+			}
+			else
+			{
+				// Need to count them explicitly
+				computeNonZeroWeights();
+			}
 		}
 		else
 		{
-			// Need to count them explicitly
-			computeNonZeroWeights();
+			// SparseFactorTable
+			
+			// Do initial conversion to SPARSE_WEIGHT representation.
+			_representation = SPARSE_WEIGHT;
+			
+			final Indices scratch = converter.getScratch();
+			final int otherSparseSize = other.sparseSize();
+			final OpenIntDoubleHashMap jointIndexToWeight = new OpenIntDoubleHashMap(otherSparseSize);
+			for (int si = 0; si < otherSparseSize; ++si)
+			{
+				other.sparseIndexToIndices(si, scratch.fromIndices);
+				converter.convertIndices(scratch);
+				int ji = domains.jointIndexFromIndices(scratch.toIndices);
+				// OpenIntDoubleHashMap.get returns 0.0 if no entry is found, which is exactly what we want here.
+				jointIndexToWeight.put(ji, jointIndexToWeight.get(ji) + other.getWeightForSparseIndex(si));
+			}
+			scratch.release();
+			
+			final int sparseSize = jointIndexToWeight.size();
+			final int[] sparseToJoint = Arrays.copyOf(jointIndexToWeight.keys().elements(), sparseSize);
+			Arrays.sort(sparseToJoint);
+			
+			final double[] sparseWeights = new double[sparseSize];
+			for (int si = 0; si < sparseSize; ++ si)
+			{
+				double weight = jointIndexToWeight.get(sparseToJoint[si]);
+				if (weight != 0.0)
+				{
+					++_nonZeroWeights;
+				}
+				sparseWeights[si] = weight;
+			}
+			
+			_sparseIndexToJointIndex = sparseToJoint;
+			_sparseWeights = sparseWeights;
 		}
 		
 		setRepresentation(representation);
 	}
 	
-	/**
-	 * Returns a new table by converting this table using provided {@code converter}, which
-	 * must be compatible with this table's domains.
-	 */
-	@Override
-	public FactorTable convert(JointDomainReindexer converter)
+	public static IFactorTable create(Object table, DiscreteDomain[] domains)
 	{
-		return new FactorTable(this, converter);
+		Object [] result = Misc.nDimensionalArray2indicesAndValues(table);
+		return FactorTable.create((int[][])result[0], (double[])result[1], domains);
+	}
+
+	public static IFactorTable create(int[][] indices, double[] weights, Discrete... variables)
+	{
+		DiscreteDomain[] domains = new DiscreteDomain[variables.length];
+		for(int i = 0; i < domains.length; ++i)
+		{
+			domains[i] = variables[i].getDiscreteDomain();
+		}
+		return create(indices, weights, domains);
+	}
+
+	public static IFactorTable create(int[][] indices, double[] weights, DiscreteDomain... domains)
+	{
+		IFactorTable table = create(domains);
+		table.setWeightsSparse(indices, weights);
+		return table;
+	}
+
+	public static IFactorTable create(JointDomainIndexer domains)
+	{
+		return domains.supportsJointIndexing() ? new FactorTable(domains) : new SparseFactorTable(domains);
+	}
+	public static IFactorTable create(DiscreteDomain... domains)
+	{
+		return create(JointDomainIndexer.create(domains));
+	}
+	
+	public static IFactorTable create(BitSet outputSet, DiscreteDomain ... domains)
+	{
+		return create(JointDomainIndexer.create(outputSet, domains));
+	}
+	
+	public static IFactorTable convert(IFactorTable oldTable, JointDomainReindexer converter)
+	{
+		if (converter.getToDomains().supportsJointIndexing())
+		{
+			return new FactorTable(oldTable, converter);
+		}
+		else
+		{
+			return new SparseFactorTable(oldTable, converter);
+		}
 	}
 	
 	/*---------------
@@ -543,12 +498,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	/*-----------------------------
 	 * INewFactorTableBase methods
 	 */
-	
-	@Override
-	public int countNonZeroWeights()
-	{
-		return _nonZeroWeights;
-	}
 	
 	@Override
 	public void evalDeterministic(Object[] arguments)
@@ -838,6 +787,12 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 
 	@Override
+	public boolean hasMaximumDensity()
+	{
+		return _nonZeroWeights == jointSize();
+	}
+	
+	@Override
 	public final boolean hasSparseRepresentation()
 	{
 		switch (_representation)
@@ -855,24 +810,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		}
 	}
 	
-	@Override
-	public final boolean hasSparseEnergies()
-	{
-		return (_representation & SPARSE_ENERGY) != 0;
-	}
-	
-	@Override
-	public final boolean hasSparseIndices()
-	{
-		return (_representation & SPARSE_INDICES) != 0;
-	}
-	
-	@Override
-	public final boolean hasSparseWeights()
-	{
-		return (_representation & SPARSE_WEIGHT) != 0;
-	}
-
 	@Override
 	public final boolean isConditional()
 	{
@@ -967,20 +904,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		return deterministic;
 	}
 
-	@Override
-	public final boolean isNormalized()
-	{
-		if ((_computedMask & NORMALIZED_COMPUTED) == 0)
-		{
-			if (!isDirected())
-			{
-				normalizeUndirected(true);
-			}
-			_computedMask |= NORMALIZED_COMPUTED;
-		}
-		return (_computedMask & NORMALIZED) != 0;
-	}
-	
 	@Override
 	public final void setEnergyForJointIndex(double energy, int jointIndex)
 	{
@@ -1191,30 +1114,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
-	public void normalize()
-	{
-		if (isDirected())
-		{
-			throw new UnsupportedOperationException(
-				"normalize() not supported for directed factor table. Use normalizeConditional() instead");
-		}
-
-		normalizeUndirected(false);
-	}
-	
-	@Override
-	public void normalizeConditional()
-	{
-		if (!isDirected())
-		{
-			throw new UnsupportedOperationException(
-				"normalizeConditional() not supported for undirected factor table. Use normalize() instead");
-		}
-
-		normalizeDirected(false);
-	}
-	
-	@Override
 	public final int sparseSize()
 	{
 		switch (_representation)
@@ -1359,12 +1258,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
-	public final double[] getEnergySlice(int sliceDimension, int ... indices)
-	{
-		return getEnergySlice(null, sliceDimension, indices);
-	}
-	
-	@Override
 	public final double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
@@ -1396,12 +1289,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		}
 		
 		return slice;
-	}
-	
-	@Override
-	public final double[] getWeightSlice(int sliceDimension, int ... indices)
-	{
-		return getWeightSlice(null, sliceDimension, indices);
 	}
 	
 	@Override
@@ -1477,47 +1364,9 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
-	public final FactorTableRepresentation getRepresentation()
-	{
-		return FactorTableRepresentation.forMask(_representation);
-	}
-	
-	@Override
 	public boolean hasDeterministicRepresentation()
 	{
 		return (_representation & ALL_VALUES) == DETERMINISTIC;
-	}
-	
-	@Override
-	public void replaceEnergiesSparse(double[] energies)
-	{
-		final int size = energies.length;
-		if (size != sparseSize())
-		{
-			throw new IllegalArgumentException(
-				String.format("Array size (%d) does not match sparse size (%d).", size, sparseSize()));
-		}
-	
-		for (int si = 0; si < size; ++si)
-		{
-			setEnergyForSparseIndex(energies[si], si);
-		}
-	}
-	
-	@Override
-	public void replaceWeightsSparse(double[] weights)
-	{
-		final int size = weights.length;
-		if (size != sparseSize())
-		{
-			throw new IllegalArgumentException(
-				String.format("Array size (%d) does not match sparse size (%d).", size, sparseSize()));
-		}
-	
-		for (int si = 0; si < size; ++si)
-		{
-			setWeightForSparseIndex(weights[si], si);
-		}
 	}
 	
 	@Override
@@ -1532,15 +1381,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		setDenseValues(weights, DENSE_WEIGHT);
 	}
 	
-	/**
-	 * Sets representation to {@link FactorTableRepresentation#DETERMINISTIC} with given set of
-	 * outputs.
-	 * <p>
-	 * @param outputIndices any array mapping input indices, representing the joint value of all input
-	 * values, to output indices, representing the joint value of all outputs. The length of the array
-	 * must be equal to the value of {@link JointDomainIndexer#getInputCardinality()} on {@link #getDomainIndexer()}.
-	 * @throws UnsupportedOperationException if not {@link #isDirected()}.
-	 */
+	@Override
 	public void setDeterministicOutputIndices(int[] outputIndices)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
@@ -1582,33 +1423,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
-	public void setConditional(BitSet outputSet)
-	{
-		if (outputSet == null)
-		{
-			throw new IllegalArgumentException("setConditional(BitSet) requires non-null argument");
-		}
-		setDirected(outputSet, true);
-	}
-	
-	@Override
-	public void makeConditional(BitSet outputSet)
-	{
-		if (outputSet == null)
-		{
-			throw new IllegalArgumentException("setConditionalAndNroa(BitSet) requires non-null argument");
-		}
-		setDirected(outputSet, false);
-		normalizeConditional();
-	}
-
-	@Override
-	public void setDirected(BitSet outputSet)
-	{
-		setDirected(outputSet, false);
-	}
-	
-	@Override
 	public void setEnergiesSparse(int[] jointIndices, double[] energies)
 	{
 		setSparseValues(jointIndices, energies, SPARSE_ENERGY);
@@ -1621,25 +1435,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 	}
 	
 	@Override
-	public void setWeightsSparse(int[][] indices, double[] weights)
-	{
-		final JointDomainIndexer domains = getDomainIndexer();
-		final int[] jointIndices = new int[indices.length];
-		for (int i = indices.length; --i>=0;)
-		{
-			jointIndices[i] = domains.jointIndexFromIndices(domains.validateIndices(indices[i]));
-		}
-		setWeightsSparse(jointIndices, weights);
-		return;
-	}
-
-	@Override
-	public void setRepresentation(final FactorTableRepresentation newRep)
-	{
-		setRepresentation(newRep.mask());
-	}
-	
-	private void setRepresentation(int newRep)
+	void setRepresentation(int newRep)
 	{
 		int oldRep = _representation;
 		
@@ -2087,16 +1883,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		}
 	}
 
-	@Override
-	public FactorTable createTableWithNewVariables(DiscreteDomain[] additionalDomains)
-	{
-		JointDomainIndexer domains = getDomainIndexer();
-		JointDomainReindexer converter =
-			JointDomainReindexer.createAdder(domains, domains.size(), additionalDomains);
-
-		return new FactorTable(this, converter);
-	}
-	
 	// FIXME: what to do if table is directed? Should we assert that the joined
 	// variables are all either inputs or outputs?
 	@Override
@@ -2107,6 +1893,18 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		DiscreteDomain jointDomain)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
+		final JointDomainReindexer converter =
+			makeConverterForJoinVariables(domains, varIndices, indexToJointIndex, allDomains, jointDomain);
+		return new FactorTable(this, converter);
+	}
+	
+	static JointDomainReindexer makeConverterForJoinVariables(
+		JointDomainIndexer domains,
+		int[] varIndices,
+		int[] indexToJointIndex,
+		DiscreteDomain[] allDomains,
+		DiscreteDomain jointDomain)
+	{
 		assert(Arrays.equals(allDomains, domains.toArray()));
 		assert(varIndices.length == indexToJointIndex.length);
 		
@@ -2165,7 +1963,7 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 			converter = createJoiner(domains, unjoinedSize, joinedSize);
 		}
 
-		return new FactorTable(this, converter);
+		return converter;
 	}
 
 	/*-----------------
@@ -2198,14 +1996,6 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		}
 		
 		return sparseIndex;
-	}
-	
-	private void assertIsConditional()
-	{
-		 if (!isConditional())
-		 {
-			 throw new DimpleException("weights must be normalized correctly for directed factors");
-		 }
 	}
 	
 	private void computeNonZeroWeights()
@@ -2319,7 +2109,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		return map;
 	}
 	
-	private boolean normalizeDirected(boolean justCheck)
+	@Override
+	boolean normalizeDirected(boolean justCheck)
 	{
 		final JointDomainIndexer domains = getDomainIndexer();
 		final int inputSize = domains.getInputCardinality();
@@ -2536,16 +2327,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		return true;
 	}
 	
-	private boolean normalizeDirectedHandleZeroForInput(boolean justCheck)
-	{
-		if (!justCheck)
-		{
-			throw new DimpleException("Cannot normalize directed factor table with zero total weight for some input");
-		}
-		return false;
-	}
-
-	private boolean normalizeUndirected(boolean justCheck)
+	@Override
+	boolean normalizeUndirected(boolean justCheck)
 	{
 		if ((_computedMask & NORMALIZED) != 0)
 		{
@@ -2601,6 +2384,11 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 			if (justCheck)
 			{
 				return false;
+			}
+			
+			if (total == 0.0)
+			{
+				throw normalizeUndirectedHandleZero();
 			}
 			
 			for (int i = _sparseWeights.length; --i>=0;)
@@ -2664,7 +2452,8 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 		computeNonZeroWeights();
 	}
 
-	private void setDirected(BitSet outputSet, boolean assertConditional)
+	@Override
+	void setDirected(BitSet outputSet, boolean assertConditional)
 	{
 		final JointDomainIndexer oldDomains = getDomainIndexer();
 		final JointDomainIndexer newDomains = JointDomainIndexer.create(outputSet, oldDomains);
@@ -2757,6 +2546,18 @@ public class FactorTable extends FactorTableBase implements IFactorTable
 				_sparseIndices = oldSparseIndices;
 			}
 		}
+	}
+	
+	@Override
+	void setSparseValues(int[][] indices, double[] values, int representation)
+	{
+		final JointDomainIndexer domains = getDomainIndexer();
+		final int[] jointIndices = new int[indices.length];
+		for (int i = indices.length; --i>=0;)
+		{
+			jointIndices[i] = domains.jointIndexFromIndices(domains.validateIndices(indices[i]));
+		}
+		setSparseValues(jointIndices, values, representation);
 	}
 	
 	private void setSparseValues(int[] jointIndices, double[] values, int representation)

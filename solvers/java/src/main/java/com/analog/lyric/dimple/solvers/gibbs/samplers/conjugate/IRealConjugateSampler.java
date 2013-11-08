@@ -23,4 +23,6 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 public interface IRealConjugateSampler extends IRealSampler
 {
 	public double nextSample(Port[] ports, FactorFunction input);
+	public IParameterizedMessage createParameterMessage();
+	public void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input);
 }

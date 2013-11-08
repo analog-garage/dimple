@@ -50,7 +50,7 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	 */
 	
 	@Override
-	public FactorTableIterator iterator()
+	public IFactorTableIterator iterator()
 	{
 		return new FactorTableIterator(this, false);
 	}
@@ -61,12 +61,12 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 		return new FactorTableIterator(this, true);
 	}
 	
-	/*-----------------------------
-	 * INewFactorTableBase methods
+	/*--------------------------
+	 * IFactorTableBase methods
 	 */
 
 	@Override
-	public final double density()
+	public double density()
 	{
 		return (double)countNonZeroWeights() / (double)jointSize();
 	}
@@ -90,13 +90,13 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
-	public final double getEnergyForElements(Object ... elements)
+	public double getEnergyForElements(Object ... elements)
 	{
 		return getEnergyForJointIndex(_domains.jointIndexFromElements(elements));
 	}
 	
 	@Override
-	public final double getWeightForElements(Object ... elements)
+	public double getWeightForElements(Object ... elements)
 	{
 		return getWeightForJointIndex(_domains.jointIndexFromElements(elements));
 	}
@@ -114,25 +114,25 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
-	public final double getEnergyForIndices(int ... indices)
+	public double getEnergyForIndices(int ... indices)
 	{
 		return getEnergyForJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final double getWeightForIndices(int ... indices)
+	public double getWeightForIndices(int ... indices)
 	{
 		return getWeightForJointIndex(_domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final int sparseIndexFromElements(Object ... elements)
+	public int sparseIndexFromElements(Object ... elements)
 	{
 		return sparseIndexFromJointIndex(_domains.jointIndexFromElements(elements));
 	}
 	
 	@Override
-	public final int sparseIndexFromIndices(int ... indices)
+	public int sparseIndexFromIndices(int ... indices)
 	{
 		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
 	}
@@ -150,7 +150,7 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
-	public int[] sparseIndexToIndices(int sparseIndex)
+	public final int[] sparseIndexToIndices(int sparseIndex)
 	{
 		return sparseIndexToIndices(sparseIndex, null);
 	}
@@ -162,35 +162,41 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 
 	@Override
-	public final int jointSize()
+	public int jointSize()
 	{
 		return _domains.getCardinality();
 	}
 	
 	@Override
-	public final void setEnergyForElements(double energy, Object ... elements)
+	public void setEnergyForElements(double energy, Object ... elements)
 	{
 		setEnergyForJointIndex(energy, _domains.jointIndexFromElements(elements));
 	}
 
 	@Override
-	public final void setEnergyForIndices(double energy, int ... indices)
+	public void setEnergyForIndices(double energy, int ... indices)
 	{
 		_domains.validateIndices(indices);
 		setEnergyForJointIndex(energy, _domains.jointIndexFromIndices(indices));
 	}
 	
 	@Override
-	public final void setWeightForElements(double weight, Object ... elements)
+	public void setWeightForElements(double weight, Object ... elements)
 	{
 		setWeightForJointIndex(weight, _domains.jointIndexFromElements(elements));
 	}
 
 	@Override
-	public final void setWeightForIndices(double weight, int ... indices)
+	public void setWeightForIndices(double weight, int ... indices)
 	{
 		_domains.validateIndices(indices);
 		setWeightForJointIndex(weight, _domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public final boolean supportsJointIndexing()
+	{
+		return _domains.supportsJointIndexing();
 	}
 	
 	/*-----------------------

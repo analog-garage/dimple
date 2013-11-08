@@ -37,8 +37,17 @@ public class IntRangeDomain extends IntDiscreteDomain
 		
 		_lowerBound = lowerBound;
 		_upperBound = upperBound;
-		_size = (interval + upperBound - lowerBound) / interval;
 		_interval = interval;
+		
+		long longInterval = interval;
+		long size = (longInterval + upperBound - lowerBound) / longInterval;
+		
+		if (size > Integer.MAX_VALUE)
+		{
+			throw new IllegalArgumentException("Bad integer range: more than MAX_INTEGER (2^32) values in range");
+		}
+		
+		_size = (int)size;
 	}
 		
 	private static int computeHashCode(int lowerBound, int upperBound, int interval)

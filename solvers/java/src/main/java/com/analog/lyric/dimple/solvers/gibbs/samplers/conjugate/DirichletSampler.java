@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
+import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -27,52 +28,97 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class DirichletSampler implements IRealJointConjugateSampler
 {
+	private DirichletParameters _parameters = new DirichletParameters();
+	private int _dimension = -1;
+	
 	@Override
-	public double[] nextSample(Port[] ports, FactorFunction input)
+	public final double[] nextSample(Port[] ports, FactorFunction input)
 	{
-		int numPorts = ports.length;
-		int dimension = 0;
-		if (numPorts > 0)
-			dimension = ((double[])(ports[0].getOutputMsg())).length;
-		else if (input != null)
-			dimension = ((Dirichlet)input).getParameters().length;
-		else
-			throw new DimpleException("Both port and input arguments are empty");
-		
-		double[] alpha = new double[dimension];
-		double[] sample = new double[dimension];
+		aggregateParameters(_parameters, ports, input);
+		return nextSample(_parameters);
+	}
+	
+	@Override
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
+	{
+		if (_dimension < 0)	// Just do this once
+			setDimension(ports, input);
+		int dimension = _dimension;		
+
+		DirichletParameters parameters = (DirichletParameters)aggregateParameters;
+		if (parameters.getSize() != dimension)
+			parameters.setSize(dimension);
+		parameters.setNull();
 		
 		if (input != null)
 		{
-			double[] inputParameters = ((Dirichlet)input).getParameters();
+			double[] inputParameters;
+			if (input instanceof Dirichlet)
+				inputParameters = ((Dirichlet)input).getParameters();
+			else // ExchangeableDirichlet
+				inputParameters = ((ExchangeableDirichlet)input).getParameters();
 			if (inputParameters.length != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
-			for (int i = 0; i < dimension; i++)
-				alpha[i] += inputParameters[i];
+			parameters.add(inputParameters);
 		}
 		
+		int numPorts = ports.length;
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			double[] message = (double[])(ports[port].getOutputMsg());
-			if (message.length != dimension)
+			DirichletParameters message = (DirichletParameters)(ports[port].getOutputMsg());
+			int messageSize = message.getSize();
+			if (messageSize == 0)	// Uninitialized message, which implies uninformative
+			{
+				message.setSize(dimension);
+				message.setNull();
+				continue;
+			}
+			else if (messageSize != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
-			for (int i = 0; i < dimension; i++)
-				alpha[i] += message[i];
+			parameters.add(message);
 		}
-		
+	}
+	
+	public final double[] nextSample(DirichletParameters parameters)
+	{
 		// Sample from a series of Gamma distributions, then normalize to sum to 1
+		int dimension = parameters.getSize();
+		double[] sample = new double[dimension];
 		double sum = 0;
 		for (int i = 0; i < dimension; i++)
-			sample[i] = SolverRandomGenerator.randGamma.nextDouble(alpha[i], 1);
+			sample[i] = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlpha(i), 1);
 		for (int i = 0; i < dimension; i++)
 			sum += sample[i];
 		for (int i = 0; i < dimension; i++)
 			sample[i] /= sum;
 		return sample;
 	}
+	
+	@Override
+	public IParameterizedMessage createParameterMessage()
+	{
+		return new DirichletParameters();
+	}
+	
+	private void setDimension(Port[] ports, FactorFunction input)
+	{
+		int numPorts = ports.length;
+		int dimension = 0;
+		if (numPorts > 0)
+			dimension = ((DirichletParameters)(ports[0].getOutputMsg())).getSize();
+		else if (input != null)
+			if (input instanceof Dirichlet)
+				dimension = ((Dirichlet)input).getDimension();
+			else // ExchangeableDirichlet
+				dimension = ((ExchangeableDirichlet)input).getDimension();
+		else
+			throw new DimpleException("Both port and input arguments are empty");
+		_parameters.setSize(dimension);
+		_dimension = dimension;
+	}
 
-
+	
 	// A static factory that creates a sampler of this type
 	public static final IRealJointConjugateSamplerFactory factory = new IRealJointConjugateSamplerFactory()
 	{
@@ -85,6 +131,8 @@ public class DirichletSampler implements IRealJointConjugateSampler
 			if (factorFunction == null)
 				return true;
 			else if (factorFunction instanceof Dirichlet)
+				return true;
+			else if (factorFunction instanceof ExchangeableDirichlet)
 				return true;
 			else
 				return false;

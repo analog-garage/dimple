@@ -25,19 +25,16 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 {
-	private IRealConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SRealVariable _alphaVariable;
 	private SRealVariable _betaVariable;
@@ -60,20 +57,17 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof BetaSampler)
+		if (portNum >= _numParameterEdges)
 		{
-			// Output port is directed output
-			BetaParameters outputMsg = (BetaParameters)_outputMsgs[outPortNum];
+			// Port is directed output
+			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 			outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
 			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -98,19 +92,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	public void initialize()
 	{
 		super.initialize();
-		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof Real)
-				_conjugateSampler[port] = ((SRealVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
-		
+				
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
 	}

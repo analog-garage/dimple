@@ -354,6 +354,15 @@ NormalSampler & Normal & value, $\mu$ \\
  & LogNormal & $\mu$ \\
 \end{longtable}
 
+Additionally, conjugate sampling is supported across a subset of applicable deterministic functions.  In the current version of Dimple, this includes the following factors:
+
+\begin{longtable} {l p{2cm} p{9cm}}
+Factor Function & Edges & Condition \\
+\hline
+\endhead
+Multiplexer & in, out & If any of the \emph{in} variables would support the same conjugate sampler as the \emph{out} variable, then those \emph{in} variables will use conjugate sampling. \\
+\end{longtable}
+
 
 The Gibbs solver automatically performs block-Gibbs updates for variables that are deterministically related.  The Gibbs solver automatically detects deterministic relationships associated with built-in deterministic factor functions (see section~\ref{sec:builtInFactors} for a list of these functions).  
 

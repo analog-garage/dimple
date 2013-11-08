@@ -1,16 +1,12 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
-import java.util.Iterator;
-
 import net.jcip.annotations.NotThreadSafe;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
 
 /**
  * Iterator over entries in a {@link IFactorTableBase}.
  */
 @NotThreadSafe
-public class FactorTableIterator implements Iterator<FactorTableEntry>
+class FactorTableIterator extends FactorTableIteratorBase
 {
 	/*-------
 	 * State
@@ -18,10 +14,7 @@ public class FactorTableIterator implements Iterator<FactorTableEntry>
 	
 	private final boolean _dense;
 	private final IFactorTableBase _table;
-	private int _sparseIndex;
 	private int _jointIndex;
-	private double _energy;
-	private double _weight;
 	
 	/*--------------
 	 * Construction
@@ -31,10 +24,7 @@ public class FactorTableIterator implements Iterator<FactorTableEntry>
 	{
 		_dense = dense;
 		_table = table;
-		_sparseIndex = 0;
 		_jointIndex = -1;
-		_energy = Double.POSITIVE_INFINITY;
-		_weight = 0.0;
 	}
 
 	/*------------------
@@ -57,29 +47,19 @@ public class FactorTableIterator implements Iterator<FactorTableEntry>
 		return result;
 	}
 	
-	@Override
-	public FactorTableEntry next()
-	{
-		advance();
-		return getEntry();
-	}
-
-	@Override
-	public void remove()
-	{
-		throw DimpleException.unsupportedMethod(getClass(), "remove");
-	}
-	
 	/*---------
 	 * Methods
 	 */
 	
+	@Override
 	public boolean advance()
 	{
 		if (done())
 		{
 			return false;
 		}
+		
+		_entry = null;
 		
 		if (_jointIndex >= 0)
 		{
@@ -89,43 +69,37 @@ public class FactorTableIterator implements Iterator<FactorTableEntry>
 		return _dense? denseAdvance() : sparseAdvance();
 	}
 	
-	public boolean done()
-	{
-		return _jointIndex >= _table.jointSize();
-	}
-	
-	public FactorTableEntry getEntry()
-	{
-		FactorTableEntry entry = null;
-		
-		if (_jointIndex < _table.jointSize())
-		{
-			entry = new FactorTableEntry(_table.getDomainIndexer(), _sparseIndex, _jointIndex, _energy, _weight);
-		}
-		
-		return entry;
-	}
-	
-	public double energy()
-	{
-		return _energy;
-	}
-	
+	@Override
 	public int jointIndex()
 	{
 		return _jointIndex;
 	}
 	
-	public int sparseIndex()
+	@Override
+	public boolean skipsZeroWeights()
 	{
-		return _sparseIndex;
+		return !_dense;
 	}
 	
-	public double weight()
+	/*---------------------------------
+	 * FactorTableIteratorBase methods
+	 */
+	
+	@Override
+	boolean done()
 	{
-		return _weight;
+		return _jointIndex >= _table.jointSize();
 	}
-
+	
+	@Override
+	void makeEntry()
+	{
+		if (_jointIndex < _table.jointSize())
+		{
+			_entry = new FactorTableEntry(_table.getDomainIndexer(), _sparseIndex, _jointIndex, _energy, _weight);
+		}
+	}
+	
 	/*-----------------
 	 * Private methods
 	 */
@@ -183,7 +157,7 @@ public class FactorTableIterator implements Iterator<FactorTableEntry>
 		{
 			if (_jointIndex < 0)
 			{
-				_sparseIndex = 0;
+				_sparseIndex = -1;
 			}
 			for (int si = _sparseIndex + 1, end = _table.sparseSize(); si < end; ++si)
 			{

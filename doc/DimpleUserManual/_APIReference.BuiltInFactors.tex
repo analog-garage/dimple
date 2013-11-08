@@ -26,7 +26,7 @@ Beta & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \ne
 %
 Binomial & [$N$](D) \newline $\rho$(R) \newline x(D) & [$N$] & Binomial distribution, $p(x|N, \rho)$, where $N$ is the total number of trials, $\rho$ is a parameter indicating the success probability, and x is a count of success outcomes.  Parameter $N$ can be a Discrete variable with positive integer values or a constant integer value specified in the constructor.  The domain of x must include integers from 0 through $N$, or if $N$ is a variable, through the maximum value in the domain of $N$.  The conjugate prior for the parameter, $\rho$, is a Beta distribution\textsuperscript{\ref{ftn:conugatePrior}}. \\
 %
-Categorical & $\alpha$...(RJ)  \newline x...(D) & - & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ must equal the domain size of x.  There can be any number of x variables, all associated with the same parameter values.  \newline
+Categorical & $\alpha$(RJ)  \newline x...(D) & - & Categorical distribution, $p(x | \alpha)$, where $\alpha$ is a vector of parameter variables and x is an array of discrete variables.  The number of elements in $\alpha$ must equal the domain size of x.  There can be any number of x variables, all associated with the same parameter values.  \newline
 The $\alpha$ parameters are represented as a (not necessarily normalized) probability vector. The conjugate prior for this representation is a Dirichlet distribution\textsuperscript{\ref{ftn:conugatePrior}}.  \newline
 In the current implementation, the domain of the x variable must be zero-based contiguous integers, $0...N-1$\footnote{\label{ftn:zeroBaseRestriction}This limitation may be lifted in a future version.}. \\
 %
@@ -85,6 +85,8 @@ Equality & value...(B,D,R) & [smoothing] & Deterministic equality constraint.  A
 %
 Equals & out(B) \newline in...(B,D,R) & - & Deterministic equals function, where out~=~(in(1)~==~in(2)~== ... ). \\
 %
+ExchangeableDirichlet & [$\alpha$](R) \newline value...(RJ) & N, [$\alpha$] & Exchangeable Dirichlet distribution.  This is a variant of the Dirichlet distribution parameterized with a single common parameter for all dimensions.  There can be any number of value variables, all associated with the same parameter value.  Parameter $\alpha$ can be a Real variable or a constant specified in the constructor.  The dimension of each of the value variables must be identical and equal to the value of N, specified in the constructor. \\
+%
 Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
@@ -105,6 +107,8 @@ MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline 
 %%
 %% Primarily for testing, need not be listed here.
 %MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
+%
+Multiplexer & out(any) \newline select \newline in...(any) & [smoothing] & Deterministic multiplexer.  The selector must be a discrete variable that selects one of the inputs to pass to the output.  The data type of all inputs must be identical to that of the output.  For RealJoint variables, the dimension of all inputs must equal that of the output.  The with domain of the selector variable must be zero-based contiguous integers, $0...N-1$, where $N$ is the number of input variables.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -179,6 +183,7 @@ Dimple includes some helper functions to create other built-in factors using a s
 \item Categorical\footnote{This utility can be used to create either a Categorical or CategoricalUnnormalizedParameters factor, depending on whether the first argument is a RealJoint variable or an array of Real variables.}
 \item CategoricalEnergyParameters
 \item Dirichlet
+\item ExchangeableDirichlet
 \item Gamma
 \item InverseGamma
 \item LogNormal
@@ -193,8 +198,10 @@ For each, the arguments are the parameters of the distribution.  For example:
 \begin{lstlisting}
 W = Gamma(alpha, beta);
 X = Normal(mean, precision);
-Y = Categorical(alphaVector);
+Y = Categorical(alpha);
 Z = Rayleigh(sigma);
+D = Dirichlet(alpha);
+E = ExchangeableDirichlet(dimension, alpha);
 \end{lstlisting}
 
 
@@ -205,7 +212,7 @@ By default, calling one of these functions creates a single output variable, and
 \begin{lstlisting}
 W = Gamma(alpha, beta, altGraph);
 X = Normal(mean, precision, [100, 1]);
-Y = Categorical(alphaVector, [10, 10, 2], aGraph);
+Y = Categorical(alpha, [10, 10, 2], aGraph);
 Z = Rayleigh(sigma, myGraph, size(somethingElse));
 \end{lstlisting}
 

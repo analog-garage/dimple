@@ -7,7 +7,7 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
 /**
- * Holds the information for one factor table entry from a {@link FactorTableIterator}
+ * Holds the information for one factor table entry from a {@link IFactorTableIterator}
  */
 @Immutable
 public final class FactorTableEntry implements Serializable
@@ -17,6 +17,7 @@ public final class FactorTableEntry implements Serializable
 	private final JointDomainIndexer _domains;
 	private final int _sparseIndex;
 	private final int _jointIndex;
+	private final int[] _jointIndices;
 	private final double _energy;
 	private final double _weight;
 	
@@ -29,10 +30,21 @@ public final class FactorTableEntry implements Serializable
 		_domains = domains;
 		_sparseIndex = sparseIndex;
 		_jointIndex = jointIndex;
+		_jointIndices = null;
 		_energy = energy;
 		_weight = weight;
 	}
 	
+	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, int[] jointIndices, double energy, double weight)
+	{
+		_domains = domains;
+		_sparseIndex = sparseIndex;
+		_jointIndex = -1;
+		_jointIndices = jointIndices;
+		_energy = energy;
+		_weight = weight;
+	}
+
 	/*---------
 	 * Methods
 	 */
@@ -71,9 +83,21 @@ public final class FactorTableEntry implements Serializable
 	 */
 	public int[] indices(int[] indices)
 	{
-		return _domains.jointIndexToIndices(_jointIndex, indices);
+		indices = _domains.allocateIndices(indices);
+		if (_jointIndices != null)
+		{
+			System.arraycopy(_jointIndices, 0, indices, 0, _jointIndices.length);
+		}
+		else
+		{
+			_domains.jointIndexToIndices(_jointIndex, indices);
+		}
+		return indices;
 	}
 	
+	/**
+	 * Returns joint index of entry if available or else -1.
+	 */
 	public int jointIndex()
 	{
 		return _jointIndex;
@@ -89,9 +113,18 @@ public final class FactorTableEntry implements Serializable
 		return values(null);
 	}
 	
-	public Object[] values(Object[] arguments)
+	public <T> T[] values(T[] elements)
 	{
-		return _domains.jointIndexToElements(_jointIndex, arguments);
+		elements = _domains.allocateElements(elements);
+		if (_jointIndices != null)
+		{
+			_domains.elementsFromIndices(_jointIndices, elements);
+		}
+		else
+		{
+			_domains.jointIndexToElements(_jointIndex, elements);
+		}
+		return elements;
 	}
 	
 	/**

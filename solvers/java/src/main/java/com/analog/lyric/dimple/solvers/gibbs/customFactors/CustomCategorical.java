@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,15 +29,13 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class CustomCategorical extends SRealFactor implements IRealJointConjugateFactor
 {
-	private IRealJointConjugateSampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SDiscreteVariable[] _outputVariables;
 	private int _parameterDimension;
@@ -55,38 +52,32 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	}
 
 	@Override
-	public void updateEdgeMessage(int outPortNum)
+	public void updateEdgeMessage(int portNum)
 	{
-		IRealJointConjugateSampler conjugateSampler = _conjugateSampler[outPortNum];
-		if (conjugateSampler == null)
-			super.updateEdgeMessage(outPortNum);
-		else if (conjugateSampler instanceof DirichletSampler)
+		if (portNum < _numParameterEdges)
 		{
-			// Output port must be a joint parameter input
+			// Output port is a joint parameter input
 			// Determine sample alpha vector of the conjugate Dirichlet distribution
 			// Note: This case works for the Categorical factor function (which has joint parameters)
 			
-			double[] outputMsg = (double[])_outputMsgs[outPortNum];
+			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			// Clear the output counts
-			Arrays.fill(outputMsg, 0);
+			outputMsg.fill(0);
 			
 			// Start with the ports to variable outputs
 			for (int i = 0; i < _numOutputEdges; i++)
 			{
 				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
-				outputMsg[outputIndex]++;	// Increment the statistics
+				outputMsg.increment(outputIndex);	// Increment the statistics
 			}
 
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
-			{
-				for (int i = 0; i < _constantOutputCounts.length; i++)
-					outputMsg[i] += _constantOutputCounts[i];
-			}
+				outputMsg.add(_constantOutputCounts);
 		}
 		else
-			super.updateEdgeMessage(outPortNum);
+			super.updateEdgeMessage(portNum);
 	}
 	
 	
@@ -112,18 +103,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	{
 		super.initialize();
 		
-		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealJointConjugateSampler[_numPorts];
-		for (int port = 0; port < _numPorts; port++)
-		{
-			INode var = _factor.getSibling(port);
-			if (var instanceof RealJoint)
-				_conjugateSampler[port] = ((SRealJointVariable)var.getSolver()).getConjugateSampler();
-			else
-				_conjugateSampler[port] = null;
-		}
-		
-		
+
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
 		
@@ -212,7 +192,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
-			_outputMsgs[port] = new double[_parameterDimension];
+			_outputMsgs[port] = new DirichletParameters(_parameterDimension);
 	}
 	
 	@Override

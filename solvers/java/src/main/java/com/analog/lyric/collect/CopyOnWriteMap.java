@@ -51,6 +51,27 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 		_map = new AtomicReference<Map<K,V>>(underlyingMap);
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		return readOnlyMap().equals(other);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return readOnlyMap().hashCode();
+	}
+	
 	/*-----------------------
 	 * ConcurrentMap methods
 	 */
