@@ -128,12 +128,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			List<INode> siblings = _var.getSiblings();
-			int numPorts = siblings.size();
+			int numPorts = _var.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = siblings.get(portIndex);
+				INode factorNode = _var.getSibling(portIndex);
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
@@ -169,11 +168,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Sum up the potentials from the input and all connected factors
 		if (_input != null)
 			potential = _input.evalEnergy(new Object[]{_sampleValue});
-		List<INode> siblings = _var.getSiblings();
-		int numPorts = siblings.size();
+		int numPorts = _var.getSiblingCount();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
-			INode factorNode = siblings.get(portIndex);
+			INode factorNode = _var.getSibling(portIndex);
 			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
 			int factorPortNumber = factorNode.getPortNum(_var);
 			potential += factor.getConditionalPotential(factorPortNumber);
@@ -199,12 +197,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		int numPorts = _var.getSiblingCount();
 		Port[] ports = new Port[numPorts - 1];
-		List<INode> siblings = _var.getSiblings();
 		for (int port = 0, i = 0; port < numPorts; port++)
 		{
 			if (port != outPortNum)
 			{
-				INode factorNode = siblings.get(port);
+				INode factorNode = _var.getSibling(port);
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[i++] = factorNode.getPorts().get(factorPortNumber);
@@ -283,8 +280,27 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	@Override
 	public void updateDirectedCache()
 	{
-		_hasDeterministicDependents = hasDeterministicDependents();
-		_isDeterministicDependent = isDeterministicDependent();
+		// Determine whether this variable is a deterministic dependent variable (one that corresponds
+		// to the output of a deterministic directed factor) and whether this variable has variables that
+		// are deterministic dependents of this variable
+		_hasDeterministicDependents = false;
+		_isDeterministicDependent = false;
+		int numPorts = _var.getSiblingCount();
+		for (int port = 0; port < numPorts; port++)
+		{
+			Factor factor = (Factor)_var.getSibling(port);
+			boolean factorIsDeterministicDirected = factor.getFactorFunction().isDeterministicDirected();
+			if (factorIsDeterministicDirected)
+			{
+				boolean isDirectedtoThis = factor.isDirectedTo(_var);
+				if (isDirectedtoThis)
+					_isDeterministicDependent = true;
+				else
+					_hasDeterministicDependents = true;
+				if (_isDeterministicDependent && _hasDeterministicDependents)
+					break;	// No need to keep looking
+			}
+		}
 	}
 	
 	@Override
@@ -358,11 +374,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		List<INode> siblings = _var.getSiblings();
-		int numPorts = siblings.size();
+		int numPorts = _var.getSiblingCount();
 		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
-				result += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 
 		return result;
 	}
@@ -388,11 +403,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If this variable has deterministic dependents, then set their values
 		if (_hasDeterministicDependents)
 		{
-			List<INode> siblings = _var.getSiblings();
-			int numPorts = siblings.size();
+			int numPorts = _var.getSiblingCount();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			{
-				Factor f = (Factor)siblings.get(port);
+				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
 					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
 			}
@@ -531,31 +545,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
 		_beta = beta;
-	}
-	
-	// Determine whether or not this variable is a deterministic dependent variable; that is, one that corresponds
-	// to the output of a directed deterministic factor
-	public boolean isDeterministicDependent()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
-	}
-	
-	// Determine whether or not this variable has variables that are deterministic dependents of this variable
-	public boolean hasDeterministicDependents()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && !factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
 	}
 
 

@@ -135,26 +135,27 @@ public class FactorFunctionWithConstants extends FactorFunction
 	// Assumes constant index list is already sorted
 	protected Object[] expandInputList(Object... input)
 	{
-		Object [] expandedInputs = new Object[input.length + _constantIndices.length];
+		int inputLength = input.length;
+		int constantLength = _constantIndices.length;
+		int expandedLength = inputLength + constantLength;
+		Object[] expandedInputs = new Object[expandedLength];
 		
-		int curConstantIndexIndex = 0;
 		int curInputIndex = 0;
-		
-		for (int i = 0; i < expandedInputs.length; i++)
+		int curConstantIndexIndex = 0;
+		int curConstantIndex = _constantIndices[curConstantIndexIndex];
+		for (int i = 0; i < expandedLength; i++)
 		{
-			if (curConstantIndexIndex < _constantIndices.length && _constantIndices[curConstantIndexIndex] == i)
+			if (curConstantIndex == i)
 			{
-				//insert constant
-				expandedInputs[i] = _constants[curConstantIndexIndex];
-				curConstantIndexIndex++;
+				expandedInputs[i] = _constants[curConstantIndexIndex++];		// Insert constant
+				if (curConstantIndexIndex < constantLength)
+					curConstantIndex = _constantIndices[curConstantIndexIndex];	// Next constant
+				else
+					curConstantIndex = -1;										// Done with constants
 			}
 			else
 			{
-				if (curInputIndex >= input.length)
-					throw new DimpleException("incorrect number of arguments");
-				
-				expandedInputs[i] = input[curInputIndex];
-				curInputIndex++;
+				expandedInputs[i] = input[curInputIndex++];						// Insert non-constant input
 			}
 		}
 		
