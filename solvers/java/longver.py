@@ -24,7 +24,15 @@ date = subprocess.Popen('git log -n 1 --format=format:%ci'.split(),stdout=subpro
 f.close()
 
 f = file('src/main/resources/VERSION','w')
-f.write(version + ' ' + branch + ' ' + date)
+s = version + ' ' + branch + ' ' + date
+h = hash(s)
+nouns = file('nouns.txt','r').readlines()
+adjs = file('adj.txt','r').readlines()
+advs = file('adv.txt','r').readlines()
+s +=     ' ' + advs[h % len(advs)].strip().lower() + \
+         ' ' + adjs[h % len(adjs)].strip().lower() + \
+         ' ' + nouns[h % len(nouns)].strip().lower()
+f.write(s)
 f.close()
 shutil.copy('src/main/resources/VERSION','../../LONG_VERSION')
 
