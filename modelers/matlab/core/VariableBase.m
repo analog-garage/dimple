@@ -76,11 +76,17 @@ classdef VariableBase < Node
             if (isscalar(a) || isscalar(b))
                 if (iscomplex(a) || iscomplex(b))
                     z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.ComplexProduct);
+                elseif (isa(a,'RealJoint') || isa(b,'RealJoint'))
+                    z = VectorInnerProduct(a, b);
                 else
                     z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.factorfunctions.Product);
                 end
-            else
+            elseif ((nnz(size(a)>1)==1) && (nnz(size(b)>1)==1))
+                z = VectorInnerProduct(a, b);
+            elseif ((nnz(size(a)>1)==1) || (nnz(size(b)>1)==1))
                 z = MatrixVectorProduct(a, b);
+            else
+                z = MatrixProduct(a, b);
             end
         end
         
