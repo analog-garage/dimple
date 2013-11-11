@@ -72,9 +72,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
-	private boolean _isDeterministicDependent = false;
-	private boolean _hasDeterministicDependents = false;
-
 
 	// Primary constructor
 	public SRealVariable(VariableBase var)
@@ -109,7 +106,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDependent) return;
+		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -276,50 +273,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			setCurrentSample(fixedValue);
 	}
 
-	
-	@Override
-	public void updateDirectedCache()
-	{
-		// Determine whether this variable is a deterministic dependent variable (one that corresponds
-		// to the output of a deterministic directed factor) and whether this variable has variables that
-		// are deterministic dependents of this variable
-		_hasDeterministicDependents = false;
-		_isDeterministicDependent = false;
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)
-		{
-			Factor factor = (Factor)_var.getSibling(port);
-			boolean factorIsDeterministicDirected = factor.getFactorFunction().isDeterministicDirected();
-			if (factorIsDeterministicDirected)
-			{
-				boolean isDirectedtoThis = factor.isDirectedTo(_var);
-				if (isDirectedtoThis)
-					_isDeterministicDependent = true;
-				else
-					_hasDeterministicDependents = true;
-				if (_isDeterministicDependent && _hasDeterministicDependents)
-					break;	// No need to keep looking
-			}
-		}
-	}
-	
 	@Override
 	public void postAddFactor(Factor f)
 	{
-		// Update the direction information
-		updateDirectedCache();
-		
-		// Set the fixed value is there is one
-		if (_var.hasFixedValue())
-		{
-			setCurrentSample(_var.getFixedValueObject());
-		}
-		else
-		{
-			setCurrentSample(_sampleValue);
-		}
-		
-		// Get the default sampler
+		// Set the default sampler
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
@@ -401,7 +358,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_outputMsg.setValue(_sampleValue);
 		
 		// If this variable has deterministic dependents, then set their values
-		if (_hasDeterministicDependents)
+		if (getModelObject().isDeterministicInput())
 		{
 			int numPorts = _var.getSiblingCount();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value
@@ -602,7 +559,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		super.initialize();
 
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
-		if (!_isDeterministicDependent)
+		if (!getModelObject().isDeterministicOutput())
 		{
 			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)

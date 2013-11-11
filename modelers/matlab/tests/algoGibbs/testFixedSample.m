@@ -29,6 +29,7 @@ function testFixedSample()
         a = b+c;
         b.FixedValue = 2;
         c.FixedValue = 3;
+        fg.initialize();
         assertEqual(a.Solver.getCurrentSample(),5);
 
 
@@ -39,6 +40,7 @@ function testFixedSample()
         b.FixedValue = 2;
         c.FixedValue = 3;
         a = b+c;
+        fg.initialize();
         assertEqual(a.Solver.getCurrentSample(),5);
 
 
@@ -51,6 +53,7 @@ function testFixedSample()
         b.FixedValue = 2;
         c.FixedValue = 3;
         fg.Solver = 'gibbs';
+        fg.initialize();
         assertEqual(a.Solver.getCurrentSample(),5);
 
         
@@ -67,6 +70,7 @@ function testFixedSample()
         h.FixedValue = 3;
         d = g+h;
         e = c+d;
+        fg.initialize();
         assertEqual(e.Solver.getCurrentSample(),11);
         
         a = const();
@@ -83,6 +87,7 @@ function testFixedSample()
         d = g+h;
         e = c+d;
         fg.Solver = 'gibbs';
+        fg.initialize();
         assertEqual(e.Solver.getCurrentSample(),11);
     end
     

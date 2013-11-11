@@ -223,14 +223,4 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
 	}
 
-	@Override
-	public void setDirectedTo(int [] indices)
-	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		for (VariableBase vb : _factor.getVariables())
-		{
-			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();
-		}
-	}
-
 }

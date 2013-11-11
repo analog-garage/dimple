@@ -51,8 +51,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
-	protected boolean _isDeterministicDependent = false;
-	protected boolean _hasDeterministicDependents = false;
 
 	public SDiscreteVariable(VariableBase var)
 	{
@@ -71,7 +69,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDependent) return;
+		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -84,7 +82,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		double minEnergy = Double.POSITIVE_INFINITY;
 
 		// Compute the conditional probability
-		if (!_hasDeterministicDependents)
+		if (!getModelObject().isDeterministicInput())
 		{
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
@@ -229,47 +227,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public void updateDirectedCache()
-	{
-		// Determine whether this variable is a deterministic dependent variable (one that corresponds
-		// to the output of a deterministic directed factor) and whether this variable has variables that
-		// are deterministic dependents of this variable
-		_hasDeterministicDependents = false;
-		_isDeterministicDependent = false;
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)
-		{
-			Factor factor = (Factor)_var.getSibling(port);
-			boolean factorIsDeterministicDirected = factor.getFactorFunction().isDeterministicDirected();
-			if (factorIsDeterministicDirected)
-			{
-				boolean isDirectedtoThis = factor.isDirectedTo(_var);
-				if (isDirectedtoThis)
-					_isDeterministicDependent = true;
-				else
-					_hasDeterministicDependents = true;
-				if (_isDeterministicDependent && _hasDeterministicDependents)
-					break;	// No need to keep looking
-			}
-		}
-	}
-	
-	@Override
 	public void postAddFactor(Factor f)
 	{
-		updateDirectedCache();
-		
-		if (_var.hasFixedValue())
-		{
-			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
-		}
-		else
-		{
-			setCurrentSampleIndex(_sampleIndex);
-		}
-		
 	}
-
 	
     @Override
 	public final void saveAllSamples()
@@ -341,7 +301,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElement(index));
 				
 		// If this variable has deterministic dependents, then set their values
-		if (_hasDeterministicDependents)
+		if (getModelObject().isDeterministicInput())
 		{
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
@@ -610,6 +570,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int messageLength = _varDiscrete.getDiscreteDomain().size();
 		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;
+		
+		if (_var.hasFixedValue())
+		{
+			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
+		}
+		else
+		{
+			setCurrentSampleIndex(_sampleIndex);
+		}
 	}
-	
+
 }

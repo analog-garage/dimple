@@ -46,6 +46,31 @@ public abstract class VariableBase extends Node implements Cloneable
 	private Domain _domain;
     private boolean _hasFixedValue = false;
 
+    private byte DETERMINSTIC_INPUT = 0x01;
+    private byte DETERMINSTIC_OUTPUT = 0x02;
+    private byte _topologicalFlags;
+    
+    @Internal
+    public final void setDeterministicOutput()
+    {
+    	_topologicalFlags |= DETERMINSTIC_OUTPUT;
+    }
+    
+    @Internal
+    public final void setDeterministicInput()
+    {
+    	_topologicalFlags |= DETERMINSTIC_INPUT;
+    }
+    
+    public final boolean isDeterministicInput()
+    {
+    	return (_topologicalFlags & DETERMINSTIC_INPUT) != 0;
+    }
+
+    public final boolean isDeterministicOutput()
+    {
+    	return (_topologicalFlags & DETERMINSTIC_OUTPUT) != 0;
+    }
 	
 	public VariableBase(Domain domain)
 	{
@@ -312,9 +337,7 @@ public abstract class VariableBase extends Node implements Cloneable
     @Override
 	public void initialize()
     {
-
-    	if (_solverVariable != null)
-    		_solverVariable.initialize();
+    	_topologicalFlags = 0;
     }
     
     public Factor [] getFactors()

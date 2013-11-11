@@ -33,7 +33,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Internal;
 
 public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGraph
 {
@@ -454,14 +453,24 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	@Override
 	public void initialize()
 	{
+		FactorGraph fg = _factorGraph;
+		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
+		{
+			fg.getOwnedVariable(i).getSolver().initialize();
+		}
+		if (!fg.hasParentGraph())
+		{
+			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
+			{
+				fg.getBoundaryVariable(i).getSolver().initialize();
+			}
+		}
+		for (Factor f : fg.getNonGraphFactorsTop())
+			f.getSolver().initialize();
+		for (FactorGraph g : fg.getNestedGraphs())
+			g.getSolver().initialize();
 	}
 	
-	@Override
-	@Internal
-	public void enterInitializationPhase(InitializationPhase phase)
-	{
-	}
-
 	/***********************************************
 	 * 
 	 * Stuff for rolled up graphs

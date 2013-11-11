@@ -21,7 +21,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Matlab;
 
 public interface ISolverFactorGraph extends ISolverNode
@@ -71,19 +70,6 @@ public interface ISolverFactorGraph extends ISolverNode
 	public void postAddFactor(Factor f);
 	public void postSetSolverFactory();
 
-	public static enum InitializationPhase
-	{
-		VARIABLES,
-		BOUNDARY,
-		FACTORS,
-		SUBGRAPHS,
-		SOLVER,
-		DONE
-	}
-	
-	@Internal
-	public void enterInitializationPhase(InitializationPhase phase);
-	
 	/**
 	 * Returns the name of a solver-specific MATLAB wrapper function that should be invoked from
 	 * MATLAB to do the solve. The value or existence of the function is allowed to change depending

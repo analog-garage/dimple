@@ -33,5 +33,4 @@ public interface ISolverVariableGibbs
 	public void updateBelief();
 	public void randomRestart();
 	public void postAddFactor(Factor f);
-	public void updateDirectedCache();
 }

@@ -56,7 +56,6 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph.InitializationPhase;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -1151,37 +1150,21 @@ public class FactorGraph extends FactorBase
 	@Override
 	public void initialize()
 	{
-		enterInitializationPhase(InitializationPhase.VARIABLES);
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
-		enterInitializationPhase(InitializationPhase.BOUNDARY);
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
 				v.initialize();
 
-		enterInitializationPhase(InitializationPhase.FACTORS);
 		for (Factor f : getNonGraphFactorsTop())
 			f.initialize();
-		enterInitializationPhase(InitializationPhase.SUBGRAPHS);
 		for (FactorGraph g : getNestedGraphs())
 			g.initialize();
 
-		enterInitializationPhase(InitializationPhase.SOLVER);
-
 		if (_solverFactorGraph != null)
 			_solverFactorGraph.initialize();
-		
-		enterInitializationPhase(InitializationPhase.DONE);
 	}
 	
-	private void enterInitializationPhase(InitializationPhase phase)
-	{
-		if (_solverFactorGraph != null)
-		{
-			_solverFactorGraph.enterInitializationPhase(phase);
-		}
-	}
-
 	private void checkSolverIsSet()
 	{
 		if (_solverFactorGraph == null)
@@ -1556,6 +1539,45 @@ public class FactorGraph extends FactorBase
 		return _solverFactorGraph;
 	}
 
+	/**
+	 * Returns the number of boundary variables for this graph, if any.
+	 * @see #getBoundaryVariable(int)
+	 */
+	public int getBoundaryVariableCount()
+	{
+		return _boundaryVariables.size();
+	}
+	
+	/**
+	 * Returns the ith boundary variable for this graph.
+	 * 
+	 * @param i an index in the range [0, {@link #getBoundaryVariableCount()} - 1].
+	 */
+	public VariableBase getBoundaryVariable(int i)
+	{
+		return _boundaryVariables.getByIndex(i);
+	}
+	
+	/**
+	 * Returns the number of non-boundary variables contained directly in this graph
+	 * (i.e. not in subgraphs).
+	 * @see #getOwnedVariable(int)
+	 */
+	public int getOwnedVariableCount()
+	{
+		return _ownedVariables.size();
+	}
+	
+	/**
+	 * Returns the ith non-boundary variable contained directly in this graph
+	 * (i.e. not in subgraphs).
+	 * @param i an index int he range [0,{@link #getOwnedVariableCount()} - 1]
+	 */
+	public VariableBase getOwnedVariable(int i)
+	{
+		return _ownedVariables.getByIndex(i);
+	}
+	
 	/**
 	 * Returns count of variables that would be returned by {@link #getVariables()}.
 	 */
