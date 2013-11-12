@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 
+// REFACTOR: eliminate this class and push down into FactorFunction
 public abstract class FactorFunctionBase
 {
 	private final String _name;
