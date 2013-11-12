@@ -25,6 +25,6 @@ function [fg,y,a,zs] = makeCustomFactorCPD(ZDomains)
         zs{i} = Discrete(ZDomains{i});
     end
 
-    fg.addFactor(@multiplexerCPD,y,a,zs{:});
+    fg.addFactor('Multiplexer',y,a,zs{:});
 
 end
