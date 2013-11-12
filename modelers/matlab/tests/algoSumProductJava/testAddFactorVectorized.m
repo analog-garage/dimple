@@ -173,6 +173,52 @@ function testAddFactorVectorized()
            assertTrue(b(i,j).Factors{1} == graphs(i).Factors{1});
         end
     end
+ 
+    %Test fix for bug 60
+    fg=FactorGraph;
+    a=Bit(3,1);
+    b=Bit(3,4);
+    f=fg.addFactorVectorized('Xor', a, {b,1});
+    ainput = rand();
+    binput = rand(1,4);
+    a.Input = repmat(ainput,3,1);
+    b.Input = repmat(binput,3,1);
+    fg.solve();
+    fg2 = FactorGraph;
+    a2 = Bit();
+    b2 = Bit(1,4);
+    fg2.addFactor('Xor',a2,b2);
+    a2.Input = ainput;
+    b2.Input = binput;
+    fg2.solve();
+    
+    for i = 1:3
+       assertElementsAlmostEqual(a(i).Belief,a2.Belief);
+       assertElementsAlmostEqual(b(i,:).Belief,b2.Belief);
+    end
+    
+    fg=FactorGraph;
+    a=Bit(1,3);
+    b=Bit(4,3);
+    f=fg.addFactorVectorized('Xor', a, {b,2});
+    ainput = rand();
+    binput = rand(4,1);
+    a.Input = repmat(ainput,1,3);
+    b.Input = repmat(binput,1,3);
+    fg.solve();
+    fg2 = FactorGraph;
+    a2 = Bit();
+    b2 = Bit(4,1);
+    fg2.addFactor('Xor',a2,b2);
+    a2.Input = ainput;
+    b2.Input = binput;
+    fg2.solve();
+    
+    for i = 1:3
+       assertElementsAlmostEqual(a(i).Belief,a2.Belief);
+       assertElementsAlmostEqual(b(:,i).Belief,b2.Belief);
+    end
+    
     
 end
 

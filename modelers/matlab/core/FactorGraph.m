@@ -1497,6 +1497,10 @@ classdef FactorGraph < Node
         end
         
         function dimsizes = extractFactorDimensions(obj,varargin)
+            %This method is used to reshape the Factors returned by
+            %add Factor.  It uses the list of variables passed in to
+            %determine the dimensions of the factors.  In addition, it
+            %verifies that the variable argument list is consistent.
             
             dimsizes = 1;
             for i = 1:length(varargin)
@@ -1505,12 +1509,13 @@ classdef FactorGraph < Node
                     tmpdimsizes = size(tmp);
                 elseif iscell(tmp) && ~isempty(tmp) && isa(tmp{1},'VariableBase')
                     dims = tmp{2};
+                    
                     if isempty(dims)
                         tmpdimsizes = [1 1];
                     else 
-                        tmpdimsizes = zeros(size(dims));
-                        for j = 1:length(tmpdimsizes)
-                            tmpdimsizes(j) = size(tmp{1},dims(j));
+                        tmpdimsizes = ones(1,length(size(tmp{1})));
+                        for j = 1:length(dims)
+                            tmpdimsizes(dims(j)) = size(tmp{1},dims(j));
                         end
                     end
                 else
