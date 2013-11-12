@@ -219,6 +219,33 @@ function testAddFactorVectorized()
        assertElementsAlmostEqual(b(:,i).Belief,b2.Belief);
     end
     
+    %Test the degenerate case where we addFactorVectorized with two
+    %variables
+    a = Bit(2,1);
+    b = Bit(4,1);
+    fg = FactorGraph();
+    fg.addFactorVectorized('Xor',a,{b,[]});
+
+    aInput = rand(2,1);
+    bInput = rand(4,1);
+
+    a.Input = aInput;
+    b.Input = bInput;
+
+    fg.solve();
+
+    fg2 = FactorGraph();
+    a2 = Bit(2,1);
+    b2 = Bit(4,1);
+    fg2.addFactor('Xor',a2(1),b2);
+    fg2.addFactor('Xor',a2(2),b2);
+    a2.Input = aInput;
+    b2.Input = bInput;
+
+    fg2.solve();
+
+    assertElementsAlmostEqual(a2.Belief,a.Belief);
+    assertElementsAlmostEqual(b2.Belief,b.Belief);
     
 end
 
