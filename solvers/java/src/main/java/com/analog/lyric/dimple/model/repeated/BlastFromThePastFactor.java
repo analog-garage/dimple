@@ -22,14 +22,14 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
-public class BlastFromThePastFactor extends Factor 
+public class BlastFromThePastFactor extends Factor
 {
 	
 	private Port _portForOtherVariable;
 	private VariableBase _variableConnectedToBlast;
 	
-	public BlastFromThePastFactor(int id, VariableBase varConnectedToBlast, 
-			Port portForOtherVar) 
+	public BlastFromThePastFactor(int id, VariableBase varConnectedToBlast,
+			Port portForOtherVar)
 	{
 		super(id,((Factor)portForOtherVar.getSibling()).getFactorFunction(),new VariableBase[]{varConnectedToBlast});
 		
@@ -37,7 +37,8 @@ public class BlastFromThePastFactor extends Factor
 		_variableConnectedToBlast = varConnectedToBlast;
 	}
 
-	public void createSolverObject(ISolverFactorGraph factorGraph) 
+	@Override
+	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
 		_variables = null;
 		_solverFactor = factorGraph.createBlastFromThePast(this);
@@ -56,9 +57,6 @@ public class BlastFromThePastFactor extends Factor
 	@Override
 	public void initialize()
 	{
-		if (_solverFactor != null)
-			_solverFactor.initialize();
-		
 		// Specifically remove from super class things that have to do with directedness
 	}
 

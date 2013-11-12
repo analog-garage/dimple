@@ -40,9 +40,9 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBinomial;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategorical;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomCategoricalUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDirichlet;
-import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomExchangeableDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransition;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransitionUnnormalizedOrEnergyParameters;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomExchangeableDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
@@ -52,7 +52,6 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Internal;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
@@ -245,7 +244,25 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void initialize()
 	{
-		super.initialize();
+		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
+		FactorGraph fg = _factorGraph;
+		deferDeterministicUpdates();
+		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
+		{
+			fg.getOwnedVariable(i).getSolver().initialize();
+		}
+		if (!fg.hasParentGraph())
+		{
+			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
+			{
+				fg.getBoundaryVariable(i).getSolver().initialize();
+			}
+		}
+		processDeferredDeterministicUpdates();
+		for (Factor f : fg.getNonGraphFactorsTop())
+			f.getSolver().initialize();
+		for (FactorGraph g : fg.getNestedGraphs())
+			g.getSolver().initialize();
 		
 		_schedule = _factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
@@ -264,26 +281,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		randomRestart();
 	}
 
-	@Internal
-	@Override
-	public void enterInitializationPhase(InitializationPhase phase)
-	{
-		// WARNING: This code currently assumes that variables are updated prior to factors
-		// A better way to do this may be to push the initialization of variables and factors into the solver's
-		// own initialization method instead of having the model do that
-		switch (phase)
-		{
-		case VARIABLES:
-			deferDeterministicUpdates();
-			break;
-		case FACTORS:
-			processDeferredDeterministicUpdates();
-			break;
-		default:
-			break;
-		}
-	}
-	
 	@Override
 	public void solveOneStep()
 	{

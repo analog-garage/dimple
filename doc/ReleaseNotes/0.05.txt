@@ -13,6 +13,8 @@ New Features Since v0.04 (Oct 5)
 
 * Added Multiplexer factor function
 
+* Added MatrixProduct and VectorInnerProduct factor functions, and corresponding use cases for the overloaded * operator
+
 
 Fixes Since v0.04
 -----------------

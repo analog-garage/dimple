@@ -223,14 +223,33 @@ public class Factor extends FactorBase implements Cloneable
 			_solverFactor.resetEdgeMessages(portNum);
 	}
     
-	
+	/**
+	 * Model-specific initialization for factors.
+	 * <p>
+	 * Assumes that model variables in same graph have already been initialized.
+	 * Does NOT invoke solver factor initialize.
+	 */
 	@Override
 	public void initialize()
 	{
-		if (_solverFactor != null)
-			_solverFactor.initialize();
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
+		{
 			setDirectedTo(_factorFunction.getDirectedToIndices(getSiblingCount()));
+			if (_factorFunction.isDeterministicDirected())
+			{
+				for (int to : _directedTo)
+				{
+					getSibling(to).setDeterministicOutput();
+				}
+				if (_directedTo.length > 0)
+				{
+					for (int from : _directedFrom)
+					{
+						getSibling(from).setDeterministicInput();
+					}
+				}
+			}
+		}
 	}
 	
 	public IVariableMapList getVariables()

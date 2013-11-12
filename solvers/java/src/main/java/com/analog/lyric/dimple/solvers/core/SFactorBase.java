@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import java.util.List;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -92,13 +90,12 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
     public double getScore()
     {
-		List<INode> ports = _factor.getSiblings();
-		int numPorts = ports.size();
+		int numPorts = _factor.getSiblingCount();
 	    Object[] values = new Object[numPorts];
 
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	INode neighbor = _factor.getConnectedNodeFlat(port);
+	    	INode neighbor = _factor.getSibling(port);
 	    	values[port] = ((ISolverVariable)neighbor.getSolver()).getGuess();
 	    }
 	    

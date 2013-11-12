@@ -76,9 +76,4 @@ public class DummyFactorGraph extends SFactorGraphBase
 			return false;
 	}
 
-	@Override
-	public void initialize()
-	{
-
-	}
 }

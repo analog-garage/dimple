@@ -18,12 +18,10 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -53,8 +51,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
-	protected boolean _isDeterministicDependent = false;
-	protected boolean _hasDeterministicDependents = false;
 
 	public SDiscreteVariable(VariableBase var)
 	{
@@ -73,7 +69,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDependent) return;
+		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -86,15 +82,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		double minEnergy = Double.POSITIVE_INFINITY;
 
 		// Compute the conditional probability
-		if (!_hasDeterministicDependents)
+		if (!getModelObject().isDeterministicInput())
 		{
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
-			List<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)
 			{
-				((ISolverFactorGibbs)siblings.get(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
+				((ISolverFactorGibbs)_var.getSibling(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
 			}
 			
 			// Sum up the messages to get the conditional distribution
@@ -117,14 +112,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		else	// There are deterministic dependents, so must account for these
 		{
 			// TODO: SPEED UP
-			List<INode> siblings = _var.getSiblings();
 			for (int index = 0; index < messageLength; index++)
 			{
 				setCurrentSampleIndex(index);
 				double out = _input[index];						// Sum of the input prior...
 				for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 				{
-					double tmp = ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+					double tmp = ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 					out += tmp;
 				}
 				out *= _beta;									// Apply tempering
@@ -233,29 +227,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public void updateDirectedCache()
-	{
-		_isDeterministicDependent = isDeterministicDependent();
-		_hasDeterministicDependents = hasDeterministicDependents();
-		
-	}
-	
-	@Override
 	public void postAddFactor(Factor f)
 	{
-		updateDirectedCache();
-		
-		if (_var.hasFixedValue())
-		{
-			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
-		}
-		else
-		{
-			setCurrentSampleIndex(_sampleIndex);
-		}
-		
 	}
-
 	
     @Override
 	public final void saveAllSamples()
@@ -282,10 +256,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		List<INode> siblings = _var.getSiblings();
 		for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
-				result += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 
 		    return result;
 	}
@@ -328,12 +301,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElement(index));
 				
 		// If this variable has deterministic dependents, then set their values
-		if (_hasDeterministicDependents)
+		if (getModelObject().isDeterministicInput())
 		{
-			List<INode> siblings = _var.getSiblings();
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
-				Factor f = (Factor)siblings.get(port);
+				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
 					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
 			}
@@ -487,30 +459,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	
-	// Determine whether or not this variable is a deterministic dependent variable; that is, one that corresponds
-	// to the output of a directed deterministic factor
-	public boolean isDeterministicDependent()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
-	}
-	
-	// Determine whether or not this variable has variables that are deterministic dependents of this variable
-	public boolean hasDeterministicDependents()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && !factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
-	}
 	
 	@Override
 	public void createNonEdgeSpecificState()
@@ -622,6 +570,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int messageLength = _varDiscrete.getDiscreteDomain().size();
 		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;
+		
+		if (_var.hasFixedValue())
+		{
+			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
+		}
+		else
+		{
+			setCurrentSampleIndex(_sampleIndex);
+		}
 	}
-	
+
 }

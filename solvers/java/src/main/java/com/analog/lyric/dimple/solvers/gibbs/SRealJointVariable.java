@@ -73,8 +73,6 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private double[] _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
-	private boolean _isDeterministicDepdentent = false;
-	private boolean _hasDeterministicDependents = false;
 	private int _numRealVars;
 	private double[] _guessValue;
 	private boolean _guessWasSet = false;
@@ -114,7 +112,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	public void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (_isDeterministicDepdentent) return;
+		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -138,12 +136,11 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		{
 			// Use conjugate sampler, first update the messages from all factors
 			// Factor messages represent the current distribution parameters from each factor
-			List<INode> siblings = _var.getSiblings();
-			int numPorts = siblings.size();
+			int numPorts = _var.getSiblingCount();
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = siblings.get(portIndex);
+				INode factorNode = _var.getSibling(portIndex);
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
@@ -182,11 +179,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			for (int i = 0; i < _numRealVars; i++)
 				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
 		}
-		List<INode> siblings = _var.getSiblings();
-		int numPorts = siblings.size();
+		int numPorts = _var.getSiblingCount();
 		for (int portIndex = 0; portIndex < numPorts; portIndex++)
 		{
-			INode factorNode = siblings.get(portIndex);
+			INode factorNode = _var.getSibling(portIndex);
 			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
 			int factorPortNumber = factorNode.getPortNum(_var);
 			potential += factor.getConditionalPotential(factorPortNumber);
@@ -212,12 +208,11 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		int numPorts = _var.getSiblingCount();
 		Port[] ports = new Port[numPorts - 1];
-		List<INode> siblings = _var.getSiblings();
 		for (int port = 0, i = 0; port < numPorts; port++)
 		{
 			if (port != outPortNum)
 			{
-				INode factorNode = siblings.get(port);
+				INode factorNode = _var.getSibling(port);
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[i++] = factorNode.getPorts().get(factorPortNumber);
@@ -368,31 +363,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			setCurrentSample(fixedValue);
 	}
 
-	
-	@Override
-	public void updateDirectedCache()
-	{
-		_hasDeterministicDependents = hasDeterministicDependents();
-		_isDeterministicDepdentent = isDeterministicDependent();
-	}
-	
 	@Override
 	public void postAddFactor(Factor f)
 	{
-		// Update the direction information
-		updateDirectedCache();
-		
-		// Set the fixed value is there is one
-		if (_var.hasFixedValue())
-		{
-			setCurrentSample(_var.getFixedValueObject());
-		}
-		else
-		{
-			setCurrentSample(_sampleValue);
-		}
-		
-		// Get the default sampler
+		// Set the default sampler
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
@@ -475,11 +449,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		List<INode> siblings = _var.getSiblings();
-		int numPorts = siblings.size();
+		int numPorts = _var.getSiblingCount();
 		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
-				result += ((ISolverFactorGibbs)siblings.get(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 
 		return result;
 	}
@@ -524,13 +497,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	
 	public final void setDependentValues()
 	{
-		if (_hasDeterministicDependents)
+		if (getModelObject().isDeterministicInput())
 		{
-			List<INode> siblings = _var.getSiblings();
-			int numPorts = siblings.size();
+			int numPorts = _var.getSiblingCount();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			{
-				Factor f = (Factor)siblings.get(port);
+				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
 					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
 			}
@@ -675,31 +647,6 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_beta = beta;
 	}
 	
-	// Determine whether or not this variable is a deterministic dependent variable; that is, one that corresponds
-	// to the output of a directed deterministic factor
-	public boolean isDeterministicDependent()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
-	}
-	
-	// Determine whether or not this variable has variables that are deterministic dependents of this variable
-	public boolean hasDeterministicDependents()
-	{
-		for (INode f : _var.getSiblings())
-		{
-			Factor factor = (Factor)f;
-			if (factor.getFactorFunction().isDeterministicDirected() && !factor.isDirectedTo(_var))
-				return true;
-		}
-		return false;
-	}
-
 
 
 	public RealJointSample createDefaultMessage()
@@ -754,7 +701,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		super.initialize();
 
-		if (!_isDeterministicDepdentent)
+		if (!getModelObject().isDeterministicOutput())
 		{
 			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)

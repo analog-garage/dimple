@@ -56,7 +56,6 @@ import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph.InitializationPhase;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -1148,40 +1147,41 @@ public class FactorGraph extends FactorBase
 
 	}
 
+	/**
+	 * Initializes components of model, and if a solver is set, also initializes the
+	 * solver.
+	 * <p>
+	 * Does the following:
+	 * <ol>
+	 * <li>Initializes non-boundary model variables contained directly in the graph (not in subgraphs)
+	 * by calling {@link VariableBase#initialize()} on each.
+	 * <li>If not {@link #hasParentGraph()}, initializes boundary variables in the same fashion.
+	 * <li>Initializes all model factors contained directly in the graph by calling
+	 * {@link Factor#initialize()} on each.
+	 * <li>Initializes nested graphs by invoking this method recursively on each.
+	 * <li>Finally, if {@link #getSolver()} is not null, invokes {@link ISolverFactorGraph#initialize()}
+	 * on the solver graph to initialize solver state. The solver is responsible for initializing
+	 * its component variables, factors and any other state.
+	 * </ol>
+	 */
 	@Override
 	public void initialize()
 	{
-		enterInitializationPhase(InitializationPhase.VARIABLES);
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
-		enterInitializationPhase(InitializationPhase.BOUNDARY);
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it
 			for (VariableBase v : _boundaryVariables)
 				v.initialize();
 
-		enterInitializationPhase(InitializationPhase.FACTORS);
 		for (Factor f : getNonGraphFactorsTop())
 			f.initialize();
-		enterInitializationPhase(InitializationPhase.SUBGRAPHS);
 		for (FactorGraph g : getNestedGraphs())
 			g.initialize();
 
-		enterInitializationPhase(InitializationPhase.SOLVER);
-
 		if (_solverFactorGraph != null)
 			_solverFactorGraph.initialize();
-		
-		enterInitializationPhase(InitializationPhase.DONE);
 	}
 	
-	private void enterInitializationPhase(InitializationPhase phase)
-	{
-		if (_solverFactorGraph != null)
-		{
-			_solverFactorGraph.enterInitializationPhase(phase);
-		}
-	}
-
 	private void checkSolverIsSet()
 	{
 		if (_solverFactorGraph == null)
@@ -1556,6 +1556,49 @@ public class FactorGraph extends FactorBase
 		return _solverFactorGraph;
 	}
 
+	/**
+	 * Returns the number of boundary variables for this graph, if any.
+	 * @see #getBoundaryVariable(int)
+	 * @since 0.05
+	 */
+	public int getBoundaryVariableCount()
+	{
+		return _boundaryVariables.size();
+	}
+	
+	/**
+	 * Returns the ith boundary variable for this graph.
+	 * 
+	 * @param i an index in the range [0, {@link #getBoundaryVariableCount()} - 1].
+	 * @since 0.05
+	 */
+	public VariableBase getBoundaryVariable(int i)
+	{
+		return _boundaryVariables.getByIndex(i);
+	}
+	
+	/**
+	 * Returns the number of non-boundary variables contained directly in this graph
+	 * (i.e. not in subgraphs).
+	 * @see #getOwnedVariable(int)
+	 * @since 0.05
+	 */
+	public int getOwnedVariableCount()
+	{
+		return _ownedVariables.size();
+	}
+	
+	/**
+	 * Returns the ith non-boundary variable contained directly in this graph
+	 * (i.e. not in subgraphs).
+	 * @param i an index int he range [0,{@link #getOwnedVariableCount()} - 1]
+	 * @since 0.05
+	 */
+	public VariableBase getOwnedVariable(int i)
+	{
+		return _ownedVariables.getByIndex(i);
+	}
+	
 	/**
 	 * Returns count of variables that would be returned by {@link #getVariables()}.
 	 */

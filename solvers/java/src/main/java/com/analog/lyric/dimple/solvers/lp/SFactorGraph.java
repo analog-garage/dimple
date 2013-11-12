@@ -133,11 +133,6 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 	}
 
-	@Override
-	public void initialize()
-	{
-	}
-
 	/**
 	 * Does nothing for this solver.
 	 */

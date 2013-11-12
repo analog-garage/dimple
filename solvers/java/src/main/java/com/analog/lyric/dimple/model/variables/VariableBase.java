@@ -38,6 +38,23 @@ import com.analog.lyric.util.misc.Internal;
 
 public abstract class VariableBase extends Node implements Cloneable
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * {@link #_topologicalFlags} value used by {@link #isDeterministicInput()}
+	 */
+    private static final byte DETERMINISTIC_INPUT = 0x01;
+	/**
+	 * {@link #_topologicalFlags} value used by {@link #isDeterministicOutput()}
+	 */
+    private static final byte DETERMINISTIC_OUTPUT = 0x02;
+
+    /*-------
+	 * State
+	 */
+	
 	protected Object _input = null;
 	protected Object _fixedValue = null;
 	protected String _modelerClassName;
@@ -46,7 +63,16 @@ public abstract class VariableBase extends Node implements Cloneable
 	private Domain _domain;
     private boolean _hasFixedValue = false;
 
-	
+    /**
+     * Flags computed based on the topological relationship of the variable
+     * with its surrounding factors.
+     */
+    private byte _topologicalFlags;
+    
+    /*--------------
+     * Construction
+     */
+    
 	public VariableBase(Domain domain)
 	{
 		this(NodeId.getNext(), "Variable", domain);
@@ -64,11 +90,27 @@ public abstract class VariableBase extends Node implements Cloneable
 		_domain = domain;
 	}
 
+	/*----------------
+	 * Object methods
+	 */
 	
-	public final Discrete asDiscreteVariable()
+	@Override
+	public VariableBase clone()
 	{
-		return (Discrete)this;
+		/*******
+		 * NOTE: Any derived class that defines instance variables that are
+		 * objects (rather than primitive types) must implement clone(), which
+		 * must first call super.clone(), and then deep-copy those instance
+		 * variables to the clone.
+		 *******/
+		VariableBase v = (VariableBase)(super.clone());
+		v._solverVariable = null;
+		return v;
 	}
+
+	/*---------------
+	 * INode methods
+	 */
 	
 	@Override
 	public final VariableBase asVariable()
@@ -82,16 +124,12 @@ public abstract class VariableBase extends Node implements Cloneable
 		return true;
 	}
 	
-	public Domain getDomain()
-	{
-		return _domain;
-	}
-	
-    public Object getInputObject()
+	@Override
+	public String getClassLabel()
     {
-    	return _input;
+    	return "Variable";
     }
-
+    
     @Override
     public FactorBase getSibling(int i)
     {
@@ -108,6 +146,90 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _solverVariable;
 	}
 	
+	@Override
+	public double getScore()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver needs to be set before calculating energy");
+		
+		return _solverVariable.getScore();
+	}
+
+	@Override
+	public double getBetheEntropy()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver needs to be set");
+		
+		return _solverVariable.getBetheEntropy();
+	}
+	
+	@Override
+	public double getInternalEnergy()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver needs to be set");
+		
+		return _solverVariable.getInternalEnergy();
+		
+	}
+	
+	@Override
+	public void initialize(int portNum)
+	{
+		if (_solverVariable != null)
+			_solverVariable.resetEdgeMessages(portNum);
+	}
+    
+	/**
+	 * Model-specific initialization for variables.
+	 * <p>
+	 * Clears {@link #isDeterministicInput()} and {@link #isDeterministicOutput()}.
+	 * Does NOT invoke solver variable initialize.
+	 */
+    @Override
+	public void initialize()
+    {
+    	_topologicalFlags = 0;
+    }
+    
+	@Override
+	public void update()
+	{
+		checkSolverNotNull();
+		_solverVariable.update();
+	}
+
+	@Override
+	public void updateEdge(int outPortNum)
+	{
+		checkSolverNotNull();
+		_solverVariable.updateEdge(outPortNum);
+	}
+
+	/*----------------------
+	 * VariableBase methods
+	 */
+	
+	/**
+	 * Casts this object to a {@link Discrete}.
+	 * @throws ClassCastException if this is not an instance of {@link Discrete}.
+	 */
+	public Discrete asDiscreteVariable()
+	{
+		return (Discrete)this;
+	}
+	
+	public Domain getDomain()
+	{
+		return _domain;
+	}
+	
+    public Object getInputObject()
+    {
+    	return _input;
+    }
+
     /**
      * Returns the solver-specific variable instance associated with this model variable if it is
      * an instance of the specified {@code solverVariableClass}, otherwise returns null.
@@ -141,13 +263,33 @@ public abstract class VariableBase extends Node implements Cloneable
 		return svar;
 	}
 
-	@Override
-	public String getClassLabel()
+	/**
+	 * True if variable is an input to a directed deterministic function.
+	 * <p>
+	 * This attribute is not valid until after graph initialization has occurred
+	 * (see {@link FactorGraph#initialize()}).
+	 * 
+	 * @since 0.05
+	 */
+    public final boolean isDeterministicInput()
     {
-    	return "Variable";
+    	return (_topologicalFlags & DETERMINISTIC_INPUT) != 0;
     }
-    
-    public void setGuess(Object guess)
+
+	/**
+	 * True if variable is an ouput from a directed deterministic function.
+	 * <p>
+	 * This attribute is not valid until after graph initialization has occurred
+	 * (see {@link FactorGraph#initialize()}).
+	 * 
+	 * @since 0.05
+	 */
+    public final boolean isDeterministicOutput()
+    {
+    	return (_topologicalFlags & DETERMINISTIC_OUTPUT) != 0;
+    }
+	
+   public void setGuess(Object guess)
     {
     	_solverVariable.setGuess(guess);
     }
@@ -157,34 +299,6 @@ public abstract class VariableBase extends Node implements Cloneable
     	return _solverVariable.getGuess();
     }
     
-	@Override
-	public double getScore()
-	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverVariable.getScore();
-	}
-
-	@Override
-	public double getBetheEntropy()
-	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set");
-		
-		return _solverVariable.getBetheEntropy();
-	}
-	
-	@Override
-	public double getInternalEnergy()
-	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set");
-		
-		return _solverVariable.getInternalEnergy();
-		
-	}
-	
 	public void moveInputs(VariableBase other)
 	{
 		_input = other._input;
@@ -221,20 +335,6 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _properties == null ? null : _properties.get(key);
 	}
 
-	@Override
-	public VariableBase clone()
-	{
-		/*******
-		 * NOTE: Any derived class that defines instance variables that are
-		 * objects (rather than primitive types) must implement clone(), which
-		 * must first call super.clone(), and then deep-copy those instance
-		 * variables to the clone.
-		 *******/
-		VariableBase v = (VariableBase)(super.clone());
-		v._solverVariable = null;
-		return v;
-	}
-
 	
 	
 	public Object getFixedValueObject()
@@ -245,13 +345,6 @@ public abstract class VariableBase extends Node implements Cloneable
 	public void setFixedValueObject(Object value)
 	{
 		setFixedValueObject(value,false);
-	}
-	
-	private void inputOrFixedValueChanged()
-	{
-		if (_solverVariable != null)
-    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
-		
 	}
 	
 	protected void setFixedValueObject(Object value,boolean leaveInput)
@@ -301,21 +394,6 @@ public abstract class VariableBase extends Node implements Cloneable
     		return getInputObject();
     }
    
-    
-	@Override
-	public void initialize(int portNum)
-	{
-		if (_solverVariable != null)
-			_solverVariable.resetEdgeMessages(portNum);
-	}
-    
-    @Override
-	public void initialize()
-    {
-
-    	if (_solverVariable != null)
-    		_solverVariable.initialize();
-    }
     
     public Factor [] getFactors()
     {
@@ -380,31 +458,8 @@ public abstract class VariableBase extends Node implements Cloneable
 		}
 	}
 	
-	@Override
-	public void update()
-	{
-		checkSolverNotNull();
-		_solverVariable.update();
-	}
-
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		checkSolverNotNull();
-		_solverVariable.updateEdge(outPortNum);
-	}
-
 
 	
-	private void checkSolverNotNull()
-	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver must be set before performing this action.");
-	}
-	
-	
-    
-    
     public VariableBase split(FactorGraph fg,Factor [] factorsToBeMovedToCopy)
     {
     	//create a copy of this variable
@@ -446,6 +501,9 @@ public abstract class VariableBase extends Node implements Cloneable
     	return mycopy;
     }
     
+    /*-------------------
+     * Internal methods
+     */
     
     /**
      * Creates a new variable that combines the domains of this variable with additional {@code variables}.
@@ -462,4 +520,42 @@ public abstract class VariableBase extends Node implements Cloneable
     	throw new DimpleException("not implemented");
     }
     
+    /**
+     * Sets {@link #isDeterministicInput()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final void setDeterministicInput()
+    {
+    	_topologicalFlags |= DETERMINISTIC_INPUT;
+    }
+    
+    /**
+     * Sets {@link #isDeterministicOutput()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final void setDeterministicOutput()
+    {
+    	_topologicalFlags |= DETERMINISTIC_OUTPUT;
+    }
+    
+    /*-----------------
+     * Private methods
+     */
+    
+	private void checkSolverNotNull()
+	{
+		if (_solverVariable == null)
+			throw new DimpleException("solver must be set before performing this action.");
+	}
+	
+	private void inputOrFixedValueChanged()
+	{
+		if (_solverVariable != null)
+    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+		
+	}
 }

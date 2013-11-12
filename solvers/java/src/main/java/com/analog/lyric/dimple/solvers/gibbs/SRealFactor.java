@@ -62,12 +62,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public double getConditionalPotential(int portIndex)
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		double result = getPotential();
 		
 		// If this is a deterministic directed factor, and the request is from a directed-from variable,
 		// Then propagate the request through the directed-to variables and sum up the results
+		// No need to get the potential for this factor since we should have already set outputs
+		// to equal the deterministic function of the inputs (so the potential should be zero)
 		if (_isDeterministicDirected && !_factor.isDirectedTo(portIndex))
 		{
+			double result = 0;
 			int[] directedTo = _factor.getDirectedTo();
 			if (directedTo != null)
 			{
@@ -78,9 +80,12 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(_factor.getSiblingPortIndex(port));
 				}
 			}
+			return result;
 		}
-
-		return result;
+		else	// Not deterministic directed, so get the potential for this factor
+		{
+			return getPotential();
+		}
 	}
 
 	
@@ -216,16 +221,6 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
-	}
-
-	@Override
-	public void setDirectedTo(int [] indices)
-	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		for (VariableBase vb : _factor.getVariables())
-		{
-			((ISolverVariableGibbs)vb.getSolver()).updateDirectedCache();
-		}
 	}
 
 }
