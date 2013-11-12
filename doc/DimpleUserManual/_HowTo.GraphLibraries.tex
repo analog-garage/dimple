@@ -11,6 +11,8 @@ Suppose you wanted a factor representing a DAG with the following probability di
 p(Y=y|a,z_1,z_2,...) \propto \delta(y = z_a)
 \]
 
+where all variables are Discrete.
+
 You could code this up in Dimple as follows:
 
 \ifmatlab
@@ -132,32 +134,8 @@ fg.addFactor(cpd,Y,A,Z1,Z2,Z3);
 \end{lstlisting}
 \fi
 
-In addition to the MultiplexerCPD nested graph, Dimple provides a custom factor function called "multiplexerCPD" that can be used for the same purpose.  Using the custom factor results in faster code but can currently only be used with the sum product algorithm.  
+Note that when using the SumProduct solver, a custom implementation of the built-in `Multiplexer' factor function (see section~\ref{sec:builtInFactors}) exists that is even more efficient than using the MultiplexerCPD graph library function.  When using other solvers with discrete variables, the MultiplexerCPD graph library function should be more efficient.  When the Z variables are real rather than discrete, the `Multiplexer' factor function is the only option.
 
-\ifmatlab
-\begin{lstlisting}
-Y = Discrete(1:4);
-A = Discrete(1:3);
-Z1 = Discrete(1:2);
-Z2 = Discrete(1:3);
-Z3 = Discrete([2 4]);
-fg = FactorGraph();
-fg.addFactor(@multiplexerCPD,Y,A,Z1,Z2,Z3);
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-Discrete Y = new Discrete(1,2,3,4);
-Discrete A = new Discrete(0,1,2);
-Discrete Z1 = new Discrete(1,2);
-Discrete Z2 = new Discrete(1,2,3);
-Discrete Z3 = new Discrete(2,4);
-
-FactorGraph fg = new FactorGraph();
-fg.addFactor(new NopFactorFunction("multiplexerCPD"),Y,A,Z1,Z2,Z3);
-\end{lstlisting}
-\fi
 
 \ifmatlab
 \subsubsection{N-Bit Xor Definition}

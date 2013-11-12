@@ -110,7 +110,7 @@ MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline 
 %% Primarily for testing, need not be listed here.
 %MixedNormal & value(R) \newline control(B) & $\mu_{0} \newline \tau_{0} \newline \mu_{1} \newline \tau_{1}$ & Simple mixture of two fixed-parameter Normal distributions. The choice of distribution parameters (0 vs. 1) is a function of the control bit. \\
 %
-Multiplexer & out(any) \newline select \newline in...(any) & [smoothing] & Deterministic multiplexer.  The selector must be a discrete variable that selects one of the inputs to pass to the output.  The data type of all inputs must be identical to that of the output.  For RealJoint variables, the dimension of all inputs must equal that of the output.  The with domain of the selector variable must be zero-based contiguous integers, $0...N-1$, where $N$ is the number of input variables.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+Multiplexer & out(any) \newline select \newline in...(any) & [smoothing] & Deterministic multiplexer\footnote{Note that for the SumProduct solver, an optimized custom implementation of this factor function is used automatically, which avoids creation of a corresponding factor table.}.  The selector must be a discrete variable that selects one of the inputs to pass to the output.  The data type of all inputs must be identical to that of the output.  For RealJoint variables, the dimension of all inputs must equal that of the output.  The with domain of the selector variable must be zero-based contiguous integers, $0...N-1$, where $N$ is the number of input variables.  An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Negate & out(D,R) \newline in(D,R) & [smoothing] & Deterministic negation function, where out = -in. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -169,7 +169,6 @@ FiniteFieldProjection & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:fini
 FiniteFieldAdd & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
 FiniteFieldConstMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
 FiniteFieldMult & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:finiteFields} \\ 
-multiplexerCPD & SumProduct$^{\ref{ftn:fff}}$ & See section~\ref{sec:multiplexerCPD} \\ 
 CustomXor & MinSum & Same as the Xor factor described above, but with a significantly faster implementation. \\ 
 \end{longtable}
 
@@ -230,14 +229,14 @@ Dimple includes some built-in helper functions to create structured graphs, comb
 \item getNBitXorDef(n), where n is a positive integer. Returns a nestable graph and an array of n-Bit connector variables. Efficient tree implementation of the XORDelta function.
 \item getVXOR(n), where n is a positive integer. Returns a nestable graph and an array of n-Bits connector variables. Constrains exactly one bit to be 1, and all others to be 0.
 \item MultiplexerCPD(domains) - See section~\ref{sec:multiplexerCPD}
-\item MultiplexerCPD(domain,numZs) - See section~\ref{sec:multiplexerCPD}
+\item MultiplexerCPD(domain, numZs) - See section~\ref{sec:multiplexerCPD}
 \end{itemize}
 \fi
 
 \ifjava
 \begin{itemize}
 \item MultiplexerCPD(domains) - See section~\ref{sec:multiplexerCPD}
-\item MultiplexerCPD(domain,numZs) - See section~\ref{sec:multiplexerCPD}
+\item MultiplexerCPD(domain, numZs) - See section~\ref{sec:multiplexerCPD}
 \end{itemize}
 \fi
 
