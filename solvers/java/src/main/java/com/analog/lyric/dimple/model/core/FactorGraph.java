@@ -1147,6 +1147,23 @@ public class FactorGraph extends FactorBase
 
 	}
 
+	/**
+	 * Initializes components of model, and if a solver is set, also initializes the
+	 * solver.
+	 * <p>
+	 * Does the following:
+	 * <ol>
+	 * <li>Initializes non-boundary model variables contained directly in the graph (not in subgraphs)
+	 * by calling {@link VariableBase#initialize()} on each.
+	 * <li>If not {@link #hasParentGraph()}, initializes boundary variables in the same fashion.
+	 * <li>Initializes all model factors contained directly in the graph by calling
+	 * {@link Factor#initialize()} on each.
+	 * <li>Initializes nested graphs by invoking this method recursively on each.
+	 * <li>Finally, if {@link #getSolver()} is not null, invokes {@link ISolverFactorGraph#initialize()}
+	 * on the solver graph to initialize solver state. The solver is responsible for initializing
+	 * its component variables, factors and any other state.
+	 * </ol>
+	 */
 	@Override
 	public void initialize()
 	{
@@ -1542,6 +1559,7 @@ public class FactorGraph extends FactorBase
 	/**
 	 * Returns the number of boundary variables for this graph, if any.
 	 * @see #getBoundaryVariable(int)
+	 * @since 0.05
 	 */
 	public int getBoundaryVariableCount()
 	{
@@ -1552,6 +1570,7 @@ public class FactorGraph extends FactorBase
 	 * Returns the ith boundary variable for this graph.
 	 * 
 	 * @param i an index in the range [0, {@link #getBoundaryVariableCount()} - 1].
+	 * @since 0.05
 	 */
 	public VariableBase getBoundaryVariable(int i)
 	{
@@ -1562,6 +1581,7 @@ public class FactorGraph extends FactorBase
 	 * Returns the number of non-boundary variables contained directly in this graph
 	 * (i.e. not in subgraphs).
 	 * @see #getOwnedVariable(int)
+	 * @since 0.05
 	 */
 	public int getOwnedVariableCount()
 	{
@@ -1572,6 +1592,7 @@ public class FactorGraph extends FactorBase
 	 * Returns the ith non-boundary variable contained directly in this graph
 	 * (i.e. not in subgraphs).
 	 * @param i an index int he range [0,{@link #getOwnedVariableCount()} - 1]
+	 * @since 0.05
 	 */
 	public VariableBase getOwnedVariable(int i)
 	{

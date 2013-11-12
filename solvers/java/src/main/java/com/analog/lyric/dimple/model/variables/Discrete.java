@@ -59,6 +59,12 @@ public class Discrete extends VariableBase
      */
     
     @Override
+    public final Discrete asDiscreteVariable()
+    {
+    	return this;
+    }
+    
+    @Override
 	public DiscreteDomain getDomain()
     {
     	return (DiscreteDomain)super.getDomain();

@@ -223,7 +223,12 @@ public class Factor extends FactorBase implements Cloneable
 			_solverFactor.resetEdgeMessages(portNum);
 	}
     
-	
+	/**
+	 * Model-specific initialization for factors.
+	 * <p>
+	 * Assumes that model variables in same graph have already been initialized.
+	 * Does NOT invoke solver factor initialize.
+	 */
 	@Override
 	public void initialize()
 	{
