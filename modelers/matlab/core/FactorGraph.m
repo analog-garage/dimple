@@ -254,6 +254,10 @@ classdef FactorGraph < Node
                 %special case it since Matlab to java calls don't keep row
                 %vectors as 1,N matrices.
                 if numLeft == 1
+                    for i = 1:length(finalvars)
+                        finalvars{i} = wrapProxyObject(finalvars{i});
+                    end
+                    
                     otherFactors = obj.addFactor(firstArg,finalvars{:}).VectorObject;
                 else
 
