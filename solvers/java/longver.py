@@ -29,9 +29,9 @@ h = hash(s)
 nouns = file('nouns.txt','r').readlines()
 adjs = file('adj.txt','r').readlines()
 advs = file('adv.txt','r').readlines()
-s +=     ' "' + advs[h % len(advs)].strip().lower().capitalize() + \
-         ' ' + adjs[h % len(adjs)].strip().lower().capitalize() + \
-         ' ' + nouns[h % len(nouns)].strip().lower().capitalize() + '"'
+s +=     ' "' + advs[h % len(advs)].strip().capitalize() + \
+         ' ' + adjs[h % len(adjs)].strip().capitalize() + \
+         ' ' + nouns[h % len(nouns)].strip() + '"'
 f.write(s)
 f.close()
 shutil.copy('src/main/resources/VERSION','../../LONG_VERSION')
