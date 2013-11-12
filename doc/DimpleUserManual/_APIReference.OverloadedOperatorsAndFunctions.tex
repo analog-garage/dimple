@@ -20,7 +20,9 @@ $-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark
  & ComplexNegate & C & C, R & - & \checkmark & Unary complex minus \\
 $*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:inScalar}One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply \\*
  & ComplexProduct & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:inScalar}} & Complex scalar multiply \\*
- & MatrixVectorProduct & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.} \\
+ & VectorInnerProduct & R & D,R,RJ & D,R,RJ & - & Vector inner product\footnote{If both inputs are vectors of the same dimension, then the VectorInnerProduct factor will be used. Each vector may be an array of scalar variables or a RealJoint variable.} \\*
+ & MatrixProduct & R & D,R & D,R & - & Matrix multiply\footnote{If both inputs are two-dimensional matrices of appropriate dimension, then the MatrixProduct factor will be used.} \\*
+ & MatrixVectorProduct & R & D,R & D,R & - & Matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.} \\
 $.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\*
  & ComplexProduct & C & C,R & C,R & \checkmark & Complex pointwise multiply \\
 $/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:divScalar}The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\*

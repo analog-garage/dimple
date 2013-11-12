@@ -46,7 +46,6 @@ public class MatrixVectorProduct extends FactorFunction
 	protected double[][] _matrix;
 	protected double[] _inVector;
 	protected double[] _outVector;
-	protected double[] _expectedOutVector;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
 	
@@ -59,7 +58,6 @@ public class MatrixVectorProduct extends FactorFunction
     	_matrix = new double[_outLength][_inLength];
     	_inVector = new double[_inLength];
     	_outVector = new double[_outLength];
-    	_expectedOutVector = new double[_outLength];
 
 		if (smoothing > 0)
 		{
@@ -102,26 +100,18 @@ public class MatrixVectorProduct extends FactorFunction
     			inVector[i] = FactorFunctionUtilities.toDouble(arguments[argIndex++]);
     	}
     	
-    	// Compute the expected output
-    	double[] expectedOutVector = _expectedOutVector;
+    	// Compute the expected output and the total error
+    	double error = 0;
     	for (int row = 0; row < outLength; row++)
     	{
     		double sum = 0;
     		double[] rowValues = matrix[row];
     		for (int col = 0; col < inLength; col++)
-    		{
     			sum += rowValues[col] * inVector[col];
-    		}
-    		expectedOutVector[row] = sum;
-    	}
-
-    	// Compute the total squared error
-    	double error = 0;
-    	for (int i = 0; i < outLength; i++)
-    	{
-    		double diff = outVector[i] - expectedOutVector[i];
+    		double diff = outVector[row] - sum;
     		error += diff*diff;
     	}
+
     	
     	if (_smoothingSpecified)
     		return error*_beta;

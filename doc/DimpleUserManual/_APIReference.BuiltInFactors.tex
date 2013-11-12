@@ -103,6 +103,8 @@ Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log functi
 %
 LogNormal & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Log-normal distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor. \\
 %
+MatrixProduct & C(D,R) \newline A(D,R) \newline B(D,R) & $N_{r}$ \newline $N_{x}$ \newline $N_{c}$ \newline [smoothing] & Deterministic matrix product function, $C = AB$, where $A$, $B$, and $C$ are matrices. Constructor arguments, $N_{r}$ specifies the number of rows in A and C, $N_{x}$ specifies the number of columns in A and number of rows in B, and $N_{c}$ specifies the number of columns in B and C. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
 MatrixVectorProduct & y(D,R) \newline M(D,R) \newline x(D,R) & $N_{x}$ \newline $N_{y}$ \newline [smoothing] & Deterministic matrix-vector product function, $y = Mx$, where $x$ and $y$ are vectors and $M$ is a matrix. Constructor arguments, $N_{x}$ and $N_{y}$, specify the input and output vector lengths, respectively. The matrix dimension is $N_{y} \times N_{x}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %%
 %% Primarily for testing, need not be listed here.
@@ -143,6 +145,8 @@ Sum & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic summation fun
 Tan & out(D,R) \newline in(D,R) & [smoothing] & Deterministic tangent function, where out = tan(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Tanh & out(D,R) \newline in(D,R) & [smoothing] & Deterministic hyperbolic-tangent function, where out = tanh(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
+%
+VectorInnerProduct & z(D,R) \newline x(D,R,RJ) \newline y(D,R,RJ) & [smoothing] & Deterministic vector inner product function, $z = x \dot y$, where $x$ and $y$ are vectors and $z$ is a scalar. Each vector input may be either an array of scalar variables, or a single RealJoint variable. The number of elements in $x$ and $y$ must be identical. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 VonMises & [$\mu$](R) \newline [$\tau$](R) \newline value...(R) & [$\mu$] \newline [$\tau$] & Von Mises distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\mu$ (mean) and $\tau = \frac{1}{\sigma^{2}}$ (precision) can be variables, or if both are constant then fixed parameters can be specified in the constructor.  The distribution is non-zero for value variables in the range $-\pi$ to $\pi$. \\
 %
