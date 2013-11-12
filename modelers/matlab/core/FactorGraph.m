@@ -1447,7 +1447,7 @@ classdef FactorGraph < Node
             if isa(input,'VariableBase')
                 arg = input(1);
                 if length(input) > 1
-                    numLeft = length(input)-1;
+                    numLeft = prod(size(input))-1;
                 end
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
                 newarg = obj.reorderArg(input{1},input{2});

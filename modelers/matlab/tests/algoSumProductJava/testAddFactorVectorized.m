@@ -247,5 +247,14 @@ function testAddFactorVectorized()
     assertElementsAlmostEqual(a2.Belief,a.Belief);
     assertElementsAlmostEqual(b2.Belief,b.Belief);
     
+    %2x2 test
+    a = Bit(2,2);
+    b = Bit(2,2);
+    a.Input = ones(2,2)*0.8;
+    fg = FactorGraph();
+    fg.addFactorVectorized('Xor',a,b);
+    fg.solve();
+    assertElementsAlmostEqual(b.Belief,ones(2,2)*0.8);
+    
 end
 
