@@ -1531,6 +1531,16 @@ classdef FactorGraph < Node
                     tmpdimsizes = [1 1];
                 end
                 
+                %remove all ones in the middle.
+                tmp = tmpdimsizes(2:end);
+                tmp = tmp(tmp > 1);
+                if isempty(tmp)
+                    tmp = 1;
+                end
+                tmpdimsizes = [tmpdimsizes(1) tmp];                
+                
+                %remove any trailing ones
+                
                 if ~isequal(tmpdimsizes,[1 1])
                     if ~isequal(dimsizes,1) && ~isequal(dimsizes,tmpdimsizes)
                         error('variable sizes dont match');

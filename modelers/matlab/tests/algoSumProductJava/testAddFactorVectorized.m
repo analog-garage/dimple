@@ -256,5 +256,40 @@ function testAddFactorVectorized()
     fg.solve();
     assertElementsAlmostEqual(b.Belief,ones(2,2)*0.8);
     
+    %Test getting rid of 1s
+    a = Bit(2,2,3);
+    a.Label = 'a';
+    b = Bit(2,2);
+    b.Label = 'b';
+    fg = FactorGraph();
+    f=fg.addFactorVectorized('Xor',{a,[1 2 ]},b);
+    f.Label = 'f';
+
+    a2 = Bit(2,2,3);
+    a2.Label = 'a';
+    b2 = Bit(2,2);
+    b2.Label = 'b';
+    fg2 = FactorGraph();
+
+    for i = 1:2
+        for j = 1:2        
+            f = fg2.addFactor('Xor',a2(i,j,:),b2(i,j));
+            f.Label = 'f';
+        end
+    end
+
+    aInput = rand(2,2,3);
+    bInput = rand(2,2);
+    a.Input = aInput;
+    b.Input = bInput;
+    a2.Input = aInput;
+    b2.Input = bInput;
+
+    fg.solve();
+    fg2.solve();
+
+
+    assertElementsAlmostEqual(a.Belief,a2.Belief);
+    assertElementsAlmostEqual(b.Belief,b2.Belief);
 end
 
