@@ -60,7 +60,7 @@ public class Rayleigh extends FactorFunction
     		_sigma = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is sigma
     		_inverseSigmaSquared = 1/(_sigma*_sigma);
     		_halfInverseSigmaSquared = _inverseSigmaSquared * 0.5;
-    		if (_sigma < 0) throw new DimpleException("Negative sigma value. Domain must be restricted to non-negative values.");
+    		if (_sigma < 0) return Double.POSITIVE_INFINITY;
     	}
     	int length = arguments.length;
     	double sum = 0;

@@ -66,7 +66,7 @@ public class VonMises extends FactorFunction
     		_mean = FactorFunctionUtilities.toDouble(arguments[index++]);				// First variable is mean parameter
     		_precision = FactorFunctionUtilities.toDouble(arguments[index++]);			// Second variable is precision (must be non-negative)
     		_log2piBesseli0Precision = Math.log(Bessel.i0(_precision)) + _log2pi;
-    		if (_precision < 0) throw new DimpleException("Negative precision value. Domain must be restricted to non-negative values.");
+    		if (_precision < 0) return Double.POSITIVE_INFINITY;
     	}
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables

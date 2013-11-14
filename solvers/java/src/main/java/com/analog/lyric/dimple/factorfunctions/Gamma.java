@@ -66,8 +66,8 @@ public class Gamma extends FactorFunction
     		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
     		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
     		_logBeta = Math.log(_beta);
-    		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
-    		if (_beta < 0) throw new DimpleException("Negative beta parameter. Domain must be restricted to non-negative values.");
+    		if (_alpha < 0) return Double.POSITIVE_INFINITY;
+    		if (_beta < 0) return Double.POSITIVE_INFINITY;
     	}
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables
