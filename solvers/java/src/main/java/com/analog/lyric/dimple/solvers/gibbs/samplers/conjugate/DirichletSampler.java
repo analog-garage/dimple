@@ -86,12 +86,44 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		int dimension = parameters.getSize();
 		double[] sample = new double[dimension];
 		double sum = 0;
+		int numZeros = 0;
 		for (int i = 0; i < dimension; i++)
-			sample[i] = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlpha(i), 1);
-		for (int i = 0; i < dimension; i++)
-			sum += sample[i];
-		for (int i = 0; i < dimension; i++)
-			sample[i] /= sum;
+		{
+			double nextSample = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlpha(i), 1);
+			sample[i] = nextSample;
+			sum += nextSample;
+			if (nextSample == 0)
+				numZeros++;
+		}
+		if (numZeros == 0)
+		{
+			for (int i = 0; i < dimension; i++)
+				sample[i] /= sum;
+		}
+		else if (numZeros < dimension)
+		{
+			// Corner case where some, but not all, of the samples are zero
+			// Add a little to the zero sample values and adjust the others accordingly
+			double zeroAdjustment = Double.MIN_VALUE * numZeros / (1 - numZeros);
+			for (int i = 0; i < dimension; i++)
+			{
+				if (sample[i] == 0)
+					sample[i] = Double.MIN_VALUE;
+				else
+					sample[i] = (sample[i] / sum) - zeroAdjustment;
+			}
+		}
+		else
+		{
+			// Corner case where all samples were zero
+			// Choose one sample value at random, make that (nearly) one, and the others (nearly) zero
+			int randomChoice = (int)(SolverRandomGenerator.rand.nextDouble() * dimension);
+			if (randomChoice > dimension - 1) randomChoice = dimension - 1;
+			for (int i = 0; i < dimension; i++)
+				if (i != randomChoice)
+					sample[i] = Double.MIN_VALUE;
+			sample[randomChoice] = 1 - Double.MIN_VALUE * (dimension - 1);
+		}
 		return sample;
 	}
 	
