@@ -16,8 +16,13 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Collection;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 
 
 /**
@@ -177,5 +182,69 @@ public class MatrixVectorProduct extends FactorFunction
     	int outIndex = 0;
     	for (int i = 0; i < outLength; i++)
     		arguments[outIndex++] = outVector[i];
+    }
+    
+    @Override
+    public final int updateDeterministicLimit()
+    {
+    	// FIXME: is this a good value?
+    	return _inLength;
+    }
+    
+    @Override
+    public final void updateDeterministic(ObjectSample[] values, Collection<IndexedSample> oldValues)
+    {
+    	final int inLength = _inLength;
+    	final int outLength = _outLength;
+    	final int matrixOffset = outLength;
+    	
+    	final Object objAtMatrixOffset = values[matrixOffset].getObject();
+    	final boolean hasConstantMatrix =  objAtMatrixOffset instanceof double[][];
+    	final double[][] constantMatrix = hasConstantMatrix ? (double[][])objAtMatrixOffset : null;
+    	
+    	final int minChangedIndex = hasConstantMatrix ? matrixOffset + 1 : matrixOffset;
+    	final int inputOffset = hasConstantMatrix ? matrixOffset + 1 : matrixOffset + inLength * outLength;
+    	
+    	for (IndexedSample old : oldValues)
+    	{
+    		final int changedIndex = old.getIndex();
+    		
+    		if (changedIndex < minChangedIndex)
+    		{
+    			throw new DimpleException("Changed index value %d does not refer to an input variable.", changedIndex);
+    		}
+    		
+    		final double newInput = values[changedIndex].getDouble();
+    		final double oldInput = old.getValue().getDouble();
+    		if (newInput == oldInput)
+    		{
+    			continue;
+    		}
+    		
+    		if (changedIndex >= inputOffset)
+    		{
+    			// Input vector variable changed
+    			final int col = changedIndex - inputOffset;
+    			for (int row = 0; row < outLength; ++row)
+    			{
+    				final double oldOutput = values[row].getDouble();
+    				final double matrixValue = hasConstantMatrix ? constantMatrix[row][col] :
+    					values[matrixOffset + col * outLength + row].getDouble();
+    				
+    				values[row].setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    			}
+    		}
+    		else
+    		{
+    			// Matrix value changed
+    			int x = changedIndex - matrixOffset;
+    			final int col = x / outLength;
+    			final int row = x - col * outLength;
+    			
+    			final double oldOutput = values[row].getDouble();
+    			final double inVectorVal = values[inputOffset + col].getDouble();
+    			values[row].setDouble(oldOutput - inVectorVal * oldInput + inVectorVal * newInput);
+    		}
+    	}
     }
 }

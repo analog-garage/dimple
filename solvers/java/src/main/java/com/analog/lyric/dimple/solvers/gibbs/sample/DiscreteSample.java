@@ -16,16 +16,85 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.sample;
 
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+
+// REFACTOR: move and rename
 public class DiscreteSample extends ObjectSample
 {
+	/*-------
+	 * State
+	 */
+	
+	protected final DiscreteDomain _domain;
+	protected Object _value;
 	protected int _index;
 
-	public DiscreteSample(int index, Object value)
+	/*--------------
+	 * Construction
+	 */
+	
+	public DiscreteSample(Object value, DiscreteDomain domain, int index)
 	{
-		super(value);
+		this._domain = domain;
+		this._value = value;
 		this._index = index;
 	}
 	
+	public DiscreteSample(DiscreteDomain domain, int index)
+	{
+		this(domain.getElement(index), domain, index);
+	}
+	
+	public DiscreteSample(Object value, DiscreteDomain domain)
+	{
+		this(value, domain, domain.getIndex(value));
+	}
+	
+	public DiscreteSample(DiscreteDomain domain)
+	{
+		this(domain, 0);
+	}
+	
+	public DiscreteSample(DiscreteSample that)
+	{
+		this(that._value, that._domain, that._index);
+	}
+	
+	@Override
+	public DiscreteSample clone()
+	{
+		return new DiscreteSample(this);
+	}
+	
+	/*----------------------
+	 * ObjectSample methods
+	 */
+	
+	@Override
+	public final Object getObject()
+	{
+		return _value;
+	}
+	
+	@Override
+	public final void setObject(Object value)
+	{
+		_value = value;
+		_index = _domain.getIndex(value);
+	}
+	
 	public final int getIndex() {return _index;}
-	public final void setIndex(int index) {_index = index;}
+	
+	public final void setIndex(int index)
+	{
+		_index = index;
+		_value = _domain.getElement(index);
+	}
+	
+	public final void setObjectAndIndex(Object value, int index)
+	{
+		assert(value.equals(_domain.getElement(index)));
+		_value = value;
+		_index = index;
+	}
 }

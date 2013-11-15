@@ -16,13 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Collection;
+
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 public interface ISolverFactorGibbs extends ISolverFactor
 {
 	public double getPotential();
-	public void updateNeighborVariableValue(int portIndex);
-	public void updateNeighborVariableValuesNow();
+	public void updateNeighborVariableValue(int variableIndex, ObjectSample oldValue);
+	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValues);
 	public double getConditionalPotential(int portIndex);
 	public void updateEdgeMessage(int portIndex);
 }

@@ -16,17 +16,51 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.sample;
 
+// REFACTOR: move and rename
 public class RealJointSample extends ObjectSample
 {
+	protected double[] _value;
+	
+	/*--------------
+	 * Construction
+	 */
+	
 	public RealJointSample(double[] value)
 	{
-		super(value);
+		_value = value;
+	}
+
+	public RealJointSample(RealJointSample that)
+	{
+		_value = that._value; // should we deep copy?
 	}
 	
-	public double[] getValue() {return (double[])_value;}
+	@Override
+	public RealJointSample clone()
+	{
+		return new RealJointSample(this);
+	}
+	
+	/*----------------------
+	 * ObjectSample methods
+	 */
+	
+	@Override
+	public Object getObject()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setObject(Object value)
+	{
+		_value = (double[])value;
+	}
+	
+	public double[] getValue() {return _value;}
 	public void setValue(double[] value) {_value = value;}
 	
 	// Get/set a specific element of the sample
-	public double getValue(int index) {return ((double[])_value)[index];}
-	public void setValue(int index, double value) {((double[])_value)[index] = value;}
+	public double getValue(int index) {return _value[index];}
+	public void setValue(int index, double value) {_value[index] = value;}
 }

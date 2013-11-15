@@ -16,12 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Collection;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
 import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
@@ -83,13 +86,13 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public void updateNeighborVariableValue(int portIndex)
+	public void updateNeighborVariableValue(int variableIndex, ObjectSample value)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
 	}
 
 	@Override
-	public void updateNeighborVariableValuesNow()
+	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}

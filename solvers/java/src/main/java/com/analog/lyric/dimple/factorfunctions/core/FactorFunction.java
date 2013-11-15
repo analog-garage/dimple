@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,6 +31,8 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 
 @ThreadSafe
 public abstract class FactorFunction extends FactorFunctionBase
@@ -154,6 +157,38 @@ public abstract class FactorFunction extends FactorFunctionBase
     public IFactorTable getFactorTableIfExists(Factor factor)
     {
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
+    }
+    
+    /**
+     * The maximum number of variable updates beyond which {@link #updateDeterministic}
+     * should not be called.
+     * <p>
+     * Default implementation returns 0, indicating that {@link #updateDeterministic} should
+     * never be called.
+     */
+    public int updateDeterministicLimit()
+    {
+    	return 0;
+    }
+    
+    /**
+     * Deterministically update output values in {@code values} array incrementally based on changed input
+     * values.
+     * <p>
+     * For functions that support it, this can allow for more efficient computation when there are many
+     * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
+     * Gibbs update).
+     * <p>
+     * @param values is the array of output and input values that are maintained persistently. When this
+     * method is called, it may be assumed that the contents contains the current values of all input
+     * variables and the last computed values of all output variables (which were based on previous values
+     * of inputs).
+     * @param oldValues contains descriptions of the variable number and old value of each input. This
+     * list should not contain more than {@link #updateDeterministicLimit()} elements.
+     */
+    public void updateDeterministic(ObjectSample[] values, Collection<IndexedSample> oldValues)
+    {
+    	throw DimpleException.unsupportedMethod(getClass(), "updateDeterministic");
     }
 
     /*-------------------

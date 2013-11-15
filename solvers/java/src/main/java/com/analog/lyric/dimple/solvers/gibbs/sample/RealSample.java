@@ -16,13 +16,59 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.sample;
 
+// REFACTOR: move and rename
 public class RealSample extends ObjectSample
 {
+	protected double _value;
+	
+	/*--------------
+	 * Construction
+	 */
+	
 	public RealSample(double value)
 	{
-		super(value);
+		_value = value;
 	}
 	
-	public final double getValue() {return (Double)_value;}
+	public RealSample(RealSample that)
+	{
+		this(that._value);
+	}
+	
+	@Override
+	public RealSample clone()
+	{
+		return new RealSample(this);
+	}
+
+	/*----------------------
+	 * ObjectSample methods
+	 */
+	
+	@Override
+	public Object getObject()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setObject(Object value)
+	{
+		_value = ((Number)value).doubleValue();
+	}
+	
+	public final double getValue() {return _value;}
 	public final void setValue(double value) {_value = value;}
+	
+	@Override
+	public double getDouble()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setDouble(double value)
+	{
+		_value = value;
+	}
 }

@@ -217,6 +217,15 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	}
 	
 	/**
+	 * Returns element in queue with given key or null.
+	 */
+	protected E get(Object key)
+	{
+		Entry<E> entry = _keyToEntry.get(key);
+		return entry != null ? entry._element : null;
+	}
+	
+	/**
 	 * Remove entry with given key from the queue.
 	 * @return false if queue did not contain element for the key.
 	 */

@@ -16,15 +16,24 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.sample;
 
-public class ObjectSample 
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+
+// REFACTOR: move to general package like model.values and rename (e.g. Value)
+public abstract class ObjectSample implements Cloneable
 {
-	protected Object _value;
+	@Override
+	public abstract ObjectSample clone();
 	
-	public ObjectSample(Object value)
+	public abstract Object getObject();
+	public abstract void setObject(Object value);
+	
+	public double getDouble()
 	{
-		_value = value;
+		return FactorFunctionUtilities.toDouble(getObject());
 	}
 	
-	public final Object getObject() {return _value;}
-	public final void setObject(Object value) {_value = value;}
+	public void setDouble(double value)
+	{
+		setObject(value);
+	}
 }

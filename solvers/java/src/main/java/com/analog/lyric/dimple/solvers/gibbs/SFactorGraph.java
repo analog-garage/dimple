@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import com.analog.lyric.collect.UniquePriorityQueue;
+import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -48,6 +48,8 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -79,7 +81,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 * Priority queue of deterministic factors whose outputs should be
 	 * reevaluated. Lazily created.
 	 */
-	private UniquePriorityQueue<ISolverFactorGibbs> _deferredDeterministicFactorUpdates = null;
+	private KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> _deferredDeterministicFactorUpdates = null;
 	
 	/**
 	 * The number of requests to defer update of deterministic directed factor outputs.
@@ -669,37 +671,53 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	
-	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex)
+	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex,
+		ObjectSample oldValue)
 	{
 		if (_deferDeterministicFactorUpdatesCounter > 0)
 		{
 			if (_deferredDeterministicFactorUpdates == null)
 			{
 				// TODO: Currently uses FIFO order. Instead calculate directed dependency order and use that.
-				Comparator<ISolverFactorGibbs> comparePriority = new Comparator<ISolverFactorGibbs>() {
+				Comparator<SFactorUpdate> comparePriority = new Comparator<SFactorUpdate>() {
 					// NOTE: we could have used Ordering.allEqual() from the guava library, but
 					// it fails in MATLAB because MATLAB includes an ancient version of the google
 					// library at the front of its class path that lacks this method. :-(
 					@Override
-					public int compare(ISolverFactorGibbs arg0, ISolverFactorGibbs arg1)
+					public int compare(SFactorUpdate arg0, SFactorUpdate arg1)
 					{
 						return 0;
 					}
 				};
 				_deferredDeterministicFactorUpdates =
-					new UniquePriorityQueue<ISolverFactorGibbs>(11, comparePriority);
+					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, comparePriority);
 			}
-			_deferredDeterministicFactorUpdates.offer(sfactor);
+			SFactorUpdate update = _deferredDeterministicFactorUpdates.get(sfactor);
+			if (update == null)
+			{
+				update = new SFactorUpdate(sfactor);
+				_deferredDeterministicFactorUpdates.offer(update);
+			}
+			update.addVariableUpdate(changedVariableIndex, oldValue);
 		}
 		else
 		{
+			IndexedSample.SingleList oldValues = null;
+			if (sfactor.getModelObject().getFactorFunction().updateDeterministicLimit() > 0)
+			{
+				oldValues = IndexedSample.SingleList.create(changedVariableIndex, oldValue);
+			}
 			deferDeterministicUpdates();
 			try
 			{
-				sfactor.updateNeighborVariableValuesNow();
+				sfactor.updateNeighborVariableValuesNow(oldValues);
 			}
 			finally
 			{
+				if (oldValues != null)
+				{
+					oldValues.release();
+				}
 				processDeferredDeterministicUpdates();
 			}
 		}
@@ -714,10 +732,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			{
 				if (_deferredDeterministicFactorUpdates != null)
 				{
-					ISolverFactorGibbs sfactor = null;
-					while ((sfactor = _deferredDeterministicFactorUpdates.poll()) != null)
+					SFactorUpdate update = null;
+					while ((update = _deferredDeterministicFactorUpdates.poll()) != null)
 					{
-						sfactor.updateNeighborVariableValuesNow();
+						update.performUpdate();
 					}
 				}
 			}

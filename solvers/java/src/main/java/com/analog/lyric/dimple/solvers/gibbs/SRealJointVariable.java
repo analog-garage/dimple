@@ -479,32 +479,55 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
 	public final void setCurrentSample(double[] value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		
+		RealJointSample oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
 		_sampleValue = value;
 		_outputMsg.setValue(value);
 		
-		// If this variable has deterministic dependents, then set their values
-		setDependentValues();
+		if (hasDeterministicDependents)
+		{
+			// If this variable has deterministic dependents, then set their values
+			setDeterministicDependentValues(oldValue);
+		}
 	}
     public final void setCurrentSample(int index, Object value) {setCurrentSample(index, FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(int index, double value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+
+		RealJointSample oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+			oldValue.setValue(oldValue.getValue().clone());
+		}
+		
 		_sampleValue[index] = value;
 		_outputMsg.setValue(index, value);
 		
-		// If this variable has deterministic dependents, then set their values
-		setDependentValues();
+		if (hasDeterministicDependents)
+		{
+			// If this variable has deterministic dependents, then set their values
+			setDeterministicDependentValues(oldValue);
+		}
 	}
 	
-	public final void setDependentValues()
+	private final void setDeterministicDependentValues(RealJointSample oldValue)
 	{
-		if (getModelObject().isDeterministicInput())
+		int numPorts = _var.getSiblingCount();
+		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 		{
-			int numPorts = _var.getSiblingCount();
-			for (int port = 0; port < numPorts; port++)	// Plus each input message value
+			Factor f = (Factor)_var.getSibling(port);
+			if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
 			{
-				Factor f = (Factor)_var.getSibling(port);
-				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
-					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+				ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+				sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
 			}
 		}
 	}

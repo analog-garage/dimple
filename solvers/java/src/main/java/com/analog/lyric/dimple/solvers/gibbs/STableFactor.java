@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Collection;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -23,6 +25,8 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
+import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.IVariableMapList;
@@ -139,21 +143,19 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
 	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
-	public void updateNeighborVariableValue(int portIndex)
+	public void updateNeighborVariableValue(int variableIndex, ObjectSample oldValue)
 	{
 		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
 		
 		if (!_isDeterministicDirected) return;
-		if (_factor.isDirectedTo(portIndex)) return;
+		if (_factor.isDirectedTo(variableIndex)) return;
 		
-		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, portIndex);
+		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow()
+	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValues)
 	{
-		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
-
 		// Compute the output values of the deterministic factor function from the input values
 	    Object[] values = new Object[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)

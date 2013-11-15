@@ -38,6 +38,16 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		super.initialize();
 		_guessWasSet = false;
 	}
+
+	/*---------------
+	 * INode objects
+	 */
+	
+	@Override
+	public Discrete getModelObject()
+	{
+		return (Discrete)_var;
+	}
 	
 	/*-------------------------
 	 * ISolverVariable methods

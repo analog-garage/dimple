@@ -354,6 +354,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(double value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		
+		RealSample oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
 		_sampleValue = value;
 		_outputMsg.setValue(_sampleValue);
 		
@@ -365,7 +373,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			{
 				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
-					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+				{
+					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+					sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
+				}
 			}
 		}
 	}
