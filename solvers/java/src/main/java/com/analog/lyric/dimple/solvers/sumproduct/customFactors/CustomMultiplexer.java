@@ -27,16 +27,16 @@ import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
- * The multiplexer CPD is a directed factor
+ * The Multiplexer factor is a directed factor
  *    a z(1) z(2) ...
  *    \ |   /    /
  *       y
  *  such that P(Y=y|a,z(1),z(2),...) = Identity(y == z(a))
  * 
  *  The following custom factor provides optimized inference for the
- *  Multiplexer CPD
+ *  Multiplexer factor function
  */
-public class MultiplexerCPD extends STableFactorDoubleArray
+public class CustomMultiplexer extends STableFactorDoubleArray
 {
 	private int _yDomainSize;
 	private int _aDomainSize;
@@ -49,7 +49,7 @@ public class MultiplexerCPD extends STableFactorDoubleArray
 	private int [][] _zIndices2yIndex;
 
 	@SuppressWarnings("unchecked")
-	public MultiplexerCPD(Factor factor)
+	public CustomMultiplexer(Factor factor)
 	{
 		super(factor);
 		

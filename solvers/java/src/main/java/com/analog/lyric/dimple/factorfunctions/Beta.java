@@ -67,8 +67,8 @@ public class Beta extends FactorFunction
 			_alphaMinusOne = _alpha - 1;
 			_betaMinusOne = _beta - 1;
 			_logBetaAlphaBeta = org.apache.commons.math3.special.Beta.logBeta(_alpha, _beta);
-			if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
-			if (_beta < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
+			if (_alpha < 0) return Double.POSITIVE_INFINITY;
+			if (_beta < 0) return Double.POSITIVE_INFINITY;
 		}
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables

@@ -74,8 +74,9 @@ public class ExchangeableDirichlet extends FactorFunction
     	if (!_parametersConstant)
     	{
     		_alpha = (Double)arguments[index++];		// First variable is parameter value
+    		if (_alpha < 0)
+    			return Double.POSITIVE_INFINITY;
     		_logBetaAlpha = logBeta(_alpha);
-    		if (_alpha < 0) throw new DimpleException("Negative parameter value. Domain must be restricted to non-negative values.");
     	}
 
     	double sum = 0;
@@ -89,11 +90,12 @@ public class ExchangeableDirichlet extends FactorFunction
     		double xSum = 0;
     		for (int i = 0; i < _dimension; i++)
     		{
-    			if (x[i] < 0)
+    			double xi = x[i];
+    			if (xi <= 0)
     				return Double.POSITIVE_INFINITY;
     			else
-    				sum -= Math.log(x[i]);	// -log(x_i ^ (a_i-1))
-    			xSum += x[i];
+    				sum -= Math.log(xi);	// -log(x_i ^ (a_i-1))
+    			xSum += xi;
     		}
     		
     		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex

@@ -239,27 +239,36 @@ classdef FactorGraph < Node
             % Graphs.
             
             %Get variables
-            [firstvars,anythingLeft] = obj.extractFirstArgs(varargin{:});
+            [firstvars,numLeft] = obj.extractFirstArgs(varargin{:});
             [firstFactor,isVectorIndicesAndWeights] = obj.addFactor(firstArg,firstvars{:});
             if isVectorIndicesAndWeights
                 varargin = varargin(2:end);
             end
             retval = firstFactor;
             
-            %TODO
-            if anythingLeft
+            if numLeft
                 
-                %TODO: Catch case where there is no actual vector.
                 [finalvars,indices] = obj.extractFinalArgs(varargin{:});
-                
-                if isa(firstFactor,'FactorGraph')
-                    graph = firstFactor.VectorObject;
-                    otherFactors = obj.VectorObject.addGraphVectorized(graph,finalvars,indices);
+
+                %Check to see if this is a 2 long vector.  If it is, we
+                %special case it since Matlab to java calls don't keep row
+                %vectors as 1,N matrices.
+                if numLeft == 1
+                    for i = 1:length(finalvars)
+                        finalvars{i} = wrapProxyObject(finalvars{i});
+                    end
+                    
+                    otherFactors = obj.addFactor(firstArg,finalvars{:}).VectorObject;
                 else
-                    factor = firstFactor.VectorObject;
-                    otherFactors = obj.VectorObject.addFactorVectorized(factor,finalvars,indices);
+
+                    if isa(firstFactor,'FactorGraph')
+                        graph = firstFactor.VectorObject;
+                        otherFactors = obj.VectorObject.addGraphVectorized(graph,finalvars,indices);
+                    else
+                        factor = firstFactor.VectorObject;
+                        otherFactors = obj.VectorObject.addFactorVectorized(factor,finalvars,indices);
+                    end
                 end
-                
                 retval = wrapProxyObject(otherFactors);
                 retval = [firstFactor retval];
                 
@@ -1437,18 +1446,18 @@ classdef FactorGraph < Node
         
         %We extract the first variable of every variable vector in order to
         %make the first addFactor call.
-        function [arg,anythingleft] = extractFirstArg(obj,input)
-            anythingleft = false;
+        function [arg,numLeft] = extractFirstArg(obj,input)
+            numLeft = 0;
             if isa(input,'VariableBase')
                 arg = input(1);
                 if length(input) > 1
-                    anythingleft = true;
+                    numLeft = prod(size(input))-1;
                 end
             elseif iscell(input) && length(input) == 2 && isa(input{1},'VariableBase')
                 newarg = obj.reorderArg(input{1},input{2});
                 arg = newarg(1,:);
                 if size(newarg,1) > 1
-                    anythingleft = 1;
+                    numLeft = size(newarg,1)-1;
                 end
             else
                 arg = input;
@@ -1458,11 +1467,11 @@ classdef FactorGraph < Node
         %Extract all the first vars to call addFactor
         function [firstvars,anythingLeft] = extractFirstArgs(obj,varargin)
             firstvars = cell(size(varargin));
-            anythingLeft = false;
+            anythingLeft = 0;
             for i = 1:length(firstvars)
                 [firstvars{i},tmp] = obj.extractFirstArg(varargin{i});
                 if tmp
-                    anythingLeft = true;
+                    anythingLeft = tmp;
                 end
             end
         end
@@ -1497,6 +1506,10 @@ classdef FactorGraph < Node
         end
         
         function dimsizes = extractFactorDimensions(obj,varargin)
+            %This method is used to reshape the Factors returned by
+            %add Factor.  It uses the list of variables passed in to
+            %determine the dimensions of the factors.  In addition, it
+            %verifies that the variable argument list is consistent.
             
             dimsizes = 1;
             for i = 1:length(varargin)
@@ -1505,17 +1518,28 @@ classdef FactorGraph < Node
                     tmpdimsizes = size(tmp);
                 elseif iscell(tmp) && ~isempty(tmp) && isa(tmp{1},'VariableBase')
                     dims = tmp{2};
+                    
                     if isempty(dims)
                         tmpdimsizes = [1 1];
                     else 
-                        tmpdimsizes = zeros(size(dims));
-                        for j = 1:length(tmpdimsizes)
-                            tmpdimsizes(j) = size(tmp{1},dims(j));
+                        tmpdimsizes = ones(1,length(size(tmp{1})));
+                        for j = 1:length(dims)
+                            tmpdimsizes(dims(j)) = size(tmp{1},dims(j));
                         end
                     end
                 else
                     tmpdimsizes = [1 1];
                 end
+                
+                %remove all ones in the middle.
+                tmp = tmpdimsizes(2:end);
+                tmp = tmp(tmp > 1);
+                if isempty(tmp)
+                    tmp = 1;
+                end
+                tmpdimsizes = [tmpdimsizes(1) tmp];                
+                
+                %remove any trailing ones
                 
                 if ~isequal(tmpdimsizes,[1 1])
                     if ~isequal(dimsizes,1) && ~isequal(dimsizes,tmpdimsizes)

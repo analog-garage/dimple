@@ -69,10 +69,11 @@ public class Dirichlet extends FactorFunction
     	if (!_parametersConstant)
     	{
     		_alpha = (double[])arguments[index++];		// First variable is array of parameter values
+    		for (int i = 0; i < _dimension; i++)
+    			if (_alpha[i] < 0)
+    				return Double.POSITIVE_INFINITY;
     		_logBetaAlpha = logBeta(_alpha);
     		_dimension = _alpha.length;
-    		for (int i = 0; i < _dimension; i++)
-    			if (_alpha[i] < 0) throw new DimpleException("Negative parameter value. Domain must be restricted to non-negative values.");
     	}
 
     	double sum = 0;
@@ -86,11 +87,12 @@ public class Dirichlet extends FactorFunction
     		double xSum = 0;
     		for (int i = 0; i < _dimension; i++)
     		{
-    			if (x[i] < 0)
+    			double xi = x[i];
+    			if (xi <= 0)
     				return Double.POSITIVE_INFINITY;
     			else
-    				sum -= (_alpha[i]-1) * Math.log(x[i]);	// -log(x_i ^ (a_i-1))
-    			xSum += x[i];
+    				sum -= (_alpha[i]-1) * Math.log(xi);	// -log(x_i ^ (a_i-1))
+    			xSum += xi;
     		}
     		
     		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex

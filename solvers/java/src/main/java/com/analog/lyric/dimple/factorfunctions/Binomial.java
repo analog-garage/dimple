@@ -65,7 +65,7 @@ public class Binomial extends FactorFunction
     	{
     		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
     		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
-    		if (_N < 0) throw new DimpleException("Negative N value. Domain must be restricted to non-negative values.");
+    		if (_N < 0) return Double.POSITIVE_INFINITY;
     	}
     	
     	double p = FactorFunctionUtilities.toDouble(arguments[index++]);			// Next argument is the probability parameter

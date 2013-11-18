@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldAdd;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldConstMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldProjection;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.MultiplexerCPD;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultiplexer;
 import com.analog.lyric.util.misc.IMapList;
 
 public class SFactorGraph extends SFactorGraphBase
@@ -62,15 +62,13 @@ public class SFactorGraph extends SFactorGraphBase
 				return new FiniteFieldMult(factor);
 		}
 		else if (funcName.equals("finiteFieldAdd"))
-		{
 			return new FiniteFieldAdd(factor);
-		}
 		else if (funcName.equals("finiteFieldProjection"))
-		{
 			return new FiniteFieldProjection(factor);
-		}
-		else if (funcName.equals("multiplexerCPD"))
-			return new MultiplexerCPD(factor);
+		else if (funcName.equals("Multiplexer"))
+			return new CustomMultiplexer(factor);
+		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
+			return new CustomMultiplexer(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}
@@ -93,7 +91,9 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("finiteFieldProjection"))
 			return true;
-		else if (funcName.equals("multiplexerCPD"))
+		else if (funcName.equals("Multiplexer"))
+			return true;
+		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
 			return true;
 		else
 			return false;

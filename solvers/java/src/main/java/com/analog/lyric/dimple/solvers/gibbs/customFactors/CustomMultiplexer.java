@@ -41,6 +41,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class CustomMultiplexer extends SRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
@@ -238,7 +239,9 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		_selectorPortNumber = SELECTOR_INDEX;
 		_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		
-		_outputVariable = (ISolverRealVariableGibbs)(((VariableBase)_factor.getSibling(_outputPortNumber)).getSolver());
+		ISolverVariable outputVariable = ((VariableBase)_factor.getSibling(_outputPortNumber)).getSolver();
+		if (outputVariable instanceof ISolverRealVariableGibbs)
+		_outputVariable = (ISolverRealVariableGibbs)outputVariable;
 		_outputVariableSiblingPortIndex = _factor.getSiblingPortIndex(_outputPortNumber);
 
 		if (_hasFactorFunctionConstants)
