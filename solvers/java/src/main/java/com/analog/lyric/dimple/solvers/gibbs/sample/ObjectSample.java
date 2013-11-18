@@ -36,4 +36,31 @@ public abstract class ObjectSample implements Cloneable
 	{
 		setObject(value);
 	}
+
+	/*-----------------------
+	 * Static helper methods
+	 */
+	
+	public static <T extends ObjectSample> T[] fromObjects(Object[] objs, T[] output)
+	{
+		for (int i = objs.length; --i>=0;)
+		{
+			output[i].setObject(objs[i]);
+		}
+		return output;
+	}
+		
+	public static <T extends ObjectSample> Object[] toObjects(T[] values, Object[] output)
+	{
+		for (int i = values.length; --i>=0;)
+		{
+			output[i] = values[i].getObject();
+		}
+		return output;
+	}
+	
+	public static <T extends ObjectSample> Object[] toObjects(T[] values)
+	{
+		return toObjects(values, new Object[values.length]);
+	}
 }
