@@ -240,7 +240,8 @@ f = FactorFunction('ExchangeableDirichlet', dim, alpha);
 for j = 1:10
     x = rand(1,dim);
     x = x/sum(x);
-    prob = prod(x.^(alpha-1)) / (prod(gamma(alpha)) / gamma(sum(alpha)));
+    logp = sum(log(x)*(alpha-1)) - dim*gammaln(alpha) + gammaln(alpha*dim);
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
 end
 
@@ -248,12 +249,13 @@ end
 dim = randi(100) + 10;
 n = rand*20;
 alpha = rand(1) * n;
-Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+logZ = dim*gammaln(alpha) - gammaln(alpha*dim);
 f = FactorFunction('ExchangeableDirichlet', dim);
 for j = 1:10
     x = rand(1,dim);
     x = x/sum(x);
-    prob = prod(x.^(alpha-1)) * Z ;
+    logp = sum(log(x)*(alpha-1)) - logZ;
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), prob);
 end
 
@@ -261,16 +263,17 @@ end
 dim = randi(10) + 10;
 n = rand*20;
 alpha = rand(1) * n;
-Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+logZ = dim*gammaln(alpha) - gammaln(alpha*dim);
 f = FactorFunction('ExchangeableDirichlet', dim, alpha);
 for j = 1:10
     x = cell(1,4);
-    prob = 1;
+    logp = 0;
     for k=1:4
         x{k} = rand(1,dim);
         x{k} = x{k}/sum(x{k});
-        prob = prob * prod(x{k}.^(alpha-1)) * Z;
+        logp = logp + sum(log(x{k})*(alpha-1)) - logZ;
     end
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
 end
 

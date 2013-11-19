@@ -104,7 +104,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		{
 			// Corner case where some, but not all, of the samples are zero
 			// Add a little to the zero sample values and adjust the others accordingly
-			double zeroAdjustment = Double.MIN_VALUE * numZeros / (1 - numZeros);
+			double zeroAdjustment = Double.MIN_VALUE * (double)numZeros / (dimension - numZeros);
 			for (int i = 0; i < dimension; i++)
 			{
 				if (sample[i] == 0)

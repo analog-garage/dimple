@@ -174,6 +174,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			potential += factor.getConditionalPotential(factorPortNumber);
 		}
 		
+		if (Double.isNaN(potential))
+			return Double.POSITIVE_INFINITY;
+		
 		return potential * _beta;	// Incorporate current temperature
 	}
 	@Override

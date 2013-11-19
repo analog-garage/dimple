@@ -64,7 +64,7 @@ public class ExchangeableDirichlet extends FactorFunction
 		_logBetaAlpha = logBeta(_alpha);
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-		if (_alpha < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
+		if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
 	}
 	
     @Override
@@ -74,7 +74,7 @@ public class ExchangeableDirichlet extends FactorFunction
     	if (!_parametersConstant)
     	{
     		_alpha = (Double)arguments[index++];		// First variable is parameter value
-    		if (_alpha < 0)
+    		if (_alpha <= 0)
     			return Double.POSITIVE_INFINITY;
     		_logBetaAlpha = logBeta(_alpha);
     	}
@@ -108,7 +108,7 @@ public class ExchangeableDirichlet extends FactorFunction
     
     private final double logBeta(double alpha)
     {
-    	return (alpha - Gamma.logGamma(alpha)) * _dimension;
+    	return Gamma.logGamma(alpha) * _dimension - Gamma.logGamma(alpha * _dimension);
     }
     
     private final boolean almostEqual(double a, double b, double threshold)

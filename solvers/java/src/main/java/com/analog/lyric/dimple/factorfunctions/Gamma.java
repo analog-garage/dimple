@@ -53,8 +53,8 @@ public class Gamma extends FactorFunction
 		_logGammaAlphaMinusAlphaLogBeta = org.apache.commons.math3.special.Gamma.logGamma(_alpha) - _alpha * _logBeta;
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
-    	if (_alpha < 0) throw new DimpleException("Negative alpha parameter. This must be a non-negative value.");
-    	if (_beta < 0) throw new DimpleException("Negative beta parameter. This must be a non-negative value.");
+    	if (_alpha <= 0) throw new DimpleException("Non-positive alpha parameter. This must be a positive value.");
+    	if (_beta <= 0) throw new DimpleException("Non-positive beta parameter. This must be a positive value.");
 	}
 	
     @Override
@@ -64,10 +64,10 @@ public class Gamma extends FactorFunction
     	if (!_parametersConstant)
     	{
     		_alpha = FactorFunctionUtilities.toDouble(arguments[index++]);	// First input is alpha parameter (must be non-negative)
+    		if (_alpha <= 0) return Double.POSITIVE_INFINITY;
     		_beta = FactorFunctionUtilities.toDouble(arguments[index++]);	// Second input is beta parameter (must be non-negative)
+    		if (_beta <= 0) return Double.POSITIVE_INFINITY;
     		_logBeta = Math.log(_beta);
-    		if (_alpha < 0) return Double.POSITIVE_INFINITY;
-    		if (_beta < 0) return Double.POSITIVE_INFINITY;
     	}
     	int length = arguments.length;
     	int N = length - index;			// Number of non-parameter variables
