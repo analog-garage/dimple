@@ -22,11 +22,11 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
-import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.IVariableMapList;
@@ -38,7 +38,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	 * State
 	 */
 	
-    protected DiscreteSample[] _inPortMsgs = null;
+    protected DiscreteValue[] _inPortMsgs = null;
     protected double[][] _outPortMsgs = null;
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
@@ -143,7 +143,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
 	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
-	public void updateNeighborVariableValue(int variableIndex, ObjectSample oldValue)
+	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
 		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
 		
@@ -154,7 +154,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValues)
+	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
 	    Object[] values = new Object[_numPorts];
@@ -183,7 +183,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
     	int size = _factor.getSiblingCount();
     	_numPorts= size;
     	
-	    _inPortMsgs = new DiscreteSample[_numPorts];
+	    _inPortMsgs = new DiscreteValue[_numPorts];
 	    _outPortMsgs = new double[_numPorts][];
 	    
 	    IVariableMapList variables = _factor.getVariables();
@@ -191,7 +191,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	    {
 	    	ISolverVariable svar = variables.getByIndex(port).getSolver();
 	    	Object [] messages = svar.createMessages(this);
-	    	_inPortMsgs[port] = (DiscreteSample)messages[1];
+	    	_inPortMsgs[port] = (DiscreteValue)messages[1];
 	    	_outPortMsgs[port] = (double[])messages[0];
 	    }
 	}

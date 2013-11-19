@@ -21,8 +21,8 @@ import java.util.Collection;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -192,7 +192,7 @@ public class MatrixVectorProduct extends FactorFunction
     }
     
     @Override
-    public final void updateDeterministic(ObjectSample[] values, Collection<IndexedSample> oldValues)
+    public final void updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
     {
     	final int inLength = _inLength;
     	final int outLength = _outLength;
@@ -205,7 +205,7 @@ public class MatrixVectorProduct extends FactorFunction
     	final int minChangedIndex = hasConstantMatrix ? matrixOffset + 1 : matrixOffset;
     	final int inputOffset = hasConstantMatrix ? matrixOffset + 1 : matrixOffset + inLength * outLength;
     	
-    	for (IndexedSample old : oldValues)
+    	for (IndexedValue old : oldValues)
     	{
     		final int changedIndex = old.getIndex();
     		

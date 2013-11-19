@@ -22,15 +22,15 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-	private ObjectSample [] _inputMsgs;
+	private Value [] _inputMsgs;
 	private Object[] _outputMsgs;
 
 	
@@ -53,11 +53,11 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		Factor f = (Factor)vb.getSibling(index);
 		ISolverFactor sf = f.getSolver();
 		int numEdges = f.getSiblingCount();
-		_inputMsgs = new ObjectSample[numEdges];
+		_inputMsgs = new Value[numEdges];
 		_outputMsgs = new Object[numEdges];
 		for (int i = 0; i < numEdges; i++)
 		{
-			_inputMsgs[i] = (ObjectSample)sf.getInputMsg(i);
+			_inputMsgs[i] = (Value)sf.getInputMsg(i);
 			_outputMsgs[i] = sf.getOutputMsg(i);
 		}
 	}
@@ -86,13 +86,13 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public void updateNeighborVariableValue(int variableIndex, ObjectSample value)
+	public void updateNeighborVariableValue(int variableIndex, Value value)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
 	}
 
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValue)
+	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}

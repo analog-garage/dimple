@@ -22,11 +22,11 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IVariableMapList;
 
@@ -34,7 +34,7 @@ import com.analog.lyric.util.misc.IVariableMapList;
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {
 	protected Factor _realFactor;
-	protected ObjectSample [] _inputMsgs;
+	protected Value [] _inputMsgs;
 	//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
@@ -150,7 +150,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
 	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
-	public void updateNeighborVariableValue(int variableIndex, ObjectSample oldValue)
+	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		
@@ -161,7 +161,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValues)
+	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final FactorFunction function = _factor.getFactorFunction();
@@ -173,7 +173,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		else
 		{
 			values = new Object[_numPorts]; //_scratchValues;
-			ObjectSample[] inputMsgs = _inputMsgs;
+			Value[] inputMsgs = _inputMsgs;
 			for (int port = 0; port < _numPorts; port++)
 				values[port] = inputMsgs[port].getObject();
 			function.evalDeterministicFunction(values);
@@ -201,14 +201,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public void createMessages()
 	{
 		_numPorts = _factor.getSiblingCount();
-		_inputMsgs = new ObjectSample[_numPorts];
+		_inputMsgs = new Value[_numPorts];
 		_outputsValid = false;
 //		_scratchValues = new Object[_numPorts];
 		IVariableMapList variables = _factor.getVariables();
 		for (int i = 0; i < _numPorts; i++)
 		{
 			Object [] messages = variables.getByIndex(i).getSolver().createMessages(this);
-			_inputMsgs[i] = (ObjectSample)messages[1];
+			_inputMsgs[i] = (Value)messages[1];
 		}
 	}
 

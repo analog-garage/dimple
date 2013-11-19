@@ -14,10 +14,9 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
-// REFACTOR: move and rename
-public class RealSample extends ObjectSample
+public class RealValue extends Value
 {
 	protected double _value;
 	
@@ -25,24 +24,24 @@ public class RealSample extends ObjectSample
 	 * Construction
 	 */
 	
-	public RealSample(double value)
+	public RealValue(double value)
 	{
 		_value = value;
 	}
 	
-	public RealSample(RealSample that)
+	public RealValue(RealValue that)
 	{
 		this(that._value);
 	}
 	
 	@Override
-	public RealSample clone()
+	public RealValue clone()
 	{
-		return new RealSample(this);
+		return new RealValue(this);
 	}
 
-	/*----------------------
-	 * ObjectSample methods
+	/*---------------
+	 * Value methods
 	 */
 	
 	@Override

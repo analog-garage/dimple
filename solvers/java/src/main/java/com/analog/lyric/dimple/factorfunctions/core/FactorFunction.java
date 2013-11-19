@@ -31,8 +31,8 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 @ThreadSafe
 public abstract class FactorFunction extends FactorFunctionBase
@@ -186,7 +186,7 @@ public abstract class FactorFunction extends FactorFunctionBase
      * @param oldValues contains descriptions of the variable number and old value of each input. This
      * list should not contain more than {@link #updateDeterministicLimit()} elements.
      */
-    public void updateDeterministic(ObjectSample[] values, Collection<IndexedSample> oldValues)
+    public void updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
     {
     	throw DimpleException.unsupportedMethod(getClass(), "updateDeterministic");
     }

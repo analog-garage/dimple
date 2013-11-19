@@ -26,6 +26,8 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -48,8 +50,6 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -672,7 +672,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 
 	
 	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex,
-		ObjectSample oldValue)
+		Value oldValue)
 	{
 		if (_deferDeterministicFactorUpdatesCounter > 0)
 		{
@@ -702,10 +702,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 		else
 		{
-			IndexedSample.SingleList oldValues = null;
+			IndexedValue.SingleList oldValues = null;
 			if (sfactor.getModelObject().getFactorFunction().updateDeterministicLimit() > 0)
 			{
-				oldValues = IndexedSample.SingleList.create(changedVariableIndex, oldValue);
+				oldValues = IndexedValue.SingleList.create(changedVariableIndex, oldValue);
 			}
 			deferDeterministicUpdates();
 			try

@@ -21,18 +21,18 @@ import java.util.Collection;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
-import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.IndexedSample;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 
 public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-    protected DiscreteSample[] _inPortMsgs = null;
+    protected DiscreteValue[] _inPortMsgs = null;
     protected int _numPorts;
 	private double [] _outputMsg;
-	private DiscreteSample _inputMsg;
+	private DiscreteValue _inputMsg;
 
 	public STableFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -49,7 +49,7 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	private void getMessages()
 	{
 		_outputMsg = (double[])getOtherVariablePort().node.getSolver().getInputMsg(getOtherVariablePort().index);
-		_inputMsg = (DiscreteSample)getOtherVariablePort().node.getSolver().getOutputMsg(getOtherVariablePort().index);
+		_inputMsg = (DiscreteValue)getOtherVariablePort().node.getSolver().getOutputMsg(getOtherVariablePort().index);
 		
 	}
 	
@@ -67,13 +67,13 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	}
 	
 	@Override
-	public void updateNeighborVariableValue(int variableIndex, ObjectSample oldValue)
+	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValue");
 	}
 
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedSample> oldValue)
+	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}

@@ -24,11 +24,11 @@ import org.apache.commons.math3.random.RandomGenerator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
-import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.Utilities;
@@ -38,7 +38,7 @@ import com.analog.lyric.math.Utilities;
 public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs
 {
     protected double[][] _inPortMsgs = new double[0][];
-    protected DiscreteSample _outputMsg;
+    protected DiscreteValue _outputMsg;
     protected int _numPorts;
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
@@ -298,7 +298,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
 
-		DiscreteSample oldValue = null;
+		DiscreteValue oldValue = null;
 		if (hasDeterministicDependents)
 		{
 			oldValue = _outputMsg.clone();
@@ -474,8 +474,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void createNonEdgeSpecificState()
 	{
 		DiscreteDomain domain = getModelObject().getDomain();
-		_outputMsg = new DiscreteSample(domain);
-		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+		_outputMsg = new DiscreteValue(domain);
+		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 		_sampleIndex = 0;
 
 		if (_sampleIndexArray != null)
@@ -518,7 +518,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public Object resetOutputMessage(Object message)
 	{
-		DiscreteSample ds = (DiscreteSample)message;
+		DiscreteValue ds = (DiscreteValue)message;
 		ds.setIndex(_var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
 		return ds;
 	}
@@ -528,7 +528,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		if (!_holdSampleValue)
-			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+			_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 	}
 
 	@Override

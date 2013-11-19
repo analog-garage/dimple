@@ -1,4 +1,4 @@
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
 import java.util.AbstractList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -7,23 +7,21 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.google.common.primitives.Ints;
 
-
-// REFACTOR: move and rename
 @NotThreadSafe
-public class IndexedSample implements Comparable<IndexedSample>
+public class IndexedValue implements Comparable<IndexedValue>
 {
 	/*-------
 	 * State
 	 */
 	
 	private int _index;
-	private ObjectSample _value;
+	private Value _value;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public IndexedSample(int index, ObjectSample value)
+	public IndexedValue(int index, Value value)
 	{
 		_index = index;
 		_value = value;
@@ -41,7 +39,7 @@ public class IndexedSample implements Comparable<IndexedSample>
 			return true;
 		}
 		
-		return other instanceof IndexedSample && _index == ((IndexedSample)other)._index;
+		return other instanceof IndexedValue && _index == ((IndexedValue)other)._index;
 	}
 
 	@Override
@@ -55,13 +53,13 @@ public class IndexedSample implements Comparable<IndexedSample>
 	 */
 	
 	@Override
-	public int compareTo(IndexedSample other)
+	public int compareTo(IndexedValue other)
 	{
 		return Ints.compare(_index, other._index);
 	}
 	
-	/*-----------------------
-	 * IndexedSample methods
+	/*----------------------
+	 * IndexedValue methods
 	 */
 	
 	public int getIndex()
@@ -69,7 +67,7 @@ public class IndexedSample implements Comparable<IndexedSample>
 		return _index;
 	}
 	
-	public ObjectSample getValue()
+	public Value getValue()
 	{
 		return _value;
 	}
@@ -78,9 +76,9 @@ public class IndexedSample implements Comparable<IndexedSample>
 	 * Nested classes
 	 */
 	
-	public static class SingleList extends AbstractList<IndexedSample>
+	public static class SingleList extends AbstractList<IndexedValue>
 	{
-		private final IndexedSample _value;
+		private final IndexedValue _value;
 
 		private final static AtomicReference<SingleList> _cachedInstance = new AtomicReference<SingleList>();
 
@@ -88,12 +86,12 @@ public class IndexedSample implements Comparable<IndexedSample>
 		 * Construction
 		 */
 		
-		private SingleList(int index, ObjectSample value)
+		private SingleList(int index, Value value)
 		{
-			_value = new IndexedSample(index, value);
+			_value = new IndexedValue(index, value);
 		}
 		
-		public static SingleList create(int index, ObjectSample value)
+		public static SingleList create(int index, Value value)
 		{
 			SingleList list = _cachedInstance.getAndSet(null);
 			if (list == null)
@@ -118,7 +116,7 @@ public class IndexedSample implements Comparable<IndexedSample>
 		 */
 		
 		@Override
-		public IndexedSample get(int i)
+		public IndexedValue get(int i)
 		{
 			if (i != 0)
 				throw new IndexOutOfBoundsException();

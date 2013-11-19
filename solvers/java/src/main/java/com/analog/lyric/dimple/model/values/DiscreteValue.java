@@ -14,12 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 
-// REFACTOR: move and rename
-public class DiscreteSample extends ObjectSample
+public class DiscreteValue extends Value
 {
 	/*-------
 	 * State
@@ -33,41 +32,41 @@ public class DiscreteSample extends ObjectSample
 	 * Construction
 	 */
 	
-	public DiscreteSample(Object value, DiscreteDomain domain, int index)
+	public DiscreteValue(Object value, DiscreteDomain domain, int index)
 	{
 		this._domain = domain;
 		this._value = value;
 		this._index = index;
 	}
 	
-	public DiscreteSample(DiscreteDomain domain, int index)
+	public DiscreteValue(DiscreteDomain domain, int index)
 	{
 		this(domain.getElement(index), domain, index);
 	}
 	
-	public DiscreteSample(Object value, DiscreteDomain domain)
+	public DiscreteValue(Object value, DiscreteDomain domain)
 	{
 		this(value, domain, domain.getIndex(value));
 	}
 	
-	public DiscreteSample(DiscreteDomain domain)
+	public DiscreteValue(DiscreteDomain domain)
 	{
 		this(domain, 0);
 	}
 	
-	public DiscreteSample(DiscreteSample that)
+	public DiscreteValue(DiscreteValue that)
 	{
 		this(that._value, that._domain, that._index);
 	}
 	
 	@Override
-	public DiscreteSample clone()
+	public DiscreteValue clone()
 	{
-		return new DiscreteSample(this);
+		return new DiscreteValue(this);
 	}
 	
-	/*----------------------
-	 * ObjectSample methods
+	/*---------------
+	 * Value methods
 	 */
 	
 	@Override

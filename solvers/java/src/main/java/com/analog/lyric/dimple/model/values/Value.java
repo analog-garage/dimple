@@ -14,15 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
-// REFACTOR: move to general package like model.values and rename (e.g. Value)
-public abstract class ObjectSample implements Cloneable
+public abstract class Value implements Cloneable
 {
 	@Override
-	public abstract ObjectSample clone();
+	public abstract Value clone();
 	
 	public abstract Object getObject();
 	public abstract void setObject(Object value);
@@ -41,7 +40,7 @@ public abstract class ObjectSample implements Cloneable
 	 * Static helper methods
 	 */
 	
-	public static <T extends ObjectSample> T[] fromObjects(Object[] objs, T[] output)
+	public static <T extends Value> T[] fromObjects(Object[] objs, T[] output)
 	{
 		for (int i = objs.length; --i>=0;)
 		{
@@ -50,7 +49,7 @@ public abstract class ObjectSample implements Cloneable
 		return output;
 	}
 		
-	public static <T extends ObjectSample> Object[] toObjects(T[] values, Object[] output)
+	public static <T extends Value> Object[] toObjects(T[] values, Object[] output)
 	{
 		for (int i = values.length; --i>=0;)
 		{
@@ -59,7 +58,7 @@ public abstract class ObjectSample implements Cloneable
 		return output;
 	}
 	
-	public static <T extends ObjectSample> Object[] toObjects(T[] values)
+	public static <T extends Value> Object[] toObjects(T[] values)
 	{
 		return toObjects(values, new Object[values.length]);
 	}
