@@ -218,18 +218,12 @@ classdef VariableBase < Node
         
         
         function guess = get.Guess(obj)
-            tmp = cell(obj.VectorObject.getGuess());
-            guess = obj.unpack(tmp,obj.VectorIndices);
+            guess = obj.getGuess();
         end
         
         function set.Guess(obj,guess)
-            input = obj.pack(guess,obj.VectorIndices);
-            if ~iscell(input) && ~isfloat(input)
-                input = num2cell(input);
-            end
-            obj.VectorObject.setGuess(input);
+            obj.setGuess(guess);
         end
-        
         
         function factors = get.Factors(obj)
             factors = obj.getFactors(intmax);
@@ -305,6 +299,19 @@ classdef VariableBase < Node
     
     methods (Access = protected)
         
+        function guess = getGuess(obj)
+            tmp = cell(obj.VectorObject.getGuess());
+            guess = obj.unpack(tmp,obj.VectorIndices);
+        end
+        
+        function setGuess(obj,guess)
+            input = obj.pack(guess,obj.VectorIndices);
+            if ~iscell(input) && ~isfloat(input)
+                input = num2cell(input);
+            end
+            obj.VectorObject.setGuess(input);
+        end
+
         
         function z = addBinaryOperatorOverloadedFactor(a,b,operation,factor)
             % Sizes should be the same, or one of them should be length 1
