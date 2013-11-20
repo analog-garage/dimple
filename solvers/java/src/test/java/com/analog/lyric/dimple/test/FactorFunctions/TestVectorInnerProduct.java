@@ -98,6 +98,7 @@ public class TestVectorInnerProduct extends FactorFunctionTester
 
 			testEvalDeterministic(function, rd, testCases);
 		}
-		
+	
+		// TODO: test evalEnergy for non-deterministic cases
 	}
 }
