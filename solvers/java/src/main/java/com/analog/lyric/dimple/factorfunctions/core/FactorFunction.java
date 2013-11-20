@@ -179,16 +179,28 @@ public abstract class FactorFunction extends FactorFunctionBase
      * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
      * Gibbs update).
      * <p>
+     * The default implementation delegates back to {@link #evalDeterministicFunction(Object[])}, which
+     * will do a full update.
+     * <p>
      * @param values is the array of output and input values that are maintained persistently. When this
      * method is called, it may be assumed that the contents contains the current values of all input
      * variables and the last computed values of all output variables (which were based on previous values
      * of inputs).
-     * @param oldValues contains descriptions of the variable number and old value of each input. This
-     * list should not contain more than {@link #updateDeterministicLimit()} elements.
+     * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
+     * of input variables should be specified. This list should not contain more than
+     * {@link #updateDeterministicLimit()} elements.
+     * 
+     * @return true if update was done incrementally (i.e not all inputs were processed), false if full
+     * update was done.
+     * 
+     * @throws IndexOutOfBoundsException if an index in {@code oldValues} does not refer to an input variable.
      */
-    public void updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
     {
-    	throw DimpleException.unsupportedMethod(getClass(), "updateDeterministic");
+		Object[] tmp = Value.toObjects(values);
+		evalDeterministicFunction(tmp);
+		Value.copyFromObjects(tmp, values);
+		return false;
     }
 
     /*-------------------

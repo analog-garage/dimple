@@ -5,10 +5,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.collect.IKeyed;
 import com.google.common.primitives.Ints;
 
+/**
+ * Represents an association between an index and a {@link Value} object.
+ * <p>
+ * For purposes of comparison only the {@link #getIndex()} value is considered.
+ */
 @NotThreadSafe
-public class IndexedValue implements Comparable<IndexedValue>
+public class IndexedValue implements Comparable<IndexedValue>, IKeyed<Integer>
 {
 	/*-------
 	 * State
@@ -31,6 +37,9 @@ public class IndexedValue implements Comparable<IndexedValue>
 	 * Object methods
 	 */
 	
+	/**
+	 * True if {@code other} is an {@code IndexedValue} with same {@link #getIndex()} value.
+	 */
 	@Override
 	public boolean equals(Object other)
 	{
@@ -42,6 +51,10 @@ public class IndexedValue implements Comparable<IndexedValue>
 		return other instanceof IndexedValue && _index == ((IndexedValue)other)._index;
 	}
 
+	/**
+	 * Hash code is based soley on {@code #getIndex()} value.
+	 */
+	
 	@Override
 	public int hashCode()
 	{
@@ -52,10 +65,26 @@ public class IndexedValue implements Comparable<IndexedValue>
 	 * Comparable methods
 	 */
 	
+	/**
+	 * Comparison based on integer comparison of {@link #getIndex()} values.
+	 */
 	@Override
 	public int compareTo(IndexedValue other)
 	{
 		return Ints.compare(_index, other._index);
+	}
+	
+	/*----------------
+	 * IKeyed methods
+	 */
+	
+	/**
+	 * Returns {@link #getIndex()}.
+	 */
+	@Override
+	public Integer getKey()
+	{
+		return _index;
 	}
 	
 	/*----------------------

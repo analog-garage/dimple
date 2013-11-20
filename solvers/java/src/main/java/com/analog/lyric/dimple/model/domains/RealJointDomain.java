@@ -31,33 +31,86 @@ public class RealJointDomain extends Domain
 	private static final long serialVersionUID = 1L;
 	
 	private final RealDomain [] _domains;
+	private final int _size;
+	
+	/**
+	 * If true, then _domains will contain only one element representing the common domain
+	 * for all dimensions.
+	 */
+	private final boolean _homogeneous;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	RealJointDomain(RealDomain[] domains)
+	protected RealJointDomain(RealDomain domain, int size)
 	{
-		super(Arrays.hashCode(domains) * 3 + 31);
-		_domains = domains;
+		super(domain.hashCode() * size);
+		_domains = new RealDomain[] { domain };
+		_size = size;
+		_homogeneous = true;
 	}
-
+	
+	protected RealJointDomain(RealDomain[] domains, boolean cloneDomains)
+	{
+		super(computeHashCode(domains));
+		if (allEqual(domains))
+		{
+			_domains = new RealDomain[] { domains[0] };
+			_size = domains.length;
+			_homogeneous = true;
+		}
+		else
+		{
+			_domains = cloneDomains ? domains.clone() : domains;
+			_size = domains.length;
+			_homogeneous = false;
+		}
+	}
+	
 	public static RealJointDomain create(RealDomain... domains)
 	{
 		if (domains.length < 2)
 		{
 			throw new IllegalArgumentException("RealJointDomain requires at least two domains");
 		}
-		return new RealJointDomain(domains.clone());
+		
+		return new RealJointDomain(domains, true);
 	}
 	
 	public static RealJointDomain create(int size)
 	{
-		RealDomain[] domains = new RealDomain[size];
-		Arrays.fill(domains, RealDomain.unbounded());
-		return create(domains);
+		return create(RealDomain.unbounded(), size);
 	}
 
+	public static RealJointDomain create(RealDomain domain, int size)
+	{
+		return new RealJointDomain(domain, size);
+	}
+	
+	private static int computeHashCode(RealDomain[] domains)
+	{
+		int hashCode = 43;
+		for (RealDomain domain : domains)
+		{
+			hashCode += domain.hashCode();
+		}
+		return hashCode;
+	}
+	
+	private static boolean allEqual(RealDomain[] domains)
+	{
+		RealDomain domain = domains[0];
+		for (int i = domains.length; --i>=1;)
+		{
+			if (!domain.equals(domains[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
@@ -70,7 +123,9 @@ public class RealJointDomain extends Domain
 		if ((obj instanceof RealJointDomain))
 		{
 			RealJointDomain other = (RealJointDomain) obj;
-			return Arrays.equals(this._domains, other._domains);
+			return _size == other._size &&
+				_homogeneous == other._homogeneous &&
+				Arrays.equals(this._domains, other._domains);
 		}
 		
 		return false;
@@ -93,13 +148,27 @@ public class RealJointDomain extends Domain
 	@Override
 	public boolean inDomain(Object value)
 	{
-		if (value.getClass().isArray() && Array.getLength(value) == _domains.length)
+		if (value.getClass().isArray() && Array.getLength(value) == _size)
 		{
-			for (int i = 0, end = _domains.length; i < end; ++i)
+			if (_homogeneous)
 			{
-				if (! _domains[i].inDomain(Array.get(value, i)))
+				RealDomain domain = _domains[0];
+				for (int i = 0, end = _size; i < end; ++i)
 				{
-					return false;
+					if (! domain.inDomain(Array.get(value, i)))
+					{
+						return false;
+					}
+				}
+			}
+			else
+			{
+				for (int i = 0, end = _size; i < end; ++i)
+				{
+					if (! _domains[i].inDomain(Array.get(value, i)))
+					{
+						return false;
+					}
 				}
 			}
 			
@@ -109,19 +178,37 @@ public class RealJointDomain extends Domain
 		return false;
 	}
 	
-	public boolean inDomain(double ... value)
+	public boolean inDomain(double ... values)
 	{
-		int size = value.length;
-		if (size != _domains.length)
+		int size = values.length;
+		if (size != _size)
 			return false;
 		
-		for (int i = 0; i < size; i++)
-			if (!_domains[i].inDomain(value[i]))
-				return false;
+		if (_homogeneous)
+		{
+			final RealDomain domain = _domains[0];
+			for (double value : values)
+				if (!domain.inDomain(value))
+					return false;
+		}
+		else
+		{
+			for (int i = 0; i < size; i++)
+				if (!_domains[i].inDomain(values[i]))
+					return false;
+		}
 		
 		return true;
 	}
 
+	/**
+	 * True if all {@link RealDomain} subdomains are equal.
+	 */
+	public final boolean isHomogeneous()
+	{
+		return _homogeneous;
+	}
+	
 	@Override
 	public final boolean isRealJoint()
 	{
@@ -137,21 +224,37 @@ public class RealJointDomain extends Domain
 	 */
 	public final int getDimensions()
 	{
-		return _domains.length;
+		return _size;
 	}
 	
+	/**
+	 * Returns copy of all of the subdomains making up this joint domain.
+	 * <p>
+	 * If you just want the size use {@link #getDimensions()} and if you just want
+	 * to access a domain at a given index use {@link #getRealDomain(int)} instead
+	 * to avoid the overhead of copying the array.
+	 */
 	public RealDomain [] getRealDomains()
 	{
-		return _domains.clone();
+		if (_homogeneous)
+		{
+			RealDomain[] domains = new RealDomain[_size];
+			Arrays.fill(domains, _domains[0]);
+			return domains;
+		}
+		else
+		{
+			return _domains.clone();
+		}
 	}
 	
 	public RealDomain getRealDomain(int dimension)
 	{
-		return _domains[dimension];
+		return _domains[_homogeneous ? 0 : dimension];
 	}
 	
 	public int getNumVars()
 	{
-		return _domains.length;
+		return _size;
 	}
 }

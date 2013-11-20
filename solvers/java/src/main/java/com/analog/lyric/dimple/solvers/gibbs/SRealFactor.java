@@ -165,6 +165,8 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final FactorFunction function = _factor.getFactorFunction();
+		final int[] directedTo = _factor.getDirectedTo();
+
 		Object[] values = null;
 		if (oldValues != null && _outputsValid)
 		{
@@ -172,16 +174,19 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		}
 		else
 		{
-			values = new Object[_numPorts]; //_scratchValues;
-			Value[] inputMsgs = _inputMsgs;
-			for (int port = 0; port < _numPorts; port++)
-				values[port] = inputMsgs[port].getObject();
+			values = Value.toObjects(_inputMsgs);
 			function.evalDeterministicFunction(values);
+			if (directedTo != null)
+			{
+				for (int to : directedTo)
+				{
+					_inputMsgs[to].setObject(values[to]);
+				}
+			}
 			_outputsValid = true;
 		}
 		
 		// Update the directed-to variables with the computed values
-		int[] directedTo = _factor.getDirectedTo();
 		if (directedTo != null)
 		{
 			IVariableMapList variables = _factor.getVariables();

@@ -18,17 +18,21 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 public class FactorFunctionWithConstants extends FactorFunction
 {
-	private FactorFunctionBase _factorFunction;
+	private FactorFunction _factorFunction;
 	private Object [] _constants;
 	private int [] _constantIndices;
 	
-	public FactorFunctionWithConstants(FactorFunctionBase factorFunction,
+	public FactorFunctionWithConstants(FactorFunction factorFunction,
 			Object [] constants, int [] constantIndices)
 	{
 		super(factorFunction.getName());
@@ -128,8 +132,53 @@ public class FactorFunctionWithConstants extends FactorFunction
 		}
 	}
 	
+	@Override
+	public int updateDeterministicLimit()
+	{
+		return _factorFunction.updateDeterministicLimit();
+	}
 	
-	
+	@Override
+	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+	{
+		int inputLength = values.length;
+		int constantLength = _constantIndices.length;
+		int expandedLength = inputLength + constantLength;
+		Value[] expandedValues = new Value[expandedLength];
+
+		// Expand value array and insert constants in appropriate slots.
+		int ei = 0, vi = 0;
+		for (int ci = 0; ci < constantLength; ++ ci)
+		{
+			final int constantIndex = _constantIndices[ci];
+			final int nonConstantLength = constantIndex - ei;
+			System.arraycopy(values, vi, expandedValues, ei, nonConstantLength);
+			vi += nonConstantLength;
+			ei = constantIndex + 1;
+			expandedValues[constantIndex] = Value.create(_constants[ci]);
+		}
+		System.arraycopy(values, vi, expandedValues, ei, inputLength - vi);
+		
+		// Adjust indexes of old values to account for inserted constants.
+		ArrayList<IndexedValue> expandedOldValues = new ArrayList<IndexedValue>(oldValues);
+		Collections.sort(expandedOldValues);
+		
+		for (int i = 0, ci = 0, offset = 0, endi = expandedOldValues.size(); i < endi; ++i)
+		{
+			IndexedValue oldValue = expandedOldValues.get(i);
+			int oldIndex = oldValue.getIndex();
+			for(; ci < constantLength && oldIndex >= _constantIndices[ci]; ++ci)
+			{
+				++offset;
+			}
+			if (offset > 0)
+			{
+				expandedOldValues.set(i, new IndexedValue(oldIndex + offset, oldValue.getValue()));
+			}
+		}
+		
+		return _factorFunction.updateDeterministic(expandedValues,  expandedOldValues);
+	}
 	
 	// Expand list of inputs to include the constants
 	// Assumes constant index list is already sorted

@@ -64,7 +64,7 @@ public abstract class FactorFunctionBase
 	public int[] getDirectedToIndices(int numEdges) {return getDirectedToIndices();}	// May depend on the number of edges
 	protected int[] getDirectedToIndices() {return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
 	
-	// TODO: This doesn't appear to be used
+	// REFACTOR: This doesn't appear to be used
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{
 		return true;

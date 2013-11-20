@@ -18,11 +18,11 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Collection;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Matlab;
 
 
 /**
@@ -54,6 +54,7 @@ public class MatrixVectorProduct extends FactorFunction
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
 	
+	@Matlab
 	public MatrixVectorProduct(int inLength, int outLength) {this(inLength, outLength, 0);}
 	public MatrixVectorProduct(int inLength, int outLength, double smoothing)
 	{
@@ -192,59 +193,75 @@ public class MatrixVectorProduct extends FactorFunction
     }
     
     @Override
-    public final void updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
     {
     	final int inLength = _inLength;
     	final int outLength = _outLength;
     	final int matrixOffset = outLength;
     	
     	final Object objAtMatrixOffset = values[matrixOffset].getObject();
-    	final boolean hasConstantMatrix =  objAtMatrixOffset instanceof double[][];
-    	final double[][] constantMatrix = hasConstantMatrix ? (double[][])objAtMatrixOffset : null;
+    	final double[][] matrix = objAtMatrixOffset instanceof double[][] ? (double[][])objAtMatrixOffset : null;
     	
-    	final int minChangedIndex = hasConstantMatrix ? matrixOffset + 1 : matrixOffset;
-    	final int inputOffset = hasConstantMatrix ? matrixOffset + 1 : matrixOffset + inLength * outLength;
+    	final int vectorOffset = matrixOffset + (matrix != null ? 1 : inLength * outLength);
+    	final Object objAtVectorOffset = values[vectorOffset].getObject();
+    	final double[] vector = objAtVectorOffset instanceof double[] ? (double[])objAtVectorOffset : null;
     	
-    	for (IndexedValue old : oldValues)
+    	final int minSupportedIndex = matrix == null ? matrixOffset : (vector == null ? vectorOffset : values.length);
+    	final int maxSupportedIndex = vector == null ? values.length : (matrix == null ? vectorOffset : matrixOffset);
+    	
+    	boolean incremental = false;
+    	
+    	doIncremental:
     	{
-    		final int changedIndex = old.getIndex();
-    		
-    		if (changedIndex < minChangedIndex)
+    		for (IndexedValue old : oldValues)
     		{
-    			throw new DimpleException("Changed index value %d does not refer to an input variable.", changedIndex);
-    		}
-    		
-    		final double newInput = values[changedIndex].getDouble();
-    		final double oldInput = old.getValue().getDouble();
-    		if (newInput == oldInput)
-    		{
-    			continue;
-    		}
-    		
-    		if (changedIndex >= inputOffset)
-    		{
-    			// Input vector variable changed
-    			final int col = changedIndex - inputOffset;
-    			for (int row = 0; row < outLength; ++row)
+    			final int changedIndex = old.getIndex();
+
+    			if (changedIndex < matrixOffset || changedIndex >= values.length)
     			{
+					throw new IndexOutOfBoundsException();
+    			}
+
+    			if (changedIndex < minSupportedIndex || changedIndex >= maxSupportedIndex)
+    			{
+    				break doIncremental;
+    			}
+
+    			final double newInput = values[changedIndex].getDouble();
+    			final double oldInput = old.getValue().getDouble();
+    			if (newInput == oldInput)
+    			{
+    				continue;
+    			}
+
+    			if (changedIndex >= vectorOffset)
+    			{
+    				// Input vector variable changed
+    				final int col = changedIndex - vectorOffset;
+    				for (int row = 0; row < outLength; ++row)
+    				{
+    					final double oldOutput = values[row].getDouble();
+    					final double matrixValue =
+    						matrix != null ? matrix[row][col] :	values[matrixOffset + col * outLength + row].getDouble();
+
+    						values[row].setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    				}
+    			}
+    			else
+    			{
+    				// Matrix value changed
+    				int x = changedIndex - matrixOffset;
+    				final int col = x / outLength;
+    				final int row = x - col * outLength;
+
     				final double oldOutput = values[row].getDouble();
-    				final double matrixValue = hasConstantMatrix ? constantMatrix[row][col] :
-    					values[matrixOffset + col * outLength + row].getDouble();
-    				
-    				values[row].setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    				final double inVectorVal = vector != null ? vector[col] : values[vectorOffset + col].getDouble();
+    				values[row].setDouble(oldOutput - inVectorVal * oldInput + inVectorVal * newInput);
     			}
     		}
-    		else
-    		{
-    			// Matrix value changed
-    			int x = changedIndex - matrixOffset;
-    			final int col = x / outLength;
-    			final int row = x - col * outLength;
-    			
-    			final double oldOutput = values[row].getDouble();
-    			final double inVectorVal = values[inputOffset + col].getDouble();
-    			values[row].setDouble(oldOutput - inVectorVal * oldInput + inVectorVal * newInput);
-    		}
+    		incremental = true;
     	}
+    	
+    	return incremental || super.updateDeterministic(values, oldValues);
     }
 }

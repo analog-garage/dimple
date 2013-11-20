@@ -16,8 +16,12 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Collection;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -181,5 +185,103 @@ public class VectorInnerProduct extends FactorFunction
 
 		// Replace the output values
 		arguments[0] = outValue;
+	}
+	
+	@Override
+	public final int updateDeterministicLimit()
+	{
+		// FIXME: the real limit should be ~<vector-length>/2 but the current implementation does not
+		// know the length until updateDeterministic is called. Fixing this will require modifying the
+		// constructors and modifying the MATLAB wrapper code for this function.
+		return _smoothingSpecified ? 0 : Integer.MAX_VALUE;
+	}
+	
+	@Override
+	public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+	{
+		final int nValues = values.length;
+		final int outputOffset = 0;
+		final int offset1 = 1;
+		
+		final Object obj1 = values[offset1].getObject();
+		final double[] v1 = obj1 instanceof double[] ? (double[])obj1 : null;
+		
+		final Object obj2 = values[nValues - 1].getObject();
+		final double[] v2 = obj2 instanceof double[] ? (double[])obj2 : null;
+		
+		boolean incremental = false;
+		
+		doIncremental:
+		{
+			if (v1 != null && v2 != null)
+			{
+				// If both vectors are passed in single variables, then
+				// we don't currently have a way to determine which values changed, so we can't
+				// do an incremental update.
+				break doIncremental;
+			}
+			
+			final int vectorLength = v1 != null ? v1.length : (v2 != null ? v2.length : ((nValues - 1) / 2));
+
+			if (vectorLength / 2 < oldValues.size())
+			{
+				// If oldValues is more than half the size of vectors, then it will cost more to
+				// do an incremental update.
+				break doIncremental;
+			}
+			
+			final int offset2 = v1 == null ? offset1 + vectorLength : offset1 + 1;
+
+			final int minSupportedIndex = v1 == null ? offset1 : offset1 + 1;
+			final int maxSupportedIndex = v2 == null ? nValues: nValues - 1;
+
+			for (IndexedValue old : oldValues)
+			{
+				final int changedIndex = old.getIndex();
+
+				if (changedIndex < offset1 || nValues <= changedIndex)
+				{
+					throw new IndexOutOfBoundsException();
+				}
+
+				if (changedIndex < minSupportedIndex || changedIndex >= maxSupportedIndex)
+				{
+					// Must be referring to an array variable. Since we don't know how many or which of the
+					// elements of the array have changed, there is no point in trying to do an incremental
+					// update.
+					break doIncremental;
+				}
+			}
+			
+			double output = values[outputOffset].getDouble();
+
+			for (IndexedValue old : oldValues)
+			{
+				final int changedIndex = old.getIndex();
+				final double newInput = values[changedIndex].getDouble();
+				final double oldInput = old.getValue().getDouble();
+
+				if (newInput != oldInput)
+				{
+					double otherInput;
+					if (changedIndex < offset2)
+					{
+						final int i = changedIndex - offset1;
+						otherInput = v2 != null ? v2[i] : values[offset2 + i].getDouble();
+					}
+					else
+					{
+						final int i = changedIndex - offset2;
+						otherInput = v1 != null ? v1[i] : values[offset1 + i].getDouble();
+					}
+					output = output - otherInput * oldInput + otherInput * newInput;
+				}
+			}
+
+			values[outputOffset].setDouble(output);
+			incremental = true;
+		}
+		
+		return incremental || super.updateDeterministic(values, oldValues);
 	}
 }
