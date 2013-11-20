@@ -33,62 +33,62 @@ public abstract class Value implements Cloneable
 	 */
 	public static Class<? extends Value> classForDomain(Domain domain)
 	{
-		if (domain.isDiscrete())
+		if (domain != null)
 		{
-			return DiscreteValue.class;
+			if (domain.isDiscrete())
+			{
+				return DiscreteValue.class;
+			}
+			else if (domain.isReal())
+			{
+				return RealValue.class;
+			}
+			else if (domain.isRealJoint())
+			{
+				return RealJointValue.class;
+			}
 		}
-		else if (domain.isReal())
-		{
-			return RealValue.class;
-		}
-		else if (domain.isRealJoint())
-		{
-			return RealJointValue.class;
-		}
-		else
-		{
-			return ObjectValue.class;
-		}
+		return ObjectValue.class;
 	}
 	
 	public static Value create(Domain domain)
 	{
-		if (domain.isDiscrete())
+		if (domain != null)
 		{
-			return new DiscreteValue(domain.asDiscrete());
+			if (domain.isDiscrete())
+			{
+				return new DiscreteValue(domain.asDiscrete());
+			}
+			else if (domain.isReal())
+			{
+				return new RealValue(0.0);
+			}
+			else if (domain.isRealJoint())
+			{
+				return new RealJointValue(ArrayUtil.EMPTY_DOUBLE_ARRAY);
+			}
 		}
-		else if (domain.isReal())
-		{
-			return new RealValue(0.0);
-		}
-		else if (domain.isRealJoint())
-		{
-			return new RealJointValue(ArrayUtil.EMPTY_DOUBLE_ARRAY);
-		}
-		else
-		{
-			return new ObjectValue();
-		}
+		return new ObjectValue();
 	}
 	
 	public static Value create(Domain domain, Object value)
 	{
-		if (domain.isDiscrete())
+		if (domain != null)
 		{
-			return new DiscreteValue(value, domain.asDiscrete());
+			if (domain.isDiscrete())
+			{
+				return new DiscreteValue(value, domain.asDiscrete());
+			}
+			else if (domain.isReal())
+			{
+				return new RealValue(((Number)value).doubleValue());
+			}
+			else if (domain.isRealJoint())
+			{
+				return new RealJointValue((double[])value);
+			}
 		}
-		else if (domain.isReal())
-		{
-			return new RealValue(((Number)value).doubleValue());
-		}
-		else if (domain.isRealJoint())
-		{
-			return new RealJointValue((double[])value);
-		}
-		else
-		{
-			return new ObjectValue(value);
-		}
+		return new ObjectValue(value);
 	}
 	
 	public static Value create(Object object)
