@@ -51,7 +51,7 @@ classdef Complex < RealJoint
        end
         
        % Turn the return values into complex nubmers
-        function v = getFixedValue(obj)
+       function v = getFixedValue(obj)
             values = getFixedValue@RealJoint(obj);
             
             % Final dimension of values array have the real and imaginary parts
@@ -65,6 +65,25 @@ classdef Complex < RealJoint
             iindex{arrayDims} = 2;
             v = values(rindex{:}) + 1i*values(iindex{:});
         end
+        
+        % Treat the set values as complex numbers
+       function setGuess(obj,value)
+           arrayDims = ndims(value);
+           if (arrayDims == 2 && min(size(value)) == 1)
+               arrayDims = 1;  % ndims answers 2 even if it's really 1
+           end
+           valueArray = cat(arrayDims+1, real(value), imag(value));
+           setGuess@RealJoint(obj,valueArray);
+       end
+        
+       % Turn the return values into complex nubmers
+       function v = getGuess(obj)
+            values = getGuess@RealJoint(obj);
+            
+            % Each cell has real and imaginary parts
+            v = cellfun(@(x){x(1) + 1i*x(2)}, values);
+        end
+
 
 
    end

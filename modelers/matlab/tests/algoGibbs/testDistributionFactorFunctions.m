@@ -51,9 +51,9 @@ function test1(debugPrint, repeatable)
 
 % Bernoulli
 ps = [.001 .1 .5 .7 .99];
+f = FactorFunction('Bernoulli');
 for i=1:length(ps);
     p = ps(i);
-    f = FactorFunction('Bernoulli');
     for j=1:10
         n = randi(100);
         b = rand(1,n) < p;
@@ -62,6 +62,10 @@ for i=1:length(ps);
         assertElementsAlmostEqual(f.IFactorFunction.eval([p, num2cell(b)]), prob);
     end
 end
+assert(f.IFactorFunction.evalEnergy({0 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({-eps 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1+eps 0}) == Inf);
     
 % Beta (constant parameters)
 alphas = [1 2 .1];
@@ -78,14 +82,17 @@ end
 % Beta (variable parameters)
 alphas = [1 2 .1];
 betas = [4.5 .1 2];
+f = FactorFunction('Beta');
 for i = 1:length(alphas)
     alpha = alphas(i);
     beta = betas(i);
-    f = FactorFunction('Beta');
     for v=0:.1:1
         assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, beta, v}), betapdf(v,alpha,beta));
     end
 end
+assert(f.IFactorFunction.evalEnergy({-eps 1 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({0 -eps 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({0 -eps -eps}) == Inf);
 
 % Beta (multiple outputs, constant parameters)
 alphas = [1 2 .1];
@@ -103,9 +110,9 @@ end
 
 % Binomial
 ps = [.001 .1 .5 .7 .99];
+f = FactorFunction('Binomial');
 for i=1:length(ps);
     p = ps(i);
-    f = FactorFunction('Binomial');
     for j=1:10
         n = randi(100);
         b = rand(1,n) < p;
@@ -113,6 +120,11 @@ for i=1:length(ps);
         assertElementsAlmostEqual(f.IFactorFunction.eval({n, p, k}), binopdf(k,n,p));
     end
 end
+assert(f.IFactorFunction.evalEnergy({4 0 4}) == Inf);
+assert(f.IFactorFunction.evalEnergy({4 1 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({4 0.5 5}) == Inf);
+assert(f.IFactorFunction.evalEnergy({4 -eps 0}) == Inf);
+assert(f.IFactorFunction.evalEnergy({4 1+eps 0}) == Inf);
 
 % Categorical
 dim = randi(100) + 10;
@@ -123,6 +135,8 @@ for j = 1:10
     x = randi(dim)-1;  % Integer 0:dim-1
     assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), alpha(x+1));
 end
+alpha(1) = -eps;
+assert(f.IFactorFunction.evalEnergy({alpha, x}) == Inf);
 
 % Categorical (multiple outputs)
 dim = randi(100) + 10;
@@ -171,6 +185,8 @@ for j = 1:10
     x = randi(dim)-1;  % Integer 0:dim-1
     assertElementsAlmostEqual(f.IFactorFunction.eval([num2cell(alphaS), x]), alphaN(x+1));
 end
+alphaS(1) = -eps;
+assert(f.IFactorFunction.evalEnergy([num2cell(alphaS), x]) == Inf);
 
 % CategoricalUnnormalizedParameters (multiple outputs)
 dim = randi(100) + 10;
@@ -212,6 +228,13 @@ for j = 1:10
     prob = prod(x.^(alpha-1)) * Z ;
     assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), prob);
 end
+alphaTest = alpha;
+alphaTest(1) = 0;
+assert(f.IFactorFunction.evalEnergy({alphaTest, x}) == Inf);
+alphaTest(1) = -eps;
+assert(f.IFactorFunction.evalEnergy({alphaTest, x}) == Inf);
+x(1) = x(1) + 0.001;
+assert(f.IFactorFunction.evalEnergy({alpha, x}) == Inf);
 
 % Dirichlet (multiple outputs, constant parameters)
 dim = randi(10) + 10;
@@ -240,7 +263,8 @@ f = FactorFunction('ExchangeableDirichlet', dim, alpha);
 for j = 1:10
     x = rand(1,dim);
     x = x/sum(x);
-    prob = prod(x.^(alpha-1)) / (prod(gamma(alpha)) / gamma(sum(alpha)));
+    logp = sum(log(x)*(alpha-1)) - dim*gammaln(alpha) + gammaln(alpha*dim);
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
 end
 
@@ -248,29 +272,35 @@ end
 dim = randi(100) + 10;
 n = rand*20;
 alpha = rand(1) * n;
-Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+logZ = dim*gammaln(alpha) - gammaln(alpha*dim);
 f = FactorFunction('ExchangeableDirichlet', dim);
 for j = 1:10
     x = rand(1,dim);
     x = x/sum(x);
-    prob = prod(x.^(alpha-1)) * Z ;
+    logp = sum(log(x)*(alpha-1)) - logZ;
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), prob);
 end
+assert(f.IFactorFunction.evalEnergy({0, x}) == Inf);
+assert(f.IFactorFunction.evalEnergy({-eps, x}) == Inf);
+x(1) = x(1) + 0.001;
+assert(f.IFactorFunction.evalEnergy({alpha, x}) == Inf);
 
 % ExchangeableDirichlet (multiple outputs, constant parameters)
 dim = randi(10) + 10;
 n = rand*20;
 alpha = rand(1) * n;
-Z = 1/(prod(gamma(alpha)) / gamma(sum(alpha)));
+logZ = dim*gammaln(alpha) - gammaln(alpha*dim);
 f = FactorFunction('ExchangeableDirichlet', dim, alpha);
 for j = 1:10
     x = cell(1,4);
-    prob = 1;
+    logp = 0;
     for k=1:4
         x{k} = rand(1,dim);
         x{k} = x{k}/sum(x{k});
-        prob = prob * prod(x{k}.^(alpha-1)) * Z;
+        logp = logp + sum(log(x{k})*(alpha-1)) - logZ;
     end
+    prob = exp(logp);
     assertElementsAlmostEqual(f.IFactorFunction.eval(x), prob);
 end
 
@@ -299,6 +329,10 @@ for i = 1:length(alphas)
         assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, beta, v}), gampdf(v,alpha,scale));
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, 0, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({-eps, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, -eps, 1}) == Inf);
 
 % Gamma (multiple outputs, constant parameters)
 alphas = [1 2 .1];
@@ -342,6 +376,10 @@ for i = 1:length(alphas)
         assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, beta, v}), prob);
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, 0, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({-eps, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, -eps, 1}) == Inf);
 
 % InverseGamma (multiple outputs, constant parameters)
 alphas = [1 2 .1];
@@ -383,6 +421,7 @@ for i=1:length(means);
         assertElementsAlmostEqual(f.IFactorFunction.eval({mean, precision, v}), lognpdf(v,mean,std));
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, -eps, 0}) == Inf);
 
 % LogNormal (multiple outputs, constant parameters)
 means = [0 -10 100 pi .01];
@@ -424,6 +463,10 @@ for i = 1:length(alphas)
         assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, beta, v}), gampdf(exp(-v),alpha,scale));
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, 0, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({-eps, 1, 1}) == Inf);
+assert(f.IFactorFunction.evalEnergy({1, -eps, 1}) == Inf);
 
 % NegativeExpGamma (multiple outputs, constant parameters)
 alphas = [1 2 .1];
@@ -465,6 +508,7 @@ for i=1:length(means);
         assertElementsAlmostEqual(f.IFactorFunction.eval({mean, precision, v}), normpdf(v,mean,std));
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, -eps, 0}) == Inf);
 
 % Normal (multiple outputs, constant parameters)
 means = [0 -10 100 pi .01];
@@ -500,6 +544,7 @@ for i=1:length(means);
         assertElementsAlmostEqual(f.IFactorFunction.eval({sigma, v}), raylpdf(v,sigma));
     end
 end
+assert(f.IFactorFunction.evalEnergy({-eps, 0}) == Inf);
 
 % Rayleigh (multiple outputs, constant parameters)
 sigmas = [1 .2 27 10 2];
@@ -542,6 +587,7 @@ for i=1:length(means);
         assertElementsAlmostEqual(f.IFactorFunction.eval({mean, precision, v}), prob);
     end
 end
+assert(f.IFactorFunction.evalEnergy({0, -eps, 0}) == Inf);
 
 % VonMises (multiple outputs, constant parameters)
 means = [0 pi 2 pi/3 ];

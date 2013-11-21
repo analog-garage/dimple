@@ -59,7 +59,7 @@ public class Dirichlet extends FactorFunction
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
     	for (int i = 0; i < _dimension; i++)
-    		if (_alpha[i] < 0) throw new DimpleException("Negative alpha parameter. Domain must be restricted to non-negative values.");
+    		if (_alpha[i] <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
 	}
 	
     @Override
@@ -70,7 +70,7 @@ public class Dirichlet extends FactorFunction
     	{
     		_alpha = (double[])arguments[index++];		// First variable is array of parameter values
     		for (int i = 0; i < _dimension; i++)
-    			if (_alpha[i] < 0)
+    			if (_alpha[i] <= 0)
     				return Double.POSITIVE_INFINITY;
     		_logBetaAlpha = logBeta(_alpha);
     		_dimension = _alpha.length;

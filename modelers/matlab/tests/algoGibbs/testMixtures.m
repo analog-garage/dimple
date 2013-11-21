@@ -44,6 +44,7 @@ end
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 dtrace(debugPrint, '--testMixtures');
 
 end
@@ -242,7 +243,36 @@ end
 
 
 
+% Test multiplexer factor with discrete variables
+function test4(debugPrint, repeatable)
 
+% Create model
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+in = Bit(1,3);
+select = Discrete(0:2);
+out = Bit;
+
+f = fg.addFactor('Multiplexer', out, select, in);
+assert(strfind(char(f.Solver.getClass.getName),'CustomMultiplexer') > 0);
+
+inInput = [0.1 0.5 0.9];
+in.Input = inInput;
+selInput = [0.1 0.1 0.8];
+select.Input = selInput;
+
+fg.Solver.setNumSamples(1000);
+fg.Solver.saveAllSamples();
+
+fg.solve();
+
+os = out.Solver.getAllSampleIndices;
+outRate = sum(os)/length(os);
+expectedOutRate = inInput * selInput';
+assertElementsAlmostEqual(outRate, expectedOutRate, 'absolute', .02);
+
+end
 
 
 

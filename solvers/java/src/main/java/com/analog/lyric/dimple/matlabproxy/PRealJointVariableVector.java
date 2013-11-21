@@ -127,6 +127,23 @@ public class PRealJointVariableVector extends PVariableVector
 		return output;
 	}
 	
+	// Set guess when there's just one variable
+	public void setGuess(double[] guess)
+	{
+		getVariable(0).setGuess(guess);
+	}
+	
+	// Set guess for multiple variables
+	public void setGuess(double[][] guess)
+	{
+		for (int i = 0; i < guess.length; i++)
+		{
+			((RealJoint)getVariable(i)).setGuess(guess[i]);
+		}
+	}
+	
+
+	
 	@Override
 	public PNodeVector createNodeVector(Node[] nodes)
 	{

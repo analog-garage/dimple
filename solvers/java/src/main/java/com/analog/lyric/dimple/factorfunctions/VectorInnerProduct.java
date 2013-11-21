@@ -124,7 +124,8 @@ public class VectorInnerProduct extends FactorFunction
 		// Get the output value
 		double outValue = FactorFunctionUtilities.toDouble(arguments[0]);
 
-		double error = (outValue - expectedOutValue);
+		double diff = (outValue - expectedOutValue);
+		double error = diff*diff;
 
 		if (_smoothingSpecified)
 			return error*_beta;
