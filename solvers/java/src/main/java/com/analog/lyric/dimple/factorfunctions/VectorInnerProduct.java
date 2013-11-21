@@ -44,6 +44,7 @@ public class VectorInnerProduct extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
+	private final int _updateDeterministicLimit;
 
 	public VectorInnerProduct() {this(0);}
 	public VectorInnerProduct(double smoothing)
@@ -54,6 +55,15 @@ public class VectorInnerProduct extends FactorFunction
 		{
 			_beta = 1 / smoothing;
 			_smoothingSpecified = true;
+			_updateDeterministicLimit = 0;
+		}
+		else
+		{
+			// Each incremental update uses 2 multiply/adds versus <vector-length> for a full update so
+			// the limit should be <vector-length>/2.
+			// However, since we don't know what <vector-length> is, we set no limit until updateDeterministic is
+			// called.
+			_updateDeterministicLimit = Integer.MAX_VALUE;
 		}
 	}
 
@@ -190,10 +200,7 @@ public class VectorInnerProduct extends FactorFunction
 	@Override
 	public final int updateDeterministicLimit()
 	{
-		// FIXME: the real limit should be ~<vector-length>/2 but the current implementation does not
-		// know the length until updateDeterministic is called. Fixing this will require modifying the
-		// constructors and modifying the MATLAB wrapper code for this function.
-		return _smoothingSpecified ? 0 : Integer.MAX_VALUE;
+		return _updateDeterministicLimit;
 	}
 	
 	@Override

@@ -53,6 +53,7 @@ public class MatrixVectorProduct extends FactorFunction
 	protected double[] _outVector;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
+	private final int _updateDeterministicLimit;
 	
 	@Matlab
 	public MatrixVectorProduct(int inLength, int outLength) {this(inLength, outLength, 0);}
@@ -69,6 +70,16 @@ public class MatrixVectorProduct extends FactorFunction
 		{
 			_beta = 1 / smoothing;
 			_smoothingSpecified = true;
+			_updateDeterministicLimit = 0;
+		}
+		else
+		{
+			// A full update requires inLength*outLength multiply/adds. An incremental update
+			// will take either 2 for changes to input matrix, or outLength*2 for changes to
+			// input vector. So for matrix input changes the limit should be inLength*outLength/2
+			// and for vector input changes the limit should be inLength/2. We will use the min of
+			// these two for now:
+			_updateDeterministicLimit = inLength / 2;
 		}
 	}
 	
@@ -88,7 +99,7 @@ public class MatrixVectorProduct extends FactorFunction
 
 		// Get the matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		matrix = _matrix = (double[][])arguments[argIndex++];
+    		matrix = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int col = 0; col < _inLength; col++)
@@ -99,7 +110,7 @@ public class MatrixVectorProduct extends FactorFunction
     	// Get the input vector values
     	double[] inVector = _inVector;
     	if (arguments[argIndex] instanceof double[])	// Constant matrix is passed as a single argument
-    		inVector = _inVector = (double[])arguments[argIndex++];
+    		inVector = (double[])arguments[argIndex++];
     	else
     	{
     		for (int i = 0; i < inLength; i++)
@@ -150,7 +161,7 @@ public class MatrixVectorProduct extends FactorFunction
     	
 		// Get the matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		_matrix = matrix = (double[][])arguments[argIndex++];
+    		matrix = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int col = 0; col < inLength; col++)
@@ -161,7 +172,7 @@ public class MatrixVectorProduct extends FactorFunction
     	// Get the input vector values
     	double[] inVector = _inVector;
     	if (arguments[argIndex] instanceof double[])	// Constant matrix is passed as a single argument
-    		_inVector = inVector = (double[])arguments[argIndex++];
+    		inVector = (double[])arguments[argIndex++];
     	else
     	{
     		for (int i = 0; i < inLength; i++)
