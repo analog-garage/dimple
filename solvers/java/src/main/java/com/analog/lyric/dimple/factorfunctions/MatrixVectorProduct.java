@@ -150,7 +150,7 @@ public class MatrixVectorProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	int argIndex = _outLength;	// Skip the outputs
     	
@@ -197,10 +197,9 @@ public class MatrixVectorProduct extends FactorFunction
     }
     
     @Override
-    public final int updateDeterministicLimit()
+    public final int updateDeterministicLimit(int numEdges)
     {
-    	// FIXME: is this a good value?
-    	return _inLength;
+    	return _updateDeterministicLimit;
     }
     
     @Override

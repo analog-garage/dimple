@@ -160,7 +160,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	    Object[] values = new Object[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
 	    	values[port] = _inPortMsgs[port].getObject();
-		_factor.getFactorFunction().evalDeterministicFunction(values);
+		_factor.getFactorFunction().evalDeterministic(values);
 		
 		// Update the directed-to variables with the computed values
 		int[] directedTo = _factor.getDirectedTo();

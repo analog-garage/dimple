@@ -702,8 +702,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 		else
 		{
+			final int nEdges = sfactor.getModelObject().getSiblingCount();
 			IndexedValue.SingleList oldValues = null;
-			if (sfactor.getModelObject().getFactorFunction().updateDeterministicLimit() > 0)
+			if (sfactor.getModelObject().getFactorFunction().updateDeterministicLimit(nEdges) > 0)
 			{
 				oldValues = IndexedValue.SingleList.create(changedVariableIndex, oldValue);
 			}

@@ -49,7 +49,7 @@ public class Not extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	boolean inValue = FactorFunctionUtilities.toBoolean(arguments[1]);
     	boolean notValue = !inValue;

@@ -90,7 +90,7 @@ public abstract class FactorFunction
 		return Math.exp(-evalEnergy(arguments));
 	}
 
-	public void evalDeterministicFunction(Object[] arguments)
+	public void evalDeterministic(Object[] arguments)
 	{ }
 
 	public double evalEnergy(Object... arguments)
@@ -118,7 +118,7 @@ public abstract class FactorFunction
 	{
 		Object[] fullArgumentList = new Object[arguments.length + 1];
 		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
-		evalDeterministicFunction(fullArgumentList);
+		evalDeterministic(fullArgumentList);
 		return fullArgumentList[0];
 	}
 
@@ -203,8 +203,11 @@ public abstract class FactorFunction
      * <p>
      * Default implementation returns 0, indicating that {@link #updateDeterministic} should
      * never be called.
+     * <p>
+     * @param numEdges is the number of edges (variables) to consider. It corresponds to the
+     * size of the first argument to {@link #updateDeterministic}.
      */
-    public int updateDeterministicLimit()
+    public int updateDeterministicLimit(int numEdges)
     {
     	return 0;
     }
@@ -217,7 +220,7 @@ public abstract class FactorFunction
      * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
      * Gibbs update).
      * <p>
-     * The default implementation delegates back to {@link #evalDeterministicFunction(Object[])}, which
+     * The default implementation delegates back to {@link #evalDeterministic(Object[])}, which
      * will do a full update.
      * <p>
      * @param values is the array of output and input values that are maintained persistently. When this
@@ -226,7 +229,7 @@ public abstract class FactorFunction
      * of inputs).
      * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
      * of input variables should be specified. This list should not contain more than
-     * {@link #updateDeterministicLimit()} elements.
+     * {@link #updateDeterministicLimit(int)} elements.
      * 
      * @return true if update was done incrementally (i.e not all inputs were processed), false if full
      * update was done.
@@ -236,7 +239,7 @@ public abstract class FactorFunction
     public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
     {
 		Object[] tmp = Value.toObjects(values);
-		evalDeterministicFunction(tmp);
+		evalDeterministic(tmp);
 		Value.copyFromObjects(tmp, values);
 		return false;
     }
@@ -271,7 +274,7 @@ public abstract class FactorFunction
     		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
     		{
     			domains.inputIndexToElements(inputIndex, elements);
-    			evalDeterministicFunction(elements);
+    			evalDeterministic(elements);
     			outputs[inputIndex] = domains.outputIndexFromElements(elements);
     		}
 

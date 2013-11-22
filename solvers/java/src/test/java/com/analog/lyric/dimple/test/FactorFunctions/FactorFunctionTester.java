@@ -23,8 +23,8 @@ public class FactorFunctionTester
 	 * <p>
 	 * Exercises the following methods:
 	 * <ul>
-	 * <li>{@link FactorFunction#evalDeterministicFunction(Object[])}
-	 * <li>{@link FactorFunction#updateDeterministicLimit()}
+	 * <li>{@link FactorFunction#evalDeterministic(Object[])}
+	 * <li>{@link FactorFunction#updateDeterministicLimit(int)}
 	 * <li>{@link FactorFunction#updateDeterministic(Value[], Collection)}
 	 * </ul>
 	 * <p>
@@ -61,7 +61,7 @@ public class FactorFunctionTester
 			Object[] prevTestCase = i > 0 ? testCases[i - 1] : null;
 			Object[] testCase = testCases[i];
 			Object[] objects = copyInputs(inputIndices, testCase);
-			function.evalDeterministicFunction(objects);
+			function.evalDeterministic(objects);
 			assertArrayEquals(testCase, objects);
 			
 			assertEquals(0.0, function.evalEnergy(testCase), 0.0);
@@ -90,7 +90,7 @@ public class FactorFunctionTester
 
 				Collection<IndexedValue> oldValues = new HashSet<IndexedValue>();
 				
-				if (function.updateDeterministicLimit() <= 0)
+				if (function.updateDeterministicLimit(caseSize) <= 0)
 				{
 					// This should just do a full update
 					Value[] values = Value.createFromObjects(objects, domains);

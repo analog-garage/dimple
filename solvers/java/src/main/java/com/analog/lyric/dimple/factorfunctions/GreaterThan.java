@@ -53,7 +53,7 @@ public class GreaterThan extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	double firstVal = FactorFunctionUtilities.toDouble(arguments[1]);
     	double secondVal = FactorFunctionUtilities.toDouble(arguments[2]);

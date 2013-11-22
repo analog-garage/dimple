@@ -44,7 +44,6 @@ public class VectorInnerProduct extends FactorFunction
 {
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	private final int _updateDeterministicLimit;
 
 	public VectorInnerProduct() {this(0);}
 	public VectorInnerProduct(double smoothing)
@@ -55,15 +54,6 @@ public class VectorInnerProduct extends FactorFunction
 		{
 			_beta = 1 / smoothing;
 			_smoothingSpecified = true;
-			_updateDeterministicLimit = 0;
-		}
-		else
-		{
-			// Each incremental update uses 2 multiply/adds versus <vector-length> for a full update so
-			// the limit should be <vector-length>/2.
-			// However, since we don't know what <vector-length> is, we set no limit until updateDeterministic is
-			// called.
-			_updateDeterministicLimit = Integer.MAX_VALUE;
 		}
 	}
 
@@ -141,7 +131,7 @@ public class VectorInnerProduct extends FactorFunction
 	@Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
 	@Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
 	{
 		double outValue = 0;
 		double[] firstInput = null;
@@ -199,9 +189,12 @@ public class VectorInnerProduct extends FactorFunction
 	}
 	
 	@Override
-	public final int updateDeterministicLimit()
+	public final int updateDeterministicLimit(int numEdges)
 	{
-		return _updateDeterministicLimit;
+		// Each incremental update uses 2 multiply/adds versus <vector-length> for a full update so
+		// the limit should be <vector-length>/2. The number should be lower if one of the vectors
+		// is a constant passed in one arg, but we don't know that here.
+		return _smoothingSpecified ? 0 : numEdges / 2;
 	}
 	
 	@Override

@@ -115,10 +115,10 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public void evalDeterministicFunction(Object[] arguments)
+	public void evalDeterministic(Object[] arguments)
 	{
 		Object[] expandedArgumentList = expandInputList(arguments);
-		_factorFunction.evalDeterministicFunction(expandedArgumentList);
+		_factorFunction.evalDeterministic(expandedArgumentList);
 		
 		// Replace the original argument list entries, leaving out constant indices
 		int numExpandedArguments = expandedArgumentList.length;
@@ -133,9 +133,9 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public int updateDeterministicLimit()
+	public int updateDeterministicLimit(int numEdges)
 	{
-		return _factorFunction.updateDeterministicLimit();
+		return _factorFunction.updateDeterministicLimit(numEdges);
 	}
 	
 	@Override

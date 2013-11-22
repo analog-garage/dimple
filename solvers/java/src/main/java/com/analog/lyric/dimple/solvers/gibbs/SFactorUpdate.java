@@ -27,7 +27,8 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	SFactorUpdate(ISolverFactorGibbs sfactor)
 	{
 		_sfactor = sfactor;
-		_incrementalUpdateThreshold = sfactor.getModelObject().getFactorFunction().updateDeterministicLimit();
+		int nEdges = sfactor.getModelObject().getSiblingCount();
+		_incrementalUpdateThreshold = sfactor.getModelObject().getFactorFunction().updateDeterministicLimit(nEdges);
 		_updates = _incrementalUpdateThreshold > 0 ? new HashSet<IndexedValue>() : null;
 	}
 	

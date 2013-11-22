@@ -156,7 +156,7 @@ public class MatrixProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	final int Nr = _Nr;
     	final int Nx = _Nx;
@@ -203,7 +203,7 @@ public class MatrixProduct extends FactorFunction
     }
     
     @Override
-    public final int updateDeterministicLimit()
+    public final int updateDeterministicLimit(int numEdges)
     {
     	return _updateDeterministicLimit;
     }
@@ -222,7 +222,6 @@ public class MatrixProduct extends FactorFunction
     	final int in1Size = in1Rows * in1Cols;
     	
     	final int in2Rows = _Nx;
-    	final int in2Cols = _Nc;
     	
     	final int in1Offset = outSize;
     	final Object objAtIn1Offset = values[in1Offset].getObject();

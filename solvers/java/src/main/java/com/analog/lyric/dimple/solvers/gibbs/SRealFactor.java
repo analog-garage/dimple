@@ -175,7 +175,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		else
 		{
 			values = Value.toObjects(_inputMsgs);
-			function.evalDeterministicFunction(values);
+			function.evalDeterministic(values);
 			if (directedTo != null)
 			{
 				for (int to : directedTo)

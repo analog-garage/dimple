@@ -81,7 +81,7 @@ public class ComplexConjugate extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
 		double[] in = ((double[])arguments[1]);
 		double rConjugate = in[0];
