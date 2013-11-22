@@ -243,10 +243,13 @@ public class VectorInnerProduct extends FactorFunction
 			final int minSupportedIndex = v1 == null ? offset1 : offset1 + 1;
 			final int maxSupportedIndex = v2 == null ? nValues: nValues - 1;
 
+			final Value outputValue = values[outputOffset];
+			double output = outputValue.getDouble();
+
 			for (IndexedValue old : oldValues)
 			{
 				final int changedIndex = old.getIndex();
-
+				
 				if (changedIndex < offset1 || nValues <= changedIndex)
 				{
 					throw new IndexOutOfBoundsException();
@@ -259,13 +262,7 @@ public class VectorInnerProduct extends FactorFunction
 					// update.
 					break doIncremental;
 				}
-			}
-			
-			double output = values[outputOffset].getDouble();
-
-			for (IndexedValue old : oldValues)
-			{
-				final int changedIndex = old.getIndex();
+				
 				final double newInput = values[changedIndex].getDouble();
 				final double oldInput = old.getValue().getDouble();
 
@@ -286,7 +283,7 @@ public class VectorInnerProduct extends FactorFunction
 				}
 			}
 
-			values[outputOffset].setDouble(output);
+			outputValue.setDouble(output);
 			incremental = true;
 		}
 		
