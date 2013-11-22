@@ -85,6 +85,19 @@ public abstract class FactorFunction
     	return converted;
     }
     
+	public double eval(Object... arguments)
+	{
+		return Math.exp(-evalEnergy(arguments));
+	}
+
+	public void evalDeterministicFunction(Object[] arguments)
+	{ }
+
+	public double evalEnergy(Object... arguments)
+	{
+		return -Math.log(eval(arguments));
+	}
+
     public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;
@@ -101,6 +114,20 @@ public abstract class FactorFunction
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 	
+	public Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Object[] fullArgumentList = new Object[arguments.length + 1];
+		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
+		evalDeterministicFunction(fullArgumentList);
+		return fullArgumentList[0];
+	}
+
+	public int[] getDirectedToIndices(int numEdges)
+	{return getDirectedToIndices();}	// May depend on the number of edges
+
+	protected int[] getDirectedToIndices()
+	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
+
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
@@ -159,6 +186,17 @@ public abstract class FactorFunction
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
     }
     
+	public String getName()
+	{
+		return _name;
+	}
+
+	public boolean isDeterministicDirected()
+	{return false;}
+
+	public boolean isDirected()
+	{return false;}
+
     /**
      * The maximum number of variable updates beyond which {@link #updateDeterministic}
      * should not be called.
@@ -202,6 +240,12 @@ public abstract class FactorFunction
 		Value.copyFromObjects(tmp, values);
 		return false;
     }
+
+    // REFACTOR: does anyone use this anymore. Should we remove?
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		return true;
+	}
 
     /*-------------------
      * Protected methods
@@ -264,46 +308,4 @@ public abstract class FactorFunction
     	return table;
     }
 
-	public String getName()
-	{
-		return _name;
-	}
-
-	public double eval(Object... arguments)
-	{
-		return Math.exp(-evalEnergy(arguments));
-	}
-
-	public double evalEnergy(Object... arguments)
-	{
-		return -Math.log(eval(arguments));
-	}
-
-	public boolean isDirected()
-	{return false;}
-
-	public int[] getDirectedToIndices(int numEdges)
-	{return getDirectedToIndices();}	// May depend on the number of edges
-
-	protected int[] getDirectedToIndices()
-	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
-
-	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
-	{
-		return true;
-	}
-
-	public boolean isDeterministicDirected()
-	{return false;}
-
-	public void evalDeterministicFunction(Object[] arguments)
-	{ }
-
-	public Object getDeterministicFunctionValue(Object... arguments)
-	{
-		Object[] fullArgumentList = new Object[arguments.length + 1];
-		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
-		evalDeterministicFunction(fullArgumentList);
-		return fullArgumentList[0];
-	}
  }
