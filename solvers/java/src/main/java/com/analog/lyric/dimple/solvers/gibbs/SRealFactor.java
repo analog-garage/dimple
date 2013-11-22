@@ -190,11 +190,24 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		if (directedTo != null)
 		{
 			IVariableMapList variables = _factor.getVariables();
-			for (int outputIndex : directedTo)
+			if (values != null)
 			{
-				VariableBase variable = variables.getByIndex(outputIndex);
-				Object newValue = oldValues == null ? values[outputIndex] : _inputMsgs[outputIndex].getObject();
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = variables.getByIndex(outputIndex);
+					Object newValue = values[outputIndex];
+					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				
+				}
+			}
+			else
+			{
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = variables.getByIndex(outputIndex);
+					Object newValue = _inputMsgs[outputIndex].getObject();
+					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				}
 			}
 		}
 	}

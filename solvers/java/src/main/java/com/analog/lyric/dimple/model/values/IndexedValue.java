@@ -1,11 +1,13 @@
 package com.analog.lyric.dimple.model.values;
 
 import java.util.AbstractList;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.IKeyed;
+import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
 
 /**
@@ -138,6 +140,16 @@ public class IndexedValue implements Comparable<IndexedValue>, IKeyed<Integer>
 		public void release()
 		{
 			_cachedInstance.set(this);
+		}
+		
+		/*------------------
+		 * Iterable methods
+		 */
+		
+		@Override
+		public Iterator<IndexedValue> iterator()
+		{
+			return Iterators.singletonIterator(_value);
 		}
 		
 		/*--------------
