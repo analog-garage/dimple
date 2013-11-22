@@ -249,13 +249,26 @@ public class MatrixVectorProduct extends FactorFunction
     			{
     				// Input vector variable changed
     				final int col = changedIndex - vectorOffset;
-    				for (int row = 0; row < outLength; ++row)
+    				if (matrix != null)
     				{
-    					final double oldOutput = values[row].getDouble();
-    					final double matrixValue =
-    						matrix != null ? matrix[row][col] :	values[matrixOffset + col * outLength + row].getDouble();
-
-    						values[row].setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    					for (int row = 0; row < outLength; ++row)
+    					{
+    						final Value outputValue = values[row];
+    						final double oldOutput = outputValue.getDouble();
+    						final double matrixValue = matrix[row][col];
+    						outputValue.setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    					}
+    				}
+    				else
+    				{
+    					int matrixIndex = matrixOffset + col * outLength;
+    					for (int row = 0; row < outLength; ++row, ++matrixIndex)
+    					{
+    						final Value outputValue = values[row];
+    						final double oldOutput = outputValue.getDouble();
+    						final double matrixValue = values[matrixIndex].getDouble();
+    						outputValue.setDouble(oldOutput - matrixValue * oldInput + matrixValue * newInput);
+    					}
     				}
     			}
     			else
@@ -265,9 +278,10 @@ public class MatrixVectorProduct extends FactorFunction
     				final int col = x / outLength;
     				final int row = x - col * outLength;
 
-    				final double oldOutput = values[row].getDouble();
+    				Value outputValue = values[row];
+    				final double oldOutput = outputValue.getDouble();
     				final double inVectorVal = vector != null ? vector[col] : values[vectorOffset + col].getDouble();
-    				values[row].setDouble(oldOutput - inVectorVal * oldInput + inVectorVal * newInput);
+    				outputValue.setDouble(oldOutput - inVectorVal * oldInput + inVectorVal * newInput);
     			}
     		}
     		incremental = true;

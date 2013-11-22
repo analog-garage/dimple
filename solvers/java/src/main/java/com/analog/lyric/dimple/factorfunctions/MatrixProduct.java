@@ -266,37 +266,68 @@ public class MatrixProduct extends FactorFunction
     			if (changedIndex >= in2Offset)
     			{
     				// Second matrix cell changed - changes column of output matrix
-    				int x = changedIndex - in2Offset;
+    				final int x = changedIndex - in2Offset;
     				final int col = x / in2Rows;
     				final int in2Row = x - col * in2Rows;
     				final int in1Col = in2Row;
 
-    				for (int row = 0; row < outRows; ++row)
+    				int row = 0;
+    				int outIndex = col * outRows;
+    				
+    				if (in1Matrix != null)
     				{
-    					final int outIndex =  col * outRows + row;
-    					final int in1Index = in1Offset + in1Col * in1Rows + row;
-    						
-    					final double oldOutput = values[outIndex].getDouble();
-    					final double in1Value = in1Matrix != null ? in1Matrix[row][in1Col] : values[in1Index].getDouble();
-    					values[outIndex].setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+    					for (; row < outRows; ++row, ++outIndex)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in1Value = in1Matrix[row][in1Col];
+    						outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+    					}
+    				}
+    				else
+    				{
+        				int in1Index = in1Offset + in1Col * in1Rows;
+        				for (; row < outRows; ++row, ++outIndex, ++in1Index)
+        				{
+        					final Value outputValue = values[outIndex];
+        					final double oldOutput = outputValue.getDouble();
+        					final double in1Value = values[in1Index].getDouble();
+        					outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+        				}
     				}
     			}
     			else
     			{
     				// First matrix cell changed - changes row of output matrix
-    				int x = changedIndex - in1Offset;
+    				final int x = changedIndex - in1Offset;
     				final int in1Col = x / in1Rows;
     				final int row = x - in1Col * in1Rows;
     				final int in2Row = in1Col;
     				
-    				for (int col = 0; col < outCols; ++col)
+    				int col = 0;
+    				int outIndex = row;
+    				if (in2Matrix != null)
     				{
-    					final int outIndex = col * outRows + row;
-    					final int in2Index = in2Offset + col * in2Rows + in2Row;
-    					
-    					final double oldOutput = values[outIndex].getDouble();
-    					final double in2Value = in2Matrix != null ? in2Matrix[in2Row][col] : values[in2Index].getDouble();
-    					values[outIndex].setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    					final double[] rowValues = in2Matrix[in2Row];
+    					for (; col < outCols; ++col, outIndex += outRows)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in2Value = rowValues[col] ;
+    						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    					}
+    				}
+    				else
+    				{
+        				int in2Index = in2Offset + in2Row;
+        				
+    					for (; col < outCols; ++col, outIndex += outRows, in2Index += in2Rows)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in2Value = values[in2Index].getDouble();
+    						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    					}
     				}
     			}
     		}
