@@ -124,7 +124,7 @@ public class FactorFunctionTester
 					}
 
 					// Alternate between steps of size 1 and 2 to exercise multi-value updates
-					for (int step = 1, j = 0; j < nInputs; j += step)//, step ^= 3)
+					for (int step = 1, j = 0; j < nInputs; j += step, step ^= 3)
 					{
 						oldValues.clear();
 						for (int k = j, endk = Math.min(nInputs, j + step); k < endk; ++k)
