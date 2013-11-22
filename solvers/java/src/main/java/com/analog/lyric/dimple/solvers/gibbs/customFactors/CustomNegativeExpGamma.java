@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -162,7 +162,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 	private void determineParameterConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		_hasFactorFunctionConstants = false;
 		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within

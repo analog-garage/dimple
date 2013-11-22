@@ -35,7 +35,7 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 
 @ThreadSafe
-public abstract class FactorFunction extends FactorFunctionBase
+public abstract class FactorFunction
 {
 	/*-------
 	 * State
@@ -44,6 +44,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	// Cache of factor tables for this function by domain.
 	private AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>> _factorTables =
 		new AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>>();
+	private final String _name;
 	
 	/*--------------
 	 * Construction
@@ -56,7 +57,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	
     protected FactorFunction(String name)
     {
-		super(name);
+		_name = name != null ? name : getClass().getSimpleName();
 	}
 
     /*------------------------
@@ -100,7 +101,6 @@ public abstract class FactorFunction extends FactorFunctionBase
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 	
-    @Override
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
@@ -264,4 +264,46 @@ public abstract class FactorFunction extends FactorFunctionBase
     	return table;
     }
 
+	public String getName()
+	{
+		return _name;
+	}
+
+	public double eval(Object... arguments)
+	{
+		return Math.exp(-evalEnergy(arguments));
+	}
+
+	public double evalEnergy(Object... arguments)
+	{
+		return -Math.log(eval(arguments));
+	}
+
+	public boolean isDirected()
+	{return false;}
+
+	public int[] getDirectedToIndices(int numEdges)
+	{return getDirectedToIndices();}	// May depend on the number of edges
+
+	protected int[] getDirectedToIndices()
+	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
+
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		return true;
+	}
+
+	public boolean isDeterministicDirected()
+	{return false;}
+
+	public void evalDeterministicFunction(Object[] arguments)
+	{ }
+
+	public Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Object[] fullArgumentList = new Object[arguments.length + 1];
+		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
+		evalDeterministicFunction(fullArgumentList);
+		return fullArgumentList[0];
+	}
  }

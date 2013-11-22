@@ -259,7 +259,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	
 	// Get the contained factor function
-	public FactorFunctionBase getContainedFactorFunction()
+	public FactorFunction getContainedFactorFunction()
 	{
 		return _factorFunction;
 	}
