@@ -29,13 +29,13 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
-import com.analog.lyric.dimple.solvers.gibbs.sample.RealJointSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -58,7 +58,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, ISampleScorer
 {
 	private RealJoint _varReal;
-	private RealJointSample _outputMsg;
+	private RealJointValue _outputMsg;
 	private Object[] _inputMsg = null;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
@@ -482,32 +482,55 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
 	public final void setCurrentSample(double[] value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		
+		RealJointValue oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
 		_sampleValue = value;
 		_outputMsg.setValue(value);
 		
-		// If this variable has deterministic dependents, then set their values
-		setDependentValues();
+		if (hasDeterministicDependents)
+		{
+			// If this variable has deterministic dependents, then set their values
+			setDeterministicDependentValues(oldValue);
+		}
 	}
     public final void setCurrentSample(int index, Object value) {setCurrentSample(index, FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(int index, double value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+
+		RealJointValue oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+			oldValue.setValue(oldValue.getValue().clone());
+		}
+		
 		_sampleValue[index] = value;
 		_outputMsg.setValue(index, value);
 		
-		// If this variable has deterministic dependents, then set their values
-		setDependentValues();
+		if (hasDeterministicDependents)
+		{
+			// If this variable has deterministic dependents, then set their values
+			setDeterministicDependentValues(oldValue);
+		}
 	}
 	
-	public final void setDependentValues()
+	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
-		if (getModelObject().isDeterministicInput())
+		int numPorts = _var.getSiblingCount();
+		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 		{
-			int numPorts = _var.getSiblingCount();
-			for (int port = 0; port < numPorts; port++)	// Plus each input message value
+			Factor f = (Factor)_var.getSibling(port);
+			if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
 			{
-				Factor f = (Factor)_var.getSibling(port);
-				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
-					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+				ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+				sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
 			}
 		}
 	}
@@ -652,18 +675,18 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	
 
 
-	public RealJointSample createDefaultMessage()
+	public RealJointValue createDefaultMessage()
 	{
 		if (_var.hasFixedValue())
-			return new RealJointSample(_varReal.getFixedValue());
+			return new RealJointValue(_varReal.getFixedValue());
 		else
-			return new RealJointSample(_initialSampleValue);
+			return new RealJointValue(_initialSampleValue);
 	}
 
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((RealJointSample)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		((RealJointValue)message).setValue(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 		return message;
 	}
 

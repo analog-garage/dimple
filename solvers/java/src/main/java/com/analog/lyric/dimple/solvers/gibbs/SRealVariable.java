@@ -28,13 +28,13 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
-import com.analog.lyric.dimple.solvers.gibbs.sample.RealSample;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
@@ -58,7 +58,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public static final String DEFAULT_REAL_SAMPLER_NAME = "SliceSampler";
 	
 	private Real _varReal;
-	private RealSample _outputMsg;
+	private RealValue _outputMsg;
 	private Object[] _inputMsg = null;
 	private double _sampleValue = 0;
 	private double _initialSampleValue = 0;
@@ -357,6 +357,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(double value)
 	{
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		
+		RealValue oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
 		_sampleValue = value;
 		_outputMsg.setValue(_sampleValue);
 		
@@ -368,7 +376,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			{
 				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
-					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+				{
+					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+					sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
+				}
 			}
 		}
 	}
@@ -509,18 +520,18 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 
 
-	public RealSample createDefaultMessage()
+	public RealValue createDefaultMessage()
 	{
 		if (_var.hasFixedValue())
-			return new RealSample(_varReal.getFixedValue());
+			return new RealValue(_varReal.getFixedValue());
 		else
-			return new RealSample(_initialSampleValue);
+			return new RealValue(_initialSampleValue);
 	}
 
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((RealSample)message).setObject(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
+		((RealValue)message).setObject(_var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 		return message;
 	}
 

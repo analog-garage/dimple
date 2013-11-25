@@ -85,7 +85,7 @@ public class ConstantPower extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	Double base = FactorFunctionUtilities.toDouble(arguments[1]);
     	arguments[0] = Math.pow(base, _power);		// Replace the output value

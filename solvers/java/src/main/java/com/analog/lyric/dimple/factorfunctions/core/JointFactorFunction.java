@@ -23,13 +23,13 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 
 public class JointFactorFunction extends FactorFunction
 {
-	private FactorFunctionBase _factor1;
-	private FactorFunctionBase _factor2;
+	private FactorFunction _factor1;
+	private FactorFunction _factor2;
 	private ArrayList<Integer> _inputsForFf1;
 	private ArrayList<Integer> _inputsForFf2;
 	private int _newNumInputs;
 
-	public JointFactorFunction(String name,FactorFunctionBase ff1, FactorFunctionBase ff2,
+	public JointFactorFunction(String name,FactorFunction ff1, FactorFunction ff2,
 			ArrayList<Integer> inputsForFf1, ArrayList<Integer> inputsForFf2)
 	{
 		super(name);

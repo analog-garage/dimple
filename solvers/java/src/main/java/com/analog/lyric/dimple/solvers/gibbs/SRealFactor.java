@@ -16,14 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Collection;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
-import com.analog.lyric.dimple.solvers.gibbs.sample.ObjectSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IVariableMapList;
 
@@ -31,10 +34,14 @@ import com.analog.lyric.util.misc.IVariableMapList;
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {
 	protected Factor _realFactor;
-	protected ObjectSample [] _inputMsgs;
-//	private Object[] _scratchValues;
+	protected Value [] _inputMsgs;
+	//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
+	/**
+	 * True if output samples in {@link #_inputMsgs} have been computed.
+	 */
+	private boolean _outputsValid = false;
 	
 	public SRealFactor(Factor factor)
 	{
@@ -143,37 +150,64 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
 	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
-	public void updateNeighborVariableValue(int portIndex)
+	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 		
 		if (!_isDeterministicDirected) return;
-		if (_factor.isDirectedTo(portIndex)) return;
+		if (_factor.isDirectedTo(variableIndex)) return;
 		
-		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, portIndex);
+		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow()
+	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
 	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		
 		// Compute the output values of the deterministic factor function from the input values
-	    Object[] values = new Object[_numPorts]; //_scratchValues;
-	    ObjectSample[] inputMsgs = _inputMsgs;
-	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = inputMsgs[port].getObject();
-		_factor.getFactorFunction().evalDeterministicFunction(values);
+		final FactorFunction function = _factor.getFactorFunction();
+		final int[] directedTo = _factor.getDirectedTo();
+
+		Object[] values = null;
+		if (oldValues != null && _outputsValid)
+		{
+			function.updateDeterministic(_inputMsgs, oldValues);
+		}
+		else
+		{
+			values = Value.toObjects(_inputMsgs);
+			function.evalDeterministic(values);
+			if (directedTo != null)
+			{
+				for (int to : directedTo)
+				{
+					_inputMsgs[to].setObject(values[to]);
+				}
+			}
+			_outputsValid = true;
+		}
 		
 		// Update the directed-to variables with the computed values
-		int[] directedTo = _factor.getDirectedTo();
 		if (directedTo != null)
 		{
 			IVariableMapList variables = _factor.getVariables();
-			for (int port : directedTo)
+			if (values != null)
 			{
-				VariableBase variable = variables.getByIndex(port);
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(values[port]);
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = variables.getByIndex(outputIndex);
+					Object newValue = values[outputIndex];
+					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				
+				}
+			}
+			else
+			{
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = variables.getByIndex(outputIndex);
+					Object newValue = _inputMsgs[outputIndex].getObject();
+					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				}
 			}
 		}
 	}
@@ -185,13 +219,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public void createMessages()
 	{
 		_numPorts = _factor.getSiblingCount();
-		_inputMsgs = new ObjectSample[_numPorts];
+		_inputMsgs = new Value[_numPorts];
+		_outputsValid = false;
 //		_scratchValues = new Object[_numPorts];
 		IVariableMapList variables = _factor.getVariables();
 		for (int i = 0; i < _numPorts; i++)
 		{
 			Object [] messages = variables.getByIndex(i).getSolver().createMessages(this);
-			_inputMsgs[i] = (ObjectSample)messages[1];
+			_inputMsgs[i] = (Value)messages[1];
 		}
 	}
 
@@ -220,6 +255,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
+		_outputsValid = false;
 		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
 	}
 

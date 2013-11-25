@@ -16,8 +16,12 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Collection;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -52,6 +56,7 @@ public class MatrixProduct extends FactorFunction
 	protected double[][] _out;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
+	private final int _updateDeterministicLimit;
 	
 	public MatrixProduct(int Nr, int Nx, int Nc) {this(Nr, Nx, Nc, 0);}
 	public MatrixProduct(int Nr, int Nx, int Nc, double smoothing)
@@ -68,6 +73,13 @@ public class MatrixProduct extends FactorFunction
 		{
 			_beta = 1 / smoothing;
 			_smoothingSpecified = true;
+			_updateDeterministicLimit = 0;
+		}
+		else
+		{
+			// A full update costs Nr*Nx*Nc multiply/adds. An incremental update will cost either
+			// 2*Nr or 2*Nc depending on which input matrix contains the changed variable.
+			_updateDeterministicLimit = (Nr * Nx * Nc) / (2 * Math.max(Nr, Nc));
 		}
 	}
 	
@@ -90,7 +102,7 @@ public class MatrixProduct extends FactorFunction
     	
 		// Get the first input matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in1 = _in1 = (double[][])arguments[argIndex++];
+    		in1 = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int x = 0; x < Nx; x++)		// Scan by columns
@@ -100,7 +112,7 @@ public class MatrixProduct extends FactorFunction
 
 		// Get the second input matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in2 = _in2 = (double[][])arguments[argIndex++];
+    		in2 = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int c = 0; c < Nc; c++)		// Scan by columns
@@ -144,7 +156,7 @@ public class MatrixProduct extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	final int Nr = _Nr;
     	final int Nx = _Nx;
@@ -156,7 +168,7 @@ public class MatrixProduct extends FactorFunction
 
 		// Get the first input matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in1 = _in1 = (double[][])arguments[argIndex++];
+    		in1 = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int x = 0; x < Nx; x++)		// Scan by columns
@@ -166,7 +178,7 @@ public class MatrixProduct extends FactorFunction
 
 		// Get the second input matrix values
     	if (arguments[argIndex] instanceof double[][])	// Constant matrix is passed as a single argument
-    		in2 = _in2 = (double[][])arguments[argIndex++];
+    		in2 = (double[][])arguments[argIndex++];
     	else
     	{
     		for (int c = 0; c < Nc; c++)		// Scan by columns
@@ -188,5 +200,139 @@ public class MatrixProduct extends FactorFunction
     		}
     	}
 
+    }
+    
+    @Override
+    public final int updateDeterministicLimit(int numEdges)
+    {
+    	return _updateDeterministicLimit;
+    }
+    
+    @Override
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    {
+    	boolean incremental = false;
+    	
+    	final int outRows = _Nr;
+    	final int outCols = _Nc;
+    	final int outSize = outRows * outCols;
+    	
+    	final int in1Rows = _Nr;
+    	final int in1Cols = _Nx;
+    	final int in1Size = in1Rows * in1Cols;
+    	
+    	final int in2Rows = _Nx;
+    	
+    	final int in1Offset = outSize;
+    	final Object objAtIn1Offset = values[in1Offset].getObject();
+    	final double[][] in1Matrix = objAtIn1Offset instanceof double[][] ? (double[][])objAtIn1Offset : null;
+    	
+    	final int in2Offset = in1Offset + (in1Matrix == null ? in1Size : 1);
+    	final Object objAtIn2Offset = values[in2Offset].getObject();
+    	final double[][] in2Matrix = objAtIn2Offset instanceof double[][] ? (double[][])objAtIn2Offset : null;
+    	
+    	final int minSupportedIndex = in1Matrix == null ? in1Offset : (in2Matrix == null ? in2Offset : values.length);
+    	final int maxSupportedIndex = in2Matrix == null ? values.length : (in1Matrix == null ? in2Offset : in1Offset);
+    	
+    	doIncremental:
+    	{
+    		if (in1Matrix != null && in2Matrix != null)
+    		{
+    			break doIncremental;
+    		}
+    		
+    		for (IndexedValue old : oldValues)
+    		{
+    			final int changedIndex = old.getIndex();
+    			
+    			if (changedIndex < in1Offset || changedIndex >= values.length)
+    			{
+					throw new IndexOutOfBoundsException();
+    			}
+
+    			if (changedIndex < minSupportedIndex || changedIndex >= maxSupportedIndex)
+    			{
+    				break doIncremental;
+    			}
+
+    			final double newInput = values[changedIndex].getDouble();
+    			final double oldInput = old.getValue().getDouble();
+    			if (newInput == oldInput)
+    			{
+    				continue;
+    			}
+
+    			if (changedIndex >= in2Offset)
+    			{
+    				// Second matrix cell changed - changes column of output matrix
+    				final int x = changedIndex - in2Offset;
+    				final int col = x / in2Rows;
+    				final int in2Row = x - col * in2Rows;
+    				final int in1Col = in2Row;
+
+    				int row = 0;
+    				int outIndex = col * outRows;
+    				
+    				if (in1Matrix != null)
+    				{
+    					for (; row < outRows; ++row, ++outIndex)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in1Value = in1Matrix[row][in1Col];
+    						outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+    					}
+    				}
+    				else
+    				{
+        				int in1Index = in1Offset + in1Col * in1Rows;
+        				for (; row < outRows; ++row, ++outIndex, ++in1Index)
+        				{
+        					final Value outputValue = values[outIndex];
+        					final double oldOutput = outputValue.getDouble();
+        					final double in1Value = values[in1Index].getDouble();
+        					outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+        				}
+    				}
+    			}
+    			else
+    			{
+    				// First matrix cell changed - changes row of output matrix
+    				final int x = changedIndex - in1Offset;
+    				final int in1Col = x / in1Rows;
+    				final int row = x - in1Col * in1Rows;
+    				final int in2Row = in1Col;
+    				
+    				int col = 0;
+    				int outIndex = row;
+    				if (in2Matrix != null)
+    				{
+    					final double[] rowValues = in2Matrix[in2Row];
+    					for (; col < outCols; ++col, outIndex += outRows)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in2Value = rowValues[col] ;
+    						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    					}
+    				}
+    				else
+    				{
+        				int in2Index = in2Offset + in2Row;
+        				
+    					for (; col < outCols; ++col, outIndex += outRows, in2Index += in2Rows)
+    					{
+        					final Value outputValue = values[outIndex];
+    						final double oldOutput = outputValue.getDouble();
+    						final double in2Value = values[in2Index].getDouble();
+    						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    					}
+    				}
+    			}
+    		}
+    		incremental = true;
+    	}
+    	
+    	return incremental || super.updateDeterministic(values, oldValues);
     }
 }

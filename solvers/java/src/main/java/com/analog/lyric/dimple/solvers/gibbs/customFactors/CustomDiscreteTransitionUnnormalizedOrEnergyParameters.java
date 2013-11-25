@@ -23,7 +23,7 @@ import java.util.Set;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
@@ -138,7 +138,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	private void determineParameterConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		boolean hasFactorFunctionConstants = false;
 		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within

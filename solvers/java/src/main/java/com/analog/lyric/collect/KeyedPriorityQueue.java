@@ -131,6 +131,12 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	}
 	
 	@Override
+	public E get(Object key)
+	{
+		return super.get(key);
+	}
+	
+	@Override
 	public boolean removeKey(Object key)
 	{
 		return super.removeKey(key);

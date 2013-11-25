@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -219,7 +218,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	private void determineParameterConstantsAndEdges()
 	{
 		// Get the factor function and related state
-		FactorFunctionBase factorFunction = _factor.getFactorFunction();
+		FactorFunction factorFunction = _factor.getFactorFunction();
 		FactorFunctionWithConstants constantFactorFunction = null;
 		_hasFactorFunctionConstants = false;
 		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
@@ -239,7 +238,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		_selectorPortNumber = SELECTOR_INDEX;
 		_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		
-		ISolverVariable outputVariable = ((VariableBase)_factor.getSibling(_outputPortNumber)).getSolver();
+		ISolverVariable outputVariable = _factor.getSibling(_outputPortNumber).getSolver();
 		if (outputVariable instanceof ISolverRealVariableGibbs)
 		_outputVariable = (ISolverRealVariableGibbs)outputVariable;
 		_outputVariableSiblingPortIndex = _factor.getSiblingPortIndex(_outputPortNumber);
@@ -262,7 +261,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		}
 		else	// All edges are variables
 		{
-			_selectorVariable = (SDiscreteVariable)(((VariableBase)_factor.getSibling(_selectorPortNumber)).getSolver());
+			_selectorVariable = (SDiscreteVariable)(_factor.getSibling(_selectorPortNumber).getSolver());
 			_hasConstantSelector = false;
 		}
 	}

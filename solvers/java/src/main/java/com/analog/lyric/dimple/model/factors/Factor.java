@@ -21,7 +21,6 @@ import java.util.BitSet;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
@@ -343,8 +342,8 @@ public class Factor extends FactorBase implements Cloneable
 			}
 		}
 		
-		FactorFunctionBase ff1 = this.getFactorFunction();
-		FactorFunctionBase ff2 = other.getFactorFunction();
+		FactorFunction ff1 = this.getFactorFunction();
+		FactorFunction ff2 = other.getFactorFunction();
 		JointFactorFunction jff = getParentGraph().getJointFactorFunction(ff1,ff2,map1,map2);
 		
 		//Remove the two old factors.

@@ -57,7 +57,7 @@ public class NotEquals extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	if (arguments.length <= 2)										// One value, must be equal
     	{

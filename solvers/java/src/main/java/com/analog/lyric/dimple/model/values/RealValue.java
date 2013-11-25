@@ -14,17 +14,60 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
-public class ObjectSample 
+public class RealValue extends Value
 {
-	protected Object _value;
+	protected double _value;
 	
-	public ObjectSample(Object value)
+	/*--------------
+	 * Construction
+	 */
+	
+	public RealValue(double value)
 	{
 		_value = value;
 	}
 	
-	public final Object getObject() {return _value;}
-	public final void setObject(Object value) {_value = value;}
+	public RealValue(RealValue that)
+	{
+		this(that._value);
+	}
+	
+	@Override
+	public RealValue clone()
+	{
+		return new RealValue(this);
+	}
+
+	/*---------------
+	 * Value methods
+	 */
+	
+	@Override
+	public Object getObject()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setObject(Object value)
+	{
+		_value = ((Number)value).doubleValue();
+	}
+	
+	public final double getValue() {return _value;}
+	public final void setValue(double value) {_value = value;}
+	
+	@Override
+	public double getDouble()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setDouble(double value)
+	{
+		_value = value;
+	}
 }

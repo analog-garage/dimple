@@ -33,7 +33,6 @@ import org.xml.sax.SAXException;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -523,8 +522,8 @@ public class FactorGraph extends FactorBase
 
 	@Internal
 	public JointFactorFunction getJointFactorFunction(
-			FactorFunctionBase ff1,
-			FactorFunctionBase ff2,
+			FactorFunction ff1,
+			FactorFunction ff2,
 			ArrayList<Integer> map1,
 			ArrayList<Integer> map2
 			)
@@ -547,8 +546,8 @@ public class FactorGraph extends FactorBase
 		 * The mappings relate the arguments of the joint factor to the original
 		 * arguments of each individual factor.
 		 */
-		public JointFactorFunction get(FactorFunctionBase f1,
-				FactorFunctionBase f2,
+		public JointFactorFunction get(FactorFunction f1,
+				FactorFunction f2,
 				ArrayList<Integer> map1, ArrayList<Integer> map2)
 		{
 

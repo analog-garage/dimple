@@ -24,11 +24,11 @@ import org.apache.commons.math3.random.RandomGenerator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
-import com.analog.lyric.dimple.solvers.gibbs.sample.DiscreteSample;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.Utilities;
@@ -38,7 +38,7 @@ import com.analog.lyric.math.Utilities;
 public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs
 {
     protected double[][] _inPortMsgs = new double[0][];
-    protected DiscreteSample _outputMsg;
+    protected DiscreteValue _outputMsg;
     protected int _numPorts;
 	protected long[] _beliefHistogram;
 	protected int _sampleIndex;
@@ -296,18 +296,28 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Sample from the conditional distribution
 		_sampleIndex = index;
 
+		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+
+		DiscreteValue oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
 		// Send the sample value to all output ports
 		_outputMsg.setIndex(index);
-		_outputMsg.setObject(_varDiscrete.getDiscreteDomain().getElement(index));
 				
 		// If this variable has deterministic dependents, then set their values
-		if (getModelObject().isDeterministicInput())
+		if (hasDeterministicDependents)
 		{
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
 				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
-					((ISolverFactorGibbs)f.getSolver()).updateNeighborVariableValue(_var.getSiblingPortIndex(port));
+				{
+					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+					sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
+				}
 			}
 		}
     }
@@ -463,14 +473,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-		_outputMsg = new DiscreteSample(0, 0);
-		_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+		DiscreteDomain domain = getModelObject().getDomain();
+		_outputMsg = new DiscreteValue(domain);
+		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 		_sampleIndex = 0;
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();
 
-		_beliefHistogram = new long[((Discrete)getModelObject()).getDiscreteDomain().size()];
+		_beliefHistogram = new long[domain.size()];
 		_bestSampleIndex = -1;
 	}
 	
@@ -507,9 +518,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public Object resetOutputMessage(Object message)
 	{
-		DiscreteSample ds = (DiscreteSample)message;
+		DiscreteValue ds = (DiscreteValue)message;
 		ds.setIndex(_var.hasFixedValue() ? _varDiscrete.getFixedValueIndex() : 0);	// Normally zero, but use fixed value if one has been set
-		ds.setObject(_varDiscrete.getDiscreteDomain().getElement(ds.getIndex()));
 		return ds;
 	}
 
@@ -518,7 +528,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		_inPortMsgs[portNum] = (double[])resetInputMessage(_inPortMsgs[portNum]);
 		if (!_holdSampleValue)
-			_outputMsg = (DiscreteSample)resetOutputMessage(_outputMsg);
+			_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 	}
 
 	@Override

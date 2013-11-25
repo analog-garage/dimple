@@ -1,8 +1,5 @@
 package com.analog.lyric.dimple.model.domains;
 
-import java.util.Arrays;
-
-import com.analog.lyric.dimple.exceptions.DimpleException;
 
 public class ComplexDomain extends RealJointDomain
 {
@@ -12,26 +9,30 @@ public class ComplexDomain extends RealJointDomain
 	 * Construction
 	 */
 	
-	ComplexDomain(RealDomain[] domains)
+	ComplexDomain(RealDomain realDomain, RealDomain imaginaryDomain)
 	{
-		super(domains);
-		
-		if (domains.length != 2)
-			throw new DimpleException("Complex domain must have exactly two components");
+		super(new RealDomain[] { realDomain, imaginaryDomain }, false);
 	}
 	
-	public static ComplexDomain create(RealDomain... domains)
+	ComplexDomain(RealDomain domain)
 	{
-		return new ComplexDomain(domains.clone());
+		super(domain, 2);
+	}
+	
+	public static ComplexDomain create(RealDomain realDomain, RealDomain imaginaryDomain)
+	{
+		return new ComplexDomain(realDomain, imaginaryDomain);
+	}
+	
+	public static ComplexDomain create(RealDomain domain)
+	{
+		return new ComplexDomain(domain);
 	}
 	
 	public static ComplexDomain create()
 	{
-		RealDomain[] domains = new RealDomain[2];
-		Arrays.fill(domains, RealDomain.unbounded());
-		return create(domains);
+		return create(RealDomain.unbounded());
 	}
-	
 	
 	/*----------------
 	 * Domain methods
@@ -49,5 +50,17 @@ public class ComplexDomain extends RealJointDomain
 		return true;
 	}
 
-
+	/*-----------------
+	 * Complex methods
+	 */
+	
+	public final RealDomain realDomain()
+	{
+		return getRealDomain(0);
+	}
+	
+	public final RealDomain imaginaryDomain()
+	{
+		return getRealDomain(1);
+	}
 }

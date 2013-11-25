@@ -14,19 +14,52 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.sample;
+package com.analog.lyric.dimple.model.values;
 
-public class RealJointSample extends ObjectSample
+public class RealJointValue extends Value
 {
-	public RealJointSample(double[] value)
+	protected double[] _value;
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	public RealJointValue(double[] value)
 	{
-		super(value);
+		_value = value;
+	}
+
+	public RealJointValue(RealJointValue that)
+	{
+		_value = that._value; // should we deep copy?
 	}
 	
-	public double[] getValue() {return (double[])_value;}
+	@Override
+	public RealJointValue clone()
+	{
+		return new RealJointValue(this);
+	}
+	
+	/*---------------
+	 * Value methods
+	 */
+	
+	@Override
+	public Object getObject()
+	{
+		return _value;
+	}
+	
+	@Override
+	public void setObject(Object value)
+	{
+		_value = (double[])value;
+	}
+	
+	public double[] getValue() {return _value;}
 	public void setValue(double[] value) {_value = value;}
 	
 	// Get/set a specific element of the sample
-	public double getValue(int index) {return ((double[])_value)[index];}
-	public void setValue(int index, double value) {((double[])_value)[index] = value;}
+	public double getValue(int index) {return _value[index];}
+	public void setValue(int index, double value) {_value[index] = value;}
 }

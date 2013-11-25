@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,9 +31,11 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.IndexedValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 @ThreadSafe
-public abstract class FactorFunction extends FactorFunctionBase
+public abstract class FactorFunction
 {
 	/*-------
 	 * State
@@ -41,6 +44,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	// Cache of factor tables for this function by domain.
 	private AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>> _factorTables =
 		new AtomicReference<ConcurrentMap<JointDomainIndexer, IFactorTable>>();
+	private final String _name;
 	
 	/*--------------
 	 * Construction
@@ -53,7 +57,7 @@ public abstract class FactorFunction extends FactorFunctionBase
 	
     protected FactorFunction(String name)
     {
-		super(name);
+		_name = name != null ? name : getClass().getSimpleName();
 	}
 
     /*------------------------
@@ -81,6 +85,19 @@ public abstract class FactorFunction extends FactorFunctionBase
     	return converted;
     }
     
+	public double eval(Object... arguments)
+	{
+		return Math.exp(-evalEnergy(arguments));
+	}
+
+	public void evalDeterministic(Object[] arguments)
+	{ }
+
+	public double evalEnergy(Object... arguments)
+	{
+		return -Math.log(eval(arguments));
+	}
+
     public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;
@@ -97,7 +114,20 @@ public abstract class FactorFunction extends FactorFunctionBase
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 	
-    @Override
+	public Object getDeterministicFunctionValue(Object... arguments)
+	{
+		Object[] fullArgumentList = new Object[arguments.length + 1];
+		System.arraycopy(arguments, 0, fullArgumentList, 1, arguments.length);
+		evalDeterministic(fullArgumentList);
+		return fullArgumentList[0];
+	}
+
+	public int[] getDirectedToIndices(int numEdges)
+	{return getDirectedToIndices();}	// May depend on the number of edges
+
+	protected int[] getDirectedToIndices()
+	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
+
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
@@ -155,6 +185,70 @@ public abstract class FactorFunction extends FactorFunctionBase
     {
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
     }
+    
+	public String getName()
+	{
+		return _name;
+	}
+
+	public boolean isDeterministicDirected()
+	{return false;}
+
+	public boolean isDirected()
+	{return false;}
+
+    /**
+     * The maximum number of variable updates beyond which {@link #updateDeterministic}
+     * should not be called.
+     * <p>
+     * Default implementation returns 0, indicating that {@link #updateDeterministic} should
+     * never be called.
+     * <p>
+     * @param numEdges is the number of edges (variables) to consider. It corresponds to the
+     * size of the first argument to {@link #updateDeterministic}.
+     */
+    public int updateDeterministicLimit(int numEdges)
+    {
+    	return 0;
+    }
+    
+    /**
+     * Deterministically update output values in {@code values} array incrementally based on changed input
+     * values.
+     * <p>
+     * For functions that support it, this can allow for more efficient computation when there are many
+     * inputs and or outputs and only a small subset of inputs have changed (e.g. one when doing a single
+     * Gibbs update).
+     * <p>
+     * The default implementation delegates back to {@link #evalDeterministic(Object[])}, which
+     * will do a full update.
+     * <p>
+     * @param values is the array of output and input values that are maintained persistently. When this
+     * method is called, it may be assumed that the contents contains the current values of all input
+     * variables and the last computed values of all output variables (which were based on previous values
+     * of inputs).
+     * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
+     * of input variables should be specified. This list should not contain more than
+     * {@link #updateDeterministicLimit(int)} elements.
+     * 
+     * @return true if update was done incrementally (i.e not all inputs were processed), false if full
+     * update was done.
+     * 
+     * @throws IndexOutOfBoundsException if an index in {@code oldValues} does not refer to an input variable.
+     */
+    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    {
+		Object[] tmp = Value.toObjects(values);
+		evalDeterministic(tmp);
+		Value.copyFromObjects(tmp, values);
+		return false;
+    }
+
+    // REFACTOR: does anyone use this anymore. Should we remove?
+	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
+	{
+		return true;
+	}
 
     /*-------------------
      * Protected methods
@@ -180,7 +274,7 @@ public abstract class FactorFunction extends FactorFunctionBase
     		for (int inputIndex = 0; inputIndex < maxInput; ++inputIndex)
     		{
     			domains.inputIndexToElements(inputIndex, elements);
-    			evalDeterministicFunction(elements);
+    			evalDeterministic(elements);
     			outputs[inputIndex] = domains.outputIndexFromElements(elements);
     		}
 

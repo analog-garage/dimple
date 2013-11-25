@@ -115,7 +115,7 @@ public class Multiplexer extends FactorFunction
     @Override
 	public final boolean isDeterministicDirected() {return true;}
     @Override
-	public final void evalDeterministicFunction(Object[] arguments)
+	public final void evalDeterministic(Object[] arguments)
     {
     	int selector = FactorFunctionUtilities.toInteger(arguments[1]);
     	arguments[0] = arguments[selector + 2];		// Replace the output value

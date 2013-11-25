@@ -138,5 +138,4 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		
 	}
-
 }
