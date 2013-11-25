@@ -140,8 +140,6 @@ public abstract class Node implements INode, Cloneable
 	@Override
 	public int getSiblingPortIndex(int index)
 	{
-		INode sibling = _siblings.get(index);
-		
 		if (_siblingIndices.length <= index)
 		{
 			// Round up to next power of two no larger than the sibling size to avoid
@@ -154,11 +152,12 @@ public abstract class Node implements INode, Cloneable
 		
 		int reverseIndex = _siblingIndices[index] - 1;
 		
+		INode sibling = _siblings.get(index);
 		if (reverseIndex < 0 || sibling.getConnectedNodeFlat(reverseIndex) != this)
 		{
 			// Update reverse index if it was not yet initialized or it points to the wrong node,
 			// which can happen if nodes were removed.
-			reverseIndex = _siblings.get(index).getPortNum(this);
+			reverseIndex = sibling.getPortNum(this);
 			_siblingIndices[index] = reverseIndex + 1;
 		}
 		
