@@ -19,10 +19,10 @@ package com.analog.lyric.dimple.model.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+
+import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -50,9 +50,9 @@ public abstract class Node implements INode, Cloneable
 	private int [] _siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 	
 	/**
-	 * Reverse mapping of sibling to its index. Created lazily as needed.
+	 * Reverse mapping of sibling id to its index plus one. Created lazily as needed.
 	 */
-	private Map<INode,Integer> _siblingToIndex = null;
+	private OpenIntIntHashMap _siblingToIndex = null;
 
 	public Node()
 	{
@@ -331,7 +331,7 @@ public abstract class Node implements INode, Cloneable
 		_siblings.add(node);
 		if (_siblingToIndex != null)
 		{
-			_siblingToIndex.put(node, _siblings.size() - 1);
+			_siblingToIndex.put(node.getId(), _siblings.size());
 		}
 	}
 	
@@ -554,8 +554,8 @@ public abstract class Node implements INode, Cloneable
 			}
 			if (_siblingToIndex != null)
 			{
-				_siblingToIndex.remove(oldNode);
-				_siblingToIndex.put(newNode, index);
+				_siblingToIndex.removeKey(oldNode.getId());
+				_siblingToIndex.put(newNode.getId(), index + 1);
 			}
 		}
 	}
@@ -570,20 +570,16 @@ public abstract class Node implements INode, Cloneable
 		
 		if (_siblingToIndex == null && nSiblings > 10)
 		{
-			_siblingToIndex = new HashMap<INode,Integer>(nSiblings);
+			_siblingToIndex = new OpenIntIntHashMap(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				_siblingToIndex.put(_siblings.get(i), i);
+				_siblingToIndex.put(_siblings.get(i).getId(), i + 1);
 			}
 		}
 		
 		if (_siblingToIndex != null)
 		{
-			Integer index =_siblingToIndex.get(node);
-			if (index != null)
-			{
-				return index.intValue();
-			}
+			return _siblingToIndex.get(node.getId()) - 1;
 		}
 		else
 		{
