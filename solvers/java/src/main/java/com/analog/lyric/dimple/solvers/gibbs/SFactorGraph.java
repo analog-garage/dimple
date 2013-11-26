@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 
 import com.analog.lyric.collect.KeyedPriorityQueue;
@@ -670,7 +669,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 	}
 
-	
 	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex,
 		Value oldValue)
 	{
@@ -679,18 +677,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			if (_deferredDeterministicFactorUpdates == null)
 			{
 				// TODO: Currently uses FIFO order. Instead calculate directed dependency order and use that.
-				Comparator<SFactorUpdate> comparePriority = new Comparator<SFactorUpdate>() {
-					// NOTE: we could have used Ordering.allEqual() from the guava library, but
-					// it fails in MATLAB because MATLAB includes an ancient version of the google
-					// library at the front of its class path that lacks this method. :-(
-					@Override
-					public int compare(SFactorUpdate arg0, SFactorUpdate arg1)
-					{
-						return 0;
-					}
-				};
 				_deferredDeterministicFactorUpdates =
-					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, comparePriority);
+					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, SFactorUpdate.Equal.INSTANCE);
 			}
 			SFactorUpdate update = _deferredDeterministicFactorUpdates.get(sfactor);
 			if (update == null)
@@ -709,18 +697,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 				oldValues = IndexedValue.SingleList.create(changedVariableIndex, oldValue);
 			}
 			deferDeterministicUpdates();
-			try
+			sfactor.updateNeighborVariableValuesNow(oldValues);
+			if (oldValues != null)
 			{
-				sfactor.updateNeighborVariableValuesNow(oldValues);
+				oldValues.release();
 			}
-			finally
-			{
-				if (oldValues != null)
-				{
-					oldValues.release();
-				}
-				processDeferredDeterministicUpdates();
-			}
+			processDeferredDeterministicUpdates();
 		}
 	}
 	
@@ -729,23 +711,16 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (--_deferDeterministicFactorUpdatesCounter <= 0)
 		{
 			++_deferDeterministicFactorUpdatesCounter;
-			try
+			if (_deferredDeterministicFactorUpdates != null)
 			{
-				if (_deferredDeterministicFactorUpdates != null)
+				SFactorUpdate update = null;
+				while ((update = _deferredDeterministicFactorUpdates.poll()) != null)
 				{
-					SFactorUpdate update = null;
-					while ((update = _deferredDeterministicFactorUpdates.poll()) != null)
-					{
-						update.performUpdate();
-					}
+					update.performUpdate();
 				}
 			}
-			finally
-			{
-				--_deferDeterministicFactorUpdatesCounter;
-			
-			}
 		}
+		--_deferDeterministicFactorUpdatesCounter;
 	}
 	
 	void deferDeterministicUpdates()

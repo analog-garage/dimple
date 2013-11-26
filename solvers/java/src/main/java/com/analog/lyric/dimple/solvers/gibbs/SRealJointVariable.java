@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealJointValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
@@ -480,6 +481,13 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 	@Override
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
+	
+	@Override
+	public final void setCurrentSample(Value value)
+	{
+		setCurrentSample(value.getObject());
+	}
+	
 	public final void setCurrentSample(double[] value)
 	{
 		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();

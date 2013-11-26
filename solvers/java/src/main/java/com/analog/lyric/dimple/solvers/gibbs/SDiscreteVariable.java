@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
@@ -291,6 +292,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		setCurrentSampleIndex(valueIndex);
 	}
+	
+	@Override
+	public final void setCurrentSample(Value value)
+	{
+		// TODO: optimize for DiscreteValue with same domain
+		setCurrentSample(value.getObject());
+	}
+	
 	public final void setCurrentSampleIndex(int index)
     {
 		// Sample from the conditional distribution

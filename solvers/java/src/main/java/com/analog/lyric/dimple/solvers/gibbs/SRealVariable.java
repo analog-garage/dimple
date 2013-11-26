@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
@@ -355,9 +356,16 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
     @Override
 	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
+    
+    @Override
+    public final void setCurrentSample(Value value)
+    {
+    	setCurrentSample(value.getDouble());
+    }
+    
 	public final void setCurrentSample(double value)
 	{
-		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		final boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
 		
 		RealValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -369,7 +377,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_outputMsg.setValue(_sampleValue);
 		
 		// If this variable has deterministic dependents, then set their values
-		if (getModelObject().isDeterministicInput())
+		if (hasDeterministicDependents)
 		{
 			int numPorts = _var.getSiblingCount();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value

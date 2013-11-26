@@ -164,17 +164,28 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
-		final FactorFunction function = _factor.getFactorFunction();
-		final int[] directedTo = _factor.getDirectedTo();
+		final Factor factor = _factor;
+		final FactorFunction function = factor.getFactorFunction();
+		final int[] directedTo = factor.getDirectedTo();
 
-		Object[] values = null;
 		if (oldValues != null && _outputsValid)
 		{
 			function.updateDeterministic(_inputMsgs, oldValues);
+
+			// Update the directed-to variables with the computed values
+			if (directedTo != null)
+			{
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = factor.getSibling(outputIndex);
+					Object newValue = _inputMsgs[outputIndex].getObject();
+					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				}
+			}
 		}
 		else
 		{
-			values = Value.toObjects(_inputMsgs);
+			final Object[] values = Value.toObjects(_inputMsgs);
 			function.evalDeterministic(values);
 			if (directedTo != null)
 			{
@@ -184,28 +195,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				}
 			}
 			_outputsValid = true;
-		}
-		
-		// Update the directed-to variables with the computed values
-		if (directedTo != null)
-		{
-			IVariableMapList variables = _factor.getVariables();
-			if (values != null)
+			
+			// Update the directed-to variables with the computed values
+			if (directedTo != null)
 			{
 				for (int outputIndex : directedTo)
 				{
-					VariableBase variable = variables.getByIndex(outputIndex);
+					VariableBase variable = factor.getSibling(outputIndex);
 					Object newValue = values[outputIndex];
-					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
-				
-				}
-			}
-			else
-			{
-				for (int outputIndex : directedTo)
-				{
-					VariableBase variable = variables.getByIndex(outputIndex);
-					Object newValue = _inputMsgs[outputIndex].getObject();
 					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 				}
 			}

@@ -1,5 +1,6 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,6 +21,17 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	private Set<IndexedValue> _updates;
 	private final int _incrementalUpdateThreshold;
 
+	static enum Equal implements Comparator<SFactorUpdate>
+	{
+		INSTANCE;
+		
+		@Override
+		public int compare(SFactorUpdate o1, SFactorUpdate o2)
+		{
+			return 0;
+		}
+	}
+	
 	/*--------------
 	 * Construction
 	 */

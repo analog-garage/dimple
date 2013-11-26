@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 
 public interface ISolverVariableGibbs
 {
@@ -25,6 +26,7 @@ public interface ISolverVariableGibbs
 	public void saveCurrentSample();
     public void saveBestSample();
     public void setCurrentSample(Object value);
+    public void setCurrentSample(Value value);
 	public void setBeta(double beta);
 	public double getPotential();
 	
