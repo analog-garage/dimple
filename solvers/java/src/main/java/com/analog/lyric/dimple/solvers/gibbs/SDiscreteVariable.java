@@ -313,10 +313,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
 				Factor f = (Factor)_var.getSibling(port);
-				if (f.getFactorFunction().isDeterministicDirected() && !f.isDirectedTo(_var))
+				if (f.getFactorFunction().isDeterministicDirected())
 				{
-					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
-					sf.updateNeighborVariableValue(_var.getSiblingPortIndex(port), oldValue);
+					int reverseEdge = _var.getSiblingPortIndex(port);
+					if (!f.isDirectedTo(reverseEdge))
+					{
+						ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
+						sf.updateNeighborVariableValue(reverseEdge, oldValue);
+					}
 				}
 			}
 		}

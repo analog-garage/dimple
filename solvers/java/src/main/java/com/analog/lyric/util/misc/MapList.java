@@ -20,19 +20,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntObjectHashMap;
+
+import com.google.common.collect.Iterators;
 
 /*
  * MapList is a collection that stores data in both a HashMap and
  * an ArrayList.  This preserves order and also allows objects to be indexed by Id.
  */
 @NotThreadSafe
-public class MapList<T extends IGetId>  implements IMapList<T>
+public class MapList<T extends IGetId>  implements IMapList<T>, List<T>
 {
-	private final OpenIntObjectHashMap _hashMap;
-	private final ArrayList<T> _arrayList;
+	final OpenIntObjectHashMap _hashMap;
+	final ArrayList<T> _arrayList;
 		
 	/*---------------
 	 * Construction
@@ -63,22 +66,23 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public boolean add(T node)
 	{
-		if (!_hashMap.containsKey(node.getId()))
-		{
-			_hashMap.put(node.getId(), node);
-			_arrayList.add(node);
-			return true;
-		}
-		return false;
+		_hashMap.put(node.getId(), node);
+		_arrayList.add(node);
+		return true;
 	}
 	
 	@Override
-	public boolean addAll(Collection<? extends T> arg0)
+	public boolean addAll(Collection<? extends T> collection)
 	{
-		ensureCapacity(size() + arg0.size());
+		if (collection == this)
+		{
+			return false;
+		}
+		
+		ensureCapacity(size() + collection.size());
 		
 		boolean changed = false;
-		for (T t : arg0)
+		for (T t : collection)
 		{
 			if (add(t))
 				changed = true;
@@ -113,10 +117,13 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 		return true;
 	}
 
+	/**
+	 * Visits entries in index order. {@link Iterator#remove()} is not supported.
+	 */
 	@Override
 	public Iterator<T> iterator()
 	{
-		return _arrayList.iterator();
+		return Iterators.unmodifiableIterator(_arrayList.iterator());
 	}
 	
 	@Override
@@ -135,7 +142,23 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 			removed = _hashMap.removeKey(((IGetId)node).getId());
 			if (removed)
 			{
-				_arrayList.remove(node);
+				int nLeft = _arrayList.size() - _hashMap.size();
+				if (nLeft <= 1)
+				{
+					// There can only be one instance, so a simple remove call is sufficient.
+					_arrayList.remove(node);
+				}
+				else
+				{
+					Iterator<T> arrayIter = _arrayList.iterator();
+					while (arrayIter.hasNext())
+					{
+						if (arrayIter.next() == node)
+						{
+							arrayIter.remove();
+						}
+					}
+				}
 			}
 		}
 		return removed;
@@ -229,9 +252,92 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 	
 	@Override
+	public T removeByIndex(int index)
+	{
+		T elt = _arrayList.remove(index);
+		if (_hashMap.size() < _arrayList.size() || !_arrayList.contains(elt))
+		{
+			// If map is smaller than the array, then there can't have been more than
+			// one instance of each element so we can skip the contains test.
+			_hashMap.removeKey(elt.getId());
+		}
+		return elt;
+	}
+	
+	@Override
 	public List<T> values()
 	{
 		return _arrayList;
+	}
+
+	@Override
+	public void add(int arg0, T arg1)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean addAll(int arg0, Collection<? extends T> arg1)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public T get(int arg0)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int indexOf(Object arg0)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int lastIndexOf(Object arg0)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public ListIterator<T> listIterator()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ListIterator<T> listIterator(int arg0)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public T remove(int arg0)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public T set(int arg0, T arg1)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<T> subList(int arg0, int arg1)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

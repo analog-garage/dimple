@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import com.analog.lyric.collect.tests.CollectionTester;
 import com.analog.lyric.util.misc.FlaggedMapList;
-import com.analog.lyric.util.misc.IFlaggedMapList;
 import com.analog.lyric.util.misc.IGetId;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -50,20 +49,23 @@ public class TestMapList
 		final Value v3 = new Value(3);
 		
 		assertTrue(maplist.add(v1));
-		assertFalse(maplist.add(v1));
+		assertTrue(maplist.add(v1));
 		assertSame(v1, maplist.getByKey(1));
 		assertSame(v1, maplist.getByIndex(0));
-		assertEquals(1, maplist.size());
+		assertSame(v1, maplist.getByIndex(1));
+		assertEquals(2, maplist.size());
 		assertInvariants(maplist);
 		
+		maplist.clear();
 		assertFalse(maplist.addAll(new ArrayList<Value>()));
 		ArrayList<Value> list = new ArrayList<Value>(2);
 		list.add(v1);
 		list.add(v2);
 		list.add(v3);
 		assertTrue(maplist.addAll(list));
-		assertFalse(maplist.addAll(list));
 		assertEquals(3, maplist.size());
+		assertTrue(maplist.addAll(list));
+		assertEquals(6, maplist.size());
 		assertTrue(maplist.contains(v2));
 		assertTrue(maplist.contains(v3));
 		assertInvariants(maplist);
@@ -124,18 +126,6 @@ public class TestMapList
 			assertSame(value, maplist.getByIndex(i));
 			assertSame(value, maplist.getByKey(id));
 			assertTrue(maplist.contains(value));
-		}
-		
-		if (maplist instanceof IFlaggedMapList)
-		{
-			IFlaggedMapList<T> fmaplist = (IFlaggedMapList<T>)maplist;
-			
-			for (int i = 0, endi = values.size(); i <endi; ++ i)
-			{
-				T value = values.get(i);
-				
-				assertEquals(fmaplist.isFlagged(i), fmaplist.isFlagged(value));
-			}
 		}
 	}
 }

@@ -14,6 +14,8 @@ public interface IMapList<T extends IGetId> extends Collection<T>
 	public abstract T getByKey(int id);
 
 	public abstract T getByIndex(int index);
+	
+	public abstract T removeByIndex(int index);
 
 	public abstract List<T> values();
 }

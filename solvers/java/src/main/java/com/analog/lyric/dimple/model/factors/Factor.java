@@ -503,16 +503,6 @@ public class Factor extends FactorBase implements Cloneable
 		
 	}
 	
-	public boolean isDirectedTo(VariableBase variable)
-	{
-		ensureDirectedToSet();
-
-		if (_directedTo == null)
-			return false;
-		
-		return _variables.isFlagged(variable);
-	}
-	
 	public boolean isDirectedTo(int edge)
 	{
 		ensureDirectedToSet();
