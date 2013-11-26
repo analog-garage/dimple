@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntObjectHashMap;
@@ -32,7 +31,7 @@ import com.google.common.collect.Iterators;
  * an ArrayList.  This preserves order and also allows objects to be indexed by Id.
  */
 @NotThreadSafe
-public class MapList<T extends IGetId>  implements IMapList<T>, List<T>
+public class MapList<T extends IGetId>  implements IMapList<T>
 {
 	final OpenIntObjectHashMap _hashMap;
 	final ArrayList<T> _arrayList;
@@ -269,75 +268,4 @@ public class MapList<T extends IGetId>  implements IMapList<T>, List<T>
 	{
 		return _arrayList;
 	}
-
-	@Override
-	public void add(int arg0, T arg1)
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean addAll(int arg0, Collection<? extends T> arg1)
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public T get(int arg0)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int indexOf(Object arg0)
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int lastIndexOf(Object arg0)
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public ListIterator<T> listIterator()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ListIterator<T> listIterator(int arg0)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public T remove(int arg0)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public T set(int arg0, T arg1)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<T> subList(int arg0, int arg1)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
 }
