@@ -14,15 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-
-public interface IRealJointConjugateSampler extends ISampler
+public class GenericSamplerRegistry
 {
-	public double[] nextSample(Port[] ports, FactorFunction input);
-	public IParameterizedMessage createParameterMessage();
-	public void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input);
+	// Get a sampler by name; assumes it is located in this package
+	public static IGenericSampler get(String samplerName)
+	{
+		String fullQualifiedName = GenericSamplerRegistry.class.getPackage().getName() + "." + samplerName;
+		try
+		{
+			IGenericSampler sampler = (IGenericSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+			return sampler;
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
 }

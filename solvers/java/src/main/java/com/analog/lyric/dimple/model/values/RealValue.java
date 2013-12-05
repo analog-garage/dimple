@@ -24,11 +24,16 @@ public class RealValue extends Value
 	 * Construction
 	 */
 	
+	public RealValue()
+	{
+		_value = 0;
+	}
+
 	public RealValue(double value)
 	{
 		_value = value;
 	}
-	
+
 	public RealValue(RealValue that)
 	{
 		this(that._value);
@@ -58,6 +63,8 @@ public class RealValue extends Value
 	
 	public final double getValue() {return _value;}
 	public final void setValue(double value) {_value = value;}
+	public final void setFromValue(Value value) {_value = ((RealValue)value)._value;}
+
 	
 	@Override
 	public double getDouble()

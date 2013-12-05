@@ -48,5 +48,11 @@ public class ObjectValue extends Value
 	{
 		_object = value;
 	}
+	
+	@Override
+	public void setFromValue(Value value)
+	{
+		_object = ((ObjectValue)value)._object;
+	}
 
 }

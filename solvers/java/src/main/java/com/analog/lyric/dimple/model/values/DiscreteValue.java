@@ -82,6 +82,14 @@ public class DiscreteValue extends Value
 		_index = _domain.getIndex(value);
 	}
 	
+	@Override
+	public final void setFromValue(Value value)
+	{
+		 DiscreteValue other = (DiscreteValue)value;
+		 _value = other._value;
+		 _index = other._index;
+	}
+	
 	public final int getIndex() {return _index;}
 	
 	public final void setIndex(int index)

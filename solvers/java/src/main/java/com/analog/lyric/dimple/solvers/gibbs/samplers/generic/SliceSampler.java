@@ -14,40 +14,47 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 
-public class SliceSampler implements IRealMCMCSampler
+public class SliceSampler implements IMCMCSampler
 {
 	private double _initialSliceWidth = 1;	// Default value
 	private double _maximumDoublings = 10;	// Default value
 	
 	@Override
-	public double nextSample(ISampleScorer sampleScorer)
+	public void initialize(Domain variableDomain)
 	{
-		double y = sampleVerticalSlice(sampleScorer);
-		double x = sampleHorizontalSlice(sampleScorer.getCurrentSampleValue(), y, sampleScorer);
-		return x;
+	}
+	
+	@Override
+	public void nextSample(Value sampleValue, ISamplerClient samplerClient)
+	{
+		final double y = sampleVerticalSlice(samplerClient);
+		final double x = sampleHorizontalSlice(sampleValue.getDouble(), y, (IRealSamplerClient)samplerClient);
+		((IRealSamplerClient)samplerClient).setNextSampleValue(x);
 	}
 
 	// Sample vertical slice in log domain
 	// In probability domain this would be uniform from 0 to the value at the current horizontal location (in probability representation)
-	public double sampleVerticalSlice(ISampleScorer sampleScorer)
+	public double sampleVerticalSlice(ISamplerClient samplerClient)
 	{
-		double yValue = sampleScorer.getCurrentSampleScore();
+		final double yValue = samplerClient.getCurrentSampleScore();
 		return yValue - Math.log(SolverRandomGenerator.rand.nextDouble());
 	}
 
 	// Sample horizontal slice using doubling method
-	public double sampleHorizontalSlice(double x, double y, ISampleScorer sampleScorer)
+	public double sampleHorizontalSlice(double x, double y, IRealSamplerClient samplerClient)
 	{
 		// First finding slice using doubling method
 		double L = x - _initialSliceWidth * SolverRandomGenerator.rand.nextDouble();
 		double R = L + _initialSliceWidth;
-		double fL = sampleScorer.getSampleScore(L);
-		double fR = sampleScorer.getSampleScore(R);
+		double fL = samplerClient.getSampleScore(L);
+		double fR = samplerClient.getSampleScore(R);
 		for (int k = 0; k < _maximumDoublings; k++)
 		{
 			if (y <= fL && y <= fR)
@@ -55,12 +62,12 @@ public class SliceSampler implements IRealMCMCSampler
 			if (SolverRandomGenerator.rand.nextBoolean())	// Flip a coin
 			{
 				L -= (R - L);
-				fL = sampleScorer.getSampleScore(L);
+				fL = samplerClient.getSampleScore(L);
 			}
 			else
 			{
 				R += (R - L);
-				fR = sampleScorer.getSampleScore(R);
+				fR = samplerClient.getSampleScore(R);
 			}
 		}
 		
@@ -71,9 +78,9 @@ public class SliceSampler implements IRealMCMCSampler
 		while (true)
 		{
 			xSample = Ls + (Rs - Ls) * SolverRandomGenerator.rand.nextDouble();
-			double fSample = sampleScorer.getSampleScore(xSample);
+			double fSample = samplerClient.getSampleScore(xSample);
 			
-			if (y >= fSample && accept(xSample, x, y, L, R, sampleScorer))
+			if (y >= fSample && accept(xSample, x, y, L, R, samplerClient))
 				break;	// Accept
 			
 			// Not accepted yet, shrink the interval
@@ -86,11 +93,11 @@ public class SliceSampler implements IRealMCMCSampler
 		return xSample;
 	}
 	
-	private boolean accept(double xSample, double x, double y, double L, double R, ISampleScorer sampleScorer)
+	private boolean accept(double xSample, double x, double y, double L, double R, IRealSamplerClient samplerClient)
 	{
 		boolean D = false;
-		double fL = sampleScorer.getSampleScore(L);
-		double fR = sampleScorer.getSampleScore(R);
+		double fL = samplerClient.getSampleScore(L);
+		double fR = samplerClient.getSampleScore(R);
 		
 		while (R - L > 1.1 * _initialSliceWidth)
 		{
@@ -102,12 +109,12 @@ public class SliceSampler implements IRealMCMCSampler
 			if (xSample < M)
 			{
 				R = M;
-				fR = sampleScorer.getSampleScore(R);
+				fR = samplerClient.getSampleScore(R);
 			}
 			else
 			{
 				L = M;
-				fL = sampleScorer.getSampleScore(L);
+				fL = samplerClient.getSampleScore(L);
 			}
 			
 			if (D && (y <= fL) && (y <= fR))

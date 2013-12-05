@@ -19,39 +19,44 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.commons.math3.random.RandomGenerator;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteDirectSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IDiscreteSamplerClient;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.math.Utilities;
 
 
 
-public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs
+public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs, IDiscreteSamplerClient
 {
+	public static final String DEFAULT_DISCRETE_SAMPLER_NAME = "CDFSampler";
+
     protected double[][] _inPortMsgs = new double[0][];
     protected DiscreteValue _outputMsg;
-    protected int _numPorts;
 	protected long[] _beliefHistogram;
-	protected int _sampleIndex;
 	protected double[] _input;
 	protected double[] _conditional;
-	protected double[] _samplerScratch;
 	protected ArrayList<Integer> _sampleIndexArray;
 	protected int _bestSampleIndex;
-	protected int _lengthRoundedUp;
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
+	protected IGenericSampler _sampler;
+	private String _defaultSamplerName = DEFAULT_DISCRETE_SAMPLER_NAME;
+	private boolean _samplerSpecificallySpecified = false;
 
 	public SDiscreteVariable(VariableBase var)
 	{
@@ -67,10 +72,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	@Override
-	public void update()
+	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
-		if (getModelObject().isDeterministicOutput()) return;
+		if (_var.isDeterministicOutput()) return;
 
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -79,16 +84,17 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (_var.hasFixedValue()) return;
 
 		
-		int messageLength = _input.length;
+		final int messageLength = _input.length;
+		final int numPorts = _var.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
 
 		// Compute the conditional probability
-		if (!getModelObject().isDeterministicInput())
+		if (!_var.isDeterministicInput())
 		{
 			// Update all the neighboring factors
 			// If there are no deterministic dependents, then it should be faster to have
 			// each neighboring factor update its entire message to this variable than the alternative, below
-			for (int port = 0; port < _numPorts; port++)
+			for (int port = 0; port < numPorts; port++)
 			{
 				((ISolverFactorGibbs)_var.getSibling(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
 			}
@@ -98,7 +104,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			{
 
 				double out = _input[index];						// Sum of the input prior...
-				for (int port = 0; port < _numPorts; port++)
+				for (int port = 0; port < numPorts; port++)
 				{
 					double tmp = _inPortMsgs[port][index];
 					out += tmp;			// Plus each input message value
@@ -117,7 +123,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			{
 				setCurrentSampleIndex(index);
 				double out = _input[index];						// Sum of the input prior...
-				for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+				for (int port = 0; port < numPorts; port++)	// Plus each input message value
 				{
 					double tmp = ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 					out += tmp;
@@ -131,9 +137,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 		
 		// Sample from the conditional distribution
-		int index = generateSample(_conditional, minEnergy);
-		setCurrentSampleIndex(index);
-		
+		if (_sampler instanceof IDiscreteDirectSampler)
+			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg, _conditional, minEnergy, this);
+		else if (_sampler instanceof IMCMCSampler)
+			((IMCMCSampler)_sampler).nextSample(_outputMsg, this);
 	}
 	
 	@Override
@@ -156,15 +163,63 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			if (_input[i] < minEnergy)
 				minEnergy = _input[i];
 		
-	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
-	    _samplerScratch = new double[_lengthRoundedUp];
-		setCurrentSampleIndex(generateSample(_input, minEnergy));
+		if (_sampler instanceof CDFSampler)
+			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg, _input, minEnergy, this);
+		else
+			(new CDFSampler()).nextSample(_outputMsg, _input, minEnergy, this);
 	}
 
+	// ISampleScorer methods...
+	// The following methods are for the ISampleScorer interface, meant to be called by a sampler
+	// These are not intended for other purposes
+	@Override
+	public final double getSampleScore(Value sampleValue)
+	{
+		return getSampleScore(((DiscreteValue)sampleValue).getIndex());
+	}
+	@Override
+	public final double getSampleScore(int sampleIndex)
+	{
+		// WARNING: Side effect is that the current sample value changes to this sample value
+		// Could change back but less efficient to do this, since we'll be updating the sample value anyway
+		setCurrentSampleIndex(sampleIndex);
+
+		return getCurrentSampleScore();
+	}
+	@Override
+	public final double getCurrentSampleScore()
+	{
+		double potential = _input[_outputMsg.getIndex()];
+
+		// Propagate the request through the other neighboring factors and sum up the results
+		final int numPorts = _var.getSiblingCount();
+		for (int port = 0; port < numPorts; port++)	// Plus each input message value
+			potential += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
+
+		return potential * _beta;	// Incorporate current temperature
+	}
+	@Override
+	public final void setNextSampleValue(Value sampleValue)
+	{
+		setNextSampleIndex(((DiscreteValue)sampleValue).getIndex());
+	}
+	@Override
+	public final void setNextSampleIndex(int sampleIndex)
+	{
+		if (sampleIndex != _outputMsg.getIndex())
+			setCurrentSampleIndex(sampleIndex);
+	}
+	@Override
+	public final Domain getDomain()
+	{
+		return _var.getDomain();
+	}
+	
+	
 	@Override
 	public void updateBelief()
 	{
-		_beliefHistogram[_sampleIndex]++;
+		_beliefHistogram[_outputMsg.getIndex()]++;
 	}
 
 	@Override
@@ -230,6 +285,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public void postAddFactor(Factor f)
 	{
+		// Set the default sampler
+		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
 	}
 	
     @Override
@@ -242,13 +299,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public final void saveCurrentSample()
     {
     	if (_sampleIndexArray != null)
-    		_sampleIndexArray.add(_sampleIndex);
+    		_sampleIndexArray.add(_outputMsg.getIndex());
     }
     
     @Override
 	public final void saveBestSample()
     {
-    	_bestSampleIndex = _sampleIndex;
+    	_bestSampleIndex = _outputMsg.getIndex();
     }
     
 	@Override
@@ -257,7 +314,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		double result = getPotential();		// Start with the local potential
 		
 		// Propagate the request through the other neighboring factors and sum up the results
-		for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+		final int numPorts = _var.getSiblingCount();
+		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			if (port != portIndex)
 				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
 
@@ -268,7 +326,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public final double getPotential()
 	{
 		if (!_var.hasFixedValue())
-			return _input[_sampleIndex];
+			return _input[_outputMsg.getIndex()];
 		else
 			return 0;
 	}
@@ -302,10 +360,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public final void setCurrentSampleIndex(int index)
     {
-		// Sample from the conditional distribution
-		_sampleIndex = index;
-
-		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		boolean hasDeterministicDependents = _var.isDeterministicInput();
 
 		DiscreteValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -319,7 +374,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+			final int numPorts = _var.getSiblingCount();
+			for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			{
 				Factor f = (Factor)_var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected())
@@ -337,11 +393,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     
     public final Object getCurrentSample()
     {
-    	return _varDiscrete.getDiscreteDomain().getElement(_sampleIndex);
+    	return _outputMsg.getObject();
     }
     public final int getCurrentSampleIndex()
     {
-    	return _sampleIndex;
+    	return _outputMsg.getIndex();
     }
     
     public final Object getBestSample()
@@ -404,92 +460,52 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	_beta = beta;
     }
 	
-    
-	private final int generateSample(double[] energy, double minEnergy)
+   
+
+	// Set/get the sampler to be used for this variable
+	public final void setDefaultSampler(String samplerName)
 	{
-		RandomGenerator rand = SolverRandomGenerator.rand;
-		int length = energy.length;
-		int sampleIndex;
-
-		// Special-case lengths 2, 3, and 4 for speed
-		if (length == 2)
-		{
-			sampleIndex = (rand.nextDouble() * (1 + Math.exp(energy[1]-energy[0])) > 1) ? 0 : 1;
-		}
-		else if (length == 3)
-		{
-			double cumulative1 = Math.exp(minEnergy-energy[0]);
-			double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
-			double sum = cumulative2 + Math.exp(minEnergy-energy[2]);
-			double randomValue = sum * rand.nextDouble();
-			sampleIndex = (randomValue > cumulative2) ? 2 : (randomValue > cumulative1) ? 1 : 0;
-		}
-		else if (length == 4)
-		{
-			double cumulative1 = Math.exp(minEnergy-energy[0]);
-			double cumulative2 = cumulative1 + Math.exp(minEnergy-energy[1]);
-			double cumulative3 = cumulative2 + Math.exp(minEnergy-energy[2]);
-			double sum = cumulative3 + Math.exp(minEnergy-energy[3]);
-			double randomValue = sum * rand.nextDouble();
-			sampleIndex = (randomValue > cumulative2) ? ((randomValue > cumulative3) ? 3 : 2) : ((randomValue > cumulative1) ? 1 : 0);
-		}
-		else	// For all other lengths
-		{
-			// Calculate cumulative conditional probability (unnormalized)
-			double sum = 0;
-			double[] samplerScratch = _samplerScratch;
-			samplerScratch[0] = 0;
-			for (int m = 1; m < length; m++)
-			{
-				sum += expApprox(minEnergy-energy[m-1]);
-				samplerScratch[m] = sum;
-			}
-			sum += expApprox(minEnergy-energy[length-1]);
-			for (int m = length; m < _lengthRoundedUp; m++)
-				samplerScratch[m] = Double.POSITIVE_INFINITY;
-
-			int half = _lengthRoundedUp >> 1;
-			while (true)
-			{
-				// Sample from the distribution using a binary search.
-				double randomValue = sum * rand.nextDouble();
-				sampleIndex = 0;
-				for (int bitValue = half; bitValue > 0; bitValue >>= 1)
-				{
-					int testIndex = sampleIndex | bitValue;
-					if (randomValue > samplerScratch[testIndex]) sampleIndex = testIndex;
-				}
-
-				// Rejection sampling, since the approximation of the exponential function is so coarse
-				double logp = minEnergy-energy[sampleIndex];
-				if (Double.isNaN(logp)) throw new DimpleException("Energy value is NaN");
-				if (rand.nextDouble()*expApprox(logp) <= Math.exp(logp)) break;
-			}
-		}
-
-		return sampleIndex;
+		_defaultSamplerName = samplerName;
+	}
+	public final String getDefaultSamplerName()
+	{
+		return _defaultSamplerName;
+	}
+	public final void setSampler(ISampler sampler)
+	{
+		_sampler = (IGenericSampler)sampler;
+		_samplerSpecificallySpecified = true;
+	}
+	public final void setSampler(String samplerName)
+	{
+		_sampler = (IGenericSampler)GenericSamplerRegistry.get(samplerName);
+		_samplerSpecificallySpecified = true;
+	}
+	public final ISampler getSampler()
+	{
+		if (!_samplerSpecificallySpecified)
+			initialize();	// To determine the appropriate sampler
+		_sampler.initialize(_var.getDomain());
+		return _sampler;
+	}
+	public final String getSamplerName()
+	{
+		ISampler sampler = getSampler();
+		if (sampler != null)
+			return sampler.getClass().getSimpleName();
+		else
+			return "";
 	}
 
-	// This is an approximation to the exponential function; inputs must be non-positive
-	// To facilitate subsequent rejection sampling, the error versus the correct exponential function needs to be always positive
-	// This is true except for very large negative inputs, for values just as the output approaches zero
-	// To ensure rejection is never in an infinite loop, this must reach 0 for large negative inputs before the Math.exp function does
-	public final static double expApprox(double value)
-	{
-		// Convert input to base2 log, then convert integer part into IEEE754 exponent
-		final long expValue = (long)((int)(1512775.395195186 * value) + 0x3FF00000) << 32;	// 1512775.395195186 = 2^20/log(2)
-		return Double.longBitsToDouble(expValue & ~(expValue >> 63));	// Clip result if negative and convert to a double
-	}
-
-	
 	
 	@Override
 	public void createNonEdgeSpecificState()
 	{
-		DiscreteDomain domain = getModelObject().getDomain();
+		DiscreteDomain domain = _varDiscrete.getDomain();
 		_outputMsg = new DiscreteValue(domain);
 		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
-		_sampleIndex = 0;
+		_outputMsg = new DiscreteValue(domain);
+		_outputMsg.setIndex(0);
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();
@@ -499,16 +515,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public Object []  createMessages(ISolverFactor factor)
+	public Object[] createMessages(ISolverFactor factor)
 	{
 		int portNum = _var.getPortNum(factor.getModelObject());
-    	_numPorts= Math.max(portNum+1, _numPorts);
+		int length = _inPortMsgs.length;
+		length = Math.max(portNum+1, length);
     	
-	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, _numPorts);
+	    _inPortMsgs = Arrays.copyOf(_inPortMsgs, length);
     	_inPortMsgs[portNum] = createDefaultMessage();
     	
-	    _lengthRoundedUp = Utilities.nextPow2(_input.length);
-	    _samplerScratch = new double[_lengthRoundedUp];
 	    _conditional = new double[_input.length];
 		
 		return new Object []{_inPortMsgs[portNum],_outputMsg};
@@ -576,11 +591,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_outputMsg = ovar._outputMsg;
 		_sampleIndexArray = ovar._sampleIndexArray;
 		_beliefHistogram = ovar._beliefHistogram;
-		_sampleIndex = ovar._sampleIndex;
+		_outputMsg = ovar._outputMsg;
 		_conditional = ovar._conditional;
-		_samplerScratch = ovar._samplerScratch;
 		_bestSampleIndex = ovar._bestSampleIndex;
-		_lengthRoundedUp = ovar._lengthRoundedUp;
+		_beta = ovar._beta;
+		_sampler = ovar._sampler;
+		_defaultSamplerName = ovar._defaultSamplerName;
+		_samplerSpecificallySpecified = ovar._samplerSpecificallySpecified;
     }
 	
 
@@ -600,8 +617,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 		else
 		{
-			setCurrentSampleIndex(_sampleIndex);
+			setCurrentSampleIndex(_outputMsg.getIndex());
 		}
+		
+		if (!_samplerSpecificallySpecified)
+			_sampler = (IGenericSampler)GenericSamplerRegistry.get(_defaultSamplerName);	// If not specifically specified, use the default sampler
+		_sampler.initialize(_var.getDomain());
 	}
 
 }

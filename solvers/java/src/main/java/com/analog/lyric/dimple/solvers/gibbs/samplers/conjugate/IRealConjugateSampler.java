@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 
-public interface IRealConjugateSampler extends IRealSampler
+public interface IRealConjugateSampler extends ISampler
 {
 	public double nextSample(Port[] ports, FactorFunction input);
 	public IParameterizedMessage createParameterMessage();

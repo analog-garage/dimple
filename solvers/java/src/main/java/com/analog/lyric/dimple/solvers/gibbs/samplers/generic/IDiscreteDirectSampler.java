@@ -14,22 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-public class RealMCMCSamplerRegistry
+import com.analog.lyric.dimple.model.values.DiscreteValue;
+
+public interface IDiscreteDirectSampler extends IGenericSampler
 {
-	// Get a sampler by name; assumes it is located in this package
-	public static IRealMCMCSampler get(String samplerName)
-	{
-		String fullQualifiedName = RealMCMCSamplerRegistry.class.getPackage().getName() + "." + samplerName;
-		try
-		{
-			IRealMCMCSampler sampler = (IRealMCMCSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return sampler;
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
-	}
+	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient);
 }

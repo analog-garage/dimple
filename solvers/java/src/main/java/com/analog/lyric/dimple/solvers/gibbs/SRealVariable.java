@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealValue;
@@ -36,15 +37,15 @@ import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.IRealMCMCSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.ISampleScorer;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.MHSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.RealMCMCSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -54,7 +55,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
  *
  */
 
-public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, ISampleScorer
+public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
 	public static final String DEFAULT_REAL_SAMPLER_NAME = "SliceSampler";
 	
@@ -66,7 +67,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private FactorFunction _input;
 	private RealDomain _domain;
 	private String _defaultSamplerName = DEFAULT_REAL_SAMPLER_NAME;
-	private IRealMCMCSampler _sampler = null;
+	private IMCMCSampler _sampler = null;
 	private IRealConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
 	private ArrayList<Double> _sampleArray;
@@ -104,7 +105,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	@Override
-	public void update()
+	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
 		if (getModelObject().isDeterministicOutput()) return;
@@ -116,11 +117,11 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_var.hasFixedValue()) return;
 
 		// Get the next sample value from the sampler
-		double nextSampleValue;
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
-			nextSampleValue = _sampler.nextSample(this);
+			RealValue nextSample = new RealValue(_sampleValue);
+			_sampler.nextSample(nextSample, this);
 		}
 		else
 		{
@@ -136,16 +137,21 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
-			nextSampleValue = _conjugateSampler.nextSample(ports, _input);
+			double nextSampleValue = _conjugateSampler.nextSample(ports, _input);
+			if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
+				setCurrentSample(nextSampleValue);
 		}
-		if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
-			setCurrentSample(nextSampleValue);
 	}
 	
 	
-	// ISampleScorer methods...
-	// The following methods are for the ISampleScorer interface, meant to be called by a sampler
+	// IRealSampleScorer methods...
+	// The following methods are for the IRealSampleScorer interface, meant to be called by a sampler
 	// These are not intended for other purposes
+	@Override
+	public final double getSampleScore(Value sampleValue)
+	{
+		return getSampleScore(sampleValue.getDouble());
+	}
 	@Override
 	public final double getSampleScore(double sampleValue)
 	{
@@ -181,9 +187,20 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return potential * _beta;	// Incorporate current temperature
 	}
 	@Override
-	public final double getCurrentSampleValue()
+	public final void setNextSampleValue(Value sampleValue)
 	{
-		return _sampleValue;
+		setNextSampleValue(sampleValue.getDouble());
+	}
+	@Override
+	public final void setNextSampleValue(double sampleValue)
+	{
+		if (sampleValue != _sampleValue)
+			setCurrentSample(sampleValue);
+	}
+	@Override
+	public final Domain getDomain()
+	{
+		return _var.getDomain();
 	}
 
 	
@@ -194,7 +211,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 	@Override
-	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, IRealSampler conjugateSampler)
+	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
 	{
 		int numPorts = _var.getSiblingCount();
 		Port[] ports = new Port[numPorts - 1];
@@ -488,32 +505,40 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		return _defaultSamplerName;
 	}
-	public final void setSampler(IRealMCMCSampler sampler)
+	public final void setSampler(ISampler sampler)
 	{
-		_sampler = sampler;
+		_sampler = (IMCMCSampler)sampler;
 		_samplerSpecificallySpecified = true;
 	}
 	public final void setSampler(String samplerName)
 	{
-		_sampler = RealMCMCSamplerRegistry.get(samplerName);
+		_sampler = (IMCMCSampler)GenericSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
-	public final IRealSampler getSampler()
+	public final ISampler getSampler()
 	{
 		if (_samplerSpecificallySpecified)
+		{
+			_sampler.initialize(_var.getDomain());
 			return _sampler;
+		}
 		else
 		{
 			initialize();	// To determine the appropriate sampler
 			if (_conjugateSampler == null)
+			{
+				_sampler.initialize(_var.getDomain());
 				return _sampler;
+			}
 			else
+			{
 				return _conjugateSampler;
+			}
 		}
 	}
 	public final String getSamplerName()
 	{
-		IRealSampler sampler = getSampler();
+		ISampler sampler = getSampler();
 		if (sampler != null)
 			return sampler.getClass().getSimpleName();
 		else
@@ -598,13 +623,15 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)
-			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)s
+			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)
 		else
 		{
 			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
 			if (_conjugateSampler == null)
-				_sampler = RealMCMCSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
+				_sampler = (IMCMCSampler)GenericSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
 		}
+		if (_sampler != null)
+			_sampler.initialize(_var.getDomain());
 	}
 
 	@Override

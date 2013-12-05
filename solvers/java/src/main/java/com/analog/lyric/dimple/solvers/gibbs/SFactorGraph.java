@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.repeated.FactorGraphStream;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -74,6 +75,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private boolean _saveAllScores = false;
 	private ArrayList<Double> _scoreArray;
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
+	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
 	private final double LOG2 = Math.log(2);
 	
 	/**
@@ -520,6 +522,18 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	public String getDefaultRealSampler() {return _defaultRealSamplerName;}
+
+	// Set the default sampler for Discrete variables
+	public void setDefaultDiscreteSampler(String samplerName)
+	{
+		_defaultDiscreteSamplerName = samplerName;
+		for (VariableBase v : _factorGraph.getVariables())
+		{
+			if (v instanceof Discrete)
+				((SDiscreteVariable)v.getSolver()).setDefaultSampler(samplerName);
+		}
+	}
+	public String getDefaultDiscreteSampler() {return _defaultDiscreteSamplerName;}
 
 	// Set/get the initial temperature when using tempering
 	public void setInitialTemperature(double initialTemperature) {_temper = true; _initialTemperature = initialTemperature;}
