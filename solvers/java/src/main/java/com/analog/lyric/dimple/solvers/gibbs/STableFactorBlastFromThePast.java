@@ -79,12 +79,6 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	}
 
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		throw new DimpleException("not implemented");
-	}
-
-	@Override
 	public void updateEdgeMessage(int portIndex)
 	{
 		//NOP

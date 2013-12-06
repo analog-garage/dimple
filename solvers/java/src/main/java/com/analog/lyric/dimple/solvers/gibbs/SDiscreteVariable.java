@@ -260,19 +260,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     }
     
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();		// Start with the local potential
-		
-		// Propagate the request through the other neighboring factors and sum up the results
-		for (int port = 0; port < _numPorts; port++)	// Plus each input message value
-			if (port != portIndex)
-				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
-
-		    return result;
-	}
-	
-	@Override
 	public final double getPotential()
 	{
 		if (!_var.hasFixedValue())

@@ -38,8 +38,6 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	public boolean hasPotential();
 	
 	// Internal methods
-	@Override
-	public double getConditionalPotential(int portIndex);
 	public void updateBelief();
 	public void randomRestart();
 	public void postAddFactor(Factor f);

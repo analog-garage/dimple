@@ -68,39 +68,6 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	
 
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
-		
-		final Factor factor = _factor;
-		
-		// If this is a deterministic directed factor, and the request is from a directed-from variable,
-		// Then propagate the request through the directed-to variables and sum up the results
-		// No need to get the potential for this factor since we should have already set outputs
-		// to equal the deterministic function of the inputs (so the potential should be zero)
-		if (_isDeterministicDirected && !factor.isDirectedTo(portIndex))
-		{
-			double result = 0;
-			int[] directedTo = factor.getDirectedTo();
-			if (directedTo != null)
-			{
-				for (int port : directedTo)
-				{
-					VariableBase v = factor.getSibling(port);
-		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(factor.getSiblingPortIndex(port));
-				}
-			}
-			return result;
-		}
-		else	// Not deterministic directed, so get the potential for this factor
-		{
-			return getPotential();
-		}
-	}
-	
-
-
-	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
 		// Generate message representing conditional distribution of selected edge variable

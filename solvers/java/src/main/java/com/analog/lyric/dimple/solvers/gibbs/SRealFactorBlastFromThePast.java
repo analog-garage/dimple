@@ -50,7 +50,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	{
 		VariableBase vb = (VariableBase)_portForOtherVar.node;
 		int index = _portForOtherVar.index;
-		Factor f = (Factor)vb.getSibling(index);
+		Factor f = vb.getSibling(index);
 		ISolverFactor sf = f.getSolver();
 		int numEdges = f.getSiblingCount();
 		_inputMsgs = new Value[numEdges];
@@ -95,13 +95,6 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
-	}
-
-	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();
-		return result;
 	}
 
 	@Override

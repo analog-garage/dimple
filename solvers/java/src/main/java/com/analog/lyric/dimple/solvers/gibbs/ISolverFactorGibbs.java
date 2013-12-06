@@ -28,7 +28,5 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 	public double getPotential();
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
 	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues);
-	@Override
-	public double getConditionalPotential(int portIndex);
 	public void updateEdgeMessage(int portIndex);
 }

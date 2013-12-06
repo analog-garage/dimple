@@ -474,20 +474,6 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 	
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();		// Start with the local potential
-		
-		// Propagate the request through the other neighboring factors and sum up the results
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)	// Plus each input message value
-			if (port != portIndex)
-				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
-
-		return result;
-	}
-
-	@Override
 	public final double getPotential()
 	{
 		if (_var.hasFixedValue())

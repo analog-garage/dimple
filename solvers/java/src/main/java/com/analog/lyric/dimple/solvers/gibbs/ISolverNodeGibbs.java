@@ -21,5 +21,4 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 public interface ISolverNodeGibbs extends ISolverNode
 {
 	public double getPotential();
-	public double getConditionalPotential(int portIndex);
 }

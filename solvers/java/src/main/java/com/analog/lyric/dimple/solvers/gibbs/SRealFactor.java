@@ -66,38 +66,6 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	
 
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		
-		final Factor factor = _factor;
-		
-		// If this is a deterministic directed factor, and the request is from a directed-from variable,
-		// Then propagate the request through the directed-to variables and sum up the results
-		// No need to get the potential for this factor since we should have already set outputs
-		// to equal the deterministic function of the inputs (so the potential should be zero)
-		if (_isDeterministicDirected && !factor.isDirectedTo(portIndex))
-		{
-			double result = 0;
-			int[] directedTo = factor.getDirectedTo();
-			if (directedTo != null)
-			{
-				for (int port : directedTo)
-				{
-					VariableBase v = factor.getSibling(port);
-		    		result += ((ISolverVariableGibbs)v.getSolver()).getConditionalPotential(factor.getSiblingPortIndex(port));
-				}
-			}
-			return result;
-		}
-		else	// Not deterministic directed, so get the potential for this factor
-		{
-			return getPotential();
-		}
-	}
-
-	
-	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
 		INode var = _factor.getSibling(outPortNum);
@@ -134,11 +102,12 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	{
 		// REFACTOR: implementation identical to STableFactor, find a way to share it.
 	    int numPorts = _factor.getSiblingCount();
-	    Object[] inPortMsgs = new Object[numPorts]; //_scratchValues;
+	    final Value[] inputMsgs = _inputMsgs;
+	    Object[] values = new Object[numPorts]; //_scratchValues;
 	    for (int port = 0; port < numPorts; port++)
-	    	inPortMsgs[port] = _inputMsgs[port].getObject();
+	    	values[port] = inputMsgs[port].getObject();
 	    
-	    return getPotential(inPortMsgs);
+	    return getPotential(values);
 	}
 	public double getPotential(Object[] inputs)
 	{
