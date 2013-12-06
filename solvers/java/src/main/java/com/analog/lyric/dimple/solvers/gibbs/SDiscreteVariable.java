@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -52,6 +53,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
+
+	/**
+	 * List of neighbors for sample scoring. Instantiated during initialization.
+	 */
+	private GibbsNeighborList _neighbors = null;
 
 	public SDiscreteVariable(VariableBase var)
 	{
@@ -117,11 +123,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			{
 				setCurrentSampleIndex(index);
 				double out = _input[index];						// Sum of the input prior...
-				for (int port = 0; port < _numPorts; port++)	// Plus each input message value
+				ReleasableIterator<ISolverNodeGibbs> scoreNodes = GibbsNeighborList.iteratorFor(_neighbors, this);
+				while (scoreNodes.hasNext())
 				{
-					double tmp = ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
-					out += tmp;
+					out += scoreNodes.next().getPotential();
 				}
+				scoreNodes.release();
+				
 				out *= _beta;									// Apply tempering
 
 				if (out < minEnergy) minEnergy = out;			// For normalization
@@ -274,6 +282,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
+	public final boolean hasPotential()
+	{
+		return !_var.hasFixedValue();
+	}
+	
+	@Override
 	public final double getScore()
 	{
 		if (!_var.hasFixedValue())
@@ -321,7 +335,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		{
 			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
 			{
-				Factor f = (Factor)_var.getSibling(port);
+				Factor f = _var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected())
 				{
 					int reverseEdge = _var.getSiblingPortIndex(port);
@@ -588,6 +602,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void initialize()
 	{
 		super.initialize();
+		
+		// We actually only need to change this if the model has changed in the vicinity of this variable,
+		// but that may not be worth the trouble to figure out.
+		_neighbors = GibbsNeighborList.create(this);
 		
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().size();

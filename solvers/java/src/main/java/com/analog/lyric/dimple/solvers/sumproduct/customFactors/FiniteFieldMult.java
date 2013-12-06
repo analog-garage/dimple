@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
-import com.analog.lyric.util.misc.IVariableMapList;
+import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable.LookupTables;
 
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
@@ -42,13 +42,13 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 			throw new DimpleException("Only supports 3 arguments");
 		
 		//TODO: check all have same prime poly
-		IVariableMapList variables = factor.getVariables();
+		final Discrete v0 = (Discrete)factor.getSibling(0);
 		
 		//TODO: error check
-		int poly = ((SFiniteFieldVariable)variables.getByIndex(0).getSolver()).getTables().getPoly();
+		int poly = ((SFiniteFieldVariable)v0.getSolver()).getTables().getPoly();
 		for (int i = 1; i < 3; i++)
 		{
-			if (((SFiniteFieldVariable)variables.getByIndex(i).getSolver()).getTables().getPoly() != poly)
+			if (((SFiniteFieldVariable)factor.getSibling(i).getSolver()).getTables().getPoly() != poly)
 			{
 				//TODO: better error message
 				throw new DimpleException("polys don't match");
@@ -56,7 +56,7 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 		}
 		
 		//((Discrete)variables.getByIndex(0));
-		_fft = new DoubleFFT_1D(((Discrete)variables.getByIndex(0)).getDiscreteDomain().size()-1);
+		_fft = new DoubleFFT_1D(v0.getDiscreteDomain().size()-1);
 
 	}
 
@@ -90,8 +90,9 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 	
 	public void updateBackward(double [] yInput,double [] zInput, double [] xOutput)
 	{
-		int [] dlogTable = ((SFiniteFieldVariable)_factor.getVariables().getByIndex(0).getSolver()).getTables().getDlogTable();
-		int [] powTable = ((SFiniteFieldVariable)_factor.getVariables().getByIndex(0).getSolver()).getTables().getPowerTable();
+		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
+		int [] dlogTable = tables.getDlogTable();
+		int [] powTable = tables.getPowerTable();
 
 		//Sort x, y, and z so that probs are stored in logs
 		double [] dlogx = new double[(xOutput.length-1)*2];
@@ -158,9 +159,9 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 		double [] zOutput = _outputMsgs[2];
 
 		
-		
-		int [] dlogTable = ((SFiniteFieldVariable)_factor.getVariables().getByIndex(0).getSolver()).getTables().getDlogTable();
-		int [] powTable = ((SFiniteFieldVariable)_factor.getVariables().getByIndex(0).getSolver()).getTables().getPowerTable();
+		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
+		int [] dlogTable = tables.getDlogTable();
+		int [] powTable = tables.getPowerTable();
 		
 		//Sort x, y, and z so that probs are stored in logs
 		double [] dlogx = new double[(xInput.length-1)*2];

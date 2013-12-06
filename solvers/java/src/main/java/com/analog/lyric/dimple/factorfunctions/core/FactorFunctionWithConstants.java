@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -139,7 +140,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
 	{
 		int inputLength = values.length;
 		int constantLength = _constantIndices.length;
@@ -177,7 +178,31 @@ public class FactorFunctionWithConstants extends FactorFunction
 			}
 		}
 		
-		return _factorFunction.updateDeterministic(expandedValues,  expandedOldValues);
+		boolean incremental =
+			_factorFunction.updateDeterministic(expandedValues,  expandedOldValues, changedOutputsHolder);
+		
+		int[] changedOutputs = changedOutputsHolder.get();
+		if (changedOutputs != null)
+		{
+			final int lowestConstantIndex = _constantIndices[0];
+			
+			// Need to adjust the output indexes if they come after the constant indexes.
+			for (int oi = changedOutputs.length; --oi >= 0;)
+			{
+				int outputIndex = changedOutputs[oi];
+				if (outputIndex >= lowestConstantIndex)
+				{
+					int offset = Arrays.binarySearch(_constantIndices, outputIndex);
+					if (offset < 0)
+					{
+						offset = -1 - offset;
+					}
+					changedOutputs[oi] -= offset;
+				}
+			}
+		}
+		
+		return incremental;
 	}
 	
 	// Expand list of inputs to include the constants
@@ -189,24 +214,17 @@ public class FactorFunctionWithConstants extends FactorFunction
 		int expandedLength = inputLength + constantLength;
 		Object[] expandedInputs = new Object[expandedLength];
 		
-		int curInputIndex = 0;
-		int curConstantIndexIndex = 0;
-		int curConstantIndex = _constantIndices[curConstantIndexIndex];
-		for (int i = 0; i < expandedLength; i++)
+		int ei = 0, vi = 0;
+		for (int ci = 0; ci < constantLength; ++ ci)
 		{
-			if (curConstantIndex == i)
-			{
-				expandedInputs[i] = _constants[curConstantIndexIndex++];		// Insert constant
-				if (curConstantIndexIndex < constantLength)
-					curConstantIndex = _constantIndices[curConstantIndexIndex];	// Next constant
-				else
-					curConstantIndex = -1;										// Done with constants
-			}
-			else
-			{
-				expandedInputs[i] = input[curInputIndex++];						// Insert non-constant input
-			}
+			final int constantIndex = _constantIndices[ci];
+			final int nonConstantLength = constantIndex - ei;
+			System.arraycopy(input, vi, expandedInputs, ei, nonConstantLength);
+			vi += nonConstantLength;
+			ei = constantIndex + 1;
+			expandedInputs[constantIndex] = _constants[ci];
 		}
+		System.arraycopy(input, vi, expandedInputs, ei, inputLength - vi);
 		
 		return expandedInputs;
 	}

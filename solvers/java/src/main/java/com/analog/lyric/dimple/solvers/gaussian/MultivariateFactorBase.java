@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -42,19 +41,18 @@ public abstract class MultivariateFactorBase extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		int numPorts = _factor.getSiblingCount();
-	    _inputMsgs = new MultivariateMsg[numPorts];
-	    _outputMsgs = new MultivariateMsg[numPorts];
+		final Factor factor = _factor;
+		final int nVars = factor.getSiblingCount();
+	    _inputMsgs = new MultivariateMsg[nVars];
+	    _outputMsgs = new MultivariateMsg[nVars];
 
 		//messages were created in constructor
-		int index = 0;
-		for (VariableBase vb : _factor.getVariables())
+		for (int index = 0; index < nVars; ++index)
 		{
-			ISolverVariable sv = vb.getSolver();
+			ISolverVariable sv = factor.getSibling(index).getSolver();
 			Object [] messages = sv.createMessages(this);
 			_outputMsgs[index] = (MultivariateMsg)messages[0];
 			_inputMsgs[index] = (MultivariateMsg)messages[1];
-			index++;
 		}
 		
 	}

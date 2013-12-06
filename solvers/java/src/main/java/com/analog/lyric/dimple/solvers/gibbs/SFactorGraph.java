@@ -617,9 +617,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		deferDeterministicUpdates();
 		
-		for (VariableBase vb : f.getVariables())
+		for (int i = 0, nvars = f.getSiblingCount(); i < nvars; ++i)
 		{
-			((ISolverVariableGibbs) vb.getSolver()).postAddFactor(f);
+			((ISolverVariableGibbs) f.getSibling(i).getSolver()).postAddFactor(f);
 		}
 		
 		processDeferredDeterministicUpdates();

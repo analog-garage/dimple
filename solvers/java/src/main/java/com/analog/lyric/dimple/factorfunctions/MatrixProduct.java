@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
+
+import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -209,7 +212,8 @@ public class MatrixProduct extends FactorFunction
     }
     
     @Override
-    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
+    	AtomicReference<int[]> changedOutputsHolder)
     {
     	boolean incremental = false;
     	
@@ -233,6 +237,8 @@ public class MatrixProduct extends FactorFunction
     	
     	final int minSupportedIndex = in1Matrix == null ? in1Offset : (in2Matrix == null ? in2Offset : values.length);
     	final int maxSupportedIndex = in2Matrix == null ? values.length : (in1Matrix == null ? in2Offset : in1Offset);
+    	
+    	OpenIntIntHashMap changedOutputSet = new OpenIntIntHashMap(Math.max(outRows, outCols));
     	
     	doIncremental:
     	{
@@ -281,6 +287,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in1Value = in1Matrix[row][in1Col];
     						outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     				else
@@ -292,6 +299,7 @@ public class MatrixProduct extends FactorFunction
         					final double oldOutput = outputValue.getDouble();
         					final double in1Value = values[in1Index].getDouble();
         					outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+            				changedOutputSet.put(outIndex, outIndex);
         				}
     				}
     			}
@@ -305,6 +313,7 @@ public class MatrixProduct extends FactorFunction
     				
     				int col = 0;
     				int outIndex = row;
+    				
     				if (in2Matrix != null)
     				{
     					final double[] rowValues = in2Matrix[in2Row];
@@ -314,6 +323,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in2Value = rowValues[col] ;
     						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     				else
@@ -326,6 +336,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in2Value = values[in2Index].getDouble();
     						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     			}
@@ -333,6 +344,8 @@ public class MatrixProduct extends FactorFunction
     		incremental = true;
     	}
     	
-    	return incremental || super.updateDeterministic(values, oldValues);
+    	changedOutputsHolder.set(changedOutputSet.keys().elements());
+    	
+    	return incremental || super.updateDeterministic(values, oldValues, changedOutputsHolder);
     }
 }

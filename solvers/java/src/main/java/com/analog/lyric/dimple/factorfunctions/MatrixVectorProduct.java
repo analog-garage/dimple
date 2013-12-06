@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -203,7 +204,7 @@ public class MatrixVectorProduct extends FactorFunction
     }
     
     @Override
-    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
     {
     	final int inLength = _inLength;
     	final int outLength = _outLength;
@@ -286,6 +287,6 @@ public class MatrixVectorProduct extends FactorFunction
     		incremental = true;
     	}
     	
-    	return incremental || super.updateDeterministic(values, oldValues);
+    	return incremental || super.updateDeterministic(values, oldValues, changedOutputsHolder);
     }
 }

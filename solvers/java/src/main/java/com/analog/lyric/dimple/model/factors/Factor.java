@@ -31,8 +31,6 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.util.misc.FlaggedVariableMapList;
-import com.analog.lyric.util.misc.IVariableMapList;
 import com.analog.lyric.util.misc.Internal;
 
 public class Factor extends FactorBase implements Cloneable
@@ -40,7 +38,6 @@ public class Factor extends FactorBase implements Cloneable
 	private String _modelerFunctionName = "";
 	protected ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
-	protected FlaggedVariableMapList _variables = null;
 	int [] _directedTo = null;
 	int [] _directedFrom = null;
 	
@@ -125,7 +122,6 @@ public class Factor extends FactorBase implements Cloneable
 	
 	protected void addVariable(VariableBase variable)
 	{
-		_variables = null;
 		connect(variable);
 		variable.connect(this);
 	}
@@ -162,7 +158,6 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
-		_variables = null;
 		if (factorGraph != null)
 		{
 			_solverFactor = factorGraph.createFactor(this);
@@ -176,20 +171,18 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void replace(VariableBase oldVariable, VariableBase newVariable)
 	{
-		_variables = null;
 		replaceSibling(oldVariable, newVariable);
 	}
 	
 	public DomainList<?> getDomainList()
 	{
-		IVariableMapList variables = getVariables();
-		int numVariables = variables.size();
+		int numVariables = getSiblingCount();
 		
 		Domain [] domains = new Domain[numVariables];
 		
 		for (int i = 0; i < numVariables; i++)
 		{
-			domains[i] = variables.getByIndex(i).getDomain();
+			domains[i] = getSibling(i).getDomain();
 		}
 		
 		// FIXME: do we need to ensure that _directedTo has been set?
@@ -200,8 +193,6 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public Factor clone()
 	{
-		_variables = null;
-		
 		/*******
 		 * NOTE: Any derived class that defines instance variables that are
 		 * objects (rather than primitive types) must implement clone(), which
@@ -251,24 +242,6 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
-	public IVariableMapList getVariables()
-	{
-		//Cache the variables for performance reasons
-		if (_variables == null)
-		{
-			int nSiblings = getSiblingCount();
-			_variables = new FlaggedVariableMapList(nSiblings);
-			for (int i = 0; i < nSiblings; i++)
-				_variables.add(getSibling(i));
-			if (_directedTo != null)
-			{
-				_variables.setFlags(true, _directedTo);
-			}
-		}
-		
-		return _variables;
-	}
-
 	@Override
 	public void update()
 	{
@@ -298,7 +271,6 @@ public class Factor extends FactorBase implements Cloneable
 	@Internal
 	public Factor join(Factor other)
 	{
-		_variables = null;
 		ArrayList<VariableBase> varList = new ArrayList<VariableBase>();
 		
 		//go through variables from first factor and
@@ -427,7 +399,7 @@ public class Factor extends FactorBase implements Cloneable
 			vl = new VariableList(_directedTo.length);
 			for (int i = 0; i < _directedTo.length; i++)
 			{
-				vl.add(getVariables().getByIndex(_directedTo[i]));
+				vl.add(getSibling(_directedTo[i]));
 			}
 		}
 		else
@@ -459,14 +431,11 @@ public class Factor extends FactorBase implements Cloneable
 	
 	public void setDirectedTo(int [] directedTo)
 	{
-		getVariables();
-		_variables.clearFlags();
-
 		final JointDomainIndexer curDomains = getDomainList().asJointDomainIndexer();
 
 		BitSet toSet = new BitSet(directedTo.length);
 		
-		final int nVariables = _variables.size();
+		final int nVariables = getSiblingCount();
 		_directedFrom = new int[nVariables-directedTo.length];
 		
 		for (int toVarIndex : directedTo)
@@ -476,8 +445,6 @@ public class Factor extends FactorBase implements Cloneable
 			toSet.set(toVarIndex);
 		}
 
-		_variables.setFlags(true,  directedTo);
-		
 		for (int i = 0, fromVarIndex = 0;
 			(fromVarIndex = toSet.nextClearBit(fromVarIndex)) < nVariables;
 			++fromVarIndex, ++i)

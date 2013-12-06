@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
+import cern.colt.list.AbstractIntList;
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
@@ -230,20 +231,42 @@ public abstract class FactorFunction
      * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
      * of input variables should be specified. This list should not contain more than
      * {@link #updateDeterministicLimit(int)} elements.
-     * 
+     * @param changedOutputsHolder should be set by the function to contains the list of indexes of output variables
+     * that were changed or else set to contain null if all of the outputs were modified.
      * @return true if update was done incrementally (i.e not all inputs were processed), false if full
      * update was done.
      * 
      * @throws IndexOutOfBoundsException if an index in {@code oldValues} does not refer to an input variable.
      */
-    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
+    	AtomicReference<int[]> changedOutputsHolder)
     {
 		Object[] tmp = Value.toObjects(values);
 		evalDeterministic(tmp);
 		Value.copyFromObjects(tmp, values);
+		changedOutputsHolder.set(null);
 		return false;
     }
-
+    
+    /**
+     * Adds indexes of output variables that would be changed if the input with the specified
+     * index is changed.
+     * 
+     * @param inputIndex a valid input index for the function (i.e. one not in the
+     * {@link #getDirectedToIndices(int numEdges)} array).
+     * @param changedOutputs is the list to which output indexes will be added.
+     * @param numEdges is the number of edges/variables attached to the factor for which the function will
+     * be evaluated.
+     * @return number of output indexes added to {@code changedOutputs} or else {@code -1} if
+     * not supported.
+     * <p>
+     * Default implementation returns {@code -1}.
+     */
+    public int addDeterministicOutputsForInput(int inputIndex, AbstractIntList changedOutputs, int numEdges)
+    {
+    	return -1;
+    }
+    
     // REFACTOR: does anyone use this anymore. Should we remove?
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{

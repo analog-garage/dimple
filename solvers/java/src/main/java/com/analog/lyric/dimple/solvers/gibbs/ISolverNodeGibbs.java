@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2013 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,19 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import java.util.Collection;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-import com.analog.lyric.dimple.model.values.IndexedValue;
-import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
-
-public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
+public interface ISolverNodeGibbs extends ISolverNode
 {
-	@Override
 	public double getPotential();
-	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues);
-	@Override
 	public double getConditionalPotential(int portIndex);
-	public void updateEdgeMessage(int portIndex);
 }

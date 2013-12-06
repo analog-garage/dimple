@@ -131,10 +131,10 @@ public abstract class VariableBase extends Node implements Cloneable
     }
     
     @Override
-    public FactorBase getSibling(int i)
+    public Factor getSibling(int i)
     {
     	// Variables should only be connected to factors
-    	return (FactorBase)super.getSibling(i);
+    	return (Factor)super.getSibling(i);
     }
     
     /**

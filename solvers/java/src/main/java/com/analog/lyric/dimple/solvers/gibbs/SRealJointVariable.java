@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -50,6 +51,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.MHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.RealMCMCSamplerRegistry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
@@ -79,6 +81,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private boolean _guessWasSet = false;
 	private int _tempIndex = 0;
 
+	/**
+	 * List of neighbors for sample scoring. Instantiated during initialization.
+	 */
+	private GibbsNeighborList _neighbors = null;
 
 	public SRealJointVariable(VariableBase var)
 	{
@@ -164,35 +170,55 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 		return getCurrentSampleScore();
 	}
+
 	@Override
 	public final double getCurrentSampleScore()
 	{
-		if (!_domain.inDomain(_sampleValue))
-			return Double.POSITIVE_INFINITY;		// Outside the domain
+		double sampleScore = Double.POSITIVE_INFINITY;
 		
-		double potential = 0;
+		computeScore:
+		{
+			if (!_domain.inDomain(_sampleValue))
+				break computeScore; // outside the domain
+			
+			double potential = 0;
 
-		// Sum up the potentials from the input and all connected factors
-		if (_inputJoint != null)
-			potential += _inputJoint.evalEnergy(_sampleValue);
-		else if (_inputArray != null)
-		{
-			for (int i = 0; i < _numRealVars; i++)
-				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
-		}
-		int numPorts = _var.getSiblingCount();
-		for (int portIndex = 0; portIndex < numPorts; portIndex++)
-		{
-			INode factorNode = _var.getSibling(portIndex);
-			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
-			int factorPortNumber = factorNode.getPortNum(_var);
-			potential += factor.getConditionalPotential(factorPortNumber);
+			// Sum up the potentials from the input and all connected factors
+			if (_inputJoint != null)
+			{
+				potential += _inputJoint.evalEnergy(_sampleValue);
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+				}
+			}
+			else if (_inputArray != null)
+			{
+				for (int i = 0; i < _numRealVars; i++)
+				{
+					potential += _inputArray[i].evalEnergy(_sampleValue[i]);
+					if (!Doubles.isFinite(potential))
+					{
+						break computeScore;
+					}
+				}
+			}
+
+			ReleasableIterator<ISolverNodeGibbs> scoreNodes = GibbsNeighborList.iteratorFor(_neighbors, this);
+			while (scoreNodes.hasNext())
+			{
+				potential += scoreNodes.next().getPotential();
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+				}
+			}
+			scoreNodes.release();
+
+			sampleScore = potential * _beta;	// Incorporate current temperature
 		}
 		
-		if (Double.isNaN(potential))
-			return Double.POSITIVE_INFINITY;
-
-		return potential * _beta;	// Incorporate current temperature
+		return sampleScore;
 	}
 	@Override
 	public final double getCurrentSampleValue()
@@ -478,6 +504,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		else
 			return 0;
 	}
+	
+	@Override
+	public final boolean hasPotential()
+	{
+		return !_var.hasFixedValue() && (_inputJoint != null || _inputArray != null);
+	}
 
 	@Override
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
@@ -534,7 +566,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		int numPorts = _var.getSiblingCount();
 		for (int port = 0; port < numPorts; port++)	// Plus each input message value
 		{
-			Factor f = (Factor)_var.getSibling(port);
+			Factor f = _var.getSibling(port);
 			if (f.getFactorFunction().isDeterministicDirected())
 			{
 				int reverseEdge = _var.getSiblingPortIndex(port);
@@ -739,6 +771,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		super.initialize();
 
+		// We actually only need to change this if the model has changed in the vicinity of this variable,
+		// but that may not be worth the trouble to figure out.
+		_neighbors = GibbsNeighborList.create(this);
+		
 		if (!getModelObject().isDeterministicOutput())
 		{
 			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
