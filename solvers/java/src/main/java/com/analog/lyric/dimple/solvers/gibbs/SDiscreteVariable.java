@@ -53,6 +53,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	protected double _beta = 1;
 	protected Discrete _varDiscrete;
 	protected boolean _holdSampleValue = false;
+	private boolean _visited = false;
 
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
@@ -607,6 +608,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		{
 			setCurrentSampleIndex(_sampleIndex);
 		}
+	}
+	
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
 	}
 
 }

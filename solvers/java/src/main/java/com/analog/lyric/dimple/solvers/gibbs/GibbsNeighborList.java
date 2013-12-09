@@ -1,12 +1,9 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.AbstractList;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.Immutable;
@@ -57,13 +54,19 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		final VariableBase var = svar.getModelObject();
 		final int nSiblings = var.getSiblingCount();
 
-		final Set<ISolverNodeGibbs> visited = new HashSet<ISolverNodeGibbs>(nSiblings);
-		visited.add(svar);
+		// Neighbors at front of list, other visited nodes at end.
+		final Deque<ISolverNodeGibbs> visited = new LinkedList<ISolverNodeGibbs>();
+		visited.addLast(svar);
+		svar.setVisited(true);
 		
-		final List<ISolverNodeGibbs> neighbors = new ArrayList<ISolverNodeGibbs>(nSiblings);
-		final Queue<ISolverNodeGibbs> queue = addVariableNeighbors(svar, visited, neighbors, null);
+		// Counter of neighbors.
+		int[] counter = new int[1];
+		
+		// Nodes yet to visit.
+		// TODO: can we combine this with the visited list?
+		final Queue<ISolverNodeGibbs> queue = addVariableNeighbors(svar, visited, counter, null);
 
-		final boolean createList = queue != null || neighbors.size() != nSiblings;
+		final boolean createList = queue != null || counter[0] != nSiblings;
 		
 		if (queue != null)
 		{
@@ -71,71 +74,109 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 			{
 				if (node instanceof ISolverFactorGibbs)
 				{
-					addFactorNeighbors((ISolverFactorGibbs)node, visited, neighbors, queue);
+					addFactorNeighbors((ISolverFactorGibbs)node, visited, counter, queue);
 				}
 				else
 				{
-					addVariableNeighbors((ISolverVariableGibbs)node, visited, neighbors, queue);
+					addVariableNeighbors((ISolverVariableGibbs)node, visited, counter, queue);
 				}
 			}
 		}
 		
-		return createList ? new GibbsNeighborList(neighbors.toArray(new ISolverNodeGibbs[neighbors.size()])) : null;
+		if (createList)
+		{
+			final int size = counter[0];
+			ISolverNodeGibbs[] neighbors = new ISolverNodeGibbs[size];
+
+			int i = 0;
+			for (ISolverNodeGibbs node : visited)
+			{
+				node.setVisited(false);
+				if (i < size)
+				{
+					neighbors[i++] = node;
+				}
+			}
+			
+			return new GibbsNeighborList(neighbors);
+		}
+		else
+		{
+			for (ISolverNodeGibbs node : visited)
+			{
+				node.setVisited(false);
+			}
+			
+			return null;
+		}
 	}
 	
 	private static void addFactorNeighbors(
 		ISolverFactorGibbs sfactor,
-		Set<ISolverNodeGibbs> visited,
-		List<ISolverNodeGibbs> neighbors,
+		Deque<ISolverNodeGibbs> visited,
+		int[] neighborCounter,
 		Queue<ISolverNodeGibbs> queue)
 	{
 		Factor factor = sfactor.getModelObject();
+		int counter = neighborCounter[0];
 		for (int edge : factor.getDirectedTo())
 		{
 			VariableBase variable = factor.getSibling(edge);
 			ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();
-			if (visited.add(svariable))
+			if (svariable.setVisited(true))
 			{
 				if (svariable.hasPotential())
 				{
-					// Only add to neighbors set if getPotential() can return something other than 0.
-					neighbors.add(svariable);
+					visited.addFirst(svariable);
+					counter++;
+				}
+				else
+				{
+					visited.addLast(svariable);
 				}
 				queue.add(svariable);
 			}
 		}
+		neighborCounter[0] = counter;
 	}
 	
 	private static Queue<ISolverNodeGibbs> addVariableNeighbors(
 		ISolverVariableGibbs svariable,
-		Set<ISolverNodeGibbs> visited,
-		List<ISolverNodeGibbs> neighbors,
+		Deque<ISolverNodeGibbs> visited,
+		int[] neighborCounter,
 		Queue<ISolverNodeGibbs> queue)
 	{
 		final VariableBase variable = svariable.getModelObject();
 		final int nSiblings = variable.getSiblingCount();
 		
+		int counter = neighborCounter[0];
 		for (int edge = 0; edge < nSiblings; ++edge)
 		{
 			Factor factor = variable.getSibling(edge);
 			ISolverFactorGibbs sfactor = (ISolverFactorGibbs)factor.getSolver();
-			if (visited.add(sfactor))
+			if (sfactor.setVisited(true))
 			{
+				visited.add(sfactor);
 				if (factor.getFactorFunction().isDeterministicDirected() &&
 					!factor.isDirectedTo(variable.getSiblingPortIndex(edge)))
 				{
+					visited.addLast(sfactor);
 					if (queue == null)
 					{
-						queue = new ArrayDeque<ISolverNodeGibbs>();
+						queue = new LinkedList<ISolverNodeGibbs>();
 					}
 					queue.add(sfactor);
+//					addFactorNeighbors(sfactor, visited, neighbors, queue);
 				}
 				else
 				{
-					neighbors.add(sfactor);
+					visited.addFirst(sfactor);
+					counter++;
 				}
 			}
 		}
+		
+		neighborCounter[0] = counter;
 		
 		return queue;
 	}

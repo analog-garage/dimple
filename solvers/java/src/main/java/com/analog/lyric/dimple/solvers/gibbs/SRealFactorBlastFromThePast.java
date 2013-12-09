@@ -32,7 +32,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 {
 	private Value [] _inputMsgs;
 	private Object[] _outputMsgs;
-
+	private boolean _visited;
 	
 	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -109,4 +109,11 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		return _outputMsgs[portIndex];
 	}
 
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
 }

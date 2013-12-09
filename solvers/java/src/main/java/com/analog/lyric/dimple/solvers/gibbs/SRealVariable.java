@@ -75,6 +75,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
+	private boolean _visited = false;
 	
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
@@ -713,5 +714,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return commonSamplers;
 	}
 
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
 
 }

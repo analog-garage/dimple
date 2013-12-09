@@ -80,7 +80,8 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private double[] _guessValue;
 	private boolean _guessWasSet = false;
 	private int _tempIndex = 0;
-
+	private boolean _visited = false;
+	
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
@@ -877,5 +878,13 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 				commonSamplers.remove(sampler);	// Remove samplers not supported so remove it
 		
 		return commonSamplers;
+	}
+
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
 	}
 }

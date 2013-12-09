@@ -33,7 +33,8 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
     protected int _numPorts;
 	private double [] _outputMsg;
 	private DiscreteValue _inputMsg;
-
+	private boolean _visited = false;
+	
 	public STableFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
 		super(f);
@@ -84,5 +85,12 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 		//NOP
 	}
 
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
 
 }

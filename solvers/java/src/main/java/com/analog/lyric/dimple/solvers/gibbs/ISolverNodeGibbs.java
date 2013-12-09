@@ -17,8 +17,16 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Internal;
 
 public interface ISolverNodeGibbs extends ISolverNode
 {
 	public double getPotential();
+	
+	/**
+	 * Sets "visited" flag to specified value.
+	 * @return true if value changed.
+	 */
+	@Internal
+	public boolean setVisited(boolean visited);
 }

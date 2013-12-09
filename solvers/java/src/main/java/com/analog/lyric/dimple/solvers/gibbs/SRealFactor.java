@@ -43,6 +43,8 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	 */
 	private boolean _outputsValid = false;
 	
+	private boolean _visited = false;
+	
 	public SRealFactor(Factor factor)
 	{
 		super(factor);
@@ -227,6 +229,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	{
 		_outputsValid = false;
 		_inputMsgs[thisPortNum] = ((SRealFactor)other)._inputMsgs[otherPortNum];
+	}
+
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
 	}
 
 }

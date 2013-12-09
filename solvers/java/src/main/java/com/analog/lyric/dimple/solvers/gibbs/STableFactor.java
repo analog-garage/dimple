@@ -41,7 +41,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
     protected double[][] _outPortMsgs = null;
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
-
+    private boolean _visited = false;
+    
     /*--------------
      * Construction
      */
@@ -215,5 +216,13 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 		{
 			table.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
 		}
+	}
+
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
 	}
 }
