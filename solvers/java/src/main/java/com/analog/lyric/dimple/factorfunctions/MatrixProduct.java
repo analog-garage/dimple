@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import cern.colt.map.OpenIntIntHashMap;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -156,6 +157,81 @@ public class MatrixProduct extends FactorFunction
     		indexList[i] = i;
 		return indexList;
 	}
+    
+    @Override
+    public final int[] getDirectedToIndicesForInput(int numEdges, int inputEdge)
+    {
+    	
+    	final int outRows = _Nr;
+    	final int outCols = _Nc;
+    	final int outSize = outRows * outCols;
+    	
+    	final int in1Rows = _Nr;
+    	final int in1Cols = _Nx;
+    	final int in1Size = in1Rows * in1Cols;
+    	
+    	final int in2Rows = _Nx;
+    	final int in2Cols = _Nc;
+    	final int in2Size = in2Rows * in2Cols;
+    	
+    	final int nInputEdges = numEdges - outSize;
+    	
+    	final int in1Offset = outSize;
+    	
+    	int in2Offset = in1Offset;
+    	if (nInputEdges == in1Size + in2Size)
+    	{
+    		in2Offset += in1Size;
+    	}
+    	else if (nInputEdges == in1Size + 1)
+    	{
+    		// FIXME: if in1Size == in2Size we can't tell which input is constant! Either this method
+    		// is going to have to provide access to the factor or this object should record the configuration
+    		// at construction.
+    		in2Offset += in1Size;
+    	}
+    	else if (nInputEdges == in2Size + 1)
+    	{
+    		in2Offset += 1;
+    	}
+    	else if (nInputEdges == 2)
+    	{
+    		in2Offset += 1;
+    	}
+    	else
+    	{
+    		throw new DimpleException("Bad number of edges %d for MatrixProduct (Nr=%d, Nx=%d, Nc=%d)",
+    			numEdges, _Nr, _Nx, _Nc);
+    	}
+    	
+    	if (inputEdge >= in2Offset)
+    	{
+    		// Edge from second input matrix -- changes column of output
+			final int[] to = new int[outRows];
+			final int col = (inputEdge - in2Offset) / in2Rows;
+			
+    		for (int row = 0, outIndex = col * outRows; row < outRows; ++row, ++outIndex)
+    		{
+    			to[row] = outIndex;
+    		}
+    		
+    		return to;
+    	}
+    	else
+    	{
+    		// Edge from second input matrix -- changes row of output
+    		final int[] to = new int[outCols];
+			final int row = (inputEdge - in1Offset) % in1Rows;
+			
+			for (int col = 0, outIndex = row; col < outCols; ++col, outIndex += outRows)
+			{
+				to[col] = outIndex;
+			}
+			
+			return to;
+    	}
+    }
+    
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override

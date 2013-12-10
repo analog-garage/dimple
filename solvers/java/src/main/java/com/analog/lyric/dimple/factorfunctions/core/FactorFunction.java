@@ -23,11 +23,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
-import cern.colt.list.AbstractIntList;
 import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.MatrixProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -129,6 +129,18 @@ public abstract class FactorFunction
 	protected int[] getDirectedToIndices()
 	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
 
+	/**
+	 * Returns the output indices that can be changed when specified input is changed.
+	 * <p>
+	 * The default implementation simply delegates to {@link #getDirectedToIndices(int)}.
+	 * This may be overridden for functions that have multiple outputs and inputs for which
+	 * a single input may only affect a subset of the full outputs (e.g. {@link MatrixProduct}).
+	 */
+	public int[] getDirectedToIndicesForInput(int numEdges, int inputEdge)
+	{
+		return getDirectedToIndices(numEdges);
+	}
+	
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
@@ -246,25 +258,6 @@ public abstract class FactorFunction
 		Value.copyFromObjects(tmp, values);
 		changedOutputsHolder.set(null);
 		return false;
-    }
-    
-    /**
-     * Adds indexes of output variables that would be changed if the input with the specified
-     * index is changed.
-     * 
-     * @param inputIndex a valid input index for the function (i.e. one not in the
-     * {@link #getDirectedToIndices(int numEdges)} array).
-     * @param changedOutputs is the list to which output indexes will be added.
-     * @param numEdges is the number of edges/variables attached to the factor for which the function will
-     * be evaluated.
-     * @return number of output indexes added to {@code changedOutputs} or else {@code -1} if
-     * not supported.
-     * <p>
-     * Default implementation returns {@code -1}.
-     */
-    public int addDeterministicOutputsForInput(int inputIndex, AbstractIntList changedOutputs, int numEdges)
-    {
-    	return -1;
     }
     
     // REFACTOR: does anyone use this anymore. Should we remove?

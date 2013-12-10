@@ -44,6 +44,46 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		_neighbors = neighbors;
 	}
 	
+	private abstract static class Work
+	{
+		protected abstract Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue);
+	}
+	
+	private static class VarWork extends Work
+	{
+		private final ISolverVariableGibbs _varNode;
+	
+		private VarWork(ISolverVariableGibbs varNode)
+		{
+			_varNode = varNode;
+		}
+		
+		@Override
+		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue)
+		{
+			return addVariableNeighbors(_varNode, visited, counter, queue);
+		}
+	}
+	
+	private static class FactorWork extends Work
+	{
+		private final ISolverFactorGibbs _factorNode;
+		private final int _inputEdge;
+		
+		private FactorWork(ISolverFactorGibbs factorNode, int inputEdge)
+		{
+			_factorNode = factorNode;
+			_inputEdge = inputEdge;
+		}
+		
+		@Override
+		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue)
+		{
+			addFactorNeighbors(_factorNode, _inputEdge, visited, counter, queue);
+			return queue;
+		}
+	}
+	
 	/**
 	 * Creates a neighbor list for scoring samples of {@code svar}.
 	 * 
@@ -64,22 +104,15 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		
 		// Nodes yet to visit.
 		// TODO: can we combine this with the visited list?
-		final Queue<ISolverNodeGibbs> queue = addVariableNeighbors(svar, visited, counter, null);
+		final Queue<Work> queue = addVariableNeighbors(svar, visited, counter, null);
 
 		final boolean createList = queue != null || counter[0] != nSiblings;
 		
 		if (queue != null)
 		{
-			for (ISolverNodeGibbs node = null; (node = queue.poll()) != null;)
+			for (Work work = null; (work = queue.poll()) != null;)
 			{
-				if (node instanceof ISolverFactorGibbs)
-				{
-					addFactorNeighbors((ISolverFactorGibbs)node, visited, counter, queue);
-				}
-				else
-				{
-					addVariableNeighbors((ISolverVariableGibbs)node, visited, counter, queue);
-				}
+				work.handle(visited, counter, queue);
 			}
 		}
 		
@@ -113,13 +146,15 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 	
 	private static void addFactorNeighbors(
 		ISolverFactorGibbs sfactor,
+		int inputEdge,
 		Deque<ISolverNodeGibbs> visited,
 		int[] neighborCounter,
-		Queue<ISolverNodeGibbs> queue)
+		Queue<Work> queue)
 	{
 		Factor factor = sfactor.getModelObject();
+		int numEdges = factor.getSiblingCount();
 		int counter = neighborCounter[0];
-		for (int edge : factor.getDirectedTo())
+		for (int edge : factor.getFactorFunction().getDirectedToIndicesForInput(numEdges, inputEdge))
 		{
 			VariableBase variable = factor.getSibling(edge);
 			ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();
@@ -134,17 +169,17 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 				{
 					visited.addLast(svariable);
 				}
-				queue.add(svariable);
+				queue.add(new VarWork(svariable));
 			}
 		}
 		neighborCounter[0] = counter;
 	}
 	
-	private static Queue<ISolverNodeGibbs> addVariableNeighbors(
+	private static Queue<Work> addVariableNeighbors(
 		ISolverVariableGibbs svariable,
 		Deque<ISolverNodeGibbs> visited,
 		int[] neighborCounter,
-		Queue<ISolverNodeGibbs> queue)
+		Queue<Work> queue)
 	{
 		final VariableBase variable = svariable.getModelObject();
 		final int nSiblings = variable.getSiblingCount();
@@ -156,17 +191,20 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 			ISolverFactorGibbs sfactor = (ISolverFactorGibbs)factor.getSolver();
 			if (sfactor.setVisited(true))
 			{
+				// FIXME: may need to visit directed factor more than once if different
+				// inputs may affect different outputs.
+				
 				visited.add(sfactor);
+				int reverseEdge;
 				if (factor.getFactorFunction().isDeterministicDirected() &&
-					!factor.isDirectedTo(variable.getSiblingPortIndex(edge)))
+					!factor.isDirectedTo(reverseEdge = variable.getSiblingPortIndex(edge)))
 				{
 					visited.addLast(sfactor);
 					if (queue == null)
 					{
-						queue = new LinkedList<ISolverNodeGibbs>();
+						queue = new LinkedList<Work>();
 					}
-					queue.add(sfactor);
-//					addFactorNeighbors(sfactor, visited, neighbors, queue);
+					queue.add(new FactorWork(sfactor, reverseEdge));
 				}
 				else
 				{

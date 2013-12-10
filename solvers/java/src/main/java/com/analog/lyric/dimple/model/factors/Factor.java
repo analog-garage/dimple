@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.factors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -438,10 +439,17 @@ public class Factor extends FactorBase implements Cloneable
 		final int nVariables = getSiblingCount();
 		_directedFrom = new int[nVariables-directedTo.length];
 		
+		boolean sort = false;
+		int prev = -1;
 		for (int toVarIndex : directedTo)
 		{
 			if (toSet.get(toVarIndex) || toVarIndex > nVariables)
 				throw new DimpleException("invalid edge");
+			if (toVarIndex < prev)
+			{
+				sort = true;
+			}
+			prev = toVarIndex;
 			toSet.set(toVarIndex);
 		}
 
@@ -450,6 +458,11 @@ public class Factor extends FactorBase implements Cloneable
 			++fromVarIndex, ++i)
 		{
 			_directedFrom[i] = fromVarIndex;
+		}
+		
+		if (sort)
+		{
+			Arrays.sort(directedTo);
 		}
 		
 		_directedTo = directedTo;
@@ -474,12 +487,22 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		ensureDirectedToSet();
 		
-		if (_directedTo == null)
+		final int[] to = _directedTo;
+		
+		if (to == null)
 			return false;
 
-		for (int i = 0; i < _directedTo.length; i++)
-			if (_directedTo[i] == edge)
-				return true;
-		return false;
+		// Assume _directedTo is sorted:
+		
+		final int toRange = to.length - 1;
+		final int first = to[0];
+		final int last = to[toRange];
+		
+		if (last - first == toRange)
+		{
+			return edge <= last && edge >= first;
+		}
+		
+		return Arrays.binarySearch(to, edge) >= 0;
 	}
 }
