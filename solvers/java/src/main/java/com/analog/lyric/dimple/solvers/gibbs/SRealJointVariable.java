@@ -60,6 +60,10 @@ import com.google.common.primitives.Doubles;
 
 public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, ISampleScorer
 {
+	/*-------
+	 * State
+	 */
+	
 	private RealJoint _varReal;
 	private RealJointValue _outputMsg;
 	private Object[] _inputMsg = null;
@@ -85,7 +89,11 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
-	private GibbsNeighborList _neighbors = null;
+	private GibbsNeighbors _neighbors = null;
+
+	/*--------------
+	 * Construction
+	 */
 
 	public SRealJointVariable(VariableBase var)
 	{
@@ -109,6 +117,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	/*---------------------
+	 * ISolverNode methods
+	 */
 	
 	@Override
 	public void updateEdge(int outPortNum)
@@ -158,10 +169,17 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
 	
-	// ISampleScorer methods...
-	// The following methods are for the ISampleScorer interface, meant to be called by a sampler
-	// These are not intended for other purposes
+	/*-----------------------
+	 * ISampleScorer methods
+	 * 
+	 * The following methods are for the ISampleScorer interface, meant to be called by a sampler
+	 * These are not intended for other purposes
+	 */
+
 	@Override
 	public final double getSampleScore(double sampleValue)
 	{
@@ -205,7 +223,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 				}
 			}
 
-			ReleasableIterator<ISolverNodeGibbs> scoreNodes = GibbsNeighborList.iteratorFor(_neighbors, this);
+			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 			while (scoreNodes.hasNext())
 			{
 				potential += scoreNodes.next().getPotential();
@@ -227,13 +245,18 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		return _sampleValue[_tempIndex];
 	}
 
-	
+	// TODO move to local methods?
 	// For conjugate samplers
 	public final IRealJointConjugateSampler getConjugateSampler()
 	{
 		return _conjugateSampler;
 	}
 
+	/*----------------------------------
+	 * ISolverRealVariableGibbs methods
+	 * TODO: move below ISolverVariableGibbs methods
+	 */
+	
 	@Override
 	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, IRealSampler conjugateSampler)
 	{
@@ -253,6 +276,27 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, ports, _inputJoint);
 	}
 
+	/*--------------------------
+	 * ISolverNodeGibbs methods
+	 */
+	
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
+
+	/*------------------------------
+	 * ISolverVariableGibbs methods
+	 */
+	
+	@Override
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
+	{
+		return GibbsNeighbors.iteratorFor(_neighbors, this);
+	}
 
 	@Override
 	public void randomRestart()
@@ -361,12 +405,14 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
@@ -402,6 +448,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 
 	
+	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -430,6 +477,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return 0;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
@@ -441,6 +489,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return _sampleValue;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public void setGuess(Object guess)
 	{
@@ -474,6 +523,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_bestSampleValue = _sampleValue;
 	}
 	
+	// TODO move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
@@ -507,6 +557,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		setCurrentSample(value.getObject());
 	}
 	
+    /*---------------
+     * Local methods
+     */
+    
 	public final void setCurrentSample(double[] value)
 	{
 		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
@@ -548,6 +602,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	// TODO move to private
 	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
 		int numPorts = _var.getSiblingCount();
@@ -697,7 +752,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	public final void setInitialSampleValue(double[] initialSampleValue) {_initialSampleValue = initialSampleValue;}
 	public final double[] getInitialSampleValue() {return _initialSampleValue;}
 
-
+	// TODO move to ISolverVariableGibbs
 	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
@@ -714,6 +769,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return new RealJointValue(_initialSampleValue);
 	}
 
+	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
@@ -721,23 +777,27 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		return message;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
@@ -746,13 +806,14 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_inputMsg[portIndex] = obj;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		
 	}
 	
-
+	// TODO move to ISolverNode
 	@Override
 	public void initialize()
 	{
@@ -760,7 +821,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 		// We actually only need to change this if the model has changed in the vicinity of this variable,
 		// but that may not be worth the trouble to figure out.
-		_neighbors = GibbsNeighborList.create(this);
+		_neighbors = GibbsNeighbors.create(this);
 		
 		if (!getModelObject().isDeterministicOutput())
 		{
@@ -784,12 +845,14 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		return new Object[] {null,_outputMsg};
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
@@ -800,6 +863,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			saveAllSamples();
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
@@ -878,13 +942,5 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 				commonSamplers.remove(sampler);	// Remove samplers not supported so remove it
 		
 		return commonSamplers;
-	}
-
-	@Override
-	public boolean setVisited(boolean visited)
-	{
-		boolean changed = _visited ^ visited;
-		_visited = visited;
-		return changed;
 	}
 }

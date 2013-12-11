@@ -1,6 +1,5 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
-import java.util.AbstractList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -9,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.collect.ReleasableIterableCollection;
+import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -17,17 +16,16 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 
 /**
  * Represents the neighbors of a {@link ISolverVariableGibbs} that need to be included in the variable's
- * sample score. This class is only created when this list is different from the immediate siblings of
+ * sample score. This class is only created when the contents differ from the immediate siblings of
  * the variable. This can happen in two ways:
  * <ul>
  * <li>The same factor shows up more than once in the sibling list (and should not be double counted).
  * <li>The variable is an input to one or more deterministic directed factors whose outputs should be
- * inluded in the score.
+ * included in the score (and in turn their deterministic dependents recursively).
  * </ul>
  */
 @Immutable
-class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
-	implements ReleasableIterableCollection<ISolverNodeGibbs>
+class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 {
 	/*-------
 	 * State
@@ -39,49 +37,9 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 	 * Construction
 	 */
 	
-	private GibbsNeighborList(ISolverNodeGibbs[] neighbors)
+	private GibbsNeighbors(ISolverNodeGibbs[] neighbors)
 	{
 		_neighbors = neighbors;
-	}
-	
-	private abstract static class Work
-	{
-		protected abstract Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue);
-	}
-	
-	private static class VarWork extends Work
-	{
-		private final ISolverVariableGibbs _varNode;
-	
-		private VarWork(ISolverVariableGibbs varNode)
-		{
-			_varNode = varNode;
-		}
-		
-		@Override
-		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue)
-		{
-			return addVariableNeighbors(_varNode, visited, counter, queue);
-		}
-	}
-	
-	private static class FactorWork extends Work
-	{
-		private final ISolverFactorGibbs _factorNode;
-		private final int _inputEdge;
-		
-		private FactorWork(ISolverFactorGibbs factorNode, int inputEdge)
-		{
-			_factorNode = factorNode;
-			_inputEdge = inputEdge;
-		}
-		
-		@Override
-		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue)
-		{
-			addFactorNeighbors(_factorNode, _inputEdge, visited, counter, queue);
-			return queue;
-		}
 	}
 	
 	/**
@@ -89,12 +47,13 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 	 * 
 	 * @return null if the neighbors are the same as the node's immediate siblings.
 	 */
-	static GibbsNeighborList create(ISolverVariableGibbs svar)
+	static GibbsNeighbors create(ISolverVariableGibbs svar)
 	{
 		final VariableBase var = svar.getModelObject();
 		final int nSiblings = var.getSiblingCount();
 
-		// Neighbors at front of list, other visited nodes at end.
+		// Neighbors at front of list, other visited nodes at end. The counter indicates
+		// where the boundary is.
 		final Deque<ISolverNodeGibbs> visited = new LinkedList<ISolverNodeGibbs>();
 		visited.addLast(svar);
 		svar.setVisited(true);
@@ -104,7 +63,7 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		
 		// Nodes yet to visit.
 		// TODO: can we combine this with the visited list?
-		final Queue<Work> queue = addVariableNeighbors(svar, visited, counter, null);
+		final Queue<Work> queue = new VarWork(svar, -1).handle(visited,  counter, null);
 
 		final boolean createList = queue != null || counter[0] != nSiblings;
 		
@@ -131,7 +90,7 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 				}
 			}
 			
-			return new GibbsNeighborList(neighbors);
+			return new GibbsNeighbors(neighbors);
 		}
 		else
 		{
@@ -144,79 +103,111 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		}
 	}
 	
-	private static void addFactorNeighbors(
-		ISolverFactorGibbs sfactor,
-		int inputEdge,
-		Deque<ISolverNodeGibbs> visited,
-		int[] neighborCounter,
-		Queue<Work> queue)
+	private abstract static class Work
 	{
-		Factor factor = sfactor.getModelObject();
-		int numEdges = factor.getSiblingCount();
-		int counter = neighborCounter[0];
-		for (int edge : factor.getFactorFunction().getDirectedToIndicesForInput(numEdges, inputEdge))
+		final int _incomingEdge;
+		
+		private Work(int incomingEdge)
 		{
-			VariableBase variable = factor.getSibling(edge);
-			ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();
-			if (svariable.setVisited(true))
-			{
-				if (svariable.hasPotential())
-				{
-					visited.addFirst(svariable);
-					counter++;
-				}
-				else
-				{
-					visited.addLast(svariable);
-				}
-				queue.add(new VarWork(svariable));
-			}
+			_incomingEdge = incomingEdge;
 		}
-		neighborCounter[0] = counter;
+		
+		protected abstract Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counter, Queue<Work> queue);
 	}
 	
-	private static Queue<Work> addVariableNeighbors(
-		ISolverVariableGibbs svariable,
-		Deque<ISolverNodeGibbs> visited,
-		int[] neighborCounter,
-		Queue<Work> queue)
+	private static final class VarWork extends Work
 	{
-		final VariableBase variable = svariable.getModelObject();
-		final int nSiblings = variable.getSiblingCount();
-		
-		int counter = neighborCounter[0];
-		for (int edge = 0; edge < nSiblings; ++edge)
+		private final ISolverVariableGibbs _varNode;
+	
+		private VarWork(ISolverVariableGibbs varNode, int incomingEdge)
 		{
-			Factor factor = variable.getSibling(edge);
-			ISolverFactorGibbs sfactor = (ISolverFactorGibbs)factor.getSolver();
-			if (sfactor.setVisited(true))
+			super(incomingEdge);
+			_varNode = varNode;
+		}
+		
+		@Override
+		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder, Queue<Work> queue)
+		{
+			final VariableBase variable = _varNode.getModelObject();
+			final int nSiblings = variable.getSiblingCount();
+			
+			int counter = counterHolder[0];
+			for (int edge = 0; edge < nSiblings; ++edge)
 			{
-				// FIXME: may need to visit directed factor more than once if different
-				// inputs may affect different outputs.
+				if (edge == _incomingEdge)
+					continue;
 				
-				visited.add(sfactor);
+				final Factor factor = variable.getSibling(edge);
+				final ISolverFactorGibbs sfactor = (ISolverFactorGibbs)factor.getSolver();
+				
 				int reverseEdge;
 				if (factor.getFactorFunction().isDeterministicDirected() &&
 					!factor.isDirectedTo(reverseEdge = variable.getSiblingPortIndex(edge)))
 				{
-					visited.addLast(sfactor);
+					// Do not mark deterministic directed factors as visited because we may
+					// need to visit them again from a different input variable and may get
+					// different outputs
+					//
+					// TODO: This can only happen with some types of factor functions,
+					// such as MatrixProduct, that direct many inputs to many outputs, so it may
+					// be worthwhile to be able to identify if this is one of those cases to avoid
+					// some extra work.
 					if (queue == null)
 					{
 						queue = new LinkedList<Work>();
 					}
 					queue.add(new FactorWork(sfactor, reverseEdge));
 				}
-				else
+				else if (sfactor.setVisited(true))
 				{
 					visited.addFirst(sfactor);
 					counter++;
 				}
 			}
+			
+			counterHolder[0] = counter;
+			
+			return queue;
+		}
+	}
+	
+	private static final class FactorWork extends Work
+	{
+		private final ISolverFactorGibbs _factorNode;
+		
+		private FactorWork(ISolverFactorGibbs factorNode, int incomingEdge)
+		{
+			super(incomingEdge);
+			_factorNode = factorNode;
 		}
 		
-		neighborCounter[0] = counter;
-		
-		return queue;
+		@Override
+		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder, Queue<Work> queue)
+		{
+			Factor factor = _factorNode.getModelObject();
+			int numEdges = factor.getSiblingCount();
+			int counter = counterHolder[0];
+			for (int edge : factor.getFactorFunction().getDirectedToIndicesForInput(numEdges, _incomingEdge))
+			{
+				VariableBase variable = factor.getSibling(edge);
+				ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();
+				if (svariable.setVisited(true))
+				{
+					if (svariable.hasPotential())
+					{
+						visited.addFirst(svariable);
+						counter++;
+					}
+					else
+					{
+						visited.addLast(svariable);
+					}
+					queue.add(new VarWork(svariable, factor.getSiblingPortIndex(edge)));
+				}
+			}
+			counterHolder[0] = counter;
+			return queue;
+		}
 	}
 	
 	/*------------------------------
@@ -233,25 +224,9 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 	 * Returns an iterator that visits the contents of {@code list} if not null, and which otherwise iterates
 	 * over the solver siblings of {@code var}.
 	 */
-	public static ReleasableIterator<ISolverNodeGibbs> iteratorFor(GibbsNeighborList list, ISolverVariableGibbs var)
+	static ReleasableIterator<ISolverNodeGibbs> iteratorFor(GibbsNeighbors list, ISolverVariableGibbs var)
 	{
 		return list != null ? list.iterator() : SimpleIterator.create(var.getModelObject());
-	}
-	
-	/*--------------
-	 * List methods
-	 */
-	
-	@Override
-	public ISolverNodeGibbs get(int i)
-	{
-		return _neighbors[i];
-	}
-
-	@Override
-	public final int size()
-	{
-		return _neighbors.length;
 	}
 	
 	/*--------------------------
@@ -314,6 +289,9 @@ class GibbsNeighborList extends AbstractList<ISolverNodeGibbs>
 		}
 	}
 	
+	/**
+	 * Iterator that visits all of the solver nodes in an array.
+	 */
 	@NotThreadSafe
 	private static class ArrayIterator implements ReleasableIterator<ISolverNodeGibbs>
 	{

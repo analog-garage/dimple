@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -32,6 +33,12 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	@Override
 	public double getPotential();
 	
+	/**
+	 * Returns an iterator over the nodes other than this variable node that should be
+	 * used to compute the sample score for this variable.
+	 */
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes();
+
 	/**
 	 * True if {@link #getPotential()} does not always return zero.
 	 */

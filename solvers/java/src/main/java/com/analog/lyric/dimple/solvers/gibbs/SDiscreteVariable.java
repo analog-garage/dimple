@@ -58,21 +58,28 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
-	private GibbsNeighborList _neighbors = null;
+	private GibbsNeighbors _neighbors = null;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public SDiscreteVariable(VariableBase var)
 	{
 		super(var);
 		_varDiscrete = (Discrete)_var;
 	}
 
-
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
 	@Override
 	public void updateEdge(int outPortNum)
 	{
 		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
-
+	
 	@Override
 	public void update()
 	{
@@ -124,7 +131,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			{
 				setCurrentSampleIndex(index);
 				double out = _input[index];						// Sum of the input prior...
-				ReleasableIterator<ISolverNodeGibbs> scoreNodes = GibbsNeighborList.iteratorFor(_neighbors, this);
+				ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 				while (scoreNodes.hasNext())
 				{
 					out += scoreNodes.next().getPotential();
@@ -143,6 +150,32 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		int index = generateSample(_conditional, minEnergy);
 		setCurrentSampleIndex(index);
 		
+	}
+	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
+	
+	/*--------------------------
+	 * ISolverNodeGibbs methods
+	 */
+	
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
+
+	/*-------------------------------
+	 * ISolverVariableGibbs methods
+	 */
+	
+	@Override
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
+	{
+		return GibbsNeighbors.iteratorFor(_neighbors, this);
 	}
 	
 	@Override
@@ -170,12 +203,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		setCurrentSampleIndex(generateSample(_input, minEnergy));
 	}
 
+	// TODO - move up to ISolverVariable
 	@Override
 	public void updateBelief()
 	{
 		_beliefHistogram[_sampleIndex]++;
 	}
 
+	// TODO - move up to ISolverVariable
 	@Override
 	public double[] getBelief()
 	{
@@ -210,7 +245,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	
-	
+	// TODO - move up to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixed)
 	{
@@ -260,6 +295,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     	_bestSampleIndex = _sampleIndex;
     }
     
+    // TODO: move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
@@ -275,6 +311,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return !_var.hasFixedValue();
 	}
 	
+	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -301,6 +338,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// TODO: optimize for DiscreteValue with same domain
 		setCurrentSample(value.getObject());
 	}
+	
+	/*---------------
+	 * Local methods
+	 */
 	
 	public final void setCurrentSampleIndex(int index)
     {
@@ -399,14 +440,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_holdSampleValue = false;
 	}
 	
-    
+    // TODO: move to ISolverVariableGibbs
     @Override
 	public final void setBeta(double beta)	// beta = 1/temperature
     {
     	_beta = beta;
     }
 	
-    
+    // TODO move to bottom
 	private final int generateSample(double[] energy, double minEnergy)
 	{
 		RandomGenerator rand = SolverRandomGenerator.rand;
@@ -484,7 +525,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	
-	
+	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
@@ -500,6 +541,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_bestSampleIndex = -1;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public Object []  createMessages(ISolverFactor factor)
 	{
@@ -522,6 +564,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return (double[])resetInputMessage(retVal);
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
@@ -530,6 +573,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return retval;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public Object resetOutputMessage(Object message)
 	{
@@ -538,6 +582,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		return ds;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
@@ -546,24 +591,28 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inPortMsgs[portIndex];
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
 		_inPortMsgs[portIndex] = (double[])obj;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
@@ -571,6 +620,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_inPortMsgs[thisPortNum] = ovar._inPortMsgs[otherPortNum];
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
@@ -585,7 +635,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_lengthRoundedUp = ovar._lengthRoundedUp;
     }
 	
-
+	// TODO move to ISolverNode
 	@Override
 	public void initialize()
 	{
@@ -593,7 +643,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// We actually only need to change this if the model has changed in the vicinity of this variable,
 		// but that may not be worth the trouble to figure out.
-		_neighbors = GibbsNeighborList.create(this);
+		_neighbors = GibbsNeighbors.create(this);
 		
 		_bestSampleIndex = -1;
 		int messageLength = _varDiscrete.getDiscreteDomain().size();
@@ -608,14 +658,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		{
 			setCurrentSampleIndex(_sampleIndex);
 		}
-	}
-	
-	@Override
-	public boolean setVisited(boolean visited)
-	{
-		boolean changed = _visited ^ visited;
-		_visited = visited;
-		return changed;
 	}
 
 }
