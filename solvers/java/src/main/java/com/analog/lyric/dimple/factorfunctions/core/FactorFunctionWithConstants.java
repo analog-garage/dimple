@@ -22,9 +22,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
+import cern.colt.list.IntArrayList;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Internal;
 
 
 public class FactorFunctionWithConstants extends FactorFunction
@@ -33,6 +37,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	private Object [] _constants;
 	private int [] _constantIndices;
 	
+	@Internal
 	public FactorFunctionWithConstants(FactorFunction factorFunction,
 			Object [] constants, int [] constantIndices)
 	{
@@ -53,6 +58,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 
+	@Override
+	public int getConstantCount()
+	{
+		return _constants.length;
+	}
+	
 	public Object [] getConstants()
 	{
 		return _constants;
@@ -65,20 +76,15 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	public boolean isConstantIndex(int index)
 	{
-		for (int i = 0; i < _constantIndices.length; i++)
-			if (_constantIndices[i] == index)
-				return true;
-		return false;
+		return Arrays.binarySearch(_constantIndices,  index) >= 0;
 	}
 	
+	@Override
 	public Object getConstantByIndex(int index)
 	{
-		for (int i = 0; i < _constantIndices.length; i++)
-			if (_constantIndices[i] == index)
-				return _constants[i];
-		return null;
+		final int i = Arrays.binarySearch(_constantIndices,  index);
+		return i >= 0 ? _constants[i] : null;
 	}
-
 
 	// Wrap the methods of the actual factor function...
 
@@ -109,6 +115,17 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return contractIndexList(directedToIndices);	// Remove the constant indices
 	}
 
+	@Override
+	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+	{
+		int[] directedToIndices = _factorFunction.getDirectedToIndicesForInput(factor, expandInputEdge(inputEdge));
+		if (directedToIndices != null)
+		{
+			directedToIndices = contractIndexList(directedToIndices);
+		}
+		return directedToIndices;
+	}
+	
 	@Override
 	public boolean isDeterministicDirected()
 	{
@@ -205,6 +222,34 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return incremental;
 	}
 	
+	protected int expandInputEdge(int inputEdge)
+	{
+		final int[] constantIndices = _constantIndices;
+		final int constantLength = constantIndices.length;
+
+		int low = 0, high = constantLength;
+		while (low < high)
+		{
+			final int mid = (high - low) / 2;
+			
+			// The offset at which the constant would be inserted in the
+			// contracted version of list. Equal to the constant offset
+			// in the expanded list minus its position in the list.
+			final int insertPoint = constantIndices[mid] - mid;
+			
+			if (inputEdge >= insertPoint)
+			{
+				low = mid + 1;
+			}
+			else
+			{
+				high = mid;
+			}
+		}
+		
+		return inputEdge + low;
+	}
+	
 	// Expand list of inputs to include the constants
 	// Assumes constant index list is already sorted
 	protected Object[] expandInputList(Object... input)
@@ -236,10 +281,10 @@ public class FactorFunctionWithConstants extends FactorFunction
 		int originalLength = indexList.length;
 		int numConstantIndices = _constantIndices.length;
 		Arrays.sort(indexList);		// Side effect of sorting indexList, but ok in this context
-		
+
 		// For each constant index, scan the list (probably a more efficient way to do this)
 		// Assumes constant index list is already sorted
-		ArrayList<Integer> contractedList = new ArrayList<Integer>();
+		IntArrayList contractedList = new IntArrayList(originalLength);
 		int iConst = 0;
 		int iList = 0;
 		int listIndex;
@@ -268,10 +313,11 @@ public class FactorFunctionWithConstants extends FactorFunction
 		}
 		
 		// Convert contracted list back to an int[]
-		int contractListSize = contractedList.size();
-		int[] result = new int[contractListSize];
-		for (int i = 0; i < contractListSize; i++)
-			result[i] = contractedList.get(i);
+		int[] result = contractedList.elements();
+		if (result.length != contractedList.size())
+		{
+			result = Arrays.copyOf(result, contractedList.size());
+		}
 		return result;
 	}
 	

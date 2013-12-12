@@ -10,6 +10,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -184,10 +185,18 @@ class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 		@Override
 		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder, Queue<Work> queue)
 		{
-			Factor factor = _factorNode.getModelObject();
-			int numEdges = factor.getSiblingCount();
+			final Factor factor = _factorNode.getModelObject();
+			final FactorFunction function = factor.getFactorFunction();
+			int[] outputEdges = function.getDirectedToIndicesForInput(factor, _incomingEdge);
+			if (outputEdges == null)
+			{
+				// TODO: in this case, all of the outputs will be visited the first time, so
+				// don't revisit this node if we come to it again from a different input.
+				outputEdges = function.getDirectedToIndices(factor.getSiblingCount());
+			}
+			
 			int counter = counterHolder[0];
-			for (int edge : factor.getFactorFunction().getDirectedToIndicesForInput(numEdges, _incomingEdge))
+			for (int edge : outputEdges)
 			{
 				VariableBase variable = factor.getSibling(edge);
 				ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();

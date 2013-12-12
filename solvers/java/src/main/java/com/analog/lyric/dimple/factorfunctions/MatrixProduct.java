@@ -24,6 +24,7 @@ import cern.colt.map.OpenIntIntHashMap;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 
@@ -159,8 +160,9 @@ public class MatrixProduct extends FactorFunction
 	}
     
     @Override
-    public final int[] getDirectedToIndicesForInput(int numEdges, int inputEdge)
+    public final int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
     {
+    	final FactorFunction function = factor.getFactorFunction();
     	
     	final int outRows = _Nr;
     	final int outCols = _Nc;
@@ -174,6 +176,7 @@ public class MatrixProduct extends FactorFunction
     	final int in2Cols = _Nc;
     	final int in2Size = in2Rows * in2Cols;
     	
+    	final int numEdges = factor.getSiblingCount() + function.getConstantCount();
     	final int nInputEdges = numEdges - outSize;
     	
     	final int in1Offset = outSize;
@@ -183,20 +186,14 @@ public class MatrixProduct extends FactorFunction
     	{
     		in2Offset += in1Size;
     	}
-    	else if (nInputEdges == in1Size + 1)
-    	{
-    		// FIXME: if in1Size == in2Size we can't tell which input is constant! Either this method
-    		// is going to have to provide access to the factor or this object should record the configuration
-    		// at construction.
-    		in2Offset += in1Size;
-    	}
-    	else if (nInputEdges == in2Size + 1)
+    	else if (nInputEdges == 2 ||
+    		nInputEdges == in2Size + 1 && function.getConstantByIndex(in1Offset) instanceof double[][])
     	{
     		in2Offset += 1;
     	}
-    	else if (nInputEdges == 2)
+    	else if (nInputEdges == in1Size + 1 && function.getConstantByIndex(numEdges - 1) instanceof double[][])
     	{
-    		in2Offset += 1;
+    		in2Offset += in1Offset;
     	}
     	else
     	{

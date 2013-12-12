@@ -114,6 +114,27 @@ public abstract class FactorFunction
 	{
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
+
+	/**
+	 * Return number of constants built into the factor function instance.
+	 * <p>
+	 * Default implementation returns zero.
+	 */
+	public int getConstantCount()
+	{
+		return 0;
+	}
+	
+	/**
+	 * Returns constant at edge identified by {@code index} or null if specified
+	 * edge is not a constant.
+	 * <p>
+	 * Default implementation returns null.
+	 */
+	public Object getConstantByIndex(int index)
+	{
+		return null;
+	}
 	
 	public Object getDeterministicFunctionValue(Object... arguments)
 	{
@@ -130,15 +151,17 @@ public abstract class FactorFunction
 	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
 
 	/**
-	 * Returns the output indices that can be changed when specified input is changed.
+	 * Returns the output indices that can be changed when specified input is changed or else null
+	 * if the same as the full set of output edges.
 	 * <p>
-	 * The default implementation simply delegates to {@link #getDirectedToIndices(int)}.
+	 * The default implementation returns null.
+	 * <p>
 	 * This may be overridden for functions that have multiple outputs and inputs for which
 	 * a single input may only affect a subset of the full outputs (e.g. {@link MatrixProduct}).
 	 */
-	public int[] getDirectedToIndicesForInput(int numEdges, int inputEdge)
+	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
 	{
-		return getDirectedToIndices(numEdges);
+		return null;
 	}
 	
 	public final IFactorTable getFactorTable(Domain [] domains)
