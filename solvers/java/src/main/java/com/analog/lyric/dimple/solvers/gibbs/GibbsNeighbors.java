@@ -147,12 +147,7 @@ class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 				{
 					// Do not mark deterministic directed factors as visited because we may
 					// need to visit them again from a different input variable and may get
-					// different outputs
-					//
-					// TODO: This can only happen with some types of factor functions,
-					// such as MatrixProduct, that direct many inputs to many outputs, so it may
-					// be worthwhile to be able to identify if this is one of those cases to avoid
-					// some extra work.
+					// different outputs. See FactorWork.handle()
 					if (queue == null)
 					{
 						queue = new LinkedList<Work>();
@@ -190,8 +185,17 @@ class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 			int[] outputEdges = function.getDirectedToIndicesForInput(factor, _incomingEdge);
 			if (outputEdges == null)
 			{
-				// TODO: in this case, all of the outputs will be visited the first time, so
+				// In this case, all of the outputs will be visited the first time, so
 				// don't revisit this node if we come to it again from a different input.
+				if (_factorNode.setVisited(true))
+				{
+					visited.addLast(_factorNode);
+				}
+				else
+				{
+					return queue;
+				}
+				
 				outputEdges = function.getDirectedToIndices(factor.getSiblingCount());
 			}
 			
