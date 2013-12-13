@@ -65,6 +65,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private Object[] _inputMsg = null;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
+	private boolean _initialSampleValueSet = false;
 	private FactorFunction[] _inputArray;
 	private FactorFunction _inputJoint;
 	private RealJointDomain _domain;
@@ -247,7 +248,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 
 	@Override
-	public void randomRestart()
+	public void randomRestart(int restartCount)
 	{
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -256,6 +257,11 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		if (_var.hasFixedValue())
 		{
 			setCurrentSample(_varReal.getFixedValue());
+			return;
+		}
+		if (_initialSampleValueSet && restartCount == 0)
+		{
+			setCurrentSample(_initialSampleValue);
 			return;
 		}
 
@@ -702,9 +708,16 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return "";
 	}
 
-	public final void setInitialSampleValue(double[] initialSampleValue) {_initialSampleValue = initialSampleValue;}
-	public final double[] getInitialSampleValue() {return _initialSampleValue;}
+	public final void setInitialSampleValue(double[] initialSampleValue)
+	{
+		_initialSampleValue = initialSampleValue;
+		_initialSampleValueSet = true;
+	}
 
+	public final double[] getInitialSampleValue()
+	{
+		return _initialSampleValue;
+	}
 
 	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
@@ -813,6 +826,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_outputMsg = ovar._outputMsg;
 		_sampleValue = ovar._sampleValue;
 		_initialSampleValue = ovar._initialSampleValue;
+		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;

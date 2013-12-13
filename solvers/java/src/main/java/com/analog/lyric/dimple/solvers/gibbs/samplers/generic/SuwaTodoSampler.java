@@ -53,25 +53,25 @@ public class SuwaTodoSampler implements IDiscreteDirectSampler
 			final int previousIndex = sampleValue.getIndex();
 			final double pdf0 = Math.exp(minEnergy - energy[0]);
 			final double pdf1 = Math.exp(minEnergy - energy[1]);
-			final double sum = pdf0 + pdf1;
-			final double U = rand.nextDouble();
 			if (previousIndex == 0)
 			{
-				double flipProb = pdf0 - pdf1;
-				if (flipProb < 0) flipProb = 0;
-				if (U * sum < flipProb)
+				double rejectProb = pdf0 - pdf1;
+				if (rejectProb < 0)
 					sampleIndex = 1;	// Flip
-				else
+				else if (rand.nextDouble() < rejectProb)
 					sampleIndex = 0;
+				else
+					sampleIndex = 1;	// Flip
 			}
 			else
 			{
-				double flipProb = pdf1 - pdf0;
-				if (flipProb < 0) flipProb = 0;
-				if (U * sum < flipProb)
+				double rejectProb = pdf1 - pdf0;
+				if (rejectProb < 0)
 					sampleIndex = 0;	// Flip
-				else
+				if (rand.nextDouble() < rejectProb)
 					sampleIndex = 1;
+				else
+					sampleIndex = 0;	// Flip
 			}
 
 		}
@@ -91,14 +91,17 @@ public class SuwaTodoSampler implements IDiscreteDirectSampler
 				sum += unnormalizedValue;
 				samplerScratch[m] = sum;
 			}
-			sum += Math.exp(minEnergy-energy[length-1]);
+			final int lm1 = length - 1;
+			final double unnormalizedValue = Math.exp(minEnergy-energy[lm1]);
+			if (previousIndex == lm1) previousIntervalValue = unnormalizedValue;
+			sum += unnormalizedValue;
 			for (int m = length; m < _lengthRoundedUp; m++)
 				samplerScratch[m] = Double.POSITIVE_INFINITY;
 
 			// Sample from a range circularly shifted by the largest interval with size of the previous value interval
 			// In this scale, the largest interval is always 1
 			double randomValue = samplerScratch[previousIndex] + 1 + previousIntervalValue * rand.nextDouble();
-			if (randomValue > sum) randomValue -= sum;		// Circularly wrap
+			randomValue = randomValue % sum;		// Circularly wrap
 			
 			// Sample from the CDF using a binary search
 			final int half = _lengthRoundedUp >> 1;

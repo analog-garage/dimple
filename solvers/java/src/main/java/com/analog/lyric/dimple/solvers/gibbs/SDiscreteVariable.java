@@ -44,17 +44,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 {
 	public static final String DEFAULT_DISCRETE_SAMPLER_NAME = "CDFSampler";
 
-    protected double[][] _inPortMsgs = new double[0][];
-    protected DiscreteValue _outputMsg;
-	protected long[] _beliefHistogram;
-	protected double[] _input;
-	protected double[] _conditional;
-	protected ArrayList<Integer> _sampleIndexArray;
-	protected int _bestSampleIndex;
-	protected double _beta = 1;
-	protected Discrete _varDiscrete;
-	protected boolean _holdSampleValue = false;
-	protected IGenericSampler _sampler;
+	private double[][] _inPortMsgs = new double[0][];
+	private DiscreteValue _outputMsg;
+	private long[] _beliefHistogram;
+	private double[] _input;
+	private double[] _conditional;
+	private ArrayList<Integer> _sampleIndexArray;
+	private int _bestSampleIndex;
+	private DiscreteValue _initialSampleValue = null;
+	private double _beta = 1;
+	private Discrete _varDiscrete;
+	private boolean _holdSampleValue = false;
+	private IGenericSampler _sampler;
 	private String _defaultSamplerName = DEFAULT_DISCRETE_SAMPLER_NAME;
 	private boolean _samplerSpecificallySpecified = false;
 
@@ -138,13 +139,13 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Sample from the conditional distribution
 		if (_sampler instanceof IDiscreteDirectSampler)
-			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg, _conditional, minEnergy, this);
+			((IDiscreteDirectSampler)_sampler).nextSample(new DiscreteValue(_outputMsg), _conditional, minEnergy, this);
 		else if (_sampler instanceof IMCMCSampler)
-			((IMCMCSampler)_sampler).nextSample(_outputMsg, this);
+			((IMCMCSampler)_sampler).nextSample(new DiscreteValue(_outputMsg), this);
 	}
 	
 	@Override
-	public void randomRestart()
+	public void randomRestart(int restartCount)
 	{
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -153,6 +154,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		if (_var.hasFixedValue())
 		{
 			setCurrentSampleIndex(_varDiscrete.getFixedValueIndex());
+			return;
+		}
+		if (_initialSampleValue != null && restartCount == 0)
+		{
+			setCurrentSample(_initialSampleValue);
 			return;
 		}
 
@@ -165,8 +171,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		if (_sampler instanceof CDFSampler)
 			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg, _input, minEnergy, this);
-		else
-			(new CDFSampler()).nextSample(_outputMsg, _input, minEnergy, this);
+		else	// If the actual sampler isn't a CDF sampler, make a CDF sampler to use for random restart
+		{
+			IDiscreteDirectSampler sampler = new CDFSampler();
+			sampler.initialize(_var.getDomain());
+			sampler.nextSample(_outputMsg, _input, minEnergy, this);
+		}
 	}
 
 	// ISampleScorer methods...
@@ -453,6 +463,24 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_holdSampleValue = false;
 	}
 	
+	public final void setInitialSampleValue(Object initialSampleValue)
+	{
+		_initialSampleValue = new DiscreteValue(initialSampleValue, _varDiscrete.getDomain());
+	}
+	public final void setInitialSampleIndex(int initialSampleIndex)
+	{
+		_initialSampleValue = new DiscreteValue(_varDiscrete.getDomain(), initialSampleIndex);
+	}
+
+	public final Object getInitialSampleValue()
+	{
+		return _initialSampleValue.getObject();
+	}
+	public final int getInitialSampleIndex()
+	{
+		return _initialSampleValue.getIndex();
+	}
+	
     
     @Override
 	public final void setBeta(double beta)	// beta = 1/temperature
@@ -594,6 +622,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_outputMsg = ovar._outputMsg;
 		_conditional = ovar._conditional;
 		_bestSampleIndex = ovar._bestSampleIndex;
+		_initialSampleValue = ovar._initialSampleValue;
 		_beta = ovar._beta;
 		_sampler = ovar._sampler;
 		_defaultSamplerName = ovar._defaultSamplerName;
@@ -606,7 +635,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		super.initialize();
 		
+		// Clear out sample state
 		_bestSampleIndex = -1;
+		if (_sampleIndexArray != null) _sampleIndexArray.clear();
+
 		int messageLength = _varDiscrete.getDiscreteDomain().size();
 		for (int i = 0; i < messageLength; i++)
 			_beliefHistogram[i] = 0;

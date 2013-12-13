@@ -280,8 +280,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		if (_scoreArray != null)
 			_scoreArray.clear();
-		
-		randomRestart();
 	}
 
 	@Override
@@ -292,30 +290,21 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (int restartCount = 0; restartCount < _numRandomRestarts + 1; restartCount++)
 		{
-			boolean randomRestart = true;
-			
-			if (restartCount == 0)
-				randomRestart = false;
-			
-			burnIn(randomRestart);
-			
+			burnIn(restartCount);
 			for (int iter = 0; iter < _numSamples; iter++)
-			{
 				oneSample();
-			}
 		}
 	}
 	
 	
 	public final void burnIn()
 	{
-		burnIn(true);
+		burnIn(0);
 	}
 	
-	public final void burnIn(boolean randomRestart)
+	public final void burnIn(int restartCount)
 	{
-		if (randomRestart)
-			randomRestart();
+		randomRestart(restartCount);
 		iterate(_burnInUpdates);
 	}
 	
@@ -396,17 +385,17 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			FactorGraph ng = fgs.getNestedGraphs().get(fgs.getNestedGraphs().size()-1);
 			for (VariableBase vb : ng.getBoundaryVariables())
 			{
-				((ISolverVariableGibbs)vb.getSolver()).randomRestart();
+				((ISolverVariableGibbs)vb.getSolver()).randomRestart(0);
 			}
 		}
 	}
 	
-	public void randomRestart()
+	public void randomRestart(int restartCount)
 	{
 		deferDeterministicUpdates();
 		
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)v.getSolver()).randomRestart();
+			((ISolverVariableGibbs)v.getSolver()).randomRestart(restartCount);
 		
 		processDeferredDeterministicUpdates();
 		

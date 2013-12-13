@@ -64,6 +64,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private Object[] _inputMsg = null;
 	private double _sampleValue = 0;
 	private double _initialSampleValue = 0;
+	private boolean _initialSampleValueSet = false;
 	private FactorFunction _input;
 	private RealDomain _domain;
 	private String _defaultSamplerName = DEFAULT_REAL_SAMPLER_NAME;
@@ -231,7 +232,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	
 
 	@Override
-	public void randomRestart()
+	public void randomRestart(int restartCount)
 	{
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -242,6 +243,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			setCurrentSample(_varReal.getFixedValue());
 			return;
 		}
+		if (_initialSampleValueSet && restartCount == 0)
+		{
+			setCurrentSample(_initialSampleValue);
+			return;
+		}
+
 
 		// If there are inputs, see if there's an available conjugate sampler
 		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
@@ -545,9 +552,16 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return "";
 	}
 
-	public final void setInitialSampleValue(double initialSampleValue) {_initialSampleValue = initialSampleValue;}
-	public final double getInitialSampleValue() {return _initialSampleValue;}
+	public final void setInitialSampleValue(double initialSampleValue)
+	{
+		_initialSampleValue = initialSampleValue;
+		_initialSampleValueSet = true;
+	}
 
+	public final double getInitialSampleValue()
+	{
+		return _initialSampleValue;
+	}
 
 	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
@@ -657,6 +671,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_outputMsg = ovar._outputMsg;
 		_sampleValue = ovar._sampleValue;
 		_initialSampleValue = ovar._initialSampleValue;
+		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;
