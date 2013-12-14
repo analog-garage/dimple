@@ -182,18 +182,17 @@ public class MatrixProduct extends FactorFunction
     	final int in1Offset = outSize;
     	
     	int in2Offset = in1Offset;
-    	if (nInputEdges == in1Size + in2Size)
+    	if (nInputEdges == in1Size + in2Size ||
+    		nInputEdges == in1Size + 1 && function.getConstantByIndex(numEdges - 1) instanceof double[][])
     	{
+    		// First input matrix is flattened out.
     		in2Offset += in1Size;
     	}
     	else if (nInputEdges == 2 ||
     		nInputEdges == in2Size + 1 && function.getConstantByIndex(in1Offset) instanceof double[][])
     	{
+    		// First input matrix is a constant
     		in2Offset += 1;
-    	}
-    	else if (nInputEdges == in1Size + 1 && function.getConstantByIndex(numEdges - 1) instanceof double[][])
-    	{
-    		in2Offset += in1Offset;
     	}
     	else
     	{
