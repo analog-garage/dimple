@@ -16,20 +16,37 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import java.util.ArrayList;
+
 public class GenericSamplerRegistry
 {
+	private static ArrayList<String> _packages = new ArrayList<String>();
+	static
+	{
+		_packages.add(GenericSamplerRegistry.class.getPackage().getName());
+	}
+	
 	// Get a sampler by name; assumes it is located in this package
 	public static IGenericSampler get(String samplerName)
 	{
-		String fullQualifiedName = GenericSamplerRegistry.class.getPackage().getName() + "." + samplerName;
-		try
+		for (String s : _packages)
 		{
-			IGenericSampler sampler = (IGenericSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return sampler;
+			String fullQualifiedName = s + "." + samplerName;
+			try
+			{
+				IGenericSampler sampler = (IGenericSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+				return sampler;
+			}
+			catch (Exception e)
+			{
+				continue;
+			}
 		}
-		catch (Exception e)
-		{
-			return null;
-		}
+		return null;
+	}
+	
+	public static void addPackage(String packageName)
+	{
+		_packages.add(packageName);
 	}
 }
