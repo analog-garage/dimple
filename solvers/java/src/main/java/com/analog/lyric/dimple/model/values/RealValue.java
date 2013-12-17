@@ -63,7 +63,6 @@ public class RealValue extends Value
 	
 	public final double getValue() {return _value;}
 	public final void setValue(double value) {_value = value;}
-	public final void setFromValue(Value value) {_value = ((RealValue)value)._value;}
 
 	
 	@Override

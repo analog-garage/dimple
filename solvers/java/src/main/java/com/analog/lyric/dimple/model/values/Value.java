@@ -120,7 +120,6 @@ public abstract class Value implements Cloneable
 	
 	public abstract Object getObject();
 	public abstract void setObject(Object value);
-	public abstract void setFromValue(Value value);
 	
 	public double getDouble()
 	{

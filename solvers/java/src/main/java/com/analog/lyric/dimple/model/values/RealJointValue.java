@@ -58,7 +58,6 @@ public class RealJointValue extends Value
 	
 	public final double[] getValue() {return _value;}
 	public final void setValue(double[] value) {_value = value;}
-	public final void setFromValue(Value value) {_value = ((RealJointValue)value)._value;}
 
 	
 	// Get/set a specific element of the sample
