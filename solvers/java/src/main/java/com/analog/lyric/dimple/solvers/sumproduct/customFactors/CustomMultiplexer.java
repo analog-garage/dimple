@@ -23,8 +23,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The Multiplexer factor is a directed factor
@@ -53,23 +53,25 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	{
 		super(factor);
 		
-		IVariableMapList vl = factor.getVariables();
-		
-		factor.setDirectedTo(vl.getByIndex(0));
-		
-		if (vl.size() < 2)
+		final int nVars = factor.getSiblingCount();
+		if (nVars < 2)
 			throw new DimpleException("Must specify at least Y and A");
 		
-		_yDomainSize = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain().size();
-		_aDomainSize = vl.getByIndex(1).asDiscreteVariable().getDiscreteDomain().size();
+		final VariableBase y = factor.getSibling(0);
+		final VariableBase a = factor.getSibling(1);
 		
-		if (_aDomainSize+2 != vl.size())
+		factor.setDirectedTo(y);
+		
+		final DiscreteDomain yDomain = y.asDiscreteVariable().getDiscreteDomain();
+		
+		_yDomainSize = yDomain.size();
+		_aDomainSize = a.asDiscreteVariable().getDiscreteDomain().size();
+		
+		if (_aDomainSize+2 != nVars)
 			throw new DimpleException("Must specify " + _aDomainSize + " Zs");
 		
 		//calculate the list of z index pairs for each y
 		_yIndex2zIndices = new ArrayList [_yDomainSize];
-		
-		DiscreteDomain yDomain = vl.getByIndex(0).asDiscreteVariable().getDiscreteDomain();
 		
 		//Generate the mapping from Ys to Zs
 		for (int i = 0; i < _yDomainSize; i++)
@@ -78,7 +80,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 			
 			for (int j = 0; j < _aDomainSize; j++)
 			{
-				DiscreteDomain zDomain = vl.getByIndex(2+j).asDiscreteVariable().getDiscreteDomain();
+				DiscreteDomain zDomain = factor.getSibling(2+j).asDiscreteVariable().getDiscreteDomain();
 				
 				for (int k = 0, end = zDomain.size(); k < end; k++)
 				{
@@ -96,7 +98,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 		//Generate the mappings from zs to Y
 		for (int i = 0; i < _aDomainSize; i++)
 		{
-			DiscreteDomain zDomain = vl.getByIndex(2+i).asDiscreteVariable().getDiscreteDomain();
+			DiscreteDomain zDomain = factor.getSibling(2+i).asDiscreteVariable().getDiscreteDomain();
 
 			_zIndices2yIndex[i] = new int [zDomain.size()];
 			

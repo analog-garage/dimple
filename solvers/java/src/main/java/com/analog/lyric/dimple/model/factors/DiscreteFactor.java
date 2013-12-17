@@ -28,7 +28,6 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 public class DiscreteFactor extends Factor
 {
@@ -67,14 +66,13 @@ public class DiscreteFactor extends Factor
 	@Override
 	public JointDomainIndexer getDomainList()
 	{
-		IVariableMapList variables = getVariables();
-		int numVariables = variables.size();
+		int numVariables = getSiblingCount();
 		
 		DiscreteDomain[] domains = new DiscreteDomain[numVariables];
 		
 		for (int i = 0; i < numVariables; i++)
 		{
-			domains[i] = (DiscreteDomain)variables.getByIndex(i).getDomain();
+			domains[i] = getSibling(i).getDomain();
 		}
 		
 		return JointDomainIndexer.create(_directedTo, domains);

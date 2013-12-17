@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -48,6 +49,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.google.common.primitives.Doubles;
 
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
@@ -57,6 +59,10 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
+	/*-------
+	 * State
+	 */
+	
 	public static final String DEFAULT_REAL_SAMPLER_NAME = "SliceSampler";
 	
 	private Real _varReal;
@@ -75,7 +81,17 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	private double _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
+	private boolean _visited = false;
+	
+	/**
+	 * List of neighbors for sample scoring. Instantiated during initialization.
+	 */
+	private GibbsNeighbors _neighbors = null;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	// Primary constructor
 	public SRealVariable(VariableBase var)
 	{
@@ -97,7 +113,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_domain = domain;
 	}
 
-	
+	/*---------------------
+	 * ISolverNode methods
+	 */
 	
 	@Override
 	public void updateEdge(int outPortNum)
@@ -144,6 +162,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		}
 	}
 	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
 	
 	// IRealSampleScorer methods...
 	// The following methods are for the IRealSampleScorer interface, meant to be called by a sampler
@@ -162,31 +183,46 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 		return getCurrentSampleScore();
 	}
+	
 	@Override
 	public final double getCurrentSampleScore()
 	{
-		if (!_domain.inDomain(_sampleValue))
-			return Double.POSITIVE_INFINITY;		// Outside the domain
-			
-		double potential = 0;
-
-		// Sum up the potentials from the input and all connected factors
-		if (_input != null)
-			potential = _input.evalEnergy(new Object[]{_sampleValue});
-		int numPorts = _var.getSiblingCount();
-		for (int portIndex = 0; portIndex < numPorts; portIndex++)
+		double sampleScore = Double.POSITIVE_INFINITY;
+		
+		computeScore:
 		{
-			INode factorNode = _var.getSibling(portIndex);
-			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
-			int factorPortNumber = factorNode.getPortNum(_var);
-			potential += factor.getConditionalPotential(factorPortNumber);
+			if (!_domain.inDomain(_sampleValue))
+				break computeScore; // outside the domain
+
+			double potential = 0;
+
+			// Sum up the potentials from the input and all connected factors
+			if (_input != null)
+			{
+				potential = _input.evalEnergy(new Object[]{_sampleValue});
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+				}
+			}
+
+			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
+			while (scoreNodes.hasNext())
+			{
+				potential += scoreNodes.next().getPotential();
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+				}
+			}
+			scoreNodes.release();
+
+			sampleScore = potential * _beta;	// Incorporate current temperature
 		}
 		
-		if (Double.isNaN(potential))
-			return Double.POSITIVE_INFINITY;
-		
-		return potential * _beta;	// Incorporate current temperature
+		return sampleScore;
 	}
+	
 	@Override
 	public final void setNextSampleValue(Value sampleValue)
 	{
@@ -204,12 +240,17 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return _var.getDomain();
 	}
 
-	
+	// TODO move to local methods?
 	// For conjugate samplers
 	public final IRealConjugateSampler getConjugateSampler()
 	{
 		return _conjugateSampler;
 	}
+	
+	/*----------------------------------
+	 * ISolverRealVariableGibbs methods
+	 * TODO: move below ISolverVariableGibbs methods
+	 */
 	
 	@Override
 	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
@@ -230,6 +271,27 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		((IRealConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, ports, _input);
 	}
 	
+	/*--------------------------
+	 * ISolverNodeGibbs methods
+	 */
+	
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
+
+	/*------------------------------
+	 * ISolverVariableGibbs methods
+	 */
+	
+	@Override
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
+	{
+		return GibbsNeighbors.iteratorFor(_neighbors, this);
+	}
 
 	@Override
 	public void randomRestart(int restartCount)
@@ -283,12 +345,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
 	{
@@ -309,6 +373,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
 	
+	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -322,6 +387,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return _input.evalEnergy(_sampleValue);
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
@@ -332,7 +398,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		else
 			return Double.valueOf(_sampleValue);
 	}
-
 
 	@Override
 	public final void saveAllSamples()
@@ -353,20 +418,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_bestSampleValue = _sampleValue;
 	}
 	
-	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();		// Start with the local potential
-		
-		// Propagate the request through the other neighboring factors and sum up the results
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)	// Plus each input message value
-			if (port != portIndex)
-				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
-
-		return result;
-	}
-
+	// TODO move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
@@ -377,6 +429,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		else
 			return _input.evalEnergy(new Object[]{_sampleValue});
 	}
+	
+	@Override
+	public final boolean hasPotential()
+	{
+		return !_var.hasFixedValue() && _input != null;
+	}
 
     @Override
 	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
@@ -386,6 +444,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
     {
     	setCurrentSample(value.getDouble());
     }
+    
+    /*---------------
+     * Local methods
+     */
     
 	public final void setCurrentSample(double value)
 	{
@@ -406,7 +468,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			int numPorts = _var.getSiblingCount();
 			for (int port = 0; port < numPorts; port++)	// Plus each input message value
 			{
-				Factor f = (Factor)_var.getSibling(port);
+				Factor f = _var.getSibling(port);
 				if (f.getFactorFunction().isDeterministicDirected())
 				{
 					final int reverseEdge = _var.getSiblingPortIndex(port);
@@ -563,6 +625,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return _initialSampleValue;
 	}
 
+	// TODO move to ISolverVariableGibbs
 	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
@@ -579,6 +642,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return new RealValue(_initialSampleValue);
 	}
 
+	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
@@ -586,23 +650,27 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		return message;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
@@ -611,18 +679,23 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_inputMsg[portIndex] = obj;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		
 	}
 	
-
+	// TODO move to ISolverNode
 	@Override
 	public void initialize()
 	{
 		super.initialize();
 
+		// We actually only need to change this if the model has changed in the vicinity of this variable,
+		// but that may not be worth the trouble to figure out.
+		_neighbors = GibbsNeighbors.create(this);
+		
 		// Unless this is a dependent of a deterministic factor, then set the starting sample value
 		if (!getModelObject().isDeterministicOutput())
 		{
@@ -648,12 +721,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			_sampler.initialize(_var.getDomain());
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		return new Object[] {null,_outputMsg};
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
@@ -664,6 +739,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			saveAllSamples();
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
@@ -736,6 +812,5 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		
 		return commonSamplers;
 	}
-
 
 }

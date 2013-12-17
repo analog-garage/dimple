@@ -90,10 +90,10 @@ public class SBlastFromThePast extends AbstractOptionHolder implements ISolverBl
 	@Override
 	public void createMessages(VariableBase varConnectedToBlast, Port portForOtherVar)
 	{
-		
-	    for (int index = 0; index < _factor.getVariables().size(); index++)
+		final Factor factor = _factor;
+	    for (int index = 0, nVars = factor.getSiblingCount(); index < nVars; index++)
 	    {
-	    	ISolverVariable is = _factor.getVariables().getByIndex(index).getSolver();
+	    	ISolverVariable is = factor.getSibling(index).getSolver();
 	    	is.createMessages(this);
 	    }
 	    
@@ -179,7 +179,7 @@ public class SBlastFromThePast extends AbstractOptionHolder implements ISolverBl
 	@Override
 	public void setOutputMsg(int portIndex, Object obj)
 	{
-		VariableBase var = _factor.getVariables().getByIndex(portIndex);
+		VariableBase var = _factor.getSibling(portIndex);
 		int index = var.getPortNum(getModelObject());
 		var.getSolver().setInputMsg(index,obj);
 	}

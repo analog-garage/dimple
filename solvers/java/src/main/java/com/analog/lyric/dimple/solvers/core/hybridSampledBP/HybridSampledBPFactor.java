@@ -168,11 +168,11 @@ public abstract class HybridSampledBPFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		
-		for (int i = 0; i < _factor.getVariables().size(); i++)
+		final Factor factor = _factor;
+		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; i++)
 		{
 		
-			ISolverVariable var = _factor.getVariables().getByIndex(i).getSolver();
+			ISolverVariable var = factor.getSibling(i).getSolver();
 			Object [] messages = var.createMessages(this);
 			_samplers[i].createMessage(messages[1]);
 			_distGenerator[i].createMessage(messages[0]);

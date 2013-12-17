@@ -17,9 +17,14 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
+import cern.colt.map.OpenIntIntHashMap;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 
@@ -153,6 +158,76 @@ public class MatrixProduct extends FactorFunction
     		indexList[i] = i;
 		return indexList;
 	}
+    
+    @Override
+    public final int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+    {
+    	final FactorFunction function = factor.getFactorFunction();
+    	
+    	final int outRows = _Nr;
+    	final int outCols = _Nc;
+    	final int outSize = outRows * outCols;
+    	
+    	final int in1Rows = _Nr;
+    	final int in1Cols = _Nx;
+    	final int in1Size = in1Rows * in1Cols;
+    	
+    	final int in2Rows = _Nx;
+    	final int in2Cols = _Nc;
+    	final int in2Size = in2Rows * in2Cols;
+    	
+    	final int numEdges = factor.getSiblingCount() + function.getConstantCount();
+    	final int nInputEdges = numEdges - outSize;
+    	
+    	final int in1Offset = outSize;
+    	
+    	int in2Offset = in1Offset;
+    	if (nInputEdges == in1Size + in2Size ||
+    		nInputEdges == in1Size + 1 && function.getConstantByIndex(numEdges - 1) instanceof double[][])
+    	{
+    		// First input matrix is flattened out.
+    		in2Offset += in1Size;
+    	}
+    	else if (nInputEdges == 2 ||
+    		nInputEdges == in2Size + 1 && function.getConstantByIndex(in1Offset) instanceof double[][])
+    	{
+    		// First input matrix is a constant
+    		in2Offset += 1;
+    	}
+    	else
+    	{
+    		throw new DimpleException("Bad number of edges %d for MatrixProduct (Nr=%d, Nx=%d, Nc=%d)",
+    			numEdges, _Nr, _Nx, _Nc);
+    	}
+    	
+    	if (inputEdge >= in2Offset)
+    	{
+    		// Edge from second input matrix -- changes column of output
+			final int[] to = new int[outRows];
+			final int col = (inputEdge - in2Offset) / in2Rows;
+			
+    		for (int row = 0, outIndex = col * outRows; row < outRows; ++row, ++outIndex)
+    		{
+    			to[row] = outIndex;
+    		}
+    		
+    		return to;
+    	}
+    	else
+    	{
+    		// Edge from second input matrix -- changes row of output
+    		final int[] to = new int[outCols];
+			final int row = (inputEdge - in1Offset) % in1Rows;
+			
+			for (int col = 0, outIndex = row; col < outCols; ++col, outIndex += outRows)
+			{
+				to[col] = outIndex;
+			}
+			
+			return to;
+    	}
+    }
+    
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
@@ -209,7 +284,8 @@ public class MatrixProduct extends FactorFunction
     }
     
     @Override
-    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
+    	AtomicReference<int[]> changedOutputsHolder)
     {
     	boolean incremental = false;
     	
@@ -233,6 +309,8 @@ public class MatrixProduct extends FactorFunction
     	
     	final int minSupportedIndex = in1Matrix == null ? in1Offset : (in2Matrix == null ? in2Offset : values.length);
     	final int maxSupportedIndex = in2Matrix == null ? values.length : (in1Matrix == null ? in2Offset : in1Offset);
+    	
+    	OpenIntIntHashMap changedOutputSet = new OpenIntIntHashMap(Math.max(outRows, outCols));
     	
     	doIncremental:
     	{
@@ -281,6 +359,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in1Value = in1Matrix[row][in1Col];
     						outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     				else
@@ -292,6 +371,7 @@ public class MatrixProduct extends FactorFunction
         					final double oldOutput = outputValue.getDouble();
         					final double in1Value = values[in1Index].getDouble();
         					outputValue.setDouble(oldOutput - in1Value * oldInput + in1Value * newInput);
+            				changedOutputSet.put(outIndex, outIndex);
         				}
     				}
     			}
@@ -305,6 +385,7 @@ public class MatrixProduct extends FactorFunction
     				
     				int col = 0;
     				int outIndex = row;
+    				
     				if (in2Matrix != null)
     				{
     					final double[] rowValues = in2Matrix[in2Row];
@@ -314,6 +395,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in2Value = rowValues[col] ;
     						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     				else
@@ -326,6 +408,7 @@ public class MatrixProduct extends FactorFunction
     						final double oldOutput = outputValue.getDouble();
     						final double in2Value = values[in2Index].getDouble();
     						outputValue.setDouble(oldOutput - in2Value * oldInput + in2Value * newInput);
+    	    				changedOutputSet.put(outIndex, outIndex);
     					}
     				}
     			}
@@ -333,6 +416,8 @@ public class MatrixProduct extends FactorFunction
     		incremental = true;
     	}
     	
-    	return incremental || super.updateDeterministic(values, oldValues);
+    	changedOutputsHolder.set(changedOutputSet.keys().elements());
+    	
+    	return incremental || super.updateDeterministic(values, oldValues, changedOutputsHolder);
     }
 }

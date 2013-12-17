@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -225,7 +226,8 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			{
 				_hasConstantMean = true;
 				_meanParameterPort = NO_PORT;
-				_constantMeanValue = (Double)constantFactorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX);
+				_constantMeanValue = FactorFunctionUtilities.toDouble(
+					constantFactorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
 				_meanVariable = null;
 			}
 			else
@@ -238,7 +240,9 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			{
 				_hasConstantPrecision = true;
 				_precisionParameterPort = NO_PORT;
-				_constantPrecisionValue = (Double)constantFactorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX);
+				_constantPrecisionValue =
+					FactorFunctionUtilities.toDouble(
+						constantFactorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
 				_precisionVariable = null;
 			}
 			else

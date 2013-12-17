@@ -21,7 +21,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 
 
@@ -45,20 +44,15 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 		if (constIndices.length != 1)
 			throw new DimpleException("expected one constant");
 
-		
-		
-		IVariableMapList variables = factor.getVariables();
-		
-		if (variables.size() != 2)
+		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("finiteFieldMult expects two variable arguments");
-		
 		
 		//ArrayList<Port> ports = _factor.getPorts();
 
-		_varInput = (SFiniteFieldVariable)variables.getByIndex(0).getSolver();
+		_varInput = (SFiniteFieldVariable)factor.getSibling(0).getSolver();
 		//_varInputPort = ports.get(0);
 
-		_varOutput = (SFiniteFieldVariable)variables.getByIndex(1).getSolver();
+		_varOutput = (SFiniteFieldVariable)factor.getSibling(1).getSolver();
 		
 		//_varOutputPort = ports.get(1);
 		assignConstant((int)(double)(Double)constants[0]);

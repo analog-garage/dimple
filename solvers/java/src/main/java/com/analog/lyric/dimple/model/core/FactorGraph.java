@@ -1259,8 +1259,9 @@ public class FactorGraph extends FactorBase
 		_ownedFactors.remove(factor);
 		removeNode(factor);
 
-		for (VariableBase var : factor.getVariables())
+		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; ++i)
 		{
+			VariableBase var = factor.getSibling(i);
 			var.remove(factor);
 		}
 

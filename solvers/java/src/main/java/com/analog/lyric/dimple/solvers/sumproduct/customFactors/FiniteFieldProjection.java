@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 
 
@@ -39,24 +38,21 @@ public class FiniteFieldProjection extends SFiniteFieldFactor
 	public FiniteFieldProjection(Factor factor)
 	{
 		super(factor);
-		
-	
-		IVariableMapList variables = factor.getVariables();
+
+		final int nVars = factor.getSiblingCount();
+		if (nVars <= 1)
+			throw new DimpleException("need to specify at least one bit for projection");
 		
 		List<INode> ports = _factor.getSiblings();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
-		_ffVar = (SFiniteFieldVariable)variables.getByIndex(0).getSolver();
+		_ffVar = (SFiniteFieldVariable)factor.getSibling(0).getSolver();
 		_portIndex2bitIndex = new int[ports.size()];
 		
 		for (int i = 0; i < ports.size(); i++)
 			_portIndex2bitIndex[i] = -1;
 		
-		if (variables.size() <= 1)
-			throw new DimpleException("need to specify at least one bit for projection");
-		
-				
 		//get constant value and make sure it's in range
 		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)_factor.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();
@@ -66,13 +62,13 @@ public class FiniteFieldProjection extends SFiniteFieldFactor
 
 		double [] domain = (double[])constants[0];
 		
-		if (variables.size() != 1+domain.length)
+		if (nVars != 1+domain.length)
 			throw new DimpleException("expect finite field variable, bit positions, and bits");
 
 		
 		_bit2port = new int[ports.size()-1];
 		
-		for (int i = 1; i < variables.size(); i++)
+		for (int i = 1; i < nVars; i++)
 		{
 			//TODO: error check
 			int index = (int)domain[i-1];
@@ -83,7 +79,7 @@ public class FiniteFieldProjection extends SFiniteFieldFactor
 				throw new DimpleException("Tried to set index twice");
 			
 			//get Variable and make sure it's a bit.
-			Discrete bit = (Discrete)variables.getByIndex(i);
+			Discrete bit = (Discrete)factor.getSibling(i);
 			
 			Object [] bitDomain = bit.getDiscreteDomain().getElements();
 			if (bitDomain.length != 2 || (Double)bitDomain[0] != 0 || (Double)bitDomain[1] != 1)

@@ -32,7 +32,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 {
 	private Value [] _inputMsgs;
 	private Object[] _outputMsgs;
-
+	private boolean _visited;
 	
 	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -50,7 +50,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	{
 		VariableBase vb = (VariableBase)_portForOtherVar.node;
 		int index = _portForOtherVar.index;
-		Factor f = (Factor)vb.getSibling(index);
+		Factor f = vb.getSibling(index);
 		ISolverFactor sf = f.getSolver();
 		int numEdges = f.getSiblingCount();
 		_inputMsgs = new Value[numEdges];
@@ -98,13 +98,6 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();
-		return result;
-	}
-
-	@Override
 	public void updateEdgeMessage(int portIndex)
 	{
 		// Do nothing
@@ -116,4 +109,11 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		return _outputMsgs[portIndex];
 	}
 
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
 }

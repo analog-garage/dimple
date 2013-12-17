@@ -41,7 +41,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private int _numSamples;
 	private int _maxNumTries;
 
-	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
+	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		
@@ -98,13 +98,13 @@ public class SFactorGraph extends SFactorGraphBase
 	private boolean isMultivariate(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		
-		if (factor.getVariables().size() > 0 && (factor.getVariables().getByIndex(0) instanceof RealJoint))
+		if (factor.getSiblingCount() > 0 && (factor.getSibling(0) instanceof RealJoint))
 			return true;
 		else
 			return false;
 	}
 	
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)  
+	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		String funcName = factor.getModelerFunctionName();
 		if (funcName.equals("add"))
@@ -127,15 +127,15 @@ public class SFactorGraph extends SFactorGraphBase
 			if (isMultivariate(factor))
 				return new MultivariateGaussianConstMult(factor);
 			else
-				return new GaussianConstMult(factor);    		
+				return new GaussianConstMult(factor);
 		}
 		else if (funcName.equals("Product"))
 		{
-			return new GaussianConstMult(factor);    		
+			return new GaussianConstMult(factor);
 		}
 		else if (funcName.equals("ComplexProduct"))
 		{
-			return new MultivariateGaussianConstMult(factor);    		
+			return new MultivariateGaussianConstMult(factor);
 		}
 		else if (funcName.equals("polynomial"))
 		{
@@ -148,7 +148,8 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 
-	public ISolverFactor createFactor(Factor factor)  
+	@Override
+	public ISolverFactor createFactor(Factor factor)
 	{
 		if (customFactorExists(factor))
 			return createCustomFactor(factor);
@@ -163,7 +164,8 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 	}
 
-	public ISolverVariable createVariable(VariableBase var)  
+	@Override
+	public ISolverVariable createVariable(VariableBase var)
 	{
 		//TODO: error check to make sure it's real?
 		if (var.getDomain() instanceof RealJointDomain)
@@ -175,7 +177,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
 		if (funcName.equals("add"))
 			return true;
@@ -198,7 +200,7 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("ComplexProduct"))
 			return true;
 		else
-			return false;	
+			return false;
 	}
 	
 	

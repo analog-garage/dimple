@@ -250,6 +250,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
 		FactorGraph fg = _factorGraph;
 		deferDeterministicUpdates();
+//		long start = System.nanoTime();
 		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
 		{
 			fg.getOwnedVariable(i).getSolver().initialize();
@@ -261,6 +262,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 				fg.getBoundaryVariable(i).getSolver().initialize();
 			}
 		}
+//		System.out.format("Solver variable initialization: %fs\n", (System.nanoTime() - start) / 1e9);
 		processDeferredDeterministicUpdates();
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.getSolver().initialize();
@@ -620,9 +622,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		deferDeterministicUpdates();
 		
-		for (VariableBase vb : f.getVariables())
+		for (int i = 0, nvars = f.getSiblingCount(); i < nvars; ++i)
 		{
-			((ISolverVariableGibbs) vb.getSolver()).postAddFactor(f);
+			((ISolverVariableGibbs) f.getSibling(i).getSolver()).postAddFactor(f);
 		}
 		
 		processDeferredDeterministicUpdates();

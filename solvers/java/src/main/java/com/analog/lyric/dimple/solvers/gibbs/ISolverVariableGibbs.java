@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public interface ISolverVariableGibbs
+public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 {
 	// External API
 	public void saveAllSamples();
@@ -28,10 +30,21 @@ public interface ISolverVariableGibbs
     public void setCurrentSample(Object value);
     public void setCurrentSample(Value value);
 	public void setBeta(double beta);
+	@Override
 	public double getPotential();
 	
+	/**
+	 * Returns an iterator over the nodes other than this variable node that should be
+	 * used to compute the sample score for this variable.
+	 */
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes();
+
+	/**
+	 * True if {@link #getPotential()} does not always return zero.
+	 */
+	public boolean hasPotential();
+	
 	// Internal methods
-	public double getConditionalPotential(int portIndex);
 	public void updateBelief();
 	public void randomRestart(int restartCount);
 	public void postAddFactor(Factor f);
