@@ -239,12 +239,12 @@ public class TestDomain
 		
 		try
 		{
-			RealJointDomain.create(RealDomain.unbounded());
+			RealJointDomain.create();
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
 		{
-			assertThat(ex.getMessage(), containsString("requires at least two domains"));
+			assertThat(ex.getMessage(), containsString("requires at least one domain"));
 		}
 		
 		

@@ -70,9 +70,9 @@ public class RealJointDomain extends Domain
 	
 	public static RealJointDomain create(RealDomain... domains)
 	{
-		if (domains.length < 2)
+		if (domains.length < 1)
 		{
-			throw new IllegalArgumentException("RealJointDomain requires at least two domains");
+			throw new IllegalArgumentException("RealJointDomain requires at least one domain");
 		}
 		
 		return new RealJointDomain(domains, true);
