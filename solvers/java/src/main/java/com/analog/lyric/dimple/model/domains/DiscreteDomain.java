@@ -289,6 +289,13 @@ public abstract class DiscreteDomain extends Domain
 		return (getIndex(value) >= 0);
 	}
 	
+	@Override
+	public boolean isIntegral()
+	{
+		// TODO: also include smaller integer wrapper classes?
+		return getElementClass() == Integer.class;
+	}
+	
 	/**
 	 * @return true if {@code value} is a {@link Number} representing a valid
 	 * integer index into the array of elements returned by {@link #getElements()}.

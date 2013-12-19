@@ -14,6 +14,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.EnumDomain;
+import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -61,10 +62,12 @@ public class TestDomain
 		assertEquals(0, bit.getIntElement(0));
 		assertEquals(1, bit.getIntElement(1));
 		assertEquals(bit, DiscreteDomain.create(0, 1));
+		assertTrue(bit.isIntegral());
 		
 		TypedDiscreteDomain<Integer> reverseBit = DiscreteDomain.create(1, 0);
 		assertNotEquals(bit, reverseBit);
 		assertInvariants(reverseBit);
+		assertTrue(reverseBit.isIntegral());
 		
 		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.bool();
 		assertInvariants(bool);
@@ -75,6 +78,7 @@ public class TestDomain
 		assertNotEquals(bit.hashCode(), bool.hashCode());
 		assertEquals(bool, DiscreteDomain.create(false, true));
 		assertNotEquals(bool, DiscreteDomain.create(true, false));
+		assertFalse(bool.isIntegral());
 		
 		EnumDomain<E> e = DiscreteDomain.forEnum(E.class);
 		assertInvariants(e);
@@ -259,6 +263,20 @@ public class TestDomain
 		assertNotEquals(unitCube, realPlane);
 		assertFalse(unitCube.inDomain(.5, 0.0, 1.5));
 		assertFalse(unitCube.inDomain(new Object[] { .5, 0.0, 1.5}));
+		
+		//
+		// Test IntDomain
+		//
+		
+		IntDomain intDomain = IntDomain.unbounded();
+		assertSame(intDomain, IntDomain.unbounded());
+		assertInvariants(intDomain);
+		assertTrue(intDomain.isIntegral());
+		assertFalse(intDomain.isDiscrete());
+		assertTrue(intDomain.inDomain(42));
+		assertTrue(intDomain.inDomain((short)23));
+		assertTrue(intDomain.inDomain(-23.0));
+		assertFalse(intDomain.inDomain(1.5));
 	}
 	
 	public static void assertReal(RealDomain real, double lower, double upper)
@@ -266,6 +284,8 @@ public class TestDomain
 		assertInvariants(real);
 		assertEquals(lower, real.getLowerBound(), 0.0);
 		assertEquals(upper, real.getUpperBound(), 0.0);
+		assertFalse(real.isIntegral());
+		assertFalse(real.isDiscrete());
 	}
 	
 	@SuppressWarnings("deprecation")

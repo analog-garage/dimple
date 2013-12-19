@@ -90,6 +90,13 @@ public abstract class Domain implements Serializable
 	public boolean isDiscrete() { return false; }
 	
 	/**
+	 * True if values of domain are (32-bit) integers.
+	 * <p>
+	 * @since 0.05
+	 */
+	public boolean isIntegral() { return false; }
+	
+	/**
 	 * True if domain is an instance of {@link RealDomain}.
 	 * @see #asReal()
 	 */
