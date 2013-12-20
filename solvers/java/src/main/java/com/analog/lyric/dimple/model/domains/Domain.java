@@ -115,6 +115,26 @@ public abstract class Domain implements Serializable
 	public boolean isComplex() { return false; }
 	
 	/**
+	 * True if all values of domain are scalar numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumber() { return true; }
+	
+	/**
+	 * True if all values of domain are (not necessarily scalar) numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumeric() { return true; }
+	
+	/**
+	 * True if all elements of domain are scalar values.
+	 * <p>
+	 * This is false for {@link RealJointDomain} and {@link JointDiscreteDomain}.
+	 * @since 0.05
+	 */
+	public boolean isScalar() { return true; }
+	
+	/**
 	 * @return true if {@code value} is a valid member of the domain. Implementors
 	 * should not throw a cast exception.
 	 */

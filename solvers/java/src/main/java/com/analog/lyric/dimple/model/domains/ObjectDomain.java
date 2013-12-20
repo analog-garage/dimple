@@ -3,14 +3,14 @@ package com.analog.lyric.dimple.model.domains;
 import net.jcip.annotations.Immutable;
 
 /**
- * Non-discrete integral domain.
+ * Domain of all Java objects.
  * <p>
  * NOTE: currently there is no random variable type that corresponds to this domain.
  * 
- * @since 0.05
+ *  @since 0.05
  */
 @Immutable
-public class IntDomain extends Domain
+public final class ObjectDomain extends Domain
 {
 	/*-------
 	 * State
@@ -18,7 +18,7 @@ public class IntDomain extends Domain
 	
 	private static final long serialVersionUID = 1L;
 
-	private static final IntDomain UNBOUNDED = new IntDomain();
+	private static final ObjectDomain INSTANCE = new ObjectDomain();
 	
 	// Currently no support for bounds, since you can usually use IntRangeDomain for that.
 	
@@ -26,14 +26,14 @@ public class IntDomain extends Domain
 	 * Construction
 	 */
 	
-	private IntDomain()
+	private ObjectDomain()
 	{
-		super(14237);
+		super(617);
 	}
 	
-	public static IntDomain unbounded()
+	public static ObjectDomain instance()
 	{
-		return UNBOUNDED;
+		return INSTANCE;
 	}
 	
 	/*----------------
@@ -41,20 +41,26 @@ public class IntDomain extends Domain
 	 */
 	
 	@Override
-	public boolean isIntegral()
+	public boolean inDomain(Object value)
 	{
 		return true;
 	}
 	
 	@Override
-	public boolean inDomain(Object value)
+	public boolean isNumber()
 	{
-		if (value instanceof Number)
-		{
-			Number number = (Number)value;
-			return number.intValue() == number.doubleValue();
-		}
-		
+		return false;
+	}
+	
+	@Override
+	public boolean isNumeric()
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean isScalar()
+	{
 		return false;
 	}
 }

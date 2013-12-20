@@ -210,9 +210,21 @@ public class RealJointDomain extends Domain
 	}
 	
 	@Override
+	public final boolean isNumber()
+	{
+		return false;
+	}
+	
+	@Override
 	public final boolean isRealJoint()
 	{
 		return true;
+	}
+	
+	@Override
+	public final boolean isScalar()
+	{
+		return false;
 	}
 	
 	/*-------------------------
