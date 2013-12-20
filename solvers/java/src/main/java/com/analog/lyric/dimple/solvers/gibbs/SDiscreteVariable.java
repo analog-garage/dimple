@@ -326,7 +326,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
 		int valueIndex = domain.getIndex(value);
-		if (valueIndex == -1)
+		if (valueIndex < 0)
 			throw new DimpleException("Value is not in the domain of this variable");
 		
 		setCurrentSampleIndex(valueIndex);
@@ -530,7 +530,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void createNonEdgeSpecificState()
 	{
 		DiscreteDomain domain = getModelObject().getDomain();
-		_outputMsg = new DiscreteValue(domain);
+		_outputMsg = Value.create(domain);
 		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
 		_sampleIndex = 0;
 

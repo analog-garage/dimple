@@ -18,84 +18,176 @@ package com.analog.lyric.dimple.model.values;
 
 import java.lang.reflect.Array;
 
-import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.IntRangeDomain;
+import com.analog.lyric.dimple.model.domains.ObjectDomain;
+import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.google.common.base.Objects;
 
+/**
+ * @since 0.05
+ */
 public abstract class Value implements Cloneable
 {
 	/*--------------
 	 * Construction
 	 */
 	
-	/**
-	 * Returns concrete {@link Value} subclass to be used for values of given {@code domain}.
-	 */
-	public static Class<? extends Value> classForDomain(Domain domain)
-	{
-		if (domain != null)
-		{
-			if (domain.isDiscrete())
-			{
-				return DiscreteValue.class;
-			}
-			else if (domain.isReal())
-			{
-				return RealValue.class;
-			}
-			else if (domain.isRealJoint())
-			{
-				return RealJointValue.class;
-			}
-		}
-		return ObjectValue.class;
-	}
-	
 	public static Value create(Domain domain)
 	{
 		if (domain != null)
 		{
-			if (domain.isDiscrete())
+			DiscreteDomain discrete = domain.asDiscrete();
+			if (discrete != null)
 			{
-				return new DiscreteValue(domain.asDiscrete());
+				return create(discrete);
 			}
-			else if (domain.isReal())
+
+			RealDomain real = domain.asReal();
+			if (real != null)
 			{
-				return new RealValue(0.0);
+				return create(real);
 			}
-			else if (domain.isRealJoint())
+
+
+			RealJointDomain realJoint = domain.asRealJoint();
+			if (realJoint != null)
 			{
-				return new RealJointValue(ArrayUtil.EMPTY_DOUBLE_ARRAY);
+				return new RealJointValue(realJoint);
 			}
+
+			if (domain.isIntegral())
+			{
+				return new IntValue();
+			}
+
+			assert(domain == ObjectDomain.instance());
 		}
+		
 		return new ObjectValue();
+	}
+	
+	public static RealValue create(RealDomain domain)
+	{
+		return new RealValue(0.0);
+	}
+	
+	public static DiscreteValue create(DiscreteDomain domain)
+	{
+		if (domain.isIntegral())
+		{
+			if (domain instanceof IntRangeDomain)
+			{
+				IntRangeDomain rangeDomain = (IntRangeDomain)domain;
+				if (rangeDomain.getLowerBound() == 0 && rangeDomain.getInterval() == 1)
+				{
+					return new SimpleIntRangeValue(rangeDomain);
+				}
+				else
+				{
+					return new IntRangeValue(rangeDomain);
+				}
+			}
+			@SuppressWarnings("unchecked")
+			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
+			return new GenericIntDiscreteValue(intDomain);
+		}
+		else
+		{
+			return new GenericDiscreteValue(domain.asDiscrete());
+		}
 	}
 	
 	public static Value create(Domain domain, Object value)
 	{
 		if (domain != null)
 		{
-			if (domain.isDiscrete())
+			DiscreteDomain discrete = domain.asDiscrete();
+			if (discrete != null)
 			{
-				return new DiscreteValue(value, domain.asDiscrete());
+				return create(discrete, value);
 			}
-			else if (domain.isReal())
+
+			RealDomain real = domain.asReal();
+			if (real != null)
 			{
-				return new RealValue(((Number)value).doubleValue());
+				return create(real, ((Number)value).doubleValue());
 			}
-			else if (domain.isRealJoint())
+
+			RealJointDomain realJoint = domain.asRealJoint();
+			if (realJoint != null)
 			{
-				return new RealJointValue((double[])value);
+				return create(realJoint, (double[])value);
 			}
+
+			if (domain.isIntegral())
+			{
+				return new IntValue(FactorFunctionUtilities.toInteger(value));
+			}
+
+			assert(domain == ObjectDomain.instance());
 		}
+		
 		return new ObjectValue(value);
+	}
+	
+	public static DiscreteValue create(DiscreteDomain domain, Object value)
+	{
+		if (domain.isIntegral())
+		{
+			int intValue = FactorFunctionUtilities.toInteger(value);
+			if (domain instanceof IntRangeDomain)
+			{
+				IntRangeDomain rangeDomain = (IntRangeDomain)domain;
+				if (rangeDomain.getLowerBound() == 0 && rangeDomain.getInterval() == 1)
+				{
+					return new SimpleIntRangeValue(rangeDomain, intValue);
+				}
+				else
+				{
+					return new IntRangeValue(rangeDomain, intValue);
+				}
+			}
+			@SuppressWarnings("unchecked")
+			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
+			return new GenericIntDiscreteValue(intDomain, intValue, domain.getIndex(value));
+		}
+		else
+		{
+			return new GenericDiscreteValue(value, domain);
+		}
+	}
+	
+	public static RealValue create(RealDomain domain, double value)
+	{
+		// TODO: use domain
+		return new RealValue(value);
+	}
+
+	public static RealJointValue create(RealJointDomain domain, double[] value)
+	{
+		// TODO: do something with domain
+		return new RealJointValue(value);
 	}
 	
 	public static Value create(Object object)
 	{
 		if (object instanceof Number)
 		{
-			return new RealValue(((Number)object).doubleValue());
+			Number number = (Number)object;
+			if (number instanceof Integer || number instanceof Short || number instanceof Byte)
+			{
+				return new IntValue(number.intValue());
+			}
+			else
+			{
+				return new RealValue(number.doubleValue());
+			}
 		}
 		else if (object instanceof double[])
 		{
@@ -118,8 +210,15 @@ public abstract class Value implements Cloneable
 	 * Value methods
 	 */
 	
+	public abstract Domain getDomain();
+	
 	public abstract Object getObject();
 	public abstract void setObject(Object value);
+	
+	public boolean getBoolean()
+	{
+		return FactorFunctionUtilities.toBoolean(getObject());
+	}
 	
 	public double getDouble()
 	{
@@ -131,6 +230,53 @@ public abstract class Value implements Cloneable
 		setObject(value);
 	}
 
+	/**
+	 * If value is known to be a member of a {@link DiscreteDomain}, returns its index within its domain otherwise -1.
+	 */
+	public int getIndex()
+	{
+		return -1;
+	}
+
+	public int getInt()
+	{
+		return FactorFunctionUtilities.toInteger(getObject());
+	}
+	
+	/**
+	 * Sets contents from another value.
+	 * <p>
+	 * Default implementation uses {@link #getObject()}/{@link #setObject(Object)}.
+	 */
+	public void setFrom(Value value)
+	{
+		setObject(value.getObject());
+	}
+	
+	/**
+	 * If value is known to be a member of a {@link DiscreteDomain}, sets value to element with
+	 * given index within the domain.
+	 */
+	public void setIndex(int index)
+	{
+		throw DimpleException.unsupportedMethod(getClass(), "setIndex");
+	}
+	
+	public void setInt(int value)
+	{
+		setObject(value);
+	}
+	
+	/**
+	 * True if {@link #setFrom(Value)} on {@code other} would not change the state of this value.
+	 * <p>
+	 * Default implementation compares {@link #getObject()} values.
+	 */
+	public boolean valueEquals(Value other)
+	{
+		return Objects.equal(getObject(), other.getObject());
+	}
+	
 	/*-----------------------
 	 * Static helper methods
 	 */
@@ -177,7 +323,6 @@ public abstract class Value implements Cloneable
 		for (int i = 0; i < size; ++i)
 		{
 			final Domain domain = i < nDomains ? domains[i] : domains[nDomains - 1];
-			assert(valueClass.isAssignableFrom(Value.classForDomain(domain)));
 			
 			@SuppressWarnings("unchecked")
 			T value = (T) create(domain, objs[i]);

@@ -6,6 +6,7 @@ import java.util.BitSet;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.values.Value;
 
 public interface IFactorTableBase extends Cloneable, Serializable, Iterable<FactorTableEntry>
 {
@@ -79,6 +80,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @see #getWeightForIndicesDense(int...)
 	 */
 	public double getEnergyForIndicesDense(int ... indices);
+	
+	public double getEnergyForValuesDense(Value ... values);
 
 	/**
 	 * Returns weight for given set of indices assuming that the table has a dense
@@ -91,6 +94,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @see #getEnergyForIndicesDense(int...)
 	 */
 	public double getWeightForIndicesDense(int ... indices);
+	
+	public double getWeightForValuesDense(Value ... values);
 
 	/**
 	 * The domain indexer for the table represents the domains of the table dimensions and denotes the
@@ -139,6 +144,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @see #getWeightForIndices(int...)
 	 */
 	public abstract double getEnergyForIndices(int ... indices);
+	
+	public abstract double getEnergyForValues(Value ... values);
 	
 	/**
 	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
@@ -193,6 +200,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract double getWeightForIndices(int ... indices);
 
+	public abstract double getWeightForValues(Value ... values);
+	
 	/**
 	 * True if either {@link #hasDenseEnergies()} or {@link #hasDenseWeights()} is true.
 	 */
@@ -321,6 +330,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 */
 	public abstract int sparseIndexFromIndices(int... indices);
 	
+	public abstract int sparseIndexFromValues(Value ... values);
+	
 	/**
 	 * Converts joint index (oner per valid combination of domain indices) to sparse index.
 	 * <p>
@@ -403,13 +414,22 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public void setEnergyForElements(double energy, Object ... elements);
 
 	/**
-	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code energy} value.
+	 * Sets the table value indexed by the specified {@code indices} to the given {@code energy} value.
 	 * <p>
 	 * @see #getEnergyForJointIndex(int jointIndex)
 	 * @see #setEnergyForSparseIndex(double, int)
 	 * @see #setWeightForJointIndex(double, int)
 	 */
 	public void setEnergyForIndices(double energy, int ... indices);
+	
+	/**
+	 * Sets the table value indexed by the specified {@code values} to the given {@code energy} value.
+	 * <p>
+	 * @see #getEnergyForJointIndex(int jointIndex)
+	 * @see #setEnergyForSparseIndex(double, int)
+	 * @see #setWeightForJointIndex(double, int)
+	 */
+	public void setEnergyForValues(double energy, Value ... values);
 
 	/**
 	 * Sets the table value indexed by the specified {@code sparseIndex} to the given {@code energy} value.
@@ -440,13 +460,22 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	public void setWeightForElements(double weight, Object ... elements);
 
 	/**
-	 * Sets the table value indexed by the specified {@code jointIndex} to the given {@code weight} value.
+	 * Sets the table value indexed by the specified {@code indices} to the given {@code weight} value.
 	 * <p>
 	 * @see #getWeightForJointIndex(int jointIndex)
 	 * @see #setWeightForSparseIndex(double, int)
 	 * @see #setEnergyForJointIndex(double, int)
 	 */
 	public void setWeightForIndices(double weight, int ... indices);
+	
+	/**
+	 * Sets the table value indexed by the specified {@code values} to the given {@code weight} value.
+	 * <p>
+	 * @see #getWeightForJointIndex(int jointIndex)
+	 * @see #setWeightForSparseIndex(double, int)
+	 * @see #setEnergyForJointIndex(double, int)
+	 */
+	public void setWeightForValues(double weight, Value ... values);
 
 	/**
 	 * Sets the table value indexed by the specified {@code sparseIndex} to the given {@code weight} value.

@@ -7,6 +7,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.values.Value;
 
 public abstract class SparseFactorTableBase extends FactorTableBase implements IFactorTable
 {
@@ -182,6 +183,12 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	}
 
 	@Override
+	public final double[] getEnergySlice(int sliceDimension, Value ... values)
+	{
+		return getEnergySlice(null, sliceDimension, values);
+	}
+
+	@Override
 	public final FactorTableRepresentation getRepresentation()
 	{
 		return FactorTableRepresentation.forMask(_representation);
@@ -191,6 +198,12 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	public final double[] getWeightSlice(int sliceDimension, int... indices)
 	{
 		return getWeightSlice(null, sliceDimension, indices);
+	}
+
+	@Override
+	public final double[] getWeightSlice(int sliceDimension, Value ... values)
+	{
+		return getWeightSlice(null, sliceDimension, values);
 	}
 
 	@Override

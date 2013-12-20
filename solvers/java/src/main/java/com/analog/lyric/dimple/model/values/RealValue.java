@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import com.analog.lyric.dimple.model.domains.RealDomain;
+
 public class RealValue extends Value
 {
 	protected double _value;
@@ -24,12 +26,12 @@ public class RealValue extends Value
 	 * Construction
 	 */
 	
-	public RealValue(double value)
+	RealValue(double value)
 	{
 		_value = value;
 	}
 	
-	public RealValue(RealValue that)
+	RealValue(RealValue that)
 	{
 		this(that._value);
 	}
@@ -45,6 +47,18 @@ public class RealValue extends Value
 	 */
 	
 	@Override
+	public void setFrom(Value value)
+	{
+		_value = value.getDouble();
+	}
+	
+	@Override
+	public RealDomain getDomain()
+	{
+		return RealDomain.unbounded();
+	}
+	
+	@Override
 	public Object getObject()
 	{
 		return _value;
@@ -56,9 +70,6 @@ public class RealValue extends Value
 		_value = ((Number)value).doubleValue();
 	}
 	
-	public final double getValue() {return _value;}
-	public final void setValue(double value) {_value = value;}
-	
 	@Override
 	public double getDouble()
 	{
@@ -69,5 +80,24 @@ public class RealValue extends Value
 	public void setDouble(double value)
 	{
 		_value = value;
+	}
+	
+	@Override
+	public int getInt()
+	{
+		// TODO: is this the semantics we want here?
+		return (int)Math.round(_value);
+	}
+	
+	@Override
+	public void setInt(int value)
+	{
+		_value = value;
+	}
+	
+	@Override
+	public boolean valueEquals(Value other)
+	{
+		return _value == other.getDouble();
 	}
 }

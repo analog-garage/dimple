@@ -93,10 +93,35 @@ public abstract class FactorFunction
 
 	public void evalDeterministic(Object[] arguments)
 	{ }
+	
+	public void evalDeterministic(Factor factor, Value[] values)
+	{
+		final Object[] objects = Value.toObjects(values);
+		evalDeterministic(objects);
+		final int[] directedTo = factor.getDirectedTo();
+		if (directedTo != null)
+		{
+			for (int to : directedTo)
+			{
+				values[to].setObject(objects[to]);
+			}
+		}
+	}
 
 	public double evalEnergy(Object... arguments)
 	{
 		return -Math.log(eval(arguments));
+	}
+	
+	public double evalEnergy(Value[] values)
+	{
+		final int size = values.length;
+		final Object[] objects = new Object[size];
+		for (int i = 0; i < size; ++i)
+		{
+			objects[i] = values[i].getObject();
+		}
+		return evalEnergy(objects);
 	}
 
     public boolean factorTableExists(JointDomainIndexer domains)

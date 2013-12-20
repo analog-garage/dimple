@@ -19,6 +19,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
+import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.math.DoubleMath;
 
 @NotThreadSafe
@@ -296,11 +297,23 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	{
 		throw notDense("getEnergyForIndicesDense");
 	}
-
+	
+	@Override
+	public double getEnergyForValuesDense(Value ... values)
+	{
+		throw notDense("getEnergyForValuesDense");
+	}
+	
 	@Override
 	public double getWeightForIndicesDense(int... indices)
 	{
 		throw notDense("getWeightForIndicesDense");
+	}
+
+	@Override
+	public double getWeightForValuesDense(Value ... values)
+	{
+		throw notDense("getWeightForValuesDense");
 	}
 
 	@Override
@@ -632,6 +645,26 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	@Override
 	public double[] getEnergySlice(double[] slice, int sliceDimension, int... indices)
 	{
+		final int[] scratchIndices = _scratchIndices;
+		System.arraycopy(indices, 0, scratchIndices, 0, scratchIndices.length);
+		
+		return getEnergySliceImpl(slice, sliceDimension, scratchIndices);
+	}
+	
+	@Override
+	public double[] getEnergySlice(double[] slice, int sliceDimension, Value ... values)
+	{
+		final int[] scratchIndices = _scratchIndices;
+		for (int i = scratchIndices.length; --i>=0;)
+		{
+			scratchIndices[i] = values[i].getIndex();
+		}
+		
+		return getEnergySliceImpl(slice, sliceDimension, scratchIndices);
+	}
+	
+	private double[] getEnergySliceImpl(double[] slice, int sliceDimension, int[] scratchIndices)
+	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		int size = indexer.getDomainSize(sliceDimension);
 		
@@ -640,9 +673,6 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 			slice = new double[size];
 		}
 
-		final int[] scratchIndices = _scratchIndices;
-		System.arraycopy(indices, 0, scratchIndices, 0, scratchIndices.length);
-		
 		for (int i = 0; i < size; ++i)
 		{
 			scratchIndices[sliceDimension] = i;
@@ -676,6 +706,26 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	@Override
 	public double[] getWeightSlice(double[] slice, int sliceDimension, int... indices)
 	{
+		final int[] scratchIndices = _scratchIndices;
+		System.arraycopy(indices, 0, scratchIndices, 0, scratchIndices.length);
+		
+		return getWeightSliceImpl(slice, sliceDimension, scratchIndices);
+	}
+	
+	@Override
+	public double[] getWeightSlice(double[] slice, int sliceDimension, Value ... values)
+	{
+		final int[] scratchIndices = _scratchIndices;
+		for (int i = scratchIndices.length; --i>=0;)
+		{
+			scratchIndices[i] = values[i].getIndex();
+		}
+		
+		return getWeightSliceImpl(slice, sliceDimension, scratchIndices);
+	}
+	
+	private double[] getWeightSliceImpl(double[] slice, int sliceDimension, int[] scratchIndices)
+	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		int size = indexer.getDomainSize(sliceDimension);
 		
@@ -684,9 +734,6 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 			slice = new double[size];
 		}
 
-		final int[] scratchIndices = _scratchIndices;
-		System.arraycopy(indices, 0, scratchIndices, 0, scratchIndices.length);
-		
 		for (int i = 0; i < size; ++i)
 		{
 			scratchIndices[sliceDimension] = i;

@@ -763,10 +763,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 	public RealJointValue createDefaultMessage()
 	{
-		if (_var.hasFixedValue())
-			return new RealJointValue(_varReal.getFixedValue());
-		else
-			return new RealJointValue(_initialSampleValue);
+		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 	}
 
 	// TODO Move to ISolverVariable

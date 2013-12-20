@@ -21,6 +21,8 @@ import java.util.Arrays;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -84,17 +86,17 @@ public class Multiplexer extends FactorFunction
     	}
     	else if (selectedInput instanceof Boolean)
     	{
-    		if (_smoothingSpecified) throw new DimpleException("Smoothing allowed only for scalar numeric inputs.");
+    		if (_smoothingSpecified) throw smoothingNonNumber();
     		isEqual = (((Boolean)selectedInput).booleanValue() == ((Boolean)output).booleanValue());
     	}
     	else if (selectedInput instanceof double[])
     	{
-    		if (_smoothingSpecified) throw new DimpleException("Smoothing allowed only for scalar numeric inputs.");
+    		if (_smoothingSpecified) throw smoothingNonNumber();
     		isEqual = Arrays.equals((double[])selectedInput, (double[])output);
     	}
     	else if (selectedInput instanceof int[])
     	{
-    		if (_smoothingSpecified) throw new DimpleException("Smoothing allowed only for scalar numeric inputs.");
+    		if (_smoothingSpecified) throw smoothingNonNumber();
     		isEqual = Arrays.equals((int[])selectedInput, (int[])output);
     	}
     	else
@@ -107,6 +109,27 @@ public class Multiplexer extends FactorFunction
     		return isEqual ? 0 : Double.POSITIVE_INFINITY;
     }
     
+    @Override
+    public double evalEnergy(Value[] values)
+    {
+    	final Value output = values[0];
+    	final int selector = values[1].getInt();
+    	final Value selectedInput = values[selector + 2];
+    	
+    	if (_smoothingSpecified)
+    	{
+    		if (!selectedInput.getDomain().isNumber())
+    		{
+    			throw smoothingNonNumber();
+    		}
+    		final double diff = selectedInput.getDouble() - output.getDouble();
+    		return diff*diff*_beta;
+    	}
+    	else
+    	{
+    		return output.valueEquals(selectedInput) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
     
     @Override
     public final boolean isDirected()	{return true;}
@@ -121,6 +144,11 @@ public class Multiplexer extends FactorFunction
     	arguments[0] = arguments[selector + 2];		// Replace the output value
     }
     
+    @Override
+    public final void evalDeterministic(Factor factor, Value[] values)
+    {
+    	values[0].setFrom(values[values[1].getInt() + 2]);
+    }
     
     // Factor-specific methods
     public final boolean hasSmoothing()
@@ -128,4 +156,8 @@ public class Multiplexer extends FactorFunction
     	return _smoothingSpecified;
     }
 
+    private DimpleException smoothingNonNumber()
+    {
+    	return new DimpleException("Smoothing allowed only for scalar numeric inputs.");
+    }
 }
