@@ -139,7 +139,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
-			RealValue nextSample = new RealValue(_sampleValue);
+			RealValue nextSample = RealValue.create(_sampleValue);
 			_sampler.nextSample(nextSample, this);
 		}
 		else
@@ -153,7 +153,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 				INode factorNode = _var.getSibling(portIndex);
 				ISolverNode factor = factorNode.getSolver();
 				int factorPortNumber = factorNode.getPortNum(_var);
-				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
+				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			double nextSampleValue = _conjugateSampler.nextSample(ports, _input);
@@ -460,7 +460,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		}
 		
 		_sampleValue = value;
-		_outputMsg.setValue(_sampleValue);
+		_outputMsg.setDouble(_sampleValue);
 		
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
@@ -636,10 +636,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public RealValue createDefaultMessage()
 	{
-		if (_var.hasFixedValue())
-			return new RealValue(_varReal.getFixedValue());
-		else
-			return new RealValue(_initialSampleValue);
+		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 	}
 
 	// TODO Move to ISolverVariable
@@ -733,7 +730,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	public void createNonEdgeSpecificState()
 	{
 		_outputMsg = createDefaultMessage();
-		_sampleValue = _outputMsg.getValue();
+		_sampleValue = _outputMsg.getDouble();
 	    _bestSampleValue = _sampleValue;
 	    if (_sampleArray != null)
 			saveAllSamples();

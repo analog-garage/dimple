@@ -35,6 +35,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 {
 	private FactorFunction _factorFunction;
 	private Object [] _constants;
+	private Value[] _constantValues;
 	private int [] _constantIndices;
 	
 	@Internal
@@ -55,6 +56,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 		
 		if (_constantIndices.length != _constants.length)
 			throw new DimpleException("need to specify the constants and their locations");
+
+		_constantValues = new Value[_constants.length];
+		for (int i = _constantValues.length; --i>=0;)
+		{
+			_constantValues[i] = Value.create(_constants[i]);
+		}
 	}
 	
 
@@ -92,6 +99,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 	public double evalEnergy(Object... arguments)
 	{
 		return _factorFunction.evalEnergy(expandInputList(arguments));
+	}
+	
+	@Override
+	public double evalEnergy(Value[] values)
+	{
+		return _factorFunction.evalEnergy(expandValues(values));
 	}
 	
 	@Override
@@ -159,24 +172,9 @@ public class FactorFunctionWithConstants extends FactorFunction
 	@Override
 	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
 	{
-		int inputLength = values.length;
 		int constantLength = _constantIndices.length;
-		int expandedLength = inputLength + constantLength;
-		Value[] expandedValues = new Value[expandedLength];
+		Value[] expandedValues = expandValues(values);
 
-		// Expand value array and insert constants in appropriate slots.
-		int ei = 0, vi = 0;
-		for (int ci = 0; ci < constantLength; ++ ci)
-		{
-			final int constantIndex = _constantIndices[ci];
-			final int nonConstantLength = constantIndex - ei;
-			System.arraycopy(values, vi, expandedValues, ei, nonConstantLength);
-			vi += nonConstantLength;
-			ei = constantIndex + 1;
-			expandedValues[constantIndex] = Value.create(_constants[ci]);
-		}
-		System.arraycopy(values, vi, expandedValues, ei, inputLength - vi);
-		
 		// Adjust indexes of old values to account for inserted constants.
 		ArrayList<IndexedValue> expandedOldValues = new ArrayList<IndexedValue>(oldValues);
 		Collections.sort(expandedOldValues);
@@ -274,6 +272,27 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return expandedInputs;
 	}
 	
+	protected Value[] expandValues(Value[] values)
+	{
+		int inputLength = values.length;
+		int constantLength = _constantIndices.length;
+		int expandedLength = inputLength + constantLength;
+		Value[] expandedValues = new Value[expandedLength];
+		
+		int ei = 0, vi = 0;
+		for (int ci = 0; ci < constantLength; ++ ci)
+		{
+			final int constantIndex = _constantIndices[ci];
+			final int nonConstantLength = constantIndex - ei;
+			System.arraycopy(values, vi, expandedValues, ei, nonConstantLength);
+			vi += nonConstantLength;
+			ei = constantIndex + 1;
+			expandedValues[constantIndex] = _constantValues[ci];
+		}
+		System.arraycopy(values, vi, expandedValues, ei, inputLength - vi);
+		
+		return expandedValues;
+	}
 
 	// Contract a list of indices to exclude the constant indices and renumber the others accordingly
 	protected int[] contractIndexList(int[] indexList)

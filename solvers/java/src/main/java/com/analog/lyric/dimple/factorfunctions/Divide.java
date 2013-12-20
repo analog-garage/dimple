@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -76,6 +77,33 @@ public class Divide extends FactorFunction
     		return (expectedQuotient == quotient) ? 0 : Double.POSITIVE_INFINITY;
     	}
     }
+    
+    @Override
+    public double evalEnergy(Value[] values)
+    {
+    	double quotient = values[0].getDouble();
+    	double dividend = values[1].getDouble();
+    	double divisor = values[2].getDouble();
+    	
+    	double expectedQuotient = dividend / divisor;
+    	
+    	if (Double.isNaN(expectedQuotient))
+    		return Double.POSITIVE_INFINITY;
+    	if (Double.isInfinite(expectedQuotient))
+    		return Double.POSITIVE_INFINITY;
+    	
+    	if (_smoothingSpecified)
+    	{
+    		double diff = expectedQuotient - quotient;
+    		double potential = diff*diff;
+    		return potential*_beta;
+    	}
+    	else
+    	{
+    		return (expectedQuotient == quotient) ? 0 : Double.POSITIVE_INFINITY;
+    	}
+    }
+    
     
     
     @Override

@@ -16,6 +16,10 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import java.util.Arrays;
+
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
+
 public class RealJointValue extends Value
 {
 	protected double[] _value;
@@ -24,12 +28,17 @@ public class RealJointValue extends Value
 	 * Construction
 	 */
 	
-	public RealJointValue(double[] value)
+	RealJointValue(double[] value)
 	{
 		_value = value;
 	}
 
-	public RealJointValue(RealJointValue that)
+	RealJointValue(RealJointDomain domain)
+	{
+		_value = new double[domain.getDimensions()];
+	}
+
+	RealJointValue(RealJointValue that)
 	{
 		_value = that._value; // should we deep copy?
 	}
@@ -45,7 +54,13 @@ public class RealJointValue extends Value
 	 */
 	
 	@Override
-	public Object getObject()
+	public RealJointDomain getDomain()
+	{
+		return RealJointDomain.create(_value.length);
+	}
+	
+	@Override
+	public double[] getObject()
 	{
 		return _value;
 	}
@@ -63,4 +78,11 @@ public class RealJointValue extends Value
 	// Get/set a specific element of the sample
 	public double getValue(int index) {return _value[index];}
 	public void setValue(int index, double value) {_value[index] = value;}
+	
+	@Override
+	public boolean valueEquals(Value other)
+	{
+		Object otherObj = other.getObject();
+		return otherObj instanceof double[] && Arrays.equals(_value, (double[])otherObj);
+	}
 }

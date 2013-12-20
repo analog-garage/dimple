@@ -8,6 +8,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.values.Value;
 
 public interface IFactorTable extends IFactorTableBase
 {
@@ -103,6 +104,8 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getEnergySlice(int sliceDimension, int ... indices);
 	
+	public double[] getEnergySlice(int sliceDimension, Value ... values);
+	
 	/**
 	 * Returns an array of energies for the {@code sliceDimension} of the factor table with all other
 	 * dimensions fixed to provided values.
@@ -121,6 +124,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getWeightSlice(double[], int, int ...)
 	 */
 	public double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices);
+	
+	public double[] getEnergySlice(double[] slize, int sliceDimension, Value ... values);
 	
 	/**
 	 * Returns the underlying array of sparse element indices.
@@ -169,6 +174,8 @@ public interface IFactorTable extends IFactorTableBase
 	 */
 	public double[] getWeightSlice(int sliceDimension, int ... indices);
 	
+	public double[] getWeightSlice(int sliceDimension, Value ... values);
+	
 	/**
 	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
 	 * dimensions fixed to provided values.
@@ -187,6 +194,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getEnergySlice(double[], int, int ...)
 	 */
 	public double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices);
+	
+	public double[] getWeightSlice(double[] slice, int sliceDimension, Value ... values);
 	
 	/**
 	 * True if the current factor table representation supports {@link #getIndicesSparseUnsafe}.

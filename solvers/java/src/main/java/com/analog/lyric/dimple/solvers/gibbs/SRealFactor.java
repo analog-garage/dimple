@@ -102,14 +102,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getPotential()
 	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-	    int numPorts = _factor.getSiblingCount();
-	    final Value[] inputMsgs = _inputMsgs;
-	    Object[] values = new Object[numPorts]; //_scratchValues;
-	    for (int port = 0; port < numPorts; port++)
-	    	values[port] = inputMsgs[port].getObject();
-	    
-	    return getPotential(values);
+		return _realFactor.getFactorFunction().evalEnergy(_inputMsgs);
 	}
 	public double getPotential(Object[] inputs)
 	{
@@ -160,15 +153,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		}
 		else
 		{
-			final Object[] values = Value.toObjects(_inputMsgs);
-			function.evalDeterministic(values);
-			if (directedTo != null)
-			{
-				for (int to : directedTo)
-				{
-					_inputMsgs[to].setObject(values[to]);
-				}
-			}
+			function.evalDeterministic(factor, _inputMsgs);
 			_outputsValid = true;
 
 			// Update the directed-to variables with the computed values
@@ -178,7 +163,8 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				for (int outputIndex : directedTo)
 				{
 					VariableBase variable = factor.getSibling(outputIndex);
-					Object newValue = values[outputIndex];
+					Object newValue = _inputMsgs[outputIndex].getObject();
+					// FIXME: is sample already set? Just need to handle side-effects?
 					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 				}
 			}

@@ -10,12 +10,15 @@ import java.util.Iterator;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.ComplexDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.EnumDomain;
+import com.analog.lyric.dimple.model.domains.IntDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
+import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
@@ -61,10 +64,12 @@ public class TestDomain
 		assertEquals(0, bit.getIntElement(0));
 		assertEquals(1, bit.getIntElement(1));
 		assertEquals(bit, DiscreteDomain.create(0, 1));
+		assertTrue(bit.isIntegral());
 		
 		TypedDiscreteDomain<Integer> reverseBit = DiscreteDomain.create(1, 0);
 		assertNotEquals(bit, reverseBit);
 		assertInvariants(reverseBit);
+		assertTrue(reverseBit.isIntegral());
 		
 		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.bool();
 		assertInvariants(bool);
@@ -75,6 +80,7 @@ public class TestDomain
 		assertNotEquals(bit.hashCode(), bool.hashCode());
 		assertEquals(bool, DiscreteDomain.create(false, true));
 		assertNotEquals(bool, DiscreteDomain.create(true, false));
+		assertFalse(bool.isIntegral());
 		
 		EnumDomain<E> e = DiscreteDomain.forEnum(E.class);
 		assertInvariants(e);
@@ -239,12 +245,12 @@ public class TestDomain
 		
 		try
 		{
-			RealJointDomain.create(RealDomain.unbounded());
+			RealJointDomain.create();
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException ex)
 		{
-			assertThat(ex.getMessage(), containsString("requires at least two domains"));
+			assertThat(ex.getMessage(), containsString("requires at least one domain"));
 		}
 		
 		
@@ -259,6 +265,31 @@ public class TestDomain
 		assertNotEquals(unitCube, realPlane);
 		assertFalse(unitCube.inDomain(.5, 0.0, 1.5));
 		assertFalse(unitCube.inDomain(new Object[] { .5, 0.0, 1.5}));
+		
+		//
+		// Test IntDomain
+		//
+		
+		IntDomain intDomain = IntDomain.unbounded();
+		assertSame(intDomain, IntDomain.unbounded());
+		assertInvariants(intDomain);
+		assertTrue(intDomain.isIntegral());
+		assertFalse(intDomain.isDiscrete());
+		assertTrue(intDomain.inDomain(42));
+		assertTrue(intDomain.inDomain((short)23));
+		assertTrue(intDomain.inDomain(-23.0));
+		assertFalse(intDomain.inDomain(1.5));
+		
+		//
+		// Test ObjectDomain
+		//
+		
+		ObjectDomain objDomain = ObjectDomain.instance();
+		assertSame(objDomain, ObjectDomain.instance());
+		assertInvariants(objDomain);
+		assertTrue(objDomain.inDomain(42));
+		assertTrue(objDomain.inDomain("foo"));
+		assertTrue(objDomain.inDomain(null));
 	}
 	
 	public static void assertReal(RealDomain real, double lower, double upper)
@@ -266,6 +297,8 @@ public class TestDomain
 		assertInvariants(real);
 		assertEquals(lower, real.getLowerBound(), 0.0);
 		assertEquals(upper, real.getUpperBound(), 0.0);
+		assertFalse(real.isIntegral());
+		assertFalse(real.isDiscrete());
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -274,15 +307,23 @@ public class TestDomain
 		assertNotEquals(domain, "foo");
 		assertEquals(domain, domain);
 		
-		assertFalse(domain.inDomain(Bogus.X));
-		assertFalse(domain.containsValueWithRepresentation(Bogus.X));
+		assertEquals(domain.isNumber(), domain.isNumeric() && domain.isScalar());
+		
+		if (domain != ObjectDomain.instance())
+		{
+			assertFalse(domain.inDomain(Bogus.X));
+			assertFalse(domain.containsValueWithRepresentation(Bogus.X));
+		}
 		
 		if (domain.isReal())
 		{
 			assertFalse(domain.isDiscrete());
 			assertFalse(domain.isRealJoint());
 			assertTrue(domain instanceof RealDomain);
+			assertTrue(domain.isScalar());
+			assertTrue(domain.isNumeric());
 			RealDomain real = (RealDomain)domain;
+			assertSame(real, domain.asReal());
 			
 			double lower = real.getLowerBound();
 			double upper = real.getUpperBound();
@@ -307,12 +348,16 @@ public class TestDomain
 				assertFalse(real.inDomain(tooHigh));
 			}
 		}
+		else
+		{
+			assertNull(domain.asReal());
+		}
 		
 		if (domain.isDiscrete())
 		{
 			assertFalse(domain.isRealJoint());
-			assertTrue(domain instanceof DiscreteDomain);
 			DiscreteDomain discrete = (DiscreteDomain)domain;
+			assertSame(discrete, domain.asDiscrete());
 			
 			TypedDiscreteDomain<Object> discreteObj = discrete.asTypedDomain(Object.class);
 			assertSame(discreteObj, discrete);
@@ -320,10 +365,12 @@ public class TestDomain
 			if (Number.class.isAssignableFrom(discrete.getElementClass()))
 			{
 				assertSame(discrete, discreteNum);
+				assertTrue(domain.isNumeric());
 			}
 			else
 			{
 				assertNull(discreteNum);
+				assertFalse(domain.isNumeric());
 			}
 			
 			final int size = discrete.size();
@@ -441,6 +488,7 @@ public class TestDomain
 			
 			if (discrete instanceof JointDiscreteDomain)
 			{
+				assertFalse(discrete.isScalar());
 				JointDiscreteDomain<?> joint = (JointDiscreteDomain<?>)discrete;
 				assertEquals(joint.getDomainIndexer().size(), joint.getDimensions());
 				
@@ -468,11 +516,21 @@ public class TestDomain
 				Arrays.fill(indices, joint.size());
 				assertFalse(joint.containsValueWithRepresentation(indices));
 			}
+			else
+			{
+				assertTrue(discrete.isScalar());
+			}
+		}
+		else // Not Discrete
+		{
+			assertNull(domain.asDiscrete());
 		}
 		
 		if (domain instanceof RealJointDomain)
 		{
+			assertFalse(domain.isScalar());
 			RealJointDomain realJoint = (RealJointDomain)domain;
+			assertSame(realJoint, domain.asRealJoint());
 			assertTrue(realJoint.isRealJoint());
 			assertFalse(realJoint.isReal());
 			assertFalse(realJoint.isDiscrete());
@@ -501,6 +559,24 @@ public class TestDomain
 			double[] lowerTooLong = Arrays.copyOf(lower, lower.length + 1);
 			assertFalse(domain.inDomain(lowerTooLong));
 			assertFalse(realJoint.inDomain(lowerTooLong));
+			
+			if (domain instanceof ComplexDomain)
+			{
+				ComplexDomain complex = (ComplexDomain)domain;
+				assertSame(complex, domain.asComplex());
+				assertTrue(domain.isComplex());
+			}
+			else
+			{
+				assertNull(domain.asComplex());
+				assertFalse(domain.isComplex());
+			}
+		}
+		else
+		{
+			assertNull(domain.asRealJoint());
+			assertNull(domain.asComplex());
+			assertFalse(domain.isComplex());
 		}
 	}
 	

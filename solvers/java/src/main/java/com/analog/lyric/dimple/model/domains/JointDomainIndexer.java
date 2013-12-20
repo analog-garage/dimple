@@ -13,6 +13,8 @@ import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.DiscreteValue;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -42,6 +44,11 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
  * <dt>indices</dt>
  * <dd>Refers to an array of indices of domain elements in their canonical order in the indexer. This is
  * an equivalent representation to elements but uses the element indexes rather than their actual values.
+ * </dd>
+ * 
+ * <dt>values</dt>
+ * <dd>Refers to a {@link Value} array presumed to contain non-null {@link DiscreteValue}s that contain
+ * both the element and index.
  * </dd>
  * 
  * <dt>joint index</dt>
@@ -581,6 +588,23 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	}
 	
 	/**
+	 * Computes a unique index for the subset of {@code values} designated as inputs.
+	 * <p>
+	 * Similar to {@link #jointIndexFromValues(Value...)} but computes value only
+	 * from those element indices designated by {@link #getInputSet()}.
+	 * <p>
+	 * Returns 0 if not {@link #isDirected()}.
+	 * <p>
+	 * @see #inputIndexFromElements(Object...)
+	 * @see #inputIndexFromIndices(int...)
+	 * @see #outputIndexFromValues(Value...)
+	 */
+	public int inputIndexFromValues(Value ... values)
+	{
+		return 0;
+	}
+	
+	/**
 	 * Converts a joint index to an input index.
 	 * <p>
 	 * Returns 0 if not {@link #isDirected()}.
@@ -659,6 +683,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public int jointIndexFromIndices(int ... indices)
 	{
 		return undirectedJointIndexFromIndices(indices);
+	}
+	
+	public int jointIndexFromValues(Value ... values)
+	{
+		return undirectedJointIndexFromValues(values);
 	}
 	
 	/**
@@ -773,6 +802,11 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return undirectedJointIndexFromIndices(indices);
 	}
 	
+	public int outputIndexFromValues(Value ... values)
+	{
+		return undirectedJointIndexFromValues(values);
+	}
+	
 	/**
 	 * Converts a joint index to an output index.
 	 * <p>
@@ -822,6 +856,8 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	public abstract int undirectedJointIndexFromElements(Object ... elements);
 
 	public abstract int undirectedJointIndexFromIndices(int ... indices);
+	
+	public abstract int undirectedJointIndexFromValues(Value ... values);
 	
 	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements);
 	
@@ -926,6 +962,32 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 		
 		return indices;
+	}
+	
+	public Value[] validateValues(Value ... values)
+	{
+		final DiscreteDomain[] domains = _domains;
+		final int length = domains.length;
+	
+		if (values.length != length)
+		{
+			throw new IllegalArgumentException(
+				String.format("Wrong number of values: %d instead of %d", values.length, length));
+		}
+		
+		// TODO: should this check that value is in the appropriate domain?
+		
+		for (int i = 0; i < length; ++i)
+		{
+			final int index = values[i].getIndex();
+			if (index < 0 || index >= domains[i].size())
+			{
+				throw new IndexOutOfBoundsException(
+					String.format("Index %d out of bounds for domain %d with size %d", index, i, domains[i].size()));
+			}
+		}
+		
+		return values;
 	}
 	
 	/*-------------------

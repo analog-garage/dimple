@@ -17,7 +17,9 @@ public class UniformDiscreteProposalKernel implements IProposalKernel
 		int currentIndex = ((DiscreteValue)currentValue).getIndex();
 		int nextIndex = SolverRandomGenerator.rand.nextInt(domain.size() - 1);
 		if (nextIndex >= currentIndex) nextIndex++;
-		return new Proposal(new DiscreteValue(domain, nextIndex));
+		Value value = Value.create(domain);
+		value.setIndex(nextIndex);
+		return new Proposal(value);
 	}
 
 	@Override

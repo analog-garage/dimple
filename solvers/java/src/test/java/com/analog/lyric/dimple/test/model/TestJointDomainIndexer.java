@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.test.SerializationTester;
 
 public class TestJointDomainIndexer
@@ -190,6 +191,8 @@ public class TestJointDomainIndexer
 			}
 		}
 		
+		DiscreteDomain[] domains = indexer.toArray(new DiscreteDomain[indexer.size()]);
+		
 		int i = 0, expectedStride = 1;
 		for (DiscreteDomain domain : indexer)
 		{
@@ -203,6 +206,7 @@ public class TestJointDomainIndexer
 				expectedStride *= domain.size();
 			}
 			assertSame(domain, indexer.get(i));
+			assertSame(domain, domains[i]);
 			assertEquals(domain.size(), indexer.getDomainSize(i));
 			assertTrue(indexer.getElementClass().isAssignableFrom(domain.getElementClass()));
 			++i;
@@ -254,13 +258,18 @@ public class TestJointDomainIndexer
 				assertTrue(indicesIterator.hasNext());
 				assertArrayEquals(indices, indicesIterator.next());
 
+				Value[] values = Value.createFromObjects(elements, domains);
+				
 				indexer.validateIndices(indices);
+				indexer.validateValues(values);
 
 				assertEquals(i, indexer.undirectedJointIndexFromElements(elements));
 				assertEquals(i, indexer.undirectedJointIndexFromIndices(indices));
-
+				assertEquals(i, indexer.undirectedJointIndexFromValues(values));
+				
 				int ji = indexer.jointIndexFromIndices(indices);
 				assertEquals(ji, indexer.jointIndexFromElements(elements));
+				assertEquals(ji, indexer.jointIndexFromValues(values));
 
 				if (i == ji)
 				{
@@ -269,10 +278,12 @@ public class TestJointDomainIndexer
 
 				int in = indexer.inputIndexFromIndices(indices);
 				assertEquals(in, indexer.inputIndexFromElements(elements));
+				assertEquals(in, indexer.inputIndexFromValues(values));
 				assertEquals(in, indexer.inputIndexFromJointIndex(ji));
 
 				int out = indexer.outputIndexFromIndices(indices);
 				assertEquals(out, indexer.outputIndexFromElements(elements));
+				assertEquals(out, indexer.outputIndexFromValues(values));
 				assertEquals(out, indexer.outputIndexFromJointIndex(ji));
 
 				assertEquals(ji, indexer.jointIndexFromInputOutputIndices(in, out));
@@ -352,6 +363,7 @@ public class TestJointDomainIndexer
 			expectNoJoint(indexer, "getUndirectedStride", 0);
 			expectNoJoint(indexer, "undirectedJointIndexFromElements");
 			expectNoJoint(indexer, "undirectedJointIndexFromIndices");
+			expectNoJoint(indexer, "undirectedJointIndexFromValues");
 			expectNoJoint(indexer, "undirectedJointIndexToElements", 42);
 			expectNoJoint(indexer, "undirectedJointIndexToIndices", 42);
 			expectNoJoint(indexer, "undirectedJointIndexToElementIndex", 1, 2);

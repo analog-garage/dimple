@@ -80,6 +80,18 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 		return _elementToIndex.containsKey(value);
 	}
 	
+	@Override
+	public boolean isNumber()
+	{
+		return isNumeric();
+	}
+	
+	@Override
+	public boolean isNumeric()
+	{
+		return Number.class.isAssignableFrom(getElementClass());
+	}
+	
 	/*------------------------
 	 * DiscreteDomain methods
 	 */

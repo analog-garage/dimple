@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -48,6 +49,10 @@ public class DiscreteTransition extends FactorFunction
 {
 	private final static int NUM_DATA_ARGUMENTS = 2;
 	
+	// TODO: skip normalization if possible. We may know that the transition matrix columns
+	// are already normalized or we may be able to cache the sum and reuse if the column values
+	// have not changed.
+	
 	@Override
 	public double evalEnergy(Object... arguments)
     {
@@ -58,7 +63,7 @@ public class DiscreteTransition extends FactorFunction
     	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
 
     	double[] Acol = (double[])arguments[x + NUM_DATA_ARGUMENTS];		// Choose column of A indexed by input variable x
-    	double yDimension = Acol.length;
+    	int yDimension = Acol.length;
     	
     	double sum = 0;									// Normalize over column selected by input variable x
     	for (int row = 0; row < yDimension; row++)
@@ -72,4 +77,28 @@ public class DiscreteTransition extends FactorFunction
     	return -Math.log(Acol[y]) + Math.log(sum);
 	}
 
+	@Override
+	public double evalEnergy(Value[] values)
+	{
+    	if (values.length < NUM_DATA_ARGUMENTS + 1)
+    		throw new DimpleException("Insufficient number of arguments.");
+		
+    	final int y = values[0].getInt(); // First argument is y (output variable)
+    	final int x = values[1].getInt(); // Second argument is x (input variable)
+
+    	// Choose column of A indexed by input variable x
+    	final double[] Acol = (double[])values[x + NUM_DATA_ARGUMENTS].getObject();
+    	final int yDimension = Acol.length;
+
+    	double sum = 0;									// Normalize over column selected by input variable x
+    	for (int row = 0; row < yDimension; row++)
+    	{
+    		double a = Acol[row];
+    		if (a < 0)
+    			return Double.POSITIVE_INFINITY;
+    		sum += a;
+    	}
+
+    	return -Math.log(Acol[y]) + Math.log(sum);
+	}
 }

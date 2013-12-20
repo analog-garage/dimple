@@ -23,6 +23,7 @@ import org.apache.commons.math3.special.Gamma;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -105,6 +106,43 @@ public class ExchangeableDirichlet extends FactorFunction
     	return sum * (_alpha - 1) + N * _logBetaAlpha;
 	}
     
+    @Override
+    public double evalEnergy(Value[] values)
+    {
+    	int index = 0;
+    	if (!_parametersConstant)
+    	{
+    		_alpha = values[index++].getDouble();		// First variable is parameter value
+    		if (_alpha <= 0)
+    			return Double.POSITIVE_INFINITY;
+    		_logBetaAlpha = logBeta(_alpha);
+    	}
+
+    	double sum = 0;
+    	int length = values.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	for (; index < length; index++)
+    	{
+    		double[] x = (double[])values[index].getObject();	// Remaining inputs are Dirichlet distributed random variable vectors
+    		if (x.length != _dimension)
+	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
+    		double xSum = 0;
+    		for (int i = 0; i < _dimension; i++)
+    		{
+    			double xi = x[i];
+    			if (xi <= 0)
+    				return Double.POSITIVE_INFINITY;
+    			else
+    				sum -= Math.log(xi);	// -log(x_i ^ (a_i-1))
+    			xSum += xi;
+    		}
+    		
+    		if (!almostEqual(xSum, 1, SIMPLEX_THRESHOLD * _dimension))	// Values must be on the probability simplex
+    			return Double.POSITIVE_INFINITY;
+    	}
+
+    	return sum * (_alpha - 1) + N * _logBetaAlpha;
+    }
     
     private final double logBeta(double alpha)
     {

@@ -15,8 +15,8 @@ public class Proposal
 	public Proposal(Value value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
 	
 	// Construct with no Hastings term; for real valued proposal
-	public Proposal(double value) {this.value = new RealValue(value); this.hastingsTerm = 0;}
+	public Proposal(double value) {this.value = RealValue.create(value); this.hastingsTerm = 0;}
 	
 	// General constructor; for real valued proposal
-	public Proposal(double value, double hastingsTerm) {this.value = new RealValue(value); this.hastingsTerm = hastingsTerm;}
+	public Proposal(double value, double hastingsTerm) {this.value = RealValue.create(value); this.hastingsTerm = hastingsTerm;}
 }

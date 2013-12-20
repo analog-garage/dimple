@@ -139,6 +139,7 @@ public interface INode  extends INameable
 	public boolean hasParentGraph();
 	public int getPortNum(INode node) ;
 	public ArrayList<INode> getConnectedNodeAndParents(int index);
+	public Port getPort(int i);
 	public ArrayList<Port> getPorts();
 	
 	/**
@@ -187,5 +188,6 @@ public interface INode  extends INameable
 	
 	public void initialize();
 	public void initialize(int portNum);
+
 
 }

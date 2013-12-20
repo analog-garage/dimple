@@ -228,7 +228,7 @@ public class SRealVariable extends SRealVariableBase
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				Proposal proposal = _proposalKernel.next(new RealValue(sampleValue), varDomain);
+				Proposal proposal = _proposalKernel.next(RealValue.create(sampleValue), varDomain);
 				double proposalValue = proposal.value.getDouble();
 
 				// If outside the bounds, then reject

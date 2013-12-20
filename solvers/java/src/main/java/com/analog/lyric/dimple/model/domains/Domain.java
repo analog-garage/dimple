@@ -90,6 +90,13 @@ public abstract class Domain implements Serializable
 	public boolean isDiscrete() { return false; }
 	
 	/**
+	 * True if values of domain are (32-bit) integers.
+	 * <p>
+	 * @since 0.05
+	 */
+	public boolean isIntegral() { return false; }
+	
+	/**
 	 * True if domain is an instance of {@link RealDomain}.
 	 * @see #asReal()
 	 */
@@ -106,6 +113,26 @@ public abstract class Domain implements Serializable
 	 * @see #asComplex()
 	 */
 	public boolean isComplex() { return false; }
+	
+	/**
+	 * True if all values of domain are scalar numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumber() { return true; }
+	
+	/**
+	 * True if all values of domain are (not necessarily scalar) numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumeric() { return true; }
+	
+	/**
+	 * True if all elements of domain are scalar values.
+	 * <p>
+	 * This is false for {@link RealJointDomain} and {@link JointDiscreteDomain}.
+	 * @since 0.05
+	 */
+	public boolean isScalar() { return true; }
 	
 	/**
 	 * @return true if {@code value} is a valid member of the domain. Implementors

@@ -146,7 +146,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
-			RealValue nextSample = new RealValue();
+			RealValue nextSample = RealValue.create();
 			for (int i = 0; i < _numRealVars; i++)
 			{
 				_tempIndex = i;		// Save this to be used by the call-back from sampler
@@ -799,10 +799,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 	public RealJointValue createDefaultMessage()
 	{
-		if (_var.hasFixedValue())
-			return new RealJointValue(_varReal.getFixedValue());
-		else
-			return new RealJointValue(_initialSampleValue);
+		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 	}
 
 	// TODO Move to ISolverVariable

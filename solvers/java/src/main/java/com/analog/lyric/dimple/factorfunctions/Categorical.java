@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -67,7 +68,37 @@ public class Categorical extends FactorFunction
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
     		sum += -Math.log(alpha[x]);
-    	}    	
+    	}
+    	return sum + N * Math.log(normalizationValue);
+	}
+    
+    @Override
+	public double evalEnergy(Value[] values)
+    {
+    	if (values.length < 2)
+    		throw new DimpleException("Insufficient number of arguments.");
+
+    	int index = 0;
+    	double[] alpha = (double[])values[index++].getObject();		// First argument is the parameter vector
+    	int dimension = alpha.length;
+
+    	
+    	// Get the normalization value
+    	double normalizationValue = 0;
+    	for (int i = 0; i < dimension; i++)
+    	{
+    		if (alpha[i] < 0)
+    			return Double.POSITIVE_INFINITY;
+    		normalizationValue += alpha[i];
+    	}
+    	
+    	int length = values.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		sum += -Math.log(alpha[values[index].getInt()]);  // Remaining arguments are Categorical variables
+    	}
     	return sum + N * Math.log(normalizationValue);
 	}
     

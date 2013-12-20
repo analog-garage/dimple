@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.Value;
 
 public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndexer
 {
@@ -233,6 +234,19 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 		return joint;
 	}
 	
+	@Override
+	public int outputIndexFromValues(Value ... values)
+	{
+		assertSupportsOutputIndexing("outputIndexFromValues");
+		final int length = values.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += values[i].getIndex() * _outputProducts[i];
+		}
+		return joint;
+	}
+
 	@Override
 	public void outputIndexToElements(int outputIndex, Object[] elements)
 	{

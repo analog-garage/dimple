@@ -157,9 +157,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Sample from the conditional distribution
 		if (_sampler instanceof IDiscreteDirectSampler)
-			((IDiscreteDirectSampler)_sampler).nextSample(new DiscreteValue(_outputMsg), _conditional, minEnergy, this);
+			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg.clone(), _conditional, minEnergy, this);
 		else if (_sampler instanceof IMCMCSampler)
-			((IMCMCSampler)_sampler).nextSample(new DiscreteValue(_outputMsg), this);
+			((IMCMCSampler)_sampler).nextSample(_outputMsg.clone(), this);
 	}
 	
 	/*-------------------------
@@ -406,7 +406,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	{
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
 		int valueIndex = domain.getIndex(value);
-		if (valueIndex == -1)
+		if (valueIndex < 0)
 			throw new DimpleException("Value is not in the domain of this variable");
 		
 		setCurrentSampleIndex(valueIndex);
@@ -520,11 +520,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public final void setInitialSampleValue(Object initialSampleValue)
 	{
-		_initialSampleValue = new DiscreteValue(initialSampleValue, _varDiscrete.getDomain());
+		_initialSampleValue = Value.create(_varDiscrete.getDomain(), initialSampleValue);
 	}
 	public final void setInitialSampleIndex(int initialSampleIndex)
 	{
-		_initialSampleValue = new DiscreteValue(_varDiscrete.getDomain(), initialSampleIndex);
+		_initialSampleValue = Value.create(_varDiscrete.getDomain());
+		_initialSampleValue.setIndex(initialSampleIndex);
 	}
 
 	public final Object getInitialSampleValue()
@@ -587,10 +588,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	public void createNonEdgeSpecificState()
 	{
 		DiscreteDomain domain = _varDiscrete.getDomain();
-		_outputMsg = new DiscreteValue(domain);
+		_outputMsg = Value.create(domain);
 		_outputMsg = (DiscreteValue)resetOutputMessage(_outputMsg);
-		_outputMsg = new DiscreteValue(domain);
-		_outputMsg.setIndex(0);
 
 		if (_sampleIndexArray != null)
 			saveAllSamples();

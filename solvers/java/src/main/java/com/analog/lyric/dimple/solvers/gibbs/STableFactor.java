@@ -94,7 +94,6 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getPotential()
 	{
-		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
 	    int[] inPortMsgs = new int[_numPorts];
 	    for (int port = 0; port < _numPorts; port++)
 	    	inPortMsgs[port] = _inPortMsgs[port].getIndex();
@@ -126,10 +125,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final Factor factor = _factor;
-		Object[] values = new Object[_numPorts];
-	    for (int port = 0; port < _numPorts; port++)
-	    	values[port] = _inPortMsgs[port].getObject();
-		factor.getFactorFunction().evalDeterministic(values);
+		factor.getFactorFunction().evalDeterministic(factor, _inPortMsgs);
 		
 		// Update the directed-to variables with the computed values
 		int[] directedTo = factor.getDirectedTo();
@@ -138,7 +134,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 			for (int outputIndex : directedTo)
 			{
 				VariableBase variable = factor.getSibling(outputIndex);
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(values[outputIndex]);
+				// FIXME: is sample value already set? Just need to handle side effects?
+				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(_inPortMsgs[outputIndex].getObject());
 			}
 		}
 	}
