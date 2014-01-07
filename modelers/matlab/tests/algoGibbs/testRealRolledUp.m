@@ -24,8 +24,6 @@ function testRealRolledUp()
 
     % Gibbs solver parameters
     numSamples = 10000;                   % Total number of Gibbs samples to run
-    proposalStandardDeviation = 0.5;      % Proposal standard deviation for parameter variables
-    scansPerSample = 1;                 % Number of scans (one update of all variables) per sample
     burnInScans = 100;                  % Number of burn-in scans before sampling
     numRestarts = 0;
 
@@ -65,8 +63,6 @@ function testRealRolledUp()
     % Solve using Gibbs sampling solver
     %**************************************************************************
     setSolver('Gibbs');
-
-    fg = FactorGraph();
 
     Xo = Real();
     Xi = Real();
@@ -114,11 +110,6 @@ function testRealRolledUp()
     end
 
     for i = 1:hmmLength-bufferSize
-        for j = 1:X.Size
-            %TODO: Need tis?
-            X.get(j).Solver.setProposalStandardDeviation(proposalStandardDeviation);
-
-        end
         fg.solveOneStep();
         output(outputIndex) = X.get(1).Solver.getBestSample();
         outputIndex = outputIndex + 1;

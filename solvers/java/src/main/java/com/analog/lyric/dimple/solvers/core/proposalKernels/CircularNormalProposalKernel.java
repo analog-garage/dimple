@@ -52,5 +52,32 @@ public class CircularNormalProposalKernel implements IProposalKernel
 		parameters[2] = _max;
 		return parameters;
 	}
+	
+	public void setStandardDeviation(double standardDeviation)
+	{
+		_standardDeviation = standardDeviation;
+	}
+	
+	public double getStandardDeviation()
+	{
+		return _standardDeviation;
+	}
+
+	public void setCircularBounds(double lower, double upper)
+	{
+		_min = lower;
+		_max = upper;
+		_range = _max-_min;
+	}
+	
+	public double getLowerBound()
+	{
+		return _min;
+	}
+	
+	public double getUpperBound()
+	{
+		return _max;
+	}
 }
 

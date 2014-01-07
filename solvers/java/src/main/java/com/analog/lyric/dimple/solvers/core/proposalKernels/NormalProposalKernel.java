@@ -40,4 +40,14 @@ public class NormalProposalKernel implements IProposalKernel
 		parameters[0] = _standardDeviation;
 		return parameters;
 	}
+	
+	public void setStandardDeviation(double standardDeviation)
+	{
+		_standardDeviation = standardDeviation;
+	}
+	
+	public double getStandardDeviation()
+	{
+		return _standardDeviation;
+	}
 }

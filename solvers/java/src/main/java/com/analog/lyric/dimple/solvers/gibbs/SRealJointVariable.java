@@ -685,11 +685,13 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@Deprecated
 	public final void setProposalStandardDeviation(double stdDev)
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
+	@Deprecated
 	public final double getProposalStandardDeviation()
 	{
 		if (_sampler instanceof MHSampler)
@@ -698,6 +700,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return 0;
 	}
 	// Set the proposal kernel parameters more generally
+	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
 	{
 		if (_sampler instanceof MHSampler)
@@ -707,16 +710,19 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@Deprecated
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernel);
 	}
+	@Deprecated
 	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
 	}
+	@Deprecated
 	public final IProposalKernel getProposalKernel()
 	{
 		if (_sampler instanceof MHSampler)
