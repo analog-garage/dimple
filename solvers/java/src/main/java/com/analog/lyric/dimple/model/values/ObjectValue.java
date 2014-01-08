@@ -1,8 +1,10 @@
 package com.analog.lyric.dimple.model.values;
 
-import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 
+/**
+ * Holder for arbitrary values represented as {@link Object}.
+ */
 public class ObjectValue extends Value
 {
 	/*-------
@@ -36,7 +38,7 @@ public class ObjectValue extends Value
 	}
 
 	@Override
-	public Domain getDomain()
+	public ObjectDomain getDomain()
 	{
 		return ObjectDomain.instance();
 	}

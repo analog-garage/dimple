@@ -3,6 +3,9 @@ package com.analog.lyric.dimple.model.values;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.IntDomain;
 
+/**
+ * Holder for {@code int} values.
+ */
 public class IntValue extends Value
 {
 	protected int _value;
@@ -66,6 +69,11 @@ public class IntValue extends Value
 		return _value;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Sets content by rounding {@code value}.
+	 */
 	@Override
 	public void setDouble(double value)
 	{

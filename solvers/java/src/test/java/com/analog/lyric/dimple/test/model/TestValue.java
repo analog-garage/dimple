@@ -257,6 +257,35 @@ public class TestValue
 		assertEquals(-123.4, value.getDouble(), 0.0);
 		assertFalse(value.valueEquals(Value.create(-123.4002)));
 		
+		Domain halves = DiscreteDomain.range(0, 10, .5);
+		value = Value.create(halves, 3);
+		assertEquals(3, value.getInt());
+		assertEquals(3, value.getDouble(), 0.0);
+		assertEquals(6, value.getIndex());
+		assertInvariants(value);
+		value.setIndex(1);
+		assertEquals(.5, value.getDouble(), 0.0);
+		assertEquals(1, value.getIndex());
+		
+		Domain realDigits = DiscreteDomain.range(0.0, 9.0);
+		value = Value.create(realDigits, 3);
+		assertEquals(3, value.getInt());
+		assertEquals(3, value.getIndex());
+		assertInvariants(value);
+		value.setIndex(5);
+		assertEquals(5, value.getInt());
+		
+		Domain powersOfTwo = DiscreteDomain.create(.125, .25, .5, 1.0, 2.0, 4.0, 8.0);
+		value = Value.create(powersOfTwo);
+		assertEquals(.125, value.getDouble(), 0.0);
+		assertInvariants(value);
+		value.setIndex(2);
+		assertEquals(.5, value.getDouble(), 0.0);
+		value.setFrom(Value.create(.25));
+		assertEquals(1, value.getIndex());
+		value.setFrom(Value.create(DiscreteDomain.create(2.3, 4.0, 5.0), 4.0));
+		assertEquals(4.0, value.getDouble(), 0.0);
+		
 		/*
 		 * Test object values
 		 */
@@ -272,6 +301,10 @@ public class TestValue
 		assertEquals(23.1, value.getObject());
 		assertEquals(23, value.getInt());
 		assertEquals(23.1, value.getDouble(), 0.0);
+		
+		value = Value.create((Domain)null);
+		assertNull(value.getObject());
+		assertSame(ObjectDomain.instance(), value.getDomain());
 		
 		/*
 		 * 

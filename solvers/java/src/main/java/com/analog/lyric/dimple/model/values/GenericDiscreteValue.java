@@ -44,11 +44,6 @@ public class GenericDiscreteValue extends DiscreteValue
 		this(domain.getElement(index), domain, index);
 	}
 	
-	GenericDiscreteValue(Object value, DiscreteDomain domain)
-	{
-		this(value, domain, domain.getIndex(value));
-	}
-	
 	GenericDiscreteValue(DiscreteDomain domain)
 	{
 		this(domain, 0);

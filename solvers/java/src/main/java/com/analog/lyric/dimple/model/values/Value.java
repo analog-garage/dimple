@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
 import com.analog.lyric.dimple.model.domains.IntRangeDomain;
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -30,6 +31,10 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 import com.google.common.base.Objects;
 
 /**
+ * Holder for a values for a given {@link Domain}.
+ * <p>
+ * Subclasses are implemented to take advantage of knowledge of domain values.
+ * 
  * @since 0.05
  */
 public abstract class Value implements Cloneable
@@ -38,6 +43,13 @@ public abstract class Value implements Cloneable
 	 * Construction
 	 */
 	
+	/**
+	 * Creates a {@code Value} instance appropriate to the given {@code domain}
+	 * with a default value depending on the domain: zero for numeric domains,
+	 * the first element for discrete domains, and null for {@link ObjectDomain}.
+	 * <p>
+	 * If {@code domain} is null, an {@link ObjectValue} will be returned.
+	 */
 	public static Value create(Domain domain)
 	{
 		if (domain != null)
@@ -72,11 +84,17 @@ public abstract class Value implements Cloneable
 		return new ObjectValue();
 	}
 	
+	/**
+	 * Creates a {@link RealValue} instance for given {@code domain}.
+	 */
 	public static RealValue create(RealDomain domain)
 	{
 		return new RealValue(0.0);
 	}
 	
+	/**
+	 * Creates a {@link DiscreteValue} instance for given {@code domain}.
+	 */
 	public static DiscreteValue create(DiscreteDomain domain)
 	{
 		if (domain.isIntegral())
@@ -97,89 +115,80 @@ public abstract class Value implements Cloneable
 			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
 			return new GenericIntDiscreteValue(intDomain);
 		}
+		else if (Double.class.isAssignableFrom(domain.getElementClass()))
+		{
+			if (domain instanceof DoubleRangeDomain)
+			{
+				DoubleRangeDomain rangeDomain = (DoubleRangeDomain)domain;
+				if (rangeDomain.getLowerBound() == 0.0 && rangeDomain.getInterval() == 1.0)
+				{
+					return new SimpleDoubleRangeValue(rangeDomain);
+				}
+				else
+				{
+					return new DoubleRangeValue(rangeDomain);
+				}
+			}
+			@SuppressWarnings("unchecked")
+			TypedDiscreteDomain<Double> doubleDomain = (TypedDiscreteDomain<Double>) domain;
+			return new GenericDoubleDiscreteValue(doubleDomain);
+		}
 		else
 		{
 			return new GenericDiscreteValue(domain.asDiscrete());
 		}
 	}
 	
+	/**
+	 * Creates a {@code Value} instance for given {@code domain} with specified initial {@code value}.
+	 * <p>
+	 * Simply calls {@link Value#setObject(Object)} on instance returned by {@link #create(Domain)}.
+	 */
 	public static Value create(Domain domain, Object value)
 	{
-		if (domain != null)
-		{
-			DiscreteDomain discrete = domain.asDiscrete();
-			if (discrete != null)
-			{
-				return create(discrete, value);
-			}
-
-			RealDomain real = domain.asReal();
-			if (real != null)
-			{
-				return create(real, ((Number)value).doubleValue());
-			}
-
-			RealJointDomain realJoint = domain.asRealJoint();
-			if (realJoint != null)
-			{
-				return create(realJoint, (double[])value);
-			}
-
-			if (domain.isIntegral())
-			{
-				return new IntValue(FactorFunctionUtilities.toInteger(value));
-			}
-
-			assert(domain == ObjectDomain.instance());
-		}
-		
-		return new ObjectValue(value);
+		Value instance = create(domain);
+		instance.setObject(value);
+		return instance;
 	}
 	
+	/**
+	 * Creates a {@link DiscreteValue} instance for given {@code domain} with specified initial {@code value}.
+	 * <p>
+	 * Simply calls {@link Value#setObject(Object)} on instance returned by {@link #create(DiscreteDomain)}.
+	 */
 	public static DiscreteValue create(DiscreteDomain domain, Object value)
 	{
-		if (domain.isIntegral())
-		{
-			int intValue = FactorFunctionUtilities.toInteger(value);
-			if (domain instanceof IntRangeDomain)
-			{
-				IntRangeDomain rangeDomain = (IntRangeDomain)domain;
-				if (rangeDomain.getLowerBound() == 0 && rangeDomain.getInterval() == 1)
-				{
-					return new SimpleIntRangeValue(rangeDomain, intValue);
-				}
-				else
-				{
-					return new IntRangeValue(rangeDomain, intValue);
-				}
-			}
-			@SuppressWarnings("unchecked")
-			TypedDiscreteDomain<Integer> intDomain = (TypedDiscreteDomain<Integer>) domain;
-			return new GenericIntDiscreteValue(intDomain, intValue, domain.getIndex(value));
-		}
-		else
-		{
-			return new GenericDiscreteValue(value, domain);
-		}
+		DiscreteValue discrete = create(domain);
+		discrete.setObject(value);
+		return discrete;
 	}
 	
+	/**
+	 * Creates a {@link RealValue} instance for given {@code domain} with specified initial {@code value}.
+	 */
 	public static RealValue create(RealDomain domain, double value)
 	{
 		// TODO: use domain
 		return new RealValue(value);
 	}
 
+	/**
+	 * Creates a {@link RealJointValue} instance for given {@code domain} with specified initial {@code value}.
+	 */
 	public static RealJointValue create(RealJointDomain domain, double[] value)
 	{
-		// TODO: do something with domain
+		// TODO: use domain
 		return new RealJointValue(value);
 	}
 	
-	public static Value create(Object object)
+	/**
+	 * Creates a {@code Value} instance with specified {@code initialValue}.
+	 */
+	public static Value create(Object initialValue)
 	{
-		if (object instanceof Number)
+		if (initialValue instanceof Number)
 		{
-			Number number = (Number)object;
+			Number number = (Number)initialValue;
 			if (number instanceof Integer || number instanceof Short || number instanceof Byte)
 			{
 				return new IntValue(number.intValue());
@@ -189,13 +198,13 @@ public abstract class Value implements Cloneable
 				return new RealValue(number.doubleValue());
 			}
 		}
-		else if (object instanceof double[])
+		else if (initialValue instanceof double[])
 		{
-			return new RealJointValue((double[])object);
+			return new RealJointValue((double[])initialValue);
 		}
 		else
 		{
-			return new ObjectValue(object);
+			return new ObjectValue(initialValue);
 		}
 	}
 	
@@ -210,21 +219,43 @@ public abstract class Value implements Cloneable
 	 * Value methods
 	 */
 	
+	/**
+	 * Domain for valid contents of value object.
+	 */
 	public abstract Domain getDomain();
 	
+	/**
+	 * Returns current value as a {@link Object}.
+	 * <p>
+	 * This may create a new object if underlying representation is a primitive type such as {@code int} or
+	 * {@code double}; in such cases it is preferable to use {@link #getInt()}, {@link #getDouble()}, etc.
+	 */
 	public abstract Object getObject();
+	
+	/**
+	 * Sets current value from an {@link Object}.
+	 */
 	public abstract void setObject(Object value);
 	
+	/**
+	 * Returns current value as a {@code boolean}.
+	 */
 	public boolean getBoolean()
 	{
 		return FactorFunctionUtilities.toBoolean(getObject());
 	}
 	
+	/**
+	 * Sets current value as a {@code double}.
+	 */
 	public double getDouble()
 	{
 		return FactorFunctionUtilities.toDouble(getObject());
 	}
 	
+	/**
+	 * Sets current value from a {@code double}.
+	 */
 	public void setDouble(double value)
 	{
 		setObject(value);
@@ -238,6 +269,9 @@ public abstract class Value implements Cloneable
 		return -1;
 	}
 
+	/**
+	 * Returns current value as a {@code int}.
+	 */
 	public int getInt()
 	{
 		return FactorFunctionUtilities.toInteger(getObject());
@@ -246,7 +280,8 @@ public abstract class Value implements Cloneable
 	/**
 	 * Sets contents from another value.
 	 * <p>
-	 * Default implementation uses {@link #getObject()}/{@link #setObject(Object)}.
+	 * Default implementation uses {@link #getObject()}/{@link #setObject(Object)}. Subclasses implement
+	 * this more efficiently to avoid {@link Object} conversion.
 	 */
 	public void setFrom(Value value)
 	{
@@ -262,6 +297,9 @@ public abstract class Value implements Cloneable
 		throw DimpleException.unsupportedMethod(getClass(), "setIndex");
 	}
 	
+	/**
+	 * Sets contents from a {@code int}.
+	 */
 	public void setInt(int value)
 	{
 		setObject(value);
@@ -339,6 +377,9 @@ public abstract class Value implements Cloneable
 		return createFromObjects(objs, Value.class, domains);
 	}
 
+	/**
+	 * Copies current contents of {@code values} into {@code output} array.
+	 */
 	public static <T extends Value> Object[] toObjects(T[] values, Object[] output)
 	{
 		for (int i = values.length; --i>=0;)
@@ -348,6 +389,10 @@ public abstract class Value implements Cloneable
 		return output;
 	}
 	
+	/**
+	 * Converts an array of {@code Value} to an array of {@link Object} containing the current
+	 * contents of the values.
+	 */
 	public static <T extends Value> Object[] toObjects(T[] values)
 	{
 		return toObjects(values, new Object[values.length]);

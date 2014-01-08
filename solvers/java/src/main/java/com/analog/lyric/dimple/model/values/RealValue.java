@@ -18,6 +18,9 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
 
+/**
+ * A holder for a real (i.e. {@code double} value).
+ */
 public class RealValue extends Value
 {
 	protected double _value;
@@ -82,6 +85,11 @@ public class RealValue extends Value
 		_value = value;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Returns {@link #getDouble()} rounded.
+	 */
 	@Override
 	public int getInt()
 	{

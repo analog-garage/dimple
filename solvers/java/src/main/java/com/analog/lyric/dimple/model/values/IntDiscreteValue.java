@@ -80,6 +80,12 @@ public abstract class IntDiscreteValue extends DiscreteValue
 	}
 
 	@Override
+	public void setFrom(Value value)
+	{
+		setInt(value.getInt());
+	}
+	
+	@Override
 	public final boolean valueEquals(Value other)
 	{
 		return _value == other.getInt();

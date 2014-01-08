@@ -20,12 +20,6 @@ public class GenericIntDiscreteValue extends IntDiscreteValue
 		_index = 0;
 	}
 	
-	GenericIntDiscreteValue(TypedDiscreteDomain<Integer> domain, int value, int index)
-	{
-		super(domain, value);
-		_index = index;
-	}
-	
 	GenericIntDiscreteValue(GenericIntDiscreteValue other)
 	{
 		super(other);
