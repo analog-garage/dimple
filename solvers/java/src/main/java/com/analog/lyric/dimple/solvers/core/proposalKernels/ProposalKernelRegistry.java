@@ -16,20 +16,38 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import java.util.ArrayList;
+
 public class ProposalKernelRegistry
 {
+	private static ArrayList<String> _packages = new ArrayList<String>();
+	static
+	{
+		_packages.add(ProposalKernelRegistry.class.getPackage().getName());
+	}
+	
 	// Get a proposal kernel by name; assumes it is located in this package
 	public static IProposalKernel get(String proposalKernelName)
 	{
-		String fullQualifiedName = ProposalKernelRegistry.class.getPackage().getName() + "." + proposalKernelName;
-		try
+		for (String s : _packages)
 		{
-			IProposalKernel proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return proposalKernel;
+			String fullQualifiedName = s + "." + proposalKernelName;
+			try
+			{
+				IProposalKernel proposalKernel = (IProposalKernel)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+				return proposalKernel;
+			}
+			catch (Exception e)
+			{
+				continue;
+			}
 		}
-		catch (Exception e)
-		{
-			return null;
-		}
+		return null;
+	}
+	
+	
+	public static void addPackage(String packageName)
+	{
+		_packages.add(packageName);
 	}
 }

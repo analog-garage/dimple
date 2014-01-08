@@ -20,9 +20,11 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
@@ -182,6 +184,7 @@ public class SRealVariable extends SRealVariableBase
 	public void resample()
 	{
 		int numPorts = _var.getSiblingCount();
+		Domain varDomain = _var.getDomain();
 		double _lowerBound = _domain.getLowerBound();
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
@@ -225,8 +228,8 @@ public class SRealVariable extends SRealVariableBase
 			// Now repeat resampling this sample
 			for (int update = 0; update < _resamplingUpdatesPerSample; update++)
 			{
-				Proposal proposal = _proposalKernel.next(sampleValue);
-				double proposalValue = (Double)proposal.value;
+				Proposal proposal = _proposalKernel.next(RealValue.create(sampleValue), varDomain);
+				double proposalValue = proposal.value.getDouble();
 
 				// If outside the bounds, then reject
 				if (proposalValue < _lowerBound) continue;

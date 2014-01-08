@@ -71,8 +71,9 @@ public class RealJointValue extends Value
 		_value = (double[])value;
 	}
 	
-	public double[] getValue() {return _value;}
-	public void setValue(double[] value) {_value = value;}
+	public final double[] getValue() {return _value;}
+	public final void setValue(double[] value) {_value = value;}
+
 	
 	// Get/set a specific element of the sample
 	public double getValue(int index) {return _value[index];}

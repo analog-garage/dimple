@@ -46,7 +46,9 @@ a = Real();
 fg.addFactor({'VonMises',0,1}, a);
 
 a.Solver.setSampler('MHSampler');           % Test MH Sampler
-a.Solver.getSampler.getProposalKernel.setParameters(1); % Proposal std-dev
+a.Solver.getSampler.getProposalKernel.setStandardDeviation(2); % Proposal std-dev
+assert(~isempty(strcmp(a.Solver.getSampler.getProposalKernelName, 'NormalPropoalKernel')));
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getStandardDeviation, 2);
 
 if (repeatable)
     fg.Solver.setSeed(1);					% Make this repeatable
@@ -64,7 +66,11 @@ assert(min(as) >= -pi);
 % Try with circular kernel, by default, bounds are +/-pi
 
 a.Solver.setProposalKernel('CircularNormalProposalKernel');
-a.Solver.getSampler.getProposalKernel.setParameters(1); % Proposal std-dev
+a.Solver.getSampler.getProposalKernel.setStandardDeviation(1.5); % Proposal std-dev
+assert(~isempty(strcmp(a.Solver.getSampler.getProposalKernelName, 'CircularNormalProposalKernel')));
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getStandardDeviation, 1.5);
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getLowerBound, -pi);
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getUpperBound, pi);
 
 fg.Solver.saveAllSamples();
 fg.solve();
@@ -81,7 +87,11 @@ assert(min(as) >= -pi);
 % past +/-pi/2
 
 a.Solver.setProposalKernel('CircularNormalProposalKernel');
-a.Solver.setProposalKernelParameters({1, -pi/2, pi/2});
+a.Solver.getSampler.getProposalKernel.setStandardDeviation(1);
+a.Solver.getSampler.getProposalKernel.setCircularBounds(-pi/2, pi/2);
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getStandardDeviation, 1);
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getLowerBound, -pi/2);
+assertElementsAlmostEqual(a.Solver.getSampler.getProposalKernel.getUpperBound, pi/2);
 
 fg.Solver.saveAllSamples();
 fg.solve();

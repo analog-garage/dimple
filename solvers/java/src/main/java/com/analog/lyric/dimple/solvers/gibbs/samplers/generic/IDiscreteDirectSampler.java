@@ -14,11 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-public interface ISampleScorer
+import com.analog.lyric.dimple.model.values.DiscreteValue;
+
+public interface IDiscreteDirectSampler extends IGenericSampler
 {
-	public double getSampleScore(double sampleValue);
-	public double getCurrentSampleScore();
-	public double getCurrentSampleValue();
+	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient);
 }

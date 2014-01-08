@@ -46,6 +46,6 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	
 	// Internal methods
 	public void updateBelief();
-	public void randomRestart();
+	public void randomRestart(int restartCount);
 	public void postAddFactor(Factor f);
 }

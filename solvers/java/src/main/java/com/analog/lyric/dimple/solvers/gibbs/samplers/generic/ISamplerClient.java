@@ -14,15 +14,15 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.Port;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 
-public interface IRealJointConjugateSampler extends ISampler
+public interface ISamplerClient
 {
-	public double[] nextSample(Port[] ports, FactorFunction input);
-	public IParameterizedMessage createParameterMessage();
-	public void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input);
+	public double getSampleScore(Value sampleValue);
+	public double getCurrentSampleScore();
+	public void setNextSampleValue(Value sampleValue);
+	public Domain getDomain();
 }

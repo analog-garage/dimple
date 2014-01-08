@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class CircularNormalProposalKernel implements IProposalKernel
@@ -25,9 +27,9 @@ public class CircularNormalProposalKernel implements IProposalKernel
 	protected double _max = Math.PI;
 	protected double _range = _max-_min;
 
-	public Proposal next(Object currentValue)
+	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		double value = (Double)currentValue + _standardDeviation * SolverRandomGenerator.rand.nextGaussian();
+		double value = currentValue.getDouble() + _standardDeviation * SolverRandomGenerator.rand.nextGaussian();
 		value = ((((value - _min) % _range) + _range) % _range) + _min;		// Wrap from -pi to pi
 		return new Proposal(value);
 	}
@@ -49,6 +51,33 @@ public class CircularNormalProposalKernel implements IProposalKernel
 		parameters[1] = _min;
 		parameters[2] = _max;
 		return parameters;
+	}
+	
+	public void setStandardDeviation(double standardDeviation)
+	{
+		_standardDeviation = standardDeviation;
+	}
+	
+	public double getStandardDeviation()
+	{
+		return _standardDeviation;
+	}
+
+	public void setCircularBounds(double lower, double upper)
+	{
+		_min = lower;
+		_max = upper;
+		_range = _max-_min;
+	}
+	
+	public double getLowerBound()
+	{
+		return _min;
+	}
+	
+	public double getUpperBound()
+	{
+		return _max;
 	}
 }
 

@@ -169,10 +169,10 @@ fg.addFactor((0:9)', zeros(10,1), v);
 
 % Directly check certain values of expApprox to make sure their correct
 % expApprox is an approximate exponential function used by the sampler
-assert(v.Solver.expApprox(-Inf) == 0);
-assert(v.Solver.expApprox(-realmax) == 0);
-assert(v.Solver.expApprox(-log(realmax)) == 0);
-assert(v.Solver.expApprox(0) == 1);
+assert(v.Solver.getSampler.expApprox(-Inf) == 0);
+assert(v.Solver.getSampler.expApprox(-realmax) == 0);
+assert(v.Solver.getSampler.expApprox(-log(realmax)) == 0);
+assert(v.Solver.getSampler.expApprox(0) == 1);
 
 end
 

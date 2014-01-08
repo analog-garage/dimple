@@ -29,11 +29,21 @@ public class RealValue extends Value
 	 * Construction
 	 */
 	
+	public static RealValue create()
+	{
+		return new RealValue(0.0);
+	}
+	
+	public static RealValue create(double value)
+	{
+		return new RealValue(value);
+	}
+	
 	RealValue(double value)
 	{
 		_value = value;
 	}
-	
+
 	RealValue(RealValue that)
 	{
 		this(that._value);

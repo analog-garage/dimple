@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
+
 public interface IProposalKernel
 {
-	public Proposal next(Object currentValue);
+	public Proposal next(Value currentValue, Domain variableDomain);
 	public void setParameters(Object... parameters);
 	public Object[] getParameters();
 }
