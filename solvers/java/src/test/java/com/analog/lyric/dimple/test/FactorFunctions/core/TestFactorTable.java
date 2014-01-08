@@ -390,6 +390,7 @@ public class TestFactorTable
 	}
 	
 	@Test
+	@Ignore
 	public void performanceComparison()
 	{
 		int iterations = 10000;
