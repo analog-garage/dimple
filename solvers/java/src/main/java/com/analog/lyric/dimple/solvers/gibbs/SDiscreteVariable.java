@@ -335,8 +335,23 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public final void setCurrentSample(Value value)
 	{
-		// TODO: optimize for DiscreteValue with same domain
-		setCurrentSample(value.getObject());
+		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
+
+		DiscreteValue oldValue = null;
+		if (hasDeterministicDependents)
+		{
+			oldValue = _outputMsg.clone();
+		}
+		
+		// Send the sample value to all output ports
+		_outputMsg.setFrom(value);
+		_sampleIndex = _outputMsg.getIndex();
+				
+		// If this variable has deterministic dependents, then set their values
+		if (hasDeterministicDependents)
+		{
+			_neighbors.update(oldValue);
+		}
 	}
 	
 	/*---------------
@@ -345,10 +360,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public final void setCurrentSampleIndex(int index)
     {
-		// Sample from the conditional distribution
-		_sampleIndex = index;
-
-		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
 
 		DiscreteValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -358,23 +370,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Send the sample value to all output ports
 		_outputMsg.setIndex(index);
+		_sampleIndex = index;
 				
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			for (int port = 0; port < _numPorts; port++)	// Plus each input message value
-			{
-				Factor f = _var.getSibling(port);
-				if (f.getFactorFunction().isDeterministicDirected())
-				{
-					int reverseEdge = _var.getSiblingPortIndex(port);
-					if (!f.isDirectedTo(reverseEdge))
-					{
-						ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
-						sf.updateNeighborVariableValue(reverseEdge, oldValue);
-					}
-				}
-			}
+			_neighbors.update(oldValue);
 		}
     }
     

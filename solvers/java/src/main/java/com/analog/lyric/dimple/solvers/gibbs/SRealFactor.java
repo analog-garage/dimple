@@ -111,17 +111,9 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 
 	
 	
-	// Set the value of a neighboring variable
-	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
-	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		// REFACTOR: implementation identical to STableFactor, find a way to share it.
-		
-		if (!_isDeterministicDirected) return;
-		if (_factor.isDirectedTo(variableIndex)) return;
-		
 		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
@@ -147,7 +139,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			for (int outputIndex : directedTo)
 			{
 				VariableBase variable = factor.getSibling(outputIndex);
-				Object newValue = _inputMsgs[outputIndex].getObject();
+				Value newValue = _inputMsgs[outputIndex];
 				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 			}
 		}
@@ -163,7 +155,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				for (int outputIndex : directedTo)
 				{
 					VariableBase variable = factor.getSibling(outputIndex);
-					Object newValue = _inputMsgs[outputIndex].getObject();
+					Value newValue = _inputMsgs[outputIndex];
 					// FIXME: is sample already set? Just need to handle side-effects?
 					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 				}

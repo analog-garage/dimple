@@ -671,8 +671,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 	}
 
-	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex,
-		Value oldValue)
+	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex, Value oldValue)
 	{
 		if (_deferDeterministicFactorUpdatesCounter > 0)
 		{
@@ -692,9 +691,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 		else
 		{
-			final int nEdges = sfactor.getModelObject().getSiblingCount();
+			final Factor factor = sfactor.getModelObject();
+			final int nEdges = factor.getSiblingCount();
 			IndexedValue.SingleList oldValues = null;
-			if (sfactor.getModelObject().getFactorFunction().updateDeterministicLimit(nEdges) > 0)
+			if (factor.getFactorFunction().updateDeterministicLimit(nEdges) > 0)
 			{
 				oldValues = IndexedValue.SingleList.create(changedVariableIndex, oldValue);
 			}

@@ -605,19 +605,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	// TODO move to private
 	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)	// Plus each input message value
+		if (_neighbors != null)
 		{
-			Factor f = _var.getSibling(port);
-			if (f.getFactorFunction().isDeterministicDirected())
-			{
-				int reverseEdge = _var.getSiblingPortIndex(port);
-				if (!f.isDirectedTo(reverseEdge))
-				{
-					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
-					sf.updateNeighborVariableValue(reverseEdge, oldValue);
-				}
-			}
+			_neighbors.update(oldValue);
 		}
 	}
 

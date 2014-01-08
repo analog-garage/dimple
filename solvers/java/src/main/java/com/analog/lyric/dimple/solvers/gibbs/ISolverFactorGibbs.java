@@ -26,6 +26,15 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
 	@Override
 	public double getPotential();
+	
+	/**
+	 * Updates neighboring dependent variable sample values based on the current
+	 * value. Should only be invoked if factor is deterministic and is directed
+	 * from variable with given {@code variableIndex}.
+	 * 
+	 * @param variableIndex
+	 * @param oldValue
+	 */
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
 	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues);
 	public void updateEdgeMessage(int portIndex);

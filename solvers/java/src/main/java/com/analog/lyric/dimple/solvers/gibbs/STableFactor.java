@@ -106,17 +106,9 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 		
 	
-	// Set the value of a neighboring variable
-	// If this is a deterministic directed factor, and this variable is a directed input (directed-from)
-	// then re-compute the directed outputs and propagate the result to the directed-to variables
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		// REFACTOR: implementation identical to SRealFactor, find a way to share it.
-		
-		if (!_isDeterministicDirected) return;
-		if (_factor.isDirectedTo(variableIndex)) return;
-		
 		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	

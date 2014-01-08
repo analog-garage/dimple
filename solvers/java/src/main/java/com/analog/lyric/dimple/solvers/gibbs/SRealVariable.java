@@ -430,7 +430,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
     
 	public final void setCurrentSample(double value)
 	{
-		final boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
+		final boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
 		
 		RealValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -444,20 +444,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			int numPorts = _var.getSiblingCount();
-			for (int port = 0; port < numPorts; port++)	// Plus each input message value
-			{
-				Factor f = _var.getSibling(port);
-				if (f.getFactorFunction().isDeterministicDirected())
-				{
-					final int reverseEdge = _var.getSiblingPortIndex(port);
-					if (!f.isDirectedTo(reverseEdge))
-					{
-						ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
-						sf.updateNeighborVariableValue(reverseEdge, oldValue);
-					}
-				}
-			}
+			_neighbors.update(oldValue);
 		}
 	}
 
