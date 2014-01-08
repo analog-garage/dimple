@@ -425,7 +425,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Send the sample value to all output ports
 		_outputMsg.setFrom(value);
-		_sampleIndex = _outputMsg.getIndex();
 				
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
@@ -450,7 +449,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Send the sample value to all output ports
 		_outputMsg.setIndex(index);
-		_sampleIndex = index;
 				
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
