@@ -14,6 +14,12 @@ public abstract class IntDiscreteDomain extends TypedDiscreteDomain<Integer>
 	 */
 	
 	@Override
+	public boolean hasIntCompatibleValues()
+	{
+		return true;
+	}
+	
+	@Override
 	public boolean isIntegral()
 	{
 		return true;

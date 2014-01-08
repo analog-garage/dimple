@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -47,6 +48,7 @@ public class TestDomain
 		assertNotEquals(RealDomain.unbounded(), RealDomain.nonPositive());
 		
 		assertNotEquals(RealDomain.unbounded().hashCode(), RealDomain.nonNegative().hashCode());
+		assertFalse(RealDomain.unbounded().hasIntCompatibleValues());
 		
 		RealDomain unit = RealDomain.create(0.0, 1.0);
 		assertReal(unit, 0.0, 1.0);
@@ -229,6 +231,9 @@ public class TestDomain
 		TypedDiscreteDomain<Integer> primes = DiscreteDomain.create(2,3,5,7,11,13);
 		assertInvariants(primes);
 		
+		TypedDiscreteDomain<Double> powerOfTwo = DiscreteDomain.create(.125, .25, .5, 1, 2, 4, 8);
+		assertInvariants(powerOfTwo);
+		
 		// Test for -0.0
 		TypedDiscreteDomain<Double> doublesWithZero = DiscreteDomain.create(0.0, 1.0, 3.0);
 		assertInvariants(doublesWithZero);
@@ -290,6 +295,25 @@ public class TestDomain
 		assertTrue(objDomain.inDomain(42));
 		assertTrue(objDomain.inDomain("foo"));
 		assertTrue(objDomain.inDomain(null));
+		
+		//
+		// Test static helper methods
+		//
+		
+		assertTrue(Domain.isIntCompatibleClass(Integer.class));
+		assertTrue(Domain.isIntCompatibleClass(Short.class));
+		assertTrue(Domain.isIntCompatibleClass(Byte.class));
+		assertFalse(Domain.isIntCompatibleClass(Character.class));
+		assertFalse(Domain.isIntCompatibleClass(Integer.TYPE));
+		assertFalse(Domain.isIntCompatibleClass(Long.class));
+		assertFalse(Domain.isIntCompatibleClass(Float.class));
+		
+		assertTrue(Domain.isIntCompatibleValue(4.0));
+		assertFalse(Domain.isIntCompatibleValue(4.01));
+		assertFalse(Domain.isIntCompatibleValue((double)(Integer.MAX_VALUE + 1)));
+		assertFalse(Domain.isIntCompatibleValue((long)Integer.MAX_VALUE + 1));
+		assertFalse(Domain.isIntCompatibleValue(new Long(Integer.MAX_VALUE + 1)));
+		assertTrue(Domain.isIntCompatibleValue(BigInteger.ONE));
 	}
 	
 	public static void assertReal(RealDomain real, double lower, double upper)
@@ -322,6 +346,8 @@ public class TestDomain
 			assertTrue(domain instanceof RealDomain);
 			assertTrue(domain.isScalar());
 			assertTrue(domain.isNumeric());
+			assertFalse(domain.isIntegral());
+			assertFalse(domain.hasIntCompatibleValues());
 			RealDomain real = (RealDomain)domain;
 			assertSame(real, domain.asReal());
 			
@@ -398,6 +424,7 @@ public class TestDomain
 				iter = ((Iterable<?>)discrete).iterator();
 			}
 			
+			boolean allInt = true;
 			for (int i = 0; i < size; ++i)
 			{
 				Object element = elements[i];
@@ -407,6 +434,7 @@ public class TestDomain
 				assertElementEquals(element, discrete.getElement(i));
 				assertEquals(i, discrete.getIndex(element));
 				assertEquals(i, discrete.getIndexOrThrow(element));
+				allInt &= Domain.isIntCompatibleValue(element);
 				
 				if (iter != null)
 				{
@@ -426,6 +454,7 @@ public class TestDomain
 				{
 				}
 			}
+			assertEquals(allInt, discrete.hasIntCompatibleValues());
 			
 			try
 			{
@@ -451,6 +480,7 @@ public class TestDomain
 				assertEquals(range.getLowerBound(), range.getIntElement(0));
 				assertTrue((range.size()-1) * range.getInterval() + range.getLowerBound() <= range.getUpperBound());
 				assertTrue(range.size() * range.getInterval() + range.getLowerBound() > range.getUpperBound());
+				assertTrue(discrete.hasIntCompatibleValues());
 			}
 			
 			if (discrete instanceof DoubleRangeDomain)
@@ -484,11 +514,13 @@ public class TestDomain
 				{
 					assertEquals(i, e.getIndex(evalues[i]));
 				}
+				assertFalse(discrete.hasIntCompatibleValues());
 			}
 			
 			if (discrete instanceof JointDiscreteDomain)
 			{
 				assertFalse(discrete.isScalar());
+				assertFalse(discrete.hasIntCompatibleValues());
 				JointDiscreteDomain<?> joint = (JointDiscreteDomain<?>)discrete;
 				assertEquals(joint.getDomainIndexer().size(), joint.getDimensions());
 				
@@ -529,6 +561,7 @@ public class TestDomain
 		if (domain instanceof RealJointDomain)
 		{
 			assertFalse(domain.isScalar());
+			assertFalse(domain.hasIntCompatibleValues());
 			RealJointDomain realJoint = (RealJointDomain)domain;
 			assertSame(realJoint, domain.asRealJoint());
 			assertTrue(realJoint.isRealJoint());

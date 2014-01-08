@@ -41,7 +41,13 @@ public class IntDomain extends Domain
 	 */
 	
 	@Override
-	public boolean isIntegral()
+	public final boolean hasIntCompatibleValues()
+	{
+		return true;
+	}
+	
+	@Override
+	public final boolean isIntegral()
 	{
 		return true;
 	}
