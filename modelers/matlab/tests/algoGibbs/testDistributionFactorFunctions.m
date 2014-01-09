@@ -135,8 +135,6 @@ for j = 1:10
     x = randi(dim)-1;  % Integer 0:dim-1
     assertElementsAlmostEqual(f.IFactorFunction.eval({alpha, x}), alpha(x+1));
 end
-alpha(1) = -eps;
-assert(f.IFactorFunction.evalEnergy({alpha, x}) == Inf);
 
 % Categorical (multiple outputs)
 dim = randi(100) + 10;
