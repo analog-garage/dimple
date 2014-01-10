@@ -63,9 +63,10 @@ function testSetValueGibbs()
     % Test real variables
     domain = [-10, 10];
     a = Real(domain);
+    b = Real(domain);
     fg = FactorGraph();
     fg.Solver = 'Gibbs';
-    b = -a; % Add implicit factor
+    fg.addFactor('Equality', a, b);
     a.Input = {'Normal',1,1};
     assert(isa(a.Input, 'com.analog.lyric.dimple.factorfunctions.Normal'));
     value = rand();
@@ -75,9 +76,9 @@ function testSetValueGibbs()
     assert(a.hasFixedValue);
     assertEqual(a.FixedValue,value);
     assert(~b.hasFixedValue);
-    b.FixedValue = -value;
+    b.FixedValue = value;
     assert(b.hasFixedValue);
-    assertEqual(b.FixedValue,-value);
+    assertEqual(b.FixedValue,value);
     assertEqual(fg.Solver.getTotalPotential(), 0);
     b.FixedValue = value + 1;
     assert(b.hasFixedValue);

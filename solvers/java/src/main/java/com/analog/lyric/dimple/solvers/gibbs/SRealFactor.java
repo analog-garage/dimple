@@ -102,6 +102,9 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getPotential()
 	{
+		if (_isDeterministicDirected)
+			return 0;
+
 		return _realFactor.getFactorFunction().evalEnergy(_inputMsgs);
 	}
 	public double getPotential(Object[] inputs)
