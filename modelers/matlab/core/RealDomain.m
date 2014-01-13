@@ -16,7 +16,7 @@
 
 classdef RealDomain < Domain
     
-    properties
+    properties (SetAccess=immutable)
        LB;
        UB;
     end
