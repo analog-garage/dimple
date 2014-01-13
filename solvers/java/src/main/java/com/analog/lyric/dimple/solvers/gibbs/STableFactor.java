@@ -94,11 +94,14 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public double getPotential()
 	{
-	    int[] inPortMsgs = new int[_numPorts];
-	    for (int port = 0; port < _numPorts; port++)
-	    	inPortMsgs[port] = _inPortMsgs[port].getIndex();
-	    
-	    return getPotential(inPortMsgs);
+		if (_isDeterministicDirected)
+			return 0;
+
+		int[] inPortMsgs = new int[_numPorts];
+		for (int port = 0; port < _numPorts; port++)
+			inPortMsgs[port] = _inPortMsgs[port].getIndex();
+
+		return getPotential(inPortMsgs);
 	}
 	public double getPotential(int[] inputs)
 	{
