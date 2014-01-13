@@ -125,7 +125,7 @@ end
 
 \ifjava
 
-The method has syntax addFactor(factorFunction,arguments), where factorFunction is an instance of a class that inherits from FactorFunction.  The arguments are the variables involved in the factor being defined (in the same order as the inputs of the veal function of the Factor Function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
+The method has syntax addFactor(factorFunction,arguments), where factorFunction is an instance of a class that inherits from FactorFunction.  The arguments are the variables involved in the factor being defined (in the same order as the inputs of the real function of the Factor Function). The number of inputs of the function referred to by the function handle has to be equal to the number of arguments of addFactor.
 
 In our case, we define a class called TransitionFactorFunction.
 
@@ -185,7 +185,7 @@ HMM.addFactor(trans, TuesdayWeather,WednesdayWeather);
 HMM.addFactor(trans, WednesdayWeather,ThursdayWeather);
 HMM.addFactor(trans, ThursdayWeather,FridayWeather);
 HMM.addFactor(trans, FridayWeather,SaturdayWeather);
-HMM.addFactor(trans, FridayWeather,SundayWeather);
+HMM.addFactor(trans, SaturdayWeather,SundayWeather);
 \end{lstlisting}
 
 The java code first instantiates the factor function before connecting all of the variables.  It would be possible to create a new instance of the factor function for each addFactor call, but this would use unnecessary memory.
