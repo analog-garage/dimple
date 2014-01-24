@@ -1,0 +1,184 @@
+package com.analog.lyric.collect;
+
+import java.util.Collection;
+import java.util.Iterator;
+
+/**
+ * Priority queue supporting dynamically changeable priorities of
+ * type double.
+ * <p>
+ * Unlike {@link java.util.PriorityQueue}, the priorities are stored separately
+ * from the elements and ordering is based directly on the double values with
+ * no intervening comparator. An element with the lowest value will be at the
+ * head of the queue.
+ * <p>
+ * @author Christopher Barber
+ * @since 0.05
+ */
+public interface IDynamicPriorityQueue<E> extends Collection<E>, Cloneable
+{
+	/*------------------
+	 * Internal classes
+	 */
+	
+	/**
+	 * Interface for {@link IDynamicPriorityQueue} entry.
+	 */
+	public interface IEntry<E> extends Cloneable
+	{
+		/**
+		 * Returns a shallow copy of this entry.
+		 */
+		public IEntry<E> clone();
+
+		/**
+		 * Returns non-null element contained in this entry. The element
+		 * is guaranteed to not change as long as entry {@link #isOwned()}.
+		 */
+		public E getElement();
+
+		/**
+		 * Priority of this entry, which may change.
+		 * @see IDynamicPriorityQueue#changePriority(IEntry, double)
+		 */
+		public double getPriority();
+		
+		/**
+		 * True if entry is currently a member of a queue.
+		 */
+		public boolean isOwned();
+	}
+	
+	/*--------------
+	 * Construction
+	 */
+	
+	/**
+	 * Returns a copy of the queue, cloning all of its entries.
+	 */
+	public IDynamicPriorityQueue<E> clone();
+	
+	/*---------------
+	 * Local methods
+	 */
+	
+	/**
+	 * Change priority of given entry in queue.
+	 * <p>
+	 * When changing more than half of the priorities in bulk, it may
+	 * be more efficient to defer reordering.
+	 * <p>
+	 * @return false if entry was not in the queue.
+	 * @see #deferOrdering(boolean)
+	 * 
+	 * @throws IllegalArgumentException if priority is not a number.
+	 */
+	public boolean changePriority(IEntry<E> entry, double priority);
+	
+	/**
+	 * True if entry is contained in this queue.
+	 */
+	public boolean containsEntry(IEntry<E> entry);
+	
+	/**
+	 * If true, then operations that might affect the order of the queue will not
+	 * cause it to be reordered until required by some operation such as {@link #peek()}
+	 * or {@link #poll()}, after which this attribute will automatically be set to false.
+	 * <p>
+	 * Implementations are not required to implement deferral.
+	 * <p>
+	 * @see #deferOrdering(boolean)
+	 * @see #isOrdered()
+	 */
+	public boolean deferOrdering();
+	
+	/**
+	 * Defers or undefers ordering of queue.
+	 * <p>
+	 * When set to true and the implementation supports it, reordering of the queue will be
+	 * deferred until the invocation of the first method that requires it, namely one of the
+	 * peek or poll methods or this method with {@code defer}
+	 * set to false. When supported, this will lead to faster amortized reordering when making
+	 * bulk changes affecting the majority of the entries in the queue.
+	 * <p>
+	 * When set to false, the queue will immediately be ordered.
+	 * <p>
+	 * @return true if value of attribute was set to specified value. Will always return false if {@code defer}
+	 * is true and implementation does not support deferral.
+	 */
+	public boolean deferOrdering(boolean defer);
+	
+	/**
+	 * Return an entry containing given element, not necessarily the one
+	 * with the lowest priority, or else null.
+	 * <p>
+	 * Assume O({@link #size}) time complexity unless implementation documents
+	 * otherwise.
+	 */
+	public IEntry<E> entryForElement(Object element);
+	
+	/**
+	 * Ensure that queue has sufficient capacity for the specified number of elements.
+	 * <p>
+	 * For some implementations, calling this before adding many elements can avoid the
+	 * cost of incrementally growing the capacity as elements are added.
+	 */
+	public void ensureCapacity(int capacity);
+	
+	public Iterator<? extends IEntry<E>> entryIterator();
+	
+	/**
+	 * Is queue currently in correct partial order.
+	 * <p>
+	 * This should only be false if {@link #deferOrdering()} is true.
+	 */
+	public boolean isOrdered();
+	
+	/**
+	 * Adds instance of {@code element} to the queue with given {@code priority} and
+	 * returns the entry created for it, which may be used to relatively efficiently
+	 * remove it or change its priority. Unless the implementation does not support it,
+	 * the same element may be added multiple times with different priorities.
+	 * 
+	 * @throws IllegalArgumentException if priority is not a number.
+	 */
+	public IEntry<E> offer(E element, double priority) throws IllegalArgumentException;
+	
+	/**
+	 * Returns element that will be returned by {@link #poll()} without removing it from the queue.
+	 * <p>
+	 * @see #peekEntry()
+	 * @see #poll()
+	 */
+	public E peek();
+	
+	/**
+	 * Returns entry that will be returned by {@link #pollEntry()} without removing it from the queue.
+	 * <p>
+	 * @see #peek()
+	 * @see #pollEntry()
+	 */
+	public IEntry<E> peekEntry();
+	
+	/**
+	 * Removes element with the lowest priority from the queue.
+	 * <p>
+	 * @see #pollEntry()
+	 * @see #peek()
+	 */
+	public E poll();
+	
+	/**
+	 * Removes and returns entry with the lowest priority from the queue.
+	 * <p>
+	 * @see #poll()
+	 * @see #peekEntry()
+	 */
+	public IEntry<E> pollEntry();
+	
+	/**
+	 * Remove given entry from queue.
+	 * @return false if entry was not contained in the queue.
+	 */
+	public boolean removeEntry(IEntry<E> entry);
+}
