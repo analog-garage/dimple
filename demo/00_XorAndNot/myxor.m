@@ -14,7 +14,7 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function isvalid = xorDelta_00_XorAndNot(x,y,z)
+function isvalid = myxor(x,y,z)
     isvalid = mod(x+y+z,2) == 0;
     %isvalid = xor(x,xor(y,z)) == 0;    
 end
