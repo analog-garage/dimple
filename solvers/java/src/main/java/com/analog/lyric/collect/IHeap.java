@@ -4,8 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * Priority queue supporting dynamically changeable priorities of
- * type double.
+ * Priority queue supporting dynamically changeable priorities of type double.
  * <p>
  * Unlike {@link java.util.PriorityQueue}, the priorities are stored separately
  * from the elements and ordering is based directly on the double values with
@@ -15,14 +14,14 @@ import java.util.Iterator;
  * @author Christopher Barber
  * @since 0.05
  */
-public interface IDynamicPriorityQueue<E> extends Collection<E>, Cloneable
+public interface IHeap<E> extends Collection<E>, Cloneable
 {
 	/*------------------
 	 * Internal classes
 	 */
 	
 	/**
-	 * Interface for {@link IDynamicPriorityQueue} entry.
+	 * Interface for {@link IHeap} entry.
 	 */
 	public interface IEntry<E> extends Cloneable
 	{
@@ -39,7 +38,7 @@ public interface IDynamicPriorityQueue<E> extends Collection<E>, Cloneable
 
 		/**
 		 * Priority of this entry, which may change.
-		 * @see IDynamicPriorityQueue#changePriority(IEntry, double)
+		 * @see IHeap#changePriority(IEntry, double)
 		 */
 		public double getPriority();
 		
@@ -56,7 +55,7 @@ public interface IDynamicPriorityQueue<E> extends Collection<E>, Cloneable
 	/**
 	 * Returns a copy of the queue, cloning all of its entries.
 	 */
-	public IDynamicPriorityQueue<E> clone();
+	public IHeap<E> clone();
 	
 	/*---------------
 	 * Local methods
@@ -133,6 +132,17 @@ public interface IDynamicPriorityQueue<E> extends Collection<E>, Cloneable
 	 * This should only be false if {@link #deferOrdering()} is true.
 	 */
 	public boolean isOrdered();
+	
+	/**
+	 * Destructively merges contents of {@code other} heap into this one.
+	 * <p>
+	 * Removes all elements from {@code other} and adds them to this heap. Underlying
+	 * entries will only be transferred if class of {@code other} is compatible with
+	 * this class (typically meaning it is the same class).
+	 * <p>
+	 * @return true if entry objects were transferred.
+	 */
+	public boolean merge(IHeap<E> other);
 	
 	/**
 	 * Adds instance of {@code element} to the queue with given {@code priority} and

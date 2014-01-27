@@ -15,7 +15,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 classdef FactorTable < handle
-    properties
+    properties (SetAccess=private)
         Indices;
         Weights;
         Domains;

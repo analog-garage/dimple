@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Dynamic priority queue implemented using an array-based binary heap.
+ * Array-based binary heap implementation of {@link IHeap}.
  * <p>
  * Insertion, removal from head of the queue, and changing priority is O(log({@link #size})).
  * Bulk insertion and priority changes with deferred reordering is O(n + {@link #size}).
@@ -12,7 +12,7 @@ import java.util.Iterator;
  * @author Christopher Barber
  * @since 0.0.5
  */
-public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
+public class BinaryHeap<E> extends AbstractHeap<E>
 {
 	public static class Entry<E> extends AbstractEntry<E>
 	{
@@ -54,7 +54,7 @@ public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
 	/**
 	 * Construct empty heap.
 	 */
-	public DynamicHeap()
+	public BinaryHeap()
 	{
 		this(16);
 	}
@@ -62,7 +62,7 @@ public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
 	/**
 	 * Construct empty heap with initial space for {@code capacity} elements.
 	 */
-	public DynamicHeap(int capacity)
+	public BinaryHeap(int capacity)
 	{
 		_heap = new ArrayList<Entry<E>>(capacity);
 		_deferOrdering = true;
@@ -72,7 +72,7 @@ public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
 	/**
 	 * Construct a copy of the heap.
 	 */
-	public DynamicHeap(DynamicHeap<E> that)
+	public BinaryHeap(BinaryHeap<E> that)
 	{
 		_heap = (ArrayList<Entry<E>>) that._heap.clone();
 		_deferOrdering = that._deferOrdering;
@@ -84,9 +84,9 @@ public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
 	}
 	
 	@Override
-	public DynamicHeap<E> clone()
+	public BinaryHeap<E> clone()
 	{
-		return new DynamicHeap<E>(this);
+		return new BinaryHeap<E>(this);
 	}
 
 	/*--------------------
@@ -205,6 +205,30 @@ public class DynamicHeap<E> extends AbstractDynamicPriorityQueue<E>
 	public final boolean isOrdered()
 	{
 		return _orderedUpto >= _heap.size();
+	}
+	
+	@Override
+	public boolean merge(IHeap<E> other)
+	{
+		if (!(other instanceof BinaryHeap))
+		{
+			return super.merge(other);
+		}
+		
+		BinaryHeap<E> that = (BinaryHeap<E>)other;
+		
+		final int prevSize = _heap.size();
+
+		_heap.addAll(that._heap);
+		for (int i = prevSize, end = _heap.size(); i < end; ++i)
+		{
+			_heap.get(i)._offset = i;
+		}
+		that.clear();
+		
+		heapify();
+		
+		return true;
 	}
 	
 	@Override

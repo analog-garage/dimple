@@ -8,11 +8,11 @@ import java.util.Random;
 
 import org.junit.Test;
 
-import com.analog.lyric.collect.DynamicHeap;
-import com.analog.lyric.collect.IDynamicPriorityQueue;
-import com.analog.lyric.collect.IDynamicPriorityQueue.IEntry;
+import com.analog.lyric.collect.BinaryHeap;
+import com.analog.lyric.collect.IHeap;
+import com.analog.lyric.collect.IHeap.IEntry;
 
-public class TestDynamicPriorityQueue
+public class TestHeap
 {
 	private static class Element
 	{
@@ -27,17 +27,17 @@ public class TestDynamicPriorityQueue
 	@Test
 	public void test()
 	{
-		testQueue(new DynamicHeap<Element>());
+		testHeap(new BinaryHeap<Element>());
 	}
 	
-	private void testQueue(IDynamicPriorityQueue<Element> queue)
+	private void testHeap(IHeap<Element> heap)
 	{
 		Random rand = new Random(42);
 		
-		assertTrue(queue.isEmpty());
-		assertInvariants(queue);
-		assertNull(queue.pollEntry());
-		assertNull(queue.poll());
+		assertTrue(heap.isEmpty());
+		assertInvariants(heap);
+		assertNull(heap.pollEntry());
+		assertNull(heap.poll());
 		
 		final int nElements = 32;
 		final Element[] elements = new Element[nElements];
@@ -46,21 +46,21 @@ public class TestDynamicPriorityQueue
 			elements[i] = new Element(rand.nextDouble());
 		}
 		
-		expectThrow(IllegalArgumentException.class, queue, "offer", elements[0], Double.NaN);
+		expectThrow(IllegalArgumentException.class, heap, "offer", elements[0], Double.NaN);
 		
 		//
 		// Trivial test with one element
 		//
 		
-		queue.offer(elements[0], elements[0]._expectedPriority);
-		assertEquals(1, queue.size());
-		assertInvariants(queue);
+		heap.offer(elements[0], elements[0]._expectedPriority);
+		assertEquals(1, heap.size());
+		assertInvariants(heap);
 		
-		IEntry<Element> entry = queue.peekEntry();
+		IEntry<Element> entry = heap.peekEntry();
 		assertNotNull(entry);
 		assertSame(elements[0], entry.getElement());
-		assertSame(elements[0], queue.peek());
-		assertTrue(queue.isOrdered());
+		assertSame(elements[0], heap.peek());
+		assertTrue(heap.isOrdered());
 		
 		IEntry<Element> bogusEntry = new IEntry<Element>() {
 			@Override
@@ -87,14 +87,14 @@ public class TestDynamicPriorityQueue
 				return true;
 			}
 		};
-		assertFalse(queue.containsEntry(bogusEntry));
-		assertFalse(queue.removeEntry(bogusEntry));
+		assertFalse(heap.containsEntry(bogusEntry));
+		assertFalse(heap.removeEntry(bogusEntry));
 		
-		assertSame(entry, queue.pollEntry());
-		assertTrue(queue.isEmpty());
+		assertSame(entry, heap.pollEntry());
+		assertTrue(heap.isEmpty());
 		assertFalse(entry.isOwned());
-		assertFalse(queue.containsEntry(entry));
-		assertInvariants(queue);
+		assertFalse(heap.containsEntry(entry));
+		assertInvariants(heap);
 		
 		//
 		// Clear
@@ -102,125 +102,125 @@ public class TestDynamicPriorityQueue
 		
 		for (Element element : elements)
 		{
-			queue.offer(element, element._expectedPriority);
+			heap.offer(element, element._expectedPriority);
 		}
-		assertInvariants(queue);
-		queue.clear();
-		assertTrue(queue.isEmpty());
-		assertInvariants(queue);
+		assertInvariants(heap);
+		heap.clear();
+		assertTrue(heap.isEmpty());
+		assertInvariants(heap);
 		
 		//
 		// Simple add/remove test.
 		//
 		
-		queue.ensureCapacity(nElements);
+		heap.ensureCapacity(nElements);
 
-		offerAll(queue, elements);
-		assertInvariants(queue);
-		assertEquals(nElements, queue.size());
-		pollAll(queue);
+		offerAll(heap, elements);
+		assertInvariants(heap);
+		assertEquals(nElements, heap.size());
+		pollAll(heap);
 		
-		if (queue.deferOrdering())
+		if (heap.deferOrdering())
 		{
 			// Try again without deferring ordering
-			assertTrue(queue.deferOrdering(false));
+			assertTrue(heap.deferOrdering(false));
 			
-			offerAll(queue, elements);
-			assertInvariants(queue);
-			assertEquals(nElements, queue.size());
-			pollAll(queue);
+			offerAll(heap, elements);
+			assertInvariants(heap);
+			assertEquals(nElements, heap.size());
+			pollAll(heap);
 		}
 		
 		//
 		// Test deferral
 		//
 		
-		offerRange(queue, elements, 0, nElements / 4);
-		queue.deferOrdering(false);
-		assertFalse(queue.deferOrdering());
-		assertInvariants(queue);
+		offerRange(heap, elements, 0, nElements / 4);
+		heap.deferOrdering(false);
+		assertFalse(heap.deferOrdering());
+		assertInvariants(heap);
 		
 		// Defer with most elements not yet added
-		queue.deferOrdering(true);
-		offerRange(queue, elements, nElements / 4, nElements);
-		assertInvariants(queue);
-		assertEquals(nElements, queue.size());
-		pollAll(queue);
+		heap.deferOrdering(true);
+		offerRange(heap, elements, nElements / 4, nElements);
+		assertInvariants(heap);
+		assertEquals(nElements, heap.size());
+		pollAll(heap);
 		
-		offerRange(queue, elements, 0, 3 * (nElements / 4));
-		queue.deferOrdering(false);
-		assertFalse(queue.deferOrdering());
-		assertInvariants(queue);
+		offerRange(heap, elements, 0, 3 * (nElements / 4));
+		heap.deferOrdering(false);
+		assertFalse(heap.deferOrdering());
+		assertInvariants(heap);
 		
 		// Defer with most elements already added
-		queue.deferOrdering(true);
-		offerRange(queue, elements, 3 * (nElements / 4), nElements);
-		assertInvariants(queue);
-		assertEquals(nElements, queue.size());
-		pollAll(queue);
+		heap.deferOrdering(true);
+		offerRange(heap, elements, 3 * (nElements / 4), nElements);
+		assertInvariants(heap);
+		assertEquals(nElements, heap.size());
+		pollAll(heap);
 		
 		//
 		// Test removal
 		//
 		
-		offerAll(queue, elements);
-		assertTrue(queue.remove(elements[0]));
-		assertFalse(queue.remove(elements[0]));
-		assertFalse(queue.contains(elements[0]));
-		assertEquals(nElements - 1, queue.size());
-		assertInvariants(queue);
-		pollAll(queue);
+		offerAll(heap, elements);
+		assertTrue(heap.remove(elements[0]));
+		assertFalse(heap.remove(elements[0]));
+		assertFalse(heap.contains(elements[0]));
+		assertEquals(nElements - 1, heap.size());
+		assertInvariants(heap);
+		pollAll(heap);
 		
-		offerAll(queue, elements);
-		entry = queue.entryForElement(elements[0]);
+		offerAll(heap, elements);
+		entry = heap.entryForElement(elements[0]);
 		assertNotNull(entry);
 		assertTrue(entry.isOwned());
-		assertTrue(queue.removeEntry(entry));
+		assertTrue(heap.removeEntry(entry));
 		assertFalse(entry.isOwned());
-		assertFalse(queue.removeEntry(entry));
-		assertEquals(nElements - 1, queue.size());
-		assertFalse(queue.containsEntry(entry));
-		assertFalse(queue.contains(entry.getElement()));
-		assertInvariants(queue);
+		assertFalse(heap.removeEntry(entry));
+		assertEquals(nElements - 1, heap.size());
+		assertFalse(heap.containsEntry(entry));
+		assertFalse(heap.contains(entry.getElement()));
+		assertInvariants(heap);
 		
 		for (int i = 1; i < nElements; ++i)
 		{
 			Element element = elements[i];
-			assertTrue(queue.remove(element));
-			assertFalse(queue.contains(element));
+			assertTrue(heap.remove(element));
+			assertFalse(heap.contains(element));
 		}
-		assertTrue(queue.isEmpty());
+		assertTrue(heap.isEmpty());
 		
 		//
 		// Test priority change
 		//
 		
-		offerAll(queue, elements);
-		assertInvariants(queue);
+		offerAll(heap, elements);
+		assertInvariants(heap);
 		
-		queue.deferOrdering(false);
+		heap.deferOrdering(false);
 		for (Element element : elements)
 		{
-			entry = queue.entryForElement(element);
+			entry = heap.entryForElement(element);
 			element._expectedPriority = rand.nextDouble();
-			queue.changePriority(entry, element._expectedPriority);
-			assertTrue(queue.isOrdered());
+			heap.changePriority(entry, element._expectedPriority);
+			assertTrue(heap.isOrdered());
 		}
-		assertInvariants(queue);
-		pollAll(queue);
+		assertInvariants(heap);
+		pollAll(heap);
 		
-		if (queue.deferOrdering(true))
+		if (heap.deferOrdering(true))
 		{
-			offerAll(queue, elements);
+			offerAll(heap, elements);
 			for (Element element : elements)
 			{
-				entry = queue.entryForElement(element);
+				entry = heap.entryForElement(element);
 				element._expectedPriority = rand.nextDouble();
-				queue.changePriority(entry, element._expectedPriority);
-				assertFalse(queue.isOrdered());
+				heap.changePriority(entry, element._expectedPriority);
+				assertFalse(heap.isOrdered());
 			}
-			assertInvariants(queue);
-			pollAll(queue);
+			assertInvariants(heap);
+			pollAll(heap);
 		}
 		
 		//
@@ -229,25 +229,25 @@ public class TestDynamicPriorityQueue
 		
 		for (Element element : elements)
 		{
-			queue.offer(element, 42);
+			heap.offer(element, 42);
 		}
-		assertInvariants(queue, false);
-		pollAll(queue);
+		assertInvariants(heap, false);
+		pollAll(heap);
 		
-		queue.clear();
+		heap.clear();
 
 		//
 		// Test cloning
 		//
 		
-		offerAll(queue, elements);
+		offerAll(heap, elements);
 		
-		IDynamicPriorityQueue<Element> queue2 = queue.clone();
-		assertInvariants(queue2);
-		assertEquals(queue.size(), queue2.size());
+		IHeap<Element> heap2 = heap.clone();
+		assertInvariants(heap2);
+		assertEquals(heap.size(), heap2.size());
 		
-		Iterator<? extends IEntry<Element>> entries1 = queue.entryIterator();
-		Iterator<? extends IEntry<Element>> entries2 = queue2.entryIterator();
+		Iterator<? extends IEntry<Element>> entries1 = heap.entryIterator();
+		Iterator<? extends IEntry<Element>> entries2 = heap2.entryIterator();
 		
 		for (int i = 0; i < nElements; ++i)
 		{
@@ -260,56 +260,89 @@ public class TestDynamicPriorityQueue
 			assertEquals(entry1.getPriority(), entry2.getPriority(), 0.0);
 			assertNotSame(entry1, entry2);
 			
-			assertFalse(queue.containsEntry(entry2));
-			assertFalse(queue2.containsEntry(entry1));
+			assertFalse(heap.containsEntry(entry2));
+			assertFalse(heap2.containsEntry(entry1));
 			
-			assertFalse(queue.changePriority(entry2, 42));
-			assertFalse(queue.removeEntry(entry2));
+			assertFalse(heap.changePriority(entry2, 42));
+			assertFalse(heap.removeEntry(entry2));
 		}
 		assertFalse(entries1.hasNext());
 		assertFalse(entries2.hasNext());
 		
-		queue2.clear();
-		assertFalse(queue2.containsEntry(queue.peekEntry()));
-	}
-	
-	private void offerAll(IDynamicPriorityQueue<Element> queue, Element ... elements)
-	{
+		heap2.clear();
+		assertFalse(heap2.containsEntry(heap.peekEntry()));
+		
+		//
+		// Test merge
+		//
+		
+		heap.clear();
+		heap2.clear();
+		
+		// Randomly distribute elements between two heaps.
 		for (Element element : elements)
 		{
-			queue.offer(element, element._expectedPriority);
-			if (queue.deferOrdering())
+			if (rand.nextBoolean())
 			{
-				assertFalse(queue.isOrdered());
+				heap.offer(element, element._expectedPriority);
 			}
 			else
 			{
-				assertTrue(queue.isOrdered());
+				heap2.offer(element, element._expectedPriority);
+			}
+		}
+		
+		assertInvariants(heap);
+		assertInvariants(heap2);
+		
+		int size1 = heap.size();
+		int size2 = heap2.size();
+		assertEquals(nElements, size1 + size2);
+		
+		heap.merge(heap2);
+		assertTrue(heap2.isEmpty());
+		assertInvariants(heap);
+		assertInvariants(heap2);
+		pollAll(heap);
+	}
+	
+	private void offerAll(IHeap<Element> heap, Element ... elements)
+	{
+		for (Element element : elements)
+		{
+			heap.offer(element, element._expectedPriority);
+			if (heap.deferOrdering())
+			{
+				assertFalse(heap.isOrdered());
+			}
+			else
+			{
+				assertTrue(heap.isOrdered());
 			}
 		}
 	}
 	
-	private void offerRange(IDynamicPriorityQueue<Element> queue, Element[] elements, int start, int end)
+	private void offerRange(IHeap<Element> heap, Element[] elements, int start, int end)
 	{
 		for (int i = start; i < end; ++i)
 		{
 			Element element = elements[i];
-			queue.offer(element,  element._expectedPriority);
+			heap.offer(element,  element._expectedPriority);
 		}
 	}
 	
-	private void pollAll(IDynamicPriorityQueue<Element> queue)
+	private void pollAll(IHeap<Element> heap)
 	{
 		IEntry<Element> prevEntry = null;
 		
-		while (!queue.isEmpty())
+		while (!heap.isEmpty())
 		{
-			IEntry<Element> nextEntry = queue.peekEntry();
+			IEntry<Element> nextEntry = heap.peekEntry();
 			assertNotNull(nextEntry);
-			assertSame(nextEntry.getElement(), queue.peek());
-			assertTrue(queue.isOrdered());
+			assertSame(nextEntry.getElement(), heap.peek());
+			assertTrue(heap.isOrdered());
 		
-			assertSame(nextEntry, queue.pollEntry());
+			assertSame(nextEntry, heap.pollEntry());
 			if (prevEntry != null)
 			{
 				assertTrue(prevEntry.getPriority() <= nextEntry.getPriority());
@@ -318,37 +351,37 @@ public class TestDynamicPriorityQueue
 		}
 	}
 	
-	private void assertInvariants(IDynamicPriorityQueue<Element> queue)
+	private void assertInvariants(IHeap<Element> heap)
 	{
-		assertInvariants(queue, true);
+		assertInvariants(heap, true);
 	}
 	
-	private void assertInvariants(IDynamicPriorityQueue<Element> queue, boolean checkPriority)
+	private void assertInvariants(IHeap<Element> heap, boolean checkPriority)
 	{
-		final int size = queue.size();
+		final int size = heap.size();
 		assertTrue(size >= 0);
-		assertEquals(size == 0, queue.isEmpty());
+		assertEquals(size == 0, heap.isEmpty());
 		
-		if (!queue.deferOrdering())
+		if (!heap.deferOrdering())
 		{
-			assertTrue(queue.isOrdered());
+			assertTrue(heap.isOrdered());
 		}
 		
-		if (queue.isEmpty())
+		if (heap.isEmpty())
 		{
-			assertNull(queue.peek());
-			assertNull(queue.peekEntry());
-			assertTrue(queue.isOrdered());
+			assertNull(heap.peek());
+			assertNull(heap.peekEntry());
+			assertTrue(heap.isOrdered());
 		}
-		else if (!queue.deferOrdering())
+		else if (!heap.deferOrdering())
 		{
 			// Don't peek if ordering is deferred to avoid changing state.
-			IEntry<Element> entry = queue.peekEntry();
-			assertSame(queue.peek(), entry.getElement());
+			IEntry<Element> entry = heap.peekEntry();
+			assertSame(heap.peek(), entry.getElement());
 		}
 		
-		Iterator<? extends IEntry<Element>> entries = queue.entryIterator();
-		Iterator<Element> elements = queue.iterator();
+		Iterator<? extends IEntry<Element>> entries = heap.entryIterator();
+		Iterator<Element> elements = heap.iterator();
 		int count = 0;
 		
 		expectThrow(UnsupportedOperationException.class, elements, "remove");
@@ -366,10 +399,10 @@ public class TestDynamicPriorityQueue
 			}
 			assertTrue(entry.isOwned());
 			
-			assertTrue(queue.containsEntry(entry));
-			assertTrue(queue.contains(element));
+			assertTrue(heap.containsEntry(entry));
+			assertTrue(heap.contains(element));
 			
-			IEntry<Element> entry2 = queue.entryForElement(element);
+			IEntry<Element> entry2 = heap.entryForElement(element);
 			assertSame(element, entry2.getElement());
 		}
 		assertFalse(elements.hasNext());

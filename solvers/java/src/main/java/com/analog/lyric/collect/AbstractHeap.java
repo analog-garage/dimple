@@ -4,15 +4,15 @@ import java.util.AbstractCollection;
 import java.util.Iterator;
 
 /**
- * Base implementation of {@link IDynamicPriorityQueue} with default implementation
+ * Base implementation of {@link IHeap} with default implementation
  * of some methods.
  *
  * @author Christopher Barber
  * @since 0.05
  */
-public abstract class AbstractDynamicPriorityQueue<E>
+public abstract class AbstractHeap<E>
 	extends AbstractCollection<E>
-	implements IDynamicPriorityQueue<E>
+	implements IHeap<E>
 {
 	public abstract static class AbstractEntry<E> implements IEntry<E>
 	{
@@ -47,7 +47,7 @@ public abstract class AbstractDynamicPriorityQueue<E>
 	}
 	
 	@Override
-	public abstract AbstractDynamicPriorityQueue<E> clone();
+	public abstract AbstractHeap<E> clone();
 	
 	/*------------------
 	 * Iterable methods
@@ -96,8 +96,8 @@ public abstract class AbstractDynamicPriorityQueue<E>
 		return entry != null ? removeEntry(entry) : false;
 	}
 	
-	/*-------------------------------
-	 * IDynamicPriorityQueue methods
+	/*---------------
+	 * IHeap methods
 	 */
 	
 	@Override
@@ -155,6 +155,20 @@ public abstract class AbstractDynamicPriorityQueue<E>
 	public boolean deferOrdering(boolean defer)
 	{
 		return !defer;
+	}
+	
+	@Override
+	public boolean merge(IHeap<E> other)
+	{
+		Iterator<? extends IEntry<E>> entries = other.entryIterator();
+		while (entries.hasNext())
+		{
+			IEntry<E> entry = entries.next();
+			offer(entry.getElement(), entry.getPriority());
+		}
+		other.clear();
+		
+		return false;
 	}
 	
 	@Override
