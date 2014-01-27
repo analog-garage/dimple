@@ -72,7 +72,7 @@ If no solver is specified for a graph, Dimple will use the SumProduct solver by 
 
 In many cases, the model created in Dimple represents the prior, before conditioning on the data.  In this case, then assuming inference on the posterior model is desired, then the user must condition the model on the data before performing inference.
 
-There are two primary ways to condition on input data.  In the first approach, the values actually measured are not included in the model, and instead the effect of the data is specified via a likelihood function each variable that is indirectly influenced by the data.  The second approach, the variables that will be measured are included in the model, and the value of each is fixed to the actual measured data value.
+There are two primary ways to condition on input data.  In the first approach, the values actually measured are not included in the model, and instead the effect of the data is specified via a likelihood function for each variable that is indirectly influenced by the data.  In the second approach, the variables that will be measured are included in the model, and the value of each is fixed to the actual measured data value.
 
 \para{Using a Likelihood Function as Input}
 \label{sec:LikelihoodInput}
@@ -585,7 +585,7 @@ myGraph.solve();
 
 \fi
 
-For the Gibbs solver, the NumIterations property isn't used, and instead other solver specific may be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has already been set to 'Gibbs'):
+For the Gibbs solver, the NumIterations property isn't used, and instead other solver specific properties may be used instead.  For example, to set the number of Gibbs samples to run before stopping (assuming the solver has already been set to 'Gibbs'):
 
 \ifmatlab
 \begin{lstlisting}

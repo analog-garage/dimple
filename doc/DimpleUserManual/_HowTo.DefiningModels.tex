@@ -14,7 +14,7 @@ The model creation aspect of Dimple primarily involves defining variables and co
 
 \subsubsection{Creating a Graph}
 
-To create a new factor graph, call the FactorGraph constructor and assign it to a MATLAB variable.  For example,
+To create a new factor graph, call the FactorGraph constructor and assign it to a variable.  For example,
 
 \ifmatlab
 
@@ -77,7 +77,7 @@ Dimple supports several types of variables:
 
 A factor graph may mix any combination of these variable types, though there are some limitations in the use of certain variable types by some solvers.  Specifically, some solvers do not currently support Real variables\footnote{Currently Dimple has a restriction that prior to adding a Real variable to a factor graph, the solver for that factor graph must be set to one that supports real variables.  See section~\ref{sec:Solvers} to learn how to set the solver.  This restriction may be removed in a future version.}.
 
-A variable of a given type can be created using the corresponding object constructor and assigning the result to a MATLAB variable.  For example,
+A variable of a given type can be created using the corresponding object constructor.  For example,
 
 \ifmatlab
 
@@ -91,7 +91,9 @@ myRealVariable = Real();
 
 \ifjava
 \begin{lstlisting}
-Discrete var = new Discrete(1,2,3,4,5,6,7,8,9,10);
+Discrete myDiscreteVariable = new Discrete(1,2,3,4,5,6,7,8,9,10);
+Bit myBitVariable = new Bit();
+Real myRealVariable = new Real();
 \end{lstlisting}
 \fi
 
@@ -151,13 +153,13 @@ WARNING:  The following code:
 Discrete v6 = new Discrete(new int [] {1,2,3});
 \end{lstlisting}
 
-Will return 1.  It will create a discrete variable with a single domain object which is an array of three integers.
+Creates a discrete variable with a single domain object which is an array of three integers.
 
 \fi
 
 Even though the domains are discrete, the actual values of the domain states may be anything, including real numbers.  Though, when using real numbers and objects, care must be taken, for example, when making equality comparisons.
 
-The domain of a variable need not be defined in-line in the constructor, but may be defined elsewhere in the program.  For example:
+The values of a domain need not be defined in-line in the constructor, but may be defined elsewhere in the program.  For example:
 
 \ifmatlab
 
@@ -236,7 +238,7 @@ Discrete newVariable = new Discrete(otherVariable.getDomain());
 
 When creating a Real variable, specifying a domain is optional.  If no domain is specified, the domain is assumed to be the entire real line from $-\infty$ to $\infty$.
 
-The domain of a Real variable is an array of two real numbers: the first specifies the lower bound on the variable, and the second specifies the upper bound (the upper bound must be greater than or equal to the lower).  Either or both of the values may be ``-Inf'' or ``Inf'', which correspond to MATLAB notation for $-\infty$ and $\infty$, respectively.
+The domain of a Real variable is an array of two real numbers: the first specifies the lower bound on the variable, and the second specifies the upper bound (the upper bound must be greater than or equal to the lower).  Either or both of the values may be $-\infty$ or $\infty$.
 
 As with discrete variables, the domain may be specified ahead of time, and may be created by defining in this case a RealDomain object, which takes two arguments: the lower and upper bound, respectively.  Some examples:
 
@@ -577,7 +579,7 @@ end
 
 \para{Using Factor Tables}
 
-When Dimple creates a factor using a factor function, for some solvers, behind the scenes it translates that factor function into a table by enumerating all possible states of all connected variables.  While steps are taken to make this efficient, including storing only non-zero values and reusing tables for identical factors, the time it takes to create the factor table take can in some cases be very large.  In some situation, a user may have specific knowledge of the structure of a factor that would allow them to create the same table much more efficiently.  To accommodate such cases, Dimple allows factors to be specified using user-created factor tables.
+When Dimple creates a factor using a factor function, for some solvers, behind the scenes it translates that factor function into a table by enumerating all possible states of all connected variables.  While steps are taken to make this efficient, including storing only non-zero values and reusing tables for identical factors, the time it takes to create the factor table can in some cases be very large.  In some situations, a user may have specific knowledge of the structure of a factor that would allow them to create the same table much more efficiently.  To accommodate such cases, Dimple allows factors to be specified using user-created factor tables.
 
 A factor table consists of two parts: a two dimensional array of integers and a single dimensional array of doubles.  Each row of the two dimensional table represents a combination of variable values for which the factor value is non-zero.  Each column represents a variable connected to the factor. The values of this table specify an index into the discrete domain of a variable. Each row of the two dimensional table corresponds to one entry of the array of doubles, where that entry contains the value of the factor corresponding to the corresponding set of variable values.
 
@@ -1460,7 +1462,7 @@ public class MyGraphCreator {
 \end{lstlisting}
 \fi
 
-While it is possible using Dimple to retrieve variables from the factor graph object itself, returning variables in the graph creation function allows them to be more easily managed and manipulated.  The set of returned variables should include, at least, the variables that will subsequently be conditioned on input data and the variables that will be queried after performing inference.  But since it may not be known ahead of time, which variables will be used for these or other purposes, it is often useful to simply return all variables.  \ifmatlab If more than one variable or variable array is to be returned, this could be done either by returning each as a separate return value, or combining them all into a single cell array, as shown in the above example.  \fi   \ifjava If more than one variable is to be returned, this could be done either by returning each as a separate return value, or combining them all into a single class, as shown in the above example.  \fi
+While it is possible to use Dimple to retrieve variables from the factor graph object itself, returning variables in the graph creation function allows them to be more easily managed and manipulated.  The set of returned variables should include, at least, the variables that will subsequently be conditioned on input data and the variables that will be queried after performing inference.  But since which variables will be used for these or other purposes may not be known ahead of time, it is often useful to simply return all variables.  \ifmatlab If more than one variable or variable array is to be returned, this could be done either by returning each as a separate return value, or combining them all into a single cell array, as shown in the above example.  \fi   \ifjava If more than one variable is to be returned, this could be done either by returning each as a separate return value, or combining them all into a single class, as shown in the above example.  \fi
 
 In a nested graph, it is often preferable to use a structure like that shown above at each layer of nesting.  In this way, a sub-graph creation function might be reused in more than one different outer graph.
 

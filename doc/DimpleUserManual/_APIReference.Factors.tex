@@ -317,7 +317,7 @@ A FactorTable is constructed by specifying the table values in one of two forms,
 \begin{itemize}
 \item indexList is an array where each row represents a set of zero-based indices into the list of domain elements for each successive domain in the given set of domains.
 \item weightList is a one-dimensional array of real-valued entries in the factor table, where each entry corresponds to the indices given by the corresponding row of the indexList.
-\item weightArray is an N dimensional array of real-valued entries in the factor table.  The number of dimensions, N, must correspond to the number of discrete domain elements given in the subsequent arguments, and the number of elements in each dimension must equal the number of elements in the corresponding domain element.
+\item weightMatrix is an N dimensional array of real-valued entries in the factor table.  The number of dimensions, N, must correspond to the number of discrete domain elements given in the subsequent arguments, and the number of elements in each dimension must equal the number of elements in the corresponding domain element.
 \item domains is a comma-separated list of one or more discrete variable domains.  Each domain either in the form of a DiscreteDomain object or a cell-array of the elements of the domain.  From an existing variable, the domain can be obtained using the Domain property of that variable.
 \end{itemize}
 
