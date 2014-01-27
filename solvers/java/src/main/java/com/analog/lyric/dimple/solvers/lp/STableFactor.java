@@ -26,11 +26,11 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.IVariableMapList;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -267,13 +267,14 @@ public class STableFactor extends STableFactorBase
 	private SVariable[] getSVariables()
 	{
 		// Build array of solver variables for input variables.
-		final IVariableMapList variables = getModelObject().getVariables();
-		final SVariable[] svariables = new SVariable[variables.size()];
-		for (int i = svariables.length; --i >= 0;)
+		final Factor factor = getModelObject();
+		final int nVars = factor.getSiblingCount();
+		final SVariable[] svariables = new SVariable[nVars];
+		for (int i = nVars; --i >= 0;)
 		{
 			// Getting this from the solver graph instead of from the model variable allows
 			// the solver to operate even when it is detached from the model.
-			svariables[i] = _solverGraph.getSolverVariable(variables.getByIndex(i));
+			svariables[i] = _solverGraph.getSolverVariable(factor.getSibling(i));
 		}
 		return svariables;
 	}

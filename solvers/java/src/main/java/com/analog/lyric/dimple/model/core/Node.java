@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public abstract class Node implements INode, Cloneable
 		int reverseIndex = _siblingIndices[index] - 1;
 		
 		INode sibling = _siblings.get(index);
-		if (reverseIndex < 0 || sibling.getConnectedNodeFlat(reverseIndex) != this)
+		if (reverseIndex < 0 || sibling.getSibling(reverseIndex) != this)
 		{
 			// Update reverse index if it was not yet initialized or it points to the wrong node,
 			// which can happen if nodes were removed.
@@ -385,11 +385,18 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
+	public Port getPort(int i)
+	{
+		return new Port(this, i);
+	}
+	
+	@Override
 	public ArrayList<Port> getPorts()
 	{
-		ArrayList<Port> ports = new ArrayList<Port>();
-		for (int i = 0; i < _siblings.size(); i++ )
-			ports.add(new Port(this,i));
+		final int size = _siblings.size();
+		ArrayList<Port> ports = new ArrayList<Port>(size);
+		for (int i = 0; i < size; i++ )
+			ports.add(getPort(i));
 		return ports;
 	}
 	

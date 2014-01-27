@@ -328,7 +328,18 @@ The Gibbs solver supports both discrete and real variables.
 
 This solver performs Gibbs sampling on a factor graph.  It supports a variety of output information on the sampled graph, including the best joint sample (lowest energy), marginals of each variable (discrete variables only), and a full set of samples for a user-selected set of variables.  The solver supports both sequential and randomized scan, and it supports tempering with an exponential tempering schedule.
 
-For discrete variables, the Gibbs solver directly samples from the conditional distribution of each variable using a variation of the CDF sampling method.  For real variables, the Gibbs solver uses Slice sampling by default.  Optionally, the Metropolis-Hastings algorithm may be used instead.
+The Gibbs solver supports several user selectable generic samplers (those that don't require specific conjugacy relationships).  The following table lists the available generic samplers, and the variable types supported by each.
+
+\begin{longtable} {l l p{8.0cm}}
+Sampler & Variable Type &  Description \\
+\hline
+\endhead
+CDFSampler & Discrete\footnote{In this table, Discrete support implies any of the discrete variable types, including Discrete and Bit.} & Samples from the full conditional distribution of the variable.  This is the default sampler for discrete variables. \\
+SliceSampler & Real\footnote{In this table, Real support implies any of the continuous variable data types, including Real, Complex, and RealJoint.} & Slice sampler using the doubling procedure.  See Neal, Slice Sampling (2000).  This is the default sampler for real variables. \\
+MHSampler & Discrete \& Real & Metropolis-Hastings sampler.  For discrete variables, the default proposal kernel is uniform over values other than the current value.  For real variables, the default proposal kernel is Normal with standard deviation 1 (the standard deviation is user settable).  Alternate proposal kernels are also available (see below). \\
+SuwaTodoSampler & Discrete & Suwa-Todo sampler.  See Suwa, Todo, Markov Chain Monte Carlo Method without Detailed Balance (2010). \\
+\end{longtable}
+
 
 In cases where the factors of the graph support a conjugate distribution, the solver will automatically determine this and use the appropriate conjugate sampler.  The following table lists the supported conjugate samplers and the corresponding factors that support them.  The corresponding sampler will be used for a given variable if all of the edges connected to that variable support the same sampler\footnote{Additionally, for the conjugate sampler to be used, the domain of the variable must not be bounded to a range smaller than the natural range of the corresponding distribution.}.
 
@@ -489,6 +500,22 @@ Variable initialization (both on the first run and subsequent restarts) is rando
 
 \ifmatlab
 \begin{lstlisting}
+graph.Solver.setDefaultDiscreteSampler(samplerName);
+graph.Solver.getDefaultDiscreteSampler();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+graph.getSolver().setDefaultDiscreteSampler(samplerName);
+graph.getSolver().getDefaultDiscreteSampler();
+\end{lstlisting}
+\fi
+
+Set/get the default sampler for Discrete and Bit.  The default sampler can be set only to one of the generic samplers listed in the table of generic samplers, above.  The CDFSampler is the default sampler for discrete variables unless overridden by this method.  Note that for a particular variable, the default sampler is used only if the user has not overridden the default for that variable using the variable-specific setSampler method.
+
+\ifmatlab
+\begin{lstlisting}
 graph.Solver.setDefaultRealSampler(samplerName);
 graph.Solver.getDefaultRealSampler();
 \end{lstlisting}
@@ -501,14 +528,7 @@ graph.getSolver().getDefaultRealSampler();
 \end{lstlisting}
 \fi
 
-Set/get the default sampler for Real, Complex, and RealJoint variables.  The default sampler can only be set to one of the generic MCMC samplers.  In the current version of Dimple, the available MCMC samplers are:
-
-\begin{itemize}
-\item 'SliceSampler'
-\item 'MHSampler'
-\end{itemize}
-
-The SliceSampler is the default sampler unless overridden by this method.
+Set/get the default sampler for Real, Complex, and RealJoint variables.  The default sampler can be set only to one of the generic samplers listed in the table of generic samplers, above.  The SliceSampler is the default sampler for real variables unless overridden by this method.  Note that for a particular variable, the default sampler is used only if there is no available conjugate sampler and the user has not overridden the default for that variable using the variable-specific setSampler method.
 
 
 \ifmatlab
@@ -735,7 +755,47 @@ variable.getSolver().saveAllSamples();
 
 Prior to solving the graph, this method instructs the solver to save all sample values for this variable.
 
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.setInitialSampleValue(initialSampleValue)
+variable.Solver.getInitialSampleValue()
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setInitialSampleValue(initialSampleValue)
+variable.getSolver().getInitialSampleValue()
+\end{lstlisting}
+\fi
+
+Set/get the initial sample value to be used as the starting value for this variable.  This value is used only on the first run (not subsequent restarts).  Setting this value overrides any randomization of the starting value on the first run.
+
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.setSampler(samplerName);
+variable.Solver.getSampler();
+variable.Solver.getSamplerName();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().setSampler(samplerName);
+variable.getSolver().getSampler();
+variable.getSolver().getSamplerName();
+\end{lstlisting}
+\fi
+
+Set/get the sampler to be used for this variable.  Setting the sampler for a given variable overrides the default sampler for the given variable type, and also overrides any conjugate sampler that might otherwise be used.  Using this method the sampler may be set only to one of the generic samplers appropriate for the given variable type.
+
+The getSampler method returns the sampler object, while the getSamplerName method returns a string indicating the name of the sampler being used for this variable.  Automatic assignment of a conjugate sampler is done at graph initialization time, so in order to determine what sampler will actually be used, these methods must be called either after a call to the graph initialize method, or after running the solver.
+
+
 \subpara{Discrete-Variable-Specific Methods}
+
+The following methods apply to Discrete or Bit variables when using the Gibbs solver.
 
 \ifmatlab
 \begin{lstlisting}
@@ -779,68 +839,140 @@ variable.getSolver().getBestSampleIndex();
 
 Returns the index of the best sample seen so far.
 
-\subpara{Real-Variable-Specific Methods}
-
-The following methods apply to Real, RealJoint, and Complex variables when using the Gibbs solver.
 
 \ifmatlab
 \begin{lstlisting}
-variable.Solver.setSampler(samplerName);
-variable.Solver.getSampler();
-variable.Solver.getSamplerName();
+variable.Solver.setInitialSampleIndex(initialSampleIndex)
+variable.Solver.getInitialSampleIndex()
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().setSampler(samplerName);
-variable.getSolver().getSampler();
-variable.getSolver().getSamplerName();
+variable.getSolver().setInitialSampleIndex(initialSampleIndex)
+variable.getSolver().getInitialSampleIndex()
 \end{lstlisting}
 \fi
 
-Set/get the sampler to be used for this variable.  The sampler can only be set to one of the generic MCMC samplers (not a conjugate sampler, which will be used automatically if the conditions are met).  Setting the sampler for a given variable overrides any conjugate sampler that might otherwise be used.  In the current version of Dimple, the available MCMC samplers are:
+Set/get the initial sample index associated with the starting value for this variable.  The value associated with this index is used only on the first run (not subsequent restarts).  Setting this index overrides any randomization of the starting value on the first run.
 
-\begin{itemize}
-\item 'SliceSampler'
-\item 'MHSampler'
-\end{itemize}
 
-The SliceSampler is used by default, unless the default is overridden for the graph using the setDefaultRealSampler method.
+\subpara{Sampler-Specific Methods}
 
-The MHSampler uses the Metropolis-Hastings algorithm.  For the MHSampler, the Gaussian proposal distribution is used, with a standard deviation that can be set using the following method:
+Some of the generic samplers supported by the Gibbs solver include user configurable options, described in below.
+
+The SliceSampler supports setting/getting the initial slice width and the maximum number of doublings:
 
 \ifmatlab
 \begin{lstlisting}
-variable.Solver.setProposalStandardDeviation(stdDev)
-variable.Solver.getProposalStandardDeviation()
+variable.Solver.getSampler().setInitialSliceWidth(width);
+variable.Solver.getSampler().getInitialSliceWidth();
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().setProposalStandardDeviation(stdDev)
-variable.getSolver().getProposalStandardDeviation()
+variable.getSolver().getSampler().setInitialSliceWidth(width);
+variable.getSolver().getSampler().getInitialSliceWidth();
 \end{lstlisting}
 \fi
 
-Set/get the standard deviation for a Gaussian proposal distribution (the default is 1).
+The above methods set/get the initial slice width to be used by the slice sampler.  The default initial width is 1.  For variables with a natural range that is much smaller or much larger than one, it may be beneficial to modify this value.
 
 \ifmatlab
 \begin{lstlisting}
-variable.Solver.setInitialSampleValue(initialSampleValue)
-variable.Solver.getInitialSampleValue()
+variable.Solver.getSampler().setMaximumDoublings(numDoublings);
+variable.Solver.getSampler().getMaximumDoublings();
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-variable.getSolver().setInitialSampleValue(initialSampleValue)
-variable.getSolver().getInitialSampleValue()
+variable.getSolver().getSampler().setMaximumDoublings(numDoublings);
+variable.getSolver().getSampler().getMaximumDoublings();
 \end{lstlisting}
 \fi
 
-Set/get the initial sample value that is a starting point for the proposal distribution (the default is 0).  This value is used only on the first run (not subsequent restarts) and only if it is not possible to generate a random starting value.
+The above methods set/get the maximum number of doublings used by the slice sampler.  The default value is 10.
+
+The MHSampler supports setting/getting the proposal kernel:
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampler().setProposalKernel(proposalKernelName);
+variable.Solver.getSampler().setProposalKernel(proposalKernelObject);
+variable.Solver.getSampler().getProposalKernel();
+variable.Solver.getSampler().getProposalKernelName();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampler().setProposalKernel(proposalKernelName);
+variable.getSolver().getSampler().setProposalKernel(proposalKernelObject);
+variable.getSolver().getSampler().getProposalKernel();
+variable.getSolver().getSampler().getProposalKernelName();
+\end{lstlisting}
+\fi
+
+The setProposalKernel method allows setting the proposal kernel either by name or by specifying an existing proposal kernel object.  For discrete variables, Dimple currently supports only one proposal kernel: UniformDiscreteProposalKernel, though a user may create new proposal kernel Java classes.  For real variables, Dimple currently supports: NormalProposalKernel and CircularNormalProposalKernel.  The default kernel for real variables is NormalProposalKernel.
+
+The method getProposalKernel returns the proposal kernel object, while getProposalKernelName returns a string indicating the name of the current proposal kernel.
+
+The NormalProposalKernel by default makes proposals from a Normal distribution with standard deviation 1.  The standard deviation is settable using:
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampler().getProposalKernel().setStandardDeviation(std);
+variable.Solver.getSampler().getProposalKernel().getStandardDeviation();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampler().getProposalKernel().setStandardDeviation(std);
+variable.getSolver().getSampler().getProposalKernel().getStandardDeviation();
+\end{lstlisting}
+\fi
+
+The above methods set/get the standard deviation for a NormalProposalKernel.  The default standard deviation is 1.
+
+The CircularNormalProposalKernel makes proposals from a Normal distribution on a circularly wrapping range of the real line.  For example, setting the bounds of the range to $-\pi$ and $\pi$ would create proposals representing angles on a circle.  The CircularNormalProposalKernel has settable parameters that include the standard deviation as well as the lower and upper bounds of the circular range.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampler().getProposalKernel().setStandardDeviation(std);
+variable.Solver.getSampler().getProposalKernel().getStandardDeviation();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampler().getProposalKernel().setStandardDeviation(std);
+variable.getSolver().getSampler().getProposalKernel().getStandardDeviation();
+\end{lstlisting}
+\fi
+
+The above methods set/get the standard deviation for a CircularNormalProposalKernel.  The default standard deviation is 1.
+
+\ifmatlab
+\begin{lstlisting}
+variable.Solver.getSampler().getProposalKernel().setCircularBounds(lower, upper);
+variable.Solver.getSampler().getProposalKernel().getLowerBound();
+variable.Solver.getSampler().getProposalKernel().getUpperBound();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+variable.getSolver().getSampler().getProposalKernel().setCircularBounds(lower, upper);
+variable.getSolver().getSampler().getProposalKernel().getLowerBound();
+variable.getSolver().getSampler().getProposalKernel().getUpperBound();
+\end{lstlisting}
+\fi
+
+The above methods set/get the lower and upper bounds of the circular range of values.  The default lower and upper bounds are $-\pi$ and $\pi$, respectively.
+
 
 \subpara{Factor Methods}
 

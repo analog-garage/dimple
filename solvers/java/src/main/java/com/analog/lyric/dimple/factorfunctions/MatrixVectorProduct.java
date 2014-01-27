@@ -17,9 +17,12 @@
 package com.analog.lyric.dimple.factorfunctions;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Matlab;
@@ -147,6 +150,52 @@ public class MatrixVectorProduct extends FactorFunction
     		indexList[i] = i;
 		return indexList;
 	}
+    
+    @Override
+    public final int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+    {
+    	final FactorFunction function = factor.getFactorFunction();
+    	
+    	final int outLength = _outLength;
+    	final int inLength = _inLength;
+    	
+    	final int nEdges = factor.getSiblingCount() + function.getConstantCount();
+    	final int nInputEdges = nEdges - outLength;
+    	
+    	final int matrixSize = outLength * inLength;
+    	final int vectorSize = inLength;
+    		
+    	final int matrixOffset = outLength;
+    	int vectorOffset = matrixOffset;
+    	
+    	if (nInputEdges == matrixSize + vectorSize ||
+    		nInputEdges == matrixSize + 1 && function.getConstantByIndex(nEdges - 1) instanceof double[])
+    	{
+    		vectorOffset += matrixSize;
+    	}
+    	else if (nInputEdges == 2 ||
+    		nInputEdges == vectorSize + 1 && function.getConstantByIndex(matrixOffset) instanceof double[][])
+    	{
+    		vectorOffset += 1;
+    	}
+    	else
+    	{
+    		throw new DimpleException("Bad number of edges %d for MatrixVectorProduct (inLength=%d, outLength=%d)",
+    			nEdges, inLength, outLength);
+    	}
+    	
+    	if (inputEdge >= vectorOffset)
+    	{
+    		// Same as full output edges
+    		return null;
+    	}
+    	else
+    	{
+			return new int[] { (inputEdge - matrixOffset) % outLength };
+    	}
+    	
+    }
+    
     @Override
 	public final boolean isDeterministicDirected() {return !_smoothingSpecified;}
     @Override
@@ -203,7 +252,7 @@ public class MatrixVectorProduct extends FactorFunction
     }
     
     @Override
-    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public final boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
     {
     	final int inLength = _inLength;
     	final int outLength = _outLength;
@@ -286,6 +335,6 @@ public class MatrixVectorProduct extends FactorFunction
     		incremental = true;
     	}
     	
-    	return incremental || super.updateDeterministic(values, oldValues);
+    	return incremental || super.updateDeterministic(values, oldValues, changedOutputsHolder);
     }
 }

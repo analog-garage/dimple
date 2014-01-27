@@ -52,6 +52,18 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 		return value.getClass() == _enumClass;
 	}
 	
+	@Override
+	public final boolean isNumber()
+	{
+		return false;
+	}
+	
+	@Override
+	public final boolean isNumeric()
+	{
+		return false;
+	}
+	
 	/*------------------------
 	 * DiscreteDomain methods
 	 */

@@ -2,6 +2,8 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.dimple.model.values.Value;
+
 @Immutable
 public class StandardJointDomainIndexer extends JointDomainIndexer
 {
@@ -146,6 +148,18 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		return joint;
 	}
 	
+	@Override
+	public final int undirectedJointIndexFromValues(Value ... values)
+	{
+		final int length = values.length;
+		int joint = values[0].getIndex(); // _products[0] is 1, so we can skip the multiply
+		for (int i = 1, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += values[i].getIndex() * _products[i];
+		}
+		return joint;
+	}
+
 	@Override
 	public final <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements)
 	{

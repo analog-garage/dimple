@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -25,7 +26,7 @@ public class FactorFunctionTester
 	 * <ul>
 	 * <li>{@link FactorFunction#evalDeterministic(Object[])}
 	 * <li>{@link FactorFunction#updateDeterministicLimit(int)}
-	 * <li>{@link FactorFunction#updateDeterministic(Value[], Collection)}
+	 * <li>{@link FactorFunction#updateDeterministic(Value[], Collection, AtomicReference)}
 	 * </ul>
 	 * <p>
 	 * @param function is the function to be tested.
@@ -56,6 +57,8 @@ public class FactorFunctionTester
 			inputIndices[i] = j;
 		}
 		
+		AtomicReference<int[]> changedOutputsHolder = new AtomicReference<int[]>();
+
 		for (int i = 0, end = testCases.length; i < end; ++i)
 		{
 			Object[] prevTestCase = i > 0 ? testCases[i - 1] : null;
@@ -94,7 +97,9 @@ public class FactorFunctionTester
 				{
 					// This should just do a full update
 					Value[] values = Value.createFromObjects(objects, domains);
-					function.updateDeterministic(values, oldValues);
+					changedOutputsHolder.set(null);
+					function.updateDeterministic(values, oldValues, changedOutputsHolder);
+					assertNull(changedOutputsHolder.get());
 					for (int inputIndex : inputIndices)
 					{
 						assertEquals(testCase[inputIndex], values[inputIndex].getObject());
@@ -115,7 +120,7 @@ public class FactorFunctionTester
 						IndexedValue.SingleList badIndexes = IndexedValue.SingleList.create(out, values[out]);
 						try
 						{
-							function.updateDeterministic(values, badIndexes);
+							function.updateDeterministic(values, badIndexes, changedOutputsHolder);
 						}
 						catch (IndexOutOfBoundsException ex)
 						{
@@ -134,7 +139,18 @@ public class FactorFunctionTester
 							values[index].setObject(testCase[index]);
 							oldValues.add(new IndexedValue(index, oldValue));
 						}
-						function.updateDeterministic(values, oldValues);
+						changedOutputsHolder.set(null);
+						function.updateDeterministic(values, oldValues, changedOutputsHolder);
+						int[] changedOutputs = changedOutputsHolder.get();
+						if (changedOutputs != null)
+						{
+							for (int outputIndex : changedOutputs)
+							{
+								assertTrue(outputIndex >= 0);
+								assertTrue(outputIndex < caseSize);
+								assertFalse(inputSet.get(outputIndex));
+							}
+						}
 					}
 					for (int inputIndex : inputIndices)
 					{

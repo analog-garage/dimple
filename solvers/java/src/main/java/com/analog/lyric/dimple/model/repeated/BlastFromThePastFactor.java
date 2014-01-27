@@ -40,7 +40,6 @@ public class BlastFromThePastFactor extends Factor
 	@Override
 	public void createSolverObject(ISolverFactorGraph factorGraph)
 	{
-		_variables = null;
 		_solverFactor = factorGraph.createBlastFromThePast(this);
 		((ISolverBlastFromThePastFactor)_solverFactor).createMessages(
 				_variableConnectedToBlast,

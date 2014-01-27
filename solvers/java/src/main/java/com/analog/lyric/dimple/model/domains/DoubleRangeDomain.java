@@ -20,6 +20,7 @@ public class DoubleRangeDomain extends DoubleDiscreteDomain
 	private final double _interval;
 	private final int _size;
 	private final double _tolerance;
+	private final boolean _hasIntCompatibleValues;
 	
 	/*--------------
 	 * Construction
@@ -59,6 +60,8 @@ public class DoubleRangeDomain extends DoubleDiscreteDomain
 		_size = size;
 		_interval = interval;
 		_tolerance = tolerance;
+		_hasIntCompatibleValues = isIntCompatibleValue(lowerBound) && isIntCompatibleValue(interval) &&
+			isIntCompatibleValue(upperBound);
 	}
 
 	static DoubleRangeDomain create(double lowerBound, double upperBound, double interval, double tolerance)
@@ -101,6 +104,16 @@ public class DoubleRangeDomain extends DoubleDiscreteDomain
 		}
 		
 		return false;
+	}
+	
+	/*----------------
+	 * Domain methods
+	 */
+	
+	@Override
+	public final boolean hasIntCompatibleValues()
+	{
+		return _hasIntCompatibleValues;
 	}
 	
 	/*------------------------

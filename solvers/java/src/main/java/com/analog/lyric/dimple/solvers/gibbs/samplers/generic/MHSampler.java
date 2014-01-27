@@ -14,38 +14,54 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
+import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 
-public class MHSampler implements IRealMCMCSampler
+public class MHSampler implements IMCMCSampler
 {
-	protected IProposalKernel _proposalKernel = new NormalProposalKernel();		// Normal proposal kernel by default
+	protected IProposalKernel _proposalKernel;
 
 	@Override
-	public double nextSample(ISampleScorer sampleScorer)
+	public void initialize(Domain variableDomain)
 	{
-		double currentSampleValue = sampleScorer.getCurrentSampleValue();
-		Proposal proposal = _proposalKernel.next(currentSampleValue);
-		double proposalValue = (Double)proposal.value;
+		if (_proposalKernel == null)
+		{
+			// Set default proposal kernel
+			if (variableDomain instanceof DiscreteDomain)
+				_proposalKernel = new UniformDiscreteProposalKernel();
+			else
+				_proposalKernel = new NormalProposalKernel();
+		}
+	}
+	
+	@Override
+	public void nextSample(Value sampleValue, ISamplerClient samplerClient)
+	{
+		final Proposal proposal = _proposalKernel.next(sampleValue, samplerClient.getDomain());
+		final Value proposalValue = proposal.value;
 
 		// Get the potential for the current sample value
-		double LPrevious = sampleScorer.getCurrentSampleScore();
+		final double LPrevious = samplerClient.getCurrentSampleScore();
 
 		// Get the potential for the proposed sample value
-		double LProposed = sampleScorer.getSampleScore(proposalValue);
+		final double LProposed = samplerClient.getSampleScore(proposalValue);
 
 
 		// Accept or reject
-		double rejectionThreshold = Math.exp(LPrevious - LProposed + proposal.hastingsTerm);
+		final double rejectionThreshold = Math.exp(LPrevious - LProposed + proposal.hastingsTerm);
 		if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
-			return proposalValue;		// Accept
+			samplerClient.setNextSampleValue(proposalValue);		// Accept
 		else
-			return currentSampleValue;	// Reject
+			samplerClient.setNextSampleValue(sampleValue);			// Reject
 	}
 
 
@@ -63,7 +79,10 @@ public class MHSampler implements IRealMCMCSampler
 	}
 	public String getProposalKernelName()
 	{
-		return _proposalKernel.getClass().getSimpleName();
+		if (_proposalKernel != null)
+			return _proposalKernel.getClass().getSimpleName();
+		else
+			return "";
 	}
 
 

@@ -19,7 +19,6 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 public abstract class STableFactorIntArray extends STableFactorBase
 {
@@ -36,15 +35,15 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	@Override
 	public void createMessages()
 	{
-		int numPorts = _factor.getSiblingCount();
+		final Factor factor = _factor;
+		int nVars = factor.getSiblingCount();
 		
-	    _inputMsgs = new int[numPorts][];
-	    _outputMsgs = new int[numPorts][];
+	    _inputMsgs = new int[nVars][];
+	    _outputMsgs = new int[nVars][];
 	    
-	    IVariableMapList variables = _factor.getVariables();
-	    for (int index = 0, end = variables.size(); index < end; index++)
+	    for (int index = 0, end = nVars; index < end; index++)
 	    {
-	    	ISolverVariable is = variables.getByIndex(index).getSolver();
+	    	ISolverVariable is = factor.getSibling(index).getSolver();
 	    	Object [] messages = is.createMessages(this);
 	    	_outputMsgs[index] = (int[])messages[0];
 	    	_inputMsgs[index] = (int[])messages[1];

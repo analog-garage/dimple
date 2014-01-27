@@ -19,12 +19,13 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
  * Parameterized discrete transition factor, which corresponds to p(y | x, A),
  * where A is a matrix of transition probabilities that are
- * parameterized as (not necessarily normalized) probabilities.
+ * parameterized as normalized probabilities.
  * The transition matrix is organized such that each column is represented as
  * a single RealJoint variable that corresponds to
  * the output distribution for each input state. That is, the transition
@@ -58,18 +59,22 @@ public class DiscreteTransition extends FactorFunction
     	int x = FactorFunctionUtilities.toInteger(arguments[1]);			// Second argument is x (input variable)
 
     	double[] Acol = (double[])arguments[x + NUM_DATA_ARGUMENTS];		// Choose column of A indexed by input variable x
-    	double yDimension = Acol.length;
     	
-    	double sum = 0;									// Normalize over column selected by input variable x
-    	for (int row = 0; row < yDimension; row++)
-    	{
-    		double a = Acol[row];
-    		if (a < 0)
-    			return Double.POSITIVE_INFINITY;
-    		sum += a;
-    	}
-    	
-    	return -Math.log(Acol[y]) + Math.log(sum);
+    	return -Math.log(Acol[y]);
 	}
 
+	@Override
+	public double evalEnergy(Value[] values)
+	{
+    	if (values.length < NUM_DATA_ARGUMENTS + 1)
+    		throw new DimpleException("Insufficient number of arguments.");
+		
+    	final int y = values[0].getInt(); // First argument is y (output variable)
+    	final int x = values[1].getInt(); // Second argument is x (input variable)
+
+    	// Choose column of A indexed by input variable x
+    	final double[] Acol = (double[])values[x + NUM_DATA_ARGUMENTS].getObject();
+
+    	return -Math.log(Acol[y]);
+	}
 }

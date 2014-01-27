@@ -93,9 +93,6 @@ function testRealNotRolledUp()
     % Add observation data
     O.FixedValue = o(1:hmmLength-1);
 
-    % Set proposal standard deviation for real variables
-%     X.invokeSolverMethod('setProposalStandardDeviation', proposalStandardDeviation);
-
     if (repeatable)
         fg.Solver.setSeed(1);		% Make the Gibbs solver repeatable
     end

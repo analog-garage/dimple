@@ -9,6 +9,22 @@ public abstract class IntDiscreteDomain extends TypedDiscreteDomain<Integer>
 		super(hashCode);
 	}
 
+	/*----------------
+	 * Domain methods
+	 */
+	
+	@Override
+	public boolean hasIntCompatibleValues()
+	{
+		return true;
+	}
+	
+	@Override
+	public boolean isIntegral()
+	{
+		return true;
+	}
+	
 	/*------------------------
 	 * DiscreteDomain methods
 	 */

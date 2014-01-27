@@ -52,10 +52,6 @@ f = graph1.addFactor(FactorFunction('Normal',0,1), a, b);
 sa = a.Solver;
 sb = b.Solver;
 
-sa.setProposalStandardDeviation(0.1);
-sb.setProposalStandardDeviation(0.1);
-
-
 if (repeatable)
     graph1.Solver.setSeed(1);					% Make this repeatable
 end
@@ -125,9 +121,6 @@ f = graph2.addFactor(FactorFunction('MixedNormal',fMean0, fR0, fMean1, fR1), a, 
 
 sa = a.Solver;
 sb = b.Solver;
-
-sa.setProposalStandardDeviation(1.0);
-
 
 if (repeatable)
     graph2.Solver.setSeed(1);					% Make this repeatable

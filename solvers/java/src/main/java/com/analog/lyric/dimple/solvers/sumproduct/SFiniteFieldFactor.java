@@ -5,7 +5,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.IVariableMapList;
 /*******************************************************************************
 *   Copyright 2013 Analog Devices, Inc.
 *
@@ -37,17 +36,15 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-
-		int numPorts = _factor.getSiblingCount();
+		final Factor factor = _factor;
+		final int nVars = factor.getSiblingCount();
 		
-	    _inputMsgs = new double[numPorts][];
-	    _outputMsgs = new double[numPorts][];
+	    _inputMsgs = new double[nVars][];
+	    _outputMsgs = new double[nVars][];
 	    
-	    IVariableMapList variables = _factor.getVariables();
-	    
-	    for (int index = 0, end = variables.size(); index < end; index++)
+	    for (int index = 0; index < nVars; index++)
 	    {
-	    	ISolverVariable svar =  variables.getByIndex(index).getSolver();
+	    	ISolverVariable svar =  factor.getSibling(index).getSolver();
 	    	Object [] messages = svar.createMessages(this);
 	    	_outputMsgs[index] = (double[])messages[0];
 	    	_inputMsgs[index] = (double[])messages[1];

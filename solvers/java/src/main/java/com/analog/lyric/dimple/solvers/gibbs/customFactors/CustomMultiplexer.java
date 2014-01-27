@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
@@ -44,7 +44,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class CustomMultiplexer extends SRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
-	private IRealSampler[] _conjugateSampler;
+	private ISampler[] _conjugateSampler;
 	private Object[] _outputMsgs;
 	private SDiscreteVariable _selectorVariable;
 	private ISolverRealVariableGibbs _outputVariable;
@@ -145,7 +145,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		super.initialize();
 		
 		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new IRealSampler[_numPorts];
+		_conjugateSampler = new ISampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
 			INode var = _factor.getSibling(port);

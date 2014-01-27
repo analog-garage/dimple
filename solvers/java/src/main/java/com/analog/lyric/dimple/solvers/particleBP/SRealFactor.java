@@ -25,7 +25,6 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 
 public class SRealFactor extends SFactorBase
@@ -236,7 +235,8 @@ public class SRealFactor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		_numPorts = _factor.getSiblingCount();
+		final Factor factor = _factor;
+		_numPorts = factor.getSiblingCount();
     	_inPortMsgs = new double[_numPorts][];
     	_outMsgArray = new double[_numPorts][];
 		_variableDomains = new Object[_numPorts][];
@@ -245,10 +245,9 @@ public class SRealFactor extends SFactorBase
 		_variableDomainLengths = new int[_numPorts];
 		_realVariable = new boolean[_numPorts];
 
-		IVariableMapList variables = _factor.getVariables();
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
-	    	VariableBase var = variables.getByIndex(iPort);
+	    	VariableBase var = factor.getSibling(iPort);
 	    	Object [] messages = var.getSolver().createMessages(this);
 
 	    	// Is the variable connected to the port real or discrete

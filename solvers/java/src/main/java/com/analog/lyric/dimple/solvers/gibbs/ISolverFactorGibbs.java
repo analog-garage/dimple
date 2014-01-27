@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -22,11 +22,20 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
-public interface ISolverFactorGibbs extends ISolverFactor
+public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
+	@Override
 	public double getPotential();
+	
+	/**
+	 * Updates neighboring dependent variable sample values based on the current
+	 * value. Should only be invoked if factor is deterministic and is directed
+	 * from variable with given {@code variableIndex}.
+	 * 
+	 * @param variableIndex
+	 * @param oldValue
+	 */
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
 	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues);
-	public double getConditionalPotential(int portIndex);
 	public void updateEdgeMessage(int portIndex);
 }

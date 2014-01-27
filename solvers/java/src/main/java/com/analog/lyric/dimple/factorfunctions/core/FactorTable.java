@@ -18,6 +18,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
@@ -520,6 +521,12 @@ public class FactorTable extends SparseFactorTableBase
 	{
 		return _denseEnergies[getDomainIndexer().jointIndexFromIndices(indices)];
 	}
+	
+	@Override
+	public final double getEnergyForValuesDense(Value ... values)
+	{
+		return _denseEnergies[getDomainIndexer().jointIndexFromValues(values)];
+	}
 
 	@Override
 	public final double getWeightForIndicesDense(int ... indices)
@@ -527,6 +534,12 @@ public class FactorTable extends SparseFactorTableBase
 		return _denseWeights[getDomainIndexer().jointIndexFromIndices(indices)];
 	}
 	
+	@Override
+	public final double getWeightForValuesDense(Value ... values)
+	{
+		return _denseWeights[getDomainIndexer().jointIndexFromValues(values)];
+	}
+
 	@Override
 	public final double getEnergyForJointIndex(int jointIndex)
 	{
@@ -1261,17 +1274,36 @@ public class FactorTable extends SparseFactorTableBase
 	public final double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
-		int size = indexer.getDomainSize(sliceDimension);
-		
+		final int savedIndex = indices[sliceDimension];
+		indices[sliceDimension] = 0;
+		final int start = indexer.jointIndexFromIndices(indices);
+		indices[sliceDimension] = savedIndex;
+
+		return getEnergySliceImpl(slice, sliceDimension, start);
+	}
+	
+	@Override
+	public final double[] getEnergySlice(double[] slice, int sliceDimension, Value ... values)
+	{
+		JointDomainIndexer indexer = getDomainIndexer();
+		final int savedIndex = values[sliceDimension].getIndex();
+		values[sliceDimension].setIndex(0);
+		final int start = indexer.jointIndexFromValues(values);
+		values[sliceDimension].setIndex(savedIndex);
+
+		return getEnergySliceImpl(slice, sliceDimension, start);
+	}
+
+	private final double[] getEnergySliceImpl(double[] slice, int sliceDimension, int start)
+	{
+		final JointDomainIndexer indexer = getDomainIndexer();
+		final int size = indexer.getDomainSize(sliceDimension);
+		final int stride = indexer.getStride(sliceDimension);
+
 		if (slice == null || slice.length < size)
 		{
 			slice = new double[size];
 		}
-		
-		final int stride = indexer.getStride(sliceDimension);
-		
-		indices[sliceDimension] = 0;
-		final int start = indexer.jointIndexFromIndices(indices);
 		
 		if (hasDenseEnergies())
 		{
@@ -1295,27 +1327,47 @@ public class FactorTable extends SparseFactorTableBase
 	public final double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
-		int size = indexer.getDomainSize(sliceDimension);
-		
+		final int savedIndex = indices[sliceDimension];
+		indices[sliceDimension] = 0;
+		final int start = indexer.jointIndexFromIndices(indices);
+		indices[sliceDimension] = savedIndex;
+
+		return getWeightSliceImpl(slice, sliceDimension, start);
+	}
+	
+	@Override
+	public final double[] getWeightSlice(double[] slice, int sliceDimension, Value ... values)
+	{
+		JointDomainIndexer indexer = getDomainIndexer();
+		final int savedIndex = values[sliceDimension].getIndex();
+		values[sliceDimension].setIndex(0);
+		final int start = indexer.jointIndexFromValues(values);
+		values[sliceDimension].setIndex(savedIndex);
+
+		return getEnergySliceImpl(slice, sliceDimension, start);
+	}
+
+	private final double[] getWeightSliceImpl(double[] slice, int sliceDimension, int start)
+	{
+		final JointDomainIndexer indexer = getDomainIndexer();
+		final int size = indexer.getDomainSize(sliceDimension);
+		final int stride = indexer.getStride(sliceDimension);
+
 		if (slice == null || slice.length < size)
 		{
 			slice = new double[size];
 		}
 		
-		final int stride = indexer.getStride(sliceDimension);
-		
-		indices[sliceDimension] = 0;
-		
 		if (hasDenseWeights())
 		{
-			for (int i = 0, ji = indexer.jointIndexFromIndices(indices); i < size; ++i, ji += stride)
+			for (int i = 0, ji = start; i < size; ++i, ji += stride)
 			{
 				slice[i] = _denseWeights[ji];
 			}
 		}
 		else
 		{
-			for (int i = 0, ji = indexer.jointIndexFromIndices(indices); i < size; ++i, ji += stride)
+			for (int i = 0, ji = start; i < size; ++i, ji += stride)
 			{
 				slice[i] = getWeightForJointIndex(ji);
 			}

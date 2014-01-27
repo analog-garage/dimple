@@ -19,11 +19,12 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
  * Parameterized categorical distribution, which corresponds to p(x | alpha),
- * where alpha is a RealJoint variable vector of (not necessarily normalized) probabilities.
+ * where alpha is a RealJoint variable vector of normalized probabilities.
  * 
  * Representing alpha as described, the conjugate prior for alpha is
  * a Dirichlet distribution.
@@ -47,28 +48,34 @@ public class Categorical extends FactorFunction
     		throw new DimpleException("Insufficient number of arguments.");
 
     	int index = 0;
-    	double[] alpha = (double[])arguments[index++];		// First argument is the parameter vector
-    	int dimension = alpha.length;
+    	final double[] alpha = (double[])arguments[index++];		// First argument is the parameter vector
 
-    	
-    	// Get the normalization value
-    	double normalizationValue = 0;
-    	for (int i = 0; i < dimension; i++)
-    	{
-    		if (alpha[i] < 0)
-    			return Double.POSITIVE_INFINITY;
-    		normalizationValue += alpha[i];
-    	}
-    	
-    	int length = arguments.length;
-    	int N = length - index;			// Number of non-parameter variables
+    	final int length = arguments.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
     		sum += -Math.log(alpha[x]);
-    	}    	
-    	return sum + N * Math.log(normalizationValue);
+    	}
+    	return sum;
+	}
+    
+    @Override
+	public double evalEnergy(Value[] values)
+    {
+    	if (values.length < 2)
+    		throw new DimpleException("Insufficient number of arguments.");
+
+    	int index = 0;
+    	final double[] alpha = (double[])values[index++].getObject();		// First argument is the parameter vector
+    	
+    	final int length = values.length;
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		sum += -Math.log(alpha[values[index].getInt()]);  // Remaining arguments are Categorical variables
+    	}
+    	return sum;
 	}
     
     @Override

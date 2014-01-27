@@ -284,9 +284,21 @@ public abstract class DiscreteDomain extends Domain
 	}
 	
 	@Override
+	public boolean hasIntCompatibleValues()
+	{
+		return isIntCompatibleClass(getElementClass());
+	}
+	
+	@Override
 	public boolean inDomain(Object value)
 	{
 		return (getIndex(value) >= 0);
+	}
+	
+	@Override
+	public boolean isIntegral()
+	{
+		return isIntCompatibleClass(getElementClass());
 	}
 	
 	/**

@@ -14,22 +14,39 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc;
+package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-public class RealMCMCSamplerRegistry
+import java.util.ArrayList;
+
+public class GenericSamplerRegistry
 {
-	// Get a sampler by name; assumes it is located in this package
-	public static IRealMCMCSampler get(String samplerName)
+	private static ArrayList<String> _packages = new ArrayList<String>();
+	static
 	{
-		String fullQualifiedName = RealMCMCSamplerRegistry.class.getPackage().getName() + "." + samplerName;
-		try
+		_packages.add(GenericSamplerRegistry.class.getPackage().getName());
+	}
+	
+	// Get a sampler by name; assumes it is located in this package
+	public static IGenericSampler get(String samplerName)
+	{
+		for (String s : _packages)
 		{
-			IRealMCMCSampler sampler = (IRealMCMCSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
-			return sampler;
+			String fullQualifiedName = s + "." + samplerName;
+			try
+			{
+				IGenericSampler sampler = (IGenericSampler)(Class.forName(fullQualifiedName).getConstructor().newInstance());
+				return sampler;
+			}
+			catch (Exception e)
+			{
+				continue;
+			}
 		}
-		catch (Exception e)
-		{
-			return null;
-		}
+		return null;
+	}
+	
+	public static void addPackage(String packageName)
+	{
+		_packages.add(packageName);
 	}
 }

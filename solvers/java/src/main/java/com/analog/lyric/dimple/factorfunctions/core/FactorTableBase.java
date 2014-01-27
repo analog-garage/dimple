@@ -7,6 +7,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.values.Value;
 
 @NotThreadSafe
 public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
@@ -126,6 +127,18 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
+	public double getEnergyForValues(Value ... values)
+	{
+		return getEnergyForJointIndex(_domains.jointIndexFromValues(values));
+	}
+	
+	@Override
+	public double getWeightForValues(Value ... values)
+	{
+		return getWeightForJointIndex(_domains.jointIndexFromValues(values));
+	}
+	
+	@Override
 	public int sparseIndexFromElements(Object ... elements)
 	{
 		return sparseIndexFromJointIndex(_domains.jointIndexFromElements(elements));
@@ -135,6 +148,12 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	public int sparseIndexFromIndices(int ... indices)
 	{
 		return sparseIndexFromJointIndex(_domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public int sparseIndexFromValues(Value ... values)
+	{
+		return sparseIndexFromJointIndex(_domains.jointIndexFromValues(values));
 	}
 	
 	@Override
@@ -181,6 +200,13 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
+	public void setEnergyForValues(double energy, Value ... values)
+	{
+		_domains.validateValues(values);
+		setEnergyForJointIndex(energy, _domains.jointIndexFromValues(values));
+	}
+	
+	@Override
 	public void setWeightForElements(double weight, Object ... elements)
 	{
 		setWeightForJointIndex(weight, _domains.jointIndexFromElements(elements));
@@ -191,6 +217,13 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	{
 		_domains.validateIndices(indices);
 		setWeightForJointIndex(weight, _domains.jointIndexFromIndices(indices));
+	}
+	
+	@Override
+	public void setWeightForValues(double energy, Value ... values)
+	{
+		_domains.validateValues(values);
+		setWeightForJointIndex(energy, _domains.jointIndexFromValues(values));
 	}
 	
 	@Override

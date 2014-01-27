@@ -1,5 +1,10 @@
 package com.analog.lyric.dimple.model.values;
 
+import com.analog.lyric.dimple.model.domains.ObjectDomain;
+
+/**
+ * Holder for arbitrary values represented as {@link Object}.
+ */
 public class ObjectValue extends Value
 {
 	/*-------
@@ -12,19 +17,14 @@ public class ObjectValue extends Value
 	 * Construction
 	 */
 
-	public ObjectValue(Object value)
+	ObjectValue(Object value)
 	{
 		_object = value;
 	}
 	
-	public ObjectValue()
+	ObjectValue()
 	{
 		this(null);
-	}
-	
-	public ObjectValue(ObjectValue that)
-	{
-		this(that._object);
 	}
 	
 	/*----------------
@@ -34,9 +34,15 @@ public class ObjectValue extends Value
 	@Override
 	public ObjectValue clone()
 	{
-		return new ObjectValue(this);
+		return new ObjectValue(this._object);
 	}
 
+	@Override
+	public ObjectDomain getDomain()
+	{
+		return ObjectDomain.instance();
+	}
+	
 	@Override
 	public Object getObject()
 	{
@@ -48,5 +54,5 @@ public class ObjectValue extends Value
 	{
 		_object = value;
 	}
-
+	
 }

@@ -200,6 +200,24 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 		throw domainError(value);
 	}
 	
+	@Override
+	public final boolean isNumber()
+	{
+		return false;
+	}
+	
+	@Override
+	public final boolean isNumeric()
+	{
+		return Number.class.isAssignableFrom(_elementClass);
+	}
+	
+	@Override
+	public final boolean isScalar()
+	{
+		return false;
+	}
+	
 	/*-----------------------------
 	 * JointDiscreteDomain methods
 	 */

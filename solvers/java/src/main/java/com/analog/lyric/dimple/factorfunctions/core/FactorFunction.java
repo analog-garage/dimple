@@ -27,6 +27,7 @@ import cern.colt.list.DoubleArrayList;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.MatrixProduct;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -92,10 +93,35 @@ public abstract class FactorFunction
 
 	public void evalDeterministic(Object[] arguments)
 	{ }
+	
+	public void evalDeterministic(Factor factor, Value[] values)
+	{
+		final Object[] objects = Value.toObjects(values);
+		evalDeterministic(objects);
+		final int[] directedTo = factor.getDirectedTo();
+		if (directedTo != null)
+		{
+			for (int to : directedTo)
+			{
+				values[to].setObject(objects[to]);
+			}
+		}
+	}
 
 	public double evalEnergy(Object... arguments)
 	{
 		return -Math.log(eval(arguments));
+	}
+	
+	public double evalEnergy(Value[] values)
+	{
+		final int size = values.length;
+		final Object[] objects = new Object[size];
+		for (int i = 0; i < size; ++i)
+		{
+			objects[i] = values[i].getObject();
+		}
+		return evalEnergy(objects);
 	}
 
     public boolean factorTableExists(JointDomainIndexer domains)
@@ -113,6 +139,27 @@ public abstract class FactorFunction
 	{
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
+
+	/**
+	 * Return number of constants built into the factor function instance.
+	 * <p>
+	 * Default implementation returns zero.
+	 */
+	public int getConstantCount()
+	{
+		return 0;
+	}
+	
+	/**
+	 * Returns constant at edge identified by {@code index} or null if specified
+	 * edge is not a constant.
+	 * <p>
+	 * Default implementation returns null.
+	 */
+	public Object getConstantByIndex(int index)
+	{
+		return null;
+	}
 	
 	public Object getDeterministicFunctionValue(Object... arguments)
 	{
@@ -128,6 +175,20 @@ public abstract class FactorFunction
 	protected int[] getDirectedToIndices()
 	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
 
+	/**
+	 * Returns the output indices that can be changed when specified input is changed or else null
+	 * if the same as the full set of output edges.
+	 * <p>
+	 * The default implementation returns null.
+	 * <p>
+	 * This may be overridden for functions that have multiple outputs and inputs for which
+	 * a single input may only affect a subset of the full outputs (e.g. {@link MatrixProduct}).
+	 */
+	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+	{
+		return null;
+	}
+	
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
@@ -230,20 +291,23 @@ public abstract class FactorFunction
      * @param oldValues contains descriptions of the variable number and old value of each input. Only indexes
      * of input variables should be specified. This list should not contain more than
      * {@link #updateDeterministicLimit(int)} elements.
-     * 
+     * @param changedOutputsHolder should be set by the function to contains the list of indexes of output variables
+     * that were changed or else set to contain null if all of the outputs were modified.
      * @return true if update was done incrementally (i.e not all inputs were processed), false if full
      * update was done.
      * 
      * @throws IndexOutOfBoundsException if an index in {@code oldValues} does not refer to an input variable.
      */
-    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+    public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues,
+    	AtomicReference<int[]> changedOutputsHolder)
     {
 		Object[] tmp = Value.toObjects(values);
 		evalDeterministic(tmp);
 		Value.copyFromObjects(tmp, values);
+		changedOutputsHolder.set(null);
 		return false;
     }
-
+    
     // REFACTOR: does anyone use this anymore. Should we remove?
 	public boolean verifyValidForDirectionality(int [] directedTo, int [] directedFrom)
 	{

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.factorfunctions;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.values.Value;
 
 
 /**
@@ -77,6 +78,29 @@ public class Normal extends FactorFunction
     	for (; index < length; index++)
     	{
     		double relInput = FactorFunctionUtilities.toDouble(arguments[index]) - _mean;	// Remaining inputs are Normal variables
+    		sum += relInput*relInput;
+    	}
+    	return sum * _precisionOverTwo - N * _logSqrtPrecisionOver2Pi;
+	}
+    
+    @Override
+	public double evalEnergy(Value[] values)
+	{
+    	int index = 0;
+    	if (!_parametersConstant)
+    	{
+    		_mean = values[index++].getDouble();				// First variable is mean parameter
+    		_precision = values[index++].getDouble();			// Second variable is precision (must be non-negative)
+    		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
+    		_precisionOverTwo = _precision*0.5;
+    		if (_precision < 0) return Double.POSITIVE_INFINITY;
+    	}
+    	int length = values.length;
+    	int N = length - index;			// Number of non-parameter variables
+    	double sum = 0;
+    	for (; index < length; index++)
+    	{
+    		double relInput = values[index].getDouble() - _mean;	// Remaining inputs are Normal variables
     		sum += relInput*relInput;
     	}
     	return sum * _precisionOverTwo - N * _logSqrtPrecisionOver2Pi;

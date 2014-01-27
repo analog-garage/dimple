@@ -16,6 +16,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 	
 	private final Element[] _elements;
 	private final HashMap<Object,Integer> _elementToIndex;
+	private final boolean _hasIntCompatibleValues;
 	
 	/*--------------
 	 * Construction
@@ -34,6 +35,8 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 			elements[i+1-offset] = moreElements[i];
 		}
 		_elements = (Element[])elements;
+		
+		boolean hasIntCompatibleValues = isIntCompatibleClass(eltClass);
 
 		_elementToIndex = new HashMap<Object,Integer>(elements.length);
 		for (int i = 0, end = elements.length; i < end; ++i)
@@ -60,6 +63,22 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 				}
 			}
 		}
+		
+		if (!hasIntCompatibleValues && Number.class.isAssignableFrom(eltClass))
+		{
+			Number[] numbers = (Number[])elements;
+			hasIntCompatibleValues = true;
+			for (Number number : numbers)
+			{
+				if (!isIntCompatibleValue(number))
+				{
+					hasIntCompatibleValues = false;
+					break;
+				}
+			}
+		}
+		
+		_hasIntCompatibleValues = hasIntCompatibleValues;
 	}
 	
 	private static int computeHashCode(Object firstElement, Object[] elements)
@@ -75,9 +94,27 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 	 */
 	
 	@Override
+	public final boolean hasIntCompatibleValues()
+	{
+		return _hasIntCompatibleValues;
+	}
+	
+	@Override
 	public boolean inDomain(Object value)
 	{
 		return _elementToIndex.containsKey(value);
+	}
+	
+	@Override
+	public boolean isNumber()
+	{
+		return isNumeric();
+	}
+	
+	@Override
+	public boolean isNumeric()
+	{
+		return Number.class.isAssignableFrom(getElementClass());
 	}
 	
 	/*------------------------

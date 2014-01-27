@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -20,18 +20,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
+
+import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Internal;
 
 
 public class FactorFunctionWithConstants extends FactorFunction
 {
 	private FactorFunction _factorFunction;
 	private Object [] _constants;
+	private Value[] _constantValues;
 	private int [] _constantIndices;
 	
+	@Internal
 	public FactorFunctionWithConstants(FactorFunction factorFunction,
 			Object [] constants, int [] constantIndices)
 	{
@@ -49,9 +56,21 @@ public class FactorFunctionWithConstants extends FactorFunction
 		
 		if (_constantIndices.length != _constants.length)
 			throw new DimpleException("need to specify the constants and their locations");
+
+		_constantValues = new Value[_constants.length];
+		for (int i = _constantValues.length; --i>=0;)
+		{
+			_constantValues[i] = Value.create(_constants[i]);
+		}
 	}
 	
 
+	@Override
+	public int getConstantCount()
+	{
+		return _constants.length;
+	}
+	
 	public Object [] getConstants()
 	{
 		return _constants;
@@ -64,20 +83,15 @@ public class FactorFunctionWithConstants extends FactorFunction
 	
 	public boolean isConstantIndex(int index)
 	{
-		for (int i = 0; i < _constantIndices.length; i++)
-			if (_constantIndices[i] == index)
-				return true;
-		return false;
+		return Arrays.binarySearch(_constantIndices,  index) >= 0;
 	}
 	
+	@Override
 	public Object getConstantByIndex(int index)
 	{
-		for (int i = 0; i < _constantIndices.length; i++)
-			if (_constantIndices[i] == index)
-				return _constants[i];
-		return null;
+		final int i = Arrays.binarySearch(_constantIndices,  index);
+		return i >= 0 ? _constants[i] : null;
 	}
-
 
 	// Wrap the methods of the actual factor function...
 
@@ -85,6 +99,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 	public double evalEnergy(Object... arguments)
 	{
 		return _factorFunction.evalEnergy(expandInputList(arguments));
+	}
+	
+	@Override
+	public double evalEnergy(Value[] values)
+	{
+		return _factorFunction.evalEnergy(expandValues(values));
 	}
 	
 	@Override
@@ -108,6 +128,17 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return contractIndexList(directedToIndices);	// Remove the constant indices
 	}
 
+	@Override
+	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+	{
+		int[] directedToIndices = _factorFunction.getDirectedToIndicesForInput(factor, expandInputEdge(inputEdge));
+		if (directedToIndices != null)
+		{
+			directedToIndices = contractIndexList(directedToIndices);
+		}
+		return directedToIndices;
+	}
+	
 	@Override
 	public boolean isDeterministicDirected()
 	{
@@ -139,26 +170,11 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues)
+	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
 	{
-		int inputLength = values.length;
 		int constantLength = _constantIndices.length;
-		int expandedLength = inputLength + constantLength;
-		Value[] expandedValues = new Value[expandedLength];
+		Value[] expandedValues = expandValues(values);
 
-		// Expand value array and insert constants in appropriate slots.
-		int ei = 0, vi = 0;
-		for (int ci = 0; ci < constantLength; ++ ci)
-		{
-			final int constantIndex = _constantIndices[ci];
-			final int nonConstantLength = constantIndex - ei;
-			System.arraycopy(values, vi, expandedValues, ei, nonConstantLength);
-			vi += nonConstantLength;
-			ei = constantIndex + 1;
-			expandedValues[constantIndex] = Value.create(_constants[ci]);
-		}
-		System.arraycopy(values, vi, expandedValues, ei, inputLength - vi);
-		
 		// Adjust indexes of old values to account for inserted constants.
 		ArrayList<IndexedValue> expandedOldValues = new ArrayList<IndexedValue>(oldValues);
 		Collections.sort(expandedOldValues);
@@ -177,7 +193,59 @@ public class FactorFunctionWithConstants extends FactorFunction
 			}
 		}
 		
-		return _factorFunction.updateDeterministic(expandedValues,  expandedOldValues);
+		boolean incremental =
+			_factorFunction.updateDeterministic(expandedValues,  expandedOldValues, changedOutputsHolder);
+		
+		int[] changedOutputs = changedOutputsHolder.get();
+		if (changedOutputs != null)
+		{
+			final int lowestConstantIndex = _constantIndices[0];
+			
+			// Need to adjust the output indexes if they come after the constant indexes.
+			for (int oi = changedOutputs.length; --oi >= 0;)
+			{
+				int outputIndex = changedOutputs[oi];
+				if (outputIndex >= lowestConstantIndex)
+				{
+					int offset = Arrays.binarySearch(_constantIndices, outputIndex);
+					if (offset < 0)
+					{
+						offset = -1 - offset;
+					}
+					changedOutputs[oi] -= offset;
+				}
+			}
+		}
+		
+		return incremental;
+	}
+	
+	protected int expandInputEdge(int inputEdge)
+	{
+		final int[] constantIndices = _constantIndices;
+		final int constantLength = constantIndices.length;
+
+		int low = 0, high = constantLength;
+		while (low < high)
+		{
+			final int mid = (high - low) / 2;
+			
+			// The offset at which the constant would be inserted in the
+			// contracted version of list. Equal to the constant offset
+			// in the expanded list minus its position in the list.
+			final int insertPoint = constantIndices[mid] - mid;
+			
+			if (inputEdge >= insertPoint)
+			{
+				low = mid + 1;
+			}
+			else
+			{
+				high = mid;
+			}
+		}
+		
+		return inputEdge + low;
 	}
 	
 	// Expand list of inputs to include the constants
@@ -189,28 +257,42 @@ public class FactorFunctionWithConstants extends FactorFunction
 		int expandedLength = inputLength + constantLength;
 		Object[] expandedInputs = new Object[expandedLength];
 		
-		int curInputIndex = 0;
-		int curConstantIndexIndex = 0;
-		int curConstantIndex = _constantIndices[curConstantIndexIndex];
-		for (int i = 0; i < expandedLength; i++)
+		int ei = 0, vi = 0;
+		for (int ci = 0; ci < constantLength; ++ ci)
 		{
-			if (curConstantIndex == i)
-			{
-				expandedInputs[i] = _constants[curConstantIndexIndex++];		// Insert constant
-				if (curConstantIndexIndex < constantLength)
-					curConstantIndex = _constantIndices[curConstantIndexIndex];	// Next constant
-				else
-					curConstantIndex = -1;										// Done with constants
-			}
-			else
-			{
-				expandedInputs[i] = input[curInputIndex++];						// Insert non-constant input
-			}
+			final int constantIndex = _constantIndices[ci];
+			final int nonConstantLength = constantIndex - ei;
+			System.arraycopy(input, vi, expandedInputs, ei, nonConstantLength);
+			vi += nonConstantLength;
+			ei = constantIndex + 1;
+			expandedInputs[constantIndex] = _constants[ci];
 		}
+		System.arraycopy(input, vi, expandedInputs, ei, inputLength - vi);
 		
 		return expandedInputs;
 	}
 	
+	protected Value[] expandValues(Value[] values)
+	{
+		int inputLength = values.length;
+		int constantLength = _constantIndices.length;
+		int expandedLength = inputLength + constantLength;
+		Value[] expandedValues = new Value[expandedLength];
+		
+		int ei = 0, vi = 0;
+		for (int ci = 0; ci < constantLength; ++ ci)
+		{
+			final int constantIndex = _constantIndices[ci];
+			final int nonConstantLength = constantIndex - ei;
+			System.arraycopy(values, vi, expandedValues, ei, nonConstantLength);
+			vi += nonConstantLength;
+			ei = constantIndex + 1;
+			expandedValues[constantIndex] = _constantValues[ci];
+		}
+		System.arraycopy(values, vi, expandedValues, ei, inputLength - vi);
+		
+		return expandedValues;
+	}
 
 	// Contract a list of indices to exclude the constant indices and renumber the others accordingly
 	protected int[] contractIndexList(int[] indexList)
@@ -218,10 +300,10 @@ public class FactorFunctionWithConstants extends FactorFunction
 		int originalLength = indexList.length;
 		int numConstantIndices = _constantIndices.length;
 		Arrays.sort(indexList);		// Side effect of sorting indexList, but ok in this context
-		
+
 		// For each constant index, scan the list (probably a more efficient way to do this)
 		// Assumes constant index list is already sorted
-		ArrayList<Integer> contractedList = new ArrayList<Integer>();
+		IntArrayList contractedList = new IntArrayList(originalLength);
 		int iConst = 0;
 		int iList = 0;
 		int listIndex;
@@ -250,10 +332,11 @@ public class FactorFunctionWithConstants extends FactorFunction
 		}
 		
 		// Convert contracted list back to an int[]
-		int contractListSize = contractedList.size();
-		int[] result = new int[contractListSize];
-		for (int i = 0; i < contractListSize; i++)
-			result[i] = contractedList.get(i);
+		int[] result = contractedList.elements();
+		if (result.length != contractedList.size())
+		{
+			result = Arrays.copyOf(result, contractedList.size());
+		}
 		return result;
 	}
 	

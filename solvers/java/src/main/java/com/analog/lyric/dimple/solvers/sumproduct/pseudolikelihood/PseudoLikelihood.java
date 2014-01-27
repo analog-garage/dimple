@@ -32,7 +32,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
-import com.analog.lyric.util.misc.IVariableMapList;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm
@@ -73,7 +72,8 @@ public class PseudoLikelihood extends ParameterEstimator
 		//Retrieve all the variables that are connected to factors in the graph.
 		HashSet<VariableBase> varsConnectedToFactors = new HashSet<VariableBase>();
 		for (Factor f : fl)
-			varsConnectedToFactors.addAll(f.getVariables());
+			for (int vi = 0, endvi = f.getSiblingCount(); vi < endvi; ++vi)
+				varsConnectedToFactors.add(f.getSibling(vi));
 		
 		//for each variable, create a variable info
 		//This will be used to store a joint empirical distribution over all of the
@@ -188,7 +188,6 @@ public class PseudoLikelihood extends ParameterEstimator
 				for (int k = 0; k < factors.size(); k++)
 				{
 					Factor f = factors.get(k);
-					IVariableMapList vl = f.getVariables();
 					FactorInfo fi = _factor2factorInfo.get(f);
 	
 					//for each weight
@@ -200,8 +199,9 @@ public class PseudoLikelihood extends ParameterEstimator
 					}
 	
 					//for each variable
-					for (VariableBase v : vl)
+					for (int vindex = 0, size = f.getSiblingCount(); vindex < size; ++vindex)
 					{
+						VariableBase v = f.getSibling(vindex);
 						VariableInfo vi = _var2varInfo.get(v);
 						
 						//for each element of the variables domain
@@ -314,10 +314,10 @@ public class PseudoLikelihood extends ParameterEstimator
 				for (Factor f : v.getFactorsFlat())
 				{
 					//Build the indices associated with these variables
-					IVariableMapList fvs = f.getVariables();
-					int [] indices = new int[fvs.size()];
-					for (int i = 0; i < indices.length; i++)
-						indices[i] = _data[m][_var2index.get(fvs.getByIndex(i))];
+					final int nVars = f.getSiblingCount();
+					int [] indices = new int[nVars];
+					for (int i = 0; i < nVars; i++)
+						indices[i] = _data[m][_var2index.get(f.getSibling(i))];
 					
 					//add the term.
 					total -= f.getFactorTable().getEnergyForIndices(indices);
@@ -347,11 +347,11 @@ public class PseudoLikelihood extends ParameterEstimator
 					for (Factor f : v.getFactorsFlat())
 					{
 						//build up the list of indices associated with that factor.
-						IVariableMapList fvs = f.getVariables();
-						int [] indices = new int[fvs.size()];
+						final int nVars = f.getSiblingCount();
+						int [] indices = new int[nVars];
 						for (int i = 0; i < indices.length; i++)
 						{
-							VariableBase fv = fvs.getByIndex(i);
+							VariableBase fv = f.getSibling(i);
 							if (fv == v)
 								indices[i] = d;
 							else

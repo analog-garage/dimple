@@ -16,15 +16,17 @@
 
 package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 public class NormalProposalKernel implements IProposalKernel
 {
 	protected double _standardDeviation = 1;
 	
-	public Proposal next(Object currentValue)
+	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		return new Proposal((Double)currentValue + _standardDeviation * SolverRandomGenerator.rand.nextGaussian());
+		return new Proposal(currentValue.getDouble() + _standardDeviation * SolverRandomGenerator.rand.nextGaussian());
 	}
 	
 	public void setParameters(Object... parameters)
@@ -37,5 +39,15 @@ public class NormalProposalKernel implements IProposalKernel
 		Object[] parameters = new Object[1];
 		parameters[0] = _standardDeviation;
 		return parameters;
+	}
+	
+	public void setStandardDeviation(double standardDeviation)
+	{
+		_standardDeviation = standardDeviation;
+	}
+	
+	public double getStandardDeviation()
+	{
+		return _standardDeviation;
 	}
 }

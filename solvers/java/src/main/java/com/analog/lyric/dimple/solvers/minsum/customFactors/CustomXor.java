@@ -172,17 +172,18 @@ public class CustomXor extends SFactorBase
 	@Override
 	public void createMessages()
 	{
-		int numPorts = _factor.getSiblingCount();
+		final Factor factor = _factor;
+		int nVars = factor.getSiblingCount();
 		
-	    _inPortMsgs = new double[numPorts][];
-	    _outPortMsgs = new double[numPorts][];
+	    _inPortMsgs = new double[nVars][];
+	    _outPortMsgs = new double[nVars][];
 	    
 	    if (_dampingInUse)
-	    	_savedOutMsgsLLR = new double[numPorts];
+	    	_savedOutMsgsLLR = new double[nVars];
 	    
-		for (int i = 0; i < numPorts; i++)
+		for (int i = 0; i < nVars; i++)
 		{
-			ISolverVariable sv = _factor.getVariables().getByIndex(i).getSolver();
+			ISolverVariable sv = factor.getSibling(i).getSolver();
 			Object [] messages = sv.createMessages(this);
 			_outPortMsgs[i] = (double[])messages[0];
 			_inPortMsgs[i] = (double[])messages[1];

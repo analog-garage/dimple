@@ -8,6 +8,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.values.Value;
 
 /**
  * Directed implementation of {@link JointDomainIndexer}.
@@ -260,6 +261,18 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	}
 	
 	@Override
+	public int inputIndexFromValues(Value ... values)
+	{
+		final int length = values.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += values[i].getIndex() * _inputProducts[i];
+		}
+		return joint;
+	}
+	
+	@Override
 	public int inputIndexFromJointIndex(int jointIndex)
 	{
 		return jointIndex / _outputCardinality;
@@ -298,6 +311,18 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
 			joint += indices[i] * _directedProducts[i];
+		}
+		return joint;
+	}
+	
+	@Override
+	public int jointIndexFromValues(Value ... values)
+	{
+		final int length = values.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += values[i].getIndex() * _directedProducts[i];
 		}
 		return joint;
 	}
@@ -361,6 +386,18 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
 			joint += indices[i] * _outputProducts[i];
+		}
+		return joint;
+	}
+	
+	@Override
+	public int outputIndexFromValues(Value ... values)
+	{
+		final int length = values.length;
+		int joint = 0;
+		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
+		{
+			joint += values[i].getIndex() * _outputProducts[i];
 		}
 		return joint;
 	}

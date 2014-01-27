@@ -21,15 +21,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.RealJointValue;
+import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -37,37 +40,43 @@ import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.IRealSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealJointConjugateSamplerRegistry;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.IRealMCMCSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.ISampleScorer;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.MHSampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.mcmc.RealMCMCSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.GenericSamplerRegistry;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
  *
  */
 
-public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, ISampleScorer
+public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
+	/*-------
+	 * State
+	 */
+	
 	private RealJoint _varReal;
 	private RealJointValue _outputMsg;
 	private Object[] _inputMsg = null;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
+	private boolean _initialSampleValueSet = false;
 	private FactorFunction[] _inputArray;
 	private FactorFunction _inputJoint;
 	private RealJointDomain _domain;
 	private String _defaultSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
-	private IRealMCMCSampler _sampler = null;
+	private IMCMCSampler _sampler = null;
 	private IRealJointConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
 	private ArrayList<double[]> _sampleArray;
@@ -78,7 +87,16 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private double[] _guessValue;
 	private boolean _guessWasSet = false;
 	private int _tempIndex = 0;
+	private boolean _visited = false;
+	
+	/**
+	 * List of neighbors for sample scoring. Instantiated during initialization.
+	 */
+	private GibbsNeighbors _neighbors = null;
 
+	/*--------------
+	 * Construction
+	 */
 
 	public SRealJointVariable(VariableBase var)
 	{
@@ -102,6 +120,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	/*---------------------
+	 * ISolverNode methods
+	 */
 	
 	@Override
 	public void updateEdge(int outPortNum)
@@ -110,7 +131,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 
 	@Override
-	public void update()
+	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
 		if (getModelObject().isDeterministicOutput()) return;
@@ -125,12 +146,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
+			RealValue nextSample = RealValue.create();
 			for (int i = 0; i < _numRealVars; i++)
 			{
 				_tempIndex = i;		// Save this to be used by the call-back from sampler
-				double nextSampleValue = _sampler.nextSample(this);
-				if (nextSampleValue != _sampleValue[i])	// Would be exactly equal if not changed since last value tested
-					setCurrentSample(i, nextSampleValue);
+				nextSample.setDouble(_sampleValue[i]);
+				_sampler.nextSample(nextSample, this);
 			}
 		}
 		else
@@ -151,10 +172,18 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
 	
-	// ISampleScorer methods...
-	// The following methods are for the ISampleScorer interface, meant to be called by a sampler
+	// IRealSampleScorer methods...
+	// The following methods are for the IRealSampleScorer interface, meant to be called by a sampler
 	// These are not intended for other purposes
+	@Override
+	public final double getSampleScore(Value sampleValue)
+	{
+		return getSampleScore(sampleValue.getDouble());
+	}
 	@Override
 	public final double getSampleScore(double sampleValue)
 	{
@@ -164,51 +193,87 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 		return getCurrentSampleScore();
 	}
+
 	@Override
 	public final double getCurrentSampleScore()
 	{
+		double sampleScore = Double.POSITIVE_INFINITY;
+		
+		computeScore:
+		{
 		if (!_domain.inDomain(_sampleValue))
-			return Double.POSITIVE_INFINITY;		// Outside the domain
+				break computeScore; // outside the domain
 		
 		double potential = 0;
 
 		// Sum up the potentials from the input and all connected factors
 		if (_inputJoint != null)
+			{
 			potential += _inputJoint.evalEnergy(_sampleValue);
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+				}
+			}
 		else if (_inputArray != null)
 		{
 			for (int i = 0; i < _numRealVars; i++)
+				{
 				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
+					if (!Doubles.isFinite(potential))
+					{
+						break computeScore;
 		}
-		int numPorts = _var.getSiblingCount();
-		for (int portIndex = 0; portIndex < numPorts; portIndex++)
-		{
-			INode factorNode = _var.getSibling(portIndex);
-			ISolverFactorGibbs factor = (ISolverFactorGibbs)(factorNode.getSolver());
-			int factorPortNumber = factorNode.getPortNum(_var);
-			potential += factor.getConditionalPotential(factorPortNumber);
-		}
-		
-		if (Double.isNaN(potential))
-			return Double.POSITIVE_INFINITY;
+				}
+			}
 
-		return potential * _beta;	// Incorporate current temperature
+			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
+			while (scoreNodes.hasNext())
+		{
+				potential += scoreNodes.next().getPotential();
+				if (!Doubles.isFinite(potential))
+				{
+					break computeScore;
+		}
+			}
+			scoreNodes.release();
+
+			sampleScore = potential * _beta;	// Incorporate current temperature
+	}
+		
+		return sampleScore;
 	}
 	@Override
-	public final double getCurrentSampleValue()
+	public final void setNextSampleValue(Value sampleValue)
 	{
-		return _sampleValue[_tempIndex];
+		setNextSampleValue(sampleValue.getDouble());
+	}
+	@Override
+	public final void setNextSampleValue(double sampleValue)
+	{
+		if (sampleValue != _sampleValue[_tempIndex])
+			setCurrentSample(_tempIndex, sampleValue);
+	}
+	@Override
+	public final Domain getDomain()
+	{
+		return _var.getDomain();
 	}
 
-	
+	// TODO move to local methods?
 	// For conjugate samplers
 	public final IRealJointConjugateSampler getConjugateSampler()
 	{
 		return _conjugateSampler;
 	}
 
+	/*----------------------------------
+	 * ISolverRealVariableGibbs methods
+	 * TODO: move below ISolverVariableGibbs methods
+	 */
+	
 	@Override
-	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, IRealSampler conjugateSampler)
+	public final void getAggregateMessages(IParameterizedMessage outputMessage, int outPortNum, ISampler conjugateSampler)
 	{
 		int numPorts = _var.getSiblingCount();
 		Port[] ports = new Port[numPorts - 1];
@@ -226,9 +291,30 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		((IRealJointConjugateSampler)conjugateSampler).aggregateParameters(outputMessage, ports, _inputJoint);
 	}
 
+	/*--------------------------
+	 * ISolverNodeGibbs methods
+	 */
+	
+	@Override
+	public boolean setVisited(boolean visited)
+	{
+		boolean changed = _visited ^ visited;
+		_visited = visited;
+		return changed;
+	}
+
+	/*------------------------------
+	 * ISolverVariableGibbs methods
+	 */
+	
+	@Override
+	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
+	{
+		return GibbsNeighbors.iteratorFor(_neighbors, this);
+	}
 
 	@Override
-	public void randomRestart()
+	public void randomRestart(int restartCount)
 	{
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
@@ -237,6 +323,11 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		if (_var.hasFixedValue())
 		{
 			setCurrentSample(_varReal.getFixedValue());
+			return;
+		}
+		if (_initialSampleValueSet && restartCount == 0)
+		{
+			setCurrentSample(_initialSampleValue);
 			return;
 		}
 
@@ -334,12 +425,14 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
@@ -375,6 +468,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 
 	
+	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -403,6 +497,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return 0;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
@@ -414,6 +509,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return _sampleValue;
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public void setGuess(Object guess)
 	{
@@ -447,20 +543,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_bestSampleValue = _sampleValue;
 	}
 	
-	@Override
-	public double getConditionalPotential(int portIndex)
-	{
-		double result = getPotential();		// Start with the local potential
-		
-		// Propagate the request through the other neighboring factors and sum up the results
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)	// Plus each input message value
-			if (port != portIndex)
-				result += ((ISolverFactorGibbs)_var.getSibling(port).getSolver()).getConditionalPotential(_var.getSiblingPortIndex(port));
-
-		return result;
-	}
-
+	// TODO move to ISolverNodeGibbs
 	@Override
 	public final double getPotential()
 	{
@@ -478,6 +561,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		else
 			return 0;
 	}
+	
+	@Override
+	public final boolean hasPotential()
+	{
+		return !_var.hasFixedValue() && (_inputJoint != null || _inputArray != null);
+	}
 
 	@Override
 	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
@@ -488,6 +577,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		setCurrentSample(value.getObject());
 	}
 	
+    /*---------------
+     * Local methods
+     */
+    
 	public final void setCurrentSample(double[] value)
 	{
 		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
@@ -529,21 +622,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		}
 	}
 	
+	// TODO move to private
 	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
-		int numPorts = _var.getSiblingCount();
-		for (int port = 0; port < numPorts; port++)	// Plus each input message value
+		if (_neighbors != null)
 		{
-			Factor f = (Factor)_var.getSibling(port);
-			if (f.getFactorFunction().isDeterministicDirected())
-			{
-				int reverseEdge = _var.getSiblingPortIndex(port);
-				if (!f.isDirectedTo(reverseEdge))
-				{
-					ISolverFactorGibbs sf = (ISolverFactorGibbs)f.getSolver();
-					sf.updateNeighborVariableValue(reverseEdge, oldValue);
-				}
-			}
+			_neighbors.update(oldValue);
 		}
 	}
 
@@ -591,11 +675,13 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@Deprecated
 	public final void setProposalStandardDeviation(double stdDev)
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
+	@Deprecated
 	public final double getProposalStandardDeviation()
 	{
 		if (_sampler instanceof MHSampler)
@@ -604,6 +690,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return 0;
 	}
 	// Set the proposal kernel parameters more generally
+	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
 	{
 		if (_sampler instanceof MHSampler)
@@ -613,16 +700,19 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@Deprecated
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernel);
 	}
+	@Deprecated
 	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
 	{
 		if (_sampler instanceof MHSampler)
 			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
 	}
+	@Deprecated
 	public final IProposalKernel getProposalKernel()
 	{
 		if (_sampler instanceof MHSampler)
@@ -640,45 +730,61 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	{
 		return _defaultSamplerName;
 	}
-	public final void setSampler(IRealMCMCSampler sampler)
+	public final void setSampler(ISampler sampler)
 	{
-		_sampler = sampler;
+		_sampler = (IMCMCSampler)sampler;
 		_samplerSpecificallySpecified = true;
 	}
 	public final void setSampler(String samplerName)
 	{
-		_sampler = RealMCMCSamplerRegistry.get(samplerName);
+		_sampler = (IMCMCSampler)GenericSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
-	public final IRealSampler getSampler()
+	public final ISampler getSampler()
 	{
 		if (_samplerSpecificallySpecified)
+		{
+			_sampler.initialize(_var.getDomain());
 			return _sampler;
+		}
 		else if (_var.hasParentGraph())
 		{
 			
 			initialize();	// To determine the appropriate sampler
 			if (_conjugateSampler == null)
+			{
+				_sampler.initialize(_var.getDomain());
 				return _sampler;
+			}
 			else
+			{
 				return _conjugateSampler;
+			}
 		}
 		else
 			return null;
 	}
 	public final String getSamplerName()
 	{
-		IRealSampler sampler = getSampler();
+		ISampler sampler = getSampler();
 		if (sampler != null)
 			return sampler.getClass().getSimpleName();
 		else
 			return "";
 	}
 
-	public final void setInitialSampleValue(double[] initialSampleValue) {_initialSampleValue = initialSampleValue;}
-	public final double[] getInitialSampleValue() {return _initialSampleValue;}
+	public final void setInitialSampleValue(double[] initialSampleValue)
+	{
+		_initialSampleValue = initialSampleValue;
+		_initialSampleValueSet = true;
+	}
 
+	public final double[] getInitialSampleValue()
+	{
+		return _initialSampleValue;
+	}
 
+	// TODO move to ISolverVariableGibbs
 	@Override
 	public final void setBeta(double beta)	// beta = 1/temperature
 	{
@@ -689,12 +795,10 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 
 	public RealJointValue createDefaultMessage()
 	{
-		if (_var.hasFixedValue())
-			return new RealJointValue(_varReal.getFixedValue());
-		else
-			return new RealJointValue(_initialSampleValue);
+		return Value.create(_domain, _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue);
 	}
 
+	// TODO Move to ISolverVariable
 	@Override
 	public Object resetInputMessage(Object message)
 	{
@@ -702,23 +806,27 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		return message;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void resetEdgeMessages(int portNum)
 	{
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
@@ -727,18 +835,23 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_inputMsg[portIndex] = obj;
 	}
 
+	// TODO move to ISolverNode
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		
 	}
 	
-
+	// TODO move to ISolverNode
 	@Override
 	public void initialize()
 	{
 		super.initialize();
 
+		// We actually only need to change this if the model has changed in the vicinity of this variable,
+		// but that may not be worth the trouble to figure out.
+		_neighbors = GibbsNeighbors.create(this);
+		
 		if (!getModelObject().isDeterministicOutput())
 		{
 			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
@@ -752,21 +865,25 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)
-			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)s
+			_conjugateSampler = null;		// A sampler was specified and already created, use that one (don't use a conjugate sampler)
 		else
 		{
 			_conjugateSampler = findConjugateSampler();		// See if there's an available conjugate sampler, and if so, use it
 			if (_conjugateSampler == null)
-				_sampler = RealMCMCSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
+				_sampler = (IMCMCSampler)GenericSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
 		}
+		if (_sampler != null)
+			_sampler.initialize(_var.getDomain());
 	}
 
+	// TODO move to ISolverVariable
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		return new Object[] {null,_outputMsg};
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
 	public void createNonEdgeSpecificState()
 	{
@@ -777,6 +894,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			saveAllSamples();
 	}
 	
+	// TODO move to ISolverVariable
 	@Override
     public void moveNonEdgeSpecificState(ISolverNode other)
     {
@@ -784,6 +902,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_outputMsg = ovar._outputMsg;
 		_sampleValue = ovar._sampleValue;
 		_initialSampleValue = ovar._initialSampleValue;
+		_initialSampleValueSet = ovar._initialSampleValueSet;
 		_sampleArray = ovar._sampleArray;
 		_bestSampleValue = ovar._bestSampleValue;
 		_beta = ovar._beta;

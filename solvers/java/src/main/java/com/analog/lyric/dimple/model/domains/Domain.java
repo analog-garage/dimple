@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.google.common.math.DoubleMath;
 
 /**
  * Base class for variable domains, which specify a set of valid values for
@@ -84,10 +85,22 @@ public abstract class Domain implements Serializable
 	public ComplexDomain asComplex() { return null; }
 	
 	/**
+	 * True if domain only contains values that can be represented using an {@code int}.
+	 */
+	public boolean hasIntCompatibleValues() { return false; }
+	
+	/**
 	 * True if domain is an instance of {@link Discrete}.
 	 * @see #asDiscrete()
 	 */
 	public boolean isDiscrete() { return false; }
+	
+	/**
+	 * True if values of domain are (32-bit) integers.
+	 * <p>
+	 * @since 0.05
+	 */
+	public boolean isIntegral() { return false; }
 	
 	/**
 	 * True if domain is an instance of {@link RealDomain}.
@@ -106,6 +119,26 @@ public abstract class Domain implements Serializable
 	 * @see #asComplex()
 	 */
 	public boolean isComplex() { return false; }
+	
+	/**
+	 * True if all values of domain are scalar numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumber() { return true; }
+	
+	/**
+	 * True if all values of domain are (not necessarily scalar) numbers.
+	 * @since 0.05
+	 */
+	public boolean isNumeric() { return true; }
+	
+	/**
+	 * True if all elements of domain are scalar values.
+	 * <p>
+	 * This is false for {@link RealJointDomain} and {@link JointDiscreteDomain}.
+	 * @since 0.05
+	 */
+	public boolean isScalar() { return true; }
 	
 	/**
 	 * @return true if {@code value} is a valid member of the domain. Implementors
@@ -131,5 +164,50 @@ public abstract class Domain implements Serializable
 	public DimpleException domainError(Object value)
 	{
 		return new DimpleException("'%s' is not a member of domain '%s'", value, this);
+	}
+	
+	/*----------------
+	 * Static methods
+	 */
+	
+	/**
+	 * True if {@code type} is one of: {@link Integer}, {@link Short}, {@link Byte}.
+	 */
+	public static boolean isIntCompatibleClass(Class<?> type)
+	{
+		return Number.class.isAssignableFrom(type) &&
+			(type == Integer.class ||
+			type == Short.class ||
+			type == Byte.class);
+	}
+	
+	public static boolean isIntCompatibleValue(Object value)
+	{
+		return value instanceof Number && isIntCompatibleValue((Number)value);
+	}
+	
+	public static boolean isIntCompatibleValue(Number value)
+	{
+		if (isIntCompatibleClass(value.getClass()))
+		{
+			return true;
+		}
+		
+		if (value instanceof Long)
+		{
+			return isIntCompatibleValue(((Long)value).longValue());
+		}
+		
+		return isIntCompatibleValue(value.doubleValue());
+	}
+	
+	public static boolean isIntCompatibleValue(double value)
+	{
+		return DoubleMath.isMathematicalInteger(value) && isIntCompatibleValue((long)value);
+	}
+	
+	public static boolean isIntCompatibleValue(long value)
+	{
+		return Math.abs(value) <= Integer.MAX_VALUE;
 	}
 }
