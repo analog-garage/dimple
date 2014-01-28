@@ -18,6 +18,7 @@ public class GibbsTestParameterizedNormal
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void test1() 
 	{
