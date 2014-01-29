@@ -80,4 +80,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	 */
 	@Matlab
 	public String getMatlabSolveWrapper();
+	
+	public void useMultithreading(boolean use);
+	public boolean useMultithreading();
 }

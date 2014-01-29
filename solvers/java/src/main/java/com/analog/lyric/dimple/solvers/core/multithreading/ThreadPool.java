@@ -17,7 +17,8 @@
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -61,7 +62,11 @@ public class ThreadPool
 	{
 		cleanupService();
 		_numThreads = numThreads;
-		_service = Executors.newFixedThreadPool(numThreads);
+		ThreadPoolExecutor pool = new ThreadPoolExecutor(numThreads,
+				numThreads, 1L, TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>());
+		pool.allowCoreThreadTimeOut(true);
+		_service = pool;
 	}
 	
 	public static int getNumThreads()

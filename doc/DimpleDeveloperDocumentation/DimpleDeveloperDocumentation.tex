@@ -141,7 +141,7 @@ Because Dimple currently only supports discrete m-ary variables (where m is fini
 The following equation can be used to describe how to compute one element of the Msg array for a given edge. 
 
 \[
- p(X=x) = \sum_x \sum_y \delta (X=x,Y=y,Z=z)p(y)p(z) 
+ p(X=x) = \sum_y \sum_z \delta (X=x,Y=y,Z=z)p(y)p(z) 
  \]
 
 In this case, we have a function node connected to three variables: X, Y, and Z.  We are computing the probability that X=x.  We marginalize over all possible Ys and Zs.  The delta function will return 1 (or any other positive real value) for all valid combinations of X,Y, and Z.

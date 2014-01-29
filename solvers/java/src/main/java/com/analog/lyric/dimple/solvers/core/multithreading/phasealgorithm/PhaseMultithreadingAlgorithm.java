@@ -72,7 +72,7 @@ public class PhaseMultithreadingAlgorithm extends MultithreadingAlgorithm
 			int numThreads, boolean stealing)
 	{
 		
-		//Provide an array of concurrent liked queues so that each thread can use work
+		//Provide an array of concurrent linked queues so that each thread can use work
 		//stealing if they run out of work.
 		ConcurrentLinkedQueue<IScheduleEntry> [] deques = new ConcurrentLinkedQueue[numThreads];
 		

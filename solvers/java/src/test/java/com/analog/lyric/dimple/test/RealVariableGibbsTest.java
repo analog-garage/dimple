@@ -35,6 +35,7 @@ public class RealVariableGibbsTest
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void basicTest1() 
 	{
@@ -108,6 +109,7 @@ public class RealVariableGibbsTest
 	}
 	
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void basicTest2() 
 	{
