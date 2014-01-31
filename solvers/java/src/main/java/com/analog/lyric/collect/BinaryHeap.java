@@ -173,6 +173,18 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 		
 		return true;
 	}
+	
+	@Override
+	public boolean deferOrderingForBulkAdd(int n)
+	{
+		return _deferOrdering || n >= _heap.size() && deferOrdering(true);
+	}
+	
+	@Override
+	public boolean deferOrderingForBulkChange(int n)
+	{
+		return _deferOrdering || n >= _heap.size() / 2 && deferOrdering(true);
+	}
 
 	@Override
 	public void ensureCapacity(int capacity)

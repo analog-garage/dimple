@@ -104,8 +104,32 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * <p>
 	 * @return true if value of attribute was set to specified value. Will always return false if {@code defer}
 	 * is true and implementation does not support deferral.
+	 * @see #deferOrderingForBulkAdd
+	 * @see #deferOrderingForBulkChange
 	 */
 	public boolean deferOrdering(boolean defer);
+	
+	/**
+	 * Defer ordering given {@code n} entries to be added to the queue.
+	 * <p>
+	 * Invokes {@link #deferOrdering(boolean)} if {@code n} is large enough to
+	 * expect an amortized performance benefit.
+	 * <p>
+	 * @param n is the number of entries the caller intends to add to the queue.
+	 * @return true if {@link #deferOrdering()} was enabled.
+	 */
+	public boolean deferOrderingForBulkAdd(int n);
+	
+	/**
+	 * Defer ordering given {@code n} entries to change their priorities.
+	 * <p>
+	 * Invokes {@link #deferOrdering(boolean)} if {@code n} is large enough to
+	 * expect an amortized performance benefit.
+	 * <p>
+	 * @param n is the number of entries the caller intends to invoke {@link #changePriority(IEntry, double)} on.
+	 * @return true if {@link #deferOrdering()} was enabled.
+	 */
+	public boolean deferOrderingForBulkChange(int n);
 	
 	/**
 	 * Return an entry containing given element, not necessarily the one
