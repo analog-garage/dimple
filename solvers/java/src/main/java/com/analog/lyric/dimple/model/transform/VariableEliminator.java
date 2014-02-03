@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.google.common.collect.Iterators;
 
 /**
  * Computes a variable elimination order for a factor graph using a greedy
@@ -144,6 +145,12 @@ public class VariableEliminator
 	private final Random _rand;
 	
 	/**
+	 * If true, then variables with fixed values will be eliminated first and will be
+	 * considered to be disjoint from the rest of the graph.
+	 */
+	private final boolean _useConditioning;
+	
+	/**
 	 * The number of variables in the model. Used to preallocate capacity for data structures.
 	 */
 	private int _nVariables;
@@ -155,33 +162,134 @@ public class VariableEliminator
 	/**
 	 * Initialize for given model.
 	 * <p>
-	 * Invokes {@link #VariableEliminator(FactorGraph, Random)} with new {@link Random} instance.
+	 * Invokes {@link #VariableEliminator(FactorGraph, boolean, Random)} with new {@link Random} instance.
 	 */
-	public VariableEliminator(FactorGraph model)
+	public VariableEliminator(FactorGraph model, boolean useConditioning)
 	{
-		this(model, new Random());
+		this(model, useConditioning, new Random());
 	}
 	
 	/**
 	 * Initialize for given model and using given random number
 	 * generator.
-	 * 
+	 * @param useConditioning sets value of {@link #usesConditioning()}
 	 * @param rand is the random number generator used to randomly
 	 * break ties for variables with the same cost. If null, then
 	 * ties will be broken deterministically by favoring the variable
 	 * with the lower id ({@link VariableBase#getId()}), which is useful
 	 * for testing.
 	 */
-	public VariableEliminator(FactorGraph model, Random rand)
+	public VariableEliminator(FactorGraph model, boolean useConditioning, Random rand)
 	{
 		_model = model;
 		_rand = rand;
+		_useConditioning = useConditioning;
 		_nVariables = model.getVariableCount();
 	}
 	
 	/*---------
 	 * Methods
 	 */
+
+	/**
+	 * Computes a variable elimination ordering using given parameters.
+	 * <p>
+	 * Helper function that builds an eliminator object for given {@code model} and
+	 * {@code useConditioning} attribute, and {@code cost} function.
+	 * <p>
+	 * @see #VariableEliminator(FactorGraph, boolean)
+	 * @see #orderIterator(VariableCost)
+	 */
+	public static List<VariableBase> generate(FactorGraph model, boolean useConditioning, VariableCost cost)
+	{
+		VariableEliminator eliminator = new VariableEliminator(model, useConditioning);
+		OrderIterator iterator = eliminator.orderIterator(cost);
+		List<VariableBase> list = new ArrayList<VariableBase>(iterator.size());
+		Iterators.addAll(list, iterator);
+		return iterator.getStats().addedEdges() == 0 ? null : list;
+	}
+	
+	/**
+	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
+	 * and choosing the best fit according to the specified threshold statistics.
+	 * <p>
+	 * This function builds an eliminator for specified {@code mode} and {@code useConditioning} attribute.
+	 * It then iteratively up to {@code nAttempts} times picks a cost function at random from {@code costFunctions}
+	 * and uses it to build an {@link OrderIterator} from which it generates an ordering. After each iteration,
+	 * the global statistics (from {@link OrderIterator#getStats()}) are compared against the best statistics
+	 * so far using {@link Stats#compareTo(Stats, Stats)} to determine whether to keep the ordering. If the
+	 * stats at any point satisfy the specified threshold values (as determined by {@link Stats#meetsThreshold(Stats)}
+	 * then the function will return immediately.
+	 * <p>
+	 * For example:
+	 * <pre>{@code
+	 *     List<VariableBase> order = generateStochastically(fg, true, 10,
+	 *         new Stats().maxCliqueCardinality(42),
+	 *         VariableCost.WEIGHTED_MIN_NEIGHBORS, VariableCost.WEIGHTED_MIN_FILL)
+	 * }</pre>
+	 * <p>
+	 * @param model is the graph for which the eliminator order is being computed.
+	 * @param useConditioning specifies whether to use conditioning (see {@link #usesConditioning()}
+	 * @param nAttempts is the number of potential iteration orders to compute
+	 * @param threshold specifies which statistics should be used to evaluate the goodness of a given
+	 * ordering (see {@link Stats#compareTo(Stats, Stats)}) and also threshold values for each
+	 * statistic that will terminate the function before all {@code nAttempts} have been tried
+	 * (see {@link Stats#meetsThreshold(Stats)}). Only statistics with non-negative threshold
+	 * values will be considered.
+	 * @param costFunctions is a list of one or more cost functions to be used
+	 *
+	 * @return the variable elimination order that best satisfied the {@code threshold} statistics.
+	 */
+	public static List<VariableBase> generateStochastically(FactorGraph model, boolean useConditioning,
+		int nAttempts, Stats threshold, VariableCost ... costFunctions)
+	{
+		VariableEliminator eliminator = new VariableEliminator(model, useConditioning);
+		
+		if (costFunctions.length == 0)
+		{
+			costFunctions = VariableCost.values();
+		}
+		final int nFunctions = costFunctions.length;
+		
+		ArrayList<VariableBase> curList = new ArrayList<VariableBase>(eliminator._nVariables);
+		ArrayList<VariableBase> bestList = new ArrayList<VariableBase>(eliminator._nVariables);
+		Stats bestStats = null;
+		
+		for (int attempt = 0; attempt < nAttempts; ++attempt)
+		{
+			// Randomly pick a cost function from list.
+			VariableCost cost = nFunctions == 1 ? costFunctions[0] : costFunctions[eliminator._rand.nextInt(nFunctions)];
+			
+			// Run variable elimination
+			OrderIterator iterator = eliminator.orderIterator(cost);
+			Iterators.addAll(curList, iterator);
+			
+			// Compare stats
+			Stats curStats = iterator.getStats();
+			
+			if (curStats.addedEdges() == 0)
+			{
+				// Graph is already a tree.
+				return null;
+			}
+			
+			if (bestStats == null || curStats.compareTo(bestStats, threshold) < 0)
+			{
+				ArrayList<VariableBase> tmp = curList;
+				curList = bestList;
+				curList.clear();
+				bestList = tmp;
+				bestStats = curStats;
+				
+				if (bestStats.meetsThreshold(threshold))
+				{
+					break;
+				}
+			}
+		}
+		
+		return bestList;
+	}
 	
 	/**
 	 * The model for which ordering can be computed.
@@ -195,7 +303,7 @@ public class VariableEliminator
 	 * The randomizer used to break ties between variables with the same cost.
 	 * When null, ties are broken deterministically.
 	 * 
-	 * @see #VariableEliminator(FactorGraph, Random)
+	 * @see #VariableEliminator(FactorGraph, boolean, Random)
 	 */
 	public Random getRandomizer()
 	{
@@ -209,7 +317,17 @@ public class VariableEliminator
 	 */
 	public OrderIterator orderIterator(VariableCost cost)
 	{
-		return new OrderIterator(buildAdjacencyList(), cost);
+		return new OrderIterator(this, buildAdjacencyList(), cost);
+	}
+	
+	/**
+	 * True if eliminator takes into account variables that are conditioned with
+	 * a fixed value. If true, then such variables will be eliminated first and
+	 * will be treated as if they have no siblings. Value is set during construction.
+	 */
+	public boolean usesConditioning()
+	{
+		return _useConditioning;
 	}
 	
 	/*----------------
@@ -227,17 +345,19 @@ public class VariableEliminator
 	 */
 	public static class OrderIterator implements Iterator<VariableBase>
 	{
+		private final VariableEliminator _eliminator;
 		private final VariableCost _cost;
 		private final CostFunction _costFunction;
 		private final IHeap<Var> _heap;
-		private final Stats _stats = new Stats();
+		private final Stats _stats = new Stats(0);
 		
 		/*--------------
 		 * Construction
 		 */
 		
-		private OrderIterator(List<Var> adjacencyList, VariableCost cost)
+		private OrderIterator(VariableEliminator eliminator, List<Var> adjacencyList, VariableCost cost)
 		{
+			_eliminator = eliminator;
 			_cost = cost;
 			_costFunction = cost._costFunction;
 		
@@ -273,7 +393,7 @@ public class VariableEliminator
 			}
 
 			// Remove variable from graph
-			long cliqueCardinality = var.cardinality();
+			long cliqueCardinality = _eliminator.isConditioned(var._variable) ? 1 : var.cardinality();
 			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
 			{
 				final Var neighbor = link._var;
@@ -346,11 +466,27 @@ public class VariableEliminator
 		 */
 		
 		/**
+		 * The number of variables left to be returned by calls to {@link #next()}.
+		 */
+		public int size()
+		{
+			return _heap.size();
+		}
+		
+		/**
 		 * Identifies cost evaluator used by this iterator.
 		 */
 		public VariableCost getCostEvaluator()
 		{
 			return _cost;
+		}
+		
+		/**
+		 * The {@link VariableEliminator} that created this iterator.
+		 */
+		public VariableEliminator getEliminator()
+		{
+			return _eliminator;
 		}
 		
 		/**
@@ -375,17 +511,99 @@ public class VariableEliminator
 	 */
 	public static class Stats
 	{
-		private int _addedEdges = 0;
-		private long _addedEdgeWeight = 0;
-		private int _maxClique = 0;
-		private long _maxCliqueCardinality = 0;
+		private int _addedEdges;
+		private long _addedEdgeWeight;
+		private int _maxClique;
+		private long _maxCliqueCardinality;
+		
+		/*--------------
+		 * Construction
+		 */
 		
 		/**
-		 * All values are initialized to zero.
+		 * All values are initialized to -1.
 		 */
 		public Stats()
 		{
+			this(-1);
 		}
+		
+		private Stats(int value)
+		{
+			_addedEdges = value;
+			_addedEdgeWeight = value;
+			_maxClique = value;
+			_maxCliqueCardinality = value;
+		}
+		
+		/*------------
+		 * Comparison
+		 */
+
+		/**
+		 * Returns -1/0/1 if these stats are deemed better than/same as/worse than {@code other} stats given specified
+		 * threshold definition. Attributes for which {@code threshold} has a negative value
+		 * will not be considered (other than that the {@code threshold} attributes are ignored).
+		 * Attributes are compared in the following order:
+		 * <ol>
+		 * <li>{@link #maxCliqueCardinality()}
+		 * <li>{@link #addedEdgeWeight()}
+		 * <li>{@link #maxCliqueSize()}
+		 * <li>{@link #addedEdges()}
+		 * </ol>
+		 * The first of these that are not equal will be used for the comparison.
+		 */
+		public int compareTo(Stats other, Stats threshold)
+		{
+			long diff = 0;
+			
+			if (threshold._maxCliqueCardinality >= 0)
+			{
+				diff = _maxCliqueCardinality - other._maxCliqueCardinality;
+			}
+			if (diff == 0 && threshold._addedEdgeWeight >= 0)
+			{
+				diff = _addedEdgeWeight - other._addedEdgeWeight;
+			}
+			if (diff == 0 && threshold._maxClique >= 0)
+			{
+				diff = _maxClique - other._maxClique;
+			}
+			if (diff == 0 && threshold._addedEdges >= 0)
+			{
+				diff = _addedEdges - other._addedEdges;
+			}
+			
+			return Long.signum(diff);
+		}
+		
+		/**
+		 * True if these statistics satisfy the given threshold statistics.
+		 * <p>
+		 * Specifically, compares the values of the following attributes:
+		 * <ul>
+		 *   <li>{@link #addedEdges()}
+		 *   <li>{@link #addedEdgeWeight()}
+		 *   <li>{@link #maxCliqueSize()}
+		 *   <li>{@link #maxCliqueCardinality()}
+		 * </ul>
+		 * If for each these attribute of {@code threshold} that have a non-negative value, the
+		 * current object has value that is less than or equal to the threshold value, then the
+		 * threshold is satisfied.
+		 */
+		public boolean meetsThreshold(Stats threshold)
+		{
+			return
+				(threshold._addedEdges < 0 || threshold._addedEdges >= _addedEdges) &&
+				(threshold._addedEdgeWeight < 0 || threshold._addedEdgeWeight >= _addedEdgeWeight) &&
+				(threshold._maxClique < 0 || threshold._maxClique >= _maxClique) &&
+				(threshold._maxCliqueCardinality < 0 || threshold._maxCliqueCardinality >= _maxCliqueCardinality)
+				;
+		}
+		
+		/*------------
+		 * Attributes
+		 */
 		
 		/**
 		 * The number of edges that were added during the execution of the algorithm.
@@ -587,11 +805,14 @@ public class VariableEliminator
 	{
 		final double cost(Var var)
 		{
-			if (var.nNeighbors() <= 1)
+			final int nNeighbors = var.nNeighbors();
+			
+			if (nNeighbors <= 1)
 			{
 				// It is always better to first eliminate variables connected by no more
 				// than one edge because their removal will not expand the tree width.
-				return 0.0;
+				// This will return -1 if there are no neighbors, and 0 if there is one.
+				return nNeighbors - 1;
 			}
 			
 			return computeCost(var);
@@ -735,13 +956,13 @@ public class VariableEliminator
 		
 		for (VariableBase variable : variables)
 		{
-			if (!variable.getDomain().isDiscrete())
+			if (!variable.getDomain().isDiscrete() && !isConditioned(variable))
 			{
 				throw new DimpleException("VariableEliminator cannot handle non-discrete variable '%s'", variable);
 			}
-			Var info = new Var(variable, generateCostIncrement(variable));
-			map.put(variable, info);
-			list.add(info);
+			Var var = new Var(variable, generateCostIncrement(variable));
+			map.put(variable, var);
+			list.add(var);
 		}
 		
 		FactorList factors = _model.getFactors();
@@ -754,17 +975,23 @@ public class VariableEliminator
 			for (int i = 0; i < nVars; ++i)
 			{
 				VariableBase neighbor = factor.getSibling(i);
-				vars[i] = map.get(neighbor);
+				vars[i] = isConditioned(neighbor) ? null : map.get(neighbor);
 			}
 			
 			for (int i = nVars; --i>=1;)
 			{
-				for (int j = i; --j>=0;)
+				Var vari = vars[i];
+				if (vari != null)
 				{
-					Var vari = vars[i];
-					Var varj = vars[j];
-					vari.addNeighbor(varj);
-					varj.addNeighbor(vari);
+					for (int j = i; --j>=0;)
+					{
+						Var varj = vars[j];
+						if (varj != null)
+						{
+							vari.addNeighbor(varj);
+							varj.addNeighbor(vari);
+						}
+					}
 				}
 			}
 		}
@@ -786,6 +1013,11 @@ public class VariableEliminator
 		{
 			return _rand.nextDouble();
 		}
+	}
+	
+	private boolean isConditioned(VariableBase variable)
+	{
+		return _useConditioning && variable.hasFixedValue();
 	}
 	
 }

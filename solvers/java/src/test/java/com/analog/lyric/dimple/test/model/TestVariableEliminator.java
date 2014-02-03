@@ -159,6 +159,23 @@ public class TestVariableEliminator
 			expectedStats().addedEdges(1).addedEdgeWeight(8)
 			.maxCliqueSize(3).maxCliqueCardinality(40),
 			b, a, c, d);
+		
+		//
+		// Test conditioning
+		//
+		
+		b.setFixedValue(2);
+		
+		testEliminator(model, VariableCost.MIN_NEIGHBORS,
+			expectedStats().addedEdges(1).addedEdgeWeight(15)
+			.maxCliqueSize(3).maxCliqueCardinality(60),
+			a, b, c, d);
+
+		testEliminator(model, true, VariableCost.MIN_NEIGHBORS,
+			expectedStats().addedEdges(0).addedEdgeWeight(0)
+			.maxCliqueSize(2).maxCliqueCardinality(20),
+			b, a, c, d);
+		
 	}
 	
 	/**
@@ -213,6 +230,22 @@ public class TestVariableEliminator
 			expectedStats().addedEdges(3).addedEdgeWeight(59)
 			.maxCliqueSize(3).maxCliqueCardinality(168)
 			, b, a, h, g, d, c, e, f);
+		
+		//
+		// Test conditioning
+		//
+		
+		c.setFixedValue(2);
+		
+		testEliminator(model, false, VariableCost.WEIGHTED_MIN_NEIGHBORS,
+			expectedStats().addedEdges(3).addedEdgeWeight(59)
+			.maxCliqueSize(3).maxCliqueCardinality(168)
+			, b, a, h, d, c, f, e, g);
+		
+		testEliminator(model, true, VariableCost.WEIGHTED_MIN_NEIGHBORS,
+			expectedStats().addedEdges(1).addedEdgeWeight(21)
+			.maxCliqueSize(3).maxCliqueCardinality(126)
+			, c, a, b, d, e, f, g, h);
 	}
 
 	/**
@@ -354,14 +387,84 @@ public class TestVariableEliminator
 		r.setName("r");
 		addClique(model, a, b, r);
 		
-		VariableEliminator eliminator = new VariableEliminator(model);
+		VariableEliminator eliminator = new VariableEliminator(model, false);
 		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
 			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		eliminator = new VariableEliminator(model, true);
+		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
+			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		
+		r.setFixedValue(1.0);
+		eliminator = new VariableEliminator(model, false);
+		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
+			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		
+		testEliminator(model, true, VariableCost.MIN_FILL,
+			expectedStats().addedEdges(0).addedEdgeWeight(0)
+			.maxCliqueSize(2).maxCliqueCardinality(20),
+			r, a, b);
 	}
+	
+	@Test
+	public void testStats()
+	{
+		Stats stats = new Stats();
+		assertEquals(-1, stats.addedEdges());
+		assertEquals(-1, stats.addedEdgeWeight());
+		assertEquals(-1, stats.maxCliqueSize());
+		assertEquals(-1, stats.maxCliqueCardinality());
+		assertCompareTo(0, stats, stats, stats);
+		assertTrue(stats.meetsThreshold(stats));
+		
+		assertSame(stats, stats.addedEdges(2));
+		assertSame(stats, stats.addedEdgeWeight(10));
+		assertSame(stats, stats.maxCliqueSize(3));
+		assertSame(stats, stats.maxCliqueCardinality(20));
+		assertEquals(2, stats.addedEdges());
+		assertEquals(10, stats.addedEdgeWeight());
+		assertEquals(3, stats.maxCliqueSize());
+		assertEquals(20, stats.maxCliqueCardinality());
+		assertCompareTo(0, stats, stats, stats);
+		
+		assertCompareTo(-1, stats, new Stats().addedEdges(3), new Stats().addedEdges(100));
+		assertCompareTo(0, stats, new Stats().addedEdges(3), new Stats());
+		assertCompareTo(1, stats, new Stats().addedEdgeWeight(8), new Stats().addedEdgeWeight(100));
+		assertCompareTo(-1, stats, new Stats().maxCliqueSize(4), new Stats().maxCliqueSize(10));
+		assertCompareTo(1, stats, new Stats().maxCliqueCardinality(10), new Stats().maxCliqueCardinality(200));
+		assertCompareTo(-1, stats,
+			new Stats().maxCliqueCardinality(30).addedEdgeWeight(5),
+			new Stats().maxCliqueCardinality(1000).addedEdgeWeight(1000));
+		assertCompareTo(1, stats,
+			new Stats().addedEdgeWeight(5).maxCliqueSize(4),
+			new Stats().addedEdgeWeight(1000).maxCliqueSize(1000));
+		assertCompareTo(-1, stats,
+			new Stats().maxCliqueSize(3).addedEdges(3),
+			new Stats().maxCliqueSize(0).addedEdges(0));
+		assertCompareTo(1, stats,
+			new Stats().maxCliqueSize(2).addedEdges(3),
+			new Stats().maxCliqueSize(0).addedEdges(0));
+		
+		assertTrue(stats.meetsThreshold(new Stats().addedEdges(2)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdges(1)));
+		assertTrue(stats.meetsThreshold(new Stats().addedEdgeWeight(11).maxCliqueSize(3).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(11).maxCliqueSize(2).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(9).maxCliqueSize(4).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(20).maxCliqueSize(4).maxCliqueCardinality(19)));
+	}
+	
+	/*----------------
+	 * Helper methods
+	 */
 	
 	private void addClique(FactorGraph model, VariableBase ... variables)
 	{
 		model.addFactor(factorFunction, variables);
+	}
+	
+	private void assertCompareTo(int expected, Stats stats1, Stats stats2, Stats threshold)
+	{
+		assertEquals(expected, stats1.compareTo(stats2, threshold));
+		assertEquals(-expected, stats2.compareTo(stats1, threshold));
 	}
 	
 	private Discrete newVar(int cardinality, String name)
@@ -371,12 +474,22 @@ public class TestVariableEliminator
 		return var;
 	}
 
-	private void testEliminator(FactorGraph model, VariableCost cost, Stats expectedStats, VariableBase ... expectedOrder)
+	private void testEliminator(FactorGraph model, VariableCost cost,
+		Stats expectedStats, VariableBase ... expectedOrder)
+	{
+		testEliminator(model, false, cost, expectedStats, expectedOrder);
+	}
+	
+	private void testEliminator(FactorGraph model, boolean useConditioning, VariableCost cost,
+		Stats expectedStats, VariableBase ... expectedOrder)
 	{
 		final boolean deterministic = expectedOrder.length != 0;
 		final VariableEliminator eliminator =
-			deterministic? new VariableEliminator(model, null) : new VariableEliminator(model);
+			deterministic?
+				new VariableEliminator(model, useConditioning, null) :
+				new VariableEliminator(model, useConditioning);
 		assertSame(model, eliminator.getModel());
+		assertEquals(useConditioning, eliminator.usesConditioning());
 		if (deterministic)
 		{
 			assertNull(eliminator.getRandomizer());
@@ -387,7 +500,11 @@ public class TestVariableEliminator
 		}
 		
 		OrderIterator iterator = eliminator.orderIterator(cost);
+		assertSame(eliminator, iterator.getEliminator());
 		assertSame(cost, iterator.getCostEvaluator());
+		
+		int nVariables = model.getVariableCount();
+		assertEquals(nVariables, iterator.size());
 		
 		if (deterministic)
 		{
@@ -396,6 +513,7 @@ public class TestVariableEliminator
 				assertTrue(iterator.hasNext());
 				VariableBase actualVariable = iterator.next();
 				assertSame(expectedVariable, actualVariable);
+				assertEquals(--nVariables, iterator.size());
 			}
 		}
 		else
@@ -403,6 +521,7 @@ public class TestVariableEliminator
 			while (iterator.hasNext())
 			{
 				iterator.next();
+				assertEquals(--nVariables, iterator.size());
 			}
 		}
 		assertFalse(iterator.hasNext());
@@ -435,10 +554,6 @@ public class TestVariableEliminator
 	
 	private Stats expectedStats()
 	{
-		return new Stats()
-			.addedEdges(-1)
-			.addedEdgeWeight(-1)
-			.maxCliqueSize(-1)
-			.maxCliqueCardinality(-1);
+		return new Stats();
 	}
 }
