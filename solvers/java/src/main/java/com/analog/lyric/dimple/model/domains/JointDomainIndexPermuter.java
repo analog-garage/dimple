@@ -272,34 +272,6 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 		}
 	}
 
-	// TODO: implement hasFastJointIndexConversion()
-	// Cases:
-	// prepend domains:
-	//
-	//   addedJointIndex + addedCardinality * oldJointIndex
-	//
-	// append domains:
-	//
-	//   oldJointIndex + oldCardinality * addedJointIndex
-	//
-	// insert domains at position k:
-	//
-	//   oldJointIndex - oldJointIndex/kCardinality +
-	//   kCardinality * addedJointIndex +
-	//   kCardinality * addedCardinality * oldJointIndex/kCardinality
-	//
-	// remove domains from front:
-	//
-	//   oldJointIndex / removedCardinality
-	//
-	// remove domains from back:
-	//
-	//  oldJointIndex % remainingCardinality
-	//
-	// remove domains at position k
-	//
-	//
-	
 	@Override
 	public int convertJointIndex(int jointIndex, int addedJointIndex)
 	{
@@ -316,6 +288,15 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 			
 		case REMOVE_FROM_BACK:
 			return jointIndex % _toDomains.getCardinality();
+			
+			// TODO:
+			// insert domains at position k:
+			//
+			//   oldJointIndex - oldJointIndex/kCardinality +
+			//   kCardinality * addedJointIndex +
+			//   kCardinality * addedCardinality * oldJointIndex/kCardinality
+			//
+			// remove domains at position k
 			
 		default:
 			return super.convertJointIndex(jointIndex, addedJointIndex);
