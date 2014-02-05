@@ -18,22 +18,25 @@ package com.analog.lyric.dimple.benchmarks.stereoVision;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+
+import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.dimple.benchmarks.utils.Image;
 
 public class Dataset
 {
 	private String _name;
-	private Image _imageL;
-	private Image _imageR;
+	private ArrayM _imageL;
+	private ArrayM _imageR;
 
 	public Dataset(String name) throws IOException
 	{
 		setName(name);
 		URL urlImageL = this.getClass().getResource(String.format("datasets/%s/imageL.png", name));
 		URL urlImageR = this.getClass().getResource(String.format("datasets/%s/imageR.png", name));
-		setImageL(Image.load(urlImageL));
-		setImageR(Image.load(urlImageR));
-		if (getImageL().getWidth() != getImageR().getWidth()
-				|| getImageL().getHeight() != getImageR().getHeight())
+		setImageL(Image.loadImage(urlImageL));
+		setImageR(Image.loadImage(urlImageR));
+		if (!Arrays.equals(getImageL().getDimensions(), getImageR().getDimensions()))
 		{
 			throw new IllegalArgumentException(
 					"Left and right images have different sizes");
@@ -50,23 +53,23 @@ public class Dataset
 		this._name = name;
 	}
 
-	public Image getImageL()
+	public ArrayM getImageL()
 	{
 		return _imageL;
 	}
 
-	public void setImageL(Image imageL)
+	public void setImageL(ArrayM image)
 	{
-		this._imageL = imageL;
+		this._imageL = image;
 	}
 
-	public Image getImageR()
+	public ArrayM getImageR()
 	{
 		return _imageR;
 	}
 
-	public void setImageR(Image imageR)
+	public void setImageR(ArrayM image)
 	{
-		this._imageR = imageR;
+		this._imageR = image;
 	}
 }

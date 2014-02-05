@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.benchmarks.stereoVision;
 import java.io.IOException;
 
 import com.analog.lyric.benchmarking.Benchmark;
+import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public class StereoVisionBenchmark
@@ -60,14 +62,16 @@ public class StereoVisionBenchmark
 	private void depthInference(FactorGraph fg, String dataSetName, int depth, String saveLabel) throws IOException
 	{
 		Dataset dataset = new Dataset(dataSetName);
+		
 		StereoVisionGraph stereoVisionGraph = new StereoVisionGraph(fg, depth, dataset.getImageL(), dataset.getImageR());
 		fg.solve();
 
 		if (saveResult && saveLabel != null)
 		{
-			Image result = stereoVisionGraph.getValueImage();
+			ArrayM result = stereoVisionGraph.getValueImage();
+			result.normalize().transform(Image.contrastCurve);
 			String resultPath = String.format("%s_%s.png", dataSetName, saveLabel);
-			result.save(resultPath);
+			Image.saveImage(resultPath, result);
 		}
 
 		double score = fg.getScore();
