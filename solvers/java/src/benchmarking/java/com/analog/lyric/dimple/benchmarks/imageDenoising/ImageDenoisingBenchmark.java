@@ -36,7 +36,8 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph)fg.getSolver();
+		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph) fg
+				.getSolver();
 		solver.setNumSamples(1600);
 
 		int imageDimension = 100;
@@ -50,14 +51,14 @@ public class ImageDenoisingBenchmark
 				yImageSize, noiseSigma);
 		return false;
 	}
-	
+
 	@Benchmark(warmupIterations = 0, iterations = 1)
 	public boolean imageDenoisingSumProduct() throws IOException
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		fg.getSolver().setNumIterations(1);
-		
+
 		int imageDimension = 100;
 		int xImageOffset = 800;
 		int yImageOffset = 1925;

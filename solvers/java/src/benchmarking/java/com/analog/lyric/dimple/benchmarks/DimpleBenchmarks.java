@@ -11,5 +11,6 @@ public class DimpleBenchmarks
 		BenchmarkRunner.runBenchmarkPackage("com.analog.lyric.dimple.benchmarks");
 //		BenchmarkRunner.runBenchmarkClass("com.analog.lyric.dimple.benchmarks.imageDenoising.ImageDenoisingBenchmark");
 //		BenchmarkRunner.runBenchmarkClass("com.analog.lyric.dimple.benchmarks.stereoVision.StereoVisionBenchmark");
+//		BenchmarkRunner.runBenchmarkClass("com.analog.lyric.dimple.benchmarks.hmm.hmmBenchmark");
 	}
 }
