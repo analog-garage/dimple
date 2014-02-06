@@ -26,7 +26,6 @@ import com.google.common.reflect.ClassPath;
 
 public class BenchmarkRunner
 {
-	private static BenchmarkCreator _benchmarkCreator;
 	private static DataCollector _executionTimeCollector = new ExecutionTimeCollector();
 	private static DataCollector _gcDataCollector = new GCDataCollector();
 	private static MemoryUsageSamplingCollector _memoryUsageSamplingCollector = new MemoryUsageSamplingCollector();
@@ -34,37 +33,62 @@ public class BenchmarkRunner
 	public static void main(String[] args) throws ClassNotFoundException,
 			InstantiationException, IllegalAccessException, IOException
 	{
-		System.out.println("Classpath:");
-		System.out.println(System.getProperty("java.class.path"));
-
 		if (args.length != 1)
 		{
 			throw new IllegalArgumentException("Specify benchmark class.");
 		}
-		
+
 		String benchmarkPackageName = args[0];
-		System.out.println("Benchmark package name:");
-		System.out.println(benchmarkPackageName);
 		runBenchmarkPackage(benchmarkPackageName);
 
-//		String testClassName = args[0];
-//		System.out.println("Class name:");
-//		System.out.println(testClassName);
-//		runBenchmarkClass(testClassName);
+		// String testClassName = args[0];
+		// runBenchmarkClass(testClassName);
+	}
 
-		BenchmarkDataset benchmarkDataset = _benchmarkCreator
+	public static void runBenchmarkPackage(String packageName)
+			throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, IOException
+	{
+		applyStrategy(packageName, new BenchmarkPackageRunnerStrategy(
+				packageName));
+	}
+
+	public static void runBenchmarkClass(String className)
+			throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, IOException
+	{
+		applyStrategy(className, new BenchmarkClassRunnerStrategy(className));
+	}
+
+	private interface Strategy
+	{
+		void apply(BenchmarkCreator benchmarkCreator)
+				throws ClassNotFoundException, InstantiationException,
+				IllegalAccessException, IOException;
+	}
+
+	private static void applyStrategy(String label, Strategy strategy)
+			throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, IOException
+	{
+		System.out.println("Classpath:");
+		System.out.println(System.getProperty("java.class.path"));
+
+		BenchmarkCreator benchmarkCreator = new BenchmarkCreator(label);
+		BenchmarkDataset benchmarkDataset = benchmarkCreator
 				.getBenchmarkDataset();
-
 		String configuration = benchmarkDataset.getProperties().getProperty(
 				"hostname");
 		benchmarkDataset.getProperties().setProperty("configuration",
 				configuration);
 
+		strategy.apply(benchmarkCreator);
+
 		BenchmarkDatasetXmlSerializer serializer = new BenchmarkDatasetXmlSerializer();
 		String outputFilename = String.format(
 				"%s_%s",
-				benchmarkPackageName,
-				_benchmarkCreator.getBenchmarkDataset().getProperties()
+				configuration,
+				benchmarkCreator.getBenchmarkDataset().getProperties()
 						.getProperty("create.date")).replaceAll("\\W+", "_")
 				+ ".xml";
 
@@ -79,80 +103,99 @@ public class BenchmarkRunner
 		}
 	}
 
-	private static void runBenchmarkPackage(String packageName)
-			throws IOException, ClassNotFoundException, InstantiationException,
-			IllegalAccessException
+	private static class BenchmarkPackageRunnerStrategy implements Strategy
 	{
-		ClassPath classpath = ClassPath
-				.from(ClassLoader.getSystemClassLoader());
-		for (ClassPath.ClassInfo classInfo : classpath
-				.getTopLevelClassesRecursive(packageName))
+		private final String _packageName;
+
+		public BenchmarkPackageRunnerStrategy(String packageName)
 		{
-			if (classInfo.getSimpleName().endsWith("Benchmark"))
+			_packageName = packageName;
+		}
+
+		public void apply(BenchmarkCreator benchmarkCreator)
+				throws IOException, ClassNotFoundException,
+				InstantiationException, IllegalAccessException
+		{
+			ClassPath classpath = ClassPath.from(ClassLoader
+					.getSystemClassLoader());
+			for (ClassPath.ClassInfo classInfo : classpath
+					.getTopLevelClassesRecursive(_packageName))
 			{
-				// TODO: could pass class instead of its name?
-				runBenchmarkClass(classInfo.getName());
+				if (classInfo.getSimpleName().endsWith("Benchmark"))
+				{
+					BenchmarkClassRunnerStrategy classRunner = new BenchmarkClassRunnerStrategy(
+							classInfo.getName());
+					classRunner.apply(benchmarkCreator);
+				}
 			}
 		}
 	}
 
-	private static void runBenchmarkClass(String benchmarkClassName)
-			throws ClassNotFoundException, InstantiationException,
-			IllegalAccessException
+	private static class BenchmarkClassRunnerStrategy implements Strategy
 	{
-		Class<?> testClass = Class.forName(benchmarkClassName);
-		final Object testClassInstance = testClass.newInstance();
+		private final String _className;
 
-		Method[] methods = testClass.getMethods();
-		ArrayList<Method> annotated = new ArrayList<Method>();
-		for (Method m : methods)
+		public BenchmarkClassRunnerStrategy(String className)
 		{
-			if (m.isAnnotationPresent(Benchmark.class))
-			{
-				annotated.add(m);
-			}
+			_className = className;
 		}
 
-		_benchmarkCreator = new BenchmarkCreator(benchmarkClassName);
-
-		for (Method m : annotated)
+		public void apply(BenchmarkCreator benchmarkCreator)
+				throws ClassNotFoundException, InstantiationException,
+				IllegalAccessException
 		{
-			System.out.printf("Benchmark '%s'...\n", m.getName());
+			Class<?> testClass = Class.forName(_className);
+			final Object testClassInstance = testClass.newInstance();
 
-			Benchmark annotation = m.getAnnotation(Benchmark.class);
-
-			final Method mf = m;
-			IterationRunner runnable = new IterationRunner()
+			Method[] methods = testClass.getMethods();
+			ArrayList<Method> annotated = new ArrayList<Method>();
+			for (Method m : methods)
 			{
-				@Override
-				public boolean run()
+				if (m.isAnnotationPresent(Benchmark.class))
 				{
-					boolean abort = true;
-					try
-					{
-						mf.invoke(testClassInstance);
-						abort = false;
-					}
-					catch (IllegalArgumentException e)
-					{
-						e.printStackTrace();
-					}
-					catch (IllegalAccessException e)
-					{
-						e.printStackTrace();
-					}
-					catch (InvocationTargetException e)
-					{
-						e.printStackTrace();
-					}
-					return abort;
+					annotated.add(m);
 				}
-			};
+			}
 
-			_benchmarkCreator.doRun(m.getName(), annotation.warmupIterations(),
-					annotation.iterations(), annotation.doGC(), runnable,
-					_executionTimeCollector, _gcDataCollector,
-					_memoryUsageSamplingCollector);
+			for (Method m : annotated)
+			{
+				System.out.printf("Benchmark '%s'...\n", m.getName());
+
+				Benchmark annotation = m.getAnnotation(Benchmark.class);
+
+				final Method mf = m;
+				IterationRunner runnable = new IterationRunner()
+				{
+					@Override
+					public boolean run()
+					{
+						boolean abort = true;
+						try
+						{
+							mf.invoke(testClassInstance);
+							abort = false;
+						}
+						catch (IllegalArgumentException e)
+						{
+							e.printStackTrace();
+						}
+						catch (IllegalAccessException e)
+						{
+							e.printStackTrace();
+						}
+						catch (InvocationTargetException e)
+						{
+							e.printStackTrace();
+						}
+						return abort;
+					}
+				};
+
+				benchmarkCreator.doRun(m.getName(),
+						annotation.warmupIterations(), annotation.iterations(),
+						annotation.doGC(), runnable, _executionTimeCollector,
+						_gcDataCollector, _memoryUsageSamplingCollector);
+			}
 		}
 	}
 }

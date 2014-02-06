@@ -37,7 +37,7 @@ public class ImageDenoisingBenchmark
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
 		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph)fg.getSolver();
-		solver.setNumSamples(400);
+		solver.setNumSamples(1600);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -56,7 +56,7 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		fg.getSolver().setNumIterations(10);
+		fg.getSolver().setNumIterations(1);
 		
 		int imageDimension = 100;
 		int xImageOffset = 800;
@@ -75,7 +75,7 @@ public class ImageDenoisingBenchmark
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
-		fg.getSolver().setNumIterations(10);
+		fg.getSolver().setNumIterations(2);
 
 		int imageDimension = 100;
 		int xImageOffset = 800;

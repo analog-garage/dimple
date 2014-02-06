@@ -144,7 +144,7 @@ public class ImageDenoisingGraph
 			{
 				int row = coordinates[0];
 				int col = coordinates[1];
-				return (Double) _vs[row][col].getValue();
+				return (Integer) _vs[row][col].getValue();
 			}
 		}, _rows, _cols);
 	}
