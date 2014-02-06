@@ -20,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import com.google.common.reflect.ClassPath;
@@ -53,11 +54,27 @@ public class BenchmarkRunner
 				packageName));
 	}
 
-	public static void runBenchmarkClass(String className)
+	public static void runBenchmarkClass(String qualifiedClassName)
 			throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException, IOException
 	{
-		applyStrategy(className, new BenchmarkClassRunnerStrategy(className));
+		applyStrategy(qualifiedClassName, new BenchmarkClassRunnerStrategy(qualifiedClassName));
+	}
+
+	public static void runBenchmarkMethod(String qualifiedMethodName)
+			throws ClassNotFoundException, InstantiationException,
+			IllegalAccessException, IOException, SecurityException,
+			NoSuchMethodException
+	{
+		if (qualifiedMethodName.endsWith("()"))
+		{
+			qualifiedMethodName = qualifiedMethodName.substring(0, qualifiedMethodName.length() - 2);
+		}
+		int p = qualifiedMethodName.lastIndexOf('.');
+		String className = qualifiedMethodName.substring(0, p);
+		String methodName = qualifiedMethodName.substring(p + 1);		
+		applyStrategy(qualifiedMethodName, new BenchmarkMethodRunnerStrategy(className,
+				methodName));
 	}
 
 	private interface Strategy
@@ -159,43 +176,74 @@ public class BenchmarkRunner
 
 			for (Method m : annotated)
 			{
-				System.out.printf("Benchmark '%s'...\n", m.getName());
-
-				Benchmark annotation = m.getAnnotation(Benchmark.class);
-
-				final Method mf = m;
-				IterationRunner runnable = new IterationRunner()
-				{
-					@Override
-					public boolean run()
-					{
-						boolean abort = true;
-						try
-						{
-							mf.invoke(testClassInstance);
-							abort = false;
-						}
-						catch (IllegalArgumentException e)
-						{
-							e.printStackTrace();
-						}
-						catch (IllegalAccessException e)
-						{
-							e.printStackTrace();
-						}
-						catch (InvocationTargetException e)
-						{
-							e.printStackTrace();
-						}
-						return abort;
-					}
-				};
-
-				benchmarkCreator.doRun(m.getName(),
-						annotation.warmupIterations(), annotation.iterations(),
-						annotation.doGC(), runnable, _executionTimeCollector,
-						_gcDataCollector, _memoryUsageSamplingCollector);
+				BenchmarkMethodRunnerStrategy methodRunner = new BenchmarkMethodRunnerStrategy(
+						testClassInstance, m);
+				methodRunner.apply(benchmarkCreator);
 			}
+		}
+	}
+
+	private static class BenchmarkMethodRunnerStrategy implements Strategy
+	{
+		private final Object _testClassInstance;
+
+		private final Method _method;
+
+		public BenchmarkMethodRunnerStrategy(Object testClassInstance,
+				Method method)
+		{
+			_testClassInstance = testClassInstance;
+			_method = method;
+		}
+
+		public BenchmarkMethodRunnerStrategy(String className, String methodName)
+				throws ClassNotFoundException, InstantiationException,
+				IllegalAccessException, SecurityException,
+				NoSuchMethodException
+		{
+			Class<?> testClass = Class.forName(className);
+			_testClassInstance = testClass.newInstance();
+			_method = testClass.getMethod(methodName);
+		}
+
+		public void apply(BenchmarkCreator benchmarkCreator)
+		{
+			System.out.printf("Benchmark '%s'...\n", _method.getName());
+
+			Benchmark annotation = _method.getAnnotation(Benchmark.class);
+
+			final Method mf = _method;
+			IterationRunner runnable = new IterationRunner()
+			{
+				@Override
+				public boolean run()
+				{
+					boolean abort = true;
+					try
+					{
+						mf.invoke(_testClassInstance);
+						abort = false;
+					}
+					catch (IllegalArgumentException e)
+					{
+						e.printStackTrace();
+					}
+					catch (IllegalAccessException e)
+					{
+						e.printStackTrace();
+					}
+					catch (InvocationTargetException e)
+					{
+						e.printStackTrace();
+					}
+					return abort;
+				}
+			};
+
+			benchmarkCreator.doRun(_method.getName(),
+					annotation.warmupIterations(), annotation.iterations(),
+					annotation.doGC(), runnable, _executionTimeCollector,
+					_gcDataCollector, _memoryUsageSamplingCollector);
 		}
 	}
 }
