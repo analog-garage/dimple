@@ -29,127 +29,91 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public class ImageDenoisingBenchmark
 {
-	@Benchmark(warmupIterations = 0, iterations = 2)
-	public boolean imageDenoisingSumProduct() throws IOException
+	private final boolean saveResult = false;
+
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean imageDenoisingGibbs() throws IOException
 	{
 		FactorGraph fg = new FactorGraph();
-		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
-		int iterations = 10;
-		fg.getSolver().setNumIterations(iterations);
+		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
+		com.analog.lyric.dimple.solvers.gibbs.SFactorGraph solver = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph)fg.getSolver();
+		solver.setNumSamples(400);
 
 		int imageDimension = 100;
-
-		String imageFileName = "images/1202.4002.3.png";
-		URL urlImage = this.getClass().getResource(imageFileName);
-		String factorFileName = "imageStats/factorTableValues300dpi.csv";
-
 		int xImageOffset = 800;
 		int yImageOffset = 1925;
 		int xImageSize = imageDimension;
 		int yImageSize = imageDimension;
-		int xBlockSize = 4;
-		int yBlockSize = 4;
 		double noiseSigma = 1.0;
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "gibbs",
+				imageDimension, xImageOffset, yImageOffset, xImageSize,
+				yImageSize, noiseSigma);
+		return false;
+	}
+	
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean imageDenoisingSumProduct() throws IOException
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+		fg.getSolver().setNumIterations(10);
+		
+		int imageDimension = 100;
+		int xImageOffset = 800;
+		int yImageOffset = 1925;
+		int xImageSize = imageDimension;
+		int yImageSize = imageDimension;
+		double noiseSigma = 1.0;
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "sumproduct",
+				imageDimension, xImageOffset, yImageOffset, xImageSize,
+				yImageSize, noiseSigma);
+		return false;
+	}
 
-		// % Get input images and plot them
+	@Benchmark(warmupIterations = 0, iterations = 1)
+	public boolean imageDenoisingMinSum() throws IOException
+	{
+		FactorGraph fg = new FactorGraph();
+		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
+		fg.getSolver().setNumIterations(10);
+
+		int imageDimension = 100;
+		int xImageOffset = 800;
+		int yImageOffset = 1925;
+		int xImageSize = imageDimension;
+		int yImageSize = imageDimension;
+		double noiseSigma = 1.0;
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "minsum",
+				imageDimension, xImageOffset, yImageOffset, xImageSize,
+				yImageSize, noiseSigma);
+		return false;
+	}
+
+	@SuppressWarnings("unused")
+	public void imageDenoisingInference(FactorGraph fg, String imageFileName,
+			String saveLabel, int imageDimension, int xImageOffset,
+			int yImageOffset, int xImageSize, int yImageSize, double noiseSigma)
+			throws IOException
+	{
+		final String factorFileName = "imageStats/factorTableValues300dpi.csv";
+		final int xBlockSize = 4;
+		final int yBlockSize = 4;
+		URL urlImage = this.getClass().getResource(imageFileName);
 		ArrayM likelihoods = noisyImageInput(urlImage, noiseSigma,
 				xImageOffset, yImageOffset, xImageSize, yImageSize);
-		
-		// figure(1);
-		// screenSize = get(0,'ScreenSize');
-		// figure('Position',[screenSize(3)/8 screenSize(4)/8 3*screenSize(3)/4
-		// 3*screenSize(4)/4])
-		// subplot(2,2,1);
-		// imagesc(scaledImage);
-		// colormap(gray);
-		// title('Original binary image');
-		// subplot(2,2,2);
-		// imagesc(noisyImage);
-		// colormap(gray);
-		// title('Noisy image');
-		// subplot(2,2,3);
-		// imagesc(noisyImage > 0);
-		// colormap(gray);
-		// title('Noisy binary image');
-		// drawnow;
-
-		boolean verbose = true;
-		
-		ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg, factorFileName,
-				xImageSize, yImageSize, xBlockSize,
-				yBlockSize, verbose); 
-		
+		ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg,
+				factorFileName, xImageSize, yImageSize, xBlockSize, yBlockSize);
 		imageDenoisingGraph.setInput(likelihoods);
-		
-		
-		// fprintf('Starting solver\n');
-		// t=tic;
-		// if (~showIntermedateResults) % Solve without showing intermediate
-		// results
-		 fg.solve();
-		// else % Solve showing intermediate results
-		// fg.Solver.useMultithreading(true);
-		// fg.initialize();
-		//
-		// for i=1:iterations
-		// fprintf('Iteration: %d\n', i);
-		// fg.Solver.iterate();
-		// output = Vs.Value;
-		// subplot(2,2,4);
-		// imagesc(output);
-		// colormap(gray);
-		// title('Intermediate result');
-		// drawnow;
-		// end
-		// end
-		// solveTime = toc(t);
-		// fprintf('Solve time: %.1f seconds\n', solveTime);
-		//
-		// % Show the result
-		// output = Vs.Value;
-		 
-		GeneratorFunction generator = new GeneratorFunction() {
+		fg.solve();
 
-			int y;
-			int x;
-			private ImageDenoisingGraph _imageDenoisingGraph;
-			
-			@Override
-			public double apply()
-			{
-				return _imageDenoisingGraph.getValue(y, x);
-			}
+		if (saveResult && saveLabel != null)
+		{
+			ArrayM output = imageDenoisingGraph.getValue();
+			Image.saveImage("denoise.png",
+					output.normalize().modify(Image.contrastCurve));
+		}
 
-			private GeneratorFunction init(ImageDenoisingGraph imageDenoisingGraph)
-			{
-				_imageDenoisingGraph = imageDenoisingGraph;
-				return this;
-			}
-		}.init(imageDenoisingGraph);
-		 
-		ArrayM output = ArrayM.generate(generator, new int[] { yImageSize, xImageSize } );
-		Image.saveImage("denoise.png", output.normalize().transform(Image.contrastCurve));
-		 
-		// subplot(2,2,4);
-		// imagesc(output);
-		// title('Final result');
-		// colormap(gray);
-		//
-		// % Compute the score of the result
-		// score = fg.Score;
-		// fprintf('Score of result (BP): %f\n', score);
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-
-		// imageDenoising(fg, "images", 75, "sumproduct");
-		return false;
+		double score = fg.getScore();
 	}
 
 	private class Threshold implements MapFunction
@@ -186,43 +150,45 @@ public class ImageDenoisingBenchmark
 		}
 	}
 
-	private MapFunction threshold(double level)
-	{
-		return new Threshold(level);
-	}
-
 	private ArrayM noisyImageInput(URL urlImage, double noiseSigma,
 			int xImageOffset, int yImageOffset, int xImageSize, int yImageSize)
 			throws IOException
 	{
 		ArrayM image = Image.loadImage(urlImage);
-		image = image.slice(yImageOffset, yImageOffset + yImageSize - 1)
-				.slice(xImageOffset, xImageOffset + xImageSize - 1).get();
-		image.transform(ArrayM.compose(threshold(0.5), new MapFunction()
+
+		image = image.index(yImageOffset, yImageOffset + yImageSize - 1)
+				.index(xImageOffset, xImageOffset + xImageSize - 1).get();
+
+		ArrayM noiseImage = ArrayM.generate(
+				new NoiseGenerator(0.0, noiseSigma), yImageSize, xImageSize);
+		final double noiseVariance = Math.pow(noiseSigma, 2.0);
+
+		image.modify(new Threshold(128));
+		image.modify(new MapFunction()
 		{
 			public double apply(double v)
 			{
 				return v * 2.0 - 1.0;
 			}
-		}));
-		ArrayM noiseImage = ArrayM.generate(
-				new NoiseGenerator(0.0, noiseSigma), yImageSize, xImageSize);
-		ArrayM noisyImage = image.clone().add(noiseImage);
-		final double noiseVariance = Math.pow(noiseSigma, 2.0);
-		ArrayM llr = noisyImage.clone().transform(new MapFunction()
+		});
+		image.add(noiseImage);
+		image.modify(new MapFunction()
 		{
+			// LLR
 			public double apply(double v)
 			{
 				return -2.0 * v / noiseVariance;
 			}
 		});
-		ArrayM likelihoods = llr.clone().transform(new MapFunction()
+		image.modify(new MapFunction()
 		{
+			// likelihood
 			public double apply(double v)
 			{
 				return 1.0 / (1.0 + Math.exp(v));
 			}
 		});
-		return likelihoods;
+
+		return image;
 	}
 }

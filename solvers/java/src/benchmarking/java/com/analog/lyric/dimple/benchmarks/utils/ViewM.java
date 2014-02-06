@@ -1,3 +1,19 @@
+/*******************************************************************************
+ *   Copyright 2014 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
+
 package com.analog.lyric.dimple.benchmarks.utils;
 
 import java.util.ArrayList;
@@ -9,41 +25,41 @@ public class ViewM implements Iterable<int[]>
 
 	private final Indexer[] _indexers;
 
-	public ViewM(ArrayM arrayM, Indexer... slices)
+	public ViewM(ArrayM arrayM, Indexer... indexers)
 	{
 		_arrayM = arrayM;
-		_indexers = slices;
+		_indexers = indexers;
 	}
 
-	public ViewM slice(Indexer slice)
+	public ViewM index(Indexer index)
 	{
-		Indexer[] slices = new Indexer[_indexers.length + 1];
+		Indexer[] indexes = new Indexer[_indexers.length + 1];
 		for (int i = 0; i < _indexers.length; i++)
 		{
-			slices[i] = _indexers[i];
+			indexes[i] = _indexers[i];
 		}
-		slices[_indexers.length] = slice;
-		return new ViewM(_arrayM, slices);
+		indexes[_indexers.length] = index;
+		return new ViewM(_arrayM, indexes);
 	}
 
-	public ViewM slice()
+	public ViewM index()
 	{
-		return slice(Indexer.All);
+		return index(Indexer.All);
 	}
 
-	public ViewM slice(int just)
+	public ViewM index(int just)
 	{
-		return slice(new Indexer(just));
+		return index(new Indexer(just));
 	}
 
-	public ViewM slice(int lowIndex, int highIndex)
+	public ViewM index(int lowIndex, int highIndex)
 	{
-		return slice(new Indexer(lowIndex, highIndex));
+		return index(new Indexer(lowIndex, highIndex));
 	}
 
-	public ViewM slice(int lowIndex, int stride, int highIndex)
+	public ViewM index(int lowIndex, int stride, int highIndex)
 	{
-		return slice(new Indexer(lowIndex, stride, highIndex));
+		return index(new Indexer(lowIndex, stride, highIndex));
 	}
 
 	public Iterator<int[]> iterator()
@@ -110,7 +126,7 @@ public class ViewM implements Iterable<int[]>
 			resultDims[i] = orders.get(i);
 		}
 		ArrayM result = new ArrayM(resultDims);
-		Iterator<int[]> dstIterator = result.slice(Indexer.All).iterator();
+		Iterator<int[]> dstIterator = result.index(Indexer.All).iterator();
 		for (int[] srcIndex : this)
 		{
 			if (!dstIterator.hasNext())

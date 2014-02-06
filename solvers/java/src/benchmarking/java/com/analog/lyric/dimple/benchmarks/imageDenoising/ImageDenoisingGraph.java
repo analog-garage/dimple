@@ -1,3 +1,19 @@
+/*******************************************************************************
+ *   Copyright 2014 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
+
 package com.analog.lyric.dimple.benchmarks.imageDenoising;
 
 import java.io.IOException;
@@ -6,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.dimple.benchmarks.utils.ArrayM.GeneratorWithCoordinatesFunction;
+import com.analog.lyric.dimple.benchmarks.utils.ArrayM.IterFunctionWithCoordinates;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -21,16 +39,10 @@ public class ImageDenoisingGraph
 
 	ImageDenoisingGraph(final FactorGraph fg, final String factorFileName,
 			final int xImageSize, final int yImageSize, final int xBlockSize,
-			final int yBlockSize, final boolean verbose)
+			final int yBlockSize)
 	{
-
 		int blockSize = xBlockSize * yBlockSize;
 
-		int[] dims = new int[blockSize];
-		for (int i = 0; i < dims.length; i++)
-		{
-			dims[i] = 2;
-		}
 		double[] factorTableValues = loadFactorTableValues(factorFileName);
 
 		_rows = yImageSize;
@@ -38,15 +50,9 @@ public class ImageDenoisingGraph
 		int blockRows = _rows - yBlockSize + 1;
 		int blockCols = _cols - xBlockSize + 1;
 
-		if (verbose)
-		{
-			System.out.println("Creating variables");
-		}
 		_vs = new Bit[_rows][_cols];
-		// for row = 1:rows
 		for (int row = 0; row < _rows; row++)
 		{
-			// Vs(row,:).setNames(['V_row' num2str(row)]);
 			for (int col = 0; col < _cols; col++)
 			{
 				_vs[row][col] = new Bit();
@@ -54,56 +60,36 @@ public class ImageDenoisingGraph
 			}
 		}
 
-		if (verbose)
-		{
-			System.out.println("Done creating variables");
-		}
-
 		DiscreteDomain[] domains = new DiscreteDomain[blockSize];
 		for (int i = 0; i < domains.length; i++)
 		{
-			domains[i] = DiscreteDomain.create(0, 1);
+			domains[i] = DiscreteDomain.bit();
 		}
 		IFactorTable factorTable = FactorTable.create(domains);
 		factorTable.setWeightsDense(factorTableValues);
 
-		// yList = 1:blockRows;
 		Bit[] varPatch = new Bit[blockSize];
 		for (int yList = 0; yList < blockRows; yList++)
 		{
-			// xList = 1:blockCols;
 			for (int xList = 0; xList < blockCols; xList++)
 			{
-				// tempVar = Bit(); % Do this to avoid creating a whole array of
-				// temp
-				// variables
-				// varPatches =
-				// repmat(tempVar,[blockCols,blockRows,xBlockSize*yBlockSize]);
-				// blockOffset = 1;
 				int blockOffset = 0;
-				// for yb = 0:yBlockSize-1
-				for (int yb = 0; yb < yBlockSize - 1; yb++)
+				for (int yb = 0; yb < yBlockSize; yb++)
 				{
-					// for xb = 0:xBlockSize-1
-					for (int xb = 0; xb < xBlockSize - 1; xb++)
+					for (int xb = 0; xb < xBlockSize; xb++)
 					{
-						// TODO: Was this a bug? Reversing rows and columns...
-						// varPatches(:,:,blockOffset) = Vs(xb+xList,yb+yList);
 						varPatch[blockOffset] = _vs[yb + yList][xb + xList];
-						 blockOffset = blockOffset + 1;
-						// end
-						// end
+						blockOffset = blockOffset + 1;
 					}
 				}
-				// fg.addFactorVectorized(factorTable,{varPatches,[1,2]});
-				fg.addFactor(factorTable,  varPatch);
+				fg.addFactor(factorTable, varPatch);
 			}
 		}
 	}
 
-	private double[] loadFactorTableValues(String factorFileName)
+	private double[] loadFactorTableValues(String name)
 	{
-		InputStream i = this.getClass().getResourceAsStream(factorFileName);
+		InputStream i = this.getClass().getResourceAsStream(name);
 		try
 		{
 			Scanner scanner = new Scanner(i);
@@ -132,17 +118,34 @@ public class ImageDenoisingGraph
 
 	public void setInput(ArrayM likelihoods)
 	{
-		for (int[] coordinates : likelihoods)
+		likelihoods.iter(new IterFunctionWithCoordinates()
 		{
-			int row = coordinates[0];
-			int col = coordinates[1];
-			_vs[row][col].setInput(likelihoods.get(coordinates));
-		}
+			public void apply(double value, int... coordinates)
+			{
+				int row = coordinates[0];
+				int col = coordinates[1];
+				_vs[row][col].setInput(value);
+			}
+		});
 	}
 
-	public double getValue(int row, int col)
+	public double getValue(int... coordinates)
 	{
-		return (Double)(_vs[row][col].getValue());
+		int row = coordinates[0];
+		int col = coordinates[1];
+		return (Integer) (_vs[row][col].getValue());
 	}
 
+	public ArrayM getValue()
+	{
+		return ArrayM.generate(new GeneratorWithCoordinatesFunction()
+		{
+			public double apply(int... coordinates)
+			{
+				int row = coordinates[0];
+				int col = coordinates[1];
+				return (Double) _vs[row][col].getValue();
+			}
+		}, _rows, _cols);
+	}
 }

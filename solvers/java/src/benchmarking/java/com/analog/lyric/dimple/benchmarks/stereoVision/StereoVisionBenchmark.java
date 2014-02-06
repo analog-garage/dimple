@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public class StereoVisionBenchmark
 {
-	private final boolean saveResult = true;	
+	private final boolean saveResult = false;	
 	
 	@Benchmark(warmupIterations = 0, iterations = 2)
 	public boolean stereoVisionArtScaledGibbs() throws IOException
@@ -39,7 +39,7 @@ public class StereoVisionBenchmark
 	}
 
 	@Benchmark(warmupIterations = 0, iterations = 2)
-	public boolean stereoVisionArtScaledBP() throws IOException
+	public boolean stereoVisionArtScaledSumProduct() throws IOException
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
@@ -49,7 +49,7 @@ public class StereoVisionBenchmark
 	}
 
 	@Benchmark(warmupIterations = 0, iterations = 2)
-	public boolean stereoVisionArtScaledMinsum() throws IOException
+	public boolean stereoVisionArtScaledMinSum() throws IOException
 	{
 		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.minsum.Solver());
@@ -69,7 +69,7 @@ public class StereoVisionBenchmark
 		if (saveResult && saveLabel != null)
 		{
 			ArrayM result = stereoVisionGraph.getValueImage();
-			result.normalize().transform(Image.contrastCurve);
+			result.normalize().modify(Image.contrastCurve);
 			String resultPath = String.format("%s_%s.png", dataSetName, saveLabel);
 			Image.saveImage(resultPath, result);
 		}

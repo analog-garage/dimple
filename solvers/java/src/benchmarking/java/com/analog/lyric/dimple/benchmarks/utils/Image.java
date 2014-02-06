@@ -81,7 +81,8 @@ public class Image
 		ImageIO.write(result, "png", new File(path));
 	}
 
-	private static class ContrastCurveImpl implements MapFunction {
+	private static class ContrastCurveImpl implements MapFunction
+	{
 		final double s = 0.99;
 		final double bp = (1 + s) / 2;
 		final double b = Math.log(bp / (1 - bp));
@@ -92,9 +93,9 @@ public class Image
 			double a = v * s + (1 - s) / 2;
 			double c = Math.log(a / (1 - a));
 			double vp = (c + b) / 2 / b;
-			return (1.0 - Math.exp(-s2 * vp)) / (1.0 - Math.exp(-s2));		
+			return (1.0 - Math.exp(-s2 * vp)) / (1.0 - Math.exp(-s2));
 		}
 	}
-	
+
 	public final static MapFunction contrastCurve = new ContrastCurveImpl();
 }
