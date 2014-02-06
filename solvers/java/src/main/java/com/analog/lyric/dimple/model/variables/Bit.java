@@ -27,12 +27,12 @@ public class Bit extends Discrete
 	
 	public double getP1()
 	{
-		return getBelief()[0];
+		return getBelief()[1];
 	}
 
 	public void setInput(double p1)
 	{
-		setInput(p1,1-p1);
+		setInput(1 - p1, p1);
 	}
 	
 }

@@ -158,6 +158,18 @@ public abstract class AbstractHeap<E>
 	}
 	
 	@Override
+	public boolean deferOrderingForBulkAdd(int n)
+	{
+		return false;
+	}
+	
+	@Override
+	public boolean deferOrderingForBulkChange(int n)
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean merge(IHeap<E> other)
 	{
 		Iterator<? extends IEntry<E>> entries = other.entryIterator();
