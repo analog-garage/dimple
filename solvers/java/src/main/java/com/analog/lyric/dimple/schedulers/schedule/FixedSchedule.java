@@ -18,13 +18,14 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -224,17 +225,17 @@ public class FixedSchedule extends ScheduleBase
 	}
 	
 	@Override
-	public ISchedule copy(HashMap<Object,Object> old2newObjs)
+	public ISchedule copy(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
 	@Override
-	public ISchedule copyToRoot(HashMap<Object,Object> old2newObjs)
+	public ISchedule copyToRoot(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
 	
-	public ISchedule copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot)
+	public ISchedule copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
 	{
 		FactorGraph templateGraph = getFactorGraph();
 		

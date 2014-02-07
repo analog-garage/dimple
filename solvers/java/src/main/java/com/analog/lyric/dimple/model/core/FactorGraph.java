@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -833,7 +834,7 @@ public class FactorGraph extends FactorBase
 				templateGraph,
 				parentGraph,
 				false,
-				new HashMap<Object, Object>());
+				new HashMap<Node, Node>());
 			}
 
 	// Copy constructor -- create a graph incorporating all of the variables, functions, and sub-graphs of the template graph
@@ -841,7 +842,7 @@ public class FactorGraph extends FactorBase
 			FactorGraph templateGraph,
 			FactorGraph parentGraph,
 			boolean copyToRoot,
-			HashMap<Object, Object> old2newObjs)
+			Map<Node, Node> old2newObjs)
 			{
 		this(boundaryVariables,
 				templateGraph.getExplicitName(),
@@ -946,9 +947,9 @@ public class FactorGraph extends FactorBase
 
 	public FactorGraph copyRoot()
 	{
-		return copyRoot(new HashMap<Object, Object>());
+		return copyRoot(new HashMap<Node, Node>());
 	}
-	public FactorGraph copyRoot(HashMap<Object, Object> old2newObjs)
+	public FactorGraph copyRoot(Map<Node, Node> old2newObjs)
 	{
 		FactorGraph root = getRootGraph();
 
