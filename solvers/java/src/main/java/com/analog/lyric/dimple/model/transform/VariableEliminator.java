@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
@@ -93,8 +95,8 @@ import com.google.common.collect.Iterators;
  * </ul>
  * <p>
  * NOTE: this implementation currently does not handle models that contain non-Discrete variables
- * and it does not currently take into account fixed values (conditioning) or the contents of the
- * factors.
+ * unless they have fixed values and {@link #usesConditioning()} is true. It also
+ * and it does not take into account the contents of the factor tables.
  *
  * @author Christopher Barber
  * @since 0.05
@@ -192,24 +194,6 @@ public class VariableEliminator
 	 */
 
 	/**
-	 * Computes a variable elimination ordering using given parameters.
-	 * <p>
-	 * Helper function that builds an eliminator object for given {@code model} and
-	 * {@code useConditioning} attribute, and {@code cost} function.
-	 * <p>
-	 * @see #VariableEliminator(FactorGraph, boolean)
-	 * @see #orderIterator(VariableCost)
-	 */
-	public static List<VariableBase> generate(FactorGraph model, boolean useConditioning, VariableCost cost)
-	{
-		VariableEliminator eliminator = new VariableEliminator(model, useConditioning);
-		OrderIterator iterator = eliminator.orderIterator(cost);
-		List<VariableBase> list = new ArrayList<VariableBase>(iterator.size());
-		Iterators.addAll(list, iterator);
-		return iterator.getStats().addedEdges() == 0 ? null : list;
-	}
-	
-	/**
 	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
 	 * and choosing the best fit according to the specified threshold statistics.
 	 * <p>
@@ -221,29 +205,42 @@ public class VariableEliminator
 	 * stats at any point satisfy the specified threshold values (as determined by {@link Stats#meetsThreshold(Stats)}
 	 * then the function will return immediately.
 	 * <p>
-	 * For example:
+	 * For example, the following call will generate an order by conditioning out any fixed value variables,
+	 * and will randomly try weighted min neighbors or weighted min fill cost functions up to ten iterations
+	 * and returning the first one to achieve a max clique cardinality of no more than 42, otherwise returns
+	 * the order with the best max clique cardinality:
+	 * 
 	 * <pre>{@code
-	 *     List<VariableBase> order = generateStochastically(fg, true, 10,
+	 *     Ordering order = generateStochastically(fg, true, 10,
 	 *         new Stats().maxCliqueCardinality(42),
 	 *         VariableCost.WEIGHTED_MIN_NEIGHBORS, VariableCost.WEIGHTED_MIN_FILL)
 	 * }</pre>
 	 * <p>
 	 * @param model is the graph for which the eliminator order is being computed.
 	 * @param useConditioning specifies whether to use conditioning (see {@link #usesConditioning()}
-	 * @param nAttempts is the number of potential iteration orders to compute
+	 * @param nAttempts is the number of potential iteration orders to compute. If not a positive value,
+	 * then each cost function will be tried once deterministically.
 	 * @param threshold specifies which statistics should be used to evaluate the goodness of a given
 	 * ordering (see {@link Stats#compareTo(Stats, Stats)}) and also threshold values for each
 	 * statistic that will terminate the function before all {@code nAttempts} have been tried
 	 * (see {@link Stats#meetsThreshold(Stats)}). Only statistics with non-negative threshold
 	 * values will be considered.
-	 * @param costFunctions is a list of one or more cost functions to be used
+	 * @param costFunctions is a list of cost functions to be used. If empty, all will be tried.
 	 *
 	 * @return the variable elimination order that best satisfied the {@code threshold} statistics.
 	 */
-	public static List<VariableBase> generateStochastically(FactorGraph model, boolean useConditioning,
-		int nAttempts, Stats threshold, VariableCost ... costFunctions)
+	public static Ordering generate(
+		FactorGraph model,
+		boolean useConditioning,
+		int nAttempts,
+		Stats threshold,
+		VariableCost ... costFunctions)
 	{
-		VariableEliminator eliminator = new VariableEliminator(model, useConditioning);
+		final boolean deterministic = nAttempts <= 0;
+		final VariableEliminator eliminator =
+			deterministic?
+				new VariableEliminator(model, useConditioning, null) :
+				new VariableEliminator(model, useConditioning);
 		
 		if (costFunctions.length == 0)
 		{
@@ -251,14 +248,23 @@ public class VariableEliminator
 		}
 		final int nFunctions = costFunctions.length;
 		
+		if (deterministic)
+		{
+			nAttempts = nFunctions;
+		}
+		
 		ArrayList<VariableBase> curList = new ArrayList<VariableBase>(eliminator._nVariables);
 		ArrayList<VariableBase> bestList = new ArrayList<VariableBase>(eliminator._nVariables);
 		Stats bestStats = null;
 		
 		for (int attempt = 0; attempt < nAttempts; ++attempt)
 		{
-			// Randomly pick a cost function from list.
-			VariableCost cost = nFunctions == 1 ? costFunctions[0] : costFunctions[eliminator._rand.nextInt(nFunctions)];
+			// Pick a cost function
+			VariableCost cost = costFunctions[0];
+			if (nFunctions > 1)
+			{
+				cost = costFunctions[deterministic ? attempt : eliminator._rand.nextInt(nFunctions)];
+			}
 			
 			// Run variable elimination
 			OrderIterator iterator = eliminator.orderIterator(cost);
@@ -269,8 +275,9 @@ public class VariableEliminator
 			
 			if (curStats.addedEdges() == 0)
 			{
-				// Graph is already a tree.
-				return null;
+				bestStats = curStats;
+				bestList = curList;
+				break;
 			}
 			
 			if (bestStats == null || curStats.compareTo(bestStats, threshold) < 0)
@@ -288,7 +295,7 @@ public class VariableEliminator
 			}
 		}
 		
-		return bestList;
+		return new Ordering(bestList, bestStats);
 	}
 	
 	/**
@@ -330,6 +337,23 @@ public class VariableEliminator
 		return _useConditioning;
 	}
 	
+	/*----------
+	 * Ordering
+	 */
+	
+	@Immutable
+	public static class Ordering
+	{
+		public final ArrayList<VariableBase> variables;
+		public final Stats stats;
+		
+		private Ordering(ArrayList<VariableBase> variables, Stats stats)
+		{
+			this.variables = variables;
+			this.stats = stats;
+		}
+	}
+	
 	/*----------------
 	 * OrderIterator
 	 */
@@ -349,7 +373,7 @@ public class VariableEliminator
 		private final VariableCost _cost;
 		private final CostFunction _costFunction;
 		private final IHeap<Var> _heap;
-		private final Stats _stats = new Stats(0);
+		private final Stats _stats;
 		
 		/*--------------
 		 * Construction
@@ -360,6 +384,7 @@ public class VariableEliminator
 			_eliminator = eliminator;
 			_cost = cost;
 			_costFunction = cost._costFunction;
+			_stats = new Stats(cost, 0);
 		
 			final int size = adjacencyList.size();
 		
@@ -393,7 +418,12 @@ public class VariableEliminator
 			}
 
 			// Remove variable from graph
-			long cliqueCardinality = _eliminator.isConditioned(var._variable) ? 1 : var.cardinality();
+			final boolean isConditioned =_eliminator.isConditioned(var._variable);
+			if (isConditioned)
+			{
+				_stats.addConditionedVariable();
+			}
+			long cliqueCardinality = isConditioned ? 1 : var.cardinality();
 			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
 			{
 				final Var neighbor = link._var;
@@ -511,8 +541,11 @@ public class VariableEliminator
 	 */
 	public static class Stats
 	{
+		private final VariableCost _cost;
+		
 		private int _addedEdges;
 		private long _addedEdgeWeight;
+		private int _conditionedVariables;
 		private int _maxClique;
 		private long _maxCliqueCardinality;
 		
@@ -525,21 +558,35 @@ public class VariableEliminator
 		 */
 		public Stats()
 		{
-			this(-1);
+			this(null, -1);
 		}
 		
-		private Stats(int value)
+		private Stats(VariableCost cost, int value)
 		{
+			_cost = cost;
+			
 			_addedEdges = value;
 			_addedEdgeWeight = value;
+			_conditionedVariables = value;
 			_maxClique = value;
 			_maxCliqueCardinality = value;
 		}
 		
-		/*------------
-		 * Comparison
+		/*--------------------
+		 * Evaluation methods
 		 */
 
+		/**
+		 * False if statistics indicates that the original graph does not need to be transformed
+		 * to do efficient exact inference.
+		 * <p>
+		 * True if {@link #addedEdges()} and {@link #conditionedVariables()} are both zero.
+		 */
+		public boolean alreadyGoodForFastExactInference()
+		{
+			return _addedEdges == 0 && _conditionedVariables == 0;
+		}
+		
 		/**
 		 * Returns -1/0/1 if these stats are deemed better than/same as/worse than {@code other} stats given specified
 		 * threshold definition. Attributes for which {@code threshold} has a negative value
@@ -641,6 +688,37 @@ public class VariableEliminator
 		}
 		
 		/**
+		 * The number of variables that were eliminated by conditioning. That is, the number of variables
+		 * with a fixed value when the variable eliminator is using conditioning.
+		 * <p>
+		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 * <p>
+		 * @see VariableBase#hasFixedValue()
+		 * @see VariableEliminator#usesConditioning()
+		 */
+		public int conditionedVariables()
+		{
+			return _conditionedVariables;
+		}
+
+		/**
+		 * Sets value of {@link #conditionedVariables()} and returns this object.
+		 */
+		public Stats conditionedVariables(int n)
+		{
+			_conditionedVariables = n;
+			return this;
+		}
+
+		/**
+		 * The cost function used to generate these stats, if from {@link OrderIterator}.
+		 */
+		public VariableCost cost()
+		{
+			return _cost;
+		}
+		
+		/**
 		 * Returns the size of the largest clique induced by the execution of the algorithm.
 		 * The clique size is determined when a variable is eliminated and is equivalent to
 		 * the number of non-eliminated neighbors of the variable plus one (for the variable itself).
@@ -692,6 +770,11 @@ public class VariableEliminator
 		{
 			_maxClique = Math.max(_maxClique, size);
 			_maxCliqueCardinality = Math.max(_maxCliqueCardinality, cardinality);
+		}
+		
+		private void addConditionedVariable()
+		{
+			++_conditionedVariables;
 		}
 	}
 	
