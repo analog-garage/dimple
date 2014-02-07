@@ -307,6 +307,12 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
 	}
 
+	/**
+	 * Returns an array with length at least {@link #size()}.
+	 * <p>
+	 * If {@code indices} is non-null and is sufficiently long, it will be returned.
+	 * Otherwise a newly allocated array will be returned.
+	 */
 	public final int[] allocateIndices(int [] indices)
 	{
 		if (indices == null || indices.length < _domains.length)
