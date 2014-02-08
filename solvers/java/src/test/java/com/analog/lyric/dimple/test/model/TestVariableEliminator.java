@@ -197,11 +197,11 @@ public class TestVariableEliminator
 	/**
 	 * Graph of form:
 	 * <pre>
-	 *  a[2]------c[4]------e[6]------g[3]
+	 *  a[2]===---c[4]------e[6]------g[3]
 	 *   |          |         |         |
 	 *   |          |         |         |
 	 *   |          |         |         |
-	 *  b[3]------d[5]------f[7]------h[4]
+	 *  b[3]------d[5]---===f[7]------h[4]
 	 * </pre>
 	 */
 	@Test
@@ -214,13 +214,13 @@ public class TestVariableEliminator
 		Discrete c = newVar(4, "c");
 		Discrete d = newVar(5, "d");
 		addClique(model, c, d);
-		addClique(model, a, c);
+		addClique(model, a, a, c); // add double link from a to a-c factor.
 		addClique(model, b, d);
 		Discrete e = newVar(6, "e");
 		Discrete f = newVar(7, "f");
 		addClique(model, e, f);
 		addClique(model, c, e);
-		addClique(model, d, f);
+		addClique(model, d, f, f); // add double link from f to d-f factor
 		Discrete g = newVar(3, "g");
 		Discrete h = newVar(4, "h");
 		addClique(model, g, h);
@@ -229,7 +229,8 @@ public class TestVariableEliminator
 		
 		testEliminator(model, VariableCost.MIN_NEIGHBORS,
 			expectedStats().addedEdges(3).addedEdgeWeight(63)
-			.maxCliqueSize(3).maxCliqueCardinality(210),
+			.maxCliqueSize(3).maxCliqueCardinality(210)
+			.factorsWithDuplicateVariables(2),
 			a, b, c, d, e, f, g, h);
 		
 		testEliminator(model, VariableCost.WEIGHTED_MIN_NEIGHBORS,
@@ -478,9 +479,14 @@ public class TestVariableEliminator
 		assertTrue(new Stats().conditionedVariables(2).meetsThreshold(new Stats().conditionedVariables(0)));
 		
 		// Test alreadyGoodForExactInference
-		assertTrue(new Stats().addedEdges(0).conditionedVariables(0).alreadyGoodForFastExactInference());
-		assertFalse(new Stats().addedEdges(1).conditionedVariables(0).alreadyGoodForFastExactInference());
-		assertFalse(new Stats().addedEdges(0).conditionedVariables(1).alreadyGoodForFastExactInference());
+		assertTrue(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(1).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(1).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(1)
+			.alreadyGoodForFastExactInference());
 	}
 	
 	/*----------------
@@ -533,6 +539,7 @@ public class TestVariableEliminator
 		OrderIterator iterator = eliminator.orderIterator(cost);
 		assertSame(eliminator, iterator.getEliminator());
 		assertSame(cost, iterator.getCostEvaluator());
+		assertSame(cost, iterator.getStats().cost());
 		
 		int nVariables = model.getVariableCount();
 		assertEquals(nVariables, iterator.size());
@@ -605,6 +612,10 @@ public class TestVariableEliminator
 		if (expected.conditionedVariables() >= 0)
 		{
 			assertEquals(expected.conditionedVariables(), actual.conditionedVariables());
+		}
+		if (expected.factorsWithDuplicateVariables() >= 0)
+		{
+			assertEquals(expected.factorsWithDuplicateVariables(), actual.factorsWithDuplicateVariables());
 		}
 		if (expected.maxCliqueSize() >= 0)
 		{

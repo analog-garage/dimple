@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -324,7 +325,7 @@ public class VariableEliminator
 	 */
 	public OrderIterator orderIterator(VariableCost cost)
 	{
-		return new OrderIterator(this, buildAdjacencyList(), cost);
+		return new OrderIterator(this, cost);
 	}
 	
 	/**
@@ -370,7 +371,6 @@ public class VariableEliminator
 	public static class OrderIterator implements Iterator<VariableBase>
 	{
 		private final VariableEliminator _eliminator;
-		private final VariableCost _cost;
 		private final CostFunction _costFunction;
 		private final IHeap<Var> _heap;
 		private final Stats _stats;
@@ -379,13 +379,13 @@ public class VariableEliminator
 		 * Construction
 		 */
 		
-		private OrderIterator(VariableEliminator eliminator, List<Var> adjacencyList, VariableCost cost)
+		private OrderIterator(VariableEliminator eliminator, VariableCost cost)
 		{
 			_eliminator = eliminator;
-			_cost = cost;
 			_costFunction = cost._costFunction;
 			_stats = new Stats(cost, 0);
 		
+			final List<Var> adjacencyList = eliminator.buildAdjacencyList(_stats);
 			final int size = adjacencyList.size();
 		
 			final IHeap<Var> heap = _heap = new BinaryHeap<Var>(size);
@@ -508,7 +508,7 @@ public class VariableEliminator
 		 */
 		public VariableCost getCostEvaluator()
 		{
-			return _cost;
+			return _stats.cost();
 		}
 		
 		/**
@@ -546,9 +546,10 @@ public class VariableEliminator
 		private int _addedEdges;
 		private long _addedEdgeWeight;
 		private int _conditionedVariables;
+		private int _factorsWithDuplicateVariables;
 		private int _maxClique;
 		private long _maxCliqueCardinality;
-		
+
 		/*--------------
 		 * Construction
 		 */
@@ -568,6 +569,7 @@ public class VariableEliminator
 			_addedEdges = value;
 			_addedEdgeWeight = value;
 			_conditionedVariables = value;
+			_factorsWithDuplicateVariables = value;
 			_maxClique = value;
 			_maxCliqueCardinality = value;
 		}
@@ -580,11 +582,12 @@ public class VariableEliminator
 		 * False if statistics indicates that the original graph does not need to be transformed
 		 * to do efficient exact inference.
 		 * <p>
-		 * True if {@link #addedEdges()} and {@link #conditionedVariables()} are both zero.
+		 * True if {@link #addedEdges()} and {@link #conditionedVariables()} and
+		 * {@link #factorsWithDuplicateVariables()} are all zero.
 		 */
 		public boolean alreadyGoodForFastExactInference()
 		{
-			return _addedEdges == 0 && _conditionedVariables == 0;
+			return _addedEdges == 0 && _conditionedVariables == 0 && _factorsWithDuplicateVariables == 0;
 		}
 		
 		/**
@@ -719,6 +722,25 @@ public class VariableEliminator
 		}
 		
 		/**
+		 * The number of factors with more than one edge to the same variable.
+		 * <p>
+		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 */
+		public int factorsWithDuplicateVariables()
+		{
+			return _factorsWithDuplicateVariables;
+		}
+		
+		/**
+		 * Sets value of {@link #factorsWithDuplicateVariables()} and returns this object.
+		 */
+		public Stats factorsWithDuplicateVariables(int n)
+		{
+			_factorsWithDuplicateVariables = n;
+			return this;
+		}
+		
+		/**
 		 * Returns the size of the largest clique induced by the execution of the algorithm.
 		 * The clique size is determined when a variable is eliminated and is equivalent to
 		 * the number of non-eliminated neighbors of the variable plus one (for the variable itself).
@@ -776,6 +798,11 @@ public class VariableEliminator
 		{
 			++_conditionedVariables;
 		}
+
+		public void addFactorWithDuplicateVars(FactorBase factor)
+		{
+			++_factorsWithDuplicateVariables;
+		}
 	}
 	
 	/*-----------------------
@@ -815,7 +842,7 @@ public class VariableEliminator
 		
 		private boolean addNeighbor(Var neighbor)
 		{
-			if (!_neighborMap.containsKey(neighbor))
+			if (neighbor != this && !_neighborMap.containsKey(neighbor))
 			{
 				VarLink link = new VarLink(neighbor);
 				_neighborMap.put(neighbor, link);
@@ -1027,13 +1054,9 @@ public class VariableEliminator
 	 * Private methods
 	 */
 	
-	private List<Var> buildAdjacencyList()
+	private List<Var> buildAdjacencyList(Stats stats)
 	{
-		return buildAdjacencyList(new ArrayList<Var>(_nVariables));
-	}
-	
-	private List<Var> buildAdjacencyList(List<Var> list)
-	{
+		final List<Var> list = new LinkedList<Var>();
 		final VariableList variables = _model.getVariables();
 		final Map<VariableBase,Var> map = new HashMap<VariableBase,Var>(variables.size());
 		
@@ -1046,36 +1069,54 @@ public class VariableEliminator
 			Var var = new Var(variable, generateCostIncrement(variable));
 			map.put(variable, var);
 			list.add(var);
+			variable.clearMarked();
 		}
 		
-		FactorList factors = _model.getFactors();
+		final FactorList factors = _model.getFactors();
+		Var[] vars = new Var[10];
 		
 		for (FactorBase factor : factors)
 		{
-			int nVars = factor.getSiblingCount();
-			Var[] vars = new Var[nVars];
+			final int nVars = factor.getSiblingCount();
+			if (vars.length < nVars)
+			{
+				vars = new Var[nVars];
+			}
+			
+			int nIncludedVars = 0;
+			boolean factorHasDuplicateVars = false;
 			
 			for (int i = 0; i < nVars; ++i)
 			{
-				VariableBase neighbor = factor.getSibling(i);
-				vars[i] = isConditioned(neighbor) ? null : map.get(neighbor);
+				final VariableBase neighbor = factor.getSibling(i);
+				if (!isConditioned(neighbor))
+				{
+					factorHasDuplicateVars |= neighbor.isMarked();
+					neighbor.setMarked();
+					vars[nIncludedVars++] = map.get(neighbor);
+				}
 			}
 			
-			for (int i = nVars; --i>=1;)
+			if (factorHasDuplicateVars)
 			{
-				Var vari = vars[i];
-				if (vari != null)
+				stats.addFactorWithDuplicateVars(factor);
+			}
+
+			// Connect all variables in factor to each other.
+			for (int i = nIncludedVars; --i>=1;)
+			{
+				final Var vari = vars[i];
+				vari._variable.clearMarked();
+				for (int j = i; --j>=0;)
 				{
-					for (int j = i; --j>=0;)
-					{
-						Var varj = vars[j];
-						if (varj != null)
-						{
-							vari.addNeighbor(varj);
-							varj.addNeighbor(vari);
-						}
-					}
+					final Var varj = vars[j];
+					vari.addNeighbor(varj);
+					varj.addNeighbor(vari);
 				}
+			}
+			if (nIncludedVars > 0)
+			{
+				vars[0]._variable.clearMarked();
 			}
 		}
 		
