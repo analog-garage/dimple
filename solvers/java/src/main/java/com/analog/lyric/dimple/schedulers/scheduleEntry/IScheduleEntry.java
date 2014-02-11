@@ -16,8 +16,9 @@
 
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
-import java.util.HashMap;
+import java.util.Map;
 
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 
 
@@ -32,8 +33,8 @@ public interface IScheduleEntry
 {
 	public abstract void update() ;
 	
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs) ;
-	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs) ;
+	public IScheduleEntry copy(Map<Node,Node> old2newObjs) ;
+	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs) ;
 	
 	public Iterable<Port> getPorts();
 }

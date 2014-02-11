@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.OrderIterator;
+import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -52,7 +53,8 @@ public class TestVariableEliminator
 		
 		final Stats treeStats = expectedStats()
 			.addedEdges(0)
-			.addedEdgeWeight(0);
+			.addedEdgeWeight(0)
+			.conditionedVariables(0);
 		
 		//
 		// A simple linear chain graph
@@ -159,16 +161,47 @@ public class TestVariableEliminator
 			expectedStats().addedEdges(1).addedEdgeWeight(8)
 			.maxCliqueSize(3).maxCliqueCardinality(40),
 			b, a, c, d);
+		
+		testGenerate(model, true,
+			thresholdStats().maxCliqueCardinality(5),
+			expectedStats().addedEdges(1).addedEdgeWeight(8)
+			.maxCliqueSize(3).maxCliqueCardinality(40),
+			b, d, a, c);
+		
+		testGenerate(model, true,
+			thresholdStats().maxCliqueCardinality(60),
+			expectedStats().addedEdges(1).addedEdgeWeight(15)
+			.maxCliqueSize(3).maxCliqueCardinality(60),
+			a, b, c, d);
+
+		//
+		// Test conditioning
+		//
+		
+		b.setFixedValue(2);
+		
+		testEliminator(model, VariableCost.MIN_NEIGHBORS,
+			expectedStats().addedEdges(1).addedEdgeWeight(15)
+			.maxCliqueSize(3).maxCliqueCardinality(60)
+			.conditionedVariables(0),
+			a, b, c, d);
+
+		testEliminator(model, true, VariableCost.MIN_NEIGHBORS,
+			expectedStats().addedEdges(0).addedEdgeWeight(0)
+			.maxCliqueSize(2).maxCliqueCardinality(20)
+			.conditionedVariables(1),
+			b, a, c, d);
+		
 	}
 	
 	/**
 	 * Graph of form:
 	 * <pre>
-	 *  a[2]------c[4]------e[6]------g[3]
+	 *  a[2]===---c[4]------e[6]------g[3]
 	 *   |          |         |         |
 	 *   |          |         |         |
 	 *   |          |         |         |
-	 *  b[3]------d[5]------f[7]------h[4]
+	 *  b[3]------d[5]---===f[7]------h[4]
 	 * </pre>
 	 */
 	@Test
@@ -181,13 +214,13 @@ public class TestVariableEliminator
 		Discrete c = newVar(4, "c");
 		Discrete d = newVar(5, "d");
 		addClique(model, c, d);
-		addClique(model, a, c);
+		addClique(model, a, a, c); // add double link from a to a-c factor.
 		addClique(model, b, d);
 		Discrete e = newVar(6, "e");
 		Discrete f = newVar(7, "f");
 		addClique(model, e, f);
 		addClique(model, c, e);
-		addClique(model, d, f);
+		addClique(model, d, f, f); // add double link from f to d-f factor
 		Discrete g = newVar(3, "g");
 		Discrete h = newVar(4, "h");
 		addClique(model, g, h);
@@ -196,7 +229,8 @@ public class TestVariableEliminator
 		
 		testEliminator(model, VariableCost.MIN_NEIGHBORS,
 			expectedStats().addedEdges(3).addedEdgeWeight(63)
-			.maxCliqueSize(3).maxCliqueCardinality(210),
+			.maxCliqueSize(3).maxCliqueCardinality(210)
+			.factorsWithDuplicateVariables(2),
 			a, b, c, d, e, f, g, h);
 		
 		testEliminator(model, VariableCost.WEIGHTED_MIN_NEIGHBORS,
@@ -213,6 +247,24 @@ public class TestVariableEliminator
 			expectedStats().addedEdges(3).addedEdgeWeight(59)
 			.maxCliqueSize(3).maxCliqueCardinality(168)
 			, b, a, h, g, d, c, e, f);
+		
+		//
+		// Test conditioning
+		//
+		
+		c.setFixedValue(2);
+		
+		testEliminator(model, false, VariableCost.WEIGHTED_MIN_NEIGHBORS,
+			expectedStats().addedEdges(3).addedEdgeWeight(59)
+			.maxCliqueSize(3).maxCliqueCardinality(168)
+			.conditionedVariables(0)
+			, b, a, h, d, c, f, e, g);
+		
+		testEliminator(model, true, VariableCost.WEIGHTED_MIN_NEIGHBORS,
+			expectedStats().addedEdges(1).addedEdgeWeight(21)
+			.maxCliqueSize(3).maxCliqueCardinality(126)
+			.conditionedVariables(1)
+			, c, a, b, d, e, f, g, h);
 	}
 
 	/**
@@ -281,7 +333,7 @@ public class TestVariableEliminator
 	}
 	
 	/**
-	 * Extended student Bayesian network from Koller's Probabilisitic Graphical Models (Figure 9.8)
+	 * Extended student Bayesian network from Koller's Probabilistic Graphical Models (Figure 9.8)
 	 * <pre>
 	 *   c[3]
 	 *     |
@@ -354,14 +406,102 @@ public class TestVariableEliminator
 		r.setName("r");
 		addClique(model, a, b, r);
 		
-		VariableEliminator eliminator = new VariableEliminator(model);
+		VariableEliminator eliminator = new VariableEliminator(model, false);
 		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
 			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		eliminator = new VariableEliminator(model, true);
+		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
+			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		
+		r.setFixedValue(1.0);
+		eliminator = new VariableEliminator(model, false);
+		expectThrow(DimpleException.class, ".*cannot handle non-discrete variable.*",
+			eliminator, "orderIterator", VariableCost.MIN_FILL);
+		
+		testEliminator(model, true, VariableCost.MIN_FILL,
+			expectedStats().addedEdges(0).addedEdgeWeight(0)
+			.maxCliqueSize(2).maxCliqueCardinality(20),
+			r, a, b);
 	}
+	
+	@Test
+	public void testStats()
+	{
+		Stats stats = new Stats();
+		assertEquals(-1, stats.addedEdges());
+		assertEquals(-1, stats.addedEdgeWeight());
+		assertEquals(-1, stats.conditionedVariables());
+		assertEquals(-1, stats.maxCliqueSize());
+		assertEquals(-1, stats.maxCliqueCardinality());
+		assertCompareTo(0, stats, stats, stats);
+		assertTrue(stats.meetsThreshold(stats));
+		
+		assertSame(stats, stats.addedEdges(2));
+		assertSame(stats, stats.addedEdgeWeight(10));
+		assertSame(stats, stats.conditionedVariables(1));
+		assertSame(stats, stats.maxCliqueSize(3));
+		assertSame(stats, stats.maxCliqueCardinality(20));
+		assertEquals(2, stats.addedEdges());
+		assertEquals(10, stats.addedEdgeWeight());
+		assertEquals(1, stats.conditionedVariables());
+		assertEquals(3, stats.maxCliqueSize());
+		assertEquals(20, stats.maxCliqueCardinality());
+		assertCompareTo(0, stats, stats, stats);
+		
+		assertCompareTo(-1, stats, new Stats().addedEdges(3), new Stats().addedEdges(100));
+		assertCompareTo(0, stats, new Stats().addedEdges(3), new Stats());
+		assertCompareTo(1, stats, new Stats().addedEdgeWeight(8), new Stats().addedEdgeWeight(100));
+		assertCompareTo(-1, stats, new Stats().maxCliqueSize(4), new Stats().maxCliqueSize(10));
+		assertCompareTo(1, stats, new Stats().maxCliqueCardinality(10), new Stats().maxCliqueCardinality(200));
+		assertCompareTo(-1, stats,
+			new Stats().maxCliqueCardinality(30).addedEdgeWeight(5),
+			new Stats().maxCliqueCardinality(1000).addedEdgeWeight(1000));
+		assertCompareTo(1, stats,
+			new Stats().addedEdgeWeight(5).maxCliqueSize(4),
+			new Stats().addedEdgeWeight(1000).maxCliqueSize(1000));
+		assertCompareTo(-1, stats,
+			new Stats().maxCliqueSize(3).addedEdges(3),
+			new Stats().maxCliqueSize(0).addedEdges(0));
+		assertCompareTo(1, stats,
+			new Stats().maxCliqueSize(2).addedEdges(3),
+			new Stats().maxCliqueSize(0).addedEdges(0));
+		
+		assertTrue(stats.meetsThreshold(new Stats().addedEdges(2)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdges(1)));
+		assertTrue(stats.meetsThreshold(new Stats().addedEdgeWeight(11).maxCliqueSize(3).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(11).maxCliqueSize(2).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(9).maxCliqueSize(4).maxCliqueCardinality(20)));
+		assertFalse(stats.meetsThreshold(new Stats().addedEdgeWeight(20).maxCliqueSize(4).maxCliqueCardinality(19)));
+		
+		// conditionedVariables() does not participate in compareTo or meetsThreshold
+		assertCompareTo(0, new Stats().conditionedVariables(1), new Stats().conditionedVariables(2),
+			new Stats().conditionedVariables(2));
+		assertTrue(new Stats().conditionedVariables(2).meetsThreshold(new Stats().conditionedVariables(0)));
+		
+		// Test alreadyGoodForExactInference
+		assertTrue(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(1).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(1).factorsWithDuplicateVariables(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(1)
+			.alreadyGoodForFastExactInference());
+	}
+	
+	/*----------------
+	 * Helper methods
+	 */
 	
 	private void addClique(FactorGraph model, VariableBase ... variables)
 	{
 		model.addFactor(factorFunction, variables);
+	}
+	
+	private void assertCompareTo(int expected, Stats stats1, Stats stats2, Stats threshold)
+	{
+		assertEquals(expected, stats1.compareTo(stats2, threshold));
+		assertEquals(-expected, stats2.compareTo(stats1, threshold));
 	}
 	
 	private Discrete newVar(int cardinality, String name)
@@ -371,12 +511,22 @@ public class TestVariableEliminator
 		return var;
 	}
 
-	private void testEliminator(FactorGraph model, VariableCost cost, Stats expectedStats, VariableBase ... expectedOrder)
+	private void testEliminator(FactorGraph model, VariableCost cost,
+		Stats expectedStats, VariableBase ... expectedOrder)
+	{
+		testEliminator(model, false, cost, expectedStats, expectedOrder);
+	}
+	
+	private void testEliminator(FactorGraph model, boolean useConditioning, VariableCost cost,
+		Stats expectedStats, VariableBase ... expectedOrder)
 	{
 		final boolean deterministic = expectedOrder.length != 0;
 		final VariableEliminator eliminator =
-			deterministic? new VariableEliminator(model, null) : new VariableEliminator(model);
+			deterministic?
+				new VariableEliminator(model, useConditioning, null) :
+				new VariableEliminator(model, useConditioning);
 		assertSame(model, eliminator.getModel());
+		assertEquals(useConditioning, eliminator.usesConditioning());
 		if (deterministic)
 		{
 			assertNull(eliminator.getRandomizer());
@@ -387,7 +537,12 @@ public class TestVariableEliminator
 		}
 		
 		OrderIterator iterator = eliminator.orderIterator(cost);
+		assertSame(eliminator, iterator.getEliminator());
 		assertSame(cost, iterator.getCostEvaluator());
+		assertSame(cost, iterator.getStats().cost());
+		
+		int nVariables = model.getVariableCount();
+		assertEquals(nVariables, iterator.size());
 		
 		if (deterministic)
 		{
@@ -396,6 +551,7 @@ public class TestVariableEliminator
 				assertTrue(iterator.hasNext());
 				VariableBase actualVariable = iterator.next();
 				assertSame(expectedVariable, actualVariable);
+				assertEquals(--nVariables, iterator.size());
 			}
 		}
 		else
@@ -403,16 +559,46 @@ public class TestVariableEliminator
 			while (iterator.hasNext())
 			{
 				iterator.next();
+				assertEquals(--nVariables, iterator.size());
 			}
 		}
 		assertFalse(iterator.hasNext());
 		assertNull(iterator.next());
+		assertEquals(0, iterator.size());
+		assertEquals(0, nVariables);
 
 		expectThrow(UnsupportedOperationException.class, iterator, "remove");
 		
 		assertStats(expectedStats, iterator.getStats());
+		
+		// Test generate() method
+		int nAttempts = deterministic ? -1 : 1;
+		Ordering ordering = VariableEliminator.generate(model, useConditioning, nAttempts, expectedStats, cost);
+		assertStats(expectedStats, ordering.stats);
+		if (deterministic)
+		{
+			assertEquals(expectedOrder.length, ordering.variables.size());
+			for (int i = 0, end = expectedOrder.length; i < end; ++i)
+			{
+				VariableBase expectedVariable = expectedOrder[i];
+				VariableBase actualVariable = ordering.variables.get(i);
+				assertSame(expectedVariable, actualVariable);
+			}
+		}
 	}
 	
+	private void testGenerate(
+		FactorGraph model,
+		boolean useConditioning,
+		Stats thresholdStats,
+		Stats expectedStats,
+		VariableBase ... expectedOrder)
+	{
+		
+		Ordering ordering = VariableEliminator.generate(model, useConditioning, -1, thresholdStats);
+		assertStats(expectedStats, ordering.stats);
+	}
+		
 	private void assertStats(Stats expected, Stats actual)
 	{
 		if (expected.addedEdges() >= 0)
@@ -422,6 +608,14 @@ public class TestVariableEliminator
 		if (expected.addedEdgeWeight() >= 0)
 		{
 			assertEquals(expected.addedEdgeWeight(), actual.addedEdgeWeight());
+		}
+		if (expected.conditionedVariables() >= 0)
+		{
+			assertEquals(expected.conditionedVariables(), actual.conditionedVariables());
+		}
+		if (expected.factorsWithDuplicateVariables() >= 0)
+		{
+			assertEquals(expected.factorsWithDuplicateVariables(), actual.factorsWithDuplicateVariables());
 		}
 		if (expected.maxCliqueSize() >= 0)
 		{
@@ -435,10 +629,11 @@ public class TestVariableEliminator
 	
 	private Stats expectedStats()
 	{
-		return new Stats()
-			.addedEdges(-1)
-			.addedEdgeWeight(-1)
-			.maxCliqueSize(-1)
-			.maxCliqueCardinality(-1);
+		return new Stats();
+	}
+	
+	private Stats thresholdStats()
+	{
+		return new Stats();
 	}
 }

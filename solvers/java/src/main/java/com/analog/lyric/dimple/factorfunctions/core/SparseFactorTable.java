@@ -833,6 +833,80 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 		throw notDense("setWeightsSparse(int[] jointIndices, double[])");
 	}
 
+	/*-------------------------
+	 * FactorTableBase methods
+	 */
+	
+	@Override
+	protected void initTableConditionedOn(
+		IFactorTable newTable, JointDomainReindexer remover, int[] removedValueIndices, boolean useWeight)
+	{
+		// Use appropriate sparse representation for conversion.
+		if (useWeight)
+		{
+			setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+		}
+		else
+		{
+			setRepresentation(FactorTableRepresentation.SPARSE_ENERGY);
+		}
+
+		if (newTable.supportsJointIndexing() && newTable.jointSize() <= sparseSize())
+		{
+			// If new table is not expected to have many more entries than the original table, it
+			// is most efficient to walk through the new indices, convert back to the old
+			// indices and lookup the values from the original table.
+			final JointDomainReindexer inverseRemover = remover.getInverse();
+			final Indices inverseIndices = inverseRemover.getScratch();
+			System.arraycopy(removedValueIndices,  0, inverseIndices.addedIndices, 0, removedValueIndices.length);
+
+			final DiscreteIndicesIterator toIterator =
+				new DiscreteIndicesIterator(remover.getToDomains(), inverseIndices.fromIndices);
+			while (toIterator.hasNext())
+			{
+				toIterator.next();
+				inverseRemover.convertIndices(inverseIndices);
+				if (useWeight)
+				{
+					newTable.setWeightForIndices(getWeightForIndices(inverseIndices.toIndices), inverseIndices.fromIndices);
+				}
+				else
+				{
+					newTable.setEnergyForIndices(getEnergyForIndices(inverseIndices.toIndices), inverseIndices.fromIndices);
+				}
+			}
+
+			inverseIndices.release();
+		}
+		else
+		{
+			// Otherwise, walk through the existing entries and only copy the ones that have
+			// the right value for the removed dimensions.
+
+			final Indices indices = remover.getScratch();
+
+			for (int si = 0; si < sparseSize(); ++si)
+			{
+				sparseIndexToIndices(si, indices.fromIndices);
+				remover.convertIndices(indices);
+				if (Arrays.equals(removedValueIndices, indices.removedIndices))
+				{
+					if (useWeight)
+					{
+						newTable.setWeightForIndices(getWeightForSparseIndex(si), indices.toIndices);
+					}
+					else
+					{
+						newTable.setEnergyForIndices(getEnergyForSparseIndex(si), indices.toIndices);
+					}
+				}
+			}
+
+			indices.release();
+		}
+	}
+
+	
 	/*-----------------
 	 * Private methods
 	 */

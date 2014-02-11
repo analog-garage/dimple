@@ -24,12 +24,30 @@ public interface IFactorTable extends IFactorTableBase
 	 * @return the number of sparse entries that were removed.
 	 */
 	public int compact();
-	
+
 	@Override
 	public IFactorTable convert(JointDomainReindexer converter);
 	
 	public void copy(IFactorTable that);
 
+	/**
+	 * Constructs a new factor table by conditioning one or more dimensions
+	 * conditioned on specified values.
+	 * <p>
+	 * The new table will not be directed and will have the same representation as the original
+	 * table except that {@link FactorTableRepresentation#DETERMINISTIC} will become
+	 * {@link FactorTableRepresentation#SPARSE_ENERGY}.
+	 * <p>
+	 * @param valueIndices is an array of length {@link #getDimensions()} that specifies which
+	 * dimensions are to be conditioned away. Each entry in the array should either be
+	 * a negative value if the dimension is to be retained, or a non-negative value in
+	 * the range [0, <i>dimension-size</i> - 1].
+	 */
+	public IFactorTable createTableConditionedOn(int[] valueIndices);
+
+	/**
+	 * Constructs a new factor table by appending dimensions for the specified {@code newDomains}.
+	 */
 	public IFactorTable createTableWithNewVariables(DiscreteDomain[] newDomains);
 
 	/**

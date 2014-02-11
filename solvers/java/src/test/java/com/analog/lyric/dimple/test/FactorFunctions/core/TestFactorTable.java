@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableIterator;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.util.test.SerializationTester;
@@ -38,6 +39,7 @@ public class TestFactorTable
 	final DiscreteDomain domain3 = DiscreteDomain.range(0,2);
 	final DiscreteDomain domain5 = DiscreteDomain.range(0,5);
 	final DiscreteDomain domain32 = DiscreteDomain.range(0,31);
+	final DiscreteDomain domain256 = DiscreteDomain.range(0, 255);
 	final DiscreteDomain domainMax = DiscreteDomain.range(0,Integer.MAX_VALUE - 1);
 	
 	@Test
@@ -387,6 +389,144 @@ public class TestFactorTable
 		expectNotDense(table, "setWeightForJointIndex", 0.0, 42);
 		expectNotDense(table, "setEnergiesSparse", ArrayUtil.EMPTY_INT_ARRAY, ArrayUtil.EMPTY_DOUBLE_ARRAY);
 		expectNotDense(table, "setWeightsSparse", ArrayUtil.EMPTY_INT_ARRAY, ArrayUtil.EMPTY_DOUBLE_ARRAY);
+	}
+	
+	/**
+	 * Test for {@link IFactorTable#createTableConditionedOn(int[])} method.
+	 */
+	@Test
+	public void testConditionOn()
+	{
+		IFactorTable table = FactorTable.create(domain3, domain3, domain3);
+		
+		expectThrow(ArrayIndexOutOfBoundsException.class, table, "createTableConditionedOn", new int[] { 1, 1} );
+		expectThrow(ArrayIndexOutOfBoundsException.class, table, "createTableConditionedOn", new int[] { 1, 1} );
+		expectThrow(IndexOutOfBoundsException.class, table, "createTableConditionedOn", new int[] { -1, 1, 3 } );
+		
+		table.setEnergyForIndices(2, 0, 0, 0);
+		table.setEnergyForIndices(3, 1, 1, 1);
+		table.setEnergyForIndices(4, 2, 2, 2);
+		table.setEnergyForIndices(5, 0, 1, 2);
+		testConditionOn(table, -1, -1, 2);
+		testConditionOn(table, 0, -1, -1);
+		
+		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
+		testConditionOn(table, -1, -1, 2);
+		testConditionOn(table, 0, -1, -1);
+		
+		table.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
+		table.randomizeWeights(rand);
+		
+		testConditionOn(table, 1, -1, -1);
+		testConditionOn(table, -1, 0, -1);
+		testConditionOn(table, -1, -1, 2);
+		
+		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+		testConditionOn(table, 1, -1, 0);
+		testConditionOn(table, -1, 2, -1);
+		
+		table.setDirected(BitSetUtil.bitsetFromIndices(3, 2));
+		table.setDeterministicOutputIndices(new int[] { 0, 1, 2, 0, 1, 2, 0, 1, 2});
+		testConditionOn(table, 1, -1, -1);
+		testConditionOn(table, -1, -1, 1);
+		
+		table = FactorTable.create(domain256, domain256, domain256, domain256);
+		
+		int[][] valueMatrix = new int[4][4];
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				valueMatrix[i][j] = rand.nextInt(256);
+			}
+		}
+	
+		for (int a : valueMatrix[0])
+			for (int b : valueMatrix[1])
+				for (int c : valueMatrix[2])
+					for (int d : valueMatrix[3])
+						table.setWeightForIndices(rand.nextDouble(), a, b, c, d);
+		
+		testConditionOn(table, valueMatrix[0][0], -1, -1, -1);
+		testConditionOn(table, -1, valueMatrix[1][1], -1, -1);
+		testConditionOn(table, valueMatrix[0][3], -1, valueMatrix[2][2], valueMatrix[3][1]);
+		
+		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+		testConditionOn(table, -1, -1, -1, valueMatrix[3][0]);
+		testConditionOn(table, -1, valueMatrix[1][3], valueMatrix[2][2], valueMatrix[3][1]);
+	}
+	
+	private void testConditionOn(IFactorTable table, int ... valueIndices)
+	{
+		IFactorTable newTable = table.createTableConditionedOn(valueIndices);
+		
+		JointDomainIndexer oldDomains = table.getDomainIndexer();
+		assertEquals(oldDomains.size(), valueIndices.length);
+		
+		JointDomainIndexer newDomains = newTable.getDomainIndexer();
+		
+		int nRemoved = 0;
+		int[] oldToNew = new int[oldDomains.size()];
+		int[] newToOld = new int[newDomains.size()];
+		for (int i = 0, j = 0; i < valueIndices.length; ++i)
+		{
+			int valueIndex = valueIndices[i];
+			if (valueIndex < 0)
+			{
+				oldToNew[i] = j;
+				newToOld[j] = i;
+				++j;
+			}
+			else
+			{
+				oldToNew[i] = -1;
+				++nRemoved;
+			}
+		}
+		assertEquals(nRemoved, oldDomains.size() - newDomains.size());
+		
+		int[] oldIndices = oldDomains.allocateIndices(null);
+		int[] newIndices = newDomains.allocateIndices(null);
+		DiscreteIndicesIterator newIndicesIterator = new DiscreteIndicesIterator(newDomains, newIndices);
+		while (newIndicesIterator.hasNext())
+		{
+			newIndicesIterator.next();
+			for (int i = 0; i < oldIndices.length; ++i)
+			{
+				oldIndices[i] = oldToNew[i] >=0 ? newIndices[oldToNew[i]] : valueIndices[i];
+			}
+			
+			double oldWeight = table.getWeightForIndices(oldIndices);
+			double newWeight = newTable.getWeightForIndices(newIndices);
+			assertEquals(oldWeight, newWeight, 1e-12);
+		}
+		
+		IFactorTableIterator oldIter = table.iterator();
+		outer:
+		while (oldIter.hasNext())
+		{
+			FactorTableEntry entry = oldIter.next();
+			entry.indices(oldIndices);
+			
+			for (int i = 0; i < oldIndices.length; ++i)
+			{
+				if (oldToNew[i] >= 0)
+				{
+					newIndices[oldToNew[i]] = oldIndices[i];
+				}
+				else
+				{
+					if (valueIndices[i] != oldIndices[i])
+					{
+						continue outer;
+					}
+				}
+			}
+			
+			double oldWeight = entry.weight();
+			double newWeight = newTable.getWeightForIndices(newIndices);
+			assertEquals(oldWeight, newWeight, 1e-12);
+		}
 	}
 	
 	@Test

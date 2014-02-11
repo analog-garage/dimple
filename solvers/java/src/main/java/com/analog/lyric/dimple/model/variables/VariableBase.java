@@ -51,6 +51,11 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
     private static final byte DETERMINISTIC_OUTPUT = 0x02;
 
+    /**
+     * {@link #_topologicalFlags} value used by {@link #isMarked()}
+     */
+    private static final byte MARKED = 0x04;
+    
     /*-------
 	 * State
 	 */
@@ -506,6 +511,17 @@ public abstract class VariableBase extends Node implements Cloneable
      */
     
     /**
+     * Sets {@link #isMarked()} to false.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public void clearMarked()
+    {
+    	_topologicalFlags &= ~MARKED;
+    }
+    
+    /**
      * Creates a new variable that combines the domains of this variable with additional {@code variables}.
      * <p>
      * For use by {@link FactorGraph#join(VariableBase...)}. Currently only supported for {@link Discrete}
@@ -521,6 +537,22 @@ public abstract class VariableBase extends Node implements Cloneable
     }
     
     /**
+     * Boolean utility value that can be used to mark variable has having been processed.
+     * <p>
+     * False by default and reset by {@link #initialize()}.
+     * <p>
+     * @see #clearMarked()
+     * @see #setMarked()
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final boolean isMarked()
+    {
+    	return (_topologicalFlags & MARKED) != 0;
+    }
+    
+   /**
      * Sets {@link #isDeterministicInput()} to true.
      * 
      * @since 0.05
@@ -540,6 +572,17 @@ public abstract class VariableBase extends Node implements Cloneable
     public final void setDeterministicOutput()
     {
     	_topologicalFlags |= DETERMINISTIC_OUTPUT;
+    }
+    
+    /**
+     * Sets {@link #isMarked()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final void setMarked()
+    {
+    	_topologicalFlags |= MARKED;
     }
     
     /*-----------------
