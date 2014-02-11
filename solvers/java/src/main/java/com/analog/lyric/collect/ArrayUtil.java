@@ -2,6 +2,8 @@ package com.analog.lyric.collect;
 
 import java.lang.reflect.Array;
 
+import cern.colt.list.IntArrayList;
+
 import com.google.common.math.DoubleMath;
 
 /**
@@ -87,6 +89,56 @@ public abstract class ArrayUtil
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Given an array of non-negative array indices in ascending order, and another sorted list
+	 * of indices of entries to be removed, this returns a new array containing the new values of
+	 * the remaining indices
+	 * <p>
+	 * For example, given the original list [0, 1, 3] and the removed list [1,2], this will
+	 * return [0,1].
+	 * <p>
+	 * @param list is the starting list of non-negative indices in ascending order.
+	 * @param remove is a non-empty list of indexes to be removed also in ascending order.
+	 * @return a newly allocated array.
+	 */
+	public static int[] contractSortedIndexList(int[] list, int[] remove)
+	{
+		final int originalLength = list.length;
+		final int excludeLength = remove.length;
+
+		final IntArrayList result = new IntArrayList(originalLength);
+		int iConst = 0;
+		int iList = 0;
+		int listIndex;
+		int constantIndex = remove[iConst];
+		while (iList < originalLength)
+		{
+			listIndex = list[iList];
+			if (iConst < excludeLength)
+				constantIndex = remove[iConst];
+			if (listIndex == constantIndex)
+			{
+				// Skip this list index entry
+				iList++;
+			}
+			else if (listIndex < constantIndex || iConst >= excludeLength)
+			{
+				// Add this entry
+				result.add(listIndex - iConst);
+				iList++;
+			}
+			else if (listIndex > constantIndex)
+			{
+				// Move to the next constant if there is one
+				iConst++;
+			}
+		}
+		
+		// Convert contracted list back to an int[]
+		result.trimToSize();
+		return result.elements();
 	}
 	
 	/**
