@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -340,13 +340,11 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _properties == null ? null : _properties.get(key);
 	}
 
-	
-	
 	public Object getFixedValueObject()
 	{
 		return _fixedValue;
 	}
-
+	
 	public void setFixedValueObject(Object value)
 	{
 		setFixedValueObject(value,false);
@@ -434,6 +432,13 @@ public abstract class VariableBase extends Node implements Cloneable
 		
 	}
 	
+	/**
+	 * Remove all edges from this variable to the specified factor.
+	 * <p>
+	 * NOTE: this does not remove the edge back from the factor to the variable!
+	 * 
+	 * @throws DimpleException if variable is not connected to the factor.
+	 */
 	public void remove(Factor factor)
 	{
 		List<INode> siblings = getSiblings();
