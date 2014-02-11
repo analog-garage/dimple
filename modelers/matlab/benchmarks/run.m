@@ -17,6 +17,7 @@
 function run()
     benchmarking = Benchmarking('dimple');
     
+    runBenchmarksInFolder(benchmarking, 'HMM')
     runBenchmarksInFolder(benchmarking, 'ImageDenoising')
     runBenchmarksInFolder(benchmarking, 'StereoVision')
     
