@@ -95,6 +95,7 @@ public class BenchmarkRunner
 				.getBenchmarkDataset();
 		String configuration = benchmarkDataset.getProperties().getProperty(
 				"hostname");
+		configuration = configuration + "/java";
 		benchmarkDataset.getProperties().setProperty("configuration",
 				configuration);
 
