@@ -89,7 +89,7 @@ public class MemoryUsageSamplingCollector implements DataCollector
 							_totalAllocation += (usage - _lastUsage);
 						}
 						_lastUsage = usage;
-						Thread.sleep(0, 100000); // ~10us
+						Thread.sleep(0, 100000); // ~100us
 					}
 					catch (InterruptedException e)
 					{
