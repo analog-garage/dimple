@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.math.LyricSingularValueDecomposition;
 
 public class MutlivariateGaussianMatrixProduct 
@@ -93,7 +93,7 @@ public class MutlivariateGaussianMatrixProduct
 
 	
 	
-	public void ComputeMsg(MultivariateGaussianMessage inMsg, MultivariateGaussianMessage outMsg, char direction /* F for Forward, R for Reverse */) 
+	public void ComputeMsg(MultivariateNormalParameters inMsg, MultivariateNormalParameters outMsg, char direction /* F for Forward, R for Reverse */) 
 	{
 		int m,n;
 		//multiGaBPMsg outMsg;

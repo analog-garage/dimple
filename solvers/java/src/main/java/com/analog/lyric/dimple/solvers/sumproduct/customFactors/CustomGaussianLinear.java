@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.sumproduct.GaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 public class CustomGaussianLinear extends GaussianFactorBase
 {
@@ -82,7 +82,7 @@ public class CustomGaussianLinear extends GaussianFactorBase
 			{
 				if (i != outPortNum)
 				{
-					GaussianMessage msg = _inputMsgs[i];
+					NormalParameters msg = _inputMsgs[i];
 					mu -= msg.getMean() * _constants[i];
 					sigma2 += _constants[i]*_constants[i]*msg.getVariance();
 				}
@@ -91,7 +91,7 @@ public class CustomGaussianLinear extends GaussianFactorBase
 			sigma2 /= (_constants[outPortNum]*_constants[outPortNum]);
 		}
 		 
-		GaussianMessage msg = _outputMsgs[outPortNum];
+		NormalParameters msg = _outputMsgs[outPortNum];
 		msg.setMean(mu);
 		msg.setVariance(sigma2);
 	}

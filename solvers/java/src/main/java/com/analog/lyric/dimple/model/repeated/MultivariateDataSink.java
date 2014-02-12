@@ -16,17 +16,17 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
-public class MultivariateDataSink extends GenericDataSink<MultivariateGaussianMessage> 
+public class MultivariateDataSink extends GenericDataSink<MultivariateNormalParameters> 
 {
 
 	
-	public MultivariateGaussianMessage [] getArray()
+	public MultivariateNormalParameters [] getArray()
 	{
-		MultivariateGaussianMessage [] retval = new MultivariateGaussianMessage[_data.size()];
+		MultivariateNormalParameters [] retval = new MultivariateNormalParameters[_data.size()];
 		int i = 0;
-		for (MultivariateGaussianMessage data : _data)
+		for (MultivariateNormalParameters data : _data)
 		{
 			retval[i] = data;
 			i++;

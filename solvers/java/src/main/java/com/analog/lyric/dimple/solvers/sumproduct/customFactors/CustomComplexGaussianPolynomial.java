@@ -24,7 +24,7 @@ import Jama.Matrix;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorBase
 {
@@ -120,8 +120,8 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	{
 		
 		//get mu and sigma for complex numbers
-		MultivariateGaussianMessage y = _inputMsgs[0];
-		MultivariateGaussianMessage x = _outputMsgs[1];
+		MultivariateNormalParameters y = _inputMsgs[0];
+		MultivariateNormalParameters x = _outputMsgs[1];
 
 		Complex means = new Complex(y.getMeans()[0],y.getMeans()[1]);
 	
@@ -146,8 +146,8 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	public void updateToY()
 	{
 		//get mu and sigma for complex numbers
-		MultivariateGaussianMessage y = _outputMsgs[0];
-		MultivariateGaussianMessage x = _inputMsgs[1];
+		MultivariateNormalParameters y = _outputMsgs[0];
+		MultivariateNormalParameters x = _inputMsgs[1];
 		
 		double [] xmeans = x.getMeans();
 		double [][] xcovar = x.getCovariance();

@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.sumproduct.GaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 
@@ -76,8 +76,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 
 	public void updateProduct()
 	{
-		GaussianMessage outMsg = _outputMsgs[0];
-		GaussianMessage inMsg = _inputMsgs[_varIndex];
+		NormalParameters outMsg = _outputMsgs[0];
+		NormalParameters inMsg = _inputMsgs[_varIndex];
 		
 		// Up = C*Uv
 		outMsg.setMean(inMsg.getMean() * _constant);
@@ -88,8 +88,8 @@ public class CustomGaussianProduct extends GaussianFactorBase
 
 	public void updateVariable()
 	{
-		GaussianMessage outMsg = _outputMsgs[_varIndex];
-		GaussianMessage inMsg = _inputMsgs[0];
+		NormalParameters outMsg = _outputMsgs[_varIndex];
+		NormalParameters inMsg = _inputMsgs[0];
 		
 		// Uv = Up/C
 		outMsg.setMean(inMsg.getMean() / _constant);

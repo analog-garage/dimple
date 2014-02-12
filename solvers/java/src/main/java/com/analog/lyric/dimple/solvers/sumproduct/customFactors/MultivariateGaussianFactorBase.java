@@ -18,15 +18,15 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
 
 public abstract class MultivariateGaussianFactorBase extends SFactorBase
 {
 
-	protected MultivariateGaussianMessage [] _inputMsgs;
-	protected MultivariateGaussianMessage [] _outputMsgs;
+	protected MultivariateNormalParameters [] _inputMsgs;
+	protected MultivariateNormalParameters [] _outputMsgs;
 	
 	public MultivariateGaussianFactorBase(Factor factor)
 	{
@@ -44,16 +44,16 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	{
 		final Factor factor = _factor;
 		final int nVars = factor.getSiblingCount();
-	    _inputMsgs = new MultivariateGaussianMessage[nVars];
-	    _outputMsgs = new MultivariateGaussianMessage[nVars];
+	    _inputMsgs = new MultivariateNormalParameters[nVars];
+	    _outputMsgs = new MultivariateNormalParameters[nVars];
 
 		//messages were created in constructor
 		for (int index = 0; index < nVars; ++index)
 		{
 			ISolverVariable sv = factor.getSibling(index).getSolver();
 			Object [] messages = sv.createMessages(this);
-			_outputMsgs[index] = (MultivariateGaussianMessage)messages[0];
-			_inputMsgs[index] = (MultivariateGaussianMessage)messages[1];
+			_outputMsgs[index] = (MultivariateNormalParameters)messages[0];
+			_inputMsgs[index] = (MultivariateNormalParameters)messages[1];
 		}
 		
 	}

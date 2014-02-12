@@ -21,6 +21,8 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 
 
 public class BetaSampler implements IRealConjugateSampler

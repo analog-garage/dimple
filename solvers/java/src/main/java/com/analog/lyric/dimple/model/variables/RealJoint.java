@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.model.variables;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class RealJoint extends VariableBase 
 {
@@ -80,16 +80,16 @@ public class RealJoint extends VariableBase
 	
 	public void setInput(double [] means, double [][] covar)
 	{
-		setInputObject(new MultivariateGaussianMessage(means,covar));
+		setInputObject(new MultivariateNormalParameters(means,covar));
 	}
 
-	public void setInput(MultivariateGaussianMessage msg)
+	public void setInput(MultivariateNormalParameters msg)
 	{
 		setInputObject(msg);
 	}
 	
-	public MultivariateGaussianMessage getBelief()
+	public MultivariateNormalParameters getBelief()
 	{
-		return (MultivariateGaussianMessage)getBeliefObject();
+		return (MultivariateNormalParameters)getBeliefObject();
 	}
 }

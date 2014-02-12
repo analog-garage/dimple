@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -35,9 +36,9 @@ public class SRealVariable extends SRealVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	private GaussianMessage _input;
-	private GaussianMessage[] _inputMsgs = new GaussianMessage[0];
-	private GaussianMessage[] _outputMsgs = new GaussianMessage[0];
+	private NormalParameters _input;
+	private NormalParameters[] _inputMsgs = new NormalParameters[0];
+	private NormalParameters[] _outputMsgs = new NormalParameters[0];
     
 	public SRealVariable(VariableBase var)
     {
@@ -59,7 +60,7 @@ public class SRealVariable extends SRealVariableBase
     			Normal normalInput = (Normal)input;
     			if (!normalInput.hasConstantParameters())
     				throw new DimpleException("Normal factor function used as Input must have constant parameters");
-    			_input = new GaussianMessage();
+    			_input = new NormalParameters();
     			_input.setMean(normalInput.getMean());
     			_input.setPrecision(normalInput.getPrecision());
     		}
@@ -72,7 +73,7 @@ public class SRealVariable extends SRealVariableBase
     			if (vals[1] < 0)
     				throw new DimpleException("Expect standard deviation to be >= 0");
 
-    			_input = new GaussianMessage();
+    			_input = new NormalParameters();
     			_input.setMean(vals[0]);
     			_input.setStandardDeviation(vals[1]);
     		}
@@ -86,7 +87,7 @@ public class SRealVariable extends SRealVariableBase
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
     	{
-        	((GaussianMessage)_outputMsgs[outPortNum]).set(_input);
+        	((NormalParameters)_outputMsgs[outPortNum]).set(_input);
         	return;
     	}
     	
@@ -109,7 +110,7 @@ public class SRealVariable extends SRealVariableBase
     	{
     		if (i != outPortNum)
     		{
-    			GaussianMessage msg = _inputMsgs[i];
+    			NormalParameters msg = _inputMsgs[i];
     			double tmpTau = msg.getPrecision();
     			
     			if (tmpTau == Double.POSITIVE_INFINITY)
@@ -149,7 +150,7 @@ public class SRealVariable extends SRealVariableBase
 	    		mu = 0;
     	}
     	
-    	GaussianMessage outMsg = _outputMsgs[outPortNum];
+    	NormalParameters outMsg = _outputMsgs[outPortNum];
     	outMsg.setMean(mu);
     	outMsg.setPrecision(tau);
     }
@@ -178,7 +179,7 @@ public class SRealVariable extends SRealVariableBase
     	
     	for (int i = 0; i < _inputMsgs.length; i++)
     	{
-			GaussianMessage msg = _inputMsgs[i];
+    		NormalParameters msg = _inputMsgs[i];
 			double tmpTau = msg.getPrecision();
 			
 			
@@ -242,24 +243,24 @@ public class SRealVariable extends SRealVariableBase
 		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	public GaussianMessage createDefaultMessage()
+	public NormalParameters createDefaultMessage()
 	{
-		GaussianMessage message = new GaussianMessage();
-		return (GaussianMessage)resetInputMessage(message);
+		NormalParameters message = new NormalParameters();
+		return (NormalParameters)resetInputMessage(message);
 	}
 
 	@Override
 	public Object resetInputMessage(Object message)
 	{
-		((GaussianMessage)message).setNull();
+		((NormalParameters)message).setNull();
 		return message;
 	}
 
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		_inputMsgs[i] = (GaussianMessage)resetInputMessage(_inputMsgs[i]);
-		_outputMsgs[i] = (GaussianMessage)resetOutputMessage(_outputMsgs[i]);
+		_inputMsgs[i] = (NormalParameters)resetInputMessage(_inputMsgs[i]);
+		_outputMsgs[i] = (NormalParameters)resetOutputMessage(_outputMsgs[i]);
 	}
     
     
@@ -287,12 +288,12 @@ public class SRealVariable extends SRealVariableBase
 
 	@Override
 	public void setInputMsg(int portIndex, Object obj) {
-		_inputMsgs[portIndex] = (GaussianMessage)obj;
+		_inputMsgs[portIndex] = (NormalParameters)obj;
 	}
 	
-	public GaussianMessage createFixedValueMessage(double fixedValue)
+	public NormalParameters createFixedValueMessage(double fixedValue)
 	{
-		GaussianMessage message = new GaussianMessage();
+		NormalParameters message = new NormalParameters();
 		message.setMean(fixedValue);
 		message.setPrecision(Double.POSITIVE_INFINITY);
 		return message;

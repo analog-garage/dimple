@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomMultivariateGaussianProduct extends MultivariateGaussianFactorBase
 {
@@ -75,8 +75,8 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		else
 			direction = 'R';
 		
-		MultivariateGaussianMessage outMsg = _outputMsgs[outPortNum];
-		MultivariateGaussianMessage inMsg = _inputMsgs[1-outPortNum];
+		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
+		MultivariateNormalParameters inMsg = _inputMsgs[1-outPortNum];
 		
 		matMult.ComputeMsg(inMsg, outMsg, direction);
 	}

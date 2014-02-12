@@ -14,13 +14,13 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import Jama.Matrix;
 
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
 
-public class MultivariateGaussianMessage implements Cloneable
+public class MultivariateNormalParameters implements Cloneable, IParameterizedMessage
 {
 
 	private double [] _vector;
@@ -31,25 +31,25 @@ public class MultivariateGaussianMessage implements Cloneable
 	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 
 	
-	public MultivariateGaussianMessage clone()
+	public MultivariateNormalParameters clone()
 	{
 		double [][] m = new double[_matrix.length][];
 		for (int i = 0; i < m.length; i++)
 			m[i] = _matrix[i].clone();
 		
-		return new MultivariateGaussianMessage(_vector.clone(),m);
+		return new MultivariateNormalParameters(_vector.clone(),m);
 	}
 	
 	public boolean isInInformationForm()
 	{
 		return _isInInformationForm;
 	}
-	public MultivariateGaussianMessage()
+	public MultivariateNormalParameters()
 	{
 		
 	}
 	
-	public MultivariateGaussianMessage(double [] means, double [][] covariance)
+	public MultivariateNormalParameters(double [] means, double [][] covariance)
 	{
 		setMeanAndCovariance(means.clone(), cloneMatrix(covariance));
 	}
@@ -68,7 +68,7 @@ public class MultivariateGaussianMessage implements Cloneable
 		_isInInformationForm = false;
 	}
 	
-	public void set(MultivariateGaussianMessage message)	// Set from another message without first extracting the components or determining which form
+	public void set(MultivariateNormalParameters message)	// Set from another message without first extracting the components or determining which form
 	{
 		_vector = message._vector.clone();
 		_matrix = cloneMatrix(message._matrix);
@@ -181,4 +181,11 @@ public class MultivariateGaussianMessage implements Cloneable
 
 	}
 
+	@Override
+	public void setNull()
+	{
+		_vector = null;
+		_matrix = null;
+		_isInInformationForm = true;
+	}
 }

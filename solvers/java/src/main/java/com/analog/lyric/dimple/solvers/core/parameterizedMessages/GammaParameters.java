@@ -14,24 +14,25 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
-public class BetaParameters implements IParameterizedMessage
+
+public class GammaParameters implements IParameterizedMessage
 {
 	private double _alpha = 0;
 	private double _beta = 0;
 	
-	public BetaParameters() {}
-	public BetaParameters(double alpha, double beta)
+	public GammaParameters() {}
+	public GammaParameters(double alpha, double beta)
 	{
 		_alpha = alpha;
 		_beta = beta;
 	}
-	public BetaParameters(BetaParameters other)		// Copy constructor
+	public GammaParameters(GammaParameters other)		// Copy constructor
 	{
 		this(other._alpha, other._beta);
 	}
-	
+
 	public final double getAlpha() {return _alpha;}
 	public final double getBeta() {return _beta;}
 

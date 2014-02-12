@@ -21,9 +21,9 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.GaussianMessage;
 
 public class SampledFactor extends SFactorBase
 {
@@ -90,7 +90,7 @@ public class SampledFactor extends SFactorBase
 				}
 				else
 				{
-					GaussianMessage inputMessage = (GaussianMessage)_messageGenerator[edge].getInputMsg();
+					NormalParameters inputMessage = (NormalParameters)_messageGenerator[edge].getInputMsg();
 					Normal inputFactorFunction = new Normal(inputMessage.getMean(), inputMessage.getPrecision());	// FIXME make more efficient
 					var.setInputObject(inputFactorFunction);
 				}
@@ -106,6 +106,7 @@ public class SampledFactor extends SFactorBase
 		// FIXME: Get the original ArrayLists without first copying to arrays
 		Object samples = null;
 		if (outputVar.getDomain().isDiscrete())
+			// FIXME: Get the beliefs in this case instead, and don't bother to save samples
 			samples = ((com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable)(outputVar.getSolver())).getAllSampleIndices();
 		else
 			samples = ((com.analog.lyric.dimple.solvers.gibbs.SRealVariable)(outputVar.getSolver())).getAllSamples();

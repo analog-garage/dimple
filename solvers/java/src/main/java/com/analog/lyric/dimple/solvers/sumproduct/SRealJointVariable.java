@@ -21,6 +21,7 @@ import java.util.Arrays;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -28,9 +29,9 @@ public class SRealJointVariable extends SVariableBase
 {
 
 	private int _numVars;
-	private MultivariateGaussianMessage _input;
-	private MultivariateGaussianMessage [] _outputMsgs = new MultivariateGaussianMessage[0];
-	private MultivariateGaussianMessage [] _inputMsgs = new MultivariateGaussianMessage[0];
+	private MultivariateNormalParameters _input;
+	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
+	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 	
 	public SRealJointVariable(VariableBase var) 
 	{
@@ -45,16 +46,16 @@ public class SRealJointVariable extends SVariableBase
 		if (hasFixedValue)
 			_input = createFixedValueMessage((double[])fixedValue);
 		else if (input == null)
-			_input = (MultivariateGaussianMessage) createDefaultMessage();
+			_input = (MultivariateNormalParameters) createDefaultMessage();
 		else
-			_input = (MultivariateGaussianMessage)input;
+			_input = (MultivariateNormalParameters)input;
 	}
 	
 
 	@Override
 	public Object getBelief()  
 	{
-		MultivariateGaussianMessage m = new MultivariateGaussianMessage(_input.getMeans(), _input.getCovariance());		
+		MultivariateNormalParameters m = new MultivariateNormalParameters(_input.getMeans(), _input.getCovariance());		
 		doUpdate(m,-1);
 		return m;
 	}
@@ -62,18 +63,18 @@ public class SRealJointVariable extends SVariableBase
 	@Override
 	public Object getValue()
 	{
-		MultivariateGaussianMessage m = (MultivariateGaussianMessage)getBelief();
+		MultivariateNormalParameters m = (MultivariateNormalParameters)getBelief();
 		return m.getMeans();
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)  
 	{
-		MultivariateGaussianMessage outMsg = _outputMsgs[outPortNum];
+		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
 		doUpdate(outMsg,outPortNum);
 	}
 
-	private void doUpdate(MultivariateGaussianMessage outMsg,int outPortNum) 
+	private void doUpdate(MultivariateNormalParameters outMsg,int outPortNum) 
 	{
     	// If fixed value, just return the input, which has been set to a zero-variance message
 		if (_var.hasFixedValue())
@@ -92,7 +93,7 @@ public class SRealJointVariable extends SVariableBase
 			if (i != outPortNum)
 			{				
 				//_var.getInputObject();
-				MultivariateGaussianMessage inMsg = _inputMsgs[i];
+				MultivariateNormalParameters inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
@@ -122,16 +123,16 @@ public class SRealJointVariable extends SVariableBase
 		int portNum = getModelObject().getPortNum(factor.getModelObject());
 		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
-		_inputMsgs[portNum] = (MultivariateGaussianMessage)createDefaultMessage();
+		_inputMsgs[portNum] = (MultivariateNormalParameters)createDefaultMessage();
 		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
-		_outputMsgs[portNum] = (MultivariateGaussianMessage)createDefaultMessage();
+		_outputMsgs[portNum] = (MultivariateNormalParameters)createDefaultMessage();
 		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	public MultivariateGaussianMessage createDefaultMessage() 
+	public MultivariateNormalParameters createDefaultMessage() 
 	{
-		MultivariateGaussianMessage mm = new MultivariateGaussianMessage();
-		return (MultivariateGaussianMessage)resetInputMessage(mm);
+		MultivariateNormalParameters mm = new MultivariateNormalParameters();
+		return (MultivariateNormalParameters)resetInputMessage(mm);
 	}
 
 	@Override
@@ -146,15 +147,15 @@ public class SRealJointVariable extends SVariableBase
 			covariance[i] = new double[_numVars];
 			covariance[i][i] = Double.POSITIVE_INFINITY;
 		}
-		((MultivariateGaussianMessage)message).setMeanAndCovariance(means, covariance);
+		((MultivariateNormalParameters)message).setMeanAndCovariance(means, covariance);
 		return message;
 	}
 
 	@Override
 	public void resetEdgeMessages( int i ) 
 	{
-		_inputMsgs[i] = (MultivariateGaussianMessage)resetInputMessage(_inputMsgs[i]);
-		_outputMsgs[i] = (MultivariateGaussianMessage)resetOutputMessage(_outputMsgs[i]);		
+		_inputMsgs[i] = (MultivariateNormalParameters)resetInputMessage(_inputMsgs[i]);
+		_outputMsgs[i] = (MultivariateNormalParameters)resetOutputMessage(_outputMsgs[i]);		
 	}
 	
 	@Override
@@ -179,16 +180,16 @@ public class SRealJointVariable extends SVariableBase
 	}
 	@Override
 	public void setInputMsg(int portIndex, Object obj) {
-		_inputMsgs[portIndex] = (MultivariateGaussianMessage)obj;
+		_inputMsgs[portIndex] = (MultivariateNormalParameters)obj;
 	}
 
 
-	public MultivariateGaussianMessage createFixedValueMessage(double[] fixedValue)
+	public MultivariateNormalParameters createFixedValueMessage(double[] fixedValue)
 	{
 		double[][] covariance = new double[_numVars][_numVars];
 		for (int i = 0; i < _numVars; i++)
 			Arrays.fill(covariance[i], 0);
-		MultivariateGaussianMessage message = new MultivariateGaussianMessage(fixedValue, covariance);
+		MultivariateNormalParameters message = new MultivariateNormalParameters(fixedValue, covariance);
 		return message;
 	}
 

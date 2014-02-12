@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBase
 {
@@ -30,7 +30,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		MultivariateGaussianMessage outMsg = _outputMsgs[outPortNum];
+		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
 		
 		int size = outMsg.getMeans().length;
 		
@@ -43,7 +43,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		{
 			if (i != outPortNum)
 			{
-				MultivariateGaussianMessage inMsg = _inputMsgs[i];
+				MultivariateNormalParameters inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getMeans();
 				

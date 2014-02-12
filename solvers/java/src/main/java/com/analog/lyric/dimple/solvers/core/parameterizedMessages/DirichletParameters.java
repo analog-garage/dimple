@@ -14,9 +14,10 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.util.Arrays;
+
 
 public class DirichletParameters implements IParameterizedMessage
 {

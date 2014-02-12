@@ -14,7 +14,8 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
+
 
 public class NormalParameters implements IParameterizedMessage
 {
@@ -43,6 +44,12 @@ public class NormalParameters implements IParameterizedMessage
 	public final void setVariance(double variance) {_precision = 1/variance;}
 	public final void setStandardDeviation(double standardDeviation) {_precision = 1/(standardDeviation*standardDeviation);}
 
+	public final void set(NormalParameters other)	// Set from copy
+	{
+		_mean = other._mean;
+		_precision = other._precision;
+	}
+	
 	@Override
 	public final void setNull()
 	{

@@ -1,4 +1,4 @@
-package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 public interface IParameterizedMessage
 {

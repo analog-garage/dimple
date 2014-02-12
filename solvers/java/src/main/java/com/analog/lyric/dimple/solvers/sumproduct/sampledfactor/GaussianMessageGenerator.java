@@ -19,14 +19,14 @@ package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Real;
-import com.analog.lyric.dimple.solvers.sumproduct.GaussianMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
 
 public class GaussianMessageGenerator implements IMessageGenerator
 {
 	private Port _p;
-	private GaussianMessage _inputMessage;
-	private GaussianMessage _outputMessage;
+	private NormalParameters _inputMessage;
+	private NormalParameters _outputMessage;
 
 	public GaussianMessageGenerator(Port p)
 	{
@@ -75,20 +75,20 @@ public class GaussianMessageGenerator implements IMessageGenerator
 	public void initialize()
 	{
 		SRealVariable var = (SRealVariable)_p.node.getSibling(_p.index).getSolver();
-		_outputMessage = (GaussianMessage)var.resetInputMessage(_outputMessage);
-		_inputMessage = (GaussianMessage)var.resetInputMessage(_inputMessage);
+		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
+		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
 	}
 	
 	@Override
 	public void createInputMessage(Object msg)
 	{
-		_inputMessage = (GaussianMessage)msg;
+		_inputMessage = (NormalParameters)msg;
 	}
 
 	@Override
 	public void createOutputMessage(Object msg)
 	{
-		_outputMessage = (GaussianMessage)msg;
+		_outputMessage = (NormalParameters)msg;
 	}
 
 
