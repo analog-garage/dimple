@@ -319,6 +319,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 
+		// If the variable is the output of a directed deterministic factor, then don't modify the value--it should already be set correctly
+		if (getModelObject().isDeterministicOutput()) return;
+
 		// If the variable has a fixed value, then set the current sample to that value and return
 		if (_var.hasFixedValue())
 		{
