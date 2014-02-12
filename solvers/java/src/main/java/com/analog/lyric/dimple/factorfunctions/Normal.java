@@ -130,4 +130,14 @@ public class Normal extends FactorFunction
     {
     	return _precision;
     }
+    public final void setMean(double mean)
+    {
+    	_mean = mean;
+    }
+    public final void setPrecision(double precision)
+    {
+    	_precision = precision;
+		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
+		_precisionOverTwo = _precision*0.5;
+    }
 }

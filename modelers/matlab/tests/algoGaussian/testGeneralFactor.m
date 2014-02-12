@@ -15,14 +15,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function testGeneralFactor()
 
+test1();
+test2();
+
+end
+
+function test1()
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
     fg.Solver.setNumSamples(10000);
     fg.Solver.setSeed(1);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    % Test 1
     a = Real();
     b = Real([0 Inf]);
     fg.addFactor('Square',a,b);
@@ -37,5 +41,40 @@ function testGeneralFactor()
     fracDiff = diff./expectedBelief;
     assertTrue(all(fracDiff < .02));
 
+end
+
+function test2()
+
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSeed(1);
+
+    aM = 5;
+    aS = 2;
+    bM = -2;
+    bS = 3;
+    bDomain = -10:10;
+
+    a = Real();
+    b = Discrete(bDomain);
+    c = Real();
+    fg.addFactor('Sum',c,a,b);
+    
+    a.Input = [aM aS];
+    b.Input = normpdf(bDomain, bM, bS);
+
+    fg.solve();
+
+    expectedBelief = [aM+bM; sqrt(aS^2+bS^2)];
+    diff = abs(c.Belief-expectedBelief);
+    fracDiff = diff./expectedBelief;
+    assertTrue(all(fracDiff < .04));
+    
+    bMean = bDomain * b.Belief;
+    diff = abs(bMean - (-2));
+    fracDiff = diff./2;
+    assertTrue(all(fracDiff < .01));
 
 end
+

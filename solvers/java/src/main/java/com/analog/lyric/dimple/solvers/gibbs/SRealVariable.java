@@ -492,6 +492,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			retval[i] = _sampleArray.get(i);
 		return retval;
 	}
+	
+	// This is meant for internal use, not as a user accessible method
+	public final List<Double> _getSampleArray()
+	{
+		return _sampleArray;
+	}
 
 	public final void setAndHoldSampleValue(double value)
 	{

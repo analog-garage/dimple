@@ -16,82 +16,83 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import java.util.Arrays;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
 
-public class DiscreteMessageGenerator implements IMessageGenerator
+public class DiscreteMessageTranslator extends MessageTranslatorBase
 {
-	private Port _p;
 	private double[] _inputMessage;
 	private double[] _outputMessage;
 	
 
-	public DiscreteMessageGenerator(Port p)
+	public DiscreteMessageTranslator(Port port, VariableBase variable)
 	{
-		_p = p;
+		super(port, variable);
 	
-		if (!(_p.getConnectedNode() instanceof Discrete))
+		if (!(_port.getConnectedNode() instanceof Discrete))
 			throw new DimpleException("Expected Discrete variable.");
 	}
 
-
 	@Override
-	public void generateOutputMessageFromSamples(Object samples)
+	public final void setVariableInputFromInputMessage()
 	{
-		// In this case, input samples are index values
-		int[] sampleIndices = (int[])samples;
+		_variable.setInputObject(getInputMessage());
+	}
 	
-		Arrays.fill(_outputMessage, 0);
-		for (int i = 0; i < sampleIndices.length; i++)
-			_outputMessage[sampleIndices[i]]++;
-		
-		// Normalize
-		for (int i = 0; i < _outputMessage.length; i++ )
-			_outputMessage[i] /= sampleIndices.length;
+	@Override
+	public final void setVariableInputUniform()
+	{
+		_variable.setInputObject(null);
 	}
 
 	@Override
-	public void initialize()
+	public final void setOutputMessageFromVariableBelief()
 	{
-		SVariable var = (SVariable)_p.node.getSibling(_p.index).getSolver();
+		double[] message = (double[])_variable.getBeliefObject();
+		System.arraycopy(message, 0, _outputMessage, 0, message.length);
+	}
+	
+
+	@Override
+	public final void initialize()
+	{
+		SVariable var = (SVariable)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = (double[])var.resetInputMessage(_outputMessage);
 		_inputMessage = (double[])var.resetInputMessage(_inputMessage);
 	}
 
 	@Override
-	public void createInputMessage(Object msg)
+	public final void createInputMessage(Object msg)
 	{
 		_inputMessage = (double[])msg;
 	}
 	
 	@Override
-	public void createOutputMessage(Object msg)
+	public final void createOutputMessage(Object msg)
 	{
 		_outputMessage = (double[])msg;
 	}
-	
+		
 	@Override
-	public Object getInputMsg()
+	public final Object getInputMessage()
 	{
 		return _inputMessage;
 	}
 	
 	@Override
-	public Object getOutputMsg()
+	public final Object getOutputMessage()
 	{
 		return _outputMessage;
 	}
 
-
 	@Override
-	public void moveMessages(IMessageGenerator other)
+	public final void moveMessages(MessageTranslatorBase other)
 	{
-		_inputMessage = ((DiscreteMessageGenerator)other)._inputMessage;
-		_outputMessage = ((DiscreteMessageGenerator)other)._outputMessage;
+		_inputMessage = ((DiscreteMessageTranslator)other)._inputMessage;
+		_outputMessage = ((DiscreteMessageTranslator)other)._outputMessage;
 	}
 
 }

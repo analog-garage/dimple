@@ -656,6 +656,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		return retval;
 	}
 
+	// This is meant for internal use, not as a user accessible method
+	public final List<double[]> _getSampleArray()
+	{
+		return _sampleArray;
+	}
+
 	public final void setAndHoldSampleValue(double[] value)
 	{
 		setCurrentSample(value);

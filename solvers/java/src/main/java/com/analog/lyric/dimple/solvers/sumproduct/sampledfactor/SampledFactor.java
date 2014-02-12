@@ -16,21 +16,48 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
+/**
+ * @author jeff
+ * 
+ * This class is used to implement factors that include Real variables
+ * (and potentially also discrete variables), but are not otherwise
+ * implemented by a custom factor.  In this case, we use the Gibbs
+ * solver as an inner loop in generating approximate messages.
+ * 
+ * To do this, we create a "message graph" that is a new factor graph
+ * that includes a new copy of this factor and a new variable associated
+ * with each edge; of the same type as the corresponding sibling variables.
+ * (Currently, Complex and RealJoint variables are not supported.)
+ * 
+ * To compute an approximate output message, the Input for each variable
+ * in the message graph is set to the same value as the input message
+ * to this factor.  The form of this depends on the type of variable:
+ * discrete or real.  For the edge that we're computing the output
+ * message, we don't use the input message, but instead set the input
+ * of that variable to uniform.
+ * 
+ * When we perform inference on this message graph using the Gibbs solver,
+ * the resulting samples estimate the belief on the variable in the message
+ * graph corresponding to the output edge of the factor.  If inference were
+ * perfect, this belief would exactly equal the desired output message.
+ * Since the inference is approximate, the output message is an approximation
+ * of the desired output message.  The accuracy depends on the number of
+ * samples used in each update.
+ * 
+ */
 public class SampledFactor extends SFactorBase
 {
-	private int _numSamples = 1;
-	private int _burnInScans = 0;
+	private int _samplesPerUpdate = 100;
+	private int _burnInScansPerUpdate = 0;
 	private int _scansPerSample = 1;
-	private IMessageGenerator[] _messageGenerator;
+	private MessageTranslatorBase[] _messageTranslator;
 	private VariableBase[] _privateVariables;
 	private FactorGraph _messageGraph;
 	private com.analog.lyric.dimple.solvers.gibbs.SFactorGraph _solverGraph;
@@ -41,23 +68,22 @@ public class SampledFactor extends SFactorBase
 		super(factor);
 				
 		int numSiblings = factor.getSiblingCount();
-		_messageGenerator = new IMessageGenerator[numSiblings];
+		_messageTranslator = new MessageTranslatorBase[numSiblings];
 		_privateVariables = new VariableBase[numSiblings];
 
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
-			// Choose message generator based on variable type
-			// TODO: Allow more than one message representation for Real variables
-			VariableBase var = factor.getSibling(edge);
-			if (var.getDomain().isDiscrete())
-				_messageGenerator[edge] = new DiscreteMessageGenerator(factor.getPort(edge));
-			else
-				_messageGenerator[edge] = new GaussianMessageGenerator(factor.getPort(edge));
-			
-			
 			// Create a private copy of each sibling variable to use in the message graph
+			VariableBase var = factor.getSibling(edge);
 			_privateVariables[edge] = var.clone();
 			_privateVariables[edge].setInputObject(null);
+
+			// Create a message translator based on the variable type 
+			// TODO: Allow more than one message representation for Real variables
+			if (var.getDomain().isDiscrete())
+				_messageTranslator[edge] = new DiscreteMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
+			else
+				_messageTranslator[edge] = new GaussianMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
 		}
 		
 		// Create a private message graph on which the Gibbs sampler will be run
@@ -71,60 +97,37 @@ public class SampledFactor extends SFactorBase
 	public void updateEdge(int outPortNum)
 	{
 		int numSiblings = _factor.getSiblingCount();
-		_solverGraph.setNumSamples(_numSamples);
-		_solverGraph.setBurnInScans(_burnInScans);
+		_solverGraph.setNumSamples(_samplesPerUpdate);
+		_solverGraph.setBurnInScans(_burnInScansPerUpdate);
 		_solverGraph.setScansPerSample(_scansPerSample);
 		_solverGraph.saveAllSamples();		// FIXME: Only enable on output variable, and then turn off after solving
-		VariableBase outputVar = _privateVariables[outPortNum];
 		
-		// Set inputs to the incoming message value for all variables except the output variable
+		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
 			if (edge != outPortNum)
-			{
-				VariableBase var = _privateVariables[edge];
-				// FIXME Do this in a way that doesn't require knowing the variable type
-				if (var.getDomain().isDiscrete())
-				{
-					var.setInputObject(_messageGenerator[edge].getInputMsg());
-				}
-				else
-				{
-					NormalParameters inputMessage = (NormalParameters)_messageGenerator[edge].getInputMsg();
-					Normal inputFactorFunction = new Normal(inputMessage.getMean(), inputMessage.getPrecision());	// FIXME make more efficient
-					var.setInputObject(inputFactorFunction);
-				}
-			}
+				_messageTranslator[edge].setVariableInputFromInputMessage();
 			else
-				_privateVariables[edge].setInputObject(null);
+				_messageTranslator[edge].setVariableInputUniform();
 		}
 
 		// Run the Gibbs solver
 		_messageGraph.solve();
 	
-		// Get the resulting samples
-		// FIXME: Get the original ArrayLists without first copying to arrays
-		Object samples = null;
-		if (outputVar.getDomain().isDiscrete())
-			// FIXME: Get the beliefs in this case instead, and don't bother to save samples
-			samples = ((com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable)(outputVar.getSolver())).getAllSampleIndices();
-		else
-			samples = ((com.analog.lyric.dimple.solvers.gibbs.SRealVariable)(outputVar.getSolver())).getAllSamples();
-		
-		
-		// For all output sample values, compute the output message
-		_messageGenerator[outPortNum].generateOutputMessageFromSamples(samples);
+		// Set the output message using the belief of the message-graph output variable
+		_messageTranslator[outPortNum].setOutputMessageFromVariableBelief();
+
 	}
 	
 	// Set/get operating parameters
 	public void setNumSamples(int numSamples)
 	{
-		_numSamples = numSamples;
+		_samplesPerUpdate = numSamples;
 	}
 
 	public int getNumSamples()
 	{
-		return _numSamples;
+		return _samplesPerUpdate;
 	}
 	
 	// FIXME Set the other parameters
@@ -133,7 +136,7 @@ public class SampledFactor extends SFactorBase
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		_messageGenerator[i].initialize();
+		_messageTranslator[i].initialize();
 	}
 	
 	@Override
@@ -144,8 +147,8 @@ public class SampledFactor extends SFactorBase
 		{
 			ISolverVariable var = factor.getSibling(i).getSolver();
 			Object [] messages = var.createMessages(this);
-			_messageGenerator[i].createInputMessage(messages[1]);
-			_messageGenerator[i].createOutputMessage(messages[0]);
+			_messageTranslator[i].createInputMessage(messages[1]);
+			_messageTranslator[i].createOutputMessage(messages[0]);
 		}
 	}
 
@@ -153,19 +156,19 @@ public class SampledFactor extends SFactorBase
 	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
 	{
 		SampledFactor s = (SampledFactor)other;
-		_messageGenerator[portNum].moveMessages(s._messageGenerator[otherPortNum]);
+		_messageTranslator[portNum].moveMessages(s._messageTranslator[otherPortNum]);
 	}
 
 	@Override
 	public Object getInputMsg(int portIndex)
 	{
-		return _messageGenerator[portIndex].getInputMsg();
+		return _messageTranslator[portIndex].getInputMessage();
 	}
 
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
-		return _messageGenerator[portIndex].getOutputMsg();
+		return _messageTranslator[portIndex].getOutputMessage();
 	}
 
 }
