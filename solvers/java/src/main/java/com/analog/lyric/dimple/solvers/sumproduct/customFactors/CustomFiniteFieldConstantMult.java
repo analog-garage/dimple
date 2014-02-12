@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 
 
 
-public class FiniteFieldConstMult extends SFiniteFieldFactor
+public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 {
 	
 	private int _constant;
@@ -34,7 +34,7 @@ public class FiniteFieldConstMult extends SFiniteFieldFactor
 	//private Port _varInputPort;
 	//private Port _varOutputPort;
 	
-	public FiniteFieldConstMult(Factor factor)
+	public CustomFiniteFieldConstantMult(Factor factor)
 	{
 		super(factor);
 		

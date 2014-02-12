@@ -16,17 +16,17 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
 
-public class MultivariateDataSink extends GenericDataSink<MultivariateMsg> 
+public class MultivariateDataSink extends GenericDataSink<MultivariateGaussianMessage> 
 {
 
 	
-	public MultivariateMsg [] getArray()
+	public MultivariateGaussianMessage [] getArray()
 	{
-		MultivariateMsg [] retval = new MultivariateMsg[_data.size()];
+		MultivariateGaussianMessage [] retval = new MultivariateGaussianMessage[_data.size()];
 		int i = 0;
-		for (MultivariateMsg data : _data)
+		for (MultivariateGaussianMessage data : _data)
 		{
 			retval[i] = data;
 			i++;

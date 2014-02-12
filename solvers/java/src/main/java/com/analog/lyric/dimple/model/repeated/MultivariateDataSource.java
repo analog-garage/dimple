@@ -19,19 +19,19 @@ package com.analog.lyric.dimple.model.repeated;
 
 import java.util.LinkedList;
 
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
 
-public class MultivariateDataSource extends GenericDataSource<MultivariateMsg> 
+public class MultivariateDataSource extends GenericDataSource<MultivariateGaussianMessage> 
 {
 	
 	public MultivariateDataSource()
 	{
-		_data = new LinkedList<MultivariateMsg>();
+		_data = new LinkedList<MultivariateGaussianMessage>();
 	}
 	
 	public void add(double [] means, double [][] covar)
 	{
-		_data.add(new MultivariateMsg(means, covar));
+		_data.add(new MultivariateGaussianMessage(means, covar));
 	}
 	
 	

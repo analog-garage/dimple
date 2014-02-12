@@ -55,17 +55,17 @@ function testAdd()
     mu2 = mus(1)-mus(3);
     mu3 = mus(1)-mus(2);
 
-    assertEqual(mu1,f.Ports{1}.OutputMsg(1));
-    assertEqual(mu2,f.Ports{2}.OutputMsg(1));
-    assertEqual(mu3,f.Ports{3}.OutputMsg(1));
+    assertEqual(mu1,f.Ports{1}.OutputMsg.getMean);
+    assertEqual(mu2,f.Ports{2}.OutputMsg.getMean);
+    assertEqual(mu3,f.Ports{3}.OutputMsg.getMean);
 
     %Now the sigmas
     sigma1 = sqrt(sigmas(2)^2+sigmas(3)^2);
     sigma2 = sqrt(sigmas(1)^2+sigmas(3)^2);
     sigma3 = sqrt(sigmas(1)^2+sigmas(2)^2);
-    assertEqual(sigma1,f.Ports{1}.OutputMsg(2));
-    assertEqual(sigma2,f.Ports{2}.OutputMsg(2));
-    assertEqual(sigma3,f.Ports{3}.OutputMsg(2));
+    assertElementsAlmostEqual(sigma1,f.Ports{1}.OutputMsg.getStandardDeviation);
+    assertElementsAlmostEqual(sigma2,f.Ports{2}.OutputMsg.getStandardDeviation);
+    assertElementsAlmostEqual(sigma3,f.Ports{3}.OutputMsg.getStandardDeviation);
 
     %Second, we'll calculate the beliefs to compare against the output belief.
     %Variable mus are calculated as follows:
@@ -84,15 +84,15 @@ function testAdd()
     Rs = inputRs + funcRs;
     expectedSigmas = sqrt(1./Rs);
 
-    assertEqual(expectedSigmas(1),a.Belief(2));
-    assertEqual(expectedSigmas(2),b.Belief(2));
-    assertEqual(expectedSigmas(3),c.Belief(2));
+    assertElementsAlmostEqual(expectedSigmas(1),a.Belief(2));
+    assertElementsAlmostEqual(expectedSigmas(2),b.Belief(2));
+    assertElementsAlmostEqual(expectedSigmas(3),c.Belief(2));
 
     %Calculate expected mus
     expectedMus = (mus .* inputRs + funcMus .* funcRs) ./ (inputRs + funcRs);
-    assertEqual(expectedMus(1),a.Belief(1));
-    assertEqual(expectedMus(2),b.Belief(1));
-    assertEqual(expectedMus(3),c.Belief(1));
+    assertElementsAlmostEqual(expectedMus(1),a.Belief(1));
+    assertElementsAlmostEqual(expectedMus(2),b.Belief(1));
+    assertElementsAlmostEqual(expectedMus(3),c.Belief(1));
     
     
     %%%%%%%%%%%

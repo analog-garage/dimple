@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable.LookupTab
 //import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_1D;
 
-public class FiniteFieldMult extends SFiniteFieldFactor
+public class CustomFiniteFieldMult extends SFiniteFieldFactor
 {
 	//TODO: store this here or cache somewhere else?
 	//      Maybe create a multition for this?
@@ -35,7 +35,7 @@ public class FiniteFieldMult extends SFiniteFieldFactor
 	private DoubleFFT_1D _fft;
 	
 	
-	public FiniteFieldMult(Factor factor)
+	public CustomFiniteFieldMult(Factor factor)
 	{
 		super(factor);
 		if (factor.getSiblingCount() != 3)

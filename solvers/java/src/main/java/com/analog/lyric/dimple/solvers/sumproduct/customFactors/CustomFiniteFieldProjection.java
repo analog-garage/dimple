@@ -28,14 +28,14 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
 
 
 
-public class FiniteFieldProjection extends SFiniteFieldFactor
+public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 {
 
 	private SFiniteFieldVariable _ffVar;
 	private int [] _portIndex2bitIndex;
 	private int [] _bit2port;
 	
-	public FiniteFieldProjection(Factor factor)
+	public CustomFiniteFieldProjection(Factor factor)
 	{
 		super(factor);
 

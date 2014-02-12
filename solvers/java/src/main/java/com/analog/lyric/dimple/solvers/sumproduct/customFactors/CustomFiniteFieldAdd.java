@@ -21,10 +21,10 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 
 
 
-public class FiniteFieldAdd extends SFiniteFieldFactor
+public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 {
 	
-	public FiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor) 
+	public CustomFiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor) 
 	{
 		super(factor);
 		

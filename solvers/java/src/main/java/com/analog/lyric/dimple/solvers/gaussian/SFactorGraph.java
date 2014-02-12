@@ -191,11 +191,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("linear"))
 			return true;
-		else if (funcName.equals("Sum"))
-			return true;
 		else if (funcName.equals("ComplexSum"))
-			return true;
-		else if (funcName.equals("Product"))
 			return true;
 		else if (funcName.equals("ComplexProduct"))
 			return true;

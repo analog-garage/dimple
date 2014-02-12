@@ -33,8 +33,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
 
 /*
  * The model factory creates variable vectors and FactorGraphs for MATLAB
@@ -42,9 +42,9 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 public class ModelFactory
 {
 
-	public MultivariateMsg createMultivariateMsg(double [] means, double [][] covar)
+	public MultivariateGaussianMessage createMultivariateMsg(double [] means, double [][] covar)
 	{
-		return new MultivariateMsg(means, covar);
+		return new MultivariateGaussianMessage(means, covar);
 	}
 
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)

@@ -73,7 +73,7 @@ function testVariable()
             message = E.message;
         end
         assertEqual(exFound,true);
-        assertTrue(findstr(message,'variable node failed in gaussian solver because two incoming messages were certain of conflicting things.')>0);
+        assertTrue(findstr(message,'Real variable failed because two incoming messages were certain of conflicting things.')>0);
     end
 
     %Test a negative sigmas
@@ -88,7 +88,7 @@ function testVariable()
 
 
     assertEqual(exFound,true);
-    assertTrue(findstr(message,'expect sigma to be >= 0')>0);
+    assertTrue(findstr(message,'Expect standard deviation to be >= 0')>0);
 
     %Test variable with multiple edges
     inner = Real();
@@ -126,8 +126,8 @@ function testVariable()
     mu = sum(inmus .* rs) / sum(rs);
     sigma = 1/sqrt(sum(rs));
 
-    assertEqual(inner.Ports{4}.OutputMsg(1),mu);
-    assertEqual(inner.Ports{4}.OutputMsg(2),sigma);
+    assertEqual(inner.Ports{4}.OutputMsg.getMean,mu);
+    assertEqual(inner.Ports{4}.OutputMsg.getStandardDeviation,sigma);
 
     %Test Sigma of 0 non conflicting in inner node
     mus = ones(4,1)*5;
@@ -158,7 +158,7 @@ function testVariable()
     end
 
     assertTrue(exFound);
-    result = findstr(message,'variable node failed in gaussian solver because two incoming messages were certain of conflicting things.');
+    result = findstr(message,'Real variable failed because two incoming messages were certain of conflicting things.');
     result = result(1);
     assertTrue(result>0);
 

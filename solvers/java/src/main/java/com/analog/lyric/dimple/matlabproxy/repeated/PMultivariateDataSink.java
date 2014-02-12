@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.matlabproxy.repeated;
 
 import com.analog.lyric.dimple.model.repeated.IDataSink;
 import com.analog.lyric.dimple.model.repeated.MultivariateDataSink;
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.dimple.solvers.sumproduct.MultivariateGaussianMessage;
 
 public class PMultivariateDataSink implements IPDataSink 
 {
@@ -39,9 +39,9 @@ public class PMultivariateDataSink implements IPDataSink
 			_dataSinks[i] = new MultivariateDataSink();
 	}
 		
-	public MultivariateMsg [] getNext()
+	public MultivariateGaussianMessage [] getNext()
 	{
-		MultivariateMsg [] retval = new MultivariateMsg[_dataSinks.length];
+		MultivariateGaussianMessage [] retval = new MultivariateGaussianMessage[_dataSinks.length];
 		
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = _dataSinks[i].getNext();

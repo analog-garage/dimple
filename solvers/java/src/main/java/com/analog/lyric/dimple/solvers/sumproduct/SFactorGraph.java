@@ -24,17 +24,27 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldAdd;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldConstMult;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldMult;
-import com.analog.lyric.dimple.solvers.sumproduct.customFactors.FiniteFieldProjection;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldConstantMult;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldMult;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldProjection;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinear;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianProduct;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSum;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultiplexer;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianProduct;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSum;
+import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.util.misc.IMapList;
 
 public class SFactorGraph extends SFactorGraphBase
@@ -49,38 +59,64 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
-	{
-		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("finiteFieldMult"))
-		{
-			//VariableList variables = factor.getVariables();
-			
-			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
-				return new FiniteFieldConstMult(factor);
-			else
-				return new FiniteFieldMult(factor);
-		}
-		else if (funcName.equals("finiteFieldAdd"))
-			return new FiniteFieldAdd(factor);
-		else if (funcName.equals("finiteFieldProjection"))
-			return new FiniteFieldProjection(factor);
-		else if (funcName.equals("Multiplexer"))
-			return new CustomMultiplexer(factor);
-		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
-			return new CustomMultiplexer(factor);
-		else
-			throw new DimpleException("Not implemented");
-	}
-	
 	@Override
 	public ISolverVariable createVariable(VariableBase var)
 	{
 		if (var.getModelerClassName().equals("FiniteFieldVariable"))
 			return new SFiniteFieldVariable(var);
+		else if (var instanceof RealJoint)
+			return new SRealJointVariable(var);
+		else if (var instanceof Real)
+			return new SRealVariable(var);
 		else
 			return new SVariable(var);
 	}
+
+	
+	private int _numSamples = 100;	// FIXME REMOVE
+	
+	public int getNumSamples()
+	{
+		return _numSamples;
+	}
+	
+	public void setNumSamples(int numSamples)
+	{
+		for (Factor f : _factorGraph.getNonGraphFactors())
+		{
+			ISolverFactor s = f.getSolver();
+			
+			if (s instanceof SampledFactor)
+			{
+				((SampledFactor)s).setNumSamples(numSamples);
+			}
+		}
+		_numSamples = numSamples;
+	}
+	
+	@Override
+	public ISolverFactor createFactor(Factor factor)
+	{
+		if (customFactorExists(factor))
+		{
+			return createCustomFactor(factor);
+		}
+		else if (!factor.isDiscrete())
+		{
+			// For non-discrete factor that doesn't have a custom factor, create a sampled factor
+			SampledFactor sf = new SampledFactor(factor);
+			sf.setNumSamples(_numSamples);
+			return sf;
+		}
+		else
+		{
+			STableFactor tf = new STableFactor(factor);
+			if (_damping != 0)
+				setDampingForTableFactor(tf);
+			return tf;
+		}
+	}
+	
 
 	@Override
 	public boolean customFactorExists(String funcName)
@@ -94,6 +130,104 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("Multiplexer"))
 			return true;
 		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
+			return true;
+		else if (funcName.equals("add"))				// For backward compatibility with earlier name FIXME remove
+			return true;
+		else if (funcName.equals("constmult"))			// For backward compatibility with earlier name FIXME remove
+			return true;
+		else if (funcName.equals("polynomial"))			// For backward compatibility with earlier name FIXME Choose better name
+			return true;
+		else if (funcName.equals("multivariateadd"))	// For backward compatibility with earlier name FIXME Choose better name
+			return true;
+		else if (funcName.equals("multivariateconstmult"))		// For backward compatibility with earlier name FIXME Choose better name
+			return true;
+		else if (funcName.equals("linear"))				// For backward compatibility with earlier name FIXME Choose better name
+			return true;
+		else if (funcName.equals("ComplexSum"))
+			return true;
+		else if (funcName.equals("ComplexProduct"))
+			return true;
+		else
+			return false;
+	}
+	
+	// For internal use, we check more than just the name
+	// This allows detection of factors used by overloaded operators to be used, but only if used in the right way
+	public boolean customFactorExists(Factor factor)
+	{
+		String funcName = factor.getModelerFunctionName();
+		if (customFactorExists(funcName))
+			return true;
+		else if (funcName.equals("Sum"))
+			return CustomGaussianSum.isFactorCompatible(factor);
+		else if (funcName.equals("Product"))
+			return CustomGaussianProduct.isFactorCompatible(factor);
+		else
+			return false;
+	}
+
+	public ISolverFactor createCustomFactor(Factor factor)
+	{
+		String funcName = factor.getFactorFunction().getName();
+		if (funcName.equals("finiteFieldMult"))
+		{
+			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
+				return new CustomFiniteFieldConstantMult(factor);
+			else
+				return new CustomFiniteFieldMult(factor);
+		}
+		else if (funcName.equals("finiteFieldAdd"))
+			return new CustomFiniteFieldAdd(factor);
+		else if (funcName.equals("finiteFieldProjection"))
+			return new CustomFiniteFieldProjection(factor);
+		else if (funcName.equals("Multiplexer"))
+			return new CustomMultiplexer(factor);
+		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
+			return new CustomMultiplexer(factor);
+		else if (funcName.equals("add"))
+		{
+			if (isMultivariate(factor))
+				return new CustomMultivariateGaussianSum(factor);
+			else
+				return new CustomGaussianSum(factor);
+		}
+		else if (funcName.equals("Sum"))
+		{
+			return new CustomGaussianSum(factor);
+		}
+		else if (funcName.equals("ComplexSum"))
+		{
+			return new CustomMultivariateGaussianSum(factor);
+		}
+		else if (funcName.equals("constmult"))
+		{
+			if (isMultivariate(factor))
+				return new CustomMultivariateGaussianProduct(factor);
+			else
+				return new CustomGaussianProduct(factor);
+		}
+		else if (funcName.equals("Product"))
+		{
+			return new CustomGaussianProduct(factor);
+		}
+		else if (funcName.equals("ComplexProduct"))
+		{
+			return new CustomMultivariateGaussianProduct(factor);
+		}
+		else if (funcName.equals("polynomial"))
+		{
+			return new CustomComplexGaussianPolynomial(factor);
+		}
+		else if (funcName.equals("linear"))
+			return new CustomGaussianLinear(factor);
+		else
+			throw new DimpleException("Not implemented");
+	}
+	
+	// FIXME
+	private boolean isMultivariate(Factor factor)
+	{
+		if (factor.getSiblingCount() > 0 && (factor.getSibling(0) instanceof RealJoint))
 			return true;
 		else
 			return false;
@@ -110,23 +244,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setSeed(long seed)
 	{
 		_rand = new Random(seed);
-	}
-	
-	@Override
-	public ISolverFactor createFactor(Factor factor)
-	{
-		if (customFactorExists(factor.getFactorFunction().getName()))
-		{
-			return createCustomFactor(factor);
-		}
-		else
-		{
-	
-			STableFactor tf = new STableFactor(factor);
-			if (_damping != 0)
-				setDampingForTableFunction(tf);
-			return tf;
-		}
+		SolverRandomGenerator.setSeed(seed);	// FIXME
 	}
 	
 
@@ -140,7 +258,7 @@ public class SFactorGraph extends SFactorGraphBase
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			STableFactor tf = (STableFactor)f.getSolver();
-			setDampingForTableFunction(tf);
+			setDampingForTableFactor(tf);
 		}
 	}
 	
@@ -150,11 +268,11 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	/*
-	 * This method applies the global damping parameter to all of the table function's ports
+	 * This method applies the global damping parameter to all of the table factor's ports
 	 * and all of the variable ports connected to it.  This might cause problems in the future
 	 * when we support different damping parameters per edge.
 	 */
-	protected void setDampingForTableFunction(STableFactor tf)
+	protected void setDampingForTableFactor(STableFactor tf)
 	{
 		Factor factor = tf.getFactor();
 		IMapList<INode> nodes = factor.getConnectedNodesFlat();

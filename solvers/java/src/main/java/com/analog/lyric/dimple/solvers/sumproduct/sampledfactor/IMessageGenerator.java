@@ -14,17 +14,16 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gaussian;
+package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import com.analog.lyric.dimple.solvers.core.SolverBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
-public class Solver extends SolverBase
+public interface IMessageGenerator 
 {
-
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
-	{
-		return new com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph(factorGraph);
-	}
-	
+	public abstract void generateOutputMessageFromSamples(Object samples);
+	public abstract void initialize();
+	public abstract void createInputMessage(Object msg);
+	public abstract void createOutputMessage(Object msg);
+	public abstract Object getInputMsg();
+	public abstract Object getOutputMsg();
+	public abstract void moveMessages(IMessageGenerator other);
 }
