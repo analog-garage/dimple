@@ -30,6 +30,9 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
+/**
+ * A factor with only {@link Discrete} variables.
+ */
 public class DiscreteFactor extends Factor
 {
 	/*--------------
