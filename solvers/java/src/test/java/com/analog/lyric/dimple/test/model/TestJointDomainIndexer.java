@@ -543,6 +543,15 @@ public class TestJointDomainIndexer
 			JointDomainReindexer.createPermuter(dl2by3, dl2from3);
 		testInvariants(dl3by2_to_dl3from2);
 		
+		// Deduce added/removed domains
+		JointDomainReindexer dl4_to_dl3by4 = JointDomainReindexer.createPermuter(dl4, dl3by4, new int[] {1});
+		testInvariants(dl4_to_dl3by4);
+		dl4_to_dl3by4 = JointDomainReindexer.createPermuter(dl4, dl3by4, new int[] {1, 0});
+		testInvariants(dl4_to_dl3by4);
+		
+		JointDomainReindexer dl3by4_to_dl4 = JointDomainReindexer.createPermuter(dl3by4, dl4, new int[] {1,0});
+		testInvariants(dl3by4_to_dl4);
+
 		//
 		// Construction errors
 		//
