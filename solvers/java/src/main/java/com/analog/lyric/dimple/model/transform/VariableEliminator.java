@@ -827,11 +827,14 @@ public class VariableEliminator
 		 */
 		final double _incrementalCost;
 		
-		private Var(VariableBase variable, double incrementalCost)
+		final boolean _isConditioned;
+		
+		private Var(VariableBase variable, double incrementalCost, boolean isConditioned)
 		{
 			_variable = variable;
 			_incrementalCost = incrementalCost;
 			_neighborMap = new HashMap<Var, VarLink>(variable.getSiblingCount());
+			_isConditioned = isConditioned;
 		}
 		
 		@Override
@@ -917,12 +920,20 @@ public class VariableEliminator
 		{
 			final int nNeighbors = var.nNeighbors();
 			
-			if (nNeighbors <= 1)
+			// It is always better to first eliminate variables connected by no more
+			// than one edge because their removal will not expand the tree width.
+			switch (nNeighbors)
 			{
-				// It is always better to first eliminate variables connected by no more
-				// than one edge because their removal will not expand the tree width.
-				// This will return -1 if there are no neighbors, and 0 if there is one.
-				return nNeighbors - 1;
+			case 0:
+				// Return -2 if conditioned, or -1 for other variables with no edges
+				// (which is unlikely). This ensures that conditioned variables will
+				// always come first in the elimination order.
+				return var._isConditioned ? -2 : -1;
+			case 1:
+				// Return 0 if there is only one edge.
+				return 0;
+			default:
+				break;
 			}
 			
 			return computeCost(var);
@@ -1066,7 +1077,7 @@ public class VariableEliminator
 			{
 				throw new DimpleException("VariableEliminator cannot handle non-discrete variable '%s'", variable);
 			}
-			Var var = new Var(variable, generateCostIncrement(variable));
+			Var var = new Var(variable, generateCostIncrement(variable), isConditioned(variable));
 			map.put(variable, var);
 			list.add(var);
 			variable.clearMarked();
