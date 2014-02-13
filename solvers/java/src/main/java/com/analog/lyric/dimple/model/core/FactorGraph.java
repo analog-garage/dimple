@@ -1167,6 +1167,7 @@ public class FactorGraph extends FactorBase
 	@Override
 	public void initialize()
 	{
+		super.initialize();
 		for (VariableBase v : _ownedVariables)
 			v.initialize();
 		if (!hasParentGraph())			// Initialize boundary variables only if there's no parent to do it

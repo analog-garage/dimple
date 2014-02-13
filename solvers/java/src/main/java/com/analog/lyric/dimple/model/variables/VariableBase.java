@@ -45,17 +45,12 @@ public abstract class VariableBase extends Node implements Cloneable
 	/**
 	 * {@link #_topologicalFlags} value used by {@link #isDeterministicInput()}
 	 */
-    private static final byte DETERMINISTIC_INPUT = 0x01;
+    private static final byte DETERMINISTIC_INPUT = 0x04;
 	/**
 	 * {@link #_topologicalFlags} value used by {@link #isDeterministicOutput()}
 	 */
-    private static final byte DETERMINISTIC_OUTPUT = 0x02;
+    private static final byte DETERMINISTIC_OUTPUT = 0x08;
 
-    /**
-     * {@link #_topologicalFlags} value used by {@link #isMarked()}
-     */
-    private static final byte MARKED = 0x04;
-    
     /*-------
 	 * State
 	 */
@@ -68,12 +63,6 @@ public abstract class VariableBase extends Node implements Cloneable
 	private Domain _domain;
     private boolean _hasFixedValue = false;
 
-    /**
-     * Flags computed based on the topological relationship of the variable
-     * with its surrounding factors.
-     */
-    private byte _topologicalFlags;
-    
     /*--------------
      * Construction
      */
@@ -195,7 +184,7 @@ public abstract class VariableBase extends Node implements Cloneable
     @Override
 	public void initialize()
     {
-    	_topologicalFlags = 0;
+    	super.initialize();
     }
     
 	@Override
@@ -278,7 +267,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
     public final boolean isDeterministicInput()
     {
-    	return (_topologicalFlags & DETERMINISTIC_INPUT) != 0;
+    	return isFlagSet(DETERMINISTIC_INPUT);
     }
 
 	/**
@@ -291,7 +280,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
     public final boolean isDeterministicOutput()
     {
-    	return (_topologicalFlags & DETERMINISTIC_OUTPUT) != 0;
+    	return isFlagSet(DETERMINISTIC_OUTPUT);
     }
 	
    public void setGuess(Object guess)
@@ -516,17 +505,6 @@ public abstract class VariableBase extends Node implements Cloneable
      */
     
     /**
-     * Sets {@link #isMarked()} to false.
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public void clearMarked()
-    {
-    	_topologicalFlags &= ~MARKED;
-    }
-    
-    /**
      * Creates a new variable that combines the domains of this variable with additional {@code variables}.
      * <p>
      * For use by {@link FactorGraph#join(VariableBase...)}. Currently only supported for {@link Discrete}
@@ -534,6 +512,8 @@ public abstract class VariableBase extends Node implements Cloneable
      * <p>
      * @param variables specifies at least one additional variables to join with this one. As a convenience, this
      * may begin with this variable, in which case there must be at least one other variable.
+     * 
+     * @category internal
      */
     @Internal
     public VariableBase createJointNoFactors(VariableBase ... variables)
@@ -541,53 +521,30 @@ public abstract class VariableBase extends Node implements Cloneable
     	throw new DimpleException("not implemented");
     }
     
-    /**
-     * Boolean utility value that can be used to mark variable has having been processed.
-     * <p>
-     * False by default and reset by {@link #initialize()}.
-     * <p>
-     * @see #clearMarked()
-     * @see #setMarked()
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public final boolean isMarked()
-    {
-    	return (_topologicalFlags & MARKED) != 0;
-    }
-    
    /**
      * Sets {@link #isDeterministicInput()} to true.
      * 
      * @since 0.05
+     * 
+     * @category internal
      */
     @Internal
     public final void setDeterministicInput()
     {
-    	_topologicalFlags |= DETERMINISTIC_INPUT;
+    	setFlags(DETERMINISTIC_INPUT);
     }
     
     /**
      * Sets {@link #isDeterministicOutput()} to true.
      * 
      * @since 0.05
+     * 
+     * @category internal
      */
     @Internal
     public final void setDeterministicOutput()
     {
-    	_topologicalFlags |= DETERMINISTIC_OUTPUT;
-    }
-    
-    /**
-     * Sets {@link #isMarked()} to true.
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public final void setMarked()
-    {
-    	_topologicalFlags |= MARKED;
+    	setFlags(DETERMINISTIC_OUTPUT);
     }
     
     /*-----------------
