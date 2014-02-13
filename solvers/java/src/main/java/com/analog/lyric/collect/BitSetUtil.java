@@ -54,4 +54,99 @@ public class BitSetUtil
 		return nTrue;
 	}
 
+	/**
+	 * Sets bit at {@code index} in {@code bits} to zero.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,31] identifies which bit to clear.
+	 */
+	public static int clearBit(int bits, int index)
+	{
+		return bits & ~(1 << index);
+	}
+	
+	/**
+	 * Sets bit at {@code index} in {@code bits} to zero.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,63] identifies which bit to clear.
+	 */
+	public static long clearBit(long bits, int index)
+	{
+		return bits & ~(1L << index);
+	}
+	
+	public static int clearMask(int bits, int mask)
+	{
+		return bits & ~mask;
+	}
+	
+	public static long clearMask(long bits, long mask)
+	{
+		return bits & ~mask;
+	}
+	
+	/**
+	 * True if bit at {@code index} in {@code bits} is one.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,31] identifies which bit to clear.
+	 */
+	public static boolean isBitSet(int bits, int index)
+	{
+		return (bits & (1 << index)) != 0;
+	}
+	
+	/**
+	 * True if bit at {@code index} in {@code bits} is one.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,63] identifies which bit to clear.
+	 */
+	public static boolean isBitSet(long bits, int index)
+	{
+		return (bits & (1L << index)) != 0;
+	}
+	
+	public static boolean isMaskSet(int bits, int mask)
+	{
+		return (bits & mask) == mask;
+	}
+	
+	public static boolean isMaskSet(long bits, long mask)
+	{
+		return (bits & mask) == mask;
+	}
+	
+	/**
+	 * Sets bit at {@code index} in {@code bits} to one.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,31] identifies which bit to clear.
+	 */
+	public static int setBit(int bits, int index)
+	{
+		return bits | (1 << index);
+	}
+
+	/**
+	 * Sets bit at {@code index} in {@code bits} to one.
+	 * 
+	 * @param bits
+	 * @param index must be in the range [0,63] identifies which bit to clear.
+	 */
+	public static long setBit(long bits, int index)
+	{
+		return bits | (1L << index);
+	}
+	
+	public static int setMask(int bits, int mask)
+	{
+		return bits | mask;
+	}
+
+	public static long setMask(long bits, long mask)
+	{
+		return bits | mask;
+	}
 }
