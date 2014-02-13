@@ -16,6 +16,7 @@ import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -351,7 +352,7 @@ public class FactorTable extends SparseFactorTableBase
 	/**
 	 * Constructs a new factor table that is the product of all of the given tables.
 	 * 
-	 * @param tables maps factor tables to an array of index mappings that indicates where
+	 * @param entries maps factor tables to an array of index mappings that indicates where
 	 * each dimension in the table is located in the table to be constructed. Thus the
 	 * index mapping array for a given factor table must have length equal to the factor table's dimensions
 	 * and each entry must be in the range [0,N] where N is one less than the size of the new table. Every
@@ -364,12 +365,10 @@ public class FactorTable extends SparseFactorTableBase
 	 * <p>
 	 * @return Newly constructed table.
 	 */
-	public static IFactorTable product(Map<IFactorTable, int[]> tables, FactorTableRepresentation representation)
+	public static IFactorTable product(
+		ArrayList<Tuple2<IFactorTable,int[]>> entries, FactorTableRepresentation representation)
 	{
-		final ArrayList<Map.Entry<IFactorTable, int[]>> entries =
-			new ArrayList<Map.Entry<IFactorTable, int[]>>(tables.entrySet());
-	
-		final int nFactors = tables.size();
+		final int nFactors = entries.size();
 		if (nFactors < 1)
 		{
 			return null;
@@ -378,15 +377,15 @@ public class FactorTable extends SparseFactorTableBase
 		int nDimensions = 0;
 		for (int i = 0; i < nFactors; ++i)
 		{
-			nDimensions = Math.max(nDimensions, 1 + Ints.max(entries.get(i).getValue()));
+			nDimensions = Math.max(nDimensions, 1 + Ints.max(entries.get(i).second));
 		}
 		
 		// Build target domain list and estimate density of new table.
 		final DiscreteDomain[] toDomains = new DiscreteDomain[nDimensions];
-		for (Map.Entry<IFactorTable, int[]> entry : entries)
+		for (Tuple2<IFactorTable, int[]> tuple : entries)
 		{
-			final IFactorTable table = entry.getKey();
-			final int[] old2New = entry.getValue();
+			final IFactorTable table = tuple.getKey();
+			final int[] old2New = tuple.getValue();
 			final JointDomainIndexer tableDomains = table.getDomainIndexer();
 			
 			if (old2New.length != tableDomains.size())
@@ -436,7 +435,7 @@ public class FactorTable extends SparseFactorTableBase
 			
 			for (int i = 0; i < nFactors; ++i)
 			{
-				IFactorTable table = entries.get(i).getKey();
+				IFactorTable table = entries.get(i).first;
 				final int oldNzw = table.countNonZeroWeights();
 				final int oldCardinality = table.jointSize();
 				final int newNzw  = oldNzw * (toCardinality / oldCardinality);

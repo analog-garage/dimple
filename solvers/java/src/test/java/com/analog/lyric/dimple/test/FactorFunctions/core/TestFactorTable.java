@@ -21,6 +21,7 @@ import cern.colt.map.OpenIntIntHashMap;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableEntry;
@@ -425,25 +426,26 @@ public class TestFactorTable
 		}
 
 		// Empty table map
-		assertNull(FactorTable.product(tables, FactorTableRepresentation.SPARSE_WEIGHT));
+		ArrayList<Tuple2<IFactorTable,int[]>> list = new ArrayList<Tuple2<IFactorTable,int[]>>();
+		assertNull(FactorTable.product(list, FactorTableRepresentation.SPARSE_WEIGHT));
 		
 		// Errors
-		tables.put(AxB, new int[] {});
+		list.add(Tuple2.create(AxB, new int[] {}));
 		expectThrow(IllegalArgumentException.class,
-			FactorTable.class, "product", tables, FactorTableRepresentation.ALL);
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
 		
-		tables.put(AxB, new int[] { 0, 1, 2});
+		list.set(0, Tuple2.create(AxB, new int[] { 0, 1, 2}));
 		expectThrow(IllegalArgumentException.class, ".*does not match table dimensions.*",
-			FactorTable.class, "product", tables, FactorTableRepresentation.ALL);
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
 		
-		tables.put(AxB,  new int[] { 0, -1});
+		list.set(0, Tuple2.create(AxB,  new int[] { 0, -1}));
 		expectThrow(IllegalArgumentException.class, "Negative index mapping.*",
-			FactorTable.class, "product", tables, FactorTableRepresentation.ALL);
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
 		
-		tables.put(AxB, new int[] { 0, 1 });
-		tables.put(BxC, new int[] { 0, 2 });
+		list.set(0, Tuple2.create(AxB, new int[] { 0, 1 }));
+		list.add(Tuple2.create(BxC, new int[] { 0, 2 }));
 		expectThrow(IllegalArgumentException.class, "Conflicting domain mapping for entry.*",
-			FactorTable.class, "product", tables, FactorTableRepresentation.ALL);
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
 
 		tables.clear();
 		
@@ -464,9 +466,17 @@ public class TestFactorTable
 		testProduct(tables);
 	}
 	
-	private void testProduct(Map<IFactorTable, int[]> tables)
+	private void testProduct(Map<IFactorTable, int[]> entryMap)
 	{
-		final IFactorTable newTable = FactorTable.product(tables, FactorTableRepresentation.ALL_SPARSE);
+		@SuppressWarnings("unchecked")
+		final ArrayList<Tuple2<IFactorTable, int[]>> entries =
+			new ArrayList<Tuple2<IFactorTable, int[]>>(entryMap.size());
+		for (Map.Entry<IFactorTable, int[]> entry : entryMap.entrySet())
+		{
+			entries.add(new Tuple2<IFactorTable,int[]>(entry));
+		}
+
+		final IFactorTable newTable = FactorTable.product(entries, FactorTableRepresentation.ALL_SPARSE);
 		assertEquals(FactorTableRepresentation.ALL_SPARSE, newTable.getRepresentation());
 		
 		class Tuple {
@@ -482,9 +492,10 @@ public class TestFactorTable
 		final Map<IFactorTable, int[]> oldTableIndices = new HashMap<IFactorTable, int[]>();
 		final Multimap<Integer, Tuple> inverseMap = HashMultimap.create();
 		final ArrayList<DiscreteDomain> domains = new ArrayList<DiscreteDomain>();
-		for (IFactorTable oldTable : tables.keySet())
+		for (Tuple2<IFactorTable,int[]> entry : entries)
 		{
-			final int[] old2new = tables.get(oldTable);
+			final IFactorTable oldTable = entry.first;
+			final int[] old2new = entry.second;
 			oldTableIndices.put(oldTable, oldTable.getDomainIndexer().allocateIndices(null));
 			
 			for (int from = 0; from < old2new.length; ++from)
@@ -518,8 +529,9 @@ public class TestFactorTable
 			}
 			
 			double expectedWeight = 1.0;
-			for (IFactorTable oldTable : tables.keySet())
+			for (Tuple2<IFactorTable,int[]> entry : entries)
 			{
+				final IFactorTable oldTable = entry.first;
 				int[] oldIndices = oldTableIndices.get(oldTable);
 				expectedWeight *= oldTable.getWeightForIndices(oldIndices);
 			}
