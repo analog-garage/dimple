@@ -15,24 +15,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirectory, TestFilesDirectory)
-
+    
     if nargin < 1
-       f = fileparts(mfilename('fullpath')); 
-       f = f(1:(strfind(f,[filesep 'util'])-1));
-       DimpleDirectory = f;
+        f = fileparts(mfilename('fullpath'));
+        f = f(1:(strfind(f,[filesep 'util'])-1));
+        DimpleDirectory = f;
     end
-
+    
     setenv('_Dimple_START_PATH', DimpleDirectory);
-
+    
     dimple_base = DimpleDirectory;
     loc = strfind(dimple_base,fullfile([filesep 'modelers'], 'matlab'));
     dimple_base = dimple_base(1:loc-1);
     
     bLog = false;
-
+    
     Paths = {};
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'core');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'parameterLearning');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'lib');
@@ -42,30 +42,30 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'util');
     Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'tests');
     
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	LyricPath = fullfile(DimpleDirectory, 'lyric');
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    LyricPath = fullfile(DimpleDirectory, 'lyric');
     if exist(LyricPath, 'dir')
-		Paths{length(Paths) + 1} = LyricPath;
-		bLog = true;
+        Paths{length(Paths) + 1} = LyricPath;
+        bLog = true;
     end
     
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	CPPPath = fullfile(dimple_base, 'solvers', 'cpp');
-	
-	if exist(CPPPath, 'dir')
-		Paths{length(Paths) + 1} = CPPPath;
-		Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'modelfactory');
-		bLog = true;
-	end
-	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	ActualXUnitDirectory = fullfile(DimpleDirectory, 'lib', 'xunit_dist', 'matlab_xunit', 'xunit');
-	if nargin > 1
-		ActualXUnitDirectory = XUnitDirectory;
-	end
-	Paths{length(Paths) + 1} = ActualXUnitDirectory;
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    CPPPath = fullfile(dimple_base, 'solvers', 'cpp');
+    
+    if exist(CPPPath, 'dir')
+        Paths{length(Paths) + 1} = CPPPath;
+        Paths{length(Paths) + 1} = fullfile(DimpleDirectory, 'modelfactory');
+        bLog = true;
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ActualXUnitDirectory = fullfile(DimpleDirectory, 'lib', 'xunit_dist', 'matlab_xunit', 'xunit');
+    if nargin > 1
+        ActualXUnitDirectory = XUnitDirectory;
+    end
+    Paths{length(Paths) + 1} = ActualXUnitDirectory;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     JavaBuildDir = fullfile(dimple_base, 'solvers', 'java', 'build');
     JavaClassDir = fullfile(JavaBuildDir, 'classes', 'main');
@@ -84,13 +84,18 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
     end
     
     if nargin > 2
-		ActualJavaDir = JavaDir;
-	end
+        ActualJavaDir = JavaDir;
+    end
     javaaddpath(ActualJavaDir);
     
     JavaTestClassDir = fullfile(JavaBuildDir, 'classes', 'test');
     if exist(JavaTestClassDir, 'dir')
         javaaddpath(JavaTestClassDir);
+    end
+    
+    JavaBenchmarkClassDir = fullfile(JavaBuildDir, 'classes', 'benchmarking');
+    if exist(JavaBenchmarkClassDir, 'dir')
+        javaaddpath(JavaBenchmarkClassDir);
     end
     
     % Add jars to end of javaclasspath so they don't come before
@@ -102,32 +107,32 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
             javaaddpath(fullfile(lib_dir, j),'-end');
         end
     end
-
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	ActualBerToolDirectory = fullfile(LyricPath, 'LyricBerTool');
-	if nargin > 3
-		ActualBerToolDirectory = BerToolDirectory;
-	end
-    if exist(ActualBerToolDirectory, 'dir')
-		Paths{length(Paths) + 1} = ActualBerToolDirectory;
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ActualBerToolDirectory = fullfile(LyricPath, 'LyricBerTool');
+    if nargin > 3
+        ActualBerToolDirectory = BerToolDirectory;
     end
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	ActualTestFilesDirectory = fullfile(LyricPath, 'TesterFiles');
-	if nargin > 4
-		ActualTestFilesDirectory = TestFilesDirectory;
-	end
     if exist(ActualBerToolDirectory, 'dir')
-		Paths{length(Paths) + 1} = ActualTestFilesDirectory;
+        Paths{length(Paths) + 1} = ActualBerToolDirectory;
     end
-        
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    ActualTestFilesDirectory = fullfile(LyricPath, 'TesterFiles');
+    if nargin > 4
+        ActualTestFilesDirectory = TestFilesDirectory;
+    end
+    if exist(ActualBerToolDirectory, 'dir')
+        Paths{length(Paths) + 1} = ActualTestFilesDirectory;
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for idx = 1:length(Paths)
         addpath(Paths{idx});
     end
     
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if bLog
         fprintf('Dimple initialized with paths:\n');
         for idx = 1:length(Paths)
