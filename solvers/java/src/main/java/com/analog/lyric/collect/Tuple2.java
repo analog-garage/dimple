@@ -16,8 +16,9 @@
 
 package com.analog.lyric.collect;
 
-import java.io.Serializable;
 import java.util.Map;
+
+import net.jcip.annotations.Immutable;
 
 // TODO: Create additional Tuple classes as needed...
 
@@ -26,7 +27,8 @@ import java.util.Map;
  * 
  * @author Christopher Barber
  */
-public class Tuple2<T1,T2> implements Serializable, Map.Entry<T1,T2>
+@Immutable
+public class Tuple2<T1,T2> extends Tuple implements Map.Entry<T1,T2>
 {
 	/*-------
 	 * State
@@ -67,6 +69,30 @@ public class Tuple2<T1,T2> implements Serializable, Map.Entry<T1,T2>
 		return new Tuple2<X1, X2>(first, second);
 	}
 	
+	/*--------------
+	 * List methods
+	 */
+	
+	@Override
+	public Object get(int index)
+	{
+		switch (index)
+		{
+		case 0:
+			return first;
+		case 1:
+			return second;
+		default:
+			throw new IndexOutOfBoundsException();
+		}
+	}
+
+	@Override
+	public final int size()
+	{
+		return 2;
+	}
+	
 	/*--------------------
 	 * Map.Entry methods
 	 */
@@ -97,4 +123,5 @@ public class Tuple2<T1,T2> implements Serializable, Map.Entry<T1,T2>
 	{
 		throw new UnsupportedOperationException("tuples are immutable");
 	}
+
 }
