@@ -53,13 +53,16 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
  */
 public class SampledFactor extends SFactorBase
 {
-	private int _samplesPerUpdate = 100;
-	private int _burnInScansPerUpdate = 10;
-	private int _scansPerSample = 1;
+	private int _samplesPerUpdate = DEFAULT_SAMPLES_PER_UPDATE;
+	private int _burnInScansPerUpdate = DEFAULT_BURN_IN_SCANS_PER_UPDATE;
+	private int _scansPerSample = DEFAULT_SCANS_PER_SAMPLE;
 	private MessageTranslatorBase[] _messageTranslator;
 	private VariableBase[] _privateVariables;
 	private FactorGraph _messageGraph;
 	private com.analog.lyric.dimple.solvers.gibbs.SFactorGraph _solverGraph;
+	public final static int DEFAULT_SAMPLES_PER_UPDATE = 100;
+	public final static int DEFAULT_BURN_IN_SCANS_PER_UPDATE = 10;
+	public final static int DEFAULT_SCANS_PER_SAMPLE = 1;
 
 	
 	public SampledFactor(Factor factor)
@@ -120,18 +123,33 @@ public class SampledFactor extends SFactorBase
 
 	}
 	
+	
 	// Set/get operating parameters
-	public void setNumSamples(int numSamples)
+	public void setSamplesPerUpdate(int numSamples)
 	{
 		_samplesPerUpdate = numSamples;
 	}
-
-	public int getNumSamples()
+	public int getSamplesPerUpdate()
 	{
 		return _samplesPerUpdate;
 	}
+	public void setBurnInScansPerUpdate(int burnInScansPerUpdate)
+	{
+		_burnInScansPerUpdate = burnInScansPerUpdate;
+	}
+	public int getBurnInScansPerUpdate()
+	{
+		return _burnInScansPerUpdate;
+	}
+	public void setScansPerSample(int scansPerSample)
+	{
+		_scansPerSample = scansPerSample;
+	}
 	
-	// FIXME Set the other parameters
+	public int getScansPerSample()
+	{
+		return _scansPerSample;
+	}
 
 	
 	@Override

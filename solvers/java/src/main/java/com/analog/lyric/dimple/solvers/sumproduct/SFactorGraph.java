@@ -51,6 +51,10 @@ public class SFactorGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
 	private IFactorTable _currentFactorTable = null;
+	private int _sampledFactorSamplesPerUpdate = SampledFactor.DEFAULT_SAMPLES_PER_UPDATE;
+	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
+	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
+
 
 	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
@@ -73,27 +77,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	
-	private int _numSamples = 100;	// FIXME REMOVE
-	
-	public int getNumSamples()
-	{
-		return _numSamples;
-	}
-	
-	public void setNumSamples(int numSamples)
-	{
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			ISolverFactor s = f.getSolver();
-			
-			if (s instanceof SampledFactor)
-			{
-				((SampledFactor)s).setNumSamples(numSamples);
-			}
-		}
-		_numSamples = numSamples;
-	}
-	
+
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
@@ -105,7 +89,7 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			// For non-discrete factor that doesn't have a custom factor, create a sampled factor
 			SampledFactor sf = new SampledFactor(factor);
-			sf.setNumSamples(_numSamples);
+			sf.setSamplesPerUpdate(_sampledFactorSamplesPerUpdate);
 			return sf;
 		}
 		else
@@ -283,6 +267,54 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 
 	}
+	
+	public void setSampledFactorSamplesPerUpdate(int samplesPerUpdate)
+	{
+		_sampledFactorSamplesPerUpdate = samplesPerUpdate;
+		for (Factor f : _factorGraph.getNonGraphFactors())
+		{
+			ISolverFactor s = f.getSolver();
+			if (s instanceof SampledFactor)
+				((SampledFactor)s).setSamplesPerUpdate(samplesPerUpdate);
+		}
+	}
+	public int getSampledFactorSamplesPerUpdate()
+	{
+		return _sampledFactorSamplesPerUpdate;
+	}
+	
+	public void setSampledFactorBurnInScansPerUpdate(int burnInSamples)
+	{
+		_sampledFactorBurnInScansPerUpdate = burnInSamples;
+		for (Factor f : _factorGraph.getNonGraphFactors())
+		{
+			ISolverFactor s = f.getSolver();
+			if (s instanceof SampledFactor)
+				((SampledFactor)s).setSamplesPerUpdate(burnInSamples);
+		}
+	}
+	public int getSampledFactorBurnInScansPerUpdate()
+	{
+		return _sampledFactorBurnInScansPerUpdate;
+	}
+
+	public void setSampledFactorScansPerSample(int scansPerSample)
+	{
+		_sampledFactorScansPerSample = scansPerSample;
+		for (Factor f : _factorGraph.getNonGraphFactors())
+		{
+			ISolverFactor s = f.getSolver();
+			if (s instanceof SampledFactor)
+				((SampledFactor)s).setSamplesPerUpdate(scansPerSample);
+		}
+	}
+	public int getSampledFactorScansPerSample()
+	{
+		return _sampledFactorScansPerSample;
+	}
+
+	
+
 	
 	@Override
 	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)

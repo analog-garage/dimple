@@ -40,7 +40,7 @@ function test1(debugPrint, repeatable)
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
     fg.Solver.setSeed(1);
 
     a = Real();
@@ -67,7 +67,7 @@ function test2(debugPrint, repeatable)
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
     fg.Solver.setSeed(1);
 
     aM = 5;
@@ -106,7 +106,7 @@ function test3(debugPrint, repeatable)
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
     fg.Solver.setSeed(1);
 
     a = Complex();
@@ -162,7 +162,7 @@ function test4(debugPrint, repeatable)
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
     fg.Solver.setSeed(1);
 
     a = Complex();
