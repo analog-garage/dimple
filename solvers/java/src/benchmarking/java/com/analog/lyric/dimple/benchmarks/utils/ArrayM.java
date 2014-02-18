@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import com.google.common.primitives.Doubles;
-import com.sun.media.sound.InvalidDataException;
 
 public class ArrayM implements Iterable<int[]>
 {
@@ -303,7 +302,7 @@ public class ArrayM implements Iterable<int[]>
 				}
 				else if (columns != tokens.length)
 				{
-					throw new InvalidDataException(
+					throw new IllegalArgumentException(
 							"All rows of csv text must have same quantity of columns.");
 				}
 				for (int column = 0; column < columns; column++)
