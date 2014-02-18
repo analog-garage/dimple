@@ -42,9 +42,9 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 public class ModelFactory
 {
 
-	public MultivariateNormalParameters createMultivariateMsg(double [] means, double [][] covar)
+	public MultivariateNormalParameters createMultivariateNormalParameters(double[] mean, double[][] covariance)
 	{
-		return new MultivariateNormalParameters(means, covar);
+		return new MultivariateNormalParameters(mean, covariance);
 	}
 
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)

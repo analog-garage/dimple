@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2012 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,31 +14,32 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef MultivariateDataSink < DataSink
+classdef MultivariateNormalParameters < ParameterizedMessage
+    properties
+        Mean;
+        Means; % For backward compatibility
+        Covariance;
+    end
     methods
-        function obj = MultivariateDataSink(dimensions,dataSink)
-            
-            if nargin < 1
-                dimensions = size(1);
-            end
-            
-            if nargin < 2
+        function obj = MultivariateNormalParameters(mean, covariance)
+            if ~isnumeric(mean)
+                obj.IParameters = mean;
+            else
                 modeler = getModeler();
-                dataSink = modeler.getMultivariateDataSink(prod(dimensions));
+                obj.IParameters = modeler.createMultivariateNormalParameters(mean,covariance);
             end
-            
-            obj@DataSink(dimensions,dataSink);
         end
         
-        function retval = getNext(obj)
-            retval = getNext@DataSink(obj);
-            if iscell(retval)
-                for i = 1:numel(retval)
-                   retval{i} = MultivariateNormalParameters(retval{i}); 
-                end
-            else
-                retval = MultivariateNormalParameters(retval);
-            end
+        function mean = get.Mean(obj)
+           mean = obj.IParameters.getMean(); 
+        end
+        
+        function mean = get.Means(obj)  % For backward compatibility
+           mean = obj.IParameters.getMean(); 
+        end
+        
+        function covar = get.Covariance(obj)
+           covar = obj.IParameters.getCovariance(); 
         end
         
     end

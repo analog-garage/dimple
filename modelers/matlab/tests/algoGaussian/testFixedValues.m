@@ -93,15 +93,15 @@ b = Complex();
 c = a + b;
 
 % Run first with inputs and no fixed value
-a.Input = MultivariateMsg([3 2], eye(2));
-b.Input = MultivariateMsg([2 7], eye(2));
+a.Input = MultivariateNormalParameters([3 2], eye(2));
+b.Input = MultivariateNormalParameters([2 7], eye(2));
 fg.solve();
 
 assert(~a.hasFixedValue);
 assertElementsAlmostEqual(c.Value, 5 + 1i*9, 'absolute', 1e-5);
-assertElementsAlmostEqual(c.Belief.Means, [5; 9], 'absolute', 1e-5);
-assertElementsAlmostEqual(a.Input.getMeans(), [3; 2], 'absolute');
-assertElementsAlmostEqual(b.Input.getMeans(), [2; 7], 'absolute');
+assertElementsAlmostEqual(c.Belief.Mean, [5; 9], 'absolute', 1e-5);
+assertElementsAlmostEqual(a.Input.getMean(), [3; 2], 'absolute');
+assertElementsAlmostEqual(b.Input.getMean(), [2; 7], 'absolute');
 
 % Now, set a fixed value and run again
 a.FixedValue = 7 + 1i*1.4;
@@ -109,20 +109,20 @@ fg.solve();
 
 assert(a.hasFixedValue);
 assert(isempty(a.Input));
-assertElementsAlmostEqual(a.Belief.Means, [7; 1.4], 'absolute', 1e-5);
-assertElementsAlmostEqual(c.Belief.Means, [9; 8.4], 'absolute', 1e-5);
+assertElementsAlmostEqual(a.Belief.Mean, [7; 1.4], 'absolute', 1e-5);
+assertElementsAlmostEqual(c.Belief.Mean, [9; 8.4], 'absolute', 1e-5);
 assert(all(a.Belief.Covariance(:)==0));
 assertElementsAlmostEqual(c.Belief.Covariance, eye(2), 'absolute', 1e-5);
 
 % Now set the input again, and run again
-a.Input = MultivariateMsg([4 3], eye(2));
+a.Input = MultivariateNormalParameters([4 3], eye(2));
 fg.solve();
 
 assert(~a.hasFixedValue);
 assertElementsAlmostEqual(c.Value, 6 + 1i*10, 'absolute', 1e-5);
-assertElementsAlmostEqual(c.Belief.Means, [6; 10], 'absolute', 1e-5);
-assertElementsAlmostEqual(a.Input.getMeans(), [4; 3], 'absolute');
-assertElementsAlmostEqual(b.Input.getMeans(), [2; 7], 'absolute');
+assertElementsAlmostEqual(c.Belief.Mean, [6; 10], 'absolute', 1e-5);
+assertElementsAlmostEqual(a.Input.getMean(), [4; 3], 'absolute');
+assertElementsAlmostEqual(b.Input.getMean(), [2; 7], 'absolute');
 
 end
 
@@ -243,8 +243,8 @@ biin = rand(2,3,4);
 for i=1:2
     for j=1:3
         for k=1:4
-            a(i,j,k).Input = MultivariateMsg([arin(i,j,k) aiin(i,j,k)], eye(2));
-            b(i,j,k).Input = MultivariateMsg([brin(i,j,k) biin(i,j,k)], eye(2));
+            a(i,j,k).Input = MultivariateNormalParameters([arin(i,j,k) aiin(i,j,k)], eye(2));
+            b(i,j,k).Input = MultivariateNormalParameters([brin(i,j,k) biin(i,j,k)], eye(2));
         end
     end
 end
@@ -260,9 +260,9 @@ bInput = b.Input;
 for i=1:2
     for j=1:3
         for k=1:4
-            assertElementsAlmostEqual(cBelief{i,j,k}.Means, [arin(i,j,k) + brin(i,j,k); aiin(i,j,k) + biin(i,j,k)] , 'absolute', 1e-5);
-            assertElementsAlmostEqual(aInput{i,j,k}.getMeans(), [arin(i,j,k); aiin(i,j,k)], 'absolute');
-            assertElementsAlmostEqual(bInput{i,j,k}.getMeans(), [brin(i,j,k); biin(i,j,k)], 'absolute');
+            assertElementsAlmostEqual(cBelief{i,j,k}.Mean, [arin(i,j,k) + brin(i,j,k); aiin(i,j,k) + biin(i,j,k)] , 'absolute', 1e-5);
+            assertElementsAlmostEqual(aInput{i,j,k}.getMean(), [arin(i,j,k); aiin(i,j,k)], 'absolute');
+            assertElementsAlmostEqual(bInput{i,j,k}.getMean(), [brin(i,j,k); biin(i,j,k)], 'absolute');
         end
     end
 end
@@ -281,8 +281,8 @@ cBelief = c.Belief;
 for i=1:2
     for j=1:3
         for k=1:4
-            assertElementsAlmostEqual(aBelief{i,j,k}.Means, [real(afv(i,j,k)); imag(afv(i,j,k))] , 'absolute', 1e-5);
-            assertElementsAlmostEqual(cBelief{i,j,k}.Means, [real(afv(i,j,k)) + brin(i,j,k); imag(afv(i,j,k)) + biin(i,j,k)] , 'absolute', 1e-5);
+            assertElementsAlmostEqual(aBelief{i,j,k}.Mean, [real(afv(i,j,k)); imag(afv(i,j,k))] , 'absolute', 1e-5);
+            assertElementsAlmostEqual(cBelief{i,j,k}.Mean, [real(afv(i,j,k)) + brin(i,j,k); imag(afv(i,j,k)) + biin(i,j,k)] , 'absolute', 1e-5);
             assertElementsAlmostEqual(aBelief{i,j,k}.Covariance, zeros(2) , 'absolute');
             assertElementsAlmostEqual(cBelief{i,j,k}.Covariance, eye(2) , 'absolute', 1e-5);
         end
@@ -297,8 +297,8 @@ biin = rand(2,3,4);
 for i=1:2
     for j=1:3
         for k=1:4
-            a(i,j,k).Input = MultivariateMsg([arin(i,j,k) aiin(i,j,k)], eye(2));
-            b(i,j,k).Input = MultivariateMsg([brin(i,j,k) biin(i,j,k)], eye(2));
+            a(i,j,k).Input = MultivariateNormalParameters([arin(i,j,k) aiin(i,j,k)], eye(2));
+            b(i,j,k).Input = MultivariateNormalParameters([brin(i,j,k) biin(i,j,k)], eye(2));
         end
     end
 end
@@ -314,9 +314,9 @@ bInput = b.Input;
 for i=1:2
     for j=1:3
         for k=1:4
-            assertElementsAlmostEqual(cBelief{i,j,k}.Means, [arin(i,j,k) + brin(i,j,k); aiin(i,j,k) + biin(i,j,k)] , 'absolute', 1e-5);
-            assertElementsAlmostEqual(aInput{i,j,k}.getMeans(), [arin(i,j,k); aiin(i,j,k)], 'absolute');
-            assertElementsAlmostEqual(bInput{i,j,k}.getMeans(), [brin(i,j,k); biin(i,j,k)], 'absolute');
+            assertElementsAlmostEqual(cBelief{i,j,k}.Mean, [arin(i,j,k) + brin(i,j,k); aiin(i,j,k) + biin(i,j,k)] , 'absolute', 1e-5);
+            assertElementsAlmostEqual(aInput{i,j,k}.getMean(), [arin(i,j,k); aiin(i,j,k)], 'absolute');
+            assertElementsAlmostEqual(bInput{i,j,k}.getMean(), [brin(i,j,k); biin(i,j,k)], 'absolute');
         end
     end
 end

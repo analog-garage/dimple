@@ -138,7 +138,7 @@ function test3(debugPrint, repeatable)
     
     % Use two different ways to set the input, just for variation
     a.Input = FactorFunction('MultivariateNormal', aMean, aCovariance);
-    b.Input = MultivariateMsg(bMean, bCovariance);
+    b.Input = MultivariateNormalParameters(bMean, bCovariance);
 
     if repeatable
         fg.Solver.setSeed(1);
@@ -146,7 +146,7 @@ function test3(debugPrint, repeatable)
     
     fg.solve();
     
-    diff = abs(c.Belief.Means-expectedMean);
+    diff = abs(c.Belief.Mean-expectedMean);
     fracDiff = diff./max(abs(expectedMean));
     assertTrue(all(fracDiff < .01));
     
@@ -194,7 +194,7 @@ function test4(debugPrint, repeatable)
 
     % Use two different ways to set the input, just for variation
     a.Input = FactorFunction('MultivariateNormal', aMean, aCovariance);
-    b.Input = MultivariateMsg(bMean, bCovariance);
+    b.Input = MultivariateNormalParameters(bMean, bCovariance);
 
     if repeatable
         fg.Solver.setSeed(1);
@@ -202,7 +202,7 @@ function test4(debugPrint, repeatable)
     
     fg.solve();
 
-    diff = abs(c.Belief.Means-expectedMean);
+    diff = abs(c.Belief.Mean-expectedMean);
     fracDiff = diff./max(abs(expectedMean));
     assertTrue(all(fracDiff < .02));
     

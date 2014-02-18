@@ -14,9 +14,8 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef Msg < handle
+classdef ParameterizedMessage < handle
     properties
-        IMsg;
-        
+        IParameters;
     end
 end

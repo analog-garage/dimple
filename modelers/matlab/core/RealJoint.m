@@ -92,13 +92,13 @@ classdef RealJoint < VariableBase
             a = cell(obj.VectorObject.getBeliefs(varids));
             
             if prod(sz) == 1
-                m = MultivariateMsg(0,0);
-                m.IMsg = a{1};
+                m = MultivariateNormalParameters(0,0);
+                m.IParameters = a{1};
                 b = m;
             else
                 for i = 1:numel(b)
-                    m = MultivariateMsg(0,0);
-                    m.IMsg = a{i};
+                    m = MultivariateNormalParameters(0,0);
+                    m.IParameters = a{i};
                     b{i} = m;
                 end
             end
@@ -116,8 +116,8 @@ classdef RealJoint < VariableBase
         function setInput(obj,input)
             v = obj.VectorIndices;
             
-            if isa(input,'Msg')
-                input = input.IMsg;
+            if isa(input,'ParameterizedMessage')
+                input = input.IParameters;
             elseif (isa(input, 'FactorFunction'))
                 input = input.get();
             elseif iscell(input)
