@@ -104,15 +104,21 @@ public class SampledFactor extends SFactorBase
 		_solverGraph.setNumSamples(_samplesPerUpdate);
 		_solverGraph.setBurnInScans(_burnInScansPerUpdate);
 		_solverGraph.setScansPerSample(_scansPerSample);
-		_solverGraph.saveAllSamples();		// FIXME: Only enable on output variable if real, and then turn off after solving
 		
 		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)
 		{
-			if (edge != outPortNum)
-				_messageTranslator[edge].setVariableInputFromInputMessage();
-			else
-				_messageTranslator[edge].setVariableInputUniform();
+			MessageTranslatorBase messageTranslator = _messageTranslator[edge];
+			if (edge != outPortNum)	// Input edge
+			{
+				messageTranslator.setMessageDirection(MessageTranslatorBase.MessageDirection.INPUT);
+				messageTranslator.setVariableInputFromInputMessage();
+			}
+			else					// Output edge
+			{
+				messageTranslator.setMessageDirection(MessageTranslatorBase.MessageDirection.OUTPUT);
+				messageTranslator.setVariableInputUniform();
+			}
 		}
 
 		// Run the Gibbs solver

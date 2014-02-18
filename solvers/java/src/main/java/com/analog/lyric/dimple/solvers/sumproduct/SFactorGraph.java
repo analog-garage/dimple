@@ -54,6 +54,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private int _sampledFactorSamplesPerUpdate = SampledFactor.DEFAULT_SAMPLES_PER_UPDATE;
 	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
 	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
+	private static Random _rand = new Random();
 
 
 	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
@@ -113,19 +114,19 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("Multiplexer"))
 			return true;
-		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
+		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility
 			return true;
-		else if (funcName.equals("add"))				// For backward compatibility with earlier name FIXME remove
+		else if (funcName.equals("add"))				// For backward compatibility
 			return true;
-		else if (funcName.equals("constmult"))			// For backward compatibility with earlier name FIXME remove
+		else if (funcName.equals("constmult"))			// For backward compatibility
 			return true;
-		else if (funcName.equals("polynomial"))			// For backward compatibility with earlier name FIXME Choose better name
+		else if (funcName.equals("polynomial"))
 			return true;
-		else if (funcName.equals("multivariateadd"))	// For backward compatibility with earlier name FIXME Choose better name
+		else if (funcName.equals("multivariateadd"))	// For backward compatibility
 			return true;
-		else if (funcName.equals("multivariateconstmult"))		// For backward compatibility with earlier name FIXME Choose better name
+		else if (funcName.equals("multivariateconstmult"))
 			return true;
-		else if (funcName.equals("linear"))				// For backward compatibility with earlier name FIXME Choose better name
+		else if (funcName.equals("linear"))
 			return true;
 		else
 			return false;
@@ -202,7 +203,6 @@ public class SFactorGraph extends SFactorGraphBase
 			throw new DimpleException("Not implemented");
 	}
 	
-	// FIXME
 	private boolean isMultivariate(Factor factor)
 	{
 		if (factor.getSiblingCount() > 0 && (factor.getSibling(0) instanceof RealJoint))
@@ -212,8 +212,6 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 
-	private static Random _rand = new Random();
-
 	public static Random getRandom()
 	{
 		return _rand;
@@ -221,8 +219,8 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	public void setSeed(long seed)
 	{
-		_rand = new Random(seed);
-		SolverRandomGenerator.setSeed(seed);	// FIXME
+		_rand = new Random(seed);				// Used for parameter estimation
+		SolverRandomGenerator.setSeed(seed);	// Used for sampled factors
 	}
 	
 

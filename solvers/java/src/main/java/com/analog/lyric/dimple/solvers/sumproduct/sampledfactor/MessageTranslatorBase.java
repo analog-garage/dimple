@@ -35,6 +35,8 @@ public abstract class MessageTranslatorBase
 {
 	protected Port _port;
 	protected VariableBase _variable;
+	public static enum MessageDirection {INPUT, OUTPUT}
+	
 	public MessageTranslatorBase(Port port, VariableBase variable)
 	{
 		_port = port;
@@ -42,6 +44,7 @@ public abstract class MessageTranslatorBase
 	}
 
 	// Abstract methods
+	public abstract void setMessageDirection(MessageDirection messageDirection);
 	public abstract void setVariableInputFromInputMessage();
 	public abstract void setVariableInputUniform();
 	public abstract void setOutputMessageFromVariableBelief();

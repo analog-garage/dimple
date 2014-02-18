@@ -25,6 +25,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 {
 	// External API
 	public void saveAllSamples();
+	public void disableSavingAllSamples();
 	public void saveCurrentSample();
     public void saveBestSample();
     public void setCurrentSample(Object value);

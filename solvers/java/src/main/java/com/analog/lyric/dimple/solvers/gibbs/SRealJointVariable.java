@@ -533,6 +533,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_sampleArray = new ArrayList<double[]>();
 	}
 
+    @Override
+	public void disableSavingAllSamples()
+    {
+    	_sampleArray = null;
+    }
+    
 	@Override
 	public final void saveCurrentSample()
 	{

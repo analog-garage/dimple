@@ -408,6 +408,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_sampleArray = new ArrayList<Double>();
 	}
 
+    @Override
+	public void disableSavingAllSamples()
+    {
+    	_sampleArray = null;
+    }
+    
 	@Override
 	public final void saveCurrentSample()
 	{

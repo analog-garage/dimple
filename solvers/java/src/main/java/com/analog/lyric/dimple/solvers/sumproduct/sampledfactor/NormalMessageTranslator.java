@@ -31,6 +31,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	private NormalParameters _inputMessage;
 	private NormalParameters _outputMessage;
 	private Normal _variableInput;
+	private com.analog.lyric.dimple.solvers.gibbs.SRealVariable _solverVariable;
 
 	public NormalMessageTranslator(Port port, VariableBase variable)
 	{
@@ -43,6 +44,15 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	}
 
 
+	@Override
+	public final void setMessageDirection(MessageDirection messageDirection)
+	{
+		if (messageDirection == MessageDirection.OUTPUT)
+			_solverVariable.saveAllSamples();
+		else
+			_solverVariable.disableSavingAllSamples();
+	}
+	
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
@@ -69,7 +79,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	public final void setOutputMessageFromVariableBelief()
 	{
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		List<Double> sampleValues = ((com.analog.lyric.dimple.solvers.gibbs.SRealVariable)(_variable.getSolver()))._getSampleArrayUnsafe();
+		List<Double> sampleValues = _solverVariable._getSampleArrayUnsafe();
 		int numSamples = sampleValues.size();
 
 		// For all sample values, compute the output message
@@ -100,6 +110,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 		SRealVariable var = (SRealVariable)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
 		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
+		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealVariable)_variable.getSolver();
 	}
 	
 	@Override

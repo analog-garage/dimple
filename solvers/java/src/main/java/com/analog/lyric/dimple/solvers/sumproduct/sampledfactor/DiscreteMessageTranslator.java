@@ -37,6 +37,12 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	}
 
 	@Override
+	public final void setMessageDirection(MessageDirection messageDirection)
+	{
+		// Nothing to be done
+	}
+	
+	@Override
 	public final void setVariableInputFromInputMessage()
 	{
 		_variable.setInputObject(getInputMessage());

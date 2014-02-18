@@ -424,11 +424,25 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			((ISolverVariableGibbs)(v.getSolver())).saveAllSamples();
 	}
 	
+	// Disable saving all samples if it had previously been set
+	public void disableSavingAllSamples()
+	{
+		for (VariableBase v : _factorGraph.getVariables())
+			((ISolverVariableGibbs)(v.getSolver())).disableSavingAllSamples();
+	}
+	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
 	public void saveAllScores()
 	{
 		_saveAllScores = true;
 		_scoreArray = new ArrayList<Double>();
+	}
+	
+	// Disable saving all scores if it had previously been set
+	public void disableSavingAllScores()
+	{
+		_saveAllScores = false;
+		_scoreArray = null;
 	}
 	
 	// If the score had been saved, return the array of score values
