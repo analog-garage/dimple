@@ -32,6 +32,7 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testFactorCreationUtilities');
 
@@ -297,4 +298,29 @@ assert(isa(x5,'RealJoint'));
 
 end
 
+
+
+% Test MultivariateNormal (only supports constant parameters)
+function test5(debugPrint, repeatable)
+
+fgAlt = FactorGraph();
+fgAlt.Solver = 'Gibbs';
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+mean = [0 1 2 3];
+covariance = eye(4) + ones(4)*0.1;
+
+x1 = MultivariateNormal(mean, covariance);
+assert(isa(x1,'RealJoint'));
+assert(all(size(x1)==[1,1]));
+assert(strcmp(x1.Input.getName, 'MultivariateNormal'));
+    
+x2 = MultivariateNormal(mean, covariance, [2,4]);
+assert(isa(x2,'RealJoint'));
+assert(all(size(x2)==[2,4]));
+assert(strcmp(x2(1,1).Input.getName, 'MultivariateNormal'));
+
+end
 
