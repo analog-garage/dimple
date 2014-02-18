@@ -107,10 +107,11 @@ public class BenchmarkRunner
 
 		BenchmarkDatasetXmlSerializer serializer = new BenchmarkDatasetXmlSerializer();
 		String outputFilename = String.format(
-				"%s_%s.xml",
+				"%s_%s",
 				configuration,
 				benchmarkCreator.getBenchmarkDataset().getProperties()
-						.getProperty("create.date")).replaceAll("\\W+", "_");
+						.getProperty("create.date")).replaceAll("\\W+", "_")
+				+ ".xml";
 		Writer writer = null;
 		try
 		{
