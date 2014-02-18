@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
@@ -48,14 +50,26 @@ public class SRealJointVariable extends SVariableBase
 		else if (input == null)
 			_input = (MultivariateNormalParameters) createDefaultMessage();
 		else
-			_input = (MultivariateNormalParameters)input;
+		{
+    		if (input instanceof MultivariateNormal)	// Input is a MultivariateNormal factor function with fixed parameters
+    		{
+    			MultivariateNormal multivariateNormalInput = (MultivariateNormal)input;
+    			if (!multivariateNormalInput.hasConstantParameters())
+    				throw new DimpleException("MultivariateNormal factor function used as Input must have constant parameters");
+    			_input = multivariateNormalInput.getParameters();
+    		}
+    		else	// Input is array in a MultivariateNormalParameter
+    		{
+    			_input = (MultivariateNormalParameters)input;
+    		}
+		}
 	}
 	
 
 	@Override
 	public Object getBelief()  
 	{
-		MultivariateNormalParameters m = new MultivariateNormalParameters(_input.getMeans(), _input.getCovariance());		
+		MultivariateNormalParameters m = new MultivariateNormalParameters(_input.getMean(), _input.getCovariance());		
 		doUpdate(m,-1);
 		return m;
 	}
@@ -64,7 +78,7 @@ public class SRealJointVariable extends SVariableBase
 	public Object getValue()
 	{
 		MultivariateNormalParameters m = (MultivariateNormalParameters)getBelief();
-		return m.getMeans();
+		return m.getMean();
 	}
 
 	@Override

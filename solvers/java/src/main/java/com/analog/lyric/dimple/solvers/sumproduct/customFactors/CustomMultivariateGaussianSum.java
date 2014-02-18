@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
 public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBase
@@ -32,7 +34,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 	{
 		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
 		
-		int size = outMsg.getMeans().length;
+		int size = outMsg.getMean().length;
 		
 		double [] vector = new double[size];
 		double [][] matrix = new double[size][];
@@ -45,7 +47,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 			{
 				MultivariateNormalParameters inMsg = _inputMsgs[i];
 				
-				double [] inMsgVector = inMsg.getMeans();
+				double [] inMsgVector = inMsg.getMean();
 				
 				for (int j = 0; j < vector.length; j++)
 				{
@@ -69,5 +71,26 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		
 		outMsg.setMeanAndCovariance(vector,matrix);
 	}
+	
+	
+	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	public static boolean isFactorCompatible(Factor factor)
+	{
+		
+		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
+		{
+			VariableBase v = factor.getSibling(i);
+			
+			// Must be real
+			if (v.getDomain().isDiscrete())
+				return false;
+			
+			// Must be multivariate
+			if (v instanceof Real)
+				return false;
+		}
+		return true;
+	}
+
 
 }

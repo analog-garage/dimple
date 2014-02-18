@@ -26,56 +26,73 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	private double [] _vector;
 	private double [][] _matrix;	
 	private boolean _isInInformationForm;
-	
-	//private EigenDecomposition eigendecomposition;
 	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 
 	
+	// Constructors
+	public MultivariateNormalParameters() {}
+	public MultivariateNormalParameters(double[] mean, double[][] covariance)
+	{
+		setMeanAndCovariance(mean.clone(), cloneMatrix(covariance));
+	}
+	public MultivariateNormalParameters(MultivariateNormalParameters other)		// Copy constructor
+	{
+		set(other);
+	}
+	
 	public MultivariateNormalParameters clone()
 	{
-		double [][] m = new double[_matrix.length][];
-		for (int i = 0; i < m.length; i++)
-			m[i] = _matrix[i].clone();
-		
-		return new MultivariateNormalParameters(_vector.clone(),m);
+		return new MultivariateNormalParameters(this);
 	}
 	
-	public boolean isInInformationForm()
-	{
-		return _isInInformationForm;
-	}
-	public MultivariateNormalParameters()
-	{
-		
-	}
-	
-	public MultivariateNormalParameters(double [] means, double [][] covariance)
-	{
-		setMeanAndCovariance(means.clone(), cloneMatrix(covariance));
-	}
 
-	public void setInformation(double [] informationVector, double [][] informationMatrix)
+	public final void setMeanAndCovariance(double[] mean, double[][] covariance)
+	{
+		_vector = mean.clone();
+		_matrix = cloneMatrix(covariance);
+		_isInInformationForm = false;
+	}
+	
+	public final void setInformation(double[] informationVector, double[][] informationMatrix)
 	{
 		_vector = informationVector.clone();
 		_matrix = cloneMatrix(informationMatrix);
 		_isInInformationForm = true;
 	}
 
-	public void setMeanAndCovariance(double [] means, double [][] covariance)
+	// Set from another parameter set without first extracting the components or determining which form
+	public final void set(MultivariateNormalParameters other)
 	{
-		_vector = means.clone();
-		_matrix = cloneMatrix(covariance);
-		_isInInformationForm = false;
+		_vector = other._vector.clone();
+		_matrix = cloneMatrix(other._matrix);
+		_isInInformationForm = other._isInInformationForm;
 	}
 	
-	public void set(MultivariateNormalParameters message)	// Set from another message without first extracting the components or determining which form
+	@Override
+	public final void setNull()
 	{
-		_vector = message._vector.clone();
-		_matrix = cloneMatrix(message._matrix);
-		_isInInformationForm = message._isInInformationForm;
+		_vector = null;
+		_matrix = null;
+		_isInInformationForm = true;
+	}
+	
+	public final double[] getMeans() {return getMean();}	// For backward compatibility
+	public final double[] getMean() 
+	{
+		if (_isInInformationForm)
+			ConvertType();
+		return _vector.clone();
 	}
 
-	public double [] getInformationVector() 
+	public final double [][] getCovariance() 
+	{
+		if (_isInInformationForm)
+			ConvertType();
+
+		return cloneMatrix(_matrix);
+	}
+	
+	public final double [] getInformationVector() 
 	{
 		if (!_isInInformationForm)
 			ConvertType();
@@ -83,7 +100,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		return _vector.clone();
 	}
 
-	public double [][] getInformationMatrix() 
+	public final double [][] getInformationMatrix() 
 	{
 		if (!_isInInformationForm)
 			ConvertType();
@@ -92,9 +109,24 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 
 	}
 	
-	private double [][] cloneMatrix(double [][] matrix)
+	public final int getVectorLength()
 	{
-		double [][] retval = new double[matrix.length][];
+		return _vector.length;
+	}
+	
+	public final boolean isInInformationForm()
+	{
+		return _isInInformationForm;
+	}
+	
+	public final boolean isNull()
+	{
+		return _vector == null;
+	}
+	
+	private final double[][] cloneMatrix(double[][] matrix)
+	{
+		double[][] retval = new double[matrix.length][];
 		for (int i = 0; i < retval.length; i++)
 			retval[i] = matrix[i].clone();
 		
@@ -102,27 +134,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	}
 
 
-	public double [] getMeans() 
-	{
-		if (_isInInformationForm)
-			ConvertType();
-		return _vector.clone();
-	}
-
-	public double [][] getCovariance() 
-	{
-		if (_isInInformationForm)
-			ConvertType();
-
-		return cloneMatrix(_matrix);
-	}
-	
-	public int getVectorLength()
-	{
-		return _vector.length;
-	}
-
-	private boolean isInfiniteIdentity(Matrix m)
+	private final boolean isInfiniteIdentity(Matrix m)
 	{
 		for (int i = 0; i < m.getColumnDimension(); i++)
 		{
@@ -132,7 +144,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		return true;
 	}
 	
-	private void ConvertType() 
+	private final void ConvertType() 
 	{
 		int i;
 		
@@ -181,11 +193,4 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 
 	}
 
-	@Override
-	public void setNull()
-	{
-		_vector = null;
-		_matrix = null;
-		_isInInformationForm = true;
-	}
 }

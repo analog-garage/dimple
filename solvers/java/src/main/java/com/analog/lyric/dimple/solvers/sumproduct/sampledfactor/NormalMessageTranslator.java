@@ -26,13 +26,13 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
 
-public class GaussianMessageTranslator extends MessageTranslatorBase
+public class NormalMessageTranslator extends MessageTranslatorBase
 {
 	private NormalParameters _inputMessage;
 	private NormalParameters _outputMessage;
 	private Normal _variableInput;
 
-	public GaussianMessageTranslator(Port port, VariableBase variable)
+	public NormalMessageTranslator(Port port, VariableBase variable)
 	{
 		super(port, variable);
 		
@@ -69,12 +69,12 @@ public class GaussianMessageTranslator extends MessageTranslatorBase
 	public final void setOutputMessageFromVariableBelief()
 	{
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		List<Double> sampleValues = ((com.analog.lyric.dimple.solvers.gibbs.SRealVariable)(_variable.getSolver()))._getSampleArray();
+		List<Double> sampleValues = ((com.analog.lyric.dimple.solvers.gibbs.SRealVariable)(_variable.getSolver()))._getSampleArrayUnsafe();
 		int numSamples = sampleValues.size();
 
 		// For all sample values, compute the output message
-		double mean = 0;
-		double meansq = 0;
+		double sum = 0;
+		double sumsq = 0;
 		for (int i = 0; i < numSamples; i++)
 		{
 			double tmp = sampleValues.get(i);
@@ -83,15 +83,14 @@ public class GaussianMessageTranslator extends MessageTranslatorBase
 				_outputMessage.setNull();				
 				return;
 			}
-			mean += tmp;
-			meansq += tmp*tmp;
+			sum += tmp;
+			sumsq += tmp*tmp;
 		}
-		mean /= numSamples;
-		meansq /= numSamples;
-		double sigmasquared = meansq - mean*mean;
+		double mean = sum / numSamples;
+		double variance = (sumsq - sum*mean) / (numSamples - 1);
 		
 		_outputMessage.setMean(mean);
-		_outputMessage.setVariance(sigmasquared);
+		_outputMessage.setVariance(variance);
 	}
 	
 	
@@ -130,7 +129,7 @@ public class GaussianMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void moveMessages(MessageTranslatorBase other)
 	{
-		_inputMessage = ((GaussianMessageTranslator)other)._inputMessage;
-		_outputMessage = ((GaussianMessageTranslator)other)._outputMessage;
+		_inputMessage = ((NormalMessageTranslator)other)._inputMessage;
+		_outputMessage = ((NormalMessageTranslator)other)._outputMessage;
 	}
 }

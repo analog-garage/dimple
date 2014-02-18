@@ -26,15 +26,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 /**
  * @author jeff
  * 
- * This class is used to implement factors that include Real variables
- * (and potentially also discrete variables), but are not otherwise
+ * This class is used to implement factors that have edges that
+ * connect to non-discrete variables, but are not otherwise
  * implemented by a custom factor.  In this case, we use the Gibbs
  * solver as an inner loop in generating approximate messages.
  * 
  * To do this, we create a "message graph" that is a new factor graph
  * that includes a new copy of this factor and a new variable associated
  * with each edge; of the same type as the corresponding sibling variables.
- * (Currently, Complex and RealJoint variables are not supported.)
  * 
  * To compute an approximate output message, the Input for each variable
  * in the message graph is set to the same value as the input message
@@ -55,7 +54,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public class SampledFactor extends SFactorBase
 {
 	private int _samplesPerUpdate = 100;
-	private int _burnInScansPerUpdate = 0;
+	private int _burnInScansPerUpdate = 10;
 	private int _scansPerSample = 1;
 	private MessageTranslatorBase[] _messageTranslator;
 	private VariableBase[] _privateVariables;
@@ -79,11 +78,13 @@ public class SampledFactor extends SFactorBase
 			_privateVariables[edge].setInputObject(null);
 
 			// Create a message translator based on the variable type 
-			// TODO: Allow more than one message representation for Real variables
+			// TODO: Allow alternative message representations for continuous variables
 			if (var.getDomain().isDiscrete())
 				_messageTranslator[edge] = new DiscreteMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
-			else
-				_messageTranslator[edge] = new GaussianMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
+			else if (var.getDomain().isReal())
+				_messageTranslator[edge] = new NormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
+			else // Complex or RealJoint
+				_messageTranslator[edge] = new MultivariateNormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
 		}
 		
 		// Create a private message graph on which the Gibbs sampler will be run
@@ -100,7 +101,7 @@ public class SampledFactor extends SFactorBase
 		_solverGraph.setNumSamples(_samplesPerUpdate);
 		_solverGraph.setBurnInScans(_burnInScansPerUpdate);
 		_solverGraph.setScansPerSample(_scansPerSample);
-		_solverGraph.saveAllSamples();		// FIXME: Only enable on output variable, and then turn off after solving
+		_solverGraph.saveAllSamples();		// FIXME: Only enable on output variable if real, and then turn off after solving
 		
 		// Set inputs of the message-graph variables to the incoming message value; all except the output variable
 		for (int edge = 0; edge < numSiblings; edge++)

@@ -657,7 +657,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	}
 
 	// This is meant for internal use, not as a user accessible method
-	public final List<double[]> _getSampleArray()
+	public final List<double[]> _getSampleArrayUnsafe()
 	{
 		return _sampleArray;
 	}

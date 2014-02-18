@@ -129,7 +129,7 @@ public class MutlivariateGaussianMatrixProduct
 //							tmpMat[m][n] += LeftNullTerm[m][n] * eps;
 				
 				double [] tmpVector = new double[M];
-				double [] inMsgVector = inMsg.getMeans();
+				double [] inMsgVector = inMsg.getMean();
 				//Compute mean vector output: m_y = A*m_x
 				for(m=0;m<M;m++)
 				{
@@ -200,7 +200,7 @@ public class MutlivariateGaussianMatrixProduct
 
 				
 				double [] tmpVector = new double[N];
-				double [] inMsgVector = inMsg.getMeans();
+				double [] inMsgVector = inMsg.getMean();
 				//Compute mean vector: m_x = A^-1 * m_y
 				for(m=0;m<N;m++)
 				{

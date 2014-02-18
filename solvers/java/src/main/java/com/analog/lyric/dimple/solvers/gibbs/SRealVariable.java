@@ -494,7 +494,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 	// This is meant for internal use, not as a user accessible method
-	public final List<Double> _getSampleArray()
+	public final List<Double> _getSampleArrayUnsafe()
 	{
 		return _sampleArray;
 	}

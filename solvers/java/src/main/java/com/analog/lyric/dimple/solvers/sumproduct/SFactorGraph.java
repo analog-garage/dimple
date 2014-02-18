@@ -143,10 +143,6 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("linear"))				// For backward compatibility with earlier name FIXME Choose better name
 			return true;
-		else if (funcName.equals("ComplexSum"))
-			return true;
-		else if (funcName.equals("ComplexProduct"))
-			return true;
 		else
 			return false;
 	}
@@ -162,6 +158,8 @@ public class SFactorGraph extends SFactorGraphBase
 			return CustomGaussianSum.isFactorCompatible(factor);
 		else if (funcName.equals("Product"))
 			return CustomGaussianProduct.isFactorCompatible(factor);
+		else if (funcName.equals("ComplexSum"))
+			return CustomMultivariateGaussianSum.isFactorCompatible(factor);
 		else
 			return false;
 	}
@@ -209,10 +207,6 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (funcName.equals("Product"))
 		{
 			return new CustomGaussianProduct(factor);
-		}
-		else if (funcName.equals("ComplexProduct"))
-		{
-			return new CustomMultivariateGaussianProduct(factor);
 		}
 		else if (funcName.equals("polynomial"))
 		{
