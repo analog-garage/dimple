@@ -68,7 +68,7 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
-		if (funcName.equals("customXor"))
+		if (funcName.equals("CustomXor") || funcName.equals("customXor"))		// Lower case version for backward compatibility
 			return true;
 		else
 			return false;
@@ -77,10 +77,8 @@ public class SFactorGraph extends SFactorGraphBase
 	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("customXor"))
-		{
+		if (funcName.equals("CustomXor") || funcName.equals("customXor"))		// Lower case version for backward compatibility
 			return new CustomXor(factor);
-		}
 		else
 			throw new DimpleException("Not implemented");
 	}

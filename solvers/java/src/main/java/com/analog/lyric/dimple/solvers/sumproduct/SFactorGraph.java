@@ -106,27 +106,21 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
-		if (funcName.equals("finiteFieldMult"))
+		if (funcName.equals("FiniteFieldAdd") || funcName.equals("finiteFieldAdd"))						// Lower case version for backward compatibility
 			return true;
-		else if (funcName.equals("finiteFieldAdd"))
+		else if (funcName.equals("FiniteFieldMult") || funcName.equals("finiteFieldMult"))				// Lower case version for backward compatibility
 			return true;
-		else if (funcName.equals("finiteFieldProjection"))
+		else if (funcName.equals("FiniteFieldProjection") || funcName.equals("finiteFieldProjection"))	// Lower case version for backward compatibility
 			return true;
-		else if (funcName.equals("Multiplexer"))
+		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use "Multiplexer" instead
 			return true;
-		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility
+		else if (funcName.equals("add"))
 			return true;
-		else if (funcName.equals("add"))				// For backward compatibility
-			return true;
-		else if (funcName.equals("constmult"))			// For backward compatibility
-			return true;
-		else if (funcName.equals("polynomial"))
-			return true;
-		else if (funcName.equals("multivariateadd"))	// For backward compatibility
-			return true;
-		else if (funcName.equals("multivariateconstmult"))
+		else if (funcName.equals("constmult"))
 			return true;
 		else if (funcName.equals("linear"))
+			return true;
+		else if (funcName.equals("polynomial"))
 			return true;
 		else
 			return false;
@@ -134,6 +128,7 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	// For internal use, we check more than just the name
 	// This allows detection of factors used by overloaded operators to be used, but only if used in the right way
+	// And for these factors, they will use the actual corresponding factor function rather than a NOPFactorFunction
 	public boolean customFactorExists(Factor factor)
 	{
 		String funcName = factor.getModelerFunctionName();
@@ -145,6 +140,8 @@ public class SFactorGraph extends SFactorGraphBase
 			return CustomGaussianProduct.isFactorCompatible(factor);
 		else if (funcName.equals("ComplexSum"))
 			return CustomMultivariateGaussianSum.isFactorCompatible(factor);
+		else if (funcName.equals("Multiplexer"))
+			return true;
 		else
 			return false;
 	}
@@ -152,53 +149,43 @@ public class SFactorGraph extends SFactorGraphBase
 	public ISolverFactor createCustomFactor(Factor factor)
 	{
 		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("finiteFieldMult"))
+		if (funcName.equals("FiniteFieldAdd") || funcName.equals("finiteFieldAdd"))						// Lower case version for backward compatibility
+			return new CustomFiniteFieldAdd(factor);
+		else if (funcName.equals("FiniteFieldMult") || funcName.equals("finiteFieldMult"))				// Lower case version for backward compatibility
 		{
 			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
 				return new CustomFiniteFieldConstantMult(factor);
 			else
 				return new CustomFiniteFieldMult(factor);
 		}
-		else if (funcName.equals("finiteFieldAdd"))
-			return new CustomFiniteFieldAdd(factor);
-		else if (funcName.equals("finiteFieldProjection"))
+		else if (funcName.equals("FiniteFieldProjection") || funcName.equals("finiteFieldProjection"))	// Lower case version for backward compatibility
 			return new CustomFiniteFieldProjection(factor);
-		else if (funcName.equals("Multiplexer"))
+		else if (funcName.equals("Multiplexer") || funcName.equals("multiplexerCPD"))					// "multiplexerCPD" for backward compatibility
 			return new CustomMultiplexer(factor);
-		else if (funcName.equals("multiplexerCPD"))		// For backward compatibility with earlier name
-			return new CustomMultiplexer(factor);
-		else if (funcName.equals("add"))
+		else if (funcName.equals("Sum"))
+			return new CustomGaussianSum(factor);
+		else if (funcName.equals("ComplexSum"))
+			return new CustomMultivariateGaussianSum(factor);
+		else if (funcName.equals("Product"))
+			return new CustomGaussianProduct(factor);
+		else if (funcName.equals("Add") || funcName.equals("add"))										// Lower case version for backward compatibility
 		{
 			if (isMultivariate(factor))
 				return new CustomMultivariateGaussianSum(factor);
 			else
 				return new CustomGaussianSum(factor);
 		}
-		else if (funcName.equals("Sum"))
-		{
-			return new CustomGaussianSum(factor);
-		}
-		else if (funcName.equals("ComplexSum"))
-		{
-			return new CustomMultivariateGaussianSum(factor);
-		}
-		else if (funcName.equals("constmult"))
+		else if (funcName.equals("Constmult") || funcName.equals("constmult"))							// Lower case version for backward compatibility
 		{
 			if (isMultivariate(factor))
 				return new CustomMultivariateGaussianProduct(factor);
 			else
 				return new CustomGaussianProduct(factor);
 		}
-		else if (funcName.equals("Product"))
-		{
-			return new CustomGaussianProduct(factor);
-		}
-		else if (funcName.equals("polynomial"))
-		{
-			return new CustomComplexGaussianPolynomial(factor);
-		}
-		else if (funcName.equals("linear"))
+		else if (funcName.equals("Linear") || funcName.equals("linear"))								// Lower case version for backward compatibility
 			return new CustomGaussianLinear(factor);
+		else if (funcName.equals("Polynomial") || funcName.equals("polynomial"))						// Lower case version for backward compatibility
+			return new CustomComplexGaussianPolynomial(factor);
 		else
 			throw new DimpleException("Not implemented");
 	}

@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -86,7 +85,6 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 
 		// For all sample values, compute the mean
 		double[] mean = new double[dimension];
-		Arrays.fill(mean, 0);
 		for (int sample = 0; sample < numSamples; sample++)
 		{
 			double[] tmp = sampleValues.get(sample);
@@ -99,8 +97,6 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 		// For all sample values, compute the covariance matrix
 		double[] diff = new double[dimension];
 		double[][] covariance = new double[dimension][dimension];
-		for (int row = 0; row < dimension; row++)
-			Arrays.fill(covariance[row], 0);
 		for (int sample = 0; sample < numSamples; sample++)
 		{
 			double[] tmp = sampleValues.get(sample);
