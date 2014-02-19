@@ -334,19 +334,23 @@ public class FactorTable extends SparseFactorTableBase
 	 */
 	public static IFactorTable createMarginal(int outputDomainIndex, JointDiscreteDomain<?> inputDomain)
 	{
-		final DiscreteDomain outputDomain = inputDomain.getDomainIndexer().get(outputDomainIndex);
+		final JointDomainIndexer inputDomains = inputDomain.getDomainIndexer();
+		final DiscreteDomain outputDomain = inputDomains.get(outputDomainIndex);
 		
-		final int outSize = outputDomain.size();
-		final int inSize = inputDomain.size();
-		final int outStride = inputDomain.getDomainIndexer().getStride(outputDomainIndex);
+		final int inputSize = inputDomain.size();
+		final int outputSize = outputDomain.size();
 		
-		final int[] indices = new int[inSize];
-		for (int in = 0; in < inSize; ++in)
-		{
-			// TODO: refactor this to just increment to avoid the division.
-			indices[in] = (in / outStride) % outSize;
-		}
+		// The joint cardinality of the domains prior to the output subdomain (one if empty)
+		final int innerCardinality = inputDomains.getStride(outputDomainIndex);
+		// The joint cardinality of the domains after the output subdomain (one if empty)
+		final int outerCardinality = inputSize / (innerCardinality * outputSize);
 
+		final int[] indices = new int[inputSize];
+		for (int i = 0, outer = 0; outer < outerCardinality; ++outer)
+			for (int out = 0; out < outputSize; ++out)
+				for (int inner = 0; inner < innerCardinality; ++inner)
+					indices[i++] = out;
+		
 		// Build the actual table
 		final IFactorTable table = create(BitSetUtil.bitsetFromIndices(2, 0), outputDomain, inputDomain);
 		table.setDeterministicOutputIndices(indices);
