@@ -260,6 +260,9 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		double energy = 0;
 
+		// FIXME: get*Top() methods copy all the objects into a new collection.
+		// That should not be necessary.
+		
 		for (VariableBase v : getModel().getVariablesTop())
 			energy += v.getScore();
 
@@ -417,6 +420,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	 * 
 	 ***********************************************/
 
+	@Override
 	public void useMultithreading(boolean use)
 	{
 		if (_multithreader == null)
@@ -425,6 +429,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 			_useMultithreading = use;
 	}
 	
+	@Override
 	public boolean useMultithreading()
 	{
 		return _useMultithreading;
