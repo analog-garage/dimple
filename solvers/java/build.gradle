@@ -41,8 +41,14 @@ configurations {
   jarfiles
 }
 
-//Include the benchmarking source set
 sourceSets {
+  main {
+    resources {
+      // Need to include the non-java files within benchmarking as resources. (Images, etc.)
+      srcDirs += 'src/benchmarking/java'
+    }
+  }
+  //Include the benchmarking source set
   benchmarking
 }
 
