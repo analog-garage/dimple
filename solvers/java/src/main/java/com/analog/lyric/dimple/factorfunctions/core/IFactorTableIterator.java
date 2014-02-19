@@ -4,6 +4,8 @@ import java.util.Iterator;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+
 /**
  * Iterator over entries in a {@link IFactorTable}.
  * <p>
@@ -71,6 +73,11 @@ public interface IFactorTableIterator extends Iterator<FactorTableEntry>
 	public abstract boolean advance();
 
 	/**
+	 * Domains of underlying factor table.
+	 */
+	public abstract JointDomainIndexer domains();
+	
+	/**
 	 * Returns current entry or null either if end of iteration has been reached or
 	 * neither {@link #advance()} nor {@link #next()} has been called at least once.
 	 */
@@ -83,6 +90,33 @@ public interface IFactorTableIterator extends Iterator<FactorTableEntry>
 	 */
 	public abstract double energy();
 
+	/**
+	 * Returns domain indices corresponding to the table entry at the current iteration in newly allocated array.
+	 * 
+	 * @see #indices(int[])
+	 * @see #indicesUnsafe()
+	 */
+	public abstract int[] indices();
+	
+	/**
+	 * Returns domain indices corresponding to the table entry at the current iteration using provided
+	 * {@code indices} array if it is non-null and of the correct length.
+	 * 
+	 * @see #indices()
+	 * @see #indicesUnsafe()
+	 */
+	public abstract int[] indices(int[] array);
+
+	/**
+	 * Returns domain indices corresponding to the table entry at the current iteration in read-only array.
+	 * <p>
+	 * The returned array may return an internal representation and must not be modified!
+	 * 
+	 * @see #indices()
+	 * @see #indices(int[])
+	 */
+	public abstract int[] indicesUnsafe();
+	
 	/**
 	 * Returns the joint index for the entry at the current iteration or -1 if
 	 * joint indices are not supported for this iterator.

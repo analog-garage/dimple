@@ -1448,10 +1448,12 @@ public class TestFactorTable
 			{
 				i = 0;
 				iter = table.fullIterator();
+				assertFalse(iter.skipsZeroWeights());
 				while (iter.hasNext())
 				{
 					FactorTableEntry entry = iter.next();
 					assertEquals(i, entry.jointIndex());
+					assertArrayEquals(entry.indices(), iter.indicesUnsafe());
 					if (entry.weight() != 0.0)
 					{
 						totalWeight += entry.weight();
@@ -1546,6 +1548,9 @@ public class TestFactorTable
 		
 		if (table.hasSparseRepresentation())
 		{
+			IFactorTableIterator iter = table.iterator();
+			assertTrue(iter.skipsZeroWeights());
+			
 			for (int si = 0; si < size; ++si)
 			{
 				table.sparseIndexToIndices(si, indices);
@@ -1582,6 +1587,16 @@ public class TestFactorTable
 				assertEquals(weight, table.getWeightForElements(arguments), 1e-12);
 
 				assertEquals(energy, -Math.log(weight), 1e-12);
+				
+				if (weight != 0.0)
+				{
+					assertTrue(iter.hasNext());
+					FactorTableEntry entry = iter.next();
+					assertEquals(si, entry.sparseIndex());
+					assertEquals(energy, entry.energy(), 1e-12);
+					assertEquals(weight, entry.weight(), 1e-12);
+					assertArrayEquals(iter.indicesUnsafe(), entry.indices());
+				}
 			}
 		}
 		

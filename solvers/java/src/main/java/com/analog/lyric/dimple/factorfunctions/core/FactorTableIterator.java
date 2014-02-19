@@ -2,6 +2,8 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+
 /**
  * Iterator over entries in a {@link IFactorTableBase}.
  */
@@ -67,6 +69,26 @@ class FactorTableIterator extends FactorTableIteratorBase
 		}
 		
 		return _dense? denseAdvance() : sparseAdvance();
+	}
+	
+	@Override
+	public JointDomainIndexer domains()
+	{
+		return _table.getDomainIndexer();
+	}
+	
+	@Override
+	public int[] indicesUnsafe()
+	{
+		if (! _dense && _table instanceof IFactorTable)
+		{
+			final IFactorTable table = (IFactorTable)_table;
+			if (table.hasSparseIndices())
+			{
+				return table.getIndicesSparseUnsafe()[_sparseIndex];
+			}
+		}
+		return _jointIndices = domains().jointIndexToIndices(_jointIndex, _jointIndices);
 	}
 	
 	@Override
@@ -219,6 +241,8 @@ class FactorTableIterator extends FactorTableIteratorBase
 
 			if (broken)
 			{
+				// Sparse index does not correspond to joint index. Table must have been modified
+				// during iteration.
 				si = _table.sparseIndexFromJointIndex(ji);
 				_sparseIndex = si < 0 ? -1-si : si;
 			}

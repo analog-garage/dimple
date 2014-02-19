@@ -10,6 +10,7 @@ abstract class FactorTableIteratorBase implements IFactorTableIterator
 	double _energy = Double.POSITIVE_INFINITY;
 	double _weight = 0.0;
 	FactorTableEntry _entry = null;
+	int[] _jointIndices = null;
 
 	FactorTableIteratorBase()
 	{
@@ -45,6 +46,28 @@ abstract class FactorTableIteratorBase implements IFactorTableIterator
 		return _energy;
 	}
 
+	@Override
+	public final int[] indices()
+	{
+		return indices(null);
+	}
+	
+	@Override
+	public final int[] indices(int[] array)
+	{
+		final int[] unsafeResult = indicesUnsafe();
+		final int length = unsafeResult.length;
+		
+		if (array == null || array.length < length)
+		{
+			array = new int[length];
+		}
+		
+		System.arraycopy(unsafeResult, 0, array, 0, length);
+		
+		return array;
+	}
+	
 	@Override
 	public final int sparseIndex()
 	{
