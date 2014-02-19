@@ -152,8 +152,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * an invalid state. This should be treated as a read-only value.
 	 * <p>
 	 * If necessary, this method will implicitly modify the representation to include sparse indices
-	 * (@link {@link #hasSparseIndices()}) and if the table did not previously only had a dense value
-	 * representation (@{link {@link #hasDenseRepresentation()}) it will implicitly add a sparse
+	 * (see {@link #hasSparseIndices()}) and if the table did not previously only had a dense value
+	 * representation (see {@link #hasDenseRepresentation()}) it will implicitly add a sparse
 	 * representation introducing sparse weights if the table had dense weights and otherwise introducing
 	 * sparse energies.
 	 */
