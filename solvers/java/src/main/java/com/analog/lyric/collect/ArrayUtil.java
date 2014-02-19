@@ -1,6 +1,7 @@
 package com.analog.lyric.collect;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 
 import cern.colt.list.IntArrayList;
 
@@ -139,6 +140,60 @@ public abstract class ArrayUtil
 		// Convert contracted list back to an int[]
 		result.trimToSize();
 		return result.elements();
+	}
+	
+	/**
+	 * Copies contents of collection into a new array with given component type.
+	 */
+	public static <T> T[] copy(Class<T> componentType, Collection<T> collection)
+	{
+		return collection.toArray((T[]) Array.newInstance(componentType, collection.size()));
+	}
+	
+	/**
+	 * Copies entries from {@code source} array at specified {@code sourceIndices} to new array.
+	 * 
+	 * @param source is the array from which entries will be copied.
+	 * @param sourceIndices specifies which entries to copy into new array in which order.
+	 * Each index value must be in the range [0,{@code source.length}-1] and indicates which entry is to be
+	 * copied into the corresponding destination.
+	 * @return new array
+	 * 
+	 * @see #copyFromIndices(Object[], int[], Object[])
+	 */
+	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices)
+	{
+		return copyFromIndices(source, sourceIndices, null);
+	}
+
+	/**
+	 * Copies entries from {@code source} array at specified {@code sourceIndices} to {@code destination} array.
+	 * 
+	 * @param source is the array from which entries will be copied.
+	 * @param sourceIndices must be the same length as {@code destination} array (if not null). Each index value
+	 * must be in the range [0,{@code source.length}-1] and indicates which entry is to be copied into the
+	 * corresponding destination.
+	 * @param destination is the array into which the entries are to be copied. If null, then a new one
+	 * will be allocated using same type as {@code source} and length matching that of {@code sourceIndices}.
+	 * @return array into which values have been copied. Will be same as {@code destination} if not null.
+	 * 
+	 * @see #copyFromIndices(Object[], int[])
+	 */
+	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices, T[] destination)
+	{
+		final int destSize = sourceIndices.length;
+		
+		if (destination == null)
+		{
+			destination = (T[])Array.newInstance(source.getClass().getComponentType(), destSize);
+		}
+		
+		for (int to = 0; to < destSize; ++to)
+		{
+			destination[to] = source[sourceIndices[to]];
+		}
+		
+		return destination;
 	}
 	
 	/**
