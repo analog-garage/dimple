@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.primitives.Ints;
 
 
 
@@ -62,6 +64,14 @@ public abstract class VariableBase extends Node implements Cloneable
 	protected Map<String,Object> _properties = null;
 	private Domain _domain;
     private boolean _hasFixedValue = false;
+    
+    public static Comparator<VariableBase> orderById = new Comparator<VariableBase>() {
+		@Override
+		public int compare(VariableBase var1, VariableBase var2)
+		{
+			return Ints.compare(var1.getId(), var2.getId());
+		}
+    };
 
     /*--------------
      * Construction
