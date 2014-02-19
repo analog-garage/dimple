@@ -104,13 +104,18 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		return oldValue;
 	}
 	
-	/*
+	/*--------------
 	 * Construction
 	 */
 
 	public SkipMap(Comparator<? super K> comparator)
 	{
 		super(comparator, (short)2);
+	}
+	
+	public static <K,V> SkipMap<K,V> create(Comparator<? super K> comparator)
+	{
+		return new SkipMap<K,V>(comparator);
 	}
 
 	// TODO: add following constructors: (), (Map), (SortedMap)

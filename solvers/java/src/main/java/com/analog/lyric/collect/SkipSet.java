@@ -33,6 +33,11 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		super(comparator, (short)1);
 	}
 	
+	public static <T> SkipSet<T> create(Comparator<? super T> comparator)
+	{
+		return new SkipSet<T>(comparator);
+	}
+	
 	// TODO: add the following constructors: (), (Collection), (SortedSet)
 	
 	/*----------------

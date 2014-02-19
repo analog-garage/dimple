@@ -41,7 +41,7 @@ public class SkipSetTest
 		};
 		
 		SkipSetTester<Integer> tester = new SkipSetTester<Integer>();
-		SkipSet<Integer> set1 = new SkipSet<Integer>(naturalOrder);
+		SkipSet<Integer> set1 = SkipSet.create(naturalOrder);
 		tester.validateSkipSet(set1);
 		
 		assertEquals(set1.comparator(), naturalOrder);
