@@ -35,10 +35,26 @@ repositories {
 
 }
 
-//Create a new configuration so that we can refer to all the jar file 
+//Create a new configuration so that we can refer to all the jar file
 //dependencies later
 configurations {
   jarfiles
+}
+
+sourceSets {
+  main {
+    resources {
+      // Need to include the non-java files within benchmarking as resources. (Images, etc.)
+      srcDirs += 'src/benchmarking/java'
+    }
+  }
+  //Include the benchmarking source set
+  benchmarking
+}
+
+//Benchmarking source set depends on main and its dependencies
+dependencies {
+    benchmarkingCompile sourceSets.main.runtimeClasspath
 }
 
 //Create an array of all the dependency jars
@@ -69,7 +85,7 @@ dependencies
 
   //add a dependency on junit for the testCompile target
   //testCompile 'junit:junit:4.11'
-  
+
 }
 
 //This task will copy all of the jar files into the lib directory.
@@ -105,7 +121,7 @@ processResources.dependsOn createVersionFile
 clean {
   delete 'src/main/resources/VERSION'
   delete '../lib'
-  
+
 }
 
 //define a new task for copying all jars
@@ -120,4 +136,17 @@ copyJars.dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
 //As part of assembly, make sure all jars are in the required locations
 assemble.dependsOn copyJars
 
+task(runJavaBenchmarks, dependsOn: 'benchmarkingClasses', type: JavaExec) {
+  main = 'com.analog.lyric.dimple.benchmarks.DimpleBenchmarks'
+  classpath = sourceSets.benchmarking.runtimeClasspath
+}
 
+task(runMATLABBenchmarks, type: Exec) {
+  workingDir '../..' 
+  commandLine 'matlab', '-nodesktop', '-r', 'try, startup; cd modelers/matlab/benchmarks; run; end; exit'
+}
+runMATLABBenchmarks.dependsOn benchmarkingClasses
+runMATLABBenchmarks.dependsOn copyExternalJars
+
+task runBenchmarks
+runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks

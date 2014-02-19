@@ -72,8 +72,11 @@ classdef Benchmarking < handle
         end
         
         function SaveToXml(obj, filename)
+            fileOutputStream = java.io.FileOutputStream(filename);
+            writer = java.io.OutputStreamWriter(fileOutputStream, 'UTF8');
             serializer = com.analog.lyric.benchmarking.BenchmarkDatasetXmlSerializer;
-            serializer.serialize(java.io.FileWriter(filename), obj.benchmarkDataset);
+            serializer.serialize(writer, obj.benchmarkDataset);
+            writer.close();
         end
     end
 end

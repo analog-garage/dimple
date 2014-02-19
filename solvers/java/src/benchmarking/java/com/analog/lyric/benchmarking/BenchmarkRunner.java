@@ -16,8 +16,10 @@
 
 package com.analog.lyric.benchmarking;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,7 +59,8 @@ public class BenchmarkRunner
 			throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException, IOException
 	{
-		applyStrategy(qualifiedClassName, new BenchmarkClassRunnerStrategy(qualifiedClassName));
+		applyStrategy(qualifiedClassName, new BenchmarkClassRunnerStrategy(
+				qualifiedClassName));
 	}
 
 	public static void runBenchmarkMethod(String qualifiedMethodName)
@@ -67,13 +70,14 @@ public class BenchmarkRunner
 	{
 		if (qualifiedMethodName.endsWith("()"))
 		{
-			qualifiedMethodName = qualifiedMethodName.substring(0, qualifiedMethodName.length() - 2);
+			qualifiedMethodName = qualifiedMethodName.substring(0,
+					qualifiedMethodName.length() - 2);
 		}
 		int p = qualifiedMethodName.lastIndexOf('.');
 		String className = qualifiedMethodName.substring(0, p);
-		String methodName = qualifiedMethodName.substring(p + 1);		
-		applyStrategy(qualifiedMethodName, new BenchmarkMethodRunnerStrategy(className,
-				methodName));
+		String methodName = qualifiedMethodName.substring(p + 1);
+		applyStrategy(qualifiedMethodName, new BenchmarkMethodRunnerStrategy(
+				className, methodName));
 	}
 
 	private interface Strategy
@@ -103,18 +107,29 @@ public class BenchmarkRunner
 
 		BenchmarkDatasetXmlSerializer serializer = new BenchmarkDatasetXmlSerializer();
 		String outputFilename = String.format(
-				"%s_%s.xml",
+				"%s_%s",
 				configuration,
 				benchmarkCreator.getBenchmarkDataset().getProperties()
-						.getProperty("create.date")).replaceAll("\\W+", "_");
+						.getProperty("create.date")).replaceAll("\\W+", "_")
+				+ ".xml";
+		Writer writer = null;
 		try
 		{
-			serializer.serialize(new FileWriter(outputFilename),
-					benchmarkDataset);
+			FileOutputStream fileOutputStream = new FileOutputStream(
+					outputFilename);
+			writer = new OutputStreamWriter(fileOutputStream, "UTF8");
+			serializer.serialize(writer, benchmarkDataset);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+		}
+		finally
+		{
+			if (writer != null)
+			{
+				writer.close();
+			}
 		}
 	}
 
