@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableIterator;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
+import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.util.test.SerializationTester;
@@ -468,7 +469,6 @@ public class TestFactorTable
 	
 	private void testProduct(Map<IFactorTable, int[]> entryMap)
 	{
-		@SuppressWarnings("unchecked")
 		final ArrayList<Tuple2<IFactorTable, int[]>> entries =
 			new ArrayList<Tuple2<IFactorTable, int[]>>(entryMap.size());
 		for (Map.Entry<IFactorTable, int[]> entry : entryMap.entrySet())
@@ -676,6 +676,41 @@ public class TestFactorTable
 			double oldWeight = entry.weight();
 			double newWeight = newTable.getWeightForIndices(newIndices);
 			assertEquals(oldWeight, newWeight, 1e-12);
+		}
+	}
+	
+	/**
+	 * Test for {@link FactorTable#createMarginal} constructor.
+	 */
+	@Test
+	public void testCreateMarginal()
+	{
+		testCreateMarginal(domain2, domain3, domain5);
+	}
+	
+	private void testCreateMarginal(DiscreteDomain ... domains)
+	{
+		final JointDiscreteDomain<?> jointDomain = DiscreteDomain.joint(domains);
+		final JointDomainIndexer jointIndexer = jointDomain.getDomainIndexer();
+		final int nDomains = domains.length;
+		final int jointSize = jointDomain.size();
+		final int[] indices = jointIndexer.allocateIndices(null);
+		
+		assertEquals(nDomains, jointDomain.getDimensions());
+		
+		for (int di = 0; di < nDomains; ++di)
+		{
+			IFactorTable table = FactorTable.createMarginal(di, jointDomain);
+			assertTrue(table.isDeterministicDirected());
+			assertEquals(jointDomain.size(), table.sparseSize());
+			assertSame(jointDomain, table.getDomainIndexer().get(1));
+			assertSame(jointIndexer.get(di), table.getDomainIndexer().get(0));
+			
+			for (int ji = 0; ji < jointSize; ++ji)
+			{
+				jointDomain.getElementIndices(ji, indices);
+				assertEquals(1.0, table.getWeightForIndices(indices[di], ji), 0.0);
+			}
 		}
 	}
 	

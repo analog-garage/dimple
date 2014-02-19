@@ -16,9 +16,11 @@ import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
@@ -322,6 +324,36 @@ public class FactorTable extends SparseFactorTableBase
 		return create(JointDomainIndexer.create(outputSet, domains));
 	}
 	
+	/**
+	 * Create a directed deterministic factor table that marginalizes out the specified subdomain
+	 * of the joint input domain.
+	 * <p>
+	 * @param outputDomainIndex a number in the range [0, inputDomain.getDimensions() - 1] that specifies
+	 * which subdomain to produce as the first dimension and output.
+	 * @param inputDomain will be the second dimension in the table and the input.
+	 */
+	public static IFactorTable createMarginal(int outputDomainIndex, JointDiscreteDomain<?> inputDomain)
+	{
+		final DiscreteDomain outputDomain = inputDomain.getDomainIndexer().get(outputDomainIndex);
+		
+		final int outSize = outputDomain.size();
+		final int inSize = inputDomain.size();
+		final int outStride = inputDomain.getDomainIndexer().getStride(outputDomainIndex);
+		
+		final int[] indices = new int[inSize];
+		for (int in = 0; in < inSize; ++in)
+		{
+			// TODO: refactor this to just increment to avoid the division.
+			indices[in] = (in / outStride) % outSize;
+		}
+
+		// Build the actual table
+		final IFactorTable table = create(BitSetUtil.bitsetFromIndices(2, 0), outputDomain, inputDomain);
+		table.setDeterministicOutputIndices(indices);
+		
+		return table;
+	}
+	
 	public static IFactorTable convert(IFactorTable oldTable, JointDomainReindexer converter)
 	{
 		if (converter.getToDomains().supportsJointIndexing())
@@ -351,6 +383,17 @@ public class FactorTable extends SparseFactorTableBase
 
 	/**
 	 * Constructs a new factor table that is the product of all of the given tables.
+	 * <p>
+	 * Invokes {@link #product(ArrayList, FactorTableRepresentation)} with null representation
+	 * argument.
+	 */
+	public static IFactorTable product(ArrayList<Tuple2<IFactorTable,int[]>> entries)
+	{
+		return product(entries, null);
+	}
+	
+	/**
+	 * Constructs a new factor table that is the product of all of the given tables.
 	 * 
 	 * @param entries maps factor tables to an array of index mappings that indicates where
 	 * each dimension in the table is located in the table to be constructed. Thus the
@@ -361,7 +404,9 @@ public class FactorTable extends SparseFactorTableBase
 	 * or the number of dimensions of the largest factor. When two tables both map a dimension to the same
 	 * dimension in the target table, the domains must match.
 	 * <p>
-	 * @representation is the representation to use for the table to be constructed
+	 * @representation is the representation to use for the table to be constructed. If null, the representation
+	 * will be set to either {@link FactorTableRepresentation#DENSE_ENERGY} or
+	 * {@link FactorTableRepresentation#SPARSE_ENERGY} based on the density of the tables.
 	 * <p>
 	 * @return Newly constructed table.
 	 */
@@ -411,7 +456,7 @@ public class FactorTable extends SparseFactorTableBase
 				{
 					toDomains[j] = domain;
 				}
-				else if (curDomain != domain)
+				else if (!curDomain.equals(domain))
 				{
 					throw new IllegalArgumentException(
 						String.format("Conflicting domain mapping for entry %d of index map for %s", j, table));
@@ -496,7 +541,10 @@ public class FactorTable extends SparseFactorTableBase
 		}
 		
 		// Convert to target representation
-		newTable.setRepresentation(representation);
+		if (representation != null)
+		{
+			newTable.setRepresentation(representation);
+		}
 		
 		return newTable;
 	}
