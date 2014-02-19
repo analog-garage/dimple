@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
@@ -373,69 +372,6 @@ public class Factor extends FactorBase implements Cloneable
 		throw new DimpleException("not implemented");
 	}
 	
-	@Internal
-	public Factor join(Factor other)
-	{
-		ArrayList<VariableBase> varList = new ArrayList<VariableBase>();
-		
-		//go through variables from first factor and
-		ArrayList<Integer> map1 = new ArrayList<Integer>();
-		
-		final int nSiblings = getSiblingCount();
-		final int nOtherSiblings = other.getSiblingCount();
-		
-		//First get a list of variables in common.
-		for (int i = 0; i < nSiblings; i++)
-		{
-			map1.add(i);
-			varList.add(getConnectedNodeFlat(i));
-			
-		}
-		
-		ArrayList<Integer> map2 = new ArrayList<Integer>();
-		
-		int newnuminputs = map1.size();
-		
-		for (int i = 0; i < nOtherSiblings; i++)
-		{
-			boolean found = false;
-			
-			for (int j = 0; j < nSiblings; j++)
-			{
-				
-				if (getConnectedNodeFlat(j) == other.getConnectedNodeFlat(i))
-				{
-					found = true;
-					map2.add(j);
-					break;
-				}
-				
-			}
-			if (!found)
-			{
-				map2.add(varList.size());
-				newnuminputs++;
-				varList.add(other.getConnectedNodeFlat(i));
-			}
-		}
-		
-		FactorFunction ff1 = this.getFactorFunction();
-		FactorFunction ff2 = other.getFactorFunction();
-		JointFactorFunction jff = getParentGraph().getJointFactorFunction(ff1,ff2,map1,map2);
-		
-		//Remove the two old factors.
-		getParentGraph().remove(this);
-		getParentGraph().remove(other);
-		
-		//Create the table factor using the variables
-		VariableBase [] vars = new VariableBase[newnuminputs];
-		varList.toArray(vars);
-		return getParentGraph().addFactor(jff, vars);
-
-	}
-
-	
-
 	@Override
 	public double getScore()
 	{

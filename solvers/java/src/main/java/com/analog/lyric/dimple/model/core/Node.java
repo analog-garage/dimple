@@ -35,6 +35,7 @@ import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
+import com.google.common.collect.Iterators;
 
 public abstract class Node implements INode, Cloneable
 {
@@ -247,8 +248,14 @@ public abstract class Node implements INode, Cloneable
 	/**
 	 * Returns the closest common ancestor graph containing both this node and {@code other}
 	 * or null if there isn't one.
+	 * 
+	 * @param other is another node with which to compare.
+	 * @param uncommonAncestors if non-null, then any ancestors that are not in common will
+	 * be added to this list in order from top to bottom.
+	 * 
+	 * @see #getCommonAncestor(Node)
 	 */
-	public FactorGraph getCommonAncestor(Node other)
+	public FactorGraph getCommonAncestor(Node other, List<FactorGraph> uncommonAncestors)
 	{
 		// First try some common special cases to avoid computation of full path to the root.
 		FactorGraph thisParent = getParentGraph();
@@ -289,11 +296,30 @@ public abstract class Node implements INode, Cloneable
 			}
 			else
 			{
+				if (uncommonAncestors != null)
+				{
+					// Add remaining ancestors to set, if provided
+					uncommonAncestors.add(thisAncestor);
+					Iterators.addAll(uncommonAncestors, theseAncestors);
+					uncommonAncestors.add(otherAncestor);
+					Iterators.addAll(uncommonAncestors, otherAncestors);
+				}
 				break;
 			}
 		}
 		
 		return ancestor;
+	}
+	
+	/**
+	 * Returns the closest common ancestor graph containing both this node and {@code other}
+	 * or null if there isn't one.
+	 * 
+	 * @see #getCommonAncestor(Node, List)
+	 */
+	public FactorGraph getCommonAncestor(Node other)
+	{
+		return getCommonAncestor(other, null);
 	}
 	
 	@Override

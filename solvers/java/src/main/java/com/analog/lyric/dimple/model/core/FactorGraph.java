@@ -18,9 +18,13 @@ package com.analog.lyric.dimple.model.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,12 +36,14 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction.Functions;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
@@ -58,17 +64,31 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
-import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
+import com.google.common.cache.LoadingCache;
 
 
 
 public class FactorGraph extends FactorBase
 {
-	private VariableList _ownedVariables = new VariableList();
-	private VariableList _boundaryVariables = new VariableList();
-	private MapList<FactorBase> _ownedFactors = new MapList<FactorBase>();
-	private ArrayList<FactorGraph> _ownedSubGraphs = new ArrayList<FactorGraph>();
+	/*-------
+	 * State
+	 */
+
+	private final VariableList _ownedVariables = new VariableList();
+
+	private final VariableList _boundaryVariables = new VariableList();
+	
+	/**
+	 * Factors and subgraphs contained directly by this graph. Does not include
+	 * factors and subgraphs contained in subgraphs of this graph.
+	 */
+	private final MapList<FactorBase> _ownedFactors = new MapList<FactorBase>();
+	
+	private final ArrayList<FactorGraph> _ownedSubGraphs = new ArrayList<FactorGraph>();
+	
+	// TODO : some state only needs to be in root graph. Put it in common object.
+	
 	private ISchedule _schedule = null;
 	private IScheduler _associatedScheduler = null;
 	private IScheduler _solverSpecificDefaultScheduler = null;
@@ -77,15 +97,15 @@ public class FactorGraph extends FactorBase
 	private long _scheduleAssociatedGraphVerisionId = -1;
 	private IFactorGraphFactory _solverFactory;
 	private ISolverFactorGraph _solverFactorGraph;
-	private JointFactorCache _jointFactorCache = new JointFactorCache();
-	private HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
-	private ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
+	private LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
+	private final HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
+	private final ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
 	private int _numSteps = 1;
 	private boolean _numStepsInfinite = true;
 
 	//new identity related members
-	private HashMap<String, Object> _name2object = new HashMap<String, Object>();
-	private HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
+	private final HashMap<String, Object> _name2object = new HashMap<String, Object>();
+	private final HashMap<UUID, Object> _UUID2object = new HashMap<UUID, Object>();
 
 
 
@@ -402,8 +422,15 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
+	/**
+	 * True if variable is one of this graph's boundary variables or is
+	 * owned by this graph or one of its subgraphs.
+	 */
 	private boolean variableBelongs(VariableBase v)
 	{
+		// TODO: apart from the boundary variable case, it seems that it would probably be
+		// more efficient to simply walk the ancestor chain from v to see if it hits this graph.
+		
 		if (_ownedVariables.contains(v))
 			return true;
 		if (_boundaryVariables.contains(v))
@@ -416,7 +443,48 @@ public class FactorGraph extends FactorBase
 		return false;
 
 	}
+	
+	/**
+	 * True if node is owned directly by this graph.
+	 *
+	 * @param node
+	 */
+	public boolean ownsDirectly(Node node)
+	{
+		final boolean owns = node.getParentGraph() == node;
+		assert(owns == ownsDirectly_(node));
+		return owns;
+	}
 
+	/**
+	 * Slower version of {@link #OwnsDirectly} just used for
+	 * checking correctness in assertion.
+	 */
+	private boolean ownsDirectly_(Node node)
+	{
+		if (node.isVariable())
+		{
+			return _ownedVariables.contains(node);
+		}
+		else if (node.isFactor())
+		{
+			return _ownedFactors.contains(node);
+		}
+		else if (node.isFactorGraph())
+		{
+			return _ownedSubGraphs.contains(node);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Removes variables from the graph.
+	 * <p>
+	 * This simply invokes {@link #remove(VariableBase)} on each.
+	 * 
+	 * @param variables are the variables to be removed.
+	 */
 	public void removeVariables(VariableBase ... variables)
 	{
 		for (VariableBase v : variables)
@@ -425,6 +493,13 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
+	/**
+	 * Remove variable from the graph.
+	 * @param v is the variable to remove
+	 * @throws DimpleException if the variable is still connected to some factor or if the variable
+	 * is not owned by this graph.
+	 * @see #remove(Factor)
+	 */
 	public void remove(VariableBase v)
 	{
 		if (v.getSiblingCount() != 0)
@@ -501,72 +576,99 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	/*
+	/**
 	 * Joining factors replaces all the original factors with one joint factor.
 	 * We take the cartesian product of the rows of the tables such that the
 	 * variables values are consistent.
 	 */
 	public Factor join(Factor ... factors)
 	{
-		if (factors.length < 2)
-			throw new DimpleException("need at least two factors for join");
-
-		Factor current = factors[0];
-		for (int i = 1; i < factors.length; i++)
-			current = current.join(factors[i]);
-
-		_versionId++;
-
-		return current;
+		return join(VariableBase.orderById, factors);
 	}
-
-
-	@Internal
-	public JointFactorFunction getJointFactorFunction(
-			FactorFunction ff1,
-			FactorFunction ff2,
-			ArrayList<Integer> map1,
-			ArrayList<Integer> map2
-			)
+	
+	public Factor join(Comparator<VariableBase> variableOrdering, Factor ... factors)
 	{
-
-		return _jointFactorCache.get(ff1, ff2, map1, map2);
-	}
-
-	/*
-	 * This class is used to speed up the time it takes to create graphs
-	 * that join similar factors multiple times.  In addition to speeding
-	 * up graph creation, this will reduce memory usage.
-	 */
-	public class JointFactorCache
-	{
-		private HashMap<ArrayList<Object>,JointFactorFunction> _cache = new HashMap<ArrayList<Object>, JointFactorFunction>();
-
-		/*
-		 * We have to use both the factor functions and the mappings as keys.
-		 * The mappings relate the arguments of the joint factor to the original
-		 * arguments of each individual factor.
-		 */
-		public JointFactorFunction get(FactorFunction f1,
-				FactorFunction f2,
-				ArrayList<Integer> map1, ArrayList<Integer> map2)
+		final int nFactors = factors.length;
+		
+		if (nFactors == 0)
 		{
-
-			ArrayList<Object> key = new ArrayList<Object>();
-			key.add(f1);
-			key.add(f2);
-			key.add(map1.clone());
-			key.add(map2.clone());
-
-			if (!_cache.containsKey(key))
-			{
-				String newname = f1.getName()+"_"+f2.getName();
-				JointFactorFunction jff = new JointFactorFunction(newname, f1, f2, map1, map2);
-				_cache.put(key, jff);
-			}
-
-			return _cache.get(key);
+			return null;
 		}
+		else if (nFactors == 1)
+		{
+			return factors[0];
+		}
+	
+		// Build map of variables in all factors to its index in the merged factor.
+		final Map<VariableBase, Integer> varToIndex = new LinkedHashMap<VariableBase, Integer>();
+		for (Factor factor : factors)
+		{
+			final int nVarsInFactor = factor.getSiblingCount();
+			for (int i = 0; i < nVarsInFactor; ++i)
+			{
+				final VariableBase variable = factor.getSibling(i);
+				if (!varToIndex.containsKey(variable))
+				{
+					varToIndex.put(variable, -1);
+				}
+			}
+		}
+		
+		final int nVariables = varToIndex.size();
+		final VariableBase[] variables = varToIndex.keySet().toArray(new VariableBase[nVariables]);
+		Arrays.sort(variables, variableOrdering);
+
+		for (int i = 0; i < nVariables; ++i)
+		{
+			varToIndex.put(variables[i], i);
+		}
+		
+		// Build mappings from each factor's variable order to the merged order
+		ArrayList<Tuple2<FactorFunction, int[]>> oldToNew = new ArrayList<Tuple2<FactorFunction, int[]>>(nFactors);
+		for (Factor factor : factors)
+		{
+			final int nVarsInFactor = factor.getSiblingCount();
+			final int[] oldToNewIndex = new int[nVarsInFactor];
+			for (int i = 0; i < nVarsInFactor; ++i)
+			{
+				final VariableBase variable = factor.getSibling(i);
+				oldToNewIndex[i] = varToIndex.get(variable);
+			}
+			oldToNew.add(Tuple2.create(factor.getFactorFunction(), oldToNewIndex));
+		}
+		
+		// Create the joint factor function
+		FactorGraph root = getRootGraph();
+		if (root._jointFactorCache == null)
+		{
+			root._jointFactorCache = JointFactorFunction.createCache();
+		}
+		
+		final JointFactorFunction.Functions jointFunctions = new JointFactorFunction.Functions(oldToNew);
+		final FactorFunction jointFunction = JointFactorFunction.getFromCache(root._jointFactorCache, jointFunctions);
+		
+		// Determine common parent
+		final List<FactorGraph> uncommonAncestors = new LinkedList<FactorGraph>();
+		FactorGraph parentGraph = factors[0].getParentGraph();
+		for (int i = 1; i < nFactors; ++i)
+		{
+			parentGraph = factors[i - 1].getCommonAncestor(factors[i], uncommonAncestors);
+		}
+		
+		// Remove old factors
+		for (Factor factor : factors)
+		{
+			factor.getParentGraph().remove(factor);
+		}
+
+		// If all factors did not have the same parent, then remove any intermediate subgraphs.
+		for (FactorGraph subgraph : uncommonAncestors)
+		{
+			subgraph.getParentGraph().absorbSubgraph(subgraph);
+		}
+		
+		// Add new factor
+		return parentGraph.addFactor(jointFunction, variables);
 	}
 
 	/*
@@ -658,14 +760,10 @@ public class FactorGraph extends FactorBase
 
 		}
 
-		addNameAndUUID(function);
-		function.setParentGraph(this);
-
-		_ownedFactors.add(function);
+		addOwnedFactor(function);
 		_versionId++;							// The graph has changed
 		return function;
 	}
-
 
 	public boolean customFactorExists(String funcName)
 	{
@@ -762,8 +860,15 @@ public class FactorGraph extends FactorBase
 		return addGraph(subGraph,boundaryVariables);
 	}
 
-	// Add a subgraph
-	public FactorGraph addGraph(FactorGraph subGraph, VariableBase ... boundaryVariables)
+	/**
+	 * Add a new subgraph generated from specified template graph
+	 * attached to given boundary variables.
+	 * <p>
+	 * @param subGraphTemplate
+	 * @param boundaryVariables
+	 * @return newly created subgraph
+	 */
+	public FactorGraph addGraph(FactorGraph subGraphTemplate, VariableBase ... boundaryVariables)
 	{
 
 		//TODO: helper function
@@ -772,7 +877,7 @@ public class FactorGraph extends FactorBase
 			setVariableSolver(v);
 
 		//copy the graph
-		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraph,this);
+		FactorGraph subGraphCopy = new FactorGraph(boundaryVariables, subGraphTemplate,this);
 
 		if (_solverFactory != null)
 		{
@@ -784,7 +889,7 @@ public class FactorGraph extends FactorBase
 		_ownedFactors.add(subGraphCopy);
 		_ownedSubGraphs.add(subGraphCopy);
 
-		//tell us about it and it about us
+		//tell us about it and it about us - this already done in the constructor.
 		//subGraphCopy._setParentGraph(this);
 
 
@@ -1117,7 +1222,12 @@ public class FactorGraph extends FactorBase
 
 	}
 
-
+	private void addOwnedFactor(FactorBase factor)
+	{
+		addNameAndUUID(factor);
+		factor.setParentGraph(this);
+		_ownedFactors.add(factor);
+	}
 
 	private void addOwnedVariable(VariableBase variable)
 	{
@@ -1208,30 +1318,73 @@ public class FactorGraph extends FactorBase
 		_solverFactorGraph.continueSolve();
 	}
 
-	public void remove(FactorGraph factorGraph)
+	/**
+	 * Absorbs subgraph into parent graph.
+	 * <p>
+	 * Tranfers variables, factors and subgraphs owned by {@code subgraph} to this
+	 * graph and removes subgraph.
+	 * <p>
+	 * @param subgraph must be a direct subgraph of this graph.
+	 */
+	public void absorbSubgraph(FactorGraph subgraph)
 	{
-		VariableList varList = factorGraph.getVariablesFlat();
-		IMapList<FactorBase> factors = factorGraph.getFactorsTop();
+		if (!ownsDirectly(subgraph))
+		{
+			throw new DimpleException("Cannot absorb subgraph that is not directly owned.");
+		}
+		
+		final VariableList variables = subgraph._ownedVariables;
+		final MapList<FactorBase> factors = subgraph._ownedFactors;
+		
+		// Reparent owned variables & factors & subgraphs
+		for (int i = variables.size(); --i>=0;)
+		{
+			addOwnedVariable(variables.getByIndex(i));
+		}
+		for (int i = factors.size(); --i>=0;)
+		{
+			addOwnedFactor(factors.getByIndex(i));
+		}
+		
+		// Clear subgraph state
+		variables.clear();
+		factors.clear();
+		subgraph._boundaryVariables.clear();
+		subgraph._ownedSubGraphs.clear();
 
-		VariableList boundary = factorGraph.getBoundaryVariables();
+		// Remove subgraph itself
+		remove(subgraph);
+	}
+	
+	/**
+	 * Remove a subgraph and all of its variables and factors from this graph.
+	 * Also remove boundary variables of subgraph if they are no longer connected
+	 * to anything.
+	 * 
+	 * @param subgraph
+	 */
+	public void remove(FactorGraph subgraph)
+	{
+		VariableList varList = subgraph.getVariablesFlat();
+		IMapList<FactorBase> factors = subgraph.getFactorsTop();
 
-		VariableBase [] arr = new VariableBase[varList.size()];
-		for (int i = 0; i < arr.length; i++)
-			arr[i] = varList.getByIndex(i);
+		VariableList boundary = subgraph.getBoundaryVariables();
+
+		VariableBase [] arr = varList.toArray(new VariableBase[varList.size()]);
 
 		for (FactorBase f : factors)
 		{
-			FactorGraph subgraph = f.asFactorGraph();
-			if (subgraph != null)
-				factorGraph.remove(subgraph);
+			FactorGraph subsubgraph = f.asFactorGraph();
+			if (subsubgraph != null)
+				subgraph.remove(subsubgraph);
 			else
-				factorGraph.remove(f.asFactor());
+				subgraph.remove(f.asFactor());
 		}
 
 		removeVariables(arr);
-		removeNode(factorGraph);
-		_ownedFactors.remove(factorGraph);
-		_ownedSubGraphs.remove(factorGraph);
+		removeNode(subgraph);
+		_ownedFactors.remove(subgraph);
+		_ownedSubGraphs.remove(subgraph);
 
 		for (VariableBase v : boundary)
 		{
@@ -1252,6 +1405,12 @@ public class FactorGraph extends FactorBase
 
 	}
 
+	/**
+	 * Removes factor from the graph leaving any variables it was connected to.
+	 * 
+	 * @param factor
+	 * @throws DimpleException if factor is not owned by the graph.
+	 */
 	public void remove(Factor factor)
 	{
 		//_ownedFactors;
@@ -1764,7 +1923,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	/**
-	 * Returns count of variables that would be returned by {@link #getFactors()}.
+	 * Returns count of factors that would be returned by {@link #getFactors()}.
 	 */
 	public int getFactorCount()
 	{
@@ -1772,7 +1931,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	/**
-	 * Returns count of variables that would be returned by {@link #getFactors(int)}.
+	 * Returns count of factors that would be returned by {@link #getFactors(int)}.
 	 */
 	public int getFactorCount(int relativeNestingDepth)
 	{
@@ -1801,11 +1960,28 @@ public class FactorGraph extends FactorBase
 		return count;
 	}
 
+	/**
+	 * Returns a newly constructed collection containing all factors within
+	 * the specified nesting depth and subgraphs at the specified depth.
+	 *<p>
+	 * @see #getFactors(int, MapList)
+	 */
 	public MapList<FactorBase> getFactors(int relativeNestingDepth)
 	{
 		return this.getFactors(relativeNestingDepth, new MapList<FactorBase>());
 	}
 
+	/**
+	 * Add factors from this graph down to a specified subgraph nesting level,
+	 * <p>
+	 * @param relativeNestingDepth is a non-negative number indicating how many levels
+	 * of subgraphs will be explored. Factors at the specified relative depth below the
+	 * starting graph or less will be included. Subgraphs at the exact relative depth
+	 * will be included, but <em>not</em> those at shallower depth.
+	 * <p>
+	 * @param factors is the collection to which factors will be added.
+	 * @return {@code factors} argument.
+	 */
 	public MapList<FactorBase> getFactors(int relativeNestingDepth, MapList<FactorBase> factors)
 	{
 		for (FactorBase f : _ownedFactors)
@@ -1842,6 +2018,10 @@ public class FactorGraph extends FactorBase
 		return getNonGraphFactorsFlat();
 	}
 
+	/**
+	 * Returns newly constructed collection containing all of the factors
+	 * and subgraphs that are directly owned by this graph.
+	 */
 	public IMapList<FactorBase> getFactorsTop()
 	{
 		return getFactors(0);
