@@ -118,7 +118,7 @@ public class Misc
 	}
 
 	
-	public static FactorGraph 	makeXorGraphFromMatrix(byte[][] matrix, IFactorGraphFactory solver)
+	public static FactorGraph 	makeXorGraphFromMatrix(byte[][] matrix, IFactorGraphFactory<?> solver)
     {
     	return makeGraphFromMatrix(matrix,
     							   new Double[]{0.0, 1.0},
@@ -129,7 +129,7 @@ public class Misc
     public static FactorGraph 	makeGraphFromMatrix(byte[][] matrix,
     												Object[] domain,
     												FactorFunction f,
-    												IFactorGraphFactory solver)
+    												IFactorGraphFactory<?> solver)
     {
     	
     	//Make all variables first

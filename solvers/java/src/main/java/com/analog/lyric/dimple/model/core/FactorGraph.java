@@ -95,7 +95,7 @@ public class FactorGraph extends FactorBase
 	private long _versionId = 0;
 	private long _scheduleVersionId = 0;
 	private long _scheduleAssociatedGraphVerisionId = -1;
-	private IFactorGraphFactory _solverFactory;
+	private IFactorGraphFactory<?> _solverFactory;
 	private ISolverFactorGraph _solverFactorGraph;
 	private LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
 	private final HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
@@ -135,7 +135,7 @@ public class FactorGraph extends FactorBase
 
 
 
-	public FactorGraph(VariableBase[] boundaryVariables, String name, IFactorGraphFactory solver)
+	public FactorGraph(VariableBase[] boundaryVariables, String name, IFactorGraphFactory<?> solver)
 		{
 		if (boundaryVariables != null)
 			addBoundaryVariables(boundaryVariables);
@@ -173,24 +173,26 @@ public class FactorGraph extends FactorBase
 	 * 
 	 ******************************************************************/
 
-	private void setSolverFactorySubGraph(IFactorGraphFactory factory)
+	private <SG extends ISolverFactorGraph> SG setSolverFactorySubGraph(IFactorGraphFactory<SG> factory)
 	{
+		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
 		_solverFactory = factory;
-		_solverFactorGraph = factory != null ? factory.createFactorGraph(this) : null;
+		_solverFactorGraph = solverGraph;
+		return solverGraph;
 
 	}
-	private void setSolverFactorySubGraphRecursive(IFactorGraphFactory factory)
+	private <SG extends ISolverFactorGraph> SG setSolverFactorySubGraphRecursive(IFactorGraphFactory<SG> factory)
 	{
-		setSolverFactorySubGraph(factory);
+		SG solverGraph = setSolverFactorySubGraph(factory);
 		for (FactorGraph fg : getNestedGraphs())
 			fg.setSolverFactorySubGraphRecursive(factory);
-
+		return solverGraph;
 	}
 
-	public void setSolverFactory(IFactorGraphFactory factory)
+	public <SG extends ISolverFactorGraph> SG setSolverFactory(IFactorGraphFactory<SG> factory)
 	{
 
-		setSolverFactorySubGraph(factory);
+		SG solverGraph = setSolverFactorySubGraph(factory);
 
 		for (VariableBase var : getVariablesFlat())
 			var.createSolverObject(_solverFactorGraph);
@@ -205,6 +207,8 @@ public class FactorGraph extends FactorBase
 		{
 			_solverFactorGraph.postSetSolverFactory();
 		}
+		
+		return solverGraph;
 	}
 
 
@@ -2742,7 +2746,7 @@ public class FactorGraph extends FactorBase
 		}
 		return variablesByDomain;
 	}
-	public IFactorGraphFactory getFactorGraphFactory()
+	public IFactorGraphFactory<?> getFactorGraphFactory()
 	{
 		return _solverFactory;
 	}
@@ -2825,7 +2829,7 @@ public class FactorGraph extends FactorBase
 	{
 		return deserializeFromXML(docName, null);
 	}
-	static public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	static public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		com.analog.lyric.dimple.model.core.xmlSerializer x
 		= new com.analog.lyric.dimple.model.core.xmlSerializer();

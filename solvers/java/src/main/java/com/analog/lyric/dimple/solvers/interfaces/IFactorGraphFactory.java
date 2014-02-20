@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
-public interface IFactorGraphFactory 
+public interface IFactorGraphFactory<SolverGraph extends ISolverFactorGraph>
 {
-	public ISolverFactorGraph createFactorGraph(FactorGraph graph) ;
+	public SolverGraph createFactorGraph(FactorGraph graph) ;
 }

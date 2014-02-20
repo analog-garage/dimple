@@ -17,13 +17,13 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.solvers.core.SolverBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 
-public class Solver extends SolverBase
+public class Solver extends SolverBase<SFactorGraph>
 {
 
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
+	@Override
+	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		return new SFactorGraph(factorGraph);
 	}

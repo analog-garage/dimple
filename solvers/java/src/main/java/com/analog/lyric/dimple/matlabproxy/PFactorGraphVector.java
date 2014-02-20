@@ -347,7 +347,7 @@ public class PFactorGraphVector extends PFactorVector
 
 	}
 	
-	public void setSolver(IFactorGraphFactory solver)
+	public void setSolver(IFactorGraphFactory<?> solver)
 	{
 		getGraph().setSolverFactory(solver);
 	}

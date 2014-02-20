@@ -17,18 +17,18 @@
 package com.analog.lyric.dimple.solvers.template;
 
 import com.analog.lyric.dimple.solvers.core.SolverBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
  * The solver is essentially a factory responsible for creating FactorGraph solver objects.
  */
-public class Solver extends SolverBase
+public class Solver extends SolverBase<SFactorGraph>
 {
 
 	/**
 	 * This method creates a Solver FactorGraph object given the corresponding model object.
 	 */
-	public ISolverFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph) 
+	@Override
+	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
 		return new SFactorGraph(factorGraph);
 	}

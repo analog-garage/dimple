@@ -18,12 +18,12 @@ package com.analog.lyric.dimple.test.dummySolver;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.core.SolverBase;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
-public class DummySolver extends SolverBase
+public class DummySolver extends SolverBase<DummyFactorGraph>
 {
 
-	public ISolverFactorGraph createFactorGraph(FactorGraph factorGraph) 
+	@Override
+	public DummyFactorGraph createFactorGraph(FactorGraph factorGraph)
 	{
 		return new DummyFactorGraph(factorGraph);
 	}

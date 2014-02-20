@@ -431,7 +431,7 @@ public class Deserializer
 		TableFactorFunction factorFunc;
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		deserializeFromXMLToMemory(docName);
 		
@@ -458,7 +458,7 @@ public class Deserializer
 		{
 			@SuppressWarnings("all")
 			Class cl = Class.forName(_xFg._solverClass);
-			_fg.setSolverFactory((IFactorGraphFactory)cl.newInstance());
+			_fg.setSolverFactory((IFactorGraphFactory<?>)cl.newInstance());
 		}
 		
 		

@@ -142,7 +142,7 @@ public class ModelFactory
 
 
 
-	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, int numEls) 
+	public PRealVariableVector createRealVariableVector(String className, PRealDomain domain, int numEls)
 	{
 		return new PRealVariableVector(className, domain, numEls);
 	}
@@ -171,7 +171,7 @@ public class ModelFactory
 
 	// Set solver
 
-	public void setSolver(IFactorGraphFactory solver)
+	public void setSolver(IFactorGraphFactory<?> solver)
 	{
 		Model.getInstance().setDefaultGraphFactory(solver);
 	}
@@ -211,12 +211,12 @@ public class ModelFactory
 		}
 		
 
-		return new PMultiplexerCPD(domains);				
+		return new PMultiplexerCPD(domains);
 	}
 	
 	public PMultiplexerCPD getMultiplexerCPD(Object [] domain, double numZs)
 	{
-		return new PMultiplexerCPD(domain,(int)numZs);				
+		return new PMultiplexerCPD(domain,(int)numZs);
 	}
 
 	public void setNumThreadsToDefault()
