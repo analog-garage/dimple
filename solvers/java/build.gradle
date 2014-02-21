@@ -139,6 +139,8 @@ assemble.dependsOn copyJars
 task(runJavaBenchmarks, dependsOn: 'benchmarkingClasses', type: JavaExec) {
   main = 'com.analog.lyric.dimple.benchmarks.DimpleBenchmarks'
   classpath = sourceSets.benchmarking.runtimeClasspath
+  minHeapSize = '1g'
+  maxHeapSize = '6g'
 }
 
 task(runMATLABBenchmarks, type: Exec) {
