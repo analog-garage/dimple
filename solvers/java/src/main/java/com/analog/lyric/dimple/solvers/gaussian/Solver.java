@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
-public class Solver extends SolverBase<SFactorGraph>
+public class Solver extends SolverBase<com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph>
 {
 
 	// The Gaussian solver is now identical to the SumProduct solver
