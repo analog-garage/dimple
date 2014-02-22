@@ -308,6 +308,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	 */
 	
 	@Override
+	public RealJointValue getCurrentSampleValue()
+	{
+		return _outputMsg;
+	}
+	
+	@Override
 	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
 	{
 		return GibbsNeighbors.iteratorFor(_neighbors, this);

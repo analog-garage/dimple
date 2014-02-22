@@ -288,6 +288,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	 */
 	
 	@Override
+	public RealValue getCurrentSampleValue()
+	{
+		return _outputMsg;
+	}
+	
+	@Override
 	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
 	{
 		return GibbsNeighbors.iteratorFor(_neighbors, this);

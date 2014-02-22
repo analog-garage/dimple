@@ -28,6 +28,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	public void saveAllSamples();
 	public void saveCurrentSample();
     public void saveBestSample();
+    public Value getCurrentSampleValue();
     public void setCurrentSample(Object value);
     public void setCurrentSample(Value value);
 	public void setBeta(double beta);

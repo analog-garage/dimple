@@ -242,7 +242,25 @@ public class VariableEliminator
 			deterministic?
 				new VariableEliminator(model, useConditioning, null) :
 				new VariableEliminator(model, useConditioning);
-		
+
+		return generate(eliminator, nAttempts, threshold, costFunctions);
+	}
+
+	/**
+	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
+	 * and choosing the best fit according to the specified threshold statistics.
+	 * <p>
+	 * Same as {@link #generate(FactorGraph, boolean, int, Stats, VariableCost...)} but uses provided
+	 * eliminator instead of building a new one.
+	 */
+	public static Ordering generate(
+		VariableEliminator eliminator,
+		int nAttempts,
+		Stats threshold,
+		VariableCost ... costFunctions)
+	{
+		final boolean deterministic = nAttempts <= 0;
+
 		if (costFunctions.length == 0)
 		{
 			costFunctions = VariableCost.values();
@@ -539,7 +557,7 @@ public class VariableEliminator
 	 * <p>
 	 * @see OrderIterator#getStats()
 	 */
-	public static class Stats
+	public static class Stats implements Cloneable
 	{
 		private final VariableCost _cost;
 		
@@ -572,6 +590,23 @@ public class VariableEliminator
 			_factorsWithDuplicateVariables = value;
 			_maxClique = value;
 			_maxCliqueCardinality = value;
+		}
+		
+		public Stats(Stats that)
+		{
+			_cost = that._cost;
+			_addedEdges = that._addedEdges;
+			_addedEdgeWeight = that._addedEdgeWeight;
+			_conditionedVariables = that._conditionedVariables;
+			_factorsWithDuplicateVariables = that._factorsWithDuplicateVariables;
+			_maxClique = that._maxClique;
+			_maxCliqueCardinality = that._maxCliqueCardinality;
+		}
+		
+		@Override
+		public Stats clone()
+		{
+			return new Stats();
 		}
 		
 		/*--------------------

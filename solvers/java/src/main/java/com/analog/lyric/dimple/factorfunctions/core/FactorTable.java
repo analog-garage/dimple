@@ -469,11 +469,12 @@ public class FactorTable extends SparseFactorTableBase
 		}
 		
 		final JointDomainIndexer toIndexer = JointDomainIndexer.create(toDomains);
-		final int toCardinality = toIndexer.getCardinality();
+		final boolean supportsJoint = toIndexer.supportsJointIndexing();
+		final int toCardinality = supportsJoint ? toIndexer.getCardinality() : -1;
 		
 		FactorTableRepresentation tableRep = FactorTableRepresentation.SPARSE_ENERGY;
 		
-		if (toIndexer.supportsJointIndexing())
+		if (supportsJoint)
 		{
 			// The sparsest table is going to put an upper bound
 			// on the sparsity of the final table. If the minimum

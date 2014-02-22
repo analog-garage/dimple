@@ -17,17 +17,20 @@
 package com.analog.lyric.dimple.model.transform;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
+import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.collect.SkipSet;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -38,6 +41,9 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.factors.FactorList;
+import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
+import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedJointDiscreteVariable;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
@@ -60,6 +66,7 @@ public class JunctionTreeTransform
 	private int _nEliminationAttempts = 10;
 	private boolean _useConditioning = true;
 	private final VariableCost[] _costFunctions = {};
+	private Random _rand = new Random();
 	
 	/**
 	 * Orders factors by decreasing order of non-zero factor table entries.
@@ -84,10 +91,21 @@ public class JunctionTreeTransform
 	public JunctionTreeTransform()
 	{
 	}
-
+	
 	/*---------
 	 * Options
 	 */
+	
+	public Random random()
+	{
+		return _rand;
+	}
+	
+	public JunctionTreeTransform random(Random rand)
+	{
+		_rand = rand;
+		return this;
+	}
 	
 	public boolean useConditioning()
 	{
@@ -107,17 +125,15 @@ public class JunctionTreeTransform
 	
 	private static class Clique
 	{
-		private final Discrete _eliminatedVariable;
-		
 		/**
-		 * Original factors for eliminated variable.
+		 * Factors that make up the clique.
 		 */
 		private final ArrayList<Factor> _factors;
 		
 		/**
 		 * Variables in clique
 		 */
-		private final ArrayList<Discrete> _variables = new ArrayList<Discrete>();
+		private final SkipSet<Discrete> _variables = new SkipSet<Discrete>(_variableComparator);
 		
 		private final ArrayList<CliqueEdge> _edges = new ArrayList<CliqueEdge>();
 		
@@ -141,11 +157,42 @@ public class JunctionTreeTransform
 		 * Construction
 		 */
 		
-		private Clique(Discrete eliminatedVariable)
+		private Clique(Factor factor)
 		{
-			_eliminatedVariable = eliminatedVariable;
-			_variables.add(eliminatedVariable);
-			_factors = new ArrayList<Factor>(eliminatedVariable.getSiblingCount());
+			_factors = new ArrayList<Factor>();
+			_factors.add(factor);
+			for (int i = 0, end = factor.getSiblingCount(); i < end; ++i)
+			{
+				_variables.add(factor.getSibling(i).asDiscreteVariable());
+			}
+		}
+		
+		private Clique(Clique[] cliques)
+		{
+			final int nCliques = cliques.length;
+			ArrayList<Clique> cliqueList = new ArrayList<Clique>(nCliques);
+			
+			int nFactors = 0;
+			for (Clique clique : cliques)
+			{
+				cliqueList.add(clique);
+				nFactors += clique._factors.size();
+				
+			}
+			
+			_factors = new ArrayList<Factor>(nFactors);
+			for (int i = 0; i < nCliques; ++i)
+			{
+				Clique clique = cliqueList.get(i);
+				ArrayList<Factor> factors = clique._factors;
+				
+				for (int j = 0, endj = factors.size(); j < endj; ++j)
+				{
+					_factors.add(factors.get(j));
+				}
+				
+				_variables.addAll(clique._variables);
+			}
 		}
 		
 		/*---------
@@ -158,14 +205,37 @@ public class JunctionTreeTransform
 			_edges.add(edge);
 		}
 		
-		private void addFactor(Factor factor)
+		private void addToMap(SetMultimap<Discrete, Clique> map)
 		{
-			_factors.add(factor);
+			for (Discrete variable : _variables)
+			{
+				map.put(variable, this);
+			}
 		}
 		
-		private void addVariable(Discrete neighbor)
+		private void removeFromMap(SetMultimap<Discrete, Clique> map)
 		{
-			_variables.add(neighbor);
+			for (Discrete variable : _variables)
+			{
+				map.remove(variable, this);
+			}
+		}
+		
+		private int indexOfVariable(Discrete variable)
+		{
+			int index = -1;
+			ReleasableIterator<Discrete> iter = _variables.iterator();
+			while (iter.hasNext())
+			{
+				++index;
+				if (iter.next() == variable)
+				{
+					return index;
+				}
+			}
+			iter.release();
+			
+			return -1;
 		}
 		
 		private void joinMultivariateEdges()
@@ -191,7 +261,8 @@ public class JunctionTreeTransform
 				newDomains[edgei] = edge._jointVariable.getDiscreteDomain();
 				for (int vari = 0; vari < nVars; ++vari)
 				{
-					a[vari] = _variables.indexOf(edge._variables[vari]);
+					final Discrete edgeVar = edge._variables[vari];
+					a[vari] = indexOfVariable(edgeVar);
 				}
 				newFromOld[edgei] = a;
 				if (nVars > 1)
@@ -208,6 +279,7 @@ public class JunctionTreeTransform
 			final double[] energies = new double[nEntries];
 			
 			final IFactorTableIterator oldIter = oldFactorTable.iterator();
+			int si = 0;
 			while (oldIter.advance())
 			{
 				final int[] oldIndices = oldIter.indicesUnsafe();
@@ -232,11 +304,11 @@ public class JunctionTreeTransform
 						}
 						newIndices[edgei] = ((JointDiscreteDomain<?>)newDomains[edgei]).getIndexFromIndices(scratch);
 					}
-					
-					final int si = oldIter.sparseIndex();
-					energies[si] = oldIter.energy();
-					indices[si] = newIndices;
 				}
+
+				energies[si] = oldIter.energy();
+				indices[si] = newIndices;
+				++si;
 			}
 			
 			// Create the new table
@@ -249,16 +321,6 @@ public class JunctionTreeTransform
 			
 			// Create new factor attached to edge variables
 			graph.addFactor(newFactorTable, newVariables);
-		}
-		
-		private void sortFactors()
-		{
-			Collections.sort(_factors, _factorTableComparator);
-		}
-		
-		private void sortVariables()
-		{
-			Collections.sort(_variables, _variableComparator);
 		}
 		
 		private boolean updateBestEdge(CliqueEdge incomingEdge)
@@ -326,10 +388,11 @@ public class JunctionTreeTransform
 			}
 		}
 		
-		private void makeJointVariable(FactorGraph targetModel)
+		private AddedDeterministicVariable makeJointVariable(FactorGraph targetModel)
 		{
 			final Discrete[] edgeVars = _variables;
 			final int nEdgeVars = edgeVars.length;
+			AddedDeterministicVariable addedVar = null;
 			
 			if (nEdgeVars > 1)
 			{
@@ -353,7 +416,11 @@ public class JunctionTreeTransform
 				jointVar.setName(jointName.toString());
 				targetModel.addVariables(jointVar);
 				_jointVariable = jointVar;
+				
+				addedVar = new AddedJointDiscreteVariable(jointVar, edgeVars);
 			}
+			
+			return addedVar;
 		}
 	}
 	
@@ -386,6 +453,8 @@ public class JunctionTreeTransform
 		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		
+		final FactorGraphTransformMap transformMap = new FactorGraphTransformMap(model, targetModel, old2new);
+
 		//
 		// 3) Disconnect conditioned variables in new graph
 		//
@@ -422,95 +491,85 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 4) "Eliminate" variables and create cliques.
+		// 4) Create initial cliques
 		//
-
-		final int nCliques = nVariables - nConditioned;
-		final Map<VariableBase, Clique> cliqueMap = new LinkedHashMap<VariableBase, Clique>(nCliques);
-
-		// Create a clique for each remaining variable
-		for (int i = nConditioned; i < nVariables; ++i)
+		
+		final FactorList factors = targetModel.getFactors();
+		final int nFactors = factors.size();
+		int totalCliqueSize = 0;
+		for (Factor factor : factors)
 		{
-			final Discrete var = (Discrete) old2new.get(variables.get(i));
-			cliqueMap.put(var, new Clique(var));
+			totalCliqueSize += factor.getSiblingCount();
+		}
+
+		final Set<Clique> cliques = new LinkedHashSet<Clique>(nFactors);
+		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(nFactors, totalCliqueSize/nFactors);
+
+		// Create a clique for each factor
+		for (Factor factor : targetModel.getFactors())
+		{
+			final Clique clique = new Clique(factor);
+			cliques.add(clique);
+			clique.addToMap(varToCliques);
 		}
 		
-		final Collection<Clique> cliques = cliqueMap.values();
-		
-		// Add neighboring variables to each clique
-		Clique maxClique = null;
-		int totalCliqueSize = 0;
-		for (Clique clique : cliques)
+		//
+		// 5) "Eliminate" variables and merge cliques.
+		//
+
+		for (int vari = nConditioned; vari < nVariables; ++vari)
 		{
-			final Discrete var = clique._eliminatedVariable;
+			final Discrete var = (Discrete) old2new.get(variables.get(vari));
 			// Mark variable as "eliminated". Note that there is no need to clear the mark
 			// at the start because all of the variables are newly created.
 			var.setMarked();
 			
-			for (int i = 0, endi = var.getSiblingCount(); i < endi; ++i)
+			final Set<Clique> varCliqueSet = varToCliques.get(var);
+			final int nVarCliques = varCliqueSet.size();
+			
+			if (nVarCliques > 1)
 			{
-				final Factor factor = var.getSibling(i);
-				if (!factor.isMarked())
+				// Replace cliques with a merged copy
+				Clique[] varCliques = varCliqueSet.toArray(new Clique[nVarCliques]);
+					
+				Clique newClique = new Clique(varCliques);
+				cliques.add(newClique);
+				newClique.addToMap(varToCliques);
+				
+				for (Clique oldClique : varCliques)
 				{
-					factor.setMarked();
-					clique.addFactor(factor);
-					for (int j = 0, endj = factor.getSiblingCount(); j < endj; ++j)
-					{
-						final Discrete neighborVar = factor.getSibling(j).asDiscreteVariable();
-						if (!neighborVar.isMarked())
-						{
-							// Add to clique
-							clique.addVariable(neighborVar);
-						}
-					}
+					cliques.remove(oldClique);
+					oldClique.removeFromMap(varToCliques);
 				}
 			}
-			
-			clique.sortFactors();
-			clique.sortVariables();
-			
-			// Update clique statistics
-			totalCliqueSize += clique.size();
-			if (maxClique == null || clique.size() > maxClique.size())
-			{
-				maxClique = clique;
-			}
 		}
-		final int averageCliqueSize = (int) Math.round((double)totalCliqueSize / (double)nCliques);
 
 		//
-		// 5) Merge factors in clique
+		// 6) Merge factors in clique
 		//
 		
 		for (Clique clique : cliques)
 		{
 			// Be polite and clear the mark bit.
-			clique._eliminatedVariable.clearMarked();
 			clique._mergedFactor = targetModel.join(_variableComparator, ArrayUtil.copy(Factor.class, clique._factors));
 		}
 		
 		//
-		// 6) Build mapping from variables to set of cliques that contain them.
-		//
-		
-		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(nCliques, averageCliqueSize);
-		for (Clique clique : cliques)
-		{
-			for (Discrete neighbor : clique._variables)
-			{
-				varToCliques.put(neighbor, clique);
-			}
-		}
-
-		//
 		// 7) Use Prim's algorithm to build max spanning tree over clique graph where the edge weight
 		//    is the number of variables in common between the two cliques along each edge.
 		//
-		final IHeap<Clique> heap = new BinaryHeap<Clique>(cliqueMap.size());
+		
+		final int nCliques = cliques.size();
+		final IHeap<Clique> heap = new BinaryHeap<Clique>(nCliques);
 		
 		heap.deferOrderingForBulkAdd(nCliques);
+		Clique maxClique = null;
 		for (Clique clique : cliques)
 		{
+			if (maxClique == null || clique.size() > maxClique.size())
+			{
+				maxClique = clique;
+			}
 			clique._heapEntry = heap.offer(clique, Double.POSITIVE_INFINITY);
 		}
 		heap.changePriority(maxClique._heapEntry, Double.NEGATIVE_INFINITY);
@@ -601,7 +660,7 @@ public class JunctionTreeTransform
 			targetModel.addFactor(FactorTable.createMarginal(subindex, jointd), orphan, joint);
 		}
 		
-		return new FactorGraphTransformMap(model, targetModel, old2new);
+		return transformMap;
 	}
 
 	private Ordering buildEliminationOrder(FactorGraph model)
@@ -618,8 +677,9 @@ public class JunctionTreeTransform
 		
 		VariableEliminator.Stats threshold = new VariableEliminator.Stats().maxCliqueCardinality(maxCardinality);
 		
-		return VariableEliminator.generate(model, _useConditioning, _nEliminationAttempts,
-			threshold, _costFunctions);
+		VariableEliminator eliminator = new VariableEliminator(model, _useConditioning, _rand);
+		
+		return VariableEliminator.generate(eliminator, _nEliminationAttempts, threshold, _costFunctions);
 	}
 
 	/**

@@ -150,7 +150,7 @@ public class JointFactorFunction extends FactorFunction
 		{
 			for (int index : tuple.second)
 			{
-				index = Math.max(maxIndex, index);
+				maxIndex = Math.max(maxIndex, index);
 			}
 		}
 		

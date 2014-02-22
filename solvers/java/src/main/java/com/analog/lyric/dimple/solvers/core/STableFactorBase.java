@@ -86,7 +86,12 @@ public abstract class STableFactorBase extends SFactorBase
 		}
 		return this._factorTable;
 	}
-
+    
+    protected final IFactorTable getFactorTableIfComputed()
+    {
+    	return _factorTable;
+    }
+    
     /**
      * Sets representation of {@code table} for optimal performance for particular
      * solver implementation.

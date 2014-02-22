@@ -183,6 +183,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	 */
 	
 	@Override
+	public DiscreteValue getCurrentSampleValue()
+	{
+		return _outputMsg;
+	}
+	
+	@Override
 	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes()
 	{
 		return GibbsNeighbors.iteratorFor(_neighbors, this);
