@@ -168,23 +168,23 @@ public class SFactorGraph extends SFactorGraphBase
 			return new CustomMultivariateGaussianSum(factor);
 		else if (funcName.equals("Product"))
 			return new CustomGaussianProduct(factor);
-		else if (funcName.equals("Add") || funcName.equals("add"))										// Lower case version for backward compatibility
+		else if (funcName.equals("add"))
 		{
 			if (isMultivariate(factor))
 				return new CustomMultivariateGaussianSum(factor);
 			else
 				return new CustomGaussianSum(factor);
 		}
-		else if (funcName.equals("Constmult") || funcName.equals("constmult"))							// Lower case version for backward compatibility
+		else if (funcName.equals("constmult"))
 		{
 			if (isMultivariate(factor))
 				return new CustomMultivariateGaussianProduct(factor);
 			else
 				return new CustomGaussianProduct(factor);
 		}
-		else if (funcName.equals("Linear") || funcName.equals("linear"))								// Lower case version for backward compatibility
+		else if (funcName.equals("linear"))
 			return new CustomGaussianLinear(factor);
-		else if (funcName.equals("Polynomial") || funcName.equals("polynomial"))						// Lower case version for backward compatibility
+		else if (funcName.equals("polynomial"))
 			return new CustomComplexGaussianPolynomial(factor);
 		else
 			throw new DimpleException("Not implemented");
@@ -220,8 +220,12 @@ public class SFactorGraph extends SFactorGraphBase
 		_damping = damping;
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
-			STableFactor tf = (STableFactor)f.getSolver();
-			setDampingForTableFactor(tf);
+			if (f.getSolver() instanceof STableFactor)
+			{
+				// TODO: Damping currently works only on table factors, should work on all cases
+				STableFactor tf = (STableFactor)f.getSolver();
+				setDampingForTableFactor(tf);
+			}
 		}
 	}
 	
