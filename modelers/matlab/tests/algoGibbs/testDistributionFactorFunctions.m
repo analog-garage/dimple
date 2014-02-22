@@ -49,7 +49,7 @@ end
 % Test various distribution factor functions
 function test1(debugPrint, repeatable)
 
-% Bernoulli
+% Bernoulli (variable parameter)
 ps = [.001 .1 .5 .7 .99];
 f = FactorFunction('Bernoulli');
 for i=1:length(ps);
@@ -66,7 +66,25 @@ assert(f.IFactorFunction.evalEnergy({0 1}) == Inf);
 assert(f.IFactorFunction.evalEnergy({1 0}) == Inf);
 assert(f.IFactorFunction.evalEnergy({-eps 0}) == Inf);
 assert(f.IFactorFunction.evalEnergy({1+eps 0}) == Inf);
-    
+
+% Bernoulli (constant parameter)
+ps = [.001 .1 .5 .7 .99];
+for i=1:length(ps);
+    p = ps(i);
+    f = FactorFunction('Bernoulli', p);
+    for j=1:10
+        n = randi(100);
+        b = rand(1,n) < p;
+        k = sum(b);
+        prob = p^k * (1-p)^(n-k);
+        assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(num2cell(b)), -log(prob));
+    end
+end
+f = FactorFunction('Bernoulli', 0);
+assert(f.IFactorFunction.evalEnergy(1) == Inf);
+f = FactorFunction('Bernoulli', 1);
+assert(f.IFactorFunction.evalEnergy(0) == Inf);
+
 % Beta (constant parameters)
 alphas = [1 2 .1];
 betas = [4.5 .1 2];
@@ -126,7 +144,7 @@ assert(f.IFactorFunction.evalEnergy({4 0.5 5}) == Inf);
 assert(f.IFactorFunction.evalEnergy({4 -eps 0}) == Inf);
 assert(f.IFactorFunction.evalEnergy({4 1+eps 0}) == Inf);
 
-% Categorical
+% Categorical (variable parameters)
 dim = randi(100) + 10;
 alpha = rand(1,dim);
 alpha = alpha/sum(alpha);
@@ -136,7 +154,7 @@ for j = 1:10
     assertElementsAlmostEqual(f.IFactorFunction.evalEnergy({alpha, x}), -log(alpha(x+1)));
 end
 
-% Categorical (multiple outputs)
+% Categorical (multiple outputs, variable parameters)
 dim = randi(100) + 10;
 alpha = rand(1,dim);
 alpha = alpha/sum(alpha);
@@ -146,7 +164,27 @@ for j = 1:10
     assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([alpha, num2cell(x)]), -log(prod(alpha(x+1))));
 end
 
-% CategoricalEnergyParameters
+% Categorical (constant parameters)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+f = FactorFunction('Categorical', alpha);
+for j = 1:10
+    x = randi(dim)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(x), -log(alpha(x+1)));
+end
+
+% Categorical (multiple outputs, constant parameters)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+f = FactorFunction('Categorical', alpha);
+for j = 1:10
+    x = randi(dim, 1, 4)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(num2cell(x)), -log(prod(alpha(x+1))));
+end
+
+% CategoricalEnergyParameters (variable parameters)
 dim = randi(100) + 10;
 scale = rand*20;
 alpha = rand(1,dim);
@@ -159,7 +197,7 @@ for j = 1:10
     assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([num2cell(alphaE), x]), -log(alphaN(x+1)));
 end
 
-% CategoricalEnergyParameters (multiple outputs)
+% CategoricalEnergyParameters (multiple outputs, variable parameters)
 dim = randi(100) + 10;
 scale = rand*20;
 alpha = rand(1,dim);
@@ -172,7 +210,33 @@ for j = 1:10
     assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([num2cell(alphaE), num2cell(x)]), -log(prod(alphaN(x+1))));
 end
 
-% CategoricalUnnormalizedParameters
+% CategoricalEnergyParameters (constant parameters)
+dim = randi(100) + 10;
+scale = rand*20;
+alpha = rand(1,dim);
+alphaN = alpha/sum(alpha);
+alphaS = alphaN * scale;
+alphaE = -log(alphaS);
+f = FactorFunction('CategoricalEnergyParameters', dim, alphaE);
+for j = 1:10
+    x = randi(dim)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(x), -log(alphaN(x+1)));
+end
+
+% CategoricalEnergyParameters (multiple outputs, constant parameters)
+dim = randi(100) + 10;
+scale = rand*20;
+alpha = rand(1,dim);
+alphaN = alpha/sum(alpha);
+alphaS = alphaN * scale;
+alphaE = -log(alphaS);
+f = FactorFunction('CategoricalEnergyParameters', dim, alphaE);
+for j = 1:10
+    x = randi(dim,1,4)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(num2cell(x)), -log(prod(alphaN(x+1))));
+end
+
+% CategoricalUnnormalizedParameters (variable parameters)
 dim = randi(100) + 10;
 scale = rand*20;
 alpha = rand(1,dim);
@@ -186,7 +250,7 @@ end
 alphaS(1) = -eps;
 assert(f.IFactorFunction.evalEnergy([num2cell(alphaS), x]) == Inf);
 
-% CategoricalUnnormalizedParameters (multiple outputs)
+% CategoricalUnnormalizedParameters (multiple outputs, variable parameters)
 dim = randi(100) + 10;
 scale = rand*20;
 alpha = rand(1,dim);
@@ -196,6 +260,30 @@ f = FactorFunction('CategoricalUnnormalizedParameters', dim);
 for j = 1:10
     x = randi(dim,1,4)-1;  % Integer 0:dim-1
     assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([num2cell(alphaS), num2cell(x)]), -log(prod(alphaN(x+1))));
+end
+
+% CategoricalUnnormalizedParameters (constant parameters)
+dim = randi(100) + 10;
+scale = rand*20;
+alpha = rand(1,dim);
+alphaN = alpha/sum(alpha);
+alphaS = alphaN * scale;
+f = FactorFunction('CategoricalUnnormalizedParameters', dim, alphaS);
+for j = 1:10
+    x = randi(dim)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(x), -log(alphaN(x+1)));
+end
+
+% CategoricalUnnormalizedParameters (multiple outputs, constant parameters)
+dim = randi(100) + 10;
+scale = rand*20;
+alpha = rand(1,dim);
+alphaN = alpha/sum(alpha);
+alphaS = alphaN * scale;
+f = FactorFunction('CategoricalUnnormalizedParameters', dim ,alphaS);
+for j = 1:10
+    x = randi(dim,1,4)-1;  % Integer 0:dim-1
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(num2cell(x)), -log(prod(alphaN(x+1))));
 end
 
 % Dirichlet (constant parameters)
@@ -447,7 +535,7 @@ for i=1:length(dims);
     f = FactorFunction('MultivariateNormal', mean, covariance);
     e = max(eig(covariance));
     for t=1:100
-        v = randn(dim,1)*sqrt(e)/2 + mean;
+        v = randn(dim,1)*sqrt(e)/50 + mean;
         assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(v), -log(mvnpdf(v,mean,covariance)));
     end
 end
@@ -463,7 +551,7 @@ for i=1:length(dims);
     f = FactorFunction('MultivariateNormal', mean, covariance);
     e = min(eig(covariance));
     for t=1:100
-        v = randn(dim,4)*sqrt(e)/2 + repmat(mean,1,4);
+        v = randn(dim,4)*sqrt(e)/50 + repmat(mean,1,4);
         v = num2cell(v,1);
         pv = cellfun(@(v)mvnpdf(v,mean,covariance), v,'UniformOutput',false);
         prob = prod(cell2mat(pv));

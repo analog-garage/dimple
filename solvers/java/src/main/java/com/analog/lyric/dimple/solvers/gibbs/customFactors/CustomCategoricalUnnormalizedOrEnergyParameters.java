@@ -47,6 +47,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantParameters;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private boolean _useEnergyParameters;
 
 	public CustomCategoricalUnnormalizedOrEnergyParameters(Factor factor)
@@ -130,7 +131,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 			_constantOutputCounts = new int[_numParameters];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (constantIndices[i] >= _numParameters)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= _numParameters)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
@@ -155,12 +156,14 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 		if (factorFunction instanceof CategoricalUnnormalizedParameters)
 		{
 			CategoricalUnnormalizedParameters specificFactorFunction = (CategoricalUnnormalizedParameters)factorFunction;
+			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 			_numParameters = specificFactorFunction.getDimension();
 			_useEnergyParameters = false;
 		}
 		else	// Energy parameters
 		{
 			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)factorFunction;
+			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 			_numParameters = specificFactorFunction.getDimension();
 			_useEnergyParameters = true;
 		}
@@ -171,7 +174,14 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 		_hasConstantParameters = false;
 		_hasConstantOutputs = false;
 		_parameterIndices = null;
-		if (hasFactorFunctionConstants)
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			// The factor function has fixed parameters provided in the factor-function constructor
+			_numParameterEdges = 0;
+			_hasConstantParameters = true;
+			_hasConstantOutputs = hasFactorFunctionConstants;
+		}
+		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
 			int[] constantIndices = constantFactorFunction.getConstantIndices();

@@ -36,26 +36,50 @@ import com.analog.lyric.dimple.model.values.Value;
  * 1) Alpha: RealJoint variable containing probabilities
  * 2...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  *
+ * The parameters may optionally be specified as constants in the constructor.
+ * In this case, the parameters are not included in the list of arguments.
  */
 public class Categorical extends FactorFunction
 {
-	private static final int _firstDirectedToIndex = 1;
+	private double[] _alpha;
+	private boolean _parametersConstant;
+	private int _firstDirectedToIndex;
+
+	public Categorical()		// Variable parameters
+	{
+		super();
+		_parametersConstant = false;
+		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
+	}
+	public Categorical(double[] alpha)	// Constant parameters
+	{
+		super();
+		_alpha = alpha.clone();
+		_parametersConstant = true;
+		_firstDirectedToIndex = 0;
+		double sum = 0;
+    	for (int i = 0; i < _alpha.length; i++)
+    	{
+    		if (_alpha[i] < 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
+    		sum += _alpha[i];
+    	}
+    	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
+    		_alpha[i] /= sum;
+	}
 
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length < 2)
-    		throw new DimpleException("Insufficient number of arguments.");
-
     	int index = 0;
-    	final double[] alpha = (double[])arguments[index++];		// First argument is the parameter vector
+    	if (!_parametersConstant)
+    		_alpha = (double[])arguments[index++];		// First argument is the parameter vector, if not constant
 
     	final int length = arguments.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
-    		sum += -Math.log(alpha[x]);
+    		sum += -Math.log(_alpha[x]);
     	}
     	return sum;
 	}
@@ -63,17 +87,16 @@ public class Categorical extends FactorFunction
     @Override
 	public double evalEnergy(Value[] values)
     {
-    	if (values.length < 2)
-    		throw new DimpleException("Insufficient number of arguments.");
-
     	int index = 0;
-    	final double[] alpha = (double[])values[index++].getObject();		// First argument is the parameter vector
-    	
+    	if (!_parametersConstant)
+    		_alpha = (double[])values[index++].getObject();		// First argument is the parameter vector, if not constant
+
     	final int length = values.length;
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		sum += -Math.log(alpha[values[index].getInt()]);  // Remaining arguments are Categorical variables
+    		int x = FactorFunctionUtilities.toInteger(values[index].getObject());		// Remaining arguments are Categorical variables
+    		sum += -Math.log(_alpha[x]);
     	}
     	return sum;
 	}
@@ -86,4 +109,19 @@ public class Categorical extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    
+    // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double[] getParameters()
+    {
+    	return _alpha;
+    }
+    public final int getDimension()
+    {
+    	return _alpha.length;
+    }
 }

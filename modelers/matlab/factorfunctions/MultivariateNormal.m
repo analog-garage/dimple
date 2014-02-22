@@ -33,6 +33,6 @@ dimension = numel(mean);
 var = RealJoint(dimension, outSize{:});
 
 % Constant parameters are all that's supported right now
-var.Input = FactorFunction('MultivariateNormal', mean, covariance);
+fg.addFactor(FactorFunction('MultivariateNormal', mean, covariance), var);   % Constant parameters
 
 end

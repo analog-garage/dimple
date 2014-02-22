@@ -23,6 +23,8 @@ a = Real();
 b = Real();
 c = Real();
 d = Real(1,2);
+e = Real;
+f = Real(1,2);
 
 amean = 2;
 bmean = 3;
@@ -46,9 +48,10 @@ fprecision = 1/fstd^2;
 a.Input = FactorFunction('Normal', amean, aprecision);  % Input as factor function
 b.Input = {'Normal', bmean, bprecision};                % Alternative syntax
 c.Input = [cmean, cstd];                                % Input as [mean, std] array
-d.Input = FactorFunction('Normal', dmean, dprecision);  % Array of variables
-e = Normal(emean, eprecision);                          % Implicit variable creation with constant parameters should set Input to Normal factor function
-f = Normal(fmean, fprecision, [1,2]);                   % Implicit vector creation
+d.Input = FactorFunction('Normal', dmean, dprecision);  % Input to whole array
+e.Input = FactorFunction('Normal', emean, eprecision);
+f(1).Input = FactorFunction('Normal', fmean, fprecision);
+f(2).Input = FactorFunction('Normal', fmean, fprecision);
 
 z = a + b + c + d(1) + d(2) + e + f(1) + f(2);
 

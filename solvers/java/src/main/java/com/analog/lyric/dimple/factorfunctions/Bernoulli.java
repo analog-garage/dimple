@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
@@ -33,17 +34,43 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 1) p: Probability parameter
  * 2...) An arbitrary number of discrete output variable (MUST be zero-based integer values [e.g., Bit variable]) 	// TODO: remove this restriction
  * 
+ * The parameter may optionally be specified as a constant in the constructor.
+ * In this case, the parameter is not included in the list of arguments.
  */
 public class Bernoulli extends FactorFunction
 {
-	private static final int _firstDirectedToIndex = 1;
+	private double _p;
+	private boolean _parametersConstant;
+	private int _firstDirectedToIndex;
 	
+	public Bernoulli()		// Variable parameter
+	{
+		super();
+		_parametersConstant = false;
+		_firstDirectedToIndex = 1;
+	}
+	public Bernoulli(double p)	// Constant parameter
+	{
+		super();
+		_p = p;
+		_parametersConstant = true;
+		_firstDirectedToIndex = 0;
+		if (p < 0 || p > 1) throw new DimpleException("Invalid parameter value.  Must be in range [0, 1].");
+	}
+
     @Override
 	public double evalEnergy(Object... arguments)
     {
-		double p = FactorFunctionUtilities.toDouble(arguments[0]);		// First _dimension arguments are vector of Alpha parameters
-
-		if (p < 0 || p > 1) return Double.POSITIVE_INFINITY;
+    	double p;
+    	if (_parametersConstant)
+    	{
+    		p = _p;
+    	}
+    	else
+    	{
+    		p = FactorFunctionUtilities.toDouble(arguments[0]);			// First argument, if present, is parameter, p
+    		if (p < 0 || p > 1) return Double.POSITIVE_INFINITY;
+    	}
 		
 		int numZeros = 0;
 		int length = arguments.length;
@@ -78,4 +105,15 @@ public class Bernoulli extends FactorFunction
     	// All edges except the parameter edges (if present) are directed-to edges
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
+    
+    
+    // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double getParameter()
+    {
+    	return _p;
+    }
 }

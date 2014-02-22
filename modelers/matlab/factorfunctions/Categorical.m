@@ -37,6 +37,11 @@ if (isa(alphas, 'RealJoint'))
     var = Discrete(discreteDomain, outSize{:});
 
     fg.addFactor('Categorical', alphas, var);
+elseif (isnumeric(alphas))
+    N = numel(alphas);
+    discreteDomain = 0:N-1;           % Domain must be zero based integers
+    var = Discrete(discreteDomain, outSize{:});
+    fg.addFactor(FactorFunction('Categorical', alphas), var);
 else
     % Unnormalized parameters (suitable for Gamma priors)
     N = prod(size(alphas));           % numel not supported for variable arrays
@@ -47,11 +52,6 @@ else
         fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas, var);
     elseif (iscell(alphas))
         fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas{:}, var);
-    elseif (isnumeric(alphas))  % Constant parameter (more efficient to just set the Input)
-        alphas = alphas(:);
-        outSizeExt = [1 cell2mat(outSize)];
-        dims = length(outSizeExt);
-        var.Input = permute(repmat(alphas, outSizeExt), [2:dims, 1]);
     else
         error('Invalid parameter type');
     end

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -42,6 +43,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	private int _constantOutputZeroCount;
 	private int _constantOutputOneCount;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
 	
 	public CustomBernoulli(Factor factor)
@@ -121,7 +123,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (constantIndices[i] >= NUM_PARAMETERS)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					if (outputValue == 0)
@@ -146,12 +148,20 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
-		
+		Bernoulli specificFactorFunction = (Bernoulli)factorFunction;
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_numParameterEdges = NUM_PARAMETERS;
 		_hasConstantOutputs = false;
-		if (hasFactorFunctionConstants)
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			// The factor function has fixed parameter provided in the factor-function constructor
+			_numParameterEdges = 0;
+			_hasConstantOutputs = hasFactorFunctionConstants;
+		}
+		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
 			int[] constantIndices = constantFactorFunction.getConstantIndices();

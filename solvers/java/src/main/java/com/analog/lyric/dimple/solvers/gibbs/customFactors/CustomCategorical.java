@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.dimple.factorfunctions.Categorical;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
@@ -43,6 +44,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	private int _numOutputEdges;
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
 	private static final int PARAMETER_INDEX = 0;
 	
@@ -118,7 +120,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			_constantOutputCounts = new int[_parameterDimension];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (constantIndices[i] >= NUM_PARAMETERS)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
@@ -140,11 +142,19 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
 			factorFunction = constantFactorFunction.getContainedFactorFunction();
 		}
+		Categorical specificFactorFunction = (Categorical)factorFunction;
 
 		
 		// Pre-determine whether or not the parameters are constant
 		boolean hasConstantParameters = false;
-		if (hasFactorFunctionConstants)
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			// The factor function has fixed parameters provided in the factor-function constructor
+			_numParameterEdges = 0;
+			_hasConstantOutputs = hasFactorFunctionConstants;
+		}
+		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
 			int[] constantIndices = constantFactorFunction.getConstantIndices();
@@ -157,7 +167,6 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 					_hasConstantOutputs = true;		// Constant is an output
 			}
 			_numParameterEdges = hasConstantParameters ? 0 : NUM_PARAMETERS;
-			
 		}
 		else	// No constants
 		{
@@ -168,7 +177,11 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 
 		// Determine the dimension of the parameter vector
 		List<INode> siblings = _factor.getSiblings();
-		if (hasConstantParameters)
+		if (_hasFactorFunctionConstructorConstants)
+		{
+			_parameterDimension = specificFactorFunction.getDimension();
+		}
+		else if (hasConstantParameters)
 		{
 			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
 			_parameterDimension = constantParameters.length;
