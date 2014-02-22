@@ -51,7 +51,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
-		if (portNum > _numParameterEdges)
+		if (portNum >= _numParameterEdges)
 		{
 			// Output port must be an output variable
 
