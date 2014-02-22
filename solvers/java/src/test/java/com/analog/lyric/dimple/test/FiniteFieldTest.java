@@ -16,6 +16,14 @@
 
 package com.analog.lyric.dimple.test;
 
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Model;
@@ -23,18 +31,14 @@ import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 
-import org.junit.* ;
-
-import static org.junit.Assert.* ;
-
 
 public class FiniteFieldTest {
 
-	static IFactorGraphFactory _oldSolver;
+	static IFactorGraphFactory<?> _oldSolver;
 	
 	@BeforeClass
 	public static void setUpBeforeClass()  {
-		_oldSolver = Model.getInstance().getDefaultGraphFactory(); 
+		_oldSolver = Model.getInstance().getDefaultGraphFactory();
 	}
 
 	@AfterClass
@@ -51,7 +55,7 @@ public class FiniteFieldTest {
 	}
 		
 	@Test
-	public void test_doubleXor() 
+	public void test_doubleXor()
 	{
 		int primPoly = 19;
 		int k = 4;

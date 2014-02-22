@@ -20,6 +20,7 @@ import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Internal;
 
 public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 {
@@ -46,7 +47,10 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	public boolean hasPotential();
 	
 	// Internal methods
+	@Internal
 	public void updateBelief();
+	@Internal
 	public void randomRestart(int restartCount);
+	@Internal
 	public void postAddFactor(Factor f);
 }

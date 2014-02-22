@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 public class Model
 {
-	IFactorGraphFactory _defaultGraphFactory;
+	IFactorGraphFactory<?> _defaultGraphFactory;
 
 	private Model()
 	{
@@ -55,12 +55,12 @@ public class Model
 		setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 	}
 	
-	public IFactorGraphFactory getDefaultGraphFactory()
+	public IFactorGraphFactory<?> getDefaultGraphFactory()
 	{
 		return _defaultGraphFactory;
 	}
 
-	public void setDefaultGraphFactory(IFactorGraphFactory graphFactory)
+	public void setDefaultGraphFactory(IFactorGraphFactory<?> graphFactory)
 	{
 		_defaultGraphFactory = graphFactory;
 	}

@@ -83,6 +83,16 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 		}
 	}
 	
+	public static <T> BinaryHeap<T> create()
+	{
+		return new BinaryHeap<T>();
+	}
+	
+	public static <T> BinaryHeap<T> create(int capacity)
+	{
+		return new BinaryHeap<T>(capacity);
+	}
+
 	@Override
 	public BinaryHeap<E> clone()
 	{

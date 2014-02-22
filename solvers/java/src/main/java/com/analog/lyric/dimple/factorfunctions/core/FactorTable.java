@@ -6,16 +6,21 @@ import static com.analog.lyric.math.Utilities.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntDoubleHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
@@ -24,6 +29,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
 import com.google.common.math.DoubleMath;
+import com.google.common.primitives.Ints;
 
 @NotThreadSafe
 public class FactorTable extends SparseFactorTableBase
@@ -150,15 +156,23 @@ public class FactorTable extends SparseFactorTableBase
 	/**
 	 * Constructs a new table by converting the contents of {@code other} table using
 	 * {@code converter} whose "from" domains must match {@code other}'s domains.
+	 * New table will have same representation as {@code other}.
 	 */
 	FactorTable(IFactorTable other, JointDomainReindexer converter)
+	{
+		this(other, converter, other.getRepresentation());
+	}
+	
+	/**
+	 * Constructs a new table with given representation by converting the contents of {@code other} table using
+	 * {@code converter} whose "from" domains must match {@code other}'s domains.
+	 */
+	FactorTable(IFactorTable other, JointDomainReindexer converter, FactorTableRepresentation representation)
 	{
 		super(converter.getToDomains());
 		final JointDomainIndexer domains = getDomainIndexer();
 		
-		_representation = other.getRepresentation().mask();
-		
-		final int representation = _representation;
+		_representation = representation.mask();
 		
 		_denseEnergies = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_denseWeights = ArrayUtil.EMPTY_DOUBLE_ARRAY;
@@ -310,6 +324,40 @@ public class FactorTable extends SparseFactorTableBase
 		return create(JointDomainIndexer.create(outputSet, domains));
 	}
 	
+	/**
+	 * Create a directed deterministic factor table that marginalizes out the specified subdomain
+	 * of the joint input domain.
+	 * <p>
+	 * @param outputDomainIndex a number in the range [0, inputDomain.getDimensions() - 1] that specifies
+	 * which subdomain to produce as the first dimension and output.
+	 * @param inputDomain will be the second dimension in the table and the input.
+	 */
+	public static IFactorTable createMarginal(int outputDomainIndex, JointDiscreteDomain<?> inputDomain)
+	{
+		final JointDomainIndexer inputDomains = inputDomain.getDomainIndexer();
+		final DiscreteDomain outputDomain = inputDomains.get(outputDomainIndex);
+		
+		final int inputSize = inputDomain.size();
+		final int outputSize = outputDomain.size();
+		
+		// The joint cardinality of the domains prior to the output subdomain (one if empty)
+		final int innerCardinality = inputDomains.getStride(outputDomainIndex);
+		// The joint cardinality of the domains after the output subdomain (one if empty)
+		final int outerCardinality = inputSize / (innerCardinality * outputSize);
+
+		final int[] indices = new int[inputSize];
+		for (int i = 0, outer = 0; outer < outerCardinality; ++outer)
+			for (int out = 0; out < outputSize; ++out)
+				for (int inner = 0; inner < innerCardinality; ++inner)
+					indices[i++] = out;
+		
+		// Build the actual table
+		final IFactorTable table = create(BitSetUtil.bitsetFromIndices(2, 0), outputDomain, inputDomain);
+		table.setDeterministicOutputIndices(indices);
+		
+		return table;
+	}
+	
 	public static IFactorTable convert(IFactorTable oldTable, JointDomainReindexer converter)
 	{
 		if (converter.getToDomains().supportsJointIndexing())
@@ -320,6 +368,189 @@ public class FactorTable extends SparseFactorTableBase
 		{
 			return new SparseFactorTable(oldTable, converter);
 		}
+	}
+	
+	public static IFactorTable convert(
+		IFactorTable oldTable,
+		JointDomainReindexer converter,
+		FactorTableRepresentation representation)
+	{
+		if (converter.getToDomains().supportsJointIndexing())
+		{
+			return new FactorTable(oldTable, converter, representation);
+		}
+		else
+		{
+			return new SparseFactorTable(oldTable, converter, representation);
+		}
+	}
+
+	/**
+	 * Constructs a new factor table that is the product of all of the given tables.
+	 * <p>
+	 * Invokes {@link #product(ArrayList, FactorTableRepresentation)} with null representation
+	 * argument.
+	 */
+	public static IFactorTable product(ArrayList<Tuple2<IFactorTable,int[]>> entries)
+	{
+		return product(entries, null);
+	}
+	
+	/**
+	 * Constructs a new factor table that is the product of all of the given tables.
+	 * 
+	 * @param entries maps factor tables to an array of index mappings that indicates where
+	 * each dimension in the table is located in the table to be constructed. Thus the
+	 * index mapping array for a given factor table must have length equal to the factor table's dimensions
+	 * and each entry must be in the range [0,N] where N is one less than the size of the new table. Every
+	 * value from 0 to N must be represented in at least one index mapping array. N can be any number between
+	 * the sum of the number of dimensions of all factors when the factors do not share any dimensions in common,
+	 * or the number of dimensions of the largest factor. When two tables both map a dimension to the same
+	 * dimension in the target table, the domains must match.
+	 * <p>
+	 * @representation is the representation to use for the table to be constructed. If null, the representation
+	 * will be set to either {@link FactorTableRepresentation#DENSE_ENERGY} or
+	 * {@link FactorTableRepresentation#SPARSE_ENERGY} based on the density of the tables.
+	 * <p>
+	 * @return Newly constructed table.
+	 */
+	public static IFactorTable product(
+		ArrayList<Tuple2<IFactorTable,int[]>> entries, FactorTableRepresentation representation)
+	{
+		final int nFactors = entries.size();
+		if (nFactors < 1)
+		{
+			return null;
+		}
+		
+		int nDimensions = 0;
+		for (int i = 0; i < nFactors; ++i)
+		{
+			nDimensions = Math.max(nDimensions, 1 + Ints.max(entries.get(i).second));
+		}
+		
+		// Build target domain list and estimate density of new table.
+		final DiscreteDomain[] toDomains = new DiscreteDomain[nDimensions];
+		for (Tuple2<IFactorTable, int[]> tuple : entries)
+		{
+			final IFactorTable table = tuple.getKey();
+			final int[] old2New = tuple.getValue();
+			final JointDomainIndexer tableDomains = table.getDomainIndexer();
+			
+			if (old2New.length != tableDomains.size())
+			{
+				throw new IllegalArgumentException(
+					String.format("Index mapping for %s does not match table dimensions", table));
+			}
+			
+			for (int i = 0, end = tableDomains.size(); i < end; ++i)
+			{
+				final int j = old2New[i];
+				
+				if (j < 0)
+				{
+					throw new IllegalArgumentException(
+						String.format("Negative index mapping for %s", table));
+				}
+				
+				final DiscreteDomain domain = tableDomains.get(i);
+				final DiscreteDomain curDomain = toDomains[j];
+				
+				if (curDomain == null)
+				{
+					toDomains[j] = domain;
+				}
+				else if (!curDomain.equals(domain))
+				{
+					throw new IllegalArgumentException(
+						String.format("Conflicting domain mapping for entry %d of index map for %s", j, table));
+				}
+			}
+		}
+		
+		final JointDomainIndexer toIndexer = JointDomainIndexer.create(toDomains);
+		final int toCardinality = toIndexer.getCardinality();
+		
+		FactorTableRepresentation tableRep = FactorTableRepresentation.SPARSE_ENERGY;
+		
+		if (toIndexer.supportsJointIndexing())
+		{
+			// The sparsest table is going to put an upper bound
+			// on the sparsity of the final table. If the minimum
+			// is high enough, we use a dense representation when
+			// building the table.
+			
+			int minNonZeroWeights = Integer.MAX_VALUE;
+			
+			for (int i = 0; i < nFactors; ++i)
+			{
+				IFactorTable table = entries.get(i).first;
+				final int oldNzw = table.countNonZeroWeights();
+				final int oldCardinality = table.jointSize();
+				final int newNzw  = oldNzw * (toCardinality / oldCardinality);
+				minNonZeroWeights = Math.min(minNonZeroWeights, newNzw);
+			}
+			
+			// If table looks like it will be dense enough, use a dense representation.
+			if (minNonZeroWeights >= toCardinality * .90)
+			{
+				tableRep = FactorTableRepresentation.DENSE_ENERGY;
+			}
+		}
+		
+		IFactorTable newTable = null;
+		
+		for (Map.Entry<IFactorTable, int[]> entry : entries)
+		{
+			final IFactorTable oldTable = entry.getKey();
+			final int[] old2New = entry.getValue();
+			
+			// Convert factor table to new format.
+			final JointDomainIndexer fromIndexer = oldTable.getDomainIndexer();
+			
+			final JointDomainReindexer converter = JointDomainReindexer.createPermuter(fromIndexer, toIndexer, old2New);
+			
+			final IFactorTable convertedTable =	FactorTable.convert(oldTable, converter, tableRep);
+			
+			if (newTable == null)
+			{
+				newTable = convertedTable;
+			}
+			else
+			{
+				// Merge results by adding energies (i.e. multiplying weights)
+				if (tableRep.hasDense())
+				{
+					for (int ji = 0; ji < toCardinality; ++ji)
+					{
+						double energy = newTable.getEnergyForJointIndex(ji);
+						energy += convertedTable.getEnergyForJointIndex(ji);
+						newTable.setEnergyForJointIndex(energy, ji);
+					}
+				}
+				else
+				{
+					final int[] indices = toIndexer.allocateIndices(null);
+					for (int si = 0, end = newTable.sparseSize(); si < end; ++si)
+					{
+						double energy = newTable.getEnergyForSparseIndex(si);
+						newTable.sparseIndexToIndices(si, indices);
+						energy += convertedTable.getEnergyForIndices(indices);
+						newTable.setEnergyForIndices(energy, indices);
+					}
+					// Compact table if it became more sparse
+					newTable.compact();
+				}
+			}
+		}
+		
+		// Convert to target representation
+		if (representation != null)
+		{
+			newTable.setRepresentation(representation);
+		}
+		
+		return newTable;
 	}
 	
 	/*---------------

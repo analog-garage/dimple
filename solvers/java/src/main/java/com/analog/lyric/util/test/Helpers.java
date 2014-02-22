@@ -54,14 +54,14 @@ public class Helpers
 	{
 		return MakeSimpleThreeLevelGraph(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph MakeSimpleThreeLevelGraph(IFactorGraphFactory graphFactory)
+	static public FactorGraph MakeSimpleThreeLevelGraph(IFactorGraphFactory<?> graphFactory)
 	{
 		return MakeSimpleThreeLevelGraphs(graphFactory)[0];
 	}
 
 	
 	static public FactorGraph MakeSimpleGraph(String tag,
-											 IFactorGraphFactory graphFactory,
+											 IFactorGraphFactory<?> graphFactory,
 											 boolean randomInput)
 	{
 		Discrete vB1 = new Discrete(0.0, 1.0);
@@ -93,7 +93,7 @@ public class Helpers
 		return MakeSimpleGraph(tag, Model.getInstance().getDefaultGraphFactory(), false);
 	}
 	static public FactorGraph MakeTrivialRandomGraph(String tag,
-												 	 IFactorGraphFactory graphFactory,
+												 	 IFactorGraphFactory<?> graphFactory,
 												 	 int variables,
 												 	 int extraFactors,
 												 	 int maxDegree,
@@ -160,7 +160,7 @@ public class Helpers
 		return fg;
 	}
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
-												 	IFactorGraphFactory graphFactory,
+												 	IFactorGraphFactory<?> graphFactory,
 												 	int factors,
 												 	boolean randomInput)
 	{
@@ -195,10 +195,10 @@ public class Helpers
 		return fg;
 	}
 	static public FactorGraph MakeSimpleLoopyGraph(	String tag,
-												 	IFactorGraphFactory graphFactory,
+												 	IFactorGraphFactory<?> graphFactory,
 												 	boolean randomInput)
 	{
-		IFactorGraphFactory oldFactory = Model.getInstance().getDefaultGraphFactory();
+		IFactorGraphFactory<?> oldFactory = Model.getInstance().getDefaultGraphFactory();
 		Model.getInstance().setDefaultGraphFactory(graphFactory);
 		FactorGraph fg = null;
 		try
@@ -247,7 +247,7 @@ public class Helpers
 	{
 		return MakeSimpleThreeLevelGraphs(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph[] MakeSimpleThreeLevelGraphs(IFactorGraphFactory factory)
+	static public FactorGraph[] MakeSimpleThreeLevelGraphs(IFactorGraphFactory<?> factory)
 	{
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
 		Discrete vRootO1 = new Discrete(0.0, 1.0);
@@ -676,7 +676,7 @@ public class Helpers
 	public static double decodeZerosCodeword( double[][] codewordWithErrors,
 			FactorGraph fg,
 			int iterations,
-			IFactorGraphFactory solver,
+			IFactorGraphFactory<?> solver,
 			ISchedule schedule)
 	{
 		return decodeZerosCodeword(codewordWithErrors,
@@ -689,7 +689,7 @@ public class Helpers
 	public static double decodeZerosCodeword( double[][] codewordWithErrors,
 			FactorGraph fg,
 											int iterations,
-											IFactorGraphFactory solver,
+											IFactorGraphFactory<?> solver,
 											ISchedule schedule,
 											boolean shouldFail)
 	{
@@ -744,7 +744,7 @@ public class Helpers
 	
 	static VariableBase[] ordered_vars;
 	
-	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory solver, ISchedule schedule, int iterations)
+	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory<?> solver, ISchedule schedule, int iterations)
 			
 	{
 		fg.setSolverFactory(solver);
@@ -878,7 +878,7 @@ public class Helpers
 		long diffDBG = 0;
 
 		ArrayList<VariableBase>	variables = (ArrayList<VariableBase>) fg.getVariables().values();
-		IFactorGraphFactory	solver = fg.getFactorGraphFactory();
+		IFactorGraphFactory<?>	solver = fg.getFactorGraphFactory();
 		ISchedule schedule = fg.getSchedule();
 		
 		double[][] codewordWithTooManyErrors 	= zerosCodeWord(variables.size(), (int)(variables.size() * 0.9) );

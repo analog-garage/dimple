@@ -5,8 +5,11 @@ import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +21,7 @@ import cern.colt.map.OpenIntIntHashMap;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
+import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableEntry;
@@ -27,10 +31,13 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTableBase;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableIterator;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.DiscreteIndicesIterator;
+import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 public class TestFactorTable
 {
@@ -392,6 +399,149 @@ public class TestFactorTable
 	}
 	
 	/**
+	 * Test for {@link FactorTable#product}
+	 */
+	@Test
+	public void testProduct()
+	{
+		
+		final Map<IFactorTable, int[]> tables = new HashMap<IFactorTable, int[]>();
+		
+		final IFactorTable AxB = FactorTable.create(domain2, domain3);
+		AxB.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
+		AxB.randomizeWeights(rand);
+		
+		final IFactorTable BxC = FactorTable.create(domain3, domain2);
+		BxC.setRepresentation(FactorTableRepresentation.ALL);
+		BxC.randomizeWeights(rand);
+		
+		final IFactorTable BxD = FactorTable.create(domain3, domain256);
+		BxD.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+		for (int n = 20; --n>=0;)
+		{
+			for (int b = 0; b < 3; ++b)
+			{
+				int d = rand.nextInt(256);
+				BxD.setWeightForIndices(rand.nextDouble(), b, d);
+			}
+		}
+
+		// Empty table map
+		ArrayList<Tuple2<IFactorTable,int[]>> list = new ArrayList<Tuple2<IFactorTable,int[]>>();
+		assertNull(FactorTable.product(list, FactorTableRepresentation.SPARSE_WEIGHT));
+		
+		// Errors
+		list.add(Tuple2.create(AxB, new int[] {}));
+		expectThrow(IllegalArgumentException.class,
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
+		
+		list.set(0, Tuple2.create(AxB, new int[] { 0, 1, 2}));
+		expectThrow(IllegalArgumentException.class, ".*does not match table dimensions.*",
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
+		
+		list.set(0, Tuple2.create(AxB,  new int[] { 0, -1}));
+		expectThrow(IllegalArgumentException.class, "Negative index mapping.*",
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
+		
+		list.set(0, Tuple2.create(AxB, new int[] { 0, 1 }));
+		list.add(Tuple2.create(BxC, new int[] { 0, 2 }));
+		expectThrow(IllegalArgumentException.class, "Conflicting domain mapping for entry.*",
+			FactorTable.class, "product", list, FactorTableRepresentation.ALL);
+
+		tables.clear();
+		
+		// Single table with same domain order produces a clone
+		tables.put(AxB, new int[] { 0 , 1 });
+		testProduct(tables);
+		
+		// Try swapping order.
+		tables.put(AxB, new int[] { 1, 0 });
+		testProduct(tables);
+		
+		tables.put(AxB, new int[] { 2, 1});
+		tables.put(BxC, new int[] { 1, 0});
+		testProduct(tables);
+		
+		// Test a sparse case
+		tables.put(BxD, new int[] { 1, 3 });
+		testProduct(tables);
+	}
+	
+	private void testProduct(Map<IFactorTable, int[]> entryMap)
+	{
+		final ArrayList<Tuple2<IFactorTable, int[]>> entries =
+			new ArrayList<Tuple2<IFactorTable, int[]>>(entryMap.size());
+		for (Map.Entry<IFactorTable, int[]> entry : entryMap.entrySet())
+		{
+			entries.add(new Tuple2<IFactorTable,int[]>(entry));
+		}
+
+		final IFactorTable newTable = FactorTable.product(entries, FactorTableRepresentation.ALL_SPARSE);
+		assertEquals(FactorTableRepresentation.ALL_SPARSE, newTable.getRepresentation());
+		
+		class Tuple {
+			final IFactorTable table;
+			final int dimension;
+			Tuple(IFactorTable table, int dimension)
+			{
+				this.table = table;
+				this.dimension = dimension;
+			}
+		}
+		
+		final Map<IFactorTable, int[]> oldTableIndices = new HashMap<IFactorTable, int[]>();
+		final Multimap<Integer, Tuple> inverseMap = HashMultimap.create();
+		final ArrayList<DiscreteDomain> domains = new ArrayList<DiscreteDomain>();
+		for (Tuple2<IFactorTable,int[]> entry : entries)
+		{
+			final IFactorTable oldTable = entry.first;
+			final int[] old2new = entry.second;
+			oldTableIndices.put(oldTable, oldTable.getDomainIndexer().allocateIndices(null));
+			
+			for (int from = 0; from < old2new.length; ++from)
+			{
+				int to = old2new[from];
+				while (domains.size() <= to)
+				{
+					domains.add(null);
+				}
+				domains.set(to, oldTable.getDomainIndexer().get(from));
+				inverseMap.put(to, new Tuple(oldTable, from));
+			}
+		}
+		
+		final JointDomainIndexer newIndexer = newTable.getDomainIndexer();
+		assertArrayEquals(newIndexer.toArray(), domains.toArray());
+		
+		DiscreteIndicesIterator indicesIterator = new DiscreteIndicesIterator(newIndexer);
+		while (indicesIterator.hasNext())
+		{
+			final int[] newIndices = indicesIterator.next();
+			
+			// Set corresponding indices for old factor tables
+			for (int to = 0; to < newIndices.length; ++to)
+			{
+				for (Tuple tuple : inverseMap.get(to))
+				{
+					int[] oldIndices = oldTableIndices.get(tuple.table);
+					oldIndices[tuple.dimension] = newIndices[to];
+				}
+			}
+			
+			double expectedWeight = 1.0;
+			for (Tuple2<IFactorTable,int[]> entry : entries)
+			{
+				final IFactorTable oldTable = entry.first;
+				int[] oldIndices = oldTableIndices.get(oldTable);
+				expectedWeight *= oldTable.getWeightForIndices(oldIndices);
+			}
+			
+			final double actualWeight = newTable.getWeightForIndices(newIndices);
+			assertEquals(expectedWeight, actualWeight, 1e-10);
+		}
+	}
+	
+	/**
 	 * Test for {@link IFactorTable#createTableConditionedOn(int[])} method.
 	 */
 	@Test
@@ -526,6 +676,41 @@ public class TestFactorTable
 			double oldWeight = entry.weight();
 			double newWeight = newTable.getWeightForIndices(newIndices);
 			assertEquals(oldWeight, newWeight, 1e-12);
+		}
+	}
+	
+	/**
+	 * Test for {@link FactorTable#createMarginal} constructor.
+	 */
+	@Test
+	public void testCreateMarginal()
+	{
+		testCreateMarginal(domain2, domain3, domain5);
+	}
+	
+	private void testCreateMarginal(DiscreteDomain ... domains)
+	{
+		final JointDiscreteDomain<?> jointDomain = DiscreteDomain.joint(domains);
+		final JointDomainIndexer jointIndexer = jointDomain.getDomainIndexer();
+		final int nDomains = domains.length;
+		final int jointSize = jointDomain.size();
+		final int[] indices = jointIndexer.allocateIndices(null);
+		
+		assertEquals(nDomains, jointDomain.getDimensions());
+		
+		for (int di = 0; di < nDomains; ++di)
+		{
+			IFactorTable table = FactorTable.createMarginal(di, jointDomain);
+			assertTrue(table.isDeterministicDirected());
+			assertEquals(jointDomain.size(), table.sparseSize());
+			assertSame(jointDomain, table.getDomainIndexer().get(1));
+			assertSame(jointIndexer.get(di), table.getDomainIndexer().get(0));
+			
+			for (int ji = 0; ji < jointSize; ++ji)
+			{
+				jointDomain.getElementIndices(ji, indices);
+				assertEquals(1.0, table.getWeightForIndices(indices[di], ji), 0.0);
+			}
 		}
 	}
 	
@@ -1263,10 +1448,12 @@ public class TestFactorTable
 			{
 				i = 0;
 				iter = table.fullIterator();
+				assertFalse(iter.skipsZeroWeights());
 				while (iter.hasNext())
 				{
 					FactorTableEntry entry = iter.next();
 					assertEquals(i, entry.jointIndex());
+					assertArrayEquals(entry.indices(), iter.indicesUnsafe());
 					if (entry.weight() != 0.0)
 					{
 						totalWeight += entry.weight();
@@ -1361,6 +1548,9 @@ public class TestFactorTable
 		
 		if (table.hasSparseRepresentation())
 		{
+			IFactorTableIterator iter = table.iterator();
+			assertTrue(iter.skipsZeroWeights());
+			
 			for (int si = 0; si < size; ++si)
 			{
 				table.sparseIndexToIndices(si, indices);
@@ -1397,6 +1587,16 @@ public class TestFactorTable
 				assertEquals(weight, table.getWeightForElements(arguments), 1e-12);
 
 				assertEquals(energy, -Math.log(weight), 1e-12);
+				
+				if (weight != 0.0)
+				{
+					assertTrue(iter.hasNext());
+					FactorTableEntry entry = iter.next();
+					assertEquals(si, entry.sparseIndex());
+					assertEquals(energy, entry.energy(), 1e-12);
+					assertEquals(weight, entry.weight(), 1e-12);
+					assertArrayEquals(iter.indicesUnsafe(), entry.indices());
+				}
 			}
 		}
 		

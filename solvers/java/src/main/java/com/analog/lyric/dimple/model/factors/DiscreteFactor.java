@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.factors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -29,6 +30,9 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
+/**
+ * A factor with only {@link Discrete} variables.
+ */
 public class DiscreteFactor extends Factor
 {
 	/*--------------
@@ -84,7 +88,25 @@ public class DiscreteFactor extends Factor
 		return _solverFactor.getPossibleBeliefIndices();
 	}
 	
-
+	@Override
+	protected FactorFunction removeFixedVariablesImpl(
+		FactorFunction oldFunction,
+		ArrayList<VariableBase> constantVariables,
+		int[] constantIndices)
+	{
+		final int nRemoved = constantIndices.length;
+		final int[] valueIndices = new int[nRemoved];
+		Arrays.fill(valueIndices, -1);
+		for (int i = 0; i < nRemoved; ++i)
+		{
+			final Discrete variable = (Discrete) constantVariables.get(i);
+			valueIndices[constantIndices[i]] = variable.getFixedValueIndex();
+		}
+		
+		final IFactorTable oldFactorTable = oldFunction.getFactorTable(this);
+		return new TableFactorFunction(oldFunction.getName(), oldFactorTable.createTableConditionedOn(valueIndices));
+	}
+	
 	@Override
 	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
 	{

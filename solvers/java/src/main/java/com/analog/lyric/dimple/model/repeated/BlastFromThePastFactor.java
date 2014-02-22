@@ -56,7 +56,9 @@ public class BlastFromThePastFactor extends Factor
 	@Override
 	public void initialize()
 	{
-		// Specifically remove from super class things that have to do with directedness
+		// Specifically remove from super class things that have to do with directedness.
+		// Need to clear flags directly because we are not calling super.initialize().
+		clearFlags();
 	}
 
 		

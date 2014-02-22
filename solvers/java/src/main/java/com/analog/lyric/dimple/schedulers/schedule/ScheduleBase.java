@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.Node;
 
-public abstract class ScheduleBase implements ISchedule 
+public abstract class ScheduleBase implements ISchedule
 {
 	protected FactorGraph _factorGraph;
 	
@@ -28,21 +29,25 @@ public abstract class ScheduleBase implements ISchedule
 	/*
 	 * This method is called when setSchedule is called on the FactorGraph.
 	 */
-	public void attach(FactorGraph factorGraph) 
+	@Override
+	public void attach(FactorGraph factorGraph)
 	{
 		_factorGraph = factorGraph;
 	}
 	
+	@Override
 	public FactorGraph getFactorGraph()
 	{
 		return _factorGraph;
 	}
 
-	public ISchedule copy(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public ISchedule copy(Map<Node,Node> old2newObjs)
 	{
 		return null;
 	}
-	public ISchedule copyToRoot(HashMap<Object,Object> old2newObjs) 
+	@Override
+	public ISchedule copyToRoot(Map<Node,Node> old2newObjs)
 	{
 		return null;
 	}

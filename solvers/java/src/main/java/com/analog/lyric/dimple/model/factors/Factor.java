@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -20,10 +20,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 
+import cern.colt.list.IntArrayList;
+
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
-import com.analog.lyric.dimple.factorfunctions.core.JointFactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
@@ -170,6 +173,106 @@ public class Factor extends FactorBase implements Cloneable
 		}
 	}
 	
+	/**
+	 * Removes edges to all variables that have fixed values and modifies the
+	 * factor function to incorporate those values.
+	 * <p>
+	 * For {@link DiscreteFactor}s, this will replace the factor function with one using a newly
+	 * generated factor table. For other factor types this wraps the factor function with
+	 * {@link FactorFunctionWithConstants}.
+	 * </p>
+	 * @return the number of variable edges that were removed.
+	 * 
+	 * @see VariableBase#hasFixedValue()
+	 */
+	public final int removeFixedVariables()
+	{
+		final int nEdges = getSiblingCount();
+		final ArrayList<VariableBase> constantVariables = new ArrayList<VariableBase>(nEdges);
+		final IntArrayList constantIndices = new IntArrayList(nEdges);
+		
+		// Visit in reverse order so that disconnect is safe.
+		for (int i = nEdges; --i>=0;)
+		{
+			final VariableBase var = getSibling(i);
+			if (var.hasFixedValue())
+			{
+				if (constantIndices.isEmpty() && isDiscrete())
+				{
+					// Before disconnecting siblings, force the factor table
+					// to be instantiated if discrete, since it may depend on
+					// the original edges.
+					getFactorTable();
+				}
+				var.remove(this);
+				constantVariables.add(var);
+				constantIndices.add(i);
+				disconnect(i);
+			}
+		}
+		
+		final int nRemoved = nEdges - constantIndices.size();
+		
+		if (nRemoved > 0)
+		{
+			constantIndices.trimToSize();
+			final FactorFunction oldFunction = getFactorFunction();
+			final FactorFunction newFunction =
+				removeFixedVariablesImpl(oldFunction, constantVariables, constantIndices.elements());
+			
+			int[] newDirectedTo = null;
+			if (isDirected() && !oldFunction.isDirected())
+			{
+				// If factor function is not inherently directed, then update the directed indices.
+				newDirectedTo = ArrayUtil.contractSortedIndexList(_directedTo, constantIndices.elements());
+			}
+
+			setFactorFunction(newFunction);
+			
+			if (newDirectedTo != null)
+			{
+				setDirectedTo(newDirectedTo);
+			}
+		}
+		
+		return nRemoved;
+	}
+	
+	/**
+	 * Replaces factor function conditioned on a set of variables with fixed values that
+	 * have already been removed from the factor. This should only be called from within
+	 * {@link #removeFixedVariables()}.
+	 * <p>
+	 * This is invoked after the fixed value variables have already been disconnected from the
+	 * factor, but before the factor function has been replaced.
+	 * <p>
+	 * @param constantVariables lists the variables
+	 * @param constantIndices
+	 */
+	protected FactorFunction removeFixedVariablesImpl(
+		FactorFunction oldFunction,
+		ArrayList<VariableBase> constantVariables,
+		int[] constantIndices)
+	{
+		final Object[] constantValues = new Object[constantVariables.size()];
+		for (int i = constantValues.length; --i>=0;)
+		{
+			final VariableBase variable = constantVariables.get(i);
+			if (variable.getDomain().isDiscrete())
+			{
+				// FIXME: clean up fixed value methods so there is a base class method for getting
+				// the actual fixed value as opposed to its representation.
+				constantValues[i] = variable.asDiscreteVariable().getFixedValue();
+			}
+			else
+			{
+				constantValues[i] = variable.getFixedValueObject();
+			}
+		}
+		
+		return new FactorFunctionWithConstants(oldFunction,	constantValues,	constantIndices);
+	}
+	
 	public void replace(VariableBase oldVariable, VariableBase newVariable)
 	{
 		replaceSibling(oldVariable, newVariable);
@@ -269,69 +372,6 @@ public class Factor extends FactorBase implements Cloneable
 		throw new DimpleException("not implemented");
 	}
 	
-	@Internal
-	public Factor join(Factor other)
-	{
-		ArrayList<VariableBase> varList = new ArrayList<VariableBase>();
-		
-		//go through variables from first factor and
-		ArrayList<Integer> map1 = new ArrayList<Integer>();
-		
-		final int nSiblings = getSiblingCount();
-		final int nOtherSiblings = other.getSiblingCount();
-		
-		//First get a list of variables in common.
-		for (int i = 0; i < nSiblings; i++)
-		{
-			map1.add(i);
-			varList.add(getConnectedNodeFlat(i));
-			
-		}
-		
-		ArrayList<Integer> map2 = new ArrayList<Integer>();
-		
-		int newnuminputs = map1.size();
-		
-		for (int i = 0; i < nOtherSiblings; i++)
-		{
-			boolean found = false;
-			
-			for (int j = 0; j < nSiblings; j++)
-			{
-				
-				if (getConnectedNodeFlat(j) == other.getConnectedNodeFlat(i))
-				{
-					found = true;
-					map2.add(j);
-					break;
-				}
-				
-			}
-			if (!found)
-			{
-				map2.add(varList.size());
-				newnuminputs++;
-				varList.add(other.getConnectedNodeFlat(i));
-			}
-		}
-		
-		FactorFunction ff1 = this.getFactorFunction();
-		FactorFunction ff2 = other.getFactorFunction();
-		JointFactorFunction jff = getParentGraph().getJointFactorFunction(ff1,ff2,map1,map2);
-		
-		//Remove the two old factors.
-		getParentGraph().remove(this);
-		getParentGraph().remove(other);
-		
-		//Create the table factor using the variables
-		VariableBase [] vars = new VariableBase[newnuminputs];
-		varList.toArray(vars);
-		return getParentGraph().addFactor(jff, vars);
-
-	}
-
-	
-
 	@Override
 	public double getScore()
 	{

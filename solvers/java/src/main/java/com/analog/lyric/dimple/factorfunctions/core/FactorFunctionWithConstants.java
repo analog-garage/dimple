@@ -22,8 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import cern.colt.list.IntArrayList;
-
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
@@ -294,52 +293,14 @@ public class FactorFunctionWithConstants extends FactorFunction
 		return expandedValues;
 	}
 
-	// Contract a list of indices to exclude the constant indices and renumber the others accordingly
-	protected int[] contractIndexList(int[] indexList)
+	/**
+	 *  Contract a list of indices to exclude the constant indices and renumber the others accordingly.
+	 */
+	public int[] contractIndexList(int[] indexList)
 	{
-		int originalLength = indexList.length;
-		int numConstantIndices = _constantIndices.length;
-		Arrays.sort(indexList);		// Side effect of sorting indexList, but ok in this context
-
-		// For each constant index, scan the list (probably a more efficient way to do this)
-		// Assumes constant index list is already sorted
-		IntArrayList contractedList = new IntArrayList(originalLength);
-		int iConst = 0;
-		int iList = 0;
-		int listIndex;
-		int constantIndex = _constantIndices[iConst];
-		while (iList < originalLength)
-		{
-			listIndex = indexList[iList];
-			if (iConst < numConstantIndices)
-				constantIndex = _constantIndices[iConst];
-			if (listIndex == constantIndex)
-			{
-				// Skip this list index entry
-				iList++;
-			}
-			else if (listIndex < constantIndex || iConst >= numConstantIndices)
-			{
-				// Add this entry
-				contractedList.add(listIndex - iConst);
-				iList++;
-			}
-			else if (listIndex > constantIndex)
-			{
-				// Move to the next constant if there is one
-				iConst++;
-			}
-		}
-		
-		// Convert contracted list back to an int[]
-		int[] result = contractedList.elements();
-		if (result.length != contractedList.size())
-		{
-			result = Arrays.copyOf(result, contractedList.size());
-		}
-		return result;
+		Arrays.sort(indexList);
+		return ArrayUtil.contractSortedIndexList(indexList, _constantIndices);
 	}
-	
 	
 	// Get the contained factor function
 	public FactorFunction getContainedFactorFunction()

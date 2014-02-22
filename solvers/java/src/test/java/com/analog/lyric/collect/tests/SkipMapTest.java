@@ -43,7 +43,7 @@ public class SkipMapTest
 
 		SkipMapTester<Integer,String> tester = new SkipMapTester<Integer,String>();
 		
-		SkipMap<Integer,String> map1 = new SkipMap<Integer,String>(naturalOrder);
+		SkipMap<Integer,String> map1 = SkipMap.create(naturalOrder);
 		assertTrue(map1.isEmpty());
 		tester.validateSkipMap(map1);
 		

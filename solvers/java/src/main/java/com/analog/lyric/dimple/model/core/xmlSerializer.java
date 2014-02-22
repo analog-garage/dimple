@@ -77,7 +77,7 @@ public class xmlSerializer
 		return _deserializer.deserializeFactorTableFromXML(docName);
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		return _deserializer.deserializeFromXML(docName, solver);
 	}

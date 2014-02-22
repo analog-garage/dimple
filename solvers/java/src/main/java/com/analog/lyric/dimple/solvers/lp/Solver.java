@@ -28,7 +28,7 @@ import com.analog.lyric.util.misc.Matlab;
  * </ul>
  *
  */
-public class Solver extends SolverBase
+public class Solver extends SolverBase<SFactorGraph>
 {
 	/*--------------
 	 * Construction

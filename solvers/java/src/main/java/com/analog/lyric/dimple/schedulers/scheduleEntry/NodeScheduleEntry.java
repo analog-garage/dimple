@@ -17,9 +17,10 @@
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
@@ -52,17 +53,17 @@ public class NodeScheduleEntry implements IScheduleEntry
 	}
 	
 	@Override
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs)
+	public IScheduleEntry copy(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
 	@Override
-	public IScheduleEntry copyToRoot(HashMap<Object,Object> old2newObjs)
+	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
 	
-	public IScheduleEntry copy(HashMap<Object,Object> old2newObjs, boolean copyToRoot)
+	public IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
 	{
 		boolean skip = false;
 		boolean isBoundaryVariable = false;
@@ -85,7 +86,7 @@ public class NodeScheduleEntry implements IScheduleEntry
 		
 		if (!skip)
 		{
-			INode newNode = (INode)old2newObjs.get(this.getNode());
+			INode newNode = old2newObjs.get(this.getNode());
 			return new NodeScheduleEntry(newNode);
 		
 		}

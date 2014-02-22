@@ -356,7 +356,7 @@ GammaSampler & Gamma & value, $\beta$ \\
  & NegativeExpGamma & $\beta$ \\
  & Normal & $\tau$ \\
  & LogNormal & $\tau$ \\
- & CategoricalUnnormalizedParameters & $\tau$ \\
+ & CategoricalUnnormalizedParameters & $\alpha$ \\
  & DiscreteTransitionUnnormalizedParameters & $\alpha$ \\
 NegativeExpGammaSampler & NegativeExpGamma & value \\
  & CategoricalEnergyParameters & $\alpha$ \\ 
@@ -1514,7 +1514,7 @@ The following code demonstrates the creation and use of a multivariate Gaussian.
 \ifmatlab
 \begin{lstlisting}
 rj = RealJoint(2);
-means = [2 3]Õ;
+means = [2 3]ï¿½;
 covar = [1 0;
          0 1];
 rj.Input = MultivariateMsg(means,covar);
@@ -1736,7 +1736,7 @@ graph.getSolver().getTemperingHalfLifeInIterations();
 \end{lstlisting}
 \fi
 
-Set/get the tempering half-lifeÑthe number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
+Set/get the tempering half-lifeï¿½the number of iterations for the temperature to decrease by half. Note that setting the tempering half-life automatically enables the use of tempering if it had not been enabled already.
 
 \ifmatlab
 \begin{lstlisting}

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.google.common.primitives.Ints;
 
 
 
@@ -45,17 +47,12 @@ public abstract class VariableBase extends Node implements Cloneable
 	/**
 	 * {@link #_topologicalFlags} value used by {@link #isDeterministicInput()}
 	 */
-    private static final byte DETERMINISTIC_INPUT = 0x01;
+    private static final byte DETERMINISTIC_INPUT = 0x04;
 	/**
 	 * {@link #_topologicalFlags} value used by {@link #isDeterministicOutput()}
 	 */
-    private static final byte DETERMINISTIC_OUTPUT = 0x02;
+    private static final byte DETERMINISTIC_OUTPUT = 0x08;
 
-    /**
-     * {@link #_topologicalFlags} value used by {@link #isMarked()}
-     */
-    private static final byte MARKED = 0x04;
-    
     /*-------
 	 * State
 	 */
@@ -67,13 +64,15 @@ public abstract class VariableBase extends Node implements Cloneable
 	protected Map<String,Object> _properties = null;
 	private Domain _domain;
     private boolean _hasFixedValue = false;
-
-    /**
-     * Flags computed based on the topological relationship of the variable
-     * with its surrounding factors.
-     */
-    private byte _topologicalFlags;
     
+    public static Comparator<VariableBase> orderById = new Comparator<VariableBase>() {
+		@Override
+		public int compare(VariableBase var1, VariableBase var2)
+		{
+			return Ints.compare(var1.getId(), var2.getId());
+		}
+    };
+
     /*--------------
      * Construction
      */
@@ -195,7 +194,7 @@ public abstract class VariableBase extends Node implements Cloneable
     @Override
 	public void initialize()
     {
-    	_topologicalFlags = 0;
+    	super.initialize();
     }
     
 	@Override
@@ -278,7 +277,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
     public final boolean isDeterministicInput()
     {
-    	return (_topologicalFlags & DETERMINISTIC_INPUT) != 0;
+    	return isFlagSet(DETERMINISTIC_INPUT);
     }
 
 	/**
@@ -291,7 +290,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
     public final boolean isDeterministicOutput()
     {
-    	return (_topologicalFlags & DETERMINISTIC_OUTPUT) != 0;
+    	return isFlagSet(DETERMINISTIC_OUTPUT);
     }
 	
    public void setGuess(Object guess)
@@ -340,13 +339,11 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _properties == null ? null : _properties.get(key);
 	}
 
-	
-	
 	public Object getFixedValueObject()
 	{
 		return _fixedValue;
 	}
-
+	
 	public void setFixedValueObject(Object value)
 	{
 		setFixedValueObject(value,false);
@@ -434,6 +431,13 @@ public abstract class VariableBase extends Node implements Cloneable
 		
 	}
 	
+	/**
+	 * Remove all edges from this variable to the specified factor.
+	 * <p>
+	 * NOTE: this does not remove the edge back from the factor to the variable!
+	 * 
+	 * @throws DimpleException if variable is not connected to the factor.
+	 */
 	public void remove(Factor factor)
 	{
 		List<INode> siblings = getSiblings();
@@ -511,17 +515,6 @@ public abstract class VariableBase extends Node implements Cloneable
      */
     
     /**
-     * Sets {@link #isMarked()} to false.
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public void clearMarked()
-    {
-    	_topologicalFlags &= ~MARKED;
-    }
-    
-    /**
      * Creates a new variable that combines the domains of this variable with additional {@code variables}.
      * <p>
      * For use by {@link FactorGraph#join(VariableBase...)}. Currently only supported for {@link Discrete}
@@ -529,6 +522,8 @@ public abstract class VariableBase extends Node implements Cloneable
      * <p>
      * @param variables specifies at least one additional variables to join with this one. As a convenience, this
      * may begin with this variable, in which case there must be at least one other variable.
+     * 
+     * @category internal
      */
     @Internal
     public VariableBase createJointNoFactors(VariableBase ... variables)
@@ -536,53 +531,30 @@ public abstract class VariableBase extends Node implements Cloneable
     	throw new DimpleException("not implemented");
     }
     
-    /**
-     * Boolean utility value that can be used to mark variable has having been processed.
-     * <p>
-     * False by default and reset by {@link #initialize()}.
-     * <p>
-     * @see #clearMarked()
-     * @see #setMarked()
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public final boolean isMarked()
-    {
-    	return (_topologicalFlags & MARKED) != 0;
-    }
-    
    /**
      * Sets {@link #isDeterministicInput()} to true.
      * 
      * @since 0.05
+     * 
+     * @category internal
      */
     @Internal
     public final void setDeterministicInput()
     {
-    	_topologicalFlags |= DETERMINISTIC_INPUT;
+    	setFlags(DETERMINISTIC_INPUT);
     }
     
     /**
      * Sets {@link #isDeterministicOutput()} to true.
      * 
      * @since 0.05
+     * 
+     * @category internal
      */
     @Internal
     public final void setDeterministicOutput()
     {
-    	_topologicalFlags |= DETERMINISTIC_OUTPUT;
-    }
-    
-    /**
-     * Sets {@link #isMarked()} to true.
-     * 
-     * @since 0.05
-     */
-    @Internal
-    public final void setMarked()
-    {
-    	_topologicalFlags |= MARKED;
+    	setFlags(DETERMINISTIC_OUTPUT);
     }
     
     /*-----------------

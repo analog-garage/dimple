@@ -139,7 +139,7 @@ public abstract class JointDomainReindexer
 	 * @param removedDomains may be null
 	 * @param oldToNewIndex maps the index of the old domain to the index of the new domain where the index of domains
 	 * in {@code fromDomains} are in the range [0,fromSize-1] and the index of domains in
-	 * {@code toDomains} is in the range [fromSize, totalSize-1]. Likewise the domains in {@code toDomains} and
+	 * {@code addedDomains} is in the range [fromSize, totalSize-1]. Likewise the domains in {@code toDomains} and
 	 * {@code removeDomains} are in the range [0, toSize-1] and [toSize, totalSize - 1]. The mapping must not
 	 * omit or repeat elements and may not map domains of different sizes.
 	 */
@@ -157,16 +157,85 @@ public abstract class JointDomainReindexer
 	 * Creates a converter that implements a permutation of the domains
 	 * in {@code fromDomains} to those in {@code toDomains}.
 	 * <p>
-	 * This simply invokes
+	 * This implementation will invoke
 	 * {@link #createPermuter(JointDomainIndexer, JointDomainIndexer, JointDomainIndexer, JointDomainIndexer, int[])}
-	 * with nulls for {@code addedDomains} and {@code removedDomains}.
+	 * after calculating the {@code addedDomains} and {@code removedDomains} arguments.
+	 * <p>
+	 * There are three cases:
+	 * <dl>
+	 *   <dt>{@code fromDomains} and {@code toDomains} have the same size.</dt>
+	 *   <dd>The {@code oldToNewIndex} must also be the same size. The {@code addedDomains} and {@code removedDomains}
+	 *   arguments will be null.
+	 *   </dd>
+	 * 
+	 *   <dt>{@code fromDomains} is smaller than {@code toDomains}</dt>
+	 *   <dd>It is necessary to deduce the {@code addedDomains}. If {@code oldToNewIndex} is the same
+	 *   length as {@code toDomains} it specifies how the added domains should be chosen from {@code toDomains}.
+	 *   If it is the same length as {@code fromDomains} then the {@code addedDomains} will be chosen from
+	 *   the remaining {@code toDomains} that are not in the index in order.
+	 *   </dd>
+	 * 
+	 *   <dt>{@code fromDomains} is larger than {@code toDomains}</dt>
+	 *   <dd>The {@code oldToNewIndex} must be the same size as {@code fromDomains}.
+	 *   It is necessary to deduce the {@code removedDomains}.
+	 *   </dd>
+	 * </ol>
 	 */
 	public static JointDomainReindexer createPermuter(
 		JointDomainIndexer fromDomains,
 		JointDomainIndexer toDomains,
 		int[] oldToNewIndex)
 	{
-		return createPermuter(fromDomains, null, toDomains, null, oldToNewIndex);
+		final int fromSize = fromDomains.size();
+		final int toSize = toDomains.size();
+		final int diff = fromSize - toSize;
+		
+		if (diff == 0)
+		{
+			return createPermuter(fromDomains, null, toDomains, null, oldToNewIndex);
+		}
+		else if (diff < 0)
+		{
+			// Need to compute added domains
+			final int addedSize = -diff;
+			
+			if (oldToNewIndex.length < toSize)
+			{
+				// index map is too short. Deduce rest of it from missing entries.
+				final BitSet toSet = BitSetUtil.bitsetFromIndices(toSize, oldToNewIndex);
+				oldToNewIndex = Arrays.copyOf(oldToNewIndex, toSize);
+				for (int from = fromSize, to = -1; from < toSize; ++from)
+				{
+					to = toSet.nextClearBit(to + 1);
+					oldToNewIndex[from] = to;
+				}
+			}
+			
+			final DiscreteDomain[] addedDomains = new DiscreteDomain[addedSize];
+			for (int i = 0; i < addedSize; ++i)
+			{
+				addedDomains[i] = toDomains.get(oldToNewIndex[i + fromSize]);
+			}
+			
+			return createPermuter(fromDomains, JointDomainIndexer.create(addedDomains), toDomains, null, oldToNewIndex);
+		}
+		else
+		{
+			// From is longer than to - need to compute removed domains
+			final int removedSize = diff;
+			
+			final DiscreteDomain[] removedDomains = new DiscreteDomain[removedSize];
+			for (int from = 0; from < fromSize; ++from)
+			{
+				final int to = oldToNewIndex[from];
+				if (to >= toSize)
+				{
+					removedDomains[to - toSize] = fromDomains.get(from);
+				}
+			}
+			
+			return createPermuter(fromDomains, null, toDomains, JointDomainIndexer.create(removedDomains), oldToNewIndex);
+		}
 	}
 	
 	/**

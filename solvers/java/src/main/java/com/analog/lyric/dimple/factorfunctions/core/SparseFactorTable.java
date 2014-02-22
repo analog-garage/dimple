@@ -153,24 +153,29 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	
 	SparseFactorTable(IFactorTable other, JointDomainReindexer converter)
 	{
+		this(other, converter, other.getRepresentation());
+	}
+	
+	SparseFactorTable(IFactorTable other, JointDomainReindexer converter, FactorTableRepresentation representation)
+	{
 		this(converter.getToDomains());
 		
-		FactorTableRepresentation otherRep = other.getRepresentation();
+		final FactorTableRepresentation otherRep = other.getRepresentation();
 
 		// Start out with just sparse weights, and convert below if necessary
 		_representation = FactorTable.SPARSE_WEIGHT;
-		int representation = 0;
-		if (otherRep.hasWeight() || otherRep.isDeterministic())
+		int curRep = 0;
+		if (representation.hasWeight() || representation.isDeterministic())
 		{
-			representation = FactorTable.SPARSE_WEIGHT;
+			curRep = FactorTable.SPARSE_WEIGHT;
 		}
-		if (otherRep.hasEnergy())
+		if (representation.hasEnergy())
 		{
-			representation |= FactorTable.SPARSE_ENERGY;
+			curRep |= FactorTable.SPARSE_ENERGY;
 		}
-		if (otherRep.hasSparseIndices())
+		if (representation.hasSparseIndices())
 		{
-			representation |= FactorTable.SPARSE_INDICES;
+			curRep |= FactorTable.SPARSE_INDICES;
 		}
 		
 		Indices scratch = converter.getScratch();
@@ -227,7 +232,7 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 		_sparseWeights = weights;
 		
 		other.setRepresentation(otherRep);
-		setRepresentation(representation);
+		setRepresentation(curRep);
 	}
 	
 	/*----------------

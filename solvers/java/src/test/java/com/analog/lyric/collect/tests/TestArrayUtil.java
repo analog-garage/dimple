@@ -70,6 +70,23 @@ public class TestArrayUtil
 	}
 
 	@Test
+	public void contractSortedIndexList()
+	{
+		assertArrayEquals(new int[] { 0, 1, 3 },
+			ArrayUtil.contractSortedIndexList(new int[] { 0, 1, 3 }, new int[] { 4, 5 }));
+		assertArrayEquals(new int[] {},
+			ArrayUtil.contractSortedIndexList(new int[] {}, new int[] { 4, 5 }));
+		assertArrayEquals(new int[] { 0, 1 },
+			ArrayUtil.contractSortedIndexList(new int[] { 0, 1, 3 }, new int[] { 1, 2 }));
+		assertArrayEquals(new int[] { 0, 1 },
+			ArrayUtil.contractSortedIndexList(new int[] { 0, 1, 3 }, new int[] { 3, 4, 5}));
+		assertArrayEquals(new int[] { 0, 2 },
+			ArrayUtil.contractSortedIndexList(new int[] { 0, 1, 3 }, new int[] { 0 }));
+		assertArrayEquals(new int[] { 0, 1, 2, 4 },
+			ArrayUtil.contractSortedIndexList(new int[] { 0, 1, 3, 5 }, new int[] { 2 }));
+	}
+	
+	@Test
 	public void copyArrayForInsert()
 	{
 		int i[] = new int[] { 1, 2, 3, 4 };
