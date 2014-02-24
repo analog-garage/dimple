@@ -19,60 +19,15 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
-public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBase
+// Same as CustomMultivariateGaussianSum, except the second edge is treated as the output instead of the first
+public class CustomMultivariateGaussianSubtract extends CustomMultivariateGaussianSum
 {
-	protected int _sumPort = 0;	// Port that is the sum of all the others
-
-	public CustomMultivariateGaussianSum(Factor factor)
+	public CustomMultivariateGaussianSubtract(Factor factor)
 	{
 		super(factor);
+		_sumPort = 1;	// Port that is the sum of all the others
 	}
-
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
-		
-		int size = outMsg.getMean().length;
-		
-		double [] vector = new double[size];
-		double [][] matrix = new double[size][];
-		for (int i = 0; i < matrix.length; i++)
-			matrix[i] = new double[size];
-		
-		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++ )
-		{
-			if (i != outPortNum)
-			{
-				MultivariateNormalParameters inMsg = _inputMsgs[i];
-				
-				double [] inMsgVector = inMsg.getMean();
-				
-				for (int j = 0; j < vector.length; j++)
-				{
-					if (outPortNum != _sumPort && i != _sumPort)
-						vector[j] -= inMsgVector[j];
-					else
-						vector[j] += inMsgVector[j];
-				}
-				
-				double [][] inMsgMatrix = inMsg.getCovariance();
-				
-				for (int j = 0; j < inMsgMatrix.length; j++)
-				{
-					for (int k = 0; k < inMsgMatrix[j].length; k++)
-					{
-						matrix[j][k] += inMsgMatrix[j][k];
-					}
-				}
-			}
-		}
-		
-		outMsg.setMeanAndCovariance(vector,matrix);
-	}
-	
 	
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)
@@ -92,6 +47,4 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 		}
 		return true;
 	}
-
-
 }

@@ -51,39 +51,32 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		if (customFactorExists(factor.getFactorFunction().getName()))
-		{
-			return createCustomFactor(factor);
-		}
-		else
+		String factorName = factor.getFactorFunction().getName();
+
+		// First see if any custom factor should be created
+		if (factorName.equals("Xor") || factorName.equals("CustomXor") || factorName.equals("customXor"))		// "CustomXor" and "customXor" for backward compatibility
+			return new CustomXor(factor);
+		else			// No custom factor exists, so create a generic one
 		{
 			STableFactor tf = new STableFactor(factor);
 			if (_damping != 0)
-				setDampingForTableFunction(tf);
+				setDampingForTableFactor(tf);
 			return tf;
 		}
 	}
 	
-	
+	// For backward compatibility only; preferable to use "Xor" factor function, which can
+	// be evaluated for scoring or other purposes, but still uses the custom factor.  This may be removed at some point.
+	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
-		if (funcName.equals("CustomXor") || funcName.equals("customXor"))		// Lower case version for backward compatibility
+		if (funcName.equals("CustomXor") || funcName.equals("customXor"))
 			return true;
 		else
 			return false;
 	}
 
-	public ISolverFactor createCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
-	{
-		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("CustomXor") || funcName.equals("customXor"))		// Lower case version for backward compatibility
-			return new CustomXor(factor);
-		else
-			throw new DimpleException("Not implemented");
-	}
-
-	
 	/*
 	 * Set the global solver damping parameter.  We have to go through all factor graphs
 	 * and update the damping parameter on all existing table functions in that graph.
@@ -94,7 +87,7 @@ public class SFactorGraph extends SFactorGraphBase
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			STableFactor tf = (STableFactor)f.getSolver();
-			setDampingForTableFunction(tf);
+			setDampingForTableFactor(tf);
 		}
 	}
 	
@@ -108,7 +101,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * and all of the variable ports connected to it.  This might cause problems in the future
 	 * when we support different damping parameters per edge.
 	 */
-	protected void setDampingForTableFunction(STableFactor tf)
+	protected void setDampingForTableFactor(STableFactor tf)
 	{
 		Factor factor = tf.getFactor();
 		IMapList<INode> nodes = factor.getConnectedNodesFlat();

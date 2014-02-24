@@ -21,11 +21,9 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
-public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBase
+public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactorBase
 {
-	protected int _sumPort = 0;	// Port that is the sum of all the others
-
-	public CustomMultivariateGaussianSum(Factor factor)
+	public CustomMultivariateGaussianNegate(Factor factor)
 	{
 		super(factor);
 	}
@@ -33,44 +31,15 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 	@Override
 	public void updateEdge(int outPortNum)
 	{
+		int inPortNum = 1 - outPortNum;		// Exactly two ports
+		
+		MultivariateNormalParameters inputMsg = _inputMsgs[inPortNum];
 		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
-		
-		int size = outMsg.getMean().length;
-		
-		double [] vector = new double[size];
-		double [][] matrix = new double[size][];
-		for (int i = 0; i < matrix.length; i++)
-			matrix[i] = new double[size];
-		
-		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++ )
-		{
-			if (i != outPortNum)
-			{
-				MultivariateNormalParameters inMsg = _inputMsgs[i];
-				
-				double [] inMsgVector = inMsg.getMean();
-				
-				for (int j = 0; j < vector.length; j++)
-				{
-					if (outPortNum != _sumPort && i != _sumPort)
-						vector[j] -= inMsgVector[j];
-					else
-						vector[j] += inMsgVector[j];
-				}
-				
-				double [][] inMsgMatrix = inMsg.getCovariance();
-				
-				for (int j = 0; j < inMsgMatrix.length; j++)
-				{
-					for (int k = 0; k < inMsgMatrix[j].length; k++)
-					{
-						matrix[j][k] += inMsgMatrix[j][k];
-					}
-				}
-			}
-		}
-		
-		outMsg.setMeanAndCovariance(vector,matrix);
+
+		double[] mean = inputMsg.getMean();
+		for (int i = 0; i < mean.length; i++)
+			mean[i] = -mean[i];		// Negate the mean vector
+		outMsg.setMeanAndCovariance(mean, inputMsg.getCovariance());
 	}
 	
 	

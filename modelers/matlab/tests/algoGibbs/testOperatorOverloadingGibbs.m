@@ -300,6 +300,18 @@ vvv = B * CD;           % Real matrix times constant matrix
 www = CA * C;           % Constant matrix times discrete matrix
 xxx = CA * D;           % Constant matrix times real matrix
 
+RJC = [1 2 3 4];
+aaaa = rj1 + rj2;       % RealJoint plus RealJoint
+bbbb = rj1 - rj2;       % RealJoint minus RealJoint
+cccc = -rj1;            % RealJoint negation
+dddd = rj1 + RJC;       % RealJoint plus vector constant
+eeee = RJC + rj2;       % Vector constant plus RealJoint
+ffff = rj1 - RJC;       % RealJoint minus vector constant
+gggg = RJC - rj2;       % Vector constant minus RealJoint
+hhhh = rj1 + 7;         % RealJoint plus scalar constant
+iiii = 7 + rj2;         % Scalar constant plus RealJoint
+jjjj = rj1 - 7;         % RealJoint minus scalar constant
+kkkk = 7 - rj2;         % Scalar constant minums RealJoint
 
 
 if (repeatable)
@@ -382,6 +394,17 @@ uuus = uuu.invokeSolverMethodWithReturnValue('getAllSamples');
 vvvs = vvv.invokeSolverMethodWithReturnValue('getAllSamples');
 wwws = www.invokeSolverMethodWithReturnValue('getAllSamples');
 xxxs = xxx.invokeSolverMethodWithReturnValue('getAllSamples');
+aaaas = aaaa.Solver.getAllSamples;
+bbbbs = bbbb.Solver.getAllSamples;
+ccccs = cccc.Solver.getAllSamples;
+dddds = dddd.Solver.getAllSamples;
+eeees = eeee.Solver.getAllSamples;
+ffffs = ffff.Solver.getAllSamples;
+ggggs = gggg.Solver.getAllSamples;
+hhhhs = hhhh.Solver.getAllSamples;
+iiiis = iiii.Solver.getAllSamples;
+jjjjs = jjjj.Solver.getAllSamples;
+kkkks = kkkk.Solver.getAllSamples;
 bts = bt.invokeSolverMethodWithReturnValue('getAllSamples');
 dts = dt.invokeSolverMethodWithReturnValue('getAllSamples');
 As = A.invokeSolverMethodWithReturnValue('getAllSamples');
@@ -605,6 +628,20 @@ for sample=1:numSamples
     assertElementsAlmostEqual(wwwsxx(:,:,sample), CA * Csxx(:,:,sample), 'absolute');
     assertElementsAlmostEqual(xxxsxx(:,:,sample), CA * Dsxx(:,:,sample), 'absolute');
 end
+
+RJCs = repmat(RJC,numSamples,1);
+assertElementsAlmostEqual(aaaas, rj1s + rj2s);
+assertElementsAlmostEqual(bbbbs, rj1s - rj2s);
+assertElementsAlmostEqual(ccccs, -rj1s);
+assertElementsAlmostEqual(dddds, rj1s + RJCs);
+assertElementsAlmostEqual(eeees, RJCs + rj2s);
+assertElementsAlmostEqual(ffffs, rj1s - RJCs);
+assertElementsAlmostEqual(ggggs, RJCs - rj2s);
+assertElementsAlmostEqual(hhhhs, rj1s + 7);
+assertElementsAlmostEqual(iiiis, 7 + rj2s);
+assertElementsAlmostEqual(jjjjs, rj1s - 7);
+assertElementsAlmostEqual(kkkks, 7 - rj2s);
+
 
 end
 

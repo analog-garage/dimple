@@ -84,8 +84,8 @@ public class FiniteFieldTest {
 			ffx[i].setInput(priors);
 		}
 		
-		fg.addFactor(new NopFactorFunction("finiteFieldAdd"), ffx);
-		fg.addFactor(new NopFactorFunction("finiteFieldAdd"), ffx);
+		fg.addFactor("finiteFieldAdd", ffx);
+		fg.addFactor("finiteFieldAdd", ffx);
 		
 		((SFactorGraph)fg.getSolver()).setNumIterations(10);
 		fg.solve();

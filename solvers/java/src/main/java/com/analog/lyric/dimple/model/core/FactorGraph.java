@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -333,9 +334,37 @@ public class FactorGraph extends FactorBase
 
 	public Factor addFactor(FactorFunction factorFunction, VariableBase ... vars)
 	{
-		return addFactor(factorFunction,(Object[])vars);
+		return addFactor(factorFunction, (Object[])vars);
 	}
 
+	public Factor addFactor(String factorName, VariableBase...vars)
+	{
+		if (customFactorExists(factorName))
+			return addFactor(new NopFactorFunction(factorName), (Object[])vars);
+		else
+		{
+			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorName;
+			FactorFunction factorFunction = null;
+			try {factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();}
+			catch (Exception e) {throw new DimpleException("Could not instantiate factor function.");}
+			return addFactor(factorFunction, (Object[])vars);
+		}
+	}
+	
+	public Factor addFactor(String factorName, Object ... vars)
+	{
+		if (customFactorExists(factorName))
+			return addFactor(new NopFactorFunction(factorName), (Object[])vars);
+		else
+		{
+			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorName;
+			FactorFunction factorFunction = null;
+			try {factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();}
+			catch (Exception e) {throw new DimpleException("Could not instantiate factor function.");}
+			return addFactor(factorFunction, (Object[])vars);
+		}
+	}
+	
 	public Factor addFactor(FactorFunction factorFunction, Object ... vars)
 	{
 		int numConstants = 0;

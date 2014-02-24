@@ -16,74 +16,19 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
-public class CustomGaussianSum extends GaussianFactorBase
+// Same as CustomGaussianSum, except the second edge is treated as the output instead of the first
+public class CustomGaussianSubtract extends CustomGaussianSum
 {
-	protected int _sumPort = 0;	// Port that is the sum of all the others
-	
-	public CustomGaussianSum(Factor factor)
+	public CustomGaussianSubtract(Factor factor)
 	{
 		super(factor);
-		
-		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
-		{
-			VariableBase v = factor.getSibling(i);
-			
-			if (v.getDomain().isDiscrete())
-				throw new DimpleException("Cannot connect discrete variable to this factor");
-		}
+		_sumPort = 1;	// Port that is the sum of all the others
 	}
-
-	@Override
-	public void updateEdge(int outPortNum)
-	{
-		// TODO: express this as different functions if doing input or output
-		// uout = ua + ub + uc
-		// ub = uout-ua-uc
-		// sigma^2 = othersigma^2 + theothersigma^2 ...
-		
-		double mu = 0;
-		double sigmaSquared = 0;
-		
-		for (int i = 0; i < _inputMsgs.length; i++)
-		{
-			if (i != outPortNum)
-			{
-				NormalParameters msg = _inputMsgs[i];
-				if (outPortNum == _sumPort)
-				{
-					mu += msg.getMean();
-				}
-				else
-				{
-					if (i == _sumPort)
-						mu += msg.getMean();
-					else
-						mu -= msg.getMean();
-				}
-				
-				sigmaSquared += msg.getVariance();
-			}
-		}
-
-		NormalParameters outMsg = _outputMsgs[outPortNum];
-		outMsg.setMean(mu);
-		outMsg.setVariance(sigmaSquared);
-		
-	}
-
-	@Override
-	public void initialize()
-	{
-		
-	}
-	
 	
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)
@@ -103,6 +48,5 @@ public class CustomGaussianSum extends GaussianFactorBase
 		}
 		return true;
 	}
-
 
 }

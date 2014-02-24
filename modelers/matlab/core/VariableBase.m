@@ -43,6 +43,8 @@ classdef VariableBase < Node
         function z = plus(a,b)
             if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.ComplexSum);
+            elseif (isrealjoint(a) || isrealjoint(b))
+                z = addRealJointBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.RealJointSum);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@plus,com.analog.lyric.dimple.factorfunctions.Sum);
             end
@@ -51,14 +53,18 @@ classdef VariableBase < Node
         function z = minus(a,b)
             if (iscomplex(a) || iscomplex(b))
                 z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.ComplexSubtract);
+            elseif (isrealjoint(a) || isrealjoint(b))
+                z = addRealJointBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.RealJointSubtract);
             else
                 z = addBinaryOperatorOverloadedFactor(a,b,@minus,com.analog.lyric.dimple.factorfunctions.Subtract);
             end
         end
         
         function z = uminus(a)
-            if (isa(a,'Complex'))
+            if (isa(a,'Complex')) % Must be a variable
                 z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.factorfunctions.ComplexNegate);
+            elseif (isa(a,'RealJoint')) % Must be a variable
+                z = addRealJointUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.factorfunctions.RealJointNegate);
             else
                 z = addUnaryOperatorOverloadedFactor(a,@uminus,com.analog.lyric.dimple.factorfunctions.Negate);
             end
@@ -108,7 +114,7 @@ classdef VariableBase < Node
         end
         
         function z = ctranspose(a)
-            if (isa(a,'Complex'))
+            if (isa(a,'Complex')) % Must be a variable
                 z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.factorfunctions.ComplexConjugate).';
             else
                 z = a.'; % No need for a factor in this case, just transpose the matrix
@@ -165,7 +171,7 @@ classdef VariableBase < Node
         end
 
         function z = exp(a)
-            if (isa(a,'Complex'))
+            if (isa(a,'Complex')) % Must be a variable
                 z = addComplexUnaryOperatorOverloadedFactor(a,com.analog.lyric.dimple.factorfunctions.ComplexExp);
             else
                 z = addUnaryOperatorOverloadedFactor(a,@exp,com.analog.lyric.dimple.factorfunctions.Exp);
@@ -501,11 +507,11 @@ classdef VariableBase < Node
                 b = [real(b) imag(b)];
             end;
 
-            % output variable must be Complex
             if (~isa(factor, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
-                error('Can only override faction functions for real-valued operators');
+                error('Can only override faction functions for complex-valued operators');
             end
             
+            % output variable must be Complex
             vs = num2cell(vectorSize);
             z = Complex(vs{:});
             fg = getFactorGraph();
@@ -518,15 +524,75 @@ classdef VariableBase < Node
         function z = addComplexUnaryOperatorOverloadedFactor(a,factor)
             vectorSize = size(a);
 
-            % output variable must be Complex
             if (~isa(factor, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
-                error('Can only override faction functions for real-valued operators');
+                error('Can only override faction functions for complex-valued operators');
             end
             
+            % output variable must be Complex
             vs = num2cell(vectorSize);
             z = Complex(vs{:});
             fg = getFactorGraph();
             fg.addFactorVectorized(factor,z,a);
+                
+        end
+        
+        
+        function z = addRealJointBinaryOperatorOverloadedFactor(a,b,factor)
+            % Sizes should be the same
+            if (isa(a, 'VariableBase'))
+                alength = a.Domain.NumElements;
+            else
+                alength = length(a);
+            end;
+            if (isa(b, 'VariableBase'))
+                blength = b.Domain.NumElements;
+            else
+                blength = length(b);
+            end;
+            if (~((alength == blength) || (alength == 1) || (blength == 1)))
+                error('Mismatch in dimension of input arguments');
+            end
+            
+            % Use the largest size (one of them could be length 1)
+            jointLength = max(alength, blength);
+
+            % Allow constant scalars
+            if (alength == 1 && isnumeric(a))
+                a = repmat(a, 1, jointLength);
+            end
+            if (blength == 1 && isnumeric(b))
+                b = repmat(b, 1, jointLength);
+            end
+
+            if (~isa(factor, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
+                error('Can only override faction functions for real-valued operators');
+            end
+            
+            % Output variable must be RealJoint
+            z = RealJoint(jointLength);
+            fg = getFactorGraph();
+            fg.addFactor(factor,z,a,b);
+                
+        end
+        
+        
+        
+        function z = addRealJointUnaryOperatorOverloadedFactor(a,factor)
+            if (isa(a, 'VariableBase'))
+                alength = a.Domain.NumElements;
+            else
+                alength = length(a);
+            end;
+
+            
+            if (~isa(factor, 'com.analog.lyric.dimple.factorfunctions.core.FactorFunction'))
+                error('Can only override faction functions for real-valued operators');
+            end
+            
+            % output variable must be RealJoint
+            z = RealJoint(alength);
+            fg = getFactorGraph();
+            fg.addFactor(factor,z,a);
                 
         end
         

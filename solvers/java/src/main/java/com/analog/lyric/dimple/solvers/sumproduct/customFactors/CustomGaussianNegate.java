@@ -16,61 +16,47 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
-public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBase
+
+public class CustomGaussianNegate extends GaussianFactorBase
 {
-	protected int _sumPort = 0;	// Port that is the sum of all the others
-
-	public CustomMultivariateGaussianSum(Factor factor)
+	public CustomGaussianNegate(Factor factor)
 	{
 		super(factor);
+		
+		if (factor.getSiblingCount() != 2)
+			throw new DimpleException("Factor must have exactly two connected varaibles");
+
+		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
+		{
+			VariableBase v = factor.getSibling(i);
+			
+			if (v.getDomain().isDiscrete())
+				throw new DimpleException("Cannot connect discrete variable to this factor");
+		}
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
+		int inPortNum = 1 - outPortNum;		// Exactly two ports
 		
-		int size = outMsg.getMean().length;
+		NormalParameters inputMsg = _inputMsgs[inPortNum];
+		NormalParameters outMsg = _outputMsgs[outPortNum];
+
+		outMsg.setMean(-inputMsg.getMean());	// Negate the mean
+		outMsg.setPrecision(inputMsg.getPrecision());
+	}
+
+	@Override
+	public void initialize()
+	{
 		
-		double [] vector = new double[size];
-		double [][] matrix = new double[size][];
-		for (int i = 0; i < matrix.length; i++)
-			matrix[i] = new double[size];
-		
-		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++ )
-		{
-			if (i != outPortNum)
-			{
-				MultivariateNormalParameters inMsg = _inputMsgs[i];
-				
-				double [] inMsgVector = inMsg.getMean();
-				
-				for (int j = 0; j < vector.length; j++)
-				{
-					if (outPortNum != _sumPort && i != _sumPort)
-						vector[j] -= inMsgVector[j];
-					else
-						vector[j] += inMsgVector[j];
-				}
-				
-				double [][] inMsgMatrix = inMsg.getCovariance();
-				
-				for (int j = 0; j < inMsgMatrix.length; j++)
-				{
-					for (int k = 0; k < inMsgMatrix[j].length; k++)
-					{
-						matrix[j][k] += inMsgMatrix[j][k];
-					}
-				}
-			}
-		}
-		
-		outMsg.setMeanAndCovariance(vector,matrix);
 	}
 	
 	
@@ -86,8 +72,8 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 			if (v.getDomain().isDiscrete())
 				return false;
 			
-			// Must be multivariate
-			if (v instanceof Real)
+			// Must be univariate
+			if (v instanceof RealJoint)
 				return false;
 		}
 		return true;

@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -39,10 +38,14 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFiel
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldProjection;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinear;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianNegate;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianProduct;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSubtract;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSum;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultiplexer;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianNegate;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianProduct;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSubtract;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSum;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.util.misc.IMapList;
@@ -82,27 +85,86 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		if (customFactorExists(factor))
+		String factorName = factor.getFactorFunction().getName();
+		
+		if (factor.isDiscrete())	// Factor contains only discrete variables		
 		{
-			return createCustomFactor(factor);
+			// First see if any custom factor should be created
+			if (factorName.equals("FiniteFieldAdd") || factorName.equals("finiteFieldAdd"))						// Lower case version for backward compatibility
+				return new CustomFiniteFieldAdd(factor);
+			else if (factorName.equals("FiniteFieldMult") || factorName.equals("finiteFieldMult"))				// Lower case version for backward compatibility
+			{
+				if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
+					return new CustomFiniteFieldConstantMult(factor);
+				else
+					return new CustomFiniteFieldMult(factor);
+			}
+			else if (factorName.equals("FiniteFieldProjection") || factorName.equals("finiteFieldProjection"))	// Lower case version for backward compatibility
+				return new CustomFiniteFieldProjection(factor);
+			else if (factorName.equals("Multiplexer") || factorName.equals("multiplexerCPD"))					// "multiplexerCPD" for backward compatibility
+				return new CustomMultiplexer(factor);															// Currently only supports discrete variables
+			else	// No custom factor exists, so create a generic one
+			{
+				// For discrete case, create a table factor
+				STableFactor tf = new STableFactor(factor);
+				if (_damping != 0)
+					setDampingForTableFactor(tf);
+				return tf;
+			}
 		}
-		else if (!factor.isDiscrete())
+		else	// Factor includes at least one continuous variable
 		{
-			// For non-discrete factor that doesn't have a custom factor, create a sampled factor
-			SampledFactor sf = new SampledFactor(factor);
-			sf.setSamplesPerUpdate(_sampledFactorSamplesPerUpdate);
-			return sf;
-		}
-		else
-		{
-			STableFactor tf = new STableFactor(factor);
-			if (_damping != 0)
-				setDampingForTableFactor(tf);
-			return tf;
+			// First see if any custom factor should be created
+			if (factorName.equals("Sum") && CustomGaussianSum.isFactorCompatible(factor))
+				return new CustomGaussianSum(factor);
+			else if (factorName.equals("Subtract") && CustomGaussianSubtract.isFactorCompatible(factor))
+				return new CustomGaussianSubtract(factor);
+			else if (factorName.equals("Negate") && CustomGaussianNegate.isFactorCompatible(factor))
+				return new CustomGaussianNegate(factor);
+			else if (factorName.equals("Product") && CustomGaussianProduct.isFactorCompatible(factor))
+				return new CustomGaussianProduct(factor);
+			else if (factorName.equals("ComplexSum") && CustomMultivariateGaussianSum.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianSum(factor);
+			else if (factorName.equals("ComplexSubtract") && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianSubtract(factor);
+			else if (factorName.equals("ComplexNegate") && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianNegate(factor);
+			else if (factorName.equals("RealJointSum") && CustomMultivariateGaussianSum.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianSum(factor);
+			else if (factorName.equals("RealJointSubtract") && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianSubtract(factor);
+			else if (factorName.equals("RealJointNegate") && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianNegate(factor);
+			else if (factorName.equals("add"))								// For backward compatibility
+			{
+				if (isMultivariate(factor))
+					return new CustomMultivariateGaussianSum(factor);
+				else
+					return new CustomGaussianSum(factor);
+			}
+			else if (factorName.equals("constmult"))
+			{
+				if (isMultivariate(factor))
+					return new CustomMultivariateGaussianProduct(factor);
+				else
+					return new CustomGaussianProduct(factor);
+			}
+			else if (factorName.equals("linear"))
+				return new CustomGaussianLinear(factor);
+			else if (factorName.equals("polynomial"))
+				return new CustomComplexGaussianPolynomial(factor);
+			else	// No custom factor exists, so create a generic one
+			{
+				// For non-discrete factor that doesn't have a custom factor, create a sampled factor
+				SampledFactor sf = new SampledFactor(factor);
+				sf.setSamplesPerUpdate(_sampledFactorSamplesPerUpdate);
+				return sf;
+			}
 		}
 	}
 	
 
+	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
@@ -114,7 +176,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use "Multiplexer" instead
 			return true;
-		else if (funcName.equals("add"))
+		else if (funcName.equals("add"))																// For backward compatibility
 			return true;
 		else if (funcName.equals("constmult"))
 			return true;
@@ -126,70 +188,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return false;
 	}
 	
-	// For internal use, we check more than just the name
-	// This allows detection of factors used by overloaded operators to be used, but only if used in the right way
-	// And for these factors, they will use the actual corresponding factor function rather than a NOPFactorFunction
-	public boolean customFactorExists(Factor factor)
-	{
-		String funcName = factor.getModelerFunctionName();
-		if (customFactorExists(funcName))
-			return true;
-		else if (funcName.equals("Sum"))
-			return CustomGaussianSum.isFactorCompatible(factor);
-		else if (funcName.equals("Product"))
-			return CustomGaussianProduct.isFactorCompatible(factor);
-		else if (funcName.equals("ComplexSum"))
-			return CustomMultivariateGaussianSum.isFactorCompatible(factor);
-		else if (funcName.equals("Multiplexer"))
-			return true;
-		else
-			return false;
-	}
 
-	public ISolverFactor createCustomFactor(Factor factor)
-	{
-		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("FiniteFieldAdd") || funcName.equals("finiteFieldAdd"))						// Lower case version for backward compatibility
-			return new CustomFiniteFieldAdd(factor);
-		else if (funcName.equals("FiniteFieldMult") || funcName.equals("finiteFieldMult"))				// Lower case version for backward compatibility
-		{
-			if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
-				return new CustomFiniteFieldConstantMult(factor);
-			else
-				return new CustomFiniteFieldMult(factor);
-		}
-		else if (funcName.equals("FiniteFieldProjection") || funcName.equals("finiteFieldProjection"))	// Lower case version for backward compatibility
-			return new CustomFiniteFieldProjection(factor);
-		else if (funcName.equals("Multiplexer") || funcName.equals("multiplexerCPD"))					// "multiplexerCPD" for backward compatibility
-			return new CustomMultiplexer(factor);
-		else if (funcName.equals("Sum"))
-			return new CustomGaussianSum(factor);
-		else if (funcName.equals("ComplexSum"))
-			return new CustomMultivariateGaussianSum(factor);
-		else if (funcName.equals("Product"))
-			return new CustomGaussianProduct(factor);
-		else if (funcName.equals("add"))
-		{
-			if (isMultivariate(factor))
-				return new CustomMultivariateGaussianSum(factor);
-			else
-				return new CustomGaussianSum(factor);
-		}
-		else if (funcName.equals("constmult"))
-		{
-			if (isMultivariate(factor))
-				return new CustomMultivariateGaussianProduct(factor);
-			else
-				return new CustomGaussianProduct(factor);
-		}
-		else if (funcName.equals("linear"))
-			return new CustomGaussianLinear(factor);
-		else if (funcName.equals("polynomial"))
-			return new CustomComplexGaussianPolynomial(factor);
-		else
-			throw new DimpleException("Not implemented");
-	}
-	
 	private boolean isMultivariate(Factor factor)
 	{
 		if (factor.getSiblingCount() > 0 && (factor.getSibling(0) instanceof RealJoint))

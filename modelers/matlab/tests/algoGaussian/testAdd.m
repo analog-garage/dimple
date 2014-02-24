@@ -108,6 +108,6 @@ function testAdd()
         message = E.message;
     end
     assertEqual(exFound,true);
-    assertTrue(findstr(message,'Cannot connect discrete variable to the Gaussian add factor')> 0);
+    assertTrue(findstr(message,'Cannot connect discrete variable to this factor')> 0);
 end
 
