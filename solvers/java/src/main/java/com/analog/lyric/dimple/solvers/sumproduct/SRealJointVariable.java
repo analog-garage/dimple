@@ -22,19 +22,19 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class SRealJointVariable extends SVariableBase 
+public class SRealJointVariable extends SRealJointVariableBase 
 {
 
 	private int _numVars;
 	private MultivariateNormalParameters _input;
 	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
 	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
-	
+
 	public SRealJointVariable(VariableBase var) 
 	{
 		super(var);
@@ -48,7 +48,7 @@ public class SRealJointVariable extends SVariableBase
 		if (hasFixedValue)
 			_input = createFixedValueMessage((double[])fixedValue);
 		else if (input == null)
-			_input = (MultivariateNormalParameters) createDefaultMessage();
+			_input = null;
 		else
 		{
     		if (input instanceof MultivariateNormal)	// Input is a MultivariateNormal factor function with fixed parameters
@@ -69,7 +69,7 @@ public class SRealJointVariable extends SVariableBase
 	@Override
 	public Object getBelief()  
 	{
-		MultivariateNormalParameters m = new MultivariateNormalParameters(_input.getMean(), _input.getCovariance());		
+		MultivariateNormalParameters m = new MultivariateNormalParameters();
 		doUpdate(m,-1);
 		return m;
 	}
@@ -80,6 +80,16 @@ public class SRealJointVariable extends SVariableBase
 		MultivariateNormalParameters m = (MultivariateNormalParameters)getBelief();
 		return m.getMean();
 	}
+	
+	@Override
+	public double getScore()
+	{
+		if (_input == null)
+			return 0;
+		else
+			return (new MultivariateNormal(_input)).evalEnergy(getGuess());
+	}
+	
 
 	@Override
 	public void updateEdge(int outPortNum)  
@@ -88,7 +98,7 @@ public class SRealJointVariable extends SVariableBase
 		doUpdate(outMsg,outPortNum);
 	}
 
-	private void doUpdate(MultivariateNormalParameters outMsg,int outPortNum) 
+	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum) 
 	{
     	// If fixed value, just return the input, which has been set to a zero-variance message
 		if (_var.hasFixedValue())
@@ -96,39 +106,40 @@ public class SRealJointVariable extends SVariableBase
 			outMsg.set(_input);
 			return;
 		}
-		
-		double [] vector = _input.getInformationVector();		
-		double [][] matrix = _input.getInformationMatrix();		
-		
-		//MultivariateMsg outMsg = (MultivariateMsg)_var.getPorts().get(outPortNum).getOutputMsg();
+
+		double[] vector;
+		double[][] matrix;
+		if (_input == null)
+		{
+			vector = new double[_numVars];
+			matrix = new double[_numVars][_numVars];
+		}
+		else
+		{
+			vector = _input.getInformationVector();
+			matrix = _input.getInformationMatrix();
+		}
 		
 		for (int i = 0; i < _outputMsgs.length; i++ )
 		{
 			if (i != outPortNum)
 			{				
-				//_var.getInputObject();
 				MultivariateNormalParameters inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getInformationVector();
 				
 				for (int j = 0; j < vector.length; j++)
-				{
 					vector[j] += inMsgVector[j];
-				}
 				
 				double [][] inMsgMatrix = inMsg.getInformationMatrix();
 				
 				for (int j = 0; j < inMsgMatrix.length; j++)
-				{
 					for (int k = 0; k < inMsgMatrix[j].length; k++)
-					{
 						matrix[j][k] += inMsgMatrix[j][k];
-					}
-				}
 			}
 		}
 		
-		outMsg.setInformation(vector,matrix);
+		outMsg.setInformation(vector, matrix);
 	}
 
 	@Override
@@ -152,8 +163,8 @@ public class SRealJointVariable extends SVariableBase
 	@Override
 	public Object resetInputMessage(Object message) 
 	{
-		double [] means = new double[_numVars];
-		double [][] covariance = new double[_numVars][];
+		double[] mean = new double[_numVars];
+		double[][] covariance = new double[_numVars][];
 		
 		
 		for (int i = 0; i < covariance.length; i++)
@@ -161,7 +172,7 @@ public class SRealJointVariable extends SVariableBase
 			covariance[i] = new double[_numVars];
 			covariance[i][i] = Double.POSITIVE_INFINITY;
 		}
-		((MultivariateNormalParameters)message).setMeanAndCovariance(means, covariance);
+		((MultivariateNormalParameters)message).setMeanAndCovariance(mean, covariance);
 		return message;
 	}
 

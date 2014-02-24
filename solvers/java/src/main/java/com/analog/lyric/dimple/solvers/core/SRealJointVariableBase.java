@@ -1,16 +1,16 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
-public abstract class SRealVariableBase extends SVariableBase
+public abstract class SRealJointVariableBase extends SVariableBase
 {
-    protected double _guessValue = 0;
-    protected boolean _guessWasSet = false;
+	protected double[] _guessValue;
+	protected boolean _guessWasSet = false;
 
     
-	public SRealVariableBase(VariableBase var)
+	public SRealJointVariableBase(VariableBase var)
 	{
 		super(var);
 	}
@@ -27,9 +27,9 @@ public abstract class SRealVariableBase extends SVariableBase
 	 */
 	
 	@Override
-	public Real getModelObject()
+	public RealJoint getModelObject()
 	{
-		return (Real)_var;
+		return (RealJoint)_var;
 	}
 
 	
@@ -41,23 +41,17 @@ public abstract class SRealVariableBase extends SVariableBase
 	public Object getGuess()
 	{
 		if (_guessWasSet)
-			return Double.valueOf(_guessValue);
+			return _guessValue;
 		else if (_var.hasFixedValue())		// If there's a fixed value set, use that
-			return ((Real)_var).getFixedValue();
+			return ((RealJoint)_var).getFixedValue();
 		else
-			return (Double)getValue();
+			return (double[])getValue();
 	}
 	
 	@Override
-	public void setGuess(Object guess) 
+	public void setGuess(Object guess)
 	{
-		// Convert the guess to a number
-		if (guess instanceof Double)
-			_guessValue = (Double)guess;
-		else if (guess instanceof Integer)
-			_guessValue = (Integer)guess;
-		else
-			throw new DimpleException("Guess is not a value type (must be Double or Integer)");
+		_guessValue = (double[])guess;
 
 		// Make sure the number is within the domain of the variable
 		if (!_var.getDomain().inDomain(_guessValue))
@@ -65,5 +59,5 @@ public abstract class SRealVariableBase extends SVariableBase
 		
 		_guessWasSet = true;
 	}
-	
+
 }

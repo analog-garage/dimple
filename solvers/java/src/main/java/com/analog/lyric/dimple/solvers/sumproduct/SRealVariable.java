@@ -52,7 +52,7 @@ public class SRealVariable extends SRealVariableBase
 		if (hasFixedValue)
 			_input = createFixedValueMessage((Double)fixedValue);
 		else if (input == null)
-    		_input = createDefaultMessage();
+    		_input = null;
     	else
     	{
     		if (input instanceof Normal)	// Input is a Normal factor function with fixed parameters
@@ -93,8 +93,15 @@ public class SRealVariable extends SRealVariableBase
     	
     	List<INode> ports = _var.getSiblings();
     	
-    	double tau = _input.getPrecision();
-    	double mu = _input.getMean() * tau;
+    	double mu = 0;
+    	double tau = 0;
+    	double muTau = 0;
+    	if (_input != null)
+    	{
+        	mu = _input.getMean();
+        	tau = _input.getPrecision();
+        	muTau = mu * tau;
+    	}
     	
     	boolean anyTauIsInfinite = false;
     	double muOfInf = 0;
@@ -102,9 +109,8 @@ public class SRealVariable extends SRealVariableBase
     	if (tau == Double.POSITIVE_INFINITY)
     	{
     		anyTauIsInfinite = true;
-    		muOfInf = _input.getMean();
+    		muOfInf = mu;
     	}
-    	
     	
     	for (int i = 0; i < ports.size(); i++)
     	{
@@ -129,7 +135,7 @@ public class SRealVariable extends SRealVariableBase
     			else
     			{
 	    			tau += tmpTau;
-	    			mu += tmpTau * msg.getMean();
+	    			muTau += tmpTau * msg.getMean();
     			}
     		}
     	}
@@ -139,19 +145,19 @@ public class SRealVariable extends SRealVariableBase
     	
     	if (anyTauIsInfinite)
     	{
-    		mu = muOfInf;
+    		muTau = muOfInf;
     		tau = Double.POSITIVE_INFINITY;
     	}
     	else
     	{
 	    	if (tau != 0)
-	    		mu /= tau;
+	    		muTau /= tau;
 	    	else
-	    		mu = 0;
+	    		muTau = 0;
     	}
     	
     	NormalParameters outMsg = _outputMsgs[outPortNum];
-    	outMsg.setMean(mu);
+    	outMsg.setMean(muTau);
     	outMsg.setPrecision(tau);
     }
     
@@ -164,8 +170,15 @@ public class SRealVariable extends SRealVariableBase
     	if (_var.hasFixedValue())
         	return new double[]{_input.getMean(), _input.getStandardDeviation()};
     	
-    	double tau = _input.getPrecision();
-    	double mu = _input.getMean() * tau;
+    	double mu = 0;
+    	double tau = 0;
+    	double muTau = 0;
+    	if (_input != null)
+    	{
+        	mu = _input.getMean();
+        	tau = _input.getPrecision();
+        	muTau = mu * tau;
+    	}
     	
     	boolean anyTauIsInfinite = false;
     	double muOfInf = 0;
@@ -173,9 +186,8 @@ public class SRealVariable extends SRealVariableBase
     	if (tau == Double.POSITIVE_INFINITY)
     	{
     		anyTauIsInfinite = true;
-    		muOfInf = _input.getMean();
+    		muOfInf = mu;
     	}
-
     	
     	for (int i = 0; i < _inputMsgs.length; i++)
     	{
@@ -199,7 +211,7 @@ public class SRealVariable extends SRealVariableBase
 			else
 			{
     			tau += tmpTau;
-    			mu += tmpTau * msg.getMean();
+    			muTau += tmpTau * msg.getMean();
 			}
     	}
 
@@ -208,18 +220,18 @@ public class SRealVariable extends SRealVariableBase
 
     	if (anyTauIsInfinite)
     	{
-    		mu = muOfInf;
+    		muTau = muOfInf;
     		tau = Double.POSITIVE_INFINITY;
     	}
     	else
     	{
 	    	if (tau != 0)
-	    		mu /= tau;
+	    		muTau /= tau;
 	    	else
-	    		mu = 0;
+	    		muTau = 0;
     	}
     	
-    	return new double[]{mu, Math.sqrt(1/tau)};
+    	return new double[]{muTau, Math.sqrt(1/tau)};
     }
     
     
@@ -228,6 +240,15 @@ public class SRealVariable extends SRealVariableBase
 	{
 		double[] belief = (double[])getBelief();
 		return new Double(belief[0]);
+	}
+	
+	@Override
+	public double getScore()
+	{
+		if (_input == null)
+			return 0;
+		else
+			return (new Normal(_input)).evalEnergy(getGuess());
 	}
 	
 

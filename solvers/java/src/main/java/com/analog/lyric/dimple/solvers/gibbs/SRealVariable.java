@@ -375,8 +375,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
-	
-	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -390,7 +388,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return _input.evalEnergy(_sampleValue);
 	}
 	
-	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
