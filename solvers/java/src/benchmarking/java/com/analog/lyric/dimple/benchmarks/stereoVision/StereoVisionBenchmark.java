@@ -19,7 +19,8 @@ package com.analog.lyric.dimple.benchmarks.stereoVision;
 import java.io.IOException;
 
 import com.analog.lyric.benchmarking.Benchmark;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
+import com.analog.lyric.benchmarking.utils.functional.Functions;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
@@ -68,10 +69,10 @@ public class StereoVisionBenchmark
 
 		if (saveResult && saveLabel != null)
 		{
-			ArrayM result = stereoVisionGraph.getValueImage();
-			result.normalize().modify(Image.contrastCurve);
+			DoubleSpace result = stereoVisionGraph.getValueImage();
+			Functions.normalize(result).transform(Image.contrastCurve);
 			String resultPath = String.format("%s_%s.png", dataSetName, saveLabel);
-			Image.saveImage(resultPath, result);
+			Image.save(resultPath, result);
 		}
 
 		double score = fg.getScore();

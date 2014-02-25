@@ -16,15 +16,19 @@
 
 package com.analog.lyric.dimple.benchmarks.imageDenoising;
 
+import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.range;
+
 import java.io.IOException;
 import java.net.URL;
-import java.util.Random;
 
 import com.analog.lyric.benchmarking.Benchmark;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
+import com.analog.lyric.benchmarking.utils.functional.Functions;
+import com.analog.lyric.benchmarking.utils.functional.NoiseGenerator;
+import com.analog.lyric.benchmarking.utils.functional.Threshold;
+import com.analog.lyric.benchmarking.utils.functional.TransformFunction;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM.GeneratorFunction;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM.MapFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
 public class ImageDenoisingBenchmark
@@ -46,8 +50,7 @@ public class ImageDenoisingBenchmark
 		int xImageSize = imageDimension;
 		int yImageSize = imageDimension;
 		double noiseSigma = 1.0;
-		imageDenoisingInference(fg, "images/1202.4002.3.png", "gibbs",
-				imageDimension, xImageOffset, yImageOffset, xImageSize,
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "gibbs", imageDimension, xImageOffset, yImageOffset, xImageSize,
 				yImageSize, noiseSigma);
 		return false;
 	}
@@ -65,8 +68,7 @@ public class ImageDenoisingBenchmark
 		int xImageSize = imageDimension;
 		int yImageSize = imageDimension;
 		double noiseSigma = 1.0;
-		imageDenoisingInference(fg, "images/1202.4002.3.png", "sumproduct",
-				imageDimension, xImageOffset, yImageOffset, xImageSize,
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "sumproduct", imageDimension, xImageOffset, yImageOffset, xImageSize,
 				yImageSize, noiseSigma);
 		return false;
 	}
@@ -84,96 +86,53 @@ public class ImageDenoisingBenchmark
 		int xImageSize = imageDimension;
 		int yImageSize = imageDimension;
 		double noiseSigma = 1.0;
-		imageDenoisingInference(fg, "images/1202.4002.3.png", "minsum",
-				imageDimension, xImageOffset, yImageOffset, xImageSize,
+		imageDenoisingInference(fg, "images/1202.4002.3.png", "minsum", imageDimension, xImageOffset, yImageOffset, xImageSize,
 				yImageSize, noiseSigma);
 		return false;
 	}
 
 	@SuppressWarnings("unused")
-	public void imageDenoisingInference(FactorGraph fg, String imageFileName,
-			String saveLabel, int imageDimension, int xImageOffset,
-			int yImageOffset, int xImageSize, int yImageSize, double noiseSigma)
-			throws IOException
+	public void imageDenoisingInference(FactorGraph fg, String imageFileName, String saveLabel, int imageDimension,
+			int xImageOffset, int yImageOffset, int xImageSize, int yImageSize, double noiseSigma) throws IOException
 	{
 		final String factorFileName = "imageStats/factorTableValues300dpi.csv";
 		final int xBlockSize = 4;
 		final int yBlockSize = 4;
 		URL urlImage = this.getClass().getResource(imageFileName);
-		ArrayM likelihoods = noisyImageInput(urlImage, noiseSigma,
-				xImageOffset, yImageOffset, xImageSize, yImageSize);
-		ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg,
-				factorFileName, xImageSize, yImageSize, xBlockSize, yBlockSize);
+		DoubleSpace likelihoods = noisyImageInput(urlImage, noiseSigma, xImageOffset, yImageOffset, xImageSize, yImageSize);
+		ImageDenoisingGraph imageDenoisingGraph = new ImageDenoisingGraph(fg, factorFileName, xImageSize, yImageSize, xBlockSize,
+				yBlockSize);
 		imageDenoisingGraph.setInput(likelihoods);
 		fg.solve();
 
 		if (saveResult && saveLabel != null)
 		{
-			ArrayM output = imageDenoisingGraph.getValue();
-			Image.saveImage("denoise.png",
-					output.normalize().modify(Image.contrastCurve));
+			DoubleSpace output = imageDenoisingGraph.getValue();
+			Functions.normalize(output).transform(Image.contrastCurve);
+			String resultPath = String.format("denoise_%s.png", saveLabel);
+			Image.save(resultPath, output);
 		}
 
 		double score = fg.getScore();
 	}
 
-	private class Threshold implements MapFunction
+	private DoubleSpace noisyImageInput(URL urlImage, double noiseSigma, int xImageOffset, int yImageOffset, int xImageSize,
+			int yImageSize) throws IOException
 	{
-		private final double _threshold;
-
-		public Threshold(double threshold)
-		{
-			_threshold = threshold;
-		}
-
-		@Override
-		public double apply(double v)
-		{
-			return (v >= _threshold) ? 1.0 : 0.0;
-		}
-	}
-
-	private class NoiseGenerator implements GeneratorFunction
-	{
-		private final double _mean;
-		private final double _sigma;
-		private final Random _random = new Random();
-
-		public NoiseGenerator(double mean, double sigma)
-		{
-			_mean = mean;
-			_sigma = sigma;
-		}
-
-		public double apply()
-		{
-			return _random.nextGaussian() * _sigma + _mean;
-		}
-	}
-
-	private ArrayM noisyImageInput(URL urlImage, double noiseSigma,
-			int xImageOffset, int yImageOffset, int xImageSize, int yImageSize)
-			throws IOException
-	{
-		ArrayM image = Image.loadImage(urlImage);
-
-		image = image.index(yImageOffset, yImageOffset + yImageSize - 1)
-				.index(xImageOffset, xImageOffset + xImageSize - 1).get();
-
-		ArrayM noiseImage = ArrayM.generate(
-				new NoiseGenerator(0.0, noiseSigma), yImageSize, xImageSize);
-		final double noiseVariance = Math.pow(noiseSigma, 2.0);
-
-		image.modify(new Threshold(128));
-		image.modify(new MapFunction()
+		DoubleSpace image = Image.loadImage(urlImage);
+		image = image.view(range(yImageOffset, yImageOffset + yImageSize - 1), range(xImageOffset, xImageOffset + xImageSize - 1));
+		image.transform(new Threshold(128));
+		image.transform(new TransformFunction()
 		{
 			public double apply(double v)
 			{
 				return v * 2.0 - 1.0;
 			}
 		});
+		DoubleSpace noiseImage = DoubleSpaceFactory.generate(new NoiseGenerator(0.0, noiseSigma), yImageSize, xImageSize);
 		image.add(noiseImage);
-		image.modify(new MapFunction()
+		final double noiseVariance = Math.pow(noiseSigma, 2.0);
+		image.transform(new TransformFunction()
 		{
 			// LLR
 			public double apply(double v)
@@ -181,7 +140,7 @@ public class ImageDenoisingBenchmark
 				return -2.0 * v / noiseVariance;
 			}
 		});
-		image.modify(new MapFunction()
+		image.transform(new TransformFunction()
 		{
 			// likelihood
 			public double apply(double v)
@@ -189,7 +148,6 @@ public class ImageDenoisingBenchmark
 				return 1.0 / (1.0 + Math.exp(v));
 			}
 		});
-
 		return image;
 	}
 }
