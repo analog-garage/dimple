@@ -1,5 +1,8 @@
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -7,11 +10,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public class CustomXor extends SFactorBase
 {
-    protected double[][] _inPortMsgs = new double[0][];
-    protected double[][] _outPortMsgs = null;
-    protected double [] _savedOutMsgsLLR;
-    protected double [] _dampingParams;
+	private double[][] _inPortMsgs = new double[0][];
+    private double[][] _outPortMsgs = null;
+    private double [] _savedOutMsgsLLR;
+    private double [] _dampingParams;
 	private boolean _dampingInUse = false;
+	private int _constantParity;
 	private int _numPorts;
 
 
@@ -33,7 +37,7 @@ public class CustomXor extends SFactorBase
 	    	}
 	    }
 
-		int hardXor = 1;
+		int hardXor = _constantParity;						// Initialize to parity of any constant inputs
 		double min = Double.POSITIVE_INFINITY;
 		for (int inPortIndex = 0; inPortIndex < _numPorts; inPortIndex++)
 		{
@@ -87,7 +91,7 @@ public class CustomXor extends SFactorBase
 	    	}
 	    }
 
-		int hardXor = 1;
+		int hardXor = _constantParity;					// Initialize to parity of any constant inputs
 		double min = Double.POSITIVE_INFINITY;
 		double secMin = Double.POSITIVE_INFINITY;
 		int minIndex = -1;
@@ -212,6 +216,26 @@ public class CustomXor extends SFactorBase
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outPortMsgs[portIndex];
+	}
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		
+		_numPorts = _factor.getSiblingCount();
+		
+		// Pre-compute parity associated with any constant edges
+		_constantParity = 1;
+		FactorFunction factorFunction = _factor.getFactorFunction();
+		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the constants
+		{
+			Object[] constantValues = ((FactorFunctionWithConstants)factorFunction).getConstants();
+			int constantSum = 0;
+			for (int i = 0; i < constantValues.length; i++)
+				constantSum += FactorFunctionUtilities.toInteger(constantValues[i]);
+			_constantParity = ((constantSum & 1) == 0) ? 1 : -1;
+		}
 	}
 
 }
