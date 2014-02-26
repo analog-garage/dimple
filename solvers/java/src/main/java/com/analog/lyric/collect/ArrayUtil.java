@@ -2,6 +2,7 @@ package com.analog.lyric.collect;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Comparator;
 
 import cern.colt.list.IntArrayList;
 
@@ -194,6 +195,54 @@ public abstract class ArrayUtil
 		}
 		
 		return destination;
+	}
+	
+	/**
+	 * Determines if array is ordered according to provided comparator.
+	 */
+	public static <T> boolean isSorted(T[] array, Comparator<T> comparator)
+	{
+		final int size = array.length;
+		
+		if (size > 1)
+		{
+			T prev = array[0];
+			for (int i = 1; i < size; ++i)
+			{
+				final T next = array[i];
+				if (0 < comparator.compare(prev, next))
+				{
+					return false;
+				}
+				prev = next;
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Determines if array is ordered according to elements' {@link Comparable#compareTo(Object)} method.
+	 */
+	public static <T extends Comparable<T>> boolean isSorted(T[] array)
+	{
+		final int size = array.length;
+		
+		if (size > 1)
+		{
+			T prev = array[0];
+			for (int i = 1; i < size; ++i)
+			{
+				final T next = array[i];
+				if (0 < prev.compareTo(next))
+				{
+					return false;
+				}
+				prev = next;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**

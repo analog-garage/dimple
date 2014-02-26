@@ -2,9 +2,14 @@ package com.analog.lyric.collect.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Random;
+
 import org.junit.Test;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.google.common.collect.Ordering;
 
 public class TestArrayUtil
 {
@@ -111,6 +116,30 @@ public class TestArrayUtil
 		assertArrayEquals(ii, ArrayUtil.copyArrayForInsert(ii, 2, 0));
 		assertArrayEquals(new int[][] { ii[0], null, null, ii[1], ii[2] }, ArrayUtil.copyArrayForInsert(ii, 1, 2));
 		assertArrayEquals(new int[][] { null, null }, ArrayUtil.copyArrayForInsert((int[][])null, 0, 2));
+	}
+	
+	@Test
+	public void isSorted()
+	{
+		final Random rand = new Random(123);
+		
+		Integer[] ia = new Integer[42];
+		for (int i = 0; i < ia.length; ++i)
+		{
+			ia[i] = rand.nextInt();
+		}
+		
+		assertFalse(ArrayUtil.isSorted(ia));
+		Arrays.sort(ia);
+		assertTrue(ArrayUtil.isSorted(ia));
+		assertTrue(ArrayUtil.isSorted(new Integer[0]));
+		assertTrue(ArrayUtil.isSorted(new Integer[] { 23 }));
+
+		Comparator<Integer> reverse = Ordering.natural().reverse();
+		assertFalse(ArrayUtil.isSorted(ia, reverse));
+		Arrays.sort(ia, reverse);
+		assertTrue(ArrayUtil.isSorted(ia, reverse));
+		assertTrue(ArrayUtil.isSorted(new Integer[] { 23 }, reverse));
 	}
 	
 	@Test
