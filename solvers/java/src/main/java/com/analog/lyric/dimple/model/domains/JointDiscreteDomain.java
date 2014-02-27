@@ -65,13 +65,13 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("JointDiscreteDomain(");
+		StringBuilder sb = new StringBuilder();
 		boolean comma = false;
 		for (DiscreteDomain domain : _domains)
 		{
 			if (comma)
 			{
-				sb.append(',');
+				sb.append('x');
 			}
 			else
 			{
@@ -79,7 +79,6 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 			}
 			sb.append(domain.toString());
 		}
-		sb.append(")");
 		return sb.toString();
 	}
 

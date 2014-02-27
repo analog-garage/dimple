@@ -67,11 +67,13 @@ public class TestDomain
 		assertEquals(1, bit.getIntElement(1));
 		assertEquals(bit, DiscreteDomain.create(0, 1));
 		assertTrue(bit.isIntegral());
+		assertEquals("{0,1}", bit.toString());
 		
 		TypedDiscreteDomain<Integer> reverseBit = DiscreteDomain.create(1, 0);
 		assertNotEquals(bit, reverseBit);
 		assertInvariants(reverseBit);
 		assertTrue(reverseBit.isIntegral());
+		assertEquals("{1,0}", reverseBit.toString());
 		
 		TypedDiscreteDomain<Boolean> bool = DiscreteDomain.bool();
 		assertInvariants(bool);
@@ -83,11 +85,13 @@ public class TestDomain
 		assertEquals(bool, DiscreteDomain.create(false, true));
 		assertNotEquals(bool, DiscreteDomain.create(true, false));
 		assertFalse(bool.isIntegral());
+		assertEquals("{false,true}", bool.toString());
 		
 		EnumDomain<E> e = DiscreteDomain.forEnum(E.class);
 		assertInvariants(e);
 		assertNotEquals(e, DiscreteDomain.forEnum(Bogus.class));
 		assertEquals(e, DiscreteDomain.create(E.A, E.B, E.C));
+		assertEquals("{A,B,C}", e.toString());
 		
 		try
 		{
@@ -118,6 +122,7 @@ public class TestDomain
 			assertEquals(i + 1, r1to5.getIntElement(i));
 		}
 		assertEquals(r1to5, DiscreteDomain.create(1,2,3,4,5));
+		assertEquals("{1,2,3,4,5}", r1to5.toString());
 		
 		IntRangeDomain r0to4 = DiscreteDomain.range(0,4);
 		assertInvariants(r0to4);
@@ -140,6 +145,7 @@ public class TestDomain
 			assertEquals(i, evenDigits.getIndex(i*2));
 		}
 		assertEquals(evenDigits, DiscreteDomain.create(0,2,4,6,8));
+		assertEquals("{0,2,4,6,8}", evenDigits.toString());
 		
 		IntRangeDomain r0to3 = DiscreteDomain.range(0, 3);
 		assertInvariants(r0to3);
@@ -150,6 +156,10 @@ public class TestDomain
 		TypedDiscreteDomain<Integer> r3to0 = DiscreteDomain.create(3,2,1,0);
 		assertInvariants(r3to0);
 		assertNotEquals(r0to3, r3to0);
+		
+		IntRangeDomain r1to99 = DiscreteDomain.range(1,99);
+		assertInvariants(r1to99);
+		assertEquals("{1,2,3,4,5,6,7,8,9,...,99}", r1to99.toString());
 		
 		try
 		{
@@ -218,6 +228,7 @@ public class TestDomain
 		
 		JointDiscreteDomain<?> joint1 = DiscreteDomain.joint(e, evenDigits);
 		assertInvariants(joint1);
+		assertEquals("{A,B,C}x{0,2,4,6,8}", joint1.toString());
 		
 		JointDiscreteDomain<E> joint2 = DiscreteDomain.joint(e, e);
 		assertInvariants(joint2);

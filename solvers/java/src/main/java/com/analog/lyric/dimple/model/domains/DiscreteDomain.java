@@ -393,22 +393,21 @@ public abstract class DiscreteDomain extends Domain
 	@Override
 	public String toString()
 	{
-		int n = size();
-		StringBuilder sb = new StringBuilder(String.format("DiscreteDomain - %d elements - ", n));
-		if(n > 0)
+		final int maxToShow = 10;
+		final int size = size();
+		final int n = Math.min(size, maxToShow) - 1;
+		StringBuilder sb = new StringBuilder("{");
+		for (int i = 0; i < n; ++i)
 		{
-			for (int i = 0; i < n; i++)
-			{
-				if (i > 0)
-				{
-					sb.append(", ");
-				}
-				Object element = getElement(i);
-				sb.append(String.format("type: %s value:%s"
-						, element != null ? element.getClass().getSimpleName() : "null"
-						, element != null ? element.toString() : "null"));
-			}
+			sb.append(getElement(i));
+			sb.append(",");
 		}
+		if (n < size - 1)
+		{
+			sb.append("...,");
+		}
+		sb.append(getElement(size-1));
+		sb.append("}");
 		return sb.toString();
 	}
 	
