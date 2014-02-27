@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
@@ -58,10 +59,27 @@ public class SRealJointVariable extends SRealJointVariableBase
     				throw new DimpleException("MultivariateNormal factor function used as Input must have constant parameters");
     			_input = multivariateNormalInput.getParameters();
     		}
-    		else	// Input is array in a MultivariateNormalParameter
+    		else if (input instanceof Normal[])			// Input is array of univariate Normal factor functions with fixed parameters
+    		{
+    			Normal[] inputArray = (Normal[])input;
+    			if (inputArray.length != _numVars)
+    				throw new DimpleException("Number of Inputs must equal the variable dimension");
+    			double[] mean = new double[_numVars];
+    			double[][] covariance = new double[_numVars][_numVars];
+    			for (int i = 0; i < _numVars; i++)
+    			{
+    				mean[i] = inputArray[i].getMean();
+    				covariance[i][i] = inputArray[i].getVariance();		// Diagonal covariance matrix
+    			}
+    			_input = new MultivariateNormalParameters(mean, covariance);
+    		}
+    		else if (input instanceof MultivariateNormalParameters)		// Input is a MultivariateNormalParameters object
     		{
     			_input = (MultivariateNormalParameters)input;
     		}
+    		else
+    			throw new DimpleException("Invalid input type");
+
 		}
 	}
 	

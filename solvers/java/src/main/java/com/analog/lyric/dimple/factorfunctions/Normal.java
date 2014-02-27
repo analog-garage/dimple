@@ -135,6 +135,14 @@ public class Normal extends FactorFunction
     {
     	return _precision;
     }
+	public final double getVariance()
+	{
+		return 1/_precision;
+	}
+	public final double getStandardDeviation()
+	{
+		return 1/Math.sqrt(_precision);
+	}
     public final void setMean(double mean)
     {
     	_mean = mean;
