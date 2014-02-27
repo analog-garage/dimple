@@ -18,8 +18,11 @@ package com.analog.lyric.collect.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.google.common.collect.Iterables;
 
 public class SetTester<T> extends CollectionTester<T>
 {
@@ -48,6 +51,25 @@ public class SetTester<T> extends CollectionTester<T>
 		}
 		
 		assertEquals(size, set.size());
+		
+		// Hash code should be sum of element hash codes for Set interface.
+		int expectedHash = 0;
+		for (T element : set)
+		{
+			expectedHash += element.hashCode();
+		}
+		assertEquals(expectedHash, set.hashCode());
+		
+		// Equals
+		assertTrue(set.equals(set));
+		assertFalse(set.equals(42));
+		final Set<T> otherSet = new HashSet<T>(set);
+		assertTrue(set.equals(otherSet));
+		if (!otherSet.isEmpty())
+		{
+			otherSet.remove(Iterables.getFirst(otherSet, null));
+			assertFalse(set.equals(otherSet));
+		}
 	}
 	
 	public void assertSetEquals(Set<T> set1, Set<T> set2)

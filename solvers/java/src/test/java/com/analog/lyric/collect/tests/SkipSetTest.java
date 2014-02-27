@@ -63,6 +63,10 @@ public class SkipSetTest
 		assertEquals(null, set1.floor(Integer.MIN_VALUE));
 		tester.validateSkipSet(set1);
 		
+		SkipSet<Integer> set1a = SkipSet.create();
+		set1a.addAll(set1);
+		assertEquals(set1, set1a);
+		
 		Integer[] inArray = new Integer[set1.size() - 1];
 		Integer[] outArray = set1.toArray(inArray);
 		assertNotSame(inArray, outArray);

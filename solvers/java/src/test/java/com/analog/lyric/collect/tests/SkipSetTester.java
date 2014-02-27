@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.analog.lyric.collect.SkipSet;
 
@@ -99,5 +100,13 @@ class SkipSetTester<T> extends SetTester<T>
 		{
 			assertEquals(prev, set.last());
 		}
+		
+		SkipSet<T> copy = set.clone();
+		assertEquals(set, copy);
+		
+		TreeSet<T> treeCopy = new TreeSet<T>(set.comparator());
+		treeCopy.addAll(set);
+		SkipSet<T> copy2 = SkipSet.create(treeCopy);
+		assertEquals(set, copy2);
 	}
 }

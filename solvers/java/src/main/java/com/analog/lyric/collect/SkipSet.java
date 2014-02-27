@@ -21,8 +21,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.SortedSet;
 
-public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, ReleasableIterableCollection<E>
+import com.google.common.collect.Ordering;
+
+public class SkipSet<E> extends AbstractSkipList<E>
+	implements Set<E>, ReleasableIterableCollection<E>, Cloneable
 {
     /*
      * Construction
@@ -33,16 +37,52 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		super(comparator, (short)1);
 	}
 	
+	public static <T extends Comparable<T>> SkipSet<T> create()
+	{
+		return create(Ordering.natural());
+	}
+	
 	public static <T> SkipSet<T> create(Comparator<? super T> comparator)
 	{
 		return new SkipSet<T>(comparator);
 	}
 	
-	// TODO: add the following constructors: (), (Collection), (SortedSet)
+	public static <T extends Comparable<T>> SkipSet<T> create(Collection<? extends T> collection)
+	{
+		final SkipSet<T> set = create();
+		set.addAll(collection);
+		return set;
+	}
+	
+	public static <T> SkipSet<T> create(SortedSet<T> set)
+	{
+		final SkipSet<T> result = create(set.comparator());
+		result.addAll(set);
+		return result;
+	}
+	
+	public static <T> SkipSet<T> create(SkipSet<T> set)
+	{
+		final SkipSet<T> result = create(set.comparator());
+		result.addAll(set);
+		return result;
+	}
 	
 	/*----------------
 	 * Object methods
 	 */
+	
+	/**
+	 * Returns a copy of the set.
+	 * <p>
+	 * SUBCLASS NOTE: this does not use the default {@link Object#clone} implementation. Therefore subclasses
+	 * should not assume that fields introduced by the subclass will be cloned automatically.
+	 */
+	@Override
+	public SkipSet<E> clone()
+	{
+		return create(this);
+	}
 	
 	@Override
 	public boolean equals(Object other)
@@ -105,6 +145,8 @@ public class SkipSet<E> extends AbstractSkipList<E> implements Set<E>, Releasabl
 		boolean changed = false;
 		
 		java.util.Iterator<? extends E> iter = c.iterator();
+		
+		// TODO: add special case for when c is a SkipSet or SortedSet with same comparator.
 		
 		while (iter.hasNext())
 		{

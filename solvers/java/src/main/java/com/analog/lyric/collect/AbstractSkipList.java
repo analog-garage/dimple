@@ -28,7 +28,7 @@ import java.util.Random;
  * collections based on a skip list. There is no reason to declare this
  * type directly in interfaces.
  * 
- * @author CBarber
+ * @author Christopher Barber
  *
  * @param <K> is the type of the key contained in the list that is used to
  * determine its order.
@@ -88,7 +88,7 @@ public abstract class AbstractSkipList<K>
 	
 	private static final ThreadLocal<Object[]> tempPrecursorNode = new ThreadLocal<Object[]>();
 	
-	private final Object[] allocatePrecursorNode()
+	final static Object[] allocatePrecursorNode()
 	{
 		Object[] precursor = AbstractSkipList.tempPrecursorNode.get();
 		if (precursor == null)
@@ -108,7 +108,7 @@ public abstract class AbstractSkipList<K>
 	 */
 	private final Object[] makeFirstPrecursorNode()
 	{
-		Object[] precursor = this.allocatePrecursorNode();
+		Object[] precursor = allocatePrecursorNode();
 		
 		Object[] firstNode = this.firstNode();
 		
@@ -133,7 +133,7 @@ public abstract class AbstractSkipList<K>
 	 */
 	private final Object[] makePrecursorNode(K key)
 	{
-		Object[] precursor = this.allocatePrecursorNode();
+		Object[] precursor = allocatePrecursorNode();
 		
 		final Comparator<? super K> c = this.comparator;
 
@@ -257,7 +257,7 @@ public abstract class AbstractSkipList<K>
 
 		if (node == null || comparator.compare(this.getNodeKey(node), key) != 0)
 		{
-			short depth = this.generateNewNodeDepth();
+			short depth = generateNewNodeDepth(size);
 			node = this.makeNode(depth, key);
 			final short maxOffset = (short)(depth + this.minDepthOffset);
 
@@ -386,10 +386,10 @@ public abstract class AbstractSkipList<K>
 	 * which is ~4.3. Since this is close to 4, and log4 can be calculated efficiently
 	 * for integers. That is what we use here.
 	 */
-	protected short generateNewNodeDepth()
+	protected static short generateNewNodeDepth(int size)
 	{
 		// maxDepth ~ log4(curSize)
-		final int maxDepth = (32 - Integer.numberOfLeadingZeros(this.size)) / 2;
+		final int maxDepth = (32 - Integer.numberOfLeadingZeros(size)) / 2;
 		short depth = 0;
 		
 		if (maxDepth != 0)
