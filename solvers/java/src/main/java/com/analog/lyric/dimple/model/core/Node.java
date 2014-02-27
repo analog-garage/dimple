@@ -49,6 +49,11 @@ public abstract class Node implements INode, Cloneable
 	private static final byte MARKED = 0x01;
 	
 	/**
+	 * {@link #_topologicalFlags} value used by {@link #wasVisited()}
+	 */
+	private static final byte VISITED = 0x02;
+	
+	/**
 	 * Flags that are reserved for use by this class and should not be
 	 * used by subclasses when invoking {@link #setFlags(int)} or {@link #clearFlags()}.
 	 */
@@ -691,7 +696,18 @@ public abstract class Node implements INode, Cloneable
     }
 	
     /**
-     * Boolean utility value that can be used to mark variable has having been processed.
+     * Sets {@link #wasVisited()} to false.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public void clearVisited()
+    {
+    	clearFlags(VISITED);
+    }
+	
+    /**
+     * Boolean utility value that can be used to mark node has having been processed.
      * <p>
      * False by default and reset by {@link #initialize()}.
      * <p>
@@ -707,6 +723,22 @@ public abstract class Node implements INode, Cloneable
     }
     
     /**
+     * Boolean utility value that can be used to indicate node has been visited.
+     * <p>
+     * False by default and reset by {@link #initialize()}.
+     * <p>
+     * @see #clearVisited()
+     * @see #setVisited()
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final boolean wasVisited()
+    {
+    	return isFlagSet(VISITED);
+    }
+    
+    /**
      * Sets {@link #isMarked()} to true.
      * 
      * @since 0.05
@@ -715,6 +747,17 @@ public abstract class Node implements INode, Cloneable
     public final void setMarked()
     {
     	setFlags(MARKED);
+    }
+    
+    /**
+     * Sets {@link #wasVisited()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public final void setVisited()
+    {
+    	setFlags(VISITED);
     }
     
 	/*-------------------
