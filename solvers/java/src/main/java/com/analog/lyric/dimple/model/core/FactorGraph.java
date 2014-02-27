@@ -18,16 +18,16 @@ package com.analog.lyric.dimple.model.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -36,8 +36,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import cern.colt.list.IntArrayList;
+
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Uniform;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -582,52 +585,82 @@ public class FactorGraph extends FactorBase
 
 	/**
 	 * Joining factors replaces all the original factors with one joint factor.
-	 * We take the cartesian product of the rows of the tables such that the
-	 * variables values are consistent.
+	 * <p>
+	 * We take the cartesian product of the entries of the tables such that the
+	 * variables values are consistent. The variable order is determined by taking
+	 * all of the variables from the first factor in order, then adding remaining
+	 * variables in order from each remaining factor in turn.
+	 * <p>
+	 * @return the new joint factor
+	 * @see #join(VariableBase[], Factor...)
 	 */
 	public Factor join(Factor ... factors)
 	{
-		return join(VariableBase.orderById, factors);
-	}
-	
-	public Factor join(Comparator<VariableBase> variableOrdering, Factor ... factors)
-	{
-		final int nFactors = factors.length;
-		
-		if (nFactors == 0)
-		{
-			return null;
-		}
-		else if (nFactors == 1)
-		{
-			return factors[0];
-		}
-	
-		// Build map of variables in all factors to its index in the merged factor.
-		final Map<VariableBase, Integer> varToIndex = new LinkedHashMap<VariableBase, Integer>();
+		Set<VariableBase> variables = new LinkedHashSet<VariableBase>();
 		for (Factor factor : factors)
 		{
 			final int nVarsInFactor = factor.getSiblingCount();
 			for (int i = 0; i < nVarsInFactor; ++i)
 			{
 				final VariableBase variable = factor.getSibling(i);
-				if (!varToIndex.containsKey(variable))
+				if (!variables.contains(variable))
 				{
-					varToIndex.put(variable, -1);
+					variables.add(variable);
 				}
 			}
 		}
+		return join(variables.toArray(new VariableBase[variables.size()]), factors);
+	}
+	
+	/**
+	 * Merges {@code factors} into a single joint factor over the given set of variables.
+	 * <p>
+	 * @param variables specifies the variables and the order in which they will appear in the new joint factor.
+	 * This may include variables that are not in any of the specified {@code factors} but must not omit any
+	 * variable that appears in one of the {@code factors} nor should it repeat any variable.
+	 * @param factors specifies the factors to be merged. If empty, this will add a new uniform factor over
+	 * the specified variables.
+	 * @return the new joint factor. If {@code factors} has a single entry with the specified
+	 * {@code variables} in the specified order, this will simply return that factor without
+	 * modifying the graph.
+	 */
+	public Factor join(VariableBase[] variables, Factor ... factors)
+	{
+		final int nFactors = factors.length;
+		final int nVariables = variables.length;
 		
-		final int nVariables = varToIndex.size();
-		final VariableBase[] variables = varToIndex.keySet().toArray(new VariableBase[nVariables]);
-		Arrays.sort(variables, variableOrdering);
-
+		if (nFactors == 0)
+		{
+			return addFactor(Uniform.INSTANCE, variables);
+		}
+		else if (nFactors == 1)
+		{
+			final Factor factor = factors[0];
+			outer:
+			if (factor.getSiblingCount() == nVariables)
+			{
+				for (int i = 0; i < nVariables; ++i)
+				{
+					if (variables[0] != factor.getSibling(i))
+					{
+						break outer;
+					}
+				}
+				
+				// Factor already in correct form.
+				return factor;
+			}
+		}
+	
+		// Build map of variables in all factors to its index in the merged factor.
+		final Map<VariableBase, Integer> varToIndex = new HashMap<VariableBase, Integer>();
 		for (int i = 0; i < nVariables; ++i)
 		{
 			varToIndex.put(variables[i], i);
 		}
 		
 		// Build mappings from each factor's variable order to the merged order
+		final BitSet varsUsed = new BitSet(nVariables);
 		ArrayList<Tuple2<FactorFunction, int[]>> oldToNew = new ArrayList<Tuple2<FactorFunction, int[]>>(nFactors);
 		for (Factor factor : factors)
 		{
@@ -636,9 +669,32 @@ public class FactorGraph extends FactorBase
 			for (int i = 0; i < nVarsInFactor; ++i)
 			{
 				final VariableBase variable = factor.getSibling(i);
-				oldToNewIndex[i] = varToIndex.get(variable);
+				final Integer oldIndex = varToIndex.get(variable);
+				if (oldIndex == null)
+				{
+					throw new DimpleException("Variable %s from factor %s not in variable list for join");
+				}
+				oldToNewIndex[i] = oldIndex.intValue();
+				varsUsed.set(oldIndex.intValue());
 			}
 			oldToNew.add(Tuple2.create(factor.getFactorFunction(), oldToNewIndex));
+		}
+		
+		// If there are variables that are not in any factor, create a virtual uniform
+		// factor for those variables
+		IntArrayList extraVariables = null;
+		for (int i = -1; (i = varsUsed.nextClearBit(i + 1)) < nVariables;)
+		{
+			if (extraVariables == null)
+			{
+				extraVariables = new IntArrayList();
+			}
+			extraVariables.add(i);
+		}
+		if (extraVariables != null)
+		{
+			extraVariables.trimToSize();
+			oldToNew.add(Tuple2.create((FactorFunction)Uniform.INSTANCE, extraVariables.elements()));
 		}
 		
 		// Create the joint factor function

@@ -622,6 +622,8 @@ public class VariableEliminator
 		 */
 		public boolean alreadyGoodForFastExactInference()
 		{
+			// FIXME: this is not sufficient because it ignores multiple factors connecting the same
+			// variables.
 			return _addedEdges == 0 && _conditionedVariables == 0 && _factorsWithDuplicateVariables == 0;
 		}
 		

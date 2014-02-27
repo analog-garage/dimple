@@ -17,9 +17,10 @@
 package com.analog.lyric.dimple.model.transform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,10 +30,10 @@ import java.util.Set;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
-import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.SkipSet;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Uniform;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTableIterator;
@@ -41,7 +42,6 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedJointDiscreteVariable;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
@@ -52,10 +52,9 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
-import com.google.common.primitives.Ints;
 
 public class JunctionTreeTransform
 {
@@ -67,17 +66,6 @@ public class JunctionTreeTransform
 	private boolean _useConditioning = true;
 	private final VariableCost[] _costFunctions = {};
 	private Random _rand = new Random();
-	
-	/**
-	 * Orders factors by decreasing order of non-zero factor table entries.
-	 */
-	private static final Comparator<Factor> _factorTableComparator = new Comparator<Factor>() {
-		@Override
-		public int compare(Factor f1, Factor f2)
-		{
-			return Ints.compare(f2.getFactorTable().countNonZeroWeights(), f1.getFactorTable().countNonZeroWeights());
-		}
-	};
 	
 	/**
 	 * Orders variables by id.
@@ -128,14 +116,14 @@ public class JunctionTreeTransform
 		/**
 		 * Factors that make up the clique.
 		 */
-		private final ArrayList<Factor> _factors;
+		private final Factor[] _factors;
 		
 		/**
 		 * Variables in clique
 		 */
-		private final SkipSet<Discrete> _variables = new SkipSet<Discrete>(_variableComparator);
+		private final Discrete[] _variables;
 		
-		private final ArrayList<CliqueEdge> _edges = new ArrayList<CliqueEdge>();
+		private final SkipSet<CliqueEdge> _edges;
 		
 		private boolean _hasMultiVariableEdge = false;
 		
@@ -157,42 +145,22 @@ public class JunctionTreeTransform
 		 * Construction
 		 */
 		
-		private Clique(Factor factor)
+		private Clique(List<Discrete> variables, List<Factor> factors)
 		{
-			_factors = new ArrayList<Factor>();
-			_factors.add(factor);
-			for (int i = 0, end = factor.getSiblingCount(); i < end; ++i)
-			{
-				_variables.add(factor.getSibling(i).asDiscreteVariable());
-			}
+			_factors = factors.toArray(new Factor[factors.size()]);
+			_variables = variables.toArray(new Discrete[variables.size()]);
+			_edges = SkipSet.create();
+			Arrays.sort(_variables, _variableComparator);
 		}
 		
-		private Clique(Clique[] cliques)
+		/*----------------
+		 * Object methods
+		 */
+		
+		@Override
+		public String toString()
 		{
-			final int nCliques = cliques.length;
-			ArrayList<Clique> cliqueList = new ArrayList<Clique>(nCliques);
-			
-			int nFactors = 0;
-			for (Clique clique : cliques)
-			{
-				cliqueList.add(clique);
-				nFactors += clique._factors.size();
-				
-			}
-			
-			_factors = new ArrayList<Factor>(nFactors);
-			for (int i = 0; i < nCliques; ++i)
-			{
-				Clique clique = cliqueList.get(i);
-				ArrayList<Factor> factors = clique._factors;
-				
-				for (int j = 0, endj = factors.size(); j < endj; ++j)
-				{
-					_factors.add(factors.get(j));
-				}
-				
-				_variables.addAll(clique._variables);
-			}
+			return Arrays.toString(_variables);
 		}
 		
 		/*---------
@@ -212,30 +180,10 @@ public class JunctionTreeTransform
 				map.put(variable, this);
 			}
 		}
-		
-		private void removeFromMap(SetMultimap<Discrete, Clique> map)
-		{
-			for (Discrete variable : _variables)
-			{
-				map.remove(variable, this);
-			}
-		}
-		
+
 		private int indexOfVariable(Discrete variable)
 		{
-			int index = -1;
-			ReleasableIterator<Discrete> iter = _variables.iterator();
-			while (iter.hasNext())
-			{
-				++index;
-				if (iter.next() == variable)
-				{
-					return index;
-				}
-			}
-			iter.release();
-			
-			return -1;
+			return Arrays.binarySearch(_variables, variable, _variableComparator);
 		}
 		
 		private void joinMultivariateEdges()
@@ -244,6 +192,7 @@ public class JunctionTreeTransform
 				return;
 			
 			final int nEdges = _edges.size();
+			final CliqueEdge[] edges = _edges.toArray(new CliqueEdge[nEdges]);
 			
 			// Build mapping from new to old indices.
 			final Discrete[] newVariables = new Discrete[nEdges];
@@ -253,21 +202,21 @@ public class JunctionTreeTransform
 			
 			for (int edgei = 0; edgei < nEdges; ++edgei)
 			{
-				final CliqueEdge edge = _edges.get(edgei);
-				final int nVars = edge._variables.length;
-				final int[] a = new int[nVars];
+				final CliqueEdge edge = edges[edgei];
+				final int nEdgeVars = edge._variables.length;
+				final int[] a = new int[nEdgeVars];
 				
 				newVariables[edgei] = edge._jointVariable;
 				newDomains[edgei] = edge._jointVariable.getDiscreteDomain();
-				for (int vari = 0; vari < nVars; ++vari)
+				for (int vari = 0; vari < nEdgeVars; ++vari)
 				{
 					final Discrete edgeVar = edge._variables[vari];
 					a[vari] = indexOfVariable(edgeVar);
 				}
 				newFromOld[edgei] = a;
-				if (nVars > 1)
+				if (nEdgeVars > 1)
 				{
-					scratchIndices[edgei] = new int[nVars];
+					scratchIndices[edgei] = new int[nEdgeVars];
 				}
 			}
 			
@@ -287,18 +236,18 @@ public class JunctionTreeTransform
 				
 				for (int edgei = 0; edgei < nEdges; ++edgei)
 				{
-					final CliqueEdge edge = _edges.get(edgei);
-					final int nVars = edge._variables.length;
+					final CliqueEdge edge = edges[edgei];
+					final int nEdgeVars = edge._variables.length;
 					final int[] map = newFromOld[edgei];
 					
-					if (nVars == 1)
+					if (nEdgeVars == 1)
 					{
 						newIndices[edgei] = oldIndices[map[0]];
 					}
 					else
 					{
 						final int[] scratch = scratchIndices[edgei];
-						for (int vari = 0; vari < nVars; ++vari)
+						for (int vari = 0; vari < nEdgeVars; ++vari)
 						{
 							scratch[vari] = oldIndices[map[vari]];
 						}
@@ -325,7 +274,7 @@ public class JunctionTreeTransform
 		
 		private boolean updateBestEdge(CliqueEdge incomingEdge)
 		{
-			if (_bestEdge == null || _bestEdge._weight > incomingEdge._weight)
+			if (_bestEdge == null || _bestEdge._weight < incomingEdge._weight)
 			{
 				_bestEdge = incomingEdge;
 				return true;
@@ -339,7 +288,7 @@ public class JunctionTreeTransform
 		 */
 		private int size()
 		{
-			return _variables.size();
+			return _variables.length;
 		}
 	}
 	
@@ -347,7 +296,7 @@ public class JunctionTreeTransform
 	 * Represents an edge between two cliques/factors. Will be represented as a single
 	 * variable in the new graph.
 	 */
-	private static class CliqueEdge
+	private static class CliqueEdge implements Comparable<CliqueEdge>
 	{
 		private final Clique _from;
 		private final Clique _to;
@@ -368,7 +317,7 @@ public class JunctionTreeTransform
 		 */
 		private final double _weight;
 		
-		private CliqueEdge(Clique from, Clique to, Discrete[] variables)
+		private CliqueEdge(Clique from, Clique to, Discrete ... variables)
 		{
 			_from = from;
 			_to = to;
@@ -386,6 +335,20 @@ public class JunctionTreeTransform
 			{
 				_jointVariable = variables[0].asDiscreteVariable();
 			}
+
+			assert(ArrayUtil.isSorted(variables, _variableComparator));
+		}
+		
+		@Override
+		public String toString()
+		{
+			return String.format("%s =%s=> %s", _from, Arrays.toString(_variables), _to);
+		}
+		
+		@Override
+		public int compareTo(CliqueEdge that)
+		{
+			return _variableComparator.compare(this._jointVariable, that._jointVariable);
 		}
 		
 		private AddedDeterministicVariable makeJointVariable(FactorGraph targetModel)
@@ -411,9 +374,9 @@ public class JunctionTreeTransform
 					{
 						jointName.append("+");
 					}
-					jointName.append(edgeVars[i].getName());
+					jointName.append(edgeVars[i].getLabel());
 				}
-				jointVar.setName(jointName.toString());
+				jointVar.setLabel(jointName.toString());
 				targetModel.addVariables(jointVar);
 				_jointVariable = jointVar;
 				
@@ -438,8 +401,11 @@ public class JunctionTreeTransform
 		final Stats orderStats = eliminationOrder.stats;
 		
 		// If elimination order introduces no edges, graph is already a tree. Done.
-		if (eliminationOrder.stats.alreadyGoodForFastExactInference())
+		if (eliminationOrder.stats.alreadyGoodForFastExactInference() && model.isTree())
 		{
+			// FIXME: isTree() check should not be necessary and isn't correct if conditioning
+			// is being used. We need to fix the stats to correctly account for loops caused by
+			// multiple factors over the same variables.
 			return null;
 		}
 		
@@ -491,32 +457,13 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 4) Create initial cliques
+		// 4) Create cliques using variable elimination order
 		//
 		
-		final FactorList factors = targetModel.getFactors();
-		final int nFactors = factors.size();
-		int totalCliqueSize = 0;
-		for (Factor factor : factors)
-		{
-			totalCliqueSize += factor.getSiblingCount();
-		}
-
-		final Set<Clique> cliques = new LinkedHashSet<Clique>(nFactors);
-		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(nFactors, totalCliqueSize/nFactors);
-
-		// Create a clique for each factor
-		for (Factor factor : targetModel.getFactors())
-		{
-			final Clique clique = new Clique(factor);
-			cliques.add(clique);
-			clique.addToMap(varToCliques);
-		}
 		
-		//
-		// 5) "Eliminate" variables and merge cliques.
-		//
-
+		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(); // TODO preallocate
+		final List<Clique> cliques = new LinkedList<Clique>();
+		final List<Factor> temporaryFactors = new LinkedList<Factor>();
 		for (int vari = nConditioned; vari < nVariables; ++vari)
 		{
 			final Discrete var = (Discrete) old2new.get(variables.get(vari));
@@ -524,38 +471,69 @@ public class JunctionTreeTransform
 			// at the start because all of the variables are newly created.
 			var.setMarked();
 			
-			final Set<Clique> varCliqueSet = varToCliques.get(var);
-			final int nVarCliques = varCliqueSet.size();
-			
-			if (nVarCliques > 1)
+			final List<Factor> cliqueFactors = new LinkedList<Factor>();
+			final List<Discrete> cliqueVars = new LinkedList<Discrete>();
+
+			final int nFactors = var.getSiblingCount();
+			for (int fi = nFactors; --fi>=0;)
 			{
-				// Replace cliques with a merged copy
-				Clique[] varCliques = varCliqueSet.toArray(new Clique[nVarCliques]);
-					
-				Clique newClique = new Clique(varCliques);
-				cliques.add(newClique);
-				newClique.addToMap(varToCliques);
-				
-				for (Clique oldClique : varCliques)
+				final Factor neighborFactor = var.getSibling(fi);
+				if (!neighborFactor.isMarked())
 				{
-					cliques.remove(oldClique);
-					oldClique.removeFromMap(varToCliques);
+					cliqueFactors.add(neighborFactor);
+					neighborFactor.setMarked();
+				}
+				for (int vi = neighborFactor.getSiblingCount(); --vi>=0;)
+				{
+					// Non-Discrete variables should already have been removed during conditioning step.
+					final Discrete neighborVar = neighborFactor.getSibling(vi).asDiscreteVariable();
+					if (!neighborVar.isMarked() && !neighborVar.wasVisited())
+					{
+						cliqueVars.add(neighborVar);
+						neighborVar.setVisited();
+					}
 				}
 			}
+			
+			for (Discrete cliqueVar : cliqueVars)
+			{
+				cliqueVar.clearVisited();
+			}
+			
+			if (!cliqueFactors.isEmpty())
+			{
+				// Add temporary factor to connect remaining variables in clique to each other.
+				if (cliqueVars.size() > 1 && nFactors > 1)
+				{
+					final Factor temporaryFactor = targetModel.addFactor(Uniform.INSTANCE, cliqueVars.toArray());
+					temporaryFactor.setMarked();
+					temporaryFactors.add(temporaryFactor);
+				}
+				
+				cliqueVars.add(var);
+				Clique clique = new Clique(cliqueVars, cliqueFactors);
+				cliques.add(clique);
+				clique.addToMap(varToCliques);
+			}
 		}
-
+		
+		for (Factor temporaryFactor : temporaryFactors)
+		{
+			targetModel.remove(temporaryFactor);
+		}
+		
 		//
-		// 6) Merge factors in clique
+		// 5) Merge factors in clique
 		//
 		
 		for (Clique clique : cliques)
 		{
 			// Be polite and clear the mark bit.
-			clique._mergedFactor = targetModel.join(_variableComparator, ArrayUtil.copy(Factor.class, clique._factors));
+			clique._mergedFactor = targetModel.join(clique._variables, clique._factors);
 		}
 		
 		//
-		// 7) Use Prim's algorithm to build max spanning tree over clique graph where the edge weight
+		// 6) Use Prim's algorithm to build max spanning tree over clique graph where the edge weight
 		//    is the number of variables in common between the two cliques along each edge.
 		//
 		
@@ -589,7 +567,7 @@ public class JunctionTreeTransform
 				if (bestEdge._variables.length > 1)
 				{
 					multiVariateEdges.add(bestEdge);
-					bestEdge.makeJointVariable(targetModel);
+					transformMap.addDeterministicVariable(bestEdge.makeJointVariable(targetModel));
 				}
 				bestEdge._from.addEdge(bestEdge);
 				bestEdge._to.addEdge(bestEdge);
@@ -607,6 +585,21 @@ public class JunctionTreeTransform
 		}
 
 		//
+		// 7) Add half-edges for variables that are in only one clique and therefore won't be in any
+		//    edge created in the previous step.
+		//
+		
+		for (Discrete var : varToCliques.keySet())
+		{
+			final Set<Clique> cliquesForVar = varToCliques.get(var);
+			if (cliquesForVar.size() == 1)
+			{
+				final Clique clique = Iterables.getOnlyElement(cliquesForVar);
+				clique.addEdge(new CliqueEdge(null, clique, var));
+			}
+		}
+		
+		//
 		// 8) Rewrite factors with multivariate edges
 		//
 		
@@ -616,7 +609,7 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 10) Find orphaned variables and map each to the smallest joint variable that subsumes it
+		// 9) Find orphaned variables and map each to the smallest joint variable that subsumes it
 		//
 		
 		final Map<Discrete, Tuple2<Discrete,Integer>> orphanVarToJointVar =
@@ -627,12 +620,12 @@ public class JunctionTreeTransform
 			{
 				final Discrete var = edge._variables[vari];
 				
-				if (var.isMarked())
+				if (var.wasVisited())
 				{
 					continue;
 				}
 			
-				var.setMarked();
+				var.setVisited();
 				if (var.getSiblingCount() > 0)
 				{
 					continue;
@@ -647,8 +640,10 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 11) Create marginal factors that connects each orphan variable to a joint variable.
+		// 10) Create marginal factors that connects each orphan variable to a joint variable.
 		//
+		//    TODO: if two or more orphaned variables are attached to the same joint variable, it
+		//    can be expressed using a single factor instead of one per variable
 		
 		for (Entry<Discrete,Tuple2<Discrete,Integer>> entry : orphanVarToJointVar.entrySet())
 		{
@@ -691,8 +686,7 @@ public class JunctionTreeTransform
 	 */
 	private List<CliqueEdge> edgesNotInTree(Clique clique, SetMultimap<Discrete, Clique> varToCliques)
 	{
-		final ListMultimap<Clique, Discrete> cliqueToCommonVars = LinkedListMultimap.create();
-		
+		final SetMultimap<Clique, Discrete> cliqueToCommonVars = LinkedHashMultimap.create();
 		
 		// NOTE: because clique._variables is sorted the variables in the edge list will also be sorted.
 		
@@ -709,9 +703,9 @@ public class JunctionTreeTransform
 		
 		List<CliqueEdge> edges = new ArrayList<CliqueEdge>(cliqueToCommonVars.size());
 		
-		for (Clique neighbor : cliqueToCommonVars.keys())
+		for (Clique neighbor : cliqueToCommonVars.keySet())
 		{
-			final List<Discrete> commonVars = cliqueToCommonVars.get(neighbor);
+			final Set<Discrete> commonVars = cliqueToCommonVars.get(neighbor);
 			edges.add(new CliqueEdge(clique, neighbor, ArrayUtil.copy(Discrete.class, commonVars)));
 		}
 		
