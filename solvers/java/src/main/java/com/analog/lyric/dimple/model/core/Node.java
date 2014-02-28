@@ -684,77 +684,43 @@ public abstract class Node implements INode, Cloneable
 	 * Internal methods
 	 */
 	
-    /**
-     * Sets {@link #isMarked()} to false.
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public void clearMarked()
     {
     	clearFlags(MARKED);
     }
 	
-    /**
-     * Sets {@link #wasVisited()} to false.
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public void clearVisited()
     {
     	clearFlags(VISITED);
     }
 	
-    /**
-     * Boolean utility value that can be used to mark node has having been processed.
-     * <p>
-     * False by default and reset by {@link #initialize()}.
-     * <p>
-     * @see #clearMarked()
-     * @see #setMarked()
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public final boolean isMarked()
     {
     	return isFlagSet(MARKED);
     }
     
-    /**
-     * Boolean utility value that can be used to indicate node has been visited.
-     * <p>
-     * False by default and reset by {@link #initialize()}.
-     * <p>
-     * @see #clearVisited()
-     * @see #setVisited()
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public final boolean wasVisited()
     {
     	return isFlagSet(VISITED);
     }
     
-    /**
-     * Sets {@link #isMarked()} to true.
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public final void setMarked()
     {
     	setFlags(MARKED);
     }
     
-    /**
-     * Sets {@link #wasVisited()} to true.
-     * 
-     * @since 0.05
-     */
-    @Internal
+    @Override
+	@Internal
     public final void setVisited()
     {
     	setFlags(VISITED);

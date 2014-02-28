@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -449,7 +451,7 @@ public class VariableEliminator
 				cliqueCardinality *= neighbor.cardinality();
 			}
 			
-			_stats.addClique(1 + var.nNeighbors(), cliqueCardinality);
+			_stats.addClique(var, cliqueCardinality);
 
 			// Add edges between remaining neighbors
 			for (VarLink link1 = var._neighborList._next; link1._var != null; link1 = link1._next)
@@ -567,6 +569,8 @@ public class VariableEliminator
 		private int _factorsWithDuplicateVariables;
 		private int _maxClique;
 		private long _maxCliqueCardinality;
+		private int _mergedFactors;
+		private int _variablesWithDuplicateEdges;
 
 		/*--------------
 		 * Construction
@@ -590,6 +594,8 @@ public class VariableEliminator
 			_factorsWithDuplicateVariables = value;
 			_maxClique = value;
 			_maxCliqueCardinality = value;
+			_mergedFactors = value;
+			_variablesWithDuplicateEdges = value;
 		}
 		
 		public Stats(Stats that)
@@ -601,6 +607,8 @@ public class VariableEliminator
 			_factorsWithDuplicateVariables = that._factorsWithDuplicateVariables;
 			_maxClique = that._maxClique;
 			_maxCliqueCardinality = that._maxCliqueCardinality;
+			_mergedFactors = that._mergedFactors;
+			_variablesWithDuplicateEdges = that._variablesWithDuplicateEdges;
 		}
 		
 		@Override
@@ -617,14 +625,14 @@ public class VariableEliminator
 		 * False if statistics indicates that the original graph does not need to be transformed
 		 * to do efficient exact inference.
 		 * <p>
-		 * True if {@link #addedEdges()} and {@link #conditionedVariables()} and
-		 * {@link #factorsWithDuplicateVariables()} are all zero.
+		 * True if {@link #addedEdges()},{@link #conditionedVariables()}, {@link #mergedFactors()},
+		 * {@link #factorsWithDuplicateVariables()}, and
+		 * {@link #variablesWithDuplicateEdges()} are all zero.
 		 */
 		public boolean alreadyGoodForFastExactInference()
 		{
-			// FIXME: this is not sufficient because it ignores multiple factors connecting the same
-			// variables.
-			return _addedEdges == 0 && _conditionedVariables == 0 && _factorsWithDuplicateVariables == 0;
+			return _addedEdges == 0 && _conditionedVariables == 0 && _factorsWithDuplicateVariables == 0 &&
+				_variablesWithDuplicateEdges == 0 && _mergedFactors == 0;
 		}
 		
 		/**
@@ -815,6 +823,42 @@ public class VariableEliminator
 			return this;
 		}
 		
+		/**
+		 * The number of factors that would need to be merged into other factors.
+		 */
+		public int mergedFactors()
+		{
+			return _mergedFactors;
+		}
+
+		/**
+		 * Sets value of {@link #mergedFactors()} and returns this object.
+		 */
+		public Stats mergedFactors(int n)
+		{
+			_mergedFactors = n;
+			return this;
+		}
+		
+		/**
+		 * The number of variables that are connected to another variable through more than one factor.
+		 * <p>
+		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 */
+		public int variablesWithDuplicateEdges()
+		{
+			return _variablesWithDuplicateEdges;
+		}
+		
+		/**
+		 * Sets value of {@link #variablesWithDuplicateEdges()} and returns this object.
+		 */
+		public Stats variablesWithDuplicateEdges(int n)
+		{
+			_variablesWithDuplicateEdges = n;
+			return this;
+		}
+		
 		/*-----------------
 		 * Private methods
 		 */
@@ -825,10 +869,17 @@ public class VariableEliminator
 			_addedEdgeWeight += weight;
 		}
 		
-		private void addClique(int size, long cardinality)
+		private void addClique(Var var, long cardinality)
 		{
+			final int size = 1 + var.nNeighbors();
 			_maxClique = Math.max(_maxClique, size);
 			_maxCliqueCardinality = Math.max(_maxCliqueCardinality, cardinality);
+			
+			final int mergedFactors = var._variable.getSiblingCount();
+			if (mergedFactors > 1)
+			{
+				_mergedFactors += mergedFactors;
+			}
 		}
 		
 		private void addConditionedVariable()
@@ -836,9 +887,14 @@ public class VariableEliminator
 			++_conditionedVariables;
 		}
 
-		public void addFactorWithDuplicateVars(FactorBase factor)
+		private void addFactorWithDuplicateVars(FactorBase factor)
 		{
 			++_factorsWithDuplicateVariables;
+		}
+
+		private void addVariableWithDuplicateEdges(VariableBase variable)
+		{
+			++_variablesWithDuplicateEdges;
 		}
 	}
 	
@@ -1106,8 +1162,8 @@ public class VariableEliminator
 	{
 		final List<Var> list = new LinkedList<Var>();
 		final VariableList variables = _model.getVariables();
-		final Map<VariableBase,Var> map = new HashMap<VariableBase,Var>(variables.size());
-		
+		final Map<VariableBase,Var> map = new LinkedHashMap<VariableBase,Var>(variables.size());
+
 		for (VariableBase variable : variables)
 		{
 			if (!variable.getDomain().isDiscrete() && !isConditioned(variable))
@@ -1119,53 +1175,76 @@ public class VariableEliminator
 			list.add(var);
 			variable.clearMarked();
 		}
-		
+
 		final FactorList factors = _model.getFactors();
-		Var[] vars = new Var[10];
-		
-		for (FactorBase factor : factors)
+		for (Factor factor : factors)
 		{
-			final int nVars = factor.getSiblingCount();
-			if (vars.length < nVars)
-			{
-				vars = new Var[nVars];
-			}
+			factor.clearMarked();
+		}
+
+		Set<Factor> factorsWithDuplicateVars = new HashSet<Factor>();
+		Set<VariableBase> variablesWithDuplicateEdges = new HashSet<VariableBase>();
+		
+		for (Var var : map.values())
+		{
+			if (var._isConditioned)
+				continue;
 			
-			int nIncludedVars = 0;
-			boolean factorHasDuplicateVars = false;
-			
-			for (int i = 0; i < nVars; ++i)
+			final VariableBase variable = var._variable;
+
+			for (int fi = 0, nFactors = variable.getSiblingCount(); fi < nFactors; ++fi)
 			{
-				final VariableBase neighbor = factor.getSibling(i);
-				if (!isConditioned(neighbor))
+				final Factor factor = variable.getSibling(fi);
+				if (factor.isMarked())
 				{
-					factorHasDuplicateVars |= neighbor.isMarked();
-					neighbor.setMarked();
-					vars[nIncludedVars++] = map.get(neighbor);
+					factorsWithDuplicateVars.add(factor);
+					continue;
 				}
-			}
-			
-			if (factorHasDuplicateVars)
-			{
-				stats.addFactorWithDuplicateVars(factor);
+				factor.setMarked();
+
+				for (int vi = 0, nVariables = factor.getSiblingCount(); vi < nVariables; ++vi)
+				{
+					final VariableBase neighborVariable = factor.getSibling(vi);
+					if (neighborVariable == variable)
+						continue;
+					
+					final Var neighborVar = map.get(neighborVariable);
+					if (neighborVar._isConditioned)
+						continue;
+
+					if (neighborVariable.isMarked())
+					{
+						variablesWithDuplicateEdges.add(variable);
+					}
+					else
+					{
+						neighborVariable.setMarked();
+						var.addNeighbor(map.get(neighborVariable));
+					}
+				}
 			}
 
-			// Connect all variables in factor to each other.
-			for (int i = nIncludedVars; --i>=1;)
+			// Reset marks for visited factors and variables.
+			for (int fi = 0, nFactors = variable.getSiblingCount(); fi < nFactors; ++fi)
 			{
-				final Var vari = vars[i];
-				vari._variable.clearMarked();
-				for (int j = i; --j>=0;)
-				{
-					final Var varj = vars[j];
-					vari.addNeighbor(varj);
-					varj.addNeighbor(vari);
-				}
+				final Factor factor = variable.getSibling(fi);
+				factor.clearMarked();
 			}
-			if (nIncludedVars > 0)
+
+			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
 			{
-				vars[0]._variable.clearMarked();
+				link._var._variable.clearMarked();
 			}
+		}
+
+		for (Factor factor : factorsWithDuplicateVars)
+		{
+			stats.addFactorWithDuplicateVars(factor);
+		}
+		
+		for (VariableBase variable : variablesWithDuplicateEdges)
+		{
+			stats.addVariableWithDuplicateEdges(variable);
 		}
 		
 		return list;

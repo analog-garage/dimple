@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
+import com.analog.lyric.util.misc.Internal;
 
 
 public interface INode  extends INameable
@@ -189,5 +190,60 @@ public interface INode  extends INameable
 	public void initialize();
 	public void initialize(int portNum);
 
-
+	/*------------------
+	 * Internal methods
+	 */
+	
+    @Internal
+    public void clearMarked();
+	
+    /**
+     * Sets {@link #wasVisited()} to false.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public void clearVisited();
+	
+    /**
+     * Boolean utility value that can be used to mark node has having been processed.
+     * <p>
+     * False by default and reset by {@link #initialize()}.
+     * <p>
+     * @see #clearMarked()
+     * @see #setMarked()
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public  boolean isMarked();
+    
+    /**
+     * Boolean utility value that can be used to indicate node has been visited.
+     * <p>
+     * False by default and reset by {@link #initialize()}.
+     * <p>
+     * @see #clearVisited()
+     * @see #setVisited()
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public  boolean wasVisited();
+    
+    /**
+     * Sets {@link #isMarked()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public  void setMarked();
+    
+    /**
+     * Sets {@link #wasVisited()} to true.
+     * 
+     * @since 0.05
+     */
+    @Internal
+    public  void setVisited();
 }

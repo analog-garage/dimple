@@ -119,6 +119,22 @@ public class TestVariableEliminator
 		}
 	}
 	
+	@Test
+	public void testMinimalLoop()
+	{
+		FactorGraph model = new FactorGraph();
+		Discrete a = newVar(2, "a");
+		Discrete b = newVar(2, "b");
+		addClique(model, a, b);
+		addClique(model, a, b);
+		
+		testEliminator(model, VariableCost.MIN_NEIGHBORS,
+			expectedStats().addedEdges(0).addedEdgeWeight(0)
+			.maxCliqueSize(2).maxCliqueCardinality(4)
+			.variablesWithDuplicateEdges(2)
+			, a, b);
+	}
+	
 	/**
 	 * Graph of form:
 	 * <pre>
@@ -130,7 +146,7 @@ public class TestVariableEliminator
 	 * </pre>
 	 */
 	@Test
-	public void testMinimalLoop()
+	public void testSquare()
 	{
 		FactorGraph model = new FactorGraph();
 		Discrete a = newVar(2, "a");
@@ -480,6 +496,12 @@ public class TestVariableEliminator
 		
 		// Test alreadyGoodForExactInference
 		assertTrue(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.variablesWithDuplicateEdges(0).mergedFactors(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(0)
+			.variablesWithDuplicateEdges(0)
+			.alreadyGoodForFastExactInference());
+		assertFalse(new Stats().addedEdges(0).conditionedVariables(0).factorsWithDuplicateVariables(0)
 			.alreadyGoodForFastExactInference());
 		assertFalse(new Stats().addedEdges(1).conditionedVariables(0).factorsWithDuplicateVariables(0)
 			.alreadyGoodForFastExactInference());

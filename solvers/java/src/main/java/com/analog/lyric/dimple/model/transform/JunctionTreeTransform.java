@@ -401,11 +401,8 @@ public class JunctionTreeTransform
 		final Stats orderStats = eliminationOrder.stats;
 		
 		// If elimination order introduces no edges, graph is already a tree. Done.
-		if (eliminationOrder.stats.alreadyGoodForFastExactInference() && model.isTree())
+		if (eliminationOrder.stats.alreadyGoodForFastExactInference())
 		{
-			// FIXME: isTree() check should not be necessary and isn't correct if conditioning
-			// is being used. We need to fix the stats to correctly account for loops caused by
-			// multiple factors over the same variables.
 			return null;
 		}
 		
