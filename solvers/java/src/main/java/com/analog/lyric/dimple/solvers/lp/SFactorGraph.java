@@ -643,6 +643,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * Returns solver factor belonging to this solver graph that is
 	 * associated with input model factor or else null.
 	 */
+	@Override
 	public STableFactor getSolverFactor(Factor factor)
 	{
 		return _factorMap.get(factor);

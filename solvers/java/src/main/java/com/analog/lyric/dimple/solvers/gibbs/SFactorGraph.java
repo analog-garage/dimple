@@ -243,7 +243,18 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new SRealFactorBlastFromThePast(factor);
 	}
 	
-
+	@Override
+	public ISolverFactorGibbs getSolverFactor(Factor factor)
+	{
+		return (ISolverFactorGibbs)super.getSolverFactor(factor);
+	}
+	
+	@Override
+	public ISolverVariableGibbs getSolverVariable(VariableBase variable)
+	{
+		return (ISolverVariableGibbs)super.getSolverVariable(variable);
+	}
+	
 	@Override
 	public void initialize()
 	{
@@ -348,7 +359,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		iterate(_updatesPerSample);
 		for (VariableBase v : _factorGraph.getVariables())
 		{
-			ISolverVariableGibbs vs = (ISolverVariableGibbs)(v.getSolver());
+			ISolverVariableGibbs vs = getSolverVariable(v);
 			vs.updateBelief();
 			vs.saveCurrentSample();		// Note that the first sample saved is one full sample after burn in, not immediately after burn in (in case the burn in is zero)
 		}
@@ -358,7 +369,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (totalPotential < _minPotential || _firstSample)
 		{
 			for (VariableBase v : _factorGraph.getVariables())
-				((ISolverVariableGibbs)(v.getSolver())).saveBestSample();
+				getSolverVariable(v).saveBestSample();
 			_minPotential = totalPotential;
 			_firstSample = false;
 		}
@@ -387,7 +398,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			FactorGraph ng = fgs.getNestedGraphs().get(fgs.getNestedGraphs().size()-1);
 			for (VariableBase vb : ng.getBoundaryVariables())
 			{
-				((ISolverVariableGibbs)vb.getSolver()).randomRestart(0);
+				getSolverVariable(vb).randomRestart(0);
 			}
 		}
 	}
@@ -397,7 +408,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		deferDeterministicUpdates();
 		
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)v.getSolver()).randomRestart(restartCount);
+			getSolverVariable(v).randomRestart(restartCount);
 		
 		processDeferredDeterministicUpdates();
 		
@@ -411,9 +422,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	{
 		double totalPotential = 0;
 		for (Factor f : _factorGraph.getNonGraphFactors())
-			totalPotential += ((ISolverFactorGibbs)(f.getSolver())).getPotential();
+			totalPotential += getSolverFactor(f).getPotential();
 		for (VariableBase v : _factorGraph.getVariables())		// Variables contribute too because they have inputs, which are factors
-			totalPotential += ((ISolverVariableGibbs)(v.getSolver())).getPotential();
+			totalPotential += getSolverVariable(v).getPotential();
 		return totalPotential;
 	}
 	
@@ -421,7 +432,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void saveAllSamples()
 	{
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)(v.getSolver())).saveAllSamples();
+			getSolverVariable(v).saveAllSamples();
 	}
 	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
@@ -452,7 +463,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_temperature = T;
 		double beta = 1/T;
 		for (VariableBase v : _factorGraph.getVariables())
-			((ISolverVariableGibbs)(v.getSolver())).setBeta(beta);
+			getSolverVariable(v).setBeta(beta);
 	}
 	public double getTemperature() {return _temperature;}
 	
@@ -624,7 +635,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (int i = 0, nvars = f.getSiblingCount(); i < nvars; ++i)
 		{
-			((ISolverVariableGibbs) f.getSibling(i).getSolver()).postAddFactor(f);
+			getSolverVariable(f.getSibling(i)).postAddFactor(f);
 		}
 		
 		processDeferredDeterministicUpdates();
@@ -637,7 +648,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 
 		for(VariableBase vb : getModel().getVariablesFlat())
 		{
-			((ISolverVariableGibbs)vb.getSolver()).postAddFactor(null);
+			getSolverVariable(vb).postAddFactor(null);
 		}
 
 		processDeferredDeterministicUpdates();

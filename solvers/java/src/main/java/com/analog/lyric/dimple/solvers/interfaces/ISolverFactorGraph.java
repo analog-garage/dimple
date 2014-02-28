@@ -37,6 +37,11 @@ public interface ISolverFactorGraph extends ISolverNode
 	public ISolverVariable createVariable(VariableBase var);
 	
 	/**
+	 * @return solver-specific factor representing the given model factor or else null.
+	 */
+	public ISolverFactor getSolverFactor(Factor factor);
+
+	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
 	public ISolverVariable getSolverVariable(VariableBase var);

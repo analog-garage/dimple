@@ -173,8 +173,8 @@ public class TestJunctionTreeTransform
 			{
 				VariableBase targetVar = (VariableBase) transformMap.sourceToTarget().get(sourceVar);
 				
-				ISolverVariableGibbs sourceSVar = (ISolverVariableGibbs) sourceVar.getSolver();
-				ISolverVariableGibbs targetSVar = (ISolverVariableGibbs) targetVar.getSolver();
+				ISolverVariableGibbs sourceSVar = sourceGibbs.getSolverVariable(sourceVar);
+				ISolverVariableGibbs targetSVar = targetGibbs.getSolverVariable(targetVar);
 
 				targetSVar.setCurrentSample(sourceSVar.getCurrentSampleValue());
 			}
@@ -182,13 +182,13 @@ public class TestJunctionTreeTransform
 			// Update values of added variables
 			for (AddedDeterministicVariable added : transformMap.addedDeterministicVariables())
 			{
-				final ISolverVariableGibbs addedSVar = (ISolverVariableGibbs)added.getVariable().getSolver();
+				final ISolverVariableGibbs addedSVar = targetGibbs.getSolverVariable(added.getVariable());
 				final Value value = addedSVar.getCurrentSampleValue();
 				final Value[] inputs = new Value[added.getInputCount()];
 				for (int i = inputs.length; --i>=0;)
 				{
 					final VariableBase inputVar = added.getInput(i);
-					final ISolverVariableGibbs inputSVar = (ISolverVariableGibbs) inputVar.getSolver();
+					final ISolverVariableGibbs inputSVar = targetGibbs.getSolverVariable(inputVar);
 					inputs[i] = inputSVar.getCurrentSampleValue();
 				}
 				
