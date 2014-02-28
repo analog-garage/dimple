@@ -24,16 +24,19 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM.MapFunction;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
+import com.analog.lyric.benchmarking.utils.functional.Functions;
+import com.analog.lyric.benchmarking.utils.functional.TransformFunction;
 
 public class Image
 {
-	public static ArrayM array2dOfImage(BufferedImage image)
+	public static DoubleSpace array2dOfImage(BufferedImage image)
 	{
-		ArrayM result = new ArrayM(image.getHeight(), image.getWidth());
-		for (int y = 0; y < image.getHeight(); y++)
+		DoubleSpace result = DoubleSpaceFactory.create(image.getHeight(), image.getWidth());
+		for (int x = 0; x < image.getWidth(); x++)
 		{
-			for (int x = 0; x < image.getWidth(); x++)
+			for (int y = 0; y < image.getHeight(); y++)
 			{
 				int rgb = image.getRGB(x, y);
 				Color color = new Color(rgb);
@@ -41,29 +44,30 @@ public class Image
 				int g = color.getGreen();
 				int b = color.getBlue();
 				double v = 0.2989 * r + 0.5870 * g + 0.1140 * b;
-				result.set(v, y, x);
+				result.put(v, y, x);
 			}
 		}
 		return result;
 	}
 
-	public static ArrayM loadImage(URL urlImage) throws IOException
+	public static DoubleSpace loadImage(URL urlImage) throws IOException
 	{
 		BufferedImage image = ImageIO.read(urlImage);
 		return array2dOfImage(image);
 	}
 
-	public static BufferedImage imageOfArray2d(ArrayM image)
+	// TODO rename
+	public static BufferedImage imageOfArray2d(DoubleSpace image)
 	{
-		image = image.clone().normalize();
+		image = DoubleSpaceFactory.copy(image);
+		Functions.normalize(image);
 		int[] dims = image.getDimensions();
 		int width = dims[1];
 		int height = dims[0];
-		BufferedImage result = new BufferedImage(width, height,
-				BufferedImage.TYPE_BYTE_GRAY);
-		for (int y = 0; y < height; y++)
+		BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+		for (int x = 0; x < width; x++)
 		{
-			for (int x = 0; x < width; x++)
+			for (int y = 0; y < height; y++)
 			{
 				double v = image.get(y, x);
 				int level = (int) (255.0 * v);
@@ -75,13 +79,13 @@ public class Image
 		return result;
 	}
 
-	public static void saveImage(String path, ArrayM image) throws IOException
+	public static void save(String path, DoubleSpace image) throws IOException
 	{
 		BufferedImage result = imageOfArray2d(image);
 		ImageIO.write(result, "png", new File(path));
 	}
 
-	private static class ContrastCurveImpl implements MapFunction
+	public final static TransformFunction contrastCurve = new TransformFunction()
 	{
 		final double s = 0.99;
 		final double bp = (1 + s) / 2;
@@ -95,7 +99,5 @@ public class Image
 			double vp = (c + b) / 2 / b;
 			return (1.0 - Math.exp(-s2 * vp)) / (1.0 - Math.exp(-s2));
 		}
-	}
-
-	public final static MapFunction contrastCurve = new ContrastCurveImpl();
+	};
 }

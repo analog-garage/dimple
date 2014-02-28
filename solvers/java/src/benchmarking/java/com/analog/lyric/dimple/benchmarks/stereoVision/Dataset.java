@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 
 public class Dataset
 {
 	private String _name;
-	private ArrayM _imageL;
-	private ArrayM _imageR;
+	private DoubleSpace _imageL;
+	private DoubleSpace _imageR;
 
 	public Dataset(String name) throws IOException
 	{
@@ -53,22 +53,22 @@ public class Dataset
 		this._name = name;
 	}
 
-	public ArrayM getImageL()
+	public DoubleSpace getImageL()
 	{
 		return _imageL;
 	}
 
-	public void setImageL(ArrayM image)
+	public void setImageL(DoubleSpace image)
 	{
 		this._imageL = image;
 	}
 
-	public ArrayM getImageR()
+	public DoubleSpace getImageR()
 	{
 		return _imageR;
 	}
 
-	public void setImageR(ArrayM image)
+	public void setImageR(DoubleSpace image)
 	{
 		this._imageR = image;
 	}

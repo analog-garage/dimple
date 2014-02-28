@@ -21,9 +21,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM.GeneratorWithCoordinatesFunction;
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM.IterFunctionWithCoordinates;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
+import com.analog.lyric.benchmarking.utils.functional.GeneratorFunction;
+import com.analog.lyric.benchmarking.utils.functional.IterFunctionWithCoordinates;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -116,7 +117,7 @@ public class ImageDenoisingGraph
 		}
 	}
 
-	public void setInput(ArrayM likelihoods)
+	public void setInput(DoubleSpace likelihoods)
 	{
 		likelihoods.iter(new IterFunctionWithCoordinates()
 		{
@@ -136,15 +137,13 @@ public class ImageDenoisingGraph
 		return (Integer) (_vs[row][col].getValue());
 	}
 
-	public ArrayM getValue()
+	public DoubleSpace getValue()
 	{
-		return ArrayM.generate(new GeneratorWithCoordinatesFunction()
+		return DoubleSpaceFactory.generate(new GeneratorFunction()
 		{
 			public double apply(int... coordinates)
 			{
-				int row = coordinates[0];
-				int col = coordinates[1];
-				return (Integer) _vs[row][col].getValue();
+				return getValue(coordinates);
 			}
 		}, _rows, _cols);
 	}

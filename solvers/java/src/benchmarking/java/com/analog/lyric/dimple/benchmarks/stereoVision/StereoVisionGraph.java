@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.benchmarks.stereoVision;
 
-import com.analog.lyric.dimple.benchmarks.utils.ArrayM;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
+import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -35,8 +36,7 @@ public class StereoVisionGraph
 	private int _depthRange;
 	private Discrete[][] _variables;
 
-	public StereoVisionGraph(FactorGraph fg, int depthRange, ArrayM imageL,
-			ArrayM imageR)
+	public StereoVisionGraph(FactorGraph fg, int depthRange, DoubleSpace imageL, DoubleSpace imageR)
 	{
 		int[] dims = imageL.getDimensions();
 		_height = dims[0];
@@ -62,57 +62,50 @@ public class StereoVisionGraph
 		{
 			for (int x = 0; x < _width - 1; x++)
 			{
-				fg.addFactor(factorFunction, _variables[y][x],
-						_variables[y][x + 1]);
+				fg.addFactor(factorFunction, _variables[y][x], _variables[y][x + 1]);
 			}
 		}
 		for (int y = 0; y < _height - 1; y++)
 		{
 			for (int x = 0; x < _width; x++)
 			{
-				fg.addFactor(factorFunction, _variables[y][x],
-						_variables[y + 1][x]);
+				fg.addFactor(factorFunction, _variables[y][x], _variables[y + 1][x]);
 			}
 		}
 	}
 
-	public ArrayM getValueImage()
+	public DoubleSpace getValueImage()
 	{
 		// The image includes a 10-pixel gray scale reference on the right.
-		ArrayM image = new ArrayM(_height, _width + 10);
+		DoubleSpace image = DoubleSpaceFactory.create(_height, _width + 10);
 		for (int y = 0; y < _height; y++)
 		{
 			for (int x = 0; x < _width; x++)
 			{
 				int value = (Integer) _variables[y][x].getValue();
-				image.set((double) value / _depthRange, y, x);
+				image.put((double) value / _depthRange, y, x);
 			}
-			double depth = ((double) ((int) ((double) y / _height * _depthRange)))
-					/ _depthRange;
+			double depth = ((double) ((int) ((double) y / _height * _depthRange))) / _depthRange;
 			for (int x = 0; x < 10; x++)
 			{
-				image.set(depth, y, _width + x);
+				image.put(depth, y, _width + x);
 			}
 		}
 		return image;
 	}
 
-	private static double[] rho_d(int x, int y, int depthRange, ArrayM imageL,
-			ArrayM imageR)
+	private static double[] rho_d(int x, int y, int depthRange, DoubleSpace imageL, DoubleSpace imageR)
 	{
 		double[] result = new double[depthRange];
-		double[] birchfieldTomasi = birchfieldTomasi(x, y, depthRange, imageL,
-				imageR);
+		double[] birchfieldTomasi = birchfieldTomasi(x, y, depthRange, imageL, imageR);
 		for (int depth = 0; depth < depthRange; depth++)
 		{
-			result[depth] = (1 - ed)
-					* Math.exp(-birchfieldTomasi[depth] / sigmaD) + ed;
+			result[depth] = (1 - ed) * Math.exp(-birchfieldTomasi[depth] / sigmaD) + ed;
 		}
 		return result;
 	}
 
-	private static double[] birchfieldTomasi(int x, int y, int depthRange,
-			ArrayM imageL, ArrayM imageR)
+	private static double[] birchfieldTomasi(int x, int y, int depthRange, DoubleSpace imageL, DoubleSpace imageR)
 	{
 		double[] result = new double[depthRange];
 		double il1 = imageL.get(y, x);
