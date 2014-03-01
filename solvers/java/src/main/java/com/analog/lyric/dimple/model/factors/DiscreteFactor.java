@@ -91,11 +91,12 @@ public class DiscreteFactor extends Factor
 	@Override
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
+		IFactorTable oldFactorTable,
 		ArrayList<VariableBase> constantVariables,
 		int[] constantIndices)
 	{
 		final int nRemoved = constantIndices.length;
-		final int[] valueIndices = new int[nRemoved];
+		final int[] valueIndices = new int[oldFactorTable.getDimensions()];
 		Arrays.fill(valueIndices, -1);
 		for (int i = 0; i < nRemoved; ++i)
 		{
@@ -103,7 +104,6 @@ public class DiscreteFactor extends Factor
 			valueIndices[constantIndices[i]] = variable.getFixedValueIndex();
 		}
 		
-		final IFactorTable oldFactorTable = oldFunction.getFactorTable(this);
 		return new TableFactorFunction(oldFunction.getName(), oldFactorTable.createTableConditionedOn(valueIndices));
 	}
 	

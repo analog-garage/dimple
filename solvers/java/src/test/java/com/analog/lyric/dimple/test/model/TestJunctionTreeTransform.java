@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
@@ -321,12 +322,43 @@ public class TestJunctionTreeTransform
 	{
 		JunctionTreeTransform jt = new JunctionTreeTransform().random(rand);
 		FactorGraphTransformMap transformMap = jt.transform(model);
+		
+		if (transformMap == null)
+		{
+			assertTrue(model.isForest());
+			return;
+		}
+		
 		for (Factor factor : transformMap.target().getFactors())
 		{
 			// Name target factors as a debugging aid
 			labelFactor(factor);
 		}
 		assertTrue(transformMap.target().isTree());
+		assertModelsEquivalent(transformMap);
+		
+		// Try with conditioning
+		model.setSolverFactory(null);
+		model.setSchedule(null);
+		VariableList variables = model.getVariables();
+		for (int i = 0; i < 100000; ++i)
+		{
+			VariableBase variable = variables.getByIndex(rand.nextInt(variables.size()));
+			if (variable instanceof Discrete)
+			{
+				Discrete discrete = (Discrete)variable;
+				discrete.setFixedValueIndex(rand.nextInt(discrete.getDomain().size()));
+				break;
+			}
+		}
+		jt.useConditioning(true);
+		transformMap = jt.transform(model);
+		for (Factor factor : transformMap.target().getFactors())
+		{
+			// Name target factors as a debugging aid
+			labelFactor(factor);
+		}
+		assertTrue(transformMap.target().isForest());
 		assertModelsEquivalent(transformMap);
 	}
 	

@@ -190,6 +190,7 @@ public class Factor extends FactorBase implements Cloneable
 		final int nEdges = getSiblingCount();
 		final ArrayList<VariableBase> constantVariables = new ArrayList<VariableBase>(nEdges);
 		final IntArrayList constantIndices = new IntArrayList(nEdges);
+		IFactorTable oldFactorTable = null;
 		
 		// Visit in reverse order so that disconnect is safe.
 		for (int i = nEdges; --i>=0;)
@@ -202,7 +203,7 @@ public class Factor extends FactorBase implements Cloneable
 					// Before disconnecting siblings, force the factor table
 					// to be instantiated if discrete, since it may depend on
 					// the original edges.
-					getFactorTable();
+					oldFactorTable = getFactorTable();
 				}
 				var.remove(this);
 				constantVariables.add(var);
@@ -218,7 +219,7 @@ public class Factor extends FactorBase implements Cloneable
 			constantIndices.trimToSize();
 			final FactorFunction oldFunction = getFactorFunction();
 			final FactorFunction newFunction =
-				removeFixedVariablesImpl(oldFunction, constantVariables, constantIndices.elements());
+				removeFixedVariablesImpl(oldFunction, oldFactorTable, constantVariables, constantIndices.elements());
 			
 			int[] newDirectedTo = null;
 			if (isDirected() && !oldFunction.isDirected())
@@ -251,6 +252,7 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
+		IFactorTable oldFactorTable,
 		ArrayList<VariableBase> constantVariables,
 		int[] constantIndices)
 	{

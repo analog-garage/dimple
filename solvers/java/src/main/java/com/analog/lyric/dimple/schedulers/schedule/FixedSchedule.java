@@ -245,9 +245,10 @@ public class FixedSchedule extends ScheduleBase
 			FixedSchedule fs = (FixedSchedule)templateGraph.getSchedule();
 			
 			ArrayList<IScheduleEntry> schedule = fs.getSchedule();
-			ArrayList<IScheduleEntry> newSchedule = new ArrayList<IScheduleEntry>();
+			final int size = schedule.size();
+			ArrayList<IScheduleEntry> newSchedule = new ArrayList<IScheduleEntry>(size);
 			
-			for (int i = 0; i < schedule.size(); i++)
+			for (int i = 0; i < size; i++)
 			{
 				IScheduleEntry entry = schedule.get(i);
 				
