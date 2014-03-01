@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
@@ -36,21 +36,17 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		
 		// TODO: alternatively, one of the ports could be a discrete variable with a single domain element
 		
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
-		if (ff.getConstants().length != 1)
+		FactorFunction ff = factor.getFactorFunction();
+		if (ff.getConstantCount() != 1)
 			throw new DimpleException("expected one constant");
 		
-		double [][] constant;
-		if (ff.getConstants()[0] instanceof double [])
-		{
+		double[][] constant;
+		if (ff.getConstants()[0] instanceof double[])
 			constant = new double[][] {(double[])ff.getConstants()[0]};
-		}
 		else
-		{
 			constant = (double[][])ff.getConstants()[0];
-		}
 		
-		if (ff.getConstantIndices()[0] != 1)
+		if (!ff.isConstantIndex(1))
 			throw new DimpleException("Expect matrix to be second arg");
 		
 		

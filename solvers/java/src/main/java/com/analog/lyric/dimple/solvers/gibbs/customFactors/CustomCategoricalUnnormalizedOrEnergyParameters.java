@@ -20,11 +20,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -40,12 +40,11 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 {
 	private Object[] _outputMsgs;
 	private SDiscreteVariable[] _outputVariables;
+	private FactorFunction _factorFunction;
 	private int _numParameters;
 	private int _numParameterEdges;
 	private int _numOutputEdges;
-	private int[] _parameterIndices;
 	private int[] _constantOutputCounts;
-	private boolean _hasConstantParameters;
 	private boolean _hasConstantOutputs;
 	private boolean _hasFactorFunctionConstructorConstants;
 	private boolean _useEnergyParameters;
@@ -68,7 +67,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
 
 			// The parameter being updated corresponds to this value
-			int parameterIndex = _hasConstantParameters ? _parameterIndices[portNum] : portNum;
+			int parameterIndex = _factorFunction.getIndexByEdge(portNum);
 
 			// Start with the ports to variable outputs
 			int count = 0;
@@ -125,9 +124,9 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			FactorFunction factorFunction = _factor.getFactorFunction();
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
 			_constantOutputCounts = new int[_numParameters];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
@@ -145,70 +144,40 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
+		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_factorFunction = factorFunction;
+		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		if (containedFactorFunction instanceof CategoricalUnnormalizedParameters)
 		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		if (factorFunction instanceof CategoricalUnnormalizedParameters)
-		{
-			CategoricalUnnormalizedParameters specificFactorFunction = (CategoricalUnnormalizedParameters)factorFunction;
+			CategoricalUnnormalizedParameters specificFactorFunction = (CategoricalUnnormalizedParameters)containedFactorFunction;
 			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 			_numParameters = specificFactorFunction.getDimension();
 			_useEnergyParameters = false;
 		}
-		else	// Energy parameters
+		else if (containedFactorFunction instanceof CategoricalEnergyParameters)
 		{
-			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)factorFunction;
+			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)containedFactorFunction;
 			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 			_numParameters = specificFactorFunction.getDimension();
 			_useEnergyParameters = true;
 		}
-		
-		
+		else
+			throw new DimpleException("Invalid factor function");
+
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_numParameterEdges = _numParameters;
-		_hasConstantParameters = false;
 		_hasConstantOutputs = false;
-		_parameterIndices = null;
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_numParameterEdges = 0;
-			_hasConstantParameters = true;
 			_hasConstantOutputs = hasFactorFunctionConstants;
 		}
 		else if (hasFactorFunctionConstants)
 		{
-			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			int numConstants = constantIndices.length;
-			int numConstantParameters = 0;
-			for (int i = 0; i < numConstants; i++)
-			{
-				if (constantIndices[i] < _numParameters)
-					numConstantParameters++;		// Constant is a parameter
-				else
-					_hasConstantOutputs = true;		// Constant is an output
-			}
+			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(_numParameters);
+			int numConstantParameters = factorFunction.numConstantsInIndexRange(0, _numParameters - 1);
 			_numParameterEdges = _numParameters - numConstantParameters;
-			
-			if (numConstantParameters > 0)
-			{
-				// There are constant parameters, so create a mapping from edges to indices for the remaining variable parameters
-				_parameterIndices = new int[_numParameterEdges];
-				_hasConstantParameters = true;
-				for (int i = 0, constantIndex = 0, variableIndex = 0; i < _numParameters; i++)
-				{
-					if (constantIndices[constantIndex] == i)
-						constantIndex++;
-					else
-						_parameterIndices[i] = variableIndex++;
-				}
-			}
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;
 	

@@ -53,12 +53,7 @@ public class CustomGaussianNegate extends GaussianFactorBase
 		outMsg.setPrecision(inputMsg.getPrecision());
 	}
 
-	@Override
-	public void initialize()
-	{
-		
-	}
-	
+
 	
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)

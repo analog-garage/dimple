@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -25,11 +27,14 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
 
 public class CustomGaussianSum extends GaussianFactorBase
 {
-	protected int _sumPort = 0;	// Port that is the sum of all the others
+	protected int _sumIndex;
+	private int _sumPort;
+	private double _constantSum;
 	
 	public CustomGaussianSum(Factor factor)
 	{
 		super(factor);
+		_sumIndex = 0;		// Index that is the sum of all the others
 		
 		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
 		{
@@ -43,52 +48,91 @@ public class CustomGaussianSum extends GaussianFactorBase
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		// TODO: express this as different functions if doing input or output
 		// uout = ua + ub + uc
 		// ub = uout-ua-uc
 		// sigma^2 = othersigma^2 + theothersigma^2 ...
 		
-		double mu = 0;
-		double sigmaSquared = 0;
+		if (outPortNum == _sumPort)
+			updateSumEdge();
+		else
+			updateSummandEdge(outPortNum);
+	}
+	
+	private void updateSumEdge()
+	{
+		double mean = _constantSum;
+		double variance = 0;
+		
+		for (int i = 0; i < _inputMsgs.length; i++)
+		{
+			if (i != _sumPort)
+			{
+				NormalParameters msg = _inputMsgs[i];
+				mean += msg.getMean();
+				variance += msg.getVariance();
+			}
+		}
+
+		NormalParameters outMsg = _outputMsgs[_sumPort];
+		outMsg.setMean(mean);
+		outMsg.setVariance(variance);
+	}
+	
+	
+	private void updateSummandEdge(int outPortNum)
+	{
+		
+		double mean = -_constantSum;		// For summands, use negative of constant sum
+		double variance = 0;
 		
 		for (int i = 0; i < _inputMsgs.length; i++)
 		{
 			if (i != outPortNum)
 			{
 				NormalParameters msg = _inputMsgs[i];
-				if (outPortNum == _sumPort)
-				{
-					mu += msg.getMean();
-				}
+				if (i == _sumPort)
+					mean += msg.getMean();
 				else
-				{
-					if (i == _sumPort)
-						mu += msg.getMean();
-					else
-						mu -= msg.getMean();
-				}
-				
-				sigmaSquared += msg.getVariance();
+					mean -= msg.getMean();
+
+				variance += msg.getVariance();
 			}
 		}
 
 		NormalParameters outMsg = _outputMsgs[outPortNum];
-		outMsg.setMean(mu);
-		outMsg.setVariance(sigmaSquared);
-		
+		outMsg.setMean(mean);
+		outMsg.setVariance(variance);
 	}
+
 
 	@Override
 	public void initialize()
 	{
+		super.initialize();
 		
+		// Pre-compute sum associated with any constant edges
+		FactorFunction factorFunction = _factor.getFactorFunction();
+		_sumPort = factorFunction.isConstantIndex(_sumIndex) ? -1 : _sumIndex;	// If sum isn't a variable, then set port to invalid value
+		_constantSum = 0;
+		if (factorFunction.hasConstants())
+		{
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
+			for (int i = 0; i < constantValues.length; i++)
+			{
+				if (constantIndices[i] == _sumIndex)
+					_constantSum -= FactorFunctionUtilities.toDouble(constantValues[i]);	// Constant sum value counts as negative
+				else
+					_constantSum += FactorFunctionUtilities.toDouble(constantValues[i]);	// Constant summand value counts as positive
+			}
+		}
+
 	}
 	
 	
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);

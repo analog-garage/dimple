@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldVariable;
@@ -38,7 +38,7 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	{
 		super(factor);
 		
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)_factor.getFactorFunction();
+		FactorFunction ff = _factor.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();
 		Object [] constants = ff.getConstants();
 		if (constIndices.length != 1)

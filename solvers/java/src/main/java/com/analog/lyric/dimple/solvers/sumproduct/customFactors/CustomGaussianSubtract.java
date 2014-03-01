@@ -27,13 +27,12 @@ public class CustomGaussianSubtract extends CustomGaussianSum
 	public CustomGaussianSubtract(Factor factor)
 	{
 		super(factor);
-		_sumPort = 1;	// Port that is the sum of all the others
+		_sumIndex = 1;	// Port that is the sum of all the others
 	}
 	
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);

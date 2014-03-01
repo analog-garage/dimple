@@ -23,7 +23,6 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -49,8 +48,8 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 	private boolean _hasFactorFunctionConstructorConstants;
 	private int _numOutputEdges;
 	private int _numParameterEdges;
-	private int _meanParameterPort = -1;
-	private int _precisionParameterPort = -1;
+	private int _meanParameterPort = NO_PORT;
+	private int _precisionParameterPort = NO_PORT;
 	private int _constantOutputCount;
 	private double _constantMeanValue;
 	private double _constantPrecisionValue;
@@ -169,9 +168,9 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		_hasConstantOutputs = false;
 		if (_hasFactorFunctionConstants)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			FactorFunction factorFunction = _factor.getFactorFunction();
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
 			_constantOutputCount = 0;
 			_constantOutputSum = 0;
 			_constantOutputSumOfSquares = 0;
@@ -194,62 +193,50 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		_hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			_hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Normal specificFactorFunction = (Normal)factorFunction;
-		
+		Normal specificFactorFunction = (Normal)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_hasFactorFunctionConstants = factorFunction.hasConstants();
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 		List<INode> siblings = _factor.getSiblings();
+		_hasConstantMean = false;
+		_hasConstantPrecision = false;
+		_meanParameterPort = NO_PORT;
+		_precisionParameterPort = NO_PORT;
+		_meanVariable = null;
+		_precisionVariable = null;
+		_constantMeanValue = 0;
+		_constantPrecisionValue = 0;
+		_numParameterEdges = 0;
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantMean = true;
 			_hasConstantPrecision = true;
-			_meanParameterPort = NO_PORT;
-			_precisionParameterPort = NO_PORT;
 			_constantMeanValue = specificFactorFunction.getMean();
 			_constantPrecisionValue = specificFactorFunction.getPrecision();
-			_numParameterEdges = 0;
 		}
-		else // Variable or constant parameters
+		else	// Variable or constant parameters
 		{
-			_numParameterEdges = 0;
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(MEAN_PARAMETER_INDEX))
+			_hasConstantMean = factorFunction.isConstantIndex(MEAN_PARAMETER_INDEX);
+			if (_hasConstantMean)	// Constant mean
+				_constantMeanValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
+			else					// Variable mean
 			{
-				_hasConstantMean = true;
-				_meanParameterPort = NO_PORT;
-				_constantMeanValue = FactorFunctionUtilities.toDouble(
-					constantFactorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
-				_meanVariable = null;
-			}
-			else
-			{
-				_hasConstantMean = false;
-				_meanParameterPort = _numParameterEdges++;
+				_meanParameterPort = factorFunction.getEdgeByIndex(MEAN_PARAMETER_INDEX);
 				_meanVariable = (SRealVariable)(((VariableBase)siblings.get(_meanParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
+			
+			_hasConstantPrecision = factorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX);
+			if (_hasConstantPrecision)	// Constant precision
+				_constantPrecisionValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
+			else 						// Variable precision
 			{
-				_hasConstantPrecision = true;
-				_precisionParameterPort = NO_PORT;
-				_constantPrecisionValue =
-					FactorFunctionUtilities.toDouble(
-						constantFactorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
-				_precisionVariable = null;
-			}
-			else
-			{
-				_hasConstantPrecision = false;
-				_precisionParameterPort = _numParameterEdges++;
+				_precisionParameterPort = factorFunction.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
 				_precisionVariable = (SRealVariable)(((VariableBase)siblings.get(_precisionParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;

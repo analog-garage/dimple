@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -54,7 +54,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 			_portIndex2bitIndex[i] = -1;
 		
 		//get constant value and make sure it's in range
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)_factor.getFactorFunction();
+		FactorFunction ff = _factor.getFactorFunction();
 		int [] constIndices = ff.getConstantIndices();
 		Object [] constants = ff.getConstants();
 		if (constIndices.length != 1)

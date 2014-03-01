@@ -46,7 +46,6 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
 	public static boolean isFactorCompatible(Factor factor)
 	{
-		
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);
@@ -61,6 +60,5 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 		}
 		return true;
 	}
-
 
 }

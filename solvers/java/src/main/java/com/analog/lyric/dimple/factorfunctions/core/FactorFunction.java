@@ -140,27 +140,7 @@ public abstract class FactorFunction
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 
-	/**
-	 * Return number of constants built into the factor function instance.
-	 * <p>
-	 * Default implementation returns zero.
-	 */
-	public int getConstantCount()
-	{
-		return 0;
-	}
-	
-	/**
-	 * Returns constant at edge identified by {@code index} or null if specified
-	 * edge is not a constant.
-	 * <p>
-	 * Default implementation returns null.
-	 */
-	public Object getConstantByIndex(int index)
-	{
-		return null;
-	}
-	
+
 	public Object getDeterministicFunctionValue(Object... arguments)
 	{
 		Object[] fullArgumentList = new Object[arguments.length + 1];
@@ -374,5 +354,109 @@ public abstract class FactorFunction
 
     	return table;
     }
+    
+    
+    
+	/*********
+	 * Methods from FactorFunctionWithConstants that allow calling even if there are no constants
+	 */
+	
+	/**
+	 * Return whether or not there are constants in the factor function instance
+	 */
+	public boolean hasConstants()
+	{
+		return false;
+	}
+	
+	/**
+	 * Return number of constants built into the factor function instance.
+	 * <p>
+	 * Default implementation returns zero.
+	 */
+	public int getConstantCount()
+	{
+		return 0;
+	}
+	
+	/**
+	 * Return the innermost FactorFunction object, in case it is wrapped in a containing class.
+	 * In this case, there is no containing class 
+	 */
+	public FactorFunction getContainedFactorFunction()
+	{
+		return this;
+	}
+	
+	/**
+	 * Returns constant at edge identified by {@code index} or null if specified
+	 * edge is not a constant.
+	 * <p>
+	 * Default implementation returns null.
+	 */
+	public Object getConstantByIndex(int index)
+	{
+		return null;
+	}
+	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 */
+	public boolean isConstantIndex(int index)
+	{
+		return false;
+	}
+	
+	public boolean hasConstantAtOrAboveIndex(int index)
+	{
+		return false;
+	}
+	
+	public boolean hasConstantAtOrBelowIndex(int index)
+	{
+		return false;
+	}
+	
+	public int numConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		return 0;
+	}
+	
+	public int numConstantsAtOrAboveIndex(int index)
+	{
+		return 0;
+	}
+	
+	public int numConstantsAtOrBelowIndex(int index)
+	{
+		return 0;
+	}
+
+
+	/**
+	 * Return the edge number associated with the specified factor index.
+	 * For factors with not constants, these are identical.
+	 */
+	public int getEdgeByIndex(int index)
+	{
+		return index;
+	}
+
+	public int getIndexByEdge(int edge)
+	{
+		return edge;
+	}
+
+	public Object[] getConstants()
+	{
+		return new Object[] {};
+	}
+	
+	public int[] getConstantIndices()
+	{
+		return new int[] {};
+	}
+	
+
 
  }

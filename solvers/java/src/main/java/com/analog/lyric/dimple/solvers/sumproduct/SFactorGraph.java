@@ -94,7 +94,7 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomFiniteFieldAdd(factor);
 			else if (factorName.equals("FiniteFieldMult") || factorName.equals("finiteFieldMult"))				// Lower case version for backward compatibility
 			{
-				if (factor.getFactorFunction() instanceof FactorFunctionWithConstants)
+				if (factor.getFactorFunction().hasConstants())
 					return new CustomFiniteFieldConstantMult(factor);
 				else
 					return new CustomFiniteFieldMult(factor);

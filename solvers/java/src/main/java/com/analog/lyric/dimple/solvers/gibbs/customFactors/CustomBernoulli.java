@@ -23,7 +23,6 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -45,6 +44,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	private boolean _hasConstantOutputs;
 	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
+	private static final int PARAMETER_INDEX = 0;
 	
 	public CustomBernoulli(Factor factor)
 	{
@@ -118,9 +118,9 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 		_constantOutputOneCount = 0;
 		if (_hasConstantOutputs)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			FactorFunction	factorFunction = _factor.getFactorFunction();
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
@@ -140,21 +140,14 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Bernoulli specificFactorFunction = (Bernoulli)factorFunction;
+		Bernoulli specificFactorFunction = (Bernoulli)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
 		_numParameterEdges = NUM_PARAMETERS;
 		_hasConstantOutputs = false;
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameter provided in the factor-function constructor
@@ -164,15 +157,8 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 		else if (hasFactorFunctionConstants)
 		{
 			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			int numConstants = constantIndices.length;
-			for (int i = 0; i < numConstants; i++)
-			{
-				if (constantIndices[i] < NUM_PARAMETERS)
-					_numParameterEdges = 0;				// Constant is a parameter
-				else
-					_hasConstantOutputs = true;			// Constant is an output
-			}
+			_numParameterEdges = factorFunction.isConstantIndex(PARAMETER_INDEX) ? 0 : 1;
+			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;
 

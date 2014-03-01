@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -32,8 +31,7 @@ public class CustomGaussianLinear extends GaussianFactorBase
 		
 		//Make sure this is of the form a = b*c where either b or c is a constant.
 		
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
-		Object [] constants = ff.getConstants();
+		Object[] constants = factor.getFactorFunction().getConstants();
 		
 		if (constants.length < 1 || constants.length > 2)
 			throw new DimpleException("Need to specify vector of constants");

@@ -2,7 +2,6 @@ package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -228,9 +227,9 @@ public class CustomXor extends SFactorBase
 		// Pre-compute parity associated with any constant edges
 		_constantParity = 1;
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the constants
+		if (factorFunction.hasConstants())
 		{
-			Object[] constantValues = ((FactorFunctionWithConstants)factorFunction).getConstants();
+			Object[] constantValues = factorFunction.getConstants();
 			int constantSum = 0;
 			for (int i = 0; i < constantValues.length; i++)
 				constantSum += FactorFunctionUtilities.toInteger(constantValues[i]);

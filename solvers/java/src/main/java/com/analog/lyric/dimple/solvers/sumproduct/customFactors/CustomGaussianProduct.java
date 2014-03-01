@@ -17,7 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -29,55 +29,44 @@ public class CustomGaussianProduct extends GaussianFactorBase
 {
 
 	private double _constant;
-	private int _varIndex;
+	private final static int PRODUCT_INDEX = 0;
+	private final static int MULTIPLICAND_INDEX = 1;
 	
 	public CustomGaussianProduct(Factor factor)
 	{
 		super(factor);
 		
-		//Make sure this is of the form a = b*c where either b or c is a constant.
+		// Make sure this is of the form a = b*c where either b or c is a non-zero constant.
 		if (factor.getSiblingCount() != 2)
 			throw new DimpleException("Factor must be of form a = b*c where b or c is a constant");
 		
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
-		if (ff.getConstants().length != 1)
+		FactorFunction ff = factor.getFactorFunction();
+		if (ff.getConstantCount() != 1)
 			throw new DimpleException("Expected one constant");
-		double constant = (Double)ff.getConstants()[0];
-		
+		_constant = (Double)ff.getConstants()[0];
+		if (_constant == 0)
+			throw new DimpleException("Constant of 0 not supported");
 		
 		VariableBase a = factor.getSibling(0);
 		VariableBase b = factor.getSibling(1);
 		
 		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
 			throw new DimpleException("Variables must be reals");
-		
-		_varIndex = 1;
-		
-		_constant = constant;
-		
-		if (_constant == 0)
-			throw new DimpleException("Constant of 0 not supported");
-		
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		if (outPortNum == 0)
-		{
+		if (outPortNum == PRODUCT_INDEX)
 			updateProduct();
-		}
-		else if (outPortNum == _varIndex)
-		{
-			updateVariable();
-		}
+		else
+			updateMultiplicand();
 	}
 
-
-	public void updateProduct()
+	private void updateProduct()
 	{
-		NormalParameters outMsg = _outputMsgs[0];
-		NormalParameters inMsg = _inputMsgs[_varIndex];
+		NormalParameters outMsg = _outputMsgs[PRODUCT_INDEX];
+		NormalParameters inMsg = _inputMsgs[MULTIPLICAND_INDEX];
 		
 		// Up = C*Uv
 		outMsg.setMean(inMsg.getMean() * _constant);
@@ -86,10 +75,10 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		outMsg.setStandardDeviation(inMsg.getStandardDeviation() * _constant);
 	}
 
-	public void updateVariable()
+	private void updateMultiplicand()
 	{
-		NormalParameters outMsg = _outputMsgs[_varIndex];
-		NormalParameters inMsg = _inputMsgs[0];
+		NormalParameters outMsg = _outputMsgs[MULTIPLICAND_INDEX];
+		NormalParameters inMsg = _inputMsgs[PRODUCT_INDEX];
 		
 		// Uv = Up/C
 		outMsg.setMean(inMsg.getMean() / _constant);
@@ -107,10 +96,9 @@ public class CustomGaussianProduct extends GaussianFactorBase
 			return false;
 
 		// Must have exactly one constant
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
-		if (ff.getConstants().length != 1)
+		FactorFunction ff = factor.getFactorFunction();
+		if (ff.getConstantCount() != 1)
 			return false;
-		double constant = (Double)ff.getConstants()[0];
 		
 		// Variables must be real and univariate
 		VariableBase a = factor.getSibling(0);
@@ -121,6 +109,7 @@ public class CustomGaussianProduct extends GaussianFactorBase
 			return false;
 		
 		// Constant must be non-zero
+		double constant = (Double)ff.getConstants()[0];
 		if (constant == 0)
 			return false;
 

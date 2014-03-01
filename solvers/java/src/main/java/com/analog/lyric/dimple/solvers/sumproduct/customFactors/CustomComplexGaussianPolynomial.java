@@ -22,7 +22,6 @@ import Jama.CholeskyDecomposition;
 import Jama.Matrix;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
@@ -47,8 +46,7 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 			throw new DimpleException("expected two complex numbers");
 
 		//TODO: throw error message if htis cast fails
-		FactorFunctionWithConstants ff = (FactorFunctionWithConstants)factor.getFactorFunction();
-		Object [] constants = ff.getConstants();
+		Object[] constants = factor.getFactorFunction().getConstants();
 
 		//TODO: error check
 		double [] powers;

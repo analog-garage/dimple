@@ -22,11 +22,9 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -39,16 +37,15 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	private Object[] _outputMsgs;
 	private SDiscreteVariable _yVariable;
 	private SDiscreteVariable _xVariable;
+	private FactorFunction _factorFunction;
 	private boolean _hasConstantY;
 	private boolean _hasConstantX;
-	private int _xDimension;
 	private int _yDimension;
 	private int _startingParameterEdge;
 	private int _yPort = -1;
 	private int _xPort = -1;
 	private int _constantYValue;
 	private int _constantXValue;
-	private int[] _parameterXIndices;
 	private static final int NUM_DISCRETE_VARIABLES = 2;
 	private static final int Y_INDEX = 0;
 	private static final int X_INDEX = 1;
@@ -73,8 +70,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 			outputMsg.fill(0);
 
 			// Get the parameter coordinates
-			int parameterIndex = portNum - _startingParameterEdge;
-			int parameterXIndex = _parameterXIndices[parameterIndex];
+			int parameterXIndex = _factorFunction.getIndexByEdge(portNum) - NUM_DISCRETE_VARIABLES;
 			
 			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
 			int xIndex = _hasConstantX ? _constantXValue : _xVariable.getCurrentSampleIndex();
@@ -122,106 +118,44 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
+		_factorFunction = factorFunction;
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		_yPort = NO_PORT;
+		_xPort = NO_PORT;
+		_yVariable = null;
+		_xVariable = null;
+		_constantYValue = -1;
+		_constantXValue = -1;
+		_yDimension = 1;
 		_startingParameterEdge = 0;
-		int numParameterEdges = _numPorts - NUM_DISCRETE_VARIABLES;
 		List<INode> siblings = _factor.getSiblings();
-		if (hasFactorFunctionConstants)
-		{
-			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int numConstants = constantIndices.length;
-			_hasConstantY = false;
-			_hasConstantX = false;
-			_yPort = NO_PORT;
-			_xPort = NO_PORT;
-			for (int i = 0; i < numConstants; i++)
-			{
-				if (constantIndices[i] == 0)
-				{
-					_hasConstantY = true;
-					_constantYValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else if (constantIndices[i] == 1)
-				{
-					_hasConstantX = true;
-					_constantXValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else	// Parameter is constant
-				{
-					numParameterEdges--;
-				}
-			}
-			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
-			_parameterXIndices = new int[numParameterEdges];
-			int constantIndex = 0;
-			int parameterEdgeIndex = 0;
-			for (int x = 0; x < _xDimension; x++)	// Column scan order
-			{
-				int parameterIndex = x;
-				if (constantIndices[constantIndex] - NUM_DISCRETE_VARIABLES == parameterIndex)
-				{
-					// Parameter is constant
-					constantIndex++;
-				}
-				else
-				{
-					// Parameter is variable
-					_parameterXIndices[parameterEdgeIndex] = x;
-					parameterEdgeIndex++;
-				}
-			}
-		}
-		else	// Factor function has no constants
-		{
-			_hasConstantY = false;
-			_hasConstantX = false;
-			
-			// Create a mapping between the edge connecting parameters and the X coordinates in the parameter array
-			_parameterXIndices = new int[numParameterEdges];
-			for (int x = 0, parameterEdgeIndex = 0; x < numParameterEdges; x++)
-				_parameterXIndices[parameterEdgeIndex++] = x;
-		}
-		
-		
+
+		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
 		if (_hasConstantY)
+			_constantYValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(Y_INDEX));
+		else					// Variable Y
 		{
-			_yPort = NO_PORT;
-			_yVariable = null;
-			_yDimension = 1;
-		}
-		else	// Y is a variable
-		{
-			_yPort = Y_INDEX;
+			_yPort = factorFunction.getEdgeByIndex(Y_INDEX);
 			Discrete yVar = ((Discrete)siblings.get(_yPort));
 			_yVariable = (SDiscreteVariable)yVar.getSolver();
 			_yDimension = yVar.getDomain().size();
 			_startingParameterEdge++;
 		}
 		
+		
+		_hasConstantX = factorFunction.isConstantIndex(X_INDEX);
 		if (_hasConstantX)
+			_constantXValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(X_INDEX));
+		else					// Variable X
 		{
-			_xPort = NO_PORT;
-			_xVariable = null;
-		}
-		else	// X is a variable
-		{
-			_xPort = _hasConstantY ? X_INDEX - 1 : X_INDEX;
-			_xVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_xPort)).getSolver());
+			_xPort = factorFunction.getEdgeByIndex(X_INDEX);
+			Discrete xVar = ((Discrete)siblings.get(_xPort));
+			_xVariable = (SDiscreteVariable)xVar.getSolver();
 			_startingParameterEdge++;
 		}
+		
 	}
 	
 	
