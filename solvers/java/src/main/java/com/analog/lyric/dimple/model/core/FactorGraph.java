@@ -843,7 +843,10 @@ public class FactorGraph extends FactorBase
 
 	public void setSchedule(ISchedule schedule)
 	{
-		schedule.attach(this);
+		if (schedule != null)
+		{
+			schedule.attach(this);
+		}
 		_schedule = schedule;
 		_scheduleVersionId++;
 		_scheduleAssociatedGraphVerisionId = _versionId;
@@ -1495,23 +1498,79 @@ public class FactorGraph extends FactorBase
 	 * 
 	 *********************************************************/
 
+	/**
+	 * True if graph is comprised of a set of one or more disjoint trees. That is,
+	 * given any two nodes in the graph there is at most one unique path between them.
+	 * <p>
+	 * @see #isTree()
+	 * @see #isForest(int)
+	 * @since 0.05
+	 */
+	public boolean isForest()
+	{
+		return isForest(Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * True if the graph is consists of a set of one or more disjoint trees when considering nodes
+	 * down to the specified {@code relativeNestingDepth} of subgraphs. That is,
+	 * given any two nodes in the graph that are no deeper than the specified depth
+	 * below the root graph, there no more than one unique path between them.
+	 * <p>
+	 * @see #isForest()
+	 * @see #isTree(int)
+	 * @since 0.05
+	 * */
+	public boolean isForest(int relativeNestingDepth)
+	{
+		return isTreeOrForest(relativeNestingDepth, true);
+	}
+	
+	/**
+	 * True if the graph is singly connected and not disjoint. That is,
+	 * given any two nodes in the graph there is exactly one unique path between them.
+	 * <p>
+	 * @see #isForest()
+	 * @see #isTree(int)
+	 */
 	public boolean isTree()
 	{
 		return isTreeFlat();
 	}
 
+	/**
+	 * Same as {@link #isTree()}}
+	 */
 	public boolean isTreeFlat()
 	{
 		return isTree(Integer.MAX_VALUE);
 	}
 
+	/**
+	 * True if the top-level of the tree -- ignoring the contents of any subgraphs -- is a tree.
+	 * <p>
+	 * Same as {@link #isTree(int)} with zero argument.
+	 */
 	public boolean isTreeTop()
 	{
 		return isTree(0);
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * True if the graph is singly connected and not disjoint when considering nodes
+	 * down to the specified {@code relativeNestingDepth} of subgraphs. That is,
+	 * given any two nodes in the graph that are no deeper than the specified depth
+	 * below the root graph, there is exactly one unique path between them.
+	 * <p>
+	 * @see #isForest(int)
+	 * @see #isTree()
+	 */
 	public boolean isTree(int relativeNestingDepth)
+	{
+		return isTreeOrForest(relativeNestingDepth, false);
+	}
+	
+	private boolean isTreeOrForest(int relativeNestingDepth, boolean checkForForest)
 	{
 		FactorGraph g = this;
 		// Get all the nodes in the graph and all sub-graphs--both variables and
@@ -1537,40 +1596,54 @@ public class FactorGraph extends FactorBase
 			return true;
 
 		// If the number of edges is greater than the number of vertices minus 1, there must be cycles
-		// If the number of edges is less than the number of vertices minus 1, it must not be connected
-		if (numEdges != numVertices - 1) return false;
+		if (numEdges > numVertices - 1)
+			return false;
 
+		// If the number of edges is less than the number of vertices minus 1, it must not be connected
+		if (!checkForForest && numEdges < numVertices - 1)
+			return false;
+		
 		// If it has the right number of edges, the either it's a tree or it
 		// isn't a connected graph, and could either be a 'forest' or have cycles.
-		// Though it could be a 'forest', which could have a fast schedule,
-		// creating a custom schedule for this case isn't currently support.
-
-		// First, for a list of all included nodes
-		@SuppressWarnings("rawtypes")
-		MapList allIncludedNodes = new MapList();
+		
+		Set<INode> allIncludedNodes = new LinkedHashSet<INode>(numVertices);
 		allIncludedNodes.addAll(allIncludedFunctions);
 		allIncludedNodes.addAll(allIncludedVariables);
 
-		//If this graph has no variable or factors, let's consider it a tree.
-		if (allIncludedNodes.size() == 0)
-			return true;
-
-		// First, pick a node arbitrarily;
-		INode n =  (INode)allIncludedNodes.getByIndex(0);
-
-		FactorGraphWalker walker =
-			new FactorGraphWalker(this, n).maxRelativeNestingDepth(relativeNestingDepth);
-		while (walker.next() != null)
+		FactorGraphWalker walker = null;
+		while (!allIncludedNodes.isEmpty())
 		{
-			if (walker.getCycleCount() > 0)
+			// First, pick a node arbitrarily;
+			INode n = allIncludedNodes.iterator().next();
+
+			if (walker == null)
 			{
-				return false;
+				walker = new FactorGraphWalker(this, n).maxRelativeNestingDepth(relativeNestingDepth);
+			}
+			else
+			{
+				walker.init(this, n);
+			}
+			
+			while (walker.hasNext())
+			{
+				INode node = walker.next();
+				if (walker.getCycleCount() > 0)
+				{
+					return false;
+				}
+				allIncludedNodes.remove(node);
+			}
+			
+			if (!checkForForest)
+			{
+				break;
 			}
 		}
-
+		
 		// No cycles were found, but we might not have visited all of the nodes in the
-		// graph. If we have, its a tree.
-		return walker.getVisitedNodesSize() == allIncludedNodes.size();
+		// graph. If we have, its a tree/forest.
+		return allIncludedNodes.isEmpty();
 	}
 
 	public int [][] getAdjacencyMatrix()
