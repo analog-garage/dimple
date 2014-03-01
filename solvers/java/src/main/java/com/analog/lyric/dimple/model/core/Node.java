@@ -478,9 +478,7 @@ public abstract class Node implements INode, Cloneable
 		_siblingToIndex = null;
 		if (portNum < _siblingIndices.length)
 		{
-			// Shift values down into the missing slot.
-			System.arraycopy(_siblingIndices, portNum + 1, _siblingIndices, portNum,
-				_siblingIndices.length - portNum - 1);
+			_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		}
 	}
 	
