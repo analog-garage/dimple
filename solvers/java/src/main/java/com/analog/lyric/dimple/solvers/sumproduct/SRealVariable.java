@@ -220,26 +220,26 @@ public class SRealVariable extends SRealVariableBase
 
     	if (anyTauIsInfinite)
     	{
-    		muTau = muOfInf;
+    		mu = muOfInf;
     		tau = Double.POSITIVE_INFINITY;
     	}
     	else
     	{
 	    	if (tau != 0)
-	    		muTau /= tau;
+	    		mu = muTau /= tau;
 	    	else
-	    		muTau = 0;
+	    		mu = 0;
     	}
     	
-    	return new double[]{muTau, Math.sqrt(1/tau)};
+    	return new NormalParameters(mu, tau);
     }
     
     
 	@Override
 	public Object getValue()
 	{
-		double[] belief = (double[])getBelief();
-		return new Double(belief[0]);
+		NormalParameters belief = (NormalParameters)getBelief();
+		return new Double(belief.getMean());
 	}
 	
 	@Override

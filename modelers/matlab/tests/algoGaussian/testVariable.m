@@ -138,7 +138,7 @@ function testVariable()
 
     fg.solve();
 
-    assertEqual(inner.Belief,[5; 0]);
+    assertElementsAlmostEqual(inner.Belief,[5; 0]);
 
     %Test Sigma of 0 conflicting in inner node
     mus = ones(4,1)*5;

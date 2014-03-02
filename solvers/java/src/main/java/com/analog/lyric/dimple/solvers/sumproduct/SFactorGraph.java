@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Random;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;

@@ -17,8 +17,10 @@
 classdef MultivariateNormalParameters < ParameterizedMessage
     properties
         Mean;
-        Means; % For backward compatibility
         Covariance;
+        InformationVector;
+        InformationMatrix;
+        Means; % For backward compatibility
     end
     methods
         function obj = MultivariateNormalParameters(mean, covariance)
@@ -42,5 +44,13 @@ classdef MultivariateNormalParameters < ParameterizedMessage
            covar = obj.IParameters.getCovariance(); 
         end
         
+        function informationVector = get.InformationVector(obj)
+           informationVector = obj.IParameters.getInformationVector(); 
+        end
+        
+        function informationMatrix = get.InformationMatrix(obj)
+           informationMatrix = obj.IParameters.getInformationMatrix(); 
+        end
+
     end
 end
