@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2013-2014 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -21,9 +21,18 @@ repeatable = true;
 
 dtrace(debugPrint, '++testOperatorOverloading');
 
+if (repeatable)
+    seed = 1;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
+
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloading');
 
@@ -36,7 +45,6 @@ a = Real();
 b = Real();
 
 fg = FactorGraph();
-fg.Solver = 'Gaussian';
 
 % Can overload + and *-constant operators with Gaussian custom factors
 z = (a + 2.7 * b) * 17;
@@ -58,7 +66,6 @@ y2 = Real();
 z2 = Real();
 
 fg2 = FactorGraph();
-fg2.Solver = 'Gaussian';
 
 fg2.addFactor('constmult', x2, b2, 2.7);
 fg2.addFactor('add', y2, x2, a2);
@@ -102,7 +109,6 @@ binPre = 1/binVar;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Operator overloaded graph
 fg = FactorGraph();
-fg.Solver = 'Gaussian';
 
 a = Real();
 b = Real();
@@ -159,7 +165,6 @@ assertElementsAlmostEqual(ii.Belief(2), K * binStd);
 % Now compare against non-overloaded version
 
 fg2 = FactorGraph();
-fg2.Solver = 'Gaussian';
 
 a2 = Real();
 b2 = Real();
@@ -246,7 +251,6 @@ binCo = diag(rand(dim,1)) + eye(dim)*0.1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Operator overloaded graph
 fg = FactorGraph();
-fg.Solver = 'Gaussian';
 
 a = RealJoint(dim);
 b = RealJoint(dim);
@@ -311,7 +315,6 @@ assertElementsAlmostEqual(kk.Belief.Covariance, binCo);
 % Now compare against non-overloaded version
 
 fg2 = FactorGraph();
-fg2.Solver = 'Gaussian';
 
 a2 = RealJoint(dim);
 b2 = RealJoint(dim);
@@ -386,6 +389,263 @@ assertElementsAlmostEqual(jj.Belief.Mean, jj2.Belief.Mean);
 assertElementsAlmostEqual(jj.Belief.Covariance, jj2.Belief.Covariance);
 assertElementsAlmostEqual(kk.Belief.Mean, kk2.Belief.Mean);
 assertElementsAlmostEqual(kk.Belief.Covariance, kk2.Belief.Covariance);
+
+end
+
+
+
+
+% More Real variable cases with more factor inputs
+function test4(debugPrint, repeatable)
+
+N = 10;
+xinMu = rand(1,N);
+xinVar = rand(1,N) + 0.1;
+xinPre = 1./xinVar;
+
+k = randn(1,N) * 100;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Operator overloaded graph
+fg = FactorGraph();
+
+x = Real(1,N);
+
+aa = x(1) + x(2) + x(3) + x(4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+bb = x(1) - x(2) - x(3) - x(4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+cc = k(1) + k(2) + k(3) + x(4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+dd = k(1) - k(2) - k(3) - x(4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+ee = x(1) + x(2) + x(3) + x(4) + x(5) + x(6) + x(7) + x(8) + k(9) + k(10);
+ff = x(1) - x(2) - x(3) - x(4) - x(5) - x(6) - x(7) - x(8) - k(9) - k(10);
+gg = x(1) + k(2) + k(3) + k(4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+hh = x(1) - k(2) - k(3) - k(4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+ii = x(1) + k(2) + x(3) + k(4) + x(5) + k(6) + x(7) + k(8) + x(9) + k(10);
+jj = x(1) - k(2) - x(3) - k(4) - x(5) - k(6) - x(7) - k(8) - x(9) - k(10);
+kk = k(1) + x(2) + k(3) + k(4) + x(5) + x(6) + k(7) + x(8) + k(9) + x(10);
+ll = k(1) - x(2) - k(3) - k(4) - x(5) - x(6) - k(7) - x(8) - k(9) - x(10);
+
+for i=1:N
+    x(i).Input = {'Normal', xinMu(i), xinPre(i)};
+end
+
+fg.NumIterations = 11;
+fg.solve();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now compare against non-overloaded version with a single factor for each sum
+
+fg2 = FactorGraph();
+
+x2 = Real(1,N);
+aa2 = Real;
+bb2 = Real;
+cc2 = Real;
+dd2 = Real;
+ee2 = Real;
+ff2 = Real;
+gg2 = Real;
+hh2 = Real;
+ii2 = Real;
+jj2 = Real;
+kk2 = Real;
+ll2 = Real;
+
+
+fg2.addFactor('Sum', aa2, x2);
+fg2.addFactor('Subtract', bb2, x2);
+fg2.addFactor('Sum', cc2, k(1), k(2), k(3), x2(4:10));
+fg2.addFactor('Subtract', dd2, k(1), k(2), k(3), x2(4:10));
+fg2.addFactor('Sum', ee2, x2(1:8), k(9), k(10));
+fg2.addFactor('Subtract', ff2, x2(1:8), k(9), k(10));
+fg2.addFactor('Sum', gg2, x2(1), k(2), k(3), k(4), x2(5:10));
+fg2.addFactor('Subtract', hh2, x2(1), k(2), k(3), k(4), x2(5:10));
+fg2.addFactor('Sum', ii2, x2(1), k(2), x2(3), k(4), x2(5), k(6), x2(7), k(8), x2(9), k(10));
+fg2.addFactor('Subtract', jj2, x2(1), k(2), x2(3), k(4), x2(5), k(6), x2(7), k(8), x2(9), k(10));
+fg2.addFactor('Sum', kk2, k(1), x2(2), k(3), k(4), x2(5:6), k(7), x2(8), k(9), x2(10));
+fg2.addFactor('Subtract', ll2, k(1), x2(2), k(3), k(4), x2(5:6), k(7), x2(8), k(9), x2(10));
+
+assert(~isempty(strfind(aa2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(bb2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+assert(~isempty(strfind(cc2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(dd2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+assert(~isempty(strfind(ee2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(ff2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+assert(~isempty(strfind(gg2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(hh2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+assert(~isempty(strfind(ii2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(jj2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+assert(~isempty(strfind(kk2.Factors{1}.Solver.toString, 'CustomGaussianSum')));
+assert(~isempty(strfind(ll2.Factors{1}.Solver.toString, 'CustomGaussianSubtract')));
+
+for i=1:N
+    x2(i).Input = {'Normal', xinMu(i), xinPre(i)};
+end
+
+fg2.solve();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check results
+assertElementsAlmostEqual(x(1).Belief, x2(1).Belief);
+assertElementsAlmostEqual(x(2).Belief, x2(2).Belief);
+assertElementsAlmostEqual(x(3).Belief, x2(3).Belief);
+assertElementsAlmostEqual(x(4).Belief, x2(4).Belief);
+assertElementsAlmostEqual(x(5).Belief, x2(5).Belief);
+assertElementsAlmostEqual(x(6).Belief, x2(6).Belief);
+assertElementsAlmostEqual(x(7).Belief, x2(7).Belief);
+assertElementsAlmostEqual(x(8).Belief, x2(8).Belief);
+assertElementsAlmostEqual(x(9).Belief, x2(9).Belief);
+assertElementsAlmostEqual(x(10).Belief, x2(10).Belief);
+assertElementsAlmostEqual(aa.Belief, aa2.Belief);
+assertElementsAlmostEqual(bb.Belief, bb2.Belief);
+assertElementsAlmostEqual(cc.Belief, cc2.Belief);
+assertElementsAlmostEqual(dd.Belief, dd2.Belief);
+assertElementsAlmostEqual(ee.Belief, ee2.Belief);
+assertElementsAlmostEqual(ff.Belief, ff2.Belief);
+assertElementsAlmostEqual(gg.Belief, gg2.Belief);
+assertElementsAlmostEqual(hh.Belief, hh2.Belief);
+assertElementsAlmostEqual(ii.Belief, ii2.Belief);
+assertElementsAlmostEqual(jj.Belief, jj2.Belief);
+assertElementsAlmostEqual(kk.Belief, kk2.Belief);
+assertElementsAlmostEqual(ll.Belief, ll2.Belief);
+
+end
+
+
+
+% RealJoint variables
+function test5(debugPrint, repeatable)
+
+dim = 7;
+N = 10;
+
+k = rand(dim,N);
+
+xinMu = zeros(dim,N);
+xinCo = zeros(dim,dim,N);
+for i = 1:N
+    xinMu(:,i) = rand(dim,1);
+    xinCo(:,:,i) = diag(rand(dim,1)) + eye(dim)*0.1;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Operator overloaded graph
+fg = FactorGraph();
+
+x = RealJoint(dim,1,N);
+
+aa = x(1) + x(2) + x(3) + x(4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+bb = x(1) - x(2) - x(3) - x(4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+cc = k(:,1) + k(:,2) + k(:,3) + x(4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+dd = k(:,1) - k(:,2) - k(:,3) - x(4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+ee = x(1) + x(2) + x(3) + x(4) + x(5) + x(6) + x(7) + x(8) + k(:,9) + k(:,10);
+ff = x(1) - x(2) - x(3) - x(4) - x(5) - x(6) - x(7) - x(8) - k(:,9) - k(:,10);
+gg = x(1) + k(:,2) + k(:,3) + k(:,4) + x(5) + x(6) + x(7) + x(8) + x(9) + x(10);
+hh = x(1) - k(:,2) - k(:,3) - k(:,4) - x(5) - x(6) - x(7) - x(8) - x(9) - x(10);
+ii = x(1) + k(:,2) + x(3) + k(:,4) + x(5) + k(:,6) + x(7) + k(:,8) + x(9) + k(:,10);
+jj = x(1) - k(:,2) - x(3) - k(:,4) - x(5) - k(:,6) - x(7) - k(:,8) - x(9) - k(:,10);
+kk = k(:,1) + x(2) + k(:,3) + k(:,4) + x(5) + x(6) + k(:,7) + x(8) + k(:,9) + x(10);
+ll = k(:,1) - x(2) - k(:,3) - k(:,4) - x(5) - x(6) - k(:,7) - x(8) - k(:,9) - x(10);
+
+for i=1:N
+    x(i).Input = {'MultivariateNormal', xinMu(:,i), xinCo(:,:,i)};
+end
+
+fg.NumIterations = 11;
+fg.solve();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now compare against non-overloaded version
+
+fg2 = FactorGraph();
+
+x2 = RealJoint(dim,1,N);
+aa2 = RealJoint(dim);
+bb2 = RealJoint(dim);
+cc2 = RealJoint(dim);
+dd2 = RealJoint(dim);
+ee2 = RealJoint(dim);
+ff2 = RealJoint(dim);
+gg2 = RealJoint(dim);
+hh2 = RealJoint(dim);
+ii2 = RealJoint(dim);
+jj2 = RealJoint(dim);
+kk2 = RealJoint(dim);
+ll2 = RealJoint(dim);
+
+% Can overload +/- operators with Gaussian custom factors
+fg2.addFactor('RealJointSum', aa2, x2);
+fg2.addFactor('RealJointSubtract', bb2, x2);
+fg2.addFactor('RealJointSum', cc2, k(:,1), k(:,2), k(:,3), x2(4:10));
+fg2.addFactor('RealJointSubtract', dd2, k(:,1), k(:,2), k(:,3), x2(4:10));
+fg2.addFactor('RealJointSum', ee2, x2(1:8), k(:,9), k(:,10));
+fg2.addFactor('RealJointSubtract', ff2, x2(1:8), k(:,9), k(:,10));
+fg2.addFactor('RealJointSum', gg2, x2(1), k(:,2), k(:,3), k(:,4), x2(5:10));
+fg2.addFactor('RealJointSubtract', hh2, x2(1), k(:,2), k(:,3), k(:,4), x2(5:10));
+fg2.addFactor('RealJointSum', ii2, x2(1), k(:,2), x2(3), k(:,4), x2(5), k(:,6), x2(7), k(:,8), x2(9), k(:,10));
+fg2.addFactor('RealJointSubtract', jj2, x2(1), k(:,2), x2(3), k(:,4), x2(5), k(:,6), x2(7), k(:,8), x2(9), k(:,10));
+fg2.addFactor('RealJointSum', kk2, k(:,1), x2(2), k(:,3), k(:,4), x2(5:6), k(:,7), x2(8), k(:,9), x2(10));
+fg2.addFactor('RealJointSubtract', ll2, k(:,1), x2(2), k(:,3), k(:,4), x2(5:6), k(:,7), x2(8), k(:,9), x2(10));
+
+assert(~isempty(strfind(aa2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(bb2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+assert(~isempty(strfind(cc2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(dd2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+assert(~isempty(strfind(ee2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(ff2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+assert(~isempty(strfind(gg2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(hh2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+assert(~isempty(strfind(ii2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(jj2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+assert(~isempty(strfind(kk2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSum')));
+assert(~isempty(strfind(ll2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
+
+for i=1:N
+    x2(i).Input = {'MultivariateNormal', xinMu(:,i), xinCo(:,:,i)};
+end
+
+fg2.solve();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check results
+T = 1e-4;
+assertElementsAlmostEqual(x(1).Belief.Mean, x2(1).Belief.Mean);
+assertElementsAlmostEqual(x(2).Belief.Mean, x2(2).Belief.Mean);
+assertElementsAlmostEqual(x(3).Belief.Mean, x2(3).Belief.Mean);
+assertElementsAlmostEqual(x(4).Belief.Mean, x2(4).Belief.Mean);
+assertElementsAlmostEqual(x(5).Belief.Mean, x2(5).Belief.Mean);
+assertElementsAlmostEqual(x(6).Belief.Mean, x2(6).Belief.Mean);
+assertElementsAlmostEqual(x(7).Belief.Mean, x2(7).Belief.Mean);
+assertElementsAlmostEqual(x(8).Belief.Mean, x2(8).Belief.Mean);
+assertElementsAlmostEqual(x(9).Belief.Mean, x2(9).Belief.Mean);
+assertElementsAlmostEqual(x(10).Belief.Mean, x2(10).Belief.Mean);
+assertElementsAlmostEqual(aa.Belief.Mean, aa2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(aa.Belief.Covariance, aa2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(bb.Belief.Mean, bb2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(bb.Belief.Covariance, bb2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(cc.Belief.Mean, cc2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(cc.Belief.Covariance, cc2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(dd.Belief.Mean, dd2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(dd.Belief.Covariance, dd2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(ee.Belief.Mean, ee2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(ee.Belief.Covariance, ee2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(ff.Belief.Mean, ff2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(ff.Belief.Covariance, ff2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(gg.Belief.Mean, gg2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(gg.Belief.Covariance, gg2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(hh.Belief.Mean, hh2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(hh.Belief.Covariance, hh2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(ii.Belief.Mean, ii2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(ii.Belief.Covariance, ii2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(jj.Belief.Mean, jj2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(jj.Belief.Covariance, jj2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(kk.Belief.Mean, kk2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(kk.Belief.Covariance, kk2.Belief.Covariance, 'absolute', T);
+assertElementsAlmostEqual(ll.Belief.Mean, ll2.Belief.Mean, 'absolute', T);
+assertElementsAlmostEqual(ll.Belief.Covariance, ll2.Belief.Covariance, 'absolute', T);
 
 end
 
