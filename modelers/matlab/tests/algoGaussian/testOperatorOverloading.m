@@ -128,8 +128,8 @@ assert(~isempty(strfind(gg.Factors{1}.Solver.toString, 'CustomGaussianSubtract')
 assert(~isempty(strfind(hh.Factors{1}.Solver.toString, 'CustomGaussianProduct')));
 assert(~isempty(strfind(ii.Factors{1}.Solver.toString, 'CustomGaussianProduct')));
 
-a.Input = FactorFunction('Normal', ainMu, ainPre);
-b.Input = FactorFunction('Normal', binMu, binPre);
+a.Input = {'Normal', ainMu, ainPre};
+b.Input = {'Normal', binMu, binPre};
 
 fg.solve();
 
@@ -194,8 +194,8 @@ assert(~isempty(strfind(gg2.Factors{1}.Solver.toString, 'CustomGaussianSubtract'
 assert(~isempty(strfind(hh2.Factors{1}.Solver.toString, 'CustomGaussianProduct')));
 assert(~isempty(strfind(ii2.Factors{1}.Solver.toString, 'CustomGaussianProduct')));
 
-a2.Input = FactorFunction('Normal', ainMu, ainPre);
-b2.Input = FactorFunction('Normal', binMu, binPre);
+a2.Input = {'Normal', ainMu, ainPre};
+b2.Input = {'Normal', binMu, binPre};
 
 fg2.solve();
 
@@ -276,8 +276,8 @@ assert(~isempty(strfind(ii.Factors{1}.Solver.toString, 'CustomMultivariateGaussi
 assert(~isempty(strfind(jj.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
 assert(~isempty(strfind(kk.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
 
-a.Input = FactorFunction('MultivariateNormal', ainMu, ainCo);
-b.Input = FactorFunction('MultivariateNormal', binMu, binCo);
+a.Input = {'MultivariateNormal', ainMu, ainCo};
+b.Input = {'MultivariateNormal', binMu, binCo};
 
 fg.solve();
 
@@ -352,8 +352,8 @@ assert(~isempty(strfind(ii2.Factors{1}.Solver.toString, 'CustomMultivariateGauss
 assert(~isempty(strfind(jj2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
 assert(~isempty(strfind(kk2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianSubtract')));
 
-a2.Input = FactorFunction('MultivariateNormal', ainMu, ainCo);
-b2.Input = FactorFunction('MultivariateNormal', binMu, binCo);
+a2.Input = {'MultivariateNormal', ainMu, ainCo};
+b2.Input = {'MultivariateNormal', binMu, binCo};
 
 fg2.solve();
 

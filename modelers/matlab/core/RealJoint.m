@@ -129,8 +129,8 @@ classdef RealJoint < VariableBase
                     for i=1:length(input)
                         input{i} = FactorFunction(input{i}{:}).get();
                     end
-                elseif (isstring(input{1}))
-                    input = FactorFunction(input).get();
+                elseif (ischar(input{1}))
+                    input = FactorFunction(input{:}).get();
                 end
             end
             
