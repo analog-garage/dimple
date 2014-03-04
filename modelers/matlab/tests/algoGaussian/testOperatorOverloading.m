@@ -33,6 +33,7 @@ test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
+test6(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloading');
 
@@ -79,12 +80,12 @@ fg2.solve();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check results
-assertEqual(a.Belief(2),a2.Belief(2));
-assertEqual(a.Belief(2),a2.Belief(2));
-assertEqual(b.Belief(2),b2.Belief(2));
-assertEqual(b.Belief(2),b2.Belief(2));
-assertEqual(z.Belief(2),z2.Belief(2));
-assertEqual(z.Belief(2),z2.Belief(2));
+assertElementsAlmostEqual(a.Belief,a2.Belief);
+assertElementsAlmostEqual(a.Belief,a2.Belief);
+assertElementsAlmostEqual(b.Belief,b2.Belief);
+assertElementsAlmostEqual(b.Belief,b2.Belief);
+assertElementsAlmostEqual(z.Belief,z2.Belief);
+assertElementsAlmostEqual(z.Belief,z2.Belief);
 
 end
 
@@ -646,6 +647,55 @@ assertElementsAlmostEqual(kk.Belief.Mean, kk2.Belief.Mean, 'absolute', T);
 assertElementsAlmostEqual(kk.Belief.Covariance, kk2.Belief.Covariance, 'absolute', T);
 assertElementsAlmostEqual(ll.Belief.Mean, ll2.Belief.Mean, 'absolute', T);
 assertElementsAlmostEqual(ll.Belief.Covariance, ll2.Belief.Covariance, 'absolute', T);
+
+end
+
+
+% Matrix vector product
+function test6(debugPrint, repeatable)
+
+Dx = 7;
+Dy = 5;
+
+xinMu = rand(Dx,1);
+xinCo = diag(rand(Dx,1)) + eye(Dx)*0.1;
+
+
+fg = FactorGraph();
+
+x = RealJoint(Dx);
+A = rand(Dy,Dx);
+y = A * x;
+
+assert(~isempty(strfind(y.Factors{1}.Solver.toString, 'CustomMultivariateGaussianProduct')));
+
+x.Input = {'MultivariateNormal', xinMu, xinCo};
+
+fg.solve();
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now compare against non-overloaded
+
+fg2 = FactorGraph();
+
+x2 = RealJoint(Dx);
+y2 = RealJoint(Dy);
+
+fg2.addFactor('constmult', y2, A, x2);
+
+assert(~isempty(strfind(y2.Factors{1}.Solver.toString, 'CustomMultivariateGaussianProduct')));
+
+x2.Input = {'MultivariateNormal', xinMu, xinCo};
+
+fg2.solve();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check results
+assertElementsAlmostEqual(x.Belief.Mean, x2.Belief.Mean);
+assertElementsAlmostEqual(x.Belief.Covariance, x2.Belief.Covariance);
+assertElementsAlmostEqual(y.Belief.Mean, y2.Belief.Mean);
+assertElementsAlmostEqual(y.Belief.Covariance, y2.Belief.Covariance);
 
 end
 

@@ -79,20 +79,33 @@ classdef VariableBase < Node
         end
         
         function z = mtimes(a,b)
-            if (isscalar(a) || isscalar(b))
+            if (hasScalarElements(a) && hasScalarElements(b))
+                % Either Discrete or Real variables or real constant arrays
+                if (isscalar(a) || isscalar(b))                    
+                    z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.factorfunctions.Product);
+                elseif ((nnz(size(a)>1)==1) && (nnz(size(b)>1)==1))
+                    z = VectorInnerProduct(a, b);
+                elseif ((nnz(size(a)>1)==1) || (nnz(size(b)>1)==1))
+                    z = MatrixVectorProduct(a, b);
+                else
+                    z = MatrixProduct(a, b);
+                end
+            elseif (isscalar(a) || isscalar(b))
+                % At least one input is Complex or RealJoint
                 if (iscomplex(a) || iscomplex(b))
                     z = addComplexBinaryOperatorOverloadedFactor(a,b,com.analog.lyric.dimple.factorfunctions.ComplexProduct);
                 elseif (isa(a,'RealJoint') || isa(b,'RealJoint'))
-                    z = VectorInnerProduct(a, b);
+                    % At least one input is RealJoint and neither are Complex
+                    if (nnz(size(a)>1)==2 || nnz(size(b)>1)==2)
+                        z = MatrixVectorProduct(a, b);
+                    else
+                        z = VectorInnerProduct(a, b);
+                    end
                 else
-                    z = addBinaryOperatorOverloadedFactor(a,b,@mtimes,com.analog.lyric.dimple.factorfunctions.Product);
+                    error('Multiplication of this type not supported');
                 end
-            elseif ((nnz(size(a)>1)==1) && (nnz(size(b)>1)==1))
-                z = VectorInnerProduct(a, b);
-            elseif ((nnz(size(a)>1)==1) || (nnz(size(b)>1)==1))
-                z = MatrixVectorProduct(a, b);
             else
-                z = MatrixProduct(a, b);
+                error('Multiplication of this type not supported');
             end
         end
         

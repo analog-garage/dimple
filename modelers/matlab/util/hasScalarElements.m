@@ -14,13 +14,13 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Determine if the input is either a real numeric vector (or array)
-% or a RealJoint Dimple variable (or array)
-function c = isrealjoint(a)
+% Determine if the basic elements of the input are either real scalar
+% constants or scalar varaibles (Real or Discerete)
+function c = hasScalarElements(a)
 if (isnumeric(a))
     imagZero = (imag(a) == 0);
-    c = (numel(a) > 1) && isvector(a) && all(imagZero(:));
+    c = all(imagZero(:));
 else
-    c = isa(a,'RealJoint');
+    c = ~isa(a,'RealJoint');
 end
 end

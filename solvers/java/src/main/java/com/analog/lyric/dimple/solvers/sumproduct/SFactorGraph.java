@@ -134,6 +134,8 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomMultivariateGaussianSubtract(factor);
 			else if (factorName.equals("RealJointNegate") && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianNegate(factor);
+			else if (factorName.equals("MatrixRealJointVectorProduct") && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
+				return new CustomMultivariateGaussianProduct(factor);
 			else if (factorName.equals("add"))								// For backward compatibility
 			{
 				if (isMultivariate(factor))
@@ -141,7 +143,7 @@ public class SFactorGraph extends SFactorGraphBase
 				else
 					return new CustomGaussianSum(factor);
 			}
-			else if (factorName.equals("constmult"))
+			else if (factorName.equals("constmult"))						// For backward compatibility
 			{
 				if (isMultivariate(factor))
 					return new CustomMultivariateGaussianProduct(factor);

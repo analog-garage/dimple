@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
@@ -76,5 +77,40 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		
 		matMult.ComputeMsg(inMsg, outMsg, direction);
 	}
+	
+	
+	// Utility to indicate whether or not a factor is compatible with the requirements of this custom factor
+	public static boolean isFactorCompatible(Factor factor)
+	{
+		// Must be of the form form y = A*x where either A is a constant matrix.
+		if (factor.getSiblingCount() != 2)
+			return false;
+
+		// Must have exactly one constant
+		FactorFunction ff = factor.getFactorFunction();
+		if (ff.getConstantCount() != 1)
+			return false;
+		
+		// Variables must be RealJoint
+		VariableBase y = factor.getSibling(0);
+		VariableBase x = factor.getSibling(1);
+		if (y.getDomain().isDiscrete() || x.getDomain().isDiscrete())
+			return false;
+		if (y instanceof Real || x instanceof Real)
+			return false;
+		
+		// Constant must be a matrix of the proper size
+		int yDimension = y.getDomain().asRealJoint().getDimensions();
+		int xDimension = x.getDomain().asRealJoint().getDimensions();
+		Object constant = ff.getConstants()[0];
+		if (!(constant instanceof double[][]))
+			return false;
+		double[][] dConstant = (double[][])constant;
+		if (dConstant.length != yDimension || dConstant[0].length != xDimension)
+			return false;
+
+		return true;
+	}
+
 
 }

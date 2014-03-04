@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2013 Analog Devices, Inc.
+%   Copyright 2013-2014 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -26,27 +26,54 @@ for arg=varargin
     end
 end
 
-if ((nnz(size(a)>1)==2) && (nnz(size(b)>1)==1))         % A*b
-    matrix = a;
-    inVector = b;
-    inLength = size(matrix,2);
-    outLength = size(matrix,1);
-    if (inLength~=length(inVector)); error('Incompatible dimensions'); end;
-    outSize = {outLength 1};
-elseif ((nnz(size(a)>1)==1) && (nnz(size(b)>1)==2))     % a*B
-    matrix = b';
-    inVector = a';
-    inLength = size(matrix,2);
-    outLength = size(matrix,1);
-    if (inLength~=length(inVector)); error('Incompatible dimensions'); end;
-    outSize = {1 outLength};
+if (isa(a,'RealJoint') || isa(b,'RealJoint'))
+    
+    % Vector is a RealJoint
+    if ((nnz(size(a)>1)==2) && isa(b,'RealJoint'))         % A*b
+        matrix = a;
+        inVector = b;
+        inLength = size(matrix,2);
+        outLength = size(matrix,1);
+        if (inLength~=inVector.Domain.NumElements); error('Incompatible dimensions'); end;
+    elseif (isa(a,'RealJoint') && (nnz(size(b)>1)==2))     % a*B
+        matrix = b';
+        inVector = a;
+        inLength = size(matrix,2);
+        outLength = size(matrix,1);
+        if (inLength~=inVector.Domain.NumElements); error('Incompatible dimensions'); end;
+    else
+        error('Inavlid dimensions: only matrix*vector or vector*matrix supported');
+    end
+    
+    outVector = RealJoint(outLength);
+    ff = FactorFunction('MatrixRealJointVectorProduct', inLength, outLength);
+
 else
-    error('Inavlid dimensions: only matrix*vector or vector*matrix supported');
+    
+    % Vector and matrix are arrays
+    if ((nnz(size(a)>1)==2) && (nnz(size(b)>1)==1))         % A*b
+        matrix = a;
+        inVector = b;
+        inLength = size(matrix,2);
+        outLength = size(matrix,1);
+        if (inLength~=length(inVector)); error('Incompatible dimensions'); end;
+        outSize = {outLength 1};
+    elseif ((nnz(size(a)>1)==1) && (nnz(size(b)>1)==2))     % a*B
+        matrix = b';
+        inVector = a';
+        inLength = size(matrix,2);
+        outLength = size(matrix,1);
+        if (inLength~=length(inVector)); error('Incompatible dimensions'); end;
+        outSize = {1 outLength};
+    else
+        error('Inavlid dimensions: only matrix*vector or vector*matrix supported');
+    end
+    
+    outVector = Real(outSize{:});
+    ff = FactorFunction('MatrixVectorProduct', inLength, outLength);
+
 end
 
-outVector = Real(outSize{:});
-
-ff = FactorFunction('MatrixVectorProduct', inLength, outLength);
 fg.addFactor(ff, outVector, matrix, inVector);
 
 end
