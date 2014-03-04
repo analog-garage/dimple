@@ -142,22 +142,23 @@ classdef MatrixObject < handle
             x = a.transpose();
         end
         function x = transpose(a)
-            x = a.createObject(a.VectorObject,a.VectorIndices');
+            vectorIndices = a.VectorIndices';
+            x = a.createObjectFromReorderedVectorIndices(vectorIndices);
         end
         
         function x = reshape(obj,varargin)
-            VectorIndices = reshape(obj.VectorIndices,varargin{:});
-            x = obj.createObject(obj.VectorObject,VectorIndices);
+            vectorIndices = reshape(obj.VectorIndices,varargin{:});
+            x = obj.createObjectFromReorderedVectorIndices(vectorIndices);
         end
         
         function x = fliplr(obj)
-            VectorIndices = fliplr(obj.VectorIndices);
-            x = obj.createObjectFromReorderedVectorIndices(VectorIndices);
+            vectorIndices = fliplr(obj.VectorIndices);
+            x = obj.createObjectFromReorderedVectorIndices(vectorIndices);
         end
         
         function x = flipud(obj)
-            VectorIndices = flipud(obj.VectorIndices);
-            x = obj.createObjectFromReorderedVectorIndices(VectorIndices);
+            vectorIndices = flipud(obj.VectorIndices);
+            x = obj.createObjectFromReorderedVectorIndices(vectorIndices);
         end
         
         function x = horzcat(varargin)
