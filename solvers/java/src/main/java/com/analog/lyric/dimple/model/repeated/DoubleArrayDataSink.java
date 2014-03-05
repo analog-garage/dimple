@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+
 
 public class DoubleArrayDataSink extends GenericDataSink<double[]>
 {
@@ -32,4 +35,27 @@ public class DoubleArrayDataSink extends GenericDataSink<double[]>
 		}
 		return retval;
 	}
+	
+	
+	// This is a hack to support backward compatibility with using double-arrays to represent
+	// beliefs represented as Gaussian parameters.  For beliefs of this type, a new class of
+	// data sink should be created that explicitly supports this representation (as in the
+	// multivariate case).  Then this hack can be removed at some point, and getNext from
+	// the base class can be used directly.
+	@Override
+	public double[] getNext()
+	{
+		if (_data.size() <= 0)
+			throw new DimpleException("Data sink is empty.");
+		
+		Object value = _data.pollFirst();
+		if (value instanceof NormalParameters)
+		{
+			NormalParameters belief = (NormalParameters)value;
+			return new double[] {belief.getMean(), belief.getStandardDeviation()};
+		}
+		else
+			return (double[])value;
+	}
+
 }
