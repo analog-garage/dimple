@@ -493,11 +493,20 @@ public abstract class Node implements INode, Cloneable
 	{
 		_parentGraph = parentGraph;
 	}
+	
+	/**
+	 * Returns the graph that immediately contains this node, or null if node does not belong to any graph
+	 * or this is the root graph.
+	 */
 	@Override
 	public FactorGraph getParentGraph()
 	{
 		return _parentGraph;
 	}
+	
+	/**
+	 * Returns the outermost graph containing this node. Returns the node itself if it is the root graph.
+	 */
 	@Override
 	public FactorGraph getRootGraph()
 	{
