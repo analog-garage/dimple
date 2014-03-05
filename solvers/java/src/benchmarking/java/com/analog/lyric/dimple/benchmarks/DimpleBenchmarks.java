@@ -6,7 +6,8 @@ import com.analog.lyric.benchmarking.BenchmarkRunner;
 
 public class DimpleBenchmarks
 {
-	public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, SecurityException, NoSuchMethodException
+	public static void main(String[] args)
+		throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException
 	{
 		// Run a package:
 		BenchmarkRunner.runBenchmarkPackage("com.analog.lyric.dimple.benchmarks");
