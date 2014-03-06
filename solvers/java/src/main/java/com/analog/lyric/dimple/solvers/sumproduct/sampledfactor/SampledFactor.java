@@ -60,7 +60,7 @@ public class SampledFactor extends SFactorBase
 	private VariableBase[] _privateVariables;
 	private FactorGraph _messageGraph;
 	private com.analog.lyric.dimple.solvers.gibbs.SFactorGraph _solverGraph;
-	public final static int DEFAULT_SAMPLES_PER_UPDATE = 100;
+	public final static int DEFAULT_SAMPLES_PER_UPDATE = 1000;
 	public final static int DEFAULT_BURN_IN_SCANS_PER_UPDATE = 10;
 	public final static int DEFAULT_SCANS_PER_SAMPLE = 1;
 
