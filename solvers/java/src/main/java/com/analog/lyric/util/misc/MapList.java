@@ -28,7 +28,7 @@ import com.google.common.collect.Iterators;
 
 /*
  * MapList is a collection that stores data in both a HashMap and
- * an ArrayList.  This preserves order and also allows objects to be indexed by Id.
+ * an ArrayList. This preserves order and also allows objects to be indexed by Id.
  */
 @NotThreadSafe
 public class MapList<T extends IGetId>  implements IMapList<T>
@@ -62,6 +62,13 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * Collection methods
 	 */
 	
+	/**
+	 * Adds element to the collection. The same element may be added multiple times and will
+	 * appear multiple times when using list-related operations such as {@link #iterator()}
+	 * and {@link #getByIndex(int)}.
+	 * 
+	 * @return true
+	 */
 	@Override
 	public boolean add(T node)
 	{
@@ -131,6 +138,11 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 		return _arrayList.isEmpty();
 	}
 
+	/**
+	 * Removes all instances of this object from the collection.
+	 * @return false if no instances were found.
+	 * @see #removeByIndex(int)
+	 */
 	@Override
 	public boolean remove(Object node)
 	{
@@ -244,12 +256,22 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 		return (T) _hashMap.get(id);
 	}
 	
+	/**
+	 * @return element at given {@code index} which depends on the order in which the element
+	 * was added to the list.
+	 */
 	@Override
 	public T getByIndex(int index)
 	{
 		return _arrayList.get(index);
 	}
 	
+	/**
+	 * Removes and returns element at given {@code index}.
+	 * <p>
+	 * This only removes the specified instance. If the element may have been added more
+	 * than once, and you want to remove all instances instead use {@link #remove(Object)}.
+	 */
 	@Override
 	public T removeByIndex(int index)
 	{
