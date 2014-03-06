@@ -19,10 +19,9 @@ package com.analog.lyric.dimple.model.core;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
-
-import com.analog.lyric.util.misc.IMapList;
-import com.analog.lyric.util.misc.MapList;
+import java.util.Set;
 
 /**
  * An iterator that walks through connected nodes in a {@link FactorGraph}
@@ -66,8 +65,8 @@ public class FactorGraphWalker implements Iterator<INode>
 	private int _maxSearchDepth = Integer.MAX_VALUE;
 	private int _maxRelativeNestingDepth;
 
-	private MapList<INode> _visitedNodes = new MapList<INode>();
-	private boolean _visitedNodesWasExposed;
+	private Set<INode> _visitedNodes = null;
+	private boolean _visitedNodesWasExposed = true;
 	private Deque<Port> _portDeque = new ArrayDeque<Port>();
 	private int _currentDepth;
 	private int _maxDepthSeen;
@@ -115,7 +114,7 @@ public class FactorGraphWalker implements Iterator<INode>
 		if (this._visitedNodesWasExposed)
 		{
 			// Someone might still be using the old copy, so we have to make a new one.
-			this._visitedNodes = new MapList<INode>();
+			this._visitedNodes = new LinkedHashSet<INode>();
 		}
 		else
 		{
@@ -348,10 +347,11 @@ public class FactorGraphWalker implements Iterator<INode>
 	}
 	
 	/**
-	 * Returns collection of nodes that were visited by the walker so far.
+	 * Returns collection of nodes that were visited by the walker so far in the order in which
+	 * they were visited.
 	 * @see #getVisitedNodesSize
 	 */
-	public final IMapList<INode> getVisitedNodes()
+	public final Set<INode> getVisitedNodes()
 	{
 		this._visitedNodesWasExposed = true;
 		return this._visitedNodes;
