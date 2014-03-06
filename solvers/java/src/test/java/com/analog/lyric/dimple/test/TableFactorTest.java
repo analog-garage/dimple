@@ -21,8 +21,8 @@ import org.junit.*;
 
 import static org.junit.Assert.* ;
 
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -58,8 +58,8 @@ public class TableFactorTest {
 		FactorGraph fg = new FactorGraph(); 
 		fg.setSolverFactory(new com.analog.lyric.dimple.test.dummySolver.DummySolver());
 		
-		Factor fCustom = fg.addFactor(new NopFactorFunction("dummyCustomFactor"), vs[0],vs[1],vs[2]);
-		Factor fCustom2 = fg.addFactor(new NopFactorFunction("dummyCustomFactor"), vs[0],vs[1],vs[2]);
+		Factor fCustom = fg.addFactor(new CustomFactorFunctionWrapper("dummyCustomFactor"), vs[0],vs[1],vs[2]);
+		Factor fCustom2 = fg.addFactor(new CustomFactorFunctionWrapper("dummyCustomFactor"), vs[0],vs[1],vs[2]);
 		XorDelta xorFF = new XorDelta();
 		DiscreteFactor tf = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);		
 		DiscreteFactor tf2 = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);		

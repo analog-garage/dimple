@@ -14,19 +14,18 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.factorfunctions;
+package com.analog.lyric.dimple.factorfunctions.core;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 
-public class NopFactorFunction extends FactorFunction 
+public class CustomFactorFunctionWrapper extends FactorFunction 
 {
 
-	public NopFactorFunction()
+	public CustomFactorFunctionWrapper()
 	{
 		super();
 	}
-	public NopFactorFunction(String name) 
+	public CustomFactorFunctionWrapper(String name) 
 	{
 		super(name);
 	}

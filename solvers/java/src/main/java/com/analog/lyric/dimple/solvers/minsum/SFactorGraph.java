@@ -17,6 +17,9 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Xor;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -51,10 +54,15 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		String factorName = factor.getFactorFunction().getName();
+		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
+		String factorName = factorFunction.getName();
+		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
 
+		
 		// First see if any custom factor should be created
-		if (factorName.equals("Xor") || factorName.equals("CustomXor") || factorName.equals("customXor"))		// "CustomXor" and "customXor" for backward compatibility
+		if (factorFunction instanceof Xor)
+			return new CustomXor(factor);
+		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))		// For backward compatibility
 			return new CustomXor(factor);
 		else			// No custom factor exists, so create a generic one
 		{

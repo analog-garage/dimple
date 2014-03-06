@@ -27,8 +27,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -64,7 +64,7 @@ public class FactorFunctionTest {
 	public void test_simpleStuff()
 	{
 		String name = "name";
-		FactorFunction ff = new NopFactorFunction(name);
+		FactorFunction ff = new CustomFactorFunctionWrapper(name);
 		assertTrue(ff.getName() == name);
 		//should kaboom
 		ff.eval(new Object[]{.5, .5});

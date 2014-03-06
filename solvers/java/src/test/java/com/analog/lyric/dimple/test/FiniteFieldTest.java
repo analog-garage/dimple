@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;

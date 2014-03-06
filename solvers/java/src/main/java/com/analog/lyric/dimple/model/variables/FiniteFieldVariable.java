@@ -23,22 +23,18 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
 
 public class FiniteFieldVariable extends Discrete
 {
-	private static TypedDiscreteDomain<Double> _getDomainFromPoly(int poly)
-	{
-		double [] dpoly = _convert2poly(poly);
-				
-        //domain = 0:2^(length(poly)-1)-1;
-		int max = (int)Math.pow(2,dpoly.length-1)-1;
-		
-		return DiscreteDomain.range(0.0, max);
-	}
-	
 	public FiniteFieldVariable(int poly)
 	{
-			super(_getDomainFromPoly(poly), "FiniteFieldVariable");
-			double [] dpoly = _convert2poly(poly);
-			this.setProperty("primitivePolynomial", dpoly);
-
+		super(_getDomainFromPoly(poly), "FiniteFieldVariable");
+		double [] dpoly = _convert2poly(poly);
+		this.setProperty("primitivePolynomial", dpoly);
+	}
+	
+	private static TypedDiscreteDomain<Integer> _getDomainFromPoly(int poly)
+	{
+		double [] dpoly = _convert2poly(poly);
+		int max = (int)Math.pow(2,dpoly.length-1)-1;		
+		return DiscreteDomain.range(0, max);
 	}
 	
 	private static double [] _convert2poly(int poly)
@@ -53,7 +49,6 @@ public class FiniteFieldVariable extends Discrete
 		{
 			if (((1 << i) & poly) != 0)
 				retval[retval.length-i-1] = 1;
-			
 		}
 		
 		return retval;

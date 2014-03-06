@@ -86,10 +86,31 @@ public abstract class FactorFunction
     	return converted;
     }
     
+	// WARNING WARNING WARNING
+	// At least one or the other of these must be overridden in a derived class.
+	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
+	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));
 	}
+	public double evalEnergy(Object... arguments)
+	{
+		return -Math.log(eval(arguments));
+	}
+
+	// Default version of evalEnergy that takes values; can be overridden to implement
+	// a more efficient version that doesn't require copying the input array
+	public double evalEnergy(Value[] values)
+	{
+		final int size = values.length;
+		final Object[] objects = new Object[size];
+		for (int i = 0; i < size; ++i)
+			objects[i] = values[i].getObject();
+
+		return evalEnergy(objects);
+	}
+
 
 	public void evalDeterministic(Object[] arguments)
 	{ }
@@ -108,22 +129,7 @@ public abstract class FactorFunction
 		}
 	}
 
-	public double evalEnergy(Object... arguments)
-	{
-		return -Math.log(eval(arguments));
-	}
 	
-	public double evalEnergy(Value[] values)
-	{
-		final int size = values.length;
-		final Object[] objects = new Object[size];
-		for (int i = 0; i < size; ++i)
-		{
-			objects[i] = values[i].getObject();
-		}
-		return evalEnergy(objects);
-	}
-
     public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;

@@ -21,6 +21,23 @@ import java.util.Iterator;
 
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Bernoulli;
+import com.analog.lyric.dimple.factorfunctions.Beta;
+import com.analog.lyric.dimple.factorfunctions.Binomial;
+import com.analog.lyric.dimple.factorfunctions.Categorical;
+import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
+import com.analog.lyric.dimple.factorfunctions.Dirichlet;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransition;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
+import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
+import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.factorfunctions.LogNormal;
+import com.analog.lyric.dimple.factorfunctions.Multiplexer;
+import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
+import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -137,40 +154,40 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		String factorName = factor.getFactorFunction().getName();
+		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
 		
 		// First see if any custom factor should be created
-		if (factorName.equals("Normal"))
+		if (factorFunction instanceof Normal)
 			return new CustomNormal(factor);
-		else if (factorName.equals("Gamma"))
+		else if (factorFunction instanceof Gamma)
 			return new CustomGamma(factor);
-		else if (factorName.equals("NegativeExpGamma"))
+		else if (factorFunction instanceof NegativeExpGamma)
 			return new CustomNegativeExpGamma(factor);
-		else if (factorName.equals("LogNormal"))
+		else if (factorFunction instanceof LogNormal)
 			return new CustomLogNormal(factor);
-		else if (factorName.equals("DiscreteTransition"))
+		else if (factorFunction instanceof DiscreteTransition)
 			return new CustomDiscreteTransition(factor);
-		else if (factorName.equals("DiscreteTransitionUnnormalizedParameters"))
+		else if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
-		else if (factorName.equals("DiscreteTransitionEnergyParameters"))
+		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
 			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
-		else if (factorName.equals("Categorical"))
+		else if (factorFunction instanceof Categorical)
 			return new CustomCategorical(factor);
-		else if (factorName.equals("CategoricalUnnormalizedParameters"))
+		else if (factorFunction instanceof CategoricalUnnormalizedParameters)
 			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
-		else if (factorName.equals("CategoricalEnergyParameters"))
+		else if (factorFunction instanceof CategoricalEnergyParameters)
 			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
-		else if (factorName.equals("Dirichlet"))
+		else if (factorFunction instanceof Dirichlet)
 			return new CustomDirichlet(factor);
-		else if (factorName.equals("ExchangeableDirichlet"))
+		else if (factorFunction instanceof ExchangeableDirichlet)
 			return new CustomExchangeableDirichlet(factor);
-		else if (factorName.equals("Beta"))
+		else if (factorFunction instanceof Beta)
 			return new CustomBeta(factor);
-		else if (factorName.equals("Bernoulli"))
+		else if (factorFunction instanceof Bernoulli)
 			return new CustomBernoulli(factor);
-		else if (factorName.equals("Binomial"))
+		else if (factorFunction instanceof Binomial)
 			return new CustomBinomial(factor);
-		else if (factorName.equals("Multiplexer"))
+		else if (factorFunction instanceof Multiplexer)
 			return new CustomMultiplexer(factor);
 		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one
 			return new STableFactor(factor);	// Generic discrete factor

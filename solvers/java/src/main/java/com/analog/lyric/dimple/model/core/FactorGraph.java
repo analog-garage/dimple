@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -337,32 +337,28 @@ public class FactorGraph extends FactorBase
 		return addFactor(factorFunction, (Object[])vars);
 	}
 
-	public Factor addFactor(String factorName, VariableBase...vars)
+	public Factor addFactor(String factorFunctionName, Object ... vars)
 	{
-		if (customFactorExists(factorName))
-			return addFactor(new NopFactorFunction(factorName), (Object[])vars);
+		if (customFactorExists(factorFunctionName))
+			return addFactor(new CustomFactorFunctionWrapper(factorFunctionName), (Object[])vars);
 		else
 		{
-			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorName;
-			FactorFunction factorFunction = null;
-			try {factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();}
-			catch (Exception e) {throw new DimpleException("Could not instantiate factor function.");}
-			return addFactor(factorFunction, (Object[])vars);
+			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorFunctionName;
+			try
+			{
+				FactorFunction factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();
+				return addFactor(factorFunction, (Object[])vars);
+			}
+			catch (Exception e)
+			{
+				throw new DimpleException("Could not instantiate factor function.");
+			}
 		}
 	}
 	
-	public Factor addFactor(String factorName, Object ... vars)
+	public Factor addFactor(String factorFunctionName, VariableBase...vars)
 	{
-		if (customFactorExists(factorName))
-			return addFactor(new NopFactorFunction(factorName), (Object[])vars);
-		else
-		{
-			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorName;
-			FactorFunction factorFunction = null;
-			try {factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();}
-			catch (Exception e) {throw new DimpleException("Could not instantiate factor function.");}
-			return addFactor(factorFunction, (Object[])vars);
-		}
+		return addFactor(factorFunctionName, (Object[])vars);
 	}
 	
 	public Factor addFactor(FactorFunction factorFunction, Object ... vars)
