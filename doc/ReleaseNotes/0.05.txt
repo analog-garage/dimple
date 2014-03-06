@@ -1,24 +1,37 @@
 Dimple v0.05 Release Notes
 ==========================
 
-New Features Since v0.04 (Oct 5)
+New Features Since v0.04 (Oct 5, 2013)
 ------------------------
 * Added dimpleVersion MATLAB function
 
-* Modified java model package structure
+* Modified Java model package structure
 
-* Added java solver template to aid in the design of new solvers
+* Added Java solver template to aid in the design of new solvers
+
+* Merged Gaussian solver into the SumProduct solver, using Gaussian-parameterized messages for continuous variables in the SumProduct solver
+
+* Added generic sampling-based approximate message computation for factors connecting to at least one continuous variable that do not otherwise support exact Gaussian message computation
 
 * Added ExchangeableDirichlet factor function
 
 * Added Multiplexer factor function
 
-* Added MatrixProduct and VectorInnerProduct factor functions, and corresponding use cases for the overloaded * operator
+* Added MatrixProduct, VectorInnerProduct, and MatrixRealJointVectorProduct built-in factor functions, and corresponding use cases for the overloaded * operator in MATLAB
+
+* Added RealJointSum, RealJointSubtract, and RealJointNegate built-in factor functions, and corresponding use cases for the overloaded + and - operators in MATLAB
+
+* Added MultivariateNormal built-in factor function
 
 
 Fixes Since v0.04
 -----------------
-
 * Fix performance problem in tree scheduler for large graphs
 
 * Fix performance problem for large deterministic-directed factors
+
+* Adding continous variables to a graph (Real, Complex, or RealJoint) no longer requires changing the solver first (since the default SumProduct solver now supports continuous variables)
+
+* Fix support for including constants when adding custom built-in factors
+
+* Fix Score method support in SumProduct solver for graphs with continuous variables
