@@ -10,9 +10,9 @@ Variable Type & Supported Solvers \\
 \endhead
 Discrete & all \\
 Bit & all \\
-Real & Gibbs, Gaussian, ParticleBP \\
-RealJoint & Gibbs, Gaussian \\ 
-Complex & Gibbs, Gaussian \\
+Real & SumProduct, Gibbs, ParticleBP \\
+RealJoint & SumProduct, Gibbs \\ 
+Complex & SumProduct, Gibbs \\
 FiniteFieldVariable & SumProduct \\
 \end{longtable} 
 
@@ -68,7 +68,7 @@ Read-only.  Returns the solver-object associated with the variable, to which sol
 
 Read-write.  Specifies a value from the variable to be used when computing the Score of the factor graph (or of the variable or neighboring factors).  The Guess must be a valid value from the domain of the variable.
 
-If the Guess had not yet been set, its value defaults to the most likely belief (which corresponds to the Value property of the variable)\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified.}.
+If the Guess had not yet been set, its value defaults to the most likely belief (which corresponds to the Value property of the variable)\footnote{For some solvers, beliefs are not supported for all variable types; in such cases there is no default value, so a Guess must be specified in order to compute the Score.}.
 
 
 \subpara{Score}
@@ -535,49 +535,52 @@ Read-only.  The Domain property returns the domain of that variable in the form 
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
+For the SumProduct solver, this property returns the estimated marginal distribution of the variable in the form of a NormalParameters object (see section~\ref{sec:NormalParameters}), which includes a mean and precision value\ifmatlab\footnote{For backward compatibility with Dimple version 0.04 and earlier, the Belief can be treated as a two-dimensional array where the first element is the mean and the second is the standard deviation.}\fi.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of NormalParameters objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
+
 
 \subpara{Value}
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
-For the Gaussian solver, the Value corresponds to the mean value of the belief.
+For the SumProduct solver, the Value corresponds to the mean value of the belief.
 
 
 \subpara{Input}
 
-Read-write.  For a Real variable, the form of the Input property depends on the particular solver.  For the Gibbs and ParticleBP solvers, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For example:
+Read-write.  For a Real variable, the Input property is expressed in the form of a FactorFunction object that can connect to exactly one Real variable.  The list of available built-in FactorFunctions is given in section~\ref{sec:usingBuiltInFactors}.  Typically, an Input would use one of the standard distributions included in this list.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For the Gibbs and ParticleBP solvers, any such factor function may be used as an Input.  For the SumProduct solver, however, only a Normal factor function may be used.  Below is an example of setting the Input for a Real variable:
 
 \ifmatlab
+
 \begin{lstlisting}
 r = Real();
 r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
 \end{lstlisting}
+
+Equivalently, a simpler alternative form for specifying the Input may be used.  In this form the name of the factor followed by the arguments to the corresponding constructor are listed as elements of a cell array:
+
+\begin{lstlisting}
+r = Real();
+r.Input = {'Normal', measuredMean, measurementPrecision};
+\end{lstlisting}
+
+To remove an Input that had previously been set, the Input may be set to an empty array.
+
 \fi
 
 \ifjava
+
 \begin{lstlisting}
 Real r = new Real();
 r.setInput(new Normal(measuredMean, measurementPrecision));
 \end{lstlisting}
-\fi
 
-For the Gaussian solver, the Input property is a two-element array, where the first element is the mean, and the second element is the standard deviation.  For example:
+To remove an Input that had previously been set, the Input may be set to null.
+
+\fi
 
 \ifmatlab
-\begin{lstlisting}
-r = Real();
-r.Input = [measuredMean, measurementStandardDeviation];
-\end{lstlisting}
-\fi
-
-\ifjava
-\begin{lstlisting}
-Real r = new Real();
-r.setInput( new double [] {measuredMean, measurementStandardDeviation});
-\end{lstlisting}
-\fi
-
 In the current version of Dimple, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+\fi
 
 \subpara{FixedValue}
 
@@ -610,7 +613,7 @@ See section~\ref{sec:Discrete.hasFixedValue}.
 
 \subsubsection{RealJoint}
 
-A RealJoint variable is a tightly coupled set of real variables that are treated by a solver as a single joint variable rather than a separate collection of variables.  For example, in the Gaussian solver, the messages associated with RealJoint variables involve joint mean and covariance matrix rather than an individual mean and variance for each variable.
+A RealJoint variable is a tightly coupled set of real variables that are treated by a solver as a single joint variable rather than a separate collection of variables.  For example, in the SumProduct solver, the messages associated with RealJoint variables involve joint mean and covariance matrix rather than an individual mean and variance for each variable.
 
 Like other variables, the RealJoint class can represent either a single RealJoint variable (representing a collection of real values) or an array of RealJoint variables.
 
@@ -655,14 +658,14 @@ Read-only.  The Domain property returns the domain of that variable in the form 
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
-For the Gaussian solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of MultivariateMsg objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
+For the SumProduct solver, this property returns the estimated marginal distribution of the variable in the form of a MultivariateNormalParameters object (see section~\ref{sec:MultivariateNormalParameters}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, this property returns a cell array of MultivariateNormalParameters objects, each corresponding to the estimated marginal distribution of the corresponding variable. \fi The results are undefined if called prior to running a solver.
 
 \subpara{Value}
 \label{sec:RealJoint.Value}
 
 Read-only.  The behavior of this property for Real variables is solver specific.  Some solvers do not support this property at all and will return an error when read.  See section~\ref{sec:SolversAPI} for more detail on each of the supported solvers.
 
-For the Gaussian solver, this property returns the mean vector, with dimension equal to the dimension of the RealJoint variable.
+For the SumProduct solver, this property returns the mean vector, with dimension equal to the dimension of the RealJoint variable.
 
 \ifmatlab
 For an array of RealJoint variables, this property returns an array where the initial dimensions correspond to the dimensions of the variable array (or portion of the variable array), and the final dimension corresponds to the dimension of the RealJoint variable.
@@ -671,16 +674,50 @@ For an array of RealJoint variables, this property returns an array where the in
 \subpara{Input}
 \label{sec:RealJoint.Input}
 
-Read-write.  The behavior of this property for Real variables is solver specific.  
+Read-write.  For a RealJoint variable, the Input property is expressed in one of two forms: either a single FactorFunction object that can connect to exactly one RealJoint variable, or a set of FactorFunction objects that can each connect to exactly one Real variable.  The latter case corresponds to a likelihood function where each dimension is independent.  The list of available built-in FactorFunctions is given in section~\ref{sec:usingBuiltInFactors}.  Typically, an Input would use one of the standard distributions included in this list.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For the Gibbs and ParticleBP solvers, any such factor function may be used as an Input.  For the SumProduct solver, however, only a MultvariateNormal factor function or a set of Normal factor functions may be used.
 
-For the Gaussian solver, \ifmatlab for a single RealJoint variable, \fi the value of this property must be a MultivariateMsg (see section~\ref{sec:MultivariateMsg}), which includes a mean vector and covariance matrix.  \ifmatlab For an array of RealJoint variables, the value of this property must be a cell array of MultivariateMsg objects, with dimensions equal to the dimension of the array (or the portion of the array) being set. \fi
+Below is an example of setting the Input for a RealJoint variable using a single multivariate factor function:
 
 \ifmatlab
-For the Gibbs or ParticleBP solvers, for a single RealJoint variable, the value of this property must be a cell array of FactorFunction objects (see section~\ref{sec:FactorFunction}), one for each dimension of the RealJoint variable.  In the current version of Dimple, for these solvers, Inputs on Real variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+
+\begin{lstlisting}
+r = Real();
+r.Input = FactorFunction('MultivariateNormal', measuredMeanVector, measurementCovarianceMatrix);
+\end{lstlisting}
+
+Equivalently, a simpler alternative form for specifying the Input may be used.  In this form the name of the factor followed by the arguments to the corresponding constructor are listed as elements of a cell array:
+
+\begin{lstlisting}
+r = Real();
+r.Input = {'MultivariateNormal', measuredMeanVector, measurementCovarianceMatrix};
+\end{lstlisting}
+
+To remove an Input that had previously been set, the Input may be set to an empty array.
+
+\fi
+
+\ifjava
+
+\begin{lstlisting}
+Real r = new Real();
+r.setInput(new MultivariateNormal(measuredMeanVector, measurementCovarianceMatrix));
+\end{lstlisting}
+
+To remove an Input that had previously been set, the Input may be set to null.
+
+\fi
+
+\ifmatlab
+To specify a set of univariate factor functions the value of this property must be a cell array of FactorFunction objects, one for each dimension of the RealJoint variable.
 \fi
 \ifjava
-For the Gibbs or ParticleBP solvers, the value of this property must be FactorFunction (see section~\ref{sec:FactorFunction}).  For an array of RealJoint variables, the value of this property must be an array of FactorFunctions, with dimensions equal to the dimensions of the array (or portion of the array) being set.
+To specify a set of univariate factor functions the value of this property must be an array of FactorFunction objects, one for each dimension of the RealJoint variable.
 \fi
+
+\ifmatlab
+In the current version of Dimple, Inputs on RealJoint variable arrays must be set one at a time, or all set to a single common value\footnote{This restriction may be removed in a future version.}.
+\fi
+
 
 \subpara{FixedValue}
 \label{sec:RealJoint.FixedValue}
@@ -1044,17 +1081,53 @@ Returns the RealDomain that correspond to the dimension corresponding to the spe
 
 \fi
 
+\subsubsection{NormalParameters}
+\label{sec:NormalParameters}
 
-
-\subsubsection{MultivariateMsg}
-\label{sec:MultivariateMsg}
-
-The MultivariateMsg class is used to specify the parameters of a multivariate Gaussian distribution, as used in the Gaussian solver.
+The NormalParameters class is used to specify the parameters of a univariate Normal distribution, as used in the SumProduct solver.
 
 \para{Constructor}
 
 \begin{lstlisting}
-MultivariateMsg(meanVector, covarianceMatrix)
+NormalParameters(mean, precision)
+\end{lstlisting}
+
+\begin{itemize}
+\item mean is the mean value of the distribution.
+\item precision is the precision of the distribution, which is the inverse of the variance.
+\end{itemize}
+
+
+\para{Properties}
+
+\subpara{Mean}
+
+Read-only.  Returns the mean value.
+
+\subpara{Precision}
+
+Read-only.  Returns the precision value.
+
+\subpara{Variance}
+
+Read-only.  Returns the variance (inverse of the precision).
+
+\subpara{StandardDeviation}
+
+Read-only.  Returns the standard deviation (square root of the variance).
+
+
+
+
+\subsubsection{MultivariateNormalParameters}
+\label{sec:MultivariateNormalParameters}
+
+The MultivariateNormalParameters class is used to specify the parameters of a multivariate Normal distribution, as used in the SumProduct solver.
+
+\para{Constructor}
+
+\begin{lstlisting}
+MultivariateNormalParameters(meanVector, covarianceMatrix)
 \end{lstlisting}
 
 \begin{itemize}
@@ -1065,15 +1138,21 @@ MultivariateMsg(meanVector, covarianceMatrix)
 
 \para{Properties}
 
-\subpara{Means}
+\subpara{Mean}
 
-Read-only.  Returns a vector of values, where each value indicates the mean value of each element in a joint set of variables.
+Read-only.  Returns a vector of values, where each value indicates the mean value of the corresponding element in a joint set of variables.
 
 \subpara{Covariance}
 
 Read-only.  Returns a two-dimensional array of values, representing the covariance matrix of a joint set of variables.
 
+\subpara{InformationVector}
 
+Read-only.  Returns a vector of values representing the information matrix, defined as $\Sigma^{-1}\mu$, where $\Sigma$ is the covariance matrix and $\mu$ is the mean vector.
+
+\subpara{InformationMatrix}
+
+Read-only.  Returns a two-dimensional array of values representing the information matrix, defined as $\Sigma^{-1}$, where $\Sigma$ is the covariance matrix.
 
 
 

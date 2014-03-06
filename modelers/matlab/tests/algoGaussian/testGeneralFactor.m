@@ -68,8 +68,10 @@ function test2(debugPrint, repeatable)
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
     fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    fg.Solver.setSampledFactorBurnInScansPerUpdate(100);
+    fg.Solver.setSampledFactorScansPerSample(1);
     fg.Solver.setSeed(1);
-
+    
     aM = 5;
     aS = 2;
     bM = -2;

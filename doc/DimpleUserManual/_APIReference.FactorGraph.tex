@@ -39,7 +39,6 @@ The current set of valid solver names are:
 \begin{itemize}
 \item SumProduct
 \item MinSum
-\item Gaussian
 \item ParticleBP
 \item Gibbs
 \item LP
@@ -52,15 +51,13 @@ The current set of valid solver names are:
 fg.setSolver(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 \end{lstlisting}
 
-The current set of valid solvers are:
+The current set of valid solvers are:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
 
 \begin{itemize}
 \item com.analog.lyric.dimple.solvers.sumproduct.Solver
 \item com.analog.lyric.dimple.solvers.minsum.Solver
-\item com.analog.lyric.dimple.solvers.gaussian.Solver
 \item com.analog.lyric.dimple.solvers.particleBP.Solver
 \item com.analog.lyric.dimple.solvers.gibbs.Solver
-\item LP - The Java LP solver is not currently supported.
 \end{itemize}
 
 \fi
@@ -134,7 +131,7 @@ In a nested graph, the Schedule property at each nesting level may be set indepe
 
 \para{NumIterations}
 
-Read-write.  The NumIterations property sets the number of iterations BP will to run when using the solve method.  This only applies to solvers that use BP, which are the SumProduct, MinSum, Gaussian, and ParticleBP solvers.
+Read-write.  The NumIterations property sets the number of iterations BP will to run when using the solve method.  This only applies to solvers that use BP, which are the SumProduct, MinSum, and ParticleBP solvers.
 
 The default value is 1.  For a factor graph with a tree-structure, when using the default scheduler, one iteration is appropriate.  Otherwise, it would normally be appropriate to set the number of iterations to a larger value.
 
@@ -258,7 +255,7 @@ indexList, weightList & A factor table specified in an alternative form.  The in
 %
 weightArray & A factor table specified in an alternative form.  The weightArray argument is defined identically to its definition in the FactorTable constructor described in section~\ref{sec:FactorTable}. Specifying a factor in this form is supported only if all connected variables are discrete. \\
 %
-builtInFactorName & String indicating the name of a built-in factor.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.  Built-in factor names are case sensitive.  \\
+builtInFactorName & String indicating the name of a built-in factor.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.  Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction.  Built-in factor names are case sensitive.  \\
 %
 FactorFunction & A FactorFunction object as described in section~\ref{sec:FactorFunction}. This form can be used to specify a built-in factor that requires constructor arguments.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.\\
 %
@@ -277,6 +274,8 @@ Factor Specification & Description \\
 \endhead
 %
 FactorFunction & A FactorFunction object as described in section~\ref{sec:FactorFunction}. This form can be used to specify a built-in factor that requires constructor arguments.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.\\
+%
+builtInFactorName & String indicating the name of a built-in factor.  The list of Dimple built-in factors is given in section~\ref{sec:builtInFactors}.  Referring to a built-in factor by name assumes no constructor arguments are needed for the corresponding FactorFunction.  Built-in factor names are case sensitive.  \\
 %
 FactorTable & A FactorTable object as described in section~\ref{sec:FactorTable}.  Specifying a factor in this form is supported only if all connected variables are discrete. \\
 %
