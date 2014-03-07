@@ -32,9 +32,9 @@ end
 var = Real(outSize{:});
 
 if (isa(mean,'VariableBase') || isa(precision,'VariableBase'))
-    fg.addFactor('LogNormal', mean, precision, var);     % At least one variable parameter
+    fg.addFactor('LogNormal', mean, precision, var);                    % At least one variable parameter
 else
-    var.Input = FactorFunction('LogNormal', mean, precision);   % Constant parameters (more efficient to fix in constructor and set as Input)
+    fg.addFactor(FactorFunction('LogNormal', mean, precision), var);    % Constant parameters
 end
 
 end

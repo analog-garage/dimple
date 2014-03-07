@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
+import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
 import com.analog.lyric.dimple.matlabproxy.repeated.IPVariableStreamSlice;
@@ -358,7 +358,7 @@ public class PFactorGraphVector extends PFactorVector
     		throw new DimpleException("No changes allowed while the solver is running.");
     	
 		VariableBase [] vars = varVector.getVariableArray();
-		Factor f = getGraph().addFactor(new NopFactorFunction(funcName), vars);
+		Factor f = getGraph().addFactor(new CustomFactorFunctionWrapper(funcName), vars);
 		return new PFactorVector(f);
 	}
 
@@ -368,7 +368,7 @@ public class PFactorGraphVector extends PFactorVector
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-    	Factor f = getGraph().addFactor(new NopFactorFunction(funcName),PHelpers.convertToMVariablesAndConstants(variables));
+    	Factor f = getGraph().addFactor(new CustomFactorFunctionWrapper(funcName),PHelpers.convertToMVariablesAndConstants(variables));
 		return new PFactorVector(f);
 	}
 

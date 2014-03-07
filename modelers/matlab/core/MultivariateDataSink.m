@@ -34,10 +34,10 @@ classdef MultivariateDataSink < DataSink
             retval = getNext@DataSink(obj);
             if iscell(retval)
                 for i = 1:numel(retval)
-                   retval{i} = MultivariateMsg(retval{i}); 
+                   retval{i} = MultivariateNormalParameters(retval{i}); 
                 end
             else
-                retval = MultivariateMsg(retval);
+                retval = MultivariateNormalParameters(retval);
             end
         end
         

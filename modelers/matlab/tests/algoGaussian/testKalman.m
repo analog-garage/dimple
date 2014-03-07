@@ -200,8 +200,8 @@ function testKalman()
     fg.initialize();
     for i = 1:timesteps
        fg.solveOneStep();
-       fgxs(i) = fxs.get(1).Belief.Means(1);
-       fgys(i) = fxs.get(1).Belief.Means(2);
+       fgxs(i) = fxs.get(1).Belief.Mean(1);
+       fgys(i) = fxs.get(1).Belief.Mean(2);
 
        if fg.hasNext()
            fg.advance();

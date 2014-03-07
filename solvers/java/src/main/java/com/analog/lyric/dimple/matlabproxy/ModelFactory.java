@@ -33,7 +33,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.ThreadPool;
-import com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 
 /*
@@ -42,9 +43,14 @@ import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 public class ModelFactory
 {
 
-	public MultivariateMsg createMultivariateMsg(double [] means, double [][] covar)
+	public MultivariateNormalParameters createMultivariateNormalParameters(double[] mean, double[][] covariance)
 	{
-		return new MultivariateMsg(means, covar);
+		return new MultivariateNormalParameters(mean, covariance);
+	}
+
+	public NormalParameters createNormalParameters(double mean, double precision)
+	{
+		return new NormalParameters(mean, precision);
 	}
 
 	public PRealJointVariableVector createRealJointVariableVector(String className, PRealJointDomain domain, int numEls)

@@ -91,15 +91,25 @@ classdef RealJoint < VariableBase
             varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             a = cell(obj.VectorObject.getBeliefs(varids));
             
-            if prod(sz) == 1
-                m = MultivariateMsg(0,0);
-                m.IMsg = a{1};
-                b = m;
-            else
-                for i = 1:numel(b)
-                    m = MultivariateMsg(0,0);
-                    m.IMsg = a{i};
-                    b{i} = m;
+            if (isa(a{1}, 'com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters'))
+                if prod(sz) == 1
+                    m = MultivariateNormalParameters(0,0);
+                    m.IParameters = a{1};
+                    b = m;
+                else
+                    for i = 1:numel(b)
+                        m = MultivariateNormalParameters(0,0);
+                        m.IParameters = a{i};
+                        b{i} = m;
+                    end
+                end
+            else % A different form of beleif
+                if prod(sz) == 1
+                    b = a{1};
+                else
+                    for i = 1:numel(b)
+                        b{i} = a{i};
+                    end
                 end
             end
         end
@@ -116,8 +126,8 @@ classdef RealJoint < VariableBase
         function setInput(obj,input)
             v = obj.VectorIndices;
             
-            if isa(input,'Msg')
-                input = input.IMsg;
+            if isa(input,'ParameterizedMessage')
+                input = input.IParameters;
             elseif (isa(input, 'FactorFunction'))
                 input = input.get();
             elseif iscell(input)
@@ -129,8 +139,8 @@ classdef RealJoint < VariableBase
                     for i=1:length(input)
                         input{i} = FactorFunction(input{i}{:}).get();
                     end
-                elseif (isstring(input{1}))
-                    input = FactorFunction(input).get();
+                elseif (ischar(input{1}))
+                    input = FactorFunction(input{:}).get();
                 end
             end
             

@@ -1,7 +1,7 @@
 \subsection{List of Overloaded MATLAB Operators and Functions}
 \label{sec:overloaded}
 
-The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding built-in factor (as described in section~\ref{sec:builtInFactors}), the valid variable data types of the inputs and outputs (B~=~Bit, D~=~Discrete, or R~=~Real, C~=~Complex), and wether or not vectorized inputs are supported.  The use of these operators and functions is described in section~\ref{sec:ImplicitFactorCreation}.
+The following table lists the set of overloaded MATLAB operators that can be used to implicitly create factors.  The table shows the operator, the corresponding built-in factor (as described in section~\ref{sec:builtInFactors}), the valid variable data types of the inputs and outputs (B~=~Bit, D~=~Discrete, or R~=~Real, C~=~Complex, RJ~=~RealJoint), and wether or not vectorized inputs are supported.  The use of these operators and functions is described in section~\ref{sec:ImplicitFactorCreation}.
 
 \begin{longtable} {p{1.7cm} p{3.2cm} p{1cm} p{1cm} p{1cm} p{1.5cm} p{4.7cm}}
 Operator & Factor & Out & In1 & In2 & Vectorized & Description \\
@@ -14,15 +14,19 @@ xor() & Xor & B & B & B & \checkmark & Logical XOR \\
 $\sim$ & Not & B & B & - & \checkmark & Logical NOT \\
 $+$ & Sum & D,R\footnote{\label{ftn:outReal}If either input is Real, then the output is Real} & D,R & D,R & \checkmark & Plus \\*
  & ComplexSum & C & C,R & C,R & \checkmark & Complex plus \\
+ & RealJointSum & RJ & RJ & RJ &  & RealJoint plus \\
 $-$ & Subtract & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Minus \\*
  & ComplexSubtract & C & C,R & C,R & \checkmark & Complex minus \\*
+ & RealJointSubtract & RJ & RJ & RJ &  & RealJoint minus \\*
  & Negate & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & - & \checkmark & Unary minus \\*
  & ComplexNegate & C & C, R & - & \checkmark & Unary complex minus \\
+ & RealJointNegate & RJ & RJ & - &  & Unary RealJoint minus \\
 $*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:inScalar}One of the inputs may be a vector as long as the other is a scalar.} & Scalar multiply \\*
  & ComplexProduct & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:inScalar}} & Complex scalar multiply \\*
  & VectorInnerProduct & R & D,R,RJ & D,R,RJ & - & Vector inner product\footnote{If both inputs are vectors of the same dimension, then the VectorInnerProduct factor will be used. Each vector may be an array of scalar variables or a RealJoint variable.} \\*
  & MatrixProduct & R & D,R & D,R & - & Matrix multiply\footnote{If both inputs are two-dimensional matrices of appropriate dimension, then the MatrixProduct factor will be used.} \\*
  & MatrixVectorProduct & R & D,R & D,R & - & Matrix-vector multiply\footnote{If one input is a vector and the other is a matrix of appropriate dimension, then the MatrixVectorProduct factor will be used.} \\
+ & MatrixRealJoint\newline VectorProduct & RJ & RJ,D,R & RJ,D,R & - & Matrix-vector multiply\footnote{If one input is a RealJoint variable and the other is a matrix of scalar variables or constants of appropriate dimension, then the MatrixRealJointVectorProduct factor will be used.} \\
 $.*$ & Product & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise multiply \\*
  & ComplexProduct & C & C,R & C,R & \checkmark & Complex pointwise multiply \\
 $/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{\label{ftn:divScalar}The dividend may be a vector as long as the divisor is a scalar.} & Scalar divide \\*

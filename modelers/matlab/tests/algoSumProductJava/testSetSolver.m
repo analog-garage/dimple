@@ -83,8 +83,8 @@ function testSetSolver()
     fg.setSolver('particlebp');
     assertTrue(isa(fg.Solver,'com.analog.lyric.dimple.solvers.particleBP.SFactorGraph'));
 
-    fg.setSolver('gaussian');
-    assertTrue(isa(fg.Solver,'com.analog.lyric.dimple.solvers.gaussian.SFactorGraph'));
+    fg.setSolver('gaussian');   % Gaussian solver merged into sum-product solver
+    assertTrue(isa(fg.Solver,'com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph'));
 
     setSolver(origSolver);
 end

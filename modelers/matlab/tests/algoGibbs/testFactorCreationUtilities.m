@@ -32,6 +32,7 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testFactorCreationUtilities');
 
@@ -46,25 +47,26 @@ fgAlt.Solver = 'Gibbs';
 fg = FactorGraph();
 fg.Solver = 'Gibbs';
 
-testHelper(@Bernoulli, 1, 0, 0, 'Bit', fg, fgAlt);
-testHelper(@Beta, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@Categorical, 10, 11, 12, 'Discrete', fg, fgAlt);
-testHelper(@CategoricalEnergyParameters, 10, 11, 0, 'Discrete', fg, fgAlt);
-testHelper(@Dirichlet, 0, 0, 11, 'RealJoint', fg, fgAlt);
-testHelper(@Gamma, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@InverseGamma, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@LogNormal, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@NegativeExpGamma, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@Normal, 2, 0, 0, 'Real', fg, fgAlt);
-testHelper(@Rayleigh, 1, 0, 0, 'Real', fg, fgAlt);
-testHelper(@VonMises, 2, 0, 0, 'Real', fg, fgAlt);
+testHelper(@Bernoulli, 1, 0, 0, true, 'Bit', fg, fgAlt);
+testHelper(@Beta, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@Categorical, 10, 11, 0, false, 'Discrete', fg, fgAlt);
+testHelper(@Categorical, 0, 0, 12, true, 'Discrete', fg, fgAlt);
+testHelper(@CategoricalEnergyParameters, 10, 11, 0, false, 'Discrete', fg, fgAlt);
+testHelper(@Dirichlet, 0, 0, 11, true, 'RealJoint', fg, fgAlt);
+testHelper(@Gamma, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@InverseGamma, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@LogNormal, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@NegativeExpGamma, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@Normal, 2, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@Rayleigh, 1, 0, 0, true, 'Real', fg, fgAlt);
+testHelper(@VonMises, 2, 0, 0, true, 'Real', fg, fgAlt);
 
 fg.initialize();    % Make sure this doesn't crash
 
 end
 
 % Test various forms of factor creation
-function testHelper(utilityFunction, numRealParameters, numVectorParameters, numJointParameters, outputType, graph, altGraph)
+function testHelper(utilityFunction, numRealParameters, numVectorParameters, numJointParameters, includeConstants, outputType, graph, altGraph)
 
 numParameters = [numRealParameters, numVectorParameters, numJointParameters];
 
@@ -105,23 +107,27 @@ for testCase = 1:3
             
     end
     
+    if (~includeConstants)
+        pConst = [];
+    end
+    
     % Test with variable parameters
     x1 = utilityFunction(p{:});
     assert(all(size(x1)==[1,1]));
     assert(isa(x1,outputType));
     assert(x1.Solver.getParentGraph == graph.Solver);
-    
+
     % Test creating an array of output variables with variable parameters
     x2 = utilityFunction(p{:}, [2,4]);
     assert(all(size(x2)==[2,4]));
     assert(isa(x2,outputType));
-    
+
     if (~isempty(pConst))
         % Test with constant parameters
         x3 = utilityFunction(pConst{:});
         assert(all(size(x3)==[1,1]));
         assert(isa(x3,outputType));
-        
+
         % Test creating an array of output variables with constant parameters
         x4 = utilityFunction(pConst{:}, [2,4]);
         assert(all(size(x4)==[2,4]));
@@ -139,56 +145,73 @@ for testCase = 1:3
     x6 = utilityFunction(pAlt{:}, altGraph);
     assert(x6.Solver.getParentGraph == altGraph.Solver);
     assert(isa(x6,outputType));
-    
+
 end
 
 end
 
 
 % Test constant parameter Bernoulli, Categorical, and CategoricalEnergyParameters
-% These shouldn't create factors at all, but should set the inputs
-% to discrete arrays
 function test2(debugPrint, repeatable)
 
 fg = FactorGraph();
 
 % Single Bernoulli
 b = Bernoulli(0.8);
-assertElementsAlmostEqual(b.Input, [0.2; 0.8]);
+assertElementsAlmostEqual(0.8, b.Factors{1}.VectorObject.getFactorFunction.eval(1));
+assertElementsAlmostEqual(0.2, b.Factors{1}.VectorObject.getFactorFunction.eval(0));
+b.Guess = 1;        % Also test using Guess, as another approach
+s1 = exp(-fg.Score);
+b.Guess = 0;
+s0 = exp(-fg.Score);
+assertElementsAlmostEqual(s1/(s1+s0), 0.8);
 
 % Array of Bernoullis
 bv = Bernoulli(0.8, [2,3,4]);
-assertElementsAlmostEqual(bv(1,2,3).Input, [0.2; 0.8]);
-assertElementsAlmostEqual(bv(2,3,4).Input, [0.2; 0.8]);
+assertElementsAlmostEqual(0.8, bv(1,2,3).Factors{1}.VectorObject.getFactorFunction.eval(1));
+assertElementsAlmostEqual(0.2, bv(1,2,3).Factors{1}.VectorObject.getFactorFunction.eval(0));
+assertElementsAlmostEqual(0.8, bv(2,3,4).Factors{1}.VectorObject.getFactorFunction.eval(1));
+assertElementsAlmostEqual(0.2, bv(2,3,4).Factors{1}.VectorObject.getFactorFunction.eval(0));
 
 % Single Categorical
-dist = rand(19,1);
+N = 7;
+dist = rand(1,N);
 c = Categorical(dist);
-assertElementsAlmostEqual(c.Input, dist);
+ff = c.Factors{1}.VectorObject.getFactorFunction;
+fDist = arrayfun(@(i)ff.eval(i), 0:(N-1));
+assertElementsAlmostEqual(dist/sum(dist), fDist/sum(fDist));
 
 % Array of Categoricals
 cv = Categorical(dist, [2,3,4]);
-assertElementsAlmostEqual(cv(1,2,3).Input, dist);
-assertElementsAlmostEqual(cv(2,3,4).Input, dist);
+ff1 = cv(1,2,3).Factors{1}.VectorObject.getFactorFunction;
+ff2 = cv(2,3,4).Factors{1}.VectorObject.getFactorFunction;
+fDist1 = arrayfun(@(i)ff1.eval(i), 0:(N-1));
+fDist2 = arrayfun(@(i)ff2.eval(i), 0:(N-1));
+assertElementsAlmostEqual(dist/sum(dist), fDist1/sum(fDist1));
+assertElementsAlmostEqual(dist/sum(dist), fDist2/sum(fDist2));
 
 % Single CategoricalEnergyParameters
-energyDist = randn(11,1);
+Ne = 11;
+energyDist = randn(1,Ne);
 e = CategoricalEnergyParameters(energyDist);
-diff = -log(e.Input) - energyDist;
+ffe = e.Factors{1}.VectorObject.getFactorFunction;
+fDiste = arrayfun(@(i)ffe.eval(i), 0:(Ne-1));
+diff = -log(fDiste) - energyDist;
 assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
 assertElementsAlmostEqual(sum(e.Input),1);              % Utility makes inputs sum to 1
 
 % Array of CategoricalEnergyParameters
 ev = CategoricalEnergyParameters(energyDist, [2,3,4]);
-diff = -log(ev(1,2,3).Input) - energyDist;
+ffe1 = ev(1,2,3).Factors{1}.VectorObject.getFactorFunction;
+ffe2 = ev(2,3,4).Factors{1}.VectorObject.getFactorFunction;
+fDiste1 = arrayfun(@(i)ffe1.eval(i), 0:(Ne-1));
+fDiste2 = arrayfun(@(i)ffe2.eval(i), 0:(Ne-1));
+diff = -log(fDiste1) - energyDist;
 assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
 assertElementsAlmostEqual(sum(ev(1,2,3).Input),1);      % Utility makes inputs sum to 1
-diff = -log(ev(2,3,4).Input) - energyDist;
+diff = -log(fDiste2) - energyDist;
 assertElementsAlmostEqual(diff(1:end-1), diff(2:end));  % Assert difference is constant
 assertElementsAlmostEqual(sum(ev(2,3,4).Input),1);      % Utility makes inputs sum to 1
-
-assert(isempty(fg.Factors));    % Shouldn't have added any factors
-assert(isempty(fg.Variables));  % Shouldn't have added any variables
 
 end
 
@@ -230,7 +253,12 @@ assert(x1.Solver.getParentGraph == fg.Solver);
 assert(x2.Solver.getParentGraph == fg.Solver);
 assert(x3.Solver.getParentGraph == fg.Solver);
 assert(x4.Solver.getParentGraph == fg.Solver);
-    
+assert(strcmp('Binomial',x1.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x2.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x3.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x4.Factors{1}.VectorObject.getFactorFunction.getName));
+
+
 x5 = Binomial(N, p, [2,4]);
 x6 = Binomial(constN, p, [2,4]);
 x7 = Binomial(N, constP, [2,4]);
@@ -251,6 +279,10 @@ assert(x5(1,1).Solver.getParentGraph == fg.Solver);
 assert(x6(1,1).Solver.getParentGraph == fg.Solver);
 assert(x7(1,1).Solver.getParentGraph == fg.Solver);
 assert(x8(1,1).Solver.getParentGraph == fg.Solver);
+assert(strcmp('Binomial',x5.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x6.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x7.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Binomial',x8.Factors{1}.VectorObject.getFactorFunction.getName));
 
 x9 = Binomial(NAlt, pAlt, fgAlt);
 assert(x9.Solver.getParentGraph == fgAlt.Solver);
@@ -280,8 +312,10 @@ assert(isa(x2,'RealJoint'));
 assert(all(size(x1)==[1,1]));
 assert(all(size(x2)==[1,1]));
 assert(x1.Solver.getParentGraph == fg.Solver);
-assert(strcmp(x2.Input.getName, 'ExchangeableDirichlet'));
-    
+assert(x2.Solver.getParentGraph == fg.Solver);
+assert(strcmp('ExchangeableDirichlet',x1.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('ExchangeableDirichlet',x2.Factors{1}.VectorObject.getFactorFunction.getName));
+
 x3 = ExchangeableDirichlet(N, alpha, [2,4]);
 x4 = ExchangeableDirichlet(N, constAlpha, [2,4]);
 assert(isa(x3,'RealJoint'));
@@ -289,12 +323,40 @@ assert(isa(x4,'RealJoint'));
 assert(all(size(x3)==[2,4]));
 assert(all(size(x4)==[2,4]));
 assert(x3(1,1).Solver.getParentGraph == fg.Solver);
-assert(strcmp(x4(1,1).Input.getName, 'ExchangeableDirichlet'));
+assert(x4(1,1).Solver.getParentGraph == fg.Solver);
+assert(strcmp('ExchangeableDirichlet',x3.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('ExchangeableDirichlet',x4.Factors{1}.VectorObject.getFactorFunction.getName));
 
 x5 = ExchangeableDirichlet(N, alphaAlt, fgAlt);
 assert(x5.Solver.getParentGraph == fgAlt.Solver);
 assert(isa(x5,'RealJoint'));
+assert(strcmp('ExchangeableDirichlet',x5.Factors{1}.VectorObject.getFactorFunction.getName));
 
 end
 
+
+
+% Test MultivariateNormal (only supports constant parameters)
+function test5(debugPrint, repeatable)
+
+fgAlt = FactorGraph();
+fgAlt.Solver = 'Gibbs';
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+mean = [0 1 2 3];
+covariance = eye(4) + ones(4)*0.1;
+
+x1 = MultivariateNormal(mean, covariance);
+assert(isa(x1,'RealJoint'));
+assert(all(size(x1)==[1,1]));
+assert(strcmp('MultivariateNormal',x1.Factors{1}.VectorObject.getFactorFunction.getName));
+    
+x2 = MultivariateNormal(mean, covariance, [2,4]);
+assert(isa(x2,'RealJoint'));
+assert(all(size(x2)==[2,4]));
+assert(strcmp('MultivariateNormal',x2.Factors{1}.VectorObject.getFactorFunction.getName));
+
+end
 

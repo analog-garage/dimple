@@ -35,7 +35,7 @@ public class GenericDataSink<Type> implements IDataSink
 	public Type getNext()
 	{
 		if (_data.size() <= 0)
-			throw new DimpleException("ACK!");
+			throw new DimpleException("Data sink is empty.");
 		
 		return _data.pollFirst();
 	}

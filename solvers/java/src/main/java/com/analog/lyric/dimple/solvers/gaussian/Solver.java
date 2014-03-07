@@ -18,13 +18,15 @@ package com.analog.lyric.dimple.solvers.gaussian;
 
 import com.analog.lyric.dimple.solvers.core.SolverBase;
 
-public class Solver extends SolverBase<SFactorGraph>
+public class Solver extends SolverBase<com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph>
 {
 
+	// The Gaussian solver is now identical to the SumProduct solver
+	// This remains for backward compatibility
 	@Override
-	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
+	public com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
 	{
-		return new SFactorGraph(factorGraph);
+		return new com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph(factorGraph);
 	}
 	
 }

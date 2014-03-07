@@ -24,6 +24,8 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler

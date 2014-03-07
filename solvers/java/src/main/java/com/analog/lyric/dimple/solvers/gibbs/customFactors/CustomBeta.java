@@ -22,13 +22,13 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -40,7 +40,6 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	private SRealVariable _betaVariable;
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
-	private boolean _hasFactorFunctionConstants;
 	private boolean _hasFactorFunctionConstructorConstants;
 	private int _numParameterEdges;
 	private int _alphaParameterPort = -1;
@@ -102,59 +101,49 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		_hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			_hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Beta specificFactorFunction = (Beta)factorFunction;
-		
+		Beta specificFactorFunction = (Beta)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		List<INode> siblings = _factor.getSiblings();
+		_hasConstantAlpha = false;
+		_hasConstantBeta = false;
+		_alphaParameterPort = NO_PORT;
+		_betaParameterPort = NO_PORT;
+		_alphaVariable = null;
+		_betaVariable = null;
+		_constantAlphaValue = 0;
+		_constantBetaValue = 0;
+		_numParameterEdges = 0;
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
 			_hasConstantBeta = true;
-			_alphaParameterPort = NO_PORT;
-			_betaParameterPort = NO_PORT;
 			_constantAlphaValue = specificFactorFunction.getAlpha();
 			_constantBetaValue = specificFactorFunction.getBeta();
-			_numParameterEdges = 0;
 		}
-		else // Variable or constant parameters
+		else	// Variable or constant parameters
 		{
-			_numParameterEdges = 0;
-			List<INode> siblings = _factor.getSiblings();
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
+			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
+			if (_hasConstantAlpha)	// Constant mean
+				_constantAlphaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX));
+			else					// Variable mean
 			{
-				_hasConstantAlpha = true;
-				_alphaParameterPort = NO_PORT;
-				_constantAlphaValue = (Double)constantFactorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = null;
-			}
-			else
-			{
-				_hasConstantAlpha = false;
-				_alphaParameterPort = _numParameterEdges++;
+				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
 				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(_alphaParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(BETA_PARAMETER_INDEX))
+			
+			_hasConstantBeta = factorFunction.isConstantIndex(BETA_PARAMETER_INDEX);
+			if (_hasConstantBeta)	// Constant precision
+				_constantBetaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX));
+			else 						// Variable precision
 			{
-				_hasConstantBeta = true;
-				_betaParameterPort = NO_PORT;
-				_constantBetaValue = (Double)constantFactorFunction.getConstantByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = null;
-			}
-			else
-			{
-				_hasConstantBeta = false;
-				_betaParameterPort = _numParameterEdges++;
+				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
 				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(_betaParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
 		}
 	}

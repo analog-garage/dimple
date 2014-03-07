@@ -32,9 +32,9 @@ end
 var = Real(outSize{:});
 
 if (isa(alpha,'VariableBase') || isa(beta,'VariableBase'))
-    fg.addFactor('Gamma', alpha, beta, var);     % At least one variable parameter
+    fg.addFactor('Gamma', alpha, beta, var);                    % At least one variable parameter
 else
-    var.Input = FactorFunction('Gamma', alpha, beta);   % Constant parameters (more efficient to fix in constructor and set as Input)
+    fg.addFactor(FactorFunction('Gamma', alpha, beta), var);    % Constant parameters
 end
 
 end

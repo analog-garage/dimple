@@ -31,10 +31,10 @@ end
 
 if (isa(alpha,'VariableBase'))
     var = RealJoint(dimension, outSize{:});
-    fg.addFactor({'ExchangeableDirichlet', dimension}, alpha, var);     % Variable parameters
+    fg.addFactor(FactorFunction('ExchangeableDirichlet', dimension), alpha, var);     % Variable parameters
 else
     var = RealJoint(dimension, outSize{:});
-    var.Input = FactorFunction('ExchangeableDirichlet', dimension, alpha);   % Constant parameters (more efficient to fix in constructor and set as Input)
+    fg.addFactor(FactorFunction('ExchangeableDirichlet', dimension, alpha), var);     % Constant parameters
 end
 
 end

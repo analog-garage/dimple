@@ -272,7 +272,7 @@ Users can retrieve their data using data sinks.
 \item MultivariateDataSink() -- Created a multivariate data sink
 \item MultivariateDataSink(dimensions) -- Creates a multivariate data sink with the specified dimensions.
 \item hasNext() -- Is there more data in the data sink?
-\item getNext() -- Retrieve the next chunk of data.  For DoubleArrays, this returns data in the same form as is supplied to data sources.  The MultivariateDataSink object returns MultivariateMsg objects.
+\item getNext() -- Retrieve the next chunk of data.  For DoubleArrays, this returns data in the same form as is supplied to data sources.  The MultivariateDataSink object returns MultivariateNormalParameters objects.
 \item varStream.DataSink = dataSink; -- Data sinks can be assigned to variable streams.
 \end{itemize}
 \fi
@@ -351,15 +351,10 @@ This code results in the following graph:
 
 \subsubsection{Real Variables}
 
-Rolled up graphs work with real variables as well.  Here we create another Markov Model.  We use the Gaussian solver that supports a custom factor called `constmult'.  We create a data source that only has information about the first variable.  The means beliefs are growing by 110\% as we iterate through the stream because the factor provides a constraint that each variable is 110\% of the previous variable.
+Rolled up graphs work with real variables as well.  Here we create another Markov Model.  We use the SumProduct solver and a built-in `Product' factor.  We create a data source that only has information about the first variable.  The means beliefs are growing by 110\% as we iterate through the stream because the factor provides a constraint that each variable is 110\% of the previous variable.
 
 \ifmatlab
 \begin{lstlisting}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                                                                
-%Set solver type so we can create reals                                                                                       
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                                                                
-setSolver('Gaussian');
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                                                                
 %Build graph                                                                                                                  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                                                                                
@@ -367,7 +362,7 @@ a = Real();
 b = Real();
 
 ng = FactorGraph(a,b);
-ng.addFactor(@constmult,b,a,1.1);
+ng.addFactor('Product',b,a,1.1);
 
 fg = FactorGraph();
 s = RealStream();
@@ -403,19 +398,13 @@ end
 \ifjava
 \begin{lstlisting}
 ///////////////////////////////////////                                                                                                
-//Set solver type so we can create reals                                                                                       
-///////////////////////////////////////
-
-Model.getInstance().setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.gaussian.Solver());
-
-///////////////////////////////////////                                                                                                
 //Build graph                                                                                                                  
 ///////////////////////////////////////                                                                                                
 Real a = new Real();
 Real b = new Real();
 
 FactorGraph ng =  new FactorGraph(a,b);
-ng.addFactor(new NopFactorFunction("constmult"), b,a,1.1);
+ng.addFactor("Product", b,a,1.1);
 
 FactorGraph fg = new FactorGraph();
 RealStream s = new RealStream();

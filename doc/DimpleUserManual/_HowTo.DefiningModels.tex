@@ -75,7 +75,7 @@ Dimple supports several types of variables:
 \item[FiniteFieldVariable:] A FiniteFieldVariable is a special-case of a discrete variable that represents a finite field with $N=2^{n}$ elements.  These fields are often used, for example, in error correcting codes.  These variables can be used along with certain custom factors that are implemented more efficiently for sum-product belief propagation than the alternative using discrete variables and factors implemented directly.  See section~\ref{sec:finiteFields} for more information on how these variables are used.
 \end{description}
 
-A factor graph may mix any combination of these variable types, though there are some limitations in the use of certain variable types by some solvers.  Specifically, some solvers do not currently support Real variables\footnote{Currently Dimple has a restriction that prior to adding a Real variable to a factor graph, the solver for that factor graph must be set to one that supports real variables.  See section~\ref{sec:Solvers} to learn how to set the solver.  This restriction may be removed in a future version.}.
+A factor graph may mix any combination of these variable types, though there are some limitations in the use of certain variable types by some solvers.  Specifically, some solvers do not currently support Real variables.
 
 A variable of a given type can be created using the corresponding object constructor.  For example,
 
@@ -365,9 +365,10 @@ The factor specification is one or more arguments that define the factor.  Dimpl
 
 \begin{itemize}
 \item A MATLAB function handle
-\item A sub-graph
 \item A factor-table
 \item A built-in factor
+\item The name of a built-in factor
+\item A sub-graph
 \item A built-in overloaded MATLAB operator\footnote{This method of factor creation does not use addFactor, but instead uses a different syntax to create the factor implicitly.}
 \item A custom Java FactorFunction object\footnote{The mechanism to create and use custom Java FactorFunction objects is described in Appendix~\ref{sec:userJava}.}
 \end{itemize}
@@ -377,11 +378,11 @@ The factor specification is one or more arguments that define the factor.  Dimpl
 \ifjava
 
 \begin{itemize}
-\item A sub-graph
 \item A factor-table
-\item An instance of a class that extends FactorFunction
+\item A built-in factor (or any instance of a class that extends FactorFunctions)
+\item The name of a built-in factor
+\item A sub-graph
 \end{itemize}
-
 
 \fi
 

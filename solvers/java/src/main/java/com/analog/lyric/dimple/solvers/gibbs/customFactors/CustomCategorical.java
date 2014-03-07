@@ -20,16 +20,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.dimple.factorfunctions.Categorical;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -43,6 +43,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	private int _numOutputEdges;
 	private int[] _constantOutputCounts;
 	private boolean _hasConstantOutputs;
+	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
 	private static final int PARAMETER_INDEX = 0;
 	
@@ -112,13 +113,13 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			FactorFunction factorFunction = _factor.getFactorFunction();
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
 			_constantOutputCounts = new int[_parameterDimension];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
-				if (constantIndices[i] >= NUM_PARAMETERS)
+				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
 					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
@@ -132,51 +133,36 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
+		Categorical specificFactorFunction = (Categorical)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant
-		boolean hasConstantParameters = false;
-		if (hasFactorFunctionConstants)
-		{
-			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			int numConstants = constantIndices.length;
-			for (int i = 0; i < numConstants; i++)
-			{
-				if (constantIndices[i] < NUM_PARAMETERS)
-					hasConstantParameters = true;	// Constant is a parameter
-				else
-					_hasConstantOutputs = true;		// Constant is an output
-			}
-			_numParameterEdges = hasConstantParameters ? 0 : NUM_PARAMETERS;
-			
-		}
-		else	// No constants
-		{
-			_numParameterEdges = NUM_PARAMETERS;
-			_hasConstantOutputs = false;
-		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
-
-		// Determine the dimension of the parameter vector
 		List<INode> siblings = _factor.getSiblings();
-		if (hasConstantParameters)
+		if (_hasFactorFunctionConstructorConstants)
 		{
-			double[] constantParameters = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
-			_parameterDimension = constantParameters.length;
+			// The factor function has fixed parameters provided in the factor-function constructor
+			_numParameterEdges = 0;
+			_hasConstantOutputs = factorFunction.hasConstants();
+			_parameterDimension = specificFactorFunction.getDimension();
 		}
 		else
 		{
-			_parameterDimension = (((RealJoint)siblings.get(PARAMETER_INDEX))).getRealDomain().getNumVars();
+			boolean hasConstantParameters = factorFunction.isConstantIndex(PARAMETER_INDEX);
+			_numParameterEdges = hasConstantParameters ? 0 : 1;
+			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
+			if (hasConstantParameters)
+			{
+				double[] constantParameters = (double[])factorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_parameterDimension = constantParameters.length;
+			}
+			else
+			{
+				_parameterDimension = (((RealJoint)siblings.get(PARAMETER_INDEX))).getRealDomain().getNumVars();
+			}
 		}
+		_numOutputEdges = _numPorts - _numParameterEdges;
+
 		
 		// Save output variables
 		_outputVariables = new SDiscreteVariable[_numOutputEdges];

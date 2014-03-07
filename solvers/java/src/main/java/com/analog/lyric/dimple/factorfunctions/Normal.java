@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
 
 /**
@@ -58,6 +59,10 @@ public class Normal extends FactorFunction
 		_firstDirectedToIndex = 0;
     	if (_precision < 0)
     		throw new DimpleException("Negative precision value. This must be a non-negative value.");
+	}
+	public Normal(NormalParameters parameters)
+	{
+		this(parameters.getMean(), parameters.getPrecision());
 	}
 
     @Override
@@ -129,5 +134,23 @@ public class Normal extends FactorFunction
     public final double getPrecision()
     {
     	return _precision;
+    }
+	public final double getVariance()
+	{
+		return 1/_precision;
+	}
+	public final double getStandardDeviation()
+	{
+		return 1/Math.sqrt(_precision);
+	}
+    public final void setMean(double mean)
+    {
+    	_mean = mean;
+    }
+    public final void setPrecision(double precision)
+    {
+    	_precision = precision;
+		_logSqrtPrecisionOver2Pi = Math.log(_precision)*0.5 - _logSqrt2pi;
+		_precisionOverTwo = _precision*0.5;
     }
 }

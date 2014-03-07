@@ -17,7 +17,7 @@
 function testNoThreadingError()
 
     fg = FactorGraph();
-    fg.Solver = 'gaussian';
+    fg.Solver = 'Gibbs';
     m = '';
     try
         fg.Solver.useMultithreading(true);

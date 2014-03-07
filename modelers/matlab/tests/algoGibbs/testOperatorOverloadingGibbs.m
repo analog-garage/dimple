@@ -26,6 +26,7 @@ test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
+test6(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testOperatorOverloadingGibbs');
 
@@ -300,6 +301,24 @@ vvv = B * CD;           % Real matrix times constant matrix
 www = CA * C;           % Constant matrix times discrete matrix
 xxx = CA * D;           % Constant matrix times real matrix
 
+RJC = [1 2 3 4];
+aaaa = rj1 + rj2;       % RealJoint plus RealJoint
+bbbb = rj1 - rj2;       % RealJoint minus RealJoint
+cccc = -rj1;            % RealJoint negation
+dddd = rj1 + RJC;       % RealJoint plus vector constant
+eeee = RJC + rj2;       % Vector constant plus RealJoint
+ffff = rj1 - RJC;       % RealJoint minus vector constant
+gggg = RJC - rj2;       % Vector constant minus RealJoint
+hhhh = rj1 + 7;         % RealJoint plus scalar constant
+iiii = 7 + rj2;         % Scalar constant plus RealJoint
+jjjj = rj1 - 7;         % RealJoint minus scalar constant
+kkkk = 7 - rj2;         % Scalar constant minums RealJoint
+
+CDt = CD';
+llll = CDt * rj1;       % Constant matrix times RealJoint
+mmmm = rj1 * CD;        % RealJoint times constant matrix
+nnnn = B * rj1;         % Real matrix times RealJoint
+oooo = rj1 * D;         % RealJoint vector times Real matrix
 
 
 if (repeatable)
@@ -382,6 +401,21 @@ uuus = uuu.invokeSolverMethodWithReturnValue('getAllSamples');
 vvvs = vvv.invokeSolverMethodWithReturnValue('getAllSamples');
 wwws = www.invokeSolverMethodWithReturnValue('getAllSamples');
 xxxs = xxx.invokeSolverMethodWithReturnValue('getAllSamples');
+aaaas = aaaa.Solver.getAllSamples;
+bbbbs = bbbb.Solver.getAllSamples;
+ccccs = cccc.Solver.getAllSamples;
+dddds = dddd.Solver.getAllSamples;
+eeees = eeee.Solver.getAllSamples;
+ffffs = ffff.Solver.getAllSamples;
+ggggs = gggg.Solver.getAllSamples;
+hhhhs = hhhh.Solver.getAllSamples;
+iiiis = iiii.Solver.getAllSamples;
+jjjjs = jjjj.Solver.getAllSamples;
+kkkks = kkkk.Solver.getAllSamples;
+lllls = llll.Solver.getAllSamples;
+mmmms = mmmm.Solver.getAllSamples;
+nnnns = nnnn.Solver.getAllSamples;
+oooos = oooo.Solver.getAllSamples;
 bts = bt.invokeSolverMethodWithReturnValue('getAllSamples');
 dts = dt.invokeSolverMethodWithReturnValue('getAllSamples');
 As = A.invokeSolverMethodWithReturnValue('getAllSamples');
@@ -604,7 +638,26 @@ for sample=1:numSamples
     assertElementsAlmostEqual(vvvsxx(:,:,sample), Bsxx(:,:,sample) * CD, 'absolute');
     assertElementsAlmostEqual(wwwsxx(:,:,sample), CA * Csxx(:,:,sample), 'absolute');
     assertElementsAlmostEqual(xxxsxx(:,:,sample), CA * Dsxx(:,:,sample), 'absolute');
+
+    assertElementsAlmostEqual(lllls(sample,:)', CDt * rj1s(sample,:)');
+    assertElementsAlmostEqual(mmmms(sample,:), rj1s(sample,:) * CD);
+    assertElementsAlmostEqual(nnnns(sample,:)', Bsxx(:,:,sample) * rj1s(sample,:)');
+    assertElementsAlmostEqual(oooos(sample,:), rj1s(sample,:) * Dsxx(:,:,sample));
+
 end
+
+RJCs = repmat(RJC,numSamples,1);
+assertElementsAlmostEqual(aaaas, rj1s + rj2s);
+assertElementsAlmostEqual(bbbbs, rj1s - rj2s);
+assertElementsAlmostEqual(ccccs, -rj1s);
+assertElementsAlmostEqual(dddds, rj1s + RJCs);
+assertElementsAlmostEqual(eeees, RJCs + rj2s);
+assertElementsAlmostEqual(ffffs, rj1s - RJCs);
+assertElementsAlmostEqual(ggggs, RJCs - rj2s);
+assertElementsAlmostEqual(hhhhs, rj1s + 7);
+assertElementsAlmostEqual(iiiis, 7 + rj2s);
+assertElementsAlmostEqual(jjjjs, rj1s - 7);
+assertElementsAlmostEqual(kkkks, 7 - rj2s);
 
 end
 
@@ -803,4 +856,507 @@ assert(all(ianSX(:) ~= (aSXN(:)==baSX(:))));
 assert(all(janSX(:) ~= (aaSX(:)==baSX(:) & aaSX(:)==cSXN(:))));            
 
 
+end
+
+
+
+% Test * (mtimes) for all supported variations
+function test6(debugPrint, repeatable)
+
+numSamples = 100;
+scansPerSample = 1;
+burnInScans = 0;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setScansPerSample(scansPerSample);
+fg.Solver.setBurnInScans(burnInScans);
+
+N = 4;
+M = 5;
+L = 6;
+domain = 1:10;
+cr = rand;
+crN = rand(1,N);
+crM = rand(1,M);
+crNM = rand(N,M);
+crML = rand(M,L);
+cc = rand + 1i*rand;
+ccN = rand(1,N) + 1i*rand(1,N);
+ccM = rand(1,M) + 1i*rand(1,M);
+ccNM = rand(N,M) + 1i*rand(N,M);
+ccML = rand(M,L) + 1i*rand(M,L);
+D = Discrete(domain);
+DN = Discrete(domain,1,N);
+DM = Discrete(domain,1,M);
+DNM = Discrete(domain,N,M);
+DML = Discrete(domain,M,L);
+R = Real();
+RN = Real(1,N);
+RM = Real(1,M);
+RNM = Real(N,M);
+RML = Real(M,L);
+C = Complex();
+CN = Complex(1,N);
+CM = Complex(1,M);
+CNM = Complex(N,M);
+CML = Complex(M,L);
+Jn = RealJoint(N);
+Jm = RealJoint(M);
+
+D2 = Discrete(domain);
+DN2 = Discrete(domain,1,N);
+DM2 = Discrete(domain,1,M);
+DNM2 = Discrete(domain,N,M);
+DML2 = Discrete(domain,M,L);
+R2 = Real();
+RN2 = Real(1,N);
+RM2 = Real(1,M);
+RNM2 = Real(N,M);
+RML2 = Real(M,L);
+C2 = Complex();
+CN2 = Complex(1,N);
+CM2 = Complex(1,M);
+CNM2 = Complex(N,M);
+CML2 = Complex(M,L);
+Jn2 = RealJoint(N);
+Jm2 = RealJoint(M);
+
+% Create all supported combinations of (non-pointwise) products
+aD1 = D * cr;
+aD2 = cr * D;
+bD1 = D * crN;
+bD2 = crN * D;
+cD1 = D * crNM;
+cD2 = crNM * D;
+dD1 = D * cc;
+dD2 = cc * D;
+eD1 = D * ccN;
+eD2 = ccN * D;
+fD1 = D * ccNM;
+fD2 = ccNM * D;
+gD1 = D * D2;
+gD2 = D2 * D;
+
+assert(cmp(aD1, 'Discrete', 'Product', [1 1]));
+assert(cmp(aD2, 'Discrete', 'Product', [1 1]));
+assert(cmp(bD1, 'Discrete', 'Product', [1 N]));
+assert(cmp(bD2, 'Discrete', 'Product', [1 N]));
+assert(cmp(cD1, 'Discrete', 'Product', [N M]));
+assert(cmp(cD2, 'Discrete', 'Product', [N M]));
+assert(cmp(dD1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(dD2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(eD1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(eD2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(fD1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(fD2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gD1, 'Discrete', 'Product', [1 1]));
+assert(cmp(gD2, 'Discrete', 'Product', [1 1]));
+
+aDN1 = DN * cr;
+aDN2 = cr * DN;
+bDN1 = DN * crN;
+bDN2 = crN * DN;
+cDN1 = DN * crNM;
+cDN2 = crNM * DM;
+dDN1 = DN * cc;
+dDN2 = cc * DN;
+% eDN1 = DN * ccN;      % Not currently supported
+% eDN2 = ccN * DN;      % Not currently supported
+% fDN1 = DN * ccNM;     % Not currently supported
+% fDN2 = ccNM * DN;     % Not currently supported
+gDN1 = DN * D;
+gDN2 = D * DN;
+hDN1 = DN * DN2;
+hDN2 = DN2 * DN;
+
+assert(cmp(aDN1, 'Discrete', 'Product', [1 N]));
+assert(cmp(aDN2, 'Discrete', 'Product', [1 N]));
+assert(cmp(bDN1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(bDN2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(cDN1, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(cDN2, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(dDN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(dDN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(gDN1, 'Discrete', 'Product', [1 N]));
+assert(cmp(gDN2, 'Discrete', 'Product', [1 N]));
+assert(cmp(hDN1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(hDN2, 'Real', 'VectorInnerProduct', [1 1]));
+
+aDNM1 = DNM * cr;
+aDNM2 = cr * DNM;
+bDNM1 = DNM * crM;
+bDNM2 = crN * DNM;
+cDNM1 = DNM * crML;
+cDNM2 = crNM * DML;
+dDNM1 = DNM * cc;
+dDNM2 = cc * DNM;
+% eDNM1 = DNM * ccM;     % Not currently supported
+% eDNM2 = ccN * DNM;     % Not currently supported
+% fDNM1 = DNM * ccML;    % Not currently supported
+% fDNM2 = ccNM * DML;    % Not currently supported
+gDNM1 = DNM * D;
+gDNM2 = D * DNM;
+hDNM1 = DNM * DM;
+hDNM2 = DN * DNM;
+iDNM1 = DNM * DML2;
+iDNM2 = DNM2 * DML;
+
+assert(cmp(aDNM1, 'Discrete', 'Product', [N M]));
+assert(cmp(aDNM2, 'Discrete', 'Product', [N M]));
+assert(cmp(bDNM1, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(bDNM2, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(cDNM1, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(cDNM2, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(dDNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(dDNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gDNM1, 'Discrete', 'Product', [N M]));
+assert(cmp(gDNM2, 'Discrete', 'Product', [N M]));
+assert(cmp(hDNM1, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(hDNM2, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(iDNM1, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(iDNM2, 'Real', 'MatrixProduct', [N L]));
+
+aR1 = R * cr;
+aR2 = cr * R;
+bR1 = R * crN;
+bR2 = crN * R;
+cR1 = R * crNM;
+cR2 = crNM * R;
+dR1 = R * cc;
+dR2 = cc * R;
+eR1 = R * ccN;
+eR2 = ccN * R;
+fR1 = R * ccNM;
+fR2 = ccNM * R;
+gR1 = R * D;
+gR2 = D * R;
+hR1 = R * DN;
+hR2 = DN * R;
+iR1 = R * DNM;
+iR2 = DNM * R;
+jR1 = R * R2;
+jR2 = R2 * R;
+
+assert(cmp(aR1, 'Real', 'Product', [1 1]));
+assert(cmp(aR2, 'Real', 'Product', [1 1]));
+assert(cmp(bR1, 'Real', 'Product', [1 N]));
+assert(cmp(bR2, 'Real', 'Product', [1 N]));
+assert(cmp(cR1, 'Real', 'Product', [N M]));
+assert(cmp(cR2, 'Real', 'Product', [N M]));
+assert(cmp(dR1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(dR2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(eR1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(eR2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(fR1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(fR2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gR1, 'Real', 'Product', [1 1]));
+assert(cmp(gR2, 'Real', 'Product', [1 1]));
+assert(cmp(hR1, 'Real', 'Product', [1 N]));
+assert(cmp(hR2, 'Real', 'Product', [1 N]));
+assert(cmp(iR1, 'Real', 'Product', [N M]));
+assert(cmp(iR2, 'Real', 'Product', [N M]));
+assert(cmp(jR1, 'Real', 'Product', [1 1]));
+assert(cmp(jR2, 'Real', 'Product', [1 1]));
+
+aRN1 = RN * cr;
+aRN2 = cr * RN;
+bRN1 = RN * crN;
+bRN2 = crN * RN;
+cRN1 = RN * crNM;
+cRN2 = crNM * RM;
+dRN1 = RN * cc;
+dRN2 = cc * RN;
+% eRN1 = RN * ccN;     % Not currently supported
+% eRN2 = ccN * RN;     % Not currently supported
+% fRN1 = RN * ccNM;    % Not currently supported
+% fRN2 = ccNM * RN;    % Not currently supported
+gRN1 = RN * D;
+gRN2 = D * RN;
+hRN1 = RN * DN;
+hRN2 = DN * RN;
+iRN1 = RN * DNM;
+iRN2 = DNM * RM;
+jRN1 = RN * R;
+jRN2 = R * RN;
+kRN1 = RN * RN2;
+kRN2 = RN2 * RN;
+
+assert(cmp(aRN1, 'Real', 'Product', [1 N]));
+assert(cmp(aRN2, 'Real', 'Product', [1 N]));
+assert(cmp(bRN1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(bRN2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(cRN1, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(cRN2, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(dRN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(dRN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(gRN1, 'Real', 'Product', [1 N]));
+assert(cmp(gRN2, 'Real', 'Product', [1 N]));
+assert(cmp(hRN1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(hRN2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(iRN1, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(iRN2, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(jRN1, 'Real', 'Product', [1 N]));
+assert(cmp(jRN2, 'Real', 'Product', [1 N]));
+assert(cmp(kRN1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(kRN2, 'Real', 'VectorInnerProduct', [1 1]));
+
+aRNM1 = RNM * cr;
+aRNM2 = cr * RNM;
+bRNM1 = RNM * crM;
+bRNM2 = crN * RNM;
+cRNM1 = RNM * crML;
+cRNM2 = crNM * RML;
+dRNM1 = RNM * cc;
+dRNM2 = cc * RNM;
+% eRNM1 = RNM * ccN;     % Not currently supported
+% eRNM2 = ccN * RNM;     % Not currently supported
+% fRNM1 = RNM * ccNM;    % Not currently supported
+% fRNM2 = ccNM * RNM;    % Not currently supported
+gRNM1 = RNM * D;
+gRNM2 = D * RNM;
+hRNM1 = RNM * DM;
+hRNM2 = DN * RNM;
+iRNM1 = RNM * DML;
+iRNM2 = DNM * RML;
+jRNM1 = RNM * R;
+jRNM2 = R * RNM;
+kRNM1 = RNM * RM;
+kRNM2 = RN * RNM;
+lRNM1 = RNM * RML2;
+lRNM2 = RNM2 * RML;
+
+assert(cmp(aRNM1, 'Real', 'Product', [N M]));
+assert(cmp(aRNM2, 'Real', 'Product', [N M]));
+assert(cmp(bRNM1, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(bRNM2, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(cRNM1, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(cRNM2, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(dRNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(dRNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gRNM1, 'Real', 'Product', [N M]));
+assert(cmp(gRNM2, 'Real', 'Product', [N M]));
+assert(cmp(hRNM1, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(hRNM2, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(iRNM1, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(iRNM2, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(jRNM1, 'Real', 'Product', [N M]));
+assert(cmp(jRNM2, 'Real', 'Product', [N M]));
+assert(cmp(kRNM1, 'Real', 'MatrixVectorProduct', [N 1]));
+assert(cmp(kRNM2, 'Real', 'MatrixVectorProduct', [1 M]));
+assert(cmp(lRNM1, 'Real', 'MatrixProduct', [N L]));
+assert(cmp(lRNM2, 'Real', 'MatrixProduct', [N L]));
+
+aC1 = C * cr;
+aC2 = cr * C;
+bC1 = C * crN;
+bC2 = crN * C;
+cC1 = C * crNM;
+cC2 = crNM * C;
+dC1 = C * cc;
+dC2 = cc * C;
+eC1 = C * ccN;
+eC2 = ccN * C;
+fC1 = C * ccNM;
+fC2 = ccNM * C;
+gC1 = C * D;
+gC2 = D * C;
+hC1 = C * DN;
+hC2 = DN * C;
+iC1 = C * DNM;
+iC2 = DNM * C;
+jC1 = C * R;
+jC2 = R * C;
+kC1 = C * RN;
+kC2 = RN * C;
+lC1 = C * RNM;
+lC2 = RNM * C;
+mC1 = C * C2;
+mC2 = C2 * C;
+
+assert(cmp(aC1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(aC2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(bC1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(bC2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(cC1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(cC2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(dC1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(dC2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(eC1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(eC2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(fC1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(fC2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gC1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(gC2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(hC1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(hC2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(iC1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(iC2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(jC1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(jC2, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(kC1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(kC2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(lC1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(lC2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(mC1, 'Complex', 'ComplexProduct', [1 1]));
+assert(cmp(mC2, 'Complex', 'ComplexProduct', [1 1]));
+
+aCN1 = CN * cr;
+aCN2 = cr * CN;
+% bCN1 = CN * crN;     % Not currently supported
+% bCN2 = crN * CN;     % Not currently supported
+% cCN1 = CN * crNM;    % Not currently supported
+% cCN2 = crNM * CN;    % Not currently supported
+dCN1 = CN * cc;
+dCN2 = cc * CN;
+% eCN1 = CN * ccN;     % Not currently supported
+% eCN2 = ccN * CN;     % Not currently supported
+% fCN1 = CN * ccNM;    % Not currently supported
+% fCN2 = ccNM * CN;    % Not currently supported
+gCN1 = CN * D;
+gCN2 = D * CN;
+% hCN1 = CN * DN;      % Not currently supported
+% hCN2 = DN * CN;      % Not currently supported
+% iCN1 = CN * DNM;     % Not currently supported
+% iCN2 = DNM * CN;     % Not currently supported
+jCN1 = CN * R;
+jCN2 = R * CN;
+% kCN1 = CN * RN;      % Not currently supported
+% kCN2 = RN * CN;      % Not currently supported
+% lCN1 = CN * RNM;     % Not currently supported
+% lCN2 = RNM * CN;     % Not currently supported
+mCN1 = CN * C;
+mCN2 = C * CN;
+% nCN1 = CN * CN2;     % Not currently supported
+% nCN2 = CN2 * CN;     % Not currently supported
+
+assert(cmp(aCN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(aCN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(dCN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(dCN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(gCN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(gCN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(jCN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(jCN2, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(mCN1, 'Complex', 'ComplexProduct', [1 N]));
+assert(cmp(mCN2, 'Complex', 'ComplexProduct', [1 N]));
+
+aCNM1 = CNM * cr;
+aCNM2 = cr * CNM;
+% bCNM1 = CNM * crN;      % Not currently supported
+% bCNM2 = crN * CNM;      % Not currently supported
+% cCNM1 = CNM * crNM;     % Not currently supported
+% cCNM2 = crNM * CNM;     % Not currently supported
+dCNM1 = CNM * cc;
+dCNM2 = cc * CNM;
+% eCNM1 = CNM * ccN;      % Not currently supported
+% eCNM2 = ccN * CNM;      % Not currently supported
+% fCNM1 = CNM * ccNM;     % Not currently supported
+% fCNM2 = ccNM * CNM;     % Not currently supported
+gCNM1 = CNM * D;
+gCNM2 = D * CNM;
+% hCNM1 = CNM * DN;       % Not currently supported
+% hCNM2 = DN * CNM;       % Not currently supported
+% iCNM1 = CNM * DNM;      % Not currently supported
+% iCNM2 = DNM * CNM;      % Not currently supported
+jCNM1 = CNM * R;
+jCNM2 = R * CNM;
+% kCNM1 = CNM * RN;       % Not currently supported
+% kCNM2 = RN * CNM;       % Not currently supported
+% lCNM1 = CNM * RNM;      % Not currently supported
+% lCNM2 = RNM * CNM;      % Not currently supported
+mCNM1 = CNM * C;
+mCNM2 = C * CNM;
+% nCNM1 = CNM * CN;       % Not currently supported
+% nCNM2 = CN * CNM;       % Not currently supported
+% oCNM1 = CNM * CNM2;     % Not currently supported
+% oCNM2 = CNM2 * CNM;     % Not currently supported
+
+assert(cmp(aCNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(aCNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(dCNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(dCNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gCNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(gCNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(jCNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(jCNM2, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(mCNM1, 'Complex', 'ComplexProduct', [N M]));
+assert(cmp(mCNM2, 'Complex', 'ComplexProduct', [N M]));
+
+% aJ1 = Jn * cr;       % Not currently supported
+% aJ2 = cr * Jn;       % Not currently supported
+bJ1 = Jn * crN;
+bJ2 = crN * Jn;
+cJ1 = Jn * crNM;
+cJ2 = crNM * Jm;
+% dJ1 = Jn * cc;       % Not currently supported
+% dJ2 = cc * Jn;       % Not currently supported
+% eJ1 = Jn * ccN;      % Not currently supported
+% eJ2 = ccN * Jn;      % Not currently supported
+% fJ1 = Jn * ccNM;     % Not currently supported
+% fJ2 = ccNM * Jm;     % Not currently supported
+% gJ1 = Jn * D;        % Not currently supported
+% gJ2 = D * Jn;        % Not currently supported
+hJ1 = Jn* DN;
+hJ2 = DN * Jn;
+iJ1 = Jn * DNM;
+iJ2 = DNM * Jm;
+% jJ1 = J * R;         % Not currently supported
+% jJ2 = R * J;         % Not currently supported
+kJ1 = Jn * RN;
+kJ2 = RN * Jn;
+lJ1 = Jn * RNM;
+lJ2 = RNM * Jm;
+% mJ1 = Jn * C;        % Not currently supported
+% mJ2 = C * Jn;        % Not currently supported
+% nJ1 = Jn * CN;       % Not currently supported
+% nJ2 = CN * Jn;       % Not currently supported
+% oJ1 = Jn * CNM;      % Not currently supported
+% oJ2 = CNM * Jm;      % Not currently supported
+pJ1 = Jn * Jn2;
+pJ2 = Jn2 * Jn;
+
+assert(cmp(bJ1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(bJ2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(cJ1, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(cmp(cJ2, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(cJ1.Domain.NumElements == M);
+assert(cJ2.Domain.NumElements == N);
+assert(cmp(hJ1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(hJ2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(iJ1, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(cmp(iJ2, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(iJ1.Domain.NumElements == M);
+assert(iJ2.Domain.NumElements == N);
+assert(cmp(kJ1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(kJ2, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(lJ1, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(cmp(lJ2, 'RealJoint', 'MatrixRealJointVectorProduct', [1 1]));
+assert(lJ1.Domain.NumElements == M);
+assert(lJ2.Domain.NumElements == N);
+assert(cmp(pJ1, 'Real', 'VectorInnerProduct', [1 1]));
+assert(cmp(pJ2, 'Real', 'VectorInnerProduct', [1 1]));
+
+end
+
+
+
+% Helpers
+function c = cmp(variable, expectedTypeName, expectedFactorName, expectedSize)
+s = all(size(variable) == expectedSize);
+v = cmpVarType(variable, expectedTypeName);
+f = cmpFactorName(variable(1).Factors{1}, expectedFactorName); 
+c = s && v && f;
+end
+
+function c = cmpVarType(variable, expectedName)
+className = class(variable);
+c = strcmp(className, expectedName);
+end
+
+function c = cmpFactorName(factor, expectedName)
+factorFunctionName = class(factor.VectorObject.getFactorFunction.getContainedFactorFunction);
+fqName = ['com.analog.lyric.dimple.factorfunctions.' expectedName];
+c = strcmp(factorFunctionName, fqName);
 end

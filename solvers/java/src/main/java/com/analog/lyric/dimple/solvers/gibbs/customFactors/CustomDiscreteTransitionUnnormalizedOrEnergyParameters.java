@@ -25,13 +25,12 @@ import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameter
 import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -79,9 +78,9 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
 			
 			// Get the parameter coordinates
-			int parameterIndex = portNum - _startingParameterEdge;
-			int parameterXIndex = _parameterXIndices[parameterIndex];
-			int parameterYIndex = _parameterYIndices[parameterIndex];
+			int parameterEdgeOffset = portNum - _startingParameterEdge;
+			int parameterXIndex = _parameterXIndices[parameterEdgeOffset];
+			int parameterYIndex = _parameterYIndices[parameterEdgeOffset];
 			
 			// Get the sample values (indices of the discrete value, which corresponds to the value as well)
 			int xIndex = _hasConstantX ? _constantXValue : _xVariable.getCurrentSampleIndex();
@@ -139,15 +138,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
+		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		if (containedFactorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
 			DiscreteTransitionUnnormalizedParameters specificFactorFunction = (DiscreteTransitionUnnormalizedParameters)factorFunction;
 			_xDimension = specificFactorFunction.getXDimension();
@@ -155,7 +147,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			_numParameters = specificFactorFunction.getNumParameters();
 			_useEnergyParameters = false;
 		}
-		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
+		else if (containedFactorFunction instanceof DiscreteTransitionEnergyParameters)
 		{
 			DiscreteTransitionEnergyParameters specificFactorFunction = (DiscreteTransitionEnergyParameters)factorFunction;
 			_xDimension = specificFactorFunction.getXDimension();
@@ -168,72 +160,55 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_numParameterEdges = _numParameters;
+		_yPort = NO_PORT;
+		_xPort = NO_PORT;
+		_yVariable = null;
+		_xVariable = null;
+		_constantYValue = -1;
+		_constantXValue = -1;
 		_startingParameterEdge = 0;
 		List<INode> siblings = _factor.getSiblings();
-		if (hasFactorFunctionConstants)
+
+		_hasConstantY = factorFunction.isConstantIndex(Y_INDEX);
+		if (_hasConstantY)
+			_constantYValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(Y_INDEX));
+		else					// Variable Y
 		{
-			// Factor function has constants, figure out which are parameters and which are discrete variables
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int numConstants = constantIndices.length;
-			_hasConstantY = false;
-			_hasConstantX = false;
-			_yPort = NO_PORT;
-			_xPort = NO_PORT;
-			for (int i = 0; i < numConstants; i++)
-			{
-				if (constantIndices[i] == 0)
-				{
-					_hasConstantY = true;
-					_constantYValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else if (constantIndices[i] == 1)
-				{
-					_hasConstantX = true;
-					_constantXValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-				}
-				else	// Parameter is constant
-				{
-					_numParameterEdges--;
-				}
-			}
-			
-			if (_hasConstantY)
-			{
-				_yPort = NO_PORT;
-				_yVariable = null;
-			}
-			else	// Y is a variable
-			{
-				_yPort = Y_INDEX;
-				_yVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_yPort)).getSolver());
-				_startingParameterEdge++;
-			}
-			
-			if (_hasConstantX)
-			{
-				_xPort = NO_PORT;
-				_xVariable = null;
-			}
-			else	// X is a variable
-			{
-				_xPort = _hasConstantY ? X_INDEX - 1 : X_INDEX;
-				_xVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_xPort)).getSolver());
-				_startingParameterEdge++;
-			}
-			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
-			_parameterXIndices = new int[_numParameterEdges];
-			_parameterYIndices = new int[_numParameterEdges];
+			_yPort = factorFunction.getEdgeByIndex(Y_INDEX);
+			Discrete yVar = ((Discrete)siblings.get(_yPort));
+			_yVariable = (SDiscreteVariable)yVar.getSolver();
+			_yDimension = yVar.getDomain().size();
+			_startingParameterEdge++;
+		}
+		
+		
+		_hasConstantX = factorFunction.isConstantIndex(X_INDEX);
+		if (_hasConstantX)
+			_constantXValue = FactorFunctionUtilities.toInteger(factorFunction.getConstantByIndex(X_INDEX));
+		else					// Variable X
+		{
+			_xPort = factorFunction.getEdgeByIndex(X_INDEX);
+			Discrete xVar = ((Discrete)siblings.get(_xPort));
+			_xVariable = (SDiscreteVariable)xVar.getSolver();
+			_startingParameterEdge++;
+		}
+		
+		// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
+		int numParameterConstants = factorFunction.numConstantsAtOrAboveIndex(NUM_DISCRETE_VARIABLES);
+		_numParameterEdges = _numParameters - numParameterConstants;
+		_parameterXIndices = new int[_numParameterEdges];
+		_parameterYIndices = new int[_numParameterEdges];
+		if (numParameterConstants > 0)
+		{
+			int[] constantIndices = factorFunction.getConstantIndices();
 			int constantIndex = 0;
-			int parameterEdgeIndex = 0;
+			int parameterEdgeOffset = 0;
 			for (int x = 0; x < _xDimension; x++)	// Column scan order
 			{
 				for (int y = 0; y < _yDimension; y++)
 				{
-					int parameterIndex = x*_yDimension + y;
-					if (constantIndices[constantIndex] - NUM_DISCRETE_VARIABLES == parameterIndex)
+					int parameterOffset = x*_yDimension + y;
+					if (constantIndices[constantIndex] - NUM_DISCRETE_VARIABLES == parameterOffset)
 					{
 						// Parameter is constant
 						constantIndex++;
@@ -241,33 +216,21 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 					else
 					{
 						// Parameter is variable
-						_parameterXIndices[parameterEdgeIndex] = x;
-						_parameterYIndices[parameterEdgeIndex] = y;
-						parameterEdgeIndex++;
+						_parameterXIndices[parameterEdgeOffset] = x;
+						_parameterYIndices[parameterEdgeOffset] = y;
+						parameterEdgeOffset++;
 					}
 				}
 			}
 		}
-		else	// Factor function has no constants
+		else	// No constant parameters
 		{
-			_hasConstantY = false;
-			_hasConstantX = false;
-			_yPort = Y_INDEX;
-			_xPort = X_INDEX;
-			_yVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_yPort)).getSolver());
-			_xVariable = (SDiscreteVariable)(((VariableBase)siblings.get(_xPort)).getSolver());
-			_numParameterEdges = _numParameters;
-			_startingParameterEdge = NUM_DISCRETE_VARIABLES;
-			
-			// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
-			_parameterXIndices = new int[_numParameterEdges];
-			_parameterYIndices = new int[_numParameterEdges];
-			for (int x = 0, parameterEdgeIndex = 0; x < _xDimension; x++)	// Column scan order
+			for (int x = 0, parameterEdgeOffset = 0; x < _xDimension; x++)	// Column scan order
 			{
-				for (int y = 0; y < _yDimension; y++, parameterEdgeIndex++)
+				for (int y = 0; y < _yDimension; y++, parameterEdgeOffset++)
 				{
-					_parameterXIndices[parameterEdgeIndex] = x;
-					_parameterYIndices[parameterEdgeIndex] = y;
+					_parameterXIndices[parameterEdgeOffset] = x;
+					_parameterYIndices[parameterEdgeOffset] = y;
 				}
 			}
 		}

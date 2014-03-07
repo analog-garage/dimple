@@ -14,28 +14,11 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef MultivariateMsg < Msg
-    properties
-        Means;
-        Covariance;
-    end
+% This class deprecated, and is for backward compatibility only
+classdef MultivariateMsg < MultivariateNormalParameters
     methods
-        function obj = MultivariateMsg(means,covariance)
-            if ~isnumeric(means)
-                obj.IMsg = means;
-            else
-                modeler = getModeler();
-                obj.IMsg = modeler.createMultivariateMsg(means,covariance);
-            end
+        function obj = MultivariateMsg(means, covariance)
+            obj@MultivariateNormalParameters(means, covariance)
         end
-        
-        function means = get.Means(obj)
-           means = obj.IMsg.getMeans(); 
-        end
-        
-        function covar = get.Covariance(obj)
-           covar = obj.IMsg.getCovariance(); 
-        end
-        
     end
 end

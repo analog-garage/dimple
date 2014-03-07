@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
@@ -37,30 +36,44 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 1..N) Alpha: Vector of energy values (-log of unnormalized probabilities)
  * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
+ * The parameters may optionally be specified as constants in the constructor.
+ * In this case, the parameters are not included in the list of arguments.
  */
 public class CategoricalEnergyParameters extends FactorFunction
 {
 	private int _dimension;
 	private double[] _alpha;
+	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
 
-	public CategoricalEnergyParameters(int dimension)
+	public CategoricalEnergyParameters(int dimension)		// Variable parameters
 	{
 		super();
 		_dimension = dimension;
 		_firstDirectedToIndex = dimension;
+		_parametersConstant = false;
 		_alpha = new double[dimension];
+	}
+	
+	public CategoricalEnergyParameters(int dimension, double[] alpha)		// Constant parameters
+	{
+		super();
+		_dimension = dimension;
+		_firstDirectedToIndex = 0;
+		_parametersConstant = true;
+		_alpha = alpha.clone();
 	}
 	
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length <= _dimension)
-    		throw new DimpleException("Insufficient number of arguments.");
-    	
     	int index = 0;
-    	for (int i = 0; i < _dimension; i++)
-    		_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
+    	
+    	if (!_parametersConstant)
+    	{
+    		for (int i = 0; i < _dimension; i++)
+    			_alpha[i] = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters, if not constant
+    	}
     	
     	// Get the normalization value
     	double normalizationValue = 0;
@@ -89,6 +102,14 @@ public class CategoricalEnergyParameters extends FactorFunction
     
     
     // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double[] getParameters()
+    {
+    	return _alpha;
+    }
     public final int getDimension()
     {
     	return _dimension;

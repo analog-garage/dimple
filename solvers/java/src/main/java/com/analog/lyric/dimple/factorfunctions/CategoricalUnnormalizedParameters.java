@@ -36,33 +36,55 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 1..N) Alpha: Vector of unnormalized probabilities
  * N+1...) An arbitrary number of discrete output variable (MUST be zero-based integer values) 	// TODO: remove this restriction
  * 
+ * The parameters may optionally be specified as constants in the constructor.
+ * In this case, the parameters are not included in the list of arguments.
  */
 public class CategoricalUnnormalizedParameters extends FactorFunction
 {
 	private int _dimension;
 	private double[] _alpha;
+	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
 
-	public CategoricalUnnormalizedParameters(int dimension)
+	public CategoricalUnnormalizedParameters(int dimension)		// Variable parameters
 	{
 		super();
 		_dimension = dimension;
 		_firstDirectedToIndex = dimension;
+		_parametersConstant = false;
 		_alpha = new double[dimension];
+	}
+	
+	public CategoricalUnnormalizedParameters(int dimension, double[] alpha)		// Constant parameters
+	{
+		super();
+		_dimension = dimension;
+		_firstDirectedToIndex = 0;
+		_parametersConstant = true;
+		_alpha = alpha.clone();
+		double sum = 0;
+    	for (int i = 0; i < _alpha.length; i++)
+    	{
+    		if (_alpha[i] < 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
+    		sum += _alpha[i];
+    	}
+    	for (int i = 0; i < _alpha.length; i++)		// Normalize the alpha vector in case they're not already normalized
+    		_alpha[i] /= sum;
 	}
 	
     @Override
 	public double evalEnergy(Object... arguments)
     {
-    	if (arguments.length <= _dimension)
-    		throw new DimpleException("Insufficient number of arguments.");
-    	
     	int index = 0;
-    	for (int i = 0; i < _dimension; i++)
+
+    	if (!_parametersConstant)
     	{
-    		double a = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters
-    		if (a < 0) return Double.POSITIVE_INFINITY;
-    		_alpha[i] = a;
+    		for (int i = 0; i < _dimension; i++)
+    		{
+    			double a = FactorFunctionUtilities.toDouble(arguments[index++]);	// First _dimension arguments are vector of Alpha parameters, if not constant
+    			if (a < 0) return Double.POSITIVE_INFINITY;
+    			_alpha[i] = a;
+    		}
     	}
     	
     	// Get the normalization value
@@ -92,6 +114,14 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
     
     
     // Factor-specific methods
+    public final boolean hasConstantParameters()
+    {
+    	return _parametersConstant;
+    }
+    public final double[] getParameters()
+    {
+    	return _alpha;
+    }
     public final int getDimension()
     {
     	return _dimension;

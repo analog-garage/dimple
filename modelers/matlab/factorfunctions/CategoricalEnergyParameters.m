@@ -35,17 +35,11 @@ discreteDomain = 0:N-1;           % Domain must be zero based integers
 var = Discrete(discreteDomain, outSize{:});
 
 if (isa(alphas, 'Real'))
-    fg.addFactor({'CategoricalEnergyParameters', N}, alphas, var);
+    fg.addFactor(FactorFunction('CategoricalEnergyParameters', N), alphas, var);
 elseif (iscell(alphas))
-    fg.addFactor({'CategoricalEnergyParameters', N}, alphas{:}, var);
-elseif (isnumeric(alphas))  % Constant parameter (more efficient to just set the Input)
-        alphas = alphas(:);
-        minAlpha = min(alphas);
-        expAlphas = exp(-(alphas - minAlpha));  % Parameters are energies, convert to probabilities
-        expAlphas = expAlphas/sum(expAlphas);
-        outSizeExt = [1 cell2mat(outSize)];
-        dims = length(outSizeExt);
-        var.Input = permute(repmat(expAlphas, outSizeExt), [2:dims, 1]);
+    fg.addFactor(FactorFunction('CategoricalEnergyParameters', N), alphas{:}, var);
+elseif (isnumeric(alphas))  % Constant parameter
+    fg.addFactor(FactorFunction('CategoricalEnergyParameters', N, alphas), var);
 else
     error('Invalid parameter type');
 end

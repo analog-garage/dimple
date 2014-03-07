@@ -36,10 +36,10 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.RealConjugateSamplerRegistry;
@@ -304,6 +304,9 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	{
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
+		
+		// If the variable is the output of a directed deterministic factor, then don't modify the value--it should already be set correctly
+		if (getModelObject().isDeterministicOutput()) return;
 
 		// If the variable has a fixed value, then set the current sample to that value and return
 		if (_var.hasFixedValue())
@@ -378,8 +381,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
-	
-	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -393,7 +394,6 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			return _input.evalEnergy(_sampleValue);
 	}
 	
-	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
@@ -411,6 +411,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		_sampleArray = new ArrayList<Double>();
 	}
 
+    @Override
+	public void disableSavingAllSamples()
+    {
+    	_sampleArray = null;
+    }
+    
 	@Override
 	public final void saveCurrentSample()
 	{
@@ -494,6 +500,12 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		for (int i = 0; i < length; i++)
 			retval[i] = _sampleArray.get(i);
 		return retval;
+	}
+	
+	// This is meant for internal use, not as a user accessible method
+	public final List<Double> _getSampleArrayUnsafe()
+	{
+		return _sampleArray;
 	}
 
 	public final void setAndHoldSampleValue(double value)

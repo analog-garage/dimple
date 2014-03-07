@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012-2013 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -33,64 +33,175 @@ import com.analog.lyric.util.misc.Internal;
 public class FactorFunctionWithConstants extends FactorFunction
 {
 	private FactorFunction _factorFunction;
-	private Object [] _constants;
+	private Object[] _constants;
 	private Value[] _constantValues;
-	private int [] _constantIndices;
+	private int[] _constantIndices;
+	private int[] _indexToEdgeOrConstant;
+	private int[] _edgeToIndex;
+	private int _largestConstantIndex;
+	private int _smallestConstantIndex;
+	public final static int NO_PORT = -1;
 	
 	@Internal
-	public FactorFunctionWithConstants(FactorFunction factorFunction,
-			Object [] constants, int [] constantIndices)
+	public FactorFunctionWithConstants(FactorFunction factorFunction, Object[] constants, int[] constantIndices)
 	{
 		super(factorFunction.getName());
 		_factorFunction = factorFunction;
 		_constants = constants;
 		_constantIndices = constantIndices;
-		
-		if (_constantIndices.length > 1)
-			for (int i = 1; i < _constantIndices.length; i++)
-			{
-				if (_constantIndices[i] <= _constantIndices[i-1])
-					throw new DimpleException("constants must be provided in ascending index order");
-			}
+		int numConstants = _constants.length;
 		
 		if (_constantIndices.length != _constants.length)
 			throw new DimpleException("need to specify the constants and their locations");
 
-		_constantValues = new Value[_constants.length];
-		for (int i = _constantValues.length; --i>=0;)
+		if (numConstants > 1)
+		{
+			for (int i = 1; i < numConstants; i++)
+			{
+				if (_constantIndices[i] <= _constantIndices[i-1])
+					throw new DimpleException("constants must be provided in ascending index order");
+			}
+		}
+
+		_constantValues = new Value[numConstants];
+		for (int i = numConstants; --i>=0;)
 		{
 			_constantValues[i] = Value.create(_constants[i]);
+		}
+		
+		// Map edges to indices, where an edge is an actually attached variable that isn't a constant
+		_smallestConstantIndex = _constantIndices[0];
+		_largestConstantIndex = _constantIndices[numConstants-1];
+		_indexToEdgeOrConstant = new int[_largestConstantIndex - _smallestConstantIndex + 1];
+		_edgeToIndex = new int[(_largestConstantIndex - _smallestConstantIndex + 1) - numConstants];
+		for (int index = _smallestConstantIndex, edge = _smallestConstantIndex, constantIndex = 0; index <= _largestConstantIndex; index++)
+		{
+			if (index == _constantIndices[constantIndex])
+			{
+				_indexToEdgeOrConstant[index - _smallestConstantIndex] = ~constantIndex;		// Encode constant index as negative (complement) value
+				constantIndex++;
+			}
+			else
+			{
+				_indexToEdgeOrConstant[index - _smallestConstantIndex] = edge;
+				_edgeToIndex[edge - _smallestConstantIndex] = index;
+				edge++;
+			}
 		}
 	}
 	
 
 	@Override
-	public int getConstantCount()
+	public final boolean hasConstants()
+	{
+		return true;
+	}
+	
+	@Override
+	public final int getConstantCount()
 	{
 		return _constants.length;
 	}
 	
-	public Object [] getConstants()
+	@Override
+	public final Object[] getConstants()
 	{
 		return _constants;
 	}
 	
-	public int [] getConstantIndices()
+	@Override
+	public final int[] getConstantIndices()
 	{
 		return _constantIndices;
 	}
 	
-	public boolean isConstantIndex(int index)
+	@Override
+	public final boolean isConstantIndex(int index)
 	{
-		return Arrays.binarySearch(_constantIndices,  index) >= 0;
+		if (index < _smallestConstantIndex || index > _largestConstantIndex)	// Index beyond the ends of the list of constants
+			return false;
+		else
+			return (_indexToEdgeOrConstant[index - _smallestConstantIndex] < 0);		// Negative value is a constant
 	}
 	
 	@Override
-	public Object getConstantByIndex(int index)
+	public final boolean hasConstantAtOrAboveIndex(int index)
 	{
-		final int i = Arrays.binarySearch(_constantIndices,  index);
-		return i >= 0 ? _constants[i] : null;
+		return _largestConstantIndex >= index;
 	}
+	
+	@Override
+	public final boolean hasConstantAtOrBelowIndex(int index)
+	{
+		return _smallestConstantIndex <= index;
+	}
+	
+	@Override
+	public final int numConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		if (maxIndex < _smallestConstantIndex || minIndex > _largestConstantIndex)	// Range beyond the ends of the list of constants
+			return 0;
+		else
+		{
+			int numConstants = 0;
+			for (int index = minIndex; index <= maxIndex; index++)
+				if (isConstantIndex(index))
+					numConstants++;
+			return numConstants;
+		}
+	}
+	
+	@Override
+	public final int numConstantsAtOrAboveIndex(int index)
+	{
+		return numConstantsInIndexRange(index, _largestConstantIndex);
+	}
+	
+	@Override
+	public final int numConstantsAtOrBelowIndex(int index)
+	{
+		return numConstantsInIndexRange(0, index);
+	}
+	
+	@Override
+	public final Object getConstantByIndex(int index)
+	{
+		if (index < _smallestConstantIndex || index > _largestConstantIndex)	// Index beyond the ends of the list of constants
+			return null;
+		else
+		{
+			int edgeOrConstant = _indexToEdgeOrConstant[index - _smallestConstantIndex];
+			return (edgeOrConstant < 0) ? _constants[~edgeOrConstant] : null;	// Negative value is a constant (complement of the index)
+		}
+	}
+	
+	@Override
+	public final int getEdgeByIndex(int index)
+	{
+		if (index < _smallestConstantIndex)										// Index below the lower end of the list of constants
+			return index;
+		else if (index > _largestConstantIndex)									// Index above the upper end of the list of constants
+			return index - _constants.length;
+		else
+		{
+			int edgeOrConstant = _indexToEdgeOrConstant[index - _smallestConstantIndex];
+			return (edgeOrConstant < 0) ? NO_PORT : edgeOrConstant;				// Negative value is a constant (complement of the index)
+		}
+	}
+	
+	@Override
+	public final int getIndexByEdge(int edge)
+	{
+		if (edge < _smallestConstantIndex)										// Edge below the lower end of the list of constants
+			return edge;
+		else if (edge > _largestConstantIndex - _constants.length)				// Edge above the upper end of the list of constants
+			return edge + _constants.length;
+		else
+			return _edgeToIndex[edge - _smallestConstantIndex];
+	}
+	
+	
+	
 
 	// Wrap the methods of the actual factor function...
 
@@ -116,7 +227,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	public int[] getDirectedToIndices(int numEdges)
 	{
 		// Add the constants to the total number of edges
-		int[] directedToIndices = _factorFunction.getDirectedToIndices(numEdges + _constantIndices.length);
+		int[] directedToIndices = _factorFunction.getDirectedToIndices(numEdges + _constants.length);
 		return contractIndexList(directedToIndices);	// Remove the constant indices
 	}
 	
@@ -152,7 +263,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 		
 		// Replace the original argument list entries, leaving out constant indices
 		int numExpandedArguments = expandedArgumentList.length;
-		int numConsts = _constantIndices.length;
+		int numConsts = _constants.length;
 		for (int iExp = 0, iOrig = 0, iConst = 0; iExp < numExpandedArguments; iExp++)
 		{
 			if (iExp != ((iConst >= numConsts) ? -1 : _constantIndices[iConst]))
@@ -171,7 +282,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	@Override
 	public boolean updateDeterministic(Value[] values, Collection<IndexedValue> oldValues, AtomicReference<int[]> changedOutputsHolder)
 	{
-		int constantLength = _constantIndices.length;
+		int constantLength = _constants.length;
 		Value[] expandedValues = expandValues(values);
 
 		// Adjust indexes of old values to account for inserted constants.
@@ -252,7 +363,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	protected Object[] expandInputList(Object... input)
 	{
 		int inputLength = input.length;
-		int constantLength = _constantIndices.length;
+		int constantLength = _constants.length;
 		int expandedLength = inputLength + constantLength;
 		Object[] expandedInputs = new Object[expandedLength];
 		
@@ -274,7 +385,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	protected Value[] expandValues(Value[] values)
 	{
 		int inputLength = values.length;
-		int constantLength = _constantIndices.length;
+		int constantLength = _constants.length;
 		int expandedLength = inputLength + constantLength;
 		Value[] expandedValues = new Value[expandedLength];
 		
@@ -303,6 +414,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	// Get the contained factor function
+	@Override
 	public FactorFunction getContainedFactorFunction()
 	{
 		return _factorFunction;

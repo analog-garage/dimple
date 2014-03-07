@@ -22,13 +22,12 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Binomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 
@@ -38,11 +37,16 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	private SDiscreteVariable _outputVariable;
 	private SDiscreteVariable _NParameterVariable;
 	private int _probabilityParameterEdge;
-	private int _constantNParameter;
+	private int _constantNParameterValue;
 	private int _constantOutputValue;
 	private boolean _hasConstantNParameter;
 	private boolean _hasConstantOutput;
 	private static final int NO_PORT = -1;
+	private static final int P_PARAMETER_INDEX_FIXED_N = 0;		// If N is in constructor then P is first index (0)
+	private static final int OUTPUT_INDEX_FIXED_N = 1;			// If N is in constructor then output is second index (1)
+	private static final int N_PARAMETER_INDEX = 0;				// If N is not in constructor then N is first index (0)
+	private static final int P_PARAMETER_INDEX = 1;				// If N is not in constructor then P is second index (1)
+	private static final int OUTPUT_INDEX = 2;					// If N is not in constructor then output is third index (2)
 
 	public CustomBinomial(Factor factor)
 	{
@@ -60,7 +64,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 
 			// Get the current values of N and the output count
-			int N = _hasConstantNParameter ? _constantNParameter : _NParameterVariable.getCurrentSampleIndex();
+			int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
 			int numOnes = _hasConstantOutput ? _constantOutputValue : _outputVariable.getCurrentSampleIndex();
 			int numZeros = N - numOnes;
 			
@@ -103,69 +107,58 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Binomial specificFactorFunction = (Binomial)factorFunction;
+		Binomial specificFactorFunction = (Binomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstantNParameter = specificFactorFunction.hasConstantNParameter();
 		List<INode> siblings = _factor.getSiblings();
-		int possibleEdgeIndex = 0;
-		int actualEdgeIndex = 0;
-		
-		// Figure out the N parameter (constructor constant, constant, or variable)
-		if (hasFactorFunctionConstructorConstantNParameter)		// N parameter is constructor constant
+		_hasConstantNParameter = false;
+		_hasConstantOutput = false;
+		_constantNParameterValue = -1;
+		_constantOutputValue = -1;
+		_NParameterVariable = null;
+		_outputVariable = null;
+		_probabilityParameterEdge = NO_PORT;
+		if (specificFactorFunction.hasConstantNParameter())		// N parameter is constructor constant
 		{
 			_hasConstantNParameter = true;
-			_constantNParameter = specificFactorFunction.getN();
-			_NParameterVariable = null;
+			_constantNParameterValue = specificFactorFunction.getN();
+			
+			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX_FIXED_N))
+				_probabilityParameterEdge = factorFunction.getEdgeByIndex(P_PARAMETER_INDEX_FIXED_N);
+			
+			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX_FIXED_N);
+			if (_hasConstantOutput)
+				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_N);
+			else
+			{
+				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
+				_outputVariable = (SDiscreteVariable)(((VariableBase)siblings.get(outputEdge)).getSolver());
+			}
 		}
 		else	// Variable or constant N parameter
 		{
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(possibleEdgeIndex))	// N parameter is constant
+			_hasConstantNParameter = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
+			if (_hasConstantNParameter)
+				_constantNParameterValue = (Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX);
+			else
 			{
-				_hasConstantNParameter = true;
-				_constantNParameter = (Integer)constantFactorFunction.getConstantByIndex(possibleEdgeIndex);
-				_NParameterVariable = null;
+				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
+				_NParameterVariable = (SDiscreteVariable)(((VariableBase)siblings.get(nParameterEdge)).getSolver());
 			}
-			else	// N parameter is variable
+			
+			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX))
+				_probabilityParameterEdge = factorFunction.getEdgeByIndex(P_PARAMETER_INDEX);
+			
+			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX);
+			if (_hasConstantOutput)
+				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX);
+			else
 			{
-				_hasConstantNParameter = false;
-				_constantNParameter = -1;
-				_NParameterVariable = (SDiscreteVariable)(((VariableBase)siblings.get(actualEdgeIndex++)).getSolver());
+				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
+				_outputVariable = (SDiscreteVariable)(((VariableBase)siblings.get(outputEdge)).getSolver());
 			}
-			possibleEdgeIndex++;
 		}
-		
-		
-		// Figure out the probability parameter (constant or variable)
-		if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(possibleEdgeIndex))	// probability parameter is constant
-			_probabilityParameterEdge = NO_PORT;
-		else	// probability parameter is variable
-			_probabilityParameterEdge = actualEdgeIndex++;
-		possibleEdgeIndex++;
-		
-		// Figure out the output (constant or variable)
-		if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(possibleEdgeIndex))	// output is constant
-		{
-			_hasConstantOutput = true;
-			_constantOutputValue = (Integer)constantFactorFunction.getConstantByIndex(possibleEdgeIndex);
-			_outputVariable = null;
-		}
-		else	// N parameter is variable
-		{
-			_hasConstantOutput = false;
-			_constantOutputValue = -1;
-			_outputVariable = (SDiscreteVariable)(((VariableBase)siblings.get(actualEdgeIndex++)).getSolver());
-		}
-	
 	}
 	
 	

@@ -108,7 +108,7 @@ The @finiteFieldAdd method must have exactly that name for the Custom Factor to 
 
 \ifjava
 \begin{lstlisting}
-myFactorGraph.addFactor(new NopFactorFunction("finiteFieldAdd"),x,y,z);
+myFactorGraph.addFactor("finiteFieldAdd",x,y,z);
 \end{lstlisting}
 
 The factor function must have the "finiteFieldAdd" name in order for the SumProduct solver to use the correct custom factor.
@@ -128,7 +128,7 @@ myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
 
 \ifjava
 \begin{lstlisting}
-myFactorGraph.addFactor(new NopFactorFunction("finiteFieldMult"),x,y,z);
+myFactorGraph.addFactor("finiteFieldMult",x,y,z);
 \end{lstlisting}
 \fi
 
@@ -180,8 +180,7 @@ for (int j = 0; j < n; j++)
 	vars[j*2] = j;
 	vars[j*2+1] = new Bit();
 }
-myFactorGraph.addFactor(new NopFactorFunction("finiteFieldProjection"), 
-					vars);
+myFactorGraph.addFactor("finiteFieldProjection",vars);
 
 \end{lstlisting}
 \fi

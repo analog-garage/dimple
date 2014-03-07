@@ -86,10 +86,31 @@ public abstract class FactorFunction
     	return converted;
     }
     
+	// WARNING WARNING WARNING
+	// At least one or the other of these must be overridden in a derived class.
+	// SHOULD override evalEnergy instead of eval, but for now can override one or the other.
+	// TODO: Eventually eval should be made final and so that only evalEnergy can be overridden.
 	public double eval(Object... arguments)
 	{
 		return Math.exp(-evalEnergy(arguments));
 	}
+	public double evalEnergy(Object... arguments)
+	{
+		return -Math.log(eval(arguments));
+	}
+
+	// Default version of evalEnergy that takes values; can be overridden to implement
+	// a more efficient version that doesn't require copying the input array
+	public double evalEnergy(Value[] values)
+	{
+		final int size = values.length;
+		final Object[] objects = new Object[size];
+		for (int i = 0; i < size; ++i)
+			objects[i] = values[i].getObject();
+
+		return evalEnergy(objects);
+	}
+
 
 	public void evalDeterministic(Object[] arguments)
 	{ }
@@ -108,22 +129,7 @@ public abstract class FactorFunction
 		}
 	}
 
-	public double evalEnergy(Object... arguments)
-	{
-		return -Math.log(eval(arguments));
-	}
 	
-	public double evalEnergy(Value[] values)
-	{
-		final int size = values.length;
-		final Object[] objects = new Object[size];
-		for (int i = 0; i < size; ++i)
-		{
-			objects[i] = values[i].getObject();
-		}
-		return evalEnergy(objects);
-	}
-
     public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;
@@ -140,27 +146,7 @@ public abstract class FactorFunction
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
 	}
 
-	/**
-	 * Return number of constants built into the factor function instance.
-	 * <p>
-	 * Default implementation returns zero.
-	 */
-	public int getConstantCount()
-	{
-		return 0;
-	}
-	
-	/**
-	 * Returns constant at edge identified by {@code index} or null if specified
-	 * edge is not a constant.
-	 * <p>
-	 * Default implementation returns null.
-	 */
-	public Object getConstantByIndex(int index)
-	{
-		return null;
-	}
-	
+
 	public Object getDeterministicFunctionValue(Object... arguments)
 	{
 		Object[] fullArgumentList = new Object[arguments.length + 1];
@@ -374,5 +360,109 @@ public abstract class FactorFunction
 
     	return table;
     }
+    
+    
+    
+	/*********
+	 * Methods from FactorFunctionWithConstants that allow calling even if there are no constants
+	 */
+	
+	/**
+	 * Return whether or not there are constants in the factor function instance
+	 */
+	public boolean hasConstants()
+	{
+		return false;
+	}
+	
+	/**
+	 * Return number of constants built into the factor function instance.
+	 * <p>
+	 * Default implementation returns zero.
+	 */
+	public int getConstantCount()
+	{
+		return 0;
+	}
+	
+	/**
+	 * Return the innermost FactorFunction object, in case it is wrapped in a containing class.
+	 * In this case, there is no containing class 
+	 */
+	public FactorFunction getContainedFactorFunction()
+	{
+		return this;
+	}
+	
+	/**
+	 * Returns constant at edge identified by {@code index} or null if specified
+	 * edge is not a constant.
+	 * <p>
+	 * Default implementation returns null.
+	 */
+	public Object getConstantByIndex(int index)
+	{
+		return null;
+	}
+	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 */
+	public boolean isConstantIndex(int index)
+	{
+		return false;
+	}
+	
+	public boolean hasConstantAtOrAboveIndex(int index)
+	{
+		return false;
+	}
+	
+	public boolean hasConstantAtOrBelowIndex(int index)
+	{
+		return false;
+	}
+	
+	public int numConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		return 0;
+	}
+	
+	public int numConstantsAtOrAboveIndex(int index)
+	{
+		return 0;
+	}
+	
+	public int numConstantsAtOrBelowIndex(int index)
+	{
+		return 0;
+	}
+
+
+	/**
+	 * Return the edge number associated with the specified factor index.
+	 * For factors with not constants, these are identical.
+	 */
+	public int getEdgeByIndex(int index)
+	{
+		return index;
+	}
+
+	public int getIndexByEdge(int edge)
+	{
+		return edge;
+	}
+
+	public Object[] getConstants()
+	{
+		return new Object[] {};
+	}
+	
+	public int[] getConstantIndices()
+	{
+		return new int[] {};
+	}
+	
+
 
  }

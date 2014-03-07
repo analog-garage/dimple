@@ -34,11 +34,11 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    X.Input = MultivariateMsg(means,covar);
+    X.Input = MultivariateNormalParameters(means,covar);
     
     fg.solve();
     b = Y.Belief;
-    diff = abs(means - b.Means');
+    diff = abs(means - b.Mean');
     assertTrue(max(diff) < 1e-5);
     
     %TODO: what should the covariance matrix be?
@@ -60,11 +60,11 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    Y.Input = MultivariateMsg(means,covar);
+    Y.Input = MultivariateNormalParameters(means,covar);
     
     fg.solve();
     b = X.Belief;
-    diff = abs(means - b.Means');
+    diff = abs(means - b.Mean');
     assertTrue(max(diff) < 1e-5);
     
       
@@ -85,13 +85,13 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    Y.Input = MultivariateMsg(means,covar);
-    Z.Input = MultivariateMsg(means,covar);
+    Y.Input = MultivariateNormalParameters(means,covar);
+    Z.Input = MultivariateNormalParameters(means,covar);
     
     fg.solve();
     
     b = X.Belief;
-    diff = abs(means*2 - b.Means');
+    diff = abs(means*2 - b.Mean');
     assertTrue(max(diff) < 1e-5);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,17 +111,17 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    X.Input = MultivariateMsg(means1,covar);
+    X.Input = MultivariateNormalParameters(means1,covar);
     
     means2 = [8 10];
     covar = [1 0; 0 1];
     
-    Z.Input = MultivariateMsg(means2,covar);
+    Z.Input = MultivariateNormalParameters(means2,covar);
     
     fg.solve();
     
     b = Y.Belief;
-    diff = abs(means1-means2 - b.Means');
+    diff = abs(means1-means2 - b.Mean');
     assertTrue(max(diff) < 1e-5);    
     
     
@@ -143,14 +143,14 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    Z.Input = MultivariateMsg(means,covar);
+    Z.Input = MultivariateNormalParameters(means,covar);
         
-    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg(means2,covar);
+    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateNormalParameters(means2,covar);
     
     fg.solve();
     
     b = X.Belief;
-    diff = abs(means - b.Means');
+    diff = abs(means - b.Mean');
     assertTrue(max(diff) < 1e-5);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,14 +171,14 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    Z.Input = MultivariateMsg(means,covar);
+    Z.Input = MultivariateNormalParameters(means,covar);
         
-    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg(means2,covar);
+    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateNormalParameters(means2,covar);
     
     fg.solve();
     
     b = X.Belief;
-    diff = abs(Y*means' - b.Means);
+    diff = abs(Y*means' - b.Mean);
     assertTrue(max(diff) < 1e-3);    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -199,12 +199,12 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    X.Input = MultivariateMsg(means,covar);
+    X.Input = MultivariateNormalParameters(means,covar);
             
     fg.solve();
     
     b = Z.Belief;
-    diff = abs(means - b.Means');
+    diff = abs(means - b.Mean');
     assertTrue(max(diff) < 1e-5);    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,15 +225,15 @@ function testMultivariate()
     covar = [1 0; 0 1];
     
     %TODO: create better way to create message
-    X.Input = MultivariateMsg(means,covar);
+    X.Input = MultivariateNormalParameters(means,covar);
         
-    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateMsg(means2,covar);
+    %Z.Input = com.analog.lyric.dimple.solvers.gaussian.MultivariateNormalParameters(means2,covar);
     
     fg.solve();
     
     b = Z.Belief;
     expectedMeans = Y^-1*means';
-    diff = abs(expectedMeans - b.Means);
+    diff = abs(expectedMeans - b.Mean);
     assertTrue(max(diff) < 1e-4);
     
     
@@ -257,11 +257,11 @@ function testMultivariate()
     
     mean1 = [2 3];
     covar1 = [4 3; 3 4];
-    Y.Input = MultivariateMsg(mean1,covar1);
+    Y.Input = MultivariateNormalParameters(mean1,covar1);
 
     mean2 = [5 6];
     covar2 = [8 6; 6 8];
-    Z.Input = MultivariateMsg(mean2,covar2);
+    Z.Input = MultivariateNormalParameters(mean2,covar2);
     
     fg.solve();
     
@@ -284,11 +284,11 @@ function testMultivariate()
     
     mean1 = [2 3];
     covar1 = [4 3; 3 4];
-    X.Input = MultivariateMsg(mean1,covar1);
+    X.Input = MultivariateNormalParameters(mean1,covar1);
 
     mean2 = [5 6];
     covar2 = [8 6; 6 8];
-    Z.Input = MultivariateMsg(mean2,covar2);
+    Z.Input = MultivariateNormalParameters(mean2,covar2);
     
     fg.solve();
     
@@ -313,7 +313,7 @@ function testMultivariate()
     
     mean = [2 3];
     covar = [4 3; 3 4];
-    X.Input = MultivariateMsg(mean,covar);
+    X.Input = MultivariateNormalParameters(mean,covar);
     
     fg.solve();
     
@@ -340,7 +340,7 @@ function testMultivariate()
     
     mean = [2 3];
     covar = [4 3; 3 4];
-    Y.Input = MultivariateMsg(mean,covar);
+    Y.Input = MultivariateNormalParameters(mean,covar);
     
     fg.solve();
     
@@ -370,9 +370,9 @@ function testMultivariate()
     covar1 = [2 1; 1 2];
     covar2 = [4 2; 2 4];
     covar3 = [5 1; 1 5];
-    X.Input = MultivariateMsg(mean1,covar1);
-    Y.Input = MultivariateMsg(mean2,covar2);
-    Z.Input = MultivariateMsg(mean3,covar3);
+    X.Input = MultivariateNormalParameters(mean1,covar1);
+    Y.Input = MultivariateNormalParameters(mean2,covar2);
+    Z.Input = MultivariateNormalParameters(mean3,covar3);
     
     fg.solve();
     
@@ -383,7 +383,7 @@ function testMultivariate()
     assertTrue(max(max(covarDiff))<1e-15);
         
     expectedMean = expectedCovar*(covar1^-1*mean1' + covar2^-1*mean2' + covar3^-1*mean3');
-    diff = abs(expectedMean-Z.Belief.Means);
+    diff = abs(expectedMean-Z.Belief.Mean);
     assertTrue(max(diff)<1e-14);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -402,11 +402,11 @@ function testMultivariate()
     
     mean = [1 2];
     covar = [1 0; 0 1];
-    x.Input = MultivariateMsg(mean,covar);    
+    x.Input = MultivariateNormalParameters(mean,covar);    
     
     fg.solve();
     
-    diff = sum(abs(y.Belief.Means-A*mean'));
+    diff = sum(abs(y.Belief.Mean-A*mean'));
     assertTrue(max(diff)<3);
     
     %TODO: better error message if dimensions are wrong (x and y both 2)
@@ -435,11 +435,11 @@ function testMultivariate()
         0 1 0;
         0 0 1];
 
-    y.Input = MultivariateMsg(mean,covar);
+    y.Input = MultivariateNormalParameters(mean,covar);
 
     fg.solve();
 
-    xbelief = x.Belief.Means;
+    xbelief = x.Belief.Mean;
     diff = sum(abs(A*xbelief-mean));
     
     assertTrue(diff<1e-4);
@@ -467,11 +467,11 @@ function testMultivariate()
         0 0 0;
         0 0 0];
 
-    x.Input = MultivariateMsg(mean,covar);
+    x.Input = MultivariateNormalParameters(mean,covar);
 
     fg.solve();
 
-    ybelief = y.Belief.Means;
+    ybelief = y.Belief.Mean;
 
     diff = sum(abs(A*mean-ybelief));
     assertTrue(diff<1e-2);
@@ -497,11 +497,11 @@ function testMultivariate()
     covar = [1 0;
         0 1];
 
-    y.Input = MultivariateMsg(mean,covar);
+    y.Input = MultivariateNormalParameters(mean,covar);
 
     fg.solve();
 
-    xbelief = x.Belief.Means;
+    xbelief = x.Belief.Mean;
 
     diff = sum(abs(mean-A*xbelief));
     assertTrue(diff<1e-6);
@@ -526,11 +526,11 @@ function testMultivariate()
 
     fg.addFactor(@constmult,y,A,x);
 
-    x.Input = MultivariateMsg(xmean,covar);
+    x.Input = MultivariateNormalParameters(xmean,covar);
 
     fg.solve();
 
-    ybelief = y.Belief.Means;
+    ybelief = y.Belief.Mean;
     yexpected = A*xmean;
     
     diff = sum(abs(ybelief-yexpected));
@@ -552,11 +552,11 @@ function testMultivariate()
 
     fg.addFactor(@constmult,y,A,x);
 
-    y.Input = MultivariateMsg(xmean,covar);
+    y.Input = MultivariateMsg(xmean,covar); % Test backward compatibility
 
     fg.solve();
 
-    xbelief = x.Belief.Means;
+    xbelief = x.Belief.Means; % Test backward compatibility
     diff = sum(abs(A*xbelief-ymean));
     assertTrue(diff<1e-6);
     

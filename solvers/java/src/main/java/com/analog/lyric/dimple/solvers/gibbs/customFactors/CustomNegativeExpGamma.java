@@ -22,13 +22,13 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
@@ -141,9 +141,9 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 		_hasConstantOutputs = false;
 		if (_hasFactorFunctionConstants)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			Object[] constantValues = constantFactorFunction.getConstants();
-			int[] constantIndices = constantFactorFunction.getConstantIndices();
+			FactorFunction factorFunction = _factor.getFactorFunction();
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
 			_constantOutputCount = 0;
 			_constantOutputSum = 0;
 			for (int i = 0; i < constantIndices.length; i++)
@@ -163,59 +163,50 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		_hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			_hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction;
-		
+		NegativeExpGamma specificFactorFunction = (NegativeExpGamma)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_hasFactorFunctionConstants = factorFunction.hasConstants();
+		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 		List<INode> siblings = _factor.getSiblings();
+		_hasConstantAlpha = false;
+		_hasConstantBeta = false;
+		_alphaParameterPort = NO_PORT;
+		_betaParameterPort = NO_PORT;
+		_alphaVariable = null;
+		_betaVariable = null;
+		_constantAlphaValue = 0;
+		_constantBetaValue = 0;
+		_numParameterEdges = 0;
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
 			_hasConstantBeta = true;
-			_alphaParameterPort = NO_PORT;
-			_betaParameterPort = NO_PORT;
 			_constantAlphaValue = specificFactorFunction.getAlpha();
 			_constantBetaValue = specificFactorFunction.getBeta();
-			_numParameterEdges = 0;
 		}
-		else // Variable or constant parameters
+		else	// Variable or constant parameters
 		{
-			_numParameterEdges = 0;
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX))
+			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
+			if (_hasConstantAlpha)	// Constant mean
+				_constantAlphaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX));
+			else					// Variable mean
 			{
-				_hasConstantAlpha = true;
-				_alphaParameterPort = NO_PORT;
-				_constantAlphaValue = (Double)constantFactorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = null;
-			}
-			else
-			{
-				_hasConstantAlpha = false;
-				_alphaParameterPort = _numParameterEdges++;
+				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
 				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(_alphaParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
-			if (_hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(BETA_PARAMETER_INDEX))
+			
+			_hasConstantBeta = factorFunction.isConstantIndex(BETA_PARAMETER_INDEX);
+			if (_hasConstantBeta)	// Constant precision
+				_constantBetaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX));
+			else 						// Variable precision
 			{
-				_hasConstantBeta = true;
-				_betaParameterPort = NO_PORT;
-				_constantBetaValue = (Double)constantFactorFunction.getConstantByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = null;
-			}
-			else
-			{
-				_hasConstantBeta = false;
-				_betaParameterPort = _numParameterEdges++;
+				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
 				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(_betaParameterPort)).getSolver());
+				_numParameterEdges++;
 			}
 		}
 		_numOutputEdges = _numPorts - _numParameterEdges;

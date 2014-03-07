@@ -35,12 +35,12 @@ function testMultivariateDataSource()
     x = RealJoint(2,N,1);
     fg.addFactorVectorized(@constmult,x(2:end),F,x(1:end-1));
 
-    x(1).Input = MultivariateMsg(A,eye(2));
+    x(1).Input = MultivariateNormalParameters(A,eye(2));
 
     fg.solve();
 
     for i = 1:N
-       assertTrue(max(abs(x(i).Belief.Means-data(:,i))) < .01);
+       assertTrue(max(abs(x(i).Belief.Mean-data(:,i))) < .01);
     end
 
     setSolver('gaussian');
@@ -51,13 +51,13 @@ function testMultivariateDataSource()
     fg = FactorGraph();
     x = RealJointStream(2);
     fg.addFactor(ng,x,x.getSlice(2));
-    x.get(1).Input = MultivariateMsg(A,eye(2));
+    x.get(1).Input = MultivariateNormalParameters(A,eye(2));
     x.DataSink = dsink;
     fg.NumSteps = 10;
     fg.solve();
     i = 1;
     while (dsink.hasNext())
-        data2(:,i) = dsink.getNext().Means;
+        data2(:,i) = dsink.getNext().Mean;
         i = i+1;
     end
     diff = norm(data-data2);

@@ -23,18 +23,17 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverRealVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
@@ -56,7 +55,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	private boolean _incompatibleWithConjugateSampling = false;
 	private boolean _hasFactorFunctionConstants;
 	private boolean _hasConstantSelector;
-	private int _selectorConstant;
+	private int _selectorConstantValue;
 	private static final int OUTPUT_INDEX = 0;
 	private static final int SELECTOR_INDEX = 1;
 	private static final int FIRST_INPUT_PORT_INDEX = 2;
@@ -73,7 +72,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		if (portNum >= _firstInputPortNumber)
 		{
 			// Port is an input port
-			int selector = _hasConstantSelector ? _selectorConstant : _selectorVariable.getCurrentSampleIndex();	// Get the current selector value
+			int selector = _hasConstantSelector ? _selectorConstantValue : _selectorVariable.getCurrentSampleIndex();	// Get the current selector value
 			if (portNum == _inputPortMap[selector])
 			{
 				// Port is the currently selected input port
@@ -187,13 +186,13 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		_inputPortMap = new int[numInputEdges];
 		if (_hasFactorFunctionConstants)
 		{
-			FactorFunctionWithConstants	constantFactorFunction = (FactorFunctionWithConstants)(_factor.getFactorFunction());
-			int numConstants = constantFactorFunction.getConstantIndices().length;
+			FactorFunction factorFunction = _factor.getFactorFunction();
+			int numConstants = factorFunction.getConstantIndices().length;
 			
 			int numIndices = _numPorts + numConstants;
 			for (int index = 0, port = 0, selectorIndex = 0; index < numIndices; index++)
 			{
-				if (constantFactorFunction.isConstantIndex(index))
+				if (factorFunction.isConstantIndex(index))
 				{
 					if (index > FIRST_INPUT_PORT_INDEX)
 						selectorIndex++;
@@ -219,50 +218,40 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		_hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			_hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Multiplexer specificFactorFunction = (Multiplexer)factorFunction;
+		Multiplexer specificFactorFunction = (Multiplexer)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_hasFactorFunctionConstants = factorFunction.hasConstants();
 		if (specificFactorFunction.hasSmoothing())
 		{
 			_incompatibleWithConjugateSampling = true;
 			return;
 		}
+		if (factorFunction.isConstantIndex(OUTPUT_INDEX))
+		{
+			_incompatibleWithConjugateSampling = true;
+			return;
+		}
 
-		_outputPortNumber = OUTPUT_INDEX;
-		_selectorPortNumber = SELECTOR_INDEX;
-		_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
+		_selectorPortNumber = NO_PORT;
+		_selectorVariable = null;
+		_selectorConstantValue = -1;
 		
+		_outputPortNumber = factorFunction.getEdgeByIndex(OUTPUT_INDEX);	// Must be a variable if not returned already
 		ISolverVariable outputVariable = _factor.getSibling(_outputPortNumber).getSolver();
 		if (outputVariable instanceof ISolverRealVariableGibbs)
-		_outputVariable = (ISolverRealVariableGibbs)outputVariable;
+			_outputVariable = (ISolverRealVariableGibbs)outputVariable;
 		_outputVariableSiblingPortIndex = _factor.getSiblingPortIndex(_outputPortNumber);
 
-		if (_hasFactorFunctionConstants)
+		_hasConstantSelector = factorFunction.isConstantIndex(SELECTOR_INDEX);
+		if (_hasConstantSelector)
 		{
-			if (constantFactorFunction.isConstantIndex(OUTPUT_INDEX))
-			{
-				_incompatibleWithConjugateSampling = true;
-				return;
-			}
-			if (constantFactorFunction.isConstantIndex(SELECTOR_INDEX))
-			{
-				_selectorPortNumber = NO_PORT;
-				_firstInputPortNumber--;
-				_selectorVariable = null;
-				_hasConstantSelector = true;
-				_selectorConstant = (Integer)constantFactorFunction.getConstantByIndex(SELECTOR_INDEX);
-			}
+			_selectorConstantValue = (Integer)factorFunction.getConstantByIndex(SELECTOR_INDEX);
+			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX - 1;
 		}
-		else	// All edges are variables
+		else
 		{
+			_selectorPortNumber = factorFunction.getEdgeByIndex(SELECTOR_INDEX);
 			_selectorVariable = (SDiscreteVariable)(_factor.getSibling(_selectorPortNumber).getSolver());
-			_hasConstantSelector = false;
+			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX;
 		}
 	}
 	

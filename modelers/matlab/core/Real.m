@@ -131,11 +131,23 @@ classdef Real < VariableBase
             varids = reshape(obj.VectorIndices,numel(obj.VectorIndices),1);
             a = cell(obj.VectorObject.getBeliefs(varids));
             
-            if prod(sz) == 1
-                b = a{1};
-            else
-                for i = 1:numel(b)
-                    b{i} = a{i};
+            if (isa(a{1}, 'com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters'))
+                if prod(sz) == 1
+                    b = NormalParameters(0,0);
+                    b.IParameters = a{1};
+                else
+                    for i = 1:numel(b)
+                        b{i} = NormalParameters(0,0);
+                        b{i}.IParameters = a{i};
+                    end
+                end
+            else % A different form of beleif
+                if prod(sz) == 1
+                    b = a{1};
+                else
+                    for i = 1:numel(b)
+                        b{i} = a{i};
+                    end
                 end
             end
         end

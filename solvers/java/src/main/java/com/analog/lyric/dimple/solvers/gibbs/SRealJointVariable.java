@@ -36,12 +36,12 @@ import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.core.SVariableBase;
+import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
@@ -60,7 +60,7 @@ import com.google.common.primitives.Doubles;
  *
  */
 
-public class SRealJointVariable extends SVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
+public class SRealJointVariable extends SRealJointVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
 	/*-------
 	 * State
@@ -84,8 +84,6 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
 	private int _numRealVars;
-	private double[] _guessValue;
-	private boolean _guessWasSet = false;
 	private int _tempIndex = 0;
 	private boolean _visited = false;
 	
@@ -325,6 +323,9 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		// If the sample value is being held, don't modify the value
 		if (_holdSampleValue) return;
 
+		// If the variable is the output of a directed deterministic factor, then don't modify the value--it should already be set correctly
+		if (getModelObject().isDeterministicOutput()) return;
+
 		// If the variable has a fixed value, then set the current sample to that value and return
 		if (_var.hasFixedValue())
 		{
@@ -473,8 +474,6 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
 	}
 
-	
-	// TODO move to ISolverNode
 	@Override
 	public final double getScore()
 	{
@@ -485,7 +484,7 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		// Which value to score
 		double[] value;
 		if (_guessWasSet)
-			value = _guessValue;
+			value = (double[])getGuess();
 		else
 			value = _sampleValue;
 		
@@ -503,39 +502,29 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 			return 0;
 	}
 	
-	// TODO move to ISolverVariable
 	@Override
 	public Object getGuess()
 	{
 		if (_guessWasSet)
 			return _guessValue;
 		else if (_var.hasFixedValue())
-			return _varReal.getFixedValue();
+			return (_varReal).getFixedValue();
 		else
 			return _sampleValue;
 	}
 	
-	// TODO move to ISolverVariable
-	@Override
-	public void setGuess(Object guess)
-	{
-		_guessValue = (double[])guess;
-
-		// Make sure the number is within the domain of the variable
-		if (!_domain.inDomain(_guessValue))
-			throw new DimpleException("Guess is not within the domain of the variable");
-		
-		_guessWasSet = true;
-	}
-
-
-
 	@Override
 	public final void saveAllSamples()
 	{
 		_sampleArray = new ArrayList<double[]>();
 	}
 
+    @Override
+	public void disableSavingAllSamples()
+    {
+    	_sampleArray = null;
+    }
+    
 	@Override
 	public final void saveCurrentSample()
 	{
@@ -657,6 +646,12 @@ public class SRealJointVariable extends SVariableBase implements ISolverVariable
 		for (int i = 0; i < length; i++)
 			retval[i] = _sampleArray.get(i);
 		return retval;
+	}
+
+	// This is meant for internal use, not as a user accessible method
+	public final List<double[]> _getSampleArrayUnsafe()
+	{
+		return _sampleArray;
 	}
 
 	public final void setAndHoldSampleValue(double[] value)

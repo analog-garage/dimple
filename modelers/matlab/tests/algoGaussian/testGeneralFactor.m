@@ -15,108 +15,212 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function testGeneralFactor()
 
+debugPrint = false;
+repeatable = true;
 
-    v = Real(3,1);
+dtrace(debugPrint, '++testGeneralFactor');
 
-    fg = FactorGraph();
-    fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(100000);
-    fg.Solver.setSeed(0);
+if (repeatable)
+    seed = 1;
+    rs=RandStream('mt19937ar');
+    RandStream.setGlobalStream(rs);
+    reset(rs,seed);
+end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    %Test add
-    inputs = [9 2; ...
-              3 2; ...
-              6 2];
+test1(debugPrint, repeatable);
+test2(debugPrint, repeatable);
+test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
-    for i = 1:3
+dtrace(debugPrint, '--testGeneralFactor');
+end
 
-        tmpinputs = inputs;
-
-        tmpinputs(i,:) = [0 Inf];
-
-        v(1).Input = tmpinputs(1,:);
-        v(2).Input = tmpinputs(2,:);
-        v(3).Input = tmpinputs(3,:);
-
-        f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridAddFactorFunction(),v(1),v(2),v(3));
-
-        fg.solve();
-
-        actualBelief = v(i).Belief;
-
-        fg.removeFactor(f);
-
-        f = fg.addFactor(@add,v(1),v(2),v(3));
-
-        fg.solve();
-
-        expectedBelief = v(i).Belief;
-
-        fg.removeFactor(f);
-
-        diff = abs(actualBelief - expectedBelief);
-        assertTrue(all(diff < .02));
-
-    end
-
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    %Test square
-    a = v(1);
-    b = v(2);
-    f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridRealSquare(),a,b);
-
-    a.Input = [25 10];
-    b.Input = [0 Inf];
-
-    fg.solve();
-
-    expectedBelief = [0; 5];
-    diff = abs(b.Belief-expectedBelief);
-    assertTrue(all(diff < .02));
-
-    a.Input = [0 Inf];
-    b.Input = [20 12];
-
-    fg.solve();
-
-    expectedMu = [b.Input(1)^2 + b.Input(2)^2];
-    assertTrue(abs(a.Belief(1)-expectedMu) < 1);
-
-
-    fg.Solver.setMaxNumTries(10);
-
-    exFound = false;
-    message = '';
-    try
-        fg.solve();
-    catch E
-        exFound = true;
-        message = E.message;
-    end
-
-    assertTrue(exFound);
-    assertTrue(~ isempty(findstr(message,'Failed to get desired number of samples')));
-
-
-    %%%%%%%%%%%%
-    %Test cube
+% Real variables only
+function test1(debugPrint, repeatable)
 
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
-    fg.Solver.setNumSamples(10000);
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    fg.Solver.setSeed(1);
 
     a = Real();
-    b = Real();
+    b = Real([0 Inf]);
+    fg.addFactor('Square',a,b);
 
-    f = fg.addFactor(com.analog.lyric.dimple.factorfunctions.HybridRealFixedPower(3),a,b);
-
-    a.Input = [27 10];
+    a.Input = [401 40.02];
     b.Input = [0 Inf];
+    
+    if repeatable
+        fg.Solver.setSeed(1);
+    end
 
     fg.solve();
 
-    expectedBelief = [3; .45];
+    expectedBelief = [20; 1];
     diff = abs(b.Belief-expectedBelief);
-    assertTrue(all(diff < .1));
+    fracDiff = diff./expectedBelief;
+    assertTrue(all(fracDiff < .02));
+end
+
+% Real and discrete variables
+function test2(debugPrint, repeatable)
+
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    fg.Solver.setSampledFactorBurnInScansPerUpdate(100);
+    fg.Solver.setSampledFactorScansPerSample(1);
+    fg.Solver.setSeed(1);
+    
+    aM = 5;
+    aS = 2;
+    bM = -2;
+    bS = 3;
+    bDomain = -10:10;
+
+    a = Real();
+    b = Discrete(bDomain);
+    c = Real();
+    fg.addFactor('Sum',c,a,b);
+    
+    a.Input = [aM aS];
+    b.Input = normpdf(bDomain, bM, bS);
+
+    if repeatable
+        fg.Solver.setSeed(1);
+    end
+    
+    fg.solve();
+
+    expectedBelief = [aM+bM; sqrt(aS^2+bS^2)];
+    diff = abs(c.Belief-expectedBelief);
+    fracDiff = diff./expectedBelief;
+    assertTrue(all(fracDiff < .04));
+    
+    bMean = bDomain * b.Belief;
+    diff = abs(bMean - (-2));
+    fracDiff = diff./2;
+    assertTrue(all(fracDiff < .01));
+end
+
+% RealJoint variables only, uncorrelated
+function test3(debugPrint, repeatable)
+
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    fg.Solver.setSeed(1);
+
+    a = Complex();
+    b = Complex();
+    c = a * b;  % Complex product
+    assert(~isempty(strfind(fg.Factors{1}.VectorObject.getFactorFunction,'ComplexProduct')));
+    
+    aMean = [10 10];
+    aCovariance = eye(2)*.01;
+    bMean = [-20 20];
+    bCovariance = eye(2)*.01;
+    
+    as = mvnrnd(aMean,aCovariance,100000);
+    bs = mvnrnd(bMean,bCovariance,100000);
+    ac = complex(as(:,1),as(:,2));
+    bc = complex(bs(:,1),bs(:,2));
+    cc = ac .* bc;
+    cs = [real(cc) imag(cc)];
+    expectedMean = mean(cs)';
+    expectedCovariance = cov(cs);
+    if debugPrint
+        figure;
+        hold off;
+        plot(real(cc),imag(cc),'.');
+        hold on;
+        plot(real(ac),imag(ac),'.r');
+        plot(real(bc),imag(bc),'.g');
+    end
+    
+    % Use two different ways to set the input, just for variation
+    a.Input = FactorFunction('MultivariateNormal', aMean, aCovariance);
+    b.Input = MultivariateNormalParameters(bMean, bCovariance);
+
+    if repeatable
+        fg.Solver.setSeed(1);
+    end
+    
+    fg.solve();
+    
+    diff = abs(c.Belief.Mean-expectedMean);
+    fracDiff = diff./max(abs(expectedMean));
+    assertTrue(all(fracDiff < .01));
+    
+    diff = abs(c.Belief.Covariance-expectedCovariance);
+    fracDiff = diff./max(max(abs(expectedCovariance)));
+    assertTrue(all(fracDiff(:) < .025));
+
+end
+
+
+% RealJoint variables only, correlated
+function test4(debugPrint, repeatable)
+
+    fg = FactorGraph();
+    fg.Solver = 'Gaussian';
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    fg.Solver.setSeed(1);
+
+    a = Complex();
+    b = Complex();
+    c = a * b;  % Complex product
+    assert(~isempty(strfind(fg.Factors{1}.VectorObject.getFactorFunction,'ComplexProduct')));
+    
+    aMean = [10 10];
+    aCovariance = randCovariance(2);
+    bMean = [-20 20];
+    bCovariance = randCovariance(2);
+    
+    as = mvnrnd(aMean,aCovariance,100000);
+    bs = mvnrnd(bMean,bCovariance,100000);
+    ac = complex(as(:,1),as(:,2));
+    bc = complex(bs(:,1),bs(:,2));
+    cc = ac .* bc;
+    cs = [real(cc) imag(cc)];
+    expectedMean = mean(cs)';
+    expectedCovariance = cov(cs);
+    if debugPrint
+        figure;
+        hold off;
+        plot(real(cc),imag(cc),'.');
+        hold on;
+        plot(real(ac),imag(ac),'.r');
+        plot(real(bc),imag(bc),'.g');
+    end
+
+    % Use two different ways to set the input, just for variation
+    a.Input = FactorFunction('MultivariateNormal', aMean, aCovariance);
+    b.Input = MultivariateNormalParameters(bMean, bCovariance);
+
+    if repeatable
+        fg.Solver.setSeed(1);
+    end
+    
+    fg.solve();
+
+    diff = abs(c.Belief.Mean-expectedMean);
+    fracDiff = diff./max(abs(expectedMean));
+    assertTrue(all(fracDiff < .02));
+    
+    diff = abs(c.Belief.Covariance-expectedCovariance);
+    fracDiff = diff./max(max(abs(expectedCovariance)));
+    assertTrue(all(fracDiff(:) < .02));
+
+end
+
+
+function C = randCovariance(n)
+
+A = rand(n,n);
+B = A + A';
+minEig = min(eig(B));
+r = randn^2 + eps;
+C = B + eye(n)*(r - minEig);
+
 end

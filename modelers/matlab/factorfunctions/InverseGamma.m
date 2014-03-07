@@ -32,9 +32,9 @@ end
 var = Real(outSize{:});
 
 if (isa(alpha,'VariableBase') || isa(beta,'VariableBase'))
-    fg.addFactor('InverseGamma', alpha, beta, var);     % At least one variable parameter
+    fg.addFactor('InverseGamma', alpha, beta, var);                 % At least one variable parameter
 else
-    var.Input = FactorFunction('InverseGamma', alpha, beta);   % Constant parameters (more efficient to fix in constructor and set as Input)
+    fg.addFactor(FactorFunction('InverseGamma', alpha, beta), var); % Constant parameters
 end
 
 end

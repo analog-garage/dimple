@@ -369,6 +369,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     }
     
     @Override
+	public void disableSavingAllSamples()
+    {
+    	_sampleIndexArray = null;
+    }
+    
+    @Override
 	public final void saveCurrentSample()
     {
     	if (_sampleIndexArray != null)

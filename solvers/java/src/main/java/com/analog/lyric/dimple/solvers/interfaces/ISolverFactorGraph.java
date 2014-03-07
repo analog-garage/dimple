@@ -53,7 +53,14 @@ public interface ISolverFactorGraph extends ISolverNode
 
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
-	public boolean customFactorExists(String funcName);
+
+	/**
+	 * Indicates whether or not the specified factor is available only as a custom factor.
+	 * @param factorName
+	 * @return True only for custom factors that do not have a corresponding FactorFunction of the same name
+	 */
+	@Matlab
+	public boolean customFactorExists(String factorName);
 	public void solve();
 	public void solveOneStep();
 	public void continueSolve();

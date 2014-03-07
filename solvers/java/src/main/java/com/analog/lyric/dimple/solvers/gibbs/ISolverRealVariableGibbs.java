@@ -1,7 +1,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IParameterizedMessage;
 
 public interface ISolverRealVariableGibbs
 {

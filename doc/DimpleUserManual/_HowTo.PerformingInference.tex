@@ -15,7 +15,7 @@ At a high level, Dimple supports three categories of solver:
 \item Linear programming (LP)
 \end{itemize}
 
-The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} value.  In both cases, the result may be approximate, depending on the specific model.  In the case of sum-product, the solvers further divide based on how real variables are dealt with.  The basic SumProduct solver doesn't support real variables at all, while the Gaussian and ParticleBP solvers use Gaussian and particle representations, respectively, for messages passed to and from real variables.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
+The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} value.  In both cases, the result may be approximate, depending on the specific model.  In the case of sum-product, the solvers further divide based on how continuous variables are dealt with (Real, Complex, and RealJoint variables).  The SumProduct solver (which is the default solver) uses a Gaussian representation for messages passed to and from continuous variables, while the ParticleBP solver uses a particle representation\footnote{In the current version of Dimple, the PartibleBP solver does not support Complex or RealJoint variables.}.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
 
 The Gibbs solver supports all of the primary variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value (see section~\ref{sec:GibbsSolverAPI}).
 
@@ -29,12 +29,11 @@ The Solver is a property of a factor graph.  To set the Solver for a given graph
 myGraph.Solver = 'Gibbs';
 \end{lstlisting}
 
-The solver name is case insensitive.  The current set of valid solver names are:
+The solver name is case insensitive.  The current set of valid solver names are:\footnote{In Dimple versions 0.04 and earlier, there was a separate Gaussian solver, which implemented the Gaussian BP for continuous variables.  In subsequent versions of Dimple, this functionality has been incorporated into the SumProduct solver.  For backward compatibility, the solver may be set to `Gaussian,' but will use the SumProduct solver in this case.} 
 
 \begin{itemize}
 \item SumProduct
 \item MinSum
-\item Gaussian
 \item ParticleBP
 \item Gibbs
 \item LP
@@ -50,15 +49,13 @@ myGraph.setSolverFactory(
      );
 \end{lstlisting}
 
-The current set of solvers is:
+The current set of solvers is:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
 
 \begin{itemize}
 \item com.analog.lyric.dimple.solvers.sumproduct.Solver()
 \item com.analog.lyric.dimple.solvers.minsum.Solver()
-\item com.analog.lyric.dimple.solvers.gaussian.Solver()
 \item com.analog.lyric.dimple.solvers.particleBP.Solver()
 \item com.analog.lyric.dimple.solvers.gibbs.Solver()
-\item LP - The LP solver is not currently supported by Java.
 \end{itemize}
 
 \fi
@@ -126,7 +123,7 @@ b.setInput(0.3);
 
 In this case, the value must be between 0 and 1, inclusive.
 
-For a Real variable, the form of the Input property depends on the particular solver.  For the Gibbs and ParticleBP solvers, the Input property must be a built-in factor function, as described in section~\ref{sec:usingBuiltInFactors}.  Typically, it would be one of the standard distributions included in the list of available built-in factor functions.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For example:
+For a Real variable, the Input property is expressed in the form of a FactorFunction object that can connect to exactly one Real variable.  The list of available built-in FactorFunctions is given in section~\ref{sec:usingBuiltInFactors}.  Typically, an Input would use one of the standard distributions included in this list.  In this case, it must be one in which all the parameters can be fixed to pre-defined constants.  For the Gibbs and ParticleBP solvers, any such factor function may be used as an Input.  For the SumProduct solver, however, only a Normal factor function may be used.  Below is an example of setting the Input for a Real variable:
 
 \ifmatlab
 
@@ -138,6 +135,7 @@ r.Input = FactorFunction('Normal', measuredMean, measurementPrecision);
 \fi
 
 \ifjava
+
 \begin{lstlisting}
 Real r = new Real();
 r.setInput(new Normal(measuredMean, measurementPrecision));
@@ -145,24 +143,7 @@ r.setInput(new Normal(measuredMean, measurementPrecision));
 
 \fi
 
-For the Gaussian solver, the Input property is a two-element array, where the first element is the mean, and the second element is the standard deviation.  For example:
-
-\ifmatlab
-
-\begin{lstlisting}
-r = Real();
-r.Input = [measuredMean, measurementStandardDeviation];
-\end{lstlisting}
-
-\fi
-
-\ifjava
-
-\begin{lstlisting}
-Real r = new Real();
-r.setInput(new double []  {measuredMean, measurementStandardDeviation});
-\end{lstlisting}
-\fi
+See section~\ref{sec:RealJoint.Input} for a description of how to set the Input on RealJoint (or Complex) variables.
 
 \ifmatlab
 
@@ -272,7 +253,7 @@ myGraph.setScheduler(new ExampleScheduler());
 \end{lstlisting}
 \fi
 
-For all of the BP solvers (SumProduct, MinSum, Gaussian, ParticleBP), the following schedulers are available.  More detail on each of these schedulers is provided in section~\ref{sec:FactorGraph.Scheduler}.
+For all of the BP solvers (SumProduct, MinSum, ParticleBP), the following schedulers are available.  More detail on each of these schedulers is provided in section~\ref{sec:FactorGraph.Scheduler}.
 
 \begin{itemize}
 \item TreeOrFloodingScheduler
@@ -651,7 +632,7 @@ myGraph.getSolver().iterate(5);
 
 For the Gibbs solver, a similar method allows running one or a specified number of samples at a time, skipping initialization as well as any burn-in or random restarts.  This is the sample method, which behaves the same as the iterate method.
 
-\para{useMultithreading}
+\para{Multithreading}
 
 Some solvers support multithreading.  The following method can be used to turn on multithreading:
 
@@ -697,9 +678,11 @@ Object o = myVariable.getbeliefObject();
 
 The particular form of the Belief property depends on the type of variable, and in some cases on the solver.  For a Discrete variable type, the Belief property is a vector with length equal to the size of the variable domain.  The values represent the normalized value of the approximate marginal probability of each element of the domain.  For a Bit variable, the Belief property is a single number that represents the marginal probability of the value 1.
 
-For Real variables when using the Gaussian solver, the Belief is represented as a mean/standard-deviation pair.  Using the ParticleBP solver, beliefs are available for Real variables, but a different interface is used to obtain the beliefs in a useful form.  This is summarized in section~\ref{sec:ParticleBPRealVariableSpecificMethods}.  Beliefs for Real variables are not currently supported in the Gibbs solver.
+For Real variables when using the SumProduct solver, the Belief is represented the mean and precision parameters of a Normal distribution and for RealJoint variables they are represented as a mean vector and covariance matrix of a multivariate Normal distribution.  Using the ParticleBP solver, beliefs are available for Real variables, but a different interface is used to obtain the beliefs in a useful form.  This is summarized in section~\ref{sec:ParticleBPRealVariableSpecificMethods}.  Beliefs for Real variables are not currently supported in the Gibbs solver.
 
+\ifmatlab
 Beliefs can be obtained directly from an array of variables using the Belief property of the array.  For a Discrete variable array, the Belief is an array with the same dimensions as the variable array (or subarray), but with an extra dimensions corresponding to the Belief vector for each variable in the array.  (If a dimension in the array is 1, that dimension is not included.)  For an array of Bit variables, the Belief is an array with the same dimensions as the Bit array.
+\fi
 
 Another useful inference result returned by the Value property of a variable.  This property returns a single value from the domain of the variable that corresponds to the maximum value of the belief:
 

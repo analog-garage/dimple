@@ -21,6 +21,23 @@ import java.util.Iterator;
 
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.Bernoulli;
+import com.analog.lyric.dimple.factorfunctions.Beta;
+import com.analog.lyric.dimple.factorfunctions.Binomial;
+import com.analog.lyric.dimple.factorfunctions.Categorical;
+import com.analog.lyric.dimple.factorfunctions.CategoricalEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters;
+import com.analog.lyric.dimple.factorfunctions.Dirichlet;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransition;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedParameters;
+import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
+import com.analog.lyric.dimple.factorfunctions.Gamma;
+import com.analog.lyric.dimple.factorfunctions.LogNormal;
+import com.analog.lyric.dimple.factorfunctions.Multiplexer;
+import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
+import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -130,105 +147,54 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new SDiscreteVariable(var);
 	}
 	
+	
+	// Note, customFactorExists is intentionally not overridden and therefore returns false
+	// This is because all of the custom factors for this solver also exist as FactorFunctions,
+	// and therefore we still want the MATLAB code to create a factor with the specified FactorFunctions.
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		String factorName = factor.getFactorFunction().getName();
-		if (customFactorExists(factorName))
-			return createCustomFactor(factor);
-		if (privateCustomFactorExists(factorName))
-			return createCustomFactor(factor);
-		else if (factor.isDiscrete())
-			return new STableFactor(factor);
+		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
+		
+		// First see if any custom factor should be created
+		if (factorFunction instanceof Normal)
+			return new CustomNormal(factor);
+		else if (factorFunction instanceof Gamma)
+			return new CustomGamma(factor);
+		else if (factorFunction instanceof NegativeExpGamma)
+			return new CustomNegativeExpGamma(factor);
+		else if (factorFunction instanceof LogNormal)
+			return new CustomLogNormal(factor);
+		else if (factorFunction instanceof DiscreteTransition)
+			return new CustomDiscreteTransition(factor);
+		else if (factorFunction instanceof DiscreteTransitionUnnormalizedParameters)
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof DiscreteTransitionEnergyParameters)
+			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof Categorical)
+			return new CustomCategorical(factor);
+		else if (factorFunction instanceof CategoricalUnnormalizedParameters)
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof CategoricalEnergyParameters)
+			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof Dirichlet)
+			return new CustomDirichlet(factor);
+		else if (factorFunction instanceof ExchangeableDirichlet)
+			return new CustomExchangeableDirichlet(factor);
+		else if (factorFunction instanceof Beta)
+			return new CustomBeta(factor);
+		else if (factorFunction instanceof Bernoulli)
+			return new CustomBernoulli(factor);
+		else if (factorFunction instanceof Binomial)
+			return new CustomBinomial(factor);
+		else if (factorFunction instanceof Multiplexer)
+			return new CustomMultiplexer(factor);
+		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one
+			return new STableFactor(factor);	// Generic discrete factor
 		else
-			return new SRealFactor(factor);
+			return new SRealFactor(factor);		// Generic real factor
 	}
 	
-	@Override
-	public boolean customFactorExists(String funcName)
-	{
-		return false;
-	}
-
-	// This is like customFactorExists, but is not the public one since for these factors, we still want the MATLAB
-	// code to create a regular factor with the specified factorfunction, which we still need (instead of creating a
-	// factor with a NOPFactorFunction).
-	private boolean privateCustomFactorExists(String factorName)
-	{
-		if (factorName.equals("Normal"))
-			return true;
-		else if (factorName.equals("Gamma"))
-			return true;
-		else if (factorName.equals("NegativeExpGamma"))
-			return true;
-		else if (factorName.equals("LogNormal"))
-			return true;
-		else if (factorName.equals("DiscreteTransition"))
-			return true;
-		else if (factorName.equals("DiscreteTransitionUnnormalizedParameters"))
-			return true;
-		else if (factorName.equals("DiscreteTransitionEnergyParameters"))
-			return true;
-		else if (factorName.equals("Categorical"))
-			return true;
-		else if (factorName.equals("CategoricalUnnormalizedParameters"))
-			return true;
-		else if (factorName.equals("CategoricalEnergyParameters"))
-			return true;
-		else if (factorName.equals("Dirichlet"))
-			return true;
-		else if (factorName.equals("ExchangeableDirichlet"))
-			return true;
-		else if (factorName.equals("Beta"))
-			return true;
-		else if (factorName.equals("Bernoulli"))
-			return true;
-		else if (factorName.equals("Binomial"))
-			return true;
-		else if (factorName.equals("Multiplexer"))
-			return true;
-		else
-			return false;
-	}
-
-	public ISolverFactor createCustomFactor(Factor factor)
-	{
-		String funcName = factor.getFactorFunction().getName();
-		if (funcName.equals("Normal"))
-			return new CustomNormal(factor);
-		else if (funcName.equals("Gamma"))
-			return new CustomGamma(factor);
-		else if (funcName.equals("NegativeExpGamma"))
-			return new CustomNegativeExpGamma(factor);
-		else if (funcName.equals("LogNormal"))
-			return new CustomLogNormal(factor);
-		else if (funcName.equals("DiscreteTransition"))
-			return new CustomDiscreteTransition(factor);
-		else if (funcName.equals("DiscreteTransitionUnnormalizedParameters"))
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
-		else if (funcName.equals("DiscreteTransitionEnergyParameters"))
-			return new CustomDiscreteTransitionUnnormalizedOrEnergyParameters(factor);
-		else if (funcName.equals("Categorical"))
-			return new CustomCategorical(factor);
-		else if (funcName.equals("CategoricalUnnormalizedParameters"))
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
-		else if (funcName.equals("CategoricalEnergyParameters"))
-			return new CustomCategoricalUnnormalizedOrEnergyParameters(factor);
-		else if (funcName.equals("Dirichlet"))
-			return new CustomDirichlet(factor);
-		else if (funcName.equals("ExchangeableDirichlet"))
-			return new CustomExchangeableDirichlet(factor);
-		else if (funcName.equals("Beta"))
-			return new CustomBeta(factor);
-		else if (funcName.equals("Bernoulli"))
-			return new CustomBernoulli(factor);
-		else if (funcName.equals("Binomial"))
-			return new CustomBinomial(factor);
-		else if (funcName.equals("Multiplexer"))
-			return new CustomMultiplexer(factor);
-		else
-			throw new DimpleException("Not implemented");
-	}
 
 	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
@@ -435,11 +401,25 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			getSolverVariable(v).saveAllSamples();
 	}
 	
+	// Disable saving all samples if it had previously been set
+	public void disableSavingAllSamples()
+	{
+		for (VariableBase v : _factorGraph.getVariables())
+			((ISolverVariableGibbs)(v.getSolver())).disableSavingAllSamples();
+	}
+	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
 	public void saveAllScores()
 	{
 		_saveAllScores = true;
 		_scoreArray = new ArrayList<Double>();
+	}
+	
+	// Disable saving all scores if it had previously been set
+	public void disableSavingAllScores()
+	{
+		_saveAllScores = false;
+		_scoreArray = null;
 	}
 	
 	// If the score had been saved, return the array of score values

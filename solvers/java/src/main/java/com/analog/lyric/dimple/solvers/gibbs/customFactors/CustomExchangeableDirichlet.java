@@ -22,13 +22,12 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -98,21 +97,12 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction;
+		ExchangeableDirichlet specificFactorFunction = (ExchangeableDirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_dimension = specificFactorFunction.getDimension();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-		_dimension = specificFactorFunction.getDimension();
-		if (hasFactorFunctionConstructorConstants)
+		if (specificFactorFunction.hasConstantParameters())
 		{
 			_hasConstantParameters = true;
 			_numParameterEdges = 0;
@@ -121,16 +111,15 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 		}
 		else // Variable or constant parameter
 		{
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PARAMETER_INDEX))
+			_hasConstantParameters = factorFunction.isConstantIndex(PARAMETER_INDEX);
+			if (_hasConstantParameters)
 			{
-				_hasConstantParameters = true;
 				_numParameterEdges = 0;
-				_alpha = (Double)constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_alpha = (Double)factorFunction.getConstantByIndex(PARAMETER_INDEX);
 				_alphaVariable = null;
 			}
 			else	// Parameter is a variable
 			{
-				_hasConstantParameters = false;
 				_numParameterEdges = 1;
 				_alpha = 0;
 				List<INode> siblings = _factor.getSiblings();

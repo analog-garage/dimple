@@ -22,13 +22,12 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -51,7 +50,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
-		if (portNum > _numParameterEdges)
+		if (portNum >= _numParameterEdges)
 		{
 			// Output port must be an output variable
 
@@ -98,20 +97,11 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
-		FactorFunctionWithConstants constantFactorFunction = null;
-		boolean hasFactorFunctionConstants = false;
-		if (factorFunction instanceof FactorFunctionWithConstants)	// In case the factor function is wrapped, get the specific factor function within
-		{
-			hasFactorFunctionConstants = true;
-			constantFactorFunction = (FactorFunctionWithConstants)factorFunction;
-			factorFunction = constantFactorFunction.getContainedFactorFunction();
-		}
-		Dirichlet specificFactorFunction = (Dirichlet)factorFunction;
-				
+		Dirichlet specificFactorFunction = (Dirichlet)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-		if (hasFactorFunctionConstructorConstants)
+		if (specificFactorFunction.hasConstantParameters())
 		{
 			_hasConstantParameters = true;
 			_numParameterEdges = 0;
@@ -121,17 +111,16 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 		}
 		else // Variable or constant parameter
 		{
-			if (hasFactorFunctionConstants && constantFactorFunction.isConstantIndex(PARAMETER_INDEX))
+			_hasConstantParameters = factorFunction.isConstantIndex(PARAMETER_INDEX);
+			if (_hasConstantParameters)
 			{
-				_hasConstantParameters = true;
 				_numParameterEdges = 0;
-				_alpha = (double[])constantFactorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_alpha = (double[])factorFunction.getConstantByIndex(PARAMETER_INDEX);
 				_alphaVariable = null;
 				_dimension = _alpha.length;
 			}
 			else	// Parameter is a variable
 			{
-				_hasConstantParameters = false;
 				_numParameterEdges = 1;
 				_alpha = null;
 				List<INode> siblings = _factor.getSiblings();

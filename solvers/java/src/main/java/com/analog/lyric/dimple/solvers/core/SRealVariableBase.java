@@ -1,7 +1,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public abstract class SRealVariableBase extends SVariableBase
@@ -15,12 +15,35 @@ public abstract class SRealVariableBase extends SVariableBase
 		super(var);
 	}
 
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		_guessWasSet = false;
+	}
+	
+	/*---------------
+	 * INode objects
+	 */
+	
+	@Override
+	public Real getModelObject()
+	{
+		return (Real)_var;
+	}
+
+	
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
 	
 	@Override
 	public Object getGuess()
 	{
 		if (_guessWasSet)
 			return Double.valueOf(_guessValue);
+		else if (_var.hasFixedValue())		// If there's a fixed value set, use that
+			return ((Real)_var).getFixedValue();
 		else
 			return (Double)getValue();
 	}
@@ -37,8 +60,7 @@ public abstract class SRealVariableBase extends SVariableBase
 			throw new DimpleException("Guess is not a value type (must be Double or Integer)");
 
 		// Make sure the number is within the domain of the variable
-		RealDomain domain = (RealDomain)_var.getDomain();
-		if ((_guessValue > domain.getUpperBound()) || (_guessValue < domain.getLowerBound()))
+		if (!_var.getDomain().inDomain(_guessValue))
 			throw new DimpleException("Guess is not within the domain of the variable");
 		
 		_guessWasSet = true;

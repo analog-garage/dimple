@@ -16,7 +16,6 @@
 
 package com.analog.lyric.dimple.examples;
 
-import com.analog.lyric.dimple.factorfunctions.NopFactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 
@@ -53,8 +52,8 @@ public class KalmanFilter
 		RealJoint fxnext = new RealJoint(8);
 
 		FactorGraph fg = new FactorGraph();
-		fg.addFactor(new NopFactorFunction("constmult"),fznonoise,H,fx);
-		fg.addFactor(new NopFactorFunction("add"),fz,fv,fznonoise);
-		fg.addFactor(new NopFactorFunction("constmult"),fxnext,F,fx);
+		fg.addFactor("constmult",fznonoise,H,fx);
+		fg.addFactor("add",fz,fv,fznonoise);
+		fg.addFactor("constmult",fxnext,F,fx);
 	}
 }
