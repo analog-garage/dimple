@@ -56,17 +56,29 @@ public class RandomGraphGenerator
 	 */
 	
 	/**
-	 * Builds an n x n grid graph with variable domains choosen randomly from {@code domains}.
+	 * Builds an n x n grid graph with variable domains chosen randomly from {@code domains}.
 	 * 
 	 * @param n
 	 * @param domains
 	 */
 	public FactorGraph buildGrid(int n, DiscreteDomain ... domains)
 	{
+		return buildGrid(n, n, domains);
+	}
+	
+	/**
+	 * Builds a m x n grid graph with variable domains chosen randomly from {@code domains}.
+	 * 
+	 * @param m
+	 * @param n
+	 * @param domains
+	 */
+	public FactorGraph buildGrid(int m, int n, DiscreteDomain ... domains)
+	{
 		final FactorGraph graph = new FactorGraph();
 		
-		final Discrete[][] vars = new Discrete[n][n];
-		for (int i = 0; i < n; ++i)
+		final Discrete[][] vars = new Discrete[m][n];
+		for (int i = 0; i < m; ++i)
 		{
 			for (int j = 0; j < n; ++j)
 			{
@@ -89,6 +101,7 @@ public class RandomGraphGenerator
 		
 		return graph;
 	}
+	
 	
 	/**
 	 * Extended student Bayesian network from Koller's Probabilistic Graphical Models (Figure 9.8)
