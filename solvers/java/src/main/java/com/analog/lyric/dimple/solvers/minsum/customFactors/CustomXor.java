@@ -3,17 +3,14 @@ package com.analog.lyric.dimple.solvers.minsum.customFactors;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
-public class CustomXor extends SFactorBase
+public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {
 	private double[][] _inPortMsgs = new double[0][];
     private double[][] _outPortMsgs = null;
     private double [] _savedOutMsgsLLR;
-    private double [] _dampingParams;
-	private boolean _dampingInUse = false;
 	private int _constantParity;
 	private int _numPorts;
 
@@ -147,7 +144,7 @@ public class CustomXor extends SFactorBase
 	
     
  
-	
+	@Override
 	public void setDamping(int index, double val)
 	{
 		_dampingParams[index] = val;
@@ -159,19 +156,6 @@ public class CustomXor extends SFactorBase
 
 	}
 	
-	public double getDamping(int index)
-	{
-		return _dampingParams[index];
-	}
-
-
-	@Override
-	public void resetEdgeMessages(int i )
-	{
-
-	}
-
-
 	@Override
 	public void createMessages()
 	{
@@ -202,21 +186,13 @@ public class CustomXor extends SFactorBase
 		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];
 		_outPortMsgs[portNum] = x._outPortMsgs[otherPort];
 		_savedOutMsgsLLR[portNum] = x._savedOutMsgsLLR[otherPort];
-		
 	}
 
-	@Override
-	public Object getInputMsg(int portIndex)
-	{
-		return _inPortMsgs[portIndex];
-	}
+    protected boolean createFactorTableOnInit()
+    {
+    	return false;
+    }
 
-	@Override
-	public Object getOutputMsg(int portIndex)
-	{
-		return _outPortMsgs[portIndex];
-	}
-	
 	@Override
 	public void initialize()
 	{
