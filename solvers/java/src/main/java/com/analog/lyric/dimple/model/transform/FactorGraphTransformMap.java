@@ -1,18 +1,20 @@
 package com.analog.lyric.dimple.model.transform;
 
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.google.common.collect.BiMap;
 
 public class FactorGraphTransformMap
 {
@@ -21,9 +23,11 @@ public class FactorGraphTransformMap
 	 */
 	
 	private final FactorGraph _sourceModel;
+	private final long _sourceVersion;
 	private final FactorGraph _targetModel;
-	private final BiMap<Node, Node> _nodeBiMap;
+	private final Map<Node, Node> _sourceToTargetMap;
 	private final List<AddedDeterministicVariable> _addedDeterministicVariables;
+	private final Set<VariableBase> _conditionedVariables;
 	
 	public static abstract class AddedDeterministicVariable
 	{
@@ -107,17 +111,41 @@ public class FactorGraphTransformMap
 	 * Construction
 	 */
 	
-	public FactorGraphTransformMap(FactorGraph source, FactorGraph target, BiMap<Node,Node> nodeBiMap)
+	protected FactorGraphTransformMap(FactorGraph source, FactorGraph target, Map<Node,Node> sourceToTargetMap)
 	{
 		_sourceModel = source;
+		_sourceVersion = source.getVersionId();
 		_targetModel = target;
-		_nodeBiMap = nodeBiMap;
+		_sourceToTargetMap = sourceToTargetMap;
 		_addedDeterministicVariables = new LinkedList<AddedDeterministicVariable>();
+		_conditionedVariables = new LinkedHashSet<VariableBase>();
+	}
+	
+	protected FactorGraphTransformMap(FactorGraph source)
+	{
+		this(source, source, null);
+	}
+	
+	public static FactorGraphTransformMap create(
+		FactorGraph source,	FactorGraph target,	Map<Node,Node> sourceToTargetMap)
+	{
+		return new FactorGraphTransformMap(source, target, sourceToTargetMap);
+	}
+	
+	public static FactorGraphTransformMap identity(FactorGraph model)
+	{
+		return new FactorGraphTransformMap(model);
 	}
 	
 	/*---------
 	 * Methods
 	 */
+	
+	public void addConditionedVariable(VariableBase variable)
+	{
+		assert(variable.hasFixedValue());
+		_conditionedVariables.add(variable);
+	}
 	
 	public void addDeterministicVariable(AddedDeterministicVariable addedVar)
 	{
@@ -129,6 +157,37 @@ public class FactorGraphTransformMap
 		return _addedDeterministicVariables;
 	}
 	
+	public Set<VariableBase> conditionedVariables()
+	{
+		return _conditionedVariables;
+	}
+	
+	public boolean isIdentity()
+	{
+		return _sourceToTargetMap == null;
+	}
+	
+	public boolean isValid()
+	{
+		if (_sourceVersion != _sourceModel.getVersionId())
+		{
+			return false;
+		}
+		
+		for (VariableBase sourceVar : _conditionedVariables)
+		{
+			if (!sourceVar.hasFixedValue())
+				return false;
+			VariableBase targetVar = sourceToTargetVariable(sourceVar);
+			if (!targetVar.hasFixedValue())
+				return false;
+			if (!sourceVar.getFixedValueObject().equals(targetVar.getFixedValueObject()))
+				return false;
+		}
+		
+		return true;
+	}
+
 	public FactorGraph source()
 	{
 		return _sourceModel;
@@ -136,16 +195,38 @@ public class FactorGraphTransformMap
 	
 	public Map<Node,Node> sourceToTarget()
 	{
-		return _nodeBiMap;
+		return _sourceToTargetMap;
+	}
+	
+	public Factor sourceToTargetFactor(Factor sourceFactor)
+	{
+		if (_sourceToTargetMap == null)
+		{
+			return sourceFactor;
+		}
+		return (Factor) _sourceToTargetMap.get(sourceFactor);
+	}
+	
+	public VariableBase sourceToTargetVariable(VariableBase sourceVariable)
+	{
+		if (_sourceToTargetMap == null)
+		{
+			return sourceVariable;
+		}
+		return (VariableBase) _sourceToTargetMap.get(sourceVariable);
+	}
+	
+	/**
+	 * Value of {@link FactorGraph#getVersionId()} of {@link #source()} when
+	 * transform map was created.
+	 */
+	public long sourceVersion()
+	{
+		return _sourceVersion;
 	}
 	
 	public FactorGraph target()
 	{
 		return _targetModel;
-	}
-
-	public Map<Node,Node> targetToSource()
-	{
-		return _nodeBiMap.inverse();
 	}
 }

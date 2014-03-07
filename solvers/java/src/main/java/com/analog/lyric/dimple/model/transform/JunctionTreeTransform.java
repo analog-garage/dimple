@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.transform;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,14 +50,12 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
 
-public class JunctionTreeTransform
+public class JunctionTreeTransform implements IFactorGraphTransform
 {
 	/*-------
 	 * State
@@ -186,10 +185,10 @@ public class JunctionTreeTransform
 			return Arrays.binarySearch(_variables, variable, _variableComparator);
 		}
 		
-		private void joinMultivariateEdges()
+		private boolean joinMultivariateEdges()
 		{
 			if (!_hasMultiVariableEdge)
-				return;
+				return false;
 			
 			final int nEdges = _edges.size();
 			final CliqueEdge[] edges = _edges.toArray(new CliqueEdge[nEdges]);
@@ -270,6 +269,8 @@ public class JunctionTreeTransform
 			
 			// Create new factor attached to edge variables
 			graph.addFactor(newFactorTable, newVariables);
+			
+			return true;
 		}
 		
 		private boolean updateBestEdge(CliqueEdge incomingEdge)
@@ -391,6 +392,10 @@ public class JunctionTreeTransform
 	 * Methods
 	 */
 
+	/*
+	 * 
+	 */
+	@Override
 	public FactorGraphTransformMap transform(FactorGraph model)
 	{
 		//
@@ -403,7 +408,7 @@ public class JunctionTreeTransform
 		// If elimination order introduces no edges, graph is already a tree. Done.
 		if (eliminationOrder.stats.alreadyGoodForFastExactInference())
 		{
-			return null;
+			return FactorGraphTransformMap.identity(model);
 		}
 		
 		//
@@ -413,10 +418,10 @@ public class JunctionTreeTransform
 		final ArrayList<VariableBase> variables = eliminationOrder.variables;
 		final int nVariables = variables.size();
 
-		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
+		final Map<Node,Node> old2new = new HashMap<Node,Node>(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		
-		final FactorGraphTransformMap transformMap = new FactorGraphTransformMap(model, targetModel, old2new);
+		final FactorGraphTransformMap transformMap = FactorGraphTransformMap.create(model, targetModel, old2new);
 
 		//
 		// 3) Disconnect conditioned variables in new graph
@@ -434,6 +439,7 @@ public class JunctionTreeTransform
 			for (int i = 0; i < nConditioned; ++i)
 			{
 				VariableBase variable = (VariableBase)old2new.get(eliminationOrder.variables.get(i));
+				transformMap.addConditionedVariable(variable);
 				for (int j = 0, endj = variable.getSiblingCount(); j < endj; ++j)
 				{
 					final Factor factor = variable.getSibling(j);
@@ -443,7 +449,11 @@ public class JunctionTreeTransform
 			
 			for (Factor factor : factors.values())
 			{
-				factor.removeFixedVariables();
+				if (factor.removeFixedVariables() > 0)
+				{
+					// Factors are no longer the same.
+					old2new.remove(factor);
+				}
 			}
 		}
 		
@@ -456,7 +466,6 @@ public class JunctionTreeTransform
 		//
 		// 4) Create cliques using variable elimination order
 		//
-		
 		
 		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(); // TODO preallocate
 		final List<Clique> cliques = new LinkedList<Clique>();
@@ -497,21 +506,18 @@ public class JunctionTreeTransform
 				cliqueVar.clearVisited();
 			}
 			
-			if (!cliqueFactors.isEmpty())
+			// Add temporary factor to connect remaining variables in clique to each other.
+			if (cliqueVars.size() > 1 && nFactors > 1)
 			{
-				// Add temporary factor to connect remaining variables in clique to each other.
-				if (cliqueVars.size() > 1 && nFactors > 1)
-				{
-					final Factor temporaryFactor = targetModel.addFactor(Uniform.INSTANCE, cliqueVars.toArray());
-					temporaryFactor.setMarked();
-					temporaryFactors.add(temporaryFactor);
-				}
-				
-				cliqueVars.add(var);
-				Clique clique = new Clique(cliqueVars, cliqueFactors);
-				cliques.add(clique);
-				clique.addToMap(varToCliques);
+				final Factor temporaryFactor = targetModel.addFactor(Uniform.INSTANCE, cliqueVars.toArray());
+				temporaryFactor.setMarked();
+				temporaryFactors.add(temporaryFactor);
 			}
+
+			cliqueVars.add(var);
+			Clique clique = new Clique(cliqueVars, cliqueFactors);
+			cliques.add(clique);
+			clique.addToMap(varToCliques);
 		}
 		
 		for (Factor temporaryFactor : temporaryFactors)
@@ -520,17 +526,7 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 5) Merge factors in clique
-		//
-		
-		for (Clique clique : cliques)
-		{
-			// Be polite and clear the mark bit.
-			clique._mergedFactor = targetModel.join(clique._variables, clique._factors);
-		}
-		
-		//
-		// 6) Use Prim's algorithm to build max spanning tree over clique graph where the edge weight
+		// 5) Use Prim's algorithm to build max spanning tree over clique graph where the edge weight
 		//    is the number of variables in common between the two cliques along each edge.
 		//
 		
@@ -582,7 +578,23 @@ public class JunctionTreeTransform
 		}
 
 		//
-		// 7) Add half-edges for variables that are in only one clique and therefore won't be in any
+		// 6) TODO: prune tree
+		//    If there are any cliques that contain all of the variables of another clique, the smaller
+		//    clique can be merged into it.
+		//
+		
+		//
+		// 7) Merge factors in clique
+		//
+		
+		for (Clique clique : cliques)
+		{
+			// Be polite and clear the mark bit.
+			clique._mergedFactor = targetModel.join(clique._variables, clique._factors);
+		}
+		
+		//
+		// 8) Add half-edges for variables that are in only one clique and therefore won't be in any
 		//    edge created in the previous step.
 		//
 		
@@ -597,7 +609,7 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 8) Rewrite factors with multivariate edges
+		// 9) Rewrite factors with multivariate edges
 		//
 		
 		for (Clique clique : cliques)
@@ -606,7 +618,7 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 9) Find orphaned variables and map each to the smallest joint variable that subsumes it
+		// 10) Find orphaned variables and map each to the smallest joint variable that subsumes it
 		//
 		
 		final Map<Discrete, Tuple2<Discrete,Integer>> orphanVarToJointVar =
@@ -637,7 +649,7 @@ public class JunctionTreeTransform
 		}
 		
 		//
-		// 10) Create marginal factors that connects each orphan variable to a joint variable.
+		// 11) Create marginal factors that connects each orphan variable to a joint variable.
 		//
 		//    TODO: if two or more orphaned variables are attached to the same joint variable, it
 		//    can be expressed using a single factor instead of one per variable
