@@ -176,32 +176,32 @@ public class FactorGraph extends FactorBase
 	 * 
 	 ******************************************************************/
 
-	private <SG extends ISolverFactorGraph> SG setSolverFactorySubGraph(IFactorGraphFactory<SG> factory)
+	private ISolverFactorGraph setSolverFactorySubGraph(ISolverFactorGraph parentSolverGraph,
+		IFactorGraphFactory<?> factory)
 	{
-		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
 		_solverFactory = factory;
-		_solverFactorGraph = solverGraph;
-		return solverGraph;
-
+		return _solverFactorGraph = parentSolverGraph.createSubGraph(this, factory);
 	}
-	private <SG extends ISolverFactorGraph> SG setSolverFactorySubGraphRecursive(IFactorGraphFactory<SG> factory)
+
+	private void setSolverFactorySubGraphRecursive(ISolverFactorGraph parentSolverGraph, IFactorGraphFactory<?> factory)
 	{
-		SG solverGraph = setSolverFactorySubGraph(factory);
+		ISolverFactorGraph solverGraph = setSolverFactorySubGraph(parentSolverGraph, factory);
 		for (FactorGraph fg : getNestedGraphs())
-			fg.setSolverFactorySubGraphRecursive(factory);
-		return solverGraph;
+			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 	}
 
 	public <SG extends ISolverFactorGraph> SG setSolverFactory(IFactorGraphFactory<SG> factory)
 	{
 
-		SG solverGraph = setSolverFactorySubGraph(factory);
+		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
+		_solverFactory = factory;
+		_solverFactorGraph = solverGraph;
 
 		for (VariableBase var : getVariablesFlat())
 			var.createSolverObject(_solverFactorGraph);
 
 		for (FactorGraph fg : getNestedGraphs())
-			fg.setSolverFactorySubGraphRecursive(factory);
+			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 
 		for (Factor f : getNonGraphFactorsFlat())
 			f.createSolverObject(_solverFactorGraph);
@@ -1632,7 +1632,11 @@ public class FactorGraph extends FactorBase
 				{
 					return false;
 				}
-				allIncludedNodes.remove(node);
+				if (!allIncludedNodes.remove(node))
+				{
+					throw new Error("FactorGraph.isTreeOrForest: found node not in list");
+				}
+					
 			}
 			
 			if (!checkForForest)

@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
+import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
@@ -58,6 +59,17 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		return _factorGraph;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Default implementation simply uses {@code factory} to generate a new solver graph.
+	 */
+	@Override
+	public ISolverFactorGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory)
+	{
+		return factory != null ? factory.createFactorGraph(subgraph) : null;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>

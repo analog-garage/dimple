@@ -32,6 +32,11 @@ public interface ISolverFactorGraph extends ISolverNode
 	public FactorGraph getModelObject();
 	
 	/**
+	 * Create a new solver-specific solver graph representing given subgraph.
+	 */
+	public ISolverFactorGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory);
+	
+	/**
 	 * Create a new solver-specific variable representing the given model variable.
 	 */
 	public ISolverVariable createVariable(VariableBase var);
