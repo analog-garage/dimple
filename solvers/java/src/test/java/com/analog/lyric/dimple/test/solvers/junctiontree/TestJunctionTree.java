@@ -30,19 +30,21 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraph;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
+import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 /**
  * Unit tests for {@link JunctionTreeSolver}
- * 
+ * <p>
  * @since 0.05
  * @author Christopher Barber
+ * @see TestJunctionTreeTransform
  */
 public class TestJunctionTree
 {
-	private final long _seed = -4867686177798148289L;//new Random().nextLong();
+	private final long _seed = new Random().nextLong();
 	private final Random _rand = new Random(_seed);
 	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(_rand);
 	
@@ -67,6 +69,19 @@ public class TestJunctionTree
 	}
 	
 	private void testGraph(FactorGraph model)
+	{
+		try
+		{
+			testGraphImpl(model);
+		}
+		catch (Throwable ex)
+		{
+			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), _seed);
+			throw new RuntimeException(msg, ex);
+		}
+	}
+	
+	private void testGraphImpl(FactorGraph model)
 	{
 		JunctionTreeSolverGraph jtgraph = model.setSolverFactory(new JunctionTreeSolver());
 		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures

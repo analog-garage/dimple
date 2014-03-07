@@ -43,7 +43,6 @@ import com.analog.lyric.util.misc.Misc;
  */
 public class TestJunctionTreeTransform
 {
-
 	private final long _seed = new Random().nextLong();
 	private final Random rand = new Random(_seed);
 	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(rand);
@@ -51,6 +50,7 @@ public class TestJunctionTreeTransform
 	private static final DiscreteDomain d2 = DiscreteDomain.range(0, 1);
 	private static final DiscreteDomain d3 = DiscreteDomain.range(0, 2);
 	private static final DiscreteDomain d4 = DiscreteDomain.range(0, 3);
+	private static final DiscreteDomain d5 = DiscreteDomain.range(0, 5);
 	
 	@Test
 	public void testTrivialLoop()
@@ -81,6 +81,20 @@ public class TestJunctionTreeTransform
 	public void testGrid4()
 	{
 		testGraph(_graphGenerator.buildGrid(4, d2));
+	}
+	
+	@Test
+	public void testGrid2by20()
+	{
+		testGraph(_graphGenerator.buildGrid(2, 20, d2, d3, d5));
+	}
+	
+	@Test
+	public void testGrid1by100()
+	{
+		FactorGraph model = _graphGenerator.buildGrid(1, 100, d2, d3, d4);
+		assertTrue(model.isTree());
+		testTree(model);
 	}
 	
 	/**
@@ -122,7 +136,7 @@ public class TestJunctionTreeTransform
 			// Copy sample values to new graph
 			for (VariableBase sourceVar : source.getVariables())
 			{
-				VariableBase targetVar = (VariableBase) transformMap.sourceToTarget().get(sourceVar);
+				VariableBase targetVar = transformMap.sourceToTargetVariable(sourceVar);
 				
 				ISolverVariableGibbs sourceSVar = sourceGibbs.getSolverVariable(sourceVar);
 				ISolverVariableGibbs targetSVar = targetGibbs.getSolverVariable(targetVar);
@@ -163,11 +177,19 @@ public class TestJunctionTreeTransform
 	
 	private void testGraph(FactorGraph model)
 	{
-		RuntimeException error = null;
-		
+		testGraph(model, false);
+	}
+	
+	private void testTree(FactorGraph model)
+	{
+		testGraph(model, true);
+	}
+	
+	private void testGraph(FactorGraph model, boolean expectIdentity)
+	{
 		try
 		{
-			testGraphImpl(model);
+			testGraphImpl(model, expectIdentity);
 		}
 		catch (Throwable ex)
 		{
@@ -176,15 +198,18 @@ public class TestJunctionTreeTransform
 		}
 	}
 	
-	private void testGraphImpl(FactorGraph model)
+	private void testGraphImpl(FactorGraph model, boolean expectIdentity)
 	{
 		JunctionTreeTransform jt = new JunctionTreeTransform().random(rand);
+		assertSame(rand, jt.random());
+		assertFalse(jt.useConditioning());
+		
 		FactorGraphTransformMap transformMap = jt.transform(model);
 		
+		assertEquals(expectIdentity, transformMap.isIdentity());
 		if (transformMap.isIdentity())
 		{
 			assertTrue(model.isForest());
-			return;
 		}
 		
 		for (Factor factor : transformMap.target().getFactors())
@@ -210,6 +235,7 @@ public class TestJunctionTreeTransform
 			}
 		}
 		jt.useConditioning(true);
+		assertTrue(jt.useConditioning());
 		transformMap = jt.transform(model);
 		for (Factor factor : transformMap.target().getFactors())
 		{
