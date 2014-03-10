@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 
 /**
  * Computes a variable elimination order for a factor graph using a greedy
@@ -875,10 +876,39 @@ public class VariableEliminator
 			_maxClique = Math.max(_maxClique, size);
 			_maxCliqueCardinality = Math.max(_maxCliqueCardinality, cardinality);
 			
-			final int mergedFactors = var._variable.getSiblingCount();
-			if (mergedFactors > 1)
+			final VariableBase variable = var._variable;
+			final int nFactors = variable.getSiblingCount();
+			if (nFactors > 1)
 			{
-				_mergedFactors += mergedFactors;
+				// If there is more than one factor whose variables are wholly contained by this clique,
+				// they will need to be merged.
+				final Set<VariableBase> variables = Sets.newHashSetWithExpectedSize(size);
+				variables.add(variable);
+				for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+				{
+					variables.add(link._var._variable);
+				}
+				
+				int nCliqueFactors = 0;
+				nextFactor:
+				for (int i = 0; i < nFactors; ++i)
+				{
+					final Factor factor = variable.getSibling(i);
+					for (int j = 0, nFactorVars = factor.getSiblingCount(); j < nFactorVars; ++j)
+					{
+						if (!variables.contains(factor.getSibling(j)))
+						{
+							// Factor is not entirely contained by this clique.
+							continue nextFactor;
+						}
+					}
+					++nCliqueFactors;
+				}
+				
+				if (nCliqueFactors > 1)
+				{
+					_mergedFactors += nCliqueFactors;
+				}
 			}
 		}
 		
