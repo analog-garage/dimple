@@ -14,34 +14,43 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.model.variables;
+package com.analog.lyric.dimple.matlabproxy;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import net.jcip.annotations.Immutable;
+
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
+import com.analog.lyric.util.misc.Matlab;
 
-
-
-public class FiniteFieldVariable extends Discrete
+@Immutable
+@Matlab
+public class PFiniteFieldDomain extends PDiscreteDomain
 {
-	public FiniteFieldVariable(int primitivePolynomial)
+	public PFiniteFieldDomain(FiniteFieldDomain domain)
 	{
-		super(DiscreteDomain.finiteField(primitivePolynomial), "FiniteFieldVariable");
+		super(domain);
 	}
 	
-	public FiniteFieldVariable(FiniteFieldDomain domain)
+	/*-----------------
+	 * PObject methods
+	 */
+	
+	@Override
+	public FiniteFieldDomain getModelerObject()
 	{
-		super(domain, "FiniteFieldVariable");
+		return (FiniteFieldDomain)super.getModelerObject();
 	}
 	
-	public FiniteFieldDomain getFiniteFieldDomain()
-	{
-		return getDomain();
-	}
-	
-    @Override
-	public FiniteFieldDomain getDomain()
-    {
-    	return (FiniteFieldDomain)super.getDomain();
-    }
+	/*-----------------
+	 * PFiniteFieldDomain methods
+	 */
 
+	public int getPrimitivePolynomial()
+	{
+		return getModelerObject().getPrimitivePolynomial();
+	}
+	
+	public int getN()
+	{
+		return getModelerObject().getN();
+	}
 }

@@ -21,6 +21,9 @@ import java.util.Random;
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
 import com.analog.lyric.dimple.factorfunctions.ComplexSubtract;
 import com.analog.lyric.dimple.factorfunctions.ComplexSum;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldAdd;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldMult;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldProjection;
 import com.analog.lyric.dimple.factorfunctions.MatrixRealJointVectorProduct;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.Negate;
@@ -101,20 +104,21 @@ public class SFactorGraph extends SFactorGraphBase
 		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
 		String factorName = factorFunction.getName();
 		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
+		boolean hasConstants = factor.getFactorFunction().hasConstants();
 		
 		if (factor.isDiscrete())	// Factor contains only discrete variables		
 		{
 			// First see if any custom factor should be created
-			if (noFF && (factorName.equals("FiniteFieldAdd") || factorName.equals("finiteFieldAdd")))
+			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
 				return new CustomFiniteFieldAdd(factor);
-			else if (noFF && (factorName.equals("FiniteFieldMult") || factorName.equals("finiteFieldMult")))
+			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult" for backward compatibility
 			{
-				if (factor.getFactorFunction().hasConstants())
+				if (hasConstants)
 					return new CustomFiniteFieldConstantMult(factor);
 				else
 					return new CustomFiniteFieldMult(factor);
 			}
-			else if (noFF && (factorName.equals("FiniteFieldProjection") || factorName.equals("finiteFieldProjection")))
+			else if ((factorFunction instanceof FiniteFieldProjection) || (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection" for backward compatibility
 				return new CustomFiniteFieldProjection(factor);
 			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD" for backward compatibility
 				return new CustomMultiplexer(factor);															// Currently only supports discrete variables
@@ -185,11 +189,11 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
-		if (funcName.equals("FiniteFieldAdd") || funcName.equals("finiteFieldAdd"))
+		if (funcName.equals("finiteFieldAdd"))															// For backward compatibility
 			return true;
-		else if (funcName.equals("FiniteFieldMult") || funcName.equals("finiteFieldMult"))
+		else if (funcName.equals("finiteFieldMult"))													// For backward compatibility
 			return true;
-		else if (funcName.equals("FiniteFieldProjection") || funcName.equals("finiteFieldProjection"))
+		else if (funcName.equals("finiteFieldProjection"))												// For backward compatibility
 			return true;
 		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use "Multiplexer" instead
 			return true;

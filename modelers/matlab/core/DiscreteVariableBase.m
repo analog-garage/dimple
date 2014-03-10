@@ -41,7 +41,11 @@ classdef DiscreteVariableBase < VariableBase
                 
                 numEls = prod(dims);
                 
-                varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
+                if (~isa(domain, 'FiniteFieldDomain'))
+                    varMat = modeler.createVariableVector(class(obj),domain.IDomain,numEls);
+                else
+                    varMat = modeler.createFiniteFieldVariableVector(domain.IDomain,numEls);
+                end
                 
                 VectorIndices = 0:(numEls-1);
                 

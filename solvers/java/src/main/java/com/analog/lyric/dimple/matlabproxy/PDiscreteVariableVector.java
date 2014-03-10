@@ -35,6 +35,10 @@ public class PDiscreteVariableVector extends PVariableVector
 	 * Construction
 	 */
 	
+	public PDiscreteVariableVector()
+	{
+	}
+
 	public PDiscreteVariableVector(Node node)
 	{
 		super(new Node[] {node});

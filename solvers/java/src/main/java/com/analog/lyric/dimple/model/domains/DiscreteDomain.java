@@ -227,6 +227,11 @@ public abstract class DiscreteDomain extends Domain
 	{
 		return DoubleRangeDomain.create(low, high, interval, tolerance);
 	}
+	
+	public static FiniteFieldDomain finiteField(int primitivePolynomial)
+	{
+		return new FiniteFieldDomain(primitivePolynomial);
+	}
 
 	/*----------------
 	 * Object methods

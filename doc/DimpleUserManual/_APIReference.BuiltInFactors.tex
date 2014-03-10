@@ -1,7 +1,7 @@
 \subsection{List of Built-in Factors}
 \label{sec:builtInFactors}
 
-The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or array of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B~=~Bit, D~=~Discrete, R~=~Real, C~=~Complex, RJ~=~RealJoint).
+The following table lists the current set of built-in Dimple factors.  For each, the name is given, followed by the set of variables that would be connected to the factor, followed by any constructor arguments.  Optional variables and constructor arguments are in brackets.  And an arbitrary length list or array of variables is followed by ellipses.  The allowed set of variable data-types for each variable is given in parentheses (B~=~Bit, D~=~Discrete, F~=~FiniteFieldVariable, R~=~Real, C~=~Complex, RJ~=~RealJoint).
 
 \begin{longtable} {p{3.5cm} p{2.2cm} p{2cm} p{7cm}}
 Name & Variables & Constructor & Description \\
@@ -89,6 +89,12 @@ ExchangeableDirichlet & [$\alpha$](R) \newline value...(RJ) & N, [$\alpha$] & Ex
 %
 Exp & out(D,R) \newline in(D,R) & [smoothing] & Deterministic exponentiation function, where out = exp(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
+FiniteFieldAdd & out(F) \newline in1(F) \newline in2(F) & - & Deterministic finite field two-input addition.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
+%
+FiniteFieldMult & out(F) \newline in1(F) \newline in2(F) & - & Deterministic finite field two-input multiplication.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
+%
+FiniteFieldProjection & fieldVar(F) \newline indices(const) \newline bits...(B) & - & Deterministic projection of a finite field variable onto one or more bit variables.  The indices argument is a constant array of indices, each representing a bit-position of the finite field variable expressed in bit-wise representation to project onto the corresponding Bit variable in the list of bits.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
+%
 Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %
 GreaterThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $>$ in2.  \\
@@ -174,9 +180,6 @@ Name & Solver & Description \\
 \hline
 \endhead
 %
-finiteFieldAdd & SumProduct & See section~\ref{sec:finiteFields} \\ 
-finiteFieldMult & SumProduct & See section~\ref{sec:finiteFields} \\ 
-finiteFieldProjection & SumProduct & See section~\ref{sec:finiteFields} \\ 
 linear & SumProduct & Deterministic linear equation for Real variables in the form $\sum_i x_i c_i = total$, where $c$ is a vector of constants and $x$ is a vector of variables and $total$ is a constant. The arguments are in the order $x, c, total$. \\
 \end{longtable}
 
