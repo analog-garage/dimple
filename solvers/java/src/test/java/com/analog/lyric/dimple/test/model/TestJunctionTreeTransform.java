@@ -55,46 +55,67 @@ public class TestJunctionTreeTransform
 	@Test
 	public void testTrivialLoop()
 	{
-		testGraph(_graphGenerator.buildTrivialLoop(d2));
+		testGraph(_graphGenerator.buildTrivialLoop());
 	}
 	
 	@Test
 	public void testTriangle()
 	{
-		testGraph(_graphGenerator.buildTriangle(d2));
+		testGraph(_graphGenerator.buildTriangle());
 		
 	}
 	
 	@Test
 	public void testGrid2()
 	{
-		testGraph(_graphGenerator.buildGrid(2, d2));
+		testGraph(_graphGenerator.buildGrid(2));
 	}
 	
 	@Test
 	public void testGrid3()
 	{
-		testGraph(_graphGenerator.buildGrid(3, d2, d3, d4));
+		testGraph(_graphGenerator.domains( d2, d3, d4).buildGrid(3));
 	}
 	
 	@Test
 	public void testGrid4()
 	{
-		testGraph(_graphGenerator.buildGrid(4, d2));
+		testGraph(_graphGenerator.buildGrid(4));
 	}
 	
 	@Test
 	public void testGrid2by20()
 	{
-		testGraph(_graphGenerator.buildGrid(2, 20, d2, d3, d5));
+		testGraph(_graphGenerator.domains(d2, d3, d5).buildGrid(2, 20));
 	}
 	
 	@Test
 	public void testGrid1by100()
 	{
-		FactorGraph model = _graphGenerator.buildGrid(1, 100, d2, d3, d4);
+		FactorGraph model = _graphGenerator.domains(d2, d3, d4).buildGrid(1, 100);
 		assertTrue(model.isTree());
 		testTree(model);
+	}
+	
+	@Test
+	public void testRandomGraphs()
+	{
+		final int nGraphs = 20;
+		final int maxSize = 1000;
+		RandomGraphGenerator gen = _graphGenerator.maxBranches(2).maxTreeWidth(5);
+
+		for (int i = 0; i < nGraphs; ++i)
+		{
+			testGraph(gen.buildRandomGraph(rand.nextInt(maxSize) + 1), null);
+		}
+	}
+	
+	@Test
+	public void testRandomTree()
+	{
+		FactorGraph tree = _graphGenerator.maxBranches(5).domains(d2, d3, d4, d5).buildRandomTree(500);
+		assertTrue(tree.isTree());
+		testTree(tree);
 	}
 	
 	/**
@@ -185,7 +206,7 @@ public class TestJunctionTreeTransform
 		testGraph(model, true);
 	}
 	
-	private void testGraph(FactorGraph model, boolean expectIdentity)
+	private void testGraph(FactorGraph model, Boolean expectIdentity)
 	{
 		try
 		{
@@ -200,7 +221,7 @@ public class TestJunctionTreeTransform
 		}
 	}
 	
-	private void testGraphImpl(FactorGraph model, boolean expectIdentity)
+	private void testGraphImpl(FactorGraph model, Boolean expectIdentity)
 	{
 		JunctionTreeTransform jt = new JunctionTreeTransform().random(rand);
 		assertSame(rand, jt.random());
@@ -208,7 +229,10 @@ public class TestJunctionTreeTransform
 		
 		FactorGraphTransformMap transformMap = jt.transform(model);
 		
-		assertEquals(expectIdentity, transformMap.isIdentity());
+		if (expectIdentity != null)
+		{
+			assertEquals(expectIdentity, transformMap.isIdentity());
+		}
 		if (transformMap.isIdentity())
 		{
 			assertTrue(model.isForest());
@@ -219,7 +243,7 @@ public class TestJunctionTreeTransform
 			// Name target factors as a debugging aid
 			RandomGraphGenerator.labelFactor(factor);
 		}
-		assertTrue(transformMap.target().isTree());
+		assertTrue(transformMap.target().isForest());
 		assertModelsEquivalent(transformMap);
 		
 		// Try with conditioning

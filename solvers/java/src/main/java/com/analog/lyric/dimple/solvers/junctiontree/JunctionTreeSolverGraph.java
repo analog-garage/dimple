@@ -138,7 +138,7 @@ public class JunctionTreeSolverGraph extends ProxySolverFactorGraph
 	@Override
 	public int getNumIterations()
 	{
-		return 1;
+		return super.getNumIterations();
 	}
 	
 	@Override
@@ -148,6 +148,7 @@ public class JunctionTreeSolverGraph extends ProxySolverFactorGraph
 		{
 			throw new DimpleException("Junction tree solver doesn't support multiple iterations.");
 		}
+		super.setNumIterations(numIterations);
 	}
 	
 	@Override

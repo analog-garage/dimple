@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.test.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Random;
 
 import cern.colt.list.IntArrayList;
@@ -27,6 +30,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.google.common.collect.ObjectArrays;
 
 /**
  * Test helper class for generating test graphs.
@@ -40,7 +44,13 @@ public class RandomGraphGenerator
 	 * State
 	 */
 	
+	private static final DiscreteDomain[] _defaultDomains = { DiscreteDomain.bit() };
+
 	private final Random _rand;
+	
+	private DiscreteDomain[] _domains = _defaultDomains;
+	private int _maxBranches = 1;
+	private int _maxTreeWidth = 1;
 	
 	/*--------------
 	 * Construction
@@ -51,29 +61,64 @@ public class RandomGraphGenerator
 		_rand = rand;
 	}
 	
+	/*-------------------
+	 * Attribute methods
+	 */
+	
+	public DiscreteDomain[] domains()
+	{
+		return _domains;
+	}
+	
+	public RandomGraphGenerator domains(DiscreteDomain ... domains)
+	{
+		_domains = (domains != null && domains.length > 0) ? domains : _defaultDomains;
+		return this;
+	}
+	
+	public int maxBranches()
+	{
+		return _maxBranches;
+	}
+	
+	public RandomGraphGenerator maxBranches(int n)
+	{
+		_maxBranches = n;
+		return this;
+	}
+	
+	public int maxTreeWidth()
+	{
+		return _maxTreeWidth;
+	}
+	
+	public RandomGraphGenerator maxTreeWidth(int width)
+	{
+		_maxTreeWidth = width;
+		return this;
+	}
+	
 	/*--------------------------
 	 * Graph generation methods
 	 */
 	
 	/**
-	 * Builds an n x n grid graph with variable domains chosen randomly from {@code domains}.
+	 * Builds an n x n grid graph with variable domains chosen randomly from {@link #domains()}.
 	 * 
 	 * @param n
-	 * @param domains
 	 */
-	public FactorGraph buildGrid(int n, DiscreteDomain ... domains)
+	public FactorGraph buildGrid(int n)
 	{
-		return buildGrid(n, n, domains);
+		return buildGrid(n, n);
 	}
 	
 	/**
-	 * Builds a m x n grid graph with variable domains chosen randomly from {@code domains}.
+	 * Builds a m x n grid graph with variable domains chosen randomly from {@link #domains()}.
 	 * 
 	 * @param m
 	 * @param n
-	 * @param domains
 	 */
-	public FactorGraph buildGrid(int m, int n, DiscreteDomain ... domains)
+	public FactorGraph buildGrid(int m, int n)
 	{
 		final FactorGraph graph = new FactorGraph();
 		
@@ -82,8 +127,7 @@ public class RandomGraphGenerator
 		{
 			for (int j = 0; j < n; ++j)
 			{
-				Discrete var = new Discrete(chooseDomain(domains));
-				var.setName(String.format("%s%d", intToBase26(i), j));
+				Discrete var = newDiscrete(String.format("%s%d", intToBase26(i), j));
 				vars[i][j] = var;
 				
 				if (i > 0)
@@ -102,6 +146,118 @@ public class RandomGraphGenerator
 		return graph;
 	}
 	
+	public FactorGraph buildRandomGraph(int size)
+	{
+		final FactorGraph graph = new FactorGraph();
+		
+		final int nRoots = _rand.nextInt(Math.min(size, maxTreeWidth())) + 1;
+		final Discrete[] roots = newDiscretes(nRoots, "root", 0);
+		graph.addVariables(roots);
+		addRandomGraph(graph, size - nRoots, roots);
+		
+		return graph;
+	}
+	
+	public void addRandomGraph(FactorGraph graph, int size, Discrete ... roots)
+	{
+		if (size <= 0)
+		{
+			return;
+		}
+		
+		final int nRoots = roots.length;
+		final int nBranches = 1 + _rand.nextInt(Math.min(size, maxBranches()));
+		final int sizePerBranch = size / nBranches;
+		
+		for (int branch = nBranches; --branch>=0;)
+		{
+			final int branchSize = branch > 0 ? sizePerBranch : sizePerBranch + size % nBranches ;
+			
+			final int nVars = 1 + _rand.nextInt(Math.min(branchSize, maxTreeWidth()));
+			final Discrete[] vars = newDiscretes(nVars);
+			final int nCliques = _rand.nextInt(Math.min(nVars, nRoots)) + 1;
+		
+			if (nCliques == 1)
+			{
+				// Just make one big clique
+				addClique(graph, ObjectArrays.concat(roots, vars, Discrete.class));
+			}
+			else
+			{
+				// Randomly order roots and new variables
+				final ArrayList<Discrete> randomRoots = new ArrayList<Discrete>(Arrays.asList(roots));
+				Collections.shuffle(randomRoots, _rand);
+				final ArrayList<Discrete> randomVars = new ArrayList<Discrete>(Arrays.asList(vars));
+				Collections.shuffle(randomVars, _rand);
+			
+				for (int n = nCliques + 1; --n>=1;)
+				{
+					int nRootsChosen = randomRoots.size();
+					int nVarsChosen = randomVars.size();
+					
+					if (n > 1)
+					{
+						nRootsChosen = Math.max(1, nRootsChosen / n);
+						nVarsChosen = Math.max(1, nVarsChosen / n);
+					}
+					
+					final Discrete[] cliqueVars = new Discrete[nRootsChosen + nVarsChosen];
+					int i = 0;
+					for (int j = 0; j < nRootsChosen; ++j)
+					{
+						cliqueVars[i++] = randomRoots.remove(randomRoots.size() - 1);
+					}
+					for (int j = 0; j < nVarsChosen; ++j)
+					{
+						cliqueVars[i++] = randomVars.remove(randomVars.size() - 1);
+					}
+					
+					addClique(graph, cliqueVars);
+				}
+			}
+
+		}
+		
+	}
+	
+	/**
+	 * Builds a random graph in the form of a tree with {@code size} nodes with at most {@code maxBranches}
+	 * (i.e. every node has at most {@code maxBranches}+1 siblings) with variable domains chosen randomly
+	 * from {@code domains}.
+	 */
+	public FactorGraph buildRandomTree(int size)
+	{
+		final FactorGraph graph = new FactorGraph();
+		
+		Discrete root = newDiscrete("root");
+		graph.addVariables(root);
+
+		addRandomTree(graph, size - 1, root);
+		
+		return graph;
+	}
+	
+	/**
+	 * Adds a random tree rooted from given {@code root} with {@code size} nodes with at most {@code maxBranches}
+	 * (i.e. every node has at most {@code maxBranches}+1 siblings) with variable domains chosen randomly
+	 * from {@code domains}.
+	 */
+	public void addRandomTree(FactorGraph graph, int size, Discrete root)
+	{
+		if (size <= 0)
+		{
+			return;
+		}
+		
+		int nChildren = 1 + _rand.nextInt(Math.min(size, maxBranches()));
+		int childSize = size / nChildren;
+		for (int i = 0; i < nChildren; ++i)
+		{
+			Discrete child = newDiscrete();
+			addClique(graph, root, child);
+			addRandomTree(graph, childSize - 1, child);
+		}
+	}
 	
 	/**
 	 * Extended student Bayesian network from Koller's Probabilistic Graphical Models (Figure 9.8)
@@ -146,12 +302,12 @@ public class RandomGraphGenerator
 		return model;
 	}
 	
-	public FactorGraph buildTriangle(DiscreteDomain ... domains)
+	public FactorGraph buildTriangle()
 	{
 		FactorGraph model = new FactorGraph();
-		Discrete a = newDiscrete(chooseDomain(domains), "a");
-		Discrete b = newDiscrete(chooseDomain(domains), "b");
-		Discrete c = newDiscrete(chooseDomain(domains), "c");
+		Discrete a = newDiscrete("a");
+		Discrete b = newDiscrete("b");
+		Discrete c = newDiscrete("c");
 		addClique(model, a, b);
 		addClique(model, b, c);
 		addClique(model, c, a);
@@ -160,16 +316,13 @@ public class RandomGraphGenerator
 	
 	/**
 	 * Build graph consisting of smallest possible loop consisting of two variables with domains randomly choosen
-	 * from {@code domains} and connected by two separate factors.
-	 * 
-	 * @param domains
-	 * @since 0.05
+	 * from {@link #domains()} and connected by two separate factors.
 	 */
-	public FactorGraph buildTrivialLoop(DiscreteDomain ... domains)
+	public FactorGraph buildTrivialLoop()
 	{
 		FactorGraph model = new FactorGraph();
-		Discrete a = newDiscrete(chooseDomain(domains), "a");
-		Discrete b = newDiscrete(chooseDomain(domains), "b");
+		Discrete a = newDiscrete("a");
+		Discrete b = newDiscrete("b");
 		addClique(model, a, b);
 		addClique(model, a, b);
 		return model;
@@ -185,14 +338,47 @@ public class RandomGraphGenerator
 		labelFactor(factor);
 	}
 	
+	/**
+	 * Chooses a domain randomly from {@link #domains()}. Returns {@link DiscreteDomain#bit()} if
+	 * empty.
+	 */
+	public DiscreteDomain chooseDomain()
+	{
+		return chooseDomain(domains());
+	}
+	
+	/**
+	 * Chooses a domain randomly from {@code domains}. Returns {@link DiscreteDomain#bit()} if
+	 * {@code domains} is empty.
+	 */
 	public DiscreteDomain chooseDomain(DiscreteDomain ... domains)
 	{
-		if (domains.length == 1)
-		{
-			return domains[0];
-		}
+		final int nDomains = domains.length;
 		
-		return domains[_rand.nextInt(domains.length)];
+		switch (nDomains)
+		{
+		case 0:
+			return DiscreteDomain.bit();
+		case 1:
+			return domains[0];
+		default:
+			return domains[_rand.nextInt(nDomains)];
+		}
+	}
+	
+	public Discrete newDiscrete()
+	{
+		return newDiscrete(null);
+	}
+	
+	public Discrete newDiscrete(String name, int counter)
+	{
+		return newDiscrete(name + counter);
+	}
+	
+	public Discrete newDiscrete(String name)
+	{
+		return newDiscrete(chooseDomain(), name);
 	}
 	
 	public Discrete newDiscrete(int cardinality, String name)
@@ -203,10 +389,34 @@ public class RandomGraphGenerator
 	public Discrete newDiscrete(DiscreteDomain domain, String name)
 	{
 		Discrete var = new Discrete(domain);
+		if (name == null || name.isEmpty())
+		{
+			name = "v" + var.getId();
+		}
 		var.setName(name);
 		return var;
 	}
 
+	public Discrete[] newDiscretes(int n)
+	{
+		final Discrete[] discretes = new Discrete[n];
+		for (int i = 0; i < n; ++i)
+		{
+			discretes[i] = newDiscrete();
+		}
+		return discretes;
+	}
+	
+	public Discrete[] newDiscretes(int n, String namePrefix, int counter)
+	{
+		final Discrete[] discretes = new Discrete[n];
+		for (int i = 0; i < n; ++i)
+		{
+			discretes[i] = newDiscrete(namePrefix, counter+i);
+		}
+		return discretes;
+	}
+	
 	public IFactorTable randomTable(Discrete ... variables)
 	{
 		DiscreteDomain[] domains = new DiscreteDomain[variables.length];
