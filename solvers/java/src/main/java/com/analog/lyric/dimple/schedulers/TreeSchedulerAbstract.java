@@ -48,7 +48,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 	@Override
 	public ISchedule createSchedule(FactorGraph g)
 	{
-		if (g.isTree())		// The graph is a tree
+		if (g.isForest())		// The graph is a tree
 			return createTreeSchedule(g);
 		else				// Not a tree
 			return createNonTreeSchedule(g);
