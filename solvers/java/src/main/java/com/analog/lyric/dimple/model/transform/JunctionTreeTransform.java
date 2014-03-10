@@ -186,6 +186,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			for (Discrete var : absorbee._variables)
 			{
 				varToCliques.remove(var, absorbee);
+				varToCliques.put(var, this);
 			}
 			
 			if (absorbee._variables.length > _variables.length)

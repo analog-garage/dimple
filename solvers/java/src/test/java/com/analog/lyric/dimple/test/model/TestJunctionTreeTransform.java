@@ -194,6 +194,8 @@ public class TestJunctionTreeTransform
 		catch (Throwable ex)
 		{
 			String msg = String.format("%s. TestJunctionTreeTransform._seed==%dL", ex.toString(), _seed);
+			ex.printStackTrace(System.err);
+			System.err.format(">>> TestJunctionTreeTransform._seed==%dL;<<<\n", _seed);
 			throw new RuntimeException(msg, ex);
 		}
 	}
