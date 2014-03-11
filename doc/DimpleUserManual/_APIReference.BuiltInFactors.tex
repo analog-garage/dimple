@@ -93,7 +93,7 @@ FiniteFieldAdd & out(F) \newline in1(F) \newline in2(F) & - & Deterministic fini
 %
 FiniteFieldMult & out(F) \newline in1(F) \newline in2(F) & - & Deterministic finite field two-input multiplication.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
 %
-FiniteFieldProjection & fieldVar(F) \newline indices(const) \newline bits...(B) & - & Deterministic projection of a finite field variable onto one or more bit variables.  The indices argument is a constant array of indices, each representing a bit-position of the finite field variable expressed in bit-wise representation to project onto the corresponding Bit variable in the list of bits.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
+FiniteFieldProjection & fieldVar(F) \newline indices(const) \newline bits...(B) & - & Deterministic projection of a finite field variable onto a set of bit variables corresponding to the bits of the field value.  The indices argument is a constant array, which must be a permutation of $0$ through $N-1$, where $N$ is the number of bits in the finite field value.  The indices represent the order of the projection of the bits in the finite field value onto the corresponding Bit variable in the list of bits.  See section~\ref{sec:finiteFields} for a description of how to use finite field variables. \\
 %
 Gamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alpha$] \newline [$\beta$] & Gamma distribution. There can be any number of value variables, all associated with the same parameter values.  Parameters $\alpha$ and $\beta$ can be variables, or if both are constant they can be specified in the constructor. \\
 %

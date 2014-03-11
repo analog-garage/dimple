@@ -50,9 +50,6 @@ fmf = fg3.addFactor('FiniteFieldMult', v(7:9));
 fmo = fg4.addFactor(@finiteFieldMult,  v(10:12));
 fcf = fg5.addFactor('FiniteFieldMult', v(13), constant, v(14));
 fco = fg6.addFactor(@finiteFieldMult,  v(15), constant, v(16));
-% FIXME
-% fpf = fg7.addFactor('FiniteFieldProjection', v(17), [1 3], b(1:2));
-% fpo = fg8.addFactor(@finiteFieldProjection,  v(18), [1 3], b(3:4));
 fpf = fg7.addFactor('FiniteFieldProjection', v(17), m-1:-1:0, b(1:m));
 fpo = fg8.addFactor(@finiteFieldProjection,  v(18), m-1:-1:0, b(m+1:2*m));
 facf = fg9.addFactor('FiniteFieldAdd', v(19), constant, v(20));
