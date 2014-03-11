@@ -58,6 +58,71 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.SetMultimap;
 
+/**
+ * This class implements the junction tree transformation on an input model to create
+ * a semantically equivalent version of the model that is singly connected and thus
+ * can be used for exact inference using belief propagation.
+ * <p>
+ * The algorithm as implemented in this class is as follows:
+ * 
+ * <ol>
+ * <li>Determine a variable elimination order.
+
+ * <li>Makes a copy of the original model and creates a mapping from old to new nodes.
+ * Creates initial version of the {@link FactorGraphTransformMap}.
+
+ * <li>If {@link #useConditioning()} is true, then any variables that have a fixed value
+ * will be disconnected in the new graph using {@link Factor#removeFixedVariables()} and
+ * will be recorded in the transform map.
+ * 
+ * <li>Organize the new graph into "cliques" of mutually connected variables using the variable
+ * elimination order. For each variable in order, find all neighboring variables that have
+ * not already been "eliminated" create a new clique containing the variable and its neighbors
+ * and create a temporary factor that connects the neighbors (but not the variable itself) to each
+ * other. All non-temporary factors that are connected to the variable and that have not been assigned to a
+ * previous clique are assigned to the new clique. After all variables have been "eliminated", remove any
+ * temporary factors from the new graph.
+ * 
+ * <li>Use a modified version of Prim's algorithm to build a max spanning tree over the cliques where the edge weight
+ * is the number of variables in common between two cliques. Ties are broken in favor of edges with lower
+ * joint variable cardinality in order to favor smaller messages. When a new edge contains all of the variables
+ * of one of the cliques, then instead of adding the edge, the two cliques are merged into one.
+ * 
+ * <li>For each clique, create a new factor that connects all of its variables by combining all of the
+ * factors that have been assigned to it using {@link FactorGraph#join(VariableBase[], Factor...)}.
+ * 
+ * <li>Create half-edges for variables that are in only one clique and therefore will not be in any edge
+ * created during spanning tree construction.
+ * 
+ * <li>For each clique that has any multi-variable edge, create a new variable for each such edge and
+ * rewrite the factor to connect to the new edge variables. This will not increase the number of entries
+ * in the underlying factor table but will require it to be converted to a sparse representation and possibly
+ * reordered. It is possible for multiple edge variables for the same combinations of original variables to
+ * exist in the same graph. At the end of inference, they should all of the same beliefs but may differ before
+ * that.
+ * 
+ * <li>The previous step may orphan some variables from the graph because they are subsumed by one or more new
+ * joint variables. Find any such variables and reconnect to the graph by adding a new deterministic factor that
+ * marginalizes out the variable value from the smallest joint variable that contains it.
+ * </ol>
+ * 
+ * <h2>References</h2>
+ * <ul>
+ * <li>David Barber.
+ * <a href="http://www.cs.ucl.ac.uk/staff/d.barber/brml/">
+ * Bayesian Reasoning and Machine Learning.</a>
+ * Chapter 6.
+ * 
+ * <li>Daphne Koller & Nir Friedman.
+ * <a href="http://mitpress.mit.edu/books/probabilistic-graphical-models">
+ * Probabilistic Graphical Models: <em>Principals and Techniques</em></a>
+ * Chapter 10.
+ * </ul>
+ * <p>
+ * 
+ * @since 0.05
+ * @author Christopher Barber
+ */
 public class JunctionTreeTransform implements IFactorGraphTransform
 {
 	/*-------
@@ -439,9 +504,6 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * Methods
 	 */
 
-	/*
-	 * 
-	 */
 	@Override
 	public FactorGraphTransformMap transform(FactorGraph model)
 	{
