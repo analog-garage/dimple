@@ -32,7 +32,7 @@ public class JunctionTreeSolverVariable extends ProxySolverVariable
 	 * State
 	 */
 	
-	private final JunctionTreeSolverGraph _root;
+	private final JunctionTreeSolverGraphBase<?> _root;
 	
 	/*--------------
 	 * Construction
@@ -41,7 +41,7 @@ public class JunctionTreeSolverVariable extends ProxySolverVariable
 	/**
 	 * @param modelVariable
 	 */
-	protected JunctionTreeSolverVariable(VariableBase modelVariable, JunctionTreeSolverGraph root)
+	protected JunctionTreeSolverVariable(VariableBase modelVariable, JunctionTreeSolverGraphBase<?> root)
 	{
 		super(modelVariable);
 		_root = root;
@@ -52,7 +52,7 @@ public class JunctionTreeSolverVariable extends ProxySolverVariable
 	 */
 	
 	@Override
-	public ProxySolverFactorGraph getRootGraph()
+	public ProxySolverFactorGraph<?> getRootGraph()
 	{
 		return _root;
 	}

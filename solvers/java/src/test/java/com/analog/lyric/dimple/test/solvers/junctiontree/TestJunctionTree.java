@@ -28,6 +28,10 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraph;
+import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolver;
+import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolverGraph;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
+import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
 import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
@@ -112,7 +116,7 @@ public class TestJunctionTree
 		{
 			model2.join(factors2.toArray(new Factor[factors2.size()]));
 		}
-		model2.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+		model2.setSolverFactory(new SumProductSolver());
 		model2.solve();
 		
 		// Compare marginal beliefs
@@ -131,5 +135,39 @@ public class TestJunctionTree
 				assertEquals(belief1, belief2);
 			}
 		}
+		
+		//
+		// Now try MAP (minsum)
+		//
+		
+		JunctionTreeMapSolverGraph jtmapgraph = model.setSolverFactory(new JunctionTreeMapSolver());
+		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
+		model.solve();
+		
+		transformedModel = jtmapgraph.getDelegate().getModelObject();
+		RandomGraphGenerator.labelFactors(transformedModel);
+		assertTrue(transformedModel.isForest());
+		
+		model2.setSolverFactory(new MinSumSolver());
+		model2.solve();
+		
+		// Compare marginal beliefs
+		for (VariableBase variable : model.getVariables())
+		{
+			final VariableBase variable2 = (VariableBase)old2new.get(variable);
+			final Object belief1 = variable.getBeliefObject();
+			final Object belief2 = variable2.getBeliefObject();
+			
+			if (belief1 instanceof double[])
+			{
+				assertArrayEquals((double[])belief2, (double[])belief1, 1e-10);
+			}
+			else
+			{
+				assertEquals(belief1, belief2);
+			}
+		}
+		
+		
 	}
 }

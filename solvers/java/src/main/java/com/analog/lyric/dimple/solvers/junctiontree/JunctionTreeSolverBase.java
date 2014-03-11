@@ -17,18 +17,18 @@
 package com.analog.lyric.dimple.solvers.junctiontree;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 /**
+ * 
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeSolver	extends JunctionTreeSolverBase<SFactorGraph, JunctionTreeSolverGraph>
+public abstract class JunctionTreeSolverBase<SG extends ISolverFactorGraph, JTSG extends JunctionTreeSolverGraphBase<SG>>
+	extends SolverBase<JTSG>
 {
 	@Override
-	public JunctionTreeSolverGraph createFactorGraph(FactorGraph graph)
-	{
-		return new JunctionTreeSolverGraph(graph, new SumProductSolver());
-	}
+	public abstract JTSG createFactorGraph(FactorGraph graph);
+
 }
