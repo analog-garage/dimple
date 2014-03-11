@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,9 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.core.SolverBase;
 
-@Matlab
-public class Solver extends MinSumSolver
+/**
+ * 
+ * @since 0.05
+ * @author Christopher Barber
+ */
+public class MinSumSolver extends SolverBase<SFactorGraph>
 {
+
+	@Override
+	public SFactorGraph createFactorGraph(FactorGraph factorGraph)
+	{
+		return new SFactorGraph(factorGraph);
+	}
 }
