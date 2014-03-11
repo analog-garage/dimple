@@ -781,7 +781,8 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			final int subindex= entry.getValue().second;
 			final JointDiscreteDomain<?> jointd = (JointDiscreteDomain<?>)joint.getDomain();
 			
-			targetModel.addFactor(FactorTable.createMarginal(subindex, jointd), orphan, joint);
+			Factor factor = targetModel.addFactor(FactorTable.createMarginal(subindex, jointd), orphan, joint);
+			factor.setDirectedTo(new int[] { 0 });
 		}
 		
 		return transformMap;
