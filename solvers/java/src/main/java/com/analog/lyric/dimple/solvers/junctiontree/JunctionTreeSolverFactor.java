@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.junctiontree;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactor;
-import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 
 /**
@@ -32,13 +31,13 @@ public class JunctionTreeSolverFactor extends ProxySolverFactor
 	 * State
 	 */
 	
-	private final JunctionTreeSolverGraph _root;
+	private final JunctionTreeSolverGraphBase<?> _root;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	JunctionTreeSolverFactor(Factor modelFactor, JunctionTreeSolverGraph root)
+	JunctionTreeSolverFactor(Factor modelFactor, JunctionTreeSolverGraphBase<?> root)
 	{
 		super(modelFactor);
 		_root = root;
@@ -49,7 +48,7 @@ public class JunctionTreeSolverFactor extends ProxySolverFactor
 	 */
 	
 	@Override
-	public ProxySolverFactorGraph getRootGraph()
+	public JunctionTreeSolverGraphBase<?> getRootGraph()
 	{
 		return _root;
 	}

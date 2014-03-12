@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,11 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.sumproduct;
+package com.analog.lyric.dimple.solvers.junctiontree.map;
 
-import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverBase;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
+import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
 
-@Matlab
-public class Solver extends SumProductSolver
+/**
+ * @since 0.05
+ * @author Christopher Barber
+ */
+public class JunctionTreeMapSolver extends JunctionTreeSolverBase<SFactorGraph, JunctionTreeMapSolverGraph>
 {
+	@Override
+	public JunctionTreeMapSolverGraph createFactorGraph(FactorGraph graph)
+	{
+		return new JunctionTreeMapSolverGraph(graph, new MinSumSolver());
+	}
 }

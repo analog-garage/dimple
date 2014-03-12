@@ -560,8 +560,8 @@ public class TestVariableEliminator
 		
 		OrderIterator iterator = eliminator.orderIterator(cost);
 		assertSame(eliminator, iterator.getEliminator());
-		assertSame(cost, iterator.getCostEvaluator());
-		assertSame(cost, iterator.getStats().cost());
+		assertSame(cost, iterator.getCostEvaluator().type());
+		assertSame(cost, iterator.getStats().cost().type());
 		
 		int nVariables = model.getVariableCount();
 		assertEquals(nVariables, iterator.size());
@@ -616,7 +616,6 @@ public class TestVariableEliminator
 		Stats expectedStats,
 		VariableBase ... expectedOrder)
 	{
-		
 		Ordering ordering = VariableEliminator.generate(model, useConditioning, -1, thresholdStats);
 		assertStats(expectedStats, ordering.stats);
 	}

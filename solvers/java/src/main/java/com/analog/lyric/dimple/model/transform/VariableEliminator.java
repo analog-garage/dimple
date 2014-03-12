@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.transform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -97,6 +98,7 @@ import com.google.common.collect.Sets;
  * <li>{@link VariableCost#MIN_FILL}
  * <li>{@link VariableCost#WEIGHTED_MIN_FILL}
  * </ul>
+ * Users can implement additional cost functions by subclassing {@link CostFunction}.
  * <p>
  * NOTE: this implementation currently does not handle models that contain non-Discrete variables
  * unless they have fixed values and {@link #usesConditioning()} is true. It also
@@ -108,7 +110,7 @@ import com.google.common.collect.Sets;
 public class VariableEliminator
 {
 	/**
-	 * Describes the variable cost functions supported by {@link VariableEliminator}.
+	 * Describes the standard built-in variable cost functions supported by {@link VariableEliminator}.
 	 * See members for details.
 	 */
 	public static enum VariableCost
@@ -116,22 +118,26 @@ public class VariableEliminator
 		/**
 		 * Cost is the number of neighboring variables that have not yet
 		 * been eliminated.
+		 * @see MinNeighbors
 		 */
 		MIN_NEIGHBORS(new MinNeighbors()),
 		/**
 		 * Cost is the product of the domain cardinalities of the neighboring variables
 		 * that have not yet been eliminated.
+		 * @see MinWeight
 		 */
 		WEIGHTED_MIN_NEIGHBORS(new MinWeight()),
 		/**
 		 * Cost is the number of edges that would be introduced between neighboring variables
 		 * if this variable were to be eliminated at this step.
+		 * @see MinFill
 		 */
 		MIN_FILL(new MinFill()),
 		/**
 		 * Cost is the sum of the weights of the edges that would be introduced between neighboring variables
 		 * if this variable were to be eliminated at this step, where the edge weights are the products of
 		 * the domain cardinalities of the variables connected by the edge.
+		 * @see WeightedMinFill
 		 */
 		WEIGHTED_MIN_FILL(new WeightedMinFill());
 		
@@ -140,7 +146,25 @@ public class VariableEliminator
 		private VariableCost(CostFunction costFunction)
 		{
 			_costFunction = costFunction;
+			_costFunction._type = this;
 		}
+		
+		public CostFunction function()
+		{
+			return _costFunction;
+		}
+		
+		static CostFunction[] toFunctions(VariableCost[] costFunctions)
+		{
+			final int nFunctions = costFunctions.length;
+			final CostFunction[] functions = new CostFunction[nFunctions];
+			for (int i = 0; i < nFunctions; ++i)
+			{
+				functions[i] = costFunctions[i].function();
+			}
+			return functions;
+		}
+
 	}
 	
 	/*-------
@@ -240,6 +264,20 @@ public class VariableEliminator
 		Stats threshold,
 		VariableCost ... costFunctions)
 	{
+		return generate(model, useConditioning, nAttempts, threshold, VariableCost.toFunctions(costFunctions));
+	}
+	
+	/**
+	 * A more general version of {@link #generate(FactorGraph, boolean, int, Stats, VariableCost...)}
+	 * but accepting {@link CostFunction} objects, which allows for user-defined cost functions.
+	 */
+	public static Ordering generate(
+		FactorGraph model,
+		boolean useConditioning,
+		int nAttempts,
+		Stats threshold,
+		CostFunction ... costFunctions)
+	{
 		final boolean deterministic = nAttempts <= 0;
 		final VariableEliminator eliminator =
 			deterministic?
@@ -249,6 +287,21 @@ public class VariableEliminator
 		return generate(eliminator, nAttempts, threshold, costFunctions);
 	}
 
+	/**
+	 * Invokes {@link #generate(FactorGraph, boolean, int, Stats, VariableCost...)} with
+	 * all standard {@link VariableCost} functions.
+	 * <p>
+	 * @since 0.05
+	 */
+	public static Ordering generate(
+		FactorGraph model,
+		boolean useConditioning,
+		int nAttempts,
+		Stats threshold)
+	{
+		return generate(model, useConditioning, nAttempts, threshold, VariableCost.values());
+	}
+	
 	/**
 	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
 	 * and choosing the best fit according to the specified threshold statistics.
@@ -262,13 +315,60 @@ public class VariableEliminator
 		Stats threshold,
 		VariableCost ... costFunctions)
 	{
+		return generate(eliminator, nAttempts, threshold, VariableCost.toFunctions(costFunctions));
+	}
+	
+	/**
+	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
+	 * and choosing the best fit according to the specified threshold statistics.
+	 * <p>
+	 * Same as {@link #generate(FactorGraph, boolean, int, Stats)} but uses provided
+	 * eliminator instead of building a new one.
+	 */
+	public static Ordering generate(
+		VariableEliminator eliminator,
+		int nAttempts,
+		Stats threshold)
+	{
+		return generate(eliminator, nAttempts, threshold, VariableCost.values());
+	}
+
+	/**
+	 * Computes a variable elimination order by iteratively retrying using one or more cost functions
+	 * and choosing the best fit according to the specified threshold statistics.
+	 * <p>
+	 * Same as {@link #generate(FactorGraph, boolean, int, Stats, CostFunction...)} but uses provided
+	 * eliminator instead of building a new one.
+	 */
+	public static Ordering generate(
+		VariableEliminator eliminator,
+		int nAttempts,
+		Stats threshold,
+		CostFunction ... costFunctions)
+	{
 		final boolean deterministic = nAttempts <= 0;
 
 		if (costFunctions.length == 0)
 		{
-			costFunctions = VariableCost.values();
+			costFunctions = VariableCost.toFunctions(VariableCost.values());
 		}
 		final int nFunctions = costFunctions.length;
+		
+		// Cumulative distribution function for choosing cost function. Initially
+		// set to uniform weights.
+		final double[] functionCDF = new double[nFunctions];
+		{
+			final double increment = 1.0 / nFunctions;
+			double cumProb = increment;
+			for (int i = 0; i < nFunctions; ++i)
+			{
+				functionCDF[i] = cumProb;
+				cumProb += increment;
+			}
+		}
+		
+		final long[] timePerFunction = new long[nFunctions];
+		long totalTime = 0;
 		
 		if (deterministic)
 		{
@@ -282,15 +382,33 @@ public class VariableEliminator
 		for (int attempt = 0; attempt < nAttempts; ++attempt)
 		{
 			// Pick a cost function
-			VariableCost cost = costFunctions[0];
+			int costIndex = 0;
 			if (nFunctions > 1)
 			{
-				cost = costFunctions[deterministic ? attempt : eliminator._rand.nextInt(nFunctions)];
+				if (deterministic)
+				{
+					costIndex = attempt;
+				}
+				else
+				{
+					costIndex = Arrays.binarySearch(functionCDF, eliminator._rand.nextDouble());
+					if (costIndex < 0)
+					{
+						costIndex = -costIndex - 1;
+					}
+					costIndex = Math.min(costIndex, nFunctions - 1);
+				}
 			}
 			
+			CostFunction cost = costFunctions[costIndex];
+			
 			// Run variable elimination
+			final long beforeNS = System.nanoTime();
 			OrderIterator iterator = eliminator.orderIterator(cost);
 			Iterators.addAll(curList, iterator);
+			final long elapsedNS = System.nanoTime() - beforeNS;
+			timePerFunction[costIndex] += elapsedNS;
+			totalTime += elapsedNS;
 			
 			// Compare stats
 			Stats curStats = iterator.getStats();
@@ -313,6 +431,18 @@ public class VariableEliminator
 				if (bestStats.meetsThreshold(threshold))
 				{
 					break;
+				}
+			}
+			
+			// Update functionCDF based on timings to favor cheaper cost function.
+			// TODO: give bonus weight to functions that improved the stats.
+			if (nFunctions > 1 && !deterministic)
+			{
+				final double normalizer = (double)totalTime * (nFunctions - 1);
+				double cumProb = 0.0;
+				for (int i = 0; i < nFunctions; ++i)
+				{
+					functionCDF[i] = cumProb += (totalTime - timePerFunction[i]) / normalizer;
 				}
 			}
 		}
@@ -346,6 +476,16 @@ public class VariableEliminator
 	 */
 	public OrderIterator orderIterator(VariableCost cost)
 	{
+		return orderIterator(cost.function());
+	}
+	
+	/**
+	 * Returns an iterator to produce the variable ordering for the given cost function.
+	 * This may be invoked multiple times with different cost functions. When {@link #getRandomizer()}
+	 * is non-null, then running with the same cost function can produce different orderings.
+	 */
+	public OrderIterator orderIterator(CostFunction cost)
+	{
 		return new OrderIterator(this, cost);
 	}
 	
@@ -363,6 +503,13 @@ public class VariableEliminator
 	 * Ordering
 	 */
 	
+	/**
+	 * Holds a variable elimination ordering along with statistics for its derivation.
+	 * 
+	 * @since 0.05
+	 * @author Christopher Barber
+	 * @see VariableEliminator#generate(VariableEliminator, int, Stats, VariableCost...)
+	 */
 	@Immutable
 	public static class Ordering
 	{
@@ -400,11 +547,11 @@ public class VariableEliminator
 		 * Construction
 		 */
 		
-		private OrderIterator(VariableEliminator eliminator, VariableCost cost)
+		private OrderIterator(VariableEliminator eliminator, CostFunction costFunction)
 		{
 			_eliminator = eliminator;
-			_costFunction = cost._costFunction;
-			_stats = new Stats(cost, 0);
+			_costFunction = costFunction;
+			_stats = new Stats(costFunction, 0);
 		
 			final List<Var> adjacencyList = eliminator.buildAdjacencyList(_stats);
 			final int size = adjacencyList.size();
@@ -527,7 +674,7 @@ public class VariableEliminator
 		/**
 		 * Identifies cost evaluator used by this iterator.
 		 */
-		public VariableCost getCostEvaluator()
+		public CostFunction getCostEvaluator()
 		{
 			return _stats.cost();
 		}
@@ -562,7 +709,7 @@ public class VariableEliminator
 	 */
 	public static class Stats implements Cloneable
 	{
-		private final VariableCost _cost;
+		private final CostFunction _cost;
 		
 		private int _addedEdges;
 		private long _addedEdgeWeight;
@@ -585,9 +732,9 @@ public class VariableEliminator
 			this(null, -1);
 		}
 		
-		private Stats(VariableCost cost, int value)
+		private Stats(CostFunction costFunction, int value)
 		{
-			_cost = cost;
+			_cost = costFunction;
 			
 			_addedEdges = value;
 			_addedEdgeWeight = value;
@@ -762,7 +909,7 @@ public class VariableEliminator
 		/**
 		 * The cost function used to generate these stats, if from {@link OrderIterator}.
 		 */
-		public VariableCost cost()
+		public CostFunction cost()
 		{
 			return _cost;
 		}
@@ -926,13 +1073,14 @@ public class VariableEliminator
 		{
 			++_variablesWithDuplicateEdges;
 		}
-	}
+	} // Stats
 	
-	/*-----------------------
-	 * Private inner classes
+	/**
+	 * Holds information about a single variable for use by variable eliminator.
+	 * <p>
+	 * Public methods are available for use by {@link CostFunction} implementations.
 	 */
-	
-	private static class Var
+	public static class Var
 	{
 		final VariableBase _variable;
 		final VarLink _neighborList = new VarLink(null);
@@ -952,6 +1100,10 @@ public class VariableEliminator
 		
 		final boolean _isConditioned;
 		
+		/*--------------
+		 * Construction
+		 */
+		
 		private Var(VariableBase variable, double incrementalCost, boolean isConditioned)
 		{
 			_variable = variable;
@@ -959,6 +1111,10 @@ public class VariableEliminator
 			_neighborMap = new HashMap<Var, VarLink>(variable.getSiblingCount());
 			_isConditioned = isConditioned;
 		}
+		
+		/*----------------
+		 * Object methods
+		 */
 		
 		@Override
 		public String toString()
@@ -984,19 +1140,52 @@ public class VariableEliminator
 			return costFunction.cost(this) + _incrementalCost;
 		}
 		
-		private int cardinality()
+		/**
+		 * The cardinality of the underlying variable's domain, assumed to be discrete.
+		 */
+		public int cardinality()
 		{
 			return _variable.getDomain().asDiscrete().size();
 		}
 		
-		private boolean isAdjacent(Var other)
+		/**
+		 * Start of linked list of variable neighbors.
+		 */
+		public VarLink firstNeighbor()
+		{
+			return _neighborList._next;
+		}
+		
+		/**
+		 * True if {@code other} variable neighbors this one (i.e. if both are connected to the same factor).
+		 */
+		public boolean isAdjacent(Var other)
 		{
 			return _neighborMap.containsKey(other);
 		}
 		
-		private int nNeighbors()
+		/**
+		 * True if conditioning has been enabled and the variable has a fixed value.
+		 */
+		public boolean isConditioned()
+		{
+			return _isConditioned;
+		}
+		
+		/**
+		 * The number of neighbor variables.
+		 */
+		public int nNeighbors()
 		{
 			return _neighborMap.size();
+		}
+		
+		/**
+		 * The underlying variable.
+		 */
+		public VariableBase variable()
+		{
+			return _variable;
 		}
 		
 		private void removeNeighbor(Var neighbor)
@@ -1005,7 +1194,10 @@ public class VariableEliminator
 		}
 	}
 
-	private static final class VarLink
+	/**
+	 * A node in a linked list of {@link Var} entries.
+	 */
+	public static final class VarLink
 	{
 		private final Var _var;
 		private VarLink _prev = this;
@@ -1014,6 +1206,22 @@ public class VariableEliminator
 		VarLink(Var info)
 		{
 			_var = info;
+		}
+		
+		/**
+		 * Refers to the next link.
+		 */
+		public VarLink next()
+		{
+			return _next;
+		}
+		
+		/**
+		 * The {@link Var} object for this link.
+		 */
+		public Var var()
+		{
+			return _var;
 		}
 		
 		void insertBefore(VarLink next)
@@ -1037,8 +1245,14 @@ public class VariableEliminator
 	 * Cost function implementations
 	 */
 	
-	private static abstract class CostFunction
+	public static abstract class CostFunction
 	{
+		private VariableCost _type = null;
+		
+		protected CostFunction()
+		{
+		}
+		
 		final double cost(Var var)
 		{
 			final int nNeighbors = var.nNeighbors();
@@ -1062,27 +1276,46 @@ public class VariableEliminator
 			return computeCost(var);
 		}
 		
-		abstract double computeCost(Var var);
+		/**
+		 * Computes cost in range [0.0,infinity] for {@code var}. Lower cost variables will be
+		 * eliminated before higher cost ones.
+		 */
+		public abstract double computeCost(Var var);
 		
 		/**
 		 * True if evaluation only depends on immediate neighbors.
 		 */
-		abstract boolean neighborsOnly();
+		public abstract boolean neighborsOnly();
+		
+		/**
+		 * If this is a standard built-in cost function, returns its corresponding descriptor,
+		 * otherwise returns null.
+		 */
+		public final VariableCost type()
+		{
+			return _type;
+		}
 	}
 
 	/**
 	 * Cost is the number of neighbors of the variable in the current graph.
+	 * <p>
+	 * Get instance from {@link VariableCost#MIN_NEIGHBORS}.
 	 */
-	private static class MinNeighbors extends CostFunction
+	public static class MinNeighbors extends CostFunction
 	{
+		private MinNeighbors()
+		{
+		}
+		
 		@Override
-		double computeCost(Var var)
+		public double computeCost(Var var)
 		{
 			return var.nNeighbors();
 		}
 		
 		@Override
-		boolean neighborsOnly()
+		public boolean neighborsOnly()
 		{
 			return true;
 		}
@@ -1091,11 +1324,17 @@ public class VariableEliminator
 	/**
 	 * Cost is the product of the domain cardinalities of all of the neighboring
 	 * variables in the current graph.
+	 * <p>
+	 * Get instance from {@link VariableCost#WEIGHTED_MIN_NEIGHBORS}.
 	 */
-	private static class MinWeight extends CostFunction
+	public static class MinWeight extends CostFunction
 	{
+		private MinWeight()
+		{
+		}
+		
 		@Override
-		double computeCost(Var var)
+		public double computeCost(Var var)
 		{
 			double weight = 1.0;
 			
@@ -1108,7 +1347,7 @@ public class VariableEliminator
 		}
 
 		@Override
-		boolean neighborsOnly()
+		public boolean neighborsOnly()
 		{
 			return true;
 		}
@@ -1118,11 +1357,17 @@ public class VariableEliminator
 	 * Cost is the number of edges that would be added if this variable were to be eliminated
 	 * from the current graph, i.e the number of unique neighbor variable pairs that are not
 	 * already adjacent to each other.
+	 * <p>
+	 * Get instance from {@link VariableCost#MIN_FILL}.
 	 */
-	private static class MinFill extends CostFunction
+	public static class MinFill extends CostFunction
 	{
+		private MinFill()
+		{
+		}
+
 		@Override
-		double computeCost(Var var)
+		public double computeCost(Var var)
 		{
 			double count = 0.0;
 			
@@ -1143,7 +1388,7 @@ public class VariableEliminator
 		}
 
 		@Override
-		boolean neighborsOnly()
+		public boolean neighborsOnly()
 		{
 			return false;
 		}
@@ -1153,11 +1398,17 @@ public class VariableEliminator
 	 * Similar to {@link MinFill} but instead of counting edges that would be added, it
 	 * counts the sum of the weights of added edges where the weight is the product of
 	 * the domain cardinalities at each end.
+	 * <p>
+	 * Get instance from {@link VariableCost#WEIGHTED_MIN_FILL}.
 	 */
-	private static class WeightedMinFill extends CostFunction
+	public static class WeightedMinFill extends CostFunction
 	{
+		private WeightedMinFill()
+		{
+		}
+
 		@Override
-		double computeCost(Var var)
+		public double computeCost(Var var)
 		{
 			double weight = 0.0;
 			
@@ -1178,7 +1429,7 @@ public class VariableEliminator
 		}
 
 		@Override
-		boolean neighborsOnly()
+		public boolean neighborsOnly()
 		{
 			return false;
 		}

@@ -25,7 +25,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 /**
  * @since 0.05
  */
-public abstract class ProxySolverFactorGraph extends ProxySolverNode implements ISolverFactorGraph
+public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph>
+	extends ProxySolverNode implements ISolverFactorGraph
 {
 	/*-------
 	 * State
@@ -235,7 +236,7 @@ public abstract class ProxySolverFactorGraph extends ProxySolverNode implements 
 	 */
 	
 	@Override
-	public abstract ISolverFactorGraph getDelegate();
+	public abstract Delegate getDelegate();
 	
 	/**
 	 * Should be invoked by implementing subclass when delegate changes.
@@ -244,7 +245,7 @@ public abstract class ProxySolverFactorGraph extends ProxySolverNode implements 
 	 * @return delegate
 	 * @since 0.05
 	 */
-	protected <SG extends ISolverFactorGraph> SG notifyNewDelegate(SG delegate)
+	protected Delegate notifyNewDelegate(Delegate delegate)
 	{
 		if (delegate != null)
 		{

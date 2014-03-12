@@ -16,17 +16,9 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import com.analog.lyric.dimple.solvers.core.SolverBase;
+import com.analog.lyric.util.misc.Matlab;
 
-
-public class Solver extends SolverBase<SFactorGraph>
+@Matlab
+public class Solver extends MinSumSolver
 {
-
-	@Override
-	public SFactorGraph createFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
-	{
-		return new SFactorGraph(factorGraph);
-	}
-
-
 }
