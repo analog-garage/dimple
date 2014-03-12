@@ -200,7 +200,10 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	public double getScore()
 	{
-		return _input[getGuessIndex()];
+		if (!_var.hasFixedValue())
+			return _input[getGuessIndex()];
+		else
+			return 0;	// If the value is fixed, ignore the guess
 	}
 
 

@@ -67,6 +67,11 @@ public class ModelFactory
 	{
 		return new PDiscreteVariableVector(className,domain,numEls);
 	}
+	
+	public PFiniteFieldVariableVector createFiniteFieldVariableVector(PFiniteFieldDomain domain, int numEls)
+	{
+		return new PFiniteFieldVariableVector(domain, numEls);
+	}
 
 	public PRealJointDomain createRealJointDomain(Object [] realDomains)
 	{
@@ -78,11 +83,16 @@ public class ModelFactory
 		return new PDiscreteDomain(DiscreteDomain.create(elements));
 	}
 
+	public PFiniteFieldDomain createFiniteFieldDomain(int primitivePolynomial)
+	{
+		return new PFiniteFieldDomain(DiscreteDomain.finiteField(primitivePolynomial));
+	}
+
 	public PRealDomain createRealDomain(double lowerBound, double upperBound)
 	{
 		return new PRealDomain(new RealDomain(lowerBound,upperBound));
 	}
-
+	
 	public PVariableStreamBase createDiscreteStream(PDiscreteDomain domain, double numVars)
 	{
 		return new PDiscreteStream(domain,(int)numVars);

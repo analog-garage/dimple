@@ -63,7 +63,10 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	@Override
 	public double getScore()
 	{
-		return -Math.log(_input[getGuessIndex()]);
+		if (!_var.hasFixedValue())
+			return -Math.log(_input[getGuessIndex()]);
+		else
+			return 0;	// If the value is fixed, ignore the guess
 	}
 	
 	public void setDamping(int portIndex,double dampingVal)

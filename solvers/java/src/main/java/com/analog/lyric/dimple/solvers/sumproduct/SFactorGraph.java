@@ -21,6 +21,10 @@ import java.util.Random;
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
 import com.analog.lyric.dimple.factorfunctions.ComplexSubtract;
 import com.analog.lyric.dimple.factorfunctions.ComplexSum;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldAdd;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldMult;
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldProjection;
+import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.MatrixRealJointVectorProduct;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.Negate;
@@ -51,6 +55,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFiel
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldProjection;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinear;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinearEquation;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianNegate;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianProduct;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSubtract;
@@ -101,20 +106,21 @@ public class SFactorGraph extends SFactorGraphBase
 		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
 		String factorName = factorFunction.getName();
 		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
+		boolean hasConstants = factor.getFactorFunction().hasConstants();
 		
 		if (factor.isDiscrete())	// Factor contains only discrete variables		
 		{
 			// First see if any custom factor should be created
-			if (noFF && (factorName.equals("FiniteFieldAdd") || factorName.equals("finiteFieldAdd")))
+			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
 				return new CustomFiniteFieldAdd(factor);
-			else if (noFF && (factorName.equals("FiniteFieldMult") || factorName.equals("finiteFieldMult")))
+			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult" for backward compatibility
 			{
-				if (factor.getFactorFunction().hasConstants())
+				if (hasConstants)
 					return new CustomFiniteFieldConstantMult(factor);
 				else
 					return new CustomFiniteFieldMult(factor);
 			}
-			else if (noFF && (factorName.equals("FiniteFieldProjection") || factorName.equals("finiteFieldProjection")))
+			else if ((factorFunction instanceof FiniteFieldProjection) || (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection" for backward compatibility
 				return new CustomFiniteFieldProjection(factor);
 			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD" for backward compatibility
 				return new CustomMultiplexer(factor);															// Currently only supports discrete variables
@@ -152,6 +158,8 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomMultivariateGaussianNegate(factor);
 			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianProduct(factor);
+			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
+				return new CustomGaussianLinearEquation(factor);
 			else if (noFF && factorName.equals("add"))								// For backward compatibility
 			{
 				if (isMultivariate(factor))
@@ -166,9 +174,9 @@ public class SFactorGraph extends SFactorGraphBase
 				else
 					return new CustomGaussianProduct(factor);
 			}
-			else if (noFF && factorName.equals("linear"))
+			else if (noFF && factorName.equals("linear"))							// For backward compatibility
 				return new CustomGaussianLinear(factor);
-			else if (noFF && factorName.equals("polynomial"))
+			else if (noFF && factorName.equals("polynomial"))						// For backward compatibility
 				return new CustomComplexGaussianPolynomial(factor);
 			else	// No custom factor exists, so create a generic one
 			{
@@ -185,11 +193,11 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
-		if (funcName.equals("FiniteFieldAdd") || funcName.equals("finiteFieldAdd"))
+		if (funcName.equals("finiteFieldAdd"))															// For backward compatibility
 			return true;
-		else if (funcName.equals("FiniteFieldMult") || funcName.equals("finiteFieldMult"))
+		else if (funcName.equals("finiteFieldMult"))													// For backward compatibility
 			return true;
-		else if (funcName.equals("FiniteFieldProjection") || funcName.equals("finiteFieldProjection"))
+		else if (funcName.equals("finiteFieldProjection"))												// For backward compatibility
 			return true;
 		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use "Multiplexer" instead
 			return true;
@@ -197,9 +205,9 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("constmult"))															// For backward compatibility
 			return true;
-		else if (funcName.equals("linear"))
+		else if (funcName.equals("linear"))																// For backward compatibility
 			return true;
-		else if (funcName.equals("polynomial"))
+		else if (funcName.equals("polynomial"))															// For backward compatibility
 			return true;
 		else
 			return false;

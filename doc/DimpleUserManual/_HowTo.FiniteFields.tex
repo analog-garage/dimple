@@ -100,18 +100,18 @@ Users can use the following syntax to create an addition factor node with three 
 
 \ifmatlab
 \begin{lstlisting}
-myFactorGraph.addFactor(@finiteFieldAdd,x,y,z);
+myFactorGraph.addFactor('FiniteFieldAdd',x,y,z);
 \end{lstlisting}
 
-The @finiteFieldAdd method must have exactly that name for the Custom Factor to be used.
+using the 'FiniteFieldAdd' built-in factor.
 \fi
 
 \ifjava
 \begin{lstlisting}
-myFactorGraph.addFactor("finiteFieldAdd",x,y,z);
+myFactorGraph.addFactor("FiniteFieldAdd",x,y,z);
 \end{lstlisting}
 
-The factor function must have the "finiteFieldAdd" name in order for the SumProduct solver to use the correct custom factor.
+The factor function must have the "FiniteFieldAdd" name in order for the SumProduct solver to use the correct custom factor.
 \fi
 
 Adding this variable take $\mathcal{O}(1)$ time and solving takes $\mathcal{O}(N\log N)$ time, where N is the size of the finite field domain.
@@ -122,17 +122,17 @@ Similarly, the following syntax can be used to create a factor node with three v
 
 \ifmatlab
 \begin{lstlisting}
-myFactorGraph.addFactor(@finiteFieldMult,x,y,z);
+myFactorGraph.addFactor('FiniteFieldMult',x,y,z);
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-myFactorGraph.addFactor("finiteFieldMult",x,y,z);
+myFactorGraph.addFactor("FiniteFieldMult",x,y,z);
 \end{lstlisting}
 \fi
 
-Under the hood this will create one of two custom factors, FiniteFieldConstMult or FiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
+Under the hood this will create one of two custom factors, CustomFiniteFieldConstMult or CustomFiniteFieldMult. The former will be created if x or y is a constant and the latter will be created if neither is a constant. This allows Dimple to optimize belief propagation so that it runs in O(N) for multiplication by constants and O(Nlog(N)) in the more general case.
 
 \ifmatlab
 
@@ -140,7 +140,7 @@ Under the hood this will create one of two custom factors, FiniteFieldConstMult 
 
 Suppose we have the finite field equation $ x1+x2+x3+x4=0 $.
 
-We can not express that using the finiteFieldAdd function directly, since it accepts only three arguments. However, we can support larger addition constraints by building a tree of these constraints. We do so using the following function:
+We can not express that using the FiniteFieldAdd factor directly, since it accepts only three arguments. However, we can support larger addition constraints by building a tree of these constraints. We do so using the following function:
 
 \begin{lstlisting}
 NumVars = 4;
@@ -155,7 +155,7 @@ It returns both the graph and the external variables of the graph. This can be u
 
 \para{Projection}
 
-Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, $x^3+x+1$ could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the finiteFieldProjection factor to relate n bits to a finite field variable with a domain of size $2^n$.
+Elements of a finite field with base 2 can be represented as polynomials with binary coefficients. Polynomials with binary coefficients can be represented as strings of bits. For instance, $x^3+x+1$ could be represented in binary as 1011. Furthermore, that number can be represented by the (decimal) integer 11. When using finite fields for decoding, we are often taking bit strings and re-interpreting these as strings of finite field elements. We can use the FiniteFieldProjection built-in factor to relate n bits to a finite field variable with a domain of size $2^n$.
 
 The following code shows how to do that:
 
@@ -167,7 +167,7 @@ for j = 0:n-1
    args{j*2+2} = bits(n-j);
 end
 
-myFactorGraph.addFactor(@finiteFieldProjection,v,args{:});
+myFactorGraph.addFactor('FiniteFieldProjection',v,args{:});
 \end{lstlisting}
 \fi
 
@@ -180,7 +180,7 @@ for (int j = 0; j < n; j++)
 	vars[j*2] = j;
 	vars[j*2+1] = new Bit();
 }
-myFactorGraph.addFactor("finiteFieldProjection",vars);
+myFactorGraph.addFactor("FiniteFieldProjection",vars);
 
 \end{lstlisting}
 \fi

@@ -11,11 +11,38 @@ public class FactorFunctionUtilities
 		return (double[][])value;
 	}
 
-	public static final double [] toDoubleArray(Object value)
+	public static final double[] toDoubleArray(Object value)
 	{
-		return (double[])value;
+		if (value instanceof double[])
+			return (double[])value;
+		else if (value instanceof int[])
+		{
+			int[] vIn = (int[])value;
+			double[] vOut = new double[vIn.length];
+			for (int i = 0; i < vIn.length; i++)
+				vOut[i] = vIn[i];
+			return vOut;
+		}
+		else
+			throw new DimpleException("Invalid input type");
 	}
 	
+	public static final int[] toIntArray(Object value)
+	{
+		if (value instanceof int[])
+			return (int[])value;
+		else if (value instanceof double[])
+		{
+			double[] vIn = (double[])value;
+			int[] vOut = new int[vIn.length];
+			for (int i = 0; i < vIn.length; i++)
+				vOut[i] = (int)vIn[i];
+			return vOut;
+		}
+		else
+			throw new DimpleException("Invalid input type");
+	}
+
 	
 	public static final double toDouble(Object value)
 	{

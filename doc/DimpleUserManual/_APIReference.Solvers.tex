@@ -203,7 +203,7 @@ RealJointSubtract & RealJoint & All connected variables must be RealJoint of the
 RealJointNegate & RealJoint & All connected variables must be RealJoint of the same dimension. \\
 Product & Real, Constant & Applies only if the product is one Real variable times one scalar constant to produce a Real variable. \\
 MatrixRealJoint\newline VectorProduct & RealJoint, \newline Constant & Applies only if the product is one RealJoint variable times a constant matrix to produce a RealJoint variable. \\
-linear & Real, Constant & Linear equation.  All connected variables must be Real. \\
+LinearEquation & Real & Linear equation.  All connected variables must be Real. \\
 \end{longtable}
 
 For factors that are neither discrete-only or listed in the above table, an approximate computation is used in computing messages from such a factor.  This includes any factor that connects to both discrete and continuous variables as well as factors that connect only to continuous variables but do not appear in the list above.  The approximate method is sample based and uses Gibbs sampling to sample from the factor, allowing approximate messages to be computed from the sample statistics.  Several methods described below allow control over the behavior of these sampled factors.

@@ -64,15 +64,6 @@ f6 = fg.addFactor('Xor', 1, x(16), 0, x(17), 1, 0, 1, x(18), 0, 1, 1);
 f7 = fg.addFactor('Xor', 1, x(19), 0, x(20), 1, 0, 1, x(21), 0, 1, 0);
 f8 = fg.addFactor('Xor', x(22:25));
 
-% Make the graph connected so it solves as a tree
-fg.addFactor(@(a,b)1, x(3), x(4));
-fg.addFactor(@(a,b)1, x(6), x(7));
-fg.addFactor(@(a,b)1, x(9), x(10));
-fg.addFactor(@(a,b)1, x(12), x(13));
-fg.addFactor(@(a,b)1, x(15), x(16));
-fg.addFactor(@(a,b)1, x(18), x(19));
-fg.addFactor(@(a,b)1, x(21), x(22));
-
 % Repeat the same inputs, except for the last value, force to 1
 x.Input = [repmat([0.2 0.3 0.9], 1, 8) 1];
 
@@ -105,9 +96,6 @@ f2 = fg.addFactor(@xorDelta, x(4:6));   % Use MATLAB function
 % Make sure one is custom and the other is not
 assert(~isempty(strfind(f1.Solver.toString, 'CustomXor')));
 assert(~isempty(strfind(f2.Solver.toString, 'STableFactor')));
-
-% Make the graph connected so it solves as a tree
-fg.addFactor(@(a,b)1, x(3), x(4));
 
 % Repeat the same inputs, except for the last value, force to 1
 x.Input = repmat([0.2 0.3 0.9], 1, 2);

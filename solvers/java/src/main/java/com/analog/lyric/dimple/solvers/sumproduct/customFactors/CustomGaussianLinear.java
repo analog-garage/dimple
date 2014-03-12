@@ -20,6 +20,13 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
+/*
+ * This class is for backward compatibility only.
+ * This is to work with the deprecated "linear" custom factor.
+ * This has been replaced by the LinearEquation factor function, which has a different
+ * interface to the "linear" custom factor, and is associated with
+ * the CustomGaussianLinearEquation custom factor.
+ */
 public class CustomGaussianLinear extends GaussianFactorBase
 {
 	private double [] _constants;

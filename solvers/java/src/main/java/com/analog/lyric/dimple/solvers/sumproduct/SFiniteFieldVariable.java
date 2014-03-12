@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import java.util.HashMap;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
@@ -46,9 +47,7 @@ public class SFiniteFieldVariable extends SVariable
 	{
 		super(var);
 		
-		double [] primPoly = (double[])var.getProperty("primitivePolynomial");
-		
-		setPrimitivePolynomial(primPoly);
+		setPrimitivePolynomial((FiniteFieldDomain)var.getDomain());
 	}
 	
 	public LookupTables getTables()
@@ -56,29 +55,16 @@ public class SFiniteFieldVariable extends SVariable
 		return _tables;
 	}
 	
-	//Converts a double array of bits to the resulting integer
-	public static int convertDoubleArray2poly(double [] poly)
-	{
-		int key = 0;
-		int max = poly.length-1;
-		
-		for (int i = 0; i < poly.length; i++)
-		{
-			key = key | ((int)poly[i]) << max-i;
-		}
-		return key;
-	}
-
 	public int getNumBits()
 	{
 		return _numBits;
 	}
 	
 	//This gets called once, shortly after the Variable is instantiated.
-	public void setPrimitivePolynomial(double [] poly) 
+	private void setPrimitivePolynomial(FiniteFieldDomain domain) 
 	{
-		int key = convertDoubleArray2poly(poly);
-		_numBits = poly.length-1;
+		int key = domain.getPrimitivePolynomial();
+		_numBits = domain.getN();
 		
 		if (_tables != null)
 			throw new DimpleException("poly already set");
@@ -86,7 +72,7 @@ public class SFiniteFieldVariable extends SVariable
 		{
 			//Create the tables if they don't exist.
 			if (!_poly2tables.containsKey(key))
-				_poly2tables.put(key,new LookupTables(key, poly.length-1));
+				_poly2tables.put(key,new LookupTables(key, _numBits));
 
 			//save the tables.
 			_tables = _poly2tables.get(key);

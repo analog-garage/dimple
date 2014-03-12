@@ -21,7 +21,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
 
 /**
- * Deterministic linear equation, multiplying an input vector by a constant vector.
+ * Deterministic linear equation, multiplying an input vector by a constant weight vector.
  * The constant vector is specified in the constructor.
  * This is a deterministic directed factor (if smoothing is not enabled).
  * 
@@ -33,20 +33,20 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 
  * The variables are ordered as follows in the argument list:
  * 
- * 1) Output (product = inner product of Input vector with Constant vector)
- * 2...) Input vector (double or integer array; length must be identical to Constant vector length)
+ * 1) Output (inner product of Input vector with Weight vector)
+ * 2...) Input vector (double or integer array; length must be identical to Weight vector length)
  * 
  */
 public class LinearEquation extends FactorFunction
 {
-	protected double[] _constant;
+	protected double[] _weightVector;
 	protected double _beta = 0;
 	protected boolean _smoothingSpecified = false;
-	public LinearEquation(double[] constant) {this(constant, 0);}
-	public LinearEquation(double[] constant, double smoothing)
+	public LinearEquation(double[] weightVector) {this(weightVector, 0);}
+	public LinearEquation(double[] weightVector, double smoothing)
 	{
 		super();
-		_constant = constant;
+		_weightVector = weightVector;
 		if (smoothing > 0)
 		{
 			_beta = 1 / smoothing;
@@ -62,7 +62,7 @@ public class LinearEquation extends FactorFunction
     	
     	double sum= 1;
     	for (int i = 1; i < length; i++)
-    		sum += _constant[i-1] * FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum += _weightVector[i-1] * FactorFunctionUtilities.toDouble(arguments[i]);
 
 
     	if (_smoothingSpecified)
@@ -91,8 +91,15 @@ public class LinearEquation extends FactorFunction
 
     	double sum= 1;
     	for (int i = 1; i < length; i++)
-    		sum += _constant[i-1] * FactorFunctionUtilities.toDouble(arguments[i]);
+    		sum += _weightVector[i-1] * FactorFunctionUtilities.toDouble(arguments[i]);
     	
     	arguments[0] = sum;		// Replace the output value
+    }
+    
+    
+    // Factor-specific methods
+    public double[] getWeightArray()
+    {
+    	return _weightVector;
     }
 }
