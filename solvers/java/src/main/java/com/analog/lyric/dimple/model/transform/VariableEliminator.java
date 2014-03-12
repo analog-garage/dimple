@@ -519,7 +519,7 @@ public class VariableEliminator
 		public final ArrayList<VariableBase> variables;
 		public final Stats stats;
 		
-		private Ordering(ArrayList<VariableBase> variables, Stats stats)
+		Ordering(ArrayList<VariableBase> variables, Stats stats)
 		{
 			this.variables = variables;
 			this.stats = stats;
