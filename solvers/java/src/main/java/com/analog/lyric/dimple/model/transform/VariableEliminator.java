@@ -154,7 +154,10 @@ public class VariableEliminator
 			return _costFunction;
 		}
 		
-		static CostFunction[] toFunctions(VariableCost[] costFunctions)
+		/**
+		 * Converts an array of {@link VariableCost} to a corresponding array of {@link CostFunction}.
+		 */
+		public static CostFunction[] toFunctions(VariableCost[] costFunctions)
 		{
 			final int nFunctions = costFunctions.length;
 			final CostFunction[] functions = new CostFunction[nFunctions];

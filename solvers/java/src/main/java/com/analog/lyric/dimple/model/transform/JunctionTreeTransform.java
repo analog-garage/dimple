@@ -45,6 +45,7 @@ import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedJointDiscreteVariable;
+import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
@@ -129,9 +130,14 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * State
 	 */
 
-	private int _nEliminationAttempts = 10;
+	/**
+	 * Default value of {@link #variableEliminatorIterations()}
+	 */
+	public static final int DEFAULT_ELIMINATOR_ITERATIONS = 10;
+	
+	private int _nEliminationAttempts = DEFAULT_ELIMINATOR_ITERATIONS;
 	private boolean _useConditioning = false;
-	private final VariableCost[] _costFunctions = {};
+	private CostFunction[] _costFunctions = {};
 	private Random _rand = new Random();
 	
 	/**
@@ -151,29 +157,113 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * Options
 	 */
 	
+	/**
+	 * The random number generator used by this transformer. This is only used when determining
+	 * the variable elimination ordering and is passed to the underlying {@link VariableEliminator}.
+	 * @see #random(Random)
+	 */
 	public Random random()
 	{
 		return _rand;
 	}
-	
+
+	/**
+	 * Sets {@link #random()} to specified generator.
+	 * <p>
+	 * Only intended for use in testing to allow for reproduction of test results from a known seed.
+	 * 
+	 * @return this
+	 */
 	public JunctionTreeTransform random(Random rand)
 	{
 		_rand = rand;
 		return this;
 	}
 	
+	/**
+	 * If true, then the transformation will condition out any variables that have a fixed value.
+	 * This will produce a more efficient graph but will prevent it from being reused if the fixed
+	 * value changes.
+	 * <p>
+	 * False by default.
+	 * @see #useConditioning(boolean)
+	 */
 	public boolean useConditioning()
 	{
 		return _useConditioning;
 	}
 	
+	/**
+	 * Sets {@link #useConditioning()} to specified value.
+	 * @return this
+	 */
 	public JunctionTreeTransform useConditioning(boolean value)
 	{
 		_useConditioning = value;
 		return this;
 	}
 	
+	/**
+	 * The cost functions used by {@link VariableEliminator} to determine the variable
+	 * elimination ordering. If empty (the default), then all of the standard {@link VariableCost}
+	 * functions will be tried.
+	 * 
+	 * @see #variableEliminatorCostFunctions(CostFunction...)
+	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 */
+	public CostFunction[] variableEliminatorCostFunctions()
+	{
+		return _costFunctions.clone();
+	}
 	
+	/**
+	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
+	 * @return this
+	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 */
+	public JunctionTreeTransform variableEliminatorCostFunctions(CostFunction ... costFunctions)
+	{
+		_costFunctions = costFunctions.clone();
+		return this;
+	}
+
+	/**
+	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
+	 * @return this
+	 * @see #variableEliminatorCostFunctions(CostFunction...)
+	 */
+	public JunctionTreeTransform variableEliminatorCostFunctions(VariableCost ... costFunctions)
+	{
+		_costFunctions = VariableCost.toFunctions(costFunctions);
+		return this;
+	}
+
+	/**
+	 * Specifies the number of iterations of the {@link VariableEliminator} when attempting
+	 * to determine the variable elimination ordering. Each iteration will pick a cost function
+	 * from {@link #variableEliminatorCostFunctions()} at random and will randomize the order of
+	 * variables that have equivalent costs. A higher number of iterations may produce a better
+	 * ordering.
+	 * <p>
+	 * Default value is specified by {@link #DEFAULT_ELIMINATOR_ITERATIONS}.
+	 * <p>
+	 * @see #variableEliminatorIterations(int)
+	 */
+	public int variableEliminatorIterations()
+	{
+		return _nEliminationAttempts;
+	}
+	
+	/**
+	 * Sets {@link #variableEliminatorIterations()} to the specified value.
+	 * @return this
+	 */
+	public JunctionTreeTransform variableEliminatorIterations(int iterations)
+	{
+		_nEliminationAttempts = iterations;
+		return this;
+	}
+
 	/*------------------------------
 	 * Inner implementation classes
 	 */
