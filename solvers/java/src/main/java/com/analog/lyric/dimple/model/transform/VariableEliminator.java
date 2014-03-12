@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.transform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -353,6 +354,22 @@ public class VariableEliminator
 		}
 		final int nFunctions = costFunctions.length;
 		
+		// Cumulative distribution function for choosing cost function. Initially
+		// set to uniform weights.
+		final double[] functionCDF = new double[nFunctions];
+		{
+			final double increment = 1.0 / nFunctions;
+			double cumProb = increment;
+			for (int i = 0; i < nFunctions; ++i)
+			{
+				functionCDF[i] = cumProb;
+				cumProb += increment;
+			}
+		}
+		
+		final long[] timePerFunction = new long[nFunctions];
+		long totalTime = 0;
+		
 		if (deterministic)
 		{
 			nAttempts = nFunctions;
@@ -365,15 +382,33 @@ public class VariableEliminator
 		for (int attempt = 0; attempt < nAttempts; ++attempt)
 		{
 			// Pick a cost function
-			CostFunction cost = costFunctions[0];
+			int costIndex = 0;
 			if (nFunctions > 1)
 			{
-				cost = costFunctions[deterministic ? attempt : eliminator._rand.nextInt(nFunctions)];
+				if (deterministic)
+				{
+					costIndex = attempt;
+				}
+				else
+				{
+					costIndex = Arrays.binarySearch(functionCDF, eliminator._rand.nextDouble());
+					if (costIndex < 0)
+					{
+						costIndex = -costIndex - 1;
+					}
+					costIndex = Math.min(costIndex, nFunctions - 1);
+				}
 			}
 			
+			CostFunction cost = costFunctions[costIndex];
+			
 			// Run variable elimination
+			final long beforeNS = System.nanoTime();
 			OrderIterator iterator = eliminator.orderIterator(cost);
 			Iterators.addAll(curList, iterator);
+			final long elapsedNS = System.nanoTime() - beforeNS;
+			timePerFunction[costIndex] += elapsedNS;
+			totalTime += elapsedNS;
 			
 			// Compare stats
 			Stats curStats = iterator.getStats();
@@ -396,6 +431,18 @@ public class VariableEliminator
 				if (bestStats.meetsThreshold(threshold))
 				{
 					break;
+				}
+			}
+			
+			// Update functionCDF based on timings to favor cheaper cost function.
+			// TODO: give bonus weight to functions that improved the stats.
+			if (nFunctions > 1 && !deterministic)
+			{
+				final double normalizer = (double)totalTime * (nFunctions - 1);
+				double cumProb = 0.0;
+				for (int i = 0; i < nFunctions; ++i)
+				{
+					functionCDF[i] = cumProb += (totalTime - timePerFunction[i]) / normalizer;
 				}
 			}
 		}
