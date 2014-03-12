@@ -41,6 +41,12 @@ public class DirichletParameters implements IParameterizedMessage
 		this(other._alpha);
 	}
 	
+	public DirichletParameters clone()
+	{
+		return new DirichletParameters(this);
+	}
+	
+	
 	public final int getSize() {return _alpha.length;}
 	public final void setSize(int size) {_alpha = new double[size];}
 	

@@ -33,7 +33,11 @@ public class NormalParameters implements IParameterizedMessage
 		this(other._mean, other._precision);
 	}
 
-	
+	public NormalParameters clone()
+	{
+		return new NormalParameters(this);
+	}
+
 	public final double getMean() {return _mean;}
 	public final double getPrecision() {return _precision;}
 	public final double getVariance() {return 1/_precision;}

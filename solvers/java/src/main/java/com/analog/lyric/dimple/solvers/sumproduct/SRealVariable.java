@@ -168,7 +168,7 @@ public class SRealVariable extends SRealVariableBase
     {
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
-        	return new double[]{_input.getMean(), _input.getStandardDeviation()};
+    		return _input.clone();
     	
     	double mu = 0;
     	double tau = 0;

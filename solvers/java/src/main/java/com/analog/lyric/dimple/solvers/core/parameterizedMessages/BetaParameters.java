@@ -33,6 +33,11 @@ public class BetaParameters implements IParameterizedMessage
 		this(other._alpha, other._beta);
 	}
 	
+	public BetaParameters clone()
+	{
+		return new BetaParameters(this);
+	}
+	
 	public final double getAlpha() {return _alpha;}
 	public final double getBeta() {return _beta;}
 

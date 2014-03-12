@@ -61,6 +61,8 @@ assertElementsAlmostEqual(b.Input, [2; 2], 'absolute');
 
 % Now, set a fixed value and run again
 a.FixedValue = 7;
+assertEqual(a.FixedValue, a.Value);
+assertEqual(a.FixedValue, a.Guess{:});  % Because Guess returns a cell
 fg.solve();
 
 assert(a.hasFixedValue);
@@ -105,6 +107,8 @@ assertElementsAlmostEqual(b.Input.getMean(), [2; 7], 'absolute');
 
 % Now, set a fixed value and run again
 a.FixedValue = 7 + 1i*1.4;
+assertEqual(a.FixedValue, a.Value);
+assertEqual(a.FixedValue, a.Guess{:});  % Because Guess returns a cell
 fg.solve();
 
 assert(a.hasFixedValue);
@@ -173,6 +177,8 @@ end
 % Now, set a fixed value and run again
 afv = rand(2,3,4);
 a.FixedValue = afv;
+assertEqual(a.FixedValue, a.Value);
+assertEqual(a.FixedValue, cell2mat(a.Guess));  % Because Guess returns a cell
 fg.solve();
 
 hfv = a.hasFixedValue;
@@ -270,6 +276,8 @@ end
 % Now, set a fixed value and run again
 afv = rand(2,3,4) + 1i*rand(2,3,4);
 a.FixedValue = afv;
+assertEqual(a.FixedValue, a.Value);
+assertEqual(a.FixedValue, cell2mat(a.Guess));  % Because Guess returns a cell
 fg.solve();
 
 hfv = a.hasFixedValue;

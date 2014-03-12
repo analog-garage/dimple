@@ -32,6 +32,12 @@ public class GammaParameters implements IParameterizedMessage
 	{
 		this(other._alpha, other._beta);
 	}
+	
+	public GammaParameters clone()
+	{
+		return new GammaParameters(this);
+	}
+
 
 	public final double getAlpha() {return _alpha;}
 	public final double getBeta() {return _beta;}
