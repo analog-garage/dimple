@@ -103,7 +103,7 @@ InverseGamma & [$\alpha$](R) \newline [$\beta$](R) \newline value...(R) & [$\alp
 %
 LessThan & out(B) \newline in1(B,D,R) \newline in2(B,D,R) & - & Deterministic greater-than function, where out = in1 $<$ in2.  \\
 %
-LinearEquation & out(D,R) \newline in(B,D,R) & constants \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant vector. The constant vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the constant vector. An optional smoothing value may be specified as a constructor argument\textsuperscript{\ref{ftn:smoothing}}. \\
+LinearEquation & out(D,R) \newline in(B,D,R) & weights \newline [smoothing] & Deterministic linear equation, multiplying an input vector by a constant weight vector to equal the output variable. The weight vector is specified in the constructor.  The number of \emph{in} variables must equal the length of the weight vector. An optional smoothing value may be specified as a constructor argument\textsuperscript{\ref{ftn:smoothing}}. \\
 %
 Log & out(D,R) \newline in(D,R) & [smoothing] & Deterministic natural log function, where out = log(in). An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
@@ -170,18 +170,6 @@ Xor & out(B) \newline in...(B) & - & Deterministic logical XOR function, where o
 %
 \end{longtable}
 
-\subsubsection{Solver-Specific Built-in Factors}
-\label{sec:solverSpecificBuiltInFactors}
-
-In addition to the built-in factors listed above, there are a set of solver-specific built-in factors, also referred to as ``custom factors.''  These factors may also be specified by name in the addFactor call (using either a quoted string or as a function handle).  These are summarized in the following table:
-
-\begin{longtable} {l p{3cm} p{7cm}}
-Name & Solver & Description \\
-\hline
-\endhead
-%
-linear & SumProduct & Deterministic linear equation for Real variables in the form $\sum_i x_i c_i = total$, where $c$ is a vector of constants and $x$ is a vector of variables and $total$ is a constant. The arguments are in the order $x, c, total$. \\
-\end{longtable}
 
 
 \ifmatlab

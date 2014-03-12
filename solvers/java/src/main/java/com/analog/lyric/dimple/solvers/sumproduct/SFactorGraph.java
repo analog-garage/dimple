@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.ComplexSum;
 import com.analog.lyric.dimple.factorfunctions.FiniteFieldAdd;
 import com.analog.lyric.dimple.factorfunctions.FiniteFieldMult;
 import com.analog.lyric.dimple.factorfunctions.FiniteFieldProjection;
+import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.MatrixRealJointVectorProduct;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.Negate;
@@ -54,6 +55,7 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFiel
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldMult;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldProjection;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinear;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianLinearEquation;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianNegate;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianProduct;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomGaussianSubtract;
@@ -156,6 +158,8 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomMultivariateGaussianNegate(factor);
 			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianProduct(factor);
+			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
+				return new CustomGaussianLinearEquation(factor);
 			else if (noFF && factorName.equals("add"))								// For backward compatibility
 			{
 				if (isMultivariate(factor))
@@ -170,9 +174,9 @@ public class SFactorGraph extends SFactorGraphBase
 				else
 					return new CustomGaussianProduct(factor);
 			}
-			else if (noFF && factorName.equals("linear"))
+			else if (noFF && factorName.equals("linear"))							// For backward compatibility
 				return new CustomGaussianLinear(factor);
-			else if (noFF && factorName.equals("polynomial"))
+			else if (noFF && factorName.equals("polynomial"))						// For backward compatibility
 				return new CustomComplexGaussianPolynomial(factor);
 			else	// No custom factor exists, so create a generic one
 			{
@@ -201,9 +205,9 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("constmult"))															// For backward compatibility
 			return true;
-		else if (funcName.equals("linear"))
+		else if (funcName.equals("linear"))																// For backward compatibility
 			return true;
-		else if (funcName.equals("polynomial"))
+		else if (funcName.equals("polynomial"))															// For backward compatibility
 			return true;
 		else
 			return false;
