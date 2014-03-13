@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
  * There is a unique pair of lookup tables for each primitive polynomial.  As a result we cache
  * the lookup tables for each unique primitive polynomial.
  */
-public class SFiniteFieldVariable extends SVariable 
+public class SFiniteFieldVariable extends SDiscreteVariable 
 {
 	//global cache of lookup tables.
 	private static HashMap<Integer,LookupTables> _poly2tables = new HashMap<Integer,LookupTables>();

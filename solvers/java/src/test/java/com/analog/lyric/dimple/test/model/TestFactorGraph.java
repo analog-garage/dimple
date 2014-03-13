@@ -48,8 +48,8 @@ public class TestFactorGraph
 		
 		fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		assertTrue(fg.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph);
-		assertTrue(b1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SVariable);
-		assertTrue(b2.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SVariable);
+		assertTrue(b1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable);
+		assertTrue(b2.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable);
 		assertTrue(sum1.getSolver() instanceof com.analog.lyric.dimple.solvers.sumproduct.STableFactor);
 		
 		fg.setSolverFactory(null);

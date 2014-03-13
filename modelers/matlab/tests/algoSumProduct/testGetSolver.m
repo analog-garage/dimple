@@ -24,6 +24,6 @@ function  testGetSolver()
     f = fg.addFactor(@xorDelta,b);
     assertTrue(isa(f.Solver,'com.analog.lyric.dimple.solvers.sumproduct.STableFactor'));
         
-    assertTrue(isa(b(1).Solver,'com.analog.lyric.dimple.solvers.sumproduct.SVariable'));
+    assertTrue(isa(b(1).Solver,'com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable'));
 end
 

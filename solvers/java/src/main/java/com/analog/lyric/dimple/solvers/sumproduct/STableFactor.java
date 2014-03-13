@@ -392,7 +392,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		//for each variable
 		for (int i = 0; i < _inputMsgs.length; i++)
 		{
-			SVariable var = (SVariable)getFactor().getConnectedNodesFlat().getByIndex(i).getSolver();
+			SDiscreteVariable var = (SDiscreteVariable)getFactor().getConnectedNodesFlat().getByIndex(i).getSolver();
 			
 			//divide out contribution
 			sum += prod / _inputMsgs[i][indices[index][i]] * var.getMessageDerivative(weightIndex,getFactor())[indices[index][i]];
@@ -496,7 +496,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 					
 					if (j != outPortNum)
 					{
-						SVariable sv = (SVariable)getFactor().getConnectedNodesFlat().getByIndex(j).getSolver();
+						SDiscreteVariable sv = (SDiscreteVariable)getFactor().getConnectedNodesFlat().getByIndex(j).getSolver();
 						double [] dvar = sv.getMessageDerivative(wn,getFactor());
 								
 						sum += (prod / _inputMsgs[j][indices[i][j]]) * dvar[indices[i][j]];

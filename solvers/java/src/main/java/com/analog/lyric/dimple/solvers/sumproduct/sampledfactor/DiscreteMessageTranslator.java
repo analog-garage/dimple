@@ -20,7 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 
 public class DiscreteMessageTranslator extends MessageTranslatorBase
 {
@@ -65,7 +65,7 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void initialize()
 	{
-		SVariable var = (SVariable)_port.node.getSibling(_port.index).getSolver();
+		SDiscreteVariable var = (SDiscreteVariable)_port.node.getSibling(_port.index).getSolver();
 		_outputMessage = (double[])var.resetInputMessage(_outputMessage);
 		_inputMessage = (double[])var.resetInputMessage(_inputMessage);
 	}

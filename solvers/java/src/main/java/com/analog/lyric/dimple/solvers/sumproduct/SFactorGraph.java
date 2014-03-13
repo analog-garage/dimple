@@ -95,7 +95,7 @@ public class SFactorGraph extends SFactorGraphBase
 		else if (var instanceof Real)
 			return new SRealVariable(var);
 		else
-			return new SVariable(var);
+			return new SDiscreteVariable(var);
 	}
 
 	
@@ -274,7 +274,7 @@ public class SFactorGraph extends SFactorGraphBase
 			VariableBase var = (VariableBase)nodes.getByIndex(i);
 			for (int j = 0, endj = var.getSiblingCount(); j < endj;j++)
 			{
-				SVariable svar = (SVariable)var.getSolver();
+				SDiscreteVariable svar = (SDiscreteVariable)var.getSolver();
 				svar.setDamping(j,_damping);
 			}
 		}
@@ -412,7 +412,7 @@ public class SFactorGraph extends SFactorGraphBase
 			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
-			((SVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+			((SDiscreteVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		
 		setCalculateDerivative(true);
 		
@@ -429,7 +429,7 @@ public class SFactorGraph extends SFactorGraphBase
 			}
 			for (VariableBase v : _factorGraph.getVariablesFlat())
 			{
-				SVariable sv = (SVariable)v.getSolver();
+				SDiscreteVariable sv = (SDiscreteVariable)v.getSolver();
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 			}
@@ -451,7 +451,7 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
 		{
-			SVariable sv = (SVariable)vb.getSolver();
+			SDiscreteVariable sv = (SDiscreteVariable)vb.getSolver();
 			sv.setCalculateDerivative(val);
 		}
 	}
