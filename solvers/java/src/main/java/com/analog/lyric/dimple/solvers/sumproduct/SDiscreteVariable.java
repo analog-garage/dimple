@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class SVariable extends SDiscreteVariableDoubleArray
+public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 {
 	/*
 	 * We cache all of the double arrays we use during the update.  This saves
@@ -39,7 +39,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
 
-	public SVariable(VariableBase var)
+	public SDiscreteVariable(VariableBase var)
     {
 		super(var);
 		
@@ -608,7 +608,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	{
 		super.moveMessages(other, portNum, otherPortNum);
 		
-		SVariable sother = (SVariable)other;
+		SDiscreteVariable sother = (SDiscreteVariable)other;
 		_logInPortMsgs[portNum] = sother._logInPortMsgs[otherPortNum];
 		
 		if (_dampingInUse)

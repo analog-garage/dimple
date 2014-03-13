@@ -56,7 +56,7 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	@Override
 	public void resetEdgeMessages(int i)
 	{
-		SVariable sv = (SVariable)_factor.getSibling(i).getSolver();
+		SDiscreteVariable sv = (SDiscreteVariable)_factor.getSibling(i).getSolver();
 		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
 	}
 

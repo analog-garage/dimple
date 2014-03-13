@@ -25,7 +25,7 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
-import com.analog.lyric.dimple.solvers.sumproduct.SVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
 
 
 public class SFactorGraph extends SFactorGraphBase 
@@ -87,7 +87,7 @@ public class SFactorGraph extends SFactorGraphBase
 			return v;
 		}
 		else
-			return new SVariable(var);
+			return new SDiscreteVariable(var);
 	}
 
 	@Override
