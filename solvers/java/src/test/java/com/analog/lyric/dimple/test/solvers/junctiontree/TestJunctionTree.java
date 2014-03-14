@@ -52,6 +52,12 @@ public class TestJunctionTree
 	private final RandomGraphGenerator _graphGenerator = new RandomGraphGenerator(_rand);
 	
 	@Test
+	public void testTriangle()
+	{
+		testGraph(_graphGenerator.buildTriangle());
+	}
+	
+	@Test
 	public void testGrid2()
 	{
 		testGraph(_graphGenerator.buildGrid(2));
@@ -119,7 +125,7 @@ public class TestJunctionTree
 		model2.setSolverFactory(new SumProductSolver());
 		model2.solve();
 		
-		// Compare marginal beliefs
+		// Compare marginal variable beliefs and scores
 		for (VariableBase variable : model.getVariables())
 		{
 			final VariableBase variable2 = (VariableBase)old2new.get(variable);
@@ -134,8 +140,36 @@ public class TestJunctionTree
 			{
 				assertEquals(belief1, belief2);
 			}
+			
+			// Compare scores
+			double score = variable.getScore();
+			double score2 = variable2.getScore();
+			assertEquals(score, score2, 1e-10);
+			
+			// Compare entropy
+			double entropy = variable.getBetheEntropy();
+			double entropy1 = variable2.getBetheEntropy();
+			assertEquals(entropy, entropy1, 1e-10);
+			
+			// Compare internal energy
+			double internalEnergy = variable.getInternalEnergy();
+			double internalEnergy2 = variable2.getInternalEnergy();
+			assertEquals(internalEnergy, internalEnergy2, 1e-10);
 		}
 		
+		double score = model.getScore();
+		double score2 = model2.getScore();
+		assertEquals(score, score2, 1e-10);
+
+		double internalEnergy = model.getInternalEnergy();
+		double internalEnergy2 = model2.getInternalEnergy();
+		assertEquals(internalEnergy, internalEnergy2, 1e-10);
+
+		// FIXME
+//		double entropy = model.getBetheEntropy();
+//		double entropy1 = model2.getBetheEntropy();
+//		assertEquals(entropy, entropy1, 1e-10);
+
 		//
 		// Now try MAP (minsum)
 		//

@@ -20,11 +20,13 @@ import java.util.Map.Entry;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
+import com.analog.lyric.dimple.model.transform.VariableEliminator;
+import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
+import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -32,8 +34,15 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Misc;
 
 /**
+ * Base class for solver graphs using junction tree algorithm to transform graph into a tree
+ * for exact inference using belief propagation.
+ * 
+ * @param <Delegate> specifies the type of the solver that will be used on the transformed graph and to
+ * which this solver will delegate.
  * 
  * @since 0.05
  * @author Christopher Barber
@@ -62,7 +71,91 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 */
 	
 	@Override
+	public double getBetheEntropy()
+	{
+		final FactorGraph sourceModel = getModelObject();
+		
+		double entropy = 0;
+		
+		// Sum up factor entropy
+		for (Factor factor : sourceModel.getFactorsFlat())
+		{
+			entropy += factor.getBetheEntropy();
+		}
+		
+		// The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase variable : sourceModel.getVariablesFlat())
+		{
+			entropy -= variable.getBetheEntropy() * (variable.getSiblingCount() - 1);
+		}
+		
+		return entropy;
+	}
+
+	@Override
+	public double getBetheFreeEnergy()
+	{
+		return getInternalEnergy() - getBetheEntropy();
+	}
+	
+	@Override
+	public double getInternalEnergy()
+	{
+		final FactorGraphTransformMap transformMap = getTransformMap();
+		if (transformMap == null)
+		{
+			return Double.NaN;
+		}
+
+		double energy = 0;
+		
+		//Sum up factor internal energy
+		for (Factor factor : transformMap.target().getFactorsFlat())
+		{
+			energy += factor.getInternalEnergy();
+		}
+		
+		//The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase variable : getModelObject().getVariablesFlat())
+		{
+			energy += variable.getInternalEnergy();
+		}
+		
+		return energy;
+	}
+
+	@Override
 	public abstract JunctionTreeSolverGraphBase<Delegate> getParentGraph();
+	
+	@Override
+	public double getScore()
+	{
+		final FactorGraphTransformMap transformMap = getTransformMap();
+		if (transformMap == null)
+		{
+			return Double.NaN;
+		}
+
+		transformMap.updateGuesses();
+		
+		double energy = 0.0;
+		
+		for (VariableBase variable : getModelObject().getVariables())
+		{
+			energy += variable.getScore();
+		}
+		
+		for (Factor factor : transformMap.target().getFactors())
+		{
+			energy += factor.getScore();
+			if (Double.isInfinite(energy))
+			{
+				Misc.breakpoint();
+			}
+		}
+		
+		return energy;
+	}
 	
 	@Override
 	public abstract JunctionTreeSolverGraphBase<Delegate> getRootGraph();
@@ -149,12 +242,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		if (isTransformValid())
 		{
 			// Copy inputs/fixed values to transformed model in case they have changed.
-			for (Entry<Node,Node> entry : _transformMap.sourceToTarget().entrySet())
+			for (Entry<VariableBase,VariableBase> entry : _transformMap.sourceToTargetVariables().entrySet())
 			{
-				final VariableBase sourceVar = entry.getKey().asVariable();
+				final VariableBase sourceVar = entry.getKey();
 				if (sourceVar != null)
 				{
-					final VariableBase targetVar = entry.getValue().asVariable();
+					final VariableBase targetVar = entry.getValue();
 					if (sourceVar.hasFixedValue())
 					{
 						targetVar.setFixedValueObject(sourceVar.getFixedValueObject());
@@ -198,11 +291,120 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * JunctionTreeSolverGraph methods
 	 */
 	
+	/**
+	 * The object that implements the junction tree transformation.
+	 */
 	public JunctionTreeTransform getTransformer()
 	{
 		return _transformer;
 	}
 	
+	/**
+	 * Returns transformed graph and accompanying mapping data. May be null if not yet computed
+	 * (i.e. {@link #initialize()} not yet run.
+	 */
+	public FactorGraphTransformMap getTransformMap()
+	{
+		return _transformMap;
+	}
+	
+	/**
+	 * If true, then the transformation will condition out any variables that have a fixed value.
+	 * This will produce a more efficient graph but will prevent it from being reused if the fixed
+	 * value changes.
+	 * <p>
+	 * False by default.
+	 * @see #useConditioning(boolean)
+	 */
+	public boolean useConditioning()
+	{
+		return _transformer.useConditioning();
+	}
+	
+	/**
+	 * Sets {@link #useConditioning()} to specified value.
+	 * @return this
+	 */
+	public JunctionTreeSolverGraphBase<Delegate> useConditioning(boolean yes)
+	{
+		_transformer.useConditioning(yes);
+		return this;
+	}
+	
+	/**
+	 * The cost functions used by {@link VariableEliminator} to determine the variable
+	 * elimination ordering. If empty (the default), then all of the standard {@link VariableCost}
+	 * functions will be tried.
+	 * 
+	 * @see #variableEliminatorCostFunctions(CostFunction...)
+	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 */
+	public CostFunction[] variableEliminatorCostFunctions()
+	{
+		return _transformer.variableEliminatorCostFunctions();
+	}
+	
+	/**
+	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
+	 * @return this
+	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 */
+	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(CostFunction ... costFunctions)
+	{
+		 _transformer.variableEliminatorCostFunctions(costFunctions);
+		return this;
+	}
+
+	/**
+	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
+	 * @return this
+	 * @see #variableEliminatorCostFunctions(CostFunction...)
+	 */
+	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(VariableCost ... costFunctions)
+	{
+		 _transformer.variableEliminatorCostFunctions(costFunctions);
+		return this;
+	}
+
+	@Matlab
+	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(String ... costFunctionNames)
+	{
+		final int n = costFunctionNames.length;
+		VariableCost[] costFunctions = new VariableCost[n];
+		for (int i = 0; i < n; ++i)
+		{
+			costFunctions[i] = VariableCost.valueOf(costFunctionNames[i]);
+		}
+		 _transformer.variableEliminatorCostFunctions(costFunctions);
+		return this;
+	}
+	
+	/**
+	 * Specifies the number of iterations of the {@link VariableEliminator} when attempting
+	 * to determine the variable elimination ordering. Each iteration will pick a cost function
+	 * from {@link #variableEliminatorCostFunctions()} at random and will randomize the order of
+	 * variables that have equivalent costs. A higher number of iterations may produce a better
+	 * ordering.
+	 * <p>
+	 * Default value is specified by {@link JunctionTreeTransform#DEFAULT_ELIMINATOR_ITERATIONS}.
+	 * <p>
+	 * @see #variableEliminatorIterations(int)
+	 */
+	public int variableEliminatorIterations()
+	{
+		return _transformer.variableEliminatorIterations();
+	}
+	
+	/**
+	 * Sets {@link #variableEliminatorIterations()} to the specified value.
+	 * @return this
+	 */
+	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorIterations(int iterations)
+	{
+		_transformer.variableEliminatorIterations(iterations);
+		return this;
+	}
+
 	/*-----------------
 	 * Package methods
 	 */

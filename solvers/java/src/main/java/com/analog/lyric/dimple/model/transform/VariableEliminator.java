@@ -154,7 +154,10 @@ public class VariableEliminator
 			return _costFunction;
 		}
 		
-		static CostFunction[] toFunctions(VariableCost[] costFunctions)
+		/**
+		 * Converts an array of {@link VariableCost} to a corresponding array of {@link CostFunction}.
+		 */
+		public static CostFunction[] toFunctions(VariableCost[] costFunctions)
 		{
 			final int nFunctions = costFunctions.length;
 			final CostFunction[] functions = new CostFunction[nFunctions];
@@ -516,7 +519,7 @@ public class VariableEliminator
 		public final ArrayList<VariableBase> variables;
 		public final Stats stats;
 		
-		private Ordering(ArrayList<VariableBase> variables, Stats stats)
+		Ordering(ArrayList<VariableBase> variables, Stats stats)
 		{
 			this.variables = variables;
 			this.stats = stats;

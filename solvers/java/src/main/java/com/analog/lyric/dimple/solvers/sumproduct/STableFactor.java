@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static com.analog.lyric.math.Utilities.*;
+
 import java.util.Arrays;
 
 import com.analog.lyric.cs.Sort;
@@ -221,18 +223,20 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 	public double [] getUnormalizedBelief()
 	{
+		final int [][] table = getFactorTable().getIndicesSparseUnsafe();
+		final double [] values = getFactorTable().getWeightsSparseUnsafe();
+		final int nEntries = values.length;
+		final double [] retval = new double[nEntries];
 		
-		int [][] table = getFactorTable().getIndicesSparseUnsafe();
-		double [] values = getFactorTable().getWeightsSparseUnsafe();
-		double [] retval = new double[table.length];
 		
-		
-		for (int i = 0; i < table.length; i++)
+		for (int i = 0; i < nEntries; i++)
 		{
 			retval[i] = values[i];
-			for (int j = 0; j < table[i].length; j++)
+			
+			final int[] indices = table[i];
+			for (int j = 0; j < indices.length; j++)
 			{
-				retval[i] *= _inputMsgs[j][table[i][j]];
+				retval[i] *= _inputMsgs[j][indices[j]];
 			}
 		}
 		
@@ -312,13 +316,13 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double getInternalEnergy()
 	{
-		double [] belief = getBelief();
+		final double [] beliefs = getBelief();
+		final double [] weights = getFactorTable().getWeightsSparseUnsafe();
+		
 		double sum = 0;
-		for (int i = 0; i < belief.length; i++)
+		for (int i = beliefs.length; --i>=0;)
 		{
-			double tmp = - Math.log(getFactorTable().getWeightsSparseUnsafe()[i]);
-			if (tmp != 0 && belief[i] != 0)
-				sum += belief[i] * tmp;
+			sum += beliefs[i] * weightToEnergy(weights[i]);
 		}
 		
 		return sum;
@@ -329,11 +333,10 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		double sum = 0;
 		
-		double [] belief = getBelief();
-		for (int i = 0; i < belief.length; i++)
+		final double [] beliefs = getBelief();
+		for (double belief : beliefs)
 		{
-			if (belief[i] != 0)
-				sum -= belief[i] * Math.log(belief[i]);
+			sum -= belief * Math.log(belief);
 		}
 		
 		return sum;

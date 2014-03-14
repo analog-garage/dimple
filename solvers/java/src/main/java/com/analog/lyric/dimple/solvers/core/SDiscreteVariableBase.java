@@ -20,8 +20,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 
-public abstract class SDiscreteVariableBase extends SVariableBase
+public abstract class SDiscreteVariableBase extends SVariableBase implements IDiscreteSolverVariable
 {
 	protected int _guessIndex = 0;
 	protected boolean _guessWasSet = false;
@@ -102,6 +103,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 		setGuessIndex(guessIndex);
 	}
 	
+	@Override
 	public int getGuessIndex()
 	{
 		int index = 0;
@@ -114,6 +116,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase
 	}
 	
 
+	@Override
 	public void setGuessIndex(int index)
 	{
 		if (index < 0 || index >= ((DiscreteDomain)_var.getDomain()).size())
