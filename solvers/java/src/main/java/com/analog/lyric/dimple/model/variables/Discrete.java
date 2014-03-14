@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
 import com.analog.lyric.util.misc.Internal;
 
 public class Discrete extends VariableBase
@@ -52,6 +53,16 @@ public class Discrete extends VariableBase
     public double [] getInput()
     {
     	return (double[])getInputObject();
+    }
+    
+    /*---------------------
+     * ISolverNode methods
+     */
+    
+    @Override
+    public IDiscreteSolverVariable getSolver()
+    {
+    	return (IDiscreteSolverVariable)super.getSolver();
     }
     
     /*----------------------
@@ -98,6 +109,10 @@ public class Discrete extends VariableBase
     		return tmp;
     }
     
+    /*------------------
+     * Discrete methods
+     */
+    
     public double [] getBelief()
     {
     	return (double[])getBeliefObject();
@@ -110,6 +125,16 @@ public class Discrete extends VariableBase
     		return _solverVariable.getBelief();
     	else
     		return getInputObject();
+    }
+    
+    public int getGuessIndex()
+    {
+    	return getSolver().getGuessIndex();
+    }
+    
+    public void setGuessIndex(int guess)
+    {
+    	getSolver().setGuessIndex(guess);
     }
     
     public Object getValue()
@@ -216,6 +241,10 @@ public class Discrete extends VariableBase
 			throw new DimpleException("Attempt to set variable to a fixed value that is not an element of the variable's domain.");
 		setFixedValueIndex(index);
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
 
 	private double[] joinWeights(double[] ... subdomainWeights)
 	{
