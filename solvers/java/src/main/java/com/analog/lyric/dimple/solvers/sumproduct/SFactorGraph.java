@@ -27,7 +27,9 @@ import com.analog.lyric.dimple.factorfunctions.FiniteFieldProjection;
 import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.MatrixRealJointVectorProduct;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
+import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Negate;
+import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.Product;
 import com.analog.lyric.dimple.factorfunctions.RealJointNegate;
 import com.analog.lyric.dimple.factorfunctions.RealJointSubtract;
@@ -65,6 +67,8 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivaria
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianProduct;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSubtract;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateGaussianSum;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomMultivariateNormalConstantParameters;
+import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalConstantParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.util.misc.IMapList;
 
@@ -158,6 +162,10 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomMultivariateGaussianNegate(factor);
 			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianProduct(factor);
+			else if ((factorFunction instanceof Normal) && CustomNormalConstantParameters.isFactorCompatible(factor))
+				return new CustomNormalConstantParameters(factor);
+			else if ((factorFunction instanceof MultivariateNormal) && CustomMultivariateNormalConstantParameters.isFactorCompatible(factor))
+				return new CustomMultivariateNormalConstantParameters(factor);
 			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
 				return new CustomGaussianLinearEquation(factor);
 			else if (noFF && factorName.equals("add"))								// For backward compatibility

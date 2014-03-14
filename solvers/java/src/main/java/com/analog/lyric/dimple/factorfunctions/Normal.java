@@ -127,6 +127,10 @@ public class Normal extends FactorFunction
     {
     	return _parametersConstant;
     }
+    public final NormalParameters getParameters()
+    {
+    	return new NormalParameters(_mean, _precision);
+    }
     public final double getMean()
     {
     	return _mean;

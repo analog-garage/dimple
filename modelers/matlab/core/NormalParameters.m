@@ -62,8 +62,13 @@ classdef NormalParameters < ParameterizedMessage
 
         % For backward compatibility
         function varargout = subsref(obj,S)
-            array = [obj.Mean; obj.StandardDeviation];
-            varargout = {array(S.subs{1})};
+            switch S(1).type
+                case '()'
+                    array = [obj.Mean; obj.StandardDeviation];
+                    varargout = {array(S.subs{1})};
+                otherwise
+                    [varargout{1:nargout}] = builtin('subsref',obj,S);
+            end
         end
         
         % For backward compatibility
