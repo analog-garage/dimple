@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap;
@@ -35,6 +34,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Misc;
 
 /**
  * Base class for solver graphs using junction tree algorithm to transform graph into a tree
@@ -70,7 +71,91 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 */
 	
 	@Override
+	public double getBetheEntropy()
+	{
+		final FactorGraph sourceModel = getModelObject();
+		
+		double entropy = 0;
+		
+		// Sum up factor entropy
+		for (Factor factor : sourceModel.getFactorsFlat())
+		{
+			entropy += factor.getBetheEntropy();
+		}
+		
+		// The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase variable : sourceModel.getVariablesFlat())
+		{
+			entropy -= variable.getBetheEntropy() * (variable.getSiblingCount() - 1);
+		}
+		
+		return entropy;
+	}
+
+	@Override
+	public double getBetheFreeEnergy()
+	{
+		return getInternalEnergy() - getBetheEntropy();
+	}
+	
+	@Override
+	public double getInternalEnergy()
+	{
+		final FactorGraphTransformMap transformMap = getTransformMap();
+		if (transformMap == null)
+		{
+			return Double.NaN;
+		}
+
+		double energy = 0;
+		
+		//Sum up factor internal energy
+		for (Factor factor : transformMap.target().getFactorsFlat())
+		{
+			energy += factor.getInternalEnergy();
+		}
+		
+		//The following would be unnecessary if we implemented inputs as single node factors
+		for (VariableBase variable : getModelObject().getVariablesFlat())
+		{
+			energy += variable.getInternalEnergy();
+		}
+		
+		return energy;
+	}
+
+	@Override
 	public abstract JunctionTreeSolverGraphBase<Delegate> getParentGraph();
+	
+	@Override
+	public double getScore()
+	{
+		final FactorGraphTransformMap transformMap = getTransformMap();
+		if (transformMap == null)
+		{
+			return Double.NaN;
+		}
+
+		transformMap.updateGuesses();
+		
+		double energy = 0.0;
+		
+		for (VariableBase variable : getModelObject().getVariables())
+		{
+			energy += variable.getScore();
+		}
+		
+		for (Factor factor : transformMap.target().getFactors())
+		{
+			energy += factor.getScore();
+			if (Double.isInfinite(energy))
+			{
+				Misc.breakpoint();
+			}
+		}
+		
+		return energy;
+	}
 	
 	@Override
 	public abstract JunctionTreeSolverGraphBase<Delegate> getRootGraph();
@@ -157,12 +242,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		if (isTransformValid())
 		{
 			// Copy inputs/fixed values to transformed model in case they have changed.
-			for (Entry<Node,Node> entry : _transformMap.sourceToTarget().entrySet())
+			for (Entry<VariableBase,VariableBase> entry : _transformMap.sourceToTargetVariables().entrySet())
 			{
-				final VariableBase sourceVar = entry.getKey().asVariable();
+				final VariableBase sourceVar = entry.getKey();
 				if (sourceVar != null)
 				{
-					final VariableBase targetVar = entry.getValue().asVariable();
+					final VariableBase targetVar = entry.getValue();
 					if (sourceVar.hasFixedValue())
 					{
 						targetVar.setFixedValueObject(sourceVar.getFixedValueObject());
@@ -212,6 +297,15 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	public JunctionTreeTransform getTransformer()
 	{
 		return _transformer;
+	}
+	
+	/**
+	 * Returns transformed graph and accompanying mapping data. May be null if not yet computed
+	 * (i.e. {@link #initialize()} not yet run.
+	 */
+	public FactorGraphTransformMap getTransformMap()
+	{
+		return _transformMap;
 	}
 	
 	/**
@@ -272,6 +366,19 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		return this;
 	}
 
+	@Matlab
+	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(String ... costFunctionNames)
+	{
+		final int n = costFunctionNames.length;
+		VariableCost[] costFunctions = new VariableCost[n];
+		for (int i = 0; i < n; ++i)
+		{
+			costFunctions[i] = VariableCost.valueOf(costFunctionNames[i]);
+		}
+		 _transformer.variableEliminatorCostFunctions(costFunctions);
+		return this;
+	}
+	
 	/**
 	 * Specifies the number of iterations of the {@link VariableEliminator} when attempting
 	 * to determine the variable elimination ordering. Each iteration will pick a cost function

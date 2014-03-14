@@ -556,11 +556,11 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			return _to._variables.length == _variables.length || _from._variables.length == _variables.length;
 		}
 		
-		private AddedDeterministicVariable makeJointVariable(FactorGraph targetModel)
+		private AddedDeterministicVariable<?> makeJointVariable(FactorGraph targetModel)
 		{
 			final Discrete[] edgeVars = _variables;
 			final int nEdgeVars = edgeVars.length;
-			AddedDeterministicVariable addedVar = null;
+			AddedDeterministicVariable<?> addedVar = null;
 			
 			if (nEdgeVars > 1)
 			{
@@ -697,7 +697,16 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		final Map<Node,Node> old2new = new HashMap<Node,Node>(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		
-		final FactorGraphTransformMap transformMap = FactorGraphTransformMap.create(model, targetModel, old2new);
+		final FactorGraphTransformMap transformMap = FactorGraphTransformMap.create(model, targetModel);
+		
+		for (Entry<Node,Node> entry : old2new.entrySet())
+		{
+			Node source = entry.getKey();
+			if (source.isVariable())
+			{
+				transformMap.addVariableMapping(source.asVariable(), entry.getValue().asVariable());
+			}
+		}
 
 		// 3) Disconnect conditioned variables from other variables in new graph
 
@@ -732,6 +741,10 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		for (Clique clique : cliques)
 		{
 			clique.joinMultivariateEdges();
+			for (Factor sourceFactor : clique._factors)
+			{
+				transformMap.addFactorMapping(sourceFactor, clique._mergedFactor);
+			}
 		}
 		
 		
@@ -772,7 +785,6 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		{
 			// Build list of factors that need to be modified
 			final Map<Factor, Factor> factors = new LinkedHashMap<Factor, Factor>();
-			final Map<Node,Node> old2new = transformMap.sourceToTarget();
 
 			// Conditioned variables are guaranteed to be at the head of the list.
 			// Conditioned variables aren't necessarily discrete but the remaining ones
@@ -790,11 +802,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 
 			for (Factor factor : factors.values())
 			{
-				if (factor.removeFixedVariables() > 0)
-				{
-					// Factors are no longer the same.
-					old2new.remove(factor);
-				}
+				factor.removeFixedVariables();
 			}
 		}
 		

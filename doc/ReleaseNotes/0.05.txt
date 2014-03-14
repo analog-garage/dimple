@@ -25,6 +25,7 @@ New Features Since v0.04 (Oct 5, 2013)
 
 * Generalize finite field custom factors to factor functions that can be used with any solver (retaining performance benefit when using SumProduct solver)
 
+* Added junction tree solvers. 
 
 Fixes Since v0.04
 -----------------

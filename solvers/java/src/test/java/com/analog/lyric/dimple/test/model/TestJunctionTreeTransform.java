@@ -106,7 +106,7 @@ public class TestJunctionTreeTransform
 
 		for (int i = 0; i < nGraphs; ++i)
 		{
-			testGraph(gen.buildRandomGraph(rand.nextInt(maxSize) + 1), null);
+			testGraph(gen.buildRandomGraph(rand.nextInt(maxSize) + 10), null);
 		}
 	}
 	
@@ -166,7 +166,7 @@ public class TestJunctionTreeTransform
 			}
 			
 			// Update values of added variables
-			for (AddedDeterministicVariable added : transformMap.addedDeterministicVariables())
+			for (AddedDeterministicVariable<?> added : transformMap.addedDeterministicVariables())
 			{
 				final ISolverVariableGibbs addedSVar = targetGibbs.getSolverVariable(added.getVariable());
 				final Value value = addedSVar.getCurrentSampleValue();

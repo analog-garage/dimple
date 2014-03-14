@@ -269,13 +269,13 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	{
 		double sum = 0;
 		
-		//Sum up factor internal energy
+		// Sum up factor entropy
 		for (Factor f : _factorGraph.getFactorsFlat())
 			sum += f.getBetheEntropy();
 		
-		//The following would be unnecessary if we implemented inputs as single node factors
+		// The following would be unnecessary if we implemented inputs as single node factors
 		for (VariableBase v : _factorGraph.getVariablesFlat())
-			sum -= v.getBetheEntropy() * (v.getFactors().length - 1);
+			sum -= v.getBetheEntropy() * (v.getSiblingCount() - 1);
 		
 		return sum;
 	}

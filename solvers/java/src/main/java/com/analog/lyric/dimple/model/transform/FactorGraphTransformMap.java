@@ -1,5 +1,7 @@
 package com.analog.lyric.dimple.model.transform;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -25,32 +26,35 @@ public class FactorGraphTransformMap
 	private final FactorGraph _sourceModel;
 	private final long _sourceVersion;
 	private final FactorGraph _targetModel;
-	private final Map<Node, Node> _sourceToTargetMap;
-	private final List<AddedDeterministicVariable> _addedDeterministicVariables;
+	private final Map<Factor,Factor> _sourceToTargetFactors;
+	private final Map<VariableBase, VariableBase> _sourceToTargetVariables;
+	private final List<AddedDeterministicVariable<?>> _addedDeterministicVariables;
 	private final Set<VariableBase> _conditionedVariables;
 	
-	public static abstract class AddedDeterministicVariable
+	public static abstract class AddedDeterministicVariable<Var extends VariableBase>
 	{
-		protected final VariableBase _variable;
-		protected final VariableBase[] _inputs;
+		protected final Var _variable;
+		protected final Var[] _inputs;
 		
-		public AddedDeterministicVariable(VariableBase newVariable, VariableBase[] inputVariables)
+		protected AddedDeterministicVariable(Var newVariable, Var[] inputVariables)
 		{
 			_variable = newVariable;
 			_inputs = inputVariables;
 		}
+
+		public abstract void updateGuess();
 
 		public Domain getDomain()
 		{
 			return _variable.getDomain();
 		}
 		
-		public VariableBase getVariable()
+		public Var getVariable()
 		{
 			return _variable;
 		}
 		
-		public final VariableBase getInput(int i)
+		public Var getInput(int i)
 		{
 			return _inputs[i];
 		}
@@ -63,7 +67,7 @@ public class FactorGraphTransformMap
 		public abstract void updateValue(Value newVariableValue, Value[] inputs);
 	}
 	
-	public static class AddedJointDiscreteVariable extends AddedDeterministicVariable
+	public static class AddedJointDiscreteVariable extends AddedDeterministicVariable<Discrete>
 	{
 
 		/**
@@ -88,48 +92,56 @@ public class FactorGraphTransformMap
 		}
 
 		@Override
-		public void updateValue(Value newVariableValue, Value[] inputs)
-		{
-			JointDomainIndexer indexer = getDomain().getDomainIndexer();
-			newVariableValue.setIndex(indexer.jointIndexFromValues(inputs));
-		}
-		
-		@Override
 		public JointDiscreteDomain<?> getDomain()
 		{
 			return (JointDiscreteDomain<?>) getVariable().getDomain();
 		}
 		
 		@Override
-		public Discrete getVariable()
+		public void updateGuess()
 		{
-			return _variable.asDiscreteVariable();
+			final JointDomainIndexer indexer = getDomain().getDomainIndexer();
+			final int[] indices = indexer.allocateIndices(null);
+			for (int i = 0; i < _inputs.length; ++i)
+			{
+				indices[i] = getInput(i).getGuessIndex();
+			}
+			getVariable().setGuessIndex(indexer.jointIndexFromIndices(indices));
 		}
+		
+		@Override
+		public void updateValue(Value newVariableValue, Value[] inputs)
+		{
+			JointDomainIndexer indexer = getDomain().getDomainIndexer();
+			newVariableValue.setIndex(indexer.jointIndexFromValues(inputs));
+		}
+		
 	}
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	protected FactorGraphTransformMap(FactorGraph source, FactorGraph target, Map<Node,Node> sourceToTargetMap)
+	protected FactorGraphTransformMap(FactorGraph source, FactorGraph target)
 	{
+		final boolean identity = (source == target);
 		_sourceModel = source;
 		_sourceVersion = source.getVersionId();
 		_targetModel = target;
-		_sourceToTargetMap = sourceToTargetMap;
-		_addedDeterministicVariables = new LinkedList<AddedDeterministicVariable>();
+		_sourceToTargetVariables = identity? null : new HashMap<VariableBase,VariableBase>(source.getVariableCount());
+		_sourceToTargetFactors = identity? null : new HashMap<Factor,Factor>(source.getFactorCount());
+		_addedDeterministicVariables = new LinkedList<AddedDeterministicVariable<?>>();
 		_conditionedVariables = new LinkedHashSet<VariableBase>();
 	}
 	
 	protected FactorGraphTransformMap(FactorGraph source)
 	{
-		this(source, source, null);
+		this(source, source);
 	}
 	
-	public static FactorGraphTransformMap create(
-		FactorGraph source,	FactorGraph target,	Map<Node,Node> sourceToTargetMap)
+	public static FactorGraphTransformMap create(FactorGraph source, FactorGraph target)
 	{
-		return new FactorGraphTransformMap(source, target, sourceToTargetMap);
+		return new FactorGraphTransformMap(source, target);
 	}
 	
 	public static FactorGraphTransformMap identity(FactorGraph model)
@@ -147,14 +159,24 @@ public class FactorGraphTransformMap
 		_conditionedVariables.add(variable);
 	}
 	
-	public void addDeterministicVariable(AddedDeterministicVariable addedVar)
+	public void addDeterministicVariable(AddedDeterministicVariable<?> addedVar)
 	{
 		_addedDeterministicVariables.add(addedVar);
 	}
 	
-	public List<AddedDeterministicVariable> addedDeterministicVariables()
+	public List<AddedDeterministicVariable<?>> addedDeterministicVariables()
 	{
 		return _addedDeterministicVariables;
+	}
+	
+	public void addFactorMapping(Factor sourceFactor, Factor targetFactor)
+	{
+		_sourceToTargetFactors.put(sourceFactor, targetFactor);
+	}
+	
+	public void addVariableMapping(VariableBase sourceVariable, VariableBase targetVariable)
+	{
+		_sourceToTargetVariables.put(sourceVariable, targetVariable);
 	}
 	
 	public Set<VariableBase> conditionedVariables()
@@ -164,7 +186,7 @@ public class FactorGraphTransformMap
 	
 	public boolean isIdentity()
 	{
-		return _sourceToTargetMap == null;
+		return _sourceToTargetVariables == null;
 	}
 	
 	public boolean isValid()
@@ -193,27 +215,32 @@ public class FactorGraphTransformMap
 		return _sourceModel;
 	}
 	
-	public Map<Node,Node> sourceToTarget()
-	{
-		return _sourceToTargetMap;
-	}
-	
 	public Factor sourceToTargetFactor(Factor sourceFactor)
 	{
-		if (_sourceToTargetMap == null)
+		if (_sourceToTargetFactors == null)
 		{
 			return sourceFactor;
 		}
-		return (Factor) _sourceToTargetMap.get(sourceFactor);
+		return _sourceToTargetFactors.get(sourceFactor);
+	}
+	
+	public Map<Factor,Factor> sourceToTargetFactors()
+	{
+		return Collections.unmodifiableMap(_sourceToTargetFactors);
 	}
 	
 	public VariableBase sourceToTargetVariable(VariableBase sourceVariable)
 	{
-		if (_sourceToTargetMap == null)
+		if (_sourceToTargetVariables == null)
 		{
 			return sourceVariable;
 		}
-		return (VariableBase) _sourceToTargetMap.get(sourceVariable);
+		return _sourceToTargetVariables.get(sourceVariable);
+	}
+	
+	public Map<VariableBase,VariableBase> sourceToTargetVariables()
+	{
+		return Collections.unmodifiableMap(_sourceToTargetVariables);
 	}
 	
 	/**
@@ -228,5 +255,13 @@ public class FactorGraphTransformMap
 	public FactorGraph target()
 	{
 		return _targetModel;
+	}
+	
+	public void updateGuesses()
+	{
+		for (AddedDeterministicVariable<?> added : addedDeterministicVariables())
+		{
+			added.updateGuess();
+		}
 	}
 }

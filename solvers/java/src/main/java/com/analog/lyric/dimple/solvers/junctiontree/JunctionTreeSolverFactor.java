@@ -16,22 +16,26 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
  * @since 0.05
  * @author Christopher Barber
  *
  */
-public class JunctionTreeSolverFactor extends ProxySolverFactor
+public class JunctionTreeSolverFactor extends SFactorBase
 {
 	/*-------
 	 * State
 	 */
 	
 	private final JunctionTreeSolverGraphBase<?> _root;
+	
+//	private ISolverFactor _delegate;
+//	private JointDomainReindexer _reindexer;
 	
 	/*--------------
 	 * Construction
@@ -48,18 +52,143 @@ public class JunctionTreeSolverFactor extends ProxySolverFactor
 	 */
 	
 	@Override
+	public double getBetheEntropy()
+	{
+		double sum = 0;
+		
+		final double [] beliefs = getBelief();
+		for (double belief : beliefs)
+		{
+			sum -= belief * Math.log(belief);
+		}
+		
+		return sum;
+	}
+	
+	@Override
+	public Object getInputMsg(int portIndex)
+	{
+		throw unsupported("getInputMsg");
+	}
+
+	@Override
+	public Object getOutputMsg(int portIndex)
+	{
+		throw unsupported("getOutputMsg");
+	}
+
+	@Override
 	public JunctionTreeSolverGraphBase<?> getRootGraph()
 	{
 		return _root;
 	}
+	
+	@Override
+	public double getScore()
+	{
+		throw unsupported("getScore");
+	}
 
-	/*-------------------------
-	 * ProxySolverNode methods
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		throw unsupported("moveMessages");
+	}
+
+	@Override
+	public void resetEdgeMessages(int portNum)
+	{
+		throw unsupported("resetEdgeMessages");
+	}
+
+	@Override
+	public void setInputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsg");
+	}
+
+	@Override
+	public void setOutputMsg(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsg");
+	}
+
+	@Override
+	public void setInputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setInputMsgValues");
+	}
+
+	@Override
+	public void setOutputMsgValues(int portIndex, Object obj)
+	{
+		throw unsupported("setOutputMsgValues");
+	}
+
+	@Override
+	public void updateEdge(int outPortNum)
+	{
+		throw unsupported("updateEdge");
+	}
+
+	/*-----------------------
+	 * ISolverFactor methods
 	 */
 	
 	@Override
-	public ISolverFactor getDelegate()
+	public void createMessages()
 	{
-		return null;
 	}
+
+	@Override
+	public double[] getBelief()
+	{
+		return null; // FIXME
+	}
+	
+	@Override
+	public int[][] getPossibleBeliefIndices()
+	{
+		throw unsupported("getPossibleBeliefIndices"); // FIXME
+	}
+	
+	@Override
+	public void moveMessages(ISolverNode other)
+	{
+		throw unsupported("moveMessages");
+	}
+	
+	@Override
+	public void setDirectedTo(int[] indices)
+	{
+		throw unsupported("setDirectedTo");
+	}
+
+	/*-----------------
+	 * Private methods
+	 */
+	
+//	private ISolverFactor getDelegate()
+//	{
+//		final ISolverFactor delegate = _delegate;
+//		if (delegate != null)
+//		{
+//			return delegate;
+//		}
+//		else
+//		{
+//			return _delegate = _root.getTransformMap().sourceToTargetFactor(getFactor()).getSolver();
+//		}
+//	}
+//
+//	private JointDomainReindexer getDelegateReindexer()
+//	{
+//		return null;
+//	}
+	
+	private RuntimeException unsupported(String method)
+	{
+		return DimpleException.unsupportedMethod(getClass(), method);
+	}
+
 }
