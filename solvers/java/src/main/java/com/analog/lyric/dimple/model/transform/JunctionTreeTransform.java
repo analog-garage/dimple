@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +52,8 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
@@ -461,7 +462,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			graph.remove(_mergedFactor);
 			
 			// Create new factor attached to edge variables
-			graph.addFactor(newFactorTable, newVariables);
+			_mergedFactor = graph.addFactor(newFactorTable, newVariables);
 			
 			return true;
 		}
@@ -694,7 +695,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		final int nVariables = variables.size();
 		final int nFactors = model.getFactorCount();
 
-		final Map<Node,Node> old2new = new HashMap<Node,Node>(nVariables * 2);
+		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		
 		final FactorGraphTransformMap transformMap = FactorGraphTransformMap.create(model, targetModel);
@@ -741,8 +742,9 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		for (Clique clique : cliques)
 		{
 			clique.joinMultivariateEdges();
-			for (Factor sourceFactor : clique._factors)
+			for (Factor cliqueFactor : clique._factors)
 			{
+				Factor sourceFactor = (Factor) old2new.inverse().get(cliqueFactor);
 				transformMap.addFactorMapping(sourceFactor, clique._mergedFactor);
 			}
 		}

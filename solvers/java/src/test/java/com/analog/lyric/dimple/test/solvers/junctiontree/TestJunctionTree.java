@@ -18,12 +18,18 @@ package com.analog.lyric.dimple.test.solvers.junctiontree;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
+import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
@@ -115,12 +121,14 @@ public class TestJunctionTree
 		assertTrue(transformedModel.isForest());
 		
 		// Do solve again on a copy of the graph with all factors merged into single giant factor.
-		BiMap<Node,Node> old2new = HashBiMap.create();
+		final BiMap<Node,Node> old2new = HashBiMap.create();
+		final BiMap<Node,Node> new2old = old2new.inverse();
 		FactorGraph model2 = model.copyRoot(old2new);
 		MapList<Factor> factors2 = model2.getFactors();
+		Factor factor2 = null;
 		if (factors2.size() > 0)
 		{
-			model2.join(factors2.toArray(new Factor[factors2.size()]));
+			factor2 = model2.join(factors2.toArray(new Factor[factors2.size()]));
 		}
 		model2.setSolverFactory(new SumProductSolver());
 		model2.solve();
@@ -155,6 +163,50 @@ public class TestJunctionTree
 			double internalEnergy = variable.getInternalEnergy();
 			double internalEnergy2 = variable2.getInternalEnergy();
 			assertEquals(internalEnergy, internalEnergy2, 1e-10);
+		}
+		
+		// Compare factor beliefs
+		if (factor2 instanceof DiscreteFactor)
+		{
+			DiscreteFactor discreteFactor2 = (DiscreteFactor) factor2;
+			JointDomainIndexer fullDomains = discreteFactor2.getDomainList();
+			final double[] fullBeliefs = discreteFactor2.getBelief();
+			final int[][] fullBeliefIndices = discreteFactor2.getPossibleBeliefIndices();
+			final IFactorTable fullTable = FactorTable.create(fullDomains);
+			fullTable.setWeightsSparse(fullBeliefIndices, fullBeliefs);
+
+			final int nFullDomains = fullDomains.size();
+			final int[] fullToMarginal = new int[nFullDomains];
+			
+			for (Factor factor : model.getFactors())
+			{
+				final DiscreteFactor discreteFactor = (DiscreteFactor)factor;
+				JointDomainIndexer factorDomains = discreteFactor.getDomainList();
+				final int nFactorDomains = factorDomains.size();
+				
+				final double[] beliefs = discreteFactor.getBelief();
+				final int[][] beliefIndices = discreteFactor.getPossibleBeliefIndices();
+				
+				// Marginalize corresponding beliefs from full table.
+				final IFactorTable beliefTable = FactorTable.create(discreteFactor.getFactorTable().getDomainIndexer());
+				beliefTable.setWeightsSparse(beliefIndices, beliefs);
+				
+				final List<? extends VariableBase> factorVars = discreteFactor.getSiblings();
+				
+				for (int from = 0, remove = nFactorDomains; from < nFullDomains; ++from)
+				{
+					final VariableBase fromVar = discreteFactor2.getSibling(from);
+					final int to = factorVars.indexOf(new2old.get(fromVar));
+					fullToMarginal[from] = to >= 0 ? to : remove++;
+				}
+				
+				final JointDomainReindexer marginalizer =
+					JointDomainReindexer.createPermuter(fullDomains, factorDomains, fullToMarginal);
+		
+				final IFactorTable beliefTable2 = fullTable.convert(marginalizer);
+				final double[] beliefs2 = beliefTable2.getWeightsSparseUnsafe();
+				assertArrayEquals(beliefs2, beliefs, 1e-10);
+			}
 		}
 		
 		double score = model.getScore();

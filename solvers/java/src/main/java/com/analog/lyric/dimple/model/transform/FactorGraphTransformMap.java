@@ -2,9 +2,8 @@ package com.analog.lyric.dimple.model.transform;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +15,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.google.common.collect.Iterables;
 
 public class FactorGraphTransformMap
 {
@@ -28,7 +28,7 @@ public class FactorGraphTransformMap
 	private final FactorGraph _targetModel;
 	private final Map<Factor,Factor> _sourceToTargetFactors;
 	private final Map<VariableBase, VariableBase> _sourceToTargetVariables;
-	private final List<AddedDeterministicVariable<?>> _addedDeterministicVariables;
+	private final LinkedHashMap<VariableBase, AddedDeterministicVariable<?>> _addedDeterministicVariables;
 	private final Set<VariableBase> _conditionedVariables;
 	
 	public static abstract class AddedDeterministicVariable<Var extends VariableBase>
@@ -130,7 +130,7 @@ public class FactorGraphTransformMap
 		_targetModel = target;
 		_sourceToTargetVariables = identity? null : new HashMap<VariableBase,VariableBase>(source.getVariableCount());
 		_sourceToTargetFactors = identity? null : new HashMap<Factor,Factor>(source.getFactorCount());
-		_addedDeterministicVariables = new LinkedList<AddedDeterministicVariable<?>>();
+		_addedDeterministicVariables = new LinkedHashMap<VariableBase, AddedDeterministicVariable<?>>();
 		_conditionedVariables = new LinkedHashSet<VariableBase>();
 	}
 	
@@ -161,12 +161,12 @@ public class FactorGraphTransformMap
 	
 	public void addDeterministicVariable(AddedDeterministicVariable<?> addedVar)
 	{
-		_addedDeterministicVariables.add(addedVar);
+		_addedDeterministicVariables.put(addedVar.getVariable(), addedVar);
 	}
 	
-	public List<AddedDeterministicVariable<?>> addedDeterministicVariables()
+	public Iterable<AddedDeterministicVariable<?>> addedDeterministicVariables()
 	{
-		return _addedDeterministicVariables;
+		return Iterables.unmodifiableIterable(_addedDeterministicVariables.values());
 	}
 	
 	public void addFactorMapping(Factor sourceFactor, Factor targetFactor)
@@ -177,6 +177,11 @@ public class FactorGraphTransformMap
 	public void addVariableMapping(VariableBase sourceVariable, VariableBase targetVariable)
 	{
 		_sourceToTargetVariables.put(sourceVariable, targetVariable);
+	}
+	
+	public <Var extends VariableBase> AddedDeterministicVariable<Var> getAddedDeterministicVariable(Var targetVariable)
+	{
+		return (AddedDeterministicVariable<Var>) _addedDeterministicVariables.get(targetVariable);
 	}
 	
 	public Set<VariableBase> conditionedVariables()
