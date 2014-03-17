@@ -343,14 +343,14 @@ public class FactorGraph extends FactorBase
 	public Factor addFactor(String factorFunctionName, Object ... vars)
 	{
 		if (customFactorExists(factorFunctionName))
-			return addFactor(new CustomFactorFunctionWrapper(factorFunctionName), (Object[])vars);
+			return addFactor(new CustomFactorFunctionWrapper(factorFunctionName), vars);
 		else
 		{
 			String fqName = "com.analog.lyric.dimple.factorfunctions." + factorFunctionName;
 			try
 			{
 				FactorFunction factorFunction = (FactorFunction)Class.forName(fqName).getConstructor((Class<FactorFunction>[])null).newInstance();
-				return addFactor(factorFunction, (Object[])vars);
+				return addFactor(factorFunction, vars);
 			}
 			catch (Exception e)
 			{
@@ -1196,7 +1196,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	@Override
-	public List<INode> getSiblings()
+	public List<? extends VariableBase> getSiblings()
 	{
 		updateSiblings();
 		return super.getSiblings();

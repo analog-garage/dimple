@@ -73,7 +73,7 @@ public interface INode  extends INameable
 	 * @see #getSiblingCount()
 	 * @see #getSibling(int)
 	 */
-    public List<INode> getSiblings();
+    public List<? extends INode> getSiblings();
     
     /**
      * Returns the size of the {@link #getSiblings()} list but without

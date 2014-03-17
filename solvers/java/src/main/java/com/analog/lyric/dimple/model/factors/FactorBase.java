@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.factors;
 
+import java.util.List;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -67,5 +69,12 @@ public abstract class FactorBase extends Node
 		// Factors may only be connected to variables so this cast should be safe.
 		return (VariableBase)super.getSibling(i);
 	}
+
+	@Override
+	public List<? extends VariableBase> getSiblings()
+	{
+		return (List<VariableBase>)super.getSiblings();
+	}
+	
 }
 

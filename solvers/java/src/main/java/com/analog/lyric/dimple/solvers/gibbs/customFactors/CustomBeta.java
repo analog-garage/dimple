@@ -23,7 +23,6 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
@@ -106,7 +105,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<INode> siblings = _factor.getSiblings();
+		List<? extends VariableBase> siblings = _factor.getSiblings();
 		_hasConstantAlpha = false;
 		_hasConstantBeta = false;
 		_alphaParameterPort = NO_PORT;
@@ -132,7 +131,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
-				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(_alphaParameterPort)).getSolver());
+				_alphaVariable = (SRealVariable)((siblings.get(_alphaParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 			
@@ -142,7 +141,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 			else 						// Variable precision
 			{
 				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);
-				_betaVariable = (SRealVariable)(((VariableBase)siblings.get(_betaParameterPort)).getSolver());
+				_betaVariable = (SRealVariable)((siblings.get(_betaParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 		}

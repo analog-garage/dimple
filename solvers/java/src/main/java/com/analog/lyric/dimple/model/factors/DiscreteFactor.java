@@ -24,7 +24,6 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.TableFactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -111,7 +110,7 @@ public class DiscreteFactor extends Factor
 	public void replaceVariablesWithJoint(VariableBase [] variablesToJoin, VariableBase newJoint)
 	{
 		//Support a mixture of variables referred to in this factor and previously not referred to in this factor
-		List<INode> ports = getSiblings();
+		List<? extends VariableBase> ports = getSiblings();
 		ArrayList<VariableBase> newVariables = new ArrayList<VariableBase>();
 		
 

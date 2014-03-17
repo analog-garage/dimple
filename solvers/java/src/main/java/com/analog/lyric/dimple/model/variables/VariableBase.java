@@ -24,7 +24,6 @@ import java.util.Map;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -141,6 +140,12 @@ public abstract class VariableBase extends Node implements Cloneable
     	return (Factor)super.getSibling(i);
     }
     
+	@Override
+	public List<Factor> getSiblings()
+	{
+		return (List<Factor>)super.getSiblings();
+	}
+	
     /**
      * Returns the solver-specific variable instance associated with this model variable if any.
      */
@@ -440,7 +445,7 @@ public abstract class VariableBase extends Node implements Cloneable
 	 */
 	public void remove(Factor factor)
 	{
-		List<INode> siblings = getSiblings();
+		List<Factor> siblings = getSiblings();
 		
 		boolean found=false;
 		

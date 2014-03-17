@@ -783,7 +783,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 	
 	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
-	public Set<IRealConjugateSamplerFactory> findConjugateSamplerFactories(List<INode> factors)
+	public Set<IRealConjugateSamplerFactory> findConjugateSamplerFactories(List<? extends Factor> factors)
 	{
 		Set<IRealConjugateSamplerFactory> commonSamplers = new HashSet<IRealConjugateSamplerFactory>();
 

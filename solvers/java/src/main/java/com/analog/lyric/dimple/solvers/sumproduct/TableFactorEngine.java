@@ -17,10 +17,8 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
-import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 
 /*
@@ -39,11 +37,10 @@ public class TableFactorEngine
 	
 	public void updateEdge(int outPortNum)
 	{
-		List<INode> siblings = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
 	    double[] values = _tableFactor.getFactorTable().getWeightsSparseUnsafe();
 	    int tableLength = table.length;
-	    int numPorts = siblings.size();
+	    int numPorts = _factor.getSiblingCount();
 	    
         double[] outputMsgs = _tableFactor.getOutPortMsgs()[outPortNum];
         double [][] inputMsgs = _tableFactor.getInPortMsgs();
@@ -105,13 +102,10 @@ public class TableFactorEngine
 	
 	public void update()
 	{
-
-		
-		List<INode> ports = _factor.getSiblings();
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
 	    double[] values = _tableFactor.getFactorTable().getWeightsSparseUnsafe();
 	    int tableLength = table.length;
-	    int numPorts = ports.size();
+	    int numPorts = _factor.getSiblingCount();
 	    
 	    
 	    double [][] outMsgs = _tableFactor.getOutPortMsgs();

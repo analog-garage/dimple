@@ -79,7 +79,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 		{
 			for (INode node : (IMapList<INode>)allIncludedNodes)
 			{
-				List<INode> siblings = node.getSiblings();
+				List<? extends INode> siblings = node.getSiblings();
 				int numSiblings = siblings.size();
 				NodeUpdateState nodeState = new NodeUpdateState(numSiblings);
 				int numSiblingsInSubGraph = 0;
@@ -124,7 +124,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 						// Use node update
 						schedule.add(new NodeScheduleEntry(node));
 						int nextNodeCount = 0;
-						List<INode> siblings = node.getSiblings();
+						List<? extends INode> siblings = node.getSiblings();
 						int numSiblings = siblings.size();
 						for (int index = 0; index < numSiblings; index++)
 						{
@@ -153,7 +153,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 					{
 						// Use edge update
 						int nextNodeCount = 0;
-						List<INode> siblings = node.getSiblings();
+						List<? extends INode> siblings = node.getSiblings();
 						int numSiblings = siblings.size();
 						for (int index = 0; index < numSiblings; index++)
 						{

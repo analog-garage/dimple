@@ -407,7 +407,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<INode> siblingNodes = node.getSiblings();
+			List<? extends INode> siblingNodes = node.getSiblings();
 			int nSiblings = siblingNodes.size();
 			if (nSiblings > 0)
 			{
@@ -473,7 +473,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<INode> portsOut = node.getSiblings();
+			List<? extends INode> portsOut = node.getSiblings();
 			int nPortsOut = portsOut.size();
 			if (nPortsOut > 0)
 			{
