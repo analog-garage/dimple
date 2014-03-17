@@ -52,7 +52,8 @@ public abstract class JointDomainReindexer
 			removedIndices =
 				converter._removedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[converter._removedDomains.size()];
 			int joinedSize =
-				Math.abs(fromIndices.length - toIndices.length) - Math.abs(addedIndices.length - removedIndices.length);
+				Math.abs(Math.abs(fromIndices.length - toIndices.length) -
+					Math.abs(addedIndices.length - removedIndices.length));
 			joinedIndices = joinedSize == 0 ? ArrayUtil.EMPTY_INT_ARRAY : new int[joinedSize];
 		}
 		
@@ -365,6 +366,7 @@ public abstract class JointDomainReindexer
 	 * Creates a converter that splits a {@link JointDiscreteDomain} at given {@code offset} in
 	 * {@code fromDomains} into its constituent subdomains.
 	 * <p>
+	 * @see #createSplitter(JointDomainIndexer, int...)
 	 * @see #createJoiner(JointDomainIndexer, int, int)
 	 */
 	public static JointDomainIndexJoiner createSplitter(JointDomainIndexer fromDomains, int offset)
@@ -372,6 +374,36 @@ public abstract class JointDomainReindexer
 		return JointDomainIndexJoiner.createSplitter(fromDomains, offset);
 	}
 	
+	/**
+	 * Creates a converter that splits a {@link JointDiscreteDomain} at given {@code offsets} in
+	 * {@code fromDomains} into its constituent subdomains.
+	 * <p>
+	 * @see #createSplitter(JointDomainIndexer, int)
+	 * @see #createJoiner(JointDomainIndexer, int, int)
+	 */
+	public static JointDomainReindexer createSplitter(JointDomainIndexer fromDomains, int ... offsets)
+	{
+		offsets = offsets.clone();
+		Arrays.sort(offsets);
+		
+		JointDomainReindexer indexer = null;
+		
+		for (int i = offsets.length; --i>=0;)
+		{
+			final int offset = offsets[i];
+			
+			final JointDomainIndexJoiner splitter = createSplitter(fromDomains, offset);
+			indexer = indexer != null ? indexer.combineWith(splitter) : splitter;
+			fromDomains = indexer.getToDomains();
+		}
+		
+		return indexer;
+	}
+
+	/**
+	 * Creates a new converter that combines this one with {@code that} by first
+	 * applying this conversion and passing the result to {@code that}.
+	 */
 	public JointDomainReindexer combineWith(JointDomainReindexer that)
 	{
 		return ChainedJointDomainReindexer.create(this, that);
