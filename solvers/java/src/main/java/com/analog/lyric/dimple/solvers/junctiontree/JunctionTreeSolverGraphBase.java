@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
@@ -53,7 +53,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	private final JunctionTreeTransform _transformer;
 	private final IFactorGraphFactory<?> _solverFactory;
 	
-	private FactorGraphTransformMap _transformMap = null;
+	private JunctionTreeTransformMap _transformMap = null;
 	
 	/*--------------
 	 * Construction
@@ -101,7 +101,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public double getInternalEnergy()
 	{
-		final FactorGraphTransformMap transformMap = getTransformMap();
+		final JunctionTreeTransformMap transformMap = getTransformMap();
 		if (transformMap == null)
 		{
 			return Double.NaN;
@@ -130,7 +130,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public double getScore()
 	{
-		final FactorGraphTransformMap transformMap = getTransformMap();
+		final JunctionTreeTransformMap transformMap = getTransformMap();
 		if (transformMap == null)
 		{
 			return Double.NaN;
@@ -303,7 +303,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * Returns transformed graph and accompanying mapping data. May be null if not yet computed
 	 * (i.e. {@link #initialize()} not yet run.
 	 */
-	public FactorGraphTransformMap getTransformMap()
+	public JunctionTreeTransformMap getTransformMap()
 	{
 		return _transformMap;
 	}

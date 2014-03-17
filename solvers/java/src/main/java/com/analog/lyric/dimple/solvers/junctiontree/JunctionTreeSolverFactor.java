@@ -27,8 +27,8 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
@@ -243,7 +243,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		{
 			_reindexerComputed = true;
 			
-			final FactorGraphTransformMap transformMap = _root.getTransformMap();
+			final JunctionTreeTransformMap transformMap = _root.getTransformMap();
 			final Factor sourceFactor = getFactor();
 			final Factor targetFactor = transformMap.sourceToTargetFactor(sourceFactor);
 
@@ -270,7 +270,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 			for (int ti = 0; ti < nTargetVars; ++ti)
 			{
 				final VariableBase targetVar = targetFactor.getSibling(ti);
-				final AddedDeterministicVariable<?> addedJointVar =
+				final AddedJointVariable<?> addedJointVar =
 					transformMap.getAddedDeterministicVariable(targetVar);
 				if (addedJointVar == null)
 				{

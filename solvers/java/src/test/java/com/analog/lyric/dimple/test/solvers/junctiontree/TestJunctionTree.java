@@ -217,11 +217,10 @@ public class TestJunctionTree
 		double internalEnergy2 = model2.getInternalEnergy();
 		assertEquals(internalEnergy, internalEnergy2, 1e-10);
 
-		// FIXME
-//		double entropy = model.getBetheEntropy();
-//		double entropy1 = model2.getBetheEntropy();
-//		assertEquals(entropy, entropy1, 1e-10);
-
+		// The entropy and free energy depend on the factorization, and thus cannot be compared vs. the
+		// joint factor and cannot be easily compared with original model either because it depends on
+		// the beliefs....
+		
 		//
 		// Now try MAP (minsum)
 		//
