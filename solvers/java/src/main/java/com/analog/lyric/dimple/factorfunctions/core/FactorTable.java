@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntDoubleHashMap;
@@ -259,9 +258,12 @@ public class FactorTable extends SparseFactorTableBase
 			{
 				other.sparseIndexToIndices(si, scratch.fromIndices);
 				converter.convertIndices(scratch);
-				int ji = domains.jointIndexFromIndices(scratch.toIndices);
-				// OpenIntDoubleHashMap.get returns 0.0 if no entry is found, which is exactly what we want here.
-				jointIndexToWeight.put(ji, jointIndexToWeight.get(ji) + other.getWeightForSparseIndex(si));
+				if (scratch.toIndices[0] >= 0)
+				{
+					int ji = domains.jointIndexFromIndices(scratch.toIndices);
+					// OpenIntDoubleHashMap.get returns 0.0 if no entry is found, which is exactly what we want here.
+					jointIndexToWeight.put(ji, jointIndexToWeight.get(ji) + other.getWeightForSparseIndex(si));
+				}
 			}
 			scratch.release();
 			
@@ -2251,72 +2253,6 @@ public class FactorTable extends SparseFactorTableBase
 		return converter;
 	}
 
-	/*-------------------------
-	 * FactorTableBase methods
-	 */
-	
-	@Override
-	protected void initTableConditionedOn(
-		IFactorTable newTable, JointDomainReindexer remover, int[] removedValueIndices, boolean useWeight)
-	{
-		final int toCardinality = remover.getToDomains().getCardinality();
-
-		final int removedji = remover.getRemovedDomains().jointIndexFromIndices(removedValueIndices);
-
-		if (!hasSparseRepresentation() || toCardinality <= sparseSize())
-		{
-			// If new table is not expected to have many more entries than the original table, it
-			// is most efficient to walk through the new joint indices, convert back to the old
-			// indices and lookup the values from the original table.
-			final JointDomainReindexer inverseRemover = remover.getInverse();
-
-			// Use dense representation for the conversion.
-			if (useWeight)
-			{
-				newTable.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
-			}
-			else
-			{
-				newTable.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
-			}
-			
-			for (int toji = 0; toji < toCardinality; ++toji)
-			{
-				int fromji = inverseRemover.convertJointIndex(toji, removedji);
-				if (useWeight)
-				{
-					newTable.setWeightForJointIndex(getWeightForJointIndex(fromji), toji);
-				}
-				else
-				{
-					newTable.setEnergyForJointIndex(getEnergyForJointIndex(fromji), toji);
-				}
-			}
-		}
-		else
-		{
-			// Otherwise, walk through the existing entries and only copy the ones that have
-			// the right value for the removed dimensions.
-			
-			final AtomicInteger removedjiCur = new AtomicInteger();
-			for (int fromsi = 0; fromsi < sparseSize(); ++fromsi)
-			{
-				int toji = remover.convertJointIndex(sparseIndexToJointIndex(fromsi), 0, removedjiCur);
-				if (removedjiCur.get() == removedji)
-				{
-					if (useWeight)
-					{
-						newTable.setWeightForJointIndex(getWeightForSparseIndex(fromsi), toji);
-					}
-					else
-					{
-						newTable.setEnergyForJointIndex(getEnergyForSparseIndex(fromsi), toji);
-					}
-				}
-			}
-		}
-	}
-	
 	/*-----------------
 	 * Private methods
 	 */

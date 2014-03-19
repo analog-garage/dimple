@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
+import cern.colt.list.IntArrayList;
 import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -77,10 +78,16 @@ public abstract class JointDomainReindexer
 		 * {@code removedJointIndexRef} is non-null and {@code #converter}
 		 * has non-null for {@link JointDomainReindexer#getRemovedDomains()},
 		 * this will compute a joint index from {@code #removedIndices} and set
-		 * it in that {@code removedJiontIndexRef}.
+		 * it in that {@code removedJointIndexRef}. Returns -1 if {@code #toIndices}
+		 * contains negative value.
 		 */
 		public int readIndices(AtomicInteger removedJointIndexRef)
 		{
+			if (toIndices[0] < 0)
+			{
+				return -1;
+			}
+			
 			int toJointIndex = converter._toDomains.jointIndexFromIndices(toIndices);
 			if (removedJointIndexRef != null && removedIndices.length > 0)
 			{
@@ -126,6 +133,88 @@ public abstract class JointDomainReindexer
 		_removedDomains = removedDomains;
 	}
 
+	/**
+	 * Creates a converter that removes domains conditioned on the specified value indices.
+	 * <p>
+	 * @param fromDomains
+	 * @param valueIndices is an array of length equal to size of {@code fromDomains}. Each entry
+	 * is either a negative value to indicate that that dimension will be retained in the new graph
+	 * or an index value that is valid for that dimension that indicates the value to be conditioned on.
+	 *
+	 * @since 0.05
+	 */
+	public static JointDomainReindexer createConditioner(JointDomainIndexer fromDomains, int[] valueIndices)
+	{
+		final int fromSize = fromDomains.size();
+
+		if (valueIndices.length != fromSize)
+		{
+			throw new ArrayIndexOutOfBoundsException(); // FIXME add message
+		}
+		
+		final int[] oldToNew = new int[fromSize];
+		final IntArrayList conditionedValues = new IntArrayList();
+		int firstConditionedIndex = -1;
+		
+		for (int i = 0, j = 0; i < fromSize; ++i)
+		{
+			final int valueIndex = valueIndices[i];
+			if (valueIndex >= 0)
+			{
+				if (valueIndex >= fromDomains.getDomainSize(i))
+				{
+					throw new IndexOutOfBoundsException(); // FIXME add message
+				}
+				conditionedValues.add(valueIndex);
+				oldToNew[i] = -1;
+				if (firstConditionedIndex < 0)
+				{
+					firstConditionedIndex = i;
+				}
+			}
+			else
+			{
+				oldToNew[i] = j++;
+			}
+		}
+		
+		if (conditionedValues.isEmpty())
+		{
+			// No conditioning - return identity reindexer.
+			return createPermuter(fromDomains,fromDomains);
+		}
+
+		conditionedValues.trimToSize();
+
+		JointDomainReindexer permuter = null;
+		
+		if (firstConditionedIndex + conditionedValues.size() != fromSize)
+		{
+			// Not all conditioned dimensions are already at the end, so a permutation is needed.
+			final int nNotConditioned = fromSize - conditionedValues.size();
+			for (int i = firstConditionedIndex, j = 0; i < fromSize; ++i)
+			{
+				if (oldToNew[i] < 0)
+				{
+					oldToNew[i] = nNotConditioned + j++;
+				}
+			}
+			
+			permuter = createPermuter(fromDomains, oldToNew);
+			fromDomains = permuter.getToDomains();
+		}
+		
+		JointDomainReindexer conditioner =
+			JointDomainIndexConditioner._createConditioner(fromDomains, conditionedValues.elements());
+		
+		if (permuter != null)
+		{
+			conditioner = permuter.combineWith(conditioner);
+		}
+		
+		return conditioner;
+	}
+	
 	/**
 	 * Creates a converter that implements a permutation of the domains in
 	 * {@code fromDomains} and {@code addedDomains} into {@code ToDomains} and
@@ -254,6 +343,45 @@ public abstract class JointDomainReindexer
 			oldToNew[i] = i;
 		}
 		return createPermuter(fromDomains, toDomains, oldToNew);
+	}
+	
+	/**
+	 * Creates a converter to convert {@code fromDomains} by permuting the order of its
+	 * domains according to the {@code oldToNew} mapping.
+	 * 
+	 * @param fromDomains
+	 * @param oldToNew must have the same length as the size of {@code fromDomains} and must contain
+	 * integers in the range [0,size-1] with no duplicates.
+	 *
+	 * @since 0.05
+	 */
+	public static JointDomainReindexer createPermuter(JointDomainIndexer fromDomains, int[] oldToNew)
+	{
+		final int size = fromDomains.size();
+		
+		if (oldToNew.length != size)
+		{
+			throw new IllegalArgumentException(); // FIXME- provide a message
+		}
+		
+		DiscreteDomain[] domains = new DiscreteDomain[size];
+		for (int i = 0; i < size; ++i)
+		{
+			domains[oldToNew[i]] = fromDomains.get(i);
+		}
+		
+		final BitSet fromOutputSet = fromDomains.getOutputSet();
+		BitSet outputSet = null;
+		if (fromOutputSet != null)
+		{
+			outputSet = new BitSet(size);
+			for (int i = 0; i < size; ++i)
+			{
+				outputSet.set(oldToNew[i], fromOutputSet.get(i));
+			}
+		}
+		
+		return createPermuter(fromDomains, JointDomainIndexer.create(outputSet, domains), oldToNew);
 	}
 	
 	/**
@@ -531,8 +659,11 @@ public abstract class JointDomainReindexer
 						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
 					}
 					convertIndices(scratch);
-					values[_toDomains.jointIndexFromIndices(scratch.toIndices)]
-						+= energyToWeight(oldEnergies[oldJoint]);
+					if (scratch.toIndices[0] >= 0)
+					{
+						values[_toDomains.jointIndexFromIndices(scratch.toIndices)]
+							+= energyToWeight(oldEnergies[oldJoint]);
+					}
 				}
 			}
 
@@ -589,7 +720,10 @@ public abstract class JointDomainReindexer
 				{
 					_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
 					convertIndices(scratch);
-					weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+					if (scratch.toIndices[0] >= 0)
+					{
+						weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+					}
 				}
 			}
 			else
@@ -658,8 +792,11 @@ public abstract class JointDomainReindexer
 			for (int added = 0; added < maxAdded; ++added)
 			{
 				final int newJoint = convertJointIndex(oldJoint, added);
-				final int newSparse = jointIndexToSparseIndex.get(newJoint);
-				values[newSparse] += oldWeight;
+				if (newJoint >= 0)
+				{
+					final int newSparse = jointIndexToSparseIndex.get(newJoint);
+					values[newSparse] += oldWeight;
+				}
 			}
 		}
 		
@@ -762,8 +899,11 @@ public abstract class JointDomainReindexer
 			for (int added = 0; added < maxAdded; ++added)
 			{
 				final int newJoint = convertJointIndex(oldJoint, added);
-				final int newSparse = jointIndexToSparseIndex.get(newJoint);
-				weights[newSparse] += oldWeight;
+				if (newJoint >= 0)
+				{
+					final int newSparse = jointIndexToSparseIndex.get(newJoint);
+					weights[newSparse] += oldWeight;
+				}
 			}
 		}
 		

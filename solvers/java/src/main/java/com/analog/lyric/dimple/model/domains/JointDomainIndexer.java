@@ -242,6 +242,43 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return JointDomainIndexer.create(outputs, domains);
 	}
 	
+	/**
+	 * Creates a new indexer constructed from the {@code length} domains in this list starting
+	 * at {@code offset}. Returns a directed indexer if this indexer is directed.
+	 * 
+	 * @since 0.05
+	 */
+	public JointDomainIndexer subindexer(int offset, int length)
+	{
+		if (offset < 0 || offset >= size() || length < 0 || length + offset > size())
+		{
+			throw new IllegalArgumentException(String.format("Bad offset/length %d/%d for subindexer", offset, length));
+		}
+		
+		final DiscreteDomain[] domains = new DiscreteDomain[length];
+		for (int i = 0; i < length; ++i)
+		{
+			domains[i] = get(i + offset);
+		}
+		
+		BitSet outputs = null;
+		
+		if (isDirected())
+		{
+			final BitSet theseOutputs = getOutputSet();
+			outputs = new BitSet(length);
+			for (int i = 0; i < length; ++i)
+			{
+				if (theseOutputs.get(i + offset))
+				{
+					outputs.set(i);
+				}
+			}
+		}
+		
+		return JointDomainIndexer.create(outputs, domains);
+	}
+	
 	/*----------------
 	 * Object methods
 	 */

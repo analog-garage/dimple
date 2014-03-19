@@ -578,7 +578,7 @@ public class TestFactorTable
 		table.setDirected(BitSetUtil.bitsetFromIndices(3, 2));
 		table.setDeterministicOutputIndices(new int[] { 0, 1, 2, 0, 1, 2, 0, 1, 2});
 		testConditionOn(table, 1, -1, -1);
-		testConditionOn(table, -1, -1, 1);
+		testConditionOn(table, -1, 1, -1);
 		
 		table = FactorTable.create(domain256, domain256, domain256, domain256);
 		

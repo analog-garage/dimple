@@ -81,6 +81,9 @@ public class TestJointDomainIndexer
 		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputDomainIndices());
 		assertArrayEquals(new Object[] { d2, d3, d2, d3}, dlfoo.toArray());
 		
+		assertEquals(dl2to3, dlfoo.subindexer(0, 2));
+		assertEquals(dl2from3, dlfoo.subindexer(2, 2));
+		
 		JointDomainIndexer dlbar = JointDomainIndexer.create((BitSet)null, dlfoo);
 		assertTrue(dlfoo.domainsEqual(dlbar));
 		assertFalse(dlbar.isDirected());
@@ -551,6 +554,11 @@ public class TestJointDomainIndexer
 		
 		JointDomainReindexer dl3by4_to_dl4 = JointDomainReindexer.createPermuter(dl3by4, dl4, new int[] {1,0});
 		testInvariants(dl3by4_to_dl4);
+		
+		// Conditioning
+		JointDomainReindexer dl2by3by4by5_conditionedOn_2_3 =
+			JointDomainReindexer.createConditioner(dl2by3by4by5, new int[] {-1, -1, 2, 3});
+		testInvariants(dl2by3by4by5_conditionedOn_2_3);
 
 		//
 		// Construction errors
@@ -648,33 +656,45 @@ public class TestJointDomainIndexer
 				assertEquals(to, converter.convertJointIndex(from, added));
 				assertEquals(to, converter.convertJointIndex(from, added, removedRef));
 				
-				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), null));
-				assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), addedRef));
-				assertEquals(added, addedRef.get());
-				
 				indices.writeIndices(from, added);
 				converter.convertIndices(indices);
-				int to2 = indices.readIndices(null);
-				assertEquals(to, to2);
-				assertEquals(to, indices.readIndices(removedRef2));
-				assertEquals(removedRef.get(), removedRef2.get());
-				
-				if (maxRemoved == 1)
+
+				if (indices.toIndices[0] < 0)
 				{
-					assertEquals(fromWeight, toDenseWeights[to], 0.0);
-					assertEquals(fromEnergy, toDenseEnergies[to], 0.0);
+					assertTrue(to < 0);
 				}
-				else
+				
+				if (to >= 0)
 				{
-					// Weight must be equal sum of entries mapping to this one
-					double weightSum = 0.0;
-					for (int removed = 0; removed < maxRemoved; ++removed)
+					assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), null));
+					assertEquals(from, inverse.convertJointIndex(to, removedRef.get(), addedRef));
+					assertEquals(added, addedRef.get());
+
+					int to2 = indices.readIndices(null);
+					assertEquals(to, to2);
+					assertEquals(to, indices.readIndices(removedRef2));
+					assertEquals(removedRef.get(), removedRef2.get());
+
+					if (maxRemoved == 1)
 					{
-						int fromInverse = inverse.convertJointIndex(to, removed);
-						weightSum += fromDenseWeights[fromInverse];
+						assertEquals(fromWeight, toDenseWeights[to], 0.0);
+						assertEquals(fromEnergy, toDenseEnergies[to], 0.0);
 					}
-					assertEquals(weightSum, toDenseWeights[to], 1e-12);
-					assertEquals(weightToEnergy(weightSum), toDenseEnergies[to], 1e-12);
+					else
+					{
+						// Weight must be equal sum of entries mapping to this one
+						double weightSum = 0.0;
+						for (int removed = 0; removed < maxRemoved; ++removed)
+						{
+							int fromInverse = inverse.convertJointIndex(to, removed);
+							if (fromInverse >= 0)
+							{
+								weightSum += fromDenseWeights[fromInverse];
+							}
+						}
+						assertEquals(weightSum, toDenseWeights[to], 1e-12);
+						assertEquals(weightToEnergy(weightSum), toDenseEnergies[to], 1e-12);
+					}
 				}
 			}
 		}
@@ -690,19 +710,22 @@ public class TestJointDomainIndexer
 			fromDenseSparseToJoint[i] = i;
 		}
 		final int[] toDenseSparseToJoint = converter.convertSparseToJointIndex(fromDenseSparseToJoint);
-		assertEquals(maxTo, toDenseSparseToJoint.length);
-		for (int i = toDenseSparseToJoint.length; --i>=0;)
+		assertTrue(maxTo >= toDenseSparseToJoint.length);
+		if (maxTo == toDenseSparseToJoint.length)
 		{
-			assertEquals(i, toDenseSparseToJoint[i]);
+			for (int i = toDenseSparseToJoint.length; --i>=0;)
+			{
+				assertEquals(i, toDenseSparseToJoint[i]);
+			}
+			assertArrayEquals(
+				toDenseWeights,
+				converter.convertSparseWeights(fromDenseWeights, fromDenseSparseToJoint, toDenseSparseToJoint),
+				1e-12);
+			assertArrayEquals(
+				toDenseEnergies,
+				converter.convertSparseEnergies(fromDenseEnergies, fromDenseSparseToJoint, toDenseSparseToJoint),
+				1e-12);
 		}
-		assertArrayEquals(
-			toDenseWeights,
-			converter.convertSparseWeights(fromDenseWeights, fromDenseSparseToJoint, toDenseSparseToJoint),
-			1e-12);
-		assertArrayEquals(
-			toDenseEnergies,
-			converter.convertSparseEnergies(fromDenseEnergies, fromDenseSparseToJoint, toDenseSparseToJoint),
-			1e-12);
 		
 		// Test a random sparse selection
 		BitSet sparseSet = new BitSet(maxFrom);
@@ -722,7 +745,10 @@ public class TestJointDomainIndexer
 			for (int added = 0; added < maxAdded; ++added)
 			{
 				int newSparse = converter.convertJointIndex(oldSparse, added);
-				assertTrue(Arrays.binarySearch(toSparseToJoint, newSparse) >= 0);
+				if (newSparse >= 0)
+				{
+					assertTrue(Arrays.binarySearch(toSparseToJoint, newSparse) >= 0);
+				}
 			}
 		}
 		final double[] fromSparseWeights = new double[fromSparseToJoint.length];
