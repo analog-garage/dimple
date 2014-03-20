@@ -123,6 +123,10 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 			// Must be univariate
 			if (v instanceof RealJoint)
 				return false;
+			
+			// Must be unbounded
+			if (v.getDomain().asReal().isBounded())
+				return false;
 		}
 		return true;
 	}

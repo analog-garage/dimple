@@ -131,7 +131,7 @@ public class RealDomain extends Domain
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public final boolean equals(Object other)
 	{
 		if (this == other)
 			return true;
@@ -156,13 +156,13 @@ public class RealDomain extends Domain
 	}
 	
 	@Override
-	public boolean inDomain(Object value)
+	public final boolean inDomain(Object value)
 	{
 		return value instanceof Number && inDomain(((Number)value).doubleValue());
 	}
 	
 	@Override
-	public boolean isReal()
+	public final boolean isReal()
 	{
 		return true;
 	}
@@ -171,15 +171,25 @@ public class RealDomain extends Domain
 	 * RealDomain methods
 	 */
 	
-	public double getLowerBound() {return _lowerBound;}
-	public double getUpperBound() {return _upperBound;}
+	public final double getLowerBound() {return _lowerBound;}
+	public final double getUpperBound() {return _upperBound;}
 	
 	/**
 	 * True if {@code value} is in the range [{@link #getLowerBound()}, {@link #getUpperBound()}].
 	 */
-	public boolean inDomain(double value)
+	public final boolean inDomain(double value)
 	{
 		return (value >= _lowerBound) && (value <= _upperBound);
+	}
+	
+	public final boolean isBounded()
+	{
+		return !isUnbounded();
+	}
+	
+	public final boolean isUnbounded()
+	{
+		return (_lowerBound == Double.NEGATIVE_INFINITY) && (_upperBound == Double.POSITIVE_INFINITY);
 	}
 	
 	

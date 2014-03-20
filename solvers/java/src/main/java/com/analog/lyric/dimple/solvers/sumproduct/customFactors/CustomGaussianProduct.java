@@ -108,6 +108,11 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		if (a instanceof RealJoint || b instanceof RealJoint)
 			return false;
 		
+		// Variables must be unbounded
+		if (a.getDomain().asReal().isBounded() || b.getDomain().asReal().isBounded())
+			return false;
+
+		
 		// Constant must be non-zero
 		double constant = (Double)ff.getConstants()[0];
 		if (constant == 0)
