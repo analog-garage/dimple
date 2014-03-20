@@ -335,7 +335,7 @@ public abstract class Node implements INode, Cloneable
 
 	
 	@Override
-	public List<INode> getSiblings()
+	public List<? extends INode> getSiblings()
 	{
 		return Collections.unmodifiableList(_siblings);
 	}

@@ -102,8 +102,8 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		{
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			SRealVariable outputVariable = ((SRealVariable)_outputVariable);
-			List<INode> outputNeighboringFactors = new ArrayList<INode>();
-			for (INode n : outputVariable.getModelObject().getSiblings())
+			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
+			for (Factor n : outputVariable.getModelObject().getSiblings())
 				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
 					outputNeighboringFactors.add(n);
 			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));
@@ -123,8 +123,8 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		{
 			// If an input variable, then check conjugacy for the output variable among all of its neighbors except this factor
 			SRealJointVariable outputVariable = ((SRealJointVariable)_outputVariable);
-			List<INode> outputNeighboringFactors = new ArrayList<INode>();
-			for (INode n : outputVariable.getModelObject().getSiblings())
+			List<Factor> outputNeighboringFactors = new ArrayList<Factor>();
+			for (Factor n : outputVariable.getModelObject().getSiblings())
 				if (!n.equals(_factor))		// Don't include this factor to test conjugacy
 					outputNeighboringFactors.add(n);
 			availableSamplers.addAll(outputVariable.findConjugateSamplerFactories(outputNeighboringFactors));

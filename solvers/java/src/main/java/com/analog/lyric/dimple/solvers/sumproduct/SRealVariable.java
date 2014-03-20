@@ -17,11 +17,9 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
-import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -87,11 +85,11 @@ public class SRealVariable extends SRealVariableBase
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
     	{
-        	((NormalParameters)_outputMsgs[outPortNum]).set(_input);
+        	_outputMsgs[outPortNum].set(_input);
         	return;
     	}
     	
-    	List<INode> ports = _var.getSiblings();
+    	final int nEdges = _var.getSiblingCount();
     	
     	double mu = 0;
     	double tau = 0;
@@ -112,7 +110,7 @@ public class SRealVariable extends SRealVariableBase
     		muOfInf = mu;
     	}
     	
-    	for (int i = 0; i < ports.size(); i++)
+    	for (int i = 0; i < nEdges; i++)
     	{
     		if (i != outPortNum)
     		{

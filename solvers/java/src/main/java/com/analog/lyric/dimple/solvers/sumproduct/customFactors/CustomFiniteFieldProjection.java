@@ -16,11 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
-import java.util.List;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
@@ -43,14 +40,14 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		if (nVars <= 1)
 			throw new DimpleException("need to specify at least one bit for projection");
 		
-		List<INode> ports = _factor.getSiblings();
+		final int nEdges = _factor.getSiblingCount();
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
 		_ffVar = (SFiniteFieldVariable)factor.getSibling(0).getSolver();
-		_portIndex2bitIndex = new int[ports.size()];
+		_portIndex2bitIndex = new int[nEdges];
 		
-		for (int i = 0; i < ports.size(); i++)
+		for (int i = 0; i < nEdges; i++)
 			_portIndex2bitIndex[i] = -1;
 		
 		//get constant value and make sure it's in range
@@ -66,14 +63,14 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 			throw new DimpleException("expect finite field variable, bit positions, and bits");
 
 		
-		_bit2port = new int[ports.size()-1];
+		_bit2port = new int[nEdges-1];
 		
 		for (int i = 1; i < nVars; i++)
 		{
 			//TODO: error check
 			int index = (int)domain[i-1];
 			
-			if (index < 0 || index >= ports.size()-1)
+			if (index < 0 || index >= nEdges-1)
 				throw new DimpleException("index out of range");
 			if (_bit2port[index] != 0)
 				throw new DimpleException("Tried to set index twice");

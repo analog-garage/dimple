@@ -22,7 +22,6 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
@@ -122,8 +121,8 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 			{
 				_numParameterEdges = 1;
 				_alpha = 0;
-				List<INode> siblings = _factor.getSiblings();
-				_alphaVariable = (SRealVariable)(((VariableBase)siblings.get(PARAMETER_INDEX)).getSolver());
+				List<? extends VariableBase> siblings = _factor.getSiblings();
+				_alphaVariable = (SRealVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
 			}
 		}
 	}

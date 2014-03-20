@@ -23,7 +23,6 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
@@ -164,10 +163,10 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Save output variables
-		List<INode> siblings = _factor.getSiblings();
+		List<? extends VariableBase> siblings = _factor.getSiblings();
 		_outputVariables = new SDiscreteVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SDiscreteVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
+			_outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

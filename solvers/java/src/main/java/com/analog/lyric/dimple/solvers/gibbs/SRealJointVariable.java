@@ -939,7 +939,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	}
 	
 	// Find the set of available conjugate samplers consistent with a specific set of neighboring factors (as well as the Input)
-	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories(List<INode> factors)
+	public Set<IRealJointConjugateSamplerFactory> findConjugateSamplerFactories(List<? extends Factor> factors)
 	{
 		Set<IRealJointConjugateSamplerFactory> commonSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
 
@@ -947,7 +947,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		int numFactors = factors.size();
 		for (int i = 0; i < numFactors; i++)
 		{
-			INode factorNode = factors.get(i);
+			Factor factorNode = factors.get(i);
 			ISolverNode factor = factorNode.getSolver();
 			if (!(factor instanceof IRealJointConjugateFactor))
 			{

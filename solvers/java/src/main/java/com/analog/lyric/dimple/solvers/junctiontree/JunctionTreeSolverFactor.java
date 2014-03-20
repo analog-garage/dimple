@@ -16,9 +16,23 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import cern.colt.list.IntArrayList;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.STableFactorBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 /**
@@ -34,8 +48,9 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	
 	private final JunctionTreeSolverGraphBase<?> _root;
 	
-//	private ISolverFactor _delegate;
-//	private JointDomainReindexer _reindexer;
+	private ISolverFactor _delegate;
+	private JointDomainReindexer _reindexer;
+	private boolean _reindexerComputed = false;
 	
 	/*--------------
 	 * Construction
@@ -143,13 +158,52 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	@Override
 	public double[] getBelief()
 	{
-		return null; // FIXME
+		final ISolverFactor delegate = getDelegate();
+		final double[] beliefs = (double[]) delegate.getBelief();
+		
+		final JointDomainReindexer reindexer = getDelegateReindexer();
+		if (reindexer == null)
+		{
+			// No conversion necessary
+			return beliefs;
+		}
+		
+		final IFactorTable delegateTable = ((STableFactorBase)delegate).getFactorTable();
+		delegateTable.getDomainIndexer();
+		
+		// FIXME: doesn't handle conditioned variables
+		
+		final IFactorTable beliefTable = FactorTable.create(delegateTable.getDomainIndexer());
+		beliefTable.setWeightsSparse(delegateTable.getIndicesSparseUnsafe(), beliefs);
+		
+		final IFactorTable convertedTable = FactorTable.convert(beliefTable, reindexer);
+		
+		return convertedTable.getWeightsSparseUnsafe();
 	}
 	
 	@Override
 	public int[][] getPossibleBeliefIndices()
 	{
-		throw unsupported("getPossibleBeliefIndices"); // FIXME
+		final ISolverFactor delegate = getDelegate();
+		
+		final JointDomainReindexer reindexer = getDelegateReindexer();
+		if (reindexer == null)
+		{
+			// No conversion necessary
+			return delegate.getPossibleBeliefIndices();
+		}
+		
+		// TODO: perhaps we should cache this state with getBelief()
+		
+		final IFactorTable delegateTable = ((STableFactorBase)delegate).getFactorTable();
+		delegateTable.getDomainIndexer();
+		
+		final IFactorTable beliefTable = FactorTable.create(delegateTable.getDomainIndexer());
+		beliefTable.setWeightsSparse(delegateTable.getIndicesSparseUnsafe(), (double[])delegate.getBelief());
+		
+		final IFactorTable convertedTable = FactorTable.convert(beliefTable, reindexer);
+		
+		return convertedTable.getIndicesSparseUnsafe();
 	}
 	
 	@Override
@@ -168,23 +222,108 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	 * Private methods
 	 */
 	
-//	private ISolverFactor getDelegate()
-//	{
-//		final ISolverFactor delegate = _delegate;
-//		if (delegate != null)
-//		{
-//			return delegate;
-//		}
-//		else
-//		{
-//			return _delegate = _root.getTransformMap().sourceToTargetFactor(getFactor()).getSolver();
-//		}
-//	}
-//
-//	private JointDomainReindexer getDelegateReindexer()
-//	{
-//		return null;
-//	}
+	private ISolverFactor getDelegate()
+	{
+		final ISolverFactor delegate = _delegate;
+		if (delegate != null)
+		{
+			return delegate;
+		}
+		else
+		{
+			final Factor sourceFactor = getFactor();
+			final Factor targetFactor = _root.getTransformMap().sourceToTargetFactor(sourceFactor);
+			return _delegate = targetFactor.getSolver();
+		}
+	}
+
+	private JointDomainReindexer getDelegateReindexer()
+	{
+		if (!_reindexerComputed)
+		{
+			_reindexerComputed = true;
+			
+			final JunctionTreeTransformMap transformMap = _root.getTransformMap();
+			final Factor sourceFactor = getFactor();
+			final Factor targetFactor = transformMap.sourceToTargetFactor(sourceFactor);
+
+			// Create mapping from target vars to their index in source factor
+			final int nSourceVars = sourceFactor.getSiblingCount();
+			final Map<VariableBase,Integer> targetVarToSourceIndex = new HashMap<VariableBase, Integer>(nSourceVars);
+			for (int si = 0; si < nSourceVars; ++si)
+			{
+				final VariableBase sourceVar = sourceFactor.getSibling(si);
+				final VariableBase targetVar = transformMap.sourceToTargetVariable(sourceVar);
+				
+				if (null != targetVarToSourceIndex.put(targetVar, si))
+				{
+					// FIXME
+					throw new DimpleException("junction tree does not support factor with duplicate variables");
+				}
+			}
+			
+			final int nTargetVars = targetFactor.getSiblingCount();
+			
+			int removeIndex = nSourceVars;
+			final IntArrayList targetToSourceIndex = new IntArrayList(nTargetVars);
+			final IntArrayList targetVarsToSplit = new IntArrayList();
+			for (int ti = 0; ti < nTargetVars; ++ti)
+			{
+				final VariableBase targetVar = targetFactor.getSibling(ti);
+				final AddedJointVariable<?> addedJointVar =
+					transformMap.getAddedDeterministicVariable(targetVar);
+				if (addedJointVar == null)
+				{
+					Integer index = targetVarToSourceIndex.remove(targetVar);
+					if (index != null)
+					{
+						targetToSourceIndex.add(index);
+					}
+					else
+					{
+						targetToSourceIndex.add(removeIndex++);
+					}
+				}
+				else
+				{
+					final int nInputs = addedJointVar.getInputCount();
+					for (int i = 0; i < nInputs; ++i)
+					{
+						final VariableBase inputVar = addedJointVar.getInput(i);
+						Integer index = targetVarToSourceIndex.remove(inputVar);
+						if (index != null)
+						{
+							targetToSourceIndex.add(index);
+						}
+						else
+						{
+							targetToSourceIndex.add(removeIndex++);
+						}
+					}
+					
+					targetVarsToSplit.add(ti);
+				}
+			}
+			
+			JointDomainIndexer fromDomains = targetFactor.getFactorTable().getDomainIndexer();
+			// TODO: get target domains without forcing instantiation of factor table?
+			JointDomainIndexer toDomains = sourceFactor.getFactorTable().getDomainIndexer();
+			
+			if (!targetVarsToSplit.isEmpty())
+			{
+				targetVarsToSplit.trimToSize();
+				_reindexer = JointDomainReindexer.createSplitter(fromDomains, targetVarsToSplit.elements());
+				fromDomains = _reindexer.getToDomains();
+			}
+
+			targetToSourceIndex.trimToSize();
+			final JointDomainReindexer permuter =
+				JointDomainReindexer.createPermuter(fromDomains, toDomains, targetToSourceIndex.elements());
+			
+			_reindexer = _reindexer != null ? _reindexer.combineWith(permuter) : permuter;
+		}
+		return _reindexer;
+	}
 	
 	private RuntimeException unsupported(String method)
 	{

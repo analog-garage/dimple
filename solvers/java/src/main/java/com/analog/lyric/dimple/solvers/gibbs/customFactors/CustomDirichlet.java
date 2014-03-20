@@ -22,7 +22,6 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
@@ -123,8 +122,8 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			{
 				_numParameterEdges = 1;
 				_alpha = null;
-				List<INode> siblings = _factor.getSiblings();
-				_alphaVariable = (SRealJointVariable)(((VariableBase)siblings.get(PARAMETER_INDEX)).getSolver());
+				List<? extends VariableBase> siblings = _factor.getSiblings();
+				_alphaVariable = (SRealJointVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
 				_dimension = _alphaVariable.getDimension();
 			}
 		}

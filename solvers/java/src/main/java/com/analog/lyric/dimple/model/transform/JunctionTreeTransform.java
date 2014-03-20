@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +43,8 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedJointDiscreteVariable;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointDiscreteVariable;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
@@ -53,6 +52,8 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
@@ -72,7 +73,7 @@ import com.google.common.collect.SetMultimap;
  * <li>Determine a variable elimination order.
 
  * <li>Makes a copy of the original model and creates a mapping from old to new nodes.
- * Creates initial version of the {@link FactorGraphTransformMap}.
+ * Creates initial version of the {@link JunctionTreeTransformMap}.
 
  * <li>If {@link #useConditioning()} is true, then any variables that have a fixed value
  * will be disconnected in the new graph using {@link Factor#removeFixedVariables()} and
@@ -126,7 +127,7 @@ import com.google.common.collect.SetMultimap;
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeTransform implements IFactorGraphTransform
+public class JunctionTreeTransform
 {
 	/*-------
 	 * State
@@ -461,7 +462,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			graph.remove(_mergedFactor);
 			
 			// Create new factor attached to edge variables
-			graph.addFactor(newFactorTable, newVariables);
+			_mergedFactor = graph.addFactor(newFactorTable, newVariables);
 			
 			return true;
 		}
@@ -556,11 +557,11 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 			return _to._variables.length == _variables.length || _from._variables.length == _variables.length;
 		}
 		
-		private AddedDeterministicVariable<?> makeJointVariable(FactorGraph targetModel)
+		private AddedJointVariable<?> makeJointVariable(FactorGraph targetModel)
 		{
 			final Discrete[] edgeVars = _variables;
 			final int nEdgeVars = edgeVars.length;
-			AddedDeterministicVariable<?> addedVar = null;
+			AddedJointVariable<?> addedVar = null;
 			
 			if (nEdgeVars > 1)
 			{
@@ -602,8 +603,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * @see #transform(FactorGraph, ArrayList)
 	 * @see #transform(FactorGraph, Ordering)
 	 */
-	@Override
-	public FactorGraphTransformMap transform(FactorGraph model)
+	public JunctionTreeTransformMap transform(FactorGraph model)
 	{
 		return transform(model, buildEliminationOrder(model));
 	}
@@ -616,7 +616,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * @see #transform(FactorGraph)
 	 * @see #transform(FactorGraph, Ordering)
 	 */
-	public FactorGraphTransformMap transform(FactorGraph model, ArrayList<VariableBase> eliminationOrder)
+	public JunctionTreeTransformMap transform(FactorGraph model, ArrayList<VariableBase> eliminationOrder)
 	{
 		// Validate variables
 		final VariableList variables = model.getVariables();
@@ -671,7 +671,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	 * @see #transform(FactorGraph)
 	 * @see #transform(FactorGraph, ArrayList)
 	 */
-	public FactorGraphTransformMap transform(FactorGraph model, Ordering eliminationOrder)
+	public JunctionTreeTransformMap transform(FactorGraph model, Ordering eliminationOrder)
 	{
 		// 1) Determine an elimination order
 		
@@ -680,7 +680,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		if (orderStats.alreadyGoodForFastExactInference())
 		{
 			// If elimination order introduces no edges, graph is already a tree. Done.
-			return FactorGraphTransformMap.identity(model);
+			return JunctionTreeTransformMap.identity(model);
 		}
 		
 		if (orderStats.factorsWithDuplicateVariables() > 0)
@@ -694,10 +694,10 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		final int nVariables = variables.size();
 		final int nFactors = model.getFactorCount();
 
-		final Map<Node,Node> old2new = new HashMap<Node,Node>(nVariables * 2);
+		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
 		
-		final FactorGraphTransformMap transformMap = FactorGraphTransformMap.create(model, targetModel);
+		final JunctionTreeTransformMap transformMap = JunctionTreeTransformMap.create(model, targetModel);
 		
 		for (Entry<Node,Node> entry : old2new.entrySet())
 		{
@@ -741,8 +741,9 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		for (Clique clique : cliques)
 		{
 			clique.joinMultivariateEdges();
-			for (Factor sourceFactor : clique._factors)
+			for (Factor cliqueFactor : clique._factors)
 			{
+				Factor sourceFactor = (Factor) old2new.inverse().get(cliqueFactor);
 				transformMap.addFactorMapping(sourceFactor, clique._mergedFactor);
 			}
 		}
@@ -778,7 +779,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		return VariableEliminator.generate(eliminator, _nEliminationAttempts, threshold, _costFunctions);
 	}
 
-	private int disconnectConditionedVariables(Ordering eliminationOrder, FactorGraphTransformMap transformMap)
+	private int disconnectConditionedVariables(Ordering eliminationOrder, JunctionTreeTransformMap transformMap)
 	{
 		final int nConditioned = _useConditioning ? eliminationOrder.stats.conditionedVariables() : 0;
 		if (nConditioned > 0)
@@ -809,7 +810,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 		return nConditioned;
 	}
 	
-	private List<Clique> createCliques(Ordering eliminationOrder, FactorGraphTransformMap transformMap)
+	private List<Clique> createCliques(Ordering eliminationOrder, JunctionTreeTransformMap transformMap)
 	{
 		final List<Clique> cliques = new LinkedList<Clique>();
 		final ArrayList<VariableBase> variables = eliminationOrder.variables;
@@ -877,7 +878,7 @@ public class JunctionTreeTransform implements IFactorGraphTransform
 	}
 	
 	private List<CliqueEdge> formSpanningTree(
-		FactorGraphTransformMap transformMap,
+		JunctionTreeTransformMap transformMap,
 		List<Clique> cliques,
 		SetMultimap<Discrete, Clique> varToCliques)
 	{

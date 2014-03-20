@@ -23,7 +23,6 @@ import java.util.Set;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
@@ -105,11 +104,11 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
 
 			// Start with the ports to variable outputs
-			List<INode> siblings = _factor.getSiblings();
+			List<? extends VariableBase> siblings = _factor.getSiblings();
 			double sum = 0;
 			for (int port = _numParameterEdges; port < _numPorts; port++)
 			{
-				double value = ((SRealVariable)(((VariableBase)siblings.get(port)).getSolver())).getCurrentSample();
+				double value = ((SRealVariable)((siblings.get(port)).getSolver())).getCurrentSample();
 				double diff = value - mean;
 				sum += diff*diff;
 			}
@@ -199,7 +198,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<INode> siblings = _factor.getSiblings();
+		List<? extends VariableBase> siblings = _factor.getSiblings();
 		_hasConstantMean = false;
 		_hasConstantPrecision = false;
 		_meanParameterPort = NO_PORT;
@@ -225,7 +224,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			else					// Variable mean
 			{
 				_meanParameterPort = factorFunction.getEdgeByIndex(MEAN_PARAMETER_INDEX);
-				_meanVariable = (SRealVariable)(((VariableBase)siblings.get(_meanParameterPort)).getSolver());
+				_meanVariable = (SRealVariable)((siblings.get(_meanParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 			
@@ -235,7 +234,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 			else 						// Variable precision
 			{
 				_precisionParameterPort = factorFunction.getEdgeByIndex(PRECISION_PARAMETER_INDEX);
-				_precisionVariable = (SRealVariable)(((VariableBase)siblings.get(_precisionParameterPort)).getSolver());
+				_precisionVariable = (SRealVariable)((siblings.get(_precisionParameterPort)).getSolver());
 				_numParameterEdges++;
 			}
 		}
@@ -244,7 +243,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 		// Save output variables
 		_outputVariables = new SRealVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SRealVariable)(((VariableBase)siblings.get(i + _numParameterEdges)).getSolver());
+			_outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	

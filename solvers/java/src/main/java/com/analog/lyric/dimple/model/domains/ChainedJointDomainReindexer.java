@@ -219,6 +219,12 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 				prev.release();
 			}
 			prev = scratch;
+
+			if (scratch.toIndices[0] < 0)
+			{
+				Arrays.fill(indices.toIndices, -1);
+				return;
+			}
 		}
 		
 		System.arraycopy(prev.toIndices, 0, indices.toIndices, 0, indices.toIndices.length);
@@ -234,6 +240,10 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 			for (JointDomainReindexer converter : _converters)
 			{
 				jointIndex = converter.convertJointIndex(jointIndex, addedJointIndex);
+				if (jointIndex < 0)
+				{
+					break;
+				}
 			}
 		}
 		else
@@ -250,6 +260,10 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 					localAddedJointIndex -= card * addedJointIndex;
 				}
 				jointIndex = converter.convertJointIndex(jointIndex, localAddedJointIndex);
+				if (jointIndex < 0)
+				{
+					break;
+				}
 			}
 		}
 		
@@ -283,11 +297,27 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 				removedJointIndex *= converter._removedDomains.getCardinality();
 				removedJointIndex += removedJointIndexRef.get();
 			}
+			
+			if (jointIndex < 0)
+			{
+				break;
+			}
 		}
 
 		removedJointIndexRef.set(removedJointIndex);
 		
 		return jointIndex;
+	}
+
+	@Override
+	public int[] convertSparseToJointIndex(int[] oldSparseToJointIndex)
+	{
+		int[] sparseToJoint = oldSparseToJointIndex;
+		for (JointDomainReindexer converter : _converters)
+		{
+			sparseToJoint = converter.convertSparseToJointIndex(sparseToJoint);
+		}
+		return sparseToJoint;
 	}
 
 	@Override

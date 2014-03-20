@@ -19,7 +19,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,7 +33,6 @@ import org.w3c.dom.Element;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.xmlSerializer;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -126,8 +124,8 @@ public class Serializer
 		e.setAttribute("explicitName", explicitName);
 		e.setAttribute("class", f.getModelerFunctionName());
 			
-		List<INode> ports = f.getSiblings();
-		e.setAttribute("numEdges", Integer.toString(ports.size()));
+		final int nEdges = f.getSiblingCount();
+		e.setAttribute("numEdges", Integer.toString(nEdges));
 
 		// * TODO TableFactor?
 		if(f.isDiscrete())
@@ -146,7 +144,7 @@ public class Serializer
 		
 		Parent.appendChild(e);
 					
-		for (int i = 0; i < ports.size(); i++)
+		for (int i = 0; i < nEdges; i++)
 		{
 			Element edgeElement = Doc.createElement("edge");
 			VariableBase targetV = (f.getConnectedNodeFlat(i));

@@ -26,8 +26,8 @@ import org.junit.Test;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap;
-import com.analog.lyric.dimple.model.transform.FactorGraphTransformMap.AddedDeterministicVariable;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -137,7 +137,7 @@ public class TestJunctionTreeTransform
 	 * 
 	 * @param transformMap
 	 */
-	private void assertModelsEquivalent(FactorGraphTransformMap transformMap)
+	private void assertModelsEquivalent(JunctionTreeTransformMap transformMap)
 	{
 		final FactorGraph source = transformMap.source();
 		final FactorGraph target = transformMap.target();
@@ -166,7 +166,7 @@ public class TestJunctionTreeTransform
 			}
 			
 			// Update values of added variables
-			for (AddedDeterministicVariable<?> added : transformMap.addedDeterministicVariables())
+			for (AddedJointVariable<?> added : transformMap.addedJointVariables())
 			{
 				final ISolverVariableGibbs addedSVar = targetGibbs.getSolverVariable(added.getVariable());
 				final Value value = addedSVar.getCurrentSampleValue();
@@ -227,7 +227,7 @@ public class TestJunctionTreeTransform
 		assertSame(rand, jt.random());
 		assertFalse(jt.useConditioning());
 		
-		FactorGraphTransformMap transformMap = jt.transform(model);
+		JunctionTreeTransformMap transformMap = jt.transform(model);
 		
 		if (expectIdentity != null)
 		{

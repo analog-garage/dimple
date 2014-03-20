@@ -8,7 +8,6 @@ import net.jcip.annotations.NotThreadSafe;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
-import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.values.Value;
 
 @NotThreadSafe
@@ -143,62 +142,8 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	@Override
 	public IFactorTable createTableConditionedOn(int[] valueIndices)
 	{
-		final JointDomainIndexer fromDomains = getDomainIndexer();
-
-		if (valueIndices.length != fromDomains.size())
-		{
-			throw new ArrayIndexOutOfBoundsException(); // FIXME add message
-		}
-		
-		BitSet removedIndices = new BitSet(valueIndices.length);
-		for (int i = 0; i < valueIndices.length; ++i)
-		{
-			int valueIndex = valueIndices[i];
-			if (valueIndex >= 0)
-			{
-				if (valueIndex >= fromDomains.getDomainSize(i))
-				{
-					throw new IndexOutOfBoundsException(); // FIXME add message
-				}
-				removedIndices.set(i);
-			}
-		}
-		
-		final JointDomainReindexer remover = JointDomainReindexer.createRemover(fromDomains, removedIndices);
-		
-		Indices indices = remover.getScratch();
-		for (int i = 0; i < valueIndices.length; ++i)
-		{
-			indices.fromIndices[i] = Math.max(0, valueIndices[i]);
-		}
-		remover.convertIndices(indices);
-
-		final int[] removedValueIndices = indices.removedIndices.clone();
-		indices.release();
-		
-		final IFactorTable newTable = FactorTable.create(remover.getToDomains());
-		
-		FactorTableRepresentation representation = getRepresentation();
-		if (representation.isDeterministic())
-		{
-			representation = FactorTableRepresentation.SPARSE_ENERGY;
-		}
-		final boolean useWeight = !representation.hasEnergy();
-
-		if (useWeight)
-		{
-			newTable.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
-		}
-		else
-		{
-			newTable.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY);
-		}
-
-		initTableConditionedOn(newTable, remover, removedValueIndices, useWeight);
-		
-		newTable.setRepresentation(representation);
-		
-		return newTable;
+		JointDomainReindexer conditioner = JointDomainReindexer.createConditioner(getDomainIndexer(), valueIndices);
+		return convert(conditioner);
 	}
 	
 	@Override
@@ -318,22 +263,5 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 			}
 		}
 	}
-
-	/*-------------------------
-	 * FactorTableBase methods
-	 */
-
-	/**
-	 * Invoked by {@link #createTableConditionedOn(int[])} to copy values into new table.
-	 * 
-	 * @param newTable is the empty table to be filled in. Initial representation is sparse
-	 * with weight or energy as specified by {@code useWeight} argument.
-	 * @param remover is the index converter from this table's index format to the new table.
-	 * @param removedValueIndices are the domain value indices for the dimensions that are being
-	 * conditioned out.
-	 * @param useWeight indicates whether to fill table in using weights or energies.
-	 */
-	protected abstract void initTableConditionedOn(
-		IFactorTable newTable, JointDomainReindexer remover, int[] removedValueIndices, boolean useWeight);
 
 }

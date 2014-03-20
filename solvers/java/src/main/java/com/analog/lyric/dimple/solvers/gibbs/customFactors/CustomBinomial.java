@@ -22,7 +22,6 @@ import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Binomial;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
@@ -111,7 +110,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		List<INode> siblings = _factor.getSiblings();
+		List<? extends VariableBase> siblings = _factor.getSiblings();
 		_hasConstantNParameter = false;
 		_hasConstantOutput = false;
 		_constantNParameterValue = -1;
@@ -133,7 +132,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
-				_outputVariable = (SDiscreteVariable)(((VariableBase)siblings.get(outputEdge)).getSolver());
+				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 		else	// Variable or constant N parameter
@@ -144,7 +143,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
-				_NParameterVariable = (SDiscreteVariable)(((VariableBase)siblings.get(nParameterEdge)).getSolver());
+				_NParameterVariable = (SDiscreteVariable)((siblings.get(nParameterEdge)).getSolver());
 			}
 			
 			if (!factorFunction.isConstantIndex(P_PARAMETER_INDEX))
@@ -156,7 +155,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);
-				_outputVariable = (SDiscreteVariable)(((VariableBase)siblings.get(outputEdge)).getSolver());
+				_outputVariable = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 	}
