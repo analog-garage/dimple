@@ -13,12 +13,12 @@
 %   See the License for the specific language governing permissions and
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function testGeneralFactor()
+function testSampledFactors()
 
 debugPrint = false;
 repeatable = true;
 
-dtrace(debugPrint, '++testGeneralFactor');
+dtrace(debugPrint, '++testSampledFactors');
 
 if (repeatable)
     seed = 1;
@@ -31,8 +31,10 @@ test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
+test5(debugPrint, repeatable);
+test6(debugPrint, repeatable);
 
-dtrace(debugPrint, '--testGeneralFactor');
+dtrace(debugPrint, '--testSampledFactors');
 end
 
 % Real variables only
@@ -41,7 +43,6 @@ function test1(debugPrint, repeatable)
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
     fg.Solver.setSampledFactorSamplesPerUpdate(10000);
-    fg.Solver.setSeed(1);
 
     a = Real();
     b = Real([0 Inf]);
@@ -70,7 +71,6 @@ function test2(debugPrint, repeatable)
     fg.Solver.setSampledFactorSamplesPerUpdate(10000);
     fg.Solver.setSampledFactorBurnInScansPerUpdate(100);
     fg.Solver.setSampledFactorScansPerSample(1);
-    fg.Solver.setSeed(1);
     
     aM = 5;
     aS = 2;
@@ -109,7 +109,6 @@ function test3(debugPrint, repeatable)
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
     fg.Solver.setSampledFactorSamplesPerUpdate(10000);
-    fg.Solver.setSeed(1);
 
     a = Complex();
     b = Complex();
@@ -165,7 +164,6 @@ function test4(debugPrint, repeatable)
     fg = FactorGraph();
     fg.Solver = 'Gaussian';
     fg.Solver.setSampledFactorSamplesPerUpdate(10000);
-    fg.Solver.setSeed(1);
 
     a = Complex();
     b = Complex();
@@ -214,6 +212,99 @@ function test4(debugPrint, repeatable)
 
 end
 
+
+% Test that only bounded variables result in custom factor; otherwise
+% should be sampled factor
+function test5(debugPrint, repeatable)
+
+    fg = FactorGraph();
+    
+    va = Real(1,10);
+    vb = Real([0 Inf], 1, 10);
+    boundedJointDomain = RealJointDomain(RealDomain(0,Inf), RealDomain);
+    ja = RealJoint(2, 1, 10);
+    jb = RealJoint(boundedJointDomain, 2, 1, 10);
+
+    fvga = fg.addFactor({'Normal', 0, 1}, va);
+    fvgb = fg.addFactor({'Normal', 0, 1}, vb);
+    fvla = fg.addFactor({'LinearEquation', ones(1,9)}, va);
+    fvlb = fg.addFactor({'LinearEquation', ones(1,9)}, vb);
+    fvsa = fg.addFactor('Sum', va);
+    fvsb = fg.addFactor('Sum', vb);
+    fvda = fg.addFactor('Subtract', va);
+    fvdb = fg.addFactor('Subtract', vb);
+    fvna = fg.addFactor('Negate', va(1), va(2));
+    fvnb = fg.addFactor('Negate', vb(1), va(2));
+    fvpa = fg.addFactor('Product', va(1), va(2), 2);
+    fvpb = fg.addFactor('Product', vb(1), va(2), 2);
+    fjga = fg.addFactor({'MultivariateNormal', zeros(1,2), eye(2)}, ja);
+    fjgb = fg.addFactor({'MultivariateNormal', zeros(1,2), eye(2)}, jb);
+    fjsa = fg.addFactor('RealJointSum', ja);
+    fjsb = fg.addFactor('RealJointSum', jb);
+    fjda = fg.addFactor('RealJointSubtract', ja);
+    fjdb = fg.addFactor('RealJointSubtract', jb);
+    fjna = fg.addFactor('RealJointNegate', ja(1), ja(2));
+    fjnb = fg.addFactor('RealJointNegate', jb(1), ja(2));
+    fjpa = fg.addFactor({'MatrixRealJointVectorProduct',2,2}, ja(1), 2*eye(2), ja(2));
+    fjpb = fg.addFactor({'MatrixRealJointVectorProduct',2,2}, jb(1), 2*eye(2), ja(2));
+
+    assert(~isempty(strfind(class(fvga.Solver), 'CustomNormalConstantParameters')));
+    assert(~isempty(strfind(class(fvgb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fvla.Solver), 'CustomGaussianLinearEquation')));
+    assert(~isempty(strfind(class(fvlb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fvsa.Solver), 'CustomGaussianSum')));
+    assert(~isempty(strfind(class(fvsb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fvda.Solver), 'CustomGaussianSubtract')));
+    assert(~isempty(strfind(class(fvdb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fvna.Solver), 'CustomGaussianNegate')));
+    assert(~isempty(strfind(class(fvnb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fvpa.Solver), 'CustomGaussianProduct')));
+    assert(~isempty(strfind(class(fvpb.Solver), 'SampledFactor')));
+
+    assert(~isempty(strfind(class(fjga.Solver), 'CustomMultivariateNormalConstantParameters')));
+    assert(~isempty(strfind(class(fjgb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fjsa.Solver), 'CustomMultivariateGaussianSum')));
+    assert(~isempty(strfind(class(fjsb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fjda.Solver), 'CustomMultivariateGaussianSubtract')));
+    assert(~isempty(strfind(class(fjdb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fjna.Solver), 'CustomMultivariateGaussianNegate')));
+    assert(~isempty(strfind(class(fjnb.Solver), 'SampledFactor')));
+    assert(~isempty(strfind(class(fjpa.Solver), 'CustomMultivariateGaussianProduct')));
+    assert(~isempty(strfind(class(fjpb.Solver), 'SampledFactor')));
+end
+
+
+% Test that bounded variables work with sampled factors
+function test6(debugPrint, repeatable)
+
+    fg = FactorGraph();
+    fg.Solver.setSampledFactorSamplesPerUpdate(10000);
+    
+	a = Real;
+    b = Real;
+    c = Real([1.99 2.01]);
+    d = Real([-3.01 -2.99]);
+    
+    x = a + b;
+    y = c + d;
+    
+    a.Input = {'Normal', 7, 0.01};
+    b.Input = {'Normal', 3, 0.01};
+    c.Input = {'Normal', 7, 0.01};
+    d.Input = {'Normal', 3, 0.01};
+
+    if repeatable
+        fg.Solver.setSeed(1);
+    end
+
+    fg.solve();
+    
+    assertElementsAlmostEqual(x.Belief.Mean, 10);
+    assertElementsAlmostEqual(y.Belief.Mean, -1, 'absolute', 1e-4);
+    assertElementsAlmostEqual(x.Belief.Precision, .005);
+    assert(y.Belief.Precision > 1000);
+
+end
 
 function C = randCovariance(n)
 

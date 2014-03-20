@@ -99,6 +99,10 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		if (y instanceof Real || x instanceof Real)
 			return false;
 		
+		// Variables must be unbounded
+		if (y.getDomain().asRealJoint().isBounded() || x.getDomain().asRealJoint().isBounded())
+			return false;
+
 		// Constant must be a matrix of the proper size
 		int yDimension = y.getDomain().asRealJoint().getDimensions();
 		int xDimension = x.getDomain().asRealJoint().getDimensions();

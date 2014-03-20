@@ -81,6 +81,10 @@ public class CustomMultivariateNormalConstantParameters extends MultivariateGaus
 			// Must be multivariate
 			if (v instanceof Real)
 				return false;
+			
+			// Must be unbounded
+			if (v.getDomain().asRealJoint().isBounded())
+				return false;
 		}
 		return true;
 	}

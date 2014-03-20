@@ -44,6 +44,10 @@ public class CustomGaussianSubtract extends CustomGaussianSum
 			// Must be univariate
 			if (v instanceof RealJoint)
 				return false;
+			
+			// Must be unbounded
+			if (v.getDomain().asReal().isBounded())
+				return false;
 		}
 		return true;
 	}

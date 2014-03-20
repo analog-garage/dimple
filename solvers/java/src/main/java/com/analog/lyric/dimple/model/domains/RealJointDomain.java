@@ -269,4 +269,22 @@ public class RealJointDomain extends Domain
 	{
 		return _size;
 	}
+	
+	public final boolean isBounded()
+	{
+		// True if any dimension is bounded
+		for (int i = 0; i < _domains.length; i++)
+		{
+			if (_domains[i].isBounded())
+				return true;
+		}
+		
+		return false;
+	}
+	
+	public final boolean isUnbounded()
+	{
+		return !isBounded();
+	}
+
 }

@@ -188,24 +188,24 @@ The SumProduct solver supports both discrete and continuous variables.  The SumP
 
 While the Gaussian representation of messages for continuous variables is sometimes and approximation, there are some specific built-in factors for which exact Gaussian messages are computed.  This can be done when a factor preserves the Gaussian form of the distribution on each edge.  The following table is a list of such lists built-in factors.  See section~\ref{sec:builtInFactors} for more information on built-in factors.
 
-\begin{longtable} {p{4.0cm} p{3.0cm} p{7.0cm}}
+\begin{longtable} {p{3.5cm} p{3.0cm} p{7.0cm}}
 Built-in Factor & Variable Types &  Notes \\
 \hline
 \endhead
-Normal & Real & Applies only if mean and precision parameters are constants. \\
-MultivariateNormal & Complex or \newline RealJoint & \\
-Sum & Real & All connected variables must be Real.  \\
-Subtract & Real & All connected variables must be Real. \\
-Negate & Real & All connected variables must be Real. \\
-ComplexSum & Complex & All connected variables must be Complex. \\
-ComplexSubtract & Complex & All connected variables must be Complex. \\
-ComplexNegate & Complex & All connected variables must be Complex. \\
-RealJointSum & RealJoint & All connected variables must be RealJoint of the same dimension. \\
-RealJointSubtract & RealJoint & All connected variables must be RealJoint of the same dimension. \\
-RealJointNegate & RealJoint & All connected variables must be RealJoint of the same dimension. \\
-Product & Real, Constant & Applies only if the product is one Real variable times one scalar constant to produce a Real variable. \\
-MatrixRealJoint\newline VectorProduct & RealJoint, \newline Constant & Applies only if the product is one RealJoint variable times a constant matrix to produce a RealJoint variable. \\
-LinearEquation & Real & Linear equation.  All connected variables must be Real. \\
+Normal & Real & Applies only if mean and precision parameters are constants and all connected variables are Real and unbounded\footnote{Unbounded means that the domain of the variable must not have finite upper or lower bounds}. \\
+MultivariateNormal & Complex or \newline RealJoint & All connected variables must be RealJoint or Complex and unbounded. \\
+Sum & Real & All connected variables must be Real and unbounded.  \\
+Subtract & Real & All connected variables must be Real and unbounded. \\
+Negate & Real & All connected variables must be Real and unbounded. \\
+ComplexSum & Complex & All connected variables must be Complex and unbounded. \\
+ComplexSubtract & Complex & All connected variables must be Complex and unbounded. \\
+ComplexNegate & Complex & All connected variables must be Complex and unbounded. \\
+RealJointSum & RealJoint & All connected variables must be RealJoint of the same dimension and unbounded. \\
+RealJointSubtract & RealJoint & All connected variables must be RealJoint of the same dimension and unbounded. \\
+RealJointNegate & RealJoint & All connected variables must be RealJoint of the same dimension and unbounded. \\
+Product & Real, Constant & Applies only if the product is one unbounded Real variable times one scalar constant to produce an unbounded Real variable. \\
+MatrixRealJoint\newline VectorProduct & RealJoint, \newline Constant & Applies only if the product is one unbounded RealJoint variable times a constant matrix to produce an unbounded RealJoint variable. \\
+LinearEquation & Real & Linear equation.  All connected variables must be Real and unbounded. \\
 \end{longtable}
 
 For factors that are neither discrete-only or listed in the above table, an approximate computation is used in computing messages from such a factor.  This includes any factor that connects to both discrete and continuous variables as well as factors that connect only to continuous variables but do not appear in the list above.  The approximate method is sample based and uses Gibbs sampling to sample from the factor, allowing approximate messages to be computed from the sample statistics.  Several methods described below allow control over the behavior of these sampled factors.
