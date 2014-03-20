@@ -199,6 +199,10 @@ public class JunctionTreeTransformMap
 		return (AddedJointVariable<Var>) _addedDeterministicVariables.get(targetVariable);
 	}
 	
+	/**
+	 * Unmodifiable set of source variables that have been conditioned out of
+	 * the target graph.
+	 */
 	public Set<VariableBase> conditionedVariables()
 	{
 		return Collections.unmodifiableSet(_conditionedVariables);

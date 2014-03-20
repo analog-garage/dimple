@@ -31,7 +31,9 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.DiscreteFactor;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraph;
 import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolver;
@@ -43,6 +45,7 @@ import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.math.DoubleMath;
 
 /**
  * Unit tests for {@link JunctionTreeSolver}
@@ -112,7 +115,27 @@ public class TestJunctionTree
 	
 	private void testGraphImpl(FactorGraph model)
 	{
+		testGraphImpl(model, false);
+		
+		// Choose a variable at random and give it a fixed value.
+		final VariableList variables = model.getVariables();
+		final int varIndex = _rand.nextInt(variables.size());
+		final Discrete variable = variables.getByIndex(varIndex).asDiscreteVariable();
+		final int valueIndex = _rand.nextInt(variable.getDomain().size());
+		variable.asDiscreteVariable().setFixedValueIndex(valueIndex);
+		
+		testGraphImpl(model, false);
+		
+		testGraphImpl(model, true);
+		
+		// Clear fixed value
+		variable.setInputObject(null);
+	}
+	
+	private void testGraphImpl(FactorGraph model, boolean useConditioning)
+	{
 		JunctionTreeSolverGraph jtgraph = model.setSolverFactory(new JunctionTreeSolver());
+		jtgraph.useConditioning(useConditioning);
 		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
 		model.solve();
 		
@@ -188,8 +211,8 @@ public class TestJunctionTree
 				final int[][] beliefIndices = discreteFactor.getPossibleBeliefIndices();
 				
 				// Marginalize corresponding beliefs from full table.
-				final IFactorTable beliefTable = FactorTable.create(discreteFactor.getFactorTable().getDomainIndexer());
-				beliefTable.setWeightsSparse(beliefIndices, beliefs);
+//				final IFactorTable beliefTable = FactorTable.create(discreteFactor.getFactorTable().getDomainIndexer());
+//				beliefTable.setWeightsSparse(beliefIndices, beliefs);
 				
 				final List<? extends VariableBase> factorVars = discreteFactor.getSiblings();
 				
@@ -204,8 +227,40 @@ public class TestJunctionTree
 					JointDomainReindexer.createPermuter(fullDomains, factorDomains, fullToMarginal);
 		
 				final IFactorTable beliefTable2 = fullTable.convert(marginalizer);
-				final double[] beliefs2 = beliefTable2.getWeightsSparseUnsafe();
-				assertArrayEquals(beliefs2, beliefs, 1e-10);
+				double[] beliefs2 = beliefTable2.getWeightsSparseUnsafe();
+				int[][] beliefIndices2 = beliefTable2.getIndicesSparseUnsafe();
+				
+				// BUG 27 can result in beliefs that are close to but not equal to zero so we have
+				// to filter out beliefs that are close to zero.
+
+				
+				
+				int i = 0, j = 0;
+				while (true)
+				{
+					while (i < beliefs.length && DoubleMath.fuzzyEquals(beliefs[i], 0.0, 1e-15))
+					{
+						++i;
+					}
+					
+					while (j < beliefs2.length && DoubleMath.fuzzyEquals(beliefs2[j], 0.0, 1e-15))
+					{
+						++j;
+					}
+					
+					if (i >= beliefs.length || j >= beliefs2.length)
+					{
+						break;
+					}
+					
+					assertEquals(beliefs[i], beliefs2[j], 1e-12);
+					assertArrayEquals(beliefIndices[i], beliefIndices2[j]);
+					++i;
+					++j;
+				}
+				
+				assertEquals(beliefs.length, i);
+				assertEquals(beliefs2.length, j);
 			}
 		}
 		

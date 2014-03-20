@@ -93,15 +93,6 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 		return new JointDomainIndexConditioner(fromDomains, null, toDomains, removedDomains, conditionedValues, null);
 	}
 	
-	static JointDomainIndexConditioner _createDeconditioner(
-		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
-		int[] conditionedValues)
-	{
-		final JointDomainIndexer toDomains = JointDomainIndexer.concat(fromDomains, addedDomains);
-		return new JointDomainIndexConditioner(fromDomains, addedDomains, toDomains, null, conditionedValues, null);
-	}
-
 	/*----------------
 	 * Object methods
 	 */

@@ -16,19 +16,23 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
+import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
@@ -171,12 +175,11 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		final IFactorTable delegateTable = ((STableFactorBase)delegate).getFactorTable();
 		delegateTable.getDomainIndexer();
 		
-		// FIXME: doesn't handle conditioned variables
-		
 		final IFactorTable beliefTable = FactorTable.create(delegateTable.getDomainIndexer());
 		beliefTable.setWeightsSparse(delegateTable.getIndicesSparseUnsafe(), beliefs);
 		
 		final IFactorTable convertedTable = FactorTable.convert(beliefTable, reindexer);
+		convertedTable.normalize();
 		
 		return convertedTable.getWeightsSparseUnsafe();
 	}
@@ -243,13 +246,16 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		{
 			_reindexerComputed = true;
 			
+			// TODO: detect when no conversion is needed
+			
 			final JunctionTreeTransformMap transformMap = _root.getTransformMap();
 			final Factor sourceFactor = getFactor();
 			final Factor targetFactor = transformMap.sourceToTargetFactor(sourceFactor);
 
 			// Create mapping from target vars to their index in source factor
 			final int nSourceVars = sourceFactor.getSiblingCount();
-			final Map<VariableBase,Integer> targetVarToSourceIndex = new HashMap<VariableBase, Integer>(nSourceVars);
+			final Map<VariableBase,Integer> targetVarToSourceIndex =
+				new LinkedHashMap<VariableBase, Integer>(nSourceVars);
 			for (int si = 0; si < nSourceVars; ++si)
 			{
 				final VariableBase sourceVar = sourceFactor.getSibling(si);
@@ -315,12 +321,41 @@ public class JunctionTreeSolverFactor extends SFactorBase
 				_reindexer = JointDomainReindexer.createSplitter(fromDomains, targetVarsToSplit.elements());
 				fromDomains = _reindexer.getToDomains();
 			}
+			
+			// Remaining entries in targetVarToSourceIndex should be conditioned variables
+			// that were removed from the factor
+			final int nConditioned = targetVarToSourceIndex.size();
+			if (nConditioned > 0)
+			{
+				final int fromSize = fromDomains.size();
+				final int[] conditionedValues = new int[fromSize + nConditioned];
+				Arrays.fill(conditionedValues, -1);
+				final DiscreteDomain[] conditionedDomains = new DiscreteDomain[nConditioned];
+				
+				int i = 0;
+				for (Entry<VariableBase, Integer> entry : targetVarToSourceIndex.entrySet())
+				{
+					final Discrete variable = entry.getKey().asDiscreteVariable();
+					final int sourceIndex = entry.getValue();
+
+					targetToSourceIndex.add(sourceIndex);
+					conditionedValues[i + fromSize] = variable.getFixedValueIndex();
+					conditionedDomains[i] = variable.getDomain();
+					++i;
+				}
+
+				fromDomains = JointDomainIndexer.concat(fromDomains, JointDomainIndexer.create(conditionedDomains));
+				
+				JointDomainReindexer deconditioner =
+					JointDomainReindexer.createConditioner(fromDomains, conditionedValues).getInverse();
+				_reindexer = deconditioner.appendTo(_reindexer);
+			}
 
 			targetToSourceIndex.trimToSize();
 			final JointDomainReindexer permuter =
 				JointDomainReindexer.createPermuter(fromDomains, toDomains, targetToSourceIndex.elements());
 			
-			_reindexer = _reindexer != null ? _reindexer.combineWith(permuter) : permuter;
+			_reindexer = permuter.appendTo(_reindexer);
 		}
 		return _reindexer;
 	}

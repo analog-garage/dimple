@@ -529,6 +529,20 @@ public abstract class JointDomainReindexer
 	}
 
 	/**
+	 * Returns a converter that combines {@code prev} converter with this one
+	 * by first applying the conversion in {@code prev} and passing the result
+	 * to this converter.
+	 * 
+	 * If {@prev} is null, simply returns this.
+	 * 
+	 * @since 0.05
+	 */
+	public JointDomainReindexer appendTo(JointDomainReindexer prev)
+	{
+		return prev != null ? prev.combineWith(this) : this;
+	}
+	
+	/**
 	 * Creates a new converter that combines this one with {@code that} by first
 	 * applying this conversion and passing the result to {@code that}.
 	 */
@@ -641,7 +655,11 @@ public abstract class JointDomainReindexer
 			{
 				for (int added = getAddedCardinality(); --added >= 0;)
 				{
-					values[convertJointIndex(oldJoint, added)] += energyToWeight(oldEnergies[oldJoint]);
+					final int newJoint = convertJointIndex(oldJoint, added);
+					if (newJoint >= 0)
+					{
+						values[newJoint] += energyToWeight(oldEnergies[oldJoint]);
+					}
 				}
 			}
 		}
@@ -696,7 +714,11 @@ public abstract class JointDomainReindexer
 			{
 				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 				{
-					weights[convertJointIndex(oldJoint, 0)] += oldWeights[oldJoint];
+					final int newJoint = convertJointIndex(oldJoint, 0);
+					if (newJoint >= 0)
+					{
+						weights[newJoint] += oldWeights[oldJoint];
+					}
 				}
 			}
 			else
@@ -705,7 +727,11 @@ public abstract class JointDomainReindexer
 				{
 					for (int added = _addedDomains.getCardinality(); --added >= 0;)
 					{
-						weights[convertJointIndex(oldJoint, added)] += oldWeights[oldJoint];
+						final int newJoint = convertJointIndex(oldJoint, added);
+						if (newJoint >= 0)
+						{
+							weights[newJoint] += oldWeights[oldJoint];
+						}
 					}
 				}
 			}
@@ -735,7 +761,10 @@ public abstract class JointDomainReindexer
 					{
 						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
 						convertIndices(scratch);
-						weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+						if (scratch.toIndices[0] >= 0)
+						{
+							weights[_toDomains.jointIndexFromIndices(scratch.toIndices)] += oldWeights[oldJoint];
+						}
 					}
 				}
 			}
