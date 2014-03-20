@@ -22,8 +22,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
-import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.VariableEliminator;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
@@ -291,6 +291,11 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * JunctionTreeSolverGraph methods
 	 */
 	
+	public IFactorGraphFactory<?> getDelegateSolverFactory()
+	{
+		return _solverFactory;
+	}
+
 	/**
 	 * The object that implements the junction tree transformation.
 	 */

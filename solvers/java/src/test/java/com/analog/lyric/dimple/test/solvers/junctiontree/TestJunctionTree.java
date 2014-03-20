@@ -35,11 +35,8 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
-import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraph;
+import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolver;
-import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolverGraph;
-import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
-import com.analog.lyric.dimple.solvers.sumproduct.SumProductSolver;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
 import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
@@ -93,7 +90,7 @@ public class TestJunctionTree
 
 		for (int i = 0; i < nGraphs; ++i)
 		{
-			testGraph(gen.buildRandomGraph(_rand.nextInt(maxSize) + 1));
+			testGraph(gen.buildRandomGraph(_rand.nextInt(maxSize) + 10));
 		}
 		
 	}
@@ -116,6 +113,12 @@ public class TestJunctionTree
 	private void testGraphImpl(FactorGraph model)
 	{
 		testGraphImpl(model, false);
+		testGraphImpl(model, true);
+	}
+	
+	private void testGraphImpl(FactorGraph model, boolean useMap)
+	{
+		testGraphImpl(model, useMap, false);
 		
 		// Choose a variable at random and give it a fixed value.
 		final VariableList variables = model.getVariables();
@@ -124,17 +127,18 @@ public class TestJunctionTree
 		final int valueIndex = _rand.nextInt(variable.getDomain().size());
 		variable.asDiscreteVariable().setFixedValueIndex(valueIndex);
 		
-		testGraphImpl(model, false);
+		testGraphImpl(model, useMap, false);
 		
-		testGraphImpl(model, true);
+		testGraphImpl(model, useMap, true);
 		
 		// Clear fixed value
 		variable.setInputObject(null);
 	}
 	
-	private void testGraphImpl(FactorGraph model, boolean useConditioning)
+	private void testGraphImpl(FactorGraph model, boolean useMap, boolean useConditioning)
 	{
-		JunctionTreeSolverGraph jtgraph = model.setSolverFactory(new JunctionTreeSolver());
+		JunctionTreeSolverGraphBase<?> jtgraph =
+			model.setSolverFactory(useMap ? new JunctionTreeMapSolver() : new JunctionTreeSolver());
 		jtgraph.useConditioning(useConditioning);
 		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
 		model.solve();
@@ -153,7 +157,7 @@ public class TestJunctionTree
 		{
 			factor2 = model2.join(factors2.toArray(new Factor[factors2.size()]));
 		}
-		model2.setSolverFactory(new SumProductSolver());
+		model2.setSolverFactory(jtgraph.getDelegateSolverFactory());
 		model2.solve();
 		
 		// Compare marginal variable beliefs and scores
@@ -177,19 +181,22 @@ public class TestJunctionTree
 			double score2 = variable2.getScore();
 			assertEquals(score, score2, 1e-10);
 			
-			// Compare entropy
-			double entropy = variable.getBetheEntropy();
-			double entropy1 = variable2.getBetheEntropy();
-			assertEquals(entropy, entropy1, 1e-10);
-			
-			// Compare internal energy
-			double internalEnergy = variable.getInternalEnergy();
-			double internalEnergy2 = variable2.getInternalEnergy();
-			assertEquals(internalEnergy, internalEnergy2, 1e-10);
+			if (!useMap)
+			{
+				// Compare entropy
+				double entropy = variable.getBetheEntropy();
+				double entropy1 = variable2.getBetheEntropy();
+				assertEquals(entropy, entropy1, 1e-10);
+
+				// Compare internal energy
+				double internalEnergy = variable.getInternalEnergy();
+				double internalEnergy2 = variable2.getInternalEnergy();
+				assertEquals(internalEnergy, internalEnergy2, 1e-10);
+			}
 		}
 		
 		// Compare factor beliefs
-		if (factor2 instanceof DiscreteFactor)
+		if (!useMap && factor2 instanceof DiscreteFactor)
 		{
 			DiscreteFactor discreteFactor2 = (DiscreteFactor) factor2;
 			JointDomainIndexer fullDomains = discreteFactor2.getDomainList();
@@ -211,9 +218,6 @@ public class TestJunctionTree
 				final int[][] beliefIndices = discreteFactor.getPossibleBeliefIndices();
 				
 				// Marginalize corresponding beliefs from full table.
-//				final IFactorTable beliefTable = FactorTable.create(discreteFactor.getFactorTable().getDomainIndexer());
-//				beliefTable.setWeightsSparse(beliefIndices, beliefs);
-				
 				final List<? extends VariableBase> factorVars = discreteFactor.getSiblings();
 				
 				for (int from = 0, remove = nFactorDomains; from < nFullDomains; ++from)
@@ -232,9 +236,6 @@ public class TestJunctionTree
 				
 				// BUG 27 can result in beliefs that are close to but not equal to zero so we have
 				// to filter out beliefs that are close to zero.
-
-				
-				
 				int i = 0, j = 0;
 				while (true)
 				{
@@ -268,46 +269,15 @@ public class TestJunctionTree
 		double score2 = model2.getScore();
 		assertEquals(score, score2, 1e-10);
 
-		double internalEnergy = model.getInternalEnergy();
-		double internalEnergy2 = model2.getInternalEnergy();
-		assertEquals(internalEnergy, internalEnergy2, 1e-10);
-
-		// The entropy and free energy depend on the factorization, and thus cannot be compared vs. the
-		// joint factor and cannot be easily compared with original model either because it depends on
-		// the beliefs....
-		
-		//
-		// Now try MAP (minsum)
-		//
-		
-		JunctionTreeMapSolverGraph jtmapgraph = model.setSolverFactory(new JunctionTreeMapSolver());
-		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
-		model.solve();
-		
-		transformedModel = jtmapgraph.getDelegate().getModelObject();
-		RandomGraphGenerator.labelFactors(transformedModel);
-		assertTrue(transformedModel.isForest());
-		
-		model2.setSolverFactory(new MinSumSolver());
-		model2.solve();
-		
-		// Compare marginal beliefs
-		for (VariableBase variable : model.getVariables())
+		if (!useMap)
 		{
-			final VariableBase variable2 = (VariableBase)old2new.get(variable);
-			final Object belief1 = variable.getBeliefObject();
-			final Object belief2 = variable2.getBeliefObject();
-			
-			if (belief1 instanceof double[])
-			{
-				assertArrayEquals((double[])belief2, (double[])belief1, 1e-10);
-			}
-			else
-			{
-				assertEquals(belief1, belief2);
-			}
+			double internalEnergy = model.getInternalEnergy();
+			double internalEnergy2 = model2.getInternalEnergy();
+			assertEquals(internalEnergy, internalEnergy2, 1e-10);
+
+			// The entropy and free energy depend on the factorization, and thus cannot be compared vs. the
+			// joint factor and cannot be easily compared with original model either because it depends on
+			// the beliefs....
 		}
-		
-		
 	}
 }
