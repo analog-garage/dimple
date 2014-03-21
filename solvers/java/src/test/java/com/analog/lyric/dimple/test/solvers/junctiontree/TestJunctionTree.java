@@ -36,7 +36,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolver;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
-import com.analog.lyric.dimple.solvers.junctiontree.map.JunctionTreeMapSolver;
+import com.analog.lyric.dimple.solvers.junctiontreemap.JunctionTreeMAPSolver;
 import com.analog.lyric.dimple.test.model.RandomGraphGenerator;
 import com.analog.lyric.dimple.test.model.TestJunctionTreeTransform;
 import com.analog.lyric.util.misc.MapList;
@@ -138,7 +138,7 @@ public class TestJunctionTree
 	private void testGraphImpl(FactorGraph model, boolean useMap, boolean useConditioning)
 	{
 		JunctionTreeSolverGraphBase<?> jtgraph =
-			model.setSolverFactory(useMap ? new JunctionTreeMapSolver() : new JunctionTreeSolver());
+			model.setSolverFactory(useMap ? new JunctionTreeMAPSolver() : new JunctionTreeSolver());
 		jtgraph.useConditioning(useConditioning);
 		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
 		model.solve();

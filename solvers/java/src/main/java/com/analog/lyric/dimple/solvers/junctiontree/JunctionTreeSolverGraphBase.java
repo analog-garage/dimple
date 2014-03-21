@@ -287,6 +287,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		updateDelegate().solveOneStep();
 	}
 	
+	@Override
+	public void startSolver()
+	{
+		updateDelegate().startSolver();
+	}
+	
 	/*---------------------------------
 	 * JunctionTreeSolverGraph methods
 	 */

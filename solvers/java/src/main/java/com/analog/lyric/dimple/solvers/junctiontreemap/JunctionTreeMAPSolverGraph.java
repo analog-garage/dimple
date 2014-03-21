@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.junctiontree.map;
+package com.analog.lyric.dimple.solvers.junctiontreemap;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
@@ -26,24 +26,24 @@ import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeMapSolverGraph extends JunctionTreeSolverGraphBase<SFactorGraph>
+public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<SFactorGraph>
 {
-	private final JunctionTreeMapSolverGraph _parent;
-	private final JunctionTreeMapSolverGraph _root;
+	private final JunctionTreeMAPSolverGraph _parent;
+	private final JunctionTreeMAPSolverGraph _root;
 
 	/*--------------
 	 * Construction
 	 */
 
-	JunctionTreeMapSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory,
-		JunctionTreeMapSolverGraph parent)
+	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory,
+		JunctionTreeMAPSolverGraph parent)
 	{
 		super(sourceModel, solverFactory);
 		_parent = parent;
 		_root = parent != null ? parent.getRootGraph() : this;
 	}
 
-	JunctionTreeMapSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
+	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
 	{
 		this(sourceModel, solverFactory,  null);
 	}
@@ -53,13 +53,13 @@ public class JunctionTreeMapSolverGraph extends JunctionTreeSolverGraphBase<SFac
 	 */
 	
 	@Override
-	public JunctionTreeMapSolverGraph getParentGraph()
+	public JunctionTreeMAPSolverGraph getParentGraph()
 	{
 		return _parent;
 	}
 	
 	@Override
-	public JunctionTreeMapSolverGraph getRootGraph()
+	public JunctionTreeMAPSolverGraph getRootGraph()
 	{
 		return _root;
 	}
@@ -69,8 +69,8 @@ public class JunctionTreeMapSolverGraph extends JunctionTreeSolverGraphBase<SFac
 	 */
 	
 	@Override
-	public JunctionTreeMapSolverGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory)
+	public JunctionTreeMAPSolverGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory)
 	{
-		return new JunctionTreeMapSolverGraph(subgraph, factory, this);
+		return new JunctionTreeMAPSolverGraph(subgraph, factory, this);
 	}
 }

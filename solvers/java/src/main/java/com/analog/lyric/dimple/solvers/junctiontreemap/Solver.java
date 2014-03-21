@@ -14,22 +14,13 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.junctiontree.map;
+package com.analog.lyric.dimple.solvers.junctiontreemap;
 
-import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverBase;
-import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
-import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.util.misc.Matlab;
 
 /**
  * @since 0.05
  * @author Christopher Barber
  */
-public class JunctionTreeMapSolver extends JunctionTreeSolverBase<SFactorGraph, JunctionTreeMapSolverGraph>
-{
-	@Override
-	public JunctionTreeMapSolverGraph createFactorGraph(FactorGraph graph)
-	{
-		return new JunctionTreeMapSolverGraph(graph, new MinSumSolver());
-	}
-}
+@Matlab
+public class Solver extends JunctionTreeMAPSolver {}
