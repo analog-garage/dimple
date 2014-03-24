@@ -80,7 +80,7 @@
   keywordstyle=\color{blue},          % keyword style
   commentstyle=\color{dkgreen},       % comment style
   stringstyle=\color{mauve},         % string literal style
-  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  escapeinside={\%*}{*},            % if you want to add LaTeX within your code
   morekeywords={*,...}               % if you want to add more keywords to the set
 }
 
@@ -105,7 +105,9 @@
 	\fi
 \fi
 
-
+\ifjava
+\lstset{language=Java}
+\fi
 
 \ifjava
 \title{\huge \bfseries Dimple User Manual \linebreak Java Interface \\ \normalfont \large Version \version}
