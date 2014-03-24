@@ -388,14 +388,15 @@ public class PFactorGraphVector extends PFactorVector
 		return retval;
 	}
 
+	public boolean isForest(int relativeNestingDepth)
+	{
+		return getGraph().isForest(relativeNestingDepth);
+	}
+	
 	public boolean isTree(int relativeNestingDepth)
 	{
 		return getGraph().isTree(relativeNestingDepth);
 	}
-
-
-
-
 
 	public PNodeVector [] depthFirstSearch(PNodeVector root, int searchDepth, int relativeNestingDepth)
 	{

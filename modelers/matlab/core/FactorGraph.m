@@ -479,6 +479,13 @@ classdef FactorGraph < Node
             end
         end
         
+        function isforest = isForest(obj,relativeNestingDepth)
+            if nargin < 2
+                relativeNestingDepth = intmax;
+            end
+            isforest = obj.VectorObject.isForest(relativeNestingDepth);
+        end
+            
         function istree = isTree(obj,relativeNestingDepth)
             if nargin < 2
                 relativeNestingDepth = intmax;
