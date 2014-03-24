@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.solvers.junctiontree;
 
 import java.util.Map.Entry;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -217,11 +216,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public void setNumIterations(int numIterations)
 	{
-		if (numIterations != 1)
-		{
-			throw new DimpleException("Junction tree solver doesn't support multiple iterations.");
-		}
-		super.setNumIterations(numIterations);
+		super.setNumIterations(1);
 	}
 	
 	@Override

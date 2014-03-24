@@ -187,7 +187,7 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 		}
 		else
 		{
-			assert(_addedJointIndex < 0);
+			assert(_addedJointIndex <= 0);
 			for (int toji = newValues.length; --toji>=0;)
 			{
 				final int fromji = toji - _addedJointIndex;
