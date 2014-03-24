@@ -43,8 +43,8 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointDiscreteVariable;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.CostFunction;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Ordering;
 import com.analog.lyric.dimple.model.transform.VariableEliminator.Stats;
@@ -696,6 +696,7 @@ public class JunctionTreeTransform
 
 		final BiMap<Node,Node> old2new = HashBiMap.create(nVariables * 2);
 		final FactorGraph targetModel = model.copyRoot(old2new);
+		targetModel.setSchedule(null); // don't use the copied schedule!
 		
 		final JunctionTreeTransformMap transformMap = JunctionTreeTransformMap.create(model, targetModel);
 		
@@ -715,7 +716,8 @@ public class JunctionTreeTransform
 		// 4) Create cliques using variable elimination order
 		
 		final List<Clique> cliques = createCliques(eliminationOrder, transformMap);
-		final SetMultimap<Discrete, Clique> varToCliques = HashMultimap.create(nVariables, nVariables/nFactors);
+		final SetMultimap<Discrete, Clique> varToCliques =
+			HashMultimap.create(nVariables, nVariables/Math.max(1,nFactors));
 		for (Clique clique : cliques)
 		{
 			clique.addToMap(varToCliques);
@@ -792,8 +794,9 @@ public class JunctionTreeTransform
 			// should be discrete.
 			for (int i = 0; i < nConditioned; ++i)
 			{
-				VariableBase variable = transformMap.sourceToTargetVariable(eliminationOrder.variables.get(i));
-				transformMap.addConditionedVariable(variable);
+				VariableBase sourceVariable = eliminationOrder.variables.get(i);
+				VariableBase variable = transformMap.sourceToTargetVariable(sourceVariable);
+				transformMap.addConditionedVariable(sourceVariable);
 				for (int j = 0, endj = variable.getSiblingCount(); j < endj; ++j)
 				{
 					final Factor factor = variable.getSibling(j);

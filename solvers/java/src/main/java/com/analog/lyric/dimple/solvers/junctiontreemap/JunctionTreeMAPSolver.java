@@ -14,9 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.gibbs.samplers;
+package com.analog.lyric.dimple.solvers.junctiontreemap;
 
-public interface ISampler
+import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverBase;
+import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
+import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+
+/**
+ * @since 0.05
+ * @author Christopher Barber
+ */
+public class JunctionTreeMAPSolver extends JunctionTreeSolverBase<SFactorGraph, JunctionTreeMAPSolverGraph>
 {
-
+	@Override
+	public JunctionTreeMAPSolverGraph createFactorGraph(FactorGraph graph)
+	{
+		return new JunctionTreeMAPSolverGraph(graph, new MinSumSolver());
+	}
 }
