@@ -483,8 +483,8 @@ Real([domain], [dimensions])
 \ifjava
 \begin{lstlisting}
 Real()
-Real(RealDomain)
-Real(lowerBound,upperBound)
+Real(RealDomain domain)
+Real(lowerBound, upperBound)
 \end{lstlisting}
 \fi
 
@@ -492,14 +492,14 @@ Real(lowerBound,upperBound)
 All arguments are optional and can be used in any combination.
 
 \begin{itemize}
-\item domain is specifies a bound on the domain of the variable. It can either be specified as a two-element array or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as an array, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\item domain specifies a bound on the domain of the variable. It can either be specified as a two-element array or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as an array, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
 \item dimensions specify the array dimensions.  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
 \fi
 
 \ifjava
 \begin{itemize}
-\item domain is specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
+\item domain specifies a bound on the domain of the variable. It can either be specified as two elements or a RealDomain object (see section~\ref{sec:RealDomain}).  If specified as two values, the first element is the lower bound and the second element is the upper bound. -Inf and Inf are allowed values for the lower or upper bound, respectively.  If no domain is specified, then a domain from $-\infty$ to $\infty$ is assumed.
 \end{itemize}
 \fi
 
@@ -621,12 +621,13 @@ Like other variables, the RealJoint class can represent either a single RealJoin
 
 \ifmatlab
 \begin{lstlisting}
-RealJoint(numElements, [dimensions])
+RealJoint([domain], numElements, [dimensions])
 \end{lstlisting}
 
 The arguments are defined as follows:
 
 \begin{itemize}
+\item domain specifies a bound on the domain of the variable.  It is specified by a RealJointDomain object (see section~\ref{sec:RealJointDomain}).  If no domain is specified, then an unbounded domain is assumed.
 \item numElements specifies the number of joint real-valued elements.
 \item dimensions specify the array dimensions (the array of individual RealJoint variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
 \end{itemize}
@@ -768,10 +769,16 @@ The behavior of all properties and methods is identical to that of RealJoint var
 
 \ifmatlab
 \begin{lstlisting}
-Complex([dimensions])
+Complex([domain], [dimensions])
 \end{lstlisting}
 
-The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+The arguments are defined as follows:
+
+\begin{itemize}
+\item domain specifies the domain of the Complex variable using a ComplexDomain object (see \ref{sec:ComplexDomain}).  If no domain is specified, then an unbounded domain is assumed.
+\item dimensions specify the array dimensions (the array of individual Complex variables).  The behavior of the list of dimensions is identical to that for Discrete variables as described in section~\ref{sec:VariableMatrixDimensions}.
+\end{itemize}
+
 \fi
 
 \ifjava
