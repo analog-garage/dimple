@@ -1,6 +1,6 @@
 \subsection{Performing Inference}
 
-Once a model has been created in Dimple, the user may then perform inference on that model.  This typically involves first conditioning on input data, then performing the inference computation, and then querying the model to retrieve information such as beliefs (marginals), maximum \emph{a posteriori} value, or samples from the posterior distribution.
+Once a model has been created in Dimple, the user may then perform inference on that model.  This typically involves first conditioning on input data, then performing the inference computation, and then querying the model to retrieve information such as beliefs (marginals), maximum \emph{a posteriori} (MAP) value, or samples from the posterior distribution.
 
 \subsubsection{Choosing a Solver}
 \label{sec:Solvers}
@@ -11,11 +11,20 @@ At a high level, Dimple supports three categories of solver:
 
 \begin{itemize}
 \item Belief propagation (BP)
+ \begin{itemize}
+ \item sum-product
+ \item min-sum
+ \item junction tree + sum-product
+ \item junction tree + min-sum
+ \item particle BP
+ \end{itemize}
 \item Gibbs sampling
 \item Linear programming (LP)
 \end{itemize}
 
-The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} value.  In both cases, the result may be approximate, depending on the specific model.  In the case of sum-product, the solvers further divide based on how continuous variables are dealt with (Real, Complex, and RealJoint variables).  The SumProduct solver (which is the default solver) uses a Gaussian representation for messages passed to and from continuous variables, while the ParticleBP solver uses a particle representation\footnote{In the current version of Dimple, the PartibleBP solver does not support Complex or RealJoint variables.}.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
+The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} (MAP) value.  In both cases, the result may be approximate, depending on the specific model and solver settings. In the case of sum-product, the solvers further divide based on how continuous variables are dealt with (Real, Complex, and RealJoint variables).  The SumProduct solver (which is the default solver) uses a Gaussian representation for messages passed to and from continuous variables, while the ParticleBP solver uses a particle representation\footnote{In the current version of Dimple, the ParticleBP solver does not support Complex or RealJoint variables.}.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
+
+The Junction Tree solver is a variant of BP that provide exact inference results by transforming the model into a singly connected graph by joining factors and variables and then performing the sum-product or min-sum algorithm on the transformed model. This is only feasible for models that are "narrow" enough, i.e. ones in which a large number of variables would have to be removed to eliminate any loops. Junction Tree currently only supports discrete variables and continuous variables that have been conditioned with fixed values. See section~\ref{sec:JunctionTreeSolverAPI} for more details.
 
 The Gibbs solver supports all of the primary variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value (see section~\ref{sec:GibbsSolverAPI}).
 
@@ -34,6 +43,8 @@ The solver name is case insensitive.  The current set of valid solver names are:
 \begin{itemize}
 \item SumProduct
 \item MinSum
+\item JunctionTree
+\item JunctionTreeMAP
 \item ParticleBP
 \item Gibbs
 \item LP
@@ -44,18 +55,18 @@ The solver name is case insensitive.  The current set of valid solver names are:
 \ifjava
 
 \begin{lstlisting}
-myGraph.setSolverFactory(
-     new com.analog.lyric.dimple.solvers.gibbs.Solver()
-     );
+myGraph.setSolverFactory(new GibbsSolver());
 \end{lstlisting}
 
-The current set of solvers is:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
+The currently supported set of solvers is:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
 
 \begin{itemize}
-\item com.analog.lyric.dimple.solvers.sumproduct.Solver()
-\item com.analog.lyric.dimple.solvers.minsum.Solver()
-\item com.analog.lyric.dimple.solvers.particleBP.Solver()
-\item com.analog.lyric.dimple.solvers.gibbs.Solver()
+\item SumProductSolver
+\item MinSumSolver
+\item JunctionTreeSolver
+\item JunctionTreeMapSolver
+\item ParticleBPSolver
+\item GibbsSolver
 \end{itemize}
 
 \fi
@@ -253,7 +264,7 @@ myGraph.setScheduler(new ExampleScheduler());
 \end{lstlisting}
 \fi
 
-For all of the BP solvers (SumProduct, MinSum, ParticleBP), the following schedulers are available.  More detail on each of these schedulers is provided in section~\ref{sec:FactorGraph.Scheduler}.
+For the Junction Tree solvers, a tree schedule will always be used, so there is no need to choose a different scheduler. For the remaining BP solvers (SumProduct, MinSum, and ParticleBP), the following schedulers are available.  More detail on each of these schedulers is provided in section~\ref{sec:FactorGraph.Scheduler}.
 
 \begin{itemize}
 \item TreeOrFloodingScheduler

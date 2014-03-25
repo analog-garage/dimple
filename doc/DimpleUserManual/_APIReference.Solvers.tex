@@ -7,32 +7,41 @@ Each solver supports a series of solver-specific methods, which are described in
 
 \ifmatlab
 \begin{lstlisting}
-factorGraph.Solver.solverSpecificMethod(arguments);
+factorGraph.Solver.%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
 
 \begin{lstlisting}
-variable.Solver.solverSpecificMethod(arguments);
+variable.Solver.%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
 
 \begin{lstlisting}
-factor.Solver.solverSpecificMethod(arguments);
+factor.Solver.%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
 \fi
 
 \ifjava
 \begin{lstlisting}
-factorGraph.getSolver().solverSpecificMethod(arguments);
+((%*\textit{SolverSpecificGraph}*)fg.getSolver()).%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
 
 \begin{lstlisting}
-variable.getSolver().solverSpecificMethod(arguments);
+((%*\textit{SolverSpecificVar}*)variable.getSolver()).%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
 
 \begin{lstlisting}
-factor.getSolver().solverSpecificMethod(arguments);
+((%*\textit{SolverSpecificFactor}*)factor.getSolver()).%*\textit{solverSpecificMethod}*(arguments);
 \end{lstlisting}
+
+The downcast in the first cast can be avoided if you save the return value from \lstname{setSolverFactory} and call the methods through that. For example:
+
+\begin{lstlisting}
+JunctionTreeSolverGraph sgraph =
+    fg.setSolverFactory(new JunctionTreeSolver());
+sgraph.useConditioning(true);
+\end{lstlisting}
+
+The downcasts are also not required for common methods available to all solvers described in the next section.
 \fi
-
 
 Some solver-specific methods return results, while others do not.  Some solver-specific methods require arguments, while others do not.  \ifmatlab If no arguments are needed, the parentheses are optional. \fi
 
@@ -178,7 +187,7 @@ fg.Solver = 'SumProduct';
 
 \ifjava
 \begin{lstlisting}
-fg.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+fg.setSolverFactory(new SumProductSolver());
 \end{lstlisting}
 \fi
 
@@ -241,7 +250,7 @@ solver.setDamping(dampingValue);
 \end{lstlisting}
 \fi
 
-The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
+The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damping value of 0 is used.
 
 \subpara{setSampledFactorSamplesPerUpdate}
 
@@ -390,7 +399,7 @@ fg.Solver = 'MinSum';
 
 \ifjava
 \begin{lstlisting}
-fg.setSolver(new com.analog.lyric.dimple.solvers.minsum.Solver());
+SFactorGraph sgraph = fg.setSolverFactory(new MinSumSolver());
 \end{lstlisting}
 \fi
 
@@ -424,10 +433,9 @@ solver.setDamping(dampingValue);
 \fi
 
 
-The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damming value of 0 is used.
+The dampingValue argument must be in the range from 0 through 1.  If this method is never called, the default damping value of 0 is used.
 
 Note that damping in the MinSum solver is done on messages in the log-domain, which has slightly different behavior than damping in the probability domain, as is done in the SumProduct solver.
-
 
 \para{Factor Methods}
 
@@ -452,7 +460,101 @@ The solver will only use the K best values for each variable when calculating ou
 
 IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
 
+\subsubsection{Junction Tree Solver}
+\label{sec:JunctionTreeSolverAPI}
 
+Use of the Junction Tree solver is specified by calling:
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver = 'JunctionTree';
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+JunctionTreeSolverGraph sgraph =
+    fg.setSolverFactory(new JunctionTreeSolver());
+\end{lstlisting}
+\fi
+
+for the sum-product version used for computing exact marginal variable beliefs and
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver = 'JunctionTreeMAP';
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+JunctionTreeMAPSolverGraph sgraph =
+    fg.setSolverFactory(new JunctionTreeMAPSolver());
+\end{lstlisting}
+\fi
+
+for the min-sum version used for computing MAP values 
+
+The Junction Tree solver is useful for performing exact inference on discrete models\footnote{Junction Tree support for continuous Gaussian models may be implemented in a later release.} that are not singly connected (i.e. that have loops) and for which the standard sum-product or min-sum algorithms will only produce approximate results. It works by transforming the model into a corresponding singly-connected model, building a proxy solver layer that connects the original model to the transformed version and doing inference on that model. If your model already is singly connected then you can simply use sum-product or min-sum directly for exact inference. To test to see if a graph is single connected use \lstname{isForest()}:
+
+\ifmatlab
+\begin{lstlisting}
+useJunctionTree = ~fg.isForest();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+useJunctionTree = !fg.isForest();
+\end{lstlisting}
+\fi
+
+One significant limitation when using this solver is that the cost of inference and amount
+of memory needed to store the factor tables is proportional to the size of the tables, which in turn is exponential in the number of variables represented in a table. The Junction Tree algorithm may be unable to determine an equivalent tree structure that has small enough factors either to fit in memory or to perform inference on in an acceptable amount of time. The typical failure mode in such cases is to get an \lstname{OutOfMemoryError} when attempting to run solve. The Junction Tree algorithm works best when used with smaller graphs or larger graphs that have fee loops or are loopy but long and narrow.
+
+\para{Graph Methods}
+
+The methods below are available to both versions of the Junction Tree solver.
+
+Because exact inference can be done in a single iteration, the Junction Tree solver fixes the number of iterations to one and will ignore attempts to set it to another value. Because damping would result in inexact inference, the Junction Tree solver does not provide options for using damping.
+
+\subpara{useConditioning}
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver.useConditioning(true);
+fg.Solver.useConditioning();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+sgraph.useConditioning(true);
+sgraph.useConditioning();
+\end{lstlisting}
+\fi
+
+Set/get whether to use conditioning when constructing the transformation of the model. This is false by default. When true, then any variables in the model that have a fixed value will be disconnected from the rest of the graph in the transformed version and its value will be incorporated in the factors of the transformed model. This will produce a more efficient transformed model when there are fixed values in the original model. Using this will require that a new transformation be computed every time a fixed value changes.
+
+\subpara{maxTransformationAttempts}
+
+\ifmatlab
+\begin{lstlisting}
+fg.Solver.maxTransformationAttempts(42);
+fg.Solver.maxTransformationAttempts();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+sgraph.maxTransformationAttempts(42);
+sgraph.maxTransformationAttempts();
+\end{lstlisting}
+\fi
+
+Set/get the maximum number of times the junction tree transformer should try to determine an optimal transformation. Each attempt uses a greedy "variable elimination" algorithm using a randomly chosen cost function and random choices to break ties, so more iterations could produce a more efficient tree transformation.
+
+\textsl{}
 \subsubsection{Gibbs Solver}
 \label{sec:GibbsSolverAPI}
 
@@ -464,9 +566,10 @@ fg.Solver = 'Gibbs';
 \end{lstlisting}
 \fi
 
+
 \ifjava
 \begin{lstlisting}
-fg.setSolver(new com.analog.lyric.dimple.solvers.gibbs.Solver());
+fg.setSolverFactory(new GibbsSolver());
 \end{lstlisting}
 \fi
 
@@ -1222,7 +1325,7 @@ fg.Solver = 'ParticleBP';
 
 \ifjava
 \begin{lstlisting}
-fg.setSolver(new com.analog.lyric.dimple.solvers.particleBP.Solver());
+fg.setSolverFactory(new ParticleBPSolver());
 \end{lstlisting}
 \fi
 
@@ -1267,8 +1370,8 @@ graph.Solver.getNumIterationsBetweenResampling();
 
 \ifjava
 \begin{lstlisting}
-graph.setSolver().setNumIterationsBetweenResampling(numIterationsBetweenResampling);
-graph.setSolver().getNumIterationsBetweenResampling();
+graph.getSolver().setNumIterationsBetweenResampling(numIterationsBetweenResampling);
+graph.getSolver().getNumIterationsBetweenResampling();
 \end{lstlisting}
 \fi
 

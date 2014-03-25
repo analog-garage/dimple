@@ -27,11 +27,11 @@ For a nested factor graph (one that may be used as a sub-graph within another gr
 
 Read-write.  Indicates the choice of solver to be used for performing inference on the graph.  The default solver is SumProduct.
 
+\ifmatlab
 When setting the solver, the solver is given by a string representing the name of the solver.  The solver name is case insensitive.
 
-\ifmatlab
 \begin{lstlisting}
-fg.Solver = 'SolverName';
+fg.Solver = '%*\textit{SolverName}';
 \end{lstlisting}
 
 The current set of valid solver names are:
@@ -39,6 +39,8 @@ The current set of valid solver names are:
 \begin{itemize}
 \item SumProduct
 \item MinSum
+\item JunctionTree
+\item JunctionTreeMAP
 \item ParticleBP
 \item Gibbs
 \item LP
@@ -47,17 +49,21 @@ The current set of valid solver names are:
 \fi
 
 \ifjava
+When setting the solver, the solver is given by an instance of \lstname{IFactorGraphFactory} specific to that kind of solver. By convention, these should have a name ending with the suffix \lstname{Solver} (e.g. \lstname{MinSumSolver} or \lstname{GibbsSolver}). The method \lstname{setSolverFactort()} sets the solver and returns a newly constructed \lstname{ISolverFactorGraph} instance specific to this graph and solver. The specific return type will depend on the solver.
+
 \begin{lstlisting}
-fg.setSolver(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
+%*\textit{SolverGraph}* sgraph = fg.setSolverFactory(new %*\textit{SolverClass}*());
 \end{lstlisting}
 
-The current set of valid solvers are:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
+The current set of valid solver classes are:\footnote{Dimple also supports and LP solver, but this solver is only accessible via the MATLAB API.}
 
 \begin{itemize}
-\item com.analog.lyric.dimple.solvers.sumproduct.Solver
-\item com.analog.lyric.dimple.solvers.minsum.Solver
-\item com.analog.lyric.dimple.solvers.particleBP.Solver
-\item com.analog.lyric.dimple.solvers.gibbs.Solver
+\item SumProductSolver
+\item MinSumSolver
+\item JunctionTreeSolver
+\item JunctionTreeMAPSolver
+\item ParticleBPSolver
+\item GibbsSolver
 \end{itemize}
 
 \fi
