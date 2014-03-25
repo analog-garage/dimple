@@ -386,28 +386,34 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 	
 	/**
-	 * Specifies the number of iterations of the {@link VariableEliminator} when attempting
-	 * to determine the variable elimination ordering. Each iteration will pick a cost function
-	 * from {@link #variableEliminatorCostFunctions()} at random and will randomize the order of
+	 * Specifies the maximum number of times to attempt to determine an optimal junction tree
+	 * transformation.
+	 * <p>
+	 * Specifies the number of iterations of the {@link VariableEliminator} algorithm when
+	 * attempting to determine the variable elimination ordering that determines the junction tree
+	 * transformation. Each iteration will pick a cost function from
+	 * {@link #variableEliminatorCostFunctions()} at random and will randomize the order of
 	 * variables that have equivalent costs. A higher number of iterations may produce a better
 	 * ordering.
 	 * <p>
-	 * Default value is specified by {@link JunctionTreeTransform#DEFAULT_ELIMINATOR_ITERATIONS}.
+	 * Default value is specified by
+	 * {@link JunctionTreeTransform#DEFAULT_MAX_TRANSFORMATION_ATTEMPTS}.
 	 * <p>
-	 * @see #variableEliminatorIterations(int)
+	 * 
+	 * @see #maxTransformationAttempts(int)
 	 */
-	public int variableEliminatorIterations()
+	public int maxTransformationAttempts()
 	{
-		return _transformer.variableEliminatorIterations();
+		return _transformer.maxTransformationAttempts();
 	}
 	
 	/**
-	 * Sets {@link #variableEliminatorIterations()} to the specified value.
+	 * Sets {@link #maxTransformationAttempts()} to the specified value.
 	 * @return this
 	 */
-	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorIterations(int iterations)
+	public JunctionTreeSolverGraphBase<Delegate> maxTransformationAttempts(int iterations)
 	{
-		_transformer.variableEliminatorIterations(iterations);
+		_transformer.maxTransformationAttempts(iterations);
 		return this;
 	}
 
