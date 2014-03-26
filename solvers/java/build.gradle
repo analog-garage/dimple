@@ -158,13 +158,42 @@ runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
 // These require you to install JDiff somewhere and define the environment
 // variable JDIFF_HOME as the directory containing the jdiff jars.
 //
-// This task generates the file build/jdiff/Dimple_<version>.xml containing
-// an abstract description of the Java API that can be used to compare against
-// another release. It will only include public members and those that do not
-// contain "@category internal" in their java doc comment.
+// To use:
+//    - checkout previous version you want to compare with
+//    - add these gradle tasks to build.gradle if necessary
+//    - gradle jdiffPrevAPI
+//    - checkout new version
+//    - gradle jdiff
+//    - change description is in build/jdiff
 //
 ext {
-	dimpleVersion = new File('../../VERSION').text
+	dimpleVersion = new File('../../VERSION').text.trim()
+	
+	docSubpackages = 'com.analog.lyric'
+	
+	// Exclude packages that are internal implementation packages or that are not ready for prime time.
+	docExclude = [
+		'com.analog.lyric.cs',
+		'com.analog.lyric.dimple.examples',
+		'com.analog.lyric.dimple.learning',
+		'com.analog.lyric.dimple.matlabproxy',
+		'com.analog.lyric.dimple.model.serializerdetails',
+		'com.analog.lyric.dimple.parameters',
+		'com.analog.lyric.dimple.schedulers.dependencyGraph',
+		'com.analog.lyric.solvers.core.multithreading',
+		'com.analog.lyric.solvers.core.parameterizedMessages',
+		'com.analog.lyric.solvers.core.proposalKernels',
+		'com.analog.lyric.solvers.gibbs.customFactors',
+		'com.analog.lyric.solvers.gibbs.samplers',
+		'com.analog.lyric.solvers.minsum.customFactors',
+		'com.analog.lyric.solvers.sumproduct.customFactors',
+		'com.analog.lyric.solvers.sumproduct.pseudolikelihood',
+		'com.analog.lyric.solvers.sumproduct.sampledfactor',
+		'com.analog.lyric.solvers.template',
+		'com.analog.lyric.math',
+		'com.analog.lyric.options',
+		'com.analog.lyric.util'
+		].join(':');	
 
 	jdiffHome = System.env["JDIFF_HOME"]
 	jdiffJars = files("$jdiffHome/jdiff.jar", "$jdiffHome/xerces.jar")
@@ -181,8 +210,15 @@ ext {
 	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
 }
 
+println docSubpackages
+
+// This task generates the file build/jdiff/Dimple_<version>.xml containing
+// an abstract description of the Java API that can be used to compare against
+// another release. It will only include public members and those that do not
+// contain "@category internal" in their java doc comment.
+//
 task jdiffAPI(dependsOn: 'assemble', type: Exec) {
-	description 'Generates jdiff API file in build/jdiff'
+	description 'Generates jdiff API file in build/jdiff for current version'
 	
 	outputs.file(jdiffApiFile)
 	
@@ -197,10 +233,13 @@ task jdiffAPI(dependsOn: 'assemble', type: Exec) {
 	'-apidir', jdiffApiDirname,
 	'-excludetag', ' @category internal',
 	'-sourcepath', 'src/main/java', 
-	'-subpackages', 'com.analog.lyric'
+	'-subpackages', docSubpackages,
+	'-exclude', docExclude
 }
 
 task jdiffPrevAPI(dependsOn: 'jdiffAPI', type:Copy) {
+	 description 'Generates jdiff API file in build/jdiff and designates as previous version'
+
 	 from jdiffApiFile
 	 into jdiffApiDir
 	 rename jdiffApiFilename, jdiffPrevApiFilename
@@ -208,6 +247,7 @@ task jdiffPrevAPI(dependsOn: 'jdiffAPI', type:Copy) {
 }
 
 task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
+	 description 'Generates comparison between this Java API and previous one'
 
 	inputs.files(jdiffPrevApiFile, jdiffApiFile)
 	outputs.files(jdiffApiDirname + '/' + 'changes.html')
