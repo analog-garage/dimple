@@ -4,7 +4,7 @@
 
 The following variable types are defined in Dimple.  Some variable types are supported by only a subset of solvers.  The following table lists the Dimple variable types and the solvers that support them.
 
-\begin{longtable} {l | p{5cm}}
+\begin{longtable} {l | p{7cm}}
 Variable Type & Supported Solvers \\
 \hline
 \endhead
@@ -13,7 +13,7 @@ Bit & all \\
 Real & SumProduct, Gibbs, ParticleBP \\
 RealJoint & SumProduct, Gibbs \\ 
 Complex & SumProduct, Gibbs \\
-FiniteFieldVariable & SumProduct \\
+FiniteFieldVariable & all\footnote{The performance enhanced implementations of built-in factors for FiniteField variables are only available when using the SumProduct solver.} \\
 \end{longtable} 
 
 \subsubsection{Common Properties and Methods}
