@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ repositories {
 
 }
 
-//Create a new configuration so that we can refer to all the jar file
-//dependencies later
 configurations {
+  //Create a new configuration so that we can refer to all the jar file
+  //dependencies later
   jarfiles
 }
 
@@ -152,3 +152,75 @@ runMATLABBenchmarks.dependsOn copyExternalJars
 
 task runBenchmarks
 runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
+
+// jdiff tasks
+//
+// These require you to install JDiff somewhere and define the environment
+// variable JDIFF_HOME as the directory containing the jdiff jars.
+//
+// This task generates the file build/jdiff/Dimple_<version>.xml containing
+// an abstract description of the Java API that can be used to compare against
+// another release. It will only include public members and those that do not
+// contain "@category internal" in their java doc comment.
+//
+ext {
+	dimpleVersion = new File('../../VERSION').text
+
+	jdiffHome = System.env["JDIFF_HOME"]
+	jdiffJars = files("$jdiffHome/jdiff.jar", "$jdiffHome/xerces.jar")
+	jdiffDocletPath = jdiffJars.getAsPath()
+	jdiffDocletClass = 'jdiff.JDiff'
+
+	jdiffApiname = 'Dimple ' + dimpleVersion
+	jdiffApiFilename = 'Dimple_' + dimpleVersion + '.xml'
+	jdiffApiDirname = 'build/jdiff'
+	jdiffApiDir = new File(jdiffApiDirname)
+	jdiffApiFile = file(jdiffApiDirname + '/' + jdiffApiFilename)
+	jdiffPrevApiname = 'Dimple_prev'
+	jdiffPrevApiFilename = jdiffPrevApiname + '.xml'
+	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
+}
+
+task jdiffAPI(dependsOn: 'assemble', type: Exec) {
+	description 'Generates jdiff API file in build/jdiff'
+	
+	outputs.file(jdiffApiFile)
+	
+	mkdir(jdiffApiDirname)
+	
+	commandLine 'javadoc', 
+	'-docletpath', jdiffDocletPath,
+	'-doclet', jdiffDocletClass,
+	'-classpath', project.sourceSets.main.compileClasspath.getAsPath(),
+	'-public',
+	'-apiname', jdiffApiname, 
+	'-apidir', jdiffApiDirname,
+	'-excludetag', ' @category internal',
+	'-sourcepath', 'src/main/java', 
+	'-subpackages', 'com.analog.lyric'
+}
+
+task jdiffPrevAPI(dependsOn: 'jdiffAPI', type:Copy) {
+	 from jdiffApiFile
+	 into jdiffApiDir
+	 rename jdiffApiFilename, jdiffPrevApiFilename
+	 inputs.file jdiffApiFile
+}
+
+task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
+
+	inputs.files(jdiffPrevApiFile, jdiffApiFile)
+	outputs.files(jdiffApiDirname + '/' + 'changes.html')
+
+	commandLine 'javadoc', 
+	 	'-docletpath', jdiffDocletPath, 
+		'-doclet', jdiffDocletClass,
+		'-classpath', project.sourceSets.main.compileClasspath.getAsPath(),
+		'-oldapi', jdiffPrevApiname,
+		'-oldapidir', jdiffApiDirname,
+		'-newapi', jdiffApiname, 
+		'-newapidir', jdiffApiDirname,
+		'-d', jdiffApiDirname,
+		'com.analog.lyric'
+}
+
