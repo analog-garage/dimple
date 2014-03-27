@@ -210,8 +210,6 @@ ext {
 	jdiffPrevApiFile = file(jdiffApiDirname + '/' + jdiffPrevApiFilename)
 }
 
-println docSubpackages
-
 // This task generates the file build/jdiff/Dimple_<version>.xml containing
 // an abstract description of the Java API that can be used to compare against
 // another release. It will only include public members and those that do not
