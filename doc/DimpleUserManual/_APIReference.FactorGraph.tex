@@ -71,7 +71,7 @@ The current set of valid solver classes are:\footnote{Dimple also supports and L
 
 A description of each of these solvers is given in section~\ref{sec:SolversAPI}.
 
-Note that the solver can be modified at any time.  After running the solver on a graph, the solver may be modified and the new solver run using the same graph\footnote{In this case, care must be taken to set any solver-specific parameters to the new values after changing the solver.}.  One exception is that if solver-specific built-in factors (also referred to as ``custom factors'') are used in a graph, it is not possible to switch solvers (a list of solver-specific built-in factors is given in section~\ref{sec:solverSpecificBuiltInFactors}).
+Note that the solver can be modified at any time.  After running the solver on a graph, the solver may be modified and the new solver run using the same graph\footnote{In this case, care must be taken to set any solver-specific parameters to the new values after changing the solver.}.
 
 
 \para{Scheduler}
@@ -106,7 +106,7 @@ Read-write.  Specifies a custom schedule to be used for performing inference.  A
 Read-write.  Specifies a custom schedule to be used for performing inference.  Schedules must implement the ISchedule interface which provides an iterator over schedule entries.  Users can instantiate a FixedSchedule object and add nodes and/or edges to the fixed schedule to provide an order of updates.  Examples of using custom schedules are given in section~\ref{sec:CustomSchedules}.
 \fi
 
-For all BP solvers, any of these entries may be included, and have the following interpretation.
+For BP solvers, any of these entries may be included, and have the following interpretation\footnote{When using the JunctionTree or JunctionTreeMAP solvers, the specified Schedule is ignored.}.
 
 \ifmatlab
 \begin{description}
@@ -415,7 +415,6 @@ This method has the following limitations:
 \begin{itemize}
 \item The factors on which parameter estimation is being performed must be directed (see section~\ref{sec:Factor.DirectedTo}).
 \item The factors on which parameter estimation is being performed must be connected only to discrete variables.
-\item The factors on which parameter estimation is being performed must \emph{not} be solver-specific built-in factors (also known as custom factors, see section~\ref{sec:solverSpecificBuiltInFactors}).
 \item The Solver must be set to use the SumProduct solver (the default solver).
 \end{itemize}
 

@@ -1,13 +1,9 @@
 Dimple v0.05 Release Notes
 ==========================
 
-New Features Since v0.04 (Oct 5, 2013)
-------------------------
-* Added dimpleVersion MATLAB function
-
-* Modified Java model package structure
-
-* Added Java solver template to aid in the design of new solvers
+Significant New Features Since v0.04 (Oct 5, 2013)
+------------------------------------
+* Added junction tree solvers
 
 * Merged Gaussian solver into the SumProduct solver, using Gaussian-parameterized messages for continuous variables in the SumProduct solver
 
@@ -15,20 +11,25 @@ New Features Since v0.04 (Oct 5, 2013)
 
 * Added ExchangeableDirichlet factor function
 
+* Added MultivariateNormal built-in factor function
+
 * Added Multiplexer factor function
 
 * Added MatrixProduct, VectorInnerProduct, and MatrixRealJointVectorProduct built-in factor functions, and corresponding use cases for the overloaded * operator in MATLAB
 
 * Added RealJointSum, RealJointSubtract, and RealJointNegate built-in factor functions, and corresponding use cases for the overloaded + and - operators in MATLAB
 
-* Added MultivariateNormal built-in factor function
-
 * Generalize finite field custom factors to factor functions that can be used with any solver (retaining performance benefit when using SumProduct solver)
 
-* Added junction tree solvers. 
+* Added Java solver template to aid in the design of new solvers
 
-Fixes Since v0.04
------------------
+* Modified Java model package structure
+
+* Added dimpleVersion MATLAB function
+
+
+Significant Bug Fixes Since v0.04
+---------------------------------
 * Fix performance problem in tree scheduler for large graphs
 
 * Fix performance problem for large deterministic-directed factors

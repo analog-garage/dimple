@@ -8,25 +8,35 @@ Once a model has been created in Dimple, the user may then perform inference on 
 To perform the inference computation, Dimple supports a variety of \emph{solver} algorithms that the user can choose from.  For each solver, there are a number of options and configuration parameters that the user may specify to customize the behavior of the solver.
 
 At a high level, Dimple supports three categories of solver:
-
+%
 \begin{itemize}
 \item Belief propagation (BP)
- \begin{itemize}
- \item sum-product
- \item min-sum
- \item junction tree + sum-product
- \item junction tree + min-sum
- \item particle BP
- \end{itemize}
 \item Gibbs sampling
 \item Linear programming (LP)
 \end{itemize}
 
-The BP solvers further segment into sum-product and min-sum solvers.  The sum-product solvers are primarily for computing the marginals of individual variables in the model, while min-sum can be used to compute the maximum \emph{a posteriori} (MAP) value.  In both cases, the result may be approximate, depending on the specific model and solver settings. In the case of sum-product, the solvers further divide based on how continuous variables are dealt with (Real, Complex, and RealJoint variables).  The SumProduct solver (which is the default solver) uses a Gaussian representation for messages passed to and from continuous variables, while the ParticleBP solver uses a particle representation\footnote{In the current version of Dimple, the ParticleBP solver does not support Complex or RealJoint variables.}.  In the current version of Dimple, the MinSum solver supports only discrete variables\footnote{This restriction may be lifted in a future version.}.
+The BP solvers further segment into solvers that are sum-product based---used primarily to compute marginals of individual variables in the model:
+%
+ \begin{itemize}
+ \item SumProduct
+ \item JunctionTree
+ \item ParticleBP
+ \end{itemize}
+ 
+ and solvers that are min-sum based---used to compute the maximum \emph{a posteriori} (MAP) value:
+ %
+ \begin{itemize}
+ \item MinSum
+ \item JunctionTreeMAP
+ \end{itemize}
 
-The Junction Tree solver is a variant of BP that provide exact inference results by transforming the model into a singly connected graph by joining factors and variables and then performing the sum-product or min-sum algorithm on the transformed model. This is only feasible for models that are "narrow" enough, i.e. ones in which a large number of variables would have to be removed to eliminate any loops. Junction Tree currently only supports discrete variables and continuous variables that have been conditioned with fixed values. See section~\ref{sec:JunctionTreeSolverAPI} for more details.
+In either case, the result may be approximate, depending on the specific model and solver settings.
 
-The Gibbs solver supports all of the primary variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value (see section~\ref{sec:GibbsSolverAPI}).
+In the case of sum-product, the solvers further divide based on how continuous variables are dealt with (Real, Complex, and RealJoint variables).  The SumProduct solver (which is the default solver) uses a Gaussian representation for messages passed to and from continuous variables, while the ParticleBP solver uses a particle representation\footnote{In the current version of Dimple, the ParticleBP solver does not support Complex or RealJoint variables.}.  In the current version of Dimple, the min-sum solvers support only discrete variables\footnote{This restriction may be lifted in a future version.}.
+
+The two forms of Junction Tree solver are variants of BP that provide exact inference results by transforming a loopy graphical model into a non-loopy graph by joining factors and variables and then performing the sum-product or min-sum algorithm on the transformed model. This is only feasible for models that are ``narrow" enough, i.e., ones in which a large number of variables would not have to be removed to eliminate any loops. The Junction Tree solvers currently support only discrete variables (and continuous variables that have been conditioned with fixed values). See section~\ref{sec:JunctionTreeSolverAPI} for more details.
+
+The Gibbs solver supports all variable types, and may be used to generate samples from the posterior distribution, or to determine marginals or approximate the maximum \emph{a posteriori} value (see section~\ref{sec:GibbsSolverAPI}).
 
 The LP solver transforms a factor graph over discrete variables into an equivalent linear program then solves this linear program (see section~\ref{sec:LPSolver}).  This solver is limited to factor graphs containing only discrete variables.
 

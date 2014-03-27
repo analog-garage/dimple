@@ -463,7 +463,9 @@ IMPORTANT: k-best and damping are not compatible with each other\footnote{This r
 \subsubsection{Junction Tree Solver}
 \label{sec:JunctionTreeSolverAPI}
 
-Use of the Junction Tree solver is specified by calling:
+There are two distinct forms of Junction Tree solver in Dimple: the sum-product form used for computing exact marginal variable beliefs and the min-sum form used for computing MAP values.  The Junction Tree solvers support only discrete variables.
+
+Use of one of the two forms of Junction Tree solver by calling either:
 
 \ifmatlab
 \begin{lstlisting}
@@ -478,7 +480,7 @@ JunctionTreeSolverGraph sgraph =
 \end{lstlisting}
 \fi
 
-for the sum-product version used for computing exact marginal variable beliefs and
+for the sum-product version or
 
 \ifmatlab
 \begin{lstlisting}
@@ -493,9 +495,9 @@ JunctionTreeMAPSolverGraph sgraph =
 \end{lstlisting}
 \fi
 
-for the min-sum version used for computing MAP values 
+for the min-sum version.
 
-The Junction Tree solver is useful for performing exact inference on discrete models\footnote{Junction Tree support for continuous Gaussian models may be implemented in a later release.} that are not singly connected (i.e. that have loops) and for which the standard sum-product or min-sum algorithms will only produce approximate results. It works by transforming the model into a corresponding singly-connected model, building a proxy solver layer that connects the original model to the transformed version and doing inference on that model. If your model already is singly connected then you can simply use sum-product or min-sum directly for exact inference. To test to see if a graph is single connected use \lstname{isForest()}:
+The Junction Tree solvers are useful for performing exact inference on loopy discrete graphical models for which the standard sum-product or min-sum algorithms will only produce approximate results. This works by transforming the model into a corresponding non-loopy model, building a proxy solver layer that connects the original model to the transformed version and doing inference on that model. If your model already is non-loopy then you can simply use sum-product or min-sum directly for exact inference. To test to see if a graph is loopy or not, use \lstname{isForest()}:
 
 \ifmatlab
 \begin{lstlisting}
@@ -509,8 +511,7 @@ useJunctionTree = !fg.isForest();
 \end{lstlisting}
 \fi
 
-One significant limitation when using this solver is that the cost of inference and amount
-of memory needed to store the factor tables is proportional to the size of the tables, which in turn is exponential in the number of variables represented in a table. The Junction Tree algorithm may be unable to determine an equivalent tree structure that has small enough factors either to fit in memory or to perform inference on in an acceptable amount of time. The typical failure mode in such cases is to get an \lstname{OutOfMemoryError} when attempting to run solve. The Junction Tree algorithm works best when used with smaller graphs or larger graphs that have fee loops or are loopy but long and narrow.
+One significant limitation when using this solver is that the cost of inference and amount of memory needed to store the factor tables is proportional to the size of the tables, which in turn is exponential in the number of variables represented in a table. The Junction Tree algorithm may be unable to determine an equivalent tree structure that has small enough factors either to fit in memory or to perform inference on in an acceptable amount of time. The typical failure mode in such cases is to get an \lstname{OutOfMemoryError} when attempting to run solve. The Junction Tree algorithm works best when used with smaller graphs or larger graphs that have few loops or are loopy but long and narrow.
 
 \para{Graph Methods}
 

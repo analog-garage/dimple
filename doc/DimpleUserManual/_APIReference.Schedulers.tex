@@ -3,7 +3,7 @@
 
 A scheduler defines a rule that determines the update schedule of a factor graph when performing inference.  This section describes all of the built-in schedulers available in Dimple.
 
-Each scheduler is applicable only to a certain subset of solvers.  For all of the BP solvers (SumProduct, MinSum, ParticleBP), the following schedulers are available:
+Each scheduler is applicable only to a certain subset of solvers.  For the BP solvers (other than the Junction Tree solvers, that is, SumProduct, MinSum, and ParticleBP), the following schedulers are available:
 
 \begin{longtable}{l p{4in}}
 \textbf{Name} & \textbf{Description} \\ \hline \hline
@@ -24,6 +24,7 @@ Each scheduler is applicable only to a certain subset of solvers.  For all of th
 %
 \end{longtable}
 
+For the JunctionTree and JunctionTreeMAP solvers, only a Tree Schedule will be used.  When using these solvers, the Scheduler setting will be ignored.
 
 In a nested graph, for most of the schedulers listed above (except for the random schedulers), the schedule is applied hierarchically.  In particular, a subgraph is treated as a factor in the nesting level that it appears.  When that subgraph is updated, the schedule for the corresponding subgraph is run in its entirety, updating all factors and variables contained within according to its specified schedule.
 
