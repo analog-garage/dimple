@@ -30,6 +30,11 @@ public abstract class AbstractHeap<E>
 	extends AbstractCollection<E>
 	implements IHeap<E>
 {
+	/**
+	 * Base implementation for heap entries.
+	 *
+	 * @since 0.05
+	 */
 	public abstract static class AbstractEntry<E> implements IEntry<E>
 	{
 		private final E _element;

@@ -38,6 +38,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	
 	/**
 	 * Interface for {@link IHeap} entry.
+	 * @since 0.05
 	 */
 	public interface IEntry<E> extends Cloneable
 	{

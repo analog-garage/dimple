@@ -30,6 +30,12 @@ import java.util.Iterator;
  */
 public class BinaryHeap<E> extends AbstractHeap<E>
 {
+	/**
+	 * A heap entry.
+	 *
+	 * @see BinaryHeap#offer
+	 * @since 0.05
+	 */
 	public static class Entry<E> extends AbstractEntry<E>
 	{
 		private int _offset;

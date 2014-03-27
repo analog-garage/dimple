@@ -25,6 +25,7 @@ import net.jcip.annotations.Immutable;
 /**
  * A simple immutable tuple of two values.
  * 
+ * @since 0.05
  * @author Christopher Barber
  */
 @Immutable

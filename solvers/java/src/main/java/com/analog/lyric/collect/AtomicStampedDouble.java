@@ -30,6 +30,7 @@ import net.jcip.annotations.ThreadSafe;
  * and unlike that class is serializable.
  * 
  * @see AtomicStampedReference
+ * @since 0.05
  */
 @ThreadSafe
 public class AtomicStampedDouble implements Serializable

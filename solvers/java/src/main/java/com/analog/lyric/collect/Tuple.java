@@ -24,6 +24,7 @@ import net.jcip.annotations.Immutable;
 /**
  * Base class for tuple types
  * 
+ * @since 0.05
  * @author Christopher Barber
  */
 @Immutable
