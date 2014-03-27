@@ -26,6 +26,9 @@ import com.analog.lyric.collect.IKeyed;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 
+/**
+ * @since 0.05
+ */
 @NotThreadSafe
 public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 {

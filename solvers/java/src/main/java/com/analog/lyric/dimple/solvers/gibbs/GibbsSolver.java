@@ -17,8 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 /**
- * @author CBarber
- *
+ * @since 0.05
  */
 public class GibbsSolver extends Solver
 {

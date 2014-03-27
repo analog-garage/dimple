@@ -19,6 +19,9 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 
+/**
+ * @since 0.05
+ */
 public interface ISolverRealVariableGibbs
 {
 	// Internal methods

@@ -19,6 +19,9 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Internal;
 
+/**
+ * @since 0.05
+ */
 public interface ISolverNodeGibbs extends ISolverNode
 {
 	public double getPotential();
