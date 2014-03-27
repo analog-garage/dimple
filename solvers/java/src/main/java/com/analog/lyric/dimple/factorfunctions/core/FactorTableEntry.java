@@ -41,6 +41,9 @@ public final class FactorTableEntry implements Serializable
 	 * Construction
 	 */
 	
+	/**
+	 * @since 0.05
+	 */
 	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, int jointIndex, double energy, double weight)
 	{
 		_domains = domains;
@@ -51,6 +54,9 @@ public final class FactorTableEntry implements Serializable
 		_weight = weight;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, int[] jointIndices, double energy, double weight)
 	{
 		_domains = domains;

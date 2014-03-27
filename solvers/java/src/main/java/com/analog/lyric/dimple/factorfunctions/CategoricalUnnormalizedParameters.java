@@ -55,6 +55,9 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
 		_alpha = new double[dimension];
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public CategoricalUnnormalizedParameters(int dimension, double[] alpha)		// Constant parameters
 	{
 		super();
@@ -99,7 +102,7 @@ public class CategoricalUnnormalizedParameters extends FactorFunction
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
     		sum += -Math.log(_alpha[x]);
-    	}    	
+    	}
     	return sum + N * Math.log(normalizationValue);
 	}
     

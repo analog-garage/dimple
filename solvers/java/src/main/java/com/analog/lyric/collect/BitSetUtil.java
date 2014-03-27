@@ -75,6 +75,7 @@ public class BitSetUtil
 	 * 
 	 * @param bits
 	 * @param index must be in the range [0,31] identifies which bit to clear.
+	 * @since 0.05
 	 */
 	public static int clearBit(int bits, int index)
 	{
@@ -86,17 +87,24 @@ public class BitSetUtil
 	 * 
 	 * @param bits
 	 * @param index must be in the range [0,63] identifies which bit to clear.
+	 * @since 0.05
 	 */
 	public static long clearBit(long bits, int index)
 	{
 		return bits & ~(1L << index);
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static int clearMask(int bits, int mask)
 	{
 		return bits & ~mask;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static long clearMask(long bits, long mask)
 	{
 		return bits & ~mask;

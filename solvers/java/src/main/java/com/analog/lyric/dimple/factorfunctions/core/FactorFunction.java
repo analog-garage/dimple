@@ -99,8 +99,11 @@ public abstract class FactorFunction
 		return -Math.log(eval(arguments));
 	}
 
-	// Default version of evalEnergy that takes values; can be overridden to implement
-	// a more efficient version that doesn't require copying the input array
+	/**
+	 * Default version of evalEnergy that takes values; can be overridden to implement
+	 * a more efficient version that doesn't require copying the input array
+	 * @since 0.05
+	 */
 	public double evalEnergy(Value[] values)
 	{
 		final int size = values.length;
@@ -112,9 +115,15 @@ public abstract class FactorFunction
 	}
 
 
+	/**
+	 * @since 0.05
+	 */
 	public void evalDeterministic(Object[] arguments)
 	{ }
-	
+
+	/**
+	 * @since 0.05
+	 */
 	public void evalDeterministic(Factor factor, Value[] values)
 	{
 		final Object[] objects = Value.toObjects(values);
@@ -130,7 +139,10 @@ public abstract class FactorFunction
 	}
 
 	
-    public boolean factorTableExists(JointDomainIndexer domains)
+	/**
+	 * @since 0.05
+	 */
+   public boolean factorTableExists(JointDomainIndexer domains)
     {
     	boolean exists = false;
     	if (domains != null)
@@ -141,6 +153,9 @@ public abstract class FactorFunction
     	return exists;
     }
     
+	/**
+	 * @since 0.05
+	 */
 	public boolean factorTableExists(Factor factor)
 	{
 		return factorTableExists(factor.getDomainList().asJointDomainIndexer());
@@ -169,17 +184,25 @@ public abstract class FactorFunction
 	 * <p>
 	 * This may be overridden for functions that have multiple outputs and inputs for which
 	 * a single input may only affect a subset of the full outputs (e.g. {@link MatrixProduct}).
+	 * 
+	 * @since 0.05
 	 */
 	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
 	{
 		return null;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public final IFactorTable getFactorTable(Domain [] domains)
     {
     	return getFactorTable(DomainList.create(domains).asJointDomainIndexer());
     }
     
+    /**
+     * @since 0.05
+     */
     public IFactorTable getFactorTable(JointDomainIndexer domains)
     {
     	if (domains == null)
@@ -209,11 +232,17 @@ public abstract class FactorFunction
     	return factorTable;
     }
     
+    /**
+     * @since 0.05
+     */
     public IFactorTable getFactorTable(Factor factor)
     {
     	return getFactorTable(factor.getDomainList().asJointDomainIndexer());
     }
 
+    /**
+     * @since 0.05
+     */
     public IFactorTable getFactorTableIfExists(JointDomainIndexer domains)
     {
     	IFactorTable factorTable = null;
@@ -228,6 +257,9 @@ public abstract class FactorFunction
     	return factorTable;
     }
     
+    /**
+     * @since 0.05
+     */
     public IFactorTable getFactorTableIfExists(Factor factor)
     {
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
@@ -253,6 +285,8 @@ public abstract class FactorFunction
      * <p>
      * @param numEdges is the number of edges (variables) to consider. It corresponds to the
      * size of the first argument to {@link #updateDeterministic}.
+     * 
+     * @since 0.05
      */
     public int updateDeterministicLimit(int numEdges)
     {
@@ -369,6 +403,8 @@ public abstract class FactorFunction
 	
 	/**
 	 * Return whether or not there are constants in the factor function instance
+	 * 
+	 * @since 0.05
 	 */
 	public boolean hasConstants()
 	{
@@ -379,6 +415,8 @@ public abstract class FactorFunction
 	 * Return number of constants built into the factor function instance.
 	 * <p>
 	 * Default implementation returns zero.
+	 * 
+	 * @since 0.05
 	 */
 	public int getConstantCount()
 	{
@@ -387,7 +425,9 @@ public abstract class FactorFunction
 	
 	/**
 	 * Return the innermost FactorFunction object, in case it is wrapped in a containing class.
-	 * In this case, there is no containing class 
+	 * In this case, there is no containing class
+	 * 
+	 * @since 0.05
 	 */
 	public FactorFunction getContainedFactorFunction()
 	{
@@ -399,6 +439,8 @@ public abstract class FactorFunction
 	 * edge is not a constant.
 	 * <p>
 	 * Default implementation returns null.
+	 * 
+	 * @since 0.05
 	 */
 	public Object getConstantByIndex(int index)
 	{
@@ -407,32 +449,53 @@ public abstract class FactorFunction
 	
 	/**
 	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
 	 */
 	public boolean isConstantIndex(int index)
 	{
 		return false;
 	}
 	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
+	 */
 	public boolean hasConstantAtOrAboveIndex(int index)
 	{
 		return false;
 	}
 	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
+	 */
 	public boolean hasConstantAtOrBelowIndex(int index)
 	{
 		return false;
 	}
 	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
+	 */
 	public int numConstantsInIndexRange(int minIndex, int maxIndex)
 	{
 		return 0;
 	}
 	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
+	 */
 	public int numConstantsAtOrAboveIndex(int index)
 	{
 		return 0;
 	}
 	
+	/**
+	 * Returns whether or not the index corresponds to a constant
+	 * @since 0.05
+	 */
 	public int numConstantsAtOrBelowIndex(int index)
 	{
 		return 0;
@@ -442,22 +505,33 @@ public abstract class FactorFunction
 	/**
 	 * Return the edge number associated with the specified factor index.
 	 * For factors with not constants, these are identical.
+	 * 
+	 * @since 0.05
 	 */
 	public int getEdgeByIndex(int index)
 	{
 		return index;
 	}
 
+	/**
+	 * @since 0.05
+	 */
 	public int getIndexByEdge(int edge)
 	{
 		return edge;
 	}
 
+	/**
+	 * @since 0.05
+	 */
 	public Object[] getConstants()
 	{
 		return new Object[] {};
 	}
-	
+
+	/**
+	 * @since 0.05
+	 */
 	public int[] getConstantIndices()
 	{
 		return new int[] {};

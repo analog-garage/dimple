@@ -60,6 +60,9 @@ public class Normal extends FactorFunction
     	if (_precision < 0)
     		throw new DimpleException("Negative precision value. This must be a non-negative value.");
 	}
+	/**
+	 * @since 0.05
+	 */
 	public Normal(NormalParameters parameters)
 	{
 		this(parameters.getMean(), parameters.getPrecision());
@@ -127,6 +130,9 @@ public class Normal extends FactorFunction
     {
     	return _parametersConstant;
     }
+	/**
+	 * @since 0.05
+	 */
     public final NormalParameters getParameters()
     {
     	return new NormalParameters(_mean, _precision);
@@ -139,18 +145,30 @@ public class Normal extends FactorFunction
     {
     	return _precision;
     }
+	/**
+	 * @since 0.05
+	 */
 	public final double getVariance()
 	{
 		return 1/_precision;
 	}
+	/**
+	 * @since 0.05
+	 */
 	public final double getStandardDeviation()
 	{
 		return 1/Math.sqrt(_precision);
 	}
+	/**
+	 * @since 0.05
+	 */
     public final void setMean(double mean)
     {
     	_mean = mean;
     }
+	/**
+	 * @since 0.05
+	 */
     public final void setPrecision(double precision)
     {
     	_precision = precision;

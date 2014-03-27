@@ -349,6 +349,7 @@ public class FactorTable extends SparseFactorTableBase
 	 * @param outputDomainIndex a number in the range [0, inputDomain.getDimensions() - 1] that specifies
 	 * which subdomain to produce as the first dimension and output.
 	 * @param inputDomain will be the second dimension in the table and the input.
+	 * @since 0.05
 	 */
 	public static IFactorTable createMarginal(int outputDomainIndex, JointDiscreteDomain<?> inputDomain)
 	{

@@ -58,6 +58,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * dimensions are to be conditioned away. Each entry in the array should either be
 	 * a negative value if the dimension is to be retained, or a non-negative value in
 	 * the range [0, <i>dimension-size</i> - 1].
+	 * 
+	 * @since 0.05
 	 */
 	public IFactorTable createTableConditionedOn(int[] valueIndices);
 
@@ -394,6 +396,7 @@ public interface IFactorTable extends IFactorTableBase
 	 * if there are duplicate indices or any of the indices is not in a valid range for the table.
 	 * @see #setEnergiesSparse(int[], double[])
 	 * @see #setWeightsSparse(int[][], double[])
+	 * @since 0.05
 	 */
 	public void setEnergiesSparse(int[][] indices, double[] energies);
 

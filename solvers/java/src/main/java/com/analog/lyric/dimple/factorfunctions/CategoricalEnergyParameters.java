@@ -55,6 +55,9 @@ public class CategoricalEnergyParameters extends FactorFunction
 		_alpha = new double[dimension];
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public CategoricalEnergyParameters(int dimension, double[] alpha)		// Constant parameters
 	{
 		super();
@@ -87,7 +90,7 @@ public class CategoricalEnergyParameters extends FactorFunction
     	{
     		int x = FactorFunctionUtilities.toInteger(arguments[index]);		// Remaining arguments are Categorical variables
     		sum += _alpha[x];
-    	}    	
+    	}
     	return sum + N * Math.log(normalizationValue);
 	}
     

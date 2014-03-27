@@ -37,9 +37,6 @@ import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-/**
- * @since 0.05
- */
 @Internal
 public class JointFactorFunction extends FactorFunction
 {
@@ -139,12 +136,18 @@ public class JointFactorFunction extends FactorFunction
 	 * Construction
 	 */
 	
+	/**
+	 * @since 0.05
+	 */
 	@Internal
 	public JointFactorFunction(Functions functions)
 	{
 		this(buildName(functions), functions);
 	}
 
+	/**
+	 * @since 0.05
+	 */
 	@Internal
 	public JointFactorFunction(String name, Functions functions)
 	{

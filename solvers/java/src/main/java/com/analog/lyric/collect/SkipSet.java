@@ -37,16 +37,25 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		super(comparator, (short)1);
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <T extends Comparable<T>> SkipSet<T> create()
 	{
 		return create(Ordering.natural());
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <T> SkipSet<T> create(Comparator<? super T> comparator)
 	{
 		return new SkipSet<T>(comparator);
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <T extends Comparable<T>> SkipSet<T> create(Collection<? extends T> collection)
 	{
 		final SkipSet<T> set = create();
@@ -54,6 +63,9 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		return set;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <T> SkipSet<T> create(SortedSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
@@ -61,6 +73,9 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		return result;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <T> SkipSet<T> create(SkipSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
@@ -77,6 +92,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	 * <p>
 	 * SUBCLASS NOTE: this does not use the default {@link Object#clone} implementation. Therefore subclasses
 	 * should not assume that fields introduced by the subclass will be cloned automatically.
+	 * @since 0.05
 	 */
 	@Override
 	public SkipSet<E> clone()

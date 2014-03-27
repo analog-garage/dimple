@@ -38,6 +38,9 @@ public class MultiplexerCPD extends FactorGraph
 		this(buildDomains(domain, numZs),false,false);
 	}
 
+	/**
+	 * @since 0.05
+	 */
 	public MultiplexerCPD(DiscreteDomain domain, int numZs)
 	{
 		this(buildDomains(domain, numZs),false,false);
@@ -60,11 +63,17 @@ public class MultiplexerCPD extends FactorGraph
 		create(buildDomains(domain,numZs),oneBased,aAsDoubles);
 	}
 
+	/**
+	 * @since 0.05
+	 */
 	public MultiplexerCPD(DiscreteDomain [] domains)
 	{
 		this(domains,false,false);
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public MultiplexerCPD(DiscreteDomain [] domains, boolean oneBased, boolean aAsDoubles)
 	{
 		super("MultiplexerCPD");

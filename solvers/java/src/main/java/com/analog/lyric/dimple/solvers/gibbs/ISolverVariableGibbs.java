@@ -39,6 +39,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable
 	/**
 	 * Returns an iterator over the nodes other than this variable node that should be
 	 * used to compute the sample score for this variable.
+	 * @since 0.05
 	 */
 	public ReleasableIterator<ISolverNodeGibbs> getSampleScoreNodes();
 

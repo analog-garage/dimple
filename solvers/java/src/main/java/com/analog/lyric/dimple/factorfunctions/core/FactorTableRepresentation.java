@@ -141,6 +141,9 @@ public enum FactorTableRepresentation
 		return (_mask & SPARSE_ENERGY._mask) != 0;
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public boolean hasSparseIndices()
 	{
 		return (_mask & FactorTable.SPARSE_INDICES) != 0;

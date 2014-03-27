@@ -415,7 +415,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_scoreArray = new ArrayList<Double>();
 	}
 	
-	// Disable saving all scores if it had previously been set
+	/**
+	 * Disable saving all scores if it had previously been set
+	 * 
+	 * @since 0.05
+	 */
 	public void disableSavingAllScores()
 	{
 		_saveAllScores = false;

@@ -120,6 +120,7 @@ public abstract class ArrayUtil
 	 * @param list is the starting list of non-negative indices in ascending order.
 	 * @param remove is a non-empty list of indexes to be removed also in ascending order.
 	 * @return a newly allocated array.
+	 * @since 0.05
 	 */
 	public static int[] contractSortedIndexList(int[] list, int[] remove)
 	{
@@ -161,6 +162,7 @@ public abstract class ArrayUtil
 	
 	/**
 	 * Copies contents of collection into a new array with given component type.
+	 * @since 0.05
 	 */
 	public static <T> T[] copy(Class<T> componentType, Collection<T> collection)
 	{
@@ -177,6 +179,7 @@ public abstract class ArrayUtil
 	 * @return new array
 	 * 
 	 * @see #copyFromIndices(Object[], int[], Object[])
+	 * @since 0.05
 	 */
 	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices)
 	{
@@ -195,6 +198,7 @@ public abstract class ArrayUtil
 	 * @return array into which values have been copied. Will be same as {@code destination} if not null.
 	 * 
 	 * @see #copyFromIndices(Object[], int[])
+	 * @since 0.05
 	 */
 	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices, T[] destination)
 	{
@@ -215,6 +219,7 @@ public abstract class ArrayUtil
 	
 	/**
 	 * Determines if array is ordered according to provided comparator.
+	 * @since 0.05
 	 */
 	public static <T> boolean isSorted(T[] array, Comparator<T> comparator)
 	{
@@ -239,6 +244,7 @@ public abstract class ArrayUtil
 	
 	/**
 	 * Determines if array is ordered according to elements' {@link Comparable#compareTo(Object)} method.
+	 * @since 0.05
 	 */
 	public static <T extends Comparable<T>> boolean isSorted(T[] array)
 	{

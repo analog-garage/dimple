@@ -24,15 +24,27 @@ public class Proposal
 	public final Value value;
 	public final double hastingsTerm;		// Negative log p(x' -> x) / p(x -> x')
 
-	// Construct with no Hastings term
+	/**
+	 * Construct with no Hastings term
+	 * @since 0.05
+	 */
 	public Proposal(Value value) {this.value = value; this.hastingsTerm = 0;}
 	
-	// General constructor
+	/**
+	 * General constructor
+	 * @since 0.05
+	 */
 	public Proposal(Value value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
 	
-	// Construct with no Hastings term; for real valued proposal
+	/**
+	 * Construct with no Hastings term; for real valued proposal
+	 * @since 0.05
+	 */
 	public Proposal(double value) {this.value = RealValue.create(value); this.hastingsTerm = 0;}
 	
-	// General constructor; for real valued proposal
+	/**
+	 * General constructor; for real valued proposal
+	 * @since 0.05
+	 */
 	public Proposal(double value, double hastingsTerm) {this.value = RealValue.create(value); this.hastingsTerm = hastingsTerm;}
 }

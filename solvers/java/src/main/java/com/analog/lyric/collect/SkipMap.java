@@ -113,6 +113,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		super(comparator, (short)2);
 	}
 	
+	/**
+	 * @since 0.05
+	 */
 	public static <K,V> SkipMap<K,V> create(Comparator<? super K> comparator)
 	{
 		return new SkipMap<K,V>(comparator);
