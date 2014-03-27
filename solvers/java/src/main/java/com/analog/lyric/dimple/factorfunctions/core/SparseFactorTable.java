@@ -38,6 +38,10 @@ import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.values.Value;
 import com.google.common.math.DoubleMath;
 
+/**
+ * @since 0.05
+ * @author Christopher Barber
+ */
 @NotThreadSafe
 public class SparseFactorTable extends SparseFactorTableBase implements IFactorTable
 {

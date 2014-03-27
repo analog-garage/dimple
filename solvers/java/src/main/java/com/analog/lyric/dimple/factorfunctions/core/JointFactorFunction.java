@@ -37,6 +37,9 @@ import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+/**
+ * @since 0.05
+ */
 @Internal
 public class JointFactorFunction extends FactorFunction
 {
@@ -44,7 +47,11 @@ public class JointFactorFunction extends FactorFunction
 	 * State
 	 */
 	
+	/**
+	 * @since 0.05
+	 */
 	@Immutable
+	@Internal
 	public static class Functions extends AbstractList<Tuple2<FactorFunction, int[]>>
 	{
 		private final Tuple2<FactorFunction,int[]>[]  _functions;

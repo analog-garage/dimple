@@ -25,6 +25,10 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
 
+/**
+ * @since 0.05
+ * @author Christopher Barber
+ */
 public abstract class SparseFactorTableBase extends FactorTableBase implements IFactorTable
 {
 	private static final long serialVersionUID = 1L;
