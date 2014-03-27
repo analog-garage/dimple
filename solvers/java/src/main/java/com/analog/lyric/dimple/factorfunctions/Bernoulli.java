@@ -49,6 +49,10 @@ public class Bernoulli extends FactorFunction
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;
 	}
+	
+	/**
+	 * @since 0.05
+	 */
 	public Bernoulli(double p)	// Constant parameter
 	{
 		super();

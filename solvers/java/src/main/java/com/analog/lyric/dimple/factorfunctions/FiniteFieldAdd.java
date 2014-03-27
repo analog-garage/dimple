@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * 2) Input1 (FiniteFieldVariable)
  * 3) Input2 (FiniteFieldVariable)
  * 
+ * @since 0.05
  */
 public class FiniteFieldAdd extends FactorFunction
 {

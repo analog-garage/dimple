@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNo
 /**
  * Factor for an exchangeable set of multivariate Normally distributed variables associated
  * with a vector representing the mean parameter and a matrix (in the form of an array of vectors)
- * representing the precision, or alternatively a vector representing the information vector and 
+ * representing the precision, or alternatively a vector representing the information vector and
  * a matrix representing the information matrix.
  * 
  * TODO: THE CURRENT IMPLEMENTATION OF THIS FACTOR FUNCTION SUPPORTS ONLY CONSTANT PARAMETRES,
@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNo
  * 
  * 1...) An arbitrary number of RealJoint variables
  * 
+ * @since 0.05
  */
 public class MultivariateNormal extends FactorFunction
 {

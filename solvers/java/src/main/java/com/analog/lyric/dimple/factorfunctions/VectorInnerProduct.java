@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * 2) First input vector (may be either a list of scalars or a RealJoint vector)
  * 3) Second input vector (may be either a list of scalars or a RealJoint vector)
  * 
+ * @since 0.05
  */
 public class VectorInnerProduct extends FactorFunction
 {

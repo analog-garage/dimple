@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
  * 1) Output (negative of input)
  * 2) Input (RealJoint)
  * 
+ * @since 0.05
  */
 public class RealJointNegate extends FactorFunction
 {

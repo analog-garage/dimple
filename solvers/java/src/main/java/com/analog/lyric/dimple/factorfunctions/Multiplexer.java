@@ -44,6 +44,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * 2) Selector input (zero-based integer value)
  * 3...) An arbitrary number of inputs (any data type)
  * 
+ * @since 0.05
  */
 public class Multiplexer extends FactorFunction
 {

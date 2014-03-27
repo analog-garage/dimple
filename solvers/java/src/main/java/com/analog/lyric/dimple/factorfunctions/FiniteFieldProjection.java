@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
  * 2) Constant array of bit positions to project
  * 3...) Bit variables
  * 
+ * @since 0.05
  */
 public class FiniteFieldProjection extends FactorFunction
 {

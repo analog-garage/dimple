@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
  * 1) Output (sum of inputs)
  * 2...) An arbitrary number of inputs (RealJoint)
  * 
+ * @since 0.05
  */
 public class RealJointSum extends FactorFunction
 {

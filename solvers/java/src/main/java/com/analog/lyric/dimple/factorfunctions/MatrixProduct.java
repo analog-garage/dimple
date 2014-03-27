@@ -50,6 +50,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * 2) Input matrix 1 (Nr x Nx, scanned by columns [because MATLAB assumes this])
  * 3) Input matrix 2 (Nx x Nc, scanned by columns [because MATLAB assumes this])
  * 
+ * @since 0.05
  */
 public class MatrixProduct extends FactorFunction
 {

@@ -39,6 +39,7 @@ import com.analog.lyric.util.misc.Matlab;
  * 2) Input matrix (outLength x inLength, scanned by columns [because MATLAB assumes this])
  * 3) Input vector (RealJoint)
  * 
+ * @since 0.05
  */
 public class MatrixRealJointVectorProduct extends FactorFunction
 {

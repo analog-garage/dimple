@@ -51,6 +51,10 @@ public class Categorical extends FactorFunction
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
 	}
+	
+	/**
+	 * @since 0.05
+	 */
 	public Categorical(double[] alpha)	// Constant parameters
 	{
 		super();

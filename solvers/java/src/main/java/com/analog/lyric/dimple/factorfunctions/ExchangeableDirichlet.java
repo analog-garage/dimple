@@ -39,6 +39,8 @@ import com.analog.lyric.dimple.model.values.Value;
  * 
  * The parameter may optionally be specified as constants in the constructor.
  * In this case, the parameters are not included in the list of arguments.
+ * 
+ * @since 0.05
  */
 public class ExchangeableDirichlet extends FactorFunction
 {

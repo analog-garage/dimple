@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
  * 2) Positive input (RealJoint)
  * 3...) An arbitrary number of subtracted inputs (RealJoint)
  * 
+ * @since 0.05
  */
 public class RealJointSubtract extends FactorFunction
 {
