@@ -20,6 +20,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
+/**
+ * @since 0.05
+ */
 public abstract class SRealJointVariableBase extends SVariableBase
 {
 	protected double[] _guessValue;

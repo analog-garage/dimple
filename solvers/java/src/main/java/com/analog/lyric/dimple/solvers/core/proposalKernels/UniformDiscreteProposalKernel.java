@@ -22,6 +22,9 @@ import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
+/**
+ * @since 0.05
+ */
 public class UniformDiscreteProposalKernel implements IProposalKernel
 {
 

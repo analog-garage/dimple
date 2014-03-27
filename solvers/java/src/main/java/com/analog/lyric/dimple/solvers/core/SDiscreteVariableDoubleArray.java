@@ -23,13 +23,16 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase 
+/**
+ * @since 0.05
+ */
+public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 {
 	protected double [] _input;
 	protected double [][] _inputMessages = new double[0][];
 	protected double [][] _outputMessages = new double[0][];
 	
-	public SDiscreteVariableDoubleArray(VariableBase var) 
+	public SDiscreteVariableDoubleArray(VariableBase var)
 	{
 		super(var);
 	}
@@ -42,7 +45,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 */
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue,
-			boolean hasFixedValue) 
+			boolean hasFixedValue)
 	{
 		if (input == null)
 		{
@@ -59,14 +62,14 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	}
 
 	/**
-	 * This method is responsible for creating the messages associated with 
+	 * This method is responsible for creating the messages associated with
 	 * an edge connecting the variable to the specified factor.  It must return
 	 * an object array where the first item is a double array for the input message
 	 * and the second item is a double array for the output message.
 	 *
 	 */
 	@Override
-	public Object[] createMessages(ISolverFactor factor) 
+	public Object[] createMessages(ISolverFactor factor)
 	{
 		//Retrieve the variable port associated with this factor
 		int portNum = _var.getPortNum(factor.getModelObject());
@@ -92,7 +95,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * messages.
 	 */
 	@Override
-	public void resetEdgeMessages(int portNum) 
+	public void resetEdgeMessages(int portNum)
 	{
 		resetInputMessage(_inputMessages[portNum]);
 		resetInputMessage(_outputMessages[portNum]);
@@ -103,7 +106,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * This method is used for introspection
 	 */
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inputMessages[portIndex];
 	}
@@ -112,7 +115,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * This method is used for introspection
 	 */
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMessages[portIndex];
 	}
@@ -122,7 +125,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 */
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) 
+			int otherPortNum)
 	{
 		SDiscreteVariableDoubleArray sother = (SDiscreteVariableDoubleArray)other;
 		_inputMessages[thisPortNum] = sother._inputMessages[otherPortNum];
