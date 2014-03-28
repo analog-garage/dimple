@@ -1,5 +1,5 @@
 Dimple
-Copyright 2012 Analog Devices Inc.
+Copyright 2012-2014 Analog Devices Inc.
 
 This product contains the following software:
 
@@ -15,8 +15,13 @@ A Java Matrix Package
 Public Domain: http://math.nist.gov/javanumerics/jama/
 
 =======================================================
-commons-math-2.2
-License file: solvers/licenses/commons-math-2.2.license.txt
+commons-math-3.3.2
+License file: solvers/licenses/commons-math-3.3.2-license.txt
+Copyright 2001-2011 The Apache Software Foundation
+
+=======================================================
+commons-collections-3.3.1
+License file: solvers/licenses/commons-collections-3.2.1-license.txt
 Copyright 2001-2011 The Apache Software Foundation
 
 =======================================================
@@ -45,3 +50,7 @@ Copyright (c) 2005 Brian Goetz and Tim Peierls
 guava-14.0
 License file: solvers/licenses/guava-14-license.txt
 Copyright (c) 2010-2013 Google
+
+=====================================================
+javaipl-1.2a
+License file: solvers/licenses/javailp-1.2a-license.
