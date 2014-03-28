@@ -153,26 +153,16 @@ runMATLABBenchmarks.dependsOn copyExternalJars
 task runBenchmarks
 runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
 
-// jdiff tasks
+// javadoc
 //
-// These require you to install JDiff somewhere and define the environment
-// variable JDIFF_HOME as the directory containing the jdiff jars.
-//
-// To use:
-//    - checkout previous version you want to compare with
-//    - add these gradle tasks to build.gradle if necessary
-//    - gradle jdiffPrevAPI
-//    - checkout new version
-//    - gradle jdiff
-//    - change description is in build/jdiff
-//
+
 ext {
 	dimpleVersion = new File('../../VERSION').text.trim()
 	
 	docSubpackages = 'com.analog.lyric'
 	
 	// Exclude packages that are internal implementation packages or that are not ready for prime time.
-	docExclude = [
+	docExcludePackages = [
 		'com.analog.lyric.cs',
 		'com.analog.lyric.dimple.examples',
 		'com.analog.lyric.dimple.learning',
@@ -193,8 +183,30 @@ ext {
 		'com.analog.lyric.math',
 		'com.analog.lyric.options',
 		'com.analog.lyric.util'
-		].join(':');	
+		];
+	docExclude = docExcludePackages.join(':');	
+}
 
+javadoc {
+    exclude docExcludePackages.collect{ '**/' + it.replace('.','/') + '/**' }
+    title 'Dimple Java API ' + dimpleVersion
+	options.header 'Dimple ' + dimpleVersion
+}
+
+// jdiff tasks
+//
+// These require you to install JDiff somewhere and define the environment
+// variable JDIFF_HOME as the directory containing the jdiff jars.
+//
+// To use:
+//    - checkout previous version you want to compare with
+//    - add these gradle tasks to build.gradle if necessary
+//    - gradle jdiffPrevAPI
+//    - checkout new version
+//    - gradle jdiff
+//    - change description is in build/jdiff
+//
+ext {
 	jdiffHome = System.env["JDIFF_HOME"]
 	jdiffJars = files("$jdiffHome/jdiff.jar", "$jdiffHome/xerces.jar")
 	jdiffDocletPath = jdiffJars.getAsPath()
