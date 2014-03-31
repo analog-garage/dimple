@@ -157,7 +157,7 @@ runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
 //
 
 ext {
-	dimpleVersion = new File('../../VERSION').text.trim()
+	dimpleVersion = file('../../VERSION').text.trim()
 	
 	docSubpackages = 'com.analog.lyric'
 	
@@ -215,7 +215,7 @@ ext {
 	jdiffApiname = 'Dimple ' + dimpleVersion
 	jdiffApiFilename = 'Dimple_' + dimpleVersion + '.xml'
 	jdiffApiDirname = 'build/jdiff'
-	jdiffApiDir = new File(jdiffApiDirname)
+	jdiffApiDir = file(jdiffApiDirname)
 	jdiffApiFile = file(jdiffApiDirname + '/' + jdiffApiFilename)
 	jdiffPrevApiname = 'Dimple_prev'
 	jdiffPrevApiFilename = jdiffPrevApiname + '.xml'
