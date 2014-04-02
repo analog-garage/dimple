@@ -1,3 +1,3 @@
 
 // Include subprojects
-include 'solvers/java'
+include 'solvers:java', 'doc'

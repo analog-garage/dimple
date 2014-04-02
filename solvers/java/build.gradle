@@ -21,6 +21,8 @@
 
 apply plugin: 'java'
 
+archivesBaseName = 'dimple'
+
 defaultTasks 'build'
 
 //Specify what repositories to use when looking for jars
@@ -193,6 +195,10 @@ javadoc {
 	options.header 'Dimple ' + dimpleVersion
 }
 
+task(allDoc, dependsOn: 'javadoc') {
+	group 'Documentation'
+}
+
 // jdiff tasks
 //
 // These require you to install JDiff somewhere and define the environment
@@ -232,8 +238,6 @@ task jdiffAPI(dependsOn: 'assemble', type: Exec) {
 	
 	outputs.file(jdiffApiFile)
 	
-	mkdir(jdiffApiDirname)
-	
 	commandLine 'javadoc', 
 	'-docletpath', jdiffDocletPath,
 	'-doclet', jdiffDocletClass,
@@ -245,6 +249,10 @@ task jdiffAPI(dependsOn: 'assemble', type: Exec) {
 	'-sourcepath', 'src/main/java', 
 	'-subpackages', docSubpackages,
 	'-exclude', docExclude
+	
+	doFirst {
+		mkdir(jdiffApiDirname)
+	}
 }
 
 task jdiffPrevAPI(dependsOn: 'jdiffAPI', type:Copy) {

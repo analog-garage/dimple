@@ -5,6 +5,7 @@
 	<projects/>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.eclipse.jdt.groovy.core.groovyNature</nature>
 	</natures>
 	<buildSpec>
 		<buildCommand>

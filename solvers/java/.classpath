@@ -31,5 +31,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="build/external-libs/jama-1.0.2.jar"/>
 	<classpathentry kind="lib" path="build/external-libs/jtransforms-2.3.jar"/>
+	<classpathentry kind="con" path="GROOVY_SUPPORT"/>
+	<classpathentry kind="con" path="GROOVY_DSL_SUPPORT"/>
 	<classpathentry kind="output" path="build/classes/main"/>
 </classpath>

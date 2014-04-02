@@ -7,4 +7,5 @@ output
 *.out
 .project
 .texlipse
+.pydevproject
 /tmp
