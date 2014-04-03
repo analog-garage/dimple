@@ -1,0 +1,57 @@
+
+// TODO: move working directory to this directory. Probably will
+// require creating a startup.m file here.
+
+ext {
+	testMatlabWorkingDir = file('../..')
+	testMatlabLogFilename = "testMatlab.log"
+	testMatlabLogFile = new File(testMatlabWorkingDir, testMatlabLogFilename)
+	testMatlabFailuresFile = new File(testMatlabWorkingDir, "testDimple.failures.txt")
+	testMatlabDoneFile = new File(testMatlabWorkingDir, "testDimpleexitDone.txt")
+	testMatlabScript = 'testDimpleexit'
+}
+
+task(cleanMatlab, type:Delete) {
+	description = 'Remove generated MATLAB files'
+	group = 'Cleanup'
+	
+	delete testMatlabLogFile, testMatlabFailuresFile, testMatlabDoneFile
+}
+
+task(clean, dependsOn: 'cleanMatlab') {
+	description = 'Removes temporary files'
+	group = 'Cleanup'
+}
+	
+task(testMatlab, type: Exec) {
+	description = "Run MATLAB unit tests"
+	group = 'Verification'
+	
+	inputs.files fileTree(dir: '.', include: ['**.m'])
+	
+	executable = 'matlab'
+	// Run in root directory to get startup.m file there.
+	workingDir = testMatlabWorkingDir
+	args = ['-nodesktop', '-minimize', '-noFigureWindows', '-nosplash', '-wait',
+		'-r', testMatlabScript, 
+		'-logfile', testMatlabLogFilename]
+	
+	doFirst {
+		delete testMatlabLogFile
+		delete testMatlabFailuresFile
+		delete testMatlabDoneFile
+	}
+	
+	doLast {
+		if (testMatlabFailuresFile.exists()) {
+			logger.error("*** testMatlab failed ***\n" + testMatlabFailuresFile.text)
+			throw new Error('testMatlabs failed')
+		}
+		delete testMatlabDoneFile
+	}
+}
+
+task(test, dependsOn: 'testMatlab') {
+	description = 'Runs the unit tests'
+	group = 'Verification'
+}
