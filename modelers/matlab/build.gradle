@@ -2,6 +2,8 @@
 // TODO: move working directory to this directory. Probably will
 // require creating a startup.m file here.
 
+project.description = 'MATLAB API tests'
+
 ext {
 	testMatlabWorkingDir = file('../..')
 	testMatlabLogFilename = "testMatlab.log"
@@ -50,6 +52,7 @@ task(testMatlab, type: Exec) {
 		delete testMatlabDoneFile
 	}
 }
+testMatlab.dependsOn rootProject.longVersion
 
 task(test, dependsOn: 'testMatlab') {
 	description = 'Runs the unit tests'

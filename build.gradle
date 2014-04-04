@@ -1,21 +1,150 @@
 /*******************************************************************************
-*   Copyright 2012-2014 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012-2014 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
-// The real work happens in subprojects. The subprojects are included
-// in settings.gradle.
-
+// Except for building the installkit, the real work happens in subprojects.
+// The subprojects are included in settings.gradle.
 
 defaultTasks 'build'
+
+ext {
+	dimpleVersionFile = file('VERSION')
+	dimpleLongVersionFile = file('LONG_VERSION')
+	dimpleVersion = dimpleVersionFile.text.trim()
+	dimpleUnderlineVersion = dimpleVersion.replace('.','_')
+
+	dimpleInstallkitDir = file('build/')
+	dimpleInstallkitName = "dimple_v${dimpleUnderlineVersion}.zip" // FIXME xxx_
+	dimpleInstallkitFile = new File(dimpleInstallkitDir, dimpleInstallkitName)
+	dimpleUnzippedInstallkit = new File(dimpleInstallkitDir, 'installkit')
+
+}
+
+task(longVersion) {
+	description = 'Build LONG_VERSION file'
+	group = 'Build'
+	
+	inputs.files(dimpleVersionFile)
+	outputs.files(dimpleLongVersionFile)
+
+	// currentGitBranchName
+	try {
+		new ByteArrayOutputStream().withStream { out ->
+			exec {
+				standardOutput = out;
+				commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+			}
+			ext.currentBranchName = out.toString().trim()
+		}
+	} catch (Exception ex) {
+		logger.error(ex.toString())
+		ext.currentGitBranchName = 'unknown'
+	}
+
+	// lastGitCommitDate
+	try {
+		new ByteArrayOutputStream().withStream { out ->
+			exec {
+				standardOutput = out;
+				commandLine 'git', 'log', '-1', '--format=%ci'
+			}
+			ext.lastGitCommitDate = out.toString().trim()
+		}
+	} catch (Exception ex) {
+		logger.error(ex.toString())
+		ext.currentGitBranchName = 'unknown'
+	}
+
+	String dimpleLongVersion = "${dimpleVersion} ${currentBranchName} ${lastGitCommitDate}"
+	int hash = dimpleLongVersion.hashCode()
+
+	List advs = file('solvers/java/adv.txt').readLines()
+	String adv = advs[hash % advs.size].trim().capitalize()
+	List adjs = file('solvers/java/adj.txt').readLines()
+	String adj = adjs[hash % adjs.size].trim().capitalize()
+	List nouns = file('solvers/java/nouns.txt').readLines()
+	String noun = nouns[hash % nouns.size].trim().capitalize()
+
+	dimpleLongVersion += " \"${adv} ${adj} ${noun}\""
+	
+	dimpleLongVersionFile.withWriter { out -> out.writeLine(dimpleLongVersion) }
+}
+
+task(cleanInstallkit, type: Delete) {
+	description = 'Remove install kits'
+	group = 'Cleanup'
+
+	delete fileTree(dir: dimpleInstallkitDir, includes:['dimple_v*.zip'])
+	delete dimpleUnzippedInstallkit
+}
+
+task(installkit, type: Zip) {
+	description = 'Build Dimple install kit'
+	group = 'Build'
+
+	dependsOn(':solvers:java:assemble', ':solvers:java:javadoc', ':doc:userDocs')
+	destinationDir = dimpleInstallkitDir
+	archiveName = dimpleInstallkitName
+
+	from ('demo/') {
+		into 'demo/'
+	}
+
+	from ('doc/') {
+		include 'ReleaseNotes/**'
+		include "DimpleUserManual_v${dimpleVersion}*.pdf"
+		include "javadoc/**"
+		into 'doc/'
+	}
+
+	from ('modelers/matlab/') {
+		include 'lib/**'
+		include '**/*.m'
+		into 'modelers/matlab/'
+	}
+
+	from ('solvers/lib/') {
+		include '*.jar'
+		into 'solvers/lib'
+	}
+
+	from ('solvers/licenses/') {
+		into 'solvers/licenses'
+	}
+
+	from ('.') {
+		include 'LICENSE.txt'
+		include 'LONG_VERSION'
+		include 'VERSION'
+		include 'NOTICE.txt'
+		include 'README.txt'
+		include 'startup.m'
+	}
+}
+
+task(unzipInstallkit, dependsOn: installkit, type: Copy) {
+	from zipTree(dimpleInstallkitFile)
+	into 'build/foo/'
+}
+
+task(testInstallkit, dependsOn: unzipInstallkit) {
+	description = 'Test install kit'
+	group = 'Verification'
+
+	doLast {
+		delete dimpleUnzippedInstallKit
+	}
+}
+

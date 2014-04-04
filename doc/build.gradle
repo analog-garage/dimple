@@ -1,4 +1,6 @@
 
+project.description = 'LaTeX user and developer documentation'
+
 ext {
 	dimpleVersion = file('../VERSION').text.trim()
 

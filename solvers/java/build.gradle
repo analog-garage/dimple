@@ -19,6 +19,8 @@
  * script works.
  */
 
+project.description = 'Java API'
+
 apply plugin: 'java'
 
 archivesBaseName = 'dimple'
@@ -112,12 +114,13 @@ task(copyDimpleJar,type: Copy) {
   into(file('../lib'))
 }
 
-task createVersionFile(type:Exec) {
-     workingDir '.'
-     commandLine 'python longver.py'.split()
+task(versionResource, dependsOn: rootProject.longVersion, type: Copy) {
+	from dimpleLongVersionFile
+	into 'src/main/resources/'
+	rename 'LONG_VERSION', 'VERSION'
 }
 
-processResources.dependsOn createVersionFile
+processResources.dependsOn versionResource
 
 //clean removes the build directory by default.  We also remove ../lib.
 clean {
@@ -159,8 +162,6 @@ runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
 //
 
 ext {
-	dimpleVersion = file('../../VERSION').text.trim()
-	
 	docSubpackages = 'com.analog.lyric'
 	
 	// Exclude packages that are internal implementation packages or that are not ready for prime time.
@@ -193,14 +194,19 @@ javadoc {
     exclude docExcludePackages.collect{ '**/' + it.replace('.','/') + '/**' }
     title 'Dimple Java API ' + dimpleVersion
 	options.header 'Dimple ' + dimpleVersion
-	destinationDir = new File(docsDir, dimpleVersion.replace('.','_'))
 
-	doFirst {
-		mkdir(destinationDir)
-	}
 }
 
-task(allDoc, dependsOn: 'javadoc') {
+task (javadocVersion, dependsOn: javadoc, type:Copy) {
+	description = "Copies javadoc into version-specific directory"
+	group = 'Documentation'
+	
+	from javadoc.destinationDir
+	into javadoc.destinationDir.parent + "/javadoc_v${dimpleUnderlineVersion}"
+}
+
+task(allDoc, dependsOn: 'javadocVersion') {
+	description "Builds all documentation"
 	group 'Documentation'
 }
 
