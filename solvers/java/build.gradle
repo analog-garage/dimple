@@ -22,7 +22,7 @@
 project.description = 'Java API'
 
 apply plugin: 'java'
-apply plugin: 'jacoco'
+apply plugin: 'jacoco' // for java code coverage
 
 archivesBaseName = 'dimple'
 
@@ -40,12 +40,6 @@ repositories {
 
 }
 
-configurations {
-  //Create a new configuration so that we can refer to all the jar file
-  //dependencies later
-  jarfiles
-}
-
 sourceSets {
   main {
     resources {
@@ -59,44 +53,23 @@ sourceSets {
 
 //Benchmarking source set depends on main and its dependencies
 dependencies {
+	compile "com.google.guava:guava:14.0"
+	compile "org.apache.commons:commons-math3:3.2"
+	compile "commons-collections:commons-collections:3.2.1"
+	compile "edu.emory.mathcs:jtransforms:2.3"
+	compile "jama:jama:1.0.2"
+	compile "colt:colt:1.2.0"
+	compile "net.jcip:jcip-annotations:1.0"
+	compile "junit:junit:4.11"
+	compile files('../non-maven-jars/javailp-1.2a.jar')
+
     benchmarkingCompile sourceSets.main.runtimeClasspath
-}
-
-//Create an array of all the dependency jars
-project.ext.myjars = [
-	"com.google.guava:guava:14.0",
-    "org.apache.commons:commons-math3:3.2",
-    "commons-collections:commons-collections:3.2.1",
-    "edu.emory.mathcs:jtransforms:2.3",
-    "jama:jama:1.0.2",
-    "colt:colt:1.2.0",
-    "junit:junit:4.11",
-    "net.jcip:jcip-annotations:1.0",
-	files('../non-maven-jars/javailp-1.2a.jar'),
-  ]
-
-//Set up all the external dependencies for dimple
-dependencies
-{
-  //for each jar file
-  for (j in project.myjars)
-  {
-    //add the dependency to the compile target
-    compile(j)
-
-    //add the dependency to our custom jarfiles target
-    jarfiles(j)
-  }
-
-  //add a dependency on junit for the testCompile target
-  //testCompile 'junit:junit:4.11'
-
 }
 
 //This task will copy all of the jar files into the lib directory.
 //MATLAB will add these jar files to the path.
 task('copyExternalJars', type: Copy) {
-  from configurations.jarfiles
+  from configurations.compile
   into file('../lib')
 }
 
@@ -104,7 +77,7 @@ task('copyExternalJars', type: Copy) {
 //subdirectories of the .classpath file.  As a result, we also have
 //to copy all of the jar files into the build/external-libs directory
 task copyExternalJarsForEclipse(type: Copy) {
-  from configurations.jarfiles
+  from configurations.compile
   into file('build/external-libs')
 }
 
@@ -142,6 +115,10 @@ copyJars.dependsOn copyDimpleJar, copyExternalJars, copyExternalJarsForEclipse
 //As part of assembly, make sure all jars are in the required locations
 assemble.dependsOn copyJars
 
+//
+// Benchmarking tasks
+//
+
 task(runJavaBenchmarks, dependsOn: 'benchmarkingClasses', type: JavaExec) {
   main = 'com.analog.lyric.dimple.benchmarks.DimpleBenchmarks'
   classpath = sourceSets.benchmarking.runtimeClasspath
@@ -159,6 +136,7 @@ runMATLABBenchmarks.dependsOn copyExternalJars
 task runBenchmarks
 runBenchmarks.dependsOn runJavaBenchmarks, runMATLABBenchmarks
 
+//
 // javadoc
 //
 
