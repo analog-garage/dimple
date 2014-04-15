@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Copyright 2012 Analog Devices, Inc.
+%   Copyright 2014 Analog Devices, Inc.
 %
 %   Licensed under the Apache License, Version 2.0 (the "License");
 %   you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
 %   limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function versionNumber = getDimpleVersionNumber()
-    numberize=[10^5 10^4 0 10^3 10^2 0 10 1];
-    version = getDimpleVersion();
-    blank = '00.00.00';
-    versionNumber = dot(numberize, version - blank);
+function version=dimpleVersionNumber()
+    firstpart = fileparts(mfilename('fullpath'));
+    filename = [firstpart filesep() fullfile('..','..','..','VERSION')];
+    f = fopen(filename);
+    version = strtrim(fgets(f));
+    if (f >= 0)
+        fclose(f);
+    end
 end

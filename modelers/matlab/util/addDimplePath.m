@@ -73,7 +73,7 @@ function addDimplePath(DimpleDirectory, XUnitDirectory, JavaDir, BerToolDirector
     if exist(JavaClassDir,'dir')
         ActualJavaDir = JavaClassDir;
     else
-        ActualJavaDir = fullfile(dimple_base, 'solvers', 'lib', 'dimple.jar');
+        ActualJavaDir = fullfile(dimple_base, 'solvers', 'lib', ['dimple-' dimpleVersionNumber(), '.jar']);
     end
     
     JavaBuildJarsDir = fullfile(JavaBuildDir, 'external-libs');

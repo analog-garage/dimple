@@ -16,7 +16,7 @@
 
 // Except for building the installkit, the real work happens in subprojects.
 // The subprojects are included in settings.gradle.
-
+ 
 defaultTasks 'build'
 
 ext {
@@ -29,7 +29,6 @@ ext {
 	dimpleInstallkitName = "dimple_v${dimpleUnderlineVersion}.zip" // FIXME xxx_
 	dimpleInstallkitFile = new File(dimpleInstallkitDir, dimpleInstallkitName)
 	dimpleUnzippedInstallkit = new File(dimpleInstallkitDir, 'installkit')
-
 }
 
 task(longVersion) {

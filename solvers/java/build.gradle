@@ -20,6 +20,7 @@
  */
 
 project.description = 'Java API'
+project.version = dimpleVersion
 
 apply plugin: 'java'
 apply plugin: 'jacoco' // for java code coverage
@@ -83,7 +84,7 @@ task copyExternalJarsForEclipse(type: Copy) {
 //We also provide a task to copy the dimple jar file to ../lib so that
 //the build kit and other projects can reference this jar file.
 task(copyDimpleJar,type: Copy) {
-  from(file('build/libs/dimple.jar'))
+  from(jar)
   into(file('../lib'))
 }
 
