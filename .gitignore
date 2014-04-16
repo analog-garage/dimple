@@ -29,3 +29,5 @@ doc/DimpleUserManual/*.gz
 /startupglpk.m
 *.pydevproject
 testMatlab.log
+solvers/java/*_java_*.xml
+modelers/matlab/benchmarks/*_matlab_*.xml
