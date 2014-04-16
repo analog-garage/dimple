@@ -81,15 +81,7 @@ task(longVersion) {
 	dimpleLongVersionFile.withWriter { out -> out.writeLine(dimpleLongVersion) }
 }
 
-task(cleanInstallkit, type: Delete) {
-	description = 'Remove install kits'
-	group = 'Cleanup'
-
-	delete fileTree(dir: dimpleInstallkitDir, includes:['dimple_v*.zip'])
-	delete dimpleUnzippedInstallkit
-}
-
-task(installkit, type: Zip) {
+task installkit(type: Zip) {
 	description = 'Build Dimple install kit'
 	group = 'Build'
 
@@ -133,17 +125,40 @@ task(installkit, type: Zip) {
 	}
 }
 
-task(unzipInstallkit, dependsOn: installkit, type: Copy) {
-	from zipTree(dimpleInstallkitFile)
-	into 'build/foo/'
+task cleanInstallkit(type: Delete) {
+	description = 'Remove install kits'
+	group = 'Cleanup'
+
+	delete fileTree(dir: dimpleInstallkitDir, includes:['dimple_v*.zip'])
 }
 
-task(testInstallkit, dependsOn: unzipInstallkit) {
-	description = 'Test install kit'
+task testInstallkitSetup(dependsOn: installkit, type: Copy) {
+	from zipTree(dimpleInstallkitFile)
+	into dimpleUnzippedInstallkit
+}
+
+task testInstallkitClean(type: Delete) {
+	delete dimpleUnzippedInstallkit
+}
+
+task testInstallkit(dependsOn: [testInstallkitSetup, 'solvers:java:testClasses'], type:Test) {
+	description = 'Runs tests against install kit'
 	group = 'Verification'
 
-	doLast {
-		delete dimpleUnzippedInstallKit
-	}
+	evaluationDependsOn ':solvers:java'
+    ext.testSet = project(':solvers:java').sourceSets.test
+
+    // show standard out and standard error of the test JVM(s) on the console
+    testLogging.showStandardStreams = true
+
+ 	testClassesDir = testSet.output.classesDir
+ 	testSrcDirs = testSet.java.srcDirs.asList()
+
+ 	classpath = files(testClassesDir, fileTree(dir: dimpleUnzippedInstallkit, includes:['**/*.jar']))
+	reports.html.enabled = false
+	reports.junitXml.enabled = false
+	binResultsDir = new File(dimpleUnzippedInstallkit, "installtestOutput") // FIXME
+
+	finalizedBy testInstallkitClean
 }
 
