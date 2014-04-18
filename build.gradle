@@ -26,7 +26,7 @@ ext {
 	dimpleUnderlineVersion = dimpleVersion.replace('.','_')
 
 	dimpleInstallkitDir = file('build/')
-	dimpleInstallkitName = "dimple_v${dimpleUnderlineVersion}.zip" // FIXME xxx_
+	dimpleInstallkitName = "dimple_v${dimpleUnderlineVersion}.zip"
 	dimpleInstallkitFile = new File(dimpleInstallkitDir, dimpleInstallkitName)
 	dimpleUnzippedInstallkit = new File(dimpleInstallkitDir, 'installkit')
 }
