@@ -24,6 +24,8 @@ public class GenericDiscreteValue extends DiscreteValue
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+
 	protected final DiscreteDomain _domain;
 	protected Object _value;
 	protected int _index;

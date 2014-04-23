@@ -23,6 +23,8 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
  */
 public abstract class DiscreteValue extends Value
 {
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public abstract DiscreteValue clone();
 	

@@ -23,6 +23,8 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
  */
 public class RealValue extends Value
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double _value;
 	
 	/*--------------

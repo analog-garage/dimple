@@ -21,6 +21,8 @@ import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 
 public class FiniteFieldValue extends DiscreteValue
 {
+	private static final long serialVersionUID = 1L;
+
 	private FiniteFieldNumber _value;
 
 	public FiniteFieldValue(FiniteFieldNumber value)

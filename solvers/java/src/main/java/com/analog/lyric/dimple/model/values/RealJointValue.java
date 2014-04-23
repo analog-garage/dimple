@@ -22,6 +22,8 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 
 public class RealJointValue extends Value
 {
+	private static final long serialVersionUID = 1L;
+
 	protected double[] _value;
 	
 	/*--------------

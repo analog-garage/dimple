@@ -23,6 +23,8 @@ import com.analog.lyric.dimple.model.domains.DoubleRangeDomain;
  */
 public class SimpleDoubleRangeValue extends DoubleDiscreteValue
 {
+	private static final long serialVersionUID = 1L;
+
 	/*--------------
 	 * Construction
 	 */

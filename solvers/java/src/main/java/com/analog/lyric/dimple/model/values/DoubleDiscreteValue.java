@@ -25,6 +25,8 @@ import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
  */
 public abstract class DoubleDiscreteValue extends DiscreteValue
 {
+	private static final long serialVersionUID = 1L;
+
 	final TypedDiscreteDomain<Double> _domain;
 	double _value;
 	

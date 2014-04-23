@@ -23,6 +23,8 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
  */
 public class ObjectValue extends Value
 {
+	private static final long serialVersionUID = 1L;
+
 	/*-------
 	 * State
 	 */

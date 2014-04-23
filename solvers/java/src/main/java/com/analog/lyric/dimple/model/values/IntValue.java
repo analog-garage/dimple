@@ -24,6 +24,8 @@ import com.analog.lyric.dimple.model.domains.IntDomain;
  */
 public class IntValue extends Value
 {
+	private static final long serialVersionUID = 1L;
+
 	protected int _value;
 	
 	/*--------------

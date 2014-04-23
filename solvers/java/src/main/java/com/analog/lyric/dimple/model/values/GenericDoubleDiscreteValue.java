@@ -24,6 +24,8 @@ public class GenericDoubleDiscreteValue extends DoubleDiscreteValue
 	 * State
 	 */
 	
+	private static final long serialVersionUID = 1L;
+
 	private int _index;
 	
 	/*--------------

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -37,8 +38,10 @@ import com.google.common.base.Objects;
  * 
  * @since 0.05
  */
-public abstract class Value implements Cloneable
+public abstract class Value implements Cloneable, Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	/*--------------
 	 * Construction
 	 */
