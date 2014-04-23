@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.model.values.RealJointValue;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.SimpleIntRangeValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.test.SerializationTester;
 
 public class TestValue
 {
@@ -379,5 +380,12 @@ public class TestValue
 		Value value4 = Value.create(domain, objValue);
 		assertEquals(objValue, value4.getObject());
 		assertEquals(value.getIndex(), value4.getIndex());
+		
+		Value value5 = SerializationTester.clone(value);
+		assertNotSame(value, value2);
+		assertSame(value.getClass(), value2.getClass());
+		assertEquals(value.getObject(), value2.getObject());
+		assertEquals(value.getIndex(), value2.getIndex());
+		assertTrue(value.valueEquals(value2));
 	}
 }
