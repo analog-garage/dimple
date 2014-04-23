@@ -42,12 +42,30 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	private MultiThreadingManager _multithreader; // = new MultiThreadingManager();
 	private boolean _useMultithreading = false;
 
+	/*--------------
+	 * Construction
+	 */
+	
 	public SFactorGraphBase(FactorGraph fg)
 	{
 		super(fg);
 		_factorGraph = fg;
 	}
 
+	/*----------------------------
+	 * ISolverEventSource methods
+	 */
+	
+	@Override
+	public SFactorGraphBase getContainingSolverGraph()
+	{
+		return this;
+	}
+	
+	/*---------------------
+	 * ISolverNode methods
+	 */
+	
 	public FactorGraph getModel()
 	{
 		return _factorGraph;

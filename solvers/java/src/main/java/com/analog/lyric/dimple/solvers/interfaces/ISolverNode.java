@@ -19,6 +19,7 @@
  */
 package com.analog.lyric.dimple.solvers.interfaces;
 
+import com.analog.lyric.dimple.events.ISolverEventSource;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
 
@@ -26,7 +27,7 @@ import com.analog.lyric.options.IOptionHolder;
  * @author schweitz
  *
  */
-public interface ISolverNode extends IOptionHolder
+public interface ISolverNode extends IOptionHolder, ISolverEventSource
 {
 	//Update all outgoing messages
 	public void update() ;

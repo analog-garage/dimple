@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.dimple.events.IDimpleEventListener;
+import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
@@ -48,7 +51,52 @@ public class SBlastFromThePast extends AbstractOptionHolder implements ISolverBl
 	{
 		return getParentGraph();
 	}
+
+	/*----------------------------
+	 * IDimpleEventSource methods
+	 */
 	
+    @Override
+	public FactorGraph getContainingGraph()
+	{
+    	return _factor.getContainingGraph();
+	}
+	
+    @Override
+    public IDimpleEventListener getEventListener()
+    {
+    	return getContainingGraph().getEventListener();
+    }
+    
+    @Override
+    public ISolverFactorGraph getEventParent()
+    {
+    	return getParentGraph();
+    }
+    
+	@Override
+	public String getEventSourceName()
+	{
+		// FIXME - determine what this should be
+		return toString();
+	}
+
+    @Override
+    public IModelEventSource getModelEventSource()
+    {
+    	return getModelObject();
+    }
+    
+	/*----------------------------
+	 * ISolverEventSource methods
+	 */
+	
+    @Override
+	public ISolverFactorGraph getContainingSolverGraph()
+	{
+    	return getParentGraph();
+	}
+
 	/*---------------------------
 	 * SBlastFromThePast methods
 	 */

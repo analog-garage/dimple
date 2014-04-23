@@ -28,6 +28,7 @@ import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -177,6 +178,45 @@ public abstract class Node implements INode, Cloneable
 		
 		return n;
 	}
+	
+	/*----------------------------
+	 * IDimpleEventSource methods
+	 */
+	
+	@Override
+	public FactorGraph getContainingGraph()
+	{
+		return _parentGraph;
+	}
+	
+	@Override
+	public IDimpleEventListener getEventListener()
+	{
+		return getRootGraph().getEventListener();
+	}
+	
+	@Override
+	public FactorGraph getEventParent()
+	{
+		return _parentGraph;
+	}
+	
+	@Override
+	public String getEventSourceName()
+	{
+		// FIXME - determine what this should be
+		return toString();
+	}
+
+	@Override
+	public Node getModelEventSource()
+	{
+		return this;
+	}
+	
+	/*---------------
+	 * INode methods
+	 */
 	
 	@Override
 	public int getSiblingPortIndex(int index)

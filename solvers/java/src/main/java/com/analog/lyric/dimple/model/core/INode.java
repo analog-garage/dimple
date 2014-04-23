@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -27,7 +28,7 @@ import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 
 
-public interface INode  extends INameable
+public interface INode  extends INameable, IModelEventSource
 {
 	/**
 	 * If node is a {@link Factor} returns it, otherwise null.
