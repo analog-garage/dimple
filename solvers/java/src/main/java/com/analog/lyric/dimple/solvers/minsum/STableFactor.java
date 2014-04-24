@@ -191,7 +191,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public double evalFactorFunction(Object[] inputs)
 	{
-		return -Math.log(getFactorFunction().eval(inputs));
+		return getFactorFunction().evalEnergy(inputs);
 	}
 
 	@Override
