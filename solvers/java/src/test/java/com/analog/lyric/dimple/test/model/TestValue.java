@@ -382,10 +382,9 @@ public class TestValue
 		assertEquals(value.getIndex(), value4.getIndex());
 		
 		Value value5 = SerializationTester.clone(value);
-		assertNotSame(value, value2);
-		assertSame(value.getClass(), value2.getClass());
-		assertEquals(value.getObject(), value2.getObject());
-		assertEquals(value.getIndex(), value2.getIndex());
-		assertTrue(value.valueEquals(value2));
+		assertNotSame(value, value5);
+		assertSame(value.getClass(), value5.getClass());
+		assertEquals(value.getIndex(), value5.getIndex());
+		assertTrue(value.valueEquals(value5));
 	}
 }
