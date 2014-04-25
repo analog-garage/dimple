@@ -25,6 +25,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.IKeyed;
 import com.google.common.collect.Ordering;
 
 public class TestArrayUtil
@@ -156,6 +157,32 @@ public class TestArrayUtil
 		Arrays.sort(ia, reverse);
 		assertTrue(ArrayUtil.isSorted(ia, reverse));
 		assertTrue(ArrayUtil.isSorted(new Integer[] { 23 }, reverse));
+	}
+	
+	@Test
+	public void linearSearch()
+	{
+		class Foo implements IKeyed<Integer>
+		{
+			int key;
+			
+			Foo(int i) { key = i; }
+			
+			@Override
+			public Integer getKey()
+			{
+				return key;
+			}
+		}
+		
+		Foo[] array = new Foo[] { new Foo(1), new Foo(3), new Foo(1), new Foo(5), new Foo(3) };
+		
+		assertEquals(-1, ArrayUtil.linearSearch(array, 42));
+		assertEquals(0, ArrayUtil.linearSearch(array, 1));
+		assertEquals(1, ArrayUtil.linearSearch(array, 3));
+		assertEquals(3, ArrayUtil.linearSearch(array,  5));
+		assertEquals(2, ArrayUtil.linearSearch(array, 1, 1, array.length));
+		assertEquals(-1, ArrayUtil.linearSearch(array, 1, 1, 1));
 	}
 	
 	@Test

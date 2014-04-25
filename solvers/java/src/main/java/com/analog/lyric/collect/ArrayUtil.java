@@ -218,6 +218,46 @@ public abstract class ArrayUtil
 	}
 	
 	/**
+	 * Searches array in linear order for first element with matching key.
+	 * 
+	 * @param array the array to be searched
+	 * @param key the value to be searched for
+	 * @param fromIndex the index of the first element (inclusive) to be searched
+	 * @param toIndex the index of the last element (exclusive) to be searched
+	 * 
+	 * @return index of first array element in range for which {@code key.equals(array[i].getKey())}; otherwise -1.
+	 * 
+	 * @since 0.06
+	 */
+	public static <K> int linearSearch(IKeyed<K>[] array, K key, int fromIndex, int toIndex)
+	{
+		for (int i = fromIndex; i < toIndex; ++i)
+		{
+			if (key.equals(array[i].getKey()))
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+
+	/**
+	 * Searches array in linear order for first element with matching key.
+	 * 
+	 * @param array the array to be searched
+	 * @param key the value to be searched for
+	 * 
+	 * @return index of first array element for which {@code key.equals(array[i].getKey())}; otherwise -1.
+	 * 
+	 * @since 0.06
+	 */
+	public static <K> int linearSearch(IKeyed<K>[] array, K key)
+	{
+		return linearSearch(array, key, 0, array.length);
+	}
+
+	/**
 	 * Determines if array is ordered according to provided comparator.
 	 * @since 0.05
 	 */
