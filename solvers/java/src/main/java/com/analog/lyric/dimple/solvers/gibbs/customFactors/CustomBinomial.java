@@ -67,8 +67,8 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			int numOnes = _hasConstantOutput ? _constantOutputValue : _outputVariable.getCurrentSampleIndex();
 			int numZeros = N - numOnes;
 			
-			outputMsg.setAlpha(numOnes);		// Sample alpha
-			outputMsg.setBeta(numZeros);		// Sample beta
+			outputMsg.setAlphaMinusOne(numOnes);		// Sample alpha
+			outputMsg.setBetaMinusOne(numZeros);		// Sample beta
 		}
 		else
 			super.updateEdgeMessage(portNum);

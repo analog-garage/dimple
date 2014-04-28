@@ -39,12 +39,12 @@ public class GammaSampler implements IRealConjugateSampler
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
 	{
-		double alpha = 0;
+		double alphaMinusOne = 0;
 		double beta = 0;
 		
 		if (input != null)
 		{
-			alpha += ((Gamma)input).getAlpha();
+			alphaMinusOne += ((Gamma)input).getAlphaMinusOne();
 			beta += ((Gamma)input).getBeta();
 		}
 		
@@ -53,21 +53,21 @@ public class GammaSampler implements IRealConjugateSampler
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
 			GammaParameters message = (GammaParameters)(ports[port].getOutputMsg());
-			alpha += message.getAlpha();
+			alphaMinusOne += message.getAlphaMinusOne();
 			beta += message.getBeta();
 		}
 		
 		// Set the output
 		GammaParameters parameters = (GammaParameters)aggregateParameters;
-		parameters.setAlpha(alpha);
+		parameters.setAlphaMinusOne(alphaMinusOne);
 		parameters.setBeta(beta);
 	}
 
 	public final double nextSample(GammaParameters parameters)
 	{
-		double alpha = parameters.getAlpha();
+		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double beta = parameters.getBeta();
-		return SolverRandomGenerator.randGamma.nextDouble(alpha, beta);
+		return SolverRandomGenerator.randGamma.nextDouble(alphaMinusOne + 1, beta);
 	}
 	
 	@Override

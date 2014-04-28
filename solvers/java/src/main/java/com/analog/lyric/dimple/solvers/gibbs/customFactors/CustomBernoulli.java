@@ -77,8 +77,8 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 				numOnes += _constantOutputOneCount;
 			}
 			
-			outputMsg.setAlpha(numOnes);		// Sample alpha
-			outputMsg.setBeta(numZeros);		// Sample beta
+			outputMsg.setAlphaMinusOne(numOnes);
+			outputMsg.setBetaMinusOne(numZeros);
 		}
 		else
 			super.updateEdgeMessage(portNum);

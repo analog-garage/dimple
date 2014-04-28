@@ -34,7 +34,6 @@ public class GibbsTestParameterizedNormal
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void test1()
 	{
@@ -86,8 +85,6 @@ public class GibbsTestParameterizedNormal
 
 		SRealVariable svModelMean = (SRealVariable)vModelMean.getSolver();
 		SRealVariable svModelInverseVariance = (SRealVariable)vModelInverseVariance.getSolver();
-		svModelMean.setProposalStandardDeviation(1);
-		svModelInverseVariance.setProposalStandardDeviation(.01);
 
 
 
@@ -99,8 +96,8 @@ public class GibbsTestParameterizedNormal
 		if (debugPrint) System.out.println("vModelMeanBest: " + (Double)svModelMean.getBestSample());
 		if (debugPrint) System.out.println("vModelInverseVarianceBest: " + (Double)svModelInverseVariance.getBestSample());
 
-		assertTrue(nearlyEquals(svModelMean.getBestSample(),27.02930453616837));
-		assertTrue(nearlyEquals(svModelInverseVariance.getBestSample(),0.005310154692129139));
+		assertTrue(nearlyEquals(svModelMean.getBestSample(),27.029282787511672));
+		assertTrue(nearlyEquals(svModelInverseVariance.getBestSample(),0.005320791975254845));
 	}
 	
 	

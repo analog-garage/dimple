@@ -67,7 +67,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			// Clear the output counts
-			outputMsg.fill(0);
+			outputMsg.setNull();
 
 			// Get the parameter coordinates
 			int parameterXIndex = _factorFunction.getIndexByEdge(portNum) - NUM_DISCRETE_VARIABLES;

@@ -46,6 +46,9 @@ test15(debugPrint, repeatable);
 test16(debugPrint, repeatable);
 test17(debugPrint, repeatable);
 test18(debugPrint, repeatable);
+test19(debugPrint, repeatable);
+test20(debugPrint, repeatable);
+test21(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -972,8 +975,132 @@ end
 end
 
 
+% Multiple Beta priors on Bernoulli distribution
+function test19(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+pData = rand();
+numDatapoints = 100;
+data = discreteSample([1-pData pData], numDatapoints);
+expectedP = (priorAlpha + sum(data))/(priorAlpha + priorBeta + numDatapoints);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+
+p.Input = FactorFunction('Beta',priorAlpha,priorBeta);
+fg.addFactor(FactorFunction('Beta',priorAlpha,priorBeta), p);
+fg.addFactor(FactorFunction('Beta',priorAlpha,priorBeta), p);
+fg.addFactor(FactorFunction('Beta',priorAlpha,priorBeta), p);
+fg.addFactor(FactorFunction('Beta',priorAlpha,priorBeta), p);
+
+% Use built-in constructor
+x = Bernoulli(p, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples();
+
+pEst = mean(ps);
+assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
+
+end
 
 
+% No Beta prior on Bernoulli distribution
+function test20(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+pData = rand();
+numDatapoints = 100;
+data = discreteSample([1-pData pData], numDatapoints);
+expectedP = (priorAlpha + sum(data))/(priorAlpha + priorBeta + numDatapoints);
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+
+% Use built-in constructor
+x = Bernoulli(p, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples();
+
+pEst = mean(ps);
+assertElementsAlmostEqual(pEst/expectedP, 1, 'absolute', 0.02);
+
+end
+
+
+% No Beta prior on Bernoulli distribution, data as likelihood function
+function test21(debugPrint, repeatable)
+
+pLikelihood = 0.95;
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+p = Real();
+
+% Use built-in constructor
+x = Bernoulli(p);
+x.Input = pLikelihood;
+
+assert(strcmp(p.Solver.getSamplerName,'BetaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ps = p.Solver.getAllSamples();
+px = x.Solver.getAllSampleIndices();
+pEst = mean(ps);
+
+% Expected value of 2(xp + (1-x)(1-p)), a weighted mixture for a single sample
+pExpected = (pLikelihood+1)/3;
+
+assertElementsAlmostEqual(pEst/pExpected, 1, 'absolute', 0.02);
+assertElementsAlmostEqual(nnz(px)/length(px), pLikelihood, 'absolute', 0.01);
+
+end
 
 
 %********* UTILITIES ***************************************

@@ -49,7 +49,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 	private int _alphaParameterPort = -1;
 	private int _betaParameterPort = -1;
 	private int _constantOutputCount;
-	private double _constantAlphaValue;
+	private double _constantAlphaValueMinusOne;
 	private double _constantBetaValue;
 	private double _constantOutputSum;
 	private static final int NUM_PARAMETERS = 2;
@@ -85,16 +85,16 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 			}
 
 			// Get the current alpha value
-			double alpha = _hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample();
+			double alpha = _hasConstantAlpha ? _constantAlphaValueMinusOne + 1 : _alphaVariable.getCurrentSample();
 
-			outputMsg.setAlpha(count * alpha);			// Sample alpha
-			outputMsg.setBeta(sum);						// Sample beta
+			outputMsg.setAlphaMinusOne(count * alpha);		// Sample alpha
+			outputMsg.setBeta(sum);							// Sample beta
 		}
 		else if (portNum >= _numParameterEdges)
 		{
 			// Port is directed output
 			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
-			outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
+			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaValueMinusOne : _alphaVariable.getCurrentSample() - 1);
 			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
 		}
 		else
@@ -175,7 +175,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 		_betaParameterPort = NO_PORT;
 		_alphaVariable = null;
 		_betaVariable = null;
-		_constantAlphaValue = 0;
+		_constantAlphaValueMinusOne = 0;
 		_constantBetaValue = 0;
 		_numParameterEdges = 0;
 		if (_hasFactorFunctionConstructorConstants)
@@ -183,14 +183,14 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
 			_hasConstantBeta = true;
-			_constantAlphaValue = specificFactorFunction.getAlpha();
+			_constantAlphaValueMinusOne = specificFactorFunction.getAlphaMinusOne();
 			_constantBetaValue = specificFactorFunction.getBeta();
 		}
 		else	// Variable or constant parameters
 		{
 			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
 			if (_hasConstantAlpha)	// Constant mean
-				_constantAlphaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX));
+				_constantAlphaValueMinusOne = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX)) - 1;
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);

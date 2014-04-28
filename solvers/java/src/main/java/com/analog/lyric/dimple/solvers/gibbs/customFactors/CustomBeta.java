@@ -43,8 +43,8 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	private int _numParameterEdges;
 	private int _alphaParameterPort = -1;
 	private int _betaParameterPort = -1;
-	private double _constantAlphaValue;
-	private double _constantBetaValue;
+	private double _constantAlphaMinusOneValue;
+	private double _constantBetaMinusOneValue;
 	private static final int ALPHA_PARAMETER_INDEX = 0;
 	private static final int BETA_PARAMETER_INDEX = 1;
 	private static final int NO_PORT = -1;
@@ -61,8 +61,8 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 		{
 			// Port is directed output
 			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
-			outputMsg.setAlpha(_hasConstantAlpha ? _constantAlphaValue : _alphaVariable.getCurrentSample());
-			outputMsg.setBeta(_hasConstantBeta ? _constantBetaValue : _betaVariable.getCurrentSample());
+			outputMsg.setAlphaMinusOne(_hasConstantAlpha ? _constantAlphaMinusOneValue : _alphaVariable.getCurrentSample() - 1);
+			outputMsg.setBetaMinusOne(_hasConstantBeta ? _constantBetaMinusOneValue : _betaVariable.getCurrentSample() - 1);
 		}
 		else
 			super.updateEdgeMessage(portNum);
@@ -112,22 +112,22 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 		_betaParameterPort = NO_PORT;
 		_alphaVariable = null;
 		_betaVariable = null;
-		_constantAlphaValue = 0;
-		_constantBetaValue = 0;
+		_constantAlphaMinusOneValue = 0;
+		_constantBetaMinusOneValue = 0;
 		_numParameterEdges = 0;
 		if (_hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
 			_hasConstantBeta = true;
-			_constantAlphaValue = specificFactorFunction.getAlpha();
-			_constantBetaValue = specificFactorFunction.getBeta();
+			_constantAlphaMinusOneValue = specificFactorFunction.getAlphaMinusOne();
+			_constantBetaMinusOneValue = specificFactorFunction.getBetaMinusOne();
 		}
 		else	// Variable or constant parameters
 		{
 			_hasConstantAlpha = factorFunction.isConstantIndex(ALPHA_PARAMETER_INDEX);
 			if (_hasConstantAlpha)	// Constant mean
-				_constantAlphaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX));
+				_constantAlphaMinusOneValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(ALPHA_PARAMETER_INDEX)) - 1;
 			else					// Variable mean
 			{
 				_alphaParameterPort = factorFunction.getEdgeByIndex(ALPHA_PARAMETER_INDEX);
@@ -137,7 +137,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 			
 			_hasConstantBeta = factorFunction.isConstantIndex(BETA_PARAMETER_INDEX);
 			if (_hasConstantBeta)	// Constant precision
-				_constantBetaValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX));
+				_constantBetaMinusOneValue = FactorFunctionUtilities.toDouble(factorFunction.getConstantByIndex(BETA_PARAMETER_INDEX)) - 1;
 			else 						// Variable precision
 			{
 				_betaParameterPort = factorFunction.getEdgeByIndex(BETA_PARAMETER_INDEX);

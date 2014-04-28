@@ -39,13 +39,13 @@ public class BetaSampler implements IRealConjugateSampler
 	@Override
 	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
 	{
-		double alpha = 0;
-		double beta = 0;
+		double alphaMinusOne = 0;
+		double betaMinusOne = 0;
 		
 		if (input != null)
 		{
-			alpha += ((Beta)input).getAlpha();
-			beta += ((Beta)input).getBeta();
+			alphaMinusOne += ((Beta)input).getAlphaMinusOne();
+			betaMinusOne += ((Beta)input).getBetaMinusOne();
 		}
 		
 		int numPorts = ports.length;
@@ -53,21 +53,21 @@ public class BetaSampler implements IRealConjugateSampler
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
 			BetaParameters message = (BetaParameters)(ports[port].getOutputMsg());
-			alpha += message.getAlpha();
-			beta += message.getBeta();
+			alphaMinusOne += message.getAlphaMinusOne();
+			betaMinusOne += message.getBetaMinusOne();
 		}
 		
 		// Set the output
 		BetaParameters parameters = (BetaParameters)aggregateParameters;
-		parameters.setAlpha(alpha);
-		parameters.setBeta(beta);
+		parameters.setAlphaMinusOne(alphaMinusOne);
+		parameters.setBetaMinusOne(betaMinusOne);
 	}
 
 	public final double nextSample(BetaParameters parameters)
 	{
-		double alpha = parameters.getAlpha();
-		double beta = parameters.getBeta();
-		return SolverRandomGenerator.randBeta.nextDouble(alpha, beta);
+		double alphaMinusOne = parameters.getAlphaMinusOne();
+		double betaMinusOne = parameters.getBetaMinusOne();
+		return SolverRandomGenerator.randBeta.nextDouble(alphaMinusOne + 1, betaMinusOne + 1);
 	}
 	
 	@Override

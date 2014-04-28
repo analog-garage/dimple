@@ -19,18 +19,18 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 public class GammaParameters implements IParameterizedMessage
 {
-	private double _alpha = 0;
+	private double _alphaMinusOne = 0;
 	private double _beta = 0;
 	
 	public GammaParameters() {}
-	public GammaParameters(double alpha, double beta)
+	public GammaParameters(double alphaMinusOne, double beta)
 	{
-		_alpha = alpha;
+		_alphaMinusOne = alphaMinusOne;
 		_beta = beta;
 	}
 	public GammaParameters(GammaParameters other)		// Copy constructor
 	{
-		this(other._alpha, other._beta);
+		this(other._alphaMinusOne, other._beta);
 	}
 	
 	public GammaParameters clone()
@@ -39,16 +39,22 @@ public class GammaParameters implements IParameterizedMessage
 	}
 
 
-	public final double getAlpha() {return _alpha;}
+	// Natural parameters are alpha-1 and beta
+	public final double getAlphaMinusOne() {return _alphaMinusOne;}
 	public final double getBeta() {return _beta;}
 
-	public final void setAlpha(double alpha) {_alpha = alpha;}
+	public final void setAlphaMinusOne(double alphaMinusOne) {_alphaMinusOne = alphaMinusOne;}
 	public final void setBeta(double beta) {_beta = beta;}
+	
+	// Ordinary alpha parameter
+	public final double getAlpha() {return _alphaMinusOne + 1;}
+	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
+
 	
 	@Override
 	public final void setNull()
 	{
-		_alpha = 0;
+		_alphaMinusOne = 0;
 		_beta = 0;
 	}
 }

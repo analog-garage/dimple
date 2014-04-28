@@ -37,7 +37,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 public class Dirichlet extends FactorFunction
 {
 	private int _dimension;
-	private double[] _alpha;
+	private double[] _alphaMinusOne;
 	private double _logBetaAlpha;
 	private boolean _parametersConstant;
 	private int _firstDirectedToIndex;
@@ -54,12 +54,15 @@ public class Dirichlet extends FactorFunction
 	{
 		super();
 		_dimension = alpha.length;
-		_alpha = alpha.clone();
-		_logBetaAlpha = logBeta(_alpha);
+		_alphaMinusOne = new double[_dimension];
+		_logBetaAlpha = logBeta(alpha);
 		_parametersConstant = true;
 		_firstDirectedToIndex = 0;
     	for (int i = 0; i < _dimension; i++)
-    		if (_alpha[i] <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
+    	{
+    		if (alpha[i] <= 0) throw new DimpleException("Non-positive alpha parameter. Domain must be restricted to positive values.");
+    		_alphaMinusOne[i] = alpha[i] - 1;
+    	}
 	}
 	
     @Override
@@ -68,12 +71,17 @@ public class Dirichlet extends FactorFunction
     	int index = 0;
     	if (!_parametersConstant)
     	{
-    		_alpha = (double[])arguments[index++];		// First variable is array of parameter values
+    		double[] alpha = (double[])arguments[index++];		// First variable is array of parameter values
+    		_dimension = alpha.length;
+    		_alphaMinusOne = new double[_dimension];
     		for (int i = 0; i < _dimension; i++)
-    			if (_alpha[i] <= 0)
+    		{
+    			double alphai = alpha[i];
+    			if (alphai <= 0)
     				return Double.POSITIVE_INFINITY;
-    		_logBetaAlpha = logBeta(_alpha);
-    		_dimension = _alpha.length;
+        		_alphaMinusOne[i] = alphai - 1;
+    		}
+    		_logBetaAlpha = logBeta(alpha);
     	}
 
     	double sum = 0;
@@ -91,7 +99,7 @@ public class Dirichlet extends FactorFunction
     			if (xi <= 0)
     				return Double.POSITIVE_INFINITY;
     			else
-    				sum -= (_alpha[i]-1) * Math.log(xi);	// -log(x_i ^ (a_i-1))
+    				sum -= (_alphaMinusOne[i]) * Math.log(xi);	// -log(x_i ^ (a_i-1))
     			xSum += xi;
     		}
     		
@@ -137,9 +145,9 @@ public class Dirichlet extends FactorFunction
     {
     	return _parametersConstant;
     }
-    public final double[] getParameters()
+    public final double[] getAlphaMinusOneArray()
     {
-    	return _alpha;
+    	return _alphaMinusOne;
     }
     public final int getDimension()
     {

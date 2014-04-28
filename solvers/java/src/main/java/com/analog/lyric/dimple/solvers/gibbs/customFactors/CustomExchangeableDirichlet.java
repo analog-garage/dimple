@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 public class CustomExchangeableDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
 	private Object[] _outputMsgs;
-	private double _alpha;
+	private double _constantAlphaMinusOne;
 	private SRealVariable _alphaVariable;
 	private int _dimension;
 	private int _numParameterEdges;
@@ -56,9 +56,9 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			if (_hasConstantParameters)
-				outputMsg.fill(_alpha);
+				outputMsg.fillAlphaMinusOne(_constantAlphaMinusOne);
 			else	// Variable parameters
-				outputMsg.fill(_alphaVariable.getCurrentSample());
+				outputMsg.fillAlphaMinusOne(_alphaVariable.getCurrentSample() - 1);
 		}
 		else
 			super.updateEdgeMessage(portNum);
@@ -105,7 +105,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 		{
 			_hasConstantParameters = true;
 			_numParameterEdges = 0;
-			_alpha = specificFactorFunction.getAlpha();
+			_constantAlphaMinusOne = specificFactorFunction.getAlphaMinusOne();
 			_alphaVariable = null;
 		}
 		else // Variable or constant parameter
@@ -114,13 +114,13 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;
-				_alpha = (Double)factorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_constantAlphaMinusOne = (Double)factorFunction.getConstantByIndex(PARAMETER_INDEX) - 1;
 				_alphaVariable = null;
 			}
 			else	// Parameter is a variable
 			{
 				_numParameterEdges = 1;
-				_alpha = 0;
+				_constantAlphaMinusOne = 0;
 				List<? extends VariableBase> siblings = _factor.getSiblings();
 				_alphaVariable = (SRealVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
 			}

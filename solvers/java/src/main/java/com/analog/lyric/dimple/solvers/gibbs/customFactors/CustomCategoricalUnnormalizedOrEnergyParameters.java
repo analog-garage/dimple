@@ -81,8 +81,8 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 			if (_hasConstantOutputs)
 				count += _constantOutputCounts[parameterIndex];
 			
-			outputMsg.setAlpha(count);		// Sample alpha
-			outputMsg.setBeta(0);			// Sample beta
+			outputMsg.setAlphaMinusOne(count);		// Sample alpha
+			outputMsg.setBeta(0);					// Sample beta
 		}
 		else
 			super.updateEdgeMessage(portNum);

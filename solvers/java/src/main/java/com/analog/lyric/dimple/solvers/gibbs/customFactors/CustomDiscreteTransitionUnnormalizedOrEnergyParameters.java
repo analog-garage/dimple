@@ -89,14 +89,14 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			if (xIndex == parameterXIndex && yIndex == parameterYIndex)
 			{
 				// This edge corresponds to the current state, so count is 1
-				outputMsg.setAlpha(1);			// Sample alpha
-				outputMsg.setBeta(0);			// Sample beta
+				outputMsg.setAlphaMinusOne(1);			// Sample alpha
+				outputMsg.setBeta(0);					// Sample beta
 			}
 			else
 			{
 				// This edge does not correspond to the current state
-				outputMsg.setAlpha(0);			// Sample alpha
-				outputMsg.setBeta(0);			// Sample beta
+				outputMsg.setAlphaMinusOne(0);			// Sample alpha
+				outputMsg.setBeta(0);					// Sample beta
 			}
 		}
 		else

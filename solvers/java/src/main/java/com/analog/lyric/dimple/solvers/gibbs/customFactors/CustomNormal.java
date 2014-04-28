@@ -122,7 +122,7 @@ public class CustomNormal extends SRealFactor implements IRealConjugateFactor
 				count += _constantOutputCount;
 			}
 
-			outputMsg.setAlpha(0.5 * count);		// Sample alpha
+			outputMsg.setAlphaMinusOne(0.5 * count);		// Sample alpha
 			outputMsg.setBeta(0.5 * sum);			// Sample beta
 		}
 		else

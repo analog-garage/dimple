@@ -21,24 +21,25 @@ import java.util.Arrays;
 
 public class DirichletParameters implements IParameterizedMessage
 {
-	private double[] _alpha;
+	// The parameters used are the natural additive parameters, (alpha-1)
+	private double[] _alphaMinusOne;
 	
 	public DirichletParameters()
 	{
-		_alpha = new double[0];
+		_alphaMinusOne = new double[0];
 	}
 	public DirichletParameters(int length)
 	{
-		_alpha = new double[length];
+		_alphaMinusOne = new double[length];
 		setNull();
 	}
-	public DirichletParameters(double[] alpha)
+	public DirichletParameters(double[] alphaMinusOne)
 	{
-		setAlpha(alpha);
+		setAlphaMinusOne(alphaMinusOne);
 	}
 	public DirichletParameters(DirichletParameters other)	// Copy constructor
 	{
-		this(other._alpha);
+		this(other._alphaMinusOne);
 	}
 	
 	public DirichletParameters clone()
@@ -47,51 +48,50 @@ public class DirichletParameters implements IParameterizedMessage
 	}
 	
 	
-	public final int getSize() {return _alpha.length;}
-	public final void setSize(int size) {_alpha = new double[size];}
+	public final int getSize() {return _alphaMinusOne.length;}
+	public final void setSize(int size) {_alphaMinusOne = new double[size];}
 	
-	public final double getAlpha(int index) {return _alpha[index];}
-	public final void setAlpha(double[] alpha)
+	public final double getAlphaMinusOne(int index) {return _alphaMinusOne[index];}
+	public final void setAlphaMinusOne(double[] alpha)
 	{ 
 		int length = alpha.length;
-		if (_alpha == null || length != _alpha.length)
-			_alpha = new double[length];
-		System.arraycopy(alpha, 0, _alpha, 0, length);
+		if (_alphaMinusOne == null || length != _alphaMinusOne.length)
+			_alphaMinusOne = new double[length];
+		System.arraycopy(alpha, 0, _alphaMinusOne, 0, length);
 	}
-	
-	// Operations on the parameters
-	public final void fill(double alpha)
+	public final void fillAlphaMinusOne(double alphaMinusOne)
 	{
-		Arrays.fill(_alpha, alpha);	// Replicate a single alpha value into all entries
+		Arrays.fill(_alphaMinusOne, alphaMinusOne);	// Replicate a single value into all entries
 	}
+
+	// Operations on the parameters
 	public final void increment(int index)
 	{
-		_alpha[index]++;
+		_alphaMinusOne[index]++;
 	}
 	public final void add(int index, double value)
 	{
-		_alpha[index] += value;
+		_alphaMinusOne[index] += value;
 	}
 	public final void add(double[] values)
 	{
 		int length = values.length;
 		for (int i = 0; i < length; i++)
-			_alpha[i] += values[i];
+			_alphaMinusOne[i] += values[i];
 	}
 	public final void add(int[] values)
 	{
 		int length = values.length;
 		for (int i = 0; i < length; i++)
-			_alpha[i] += values[i];
+			_alphaMinusOne[i] += values[i];
 	}
 	public final void add(DirichletParameters parameters)
 	{
-		add(parameters._alpha);
+		add(parameters._alphaMinusOne);
 	}
-
 	@Override
 	public final void setNull()
 	{
-		Arrays.fill(_alpha, 0);
+		Arrays.fill(_alphaMinusOne, 0);
 	}
 }

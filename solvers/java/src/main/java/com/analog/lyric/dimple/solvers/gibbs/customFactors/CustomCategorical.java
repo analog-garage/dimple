@@ -63,7 +63,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			// Clear the output counts
-			outputMsg.fill(0);
+			outputMsg.setNull();
 			
 			// Start with the ports to variable outputs
 			for (int i = 0; i < _numOutputEdges; i++)

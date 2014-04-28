@@ -98,9 +98,9 @@ public class NegativeExpGamma extends FactorFunction
     {
     	return _parametersConstant;
     }
-    public final double getAlpha()
+    public final double getAlphaMinusOne()
     {
-    	return _alpha;
+    	return _alphaMinusOne;
     }
     public final double getBeta()
     {

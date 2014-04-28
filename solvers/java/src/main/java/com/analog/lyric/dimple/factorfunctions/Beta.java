@@ -127,12 +127,12 @@ public class Beta extends FactorFunction
     {
     	return _parametersConstant;
     }
-    public final double getAlpha()
+    public final double getAlphaMinusOne()	// The natural additive parameter, alpha - 1
     {
-    	return _alpha;
+    	return _alphaMinusOne;
     }
-    public final double getBeta()
+    public final double getBetaMinusOne()	// The natural additive parameter, beta - 1
     {
-    	return _beta;
+    	return _betaMinusOne;
     }
 }

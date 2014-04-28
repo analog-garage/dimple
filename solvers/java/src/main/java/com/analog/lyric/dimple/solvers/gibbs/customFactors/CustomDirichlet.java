@@ -34,7 +34,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 public class CustomDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
 	private Object[] _outputMsgs;
-	private double[] _alpha;
+	private double[] _constantAlphaMinusOne;
 	private SRealJointVariable _alphaVariable;
 	private int _dimension;
 	private int _numParameterEdges;
@@ -56,9 +56,9 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			DirichletParameters outputMsg = (DirichletParameters)_outputMsgs[portNum];
 			
 			if (_hasConstantParameters)
-				outputMsg.setAlpha(_alpha);
+				outputMsg.setAlphaMinusOne(_constantAlphaMinusOne);
 			else	// Variable parameters
-				outputMsg.setAlpha(_alphaVariable.getCurrentSample());
+				outputMsg.setAlphaMinusOne(minusOne(_alphaVariable.getCurrentSample()));
 		}
 		else
 			super.updateEdgeMessage(portNum);
@@ -104,9 +104,9 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 		{
 			_hasConstantParameters = true;
 			_numParameterEdges = 0;
-			_alpha = specificFactorFunction.getParameters();
+			_constantAlphaMinusOne = specificFactorFunction.getAlphaMinusOneArray();
 			_alphaVariable = null;
-			_dimension = _alpha.length;
+			_dimension = _constantAlphaMinusOne.length;
 		}
 		else // Variable or constant parameter
 		{
@@ -114,14 +114,14 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;
-				_alpha = (double[])factorFunction.getConstantByIndex(PARAMETER_INDEX);
+				_constantAlphaMinusOne = minusOne((double[])factorFunction.getConstantByIndex(PARAMETER_INDEX));
 				_alphaVariable = null;
-				_dimension = _alpha.length;
+				_dimension = _constantAlphaMinusOne.length;
 			}
 			else	// Parameter is a variable
 			{
 				_numParameterEdges = 1;
-				_alpha = null;
+				_constantAlphaMinusOne = null;
 				List<? extends VariableBase> siblings = _factor.getSiblings();
 				_alphaVariable = (SRealJointVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
 				_dimension = _alphaVariable.getDimension();
@@ -151,5 +151,14 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomDirichlet)other)._outputMsgs[otherPortNum];
+	}
+	
+	
+	private double[] minusOne(double[] in)
+	{
+		double[] out = new double[in.length];
+		for (int i = 0; i < in.length; i++)
+			out[i] = in[i] - 1;
+		return out;
 	}
 }

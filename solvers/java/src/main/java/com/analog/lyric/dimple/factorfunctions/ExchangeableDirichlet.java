@@ -171,14 +171,14 @@ public class ExchangeableDirichlet extends FactorFunction
     {
     	return _parametersConstant;
     }
-    public final double getAlpha()
+    public final double getAlphaMinusOne()
     {
-    	return _alpha;
+    	return _alpha - 1;
     }
-    public final double[] getParameters()	// Get parameters as if they were separate
+    public final double[] getAlphaMinusOneArray()	// Get parameters as if they were separate
     {
     	double[] parameterArray = new double[_dimension];
-    	Arrays.fill(parameterArray, _alpha);
+    	Arrays.fill(parameterArray, _alpha - 1);
     	return parameterArray;
     }
     public final int getDimension()

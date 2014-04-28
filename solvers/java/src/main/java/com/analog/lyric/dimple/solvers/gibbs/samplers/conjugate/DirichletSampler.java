@@ -56,9 +56,9 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		{
 			double[] inputParameters;
 			if (input instanceof Dirichlet)
-				inputParameters = ((Dirichlet)input).getParameters();
+				inputParameters = ((Dirichlet)input).getAlphaMinusOneArray();
 			else // ExchangeableDirichlet
-				inputParameters = ((ExchangeableDirichlet)input).getParameters();
+				inputParameters = ((ExchangeableDirichlet)input).getAlphaMinusOneArray();
 			if (inputParameters.length != dimension)
 				throw new DimpleException("All inputs to Dirichlet sampler must have the same number of dimensions");
 			parameters.add(inputParameters);
@@ -91,7 +91,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		int numZeros = 0;
 		for (int i = 0; i < dimension; i++)
 		{
-			double nextSample = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlpha(i), 1);
+			double nextSample = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlphaMinusOne(i) + 1, 1);
 			sample[i] = nextSample;
 			sum += nextSample;
 			if (nextSample == 0)
