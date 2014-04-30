@@ -44,11 +44,33 @@ public class ExceptionTester
 	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
 		Object object, String methodName, T ... args)
 	{
+		Class<?> declaringClass = object instanceof Class ? (Class<?>)object : object.getClass();
+		expectThrow(expectedException, messagePattern, object, declaringClass, methodName, args);
+		
+	}
+	
+	/**
+	 * Use reflective invocation to test for expected exception.
+	 * 
+	 * @param expectedException asserts that the invocation will result in an exception of this type (or a subtype).
+	 * @param messagePattern if non-null asserts that the exception's message will match this specified regular
+	 * expression pattern (see {@link Pattern}).
+	 * @param object is the object on which the method will be invoked. If this is a class, then a static call
+	 * will be performed.
+	 * @param declaringClass is the class in which to look up the method. Use this when runtime type of {@code object}
+	 * is private and you need to invoke public method from superclass or interface.
+	 * @param methodName is the method to be invoked
+	 * @param args are the parameters of the method call.
+	 * @since 0.06
+	 */
+	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
+		Object object, Class<?> declaringClass, String methodName, T ... args)
+	{
 		boolean caughtSomething = false;
 		
 		try
 		{
-			Supers.invokeMethod(object, methodName, args);
+			Supers.invokeMethod(object, declaringClass, methodName, args);
 		}
 		catch (InvocationTargetException wrappedEx)
 		{
@@ -88,5 +110,4 @@ public class ExceptionTester
 	{
 		expectThrow(exceptionClass, null, object, methodName, args);
 	}
-	
 }
