@@ -111,6 +111,32 @@ public class BitSetUtil
 	}
 	
 	/**
+	 * Returns masked bits of value (i.e. "bitwise and" of two values)
+	 * 
+	 * @param word is the original word.
+	 * @param mask specifies the bits of {@code word} to be returned.
+	 *
+	 * @since 0.06
+	 */
+	public static int getMaskedValue(int word, int mask)
+	{
+		return word & mask;
+	}
+	
+	/**
+	 * Returns masked bits of value (i.e. "bitwise and" of two values)
+	 * 
+	 * @param word is the original word.
+	 * @param mask specifies the bits of {@code word} to be returned.
+	 *
+	 * @since 0.06
+	 */
+	public static long getMaskedValue(long word, long mask)
+	{
+		return word & mask;
+	}
+	
+	/**
 	 * True if bit at {@code index} in {@code bits} is one.
 	 * 
 	 * @param bits
@@ -132,11 +158,17 @@ public class BitSetUtil
 		return (bits & (1L << index)) != 0;
 	}
 	
+	/**
+	 * True if all bits in {@code mask} are set in {@code bits}.
+	 */
 	public static boolean isMaskSet(int bits, int mask)
 	{
 		return (bits & mask) == mask;
 	}
 	
+	/**
+	 * True if all bits in {@code mask} are set in {@code bits}.
+	 */
 	public static boolean isMaskSet(long bits, long mask)
 	{
 		return (bits & mask) == mask;
@@ -164,13 +196,49 @@ public class BitSetUtil
 		return bits | (1L << index);
 	}
 	
+	/**
+	 * Sets all bits in {@code mask} in {@code bits} (i.e. "bitwise or" of two values).
+	 */
 	public static int setMask(int bits, int mask)
 	{
 		return bits | mask;
 	}
 
+	/**
+	 * Sets all bits in {@code mask} in {@code bits} (i.e. "bitwise or" of two values).
+	 */
 	public static long setMask(long bits, long mask)
 	{
 		return bits | mask;
+	}
+	
+	/**
+	 * Sets a range of bits to specified value.
+	 * 
+	 * @param word is the original word.
+	 * @param mask specifies which bits in {@code word} will be set.
+	 * @param value must only use bits that are set in {@code mask} or else an incorrect value will be returned.
+	 *
+	 * @since 0.06
+	 */
+	public static int setMaskedValue(int word, int mask, int value)
+	{
+		assert((value & mask) == value);
+		return (word & ~mask) | value;
+	}
+	
+	/**
+	 * Sets a range of bits to specified value.
+	 * 
+	 * @param word is the original word.
+	 * @param mask specifies which bits in {@code word} will be set.
+	 * @param value must only use bits that are set in {@code mask} or else an incorrect value will be returned.
+	 *
+	 * @since 0.06
+	 */
+	public static long setMaskedValue(long word, long mask, long value)
+	{
+		assert((value & mask) == value);
+		return (word & ~mask) | value;
 	}
 }
