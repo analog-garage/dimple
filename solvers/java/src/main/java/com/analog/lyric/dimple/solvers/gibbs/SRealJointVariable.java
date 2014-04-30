@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -140,6 +142,21 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		// Also return if the variable is set to a fixed value
 		if (_var.hasFixedValue()) return;
 
+		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
+		Value oldValue = null;
+		double oldSampleScore = 0.0;
+
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			oldSampleScore = getCurrentSampleScore();
+			//$FALL-THROUGH$
+		case UPDATE_EVENT_SIMPLE:
+			oldValue = _outputMsg.clone();
+			break;
+		}
+
 		// Get the next sample value from the sampler
 		if (_conjugateSampler == null)
 		{
@@ -167,6 +184,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
 			setCurrentSample(_conjugateSampler.nextSample(ports, _inputJoint));
+		}
+
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
+				_outputMsg.clone(), getCurrentSampleScore()));
+			break;
+		case UPDATE_EVENT_SIMPLE:
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
+			break;
 		}
 	}
 	

@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.dimple.events.IDimpleEventListener;
+import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.events.SolverVariableEvent;
 
 /**
@@ -28,8 +30,23 @@ import com.analog.lyric.dimple.events.SolverVariableEvent;
 @Immutable
 public class GibbsSolverVariableEvent extends SolverVariableEvent
 {
+	/*-----------
+	 * Constants
+	 */
+	
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Bits in {@link SolverEventSource#_flags} used for solver variable events.
+	 */
+	final static int USED_FLAGS = 0x03;
+	
+	final static int UPDATE_EVENT_MASK = 0x03;
+	final static int UPDATE_EVENT_UNKNOWN = 0x00;
+	final static int UPDATE_EVENT_NONE = 0x01;
+	final static int UPDATE_EVENT_SCORED = 0x02;
+	final static int UPDATE_EVENT_SIMPLE = 0x03;
+	
 	/*--------------
 	 * Construction
 	 */
@@ -58,4 +75,35 @@ public class GibbsSolverVariableEvent extends SolverVariableEvent
 	{
 		return (ISolverVariableGibbs)source;
 	}
+	
+	/*-------------------------------
+	 * Static package helper methods
+	 */
+	
+	static int getVariableUpdateEventFlags(SolverEventSource source)
+	{
+		int updateEventFlags = source.getFlagValue(UPDATE_EVENT_MASK);
+
+		if (updateEventFlags == UPDATE_EVENT_UNKNOWN)
+		{
+			updateEventFlags = UPDATE_EVENT_NONE;
+			final IDimpleEventListener listener = source.getEventListener();
+			if (listener != null)
+			{
+				if (listener.isListeningFor(GibbsScoredVariableUpdateEvent.class, source))
+				{
+					updateEventFlags = UPDATE_EVENT_SCORED;
+				}
+				else if (listener.isListeningFor(GibbsScoredVariableUpdateEvent.class, source))
+				{
+					updateEventFlags = UPDATE_EVENT_SIMPLE;
+				}
+			}
+			source.setFlagValue(UPDATE_EVENT_MASK, updateEventFlags);
+		}
+		
+		return updateEventFlags;
+	}
+	
+
 }

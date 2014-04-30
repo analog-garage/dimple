@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.AbstractOptionHolder;
+import com.analog.lyric.util.misc.Internal;
 
 /**
  * 
@@ -36,7 +37,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	/**
 	 * Bits in {@link #_flags} reserved by this class.
 	 */
-	protected final int RESERVED_FLAGS = 0xF0000000;
+	protected static final int RESERVED_FLAGS = 0xF0000000;
 	
 	/*-------
 	 * State
@@ -106,8 +107,8 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
     	return getParentGraph();
 	}
 
-    /*-------------------
-     * Protected methods
+    /*----------------------------
+     * Protected/internal methods
      */
 
     /**
@@ -126,7 +127,8 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 		_flags = (byte) BitSetUtil.clearMask(_flags, mask);
 	}
 	
-	protected final int getFlagValue(int mask)
+	@Internal
+	public final int getFlagValue(int mask)
 	{
 		return BitSetUtil.getMaskedValue(_flags, mask);
 	}
@@ -161,7 +163,8 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	/**
 	 * Sets bits of flag specified by {@code mask} to {@code value}.
 	 */
-	protected final void setFlagValue(int mask, int value)
+	@Internal
+	public final void setFlagValue(int mask, int value)
 	{
 		_flags = (byte) BitSetUtil.setMaskedValue(_flags, mask, value);
 	}

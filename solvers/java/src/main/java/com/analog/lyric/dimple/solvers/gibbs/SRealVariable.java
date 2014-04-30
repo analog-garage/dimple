@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,14 +53,23 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.google.common.primitives.Doubles;
 
-
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealJointVariable.
  * The two are nearly identical, but unfortunately couldn't easily be shared due to the class hierarchy
  *
  */
 
-public class SRealVariable extends SRealVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
+public class SRealVariable extends SRealVariableBase
+	implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected final static int RESERVED_FLAGS = 0xFFFF0003;
+
 	/*-------
 	 * State
 	 */
@@ -135,6 +146,21 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// Also return if the variable is set to a fixed value
 		if (_var.hasFixedValue()) return;
 
+		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
+		Value oldValue = null;
+		double oldSampleScore = 0.0;
+
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			oldSampleScore = getCurrentSampleScore();
+			//$FALL-THROUGH$
+		case UPDATE_EVENT_SIMPLE:
+			oldValue = RealValue.create(_sampleValue);
+			break;
+		}
+
 		// Get the next sample value from the sampler
 		if (_conjugateSampler == null)
 		{
@@ -159,6 +185,18 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			double nextSampleValue = _conjugateSampler.nextSample(ports, _input);
 			if (nextSampleValue != _sampleValue)	// Would be exactly equal if not changed since last value tested
 				setCurrentSample(nextSampleValue);
+		}
+		
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
+				RealValue.create(_sampleValue), getCurrentSampleScore()));
+			break;
+		case UPDATE_EVENT_SIMPLE:
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, RealValue.create(_sampleValue)));
+			break;
 		}
 	}
 	

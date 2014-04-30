@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,7 +46,20 @@ import com.google.common.primitives.Doubles;
 
 public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverVariableGibbs, IDiscreteSamplerClient
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected static final int RESERVED_FLAGS = 0xFFFF0003;
+
 	public static final String DEFAULT_DISCRETE_SAMPLER_NAME = "CDFSampler";
+	
+	/*-------
+	 * State
+	 */
 	
 	private boolean _visited = false;
 
@@ -100,7 +115,21 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Also return if the variable is set to a fixed value
 		if (_var.hasFixedValue()) return;
 
-		
+		final int updateEventFlags = GibbsSolverVariableEvent.getVariableUpdateEventFlags(this);
+		Value oldValue = null;
+		double oldSampleScore = 0.0;
+
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			oldSampleScore = getCurrentSampleScore();
+			//$FALL-THROUGH$
+		case UPDATE_EVENT_SIMPLE:
+			oldValue = _outputMsg.clone();
+			break;
+		}
+
 		final int messageLength = _input.length;
 		final int numPorts = _var.getSiblingCount();
 		double minEnergy = Double.POSITIVE_INFINITY;
@@ -160,6 +189,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg.clone(), _conditional, minEnergy, this);
 		else if (_sampler instanceof IMCMCSampler)
 			((IMCMCSampler)_sampler).nextSample(_outputMsg.clone(), this);
+
+		switch (updateEventFlags)
+		{
+		case UPDATE_EVENT_SCORED:
+			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
+			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
+				_outputMsg.clone(), getCurrentSampleScore()));
+			break;
+		case UPDATE_EVENT_SIMPLE:
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
+			break;
+		}
 	}
 	
 	/*-------------------------

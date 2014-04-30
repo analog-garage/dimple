@@ -31,7 +31,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
-	protected final int RESERVED_FLAGS = 0xFF000000;
+	protected static final int RESERVED_FLAGS = 0xFF000000;
 	
 	/*-------
 	 * State

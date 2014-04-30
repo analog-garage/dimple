@@ -29,7 +29,7 @@ public abstract class SRealVariableBase extends SVariableBase
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
-	protected final int RESERVED_FLAGS = 0xFFFF0000;
+	protected final static int RESERVED_FLAGS = 0xFFFF0000;
 	
 	/*-------
 	 * State

@@ -19,7 +19,8 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
- * 
+ * Gibbs variable update event that includes sample scores.
+ * <p>
  * @since 0.06
  * @author Christopher Barber
  */
@@ -52,11 +53,35 @@ public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
 	 * GibbsScoredVariableUpdateEvent methods
 	 */
 	
+	/**
+	 * Computes the effect on the total graph score produced by this sample value change.
+	 * <p>
+	 * Returns {@link #getNewSampleScore()} minus {@link #getOldSampleScore()}.
+	 * 
+	 * @since 0.06
+	 */
+	public double getScoreDifference()
+	{
+		return _newSampleScore - _oldSampleScore;
+	}
+	
+	/**
+	 * The value of {@link ISolverVariableGibbs#getCurrentSampleValue()} computed for
+	 * the old sample value.
+	 * 
+	 * @since 0.06
+	 */
 	public double getOldSampleScore()
 	{
 		return _oldSampleScore;
 	}
 	
+	/**
+	 * The value of {@link ISolverVariableGibbs#getCurrentSampleValue()} computed for
+	 * the new sample value.
+	 * 
+	 * @since 0.06
+	 */
 	public double getNewSampleScore()
 	{
 		return _newSampleScore;
