@@ -18,6 +18,10 @@ package com.analog.lyric.collect.tests;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.analog.lyric.collect.Supers;
@@ -74,6 +78,80 @@ public class TestSupers
 		copy = Supers.narrowArrayOf(Object.class, supers.size(), elements);
 		assertArrayEquals(elements, copy);
 		assertEquals(expectedComponentType, copy.getClass().getComponentType());
+	}
+	
+	@Test
+	public void testeInvokeMethod()
+	{
+		try
+		{
+			assertEquals(3, Supers.invokeMethod("foo", "length"));
+			assertEquals(3, Supers.invokeMethod("foobar", String.class, "indexOf", "bar"));
+			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foo%s", "bar"));
+			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foo%s", new Object[] {"bar"}));
+			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foobar"));
+			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foobar", new Object[] {}));
+// FIXME
+//			Supers.invokeMethod(Arrays.class, "asList", 1,2,3);
+			List<?> list = (List<?>)Supers.invokeMethod(Arrays.class, "asList", "1", "2", "3");
+			assertArrayEquals(new Object[] {"1", "2", "3",}, list.toArray());
+		}
+		catch (Exception ex)
+		{
+			fail(ex.toString());
+		}
+	}
+	
+	@Test
+	public void testLookupMethod()
+	{
+		try
+		{
+			Method m;
+			
+			try
+			{
+				m = Supers.lookupMethod("foo", "bar");
+				fail("expected NoSuchMethodException");
+			}
+			catch (NoSuchMethodException ex)
+			{
+			}
+			
+			try
+			{
+				m = Supers.lookupMethod("foo", "indexOf", 2.35);
+				fail("expected NoSuchMethodException");
+			}
+			catch (NoSuchMethodException ex)
+			{
+			}
+			
+			m = Supers.lookupMethod("foo", "length");
+			assertEquals("length", m.getName());
+			m = Supers.lookupMethod("foo", "indexOf", 0);
+			assertEquals("indexOf", m.getName());
+			assertArrayEquals(new Object[] { Integer.TYPE }, m.getParameterTypes());
+			m = Supers.lookupMethod("foo", "indexOf", "f");
+			assertEquals("indexOf", m.getName());
+			assertArrayEquals(new Object[] { String.class }, m.getParameterTypes());
+			m = Supers.lookupMethod("foo", "indexOf", new Object[] { null } );
+			assertEquals("indexOf", m.getName());
+			assertArrayEquals(new Object[] { String.class }, m.getParameterTypes());
+			m = Supers.lookupMethod("foo", "format", "%s", "x");
+			assertEquals("format", m.getName());
+			assertArrayEquals(new Object[] { String.class, Object[].class }, m.getParameterTypes());
+			m = Supers.lookupMethod(String.class, "format", "hi");
+			assertEquals("format", m.getName());
+			assertArrayEquals(new Object[] { String.class, Object[].class }, m.getParameterTypes());
+// FIXME
+//			m = Supers.lookupMethod(Arrays.class, "asList", 1, 2, 3);
+//			assertEquals("asList", m.getName());
+		}
+		catch (Exception ex)
+		{
+			fail(ex.toString());
+		}
 	}
 	
 	@Test

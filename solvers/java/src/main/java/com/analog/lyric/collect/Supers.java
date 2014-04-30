@@ -124,7 +124,35 @@ public abstract class Supers
 	public static Object invokeMethod(Object object, String methodName, Object ... args)
 		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
 	{
-		Method method = lookupMethod(object, methodName, args);
+		return invokeMethod(object, object instanceof Class<?> ? (Class<?>)object : object.getClass(), methodName, args);
+	}
+	
+	/**
+	 * Looks up and invokes method with given name and applicable to given object and arguments
+	 * using reflection.
+	 * 
+	 * WARNING: this is primarily intended for use in writing unit tests. Probably should
+	 * avoid using in production code.
+	 * 
+	 * @param object either the {@link Class} of static method to be called, or object on which
+	 * method should be invoked.
+	 * @param declaredClass is the class in which to look up the method.
+	 * @param methodName is the name of the method to invoke.
+	 * @param args are the arguments to pass to the method.
+	 * @return return value from method.
+
+	 * @throws NoSuchMethodException if no method can be found with given name and matching the types
+	 * of the arguments.
+	 * @throws InvocationTargetException wraps exception thrown by reflectively invoked method.
+	 * @throws IllegalAccessException
+	 * @see #lookupMethod(Object, String, Object...)
+	 * 
+	 * @since 0.06
+	 */
+	public static Object invokeMethod(Object object, Class<?> declaredClass, String methodName, Object ... args)
+		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+	{
+		Method method = lookupMethod(declaredClass, methodName, args);
 		
 		if (method.isVarArgs())
 		{
