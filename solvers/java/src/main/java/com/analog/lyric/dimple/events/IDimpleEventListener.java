@@ -19,13 +19,31 @@ package com.analog.lyric.dimple.events;
 import java.util.EventListener;
 
 /**
+ * An object that can respond to {@link DimpleEvent}s.
  * 
  * @since 0.06
  * @author Christopher Barber
  */
 public interface IDimpleEventListener extends EventListener
 {
+	/**
+	 * Indicate whether listener will handle events with given {@code eventClass} type that originate
+	 * on given {@code source} object or its children.
+	 * <p>
+	 * This is intended to be used by {@link IDimpleEventSource} implementations to determine whether to
+	 * expend resources to raise events. When this method returns false the listener advertises that it will
+	 * ignore matching events.
+	 * 
+	 * @since 0.06
+	 */
 	public boolean isListeningFor(Class<? extends DimpleEvent> eventClass, IDimpleEventSource source);
 	
+	/**
+	 * Notify listener of a new event.
+	 * <p>
+	 * @param event a non-null instance of a subclass of {@link DimpleEvent} that has not yet been consumed.
+	 * @since 0.06
+	 * @see DimpleEvent#consumed()
+	 */
 	public void raiseEvent(DimpleEvent event);
 }

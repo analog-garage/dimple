@@ -35,7 +35,7 @@ public abstract class SolverVariableEvent extends SolverEvent
 	 * Construction
 	 */
 	
-	SolverVariableEvent(ISolverVariable source)
+	protected SolverVariableEvent(ISolverVariable source)
 	{
 		super(source);
 	}

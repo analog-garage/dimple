@@ -23,10 +23,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.dimple.events.IDimpleEventListener;
-import com.analog.lyric.dimple.events.IModelEventSource;
+import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.IOptionKey;
@@ -37,7 +35,7 @@ import com.analog.lyric.options.Options;
  * @since 0.0.5
  */
 @NotThreadSafe
-public abstract class ProxySolverNode implements ISolverNode
+public abstract class ProxySolverNode extends SolverEventSource implements ISolverNode
 {
 	/*-------
 	 * State
@@ -115,51 +113,6 @@ public abstract class ProxySolverNode implements ISolverNode
 		return new Options(this);
 	}
 
-	/*----------------------------
-	 * IDimpleEventSource methods
-	 */
-	
-    @Override
-	public FactorGraph getContainingGraph()
-	{
-    	return getModelObject().getContainingGraph();
-	}
-
-    @Override
-    public IDimpleEventListener getEventListener()
-    {
-    	return getContainingGraph().getEventListener();
-    }
-    
-    @Override
-    public ISolverFactorGraph getEventParent()
-    {
-    	return getParentGraph();
-    }
-    
-	@Override
-	public String getEventSourceName()
-	{
-		// FIXME - determine what this should be
-		return toString();
-	}
-
-    @Override
-    public IModelEventSource getModelEventSource()
-    {
-    	return getModelObject();
-    }
-    
-	/*----------------------------
-	 * ISolverEventSource methods
-	 */
-	
-    @Override
-	public ISolverFactorGraph getContainingSolverGraph()
-	{
-    	return getParentGraph();
-	}
-
 	/*---------------------
 	 * ISolverNode methods
 	 */
@@ -209,6 +162,7 @@ public abstract class ProxySolverNode implements ISolverNode
 	@Override
 	public void initialize()
 	{
+		clearFlags();
 		getDelegate().initialize();
 	}
 

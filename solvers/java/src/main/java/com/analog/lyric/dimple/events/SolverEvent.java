@@ -32,7 +32,7 @@ public abstract class SolverEvent extends DimpleEvent
 	 * Construction
 	 */
 	
-	SolverEvent(ISolverEventSource source)
+	protected SolverEvent(ISolverEventSource source)
 	{
 		super(source);
 	}

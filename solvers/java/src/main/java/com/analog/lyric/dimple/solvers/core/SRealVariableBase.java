@@ -22,9 +22,25 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public abstract class SRealVariableBase extends SVariableBase
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected final int RESERVED_FLAGS = 0xFFFF0000;
+	
+	/*-------
+	 * State
+	 */
+	
     protected double _guessValue = 0;
     protected boolean _guessWasSet = false;
 
+    /*---------------
+     * Construction
+     */
     
 	public SRealVariableBase(VariableBase var)
 	{

@@ -33,7 +33,7 @@ public abstract class ModelEvent extends DimpleEvent
 	 * Construction
 	 */
 	
-	ModelEvent(IModelEventSource source)
+	protected ModelEvent(IModelEventSource source)
 	{
 		super(source);
 	}

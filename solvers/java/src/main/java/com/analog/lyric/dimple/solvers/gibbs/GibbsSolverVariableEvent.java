@@ -14,11 +14,11 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.events;
+package com.analog.lyric.dimple.solvers.gibbs;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
+import com.analog.lyric.dimple.events.SolverVariableEvent;
 
 /**
  * 

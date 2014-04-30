@@ -29,7 +29,7 @@ public abstract class DataEvent extends DimpleEvent
 	 * Construction
 	 */
 	
-	DataEvent(IDataEventSource source)
+	protected DataEvent(IDataEventSource source)
 	{
 		super(source);
 	}

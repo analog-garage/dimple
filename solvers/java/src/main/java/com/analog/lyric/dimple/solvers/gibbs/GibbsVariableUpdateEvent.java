@@ -14,17 +14,19 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.events;
+package com.analog.lyric.dimple.solvers.gibbs;
+
+import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
-public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
+@Immutable
+public class GibbsVariableUpdateEvent extends GibbsSolverVariableEvent
 {
 	/*-------
 	 * State
@@ -32,34 +34,31 @@ public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
 	
 	private static final long serialVersionUID = 1L;
 
-	private final double _oldSampleScore;
-	private final double _newSampleScore;
-
+	private final Value _oldValue;
+	private final Value _newValue;
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	GibbsScoredVariableUpdateEvent(
-		ISolverVariableGibbs source,
-		Value oldValue, double oldSampleScore,
-		Value newValue, double newSampleScore)
+	GibbsVariableUpdateEvent(ISolverVariableGibbs source, Value oldValue, Value newValue)
 	{
-		super(source, oldValue, newValue);
-		_oldSampleScore = oldSampleScore;
-		_newSampleScore = newSampleScore;
+		super(source);
+		_oldValue = oldValue.clone();
+		_newValue = newValue.clone();
 	}
 	
-	/*----------------------------------------
-	 * GibbsScoredVariableUpdateEvent methods
+	/*----------------------------------
+	 * GibbsVariableUpdateEvent methods
 	 */
 	
-	public double getOldSampleScore()
+	public Value getOldValue()
 	{
-		return _oldSampleScore;
+		return _oldValue;
 	}
 	
-	public double getNewSampleScore()
+	public Value getNewValue()
 	{
-		return _newSampleScore;
+		return _newValue;
 	}
 }

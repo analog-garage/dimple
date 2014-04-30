@@ -16,21 +16,27 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
-import com.analog.lyric.dimple.events.IDimpleEventListener;
-import com.analog.lyric.dimple.events.IModelEventSource;
+import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
-import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.options.IOptionHolder;
 
-public abstract class SNode extends AbstractOptionHolder implements ISolverNode
+public abstract class SNode extends SolverEventSource implements ISolverNode
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected final int RESERVED_FLAGS = 0xFF000000;
+	
 	/*-------
 	 * State
 	 */
+
 	private final Node _model;
 	
 	/*--------------
@@ -52,51 +58,6 @@ public abstract class SNode extends AbstractOptionHolder implements ISolverNode
 		return getParentGraph();
 	}
 	
-	/*----------------------------
-	 * IDimpleEventSource methods
-	 */
-	
-    @Override
-	public FactorGraph getContainingGraph()
-	{
-    	return _model.getContainingGraph();
-	}
-
-    @Override
-    public IDimpleEventListener getEventListener()
-    {
-    	return getContainingGraph().getEventListener();
-    }
-    
-    @Override
-    public ISolverFactorGraph getEventParent()
-    {
-    	return getParentGraph();
-    }
-    
-	@Override
-	public String getEventSourceName()
-	{
-		// FIXME - determine what this should be
-		return toString();
-	}
-
-    @Override
-    public IModelEventSource getModelEventSource()
-    {
-    	return getModelObject();
-    }
-    
-	/*----------------------------
-	 * ISolverEventSource methods
-	 */
-	
-    @Override
-	public ISolverFactorGraph getContainingSolverGraph()
-	{
-    	return getParentGraph();
-	}
-
 	/*---------------------
 	 * ISolverNode methods
 	 */
@@ -111,6 +72,7 @@ public abstract class SNode extends AbstractOptionHolder implements ISolverNode
 	@Override
 	public void initialize()
 	{
+		clearFlags();
 		for (int i = 0, end = getModelObject().getSiblingCount(); i < end; i++)
 			resetEdgeMessages(i);
 	}

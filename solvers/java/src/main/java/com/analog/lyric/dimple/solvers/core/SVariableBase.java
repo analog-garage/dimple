@@ -25,7 +25,24 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SVariableBase extends SNode implements ISolverVariable
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected final int RESERVED_FLAGS = 0xFFF00000;
+	
+	/*-------
+	 * State
+	 */
+	
 	protected VariableBase _var;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public SVariableBase(VariableBase var)
 	{
