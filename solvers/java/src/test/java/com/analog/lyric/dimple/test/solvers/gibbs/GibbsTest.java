@@ -14,7 +14,7 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.test;
+package com.analog.lyric.dimple.test.solvers.gibbs;
 
 import static org.junit.Assert.assertTrue;
 
