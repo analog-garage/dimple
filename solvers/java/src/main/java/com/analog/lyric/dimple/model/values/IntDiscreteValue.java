@@ -41,6 +41,16 @@ public abstract class IntDiscreteValue extends DiscreteValue
 		this(other._domain, other._value);
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return String.valueOf(_value);
+	}
+	
 	/*---------------
 	 * Value methods
 	 */

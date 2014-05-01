@@ -45,9 +45,19 @@ public abstract class DoubleDiscreteValue extends DiscreteValue
 		this(other._domain, other._value);
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public abstract DoubleDiscreteValue clone();
 
+	@Override
+	public String toString()
+	{
+		return String.valueOf(_value);
+	}
+	
 	/*---------------
 	 * Value methods
 	 */

@@ -50,6 +50,10 @@ public class RealValue extends Value
 	{
 		this(that._value);
 	}
+
+	/*----------------
+	 * Object methods
+	 */
 	
 	@Override
 	public RealValue clone()
@@ -57,6 +61,12 @@ public class RealValue extends Value
 		return new RealValue(this);
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.valueOf(_value);
+	}
+	
 	/*---------------
 	 * Value methods
 	 */

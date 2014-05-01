@@ -94,7 +94,7 @@ public class GibbsSolverVariableEvent extends SolverVariableEvent
 				{
 					updateEventFlags = UPDATE_EVENT_SCORED;
 				}
-				else if (listener.isListeningFor(GibbsScoredVariableUpdateEvent.class, source))
+				else if (listener.isListeningFor(GibbsVariableUpdateEvent.class, source))
 				{
 					updateEventFlags = UPDATE_EVENT_SIMPLE;
 				}

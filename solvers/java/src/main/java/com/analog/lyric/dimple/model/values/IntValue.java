@@ -47,12 +47,22 @@ public class IntValue extends Value
 		this(that._value);
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public IntValue clone()
 	{
 		return new IntValue(this);
 	}
 
+	@Override
+	public String toString()
+	{
+		return String.valueOf(_value);
+	}
+	
 	/*---------------
 	 * Value methods
 	 */

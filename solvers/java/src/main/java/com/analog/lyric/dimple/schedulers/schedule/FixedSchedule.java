@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	{
 		add(entries);
 	}
-	public FixedSchedule(Collection<IScheduleEntry> entries)
+	public FixedSchedule(Iterable<IScheduleEntry> entries)
 	{
 		add(entries);
 	}
@@ -213,7 +212,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	{
 		if (entries != null) for (IScheduleEntry entry : entries) add(entry);
 	}
-	public void add(Collection<IScheduleEntry> entries)
+	public void add(Iterable<IScheduleEntry> entries)
 	{
 		if (entries != null) for (IScheduleEntry entry : entries) add(entry);
 	}

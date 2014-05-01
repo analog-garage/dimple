@@ -45,10 +45,20 @@ public class RealJointValue extends Value
 		_value = that._value; // should we deep copy?
 	}
 	
+	/*----------------
+	 * Object methods
+	 */
+	
 	@Override
 	public RealJointValue clone()
 	{
 		return new RealJointValue(this);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return Arrays.toString(_value);
 	}
 	
 	/*---------------

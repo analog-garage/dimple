@@ -21,6 +21,10 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
+ * Event raised when variable sample is changed by Gibbs solver.
+ * <p>
+ * Note that changes to the registration of these events do not go into affect until
+ * then next time initialize is invoked on the variable.
  * 
  * @since 0.06
  * @author Christopher Barber

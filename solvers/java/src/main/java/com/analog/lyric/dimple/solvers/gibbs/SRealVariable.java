@@ -247,7 +247,8 @@ public class SRealVariable extends SRealVariableBase
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 			while (scoreNodes.hasNext())
 			{
-				potential += scoreNodes.next().getPotential();
+				final ISolverNodeGibbs node = scoreNodes.next();
+				potential += node.getPotential();
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;

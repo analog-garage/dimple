@@ -218,6 +218,12 @@ public abstract class Value implements Cloneable, Serializable
 	@Override
 	public abstract Value clone();
 	
+	@Override
+	public String toString()
+	{
+		return getObject().toString();
+	}
+	
 	/*---------------
 	 * Value methods
 	 */

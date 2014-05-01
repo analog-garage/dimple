@@ -297,7 +297,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 			while (scoreNodes.hasNext())
 			{
-				potential += scoreNodes.next().getPotential();
+				final ISolverNodeGibbs node = scoreNodes.next();
+				potential += node.getPotential();
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;
