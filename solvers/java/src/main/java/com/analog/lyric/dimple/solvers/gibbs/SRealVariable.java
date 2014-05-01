@@ -70,6 +70,8 @@ public class SRealVariable extends SRealVariableBase
 	 */
 	protected final static int RESERVED_FLAGS = 0xFFFF0003;
 
+	protected static final int EVENT_MASK = 0x03;
+
 	/*-------
 	 * State
 	 */
@@ -198,6 +200,16 @@ public class SRealVariable extends SRealVariableBase
 			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, RealValue.create(_sampleValue)));
 			break;
 		}
+	}
+	
+	/*---------------------------
+	 * SolverEventSource methods
+	 */
+	
+	@Override
+	protected int getEventMask()
+	{
+		return EVENT_MASK;
 	}
 	
 	/*-------------------------

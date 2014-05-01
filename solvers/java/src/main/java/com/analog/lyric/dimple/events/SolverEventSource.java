@@ -106,6 +106,12 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	{
     	return getParentGraph();
 	}
+    
+    @Override
+    public void notifyListenerChanged()
+    {
+    	clearFlags(getEventMask());
+    }
 
     /*----------------------------
      * Protected/internal methods
@@ -125,6 +131,22 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	protected final void clearFlags(int mask)
 	{
 		_flags = (byte) BitSetUtil.clearMask(_flags, mask);
+	}
+	
+	/**
+	 * Return mask of flag bits that are used to determine whether to
+	 * generate events. This is used by {@link #notifyListenerChanged()}
+	 * to clear the specified flag bits. It is assumed that the value of
+	 * all zeros indicates that the object needs to recompute its flags
+	 * based on the listener.
+	 * <p>
+	 * The default implementation returns zero.
+	 *
+	 * @since 0.06
+	 */
+	protected int getEventMask()
+	{
+		return 0;
 	}
 	
 	@Internal

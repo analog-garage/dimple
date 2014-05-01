@@ -53,4 +53,16 @@ public interface IDimpleEventSource
 	public String getEventSourceName();
 	
 	public IModelEventSource getModelEventSource();
+	
+	/**
+	 * Notify the source that it should refresh its event setting.
+	 * <p>
+	 * This can be used when the event listener settings affecting this object
+	 * have changed dynamically and you want the changes to take effect earlier
+	 * than would be the case automatically. For instance, objects that can generate
+	 * high-frequency events may normally refresh their settings during the initialization phase.
+	 * 
+	 * @since 0.06
+	 */
+	public void notifyListenerChanged();
 }

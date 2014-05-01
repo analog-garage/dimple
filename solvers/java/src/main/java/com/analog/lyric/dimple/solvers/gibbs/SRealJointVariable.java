@@ -64,6 +64,12 @@ import com.google.common.primitives.Doubles;
 
 public class SRealJointVariable extends SRealJointVariableBase implements ISolverVariableGibbs, ISolverRealVariableGibbs, IRealSamplerClient
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	protected static final int EVENT_MASK = 0x03;
+
 	/*-------
 	 * State
 	 */
@@ -197,6 +203,16 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
 			break;
 		}
+	}
+	
+	/*---------------------------
+	 * SolverEventSource methods
+	 */
+	
+	@Override
+	protected int getEventMask()
+	{
+		return EVENT_MASK;
 	}
 	
 	/*-------------------------

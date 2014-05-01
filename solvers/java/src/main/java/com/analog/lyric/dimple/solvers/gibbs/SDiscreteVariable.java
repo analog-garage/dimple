@@ -54,6 +54,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
 	protected static final int RESERVED_FLAGS = 0xFFFF0003;
+	
+	protected static final int EVENT_MASK = 0x03;
 
 	public static final String DEFAULT_DISCRETE_SAMPLER_NAME = "CDFSampler";
 	
@@ -201,6 +203,16 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
 			break;
 		}
+	}
+	
+	/*---------------------------
+	 * SolverEventSource methods
+	 */
+	
+	@Override
+	protected int getEventMask()
+	{
+		return EVENT_MASK;
 	}
 	
 	/*-------------------------

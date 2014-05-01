@@ -88,9 +88,9 @@ public class TestGibbsVariableUpdateEvent
 		public void handleEvent(GibbsVariableUpdateEvent event)
 		{
 			events.add(event);
-			printEvent(event);
-			SFactorGraph sgraph = (SFactorGraph)event.getSource().getRootGraph();
-			System.out.format("total score: %s\n", sgraph.getTotalPotential());
+//			printEvent(event);
+//			SFactorGraph sgraph = (SFactorGraph)event.getSource().getRootGraph();
+//			System.out.format("total score: %s\n", sgraph.getTotalPotential());
 			
 			ISolverVariableGibbs variable = event.getSource();
 			assertTrue(event.getNewValue().valueEquals(variable.getCurrentSampleValue()));
@@ -118,6 +118,7 @@ public class TestGibbsVariableUpdateEvent
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	@Test
 	public void test()
 	{
@@ -190,10 +191,20 @@ public class TestGibbsVariableUpdateEvent
 		double score = sgraph.getTotalPotential();
 		double scoreDifference = assertEvents(handler, GibbsScoredVariableUpdateEvent.class, sd1, sr1, sc1);
 		assertEquals(score - prevScore, scoreDifference, 1e-15);
-		
 		listener.unregisterAll();
+		sd1.notifyListenerChanged();
+		sr1.notifyListenerChanged();
+		sc1.notifyListenerChanged();
+		sgraph.sample();
+		assertEvents(handler, null);
 	}
 	
+	/**
+	 * Asserts that events with given {@code expectedClass} have occurred on the {@code handler} on the
+	 * specified {@code sources} in order. This method clears the handler's event list.
+	 * 
+	 * @return the cumulative {@link GibbsScoredVariableUpdateEvent#getScoreDifference()} if available, otherwise zero.
+	 */
 	private double assertEvents(VariableUpdateHandler handler, Class<? extends DimpleEvent> expectedClass,
 		IDimpleEventSource ... sources)
 	{

@@ -214,6 +214,12 @@ public abstract class Node implements INode, Cloneable
 		return this;
 	}
 	
+    @Override
+    public void notifyListenerChanged()
+    {
+    	clearFlags(getEventMask());
+    }
+
 	/*---------------
 	 * INode methods
 	 */
@@ -802,6 +808,22 @@ public abstract class Node implements INode, Cloneable
 		_siblingToIndex = null;
 	}
 	
+	/**
+	 * Return mask of flag bits that are used to determine whether to
+	 * generate events. This is used by {@link #notifyListenerChanged()}
+	 * to clear the specified flag bits. It is assumed that the value of
+	 * all zeros indicates that the object needs to recompute its flags
+	 * based on the listener.
+	 * <p>
+	 * The default implementation returns zero.
+	 *
+	 * @since 0.06
+	 */
+	protected int getEventMask()
+	{
+		return 0;
+	}
+
 	/**
 	 * True if all of the bits in {@code mask} are set in the flags.
 	 * <p>
