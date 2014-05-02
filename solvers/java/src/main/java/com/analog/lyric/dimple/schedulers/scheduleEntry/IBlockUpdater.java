@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -16,27 +16,17 @@
 
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
-import java.util.Map;
-
-import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.dimple.model.core.INode;
 
 
 /**
+ * @since 0.06
  * @author jeffb
- * 
  */
-public interface IScheduleEntry
+public interface IBlockUpdater
 {
-	/**
-	 * All types of schedule entries must implement the update() method,
-	 * which is to update the portion of the graph associated with the
-	 * entry.
-	 */
 	public void update();
-	
-	
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs);
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
-	public Iterable<Port> getPorts();
+	public void attachNodes(INode[] nodes);
+	public INode[] getNodeList();
+	public IBlockUpdater create();		// Make a new block updater of the same type, but not yet attached to nodes
 }

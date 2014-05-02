@@ -100,4 +100,9 @@ public interface ISolverFactorGraph extends ISolverNode
 	
 	public void useMultithreading(boolean use);
 	public boolean useMultithreading();
+	
+	
+	// For solver to indicate whether or not schedules must include all edges in the graph
+	// TODO: This could be replaced by function that actually does the checking, which could be solver specific
+	public boolean checkAllEdgesAreIncludedInSchedule();
 }

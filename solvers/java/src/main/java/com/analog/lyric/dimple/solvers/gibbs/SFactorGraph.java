@@ -706,7 +706,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	
-	void processDeferredDeterministicUpdates()
+	public void processDeferredDeterministicUpdates()
 	{
 		if (--_deferDeterministicFactorUpdatesCounter <= 0)
 		{
@@ -723,8 +723,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		--_deferDeterministicFactorUpdatesCounter;
 	}
 	
-	void deferDeterministicUpdates()
+	public void deferDeterministicUpdates()
 	{
 		++_deferDeterministicFactorUpdatesCounter;
+	}
+	
+	public boolean checkAllEdgesAreIncludedInSchedule()
+	{
+		return false;
 	}
 }

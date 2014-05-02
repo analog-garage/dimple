@@ -99,6 +99,8 @@ public class FactorGraph extends FactorBase
 	private long _versionId = 0;
 	private long _scheduleVersionId = 0;
 	private long _scheduleAssociatedGraphVerisionId = -1;
+	private boolean _customScheduleSet = false;
+	private Class<? extends ISolverFactorGraph> _schedulerSolverClass;
 	private IFactorGraphFactory<?> _solverFactory;
 	private ISolverFactorGraph _solverFactorGraph;
 	private LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
@@ -194,6 +196,9 @@ public class FactorGraph extends FactorBase
 	public <SG extends ISolverFactorGraph> SG setSolverFactory(IFactorGraphFactory<SG> factory)
 	{
 
+		// First, clear out solver-specific state
+		_solverSpecificDefaultScheduler = null;
+		
 		SG solverGraph = factory != null ? factory.createFactorGraph(this) : null;
 		_solverFactory = factory;
 		_solverFactorGraph = solverGraph;
@@ -865,17 +870,11 @@ public class FactorGraph extends FactorBase
 	 ******************************************************************/
 
 
-
+	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler;
 	public void setSchedule(ISchedule schedule)
 	{
-		if (schedule != null)
-		{
-			schedule.attach(this);
-		}
-		_schedule = schedule;
-		_scheduleVersionId++;
-		_scheduleAssociatedGraphVerisionId = _versionId;
-
+		_customScheduleSet = (schedule != null);
+		_setSchedule(schedule);
 	}
 	public ISchedule getSchedule()
 	{
@@ -901,22 +900,35 @@ public class FactorGraph extends FactorBase
 		return _associatedScheduler;
 	}
 
-	// Allow a specific scheduler to set a default scheduler that overrides the normal default
+	// Allow a specific solver to set a default scheduler that overrides the normal default
 	// This would be used if the client doesn't otherwise specify a schedule
+	// This should be set by the solver factor-graph's constructor
 	public void setSolverSpecificDefaultScheduler(IScheduler scheduler)
 	{
 		_solverSpecificDefaultScheduler = scheduler;
+	}
+
+	private void _setSchedule(ISchedule schedule)
+	{
+		if (schedule != null)
+		{
+			schedule.attach(this);
+		}
+		_schedule = schedule;
+		_scheduleVersionId++;
+		_scheduleAssociatedGraphVerisionId = _versionId;
+		_schedulerSolverClass = (_solverFactorGraph == null) ? null : _solverFactorGraph.getClass();
 	}
 
 	private void _createSchedule()
 	{
 		IScheduler scheduler = getAssociatedScheduler();				// Get the scheduler associated with this graph
 		if (scheduler != null)											// Use the scheduler defined for the graph if there is one
-			setSchedule(scheduler.createSchedule(this));
+			_setSchedule(scheduler.createSchedule(this));
 		else if (_solverSpecificDefaultScheduler != null)				// Otherwise, use the default scheduler specified by the solver derived class, if there is one (optional solver-specific default scheduler)
-			setSchedule(_solverSpecificDefaultScheduler.createSchedule(this));
+			_setSchedule(_solverSpecificDefaultScheduler.createSchedule(this));
 		else															// Use default scheduler if no other is specified
-			setSchedule(new DefaultScheduler().createSchedule(this));
+			_setSchedule(new DefaultScheduler().createSchedule(this));
 	}
 
 	private void _createScheduleIfNeeded()
@@ -931,7 +943,28 @@ public class FactorGraph extends FactorBase
 	// This allows the caller to determine if the scheduler will be run in solve
 	public boolean isUpToDateSchedulePresent()
 	{
-		return _schedule != null && _scheduleAssociatedGraphVerisionId == _versionId;
+		if (_schedule == null)											// Not up-to-date if no current schedule
+			return false;
+		else if (_scheduleAssociatedGraphVerisionId != _versionId)		// Not up-to-date if graph has changed
+			return false;
+		else if (_customScheduleSet)									// If custom schedule has been set, then keep that regardless of whether the solver has changed
+			return true;
+		else if (_solverHasChanged())									// Not up-to-date if solver has changed
+			return false;
+		else
+			return true;
+		
+	}
+	
+	// Has the solver changed since last time the schedule has been created
+	private boolean _solverHasChanged()
+	{
+		if (_schedulerSolverClass == null && _solverFactorGraph == null)
+			return false;
+		else if (_schedulerSolverClass != null && _solverFactorGraph != null && _schedulerSolverClass.equals(_solverFactorGraph.getClass()))
+			return false;
+		else
+			return true;
 	}
 
 
@@ -1132,10 +1165,10 @@ public class FactorGraph extends FactorBase
 			ISchedule scheduleCopy = copyToRoot ?
 					templateGraph._schedule.copyToRoot(old2newObjs) :
 						templateGraph._schedule.copy(old2newObjs);
-					setSchedule(scheduleCopy);
+			_setSchedule(scheduleCopy);	// Might or might not be a custom schedule
+			_customScheduleSet = templateGraph._customScheduleSet;
 		}
 
-		//setSolverFactory(templateGraph.getFactorGraphFactory());
 	}
 
 	public FactorGraph copyRoot()

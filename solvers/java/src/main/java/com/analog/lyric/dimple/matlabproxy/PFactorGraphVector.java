@@ -39,7 +39,9 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
@@ -522,10 +524,12 @@ public class PFactorGraphVector extends PFactorVector
 	 * -A VariableVector
 	 * -A FactorVector
 	 * -An edge (specified with a list of two connected nodes)
+	 * -A sub-graph
+	 * -A block of nodes
 	 * 
 	 * TODO: Push this down
 	 */
-	public void setSchedule(Object [] schedule)
+	public void setSchedule(Object[] schedule)
 	{
 		ArrayList<IScheduleEntry> alEntries = new ArrayList<IScheduleEntry>();
 		
@@ -534,31 +538,44 @@ public class PFactorGraphVector extends PFactorVector
 		{
 			Object obj = schedule[i];
 			
-			if (obj instanceof Object [])
+			if (obj instanceof Object[])
 			{
-				Object [] objArray = (Object[])obj;
-				if (objArray.length != 2)
+				Object[] objArray = (Object[])obj;
+				if (objArray.length >= 2 && objArray[objArray.length-1] instanceof IBlockUpdater)
 				{
-					throw new DimpleException("length of array containing edge must be 2");
+					// This is a block schedule entry
+					int numNodes = objArray.length - 1;
+					INode[] nodes = new INode[numNodes];
+					for (int entry = 0; entry < numNodes; entry++)
+						nodes[entry] = PHelpers.convertToNode(objArray[entry]);
+					IBlockUpdater blockUpdater = (IBlockUpdater)objArray[numNodes];
+					
+					alEntries.add(new BlockScheduleEntry(nodes, blockUpdater));
 				}
-				
-				//Should be an edge
-				INode node1 = PHelpers.convertToNode(objArray[0]);
-				INode node2 = PHelpers.convertToNode(objArray[1]);
-				int portNum = node1.getPortNum(node2);
-				alEntries.add(new EdgeScheduleEntry(node1, portNum));
+				else
+				{
+					// Entry is a pair of nodes, that represent an edge
+					if (objArray.length != 2)
+						throw new DimpleException("Length of array containing edge must be 2");
+
+					INode node1 = PHelpers.convertToNode(objArray[0]);
+					INode node2 = PHelpers.convertToNode(objArray[1]);
+					int portNum = node1.getPortNum(node2);
+					alEntries.add(new EdgeScheduleEntry(node1, portNum));
+				}
 			}
 			else
 			{
 				if (obj instanceof PFactorGraphVector)
 				{
+					// Entry is a sub-graph
 					Node [] nodes = PHelpers.convertToNodeArray(obj);
 					for (Node n : nodes)
 						alEntries.add(new SubScheduleEntry(((FactorGraph)n).getSchedule()));
-					
 				}
 				else
 				{
+					// Entry is a node
 					Node [] nodes = PHelpers.convertToNodeArray(obj);
 					for (Node n : nodes)
 						alEntries.add(new NodeScheduleEntry(n));

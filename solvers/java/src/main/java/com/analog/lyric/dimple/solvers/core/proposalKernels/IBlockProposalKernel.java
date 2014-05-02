@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2013 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,29 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.schedulers.scheduleEntry;
+package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
-import java.util.Map;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.values.Value;
 
-import com.analog.lyric.dimple.model.core.Node;
-import com.analog.lyric.dimple.model.core.Port;
-
-
-/**
- * @author jeffb
- * 
- */
-public interface IScheduleEntry
+public interface IBlockProposalKernel
 {
-	/**
-	 * All types of schedule entries must implement the update() method,
-	 * which is to update the portion of the graph associated with the
-	 * entry.
-	 */
-	public void update();
-	
-	
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs);
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
-	public Iterable<Port> getPorts();
+	public BlockProposal next(Value[] currentValue, Domain[] variableDomain);
+	public void setParameters(Object... parameters);
+	public Object[] getParameters();
 }

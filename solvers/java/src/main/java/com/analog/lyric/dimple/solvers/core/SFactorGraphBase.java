@@ -565,6 +565,9 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 	}
 
 
-	
+	public boolean checkAllEdgesAreIncludedInSchedule()
+	{
+		return true;	// By default assume all edges must be included unless told otherwise; TODO: should this be the default?
+	}
 
 }

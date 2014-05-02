@@ -570,11 +570,28 @@ classdef FactorGraph < Node
                 tmp = schedule{i};
                 
                 if isa(tmp,'cell')
-                    %could be an edge
-                    if length(tmp) ~= 2
-                        error('expected a list of two elements if trying to specify an edge.');
+                    % Could either be an edge or block entry
+                    e = tmp(end);
+                    if isa(e,'cell')
+                        e = e{1};
                     end
-                    schedule{i} = {tmp{1}.VectorObject,tmp{2}.VectorObject};
+                    if isa(e, 'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater')
+                        % Must be a block entry
+       
+                        scheduleEntry = cell(1,length(tmp)) ;
+                        numNodeEntries = length(tmp)-1;
+                        for j=1:numNodeEntries
+                            scheduleEntry{j} = tmp{j}.VectorObject;
+                        end
+                        scheduleEntry(end) = e;
+                        schedule{i} = scheduleEntry;
+                    else
+                        % Must be an edge entry
+                        if length(tmp) ~= 2
+                            error('Expected a list of two elements if trying to specify an edge.');
+                        end
+                        schedule{i} = {tmp{1}.VectorObject,tmp{2}.VectorObject};
+                    end
                 else
                     schedule{i} = tmp.VectorObject;
                 end

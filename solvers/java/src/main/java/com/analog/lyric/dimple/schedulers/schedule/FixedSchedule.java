@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 
 
 /**
@@ -45,10 +46,8 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 public class FixedSchedule extends ScheduleBase
 {
 	protected ArrayList<IScheduleEntry> _schedule = new ArrayList<IScheduleEntry>();
-	protected boolean _checkAllEdgesAreIncluded = true;
 	
 	public FixedSchedule(){}
-	public FixedSchedule(boolean checkAllEdgesAreIncluded){_checkAllEdgesAreIncluded = checkAllEdgesAreIncluded;}
 	public FixedSchedule(IScheduleEntry[] entries)
 	{
 		add(entries);
@@ -78,8 +77,8 @@ public class FixedSchedule extends ScheduleBase
 	{
 		super.attach(factorGraph);
 		
-		
-		if (_checkAllEdgesAreIncluded)
+		ISolverFactorGraph sFactorGraph = factorGraph.getSolver();
+		if (sFactorGraph != null && sFactorGraph.checkAllEdgesAreIncludedInSchedule())
 		{
 			//A graph consists of owned variables, owned factors and sub graphs
 			//Users should be able to update any of the edges or nodes in the graph or its subgraphs

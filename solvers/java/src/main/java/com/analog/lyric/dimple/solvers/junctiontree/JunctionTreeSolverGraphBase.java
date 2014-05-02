@@ -449,4 +449,9 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		return notifyNewDelegate(getDelegate());
 	}
 
+	public boolean checkAllEdgesAreIncludedInSchedule()
+	{
+		return true;
+	}
+
 }

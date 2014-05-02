@@ -42,7 +42,7 @@ public class GibbsSequentialScanScheduler implements IScheduler
 
 	public ISchedule createSchedule(FactorGraph g) 
 	{
-		FixedSchedule schedule = new FixedSchedule(false);
+		FixedSchedule schedule = new FixedSchedule();
 
 		// Update all owned variables
 		for (VariableBase v : g.getVariablesFlat())

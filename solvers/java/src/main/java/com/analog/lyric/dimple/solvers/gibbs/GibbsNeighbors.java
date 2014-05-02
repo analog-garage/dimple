@@ -46,7 +46,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
  * </ul>
  */
 @Immutable
-final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
+public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 {
 	/*-------
 	 * State
@@ -75,7 +75,7 @@ final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs>
 	 * 
 	 * @return null if the neighbors are the same as the node's immediate siblings.
 	 */
-	static GibbsNeighbors create(ISolverVariableGibbs svar)
+	public static GibbsNeighbors create(ISolverVariableGibbs svar)
 	{
 		final VariableBase var = svar.getModelObject();
 		final int nSiblings = var.getSiblingCount();

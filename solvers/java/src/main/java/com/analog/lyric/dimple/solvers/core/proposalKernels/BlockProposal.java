@@ -19,32 +19,51 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.values.Value;
 
-public class Proposal
+/**
+ * @since 0.06
+ * @author jeffb
+ */
+public class BlockProposal
 {
-	public final Value value;
+	public final Value[] value;
 	public final double hastingsTerm;	// log p(x' -> x) / p(x -> x') = log p(x' -> x) - log p(x -> x'), where x is the previous value and x' is the proposed value
 
 	/**
 	 * Construct with no Hastings term
-	 * @since 0.05
+	 * @since 0.06
 	 */
-	public Proposal(Value value) {this.value = value; this.hastingsTerm = 0;}
+	public BlockProposal(Value[] value) {this.value = value; this.hastingsTerm = 0;}
 	
 	/**
 	 * General constructor
-	 * @since 0.05
+	 * @since 0.06
 	 */
-	public Proposal(Value value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
+	public BlockProposal(Value[] value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
 	
 	/**
-	 * Construct with no Hastings term; for real valued proposal
-	 * @since 0.05
+	 * Construct with no Hastings term; for all real valued proposal
+	 * @since 0.06
 	 */
-	public Proposal(double value) {this.value = RealValue.create(value); this.hastingsTerm = 0;}
+	public BlockProposal(double[] value)
+	{
+		int length = value.length;
+		this.value = new Value[length];
+		for (int i = 0; i < length; i++)
+			this.value[i] = RealValue.create(value[i]);
+		this.hastingsTerm = 0;
+	}
 	
 	/**
-	 * General constructor; for real valued proposal
-	 * @since 0.05
+	 * General constructor; for all real valued proposal
+	 * @since 0.06
 	 */
-	public Proposal(double value, double hastingsTerm) {this.value = RealValue.create(value); this.hastingsTerm = hastingsTerm;}
+	public BlockProposal(double[] value, double hastingsTerm)
+	{
+		int length = value.length;
+		this.value = new Value[length];
+		for (int i = 0; i < length; i++)
+			this.value[i] = RealValue.create(value[i]);
+		this.hastingsTerm = hastingsTerm;
+	}
+
 }
