@@ -1,2 +1,10 @@
 Dimple version 0.06 release notes
 ==================================
+
+Significant New Features Since v0.05
+------------------------------------
+
+
+Significant Bug Fixes Since v0.05
+---------------------------------
+* Corrected Gibbs conjugate sampling for Beta, Dirichlet, and Gamma samplers where either zero or more than one prior connects to a variable
