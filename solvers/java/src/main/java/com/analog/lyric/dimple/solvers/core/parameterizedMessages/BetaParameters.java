@@ -16,12 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static org.apache.commons.math3.special.Beta.*;
+import static org.apache.commons.math3.special.Gamma.*;
 
 public class BetaParameters implements IParameterizedMessage
 {
+	private static final long serialVersionUID = 1L;
+
 	// The parameters used are the natural additive parameters, (alpha-1) and (beta-1)
 	private double _alphaMinusOne = 0;
 	private double _betaMinusOne = 0;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public BetaParameters() {}
 	public BetaParameters(double alphaMinusOne, double betaMinusOne)
@@ -34,10 +42,67 @@ public class BetaParameters implements IParameterizedMessage
 		this(other._alphaMinusOne, other._betaMinusOne);
 	}
 	
+	@Override
 	public BetaParameters clone()
 	{
 		return new BetaParameters(this);
 	}
+	
+	/*-------------------------------
+	 * IParameterizedMessage methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Computes divergences as follows, where P is this, Q is that, and &Beta;(x) and &psi;(x) refer to the
+	 * beta and digamma functions respectively.
+	 * <p>
+	 * ln(&Beta;(&alpha;<sub>Q</sub>, &beta;<sub>Q</sub>))
+	 * - ln(&Beta;(&alpha;<sub>P</sub>, &beta;<sub>P</sub>))
+	 * - (&alpha;<sub>Q</sub>-&alpha;<sub>P</sub>)&psi;(&alpha;<sub>P</sub>)
+	 * - (&beta;<sub>Q</sub>-&beta;<sub>P</sub>)&psi;(&beta;<sub>P</sub>)
+	 * + (&alpha;<sub>Q</sub>-&alpha;<sub>P</sub>+&beta;<sub>Q</sub>-&beta;<sub>P</sub>)
+	 *    &psi;(&alpha;<sub>P</sub>+&alpha;<sub>Q</sub>)
+	 * 
+	 * @see <a href="http://en.wikipedia.org/wiki/Beta_distribution#Quantities_of_information_.28entropy.29">
+	 * Beta distribution (Wikipedia)</a>
+	 * @since 0.06
+	 */
+	@Override
+	public double computeKLDivergence(IParameterizedMessage that)
+	{
+		if (that instanceof BetaParameters)
+		{
+			// http://en.wikipedia.org/wiki/Beta_distribution#Quantities_of_information_.28entropy.29
+			//
+			// KL(P|Q) == log(beta(aq,bq)/beta(ap,bp)) - (aq-ap)*digamma(ap) - (bq-bp)*digamma(bp) +
+			//            (aq - ap + bq - bp)*digamma(ap + aq)
+			
+			final BetaParameters P = this, Q = (BetaParameters)that;
+			
+			final double ap = P.getAlpha(), aq = Q.getAlpha();
+			final double bp = P.getBeta(), bq = Q.getBeta();
+			final double adiff = aq - ap;
+			final double bdiff = bq - bp;
+			
+			return logBeta(aq,bq) - logBeta(ap,bp) - adiff*digamma(ap) + bdiff*digamma(bp) +
+				(adiff+bdiff) * digamma(ap+aq);
+		}
+		
+		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
+	}
+	
+	@Override
+	public final void setNull()
+	{
+		_alphaMinusOne = 0;
+		_betaMinusOne = 0;
+	}
+	
+	/*---------------
+	 * Local methods
+	 */
 	
 	// Natural parameters are alpha-1 and beta-1
 	public final double getAlphaMinusOne() {return _alphaMinusOne;}
@@ -53,11 +118,4 @@ public class BetaParameters implements IParameterizedMessage
 	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
 	public final void setBeta(double beta) {_betaMinusOne = beta - 1;}
 	
-	
-	@Override
-	public final void setNull()
-	{
-		_alphaMinusOne = 0;
-		_betaMinusOne = 0;
-	}
 }

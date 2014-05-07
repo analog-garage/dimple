@@ -19,8 +19,14 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 public class NormalParameters implements IParameterizedMessage
 {
+	private static final long serialVersionUID = 1L;
+
 	private double _mean = 0;
 	private double _precision = 0;
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public NormalParameters() {}
 	public NormalParameters(double mean, double precision)
@@ -33,11 +39,51 @@ public class NormalParameters implements IParameterizedMessage
 		this(other._mean, other._precision);
 	}
 
+	@Override
 	public NormalParameters clone()
 	{
 		return new NormalParameters(this);
 	}
 
+	/**
+	 * &tau;<sub>Q</sub>/&tau;<sub>P</sub> + &tau;<sub>Q</sub>(&mu;<sub>Q</sub> - &mu;<sub>P</sub>)<sup>2</sup> - 1
+	 */
+	@Override
+	public double computeKLDivergence(IParameterizedMessage that)
+	{
+		if (that instanceof NormalParameters)
+		{
+			final NormalParameters P = this, Q = (NormalParameters)that;
+			
+			final double QP_precision = Q._precision / P._precision;
+			final double QP_mean_difference = Q._mean - P._mean;
+			
+			double divergence = -1.0;
+			divergence = 2 * Math.log(Math.sqrt(1/QP_precision));
+			divergence += QP_precision;
+			divergence += QP_mean_difference * QP_mean_difference * Q._precision;
+			return Math.abs(divergence * .5); // protect against going negative due to precision error when close to 0.
+		}
+		
+		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
+		
+	}
+
+	/*-----------------------
+	 * IParameterizedMessage
+	 */
+	
+	@Override
+	public final void setNull()
+	{
+		_mean = 0;
+		_precision = 0;
+	}
+
+	/*---------------
+	 * Local methods
+	 */
+	
 	public final double getMean() {return _mean;}
 	public final double getPrecision() {return _precision;}
 	public final double getVariance() {return 1/_precision;}
@@ -52,12 +98,5 @@ public class NormalParameters implements IParameterizedMessage
 	{
 		_mean = other._mean;
 		_precision = other._precision;
-	}
-	
-	@Override
-	public final void setNull()
-	{
-		_mean = 0;
-		_precision = 0;
 	}
 }

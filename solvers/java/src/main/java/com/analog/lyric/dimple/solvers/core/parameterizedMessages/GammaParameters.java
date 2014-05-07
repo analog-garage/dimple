@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static org.apache.commons.math3.special.Gamma.*;
 
 public class GammaParameters implements IParameterizedMessage
 {
+	private static final long serialVersionUID = 1L;
+
 	private double _alphaMinusOne = 0;
 	private double _beta = 0;
 	
@@ -33,6 +36,7 @@ public class GammaParameters implements IParameterizedMessage
 		this(other._alphaMinusOne, other._beta);
 	}
 	
+	@Override
 	public GammaParameters clone()
 	{
 		return new GammaParameters(this);
@@ -50,6 +54,39 @@ public class GammaParameters implements IParameterizedMessage
 	public final double getAlpha() {return _alphaMinusOne + 1;}
 	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
 
+	/*-------------------------------
+	 * IParameterizedMessage methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Computes KL as follows, where &Gamma;(x) is the gamma function and
+	 * &psi;(x) is the digamma function.
+	 * <p>
+	 * (&alpha;<sub>P</sub>-&alpha;<sub>Q</sub>)&psi;(&alpha;<sub>P</sub>)
+	 * - ln(&Gamma;(&alpha;<sub>P</sub>)) + ln(&Gamma;(&alpha;<sub>Q</sub>))
+	 * + &alpha;<sub>Q</sub>(ln(&beta;<sub>P</sub>/&beta;<sub>Q</sub>))
+	 * + &alpha;<sub>P</sub>(&beta;<sub>Q</sub>-&beta;<sub>P</sub>)/&beta;<sub>P</sub>
+	 */
+	@Override
+	public double computeKLDivergence(IParameterizedMessage that)
+	{
+		if (that instanceof GammaParameters)
+		{
+			// http://en.wikipedia.org/wiki/Gamma_distribution#Kullback.E2.80.93Leibler_divergence:
+			//
+			// KL(P|Q) == (ap-aq)*digamma(ap) - log(gamma(ap)) + log(gamma(aq)) + aq*(log(bp)-log(bq)) + ap*(bq-bp)/bp
+			
+			final GammaParameters P = this, Q = (GammaParameters)that;
+			final double ap = P.getAlpha(), aq = Q.getAlpha();
+			final double bp = P.getBeta(), bq = Q.getAlpha();
+			
+			return (ap-aq)*digamma(ap) - logGamma(ap) + logGamma(aq) + aq*(Math.log(bp)-Math.log(bq)) + ap * ((bq-bp)/bp);
+		}
+		
+		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
+	}
 	
 	@Override
 	public final void setNull()

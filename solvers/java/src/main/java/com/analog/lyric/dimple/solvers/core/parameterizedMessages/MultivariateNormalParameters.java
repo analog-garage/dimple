@@ -22,9 +22,10 @@ import com.analog.lyric.math.LyricEigenvalueDecomposition;
 
 public class MultivariateNormalParameters implements Cloneable, IParameterizedMessage
 {
+	private static final long serialVersionUID = 1L;
 
 	private double [] _vector;
-	private double [][] _matrix;	
+	private double [][] _matrix;
 	private boolean _isInInformationForm;
 	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 
@@ -40,6 +41,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		set(other);
 	}
 	
+	@Override
 	public MultivariateNormalParameters clone()
 	{
 		return new MultivariateNormalParameters(this);
@@ -68,6 +70,58 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		_isInInformationForm = other._isInInformationForm;
 	}
 	
+	/*-------------------------------
+	 * IParameterizedMessage methods
+	 */
+	
+	@Override
+	public double computeKLDivergence(IParameterizedMessage that)
+	{
+		if (that instanceof MultivariateNormalParameters)
+		{
+			// http://en.wikipedia.org/wiki/Multivariate_normal_distribution#Kullback.E2.80.93Leibler_divergence
+			//
+			// K: size of vectors, # rows/columns of matrices
+			// up, uq: vectors of means for P and Q
+			// CP, CQ: covariance matrices for P and Q
+			// inv(x): inverse of x
+			// det(x): determinant of x
+			// tr(x): trace of x
+			// x': transpose of x
+			//
+			// KL(P|Q) == .5 * ( tr(inv(CQ) * CP) + (uq - up)' * inv(CQ) * (uq - up) - K - ln(det(CP)/det(CQ)) )
+			//
+		
+			final MultivariateNormalParameters P = this, Q = (MultivariateNormalParameters)that;
+			final int K = P.getVectorLength();
+			if (K != Q.getVectorLength())
+			{
+				throw new IllegalArgumentException(
+					String.format("Incompatible vector sizes '%d' and '%d'", K, Q.getVectorLength()));
+			}
+			
+			P.toCovarianceFormat();
+			
+			final double[] udiff = Q.getMean();
+			for (int i = 0; i < K; ++i)
+			{
+				udiff[i] -= _vector[i];
+			}
+
+			final Matrix Ut = new Matrix(udiff, 1);
+			final Matrix U = Ut.transpose();
+			final Matrix CP = new Matrix(P._matrix, K, K);
+			final Matrix CQ = new Matrix(Q._matrix, K, K);
+			final Matrix CQinv = CP.inverse();
+			
+			// FIXME: do we need to worry about singular covariance matrices?
+			
+			return (CQinv.times(CQ).trace() + Ut.times(CQinv).times(U).get(0,0) - K - Math.log(CP.det()/CQ.det())) / 2;
+		}
+		
+		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
+	}
+	
 	@Override
 	public final void setNull()
 	{
@@ -77,34 +131,27 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	}
 	
 	public final double[] getMeans() {return getMean();}	// For backward compatibility
-	public final double[] getMean() 
+	public final double[] getMean()
 	{
-		if (_isInInformationForm)
-			ConvertType();
+		toCovarianceFormat();
 		return _vector.clone();
 	}
 
-	public final double [][] getCovariance() 
+	public final double [][] getCovariance()
 	{
-		if (_isInInformationForm)
-			ConvertType();
-
+		toCovarianceFormat();
 		return cloneMatrix(_matrix);
 	}
 	
-	public final double [] getInformationVector() 
+	public final double [] getInformationVector()
 	{
-		if (!_isInInformationForm)
-			ConvertType();
-		
+		toInformationFormat();
 		return _vector.clone();
 	}
 
-	public final double [][] getInformationMatrix() 
+	public final double [][] getInformationMatrix()
 	{
-		if (!_isInInformationForm)
-			ConvertType();
-		
+		toInformationFormat();
 		return cloneMatrix(_matrix);
 
 	}
@@ -123,6 +170,10 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	{
 		return _vector == null;
 	}
+	
+	/*---------
+	 * Private
+	 */
 	
 	private final double[][] cloneMatrix(double[][] matrix)
 	{
@@ -144,7 +195,23 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		return true;
 	}
 	
-	private final void ConvertType() 
+	private final void toCovarianceFormat()
+	{
+		if (_isInInformationForm)
+		{
+			toggleFormat();
+		}
+	}
+	
+	private final void toInformationFormat()
+	{
+		if (!_isInInformationForm)
+		{
+			toggleFormat();
+		}
+	}
+	
+	private final void toggleFormat()
 	{
 		int i;
 		
@@ -175,7 +242,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 				d = (d>eps) ? (1/d) : 1/eps;
 				D.set(i,i,d);
 	
-				assert(d > 0); // Eigenvalues should always be positive for positive definite matrices 
+				assert(d > 0); // Eigenvalues should always be positive for positive definite matrices
 			}
 			
 			inv = V.times(D.times(V.transpose()));
