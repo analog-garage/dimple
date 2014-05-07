@@ -55,6 +55,11 @@ public class DimpleException extends RuntimeException implements IDimpleExceptio
 		super(e);
 	}
 	
+	public static DimpleException unimplementedMethod(Class<?> cl, String name)
+	{
+		return new DimpleException(String.format("Method '%s.%s' is not yet implemented", cl.getSimpleName(), name));
+	}
+	
 	public static DimpleException unsupported(String operation)
 	{
 		return new DimpleException(String.format("Operation '%s' not supported", operation));
