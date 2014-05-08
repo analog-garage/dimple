@@ -74,6 +74,20 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	 * IParameterizedMessage methods
 	 */
 	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * For multivariate normal distributions, the formula is given by:
+	 * 
+	 * <blockquote>
+	 * &frac12; {
+	 * trace(&Sigma;<sub>Q</sub><sup>-1</sup>&Sigma;<sub>P</sub>) +
+	 * (&mu;<sub>Q</sub>-&mu;<sub>P</sub>)<sup>T</sup>&Sigma;<sub>Q</sub><sup>-1</sup>(&mu;<sub>Q</sub>-&mu;<sub>P</sub>)
+	 * -K - ln(det(&Sigma;<sub>P</sub>)/det(&Sigma;<sub>Q</sub>)))
+	 * }
+	 * </blockquote>
+	 * Note that this assumes that the determinants of the covariance matrices are non-zero.
+	 */
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
 	{
