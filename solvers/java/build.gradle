@@ -128,7 +128,7 @@ task(runJavaBenchmarks, dependsOn: 'benchmarkingClasses', type: JavaExec) {
 
 task(runMATLABBenchmarks, type: Exec) {
   workingDir '../..' 
-  commandLine 'matlab', '-nodesktop', '-nodisplay', '-nosplash', '-r', 'try, startup; cd modelers/matlab/benchmarks; run; end; exit'
+  commandLine 'matlab', '-nodesktop', '-nodisplay', '-nosplash', '-wait', '-r', 'try, startup; cd modelers/matlab/benchmarks; run; end; exit'
 }
 runMATLABBenchmarks.dependsOn benchmarkingClasses
 runMATLABBenchmarks.dependsOn copyExternalJars
