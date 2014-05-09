@@ -61,7 +61,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	}
 
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		updateToZ();
 		updateToX();
@@ -221,7 +221,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	}
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
 			updateToX();

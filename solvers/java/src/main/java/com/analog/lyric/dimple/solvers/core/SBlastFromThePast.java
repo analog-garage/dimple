@@ -49,6 +49,22 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		return getParentGraph();
 	}
 
+	/*----------------------
+	 * ISolverNode methods
+	 */
+	
+	@Override
+	public ISolverVariable getSibling(int edge)
+	{
+		return getModelObject().getSibling(edge).getSolver();
+	}
+	
+	@Override
+	public int getSiblingCount()
+	{
+		return getModelObject().getSiblingCount();
+	}
+	
 	/*---------------------------
 	 * SBlastFromThePast methods
 	 */

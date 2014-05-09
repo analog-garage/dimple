@@ -33,7 +33,7 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 
 	}	
 
-	public void updateEdge(int outPortNum) 
+	public void doUpdateEdge(int outPortNum) 
 	{
 		double [] inputs1 = null;
 		double [] inputs2 = null;

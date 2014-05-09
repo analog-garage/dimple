@@ -119,7 +119,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		if (outPortNum == 0)
 			updateToY();

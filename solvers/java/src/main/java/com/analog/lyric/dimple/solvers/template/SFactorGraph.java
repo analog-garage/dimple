@@ -60,4 +60,11 @@ public class SFactorGraph  extends SFactorGraphBase
 		return new STableFactor(factor);
 	}
 
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
+
 }

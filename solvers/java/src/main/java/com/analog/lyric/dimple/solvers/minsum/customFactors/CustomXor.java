@@ -38,7 +38,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 	    if (_dampingInUse)
 	    {
@@ -89,7 +89,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
 	
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 	    if (_dampingInUse)
 	    {

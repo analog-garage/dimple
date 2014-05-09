@@ -80,7 +80,7 @@ public class SRealVariable extends SRealVariableBase
     }
 	
     @Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
     {
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
@@ -318,4 +318,19 @@ public class SRealVariable extends SRealVariableBase
 		return message;
 	}
 	
+	/*-----------------------
+	 * SVariableBase methods
+	 */
+	
+	@Override
+	protected NormalParameters cloneMessage(int edge)
+	{
+		return _outputMsgs[edge].clone();
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }

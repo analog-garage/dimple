@@ -78,7 +78,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 	
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.update();
@@ -87,7 +87,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);

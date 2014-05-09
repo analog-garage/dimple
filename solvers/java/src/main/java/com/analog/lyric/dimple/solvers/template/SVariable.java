@@ -48,7 +48,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	 * when terms can be reused.
 	 */
 	@Override
-	public void updateEdge(int outPortNum) 
+	protected void doUpdateEdge(int outPortNum) 
 	{
 		double [] output = _outputMessages[outPortNum];
 		

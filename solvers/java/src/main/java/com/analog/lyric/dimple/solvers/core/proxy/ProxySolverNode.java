@@ -154,6 +154,18 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	}
 
 	@Override
+	public ISolverNode getSibling(int edge)
+	{
+		return getModelObject().getSibling(edge).getSolver();
+	}
+	
+	@Override
+	public int getSiblingCount()
+	{
+		return getModelObject().getSiblingCount();
+	}
+	
+	@Override
 	public double getScore()
 	{
 		return getDelegate().getScore();

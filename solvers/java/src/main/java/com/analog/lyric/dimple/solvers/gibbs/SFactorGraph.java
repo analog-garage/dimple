@@ -767,4 +767,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_blockInitializers != null)
 			_blockInitializers.remove(blockInitializer);
 	}
+
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
 }

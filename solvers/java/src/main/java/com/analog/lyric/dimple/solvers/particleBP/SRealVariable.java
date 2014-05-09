@@ -66,7 +66,7 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
 	{
 		final double minLog = -100;
 		int M = _numParticles;
@@ -115,7 +115,7 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		final double minLog = -100;
 		int M = _numParticles;
@@ -284,7 +284,7 @@ public class SRealVariable extends SRealVariableBase
 		}
 
 		// Update the outgoing messages associated with the new particle locations
-		update();
+		doUpdate();
 
 		// Indicate that the particles have been updated
 		for (int iPort = 0; iPort < numPorts; iPort++)

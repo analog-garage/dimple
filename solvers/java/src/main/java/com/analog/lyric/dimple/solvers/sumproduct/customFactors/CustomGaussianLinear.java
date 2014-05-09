@@ -65,7 +65,7 @@ public class CustomGaussianLinear extends GaussianFactorBase
 	
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		double mu;
 		double sigma2;

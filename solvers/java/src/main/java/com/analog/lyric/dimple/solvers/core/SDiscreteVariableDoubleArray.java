@@ -28,15 +28,27 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
  */
 public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 {
+	/*-------
+	 * State
+	 */
+	
 	protected double [] _input;
 	protected double [][] _inputMessages = new double[0][];
 	protected double [][] _outputMessages = new double[0][];
+	
+	/*--------------
+	 * Construction
+	 */
 	
 	public SDiscreteVariableDoubleArray(VariableBase var)
 	{
 		super(var);
 	}
 
+	/*-------------------------
+	 * ISolverVariable methods
+	 */
+	
 	/**
 	 * This method is called by the model object when the solver object is first created
 	 * or any time input or fixedValue changes.  The method can be ignored if the solver
@@ -164,6 +176,5 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		for (int i = 0; i <tmp.length; i++)
 			_outputMessages[portIndex][i] = tmp[i];
 	}
-
 
 }

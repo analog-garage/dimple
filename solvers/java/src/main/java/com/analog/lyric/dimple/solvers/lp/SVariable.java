@@ -139,7 +139,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * Does nothing.
 	 */
 	@Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
 	{
 	}
 

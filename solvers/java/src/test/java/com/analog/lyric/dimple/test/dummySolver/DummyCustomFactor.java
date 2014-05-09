@@ -28,7 +28,7 @@ public class DummyCustomFactor extends SFactorBase
 		super(factor);
 	}	
 
-	public void updateEdge(int outPortNum) 
+	public void doUpdateEdge(int outPortNum) 
 	{
 		
 	}

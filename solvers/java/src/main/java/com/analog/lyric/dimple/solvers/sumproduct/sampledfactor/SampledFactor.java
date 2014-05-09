@@ -98,7 +98,7 @@ public class SampledFactor extends SFactorBase
 	}
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		int numSiblings = _factor.getSiblingCount();
 		_solverGraph.setNumSamples(_samplesPerUpdate);

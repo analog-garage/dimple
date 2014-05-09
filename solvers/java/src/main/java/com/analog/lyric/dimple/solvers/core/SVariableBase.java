@@ -19,6 +19,8 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
@@ -61,12 +63,9 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 	
 	@Override
-	public void update()
+	public ISolverFactor getSibling(int edge)
 	{
-		for (int i = 0, end = _var.getSiblingCount(); i < end; i++)
-		{
-			updateEdge(i);
-		}
+		return getModelObject().getSibling(edge).getSolver();
 	}
 	
 	/**
@@ -155,4 +154,23 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	{
 		
 	}
+	
+	/*---------------
+	 * SNode methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The {@link SVariableBase} implementation raises a {@link VariableToFactorMessageEvent}.
+	 */
+	@Override
+	protected void raiseMessageEvent(
+		int edge,
+		IParameterizedMessage oldMessage,
+		IParameterizedMessage newMessage)
+	{
+		raiseEvent(new VariableToFactorMessageEvent(this, getSibling(edge), oldMessage, newMessage));
+	}
+
 }

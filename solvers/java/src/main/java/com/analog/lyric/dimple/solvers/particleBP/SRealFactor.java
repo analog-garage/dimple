@@ -79,7 +79,7 @@ public class SRealFactor extends SFactorBase
 	
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		FactorFunction factorFunction = _realFactor.getFactorFunction();
 
@@ -111,7 +111,7 @@ public class SRealFactor extends SFactorBase
 	
 	
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		FactorFunction factorFunction = _realFactor.getFactorFunction();
 

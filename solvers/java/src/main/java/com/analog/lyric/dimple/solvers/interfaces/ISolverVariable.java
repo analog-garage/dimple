@@ -29,6 +29,8 @@ public interface ISolverVariable extends ISolverNode
     public void setGuess(Object guess);
     public Object getGuess();
     
+    @Override
+    public ISolverFactor getSibling(int edge);
     
     public void createNonEdgeSpecificState();
     

@@ -62,7 +62,7 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		MutlivariateGaussianMatrixProduct matMult = new MutlivariateGaussianMatrixProduct(_constant);
 		

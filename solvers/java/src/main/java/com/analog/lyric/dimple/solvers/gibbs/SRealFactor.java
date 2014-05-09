@@ -54,13 +54,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem
 	}
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		// The Gibbs solver doesn't directly update factors, but the equivalent is instead done calls from variables
 		// This is ignored and doesn't throw an error so that a custom schedule that updates factors won't cause a problem

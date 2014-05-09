@@ -145,7 +145,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		throw unsupported("updateEdge");
 	}

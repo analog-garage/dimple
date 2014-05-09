@@ -58,7 +58,7 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
 	{
 		// TODO Auto-generated method stub
 

@@ -96,14 +96,14 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 	}
 	
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 		updateToX();
 		updateToY();
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		//TODO: somehow avoid double computation.
 		//Maybe this is avoided when we have multivariate gaussian

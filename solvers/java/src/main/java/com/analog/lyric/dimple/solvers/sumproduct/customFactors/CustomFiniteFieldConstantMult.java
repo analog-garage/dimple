@@ -88,7 +88,7 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	}
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		switch (outPortNum)
 		{

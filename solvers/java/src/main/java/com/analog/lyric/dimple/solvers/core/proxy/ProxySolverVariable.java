@@ -49,6 +49,12 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	{
 		return _modelVariable;
 	}
+	
+	@Override
+	public ISolverFactor getSibling(int edge)
+	{
+		return getModelObject().getSibling(edge).getSolver();
+	}
 
 	/*-------------------------
 	 * ISolverVariable methods

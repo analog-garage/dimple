@@ -76,7 +76,7 @@ public class STableFactor  extends STableFactorDoubleArray
 	 * when terms can be reused.
 	 */
 	@Override
-	public void updateEdge(int outPortNum) 
+	public void doUpdateEdge(int outPortNum) 
 	{
 		double [] out = _outputMsgs[outPortNum];
 		for (int i = 0; i < out.length; i++)

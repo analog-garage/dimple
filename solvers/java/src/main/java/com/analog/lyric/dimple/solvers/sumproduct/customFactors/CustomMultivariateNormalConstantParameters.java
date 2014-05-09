@@ -34,7 +34,7 @@ public class CustomMultivariateNormalConstantParameters extends MultivariateGaus
 
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		// For constant parameters, output message will never change
 	}

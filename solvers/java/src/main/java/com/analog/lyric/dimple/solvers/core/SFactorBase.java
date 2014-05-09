@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -27,33 +28,48 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class SFactorBase extends SNode implements ISolverFactor
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Bits in {@link #_flags} reserved by this class and its superclasses.
+	 */
+	protected static final int RESERVED_FLAGS = 0xFFF00000;
+	
+	
+	
+	/*-------
+	 * State
+	 */
+	
 	protected Factor _factor;
 	
 	public SFactorBase(Factor factor)
 	{
 		super(factor);
 		_factor = factor;
-		
-		
 	}
 		
+	/*---------------------
+	 * ISolverNode methods
+	 */
+
 	@Override
 	public Factor getModelObject()
 	{
 		return _factor;
 	}
 	
+	@Override
+	public ISolverVariable getSibling(int edge)
+	{
+		return getModelObject().getSibling(edge).getSolver();
+	}
+	
 	public Factor getFactor()
 	{
 		return _factor;
-	}
-
-
-	@Override
-	public void update()
-	{
-		for (int i = 0, end = _factor.getSiblingCount(); i < end; i++)
-			updateEdge(i);
 	}
 	
 	@Override
@@ -95,8 +111,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 
 	    for (int port = 0; port < numPorts; port++)
 	    {
-	    	INode neighbor = _factor.getSibling(port);
-	    	values[port] = ((ISolverVariable)neighbor.getSolver()).getGuess();
+	    	values[port] = getSibling(port).getGuess();
 	    }
 	    
 	    return _factor.getFactorFunction().evalEnergy(values);
@@ -142,12 +157,28 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
 		}
 	}
-	
+
 	@Override
 	public void setDirectedTo(int [] indices)
 	{
 		
 	}
 
-
+	/*---------------
+	 * SNode methods
+	 */
+	
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The {@link SVariableBase} implementation raises a {@link VariableToFactorMessageEvent}.
+	 */
+	@Override
+	protected void raiseMessageEvent(
+		int edge,
+		IParameterizedMessage oldMessage,
+		IParameterizedMessage newMessage)
+	{
+		raiseEvent(new FactorToVariableMessageEvent(this, getSibling(edge), oldMessage, newMessage));
+	}
 }

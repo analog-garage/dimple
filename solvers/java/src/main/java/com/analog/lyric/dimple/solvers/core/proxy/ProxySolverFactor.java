@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core.proxy;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 /**
  * @since 0.05
@@ -47,6 +48,12 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	public Factor getModelObject()
 	{
 		return _modelFactor;
+	}
+	
+	@Override
+	public ISolverVariable getSibling(int edge)
+	{
+		return getModelObject().getSibling(edge).getSolver();
 	}
 
 	/*-----------------------

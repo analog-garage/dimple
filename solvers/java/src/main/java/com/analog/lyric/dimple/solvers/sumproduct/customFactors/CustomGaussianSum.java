@@ -46,7 +46,7 @@ public class CustomGaussianSum extends GaussianFactorBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		// uout = ua + ub + uc
 		// ub = uout-ua-uc

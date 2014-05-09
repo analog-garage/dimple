@@ -35,12 +35,12 @@ public class DummyTableFactor extends STableFactorBase
 	}
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 	}
 		
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 	}
 

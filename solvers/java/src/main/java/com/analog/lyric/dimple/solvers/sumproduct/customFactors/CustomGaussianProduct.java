@@ -55,7 +55,7 @@ public class CustomGaussianProduct extends GaussianFactorBase
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		if (outPortNum == PRODUCT_INDEX)
 			updateProduct();

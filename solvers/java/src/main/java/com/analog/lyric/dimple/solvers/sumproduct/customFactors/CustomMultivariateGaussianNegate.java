@@ -29,7 +29,7 @@ public class CustomMultivariateGaussianNegate extends MultivariateGaussianFactor
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		int inPortNum = 1 - outPortNum;		// Exactly two ports
 		

@@ -687,4 +687,11 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		return DimpleException.unsupportedBySolver("LP", methodName);
 	}
+
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
 }

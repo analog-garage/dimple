@@ -37,7 +37,7 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 	
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		double mean;
 		double variance;

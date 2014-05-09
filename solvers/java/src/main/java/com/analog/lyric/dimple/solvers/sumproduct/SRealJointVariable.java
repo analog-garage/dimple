@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNo
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class SRealJointVariable extends SRealJointVariableBase 
+public class SRealJointVariable extends SRealJointVariableBase
 {
 
 	private int _numVars;
@@ -36,7 +36,7 @@ public class SRealJointVariable extends SRealJointVariableBase
 	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
 	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 
-	public SRealJointVariable(VariableBase var) 
+	public SRealJointVariable(VariableBase var)
 	{
 		super(var);
 		
@@ -85,7 +85,7 @@ public class SRealJointVariable extends SRealJointVariableBase
 	
 
 	@Override
-	public Object getBelief()  
+	public Object getBelief()
 	{
 		MultivariateNormalParameters m = new MultivariateNormalParameters();
 		doUpdate(m,-1);
@@ -110,13 +110,13 @@ public class SRealJointVariable extends SRealJointVariableBase
 	
 
 	@Override
-	public void updateEdge(int outPortNum)  
+	protected void doUpdateEdge(int outPortNum)
 	{
 		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
 		doUpdate(outMsg,outPortNum);
 	}
 
-	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum) 
+	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
 	{
     	// If fixed value, just return the input, which has been set to a zero-variance message
 		if (_var.hasFixedValue())
@@ -141,7 +141,7 @@ public class SRealJointVariable extends SRealJointVariableBase
 		for (int i = 0; i < _outputMsgs.length; i++ )
 		{
 			if (i != outPortNum)
-			{				
+			{
 				MultivariateNormalParameters inMsg = _inputMsgs[i];
 				
 				double [] inMsgVector = inMsg.getInformationVector();
@@ -161,25 +161,25 @@ public class SRealJointVariable extends SRealJointVariableBase
 	}
 
 	@Override
-	public Object [] createMessages(ISolverFactor factor) 
+	public Object [] createMessages(ISolverFactor factor)
 	{
 		int portNum = getModelObject().getPortNum(factor.getModelObject());
 		int arrayLength = Math.max(_inputMsgs.length, portNum+1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs, arrayLength);
-		_inputMsgs[portNum] = (MultivariateNormalParameters)createDefaultMessage();
+		_inputMsgs[portNum] = createDefaultMessage();
 		_outputMsgs = Arrays.copyOf(_outputMsgs,arrayLength);
-		_outputMsgs[portNum] = (MultivariateNormalParameters)createDefaultMessage();
+		_outputMsgs[portNum] = createDefaultMessage();
 		return new Object [] {_inputMsgs[portNum],_outputMsgs[portNum]};
 	}
 
-	public MultivariateNormalParameters createDefaultMessage() 
+	public MultivariateNormalParameters createDefaultMessage()
 	{
 		MultivariateNormalParameters mm = new MultivariateNormalParameters();
 		return (MultivariateNormalParameters)resetInputMessage(mm);
 	}
 
 	@Override
-	public Object resetInputMessage(Object message) 
+	public Object resetInputMessage(Object message)
 	{
 		double[] mean = new double[_numVars];
 		double[][] covariance = new double[_numVars][];
@@ -195,14 +195,14 @@ public class SRealJointVariable extends SRealJointVariableBase
 	}
 
 	@Override
-	public void resetEdgeMessages( int i ) 
+	public void resetEdgeMessages( int i )
 	{
 		_inputMsgs[i] = (MultivariateNormalParameters)resetInputMessage(_inputMsgs[i]);
-		_outputMsgs[i] = (MultivariateNormalParameters)resetOutputMessage(_outputMsgs[i]);		
+		_outputMsgs[i] = (MultivariateNormalParameters)resetOutputMessage(_outputMsgs[i]);
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort) 
+	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
 		SRealJointVariable s = (SRealJointVariable)other;
 	
@@ -212,7 +212,7 @@ public class SRealJointVariable extends SRealJointVariableBase
 	}
 	
 	@Override
-	public Object getInputMsg(int portIndex) 
+	public Object getInputMsg(int portIndex)
 	{
 		return _inputMsgs[portIndex];
 	}
@@ -236,4 +236,19 @@ public class SRealJointVariable extends SRealJointVariableBase
 		return message;
 	}
 
+	/*-----------------------
+	 * SVariableBase methods
+	 */
+	
+	@Override
+	protected MultivariateNormalParameters cloneMessage(int edge)
+	{
+		return _outputMsgs[edge].clone();
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }

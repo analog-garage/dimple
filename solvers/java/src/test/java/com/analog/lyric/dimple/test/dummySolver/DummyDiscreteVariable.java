@@ -84,13 +84,13 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
 	{
 	}
 
 
 	@Override
-	public void update()
+	protected void doUpdate()
 	{
 	}
 

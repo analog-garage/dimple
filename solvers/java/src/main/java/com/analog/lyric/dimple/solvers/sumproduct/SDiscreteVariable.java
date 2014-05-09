@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
@@ -104,7 +105,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	}
 
     @Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
     {
     	
         final double minLog = -100;
@@ -175,7 +176,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     
 
     @Override
-	public void update()
+	protected void doUpdate()
     {
         final double minLog = -100;
         double[] priors = _input;
@@ -617,6 +618,19 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 		}
 	}
 
-
+	/*---------------
+	 * SNode methods
+	 */
 	
+	@Override
+	protected DiscreteWeightMessage cloneMessage(int edge)
+	{
+		return new DiscreteWeightMessage(_outputMessages[edge]);
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }

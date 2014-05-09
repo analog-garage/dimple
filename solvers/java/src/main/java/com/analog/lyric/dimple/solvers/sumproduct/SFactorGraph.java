@@ -487,6 +487,14 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 		
 	}
+
+
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
 	
 
 

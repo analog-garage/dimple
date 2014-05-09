@@ -100,13 +100,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	 */
 	
 	@Override
-	public void updateEdge(int outPortNum)
+	protected void doUpdateEdge(int outPortNum)
 	{
 		throw new DimpleException("Method not supported in Gibbs sampling solver.");
 	}
 	
 	@Override
-	public final void update()
+	protected
+	final void doUpdate()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
 		if (_var.isDeterministicOutput()) return;

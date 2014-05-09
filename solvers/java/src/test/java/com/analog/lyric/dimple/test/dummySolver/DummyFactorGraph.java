@@ -76,4 +76,11 @@ public class DummyFactorGraph extends SFactorGraphBase
 			return false;
 	}
 
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
+
 }

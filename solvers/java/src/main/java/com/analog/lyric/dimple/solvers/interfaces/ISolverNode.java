@@ -48,7 +48,21 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	
 	//Gets the highest level graph to which this node belongs.
 	public ISolverFactorGraph getRootGraph();
+
+	/**
+	 * Returns solver node attached to this node through edge with given index.
+	 * @param edge
+	 * @since 0.06
+	 * @see #getSiblingCount()
+	 */
+	public ISolverNode getSibling(int edge);
 	
+	/**
+	 * Returns number of solver nodes attached to this one.
+	 * @since 0.06
+	 * @see #getSibling(int)
+	 */
+	public int getSiblingCount();
 	
 	public double getScore() ;
     public double getInternalEnergy() ;

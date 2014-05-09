@@ -36,7 +36,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 	}
 
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 		MultivariateNormalParameters outMsg = _outputMsgs[outPortNum];
 		

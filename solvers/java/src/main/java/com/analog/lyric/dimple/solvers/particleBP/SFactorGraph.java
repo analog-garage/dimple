@@ -215,5 +215,12 @@ public class SFactorGraph extends SFactorGraphBase
 	public void enableTempering() {_temper = true;}
 	public void disableTempering() {_temper = false;}
 	public boolean isTemperingEnabled() {return _temper;}
+
+	/*
+	 * 
+	 */
+	protected void doUpdateEdge(int edge)
+	{
+	}
 	
 }

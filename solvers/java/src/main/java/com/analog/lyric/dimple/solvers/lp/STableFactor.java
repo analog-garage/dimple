@@ -119,7 +119,7 @@ public class STableFactor extends STableFactorBase
 	 * Does nothing.
 	 */
 	@Override
-	public void updateEdge(int outPortNum)
+	public void doUpdateEdge(int outPortNum)
 	{
 	}
 
