@@ -151,7 +151,7 @@ try
     fg.solve();
 catch exception
     % Gibbs solver should throw an exception since all probabilities are zero
-    assertTrue(~isempty(strfind(exception.message,'Energy value is NaN')));
+    assertTrue(~isempty(strfind(exception.message,'The energy for all values of this variable is infinite. This may indicate a state inconsistent with the model.')));
 end
 
 end

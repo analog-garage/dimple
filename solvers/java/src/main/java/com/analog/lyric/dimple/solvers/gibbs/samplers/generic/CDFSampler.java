@@ -98,7 +98,8 @@ public class CDFSampler implements IDiscreteDirectSampler
 
 				// Rejection sampling, since the approximation of the exponential function is so coarse
 				final double logp = minEnergy-energy[sampleIndex];
-				if (Double.isNaN(logp)) throw new DimpleException("Energy value is NaN");
+				if (Double.isNaN(logp))
+					throw new DimpleException("The energy for all values of this variable is infinite. This may indicate a state inconsistent with the model.");
 				if (rand.nextDouble()*expApprox(logp) <= Math.exp(logp)) break;
 			}
 		}
