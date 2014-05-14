@@ -203,17 +203,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		case UPDATE_EVENT_SIMPLE:
 			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone(), rejected ? 1 : 0));
 			break;
-
-		switch (updateEventFlags)
-		{
-		case UPDATE_EVENT_SCORED:
-			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
-			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
-				_outputMsg.clone(), getCurrentSampleScore()));
-			break;
-		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
-			break;
 		}
 	}
 	
