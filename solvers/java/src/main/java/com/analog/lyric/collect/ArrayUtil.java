@@ -40,6 +40,11 @@ public abstract class ArrayUtil
 	public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
 	
 	/**
+	 * Canonical empty double[][].
+	 */
+	public static final double[][] EMPTY_DOUBLE_ARRAY_ARRAY = new double[0][];
+	
+	/**
 	 * Canonical empty int array.
 	 */
 	public static final int[] EMPTY_INT_ARRAY = new int[0];
