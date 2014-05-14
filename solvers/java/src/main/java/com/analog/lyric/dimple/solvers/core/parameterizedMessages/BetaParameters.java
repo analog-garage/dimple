@@ -60,10 +60,10 @@ public class BetaParameters implements IParameterizedMessage
 	 * <p>
 	 * ln(&Beta;(&alpha;<sub>Q</sub>, &beta;<sub>Q</sub>))
 	 * - ln(&Beta;(&alpha;<sub>P</sub>, &beta;<sub>P</sub>))
-	 * - (&alpha;<sub>Q</sub>-&alpha;<sub>P</sub>)&psi;(&alpha;<sub>P</sub>)
-	 * - (&beta;<sub>Q</sub>-&beta;<sub>P</sub>)&psi;(&beta;<sub>P</sub>)
+	 * + (&alpha;<sub>P</sub>-&alpha;<sub>Q</sub>)&psi;(&alpha;<sub>P</sub>)
+	 * + (&beta;<sub>P</sub>-&beta;<sub>Q</sub>)&psi;(&beta;<sub>P</sub>)
 	 * + (&alpha;<sub>Q</sub>-&alpha;<sub>P</sub>+&beta;<sub>Q</sub>-&beta;<sub>P</sub>)
-	 *    &psi;(&alpha;<sub>P</sub>+&alpha;<sub>Q</sub>)
+	 *    &psi;(&alpha;<sub>P</sub>+&beta;<sub>P</sub>)
 	 * 
 	 * @see <a href="http://en.wikipedia.org/wiki/Beta_distribution#Quantities_of_information_.28entropy.29">
 	 * Beta distribution (Wikipedia)</a>
@@ -83,11 +83,34 @@ public class BetaParameters implements IParameterizedMessage
 			
 			final double ap = P.getAlpha(), aq = Q.getAlpha();
 			final double bp = P.getBeta(), bq = Q.getBeta();
-			final double adiff = aq - ap;
-			final double bdiff = bq - bp;
+			final double adiff = ap - aq;
+			final double bdiff = bp - bq;
 			
-			return logBeta(aq,bq) - logBeta(ap,bp) - adiff*digamma(ap) + bdiff*digamma(bp) +
-				(adiff+bdiff) * digamma(ap+aq);
+			double divergence = 0.0;
+			
+			if (adiff != 0 | bdiff !=0)
+			{
+				divergence += logBeta(aq,bq);
+				divergence -= logBeta(ap,bp);
+
+				if (adiff != 0.0)
+				{
+					divergence += adiff * digamma(ap);
+				}
+
+				if (bdiff != 0.0)
+				{
+					divergence += bdiff * digamma(bp);
+				}
+
+				final double ndiff = -adiff - bdiff;
+				if (ndiff != 0.0)
+				{
+					divergence += ndiff * digamma(ap+bp);
+				}
+			}
+
+			return divergence;
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));

@@ -68,21 +68,36 @@ public class GammaParameters implements IParameterizedMessage
 	 * - ln(&Gamma;(&alpha;<sub>P</sub>)) + ln(&Gamma;(&alpha;<sub>Q</sub>))
 	 * + &alpha;<sub>Q</sub>(ln(&beta;<sub>P</sub>/&beta;<sub>Q</sub>))
 	 * + &alpha;<sub>P</sub>(&beta;<sub>Q</sub>-&beta;<sub>P</sub>)/&beta;<sub>P</sub>
+	 * 
+	 * @see <a href="http://en.wikipedia.org/wiki/Gamma_distribution#Kullback.E2.80.93Leibler_divergence"
+	 * >Gamma distribution (Wikipedia)</a>
 	 */
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
 	{
 		if (that instanceof GammaParameters)
 		{
-			// http://en.wikipedia.org/wiki/Gamma_distribution#Kullback.E2.80.93Leibler_divergence:
-			//
 			// KL(P|Q) == (ap-aq)*digamma(ap) - log(gamma(ap)) + log(gamma(aq)) + aq*(log(bp)-log(bq)) + ap*(bq-bp)/bp
 			
 			final GammaParameters P = this, Q = (GammaParameters)that;
 			final double ap = P.getAlpha(), aq = Q.getAlpha();
-			final double bp = P.getBeta(), bq = Q.getAlpha();
+			final double bp = P.getBeta(), bq = Q.getBeta();
 			
-			return (ap-aq)*digamma(ap) - logGamma(ap) + logGamma(aq) + aq*(Math.log(bp)-Math.log(bq)) + ap * ((bq-bp)/bp);
+			double divergence = 0.0;
+			if (ap != aq)
+			{
+				divergence += (ap-aq)*digamma(ap);
+				divergence -= logGamma(ap);
+				divergence += logGamma(aq);
+			}
+			
+			if (bp != bq)
+			{
+				divergence += aq*(Math.log(bp)-Math.log(bq)) + ap * ((bq-bp)/bp);
+			}
+			
+			
+			return divergence;
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));

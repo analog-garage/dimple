@@ -46,7 +46,13 @@ public class NormalParameters implements IParameterizedMessage
 	}
 
 	/**
-	 * &tau;<sub>Q</sub>/&tau;<sub>P</sub> + &tau;<sub>Q</sub>(&mu;<sub>Q</sub> - &mu;<sub>P</sub>)<sup>2</sup> - 1
+	 * {@inheritDoc}
+	 * <p>
+	 * For single variable normal distributions, the formula is given by:
+	 * <blockquote>
+	 * &frac12; { &tau;<sub>Q</sub>(&mu;<sub>Q</sub> - &mu;<sub>P</sub>)<sup>2</sup> +
+	 * &tau;<sub>Q</sub>/&tau;<sub>P</sub> - 1 - ln(&tau;<sub>Q</sub>/&tau;<sub>P</sub>) }
+	 * </blockquote>
 	 */
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
@@ -55,11 +61,16 @@ public class NormalParameters implements IParameterizedMessage
 		{
 			final NormalParameters P = this, Q = (NormalParameters)that;
 			
+			if (Q._precision == P._precision && Q._mean == P._mean)
+			{
+				return 0.0;
+			}
+			
 			final double QP_precision = Q._precision / P._precision;
 			final double QP_mean_difference = Q._mean - P._mean;
 			
 			double divergence = -1.0;
-			divergence = 2 * Math.log(Math.sqrt(1/QP_precision));
+			divergence -= Math.log(QP_precision);
 			divergence += QP_precision;
 			divergence += QP_mean_difference * QP_mean_difference * Q._precision;
 			return Math.abs(divergence * .5); // protect against going negative due to precision error when close to 0.

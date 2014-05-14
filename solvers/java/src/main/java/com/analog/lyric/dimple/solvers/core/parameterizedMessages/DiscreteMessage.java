@@ -45,6 +45,9 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 	 * IParameterizedMessage methods
 	 */
 	
+	@Override
+	public abstract DiscreteMessage clone();
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -65,17 +68,9 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 			//
 			//  ==> sum(log((Pi/Ps)/(Qi/Qs)) * Pi/Ps)
 			//
-			//  ==> size/Ps * sum(log((Pi*Qs)/(Qi*Ps)) * Pi)
+			//  ==> 1/Ps * sum(log(Pi/Qi) * Pi + log(Qs/Ps) * Pi)
 			//
-			//  ==> size/Ps * sum(log(Pi)*Pi + log(Qs)*Pi - log(Qi)*Pi - log(Ps)*Pi)
-			//
-			//  ==> size/Ps * sum(Pi*(log(Pi) - log(Qi))   +   size/Ps * sum(Pi * (log(Qs) - log(Ps))
-			//
-			//  ==>                                    ... +   size/Ps * size*(log(Qs) - log(Ps)) * sum(Pi)
-			//
-			//  ==> size * (sum(Pi*(EQi - EPi))/Ps + size*(log(Qs) - log(Ps)))
-			//
-			// where EQi and EPi are the energies of P and Q at i (i.e. the negative log of the weight).
+			//  ==> sum(Pi*(log(Pi) - log(Qi)))/Ps + log(Qs/Ps)
 			//
 			// This formulation allows you to perform the computation using a single loop.
 			
@@ -90,7 +85,7 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 					String.format("Mismatched domain sizes '%d' and '%d'", P.size(), Q.size()));
 			}
 			
-			double Ps = 0.0, Qs = 0.0, sum = 0.0;
+			double Ps = 0.0, Qs = 0.0, unnormalizedKL = 0.0;
 			
 			for (int i = 0; i < size; ++i)
 			{
@@ -103,10 +98,10 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 				final double pe = P.getEnergy(i);
 				final double qe = Q.getEnergy(i);
 				
-				sum += pw * (qe - pe);
+				unnormalizedKL += pw * (qe - pe);
 			}
 			
-			return size * (sum/Ps + size*(Math.log(Qs) - Math.log(Ps)));
+			return unnormalizedKL / Ps + Math.log(Qs/Ps);
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));

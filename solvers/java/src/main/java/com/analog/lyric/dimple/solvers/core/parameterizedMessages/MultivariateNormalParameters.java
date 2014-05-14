@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import Jama.Matrix;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
 
 public class MultivariateNormalParameters implements Cloneable, IParameterizedMessage
@@ -31,7 +32,11 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 
 	
 	// Constructors
-	public MultivariateNormalParameters() {}
+	public MultivariateNormalParameters()
+	{
+		this(ArrayUtil.EMPTY_DOUBLE_ARRAY, ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY);
+	}
+	
 	public MultivariateNormalParameters(double[] mean, double[][] covariance)
 	{
 		setMeanAndCovariance(mean.clone(), cloneMatrix(covariance));
@@ -119,18 +124,22 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 			final double[] udiff = Q.getMean();
 			for (int i = 0; i < K; ++i)
 			{
-				udiff[i] -= _vector[i];
+				udiff[i] -= P._vector[i];
 			}
 
 			final Matrix Ut = new Matrix(udiff, 1);
 			final Matrix U = Ut.transpose();
 			final Matrix CP = new Matrix(P._matrix, K, K);
 			final Matrix CQ = new Matrix(Q._matrix, K, K);
-			final Matrix CQinv = CP.inverse();
+			final Matrix CQinv = CQ.inverse();
 			
 			// FIXME: do we need to worry about singular covariance matrices?
 			
-			return (CQinv.times(CQ).trace() + Ut.times(CQinv).times(U).get(0,0) - K - Math.log(CP.det()/CQ.det())) / 2;
+			double divergence = -K;
+			divergence += CQinv.times(CP).trace();
+			divergence += Ut.times(CQinv).times(U).get(0,0);
+			divergence -= Math.log(CP.det()/CQ.det());
+			return Math.abs(divergence/2); // use abs to guard against precision errors causing this to go negative.
 		}
 		
 		throw new IllegalArgumentException(String.format("Expected '%s' but got '%s'", getClass(), that.getClass()));
@@ -139,8 +148,8 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	@Override
 	public final void setNull()
 	{
-		_vector = null;
-		_matrix = null;
+		_vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 		_isInInformationForm = true;
 	}
 	
@@ -182,7 +191,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	
 	public final boolean isNull()
 	{
-		return _vector == null;
+		return _vector.length == 0;
 	}
 	
 	/*---------
@@ -227,48 +236,49 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	
 	private final void toggleFormat()
 	{
-		int i;
-		
-		Jama.Matrix mat = new Jama.Matrix(_matrix);
-				
-		Matrix inv;
-		Matrix vec;
-				
-		if (isInfiniteIdentity(mat))
+		if (!isNull())
 		{
-			//Handle the special case where variances are infinite
-			inv = new Matrix(mat.getRowDimension(),mat.getColumnDimension());
-			vec = new Matrix(mat.getRowDimension(),1);
-		}
-		else
-		{
-			LyricEigenvalueDecomposition eig = new LyricEigenvalueDecomposition(mat);
-			
-			Matrix D = eig.getD();
-			Matrix V = eig.getV();
-			
-			int N = D.getColumnDimension();
-			
-			for (i=0; i<N; i++) {
-				//Compute inverse of eigenvalues except for those less than eps we set to large constant.
+			Jama.Matrix mat = new Jama.Matrix(_matrix);
 
-				double d = D.get(i,i);
-				d = (d>eps) ? (1/d) : 1/eps;
-				D.set(i,i,d);
-	
-				assert(d > 0); // Eigenvalues should always be positive for positive definite matrices
+			Matrix inv;
+			Matrix vec;
+
+			if (isInfiniteIdentity(mat))
+			{
+				//Handle the special case where variances are infinite
+				inv = new Matrix(mat.getRowDimension(),mat.getColumnDimension());
+				vec = new Matrix(mat.getRowDimension(),1);
 			}
-			
-			inv = V.times(D.times(V.transpose()));
-	
-	
-			vec = new Matrix(new double [][] {_vector}).transpose();
-			
-			vec = inv.times(vec);
-		}
+			else
+			{
+				LyricEigenvalueDecomposition eig = new LyricEigenvalueDecomposition(mat);
 
-		_matrix = inv.getArray();
-		_vector = vec.transpose().getArray()[0];
+				Matrix D = eig.getD();
+				Matrix V = eig.getV();
+
+				int N = D.getColumnDimension();
+
+				for (int i=0; i<N; i++) {
+					//Compute inverse of eigenvalues except for those less than eps we set to large constant.
+
+					double d = D.get(i,i);
+					d = (d>eps) ? (1/d) : 1/eps;
+					D.set(i,i,d);
+
+					assert(d > 0); // Eigenvalues should always be positive for positive definite matrices
+				}
+
+				inv = V.times(D.times(V.transpose()));
+
+
+				vec = new Matrix(new double [][] {_vector}).transpose();
+
+				vec = inv.times(vec);
+			}
+
+			_matrix = inv.getArray();
+			_vector = vec.transpose().getArray()[0];
+		}
 		
 		_isInInformationForm = !_isInInformationForm;
 

@@ -34,11 +34,10 @@ public class DirichletParameters implements IParameterizedMessage
 	public DirichletParameters(int length)
 	{
 		_alphaMinusOne = new double[length];
-		setNull();
 	}
 	public DirichletParameters(double[] alphaMinusOne)
 	{
-		setAlphaMinusOne(alphaMinusOne);
+		_alphaMinusOne = alphaMinusOne.clone();
 	}
 	public DirichletParameters(DirichletParameters other)	// Copy constructor
 	{
@@ -61,19 +60,20 @@ public class DirichletParameters implements IParameterizedMessage
 	}
 	
 	public final double getAlphaMinusOne(int index) {return _alphaMinusOne[index];}
-<<<<<<< HEAD
+	
 	public final void setAlphaMinusOne(double[] alphaMinusOne)
-	{ 
-		int length = alphaMinusOne.length;
-=======
-	public final void setAlphaMinusOne(double[] alpha)
 	{
-		int length = alpha.length;
->>>>>>> Added KL divergence calculation to IParameterizedMessage implementations
-		if (_alphaMinusOne == null || length != _alphaMinusOne.length)
-			_alphaMinusOne = new double[length];
-		System.arraycopy(alphaMinusOne, 0, _alphaMinusOne, 0, length);
+		int length = alphaMinusOne.length;
+		if (length != _alphaMinusOne.length)
+		{
+			_alphaMinusOne = alphaMinusOne.clone();
 	}
+		else
+		{
+			System.arraycopy(alphaMinusOne, 0, _alphaMinusOne, 0, length);
+		}
+	}
+	
 	public final void fillAlphaMinusOne(double alphaMinusOne)
 	{
 		Arrays.fill(_alphaMinusOne, alphaMinusOne);	// Replicate a single value into all entries
@@ -114,11 +114,21 @@ public class DirichletParameters implements IParameterizedMessage
 	 * <p>
 	 * Dirichlet parameter messages are computed using:
 	 * <blockquote>
-	 * ln(&Beta;(<b>&alpha;<sub>Q</sub></b>)) - ln(&Beta;(<b>&alpha;<sub>P</sub></b>))
+	 * log &Beta;(<b>&alpha;<sub>Q</sub></b>) - log &Beta;(<b>&alpha;<sub>P</sub></b>)
 	 * + <big><big>&Sigma;</big></big>(&alpha;<sub>Q<sub>i</sub></sub>-&alpha;<sub>P<sub>i</sub></sub>)
-	 * (&psi;(&alpha;<sub>P<sub>i</sub></sub>) - &psi;(<b>&alpha;<sub>P</sub></b>))
+	 * (&psi;(&alpha;<sub>P<sub>i</sub></sub>) - &psi;(&Sigma;&alpha;<sub>P<sub>j</sub></sub>))
 	 * </blockquote>
-	 * where &Beta;(x) is the multinomial beta function and &psi;(x) is the digamma function.
+	 * where &Beta;(x) is the multinomial beta function:
+	 * <blockquote>
+	 * &Beta;(<b>&alpha;</b>) =
+	 * <big>&Pi;</big>&Gamma;&alpha;<sub>i</sub> <big>/</big> <big>&Gamma;</big>&Sigma;&alpha;<sub>i</sub>
+	 * </blockquote>
+	 * so
+	 * <blockquote>
+	 * log &Beta;(<b>&alpha;</b>) =
+	 * <big>&Sigma;</big>log &Gamma;&alpha;<sub>i</sub> - log <big>&Gamma;</big>&Sigma;&alpha;<sub>i</sub>
+	 * </blockquote>
+	 *  and &psi;(x) is the digamma function.
 	 */
 	@Override
 	public double computeKLDivergence(IParameterizedMessage that)
@@ -135,23 +145,39 @@ public class DirichletParameters implements IParameterizedMessage
 					String.format("Incompatible Dirichlet sizes '%d' and '%d'", size, alphasQ.length));
 			}
 
+			// To summarize the doc comment in plain ascii:
+			//
+			// logGamma(sum(alphaPi) - logGamma(sum(alphaQi) + sum(logGamma(alphaQi)) - sum(logGamma(alphaPi))
+			// + sum((alphaPi - alphaQi) * (digamma(alphaPi) - digamma(sum(alphaPj)))
+			//
+			
+			double divergence = 0.0;
+			if (size > 0)
+			{
 			double alphaSumP = size, alphaSumQ = size;
 			for (int i = 0; i < size; ++i)
 			{
 				alphaSumP += alphasP[i];
 				alphaSumQ += alphasQ[i];
 			}
-			
+
 			final double digammaAlphaSumP = digamma(alphaSumP);
 			
-			double divergence = logGamma(alphaSumQ) - logGamma(alphaSumP);
+				if (alphaSumP != alphaSumQ)
+				{
+					divergence += logGamma(alphaSumP) - logGamma(alphaSumQ);
+				}
 			
 			for (int i = 0; i < size; ++i)
 			{
-				final double alphaP = alphasP[i], alphaQ = alphasQ[i];
+					final double alphaP = alphasP[i] + 1, alphaQ = alphasQ[i] + 1;
+					if (alphaP != alphaQ)
+					{
 				divergence += logGamma(alphaQ);
 				divergence -= logGamma(alphaP);
 				divergence += (alphaP-alphaQ) * (digamma(alphaP) - digammaAlphaSumP);
+			}
+				}
 			}
 			
 			return divergence;
