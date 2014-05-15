@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import com.analog.lyric.dimple.events.IDimpleEventListener;
+import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Node;
@@ -42,6 +43,8 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	private static final int MESSAGE_EVENT_NONE = 0x01000000;
 
 	private static final int MESSAGE_EVENT_ENABLED = 0x03000000;
+	
+	protected static final int EVENT_MASK = MESSAGE_EVENT_MASK;
 	
 	/*-------
 	 * State
@@ -125,17 +128,17 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 			
 			doUpdate();
 			
-			if (oldMessages != null)
+			final IParameterizedMessage[] newMessages = cloneMessages();
+			if (newMessages != null)
 			{
-				final IParameterizedMessage[] newMessages = cloneMessages();
 				for (int edge = 0, nEdges = newMessages.length; edge < nEdges; ++edge)
 				{
-					final IParameterizedMessage oldMessage = oldMessages[edge];
+					final IParameterizedMessage oldMessage = oldMessages != null ? oldMessages[edge] : null;
 					final IParameterizedMessage newMessage = newMessages[edge];
-					
+
 					if (newMessage != null)
 					{
-						raiseMessageEvent(edge, oldMessage, newMessage);
+						raiseEvent(createMessageEvent(edge, oldMessage, newMessage));
 					}
 				}
 			}
@@ -158,7 +161,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 			final IParameterizedMessage newMessage = cloneMessage(edge);
 			if (newMessage != null)
 			{
-				raiseMessageEvent(edge, oldMessage, newMessage);
+				raiseEvent(createMessageEvent(edge, oldMessage, newMessage));
 			}
 		}
 		else
@@ -166,6 +169,16 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 			doUpdateEdge(edge);
 		}
 	}
+
+	/*---------------------------
+	 * SolverEventSource methods
+	 */
+	
+    @Override
+    protected int getEventMask()
+    {
+    	return EVENT_MASK;
+    }
 
 	/*-------------------------
 	 * Protected SNode methods
@@ -223,9 +236,9 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	protected abstract void doUpdateEdge(int edge);
 
 	/**
-	 * Raise a {@link IMessageUpdateEvent} event.
+	 * Creates a {@link IMessageUpdateEvent} event.
 	 * <p>
-	 * Default implementation does nothing. When this method does nothing, then {@link #supportsMessageEvents()}
+	 * Default implementation returns null. When this method returns null, then {@link #supportsMessageEvents()}
 	 * should also return false.
 	 * <p>
 	 * @param edge is the outgoing edge for the messages.
@@ -233,18 +246,29 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 * @param newMessage is the new message value, which must not be null.
 	 * @since 0.06
 	 */
-	protected void raiseMessageEvent(
+	protected SolverEvent createMessageEvent(
 		int edge,
 		IParameterizedMessage oldMessage,
 		IParameterizedMessage newMessage)
 	{
+		return null;
+	}
+	
+	/**
+	 * If {@link #supportsMessageEvents()}, this returns the base type for all message
+	 * events that can be created by this object. Default implementation returns null.
+	 * @since 0.06
+	 */
+	protected Class<? extends SolverEvent> messageEventType()
+	{
+		return null;
 	}
 
 	/**
 	 * Indicate subclass has a concept of passing a {@link IParameterizedMessage} messages.
 	 * <p>
-	 * Should be false if {@link #cloneMessage(int)} can only return null or {@link #raiseMessageEvent}
-	 * has no effect.
+	 * Should be false if {@link #cloneMessage(int)} can only return null or {@link #createMessageEvent}
+	 * returns null.
 	 * <p>
 	 * The default implementation returns false.
 	 * <p>
@@ -281,7 +305,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 				final IDimpleEventListener listener = getEventListener();
 				if (listener != null)
 				{
-					enabled = listener.isListeningFor(VariableToFactorMessageEvent.class, this);
+					enabled = listener.isListeningFor(messageEventType(), this);
 				}
 			}
 			setFlagValue(MESSAGE_EVENT_MASK, enabled ? MESSAGE_EVENT_ENABLED : MESSAGE_EVENT_NONE);

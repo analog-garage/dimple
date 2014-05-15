@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -171,14 +172,20 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The {@link SVariableBase} implementation raises a {@link VariableToFactorMessageEvent}.
+	 * The {@link SVariableBase} implementation returns a {@link VariableToFactorMessageEvent}.
 	 */
 	@Override
-	protected void raiseMessageEvent(
+	protected SolverEvent createMessageEvent(
 		int edge,
 		IParameterizedMessage oldMessage,
 		IParameterizedMessage newMessage)
 	{
-		raiseEvent(new FactorToVariableMessageEvent(this, getSibling(edge), oldMessage, newMessage));
+		return new FactorToVariableMessageEvent(this, getSibling(edge), oldMessage, newMessage);
+	}
+
+	@Override
+	protected Class<? extends SolverEvent> messageEventType()
+	{
+		return FactorToVariableMessageEvent.class;
 	}
 }

@@ -130,7 +130,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	 */
 	protected final void clearFlags(int mask)
 	{
-		_flags = (byte) BitSetUtil.clearMask(_flags, mask);
+		_flags = BitSetUtil.clearMask(_flags, mask);
 	}
 	
 	/**
@@ -141,6 +141,11 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	 * based on the listener.
 	 * <p>
 	 * The default implementation returns zero.
+	 * <p>
+	 * Overriders should usually combine local value with value from super class using bitwise or, e.g.:
+	 * <pre>
+	 *    return ThisClass.EVENT_MASK | super.getEventMask();
+	 * </pre>
 	 *
 	 * @since 0.06
 	 */
@@ -165,11 +170,14 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	
 	protected final boolean raiseEvent(SolverEvent event)
 	{
-		IDimpleEventListener listener = getEventListener();
-		if (listener != null)
+		if (event != null)
 		{
-			listener.raiseEvent(event);
-			return true;
+			IDimpleEventListener listener = getEventListener();
+			if (listener != null)
+			{
+				listener.raiseEvent(event);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -179,7 +187,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	 */
 	protected final void setFlags(int mask)
 	{
-		_flags = (byte) BitSetUtil.setMask(_flags, mask);
+		_flags = BitSetUtil.setMask(_flags, mask);
 	}
 
 	/**
@@ -188,6 +196,6 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	@Internal
 	public final void setFlagValue(int mask, int value)
 	{
-		_flags = (byte) BitSetUtil.setMaskedValue(_flags, mask, value);
+		_flags = BitSetUtil.setMaskedValue(_flags, mask, value);
 	}
 }

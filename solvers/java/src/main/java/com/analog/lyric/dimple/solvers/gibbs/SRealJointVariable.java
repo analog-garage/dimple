@@ -213,7 +213,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	@Override
 	protected int getEventMask()
 	{
-		return EVENT_MASK;
+		return EVENT_MASK | super.getEventMask();
 	}
 	
 	/*-------------------------

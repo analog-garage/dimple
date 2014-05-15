@@ -210,7 +210,7 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	protected int getEventMask()
 	{
-		return EVENT_MASK;
+		return EVENT_MASK | super.getEventMask();
 	}
 	
 	/*-------------------------
