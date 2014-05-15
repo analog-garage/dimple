@@ -82,6 +82,7 @@ public class SFactorGraph extends SFactorGraphBase
 	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
 	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
 	private static Random _rand = new Random();
+	private boolean _defaultTreeUpdateEnabled;
 
 
 	public SFactorGraph(com.analog.lyric.dimple.model.core.FactorGraph factorGraph)
@@ -293,6 +294,37 @@ public class SFactorGraph extends SFactorGraphBase
 
 	}
 	
+	/**
+	 * Indicates if this solver supports the tree update algorithm.
+	 * 
+	 * @return True if this solver does support the tree update algorithm.
+	 * @since 0.06
+	 */
+	public boolean isTreeUpdateSupported()
+	{
+		return true;
+	}
+
+	/**
+	 * Gets the default tree update algorithm enable. Factors for which the enable is not explicitly set use this value.
+	 * 
+	 * @since 0.06
+	 */
+	public boolean getDefaultTreeUpdateEnabled()
+	{
+		return _defaultTreeUpdateEnabled;
+	}
+	
+	/**
+	 * Sets the default tree update algorithm enable. Factors for which the enable is not explicitly set use this value.
+	 * 
+	 * @since 0.06
+	 */
+	public void setDefaultTreeUpdateEnabled(boolean value)
+	{
+		_defaultTreeUpdateEnabled = value;
+	}
+	
 	public void setSampledFactorSamplesPerUpdate(int samplesPerUpdate)
 	{
 		_sampledFactorSamplesPerUpdate = samplesPerUpdate;
@@ -481,6 +513,7 @@ public class SFactorGraph extends SFactorGraphBase
 	@Override
 	public void initialize()
 	{
+		TableFactorEngineTree.clearUpdatePlans(this);
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{

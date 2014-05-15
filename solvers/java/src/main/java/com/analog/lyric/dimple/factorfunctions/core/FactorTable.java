@@ -1629,7 +1629,7 @@ public class FactorTable extends SparseFactorTableBase
 		
 		return slice;
 	}
-	
+
 	@Override
 	public final double[] getWeightsSparseUnsafe()
 	{
@@ -1646,6 +1646,16 @@ public class FactorTable extends SparseFactorTableBase
 			}
 		}
 		return _sparseWeights;
+	}
+
+	@Override
+	public final double[] getWeightsDenseUnsafe()
+	{
+		if (!hasDenseWeights())
+		{
+			setRepresentation(DENSE_WEIGHT);
+		}	
+		return _denseWeights;
 	}
 	
 	@Override

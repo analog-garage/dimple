@@ -34,7 +34,7 @@ public class TableFactorEngine
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();
 	}
-	
+		
 	public void updateEdge(int outPortNum)
 	{
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
@@ -165,5 +165,14 @@ public class TableFactorEngine
 	    	}
 	    	
 	    }
+	}
+
+	/**
+	 * Called during solver graph initialization.
+	 * 
+	 * @since 0.06
+	 */
+	public void initialize()
+	{
 	}
 }
