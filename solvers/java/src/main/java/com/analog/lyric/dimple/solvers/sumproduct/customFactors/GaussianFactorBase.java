@@ -80,4 +80,20 @@ public abstract class GaussianFactorBase extends SFactorBase
 		_inputMsgs[portNum] = s._inputMsgs[otherPort];
 		_outputMsgs[portNum] = s._outputMsgs[otherPort];
 	}
+	
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	protected NormalParameters cloneMessage(int edge)
+	{
+		return _outputMsgs[edge].clone();
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }

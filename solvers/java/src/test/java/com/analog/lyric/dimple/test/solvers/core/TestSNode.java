@@ -193,6 +193,8 @@ public class TestSNode
 	
 	private static class TestMessage implements IParameterizedMessage
 	{
+		private static final long serialVersionUID = 1L;
+
 		private int _counter;
 		
 		private TestMessage(int counter)
@@ -221,6 +223,7 @@ public class TestSNode
 	
 	private static class TestEvent extends SolverEvent
 	{
+		private static final long serialVersionUID = 1L;
 		private final IParameterizedMessage _oldMsg;
 		private final IParameterizedMessage _newMsg;
 
@@ -240,8 +243,6 @@ public class TestSNode
 	
 	private static class TestHandler extends DimpleEventHandler<TestEvent>
 	{
-		private final List<TestEvent> _observedEvents = new ArrayList<TestEvent>();
-		
 		@Override
 		public void handleEvent(TestEvent event)
 		{

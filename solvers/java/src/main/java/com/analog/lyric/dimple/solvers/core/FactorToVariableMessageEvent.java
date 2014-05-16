@@ -34,6 +34,7 @@ public class FactorToVariableMessageEvent extends SolverFactorEvent implements I
 	 * State
 	 */
 	
+	private final int _edge;
 	private final ISolverVariable _variable;
 	private final IParameterizedMessage _oldMessage;
 	private final IParameterizedMessage _newMessage;
@@ -51,13 +52,14 @@ public class FactorToVariableMessageEvent extends SolverFactorEvent implements I
 	 */
 	FactorToVariableMessageEvent(
 		ISolverFactor factor,
-		ISolverVariable variable,
+		int edge,
 		IParameterizedMessage oldMessage,
 		IParameterizedMessage newMessage)
 	{
 		super(factor);
 		assert(newMessage != null);
-		_variable = variable;
+		_edge = edge;
+		_variable = factor.getSibling(edge);
 		_oldMessage = oldMessage;
 		_newMessage = newMessage;
 	}
@@ -80,40 +82,39 @@ public class FactorToVariableMessageEvent extends SolverFactorEvent implements I
 		return _oldMessage.computeKLDivergence(_newMessage);
 	}
 	
-	/*
-	 * 
-	 */
 	@Override
-	public final IParameterizedMessage getOldMessage()
+	public int getEdge()
 	{
-		return _oldMessage;
-	}
-
-	/*
-	 * 
-	 */
-	@Override
-	public final IParameterizedMessage getNewMessage()
-	{
-		return _newMessage;
+		return _edge;
 	}
 	
-	/*
-	 * 
-	 */
 	@Override
 	public ISolverFactor getFactor()
 	{
 		return getSolverObject();
 	}
 	
-	/*
-	 * 
-	 */
+	@Override
+	public final IParameterizedMessage getNewMessage()
+	{
+		return _newMessage;
+	}
+	
+	@Override
+	public final IParameterizedMessage getOldMessage()
+	{
+		return _oldMessage;
+	}
+
 	@Override
 	public ISolverVariable getVariable()
 	{
 		return _variable;
 	}
 
+	@Override
+	public final boolean isToFactor()
+	{
+		return false;
+	}
 }

@@ -23,11 +23,9 @@ public interface IMessageUpdateEvent
 
 	public abstract double computeKLDivergence();
 
-	/**
-	 * The previous value of the message, prior to update. May be null.
-	 * @since 0.06
-	 */
-	public abstract IParameterizedMessage getOldMessage();
+	public int getEdge();
+	
+	public abstract ISolverFactor getFactor();
 
 	/**
 	 * The new value of the message after update.
@@ -35,8 +33,19 @@ public interface IMessageUpdateEvent
 	 */
 	public abstract IParameterizedMessage getNewMessage();
 
-	public abstract ISolverFactor getFactor();
+	/**
+	 * The previous value of the message, prior to update. May be null.
+	 * @since 0.06
+	 */
+	public abstract IParameterizedMessage getOldMessage();
 
 	public abstract ISolverVariable getVariable();
 
+	/**
+	 * True if this is a {@link VariableToFactorMessageEvent} and false if it is
+	 * a {@link FactorToVariableMessageEvent}.
+	 * 
+	 * @since 0.06
+	 */
+	public boolean isToFactor();
 }

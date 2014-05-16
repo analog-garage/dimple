@@ -171,7 +171,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 		IParameterizedMessage oldMessage,
 		IParameterizedMessage newMessage)
 	{
-		return new VariableToFactorMessageEvent(this, getSibling(edge), oldMessage, newMessage);
+		return new VariableToFactorMessageEvent(this, edge, oldMessage, newMessage);
 	}
 
 

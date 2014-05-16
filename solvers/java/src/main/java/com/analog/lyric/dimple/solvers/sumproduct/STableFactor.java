@@ -31,6 +31,8 @@ import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 
@@ -159,6 +161,17 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		return retval;
 	}
 	
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	public DiscreteMessage cloneMessage(int edge)
+	{
+		return new DiscreteWeightMessage(_outputMsgs[edge]);
+	}
+	
+	
 	/*--------------------------
 	 * STableFactorBase methods
 	 */
@@ -167,6 +180,12 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected void setTableRepresentation(IFactorTable table)
 	{
 		table.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT_WITH_INDICES);
+	}
+	
+	@Override
+	public boolean supportsMessageEvents()
+	{
+		return true;
 	}
 	
 	/*-------------

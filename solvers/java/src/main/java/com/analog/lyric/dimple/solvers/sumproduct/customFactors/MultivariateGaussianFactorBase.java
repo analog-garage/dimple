@@ -77,4 +77,20 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	public Object getOutputMsg(int portIndex) {
 		return _outputMsgs[portIndex];
 	}
+	
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	protected MultivariateNormalParameters cloneMessage(int edge)
+	{
+		return _outputMsgs[edge].clone();
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }

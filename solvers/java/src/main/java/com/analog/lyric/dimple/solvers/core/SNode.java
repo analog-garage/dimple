@@ -267,8 +267,15 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	/**
 	 * Indicate subclass has a concept of passing a {@link IParameterizedMessage} messages.
 	 * <p>
-	 * Should be false if {@link #cloneMessage(int)} can only return null or {@link #createMessageEvent}
-	 * returns null.
+	 * Should only return true if:
+	 * <ul>
+	 * <li>{@link #cloneMessage(int)} can return non-null message
+	 * <li>{@link #messageEventType()} is non-null
+	 * <li>{@link #createMessageEvent} can return a non-null event
+	 * </ul>
+	 * Since {@link SVariableBase} and {@link SFactorBase} implement the latter two methods, subclasses
+	 * of those classes that support message events only need to implement {@link #cloneMessage(int)} and
+	 * this method.
 	 * <p>
 	 * The default implementation returns false.
 	 * <p>

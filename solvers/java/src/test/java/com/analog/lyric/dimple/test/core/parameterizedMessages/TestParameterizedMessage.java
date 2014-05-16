@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterized
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
+ * Base class for IParameterizedMessage tests
  * 
  * @since 0.06
  * @author Christopher Barber
@@ -31,6 +32,8 @@ public class TestParameterizedMessage
 {
 	private static class BogusParameters implements IParameterizedMessage
 	{
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public BogusParameters clone()
 		{
