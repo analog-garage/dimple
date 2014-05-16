@@ -282,8 +282,8 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		
 	}
 
-	/*-----------------------
-	 * SVariableBase methods
+	/*---------------
+	 * SNode methods
 	 */
 	
 	@Override

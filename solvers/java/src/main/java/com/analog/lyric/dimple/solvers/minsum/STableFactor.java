@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
 import com.analog.lyric.dimple.solvers.core.kbest.IKBestFactor;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
 public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
@@ -226,7 +227,23 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		return _outputMsgs;
 	}
 	
-   /*-------------
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	protected DiscreteEnergyMessage cloneMessage(int edge)
+	{
+		return new DiscreteEnergyMessage(_outputMsgs[edge]);
+	}
+	
+	@Override
+	protected boolean supportsMessageEvents()
+	{
+		return true;
+	}
+
+	/*-------------
      * New methods
      */
 	
