@@ -206,6 +206,25 @@ public class DimpleEventListener implements IDimpleEventListener
 		sources.release();
 	}
 	
+	/*------------------------------------
+	 * Static DimpleEventListener methods
+	 */
+	
+	/**
+	 * Determine if event source has listener active for given event type.
+	 * 
+	 * @param source non-null source of event.
+	 * @param eventClass non-null type of event listened for.
+	 * @return true if {@code source} has an event listener that is listening for
+	 * the given {@code eventClass}.
+	 * @since 0.06
+	 */
+	public static boolean sourceHasListenerFor(IDimpleEventSource source, Class<? extends DimpleEvent> eventClass)
+	{
+		IDimpleEventListener listener = source.getEventListener();
+		return listener != null && listener.isListeningFor(eventClass, source);
+	}
+	
 	/*-----------------------------
 	 * DimpleEventListener methods
 	 */

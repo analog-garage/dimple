@@ -176,6 +176,7 @@ public class TestDimpleEventListener
 		assertTrue(Iterables.isEmpty(listener.allHandlers()));
 		assertFalse(listener.isListeningFor(TestModelEvent.class, model));
 		assertFalse(listener.isListeningFor(ModelEvent.class, model));
+		assertFalse(DimpleEventListener.sourceHasListenerFor(model, ModelEvent.class));
 		assertTrue(listener.getHandlersFor(TestModelEvent.class, model).isEmpty());
 		
 		assertHandledBy(listener, modelEvent);
@@ -222,6 +223,12 @@ public class TestDimpleEventListener
 		
 		expectThrow(UnsupportedOperationException.class, null,
 			listener.allHandlers().iterator(), Iterator.class, "remove");
+		
+		// sourceHasListenerFor
+		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
+		model.setEventListener(listener);
+		assertTrue(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
+		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestSolverEvent.class));
 		
 		// Add a catch-all handler
 		TestEventHandler<DimpleEvent> handleAll = TestEventHandler.create(false);
