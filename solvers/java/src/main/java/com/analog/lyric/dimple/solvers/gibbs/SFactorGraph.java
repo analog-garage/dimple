@@ -34,6 +34,9 @@ import com.analog.lyric.dimple.factorfunctions.DiscreteTransitionUnnormalizedPar
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
 import com.analog.lyric.dimple.factorfunctions.Gamma;
 import com.analog.lyric.dimple.factorfunctions.LogNormal;
+import com.analog.lyric.dimple.factorfunctions.Multinomial;
+import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -64,6 +67,8 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomDiscreteTransit
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomExchangeableDirichlet;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomLogNormal;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomial;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomialUnnormalizedOrEnergyParameters;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
@@ -187,6 +192,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomBernoulli(factor);
 		else if (factorFunction instanceof Binomial)
 			return new CustomBinomial(factor);
+		else if (factorFunction instanceof Multinomial)
+			return new CustomMultinomial(factor);
+		else if (factorFunction instanceof MultinomialUnnormalizedParameters)
+			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof MultinomialEnergyParameters)
+			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
 		else if (factorFunction instanceof Multiplexer)
 			return new CustomMultiplexer(factor);
 		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one

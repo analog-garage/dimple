@@ -1,0 +1,221 @@
+/*******************************************************************************
+*   Copyright 2013 Analog Devices, Inc.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+********************************************************************************/
+
+package com.analog.lyric.dimple.solvers.gibbs.customFactors;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
+import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
+import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+
+public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
+{
+	private Object[] _outputMsgs;
+	private SDiscreteVariable[] _outputVariables;
+	private FactorFunction _factorFunction;
+	private int _dimension;
+	private int _alphaParameterMinIndex;
+	private int _alphaParameterMinEdge;
+	private int _alphaParameterMaxEdge;
+	private int _numOutputEdges;
+	private int[] _constantOutputCounts;
+	private boolean _hasConstantOutputs;
+	private boolean[] _hasConstantOutput;
+	private boolean _useEnergyParameters;
+	private static final int NO_PORT = -1;
+	private static final int ALPHA_PARAMETER_MIN_INDEX_FIXED_N = 0;	// If N is in constructor then alpha is first index (0)
+	private static final int ALPHA_PARAMETER_MIN_INDEX = 1;			// If N is not in constructor then alpha is second index (1)
+
+	public CustomMultinomialUnnormalizedOrEnergyParameters(Factor factor)
+	{
+		super(factor);
+	}
+
+	@Override
+	public void updateEdgeMessage(int portNum)
+	{
+		if (portNum >= _alphaParameterMinEdge && portNum <= _alphaParameterMaxEdge)
+		{
+			// Output port is a parameter input
+			// Determine sample alpha and beta parameters
+			// NOTE: This case works for either MultinomialUnnormalizedParameters or MultinomialEnergyParameters factor functions
+			// since the actual parameter value doesn't come into play in determining the message in this direction
+
+			GammaParameters outputMsg = (GammaParameters)_outputMsgs[portNum];
+
+			// The parameter being updated corresponds to this value
+			int parameterOffset = _factorFunction.getIndexByEdge(portNum) - _alphaParameterMinIndex;
+
+			// Get the count from the corresponding output
+			int count = _hasConstantOutputs ? _constantOutputCounts[parameterOffset] : _outputVariables[parameterOffset].getCurrentSampleIndex();
+						
+			outputMsg.setAlpha(count);		// Sample alpha
+			outputMsg.setBeta(0);			// Sample beta
+		}
+		else
+			super.updateEdgeMessage(portNum);
+	}
+	
+	
+	@Override
+	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
+	{
+		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
+		if (isPortAlphaParameter(portNumber))					// Conjugate sampler if edge is alpha parameter input
+			if (_useEnergyParameters)
+				availableSamplers.add(NegativeExpGammaSampler.factory);	// Parameter inputs have conjugate negative exp-Gamma distribution
+			else
+				availableSamplers.add(GammaSampler.factory);			// Parameter inputs have conjugate Gamma distribution
+		return availableSamplers;
+	}
+	
+	public boolean isPortAlphaParameter(int portNumber)
+	{
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		return (portNumber >= _alphaParameterMinEdge && portNumber <= _alphaParameterMaxEdge);
+	}
+
+	
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+				
+		
+		// Determine what parameters are constants or edges, and save the state
+		determineParameterConstantsAndEdges();
+	}
+	
+	
+	private void determineParameterConstantsAndEdges()
+	{
+		FactorFunction factorFunction = _factor.getFactorFunction();
+		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
+		_factorFunction = factorFunction;
+		boolean hasFactorFunctionConstructorConstantN;
+		if (containedFactorFunction instanceof MultinomialUnnormalizedParameters)
+		{
+			MultinomialUnnormalizedParameters specificFactorFunction = (MultinomialUnnormalizedParameters)containedFactorFunction;
+			hasFactorFunctionConstructorConstantN = specificFactorFunction.hasConstantNParameter();
+			_dimension = specificFactorFunction.getDimension();
+			_useEnergyParameters = false;
+		}
+		else if (containedFactorFunction instanceof MultinomialEnergyParameters)
+		{
+			MultinomialEnergyParameters specificFactorFunction = (MultinomialEnergyParameters)containedFactorFunction;
+			hasFactorFunctionConstructorConstantN = specificFactorFunction.hasConstantNParameter();
+			_dimension = specificFactorFunction.getDimension();
+			_useEnergyParameters = true;
+		}
+		else
+			throw new DimpleException("Invalid factor function");
+		
+		// Pre-determine whether or not the parameters are constant
+		List<? extends VariableBase> siblings = _factor.getSiblings();
+		_hasConstantOutputs = false;
+		_outputVariables = null;
+		_alphaParameterMinIndex = hasFactorFunctionConstructorConstantN ? ALPHA_PARAMETER_MIN_INDEX_FIXED_N : ALPHA_PARAMETER_MIN_INDEX;
+		int alphaParameterMaxIndex = _alphaParameterMinIndex + _dimension - 1;
+		int outputMinIndex = alphaParameterMaxIndex + 1;
+		
+		// Get alpha parameter edge range
+		_alphaParameterMinEdge = NO_PORT;
+		_alphaParameterMaxEdge = NO_PORT;
+		int[] edges = factorFunction.getEdgesByIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex);
+		if (edges != null)	// Not all constants
+		{
+			_alphaParameterMinEdge = edges[0];
+			_alphaParameterMaxEdge = edges[edges.length - 1];
+		}
+
+		
+		// Save the output constant or variables as well
+		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
+		_numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
+		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
+		_constantOutputCounts = null;
+		_hasConstantOutput = null;
+		if (_hasConstantOutputs)
+		{
+			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
+			_dimension = _numOutputEdges + numConstantOutputs;
+			_hasConstantOutput = new boolean[_dimension];
+			_constantOutputCounts = new int[numConstantOutputs];
+			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
+			{
+				if (factorFunction.isConstantIndex(index))
+				{
+					_hasConstantOutput[i] = true;
+					_constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
+				}
+				else
+				{
+					_hasConstantOutput[i] = false;
+					int outputEdge = factorFunction.getEdgeByIndex(index);
+					_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				}
+			}
+		}
+		else	// No constant outputs
+		{
+			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
+			{
+				int outputEdge = factorFunction.getEdgeByIndex(index);
+				_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+			}
+		}
+	}
+	
+	
+	@Override
+	public void createMessages() 
+	{
+		super.createMessages();
+		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		_outputMsgs = new Object[_numPorts];
+		if (_alphaParameterMinEdge >= 0)
+			for (int port = _alphaParameterMinEdge; port <= _alphaParameterMaxEdge; port++)	// Only parameter edges
+				_outputMsgs[port] = new GammaParameters();
+	}
+	
+	@Override
+	public Object getOutputMsg(int portIndex) 
+	{
+		return _outputMsgs[portIndex];
+	}
+	
+	@Override
+	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	{
+		super.moveMessages(other, thisPortNum, otherPortNum);
+		_outputMsgs[thisPortNum] = ((CustomMultinomialUnnormalizedOrEnergyParameters)other)._outputMsgs[otherPortNum];
+	}
+}

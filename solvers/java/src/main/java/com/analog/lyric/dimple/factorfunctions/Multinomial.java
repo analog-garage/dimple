@@ -22,31 +22,39 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
 
 /**
- * Parameterized Binomial distribution, which corresponds to p(x | N, p),
- * where x is a count of the number of ones, N is the total count (ones and zeros),
- * and p is the probability parameter.
+ * Parameterized multinomial distribution, which corresponds to p(x | N, alpha),
+ * where x is a vector of discrete count variables, N is the total count across all categories, and
+ * where alpha is a RealJoint variable vector of (not necessarily normalized) probabilities.
  * 
- * The conjugate prior for p is a Beta distribution.
+ * The domain of each x variable must be a zero-based integer with maximum value N (domain 0 through N).
+ * If N is a variable rather than a constant, then the domain of each x must be range from 0 through
+ * the maximum value in the domain of N.
+ * 
+ * Representing alpha as described, the conjugate prior for alpha is
+ * a Dirichlet distribution.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
  * 
  * The variables in the argument list are ordered as follows:
  * 
- * 1) N: Parameter indicating the total count (ones and zeros)
- * 2) p: Probability parameter
- * 3) x: Count of ones
- * 
+ * 1) N: Parameter indicating the total count
+ * 2) Alpha: RealJoint variable containing probabilities
+ * 3...) x: A number of discrete count variable, where the number of variables
+ *    must equal the dimension of alpha
+ *
+ * N parameter may optionally be specified as a constant in the constructor.
+ * In this case, N is not included in the list of arguments.
  */
-public class Binomial extends FactorFunction
+public class Multinomial extends FactorFunction
 {
 	protected int _N;
 	protected double _negativeLogFactorialN;
 	protected boolean _NParameterConstant = false;
 	private int _firstDirectedToIndex = 2;
+
 	
-	
-	public Binomial() {super();}		// Variable N
-	public Binomial(int N)				// Fixed N
+	public Multinomial() {super();}		// Variable N
+	public Multinomial(int N)			// Fixed N
 	{
 		this();
 		_N = N;
@@ -56,7 +64,6 @@ public class Binomial extends FactorFunction
 		_firstDirectedToIndex = 1;
 	}
 
-	
     @Override
 	public double evalEnergy(Object... arguments)
     {
@@ -68,29 +75,34 @@ public class Binomial extends FactorFunction
     		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
     	}
     	
-    	double p = FactorFunctionUtilities.toDouble(arguments[index++]);			// Next argument is the probability parameter
-		if (p < 0 || p > 1) return Double.POSITIVE_INFINITY;
+    	double[] alpha = (double[])arguments[index++];		// Next argument is the probability parameter vector
+    	int dimension = alpha.length;
+    	
+    	if (arguments.length - index != dimension)
+    		throw new DimpleException("Number of count variables must equal the dimension of the parameter vector.");
 
-		int numOnes = FactorFunctionUtilities.toInteger(arguments[index++]);		// Next argument is the one-count
-		if (numOnes < 0 || numOnes > _N) return Double.POSITIVE_INFINITY;
-		int numZeros = _N - numOnes;
-		
 
-    	if (p == 0)
-    		if (numOnes > 0)
+    	int countSum = 0;
+    	double parameterSum = 0;
+    	double sum = _negativeLogFactorialN;
+    	for (int i = 0; i < dimension; i++)
+    	{
+    		double alphai = alpha[i];
+    		if (alphai < 0)
     			return Double.POSITIVE_INFINITY;
-    		else
-    			return 0;
-    	else if (p == 1)
-    		if (numZeros > 0)
+    		parameterSum += alphai;
+
+    		int x = FactorFunctionUtilities.toInteger(arguments[index++]);		// Remaining arguments are discrete count variables
+    		if (x < 0)
     			return Double.POSITIVE_INFINITY;
-    		else
-    			return 0;
-    	else
-    		return -(numOnes * Math.log(p) + numZeros * Math.log(1-p))
-    				+ _negativeLogFactorialN 
-    				+ org.apache.commons.math3.special.Gamma.logGamma(numOnes + 1)
-    				+ org.apache.commons.math3.special.Gamma.logGamma(numZeros + 1);
+    		countSum += x;
+    		
+    		sum += -x * Math.log(alphai) + org.apache.commons.math3.special.Gamma.logGamma(x + 1);
+    	}
+    	if (countSum != _N)
+			return Double.POSITIVE_INFINITY;
+    	
+    	return sum + _N * Math.log(parameterSum);
 	}
     
     @Override

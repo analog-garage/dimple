@@ -125,6 +125,12 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
+	public boolean hasConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		return numConstantsInIndexRange(minIndex, maxIndex) > 0;
+	}
+	
+	@Override
 	public final boolean hasConstantAtOrAboveIndex(int index)
 	{
 		return _largestConstantIndex >= index;
@@ -187,6 +193,22 @@ public class FactorFunctionWithConstants extends FactorFunction
 			int edgeOrConstant = _indexToEdgeOrConstant[index - _smallestConstantIndex];
 			return (edgeOrConstant < 0) ? NO_PORT : edgeOrConstant;				// Negative value is a constant (complement of the index)
 		}
+	}
+	
+	@Override
+	public int[] getEdgesByIndexRange(int minIndex, int maxIndex)
+	{
+		int numEdges = maxIndex - minIndex + 1 - numConstantsInIndexRange(minIndex, maxIndex);
+		if (numEdges < 1)
+			return null;
+		int[] edges = new int[numEdges];
+		for (int index = minIndex, i = 0; index <= maxIndex; index++)
+		{
+			int edge = getEdgeByIndex(index);
+			if (edge != NO_PORT)
+				edges[i++] = edge;
+		}
+		return edges;
 	}
 	
 	@Override

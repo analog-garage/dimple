@@ -457,6 +457,14 @@ public abstract class FactorFunction
 	}
 	
 	/**
+	 * Returns whether or not the index range corresponds to a constant
+	 * @since 0.06
+	 */
+	public boolean hasConstantsInIndexRange(int minIndex, int maxIndex)
+	{
+		return false;
+	}
+	/**
 	 * Returns whether or not the index corresponds to a constant
 	 * @since 0.05
 	 */
@@ -511,6 +519,18 @@ public abstract class FactorFunction
 	public int getEdgeByIndex(int index)
 	{
 		return index;
+	}
+	
+	/**
+	 * Return all edges within the range of indices specified
+	 * @since 0.06
+	 */
+	public int[] getEdgesByIndexRange(int minIndex, int maxIndex)
+	{
+		int[] edges = new int[maxIndex - minIndex + 1];
+		for (int i = minIndex; i <= maxIndex; i++)
+			edges[i] = i;
+		return edges;
 	}
 
 	/**

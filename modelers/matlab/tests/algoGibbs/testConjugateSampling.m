@@ -49,6 +49,9 @@ test18(debugPrint, repeatable);
 test19(debugPrint, repeatable);
 test20(debugPrint, repeatable);
 test21(debugPrint, repeatable);
+test22(debugPrint, repeatable);
+test23(debugPrint, repeatable);
+test24(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -1101,6 +1104,137 @@ assertElementsAlmostEqual(pEst/pExpected, 1, 'absolute', 0.02);
 assertElementsAlmostEqual(nnz(px)/length(px), pLikelihood, 'absolute', 0.01);
 
 end
+
+
+
+% Beta prior on Multinomial distribution, fixed N parameter
+function test22(debugPrint, repeatable)
+
+dim = 10;
+priorAlpha = ones(1,dim);
+xData = randi(100,1,dim)-1;
+N = sum(xData);
+expectedAlpha = xData/N;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+alpha = RealJoint(dim);
+alpha.Input = FactorFunction('Dirichlet',priorAlpha);
+
+% Use built-in constructor
+x = Multinomial(N, alpha);
+x.FixedValue = xData;
+
+assert(strcmp(alpha.Solver.getSamplerName,'DirichletSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+as = alpha.Solver.getAllSamples();
+
+aEst = mean(as,1);
+assertElementsAlmostEqual(aEst/expectedAlpha, 1, 'absolute', 0.01);
+
+end
+
+
+
+% Beta prior on MultinomialUnnormalizedParameters, fixed N parameter
+function test23(debugPrint, repeatable)
+
+dim = 10;
+priorAlpha = 1;
+xData = randi(100,1,dim)-1;
+N = sum(xData);
+expectedAlpha = xData/N;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+alpha = Real(1,dim);
+alpha.Input = FactorFunction('Gamma',priorAlpha,1);
+
+% Use built-in constructor
+x = Multinomial(N, alpha);
+x.FixedValue = xData;
+
+assert(strcmp(alpha(1).Solver.getSamplerName,'GammaSampler'));
+assert(strcmp(alpha(dim).Solver.getSamplerName,'GammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+as = cell2mat(alpha.invokeSolverMethodWithReturnValue('getAllSamples'));
+
+aEst = mean(as,1);
+aEst = aEst/sum(aEst);  % Normalize
+assertElementsAlmostEqual(aEst/expectedAlpha, 1, 'absolute', 0.01);
+
+end
+
+
+% Beta prior on MultinomialEnergyParameters, fixed N parameter
+function test24(debugPrint, repeatable)
+
+dim = 10;
+priorAlpha = 1;
+xData = randi(100,1,dim)-1;
+N = sum(xData);
+expectedAlpha = xData/N;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+alpha = Real(1,dim);
+alpha.Input = FactorFunction('NegativeExpGamma',priorAlpha,1);
+
+% Use built-in constructor
+x = MultinomialEnergyParameters(N, alpha);
+x.FixedValue = xData;
+
+assert(strcmp(alpha(1).Solver.getSamplerName,'NegativeExpGammaSampler'));
+assert(strcmp(alpha(dim).Solver.getSamplerName,'NegativeExpGammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+as = cell2mat(alpha.invokeSolverMethodWithReturnValue('getAllSamples'));
+
+as = exp(-as);    % Convert from energy values
+aEst = mean(as,1);
+aEst = aEst/sum(aEst);  % Normalize
+assertElementsAlmostEqual(aEst/expectedAlpha, 1, 'absolute', 0.01);
+
+end
+
 
 
 %********* UTILITIES ***************************************

@@ -524,6 +524,84 @@ for i=1:length(means);
     end
 end
 
+% Multinomial (variable N)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+f = FactorFunction('Multinomial');
+for j = 1:10
+    N = randi(1000);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([N, alpha, xc]), -log(mnpdf(x,alpha)));
+end
+
+% Multinomial (constant N)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+for j = 1:10
+    N = randi(1000);
+    f = FactorFunction('Multinomial', N);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([alpha, xc]), -log(mnpdf(x,alpha)));
+end
+
+% MultinomialEnergyParameters (variable N)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+alphaE = -log(alpha);
+f = FactorFunction('MultinomialEnergyParameters', dim);
+for j = 1:10
+    N = randi(1000);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    alphaEc = num2cell(alphaE);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([N, alphaEc, xc]), -log(mnpdf(x,alpha)));
+end
+
+% MultinomialEnergyParameters (constant N)
+dim = randi(100) + 10;
+alpha = rand(1,dim);
+alpha = alpha/sum(alpha);
+alphaE = -log(alpha);
+for j = 1:10
+    N = randi(1000);
+    f = FactorFunction('MultinomialEnergyParameters', dim, N);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    alphaEc = num2cell(alphaE);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([alphaEc, xc]), -log(mnpdf(x,alpha)));
+end
+
+% MultinomialUnnormalizedParameters (variable N)
+dim = randi(100) + 10;
+alphaU = rand(1,dim);
+alpha = alphaU/sum(alphaU);
+f = FactorFunction('MultinomialUnnormalizedParameters', dim);
+for j = 1:10
+    N = randi(1000);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    alphaUc = num2cell(alphaU);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([N, alphaUc, xc]), -log(mnpdf(x,alpha)));
+end
+
+% MultinomialUnnormalizedParameters (constant N)
+dim = randi(100) + 10;
+alphaU = rand(1,dim);
+alpha = alphaU/sum(alphaU);
+for j = 1:10
+    N = randi(1000);
+    f = FactorFunction('MultinomialUnnormalizedParameters', dim, N);
+    x = mnrnd(N,alpha);
+    xc = num2cell(x);
+    alphaUc = num2cell(alphaU);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy([alphaUc, xc]), -log(mnpdf(x,alpha)));
+end
+
 % MultivariateNormal (constant parameters)
 dims = num2cell(randi(10,1,10) + 10);
 means = cellfun(@(d)randn(d,1)*10, dims,'UniformOutput',false);

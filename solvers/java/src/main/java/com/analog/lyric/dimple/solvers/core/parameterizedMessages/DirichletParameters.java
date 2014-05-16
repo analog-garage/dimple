@@ -52,12 +52,12 @@ public class DirichletParameters implements IParameterizedMessage
 	public final void setSize(int size) {_alphaMinusOne = new double[size];}
 	
 	public final double getAlphaMinusOne(int index) {return _alphaMinusOne[index];}
-	public final void setAlphaMinusOne(double[] alpha)
+	public final void setAlphaMinusOne(double[] alphaMinusOne)
 	{ 
-		int length = alpha.length;
+		int length = alphaMinusOne.length;
 		if (_alphaMinusOne == null || length != _alphaMinusOne.length)
 			_alphaMinusOne = new double[length];
-		System.arraycopy(alpha, 0, _alphaMinusOne, 0, length);
+		System.arraycopy(alphaMinusOne, 0, _alphaMinusOne, 0, length);
 	}
 	public final void fillAlphaMinusOne(double alphaMinusOne)
 	{
@@ -94,4 +94,10 @@ public class DirichletParameters implements IParameterizedMessage
 	{
 		Arrays.fill(_alphaMinusOne, 0);
 	}
+	public final void setNull(int size)
+	{
+		setSize(size);	// Create the array if it isn't already there, or change the size
+		Arrays.fill(_alphaMinusOne, 0);
+	}
+
 }

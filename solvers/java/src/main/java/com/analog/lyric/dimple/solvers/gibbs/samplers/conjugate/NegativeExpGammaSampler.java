@@ -97,7 +97,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 		@Override
 		public boolean isCompatible(RealDomain domain)
 		{
-			return (domain.getLowerBound() == Double.POSITIVE_INFINITY) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
+			return (domain.getLowerBound() == Double.NEGATIVE_INFINITY) && (domain.getUpperBound() == Double.POSITIVE_INFINITY);
 		}
 
 	};
