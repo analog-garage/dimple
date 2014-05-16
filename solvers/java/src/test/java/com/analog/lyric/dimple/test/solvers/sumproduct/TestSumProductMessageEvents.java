@@ -20,6 +20,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import com.analog.lyric.dimple.factorfunctions.FiniteFieldAdd;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -27,8 +28,10 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
@@ -76,6 +79,54 @@ public class TestSumProductMessageEvents
 			Factor factor = factors[i] = model.addFactor(table, v1, v2);
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
+		
+		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
+		
+		//
+		// Test events
+		//
+		
+		TestMessageUpdateEventHandler handler = TestMessageUpdateEventHandler.setUpListener(solver);
+		
+		handler.testNodeSchedule(solver);
+		handler.testEdgeSchedule(solver);
+		
+	}
+	
+	@Test
+	public void testFiniteField()
+	{
+		//
+		// Set up model/solver
+		//
+		
+		final int n = 4;
+		final FiniteFieldDomain domain = DiscreteDomain.finiteField(0x2f);
+		final FactorGraph model = new FactorGraph();
+		final Discrete[] vars = new Discrete[n];
+		for (int i = 0; i < n; ++i)
+		{
+			Discrete var = new FiniteFieldVariable(domain);
+			var.setName("var" + i);
+			vars[i] = var;
+		}
+		model.addVariables(vars);
+		
+		final Factor[] factors = new Factor[n];
+		for (int i = 0; i < n; ++i)
+		{
+			IFactorTable table = FactorTable.create(domain,domain);
+			table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
+			table.randomizeWeights(_rand);
+			
+			int j = (i + 1) % n;
+			Discrete v1 = vars[i], v2 = vars[j];
+			Factor factor = factors[i] = model.addFactor(table, v1, v2);
+			factor.setName(String.format("factor%d-%d",i,j));
+		}
+		
+		Factor factor = model.addFactor(new FiniteFieldAdd(), vars[0], vars[1], vars[2]);
+		factor.setName("ff-add");
 		
 		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
 		
@@ -169,4 +220,5 @@ public class TestSumProductMessageEvents
 		handler.testNodeSchedule(solver);
 		handler.testEdgeSchedule(solver);
 	}
+	
 }

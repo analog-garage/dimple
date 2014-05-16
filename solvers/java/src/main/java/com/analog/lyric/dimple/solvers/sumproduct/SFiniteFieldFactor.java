@@ -3,6 +3,8 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 /*******************************************************************************
@@ -82,4 +84,19 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	    _outputMsgs[thisPortNum] = sother._outputMsgs[otherPortNum];
 	}
 
+	/*---------------
+	 * SNode methods
+	 */
+	
+	@Override
+	public DiscreteMessage cloneMessage(int edge)
+	{
+		return new DiscreteWeightMessage(_outputMsgs[edge]);
+	}
+	
+	@Override
+	public boolean supportsMessageEvents()
+	{
+		return true;
+	}
 }
