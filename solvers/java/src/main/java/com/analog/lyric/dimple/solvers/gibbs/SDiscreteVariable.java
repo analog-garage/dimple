@@ -106,8 +106,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	protected
-	final void doUpdate()
+	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
 		if (_var.isDeterministicOutput()) return;
@@ -659,6 +658,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_sampler = GenericSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 			}
+	@Override
 	public final ISampler getSampler()
 			{
 		if (!_samplerSpecificallySpecified)

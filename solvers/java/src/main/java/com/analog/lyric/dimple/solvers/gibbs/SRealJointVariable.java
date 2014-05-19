@@ -137,8 +137,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	}
 
 	@Override
-	protected
-	final void doUpdate()
+	public final void update()
 	{
 		// Don't bother to re-sample deterministic dependent variables (those that are the output of a directional deterministic factor)
 		if (getModelObject().isDeterministicOutput()) return;
@@ -800,6 +799,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		_sampler = (IMCMCSampler)GenericSamplerRegistry.get(samplerName);
 		_samplerSpecificallySpecified = true;
 	}
+	@Override
 	public final ISampler getSampler()
 	{
 		if (_samplerSpecificallySpecified)
