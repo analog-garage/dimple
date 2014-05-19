@@ -44,7 +44,7 @@ public class Poisson extends FactorFunction
 
 	//Declaring variables
 	protected int _y;
-	protected int _n;
+	protected double _n;
 	//protected double _cutoff;
 	protected double _negativeLogFactorialy;
 	protected double _Logn;
@@ -78,7 +78,7 @@ public class Poisson extends FactorFunction
 		}
 		
 		//Second argument of the factor: n
-		_n=FactorFunctionUtilities.toInteger(arguments[index++]);
+		_n=FactorFunctionUtilities.toDouble(arguments[index++]);
 		_Logn = Math.log(_n);
 		if (_n < 0) return Double.POSITIVE_INFINITY;
 		if (_n > 0)
