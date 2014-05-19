@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.model.variables.RealJoint;
 
 /**
  * Event raised when variable sample is changed by Gibbs solver.
@@ -40,29 +41,53 @@ public class GibbsVariableUpdateEvent extends GibbsSolverVariableEvent
 
 	private final Value _oldValue;
 	private final Value _newValue;
+	private final int _rejectCount;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	GibbsVariableUpdateEvent(ISolverVariableGibbs source, Value oldValue, Value newValue)
+	GibbsVariableUpdateEvent(ISolverVariableGibbs source, Value oldValue, Value newValue, int rejectCount)
 	{
 		super(source);
 		_oldValue = oldValue.clone();
 		_newValue = newValue.clone();
+		_rejectCount = rejectCount;
 	}
 	
 	/*----------------------------------
 	 * GibbsVariableUpdateEvent methods
 	 */
 	
+	/**
+	 * A copy of the value of the variable prior to Gibbs update.
+	 * @since 0.06
+	 */
 	public Value getOldValue()
 	{
 		return _oldValue;
 	}
 	
+	/**
+	 * A copy of the value of the variable after Gibbs update.
+	 * @since 0.06
+	 */
 	public Value getNewValue()
 	{
 		return _newValue;
+	}
+	
+	/**
+	 * The number of components of the sample for this variable that were rejected
+	 * during the generation of the sample. For single-dimension variables
+	 * this will always be either zero or one. And some samplers will never reject. For
+	 * {@link RealJoint} variables, this will be a value from zero up to the size of the
+	 * joint domain.
+	 * <p>
+	 * @since 0.06
+	 */
+	public int getRejectCount()
+	{
+		return _rejectCount;
 	}
 }

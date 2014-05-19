@@ -42,9 +42,10 @@ public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
 	GibbsScoredVariableUpdateEvent(
 		ISolverVariableGibbs source,
 		Value oldValue, double oldSampleScore,
-		Value newValue, double newSampleScore)
+		Value newValue, double newSampleScore,
+		int rejectCount)
 	{
-		super(source, oldValue, newValue);
+		super(source, oldValue, newValue, rejectCount);
 		_oldSampleScore = oldSampleScore;
 		_newSampleScore = newSampleScore;
 	}

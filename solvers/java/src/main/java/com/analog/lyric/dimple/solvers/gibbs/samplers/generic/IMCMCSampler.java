@@ -20,5 +20,13 @@ import com.analog.lyric.dimple.model.values.Value;
 
 public interface IMCMCSampler extends IGenericSampler
 {
-	public void nextSample(Value sampleValue, ISamplerClient samplerClient);
+	/**
+	 * Generate a new sample value.
+	 * 
+	 * @param sampleValue
+	 * @param samplerClient
+	 * @return true if a new sample was generated. False if sample was rejected.
+	 * @since 0.06 - boolean return added
+	 */
+	public boolean nextSample(Value sampleValue, ISamplerClient samplerClient);
 }

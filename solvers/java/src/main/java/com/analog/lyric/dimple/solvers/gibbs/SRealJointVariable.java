@@ -164,6 +164,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		}
 
 		// Get the next sample value from the sampler
+		int rejectCount = 0;
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
@@ -172,7 +173,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			{
 				_tempIndex = i;		// Save this to be used by the call-back from sampler
 				nextSample.setDouble(_sampleValue[i]);
-				_sampler.nextSample(nextSample, this);
+				if (!_sampler.nextSample(nextSample, this))
+				{
+					++rejectCount;
+				}
 			}
 		}
 		else
@@ -197,10 +201,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
 			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
-				_outputMsg.clone(), getCurrentSampleScore()));
+				_outputMsg.clone(), getCurrentSampleScore(), rejectCount));
 			break;
 		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone(), rejectCount));
 			break;
 		}
 	}

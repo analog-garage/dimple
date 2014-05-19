@@ -164,11 +164,12 @@ public class SRealVariable extends SRealVariableBase
 		}
 
 		// Get the next sample value from the sampler
+		boolean rejected = false;
 		if (_conjugateSampler == null)
 		{
 			// Use MCMC sampler
 			RealValue nextSample = RealValue.create(_sampleValue);
-			_sampler.nextSample(nextSample, this);
+			rejected = !_sampler.nextSample(nextSample, this);
 		}
 		else
 		{
@@ -194,10 +195,10 @@ public class SRealVariable extends SRealVariableBase
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
 			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
-				RealValue.create(_sampleValue), getCurrentSampleScore()));
+				RealValue.create(_sampleValue), getCurrentSampleScore(), rejected ? 1 : 0));
 			break;
 		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, RealValue.create(_sampleValue)));
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, RealValue.create(_sampleValue), rejected ? 1 : 0));
 			break;
 		}
 	}

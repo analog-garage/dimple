@@ -32,11 +32,12 @@ public class SliceSampler implements IMCMCSampler
 	}
 	
 	@Override
-	public void nextSample(Value sampleValue, ISamplerClient samplerClient)
+	public boolean nextSample(Value sampleValue, ISamplerClient samplerClient)
 	{
 		final double y = sampleVerticalSlice(samplerClient);
 		final double x = sampleHorizontalSlice(sampleValue.getDouble(), y, (IRealSamplerClient)samplerClient);
 		((IRealSamplerClient)samplerClient).setNextSampleValue(x);
+		return true;
 	}
 
 	// Sample vertical slice in log domain

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.ISamplerClient;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
@@ -36,6 +37,13 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	public void setBeta(double beta);
 	@Override
 	public double getPotential();
+
+	/**
+	 * Sampler instance for generating samples for this variable.
+	 * 
+	 * @since 0.06
+	 */
+	public ISampler getSampler();
 	
 	/**
 	 * Returns an iterator over the nodes other than this variable node that should be

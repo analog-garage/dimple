@@ -30,6 +30,8 @@ import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.domains.Domain;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -190,7 +192,7 @@ public class TestGibbsVariableUpdateEvent
 		sgraph.sample();
 		double score = sgraph.getTotalPotential();
 		double scoreDifference = assertEvents(handler, GibbsScoredVariableUpdateEvent.class, sd1, sr1, sc1);
-		assertEquals(score - prevScore, scoreDifference, 1e-15);
+		assertEquals(score - prevScore, scoreDifference, 1e-14);
 		listener.unregisterAll();
 		sd1.notifyListenerChanged();
 		sr1.notifyListenerChanged();
@@ -217,9 +219,37 @@ public class TestGibbsVariableUpdateEvent
 			assertSame(expectedClass, event.getClass());
 			assertSame(sources[i], event.getSource());
 			
+			final int rejectCount = event.getRejectCount();
+			final Domain domain = event.getSource().getDomain();
+			final RealJointDomain jointDomain = domain.asRealJoint();
+			
+			assertTrue(rejectCount >= 0);
+			boolean fullyRejected = false;
+			if (jointDomain != null)
+			{
+				final int n = jointDomain.getDimensions();
+				assertTrue(rejectCount <= n);
+				fullyRejected = rejectCount == n;
+			}
+			else
+			{
+				assertTrue(rejectCount <= 1);
+				fullyRejected = rejectCount == 1;
+			}
+			
+			if (fullyRejected)
+			{
+				assertTrue(event.getOldValue().valueEquals(event.getNewValue()));
+			}
+			
 			if (event instanceof GibbsScoredVariableUpdateEvent)
 			{
-				scoreDifference += ((GibbsScoredVariableUpdateEvent)event).getScoreDifference();
+				final double eventScoreDifference = ((GibbsScoredVariableUpdateEvent)event).getScoreDifference();
+				scoreDifference += eventScoreDifference;
+				if (fullyRejected)
+				{
+					assertEquals(eventScoreDifference, 0.0, 0.0);
+				}
 			}
 		}
 		handler.events.clear();

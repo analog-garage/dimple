@@ -187,20 +187,21 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		}
 		
 		// Sample from the conditional distribution
+		boolean rejected = false;
 		if (_sampler instanceof IDiscreteDirectSampler)
 			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg.clone(), _conditional, minEnergy, this);
 		else if (_sampler instanceof IMCMCSampler)
-			((IMCMCSampler)_sampler).nextSample(_outputMsg.clone(), this);
+			rejected = !((IMCMCSampler)_sampler).nextSample(_outputMsg.clone(), this);
 
 		switch (updateEventFlags)
 		{
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
 			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
-				_outputMsg.clone(), getCurrentSampleScore()));
+				_outputMsg.clone(), getCurrentSampleScore(), rejected ? 1 : 0));
 			break;
 		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone()));
+			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone(), rejected ? 1 : 0));
 			break;
 		}
 	}

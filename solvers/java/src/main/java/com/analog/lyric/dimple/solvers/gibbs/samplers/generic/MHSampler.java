@@ -44,7 +44,7 @@ public class MHSampler implements IMCMCSampler
 	}
 	
 	@Override
-	public void nextSample(Value sampleValue, ISamplerClient samplerClient)
+	public boolean nextSample(Value sampleValue, ISamplerClient samplerClient)
 	{
 		final Proposal proposal = _proposalKernel.next(sampleValue, samplerClient.getDomain());
 		final Value proposalValue = proposal.value;
@@ -66,9 +66,15 @@ public class MHSampler implements IMCMCSampler
 				rejectionThreshold = 0;
 		}
 		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		{
 			samplerClient.setNextSampleValue(proposalValue);		// Accept
+			return true;
+		}
 		else
+		{
 			samplerClient.setNextSampleValue(sampleValue);			// Reject
+			return false;
+		}
 	}
 
 
