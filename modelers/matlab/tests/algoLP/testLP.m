@@ -3,13 +3,13 @@ function testLP()
     dtrace(bLog, '++testLP');
     
     if (isempty(ver('optim')))
-        dtrace(true, 'WARNING: testLP was skipped because optimization toolbox not installed');
+        dtrace(true, 'WARNING: testLP was skipped because Optimization Toolbox not installed');
         return;
     end
     
     [hasLicense err] = license('checkout', 'optimization_toolbox');
     if ~hasLicense
-        dtrace(true, 'WARNING: testLP was skipped because optimization toolbox license could not be obtained');
+        dtrace(true, 'WARNING: testLP was skipped because Optimization Toolbox license could not be obtained');
         return;
     end
     

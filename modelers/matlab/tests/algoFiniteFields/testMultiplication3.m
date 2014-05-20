@@ -17,7 +17,10 @@
 function testMultiplication3
     
     % Skip this test if the Communications Toolbox is unavailable.
-    if isempty(which('gf')), return; end
+    if isempty(which('gf'))
+        dtrace(true, 'WARNING: testMultiplication3 was skipped because Communications Toolbox not installed');
+        return;
+    end
     
     %{
     Set uniform priors on 1,w,w^2, for X and Y.  Output should be

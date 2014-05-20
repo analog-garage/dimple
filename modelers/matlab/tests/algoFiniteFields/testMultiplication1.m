@@ -17,7 +17,10 @@
 function testMultiplication1()
 
     % Skip this test if the Communications Toolbox is unavailable.
-    if isempty(which('gf')), return; end
+    if isempty(which('gf'))
+        dtrace(true, 'WARNING: testMultiplication1 was skipped because Communications Toolbox not installed');
+        return;
+    end
     
     m = 3;
 

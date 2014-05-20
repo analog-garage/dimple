@@ -50,13 +50,13 @@ function testDemos()
     %% 02_LDPC
     skipLDPC = false;
     if (isempty(ver('comm')))
-        dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because communications system toolbox not installed');
+        dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Communications Toolbox not installed');
         skipLDPC = true;
     else
     
         [hasLicense err] = license('checkout', 'communication_toolbox');
         if ~hasLicense
-            dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because communications system toolbox license could not be obtained');
+            dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Communications Toolbox license could not be obtained');
             skipLDPC = true;
         end
     end

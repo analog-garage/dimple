@@ -17,7 +17,10 @@
 function testFiniteField()
 
 % Skip this test if the Communications Toolbox is unavailable.
-if isempty(which('gf')), return; end
+if isempty(which('gf'))
+    dtrace(true, 'WARNING: testFiniteField was skipped because Communications Toolbox not installed');
+    return;
+end
 
 debugPrint = false;
 repeatable = true;

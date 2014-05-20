@@ -18,13 +18,13 @@ function testRealDistributions()
 
 % Skip this test if the Statistics Toolbox is unavailable.
 if (isempty(ver('stats')))
-    dtrace(true, 'WARNING: testRealDistributions was skipped because statistics toolbox not installed');
+    dtrace(true, 'WARNING: testRealDistributions was skipped because Statistics Toolbox not installed');
     return;
 end
 
 [hasLicense err] = license('checkout', 'statistics_toolbox');
 if ~hasLicense
-    dtrace(true, 'WARNING: testRealDistributions was skipped because statistics toolbox license could not be obtained');
+    dtrace(true, 'WARNING: testRealDistributions was skipped because Statistics Toolbox license could not be obtained');
     return;
 end
 
