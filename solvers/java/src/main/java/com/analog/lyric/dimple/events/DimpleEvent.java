@@ -76,6 +76,8 @@ public abstract class DimpleEvent extends EventObject
 	 * <p>
 	 * This should be non-null for a freshly generated event, but will not be preserved
 	 * by serialization (i.e. it will be null on a deserialized instance).
+	 * <p>
+	 * @see #getSourceName()
 	 */
 	@Override
 	public IDimpleEventSource getSource()
@@ -119,6 +121,15 @@ public abstract class DimpleEvent extends EventObject
 	 */
 	public abstract IModelEventSource getModelObject();
 	
+	/**
+	 * The name of the event source.
+	 * <p>
+	 * Returns value of {@link IDimpleEventSource#getEventSourceName()} for
+	 * source returned by {@link #getSource()}, but unlike the source itself
+	 * this value is preserved by serialization.
+	 * <p>
+	 * @since 0.06
+	 */
 	public String getSourceName()
 	{
 		String name = _eventSourceName;

@@ -27,7 +27,12 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 
-
+/**
+ * Base interface for model components.
+ * 
+ * @since 0.06 - extends {@link IModelEventSource}.
+ * @author Christopher Barber
+ */
 public interface INode  extends INameable, IModelEventSource
 {
 	/**
