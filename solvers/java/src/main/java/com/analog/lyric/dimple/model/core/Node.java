@@ -28,6 +28,7 @@ import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
+import com.analog.lyric.dimple.events.DimpleEvent;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -47,18 +48,20 @@ public abstract class Node implements INode, Cloneable
     /**
      * {@link #_topologicalFlags} value used by {@link #isMarked()}
      */
-	private static final byte MARKED = 0x01;
+	private static final int MARKED = 0x10000000;
 	
 	/**
 	 * {@link #_topologicalFlags} value used by {@link #wasVisited()}
 	 */
-	private static final byte VISITED = 0x02;
+	private static final int VISITED = 0x20000000;
 	
 	/**
 	 * Flags that are reserved for use by this class and should not be
 	 * used by subclasses when invoking {@link #setFlags(int)} or {@link #clearFlags()}.
 	 */
-	protected static final int RESERVED = 0xFFFFFF03;
+	protected static final int RESERVED = 0xFF000000;
+	
+	
 	
 	/*-------
 	 * State
@@ -78,7 +81,7 @@ public abstract class Node implements INode, Cloneable
 	 * <p>
 	 * The flags are automatically cleared by {@link #initialize()}.
 	 */
-	private byte _flags;
+	protected int _flags;
 	
 	/**
 	 * Maps sibling index to the inverse index from the corresponding sibling
@@ -192,7 +195,8 @@ public abstract class Node implements INode, Cloneable
 	@Override
 	public IDimpleEventListener getEventListener()
 	{
-		return getRootGraph().getEventListener();
+		FactorGraph fg = getContainingGraph();
+		return fg != null ? fg.getEventListener() : null;
 	}
 	
 	@Override
@@ -220,6 +224,9 @@ public abstract class Node implements INode, Cloneable
     	clearFlags(getEventMask());
     }
 
+    /*----------------------------
+     * IDimpleEventSource methods
+     */
 	/*---------------
 	 * INode methods
 	 */
@@ -798,7 +805,7 @@ public abstract class Node implements INode, Cloneable
 	 */
 	protected void clearFlags(int mask)
 	{
-		_flags = (byte) BitSetUtil.clearMask(_flags, mask);
+		_flags = BitSetUtil.clearMask(_flags, mask);
 	}
 	
 	protected void clearSiblings()
@@ -834,6 +841,20 @@ public abstract class Node implements INode, Cloneable
 		return BitSetUtil.isMaskSet(_flags, mask);
 	}
 	
+	protected final boolean raiseEvent(DimpleEvent event)
+	{
+		if (event != null)
+		{
+			IDimpleEventListener listener = getEventListener();
+			if (listener != null)
+			{
+				listener.raiseEvent(event);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	protected void replaceSibling(INode oldNode, INode newNode)
 	{
 		if (oldNode != newNode)
@@ -857,11 +878,20 @@ public abstract class Node implements INode, Cloneable
 	 * <p>
 	 * Subclasses should not use bits in the {@link #RESERVED} mask.
 	 */
-	protected void setFlags(int mask)
+	protected final void setFlags(int mask)
 	{
-		_flags = (byte) BitSetUtil.setMask(_flags, mask);
+		_flags = BitSetUtil.setMask(_flags, mask);
 	}
 	
+	/**
+	 * Sets bits of flag specified by {@code mask} to {@code value}.
+	 */
+	@Internal
+	protected final void setFlagValue(int mask, int value)
+	{
+		_flags = BitSetUtil.setMaskedValue(_flags, mask, value);
+	}
+
 	/*-----------------
 	 * Private methods
 	 */

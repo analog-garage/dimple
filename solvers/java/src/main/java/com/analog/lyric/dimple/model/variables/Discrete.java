@@ -93,12 +93,6 @@ public class Discrete extends VariableBase
     }
     
     @Override
-	protected void setFixedValueObject(Object value, boolean leaveInput)
-	{
-    	super.setFixedValueObject(value, leaveInput);
-	}
-
-    @Override
     public Object getInputObject()
     {
     	Object tmp = super.getInputObject();
@@ -227,11 +221,8 @@ public class Discrete extends VariableBase
 	{
 		// In case the solver doesn't directly support fixed-values, convert the fixed-value to an input
 		double[] input = new double[getDiscreteDomain().size()];
-		Arrays.fill(input, 0);
 		input[fixedValueIndex] = 1;
-		_input = input;
-		setFixedValueObject(fixedValueIndex,true);
-		_input = input;
+		setInputOrFixedValue(fixedValueIndex, input);
 		
 	}
 	public void setFixedValue(Object fixedValue)

@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.analog.lyric.dimple.events.IDataEventSource;
+import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -37,7 +39,7 @@ import com.google.common.primitives.Ints;
 
 
 
-public abstract class VariableBase extends Node implements Cloneable
+public abstract class VariableBase extends Node implements Cloneable, IDataEventSource
 {
 	/*-----------
 	 * Constants
@@ -51,7 +53,17 @@ public abstract class VariableBase extends Node implements Cloneable
 	 * {@link #_topologicalFlags} value used by {@link #isDeterministicOutput()}
 	 */
     private static final byte DETERMINISTIC_OUTPUT = 0x08;
-
+    
+    protected static final int RESERVED_FLAGS         = 0xFFFF0000;
+    
+    private static final int EVENT_MASK               = 0x00070000;
+    
+    private static final int CHANGE_EVENT_KNOWN       = 0x00010000;
+    private static final int FIXED_VALUE_CHANGE_EVENT = 0x00020000;
+    private static final int INPUT_CHANGE_EVENT       = 0x00040000;
+    private static final int CHANGE_EVENT_MASK        = 0x00070000;
+    private static final int NO_CHANGE_EVENT          = 0x00010000;
+    
     /*-------
 	 * State
 	 */
@@ -216,6 +228,16 @@ public abstract class VariableBase extends Node implements Cloneable
 		_solverVariable.updateEdge(outPortNum);
 	}
 
+	/*--------------
+	 * Node methods
+	 */
+	
+	@Override
+	protected int getEventMask()
+	{
+		return super.getEventMask() | EVENT_MASK;
+	}
+	
 	/*----------------------
 	 * VariableBase methods
 	 */
@@ -349,28 +371,17 @@ public abstract class VariableBase extends Node implements Cloneable
 		return _fixedValue;
 	}
 	
+	// FIXME: we do not allow null values in any currently supported domain, so we should make
+	// setting this to null the same as removing the fixed value
 	public void setFixedValueObject(Object value)
 	{
-		setFixedValueObject(value,false);
+		setInputOrFixedValue(value, null);
 	}
 	
-	protected void setFixedValueObject(Object value,boolean leaveInput)
-	{
-		_hasFixedValue = true;
-		if (!leaveInput)
-			_input = null;
-		_fixedValue = value;
-		inputOrFixedValueChanged();
-	}
-
     public void setInputObject(Object value)
     {
-    	_hasFixedValue = false;		// In case the value had previously been fixed, then un-fix it
-    	_input = value;
-    	_fixedValue = null;
-    	inputOrFixedValueChanged();
+    	setInputOrFixedValue(null, value);
     }
-    
     
     // For setting the variable to a fixed value in lieu of an input
 	public final boolean hasFixedValue()
@@ -572,10 +583,62 @@ public abstract class VariableBase extends Node implements Cloneable
 			throw new DimpleException("solver must be set before performing this action.");
 	}
 	
-	private void inputOrFixedValueChanged()
-	{
-		if (_solverVariable != null)
-    		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
-		
-	}
+    protected final void setInputOrFixedValue(Object newFixedValue, Object newInput)
+    {
+    	final boolean fixedValue = newFixedValue != null;
+    	final Object prevInput = _input;
+    	final Object prevFixedValue = _fixedValue;
+    	final boolean hadFixedValue = _hasFixedValue;
+    	
+    	_hasFixedValue = fixedValue;
+    	_fixedValue = newFixedValue;
+    	_input = newInput;
+    	
+    	if (_solverVariable != null)
+			_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+    
+    	final int eventFlags = getChangeEventFlags();
+    	
+    	if (eventFlags != NO_CHANGE_EVENT)
+    	{
+    		if ((eventFlags & FIXED_VALUE_CHANGE_EVENT) != 0 &&
+    			(fixedValue || hadFixedValue))
+    		{
+    			raiseEvent(new VariableFixedValueChangeEvent(this, prevFixedValue, _fixedValue));
+    		}
+    		if ((eventFlags & INPUT_CHANGE_EVENT) != 0 && prevInput != _input)
+    		{
+    			raiseEvent(new VariableInputChangeEvent(this, prevInput, _input));
+    		}
+    	}
+    }
+    
+    private int getChangeEventFlags()
+    {
+    	final int prevFlags = _flags & CHANGE_EVENT_MASK;
+    	
+    	if ((prevFlags & CHANGE_EVENT_KNOWN) != 0)
+    	{
+    		return prevFlags;
+    	}
+    	
+    	int flags = 0;
+    	
+    	final IDimpleEventListener listener = getEventListener();
+    	if (listener != null)
+    	{
+    		if (listener.isListeningFor(VariableInputChangeEvent.class, this))
+    		{
+    			flags |= INPUT_CHANGE_EVENT;
+    		}
+    		if (listener.isListeningFor(VariableFixedValueChangeEvent.class, this))
+    		{
+    			flags |= FIXED_VALUE_CHANGE_EVENT;
+    		}
+    	}
+
+    	setFlagValue(CHANGE_EVENT_MASK, flags);
+    
+		return flags;
+    }
 }
