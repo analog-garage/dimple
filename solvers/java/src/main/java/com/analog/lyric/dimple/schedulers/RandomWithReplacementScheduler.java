@@ -40,16 +40,8 @@ import com.analog.lyric.dimple.schedulers.schedule.RandomWithReplacementSchedule
  */
 public class RandomWithReplacementScheduler implements IScheduler
 {
-	protected Random _rand = new Random();
-
 	public ISchedule createSchedule(FactorGraph g) 
 	{
-		return new RandomWithReplacementSchedule(g, _rand);
-	}
-	
-	// Optionally set the seed for the random generator
-	public void setSeed(long seed)
-	{
-		_rand.setSeed(seed);
+		return new RandomWithReplacementSchedule(g);
 	}
 }

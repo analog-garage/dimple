@@ -34,12 +34,12 @@ if (isa(N,'VariableBase'))
     varDomain = 0:maxN; % N is variable, so output can range from 0 to maximum possible value of N
     var = Discrete(varDomain, outSize{:});
     
-    fg.addFactorVectorized('Binomial', {N,[]}, {p,[]}, var);
+    fg.addFactorVectorized('Binomial', N, p, var);
 else
     varDomain = 0:N;    % N is constant, so output can range from 0 to N
     var = Discrete(varDomain, outSize{:});
     
-    fg.addFactorVectorized({'Binomial', N}, {p,[]}, var);
+    fg.addFactorVectorized({'Binomial', N}, p, var);
 end
 
 end

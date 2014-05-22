@@ -528,8 +528,8 @@ public abstract class FactorFunction
 	public int[] getEdgesByIndexRange(int minIndex, int maxIndex)
 	{
 		int[] edges = new int[maxIndex - minIndex + 1];
-		for (int i = minIndex; i <= maxIndex; i++)
-			edges[i] = i;
+		for (int i = 0, index = minIndex; index <= maxIndex; i++, index++)
+			edges[i] = index;
 		return edges;
 	}
 

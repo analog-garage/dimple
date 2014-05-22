@@ -113,7 +113,14 @@ public class BlockMHSampler implements ISampler, IBlockUpdater
 
 
 		// Accept or reject
-		final double rejectionThreshold = Math.exp(LPrevious - LProposed + proposal.hastingsTerm);
+		double rejectionThreshold = Math.exp(LPrevious - LProposed + proposal.forwardEnergy - proposal.reverseEnergy);
+		if (Double.isNaN(rejectionThreshold))	// Account for invalid forward or reverse proposals
+		{
+			if (LProposed != Double.POSITIVE_INFINITY && proposal.forwardEnergy != Double.POSITIVE_INFINITY)
+				rejectionThreshold = Double.POSITIVE_INFINITY;
+			else
+				rejectionThreshold = 0;
+		}
 		if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 			setNextSampleValue(proposalValue);		// Accept
 		else

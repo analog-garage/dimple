@@ -24,32 +24,46 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.schedulers.IGibbsScheduler;
+import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.SRealVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 
-public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
+public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
 	private Object[] _outputMsgs;
 	private SDiscreteVariable[] _outputVariables;
+	private SDiscreteVariable _NVariable;
+	private SRealVariable[] _alphaVariables;
 	private FactorFunction _factorFunction;
 	private int _dimension;
 	private int _alphaParameterMinIndex;
 	private int _alphaParameterMinEdge;
 	private int _alphaParameterMaxEdge;
 	private int _numOutputEdges;
+	private int _constantN;
 	private int[] _constantOutputCounts;
+	private boolean _hasConstantN;
 	private boolean _hasConstantOutputs;
 	private boolean[] _hasConstantOutput;
+	private boolean _hasConstantAlphas;
+	private boolean[] _hasConstantAlpha;
+	private double[] _constantAlpha;
 	private boolean _useEnergyParameters;
 	private static final int NO_PORT = -1;
 	private static final int ALPHA_PARAMETER_MIN_INDEX_FIXED_N = 0;	// If N is in constructor then alpha is first index (0)
+	private static final int N_PARAMETER_INDEX = 0;					// If N is not in constructor then N is the first index (0)
 	private static final int ALPHA_PARAMETER_MIN_INDEX = 1;			// If N is not in constructor then alpha is second index (1)
 
 	public CustomMultinomialUnnormalizedOrEnergyParameters(Factor factor)
@@ -75,8 +89,8 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			// Get the count from the corresponding output
 			int count = _hasConstantOutputs ? _constantOutputCounts[parameterOffset] : _outputVariables[parameterOffset].getCurrentSampleIndex();
 						
-			outputMsg.setAlpha(count);		// Sample alpha
-			outputMsg.setBeta(0);			// Sample beta
+			outputMsg.setAlphaMinusOne(count);		// Sample alpha
+			outputMsg.setBeta(0);					// Sample beta
 		}
 		else
 			super.updateEdgeMessage(portNum);
@@ -101,16 +115,69 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		return (portNumber >= _alphaParameterMinEdge && portNumber <= _alphaParameterMaxEdge);
 	}
 
+
+	// For MultinomialBlockProposal.ICustomMultinomial interface
+	public final double[] getCurrentAlpha()
+	{
+		double[] alphas = new double[_dimension];
+		if (_hasConstantAlphas)
+		{
+			for (int i = 0; i < _dimension; i++)
+				alphas[i] = _hasConstantAlpha[i] ? _constantAlpha[i] : _alphaVariables[i].getCurrentSample();
+		}
+		else	// Only variable alphas
+		{
+			for (int i = 0; i < _dimension; i++)
+				alphas[i] = _alphaVariables[i].getCurrentSample();
+		}
+
+		return alphas;
+	}
+	public final boolean isAlphaEnergyRepresentation()
+	{
+		return _useEnergyParameters;
+	}
+	public final boolean hasConstantN()
+	{
+		return _hasConstantN;
+	}
+	public final int getN()
+	{
+		return _constantN;
+	}
+
 	
 	
 	@Override
 	public void initialize()
 	{
 		super.initialize();
-				
+		
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
+		
+		
+		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
+		MultinomialBlockProposal proposalKernel = new MultinomialBlockProposal(this);
+		INode[] nodeList = new INode[_outputVariables.length + (_hasConstantN ? 0 : 1)];
+		int nodeIndex = 0;
+		if (!_hasConstantN)
+			nodeList[nodeIndex++] = _NVariable.getModelObject();
+		for (int i = 0; i < _outputVariables.length; i++, nodeIndex++)
+			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
+		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(new BlockMHSampler(proposalKernel), nodeList);
+		
+		// Add the block updater to the scheduler
+		// FIXME: This only works if scheduler is explicitly set; doesn't work if using default Gibbs scheduler
+		// FIXME: Also should work with custom schedule
+		IScheduler scheduler = _factor.getRootGraph().getAssociatedScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
+		if (scheduler != null && scheduler instanceof IGibbsScheduler)
+			((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
+			
+		// Use the block schedule entry to initialize the neighboring variables
+		// FIXME: Doesn't work if alpha is unninitialized
+//		blockScheduleEntry.update();
 	}
 	
 	
@@ -125,6 +192,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			MultinomialUnnormalizedParameters specificFactorFunction = (MultinomialUnnormalizedParameters)containedFactorFunction;
 			hasFactorFunctionConstructorConstantN = specificFactorFunction.hasConstantNParameter();
 			_dimension = specificFactorFunction.getDimension();
+			_constantN = specificFactorFunction.getN();
 			_useEnergyParameters = false;
 		}
 		else if (containedFactorFunction instanceof MultinomialEnergyParameters)
@@ -132,6 +200,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			MultinomialEnergyParameters specificFactorFunction = (MultinomialEnergyParameters)containedFactorFunction;
 			hasFactorFunctionConstructorConstantN = specificFactorFunction.hasConstantNParameter();
 			_dimension = specificFactorFunction.getDimension();
+			_constantN = specificFactorFunction.getN();
 			_useEnergyParameters = true;
 		}
 		else
@@ -139,13 +208,28 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		
 		// Pre-determine whether or not the parameters are constant
 		List<? extends VariableBase> siblings = _factor.getSiblings();
+		_NVariable = null;
 		_hasConstantOutputs = false;
 		_outputVariables = null;
 		_alphaParameterMinIndex = hasFactorFunctionConstructorConstantN ? ALPHA_PARAMETER_MIN_INDEX_FIXED_N : ALPHA_PARAMETER_MIN_INDEX;
 		int alphaParameterMaxIndex = _alphaParameterMinIndex + _dimension - 1;
 		int outputMinIndex = alphaParameterMaxIndex + 1;
+		if (hasFactorFunctionConstructorConstantN)
+			_hasConstantN = true;
+		else	// Variable or constant N
+		{
+			_hasConstantN = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
+			if (_hasConstantN)
+				_constantN = (Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX);
+			else
+				_NVariable = (SDiscreteVariable)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
+		}
 		
-		// Get alpha parameter edge range
+		// Save the alpha parameter constant or variables as well
+		_hasConstantAlphas = false;
+		_hasConstantAlpha = null;
+		_constantAlpha = null;
+		_alphaVariables = new SRealVariable[_dimension];
 		_alphaParameterMinEdge = NO_PORT;
 		_alphaParameterMaxEdge = NO_PORT;
 		int[] edges = factorFunction.getEdgesByIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex);
@@ -153,6 +237,34 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		{
 			_alphaParameterMinEdge = edges[0];
 			_alphaParameterMaxEdge = edges[edges.length - 1];
+		}
+		if (factorFunction.hasConstantsInIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex))	// Some constant alphas
+		{
+			_hasConstantAlphas = true;
+			_hasConstantAlpha = new boolean[_dimension];
+			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
+			{
+				if (factorFunction.isConstantIndex(index))
+				{
+					_hasConstantAlpha[i] = true;
+					_constantAlpha[i] = (Double)factorFunction.getConstantByIndex(index);
+
+				}
+				else
+				{
+					_hasConstantAlpha[i] = false;
+					int alphaEdge = factorFunction.getEdgeByIndex(index);
+					_alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+				}
+			}
+		}
+		else	// No constant alphas
+		{
+			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
+			{
+				int alphaEdge = factorFunction.getEdgeByIndex(index);
+				_alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+			}
 		}
 
 		
@@ -166,7 +278,6 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		if (_hasConstantOutputs)
 		{
 			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
-			_dimension = _numOutputEdges + numConstantOutputs;
 			_hasConstantOutput = new boolean[_dimension];
 			_constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)

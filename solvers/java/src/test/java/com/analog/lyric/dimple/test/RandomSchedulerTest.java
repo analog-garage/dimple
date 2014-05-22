@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.schedulers.RandomWithReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 
 public class RandomSchedulerTest
@@ -43,7 +44,7 @@ public class RandomSchedulerTest
 		FactorGraph g = new FactorGraph();
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithoutReplacementScheduler scheduler = new RandomWithoutReplacementScheduler();
-		scheduler.setSeed(1);		// Make it repeatable
+		SolverRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
@@ -78,13 +79,13 @@ public class RandomSchedulerTest
 		{
 			if (debugPrint) System.out.println(entry.toString());
 			if (i == 3)
-				assertTrue(entry.toString().equals("IScheduleEntry [F4]"));
-			else if (i == 7)
-				assertTrue(entry.toString().equals("IScheduleEntry [F1]"));
-			else if (i == 11)
 				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
-			else if (i == 15)
+			else if (i == 7)
+				assertTrue(entry.toString().equals("IScheduleEntry [F4]"));
+			else if (i == 11)
 				assertTrue(entry.toString().equals("IScheduleEntry [F3]"));
+			else if (i == 15)
+				assertTrue(entry.toString().equals("IScheduleEntry [F1]"));
 			i++;
 		}
 
@@ -98,7 +99,7 @@ public class RandomSchedulerTest
 		FactorGraph g = new FactorGraph();
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithReplacementScheduler scheduler = new RandomWithReplacementScheduler();
-		scheduler.setSeed(1);		// Make it repeatable
+		SolverRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
@@ -133,13 +134,13 @@ public class RandomSchedulerTest
 		{
 			if (debugPrint) System.out.println(entry.toString());
 			if (i == 3)
-				assertTrue(entry.toString().equals("IScheduleEntry [F3]"));
-			else if (i == 7)
 				assertTrue(entry.toString().equals("IScheduleEntry [F1]"));
+			else if (i == 7)
+				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
 			else if (i == 11)
 				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
 			else if (i == 15)
-				assertTrue(entry.toString().equals("IScheduleEntry [F2]"));
+				assertTrue(entry.toString().equals("IScheduleEntry [F4]"));
 			i++;
 		}
 

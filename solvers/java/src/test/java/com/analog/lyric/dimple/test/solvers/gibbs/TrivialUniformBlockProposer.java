@@ -53,8 +53,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 			}
 		}
 		
-		double hastingsTerm = 0;
-		return new BlockProposal(newValue, hastingsTerm);
+		return new BlockProposal(newValue);
 	}
 
 	@Override

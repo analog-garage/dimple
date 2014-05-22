@@ -251,7 +251,14 @@ public class SRealVariable extends SRealVariableBase
 
 
 					// Accept or reject
-					double rejectionThreshold = Math.exp(potential - potentialProposed + proposal.hastingsTerm);
+					double rejectionThreshold = Math.exp(potential - potentialProposed + proposal.forwardEnergy - proposal.reverseEnergy);
+					if (Double.isNaN(rejectionThreshold))	// Account for invalid forward or reverse proposals
+					{
+						if (potentialProposed != Double.POSITIVE_INFINITY && proposal.forwardEnergy != Double.POSITIVE_INFINITY)
+							rejectionThreshold = Double.POSITIVE_INFINITY;
+						else
+							rejectionThreshold = 0;
+					}
 					if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
 					{
 						sampleValue = proposalValue;

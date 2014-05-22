@@ -22,29 +22,50 @@ import com.analog.lyric.dimple.model.values.Value;
 public class Proposal
 {
 	public final Value value;
-	public final double hastingsTerm;	// log p(x' -> x) / p(x -> x') = log p(x' -> x) - log p(x -> x'), where x is the previous value and x' is the proposed value
+	public final double forwardEnergy;	// -log p(x_previous -> x_proposed)
+	public final double reverseEnergy;	// -log p(x_proposed -> x_previous)
 
 	/**
 	 * Construct with no Hastings term
 	 * @since 0.05
 	 */
-	public Proposal(Value value) {this.value = value; this.hastingsTerm = 0;}
+	public Proposal(Value value)
+	{
+		this.value = value;
+		this.forwardEnergy = 0;
+		this.reverseEnergy = 0;
+	}
 	
 	/**
 	 * General constructor
 	 * @since 0.05
 	 */
-	public Proposal(Value value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
+	public Proposal(Value value, double forwardEnergy, double reverseEnergy)
+	{
+		this.value = value;
+		this.forwardEnergy = forwardEnergy;
+		this.reverseEnergy = reverseEnergy;
+	}
 	
 	/**
 	 * Construct with no Hastings term; for real valued proposal
 	 * @since 0.05
 	 */
-	public Proposal(double value) {this.value = RealValue.create(value); this.hastingsTerm = 0;}
+	public Proposal(double value)
+	{
+		this.value = RealValue.create(value);
+		this.forwardEnergy = 0;
+		this.reverseEnergy = 0;
+	}
 	
 	/**
 	 * General constructor; for real valued proposal
 	 * @since 0.05
 	 */
-	public Proposal(double value, double hastingsTerm) {this.value = RealValue.create(value); this.hastingsTerm = hastingsTerm;}
+	public Proposal(double value, double forwardEnergy, double reverseEnergy)
+	{
+		this.value = RealValue.create(value);
+		this.forwardEnergy = forwardEnergy;
+		this.reverseEnergy = reverseEnergy;
+	}
 }

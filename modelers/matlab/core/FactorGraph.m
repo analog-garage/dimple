@@ -571,19 +571,18 @@ classdef FactorGraph < Node
                 
                 if isa(tmp,'cell')
                     % Could either be an edge or block entry
-                    e = tmp(end);
+                    e = tmp(1);
                     if isa(e,'cell')
                         e = e{1};
                     end
                     if isa(e, 'com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater')
                         % Must be a block entry
        
-                        scheduleEntry = cell(1,length(tmp)) ;
-                        numNodeEntries = length(tmp)-1;
-                        for j=1:numNodeEntries
+                        scheduleEntry = cell(1,length(tmp));
+                        scheduleEntry{1} = e;
+                        for j=2:length(tmp)
                             scheduleEntry{j} = tmp{j}.VectorObject;
                         end
-                        scheduleEntry(end) = e;
                         schedule{i} = scheduleEntry;
                     else
                         % Must be an edge entry

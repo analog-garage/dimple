@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.schedulers;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.GibbsRandomScanSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 
 /**
  * @author jeffb
@@ -35,10 +36,21 @@ import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
  *         to operate properly.
  *         
  */
-public class GibbsRandomScanScheduler implements IScheduler
+public class GibbsRandomScanScheduler implements IGibbsScheduler
 {
+	private GibbsRandomScanSchedule _schedule;
+	
+	@Override
 	public ISchedule createSchedule(FactorGraph g) 
 	{
-		return new GibbsRandomScanSchedule(g);
+		_schedule = new GibbsRandomScanSchedule(g);
+		return _schedule;
+	}
+	
+	// Add a block schedule entry, which will replace individual variable updates included in the block
+	@Override
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	{
+		_schedule.addBlockScheduleEntry(blockScheduleEntry);
 	}
 }

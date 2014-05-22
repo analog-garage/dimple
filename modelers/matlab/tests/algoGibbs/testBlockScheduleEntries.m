@@ -70,7 +70,7 @@ dB = d.Belief;
 
 
 fg.Solver = 'Gibbs';
-fg.Schedule = {{a,b,c,BlockMHSampler(TrivialUniformBlockProposer)}, d};
+fg.Schedule = {{BlockMHSampler(TrivialUniformBlockProposer),a,b,c}, d};
 
 if repeatable
     fg.Solver.setSeed(1);
@@ -139,7 +139,7 @@ fg.Solver = 'Gibbs';
 % Separately set the proposal this time
 blockSampler1 = BlockMHSampler;
 blockSampler1.setProposalKernel(TrivialUniformBlockProposer);
-fg.Schedule = {a, {b,c,d,blockSampler1}, e, f};  % Block connects to deterministic directed factor
+fg.Schedule = {a, {blockSampler1,b,c,d}, e, f};  % Block connects to deterministic directed factor
 
 if repeatable
     fg.Solver.setSeed(2);
@@ -202,7 +202,7 @@ fg.Solver = 'Gibbs';
 abcDomainSizes = [2, 2, 2];
 abcWeights = rand(2,2,2) + 0.2;
 abcWeightsFlat = abcWeights(:);
-fg.Schedule = {{a,b,c,BlockMHSampler(TrivialNonuniformBlockProposer(abcWeightsFlat, abcDomainSizes))}, d};
+fg.Schedule = {{BlockMHSampler(TrivialNonuniformBlockProposer(abcWeightsFlat, abcDomainSizes)),a,b,c}, d};
 
 if repeatable
     fg.Solver.setSeed(2);

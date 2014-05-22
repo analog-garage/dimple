@@ -97,7 +97,12 @@ public class Multinomial extends FactorFunction
     			return Double.POSITIVE_INFINITY;
     		countSum += x;
     		
-    		sum += -x * Math.log(alphai) + org.apache.commons.math3.special.Gamma.logGamma(x + 1);
+    		double negativeXLogAlphai;
+    		if (alphai == 0 && x == 0)
+    			negativeXLogAlphai = 0;
+    		else
+    			negativeXLogAlphai = -x * Math.log(alphai);
+    		sum += negativeXLogAlphai + org.apache.commons.math3.special.Gamma.logGamma(x + 1);
     	}
     	if (countSum != _N)
 			return Double.POSITIVE_INFINITY;

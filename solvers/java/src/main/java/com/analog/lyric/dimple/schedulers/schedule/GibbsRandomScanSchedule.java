@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 /**
@@ -43,8 +43,8 @@ import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
  */
 public class GibbsRandomScanSchedule extends ScheduleBase
 {
-	protected VariableList _variables;
-	protected int _numVariables;
+	protected FixedSchedule _scheduleEntryPool;
+
 	
 	public GibbsRandomScanSchedule(FactorGraph factorGraph)
 	{
@@ -61,23 +61,35 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 
 	protected void initialize()
 	{
-		_variables = _factorGraph.getVariables();
-		_numVariables = _variables.size();
+		// Create a pool of schedule entries that will be randomly chosen from
+		// By default, this is the same set of nodes in a sequential-scan schedule
+		_scheduleEntryPool = (FixedSchedule)new GibbsSequentialScanScheduler().createSchedule(_factorGraph);
 	}
 
 	@Override
 	public Iterator<IScheduleEntry> iterator()
 	{
-		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
-		
+		// Choose an entry in the list of schedule entries uniformly at random
 		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
-		int variableIndex = SolverRandomGenerator.rand.nextInt(_numVariables);
+		int entryIndex = SolverRandomGenerator.rand.nextInt(_scheduleEntryPool.size());
 		
 		// Create a single schedule entry that includes all of the selected variable
-		VariableBase v = ((ArrayList<VariableBase>)_variables.values()).get(variableIndex);
-		updateList.add(new NodeScheduleEntry(v));
+		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();
+		updateList.add(_scheduleEntryPool.get(entryIndex));
 		
 		return updateList.iterator();
+	}
+
+	
+	// Add a block schedule entry, which will replace individual variable updates included in the block
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	{
+		// Remove any node entries associated with the nodes in the block entry
+		for (INode n : blockScheduleEntry.getNodeList())
+			_scheduleEntryPool.remove(n);
+		
+		// Add the block entry
+		_scheduleEntryPool.add(blockScheduleEntry);
 	}
 
 }

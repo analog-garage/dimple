@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -27,6 +26,7 @@ import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 
 /**
  * @author jeffb
@@ -48,13 +48,11 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 {
 	protected FactorList _factors;
 	protected int _numFactors;
-	protected Random _rand;
 
 
-	public RandomWithReplacementSchedule(FactorGraph factorGraph, Random rand)
+	public RandomWithReplacementSchedule(FactorGraph factorGraph)
 	{
 		_factorGraph = factorGraph;
-		_rand = rand;
 		initialize();
 	}
 
@@ -79,7 +77,7 @@ public class RandomWithReplacementSchedule extends ScheduleBase
 		// One iteration consists of the number of factor updates equaling the total number of factors, even though not all factors will necessarily be updated
 		for (int iFactor = 0; iFactor < _numFactors; iFactor++)
 		{
-			int factorIndex = _rand.nextInt(_numFactors);
+			int factorIndex = SolverRandomGenerator.rand.nextInt(_numFactors);
 			Factor f = ((ArrayList<Factor>)_factors.values()).get(factorIndex);
 			for (INode v : f.getSiblings())
 			{

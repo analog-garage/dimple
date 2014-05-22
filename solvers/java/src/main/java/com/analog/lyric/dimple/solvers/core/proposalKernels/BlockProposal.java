@@ -26,19 +26,30 @@ import com.analog.lyric.dimple.model.values.Value;
 public class BlockProposal
 {
 	public final Value[] value;
-	public final double hastingsTerm;	// log p(x' -> x) / p(x -> x') = log p(x' -> x) - log p(x -> x'), where x is the previous value and x' is the proposed value
+	public final double forwardEnergy;	// -log p(x_previous -> x_proposed)
+	public final double reverseEnergy;	// -log p(x_proposed -> x_previous)
 
 	/**
 	 * Construct with no Hastings term
 	 * @since 0.06
 	 */
-	public BlockProposal(Value[] value) {this.value = value; this.hastingsTerm = 0;}
+	public BlockProposal(Value[] value)
+	{
+		this.value = value;
+		this.forwardEnergy = 0;
+		this.reverseEnergy = 0;
+	}
 	
 	/**
 	 * General constructor
 	 * @since 0.06
 	 */
-	public BlockProposal(Value[] value, double hastingsTerm) {this.value = value; this.hastingsTerm = hastingsTerm;}
+	public BlockProposal(Value[] value, double forwardEnergy, double reverseEnergy)
+	{
+		this.value = value;
+		this.forwardEnergy = forwardEnergy;
+		this.reverseEnergy = reverseEnergy;
+	}
 	
 	/**
 	 * Construct with no Hastings term; for all real valued proposal
@@ -50,20 +61,22 @@ public class BlockProposal
 		this.value = new Value[length];
 		for (int i = 0; i < length; i++)
 			this.value[i] = RealValue.create(value[i]);
-		this.hastingsTerm = 0;
+		this.forwardEnergy = 0;
+		this.reverseEnergy = 0;
 	}
 	
 	/**
 	 * General constructor; for all real valued proposal
 	 * @since 0.06
 	 */
-	public BlockProposal(double[] value, double hastingsTerm)
+	public BlockProposal(double[] value, double forwardEnergy, double reverseEnergy)
 	{
 		int length = value.length;
 		this.value = new Value[length];
 		for (int i = 0; i < length; i++)
 			this.value[i] = RealValue.create(value[i]);
-		this.hastingsTerm = hastingsTerm;
+		this.forwardEnergy = forwardEnergy;
+		this.reverseEnergy = reverseEnergy;
 	}
 
 }

@@ -223,6 +223,39 @@ public class FixedSchedule extends ScheduleBase
 		if (s != null) _schedule.add(new SubScheduleEntry(s));
 	}
 	
+	
+	// Remove node or edge schedule entries containing a specified node
+	public final void remove(INode n)
+	{
+		for (final Iterator<IScheduleEntry> iterator = _schedule.iterator(); iterator.hasNext(); )	// Use iterator to avoid concurrent modification
+		{
+			IScheduleEntry s = iterator.next();
+			if (s instanceof NodeScheduleEntry)
+			{
+				if (((NodeScheduleEntry)s).getNode().getId() == n.getId())
+					iterator.remove();
+			}
+			else if (s instanceof EdgeScheduleEntry)
+			{
+				if (((EdgeScheduleEntry)s).getNode().getId() == n.getId())
+					iterator.remove();
+			}
+		}
+	}
+	
+	// Get a particular entry by index (this is used, for example, for randomly selecting entries)
+	public final IScheduleEntry get(int index)
+	{
+		return _schedule.get(index);
+	}
+	
+	// Return the number of entries
+	public final int size()
+	{
+		return _schedule.size();
+	}
+	
+	
 	@Override
 	public ISchedule copy(Map<Node,Node> old2newObjs)
 	{

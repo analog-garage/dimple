@@ -36,14 +36,14 @@ public class BlockScheduleEntry implements IScheduleEntry
 {
 	IBlockUpdater _blockUpdater;
 	
-	public BlockScheduleEntry(INode[] nodeList, IBlockUpdater blockUpdater)
+	public BlockScheduleEntry(IBlockUpdater blockUpdater, INode... nodeList)
 	{
 		_blockUpdater = blockUpdater;
 		_blockUpdater.attachNodes(nodeList);
 	}
-	public BlockScheduleEntry(INode[] nodeList, Class<IBlockUpdater> blockUpdaterClass) throws Exception
+	public BlockScheduleEntry(Class<IBlockUpdater> blockUpdaterClass, INode... nodeList) throws Exception
 	{
-		this(nodeList, blockUpdaterClass.newInstance());
+		this(blockUpdaterClass.newInstance(), nodeList);
 	}
 
 	
@@ -82,7 +82,7 @@ public class BlockScheduleEntry implements IScheduleEntry
 		for (int i = 0; i < oldNodeList.length; i++)
 			newNodeList[i] = old2newObjs.get(oldNodeList[i]);
 		
-		return new BlockScheduleEntry(newNodeList, _blockUpdater.create());
+		return new BlockScheduleEntry(_blockUpdater.create(), newNodeList);
 	}
 
 	@Override

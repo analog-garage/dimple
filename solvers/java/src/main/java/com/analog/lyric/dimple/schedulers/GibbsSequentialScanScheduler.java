@@ -17,9 +17,11 @@
 package com.analog.lyric.dimple.schedulers;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 
 
@@ -37,18 +39,32 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
  *         schedule. I believe this is a necessary limitation for Gibbs sampling
  *         to operate properly.
  */
-public class GibbsSequentialScanScheduler implements IScheduler
+public class GibbsSequentialScanScheduler implements IGibbsScheduler
 {
-
+	FixedSchedule _schedule;
+	
+	@Override
 	public ISchedule createSchedule(FactorGraph g) 
 	{
-		FixedSchedule schedule = new FixedSchedule();
+		_schedule = new FixedSchedule();
 
 		// Update all owned variables
 		for (VariableBase v : g.getVariablesFlat())
-			schedule.add(new NodeScheduleEntry(v));
+			_schedule.add(new NodeScheduleEntry(v));
 
-		return schedule;
+		return _schedule;
 	}
 
+	
+	// Add a block schedule entry, which will replace individual variable updates included in the block
+	@Override
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	{
+		// Remove any node entries associated with the nodes in the block entry
+		for (INode n : blockScheduleEntry.getNodeList())
+			_schedule.remove(n);
+		
+		// Add the block entry
+		_schedule.add(blockScheduleEntry);
+	}
 }

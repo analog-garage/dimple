@@ -51,16 +51,16 @@ if (isa(N,'VariableBase'))
     var = Discrete(varDomain, outSize{:}, dim);
     
     if (joint)
-        fg.addFactorVectorized('Multinomial', {N,[]}, {alphas,[]}, {var,1});
+        fg.addFactorVectorized('Multinomial', N, alphas, {var,1});
     else
-        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim}, {N,[]}, {alphas,[]}, {var,1});
+        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim}, N, {alphas,[]}, {var,1});
     end
 else
     varDomain = 0:N;    % N is constant, so output can range from 0 to N
     var = Discrete(varDomain, outSize{:}, dim);
     
     if (joint)
-        fg.addFactorVectorized({'Multinomial', N}, {alphas,[]}, {var,1});
+        fg.addFactorVectorized({'Multinomial', N}, alphas, {var,1});
     else
         fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim, N}, {alphas,[]}, {var,1});
     end

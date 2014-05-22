@@ -541,16 +541,17 @@ public class PFactorGraphVector extends PFactorVector
 			if (obj instanceof Object[])
 			{
 				Object[] objArray = (Object[])obj;
-				if (objArray.length >= 2 && objArray[objArray.length-1] instanceof IBlockUpdater)
+				if (objArray.length >= 2 && objArray[0] instanceof IBlockUpdater)
 				{
 					// This is a block schedule entry
+					int argumentIndex = 0;
 					int numNodes = objArray.length - 1;
+					IBlockUpdater blockUpdater = (IBlockUpdater)objArray[argumentIndex++];
 					INode[] nodes = new INode[numNodes];
-					for (int entry = 0; entry < numNodes; entry++)
-						nodes[entry] = PHelpers.convertToNode(objArray[entry]);
-					IBlockUpdater blockUpdater = (IBlockUpdater)objArray[numNodes];
+					for (int entry = 0; entry < numNodes; entry++, argumentIndex++)
+						nodes[entry] = PHelpers.convertToNode(objArray[argumentIndex]);
 					
-					alEntries.add(new BlockScheduleEntry(nodes, blockUpdater));
+					alEntries.add(new BlockScheduleEntry(blockUpdater, nodes));
 				}
 				else
 				{

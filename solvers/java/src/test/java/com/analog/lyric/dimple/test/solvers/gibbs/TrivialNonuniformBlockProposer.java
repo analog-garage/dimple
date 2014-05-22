@@ -79,8 +79,9 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 			}
 		}
 		
-		double hastingsTerm =  Math.log(_weights[currentIndex]) - Math.log(_weights[newIndex]);
-		return new BlockProposal(newValue, hastingsTerm);
+		double proposalForwardEnergy = -Math.log(_weights[newIndex]);
+		double proposalReverseEnergy = -Math.log(_weights[currentIndex]);
+		return new BlockProposal(newValue, proposalForwardEnergy, proposalReverseEnergy);
 	}
 
 	@Override
