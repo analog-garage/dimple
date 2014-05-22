@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
