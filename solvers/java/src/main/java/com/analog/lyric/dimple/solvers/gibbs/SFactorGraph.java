@@ -52,7 +52,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
-import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
@@ -80,7 +80,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
 {
-	private ISchedule _schedule;
+	private IGibbsSchedule _schedule;
 	private Iterator<IScheduleEntry> _scheduleIterator;
 	private int _numSamples;
 	private int _updatesPerSample;
@@ -257,7 +257,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (FactorGraph g : fg.getNestedGraphs())
 			g.getSolver().initialize();
 		
-		_schedule = _factorGraph.getSchedule();
+		_schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
@@ -488,7 +488,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			throw new DimpleException("Scans per sample must be greater than 0.");
 		
 		_scansPerSample = scansPerSample;
-		_updatesPerSample = _scansPerSample * _factorGraph.getVariables().size();
+		_updatesPerSample = _scansPerSample * ((_schedule != null) ? _schedule.size() : _factorGraph.getVariableCount());
 	}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples

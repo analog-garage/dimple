@@ -76,8 +76,12 @@ if repeatable
     fg.Solver.setSeed(1);
 end
 
-fg.Solver.setNumSamples(10000);
+fg.Solver.setNumSamples(20000);
 fg.Solver.saveAllSamples();
+
+fg.initialize();
+assert(fg.Solver.getUpdatesPerSample() == 2);
+
 fg.solve();
 
 assertElementsAlmostEqual(aB/a.Belief, 1, 'absolute', 0.04);

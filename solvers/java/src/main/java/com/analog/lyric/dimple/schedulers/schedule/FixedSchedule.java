@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
  *         A FixedSchedule is a schedule that has a fixed update order, and does
  *         not change dynamically as the solver runs.
  */
-public class FixedSchedule extends ScheduleBase
+public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 {
 	protected ArrayList<IScheduleEntry> _schedule = new ArrayList<IScheduleEntry>();
 	

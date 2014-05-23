@@ -41,7 +41,7 @@ import com.analog.lyric.math.DimpleRandomGenerator;
  *         to operate properly.
  * 
  */
-public class GibbsRandomScanSchedule extends ScheduleBase
+public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSchedule
 {
 	protected FixedSchedule _scheduleEntryPool;
 
@@ -90,6 +90,13 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 		
 		// Add the block entry
 		_scheduleEntryPool.add(blockScheduleEntry);
+	}
+
+	// Indicate the number of entries in the schedule entry pool
+	@Override
+	public int size()
+	{
+		return _scheduleEntryPool.size();
 	}
 
 }
