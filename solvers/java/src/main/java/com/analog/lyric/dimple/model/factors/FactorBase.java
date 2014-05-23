@@ -25,6 +25,16 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 
 public abstract class FactorBase extends Node
 {
+	/*-----------
+	 * Constants
+	 */
+	
+	/**
+	 * Flags that are reserved for use by this class and should not be
+	 * used by subclasses when invoking {@link #setFlags(int)} or {@link #clearFlags()}.
+	 */
+	protected static final int RESERVED = 0xFFFF0000;
+
 	/*--------------
 	 * Construction
 	 */

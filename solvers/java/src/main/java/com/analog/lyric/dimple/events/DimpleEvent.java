@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.events;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
 
@@ -36,7 +35,7 @@ public abstract class DimpleEvent extends EventObject
 
 	private volatile transient boolean _consumed = false;
 	
-	private String _eventSourceName;
+	private final String _eventSourceName;
 	
 	/*--------------
 	 * Construction
@@ -54,19 +53,9 @@ public abstract class DimpleEvent extends EventObject
 	
 	private void writeObject(ObjectOutputStream out) throws IOException
 	{
-		if (_eventSourceName == null)
-		{
-			IDimpleEventSource source = getSource();
-			_eventSourceName = source.getEventSourceName();
-		}
-		out.defaultWriteObject();
+		out.writeObject(getSourceName()); // Make sure _eventSourceName is non-null.
 	}
 
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
-	{
-		in.defaultReadObject();
-	}
-	
 	/*---------------------
 	 * EventObject methods
 	 */
