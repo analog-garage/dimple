@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class NormalProposalKernel implements IProposalKernel
 {
@@ -26,7 +26,7 @@ public class NormalProposalKernel implements IProposalKernel
 	
 	public Proposal next(Value currentValue, Domain variableDomain)
 	{
-		return new Proposal(currentValue.getDouble() + _standardDeviation * SolverRandomGenerator.rand.nextGaussian());
+		return new Proposal(currentValue.getDouble() + _standardDeviation * DimpleRandomGenerator.rand.nextGaussian());
 	}
 	
 	public void setParameters(Object... parameters)

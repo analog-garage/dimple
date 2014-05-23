@@ -26,7 +26,7 @@ import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * @author jeffb
@@ -78,7 +78,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 		for (int iFactor = _numFactors - 1; iFactor > 0; iFactor--)
 		{
 			int randRange = iFactor + 1;
-		    int randFactor = SolverRandomGenerator.rand.nextInt(randRange);
+		    int randFactor = DimpleRandomGenerator.rand.nextInt(randRange);
 		    int nextIndex = _factorIndices[randFactor];
 		    _factorIndices[randFactor] = _factorIndices[iFactor];
 		    _factorIndices[iFactor] = nextIndex;

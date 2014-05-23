@@ -14,14 +14,14 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.dimple.solvers.core;
+package com.analog.lyric.math;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
 import cern.jet.random.engine.RandomEngine;
 
 
-public class SolverRandomGenerator
+public class DimpleRandomGenerator
 {
 	public static RandomGenerator rand = new org.apache.commons.math3.random.MersenneTwister();
 	

@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class SliceSampler implements IMCMCSampler
@@ -44,14 +44,14 @@ public class SliceSampler implements IMCMCSampler
 	public double sampleVerticalSlice(ISamplerClient samplerClient)
 	{
 		final double yValue = samplerClient.getCurrentSampleScore();
-		return yValue - Math.log(SolverRandomGenerator.rand.nextDouble());
+		return yValue - Math.log(DimpleRandomGenerator.rand.nextDouble());
 	}
 
 	// Sample horizontal slice using doubling method
 	public double sampleHorizontalSlice(double x, double y, IRealSamplerClient samplerClient)
 	{
 		// First finding slice using doubling method
-		double L = x - _initialSliceWidth * SolverRandomGenerator.rand.nextDouble();
+		double L = x - _initialSliceWidth * DimpleRandomGenerator.rand.nextDouble();
 		double R = L + _initialSliceWidth;
 		double fL = samplerClient.getSampleScore(L);
 		double fR = samplerClient.getSampleScore(R);
@@ -59,7 +59,7 @@ public class SliceSampler implements IMCMCSampler
 		{
 			if (y <= fL && y <= fR)
 				break;
-			if (SolverRandomGenerator.rand.nextBoolean())	// Flip a coin
+			if (DimpleRandomGenerator.rand.nextBoolean())	// Flip a coin
 			{
 				L -= (R - L);
 				fL = samplerClient.getSampleScore(L);
@@ -77,7 +77,7 @@ public class SliceSampler implements IMCMCSampler
 		double Rs = R;
 		while (true)
 		{
-			xSample = Ls + (Rs - Ls) * SolverRandomGenerator.rand.nextDouble();
+			xSample = Ls + (Rs - Ls) * DimpleRandomGenerator.rand.nextDouble();
 			double fSample = samplerClient.getSampleScore(xSample);
 			
 			if (y >= fSample && accept(xSample, x, y, L, R, samplerClient))

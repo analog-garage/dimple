@@ -37,7 +37,6 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealJointConjugateFactor;
@@ -53,6 +52,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.math.DimpleRandomGenerator;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
@@ -372,7 +372,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 				}
 			}
 		}
@@ -406,7 +406,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				{
 					// No available sampler, so if bounded, sample uniformly from the bounds
 					if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-						setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+						setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 				}
 			}
 		}
@@ -421,7 +421,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 				// If bounded, sample uniformly from the bounds, otherwise leave current sample value
 				if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-					setCurrentSample(i, SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+					setCurrentSample(i, DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 			}
 		}
 	}

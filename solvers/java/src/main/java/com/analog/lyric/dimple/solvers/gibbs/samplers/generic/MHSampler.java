@@ -19,12 +19,12 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class MHSampler implements IMCMCSampler
 {
@@ -65,7 +65,7 @@ public class MHSampler implements IMCMCSampler
 			else
 				rejectionThreshold = 0;
 		}
-		if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
 			samplerClient.setNextSampleValue(proposalValue);		// Accept
 		else
 			samplerClient.setNextSampleValue(sampleValue);			// Reject

@@ -20,9 +20,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * 
@@ -44,7 +44,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 				DiscreteDomain discreteDomain = domain.asDiscrete();
 				int domainSize = discreteDomain.size();
 				Value v = Value.create(discreteDomain);
-				v.setIndex(SolverRandomGenerator.rand.nextInt(domainSize));
+				v.setIndex(DimpleRandomGenerator.rand.nextInt(domainSize));
 				newValue[i] = v;
 			}
 			else

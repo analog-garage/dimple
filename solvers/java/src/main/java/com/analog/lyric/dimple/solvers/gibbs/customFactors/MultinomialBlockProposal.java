@@ -18,9 +18,9 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * 
@@ -90,7 +90,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 			// If N is variable, sample N uniformly
 			int previousN = currentValue[argumentIndex].getIndex();
 			int NDomainSize = variableDomain[0].asDiscrete().size();
-			nextN = SolverRandomGenerator.rand.nextInt(NDomainSize);
+			nextN = DimpleRandomGenerator.rand.nextInt(NDomainSize);
 			newValue[argumentIndex].setIndex(nextN);
 			argumentIndex++;
 			
@@ -158,7 +158,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 		else if (p >= 1)
 			return N;
 		else
-			return SolverRandomGenerator.randBinomial.nextInt(N, p);
+			return DimpleRandomGenerator.randBinomial.nextInt(N, p);
 	}
 	
 	

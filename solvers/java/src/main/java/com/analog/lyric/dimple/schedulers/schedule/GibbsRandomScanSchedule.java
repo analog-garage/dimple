@@ -24,7 +24,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * @author jeffb
@@ -70,8 +70,8 @@ public class GibbsRandomScanSchedule extends ScheduleBase
 	public Iterator<IScheduleEntry> iterator()
 	{
 		// Choose an entry in the list of schedule entries uniformly at random
-		// Note: the GibbsSolverRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
-		int entryIndex = SolverRandomGenerator.rand.nextInt(_scheduleEntryPool.size());
+		// Note: the DimpleRandomGenerator is used here so that if a fixed seed is set in the solver, then the schedule will also be repeatable
+		int entryIndex = DimpleRandomGenerator.rand.nextInt(_scheduleEntryPool.size());
 		
 		// Create a single schedule entry that includes all of the selected variable
 		ArrayList<IScheduleEntry> updateList = new ArrayList<IScheduleEntry>();

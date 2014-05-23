@@ -22,9 +22,9 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
+import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
 
 /**
@@ -44,7 +44,7 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 	{
 		_domainSizes = domainSizes;
 		_weights = weights;
-		_random = new Random(SolverRandomGenerator.rand.nextLong());
+		_random = new Random(DimpleRandomGenerator.rand.nextLong());
 		_numDomains = _domainSizes.length;
 		
 		_domainProducts = new int[_numDomains];
@@ -131,7 +131,7 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 		int product = 2 * 5 * 3 * 6 * 4;
 		double[] weights = new double[product];
 		for (int i = 0; i < product; i++)
-			weights[i] = SolverRandomGenerator.rand.nextDouble();
+			weights[i] = DimpleRandomGenerator.rand.nextDouble();
 		TrivialNonuniformBlockProposer t = new TrivialNonuniformBlockProposer(weights, domainSizes);
 		for (int i = 0; i < product; i++)
 		{

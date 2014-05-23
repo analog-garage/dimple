@@ -23,9 +23,9 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler
@@ -91,7 +91,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		int numZeros = 0;
 		for (int i = 0; i < dimension; i++)
 		{
-			double nextSample = SolverRandomGenerator.randGamma.nextDouble(parameters.getAlphaMinusOne(i) + 1, 1);
+			double nextSample = DimpleRandomGenerator.randGamma.nextDouble(parameters.getAlphaMinusOne(i) + 1, 1);
 			sample[i] = nextSample;
 			sum += nextSample;
 			if (nextSample == 0)
@@ -119,7 +119,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		{
 			// Corner case where all samples were zero
 			// Choose one sample value at random, make that (nearly) one, and the others (nearly) zero
-			int randomChoice = (int)(SolverRandomGenerator.rand.nextDouble() * dimension);
+			int randomChoice = (int)(DimpleRandomGenerator.rand.nextDouble() * dimension);
 			if (randomChoice > dimension - 1) randomChoice = dimension - 1;
 			for (int i = 0; i < dimension; i++)
 				if (i != randomChoice)

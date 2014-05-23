@@ -27,12 +27,12 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.values.RealValue;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.NormalProposalKernel;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class SRealVariable extends SRealVariableBase
 {
@@ -259,7 +259,7 @@ public class SRealVariable extends SRealVariableBase
 						else
 							rejectionThreshold = 0;
 					}
-					if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+					if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
 					{
 						sampleValue = proposalValue;
 						potential = potentialProposed;

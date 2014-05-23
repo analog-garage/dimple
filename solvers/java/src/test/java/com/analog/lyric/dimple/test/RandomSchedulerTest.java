@@ -29,7 +29,7 @@ import com.analog.lyric.dimple.schedulers.RandomWithReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class RandomSchedulerTest
@@ -44,7 +44,7 @@ public class RandomSchedulerTest
 		FactorGraph g = new FactorGraph();
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithoutReplacementScheduler scheduler = new RandomWithoutReplacementScheduler();
-		SolverRandomGenerator.setSeed(1);		// Make it repeatable
+		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 
@@ -99,7 +99,7 @@ public class RandomSchedulerTest
 		FactorGraph g = new FactorGraph();
 		g.setSolverFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 		RandomWithReplacementScheduler scheduler = new RandomWithReplacementScheduler();
-		SolverRandomGenerator.setSeed(1);		// Make it repeatable
+		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
 		g.getSolver().setNumIterations(20);
 

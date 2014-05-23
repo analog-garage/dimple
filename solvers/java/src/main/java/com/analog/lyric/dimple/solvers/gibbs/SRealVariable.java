@@ -35,7 +35,6 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.IRealConjugateFactor;
@@ -49,6 +48,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IRealSamplerClient
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.math.DimpleRandomGenerator;
 import com.google.common.primitives.Doubles;
 
 
@@ -344,7 +344,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			// No input or no available sampler, so if bounded, sample uniformly from the bounds
 			if (hi < Double.POSITIVE_INFINITY && lo > Double.NEGATIVE_INFINITY)
-				setCurrentSample(SolverRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
+				setCurrentSample(DimpleRandomGenerator.rand.nextDouble() * (hi - lo) + lo);
 		}
 	}
 

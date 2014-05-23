@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
+import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.math.Utilities;
 
 public class CDFSampler implements IDiscreteDirectSampler
@@ -43,7 +43,7 @@ public class CDFSampler implements IDiscreteDirectSampler
 	@Override
 	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient)
 	{		
-		final RandomGenerator rand = SolverRandomGenerator.rand;
+		final RandomGenerator rand = DimpleRandomGenerator.rand;
 		final int length = energy.length;
 		int sampleIndex;
 

@@ -20,9 +20,9 @@ import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class NormalSampler implements IRealConjugateSampler
 {
@@ -76,9 +76,9 @@ public class NormalSampler implements IRealConjugateSampler
 		double mean = parameters.getMean();
 		double precision = parameters.getPrecision();
 		if (precision > 0)
-			return mean + SolverRandomGenerator.rand.nextGaussian() / Math.sqrt(precision);
+			return mean + DimpleRandomGenerator.rand.nextGaussian() / Math.sqrt(precision);
 		else
-			return mean + SolverRandomGenerator.rand.nextGaussian() * MAX_SIGMA;
+			return mean + DimpleRandomGenerator.rand.nextGaussian() * MAX_SIGMA;
 	}
 
 	@Override

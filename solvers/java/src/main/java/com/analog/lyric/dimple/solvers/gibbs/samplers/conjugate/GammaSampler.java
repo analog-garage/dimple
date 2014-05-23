@@ -20,9 +20,9 @@ import com.analog.lyric.dimple.factorfunctions.Gamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class GammaSampler implements IRealConjugateSampler
@@ -67,7 +67,7 @@ public class GammaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double beta = parameters.getBeta();
-		return SolverRandomGenerator.randGamma.nextDouble(alphaMinusOne + 1, beta);
+		return DimpleRandomGenerator.randGamma.nextDouble(alphaMinusOne + 1, beta);
 	}
 	
 	@Override

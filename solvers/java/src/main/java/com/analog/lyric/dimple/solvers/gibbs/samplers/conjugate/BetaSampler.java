@@ -20,9 +20,9 @@ import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 
 public class BetaSampler implements IRealConjugateSampler
@@ -67,7 +67,7 @@ public class BetaSampler implements IRealConjugateSampler
 	{
 		double alphaMinusOne = parameters.getAlphaMinusOne();
 		double betaMinusOne = parameters.getBetaMinusOne();
-		return SolverRandomGenerator.randBeta.nextDouble(alphaMinusOne + 1, betaMinusOne + 1);
+		return DimpleRandomGenerator.randBeta.nextDouble(alphaMinusOne + 1, betaMinusOne + 1);
 	}
 	
 	@Override

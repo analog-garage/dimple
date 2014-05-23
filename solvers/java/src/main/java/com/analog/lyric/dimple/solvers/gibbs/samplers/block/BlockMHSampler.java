@@ -26,7 +26,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IBlockUpdater;
-import com.analog.lyric.dimple.solvers.core.SolverRandomGenerator;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
@@ -35,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * @since 0.06
@@ -121,7 +121,7 @@ public class BlockMHSampler implements ISampler, IBlockUpdater
 			else
 				rejectionThreshold = 0;
 		}
-		if (SolverRandomGenerator.rand.nextDouble() < rejectionThreshold)
+		if (DimpleRandomGenerator.rand.nextDouble() < rejectionThreshold)
 			setNextSampleValue(proposalValue);		// Accept
 		else
 			setNextSampleValue(sampleValue);		// Reject
