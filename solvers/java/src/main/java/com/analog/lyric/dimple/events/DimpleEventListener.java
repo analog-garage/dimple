@@ -118,6 +118,9 @@ public class DimpleEventListener implements IDimpleEventListener
 	private final AtomicReference<EventSourceIterator> _eventSourceIterator =
 		new AtomicReference<EventSourceIterator>();
 	
+	private static final AtomicReference<DimpleEventListener> _defaultListener =
+		new AtomicReference<DimpleEventListener>();
+	
 	/*--------------
 	 * Construction
 	 */
@@ -130,6 +133,34 @@ public class DimpleEventListener implements IDimpleEventListener
 		// We use ConcurrentMap so that readers don't have to lock it, but force updates to be single
 		// threaded with a lock this.
 		_handlersForSource = new ConcurrentHashMap<IDimpleEventSource, Entry<?>[]>(16, .75f, 1);
+	}
+
+	/**
+	 * Gets a global default instance of this class, creating it if necessary.
+	 * @since 0.06
+	 * @see #setDefault(DimpleEventListener)
+	 */
+	public static DimpleEventListener getDefault()
+	{
+		DimpleEventListener listener;
+		while ((listener = _defaultListener.get()) == null)
+		{
+			_defaultListener.compareAndSet(null, new DimpleEventListener());
+		}
+		return listener;
+	}
+	
+	/**
+	 * Sets global default listener.
+	 * @param listener is the new value to return from {@link #getDefault()}.
+	 * If null, then the next call to {@link #getDefault()} will construct
+	 * a new default listener.
+	 * @return the previous value.
+	 * @since 0.06
+	 */
+	public static DimpleEventListener setDefault(DimpleEventListener listener)
+	{
+		return _defaultListener.getAndSet(listener);
 	}
 	
 	/*------------------------------
@@ -333,6 +364,16 @@ public class DimpleEventListener implements IDimpleEventListener
 		}
 		iterator.init(source);
 		return iterator;
+	}
+	
+	/**
+	 * True if no handlers are registered with this listener.
+	 * 
+	 * @since 0.06
+	 */
+	public boolean isEmpty()
+	{
+		return _handlersForSource.isEmpty();
 	}
 	
 	/**

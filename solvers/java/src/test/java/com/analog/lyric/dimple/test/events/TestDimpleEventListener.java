@@ -307,6 +307,21 @@ public class TestDimpleEventListener
 		
 		listener.unregister(handleSolverFactorEvent, TestSolverFactorEvent.class, model);
 		assertHandledBy(listener, new TestSolverFactorEvent(sf1), handleAll);
+		
+		//
+		// Test defaultListener
+		//
+		
+		DimpleEventListener defaultListener = DimpleEventListener.getDefault();
+		assertTrue(defaultListener.isEmpty());
+		assertInvariants(defaultListener);
+		assertSame(defaultListener, DimpleEventListener.getDefault());
+		assertSame(defaultListener, DimpleEventListener.setDefault(listener));
+		assertSame(listener, DimpleEventListener.setDefault(null));
+		assertNull(DimpleEventListener.setDefault(null));
+		DimpleEventListener defaultListener2 = DimpleEventListener.getDefault();
+		assertInvariants(defaultListener2);
+		assertNotSame(defaultListener, defaultListener2);
 	}
 
 	private void assertEventSources(Iterator<IDimpleEventSource> iter, IDimpleEventSource ... expected)
@@ -335,8 +350,10 @@ public class TestDimpleEventListener
 	
 	private void assertInvariants(DimpleEventListener listener)
 	{
+		boolean hasHandlers = false;
 		for (IHandlersForSource handlers : listener.allHandlers())
 		{
+			hasHandlers = true;
 			IDimpleEventSource source = handlers.eventSource();
 			assertNotNull(source);
 			
@@ -371,5 +388,7 @@ public class TestDimpleEventListener
 				assertTrue(entries2.indexOf(entry) >= 0 || entries2.get(entries2.size() -1).eventHandler().isBlocker());
 			}
 		}
+		
+		assertEquals(!hasHandlers, listener.isEmpty());
 	}
 }
