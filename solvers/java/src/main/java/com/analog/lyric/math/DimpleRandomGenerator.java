@@ -46,4 +46,19 @@ public class DimpleRandomGenerator
 		randBeta = new cern.jet.random.Beta(1, 1, randEngine);
 		randBinomial = new cern.jet.random.Binomial(1, 0.5, randEngine);
 	}
+	
+	
+	// randBinomial doesn't accept zero N value or 1 or 0 p value
+	public static final int randomBinomial(int N, double p)
+	{
+		if (N <= 0)
+			return 0;
+		else if (p <= 0)
+			return 0;
+		else if (p >= 1)
+			return N;
+		else
+			return randBinomial.nextInt(N, p);
+	}
+
 }

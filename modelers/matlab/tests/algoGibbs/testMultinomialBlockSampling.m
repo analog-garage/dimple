@@ -69,7 +69,7 @@ test7('*', debugPrint, repeatable);
 test8('*', debugPrint, repeatable);
 
 testMultinomialToCategorical(debugPrint, repeatable);
-
+testBinomialInitialization(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testMultinomialBlockSampling');
 
@@ -476,7 +476,6 @@ end
 
 
 
-% Multinomial joint parameters, constant N, constant alpha
 function testMultinomialToCategorical(debugPrint, repeatable)
 
 fg = FactorGraph();
@@ -516,6 +515,37 @@ assert(all(sum(xs,2) == N));
 
 end
 
+
+% Test block initialization for Binomial factor, making sure output is
+% always consistent with N value
+function testBinomialInitialization(debugPrint, repeatable)
+
+fg = FactorGraph();
+
+p = 0.5;
+N = Discrete(0:1);
+x = Binomial(N, p);
+
+fg.Solver = 'Gibbs';
+fg.Solver.setBurnInScans(0);
+if repeatable
+    fg.Solver.setSeed(1);
+end
+
+fg.initialize();
+
+xSum = 0;
+NSum = 0;
+for i=1:100
+    fg.Solver.burnIn();
+    assert(x.Solver.getCurrentSampleIndex <= N.Solver.getCurrentSampleIndex);
+    xSum = xSum + x.Solver.getCurrentSampleIndex;
+    NSum = NSum + N.Solver.getCurrentSampleIndex;
+end
+assert(xSum > 0);
+assert(NSum > 0);
+
+end
 
 
 %********* UTILITIES ***************************************

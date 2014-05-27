@@ -122,7 +122,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 			int previousX = currentValue[argumentIndex].getIndex();
 			int nextX;
 			if (argumentIndex < argumentLength - 1)
-				nextX = randomBinomial(remainingN, alphai/alphaSum);
+				nextX = DimpleRandomGenerator.randomBinomial(remainingN, alphai/alphaSum);
 			else	// Last value
 				nextX = remainingN;
 			newValue[argumentIndex].setIndex(nextX);
@@ -154,20 +154,6 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 	public void setParameters(Object... parameters) {}
 	@Override
 	public Object[] getParameters() {return null;}
-	
-	
-	private final int randomBinomial(int N, double p)
-	{
-		// randBinomial doesn't accept zero N value or 1 or 0 p value
-		if (N <= 0)
-			return 0;
-		else if (p <= 0)
-			return 0;
-		else if (p >= 1)
-			return N;
-		else
-			return DimpleRandomGenerator.randBinomial.nextInt(N, p);
-	}
 	
 	
 	// Interface to be used by the custom factor using this proposal, allowing this class to access additional information needed

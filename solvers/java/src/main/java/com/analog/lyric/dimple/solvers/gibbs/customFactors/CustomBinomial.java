@@ -26,10 +26,13 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 {
@@ -100,6 +103,9 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 				
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
+		
+		// Create a block initializer to initialize the neighboring variables
+		((SFactorGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
 	}
 	
 	
@@ -184,4 +190,30 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomBinomial)other)._outputMsgs[otherPortNum];
 	}
+	
+	
+	public class BlockInitializer implements IBlockInitializer
+	{
+		@Override
+		public void initialize()
+		{
+			if (!_hasConstantOutput)
+			{
+				// If output is variable, resample uniformly
+				int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
+				int nextIndex;
+				if (N > 0)
+					nextIndex = DimpleRandomGenerator.rand.nextInt(N + 1);
+				else
+					nextIndex = 0;
+				
+				// Set the output variable value
+				SFactorGraph sRootGraph = (SFactorGraph)_factor.getRootGraph().getSolver();
+				sRootGraph.deferDeterministicUpdates();
+				_outputVariable.setCurrentSampleIndex(nextIndex);
+				sRootGraph.processDeferredDeterministicUpdates();
+			}
+		}
+	}
+	
 }
