@@ -24,7 +24,10 @@ import net.jcip.annotations.ThreadSafe;
 
 /**
  * Abstract base class for all Dimple events.
- * 
+ * <p>
+ * Concrete subclasses should be immutable and should support serialization.
+ * Subclasses must not attempt to serialize the model or solver graphs themselves!
+ * <p>
  * @since 0.06
  * @author Christopher Barber
  */
