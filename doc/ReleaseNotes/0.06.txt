@@ -3,6 +3,7 @@ Dimple version 0.06 release notes
 
 Significant New Features Since v0.05
 ------------------------------------
+* Added built-in factors Multinomial, MultinomialUnnormalizedParameters, and MultinomialEnergyParameters
 
 
 Significant Bug Fixes Since v0.05

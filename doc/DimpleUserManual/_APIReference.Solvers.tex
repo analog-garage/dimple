@@ -635,8 +635,16 @@ For user-defined factors specified by MATLAB factor functions or factor tables, 
 For user-defined factors specified by factor functions or factor tables, the Gibbs solver will detect if they are deterministic functions as along as the factor is marked as the directed outputs are indicated using the DirectedTo property, as described in section~\ref{sec:Factor.DirectedTo}.
 \fi
  
+The Gibbs solver also automatically performs block-Gibbs updates for certain built-in factors that Gibbs sampling on individual variables would fail due to the dependencies between variables imposed by the factor.  In these cases, a custom proposal distribution ensures that proposals are consistent with the constraints of the factor.  However, the custom proposals are not assured to result in efficient mixing.  In the current version of Dimple, the following built-in factors automatically implement block-Gibbs updates:
+%
+\begin{itemize}
+\item Multinomial
+\item MultinomialUnnormalizedParameters
+\item MultinomialEnergyParameters
+\end{itemize}
 
-Most Dimple methods work more-or-less as normal when using the Gibbs solver, but in some cases the interpretation is slightly different. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
+
+Most Dimple methods work more-or-less as normal when using the Gibbs solver, but in some cases the interpretation is slightly different than for other solvers. For example, the .Belief method for a discrete variable returns an estimate of the belief based on averaging over the sample values.
 
 NOTE: The setNumIterations() method is not supported by the Gibbs solver as the term ``iteration'' is ambiguous in this case. Instead, the method setNumSamples() should be used to set the length of the run. The Solver.iterate() method performs a single-variable update in the case of the Gibbs solver, rather than an entire scan of all variables.
 
