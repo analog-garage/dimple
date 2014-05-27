@@ -24,11 +24,13 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultinomialEnergyParameters;
 import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.IGibbsScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
+import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
@@ -168,11 +170,19 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(new BlockMHSampler(proposalKernel), nodeList);
 		
-		// Add the block updater to the scheduler
-		// FIXME: Doesn't work with custom schedule
-		IScheduler scheduler = _factor.getRootGraph().getScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
-		if (scheduler != null && scheduler instanceof IGibbsScheduler)
-			((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
+		// Add the block updater to the schedule
+		FactorGraph rootGraph = _factor.getRootGraph();
+		if (rootGraph.hasCustomSchedule())	// If there's a custom schedule
+		{
+			FixedSchedule schedule = (FixedSchedule)rootGraph.getSchedule();	// A custom schedule is a fixed schedule
+			schedule.addBlockScheduleEntry(blockScheduleEntry);					// Add the block schedule entry, which replaces node entries for the nodes in the block
+		}
+		else	// There's a scheduler to create the schedule
+		{
+			IScheduler scheduler = rootGraph.getScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
+			if (scheduler instanceof IGibbsScheduler)
+				((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
+		}
 			
 		// Use the block schedule entry to initialize the neighboring variables
 		// FIXME: Doesn't work if alpha is unninitialized

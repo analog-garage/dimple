@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.schedulers;
 
-import java.util.Random;
-
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.schedule.RandomWithoutReplacementSchedule;

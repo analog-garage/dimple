@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
@@ -249,11 +250,28 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 		return _schedule.get(index);
 	}
 	
+	
+	
+	
+	// For IGibbsSchedule interface...
+	// Add a block schedule entry, which will replace individual node updates included in the block
+	@Override
+	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
+	{
+		// Remove any node entries associated with the nodes in the block entry
+		for (INode n : blockScheduleEntry.getNodeList())
+			remove(n);
+		
+		// Add the block entry
+		add(blockScheduleEntry);
+	}
 	// Return the number of entries
+	@Override
 	public final int size()
 	{
 		return _schedule.size();
 	}
+	
 	
 	
 	@Override

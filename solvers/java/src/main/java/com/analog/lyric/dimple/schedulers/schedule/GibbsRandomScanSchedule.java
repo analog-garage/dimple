@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
@@ -84,12 +83,7 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 	// Add a block schedule entry, which will replace individual variable updates included in the block
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
-		// Remove any node entries associated with the nodes in the block entry
-		for (INode n : blockScheduleEntry.getNodeList())
-			_scheduleEntryPool.remove(n);
-		
-		// Add the block entry
-		_scheduleEntryPool.add(blockScheduleEntry);
+		_scheduleEntryPool.addBlockScheduleEntry(blockScheduleEntry);
 	}
 
 	// Indicate the number of entries in the schedule entry pool
