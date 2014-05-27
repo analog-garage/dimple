@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
@@ -115,7 +116,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	// For MultinomialBlockProposal.ICustomMultinomial interface
 	public final double[] getCurrentAlpha()
 	{
-		return _hasConstantAlpha ? _constantAlpha : _alphaVariable.getCurrentSample();
+		return (_hasConstantAlpha ? _constantAlpha : _alphaVariable.getCurrentSample()).clone();
 	}
 	public final boolean isAlphaEnergyRepresentation()
 	{
@@ -143,14 +144,14 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
-		MultinomialBlockProposal proposalKernel = new MultinomialBlockProposal(this);
+		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
 		INode[] nodeList = new INode[_outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
 		if (!_hasConstantN)
 			nodeList[nodeIndex++] = _NVariable.getModelObject();
 		for (int i = 0; i < _outputVariables.length; i++, nodeIndex++)
 			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
-		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(new BlockMHSampler(proposalKernel), nodeList);
+		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
 		
 		// Add the block updater to the schedule
 		FactorGraph rootGraph = _factor.getRootGraph();
@@ -166,9 +167,8 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 				((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
 		}
 			
-		// Use the block schedule entry to initialize the neighboring variables
-		// FIXME: Doesn't work if alpha is unninitialized
-//		blockScheduleEntry.update();
+		// Use the block sampler to initialize the neighboring variables
+		((SFactorGraph)rootGraph.getSolver()).addBlockInitializer(blockSampler);
 	}
 	
 	

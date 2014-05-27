@@ -71,6 +71,7 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomialUnno
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -82,6 +83,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 {
 	private IGibbsSchedule _schedule;
 	private Iterator<IScheduleEntry> _scheduleIterator;
+	private ArrayList<IBlockInitializer> _blockInitializers;
 	private int _numSamples;
 	private int _updatesPerSample;
 	private int _burnInUpdates;
@@ -239,26 +241,23 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		_schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
+		_blockInitializers = null;
 		FactorGraph fg = _factorGraph;
 		deferDeterministicUpdates();
-//		long start = System.nanoTime();
 		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
-		{
 			fg.getOwnedVariable(i).getSolver().initialize();
-		}
 		if (!fg.hasParentGraph())
-		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
-			{
 				fg.getBoundaryVariable(i).getSolver().initialize();
-			}
-		}
-//		System.out.format("Solver variable initialization: %fs\n", (System.nanoTime() - start) / 1e9);
 		processDeferredDeterministicUpdates();
 		for (Factor f : fg.getNonGraphFactorsTop())
 			f.getSolver().initialize();
 		for (FactorGraph g : fg.getNestedGraphs())
 			g.getSolver().initialize();
+		if (_blockInitializers != null)
+			for (IBlockInitializer b : _blockInitializers)	// After initializing all variables and factors, invoke any block initializers
+				b.initialize();
+			
 		
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
@@ -388,7 +387,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (VariableBase v : _factorGraph.getVariables())
 			getSolverVariable(v).randomRestart(restartCount);
-		
+		if (_blockInitializers != null)
+			for (IBlockInitializer b : _blockInitializers)	// Also invoke any block initializers
+				b.initialize();
+
 		processDeferredDeterministicUpdates();
 		
 		if (_temper) setTemperature(_initialTemperature);	// Reset the temperature, if tempering
@@ -744,5 +746,19 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public boolean checkAllEdgesAreIncludedInSchedule()
 	{
 		return false;
+	}
+	
+	public void addBlockInitializer(IBlockInitializer blockInitializer)
+	{
+		if (_blockInitializers == null)
+			_blockInitializers = new ArrayList<IBlockInitializer>();
+
+		_blockInitializers.add(blockInitializer);
+	}
+	
+	public void removeBlockInitializer(IBlockInitializer blockInitializer)
+	{
+		if (_blockInitializers != null)
+			_blockInitializers.remove(blockInitializer);
 	}
 }

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import java.util.Arrays;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
@@ -82,6 +84,12 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 				alphaEnergy[i] = -Math.log(alpha[i]);
 				alphaSum += alpha[i];
 			}
+		}
+		if (alphaSum == 0)	// Shouldn't happen, but can during initialization
+		{
+			Arrays.fill(alpha, 1);
+			Arrays.fill(alphaEnergy, 0);
+			alphaSum = alpha.length;
 		}
 
 		int nextN = _constantN;

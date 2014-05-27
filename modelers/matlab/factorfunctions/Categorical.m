@@ -48,7 +48,7 @@ else
     discreteDomain = 0:N-1;           % Domain must be zero based integers
     var = Discrete(discreteDomain, outSize{:});
 
-    if (isa(alphas, 'Real'))
+    if (isa(alphas, 'Real') || isa(alphas, 'Discrete'))
         fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas, var);
     elseif (iscell(alphas))
         fg.addFactor({'CategoricalUnnormalizedParameters', N}, alphas{:}, var);

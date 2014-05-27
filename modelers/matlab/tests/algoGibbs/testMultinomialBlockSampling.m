@@ -68,6 +68,8 @@ test6('*', debugPrint, repeatable);
 test7('*', debugPrint, repeatable);
 test8('*', debugPrint, repeatable);
 
+testMultinomialToCategorical(debugPrint, repeatable);
+
 
 dtrace(debugPrint, '--testMultinomialBlockSampling');
 
@@ -100,8 +102,8 @@ end
 
 % Check initialization results in a valid value
 fg.initialize();
-% xi = cell2mat(x.invokeSolverMethodWithReturnValue('getCurrentSampleIndex'));
-% assert(sum(xi) == N); %% ***** FIXME: Restore once initialization is fixed
+xi = cell2mat(x.invokeSolverMethodWithReturnValue('getCurrentSampleIndex'));
+assert(sum(xi) == N);
 
 % Check the number of updates per sample (after running initialize)
 assert(fg.Solver.getUpdatesPerSample() == 1);
@@ -143,7 +145,7 @@ fg.Solver = 'Gibbs';
 if repeatable
     fg.Solver.setSeed(1);
 end
-fg.Solver.setNumSamples(1000);
+fg.Solver.setNumSamples(2000);
 fg.Solver.saveAllSamples();
 if (strcmp(scheduler, '*'))
     fg.Schedule = {N, x};
@@ -209,8 +211,7 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.005);
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == N));
-assert(all(sum(xs(2:end,:),2) == N));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == N));
 
 end
 
@@ -262,8 +263,7 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.02);
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == Ns));
-assert(all(sum(xs(2:end,:),2) == Ns(2:end)));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == Ns));
 
 end
 
@@ -311,8 +311,7 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.008);
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == N));
-assert(all(sum(xs(2:end,:),2) == N));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == N));
 
 end
 
@@ -367,8 +366,7 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.01);
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == Ns));
-assert(all(sum(xs(2:end,:),2) == Ns(2:end)));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == Ns));
 
 end
 
@@ -417,8 +415,7 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.05);
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == N));
-assert(all(sum(xs(2:end,:),2) == N));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == N));
 
 end
 
@@ -473,11 +470,51 @@ xmean = normalize(mean(xs,1));
 assertElementsAlmostEqual(xmean, amean, 'absolute', 0.01); 
 
 % Check that all samples of x sum to N
-% assert(all(sum(xs,2) == Ns));
-assert(all(sum(xs(2:end,:),2) == Ns(2:end)));  %% FIXME: restore when initialization is fixed
+assert(all(sum(xs,2) == Ns));
 
 end
 
+
+
+% Multinomial joint parameters, constant N, constant alpha
+function testMultinomialToCategorical(debugPrint, repeatable)
+
+fg = FactorGraph();
+
+dim = 10;
+
+alpha = randSimplex(1,dim);
+N = 10;
+x = Multinomial(N, alpha);
+y = Categorical(x); % Use Multinomial variables as parameters of Categorical
+
+assert(strcmp(y.Factors{1}.VectorObject.getFactorFunction.getContainedFactorFunction.getName,'CategoricalUnnormalizedParameters'));
+
+fg.Solver = 'Gibbs';
+if repeatable
+    fg.Solver.setSeed(1);
+end
+fg.Solver.setNumSamples(5000);
+fg.Solver.saveAllSamples();
+
+
+fg.solve();
+
+% Check that samples are consistent with alpha
+xs = cell2mat(x.invokeSolverMethodWithReturnValue('getAllSampleIndices'));
+xmean = mean(xs,1);
+xmean = xmean/N;
+assertElementsAlmostEqual(xmean, alpha, 'absolute', 0.01);
+
+% Check that the categorical variables follow the same distribution
+ys = y.Solver.getAllSampleIndices;
+yhist = sum(bsxfun(@eq, 0:dim-1, ys), 1);
+assertElementsAlmostEqual(normalize(yhist), alpha, 'absolute', 0.01);
+
+% Check that all samples of x sum to N
+assert(all(sum(xs,2) == N));
+
+end
 
 
 

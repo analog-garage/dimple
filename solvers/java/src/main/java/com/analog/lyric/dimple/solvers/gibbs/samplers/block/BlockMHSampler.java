@@ -33,14 +33,13 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsNeighbors;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
-import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 /**
  * @since 0.06
  * @author jeffb
  */
-public class BlockMHSampler implements ISampler, IBlockUpdater
+public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 {
 	private IBlockProposalKernel _proposalKernel;
 	private VariableBase[] _variables;
@@ -133,6 +132,7 @@ public class BlockMHSampler implements ISampler, IBlockUpdater
 		return getVariableList();
 	}
 	
+	@Override
 	public VariableBase[] getVariableList()
 	{
 		return _variables.clone();
@@ -199,6 +199,25 @@ public class BlockMHSampler implements ISampler, IBlockUpdater
 	public IBlockUpdater create()
 	{
 		return new BlockMHSampler(_proposalKernel);
+	}
+	
+	
+	// This sampler can be used as a block initializer, which is used to initialize blocks of variables that may
+	// not be easily initialized by initializing each variable independently
+	@Override
+	public void initialize()
+	{
+		if (_proposalKernel == null)
+			throw new DimpleException("Must specify a block proposal kernel. No default is defined.");
+
+		final Value[] sampleValue = new Value[_numVariables];
+		for (int i = 0; i < _numVariables; i++)
+			sampleValue[i] = _sVariables[i].getCurrentSampleValue().clone();
+		
+		final BlockProposal proposal = _proposalKernel.next(sampleValue, _domains);
+		final Value[] proposalValue = proposal.value;
+
+		setNextSampleValue(proposalValue);
 	}
 
 }
