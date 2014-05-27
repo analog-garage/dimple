@@ -169,9 +169,8 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(new BlockMHSampler(proposalKernel), nodeList);
 		
 		// Add the block updater to the scheduler
-		// FIXME: This only works if scheduler is explicitly set; doesn't work if using default Gibbs scheduler
-		// FIXME: Also should work with custom schedule
-		IScheduler scheduler = _factor.getRootGraph().getAssociatedScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
+		// FIXME: Doesn't work with custom schedule
+		IScheduler scheduler = _factor.getRootGraph().getScheduler();	// Assumes scheduler for Gibbs solver is flattened to root graph
 		if (scheduler != null && scheduler instanceof IGibbsScheduler)
 			((IGibbsScheduler)scheduler).addBlockScheduleEntry(blockScheduleEntry);
 			

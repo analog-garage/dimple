@@ -294,7 +294,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		_beliefHistogram[_outputMsg.getIndex()]++;
 	}
 
-	// TODO - move up to ISolverVariable
 	@Override
 	public double[] getBelief()
 	{
@@ -329,7 +328,6 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 
 	
-	// TODO - move up to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixed)
 	{
@@ -351,7 +349,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		if (hasFixed)
 		{
-			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
+			setCurrentSampleIndexForce((Integer)_var.getFixedValueObject());
 		}
 	}
 	
@@ -416,17 +414,30 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public final void setCurrentSample(Object value)
 	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+		
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
+		
+
 		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
 		int valueIndex = domain.getIndex(value);
 		if (valueIndex < 0)
 			throw new DimpleException("Value is not in the domain of this variable");
 		
-		setCurrentSampleIndex(valueIndex);
+		setCurrentSampleIndexForce(valueIndex);
 	}
 	
 	@Override
 	public final void setCurrentSample(Value value)
 	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+		
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
+		
 		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
 
 		DiscreteValue oldValue = null;
@@ -451,6 +462,18 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	public final void setCurrentSampleIndex(int index)
     {
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+		
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
+		
+		setCurrentSampleIndexForce(index);
+    }
+	
+	// Sets the sample regardless of whether the value is fixed or held
+	private final void setCurrentSampleIndexForce(int index)
+	{
 		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
 
 		DiscreteValue oldValue = null;
@@ -467,7 +490,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		{
 			_neighbors.update(oldValue);
 		}
-    }
+	}
     
     public final Object getCurrentSample()
     {
@@ -511,12 +534,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	public final void setAndHoldSampleValue(Object value)
 	{
+		releaseSampleValue();
 		setCurrentSample(value);
 		holdSampleValue();
 	}
 	
 	public final void setAndHoldSampleIndex(int index)
 	{
+		releaseSampleValue();
 		setCurrentSampleIndex(index);
 		holdSampleValue();
 	}
@@ -726,13 +751,9 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			_beliefHistogram[i] = 0;
 		
 		if (_var.hasFixedValue())
-		{
-			setCurrentSampleIndex((Integer)_var.getFixedValueObject());
-		}
+			setCurrentSampleIndexForce((Integer)_var.getFixedValueObject());
 		else
-		{
-			setCurrentSampleIndex(_outputMsg.getIndex());
-		}
+			setCurrentSampleIndexForce(_outputMsg.getIndex());
 		
 		if (!_samplerSpecificallySpecified)
 			_sampler = GenericSamplerRegistry.get(_defaultSamplerName);	// If not specifically specified, use the default sampler

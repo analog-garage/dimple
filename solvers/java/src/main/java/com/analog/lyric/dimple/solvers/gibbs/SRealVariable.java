@@ -354,16 +354,14 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
-	// TODO move to ISolverVariable
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
 	}
 
-	// TODO move to ISolverVariable
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 			_input = null;
@@ -371,7 +369,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 			_input = (FactorFunction)input;
 
 		if (hasFixedValue)
-			setCurrentSample(fixedValue);
+			setCurrentSampleForce(FactorFunctionUtilities.toDouble(fixedValue));
 	}
 
 	@Override
@@ -449,7 +447,10 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 	}
 
     @Override
-	public final void setCurrentSample(Object value) {setCurrentSample(FactorFunctionUtilities.toDouble(value));}
+	public final void setCurrentSample(Object value)
+	{
+		setCurrentSample(FactorFunctionUtilities.toDouble(value));
+	}
     
     @Override
     public final void setCurrentSample(Value value)
@@ -463,6 +464,19 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
     
 	public final void setCurrentSample(double value)
 	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+		
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
+		
+		setCurrentSampleForce(value);
+	}
+	
+	// Sets the sample regardless of whether the value is fixed or held
+	private final void setCurrentSampleForce(double value)
+	{
+
 		final boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
 		
 		RealValue oldValue = null;
@@ -510,6 +524,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 
 	public final void setAndHoldSampleValue(double value)
 	{
+		releaseSampleValue();
 		setCurrentSample(value);
 		holdSampleValue();
 	}
@@ -709,7 +724,7 @@ public class SRealVariable extends SRealVariableBase implements ISolverVariableG
 		{
 			double initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
-				setCurrentSample(initialSampleValue);
+				setCurrentSampleForce(initialSampleValue);
 		}
 		
 		// Clear out sample state

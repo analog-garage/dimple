@@ -137,7 +137,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 			{
 				VariableBase variable = factor.getSibling(outputIndex);
 				// FIXME: is sample value already set? Just need to handle side effects?
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(_inPortMsgs[outputIndex].getObject());
+				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(_inPortMsgs[outputIndex]);
 			}
 		}
 	}

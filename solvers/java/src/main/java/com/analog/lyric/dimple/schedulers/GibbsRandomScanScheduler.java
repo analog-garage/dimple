@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.GibbsRandomScanSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
@@ -51,6 +52,8 @@ public class GibbsRandomScanScheduler implements IGibbsScheduler
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
+		if (_schedule == null)
+			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
 		_schedule.addBlockScheduleEntry(blockScheduleEntry);
 	}
 }

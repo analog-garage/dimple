@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -60,6 +61,9 @@ public class GibbsSequentialScanScheduler implements IGibbsScheduler
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
+		if (_schedule == null)
+			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
+			
 		// Remove any node entries associated with the nodes in the block entry
 		for (INode n : blockScheduleEntry.getNodeList())
 			_schedule.remove(n);

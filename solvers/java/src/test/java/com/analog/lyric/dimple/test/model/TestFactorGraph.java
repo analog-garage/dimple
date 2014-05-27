@@ -38,7 +38,7 @@ public class TestFactorGraph
 		assertTrue(fg.getNumStepsInfinite());
 		assertEquals(1, fg.getNumSteps());
 		assertTrue(fg.getFactorGraphStreams().isEmpty());
-		assertNull(fg.getAssociatedScheduler());
+		assertNull(fg.getExplicitlySetScheduler());
 		assertTrue(fg.getSiblings().isEmpty());
 		assertTrue(fg.isTree());
 		assertEquals(0, fg.getVariableCount());

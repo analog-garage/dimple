@@ -432,14 +432,12 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		// TODO -- not clear if it's practical to compute beliefs for real variables, or if so, how they should be represented
 	}
 
-	// TODO move to ISolverVariable
 	@Override
 	public Object getBelief()
 	{
 		return 0d;
 	}
 
-	// TODO move to ISolverVariable
 	@Override
 	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
 	{
@@ -464,7 +462,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			throw new DimpleException("Invalid input type");
 
 		if (hasFixedValue)
-			setCurrentSample(fixedValue);
+			setCurrentSampleForce((double[])fixedValue);
 	}
 
 	@Override
@@ -564,7 +562,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	}
 
 	@Override
-	public final void setCurrentSample(Object value) {setCurrentSample((double[])value);}
+	public final void setCurrentSample(Object value)
+	{
+		setCurrentSample((double[])value);
+	}
 	
 	@Override
 	public final void setCurrentSample(Value value)
@@ -577,6 +578,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
      */
     
 	public final void setCurrentSample(double[] value)
+	{
+		// If the sample value is being held, don't modify the value
+		if (_holdSampleValue) return;
+		
+		// Also return if the variable is set to a fixed value
+		if (_var.hasFixedValue()) return;
+
+		setCurrentSampleForce(value);
+	}
+	
+	// Sets the sample regardless of whether the value is fixed or held
+	private final void setCurrentSampleForce(double[] value)
 	{
 		boolean hasDeterministicDependents = getModelObject().isDeterministicInput();
 		
@@ -595,6 +608,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			setDeterministicDependentValues(oldValue);
 		}
 	}
+	
+	// Set a specific element of the sample value
     public final void setCurrentSample(int index, Object value) {setCurrentSample(index, FactorFunctionUtilities.toDouble(value));}
 	public final void setCurrentSample(int index, double value)
 	{
@@ -617,13 +632,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		}
 	}
 	
-	// TODO move to private
 	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
 		if (_neighbors != null)
-		{
 			_neighbors.update(oldValue);
-		}
 	}
 
 
@@ -656,6 +668,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	public final void setAndHoldSampleValue(double[] value)
 	{
+		releaseSampleValue();
 		setCurrentSample(value);
 		holdSampleValue();
 	}
@@ -857,7 +870,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		{
 			double[] initialSampleValue = _var.hasFixedValue() ? _varReal.getFixedValue() : _initialSampleValue;
 			if (!_holdSampleValue)
-				setCurrentSample(initialSampleValue);
+				setCurrentSampleForce(initialSampleValue);
 		}
 		
 		// Clear out sample state

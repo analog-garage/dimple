@@ -76,9 +76,9 @@ public class SequentialScheduler implements IScheduler
 			}
 
 			// Then update the sub-graph
-			if (sg.getAssociatedScheduler() != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
+			if (sg.getExplicitlySetScheduler() != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
 			{
-				ISchedule tmp = sg.getAssociatedScheduler().createSchedule(sg);
+				ISchedule tmp = sg.getExplicitlySetScheduler().createSchedule(sg);
 				tmp.attach(sg);
 				schedule.add(tmp);
 			}

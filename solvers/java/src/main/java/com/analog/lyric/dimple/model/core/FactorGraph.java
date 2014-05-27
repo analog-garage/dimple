@@ -94,12 +94,12 @@ public class FactorGraph extends FactorBase
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
 	private ISchedule _schedule = null;
-	private IScheduler _associatedScheduler = null;
+	private IScheduler _explicitlyAssociatedScheduler = null;
 	private IScheduler _solverSpecificDefaultScheduler = null;
 	private long _versionId = 0;
 	private long _scheduleVersionId = 0;
 	private long _scheduleAssociatedGraphVerisionId = -1;
-	private boolean _customScheduleSet = false;
+	private boolean _hasCustomScheduleSet = false;
 	private Class<? extends ISolverFactorGraph> _schedulerSolverClass;
 	private IFactorGraphFactory<?> _solverFactory;
 	private ISolverFactorGraph _solverFactorGraph;
@@ -870,35 +870,63 @@ public class FactorGraph extends FactorBase
 	 ******************************************************************/
 
 
-	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler;
+	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler
+	// Setting the schedule to null removes any previously set custom schedule
 	public void setSchedule(ISchedule schedule)
 	{
-		_customScheduleSet = (schedule != null);
+		_hasCustomScheduleSet = (schedule != null);
 		_setSchedule(schedule);
 	}
+	
+	// Get the schedule if one exists or create one if not already created
 	public ISchedule getSchedule()
 	{
 		_createScheduleIfNeeded();
 		return _schedule;
 	}
 
-	// This association is maintained by a FactorGraph object so that it can use
-	// it when a graph is cloned in the copy constructor used by addGraph.
-	public void associateScheduler(IScheduler scheduler)
-	{
-		_associatedScheduler = scheduler;
-	}
-
+	// This is the method to use when specifically setting the scheduler, overriding any default scheduler that would otherwise be used
+	// Setting the scheduler to null removes any previously set scheduler
 	public void setScheduler(IScheduler scheduler)
 	{
-		associateScheduler(scheduler);		// Associate the scheduler with this graph
-		_createSchedule();					// Create the schedule using this scheduler
+		// Associate the scheduler with the factor graph.
+		// This association is maintained by a FactorGraph object so that it can use
+		// it when a graph is cloned in the copy constructor used by addGraph.
+		_explicitlyAssociatedScheduler = scheduler;
+		_createSchedule();								// Create the schedule using this scheduler
 	}
 
-	public IScheduler getAssociatedScheduler()
+	// Get the scheduler that would be used if no custom schedule is set
+	public IScheduler getScheduler()
 	{
-		return _associatedScheduler;
+		if (_hasCustomScheduleSet)
+			return null;
+		else if (_explicitlyAssociatedScheduler != null)
+			return _explicitlyAssociatedScheduler;
+		else if (_solverSpecificDefaultScheduler != null)
+			return _solverSpecificDefaultScheduler;
+		else
+			return new DefaultScheduler();
 	}
+	
+	// Has a custom schedule been set
+	public boolean hasCustomSchedule()
+	{
+		return _hasCustomScheduleSet;
+	}
+	
+	// Has a scheduler been explicitly set
+	public boolean hasExplicitlyAssociatedScheduler()
+	{
+		return _explicitlyAssociatedScheduler != null;
+	}
+
+	// Get the scheduler that has been explicitly set, if any
+	public IScheduler getExplicitlySetScheduler()
+	{
+		return _explicitlyAssociatedScheduler;
+	}
+	
 
 	// Allow a specific solver to set a default scheduler that overrides the normal default
 	// This would be used if the client doesn't otherwise specify a schedule
@@ -907,6 +935,7 @@ public class FactorGraph extends FactorBase
 	{
 		_solverSpecificDefaultScheduler = scheduler;
 	}
+	
 
 	private void _setSchedule(ISchedule schedule)
 	{
@@ -922,13 +951,10 @@ public class FactorGraph extends FactorBase
 
 	private void _createSchedule()
 	{
-		IScheduler scheduler = getAssociatedScheduler();				// Get the scheduler associated with this graph
-		if (scheduler != null)											// Use the scheduler defined for the graph if there is one
-			_setSchedule(scheduler.createSchedule(this));
-		else if (_solverSpecificDefaultScheduler != null)				// Otherwise, use the default scheduler specified by the solver derived class, if there is one (optional solver-specific default scheduler)
-			_setSchedule(_solverSpecificDefaultScheduler.createSchedule(this));
-		else															// Use default scheduler if no other is specified
-			_setSchedule(new DefaultScheduler().createSchedule(this));
+		IScheduler scheduler = getScheduler();	// Get the scheduler or create one if not already set
+		if (scheduler == null)
+			throw new DimpleException("Custom schedule has been set, but is not up-to-date with the current graph.");
+		_setSchedule(scheduler.createSchedule(this));
 	}
 
 	private void _createScheduleIfNeeded()
@@ -939,22 +965,6 @@ public class FactorGraph extends FactorBase
 			_createSchedule();
 	}
 
-
-	// This allows the caller to determine if the scheduler will be run in solve
-	public boolean isUpToDateSchedulePresent()
-	{
-		if (_schedule == null)											// Not up-to-date if no current schedule
-			return false;
-		else if (_scheduleAssociatedGraphVerisionId != _versionId)		// Not up-to-date if graph has changed
-			return false;
-		else if (_customScheduleSet)									// If custom schedule has been set, then keep that regardless of whether the solver has changed
-			return true;
-		else if (_solverHasChanged())									// Not up-to-date if solver has changed
-			return false;
-		else
-			return true;
-		
-	}
 	
 	// Has the solver changed since last time the schedule has been created
 	private boolean _solverHasChanged()
@@ -965,6 +975,23 @@ public class FactorGraph extends FactorBase
 			return false;
 		else
 			return true;
+	}
+
+
+	// This allows the caller to determine if the scheduler will be run in solve
+	public boolean isUpToDateSchedulePresent()
+	{
+		if (_schedule == null)											// Not up-to-date if no current schedule
+			return false;
+		else if (_scheduleAssociatedGraphVerisionId != _versionId)		// Not up-to-date if graph has changed
+			return false;
+		else if (_hasCustomScheduleSet)									// If custom schedule has been set, then keep that regardless of whether the solver has changed
+			return true;
+		else if (_solverHasChanged())									// Not up-to-date if solver has changed
+			return false;
+		else
+			return true;
+		
 	}
 
 
@@ -1154,7 +1181,7 @@ public class FactorGraph extends FactorBase
 		// If there's a scheduler associated with the template graph, copy it
 		// for use to this graph. But leave the creation of a schedule for later
 		// when the parent graph's schedule is created.
-		_associatedScheduler = templateGraph._associatedScheduler;
+		_explicitlyAssociatedScheduler = templateGraph._explicitlyAssociatedScheduler;
 
 		_setParentGraph(parentGraph);
 
@@ -1166,7 +1193,7 @@ public class FactorGraph extends FactorBase
 					templateGraph._schedule.copyToRoot(old2newObjs) :
 						templateGraph._schedule.copy(old2newObjs);
 			_setSchedule(scheduleCopy);	// Might or might not be a custom schedule
-			_customScheduleSet = templateGraph._customScheduleSet;
+			_hasCustomScheduleSet = templateGraph._hasCustomScheduleSet;
 		}
 
 	}

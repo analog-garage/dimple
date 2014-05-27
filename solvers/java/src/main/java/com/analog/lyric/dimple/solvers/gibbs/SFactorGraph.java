@@ -235,6 +235,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void initialize()
 	{
+		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
+		_schedule = (IGibbsSchedule)_factorGraph.getSchedule();
+
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
 		FactorGraph fg = _factorGraph;
 		deferDeterministicUpdates();
@@ -257,7 +260,6 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (FactorGraph g : fg.getNestedGraphs())
 			g.getSolver().initialize();
 		
-		_schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;

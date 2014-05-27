@@ -28,28 +28,28 @@ if (repeatable)
     reset(rs,seed);
 end
 
-% test1([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test1([], debugPrint, repeatable);
 test1('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test1('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test2([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test2([], debugPrint, repeatable);
 test2('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test2('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test3([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test3([], debugPrint, repeatable);
 test3('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test3('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test4([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test4([], debugPrint, repeatable);
 test4('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test4('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test5([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test5([], debugPrint, repeatable);
 test5('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test5('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test6([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test6([], debugPrint, repeatable);
 test6('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test6('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test7([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test7([], debugPrint, repeatable);
 test7('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test7('GibbsRandomScanScheduler', debugPrint, repeatable);
-% test8([], debugPrint, repeatable);    %% ***** FIXME Sholdn't need to set scheduler
+test8([], debugPrint, repeatable);
 test8('GibbsSequentialScanScheduler', debugPrint, repeatable);
 test8('GibbsRandomScanScheduler', debugPrint, repeatable);
 
