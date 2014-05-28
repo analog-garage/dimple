@@ -70,6 +70,7 @@ test8('*', debugPrint, repeatable);
 
 testMultinomialToCategorical(debugPrint, repeatable);
 testBinomialInitialization(debugPrint, repeatable);
+testDirichletInitialization(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testMultinomialBlockSampling');
 
@@ -544,6 +545,35 @@ for i=1:100
 end
 assert(xSum > 0);
 assert(NSum > 0);
+
+end
+
+
+
+% Test block initialization for Dirichlet factor, making sure outputs
+% always sum to one
+function testDirichletInitialization(debugPrint, repeatable)
+
+fg = FactorGraph();
+
+dim = 10;
+n = 5;
+alpha = randSimplex(1,dim) * 5 * (rand + 0.25);
+x = Dirichlet(alpha, [1,n]);
+
+fg.Solver = 'Gibbs';
+fg.Solver.setBurnInScans(0);
+if repeatable
+    fg.Solver.setSeed(1);
+end
+
+fg.initialize();
+
+for i=1:10
+    fg.Solver.burnIn();
+    xs = cell2mat(x.invokeSolverMethodWithReturnValue('getCurrentSample'));
+    assertElementsAlmostEqual(sum(xs,1), ones(1,n));
+end
 
 end
 

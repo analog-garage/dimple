@@ -254,10 +254,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			f.getSolver().initialize();
 		for (FactorGraph g : fg.getNestedGraphs())
 			g.getSolver().initialize();
+		deferDeterministicUpdates();
 		if (_blockInitializers != null)
 			for (IBlockInitializer b : _blockInitializers)	// After initializing all variables and factors, invoke any block initializers
 				b.initialize();
-			
+		processDeferredDeterministicUpdates();
+
 		
 		_scheduleIterator = _schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;

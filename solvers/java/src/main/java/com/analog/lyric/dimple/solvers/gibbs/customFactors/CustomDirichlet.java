@@ -25,11 +25,14 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
+import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
 import com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable;
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.math.DimpleRandomGenerator;
 
 public class CustomDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
@@ -89,6 +92,9 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 		
 		// Determine what parameters are constants or edges, and save the state
 		determineParameterConstantsAndEdges();
+		
+		// Create a block initializer to initialize the neighboring variables
+		((SFactorGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomDirichlet.BlockInitializer());
 	}
 	
 	
@@ -123,7 +129,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
 				List<? extends VariableBase> siblings = _factor.getSiblings();
-				_alphaVariable = (SRealJointVariable)((siblings.get(PARAMETER_INDEX)).getSolver());
+				_alphaVariable = (SRealJointVariable)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
 				_dimension = _alphaVariable.getDimension();
 			}
 		}
@@ -161,4 +167,37 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 			out[i] = in[i] - 1;
 		return out;
 	}
+	
+	
+	
+	public class BlockInitializer implements IBlockInitializer
+	{
+		@Override
+		public void initialize()
+		{
+			int numOutputEdges = _numPorts - _numParameterEdges;
+			if (numOutputEdges > 0)
+			{
+				List<? extends VariableBase> siblings = _factor.getSiblings();
+				double[] value = new double[_dimension];
+				for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+				{
+					// Sample uniformly from the simplex
+					double sum = 0;
+					for (int i = 0; i < _dimension; i++)
+					{
+						double v = -Math.log(DimpleRandomGenerator.rand.nextDouble());	// Sample from an exponential distribution
+						value[i] = v;
+						sum += v;
+					}
+					for (int i = 0; i < _dimension; i++)
+						value[i] /= sum;												// Normalize
+
+					// Set the output variable value
+					((SRealJointVariable)((siblings.get(edge)).getSolver())).setCurrentSample(value);
+				}
+			}
+		}
+	}
+
 }

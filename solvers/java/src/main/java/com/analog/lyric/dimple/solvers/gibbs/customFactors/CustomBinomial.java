@@ -199,7 +199,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 		{
 			if (!_hasConstantOutput)
 			{
-				// If output is variable, resample uniformly
+				// If output is variable, sample uniformly
 				int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
 				int nextIndex;
 				if (N > 0)
@@ -208,10 +208,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 					nextIndex = 0;
 				
 				// Set the output variable value
-				SFactorGraph sRootGraph = (SFactorGraph)_factor.getRootGraph().getSolver();
-				sRootGraph.deferDeterministicUpdates();
 				_outputVariable.setCurrentSampleIndex(nextIndex);
-				sRootGraph.processDeferredDeterministicUpdates();
 			}
 		}
 	}
