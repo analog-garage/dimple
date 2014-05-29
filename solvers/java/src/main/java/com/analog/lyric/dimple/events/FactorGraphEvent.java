@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.events;
 
+import java.io.PrintStream;
+
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.Node;
 
 /**
  * Base class for model events whose source is a {@link FactorGraph}.
@@ -63,4 +66,50 @@ public abstract class FactorGraphEvent extends ModelEvent
 	{
 		return (FactorGraph)source;
 	}
+	
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		out.format("%s %s '%s'",
+			addRemoveType()._verb,
+			nodeType()._description,
+			getNode());
+	}
+	
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	public abstract Node getNode();
+	
+	protected static enum NodeType
+	{
+		BOUNDARY("boundary variable"),
+		FACTOR("factor"),
+		SUBGRAPH("subgraph"),
+		VARIABLE("variable");
+		
+		private final String _description;
+		
+		private NodeType(String desc)
+		{
+			_description = desc;
+		}
+	}
+	
+	protected static enum AddRemoveType
+	{
+		ADD("added"),
+		REMOVE("removed");
+		
+		private final String _verb;
+		
+		private AddRemoveType(String verb)
+		{
+			_verb = verb;
+		}
+	}
+	
+	protected abstract AddRemoveType addRemoveType();
+	protected abstract NodeType nodeType();
 }

@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.variables;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 
@@ -91,6 +92,35 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 		in.defaultReadObject();
 	}
 	
+	/*---------------------
+	 * DimpleEvent methods
+	 */
+
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		switch (getType())
+		{
+		case ADDED:
+			out.format("fixed value on '%s' set to '%s'", getModelObject(), getNewValue());
+			break;
+		case CHANGED:
+			out.format("fixed value on '%s' set to '%s'", getModelObject(), getNewValue());
+			if (verbosity > 0)
+			{
+				out.format(" (was %s)", getOldValue());
+			}
+			break;
+		case REMOVED:
+			out.format("fixed value removed from '%s'", getModelObject());
+			if (verbosity > 0)
+			{
+				out.format(" (was %s)", getOldValue());
+			}
+			break;
+		}
+	}
+
 	/*-------------------------------
 	 * VariableFixedValueChangeEvent
 	 */

@@ -16,16 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import java.io.PrintStream;
+
 import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
 
-public class MultivariateNormalParameters implements Cloneable, IParameterizedMessage
+public class MultivariateNormalParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
 	private double [] _vector;
+	// Cache means to avoid having to recompute
+	private double [] _mean = null;
 	private double [][] _matrix;
 	private boolean _isInInformationForm;
 	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
@@ -55,7 +59,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 
 	public final void setMeanAndCovariance(double[] mean, double[][] covariance)
 	{
-		_vector = mean.clone();
+		_vector = _mean = mean.clone();
 		_matrix = cloneMatrix(covariance);
 		_isInInformationForm = false;
 	}
@@ -63,6 +67,7 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	public final void setInformation(double[] informationVector, double[][] informationMatrix)
 	{
 		_vector = informationVector.clone();
+		_mean = null;
 		_matrix = cloneMatrix(informationMatrix);
 		_isInInformationForm = true;
 	}
@@ -73,6 +78,101 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		_vector = other._vector.clone();
 		_matrix = cloneMatrix(other._matrix);
 		_isInInformationForm = other._isInInformationForm;
+	}
+	
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity < 0)
+		{
+			return;
+		}
+		
+		double[] mean = _mean;
+
+		if (mean == null)
+		{
+			assert(_isInInformationForm);
+			double[] vector = _vector;
+			double[][] matrix = _matrix;
+			// switch to covariance form to compute the mean
+			toCovarianceFormat();
+			mean = _mean;
+			// switch back to original values.
+			_vector = vector;
+			_matrix = matrix;
+			_isInInformationForm = true;
+		}
+		
+		out.print("Normal(");
+
+		if (verbosity > 1)
+		{
+			out.println();
+			out.print("    ");
+		}
+		out.print("mean=[");
+		for (int i = 0, end = mean.length; i < end; ++i)
+		{
+			if (i > 0)
+			{
+				out.print(',');
+				if (verbosity > 0)
+				{
+					out.print(' ');
+				}
+			}
+			if (verbosity > 0)
+			{
+				out.format("%d=", i);
+			}
+			out.format("%g", mean[i]);
+		}
+		out.print(']');
+		if (verbosity > 1)
+		{
+			out.println();
+		}
+		else
+		{
+			out.print(", ");
+		}
+		
+		out.print(_isInInformationForm ? "precision=[" : "covariance=[");
+		
+		final int n = _matrix.length;
+		for (int row = 0; row < n; ++row)
+		{
+			if (row > 0)
+			{
+				out.println();
+				out.print("        ");
+			}
+			else
+			{
+				out.print("; ");
+			}
+			for (int col = 0; col < n; ++col)
+			{
+				if (col > 0)
+				{
+					out.print(',');
+				}
+				out.format("%g", _matrix[row][col]);
+			}
+		}
+		
+		out.print(']');
+		
+		if (verbosity > 1)
+		{
+			out.println();
+		}
+		out.print(')');
 	}
 	
 	/*-------------------------------
@@ -150,13 +250,17 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 	{
 		_vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+		_mean = null;
 		_isInInformationForm = true;
 	}
 	
 	public final double[] getMeans() {return getMean();}	// For backward compatibility
 	public final double[] getMean()
 	{
-		toCovarianceFormat();
+		if (_mean == null)
+		{
+			toCovarianceFormat();
+		}
 		return _vector.clone();
 	}
 
@@ -234,10 +338,18 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		}
 	}
 	
+	/**
+	 * Toggles between mean/covariance format and information format, which uses the matrix
+	 * inverse of the covariance matrix (this is also known as the precision or concentration matrix)
+	 * 
+	 * @since 0.06
+	 */
 	private final void toggleFormat()
 	{
 		if (!isNull())
 		{
+			// TODO: consider using EJML library instead of Jama
+			
 			Jama.Matrix mat = new Jama.Matrix(_matrix);
 
 			Matrix inv;
@@ -281,7 +393,10 @@ public class MultivariateNormalParameters implements Cloneable, IParameterizedMe
 		}
 		
 		_isInInformationForm = !_isInInformationForm;
-
+		if (!_isInInformationForm)
+		{
+			_mean = _vector;
+		}
 	}
 
 }

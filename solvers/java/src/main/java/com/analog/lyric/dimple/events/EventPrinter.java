@@ -16,54 +16,74 @@
 
 package com.analog.lyric.dimple.events;
 
-import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import java.io.PrintStream;
+
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
-public abstract class SolverFactorEvent extends SolverEvent
+@ThreadSafe
+public class EventPrinter extends DimpleEventHandler<DimpleEvent>
 {
-	private static final long serialVersionUID = 1L;
-
+	/*-------
+	 * State
+	 */
+	
+	private volatile int _verbosity;
+	private volatile PrintStream _out;
+	
 	/*--------------
 	 * Construction
 	 */
 	
-	protected SolverFactorEvent(ISolverFactor source)
+	public EventPrinter()
 	{
-		super(source);
+		this(System.err, 0);
 	}
 	
-	/*---------------------
-	 * EventObject methods
+	public EventPrinter(PrintStream out, int verbosity)
+	{
+		_out = out;
+		_verbosity = verbosity;
+	}
+	
+	/*-----------------------------
+	 * IDimpleEventHandler methods
 	 */
 	
 	@Override
-	public ISolverFactor getSource()
+	public void handleEvent(DimpleEvent event)
 	{
-		return (ISolverFactor)source;
-	}
-
-	/*---------------------
-	 * DimpleEvent methods
-	 */
-	
-	@Override
-	public Factor getModelObject()
-	{
-		return getSource().getModelObject();
+		synchronized(_out)
+		{
+			event.println(_out, _verbosity);
+		}
 	}
 	
-	/*---------------------
-	 * SolverEvent methods
+	/*---------------
+	 * Local methods
 	 */
-
-	@Override
-	public ISolverFactor getSolverObject()
+	
+	public int getVerbosity()
 	{
-		return (ISolverFactor)source;
+		return _verbosity;
+	}
+	
+	public void setVerbosity(int verbosity)
+	{
+		_verbosity = verbosity;
+	}
+			
+	public PrintStream getPrintStream()
+	{
+		return _out;
+	}
+	
+	public void setPrintStream(PrintStream out)
+	{
+		_out = out;
 	}
 }

@@ -16,13 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import java.io.PrintStream;
+
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
-public abstract class DiscreteMessage implements IParameterizedMessage
+public abstract class DiscreteMessage extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
@@ -39,6 +41,37 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 	DiscreteMessage(double[] message)
 	{
 		_message = message.clone();
+	}
+	
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			out.print(storesWeights() ? "weights" : "energies");
+			out.print('(');
+			for (int i = 0, end = _message.length; i < end; ++i)
+			{
+				if (i > 0)
+				{
+					out.print(',');
+					if (verbosity > 1)
+					{
+						out.print(' ');
+					}
+				}
+				if (verbosity > 1)
+				{
+					out.format("%d=", i);
+				}
+				out.format("%g", _message[i]);
+			}
+			out.print(')');
+		}
 	}
 	
 	/*-------------------------------
@@ -127,4 +160,9 @@ public abstract class DiscreteMessage implements IParameterizedMessage
 	public abstract double getEnergy(int i);
 	public abstract void setEnergy(int i, double energy);
 	
+	/**
+	 * True if underlying representation uses weights, false if it uses energies.
+	 * @since 0.06
+	 */
+	public abstract boolean storesWeights();
 }

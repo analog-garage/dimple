@@ -19,7 +19,9 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 import static org.apache.commons.math3.special.Beta.*;
 import static org.apache.commons.math3.special.Gamma.*;
 
-public class BetaParameters implements IParameterizedMessage
+import java.io.PrintStream;
+
+public class BetaParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
@@ -46,6 +48,39 @@ public class BetaParameters implements IParameterizedMessage
 	public BetaParameters clone()
 	{
 		return new BetaParameters(this);
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return String.format("Beta(%g,%g)", getAlpha(), getBeta());
+	}
+	
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			String fmt;
+			switch (verbosity)
+			{
+			case 0:
+				fmt = "Beta(%g,%g)";
+				break;
+			default:
+				fmt = "Beta(alpha=%g, beta=%g)";
+				break;
+			}
+			out.format(fmt, getAlpha(), getBeta());
+		}
 	}
 	
 	/*-------------------------------

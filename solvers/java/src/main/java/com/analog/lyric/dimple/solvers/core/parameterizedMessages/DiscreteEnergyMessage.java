@@ -30,7 +30,7 @@ import com.analog.lyric.math.Utilities;
  * @since 0.06
  * @author Christopher Barber
  */
-public class DiscreteEnergyMessage extends DiscreteMessage
+public final class DiscreteEnergyMessage extends DiscreteMessage
 {
 	private static final long serialVersionUID = 1L;
 
@@ -91,5 +91,11 @@ public class DiscreteEnergyMessage extends DiscreteMessage
 	public void setEnergy(int i, double energy)
 	{
 		_message[i] = energy;
+	}
+	
+	@Override
+	public boolean storesWeights()
+	{
+		return false;
 	}
 }

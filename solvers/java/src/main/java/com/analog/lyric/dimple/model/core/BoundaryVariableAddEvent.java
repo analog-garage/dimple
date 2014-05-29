@@ -41,4 +41,22 @@ public final class BoundaryVariableAddEvent extends FactorGraphVariableEvent
 	{
 		super(source, variable);
 	}
+
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	protected AddRemoveType addRemoveType()
+	{
+		return AddRemoveType.ADD;
+	}
+	
+	@Override
+	protected final NodeType nodeType()
+	{
+		return NodeType.BOUNDARY;
+	}
+	
+
 }

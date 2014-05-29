@@ -18,9 +18,12 @@ package com.analog.lyric.dimple.events;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.util.EventObject;
 
 import net.jcip.annotations.ThreadSafe;
+
+import com.analog.lyric.util.misc.IPrintable;
 
 /**
  * Abstract base class for all Dimple events.
@@ -32,10 +35,14 @@ import net.jcip.annotations.ThreadSafe;
  * @author Christopher Barber
  */
 @ThreadSafe
-public abstract class DimpleEvent extends EventObject
+public abstract class DimpleEvent extends EventObject implements IPrintable
 {
 	private static final long serialVersionUID = 1L;
 
+	/*-------
+	 * State
+	 */
+	
 	private volatile transient boolean _consumed = false;
 	
 	private final String _eventSourceName;
@@ -59,6 +66,47 @@ public abstract class DimpleEvent extends EventObject
 		out.writeObject(getSourceName()); // Make sure _eventSourceName is non-null.
 	}
 
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public String toString()
+	{
+		return toString(1);
+	}
+	
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public final void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			if (verbosity > 0)
+			{
+				out.format("%s: ", getClass().getSimpleName());
+			}
+		}
+		printDetails(out, verbosity);
+	}
+	
+	protected abstract void printDetails(PrintStream out, int verbosity);
+	
+	@Override
+	public final void println(PrintStream out, int verbosity)
+	{
+		IPrintable.Methods.println(this, out, verbosity);
+	}
+	
+	@Override
+	public String toString(int verbosity)
+	{
+		return IPrintable.Methods.toString(this, verbosity);
+	}
+	
 	/*---------------------
 	 * EventObject methods
 	 */
@@ -131,4 +179,5 @@ public abstract class DimpleEvent extends EventObject
 		}
 		return name;
 	}
+
 }

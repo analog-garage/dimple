@@ -41,4 +41,14 @@ public final class VariableRemoveEvent extends FactorGraphVariableEvent
 	{
 		super(source, variable);
 	}
+	
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	protected AddRemoveType addRemoveType()
+	{
+		return AddRemoveType.REMOVE;
+	}
 }

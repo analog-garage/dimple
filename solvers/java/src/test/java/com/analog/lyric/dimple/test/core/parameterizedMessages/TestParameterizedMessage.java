@@ -19,7 +19,10 @@ package com.analog.lyric.dimple.test.core.parameterizedMessages;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.PrintStream;
+
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
@@ -30,7 +33,7 @@ import com.analog.lyric.util.test.SerializationTester;
  */
 public class TestParameterizedMessage
 {
-	private static class BogusParameters implements IParameterizedMessage
+	private static class BogusParameters extends ParameterizedMessageBase
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -40,6 +43,12 @@ public class TestParameterizedMessage
 			return new BogusParameters();
 		}
 		
+		
+		@Override
+		public void print(PrintStream out, int verbosity)
+		{
+		}
+
 		@Override
 		public double computeKLDivergence(IParameterizedMessage that)
 		{
@@ -67,5 +76,13 @@ public class TestParameterizedMessage
 		assertTrue(divergence >= 0.0);
 
 		expectThrow(IllegalArgumentException.class, message, "computeKLDivergence", new BogusParameters());
+		
+		assertEquals("", message.toString(-1));
+		for (int verbosity = 0, prevLength = 0; verbosity < 3; ++verbosity)
+		{
+			String desc = message.toString(verbosity);
+			assertTrue(desc.length() >= prevLength);
+			prevLength = desc.length();
+		}
 	}
 }

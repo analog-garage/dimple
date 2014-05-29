@@ -42,8 +42,10 @@ public interface IDimpleEventListener extends EventListener
 	 * Notify listener of a new event.
 	 * <p>
 	 * @param event a non-null instance of a subclass of {@link DimpleEvent} that has not yet been consumed.
+	 * @return false if event was not already consumed and no handler was found for it.
+	 * 
 	 * @since 0.06
 	 * @see DimpleEvent#consumed()
 	 */
-	public void raiseEvent(DimpleEvent event);
+	public boolean raiseEvent(DimpleEvent event);
 }

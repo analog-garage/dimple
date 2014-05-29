@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import java.io.PrintStream;
+
 import net.jcip.annotations.Immutable;
 
 
@@ -55,6 +57,35 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 		super(variable);
 		_oldInput = oldInput;
 		_newInput = newInput;
+	}
+	
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		switch (getType())
+		{
+		case ADDED:
+			out.format("input on '%s' set to '%s'", getModelObject(), getNewInput());
+			break;
+		case CHANGED:
+			out.format("input on '%s' set to '%s'", getModelObject(), getNewInput());
+			if (verbosity > 0)
+			{
+				out.format(" (was %s)", getOldInput());
+			}
+			break;
+		case REMOVED:
+			out.format("input removed from '%s'", getModelObject());
+			if (verbosity > 0)
+			{
+				out.format(" (was %s)", getOldInput());
+			}
+			break;
+		}
 	}
 	
 	/*----------------------------------

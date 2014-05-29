@@ -168,18 +168,19 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 		return BitSetUtil.isMaskSet(_flags, mask);
 	}
 	
-	protected final boolean raiseEvent(SolverEvent event)
+	protected final void raiseEvent(SolverEvent event)
 	{
 		if (event != null)
 		{
-			IDimpleEventListener listener = getEventListener();
-			if (listener != null)
+			final IDimpleEventListener listener = getEventListener();
+			final boolean handled = listener != null && listener.raiseEvent(event);
+			if (!handled)
 			{
-				listener.raiseEvent(event);
-				return true;
+				// Listener configuration probably changed. Reconfigure source to
+				// prevent further event creation.
+				notifyListenerChanged();
 			}
 		}
-		return false;
 	}
 	
 	/**

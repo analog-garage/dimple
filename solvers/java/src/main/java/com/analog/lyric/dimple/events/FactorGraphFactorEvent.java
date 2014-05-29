@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 
 /**
@@ -67,6 +68,22 @@ public abstract class FactorGraphFactorEvent extends FactorGraphEvent
 	}
 	
 	// The default readObject method should work...
+	
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	public Node getNode()
+	{
+		return _factor;
+	}
+	
+	@Override
+	protected final NodeType nodeType()
+	{
+		return NodeType.FACTOR;
+	}
 	
 	/*--------------------------------
 	 * FactorGraphFactorEvent methods

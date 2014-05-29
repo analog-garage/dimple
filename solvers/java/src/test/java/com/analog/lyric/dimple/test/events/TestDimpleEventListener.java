@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.test.events;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +68,11 @@ public class TestDimpleEventListener
 		{
 			super(source);
 		}
+
+		@Override
+		protected void printDetails(PrintStream out, int verbosity)
+		{
+		}
 	}
 	
 	static class TestVariableEvent extends TestModelEvent
@@ -92,6 +98,11 @@ public class TestDimpleEventListener
 		public IModelEventSource getModelObject()
 		{
 			return getSource().getModelEventSource();
+		}
+
+		@Override
+		protected void printDetails(PrintStream out, int verbosity)
+		{
 		}
 	}
 	
@@ -173,7 +184,7 @@ public class TestDimpleEventListener
 		// Test empty listener
 		DimpleEventListener listener = new DimpleEventListener();
 		assertInvariants(listener);
-		assertTrue(Iterables.isEmpty(listener.allHandlers()));
+		assertTrue(Iterables.isEmpty(listener.allHandlerPerSource()));
 		assertFalse(listener.isListeningFor(TestModelEvent.class, model));
 		assertFalse(listener.isListeningFor(ModelEvent.class, model));
 		assertFalse(DimpleEventListener.sourceHasListenerFor(model, ModelEvent.class));
@@ -222,7 +233,7 @@ public class TestDimpleEventListener
 		assertHandledBy(listener, modelEvent, handler1);
 		
 		expectThrow(UnsupportedOperationException.class, null,
-			listener.allHandlers().iterator(), Iterator.class, "remove");
+			listener.allHandlerPerSource().iterator(), Iterator.class, "remove");
 		
 		// sourceHasListenerFor
 		assertFalse(DimpleEventListener.sourceHasListenerFor(model, TestModelEvent.class));
@@ -251,7 +262,7 @@ public class TestDimpleEventListener
 		assertHandledBy(listener, new TestSolverFactorEvent(sf1), handleSolverFactorEvent);
 		assertHandledBy(listener, new TestSolverEvent(sf1));
 		
-		assertEquals(3, Iterables.size(listener.allHandlers()));
+		assertEquals(3, Iterables.size(listener.allHandlerPerSource()));
 
 		assertFalse(listener.unblock(DimpleEvent.class, sf1));
 		assertFalse(listener.unblock(TestModelEvent.class, ssubgraph));
@@ -271,7 +282,7 @@ public class TestDimpleEventListener
 		
 		listener.unregisterAll();
 		assertInvariants(listener);
-		assertTrue(Iterables.isEmpty(listener.allHandlers()));
+		assertTrue(Iterables.isEmpty(listener.allHandlerPerSource()));
 		assertFalse(listener.unregister(handleAll, DimpleEvent.class, model));
 		
 		listener.register(handleAll, TestSolverEvent.class, true, model);
@@ -285,7 +296,7 @@ public class TestDimpleEventListener
 		listener.register(handleAll, TestSolverFactorEvent.class, false, model);
 		assertInvariants(listener);
 		
-		for (IHandlersForSource allHandlers : listener.allHandlers())
+		for (IHandlersForSource allHandlers : listener.allHandlerPerSource())
 		{
 			for (IHandlerEntry e : allHandlers.handlerEntries())
 			{
@@ -351,7 +362,7 @@ public class TestDimpleEventListener
 	private void assertInvariants(DimpleEventListener listener)
 	{
 		boolean hasHandlers = false;
-		for (IHandlersForSource handlers : listener.allHandlers())
+		for (IHandlersForSource handlers : listener.allHandlerPerSource())
 		{
 			hasHandlers = true;
 			IDimpleEventSource source = handlers.eventSource();

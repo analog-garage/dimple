@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.test.solvers.core;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
+import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedMessageBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
@@ -191,7 +193,7 @@ public class TestSNode
 		}
 	}
 	
-	private static class TestMessage implements IParameterizedMessage
+	private static class TestMessage extends ParameterizedMessageBase
 	{
 		private static final long serialVersionUID = 1L;
 
@@ -208,6 +210,12 @@ public class TestSNode
 			return new TestMessage(_counter);
 		}
 		
+		@Override
+		public void print(PrintStream out, int verbosity)
+		{
+			out.format("TestMessage(counter=%d)", _counter);
+		}
+
 		@Override
 		public double computeKLDivergence(IParameterizedMessage that)
 		{
@@ -238,6 +246,11 @@ public class TestSNode
 		public IModelEventSource getModelObject()
 		{
 			return getSource().getModelEventSource();
+		}
+
+		@Override
+		protected void printDetails(PrintStream out, int verbosity)
+		{
 		}
 	}
 	

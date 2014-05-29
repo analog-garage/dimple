@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,6 +31,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.Supers;
+import com.google.common.collect.MapMaker;
 
 
 /**
@@ -89,7 +89,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * Describes association of registered event handlers with a particular event source.
 	 *
 	 * @since 0.06
-	 * @see DimpleEventListener#allHandlers()
+	 * @see DimpleEventListener#allHandlerPerSource()
 	 */
 	public interface IHandlersForSource
 	{
@@ -112,7 +112,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * State
 	 */
 	
-	private final ConcurrentMap<IDimpleEventSource, Entry<?>[]> _handlersForSource;
+	private final ConcurrentMap<IDimpleEventSource, Entry[]> _handlersForSource;
 	
 	// Reusable iterator for visiting event sources in hierarchical order.
 	private final AtomicReference<EventSourceIterator> _eventSourceIterator =
@@ -131,8 +131,9 @@ public class DimpleEventListener implements IDimpleEventListener
 	public DimpleEventListener()
 	{
 		// We use ConcurrentMap so that readers don't have to lock it, but force updates to be single
-		// threaded with a lock this.
-		_handlersForSource = new ConcurrentHashMap<IDimpleEventSource, Entry<?>[]>(16, .75f, 1);
+		// threaded with a lock this so the concurrency level is set to one to minimize overhead.
+		// Use weak keys to prevent listener from keeping event sources in memory if no one else is using them.
+		_handlersForSource = new MapMaker().concurrencyLevel(1).weakKeys().makeMap();
 	}
 
 	/**
@@ -148,6 +149,17 @@ public class DimpleEventListener implements IDimpleEventListener
 			_defaultListener.compareAndSet(null, new DimpleEventListener());
 		}
 		return listener;
+	}
+
+	/**
+	 * True if this is the default listener.
+	 * 
+	 * @since 0.06
+	 * @see #getDefault()
+	 */
+	public boolean isDefault()
+	{
+		return this == _defaultListener.get();
 	}
 	
 	/**
@@ -179,10 +191,10 @@ public class DimpleEventListener implements IDimpleEventListener
 		{
 			final IDimpleEventSource source = sources.next();
 
-			Entry<?>[] entries = _handlersForSource.get(source);
+			Entry[] entries = _handlersForSource.get(source);
 			if (entries != null)
 			{
-				for (Entry<?> entry : entries)
+				for (Entry entry : entries)
 				{
 					if (entry.canHandleEvent(eventClass))
 					{
@@ -211,21 +223,22 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * @see IDimpleEventHandler#handleEvent(DimpleEvent)
 	 */
 	@Override
-	public void raiseEvent(DimpleEvent event)
+	public boolean raiseEvent(DimpleEvent event)
 	{
 		final ReleasableIterator<IDimpleEventSource> sources = eventSources(event.getSource());
+		boolean handlerFound = false;
 		
 		outer:
 		while (sources.hasNext())
 		{
 			final IDimpleEventSource source = sources.next();
 
-			Entry<?>[] entries = _handlersForSource.get(source);
+			Entry[] entries = _handlersForSource.get(source);
 			if (entries != null)
 			{
-				for (Entry<?> entry : entries)
+				for (Entry entry : entries)
 				{
-					entry.handleEvent(event);
+					handlerFound |= entry.handleEvent(event);
 					if (event.consumed())
 					{
 						break outer;
@@ -235,6 +248,8 @@ public class DimpleEventListener implements IDimpleEventListener
 		}
 		
 		sources.release();
+		
+		return handlerFound;
 	}
 	
 	/*------------------------------------
@@ -261,11 +276,13 @@ public class DimpleEventListener implements IDimpleEventListener
 	 */
 	
 	/**
-	 * Lists all handlers currently registered with this listener.
-	 * 
+	 * Lists all handlers currently registered with this listener for each source.
+	 * <p>
+	 * The underlying iterators do not support removal.
+	 * <p>
 	 * @since 0.06
 	 */
-	public Iterable<IHandlersForSource> allHandlers()
+	public Iterable<IHandlersForSource> allHandlerPerSource()
 	{
 		return new HandlersForSourceIterable();
 	}
@@ -309,10 +326,10 @@ public class DimpleEventListener implements IDimpleEventListener
 		{
 			final IDimpleEventSource source = sources.next();
 
-			Entry<?>[] entries = _handlersForSource.get(source);
+			Entry[] entries = _handlersForSource.get(source);
 			if (entries != null)
 			{
-				for (Entry<?> entry : entries)
+				for (Entry entry : entries)
 				{
 					if (entry.canHandleEvent(eventClass))
 					{
@@ -393,11 +410,15 @@ public class DimpleEventListener implements IDimpleEventListener
 		boolean handleSubclasses,
 		IDimpleEventSource target)
 	{
-		final Entry<Event> entry = new Entry<Event>(handler, eventClass, handleSubclasses, target);
+		if (handler == null || eventClass == null || target == null)
+		{
+			throw new NullPointerException();
+		}
+		final Entry entry = new Entry(handler, eventClass, handleSubclasses, target);
 			
 		synchronized(this)
 		{
-			Entry<?>[] entries = _handlersForSource.get(target);
+			Entry[] entries = _handlersForSource.get(target);
 			
 			if (entries == null)
 			{
@@ -458,20 +479,20 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * @return false if no handler matching the arguments was found.
 	 * @since 0.06
 	 */
-	public <Event extends DimpleEvent> boolean unregister(
-		IDimpleEventHandler<? super Event> handler,
-		Class<Event> eventClass,
+	public boolean unregister(
+		IDimpleEventHandler<?> handler,
+		Class<? extends DimpleEvent> eventClass,
 		IDimpleEventSource target)
 	{
 		boolean found = false;
 		
 		synchronized(this)
 		{
-			Entry<?>[] entries = _handlersForSource.get(target);
+			Entry[] entries = _handlersForSource.get(target);
 			
 			if (entries != null)
 			{
-				final Entry<Event> entry = new Entry<Event>(handler, eventClass, false, target);
+				final Entry entry = new Entry(handler, eventClass, false, target);
 				
 				int i = Arrays.binarySearch(entries, entry, EntryEventClassOrder.COMPARATOR);
 				if (i >= 0)
@@ -486,7 +507,7 @@ public class DimpleEventListener implements IDimpleEventListener
 							}
 							else
 							{
-								final Entry<?>[] newEntries = new Entry<?>[size];
+								final Entry[] newEntries = new Entry[size];
 								System.arraycopy(entries, 0, newEntries, 0, i);
 								System.arraycopy(entries, i + 1, newEntries, i, size - i);
 								_handlersForSource.put(target, newEntries);
@@ -526,7 +547,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	/**
 	 * Unregisters all handlers.
 	 * <p>
-	 * After invoking this {@link #allHandlers()} will be empty.
+	 * After invoking this {@link #allHandlerPerSource()} will be empty.
 	 * 
 	 * @since 0.06
 	 */
@@ -538,6 +559,42 @@ public class DimpleEventListener implements IDimpleEventListener
 		}
 	}
 	
+	/**
+	 * Unregisters all instances of given handler.
+	 * <p>
+	 * @param handler is the handler instance that will be removed.
+	 * @return the number of entries that were removed from the listener.
+	 * @since 0.06
+	 */
+	public int unregisterAll(IDimpleEventHandler<?> handler)
+	{
+		int nRemoved = 0;
+		
+		synchronized(this)
+		{
+			final List<IHandlerEntry> entriesToRemove = new ArrayList<IHandlerEntry>();
+			
+			for (IHandlersForSource handlersForSource : allHandlerPerSource())
+			{
+				for (IHandlerEntry entry : handlersForSource.handlerEntries())
+				{
+					if (entry.eventHandler() == handler)
+					{
+						entriesToRemove.add(entry);
+					}
+				}
+			}
+			
+			for (IHandlerEntry entry : entriesToRemove)
+			{
+				unregister(handler, entry.eventClass(), entry.eventSource());
+				++nRemoved;
+			}
+		}
+		
+		return nRemoved;
+	}
+	
 	/*-----------------------
 	 * Private inner classes
 	 */
@@ -545,14 +602,14 @@ public class DimpleEventListener implements IDimpleEventListener
 	/**
 	 * Entry containing handler registered for given event class for a given target.
 	 */
-	private static class Entry<Event extends DimpleEvent> implements IHandlerEntry
+	private static class Entry implements IHandlerEntry
 	{
 		/*-------
 		 * State
 		 */
 		
 		private final IDimpleEventSource _eventSource;
-		private final Class<Event> _eventClass;
+		private final Class<? extends DimpleEvent> _eventClass;
 		private final boolean _handleSubclasses;
 		private final IDimpleEventHandler<DimpleEvent> _handler;
 		private final int _eventClassDepth;
@@ -562,7 +619,7 @@ public class DimpleEventListener implements IDimpleEventListener
 		 */
 		
 		@SuppressWarnings("unchecked")
-		private Entry(IDimpleEventHandler<? super Event> handler, Class<Event> eventClass, boolean handleSubclasses,
+		private Entry(IDimpleEventHandler<?> handler, Class<? extends DimpleEvent> eventClass, boolean handleSubclasses,
 			IDimpleEventSource eventSource)
 		{
 			_eventSource = eventSource;
@@ -587,12 +644,12 @@ public class DimpleEventListener implements IDimpleEventListener
 				return true;
 			}
 			
-			if (!(other instanceof Entry<?>))
+			if (!(other instanceof Entry))
 			{
 				return false;
 			}
 			
-			Entry<?> that = (Entry<?>)other;
+			Entry that = (Entry)other;
 			
 			return this._eventSource == that._eventSource &&
 				this._eventClass == that._eventClass &&
@@ -642,12 +699,16 @@ public class DimpleEventListener implements IDimpleEventListener
 			return _handleSubclasses ? _eventClass.isAssignableFrom(eventClass) : _eventClass.equals(eventClass);
 		}
 
-		private void handleEvent(DimpleEvent event)
+		private boolean handleEvent(DimpleEvent event)
 		{
-			if (canHandleEvent(event.getClass()))
+			final boolean handle = canHandleEvent(event.getClass());
+			
+			if (handle)
 			{
 				_handler.handleEvent(event);
 			}
+			
+			return handle;
 		}
 	}
 	
@@ -656,12 +717,12 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * subclasses coming before superclasses. Ties are broken using the event class names,
 	 * which ensures that multiple entries for the same class will be next to each other.
 	 */
-	private static enum EntryEventClassOrder implements Comparator<Entry<?>>
+	private static enum EntryEventClassOrder implements Comparator<Entry>
 	{
 		COMPARATOR;
 		
 		@Override
-		public int compare(Entry<?> entry1, Entry<?> entry2)
+		public int compare(Entry entry1, Entry entry2)
 		{
 			int diff = entry2._eventClassDepth - entry1._eventClassDepth;
 			if (diff == 0)
@@ -779,7 +840,7 @@ public class DimpleEventListener implements IDimpleEventListener
 		private final IDimpleEventSource _eventSource;
 		private final List<IHandlerEntry> _handlerEntries;
 		
-		private HandlersForSource(Map.Entry<IDimpleEventSource, Entry<?>[]> entry)
+		private HandlersForSource(Map.Entry<IDimpleEventSource, Entry[]> entry)
 		{
 			_eventSource = entry.getKey();
 			_handlerEntries = new HandlerEntryList(entry.getValue());
@@ -800,7 +861,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	
 	private final class HandlersForSourceIterator implements Iterator<IHandlersForSource>
 	{
-		private Iterator<Map.Entry<IDimpleEventSource, Entry<?>[]>> _iterator =
+		private Iterator<Map.Entry<IDimpleEventSource, Entry[]>> _iterator =
 			_handlersForSource.entrySet().iterator();
 		
 		@Override

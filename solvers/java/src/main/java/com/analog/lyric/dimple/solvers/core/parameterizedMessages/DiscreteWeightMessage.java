@@ -88,4 +88,9 @@ public class DiscreteWeightMessage extends DiscreteMessage
 		_message[i] = Utilities.energyToWeight(energy);
 	}
 	
+	@Override
+	public boolean storesWeights()
+	{
+		return true;
+	}
 }

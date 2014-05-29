@@ -18,7 +18,9 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import java.io.Serializable;
 
-public interface IParameterizedMessage extends Cloneable, Serializable
+import com.analog.lyric.util.misc.IPrintable;
+
+public interface IParameterizedMessage extends Cloneable, Serializable, IPrintable
 {
 	public abstract IParameterizedMessage clone();
 	

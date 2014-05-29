@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.io.PrintStream;
+
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.values.Value;
@@ -53,6 +55,24 @@ public class GibbsVariableUpdateEvent extends GibbsSolverVariableEvent
 		_oldValue = oldValue.clone();
 		_newValue = newValue.clone();
 		_rejectCount = rejectCount;
+	}
+	
+	/*---------------------
+	 * DimpleEvent methods
+	 */
+	
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		out.format("sample for '%s' set to '%s'", getModelObject(), getNewValue());
+		if (verbosity > 0)
+		{
+			out.format(" (was %s)", getOldValue());
+			if (verbosity > 1)
+			{
+				out.format(" [reject count %d]", getRejectCount());
+			}
+		}
 	}
 	
 	/*----------------------------------

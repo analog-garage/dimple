@@ -44,6 +44,16 @@ public final class SubgraphRemoveEvent extends FactorGraphSubgraphEvent
 		_absorbedByParent = absorbedByParent;
 	}
 	
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	protected AddRemoveType addRemoveType()
+	{
+		return AddRemoveType.REMOVE;
+	}
+	
 	/**
 	 * True if subgraph was removed because its contents were absorbed by its parent graph
 	 * as a result of a call to {@link FactorGraph#absorbSubgraph(FactorGraph)}.

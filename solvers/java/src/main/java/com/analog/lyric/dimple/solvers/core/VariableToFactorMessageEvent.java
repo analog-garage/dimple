@@ -16,6 +16,8 @@ p*   Copyright 2014 Analog Devices, Inc.
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.io.PrintStream;
+
 import com.analog.lyric.dimple.events.SolverVariableEvent;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -62,6 +64,27 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 		_factor = variable.getSibling(edge);
 		_oldMessage = oldMessage;
 		_newMessage = newMessage;
+	}
+	
+	/*---------------------
+	 * DimpleEvent methods
+	 */
+	
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		out.format("update from '%s' to '%s\n", getVariable().getEventSourceName(), getFactor().getEventSourceName());
+		out.print("  new message: ");
+		getNewMessage().print(out, verbosity);
+		if (verbosity > 0)
+		{
+			out.print("\n  old message: ");
+			getOldMessage().print(out, verbosity);
+			if (verbosity > 1)
+			{
+				out.format("\n  KL divergence is %g", computeKLDivergence());
+			}
+		}
 	}
 	
 	/*-----------------------------

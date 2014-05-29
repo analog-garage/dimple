@@ -45,6 +45,16 @@ public final class VariableAddEvent extends FactorGraphVariableEvent
 		_absorbedFromSubgraph = absorbedFromSubgraph;
 	}
 
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	protected AddRemoveType addRemoveType()
+	{
+		return AddRemoveType.ADD;
+	}
+	
 	/**
 	 * True if variable was added as a result of absorbing the contents of a subgraph
 	 * through {@link FactorGraph#absorbSubgraph(FactorGraph)}.

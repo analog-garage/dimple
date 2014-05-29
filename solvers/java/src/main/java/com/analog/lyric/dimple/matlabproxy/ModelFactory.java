@@ -184,7 +184,11 @@ public class ModelFactory
 		return new PFactorGraphVector(f);
 	}
 
-
+	public PDimpleEventLogger createEventLogger()
+	{
+		return new PDimpleEventLogger();
+	}
+	
 	// Set solver
 
 	public void setSolver(IFactorGraphFactory<?> solver)

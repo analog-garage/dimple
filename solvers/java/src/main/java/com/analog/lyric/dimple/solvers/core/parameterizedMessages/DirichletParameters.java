@@ -18,9 +18,10 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import static org.apache.commons.math3.special.Gamma.*;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 
-public class DirichletParameters implements IParameterizedMessage
+public class DirichletParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
@@ -105,6 +106,36 @@ public class DirichletParameters implements IParameterizedMessage
 		add(parameters._alphaMinusOne);
 	}
 
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			out.print("Dirichlet(");
+			for (int i = 0, end = getSize(); i < end; ++i)
+			{
+				if (i > 0)
+				{
+					out.print(',');
+					if (verbosity > 1)
+					{
+						out.print(' ');
+					}
+				}
+				if (verbosity > 1)
+				{
+					out.format("a%d=", i);
+				}
+				out.format("%g", getAlpha(i));
+			}
+			out.print(')');
+		}
+	}
+	
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */

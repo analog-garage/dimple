@@ -28,7 +28,7 @@ import com.analog.lyric.dimple.events.SolverVariableEvent;
  * @author Christopher Barber
  */
 @Immutable
-public class GibbsSolverVariableEvent extends SolverVariableEvent
+public abstract class GibbsSolverVariableEvent extends SolverVariableEvent
 {
 	/*-----------
 	 * Constants

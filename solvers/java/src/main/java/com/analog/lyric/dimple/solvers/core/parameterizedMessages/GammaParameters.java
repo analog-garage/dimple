@@ -18,7 +18,9 @@ package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
 import static org.apache.commons.math3.special.Gamma.*;
 
-public class GammaParameters implements IParameterizedMessage
+import java.io.PrintStream;
+
+public class GammaParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
@@ -54,6 +56,29 @@ public class GammaParameters implements IParameterizedMessage
 	public final double getAlpha() {return _alphaMinusOne + 1;}
 	public final void setAlpha(double alpha) {_alphaMinusOne = alpha - 1;}
 
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			String fmt;
+			switch (verbosity)
+			{
+			case 0:
+				fmt = "Gamma(%g,%g)";
+				break;
+			default:
+				fmt = "Gamma(alpha=%g, beta=%g)";
+				break;
+			}
+			out.format(fmt, getAlpha(), getBeta());
+		}
+	}
+	
 	/*-------------------------------
 	 * IParameterizedMessage methods
 	 */

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import java.io.PrintStream;
+
 import com.analog.lyric.dimple.model.values.Value;
 
 /**
@@ -48,6 +50,21 @@ public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
 		super(source, oldValue, newValue, rejectCount);
 		_oldSampleScore = oldSampleScore;
 		_newSampleScore = newSampleScore;
+	}
+	
+	/*---------------------
+	 * DimpleEvent methods
+	 */
+	
+	@Override
+	protected void printDetails(PrintStream out, int verbosity)
+	{
+		super.printDetails(out, verbosity);
+		out.format(" score %+g", getScoreDifference());
+		if (verbosity > 1)
+		{
+			out.format(" (%g - %g)", getOldSampleScore(), getNewSampleScore());
+		}
 	}
 	
 	/*----------------------------------------

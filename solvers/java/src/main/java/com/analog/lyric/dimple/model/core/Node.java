@@ -841,18 +841,19 @@ public abstract class Node implements INode, Cloneable
 		return BitSetUtil.isMaskSet(_flags, mask);
 	}
 	
-	protected final boolean raiseEvent(DimpleEvent event)
+	protected final void raiseEvent(DimpleEvent event)
 	{
 		if (event != null)
 		{
-			IDimpleEventListener listener = getEventListener();
-			if (listener != null)
+			final IDimpleEventListener listener = getEventListener();
+			final boolean handled = listener != null && listener.raiseEvent(event);
+			if (!handled)
 			{
-				listener.raiseEvent(event);
-				return true;
+				// Listener configuration probably changed. Reconfigure source to
+				// prevent further event creation.
+				notifyListenerChanged();
 			}
 		}
-		return false;
 	}
 	
 	protected void replaceSibling(INode oldNode, INode newNode)

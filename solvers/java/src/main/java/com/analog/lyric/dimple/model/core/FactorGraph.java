@@ -262,6 +262,16 @@ public class FactorGraph extends FactorBase
 		setFlagValue(EVENT_MASK, eventMask);
 	}
 	
+	/**
+	 * Sets event listener.
+	 * <p>
+	 * Sets the value to be returned by {@link #getEventListener()}.
+	 * This should only be set on a root graph.
+	 * <p>
+	 * @param listener is the event listener to be used for this graph and all of its
+	 * contents. May be set to null to turn off listening.
+	 * @since 0.06
+	 */
 	public void setEventListener(DimpleEventListener listener)
 	{
 		_eventListener = listener;

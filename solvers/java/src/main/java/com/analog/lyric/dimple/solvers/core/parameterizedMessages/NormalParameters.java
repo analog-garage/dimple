@@ -16,8 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import java.io.PrintStream;
 
-public class NormalParameters implements IParameterizedMessage
+
+public class NormalParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
@@ -45,6 +47,34 @@ public class NormalParameters implements IParameterizedMessage
 		return new NormalParameters(this);
 	}
 
+	/*--------------------
+	 * IPrintable methods
+	 */
+	
+	@Override
+	public void print(PrintStream out, int verbosity)
+	{
+		if (verbosity >= 0)
+		{
+			switch (verbosity)
+			{
+			case 0:
+				out.format("Normal(%g,%g)", getMean(), getPrecision());
+				break;
+			case 1:
+				out.format("Normal(mean=%g, precision=%g)", getMean(), getPrecision());
+				break;
+			default:
+				out.format("Normal(mean=%g, precision=%g, std=%g)", getMean(), getPrecision(), getStandardDeviation());
+				break;
+			}
+		}
+	}
+	
+	/*-----------------------
+	 * IParameterizedMessage
+	 */
+	
 	/**
 	 * {@inheritDoc}
 	 * <p>
@@ -80,10 +110,6 @@ public class NormalParameters implements IParameterizedMessage
 		
 	}
 
-	/*-----------------------
-	 * IParameterizedMessage
-	 */
-	
 	@Override
 	public final void setNull()
 	{

@@ -44,6 +44,16 @@ public final class SubgraphAddEvent extends FactorGraphSubgraphEvent
 		_absorbedFromSubgraph = absorbedFromSubgraph;
 	}
 
+	/*--------------------------
+	 * FactorGraphEvent methods
+	 */
+	
+	@Override
+	protected AddRemoveType addRemoveType()
+	{
+		return AddRemoveType.ADD;
+	}
+	
 	/**
 	 * True if subgraph was added as a result of absorbing the contents of another subgraph
 	 * through {@link FactorGraph#absorbSubgraph(FactorGraph)}.
