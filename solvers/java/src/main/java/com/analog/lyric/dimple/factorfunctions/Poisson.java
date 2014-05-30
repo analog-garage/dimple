@@ -16,87 +16,78 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
-/**
- * 
- * @since 0.06
- * @author Jake
- */
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
-
-// Poisson distribution corresponding to p(obs|act), where obs is the observed number of counts
-// and act is the actual number of counts.
-//
-// The conjugate prior for p is the Gamma distribution. It may be necessary to use a conjugate
-// prior, depending on your choice of solver.
-//
-// The variables in the argument are as follows:
-//
-// 1) "y" is the observed number of counts
-// 2) "n" is the true number of counts
-
-
-
+/**
+ * @since 0.06
+ * @author Jake
+ * 
+ * Poisson distribution corresponding to p(k|lambda), where k is the observed number of counts
+ * and lambda is the rate parameter.
+ * 
+ * The conjugate prior for lambda is the Gamma distribution
+ * Depending on the solver, it may or may not be necessary to use a
+ * conjugate prior (for the Gibbs solver, for example, it is not).
+ * 
+ * The variables in the argument are as follows:
+ * 
+ * 1) lambda: the rate parameter
+ * 2) k: the observed number of counts
+ * 
+ * The rate parameter may optionally be specified as constants in the constructor.
+ * In this case, it is not included in the list of arguments.
+ */
 public class Poisson extends FactorFunction
 {
-
-	//Declaring variables
-	protected int _y;
-	protected double _n;
-	//protected double _cutoff;
-	protected double _negativeLogFactorialy;
-	protected double _Logn;
-	protected boolean _yParameterConstant = false;
+	protected double _lambda;
+	protected double _logLambda;
+	protected boolean _lambdaParameterConstant = false;
 	private int _firstDirectedToIndex = 1;
 	
-	//For variable y
-	public Poisson() {super();}
-	//For fixed y
-	public Poisson(int y)
+	
+	public Poisson() {super();}		// For variable lambda
+	public Poisson(double lambda)	// For fixed lambda
 	{
 		this();
-		_y=y;
-		if (_y < 0) throw new DimpleException("y must be a non-negative value.");
-		_negativeLogFactorialy = -org.apache.commons.math3.special.Gamma.logGamma((double)(_y + 1));
-		_yParameterConstant=true;
-		_firstDirectedToIndex=0;		
+		if (lambda <= 0) throw new DimpleException("lambda must be greater than zero.");
+		_lambda = lambda;
+		_logLambda = Math.log(lambda);
+		_lambdaParameterConstant=true;
+		_firstDirectedToIndex=0;	
 	}
+	
 	
 	//Evaluating the energy
 	@Override
 	public double evalEnergy(Object... arguments)
 	{
 		int index = 0;
-		//First argument of the factor: y
-		if (!_yParameterConstant)
+		
+		// First argument of the factor: lambda
+		if (!_lambdaParameterConstant)
 		{
-			_y = FactorFunctionUtilities.toInteger(arguments[index++]);
-			_negativeLogFactorialy = -org.apache.commons.math3.special.Gamma.logGamma((double)(_y + 1));
-			if (_y < 0) return Double.POSITIVE_INFINITY;
+			_lambda = FactorFunctionUtilities.toDouble(arguments[index++]);
+			if (_lambda < 0)
+				return Double.POSITIVE_INFINITY;
+			_logLambda = Math.log(_lambda);
 		}
 		
-		//Second argument of the factor: n
-		_n=FactorFunctionUtilities.toDouble(arguments[index++]);
-		_Logn = Math.log(_n);
-		if (_n < 0) return Double.POSITIVE_INFINITY;
-		if (_n > 0)
+		// Second argument of the factor: k
+		int k = FactorFunctionUtilities.toInteger(arguments[index++]);
+		double negativeLogFactorialK = -org.apache.commons.math3.special.Gamma.logGamma(k + 1);
 
-			return -(-_n + _y*_Logn + _negativeLogFactorialy);
-
-			else if (_n==0 && _y!=0)
-
+		if (_lambda > 0)
+			return -(-_lambda + k*_logLambda + negativeLogFactorialK);
+		else if (_lambda==0 && k!=0)
 			return Double.POSITIVE_INFINITY;
-
-			else if (_n==0 && _y==0)
-
+		else if (_lambda==0 && k==0)
 			return 0;
-
-
-			return Double.POSITIVE_INFINITY;
-		
+		return Double.POSITIVE_INFINITY;
 	}
+	
+	
 	@Override
 	public final boolean isDirected() {return true;}
 	@Override
@@ -105,15 +96,14 @@ public class Poisson extends FactorFunction
 		return FactorFunctionUtilities.getListOfIndices(_firstDirectedToIndex, numEdges-1);
 	}
 	
-	//Factor-specific methods
-	public final boolean hasConstantyParameter()
-	{
-		return _yParameterConstant;
-	}
-	public final int gety()
-	{
-		return _y;
-	}
 	
-	
+	// Factor-specific methods
+	public final boolean hasConstantLambdaParameter()
+	{
+		return _lambdaParameterConstant;
+	}
+	public final double getLambda()
+	{
+		return _lambda;
+	}
 }

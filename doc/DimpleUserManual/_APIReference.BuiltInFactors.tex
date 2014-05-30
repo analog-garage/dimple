@@ -143,6 +143,8 @@ NotEquals & out(B) \newline in...(B,D,R) & - & Deterministic not-equals function
 %
 Or & out(B) \newline in...(B) & - & Deterministic logical OR function, where out = OR(in...). \\
 %
+Poisson & [$\lambda$](R) \newline $k$(D) & [$\lambda$] & Poisson distribution, $p(k|\lambda)$, where $\lambda$ is the rate parameter, and k is the discrete output.  While the value of $k$ for a Poission distribution is unbounded, the domain should be set to include integers from 0 through a maximum value.  The maximum value should be a multiple of the maximum likely value of $\lambda$\footnote{If the maximum value is 5 times larger than the largest value of $\lambda$, then less than 0.1 of the probability mass would fall above this value.}.  The conjugate prior for the parameter, $\lambda$, is a Gamma distribution\textsuperscript{\ref{ftn:conugatePrior}}. \\
+%
 Power & out(D,R) \newline base(D,R) \newline power(D,R) & [smoothing] & Deterministic power function, where out~=~base~$^{\mathrm{power}}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
 %
 Product & out(D,R) \newline in...(B,D,R) & [smoothing] & Deterministic product function, where $\mathrm{out} = \prod \mathrm{in}$. An optional smoothing value may be specified as a constructor argument$^{\ref{ftn:smoothing}}$. \\
@@ -202,6 +204,7 @@ Dimple includes some helper functions to create other built-in factors using a s
 \item MultivariateNormal\footnote{In the current version of Dimple, only constant parameters are supported by the MultivariateNormal factor.}
 \item NegativeExpGamma
 \item Normal
+\item Poisson\footnote{This utility takes an argument $\lambda$, either a variable or constant, plus an additional argument $maxK$, which indicates the maximum likely value of the output variable, k.  The value of $maxK$ should be a multiple of the maximum likely value of $\lambda$ (if $maxK$ is 5 times larger than the largest value of $\lambda$, then less than 0.1 of the probability mass would be greater than $maxK$).}
 \item Rayleigh
 \item VonMises
 \end{itemize}

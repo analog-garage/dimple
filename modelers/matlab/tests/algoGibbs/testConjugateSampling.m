@@ -52,6 +52,7 @@ test21(debugPrint, repeatable);
 test22(debugPrint, repeatable);
 test23(debugPrint, repeatable);
 test24(debugPrint, repeatable);
+test25(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -1232,6 +1233,61 @@ as = exp(-as);    % Convert from energy values
 aEst = mean(as,1);
 aEst = aEst/sum(aEst);  % Normalize
 assertElementsAlmostEqual(aEst/expectedAlpha, 1, 'absolute', 0.01);
+
+end
+
+
+
+
+% Gamma prior on Poisson distribution
+function test25(debugPrint, repeatable)
+
+priorAlpha = 1;
+priorBeta = 1;
+maxK = 100;
+lambdaData = 7;
+numDatapoints = 1000;
+
+% Sample from Poisson (see Wikipedia on Poisson distribution)
+L = exp(-lambdaData);
+data = zeros(1,numDatapoints);
+for i = 1:numDatapoints
+    k = 0;
+    p = 1;
+    while (p > L)
+        k = k + 1;
+        p = p * rand;
+    end
+    data(i) = k - 1;
+end
+
+% Create the graph
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+% Use built-in constructors
+lambda = Gamma(priorAlpha, priorBeta);
+x = Poisson(lambda, maxK, [1, numDatapoints]);
+x.FixedValue = data;
+
+assert(strcmp(lambda.Solver.getSamplerName,'GammaSampler'));
+
+numSamples = 1000;
+fg.Solver.setNumSamples(numSamples);
+fg.Solver.setBurnInScans(10);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(1);					% Make this repeatable
+end
+
+fg.solve();
+
+ls = lambda.Solver.getAllSamples();
+
+lambdaMean = mean(ls);
+assertElementsAlmostEqual(lambdaMean/lambdaData, 1, 'absolute', 0.01);
 
 end
 
