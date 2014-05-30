@@ -43,13 +43,31 @@ if (isa(N,'VariableBase'))
     maxN = max(cell2mat(N.Domain.Elements));
     varDomain = 0:maxN; % N is variable, so output can range from 0 to maximum possible value of N
     var = Discrete(varDomain, outSize{:}, dim);
-    
-    fg.addFactorVectorized({'MultinomialEnergyParameters', dim}, {N,[]}, {alphas,[]}, {var,1});
+    if (numel(outSize)==1 && outSize{1}==1)
+        varArgument = {var,[]};
+    else
+        varArgument = {var,1:numel(outSize)};   % Vectorize over all but last dimension
+    end
+
+    if (iscell(alphas))
+        fg.addFactorVectorized({'MultinomialEnergyParameters', dim}, {N,[]}, alphas{:}, varArgument);
+    else
+        fg.addFactorVectorized({'MultinomialEnergyParameters', dim}, {N,[]}, {alphas,[]}, varArgument);
+    end
 else
     varDomain = 0:N;    % N is constant, so output can range from 0 to N
     var = Discrete(varDomain, outSize{:}, dim);
-    
-    fg.addFactorVectorized({'MultinomialEnergyParameters', dim, N}, {alphas,[]}, {var,1});
+    if (numel(outSize)==1 && outSize{1}==1)
+        varArgument = {var,[]};
+    else
+        varArgument = {var,1:numel(outSize)};   % Vectorize over all but last dimension
+    end
+
+    if (iscell(alphas))
+        fg.addFactorVectorized({'MultinomialEnergyParameters', dim, N}, alphas{:}, varArgument);
+    else
+        fg.addFactorVectorized({'MultinomialEnergyParameters', dim, N}, {alphas,[]}, varArgument);
+    end
 end
 
 end

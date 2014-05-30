@@ -251,13 +251,13 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		{
 			_hasConstantAlphas = true;
 			_hasConstantAlpha = new boolean[_dimension];
+			_constantAlpha = new double[_dimension];
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
 				if (factorFunction.isConstantIndex(index))
 				{
 					_hasConstantAlpha[i] = true;
 					_constantAlpha[i] = (Double)factorFunction.getConstantByIndex(index);
-
 				}
 				else
 				{

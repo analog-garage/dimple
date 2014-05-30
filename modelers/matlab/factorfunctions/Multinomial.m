@@ -49,20 +49,34 @@ if (isa(N,'VariableBase'))
     maxN = max(cell2mat(N.Domain.Elements));
     varDomain = 0:maxN; % N is variable, so output can range from 0 to maximum possible value of N
     var = Discrete(varDomain, outSize{:}, dim);
+    if (numel(outSize)==1 && outSize{1}==1)
+        varArgument = {var,[]};
+    else
+        varArgument = {var,1:numel(outSize)};   % Vectorize over all but last dimension
+    end
     
     if (joint)
-        fg.addFactorVectorized('Multinomial', N, alphas, {var,1});
+        fg.addFactorVectorized('Multinomial', N, alphas, varArgument);
+    elseif iscell(alphas)
+        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim}, N, alphas{:}, varArgument);
     else
-        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim}, N, {alphas,[]}, {var,1});
+        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim}, N, {alphas,[]}, varArgument);
     end
 else
     varDomain = 0:N;    % N is constant, so output can range from 0 to N
     var = Discrete(varDomain, outSize{:}, dim);
-    
-    if (joint)
-        fg.addFactorVectorized({'Multinomial', N}, alphas, {var,1});
+    if (numel(outSize)==1 && outSize{1}==1)
+        varArgument = {var,[]};
     else
-        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim, N}, {alphas,[]}, {var,1});
+        varArgument = {var,1:numel(outSize)};   % Vectorize over all but last dimension
+    end
+
+    if (joint)
+        fg.addFactorVectorized({'Multinomial', N}, alphas, varArgument);
+    elseif iscell(alphas)
+        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim, N}, alphas{:}, varArgument);
+    else
+        fg.addFactorVectorized({'MultinomialUnnormalizedParameters', dim, N}, {alphas,[]}, varArgument);
     end
 end
 

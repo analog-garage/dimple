@@ -22,7 +22,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 
 
 /**
- * Parameterized Binomial distribution, which corresponds to p(x | N, p),
+ * Binomial distribution, which corresponds to p(x | N, p),
  * where x is a count of the number of ones, N is the total count (ones and zeros),
  * and p is the probability parameter.
  * 
@@ -36,6 +36,8 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * 2) p: Probability parameter
  * 3) x: Count of ones
  * 
+ * N parameter may optionally be specified as constants in the constructor.
+ * In this case, N is not included in the list of arguments.
  */
 public class Binomial extends FactorFunction
 {
