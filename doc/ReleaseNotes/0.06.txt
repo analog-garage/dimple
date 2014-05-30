@@ -5,6 +5,8 @@ Significant New Features Since v0.05
 ------------------------------------
 * Added built-in factors Multinomial, MultinomialUnnormalizedParameters, and MultinomialEnergyParameters
 
+* Added built-in Poisson factor
+
 
 Significant Bug Fixes Since v0.05
 ---------------------------------
