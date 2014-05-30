@@ -22,7 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.jcip.annotations.ThreadSafe;
@@ -69,6 +71,28 @@ public class DimpleEventLogger implements Closeable
 				event.println(out, _verbosity);
 				out.flush();
 			}
+		}
+	}
+	
+	public static class LogEntry
+	{
+		private final Class<? extends DimpleEvent> _eventClass;
+		private final IDimpleEventSource _eventSource;
+		
+		private LogEntry(DimpleEventListener.IHandlerEntry entry)
+		{
+			_eventClass = entry.eventClass();
+			_eventSource = entry.eventSource();
+		}
+		
+		public Class<? extends DimpleEvent> eventClass()
+		{
+			return _eventClass;
+		}
+		
+		public IDimpleEventSource eventSource()
+		{
+			return _eventSource;
 		}
 	}
 	
@@ -126,6 +150,18 @@ public class DimpleEventLogger implements Closeable
 	}
 	
 	/**
+	 * True if object is known to not have any active log entries, no calls have been made
+	 * to {@link #log(Class, IDimpleEventSource...)} since object was created or last call
+	 * to {@link #clear()}.
+	 * 
+	 * @since 0.06
+	 */
+	public boolean isClear()
+	{
+		return _listeners.isEmpty();
+	}
+	
+	/**
 	 * True if {@link #out()} is non-null.
 	 * 
 	 * @since 0.06
@@ -155,6 +191,62 @@ public class DimpleEventLogger implements Closeable
 			DimpleEventListener listener = listenerForSource(source);
 			listener.register(_handler, eventType, Modifier.isAbstract(eventType.getModifiers()), source);
 		}
+	}
+	
+	/**
+	 * Returns newly created list of current log entries for this object in no particular order.
+	 * 
+	 * @since 0.06
+	 */
+	public synchronized List<LogEntry> logEntries()
+	{
+		ArrayList<LogEntry> entries = new ArrayList<LogEntry>();
+		for (DimpleEventListener listener : _listeners)
+		{
+			for (DimpleEventListener.IHandlersForSource handlersForSource : listener.allHandlerPerSource())
+			{
+				for (DimpleEventListener.IHandlerEntry entry : handlersForSource.handlerEntries())
+				{
+					if (entry.eventHandler() == _handler)
+					{
+						entries.add(new LogEntry(entry));
+					}
+				}
+			}
+		}
+		
+		return entries;
+	}
+	
+	/**
+	 * Removes log configuration of given event type on specified targets.
+	 * <p>
+	 * Note that this will only remove logging set up for the same {@code eventType} and source combination.
+	 * It will not block logging when {@link #log(Class, IDimpleEventSource...)} was called on a parent
+	 * object of the source.
+	 * <p>
+	 * @param eventType is type used in a previous call to {@link #log}.
+	 * @param sources are one or more sources previously used with {@code eventType} in a previous call
+	 * to {@link #log}.
+	 * @return the number of log entries that were removed by this call.
+	 * @since 0.06
+	 */
+	public synchronized int unlog(Class<? extends DimpleEvent> eventType, IDimpleEventSource ... sources)
+	{
+		int nRemoved = 0;
+		for (IDimpleEventSource source : sources)
+		{
+			FactorGraph rootGraph = source.getContainingGraph().getRootGraph();
+			DimpleEventListener listener = rootGraph.getEventListener();
+			if (listener!= null)
+			{
+				if (listener.unregister(_handler, eventType, source))
+				{
+					++nRemoved;
+				}
+			}
+		}
+		return nRemoved;
 	}
 	
 	/**
@@ -275,4 +367,5 @@ public class DimpleEventLogger implements Closeable
 
 		return listener;
 	}
+	
 }

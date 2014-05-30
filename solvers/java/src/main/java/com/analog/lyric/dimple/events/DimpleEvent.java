@@ -51,7 +51,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	 * Construction
 	 */
 	
-	DimpleEvent(IDimpleEventSource source)
+	protected DimpleEvent(IDimpleEventSource source)
 	{
 		super(source);
 		_eventSourceName = null;

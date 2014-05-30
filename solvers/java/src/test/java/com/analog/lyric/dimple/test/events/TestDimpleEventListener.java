@@ -192,6 +192,10 @@ public class TestDimpleEventListener
 		
 		assertHandledBy(listener, modelEvent);
 		assertFalse(modelEvent.consumed());
+		
+		expectThrow(NullPointerException.class, listener, "register", null, DimpleEvent.class, true, model);
+		expectThrow(NullPointerException.class, listener, "register", null, DimpleEvent.class, true, model);
+		expectThrow(NullPointerException.class, listener, "register", null, DimpleEvent.class, true, model);
 	
 		// Test eventSources() order
 		ReleasableIterator<IDimpleEventSource> sources1 = listener.eventSources(sv1);
@@ -215,6 +219,10 @@ public class TestDimpleEventListener
 			
 		// Single handler
 		TestEventHandler<TestModelEvent> handler1 = TestEventHandler.create(false);
+		expectThrow(NullPointerException.class, listener, "register", null, DimpleEvent.class, true, model);
+		expectThrow(NullPointerException.class, listener, "register", handler1, null, true, model);
+		expectThrow(NullPointerException.class, listener, "register", handler1, DimpleEvent.class, true, null);
+		assertTrue(listener.isEmpty());
 		listener.register(handler1, TestModelEvent.class, false, model);
 		listener.register(handler1, TestModelEvent.class, false, model); // no effect
 		assertInvariants(listener);
@@ -319,18 +327,39 @@ public class TestDimpleEventListener
 		listener.unregister(handleSolverFactorEvent, TestSolverFactorEvent.class, model);
 		assertHandledBy(listener, new TestSolverFactorEvent(sf1), handleAll);
 		
+		listener.unregisterAll();
+		assertTrue(listener.isEmpty());
+		
+		DimpleEventHandler<DimpleEvent> anotherHandler = new TestEventHandler<DimpleEvent>(false);
+		listener.register(handleAll, DimpleEvent.class, true, model);
+		listener.register(anotherHandler, DimpleEvent.class, true, model);
+		listener.register(handleAll, DimpleEvent.class, true, sf1);
+		listener.register(anotherHandler, DimpleEvent.class, true, sf1);
+		listener.unregisterAll(anotherHandler);
+		
+		for (IHandlersForSource allHandlers : listener.allHandlerPerSource())
+		{
+			for (IHandlerEntry e : allHandlers.handlerEntries())
+			{
+				assertNotSame(anotherHandler, e.eventHandler());
+			}
+		}
+		
 		//
 		// Test defaultListener
 		//
 		
 		DimpleEventListener defaultListener = DimpleEventListener.getDefault();
+		assertTrue(defaultListener.isDefault());
 		assertTrue(defaultListener.isEmpty());
 		assertInvariants(defaultListener);
 		assertSame(defaultListener, DimpleEventListener.getDefault());
 		assertSame(defaultListener, DimpleEventListener.setDefault(listener));
 		assertSame(listener, DimpleEventListener.setDefault(null));
 		assertNull(DimpleEventListener.setDefault(null));
+		assertFalse(defaultListener.isDefault());
 		DimpleEventListener defaultListener2 = DimpleEventListener.getDefault();
+		assertTrue(defaultListener2.isDefault());
 		assertInvariants(defaultListener2);
 		assertNotSame(defaultListener, defaultListener2);
 	}
