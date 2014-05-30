@@ -724,6 +724,22 @@ for i=1:length(means);
     end
 end
 
+% Poisson (constant parameter)
+for k=0:10;
+    lambda=rand*15;
+    f = FactorFunction('Poisson', lambda);
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy(k),-log(poisspdf(k,lambda)));
+end
+
+% Poisson (variable parameter)
+f = FactorFunction('Poisson');
+for k=0:10;
+    lambda=rand*15;
+    assertElementsAlmostEqual(f.IFactorFunction.evalEnergy({lambda,k}),-log(poisspdf(k,lambda)));
+end
+assert(f.IFactorFunction.evalEnergy({0,randi(100)}) == Inf);
+assert(f.IFactorFunction.evalEnergy({0,0}) == 0);
+
 % Rayleigh (constant parameters)
 sigmas = [1 .2 27 10 2];
 for i=1:length(means);

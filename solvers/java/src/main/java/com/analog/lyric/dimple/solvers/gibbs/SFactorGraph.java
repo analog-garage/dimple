@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.factorfunctions.MultinomialUnnormalizedParameters
 import com.analog.lyric.dimple.factorfunctions.Multiplexer;
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.Poisson;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -71,6 +72,7 @@ import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultinomialUnno
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomMultiplexer;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNegativeExpGamma;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomNormal;
+import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomPoisson;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.block.IBlockInitializer;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
@@ -200,6 +202,8 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
 		else if (factorFunction instanceof MultinomialEnergyParameters)
 			return new CustomMultinomialUnnormalizedOrEnergyParameters(factor);
+		else if (factorFunction instanceof Poisson)
+			return new CustomPoisson(factor);
 		else if (factorFunction instanceof Multiplexer)
 			return new CustomMultiplexer(factor);
 		else if (factor.isDiscrete())			// No custom factor exists, so create a generic one

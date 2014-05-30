@@ -34,6 +34,7 @@ test3(debugPrint, repeatable);
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
+test7(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testFactorCreationUtilities');
 
@@ -564,6 +565,55 @@ assert(strcmp('MultinomialUnnormalizedParameters',z6.Factors{1}.VectorObject.get
 assert(strcmp('MultinomialEnergyParameters',z7.Factors{1}.VectorObject.getFactorFunction.getName));
 assert(strcmp('MultinomialEnergyParameters',z8.Factors{1}.VectorObject.getFactorFunction.getName));
 
+
+end
+
+
+
+% Test Poisson
+function test7(debugPrint, repeatable)
+
+fgAlt = FactorGraph();
+fgAlt.Solver = 'Gibbs';
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+maxK = 100;
+constLambda = 12.7;
+lambda = Real;
+lambdaAlt = Real;
+
+x1 = Poisson(lambda, maxK);
+x2 = Poisson(constLambda, maxK);
+assert(isa(x1,'Discrete'));
+assert(isa(x2,'Discrete'));
+assert(all(cell2mat(x1.Domain.Elements) == 0:maxK));
+assert(all(cell2mat(x2.Domain.Elements) == 0:maxK));
+assert(all(size(x1)==[1,1]));
+assert(all(size(x2)==[1,1]));
+assert(x1.Solver.getParentGraph == fg.Solver);
+assert(x2.Solver.getParentGraph == fg.Solver);
+assert(strcmp('Poisson',x1.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Poisson',x2.Factors{1}.VectorObject.getFactorFunction.getName));
+
+
+x5 = Poisson(lambda, maxK, [2,4]);
+x6 = Poisson(constLambda, maxK, [2,4]);
+assert(isa(x5,'Discrete'));
+assert(isa(x6,'Discrete'));
+assert(all(cell2mat(x5.Domain.Elements) == 0:maxK));
+assert(all(cell2mat(x6.Domain.Elements) == 0:maxK));
+assert(all(size(x5)==[2,4]));
+assert(all(size(x6)==[2,4]));
+assert(x5(1,1).Solver.getParentGraph == fg.Solver);
+assert(x6(1,1).Solver.getParentGraph == fg.Solver);
+assert(strcmp('Poisson',x5.Factors{1}.VectorObject.getFactorFunction.getName));
+assert(strcmp('Poisson',x6.Factors{1}.VectorObject.getFactorFunction.getName));
+
+x9 = Poisson(lambdaAlt, maxK, fgAlt);
+assert(x9.Solver.getParentGraph == fgAlt.Solver);
+assert(isa(x9,'Discrete'));
 
 end
 
