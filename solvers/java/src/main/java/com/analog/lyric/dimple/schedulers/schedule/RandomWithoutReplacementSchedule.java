@@ -18,7 +18,6 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Random;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -56,7 +55,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 	}
 
 	@Override
-	public void attach(FactorGraph factorGraph) 
+	public void attach(FactorGraph factorGraph)
 	{
 		super.attach(factorGraph);
 		initialize();
