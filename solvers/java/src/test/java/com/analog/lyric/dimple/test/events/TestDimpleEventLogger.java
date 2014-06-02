@@ -198,6 +198,8 @@ public class TestDimpleEventLogger
 	
 	private static class TestEvent extends DimpleEvent
 	{
+		private static final long serialVersionUID = 1L;
+
 		TestEvent(IDimpleEventSource source)
 		{
 			super(source);

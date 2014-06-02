@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +31,25 @@ import net.jcip.annotations.ThreadSafe;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
 /**
+ * Provides basic logging of dimple events.
+ * <p>
+ * This class provides a simpler interface for than {@link DimpleEventListener} when
+ * you only want to print the text of events to an output stream.
+ * <p>
+ * For instance, to log all dimple events to stderr for a graph {@code fg}, you only need to write:
+ * <pre>
+ *     DimpleEventLogger logger = new DimpleEventLogger();
+ *     logger.log(DimpleEvent.class, fg);
+ * </pre>
+ * and to write to a specified file instead, you just need to open the logger with the
+ * given file, as in:
+ * <pre>
+ *     logger.open(new File("events.log"));
+ * </pre>
+ * 
+ * The event logger will use the existing {@link DimpleEventListener} that is associated
+ * with the root graph of each event source, if it has been set. Otherwise, it will automatically
+ * set the root graph to use the listener {@link DimpleEventListener#getDefault()}.
  * 
  * @since 0.06
  * @author Christopher Barber
@@ -189,7 +207,7 @@ public class DimpleEventLogger implements Closeable
 		for (IDimpleEventSource source : sources)
 		{
 			DimpleEventListener listener = listenerForSource(source);
-			listener.register(_handler, eventType, Modifier.isAbstract(eventType.getModifiers()), source);
+			listener.register(_handler, eventType, source);
 		}
 	}
 	
@@ -337,11 +355,23 @@ public class DimpleEventLogger implements Closeable
 		return _out;
 	}
 	
+	/**
+	 * The verbosity of logged events.
+	 * <p>
+	 * This is the value that will be passed to {@link DimpleEvent#println(PrintStream, int)}
+	 * when output an event.
+	 * 
+	 * @since 0.06
+	 */
 	public int verbosity()
 	{
 		return _verbosity;
 	}
 	
+	/**
+	 * Sets the value of {@link #verbosity()} to the specified value.
+	 * @since 0.06
+	 */
 	public void verbosity(int verbosity)
 	{
 		_verbosity = verbosity;

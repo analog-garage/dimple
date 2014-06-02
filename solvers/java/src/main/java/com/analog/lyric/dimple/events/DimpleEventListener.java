@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.events;
 
+import java.lang.reflect.Modifier;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import com.google.common.collect.MapMaker;
 
 
 /**
+ * Manages dispatching of {@link DimpleEvent}s.
  * 
  * @since 0.06
  * @author Christopher Barber
@@ -402,6 +404,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * of subclasses of the {@code eventClass}.
 	 * @param target is the object to be monitored for events. Note that children of this object may also
 	 * @since 0.06
+	 * @see #register(IDimpleEventHandler, Class, IDimpleEventSource)
 	 * @see #raiseEvent(DimpleEvent)
 	 */
 	public <Event extends DimpleEvent> void register(
@@ -456,6 +459,26 @@ public class DimpleEventListener implements IDimpleEventListener
 			
 			_handlersForSource.put(target, entries);
 		}
+	}
+	
+	/**
+	 * Registers an event handler for given event class on given event source.
+	 * <p>
+	 * This simply invokes {@link #register(IDimpleEventHandler, Class, boolean, IDimpleEventSource)}
+	 * passing true for the {@code handleSubclasses} argument if {@code eventClass} is abstract.
+	 * <p>
+	 * @param handler non-null handler
+	 * @param eventClass is the class of events to be handled
+	 * @param target is the object to be monitored for events. Note that children of this object may also
+	 * @since 0.06
+	 * @see #raiseEvent(DimpleEvent)
+	 */
+	public <Event extends DimpleEvent> void register(
+		IDimpleEventHandler<? super Event> handler,
+		Class<Event> eventClass,
+		IDimpleEventSource target)
+	{
+		register(handler, eventClass, Modifier.isAbstract(eventClass.getModifiers()), target);
 	}
 	
 	/**

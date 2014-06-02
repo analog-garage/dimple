@@ -17,7 +17,10 @@
 package com.analog.lyric.dimple.events;
 
 /**
- * 
+ * Abstract interface for dimple event handlers.
+ * <p>
+ * Most implementors will simply want to extend {@link DimpleEventHandler}.
+ * <p>
  * @since 0.06
  * @author Christopher Barber
  */
