@@ -16,12 +16,14 @@
 
 package com.analog.lyric.dimple.events;
 
+import com.analog.lyric.util.misc.IGetId;
+
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
-public interface IModelEventSource extends IDimpleEventSource
+public interface IModelEventSource extends IDimpleEventSource, IGetId
 {
 }

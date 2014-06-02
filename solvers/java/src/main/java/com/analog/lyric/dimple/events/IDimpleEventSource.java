@@ -52,6 +52,12 @@ public interface IDimpleEventSource
 	 */
 	public String getEventSourceName();
 	
+	/**
+	 * The model object that is most closely associated with the source.
+	 * <p>
+	 * If this object is itself a {@link IModelEventSource} this method should simply
+	 * return this object.
+	 */
 	public IModelEventSource getModelEventSource();
 	
 	/**

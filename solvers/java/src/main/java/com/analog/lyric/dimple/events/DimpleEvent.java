@@ -16,13 +16,12 @@
 
 package com.analog.lyric.dimple.events;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.EventObject;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.util.misc.IPrintable;
 
 /**
@@ -45,6 +44,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	
 	private volatile transient boolean _consumed = false;
 	
+	private final int _modelId;
 	private final String _eventSourceName;
 	
 	/*--------------
@@ -54,18 +54,11 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	protected DimpleEvent(IDimpleEventSource source)
 	{
 		super(source);
-		_eventSourceName = null;
+		_eventSourceName = source.getEventSourceName();
+		IModelEventSource obj = source.getModelEventSource();
+		_modelId = obj != null ? obj.getId() : -1;
 	}
 	
-	/*---------------
-	 * Serialization
-	 */
-	
-	private void writeObject(ObjectOutputStream out) throws IOException
-	{
-		out.writeObject(getSourceName()); // Make sure _eventSourceName is non-null.
-	}
-
 	/*----------------
 	 * Object methods
 	 */
@@ -89,8 +82,8 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 			{
 				out.format("%s: ", getClass().getSimpleName());
 			}
+			printDetails(out, verbosity);
 		}
-		printDetails(out, verbosity);
 	}
 	
 	protected abstract void printDetails(PrintStream out, int verbosity);
@@ -162,6 +155,19 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	public abstract IModelEventSource getModelObject();
 	
 	/**
+	 * The id of the model object associated with the source of the event, if applicable.
+	 * <p>
+	 * This is the same as the the value of {@link INode#getId()} on {@link #getModelObject()}
+	 * when the latter is non-null. This is preserved by serialization.
+	 * 
+	 * @since 0.06
+	 */
+	public int getModelId()
+	{
+		return _modelId;
+	}
+	
+	/**
 	 * The name of the event source.
 	 * <p>
 	 * Returns value of {@link IDimpleEventSource#getEventSourceName()} for
@@ -172,12 +178,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	 */
 	public String getSourceName()
 	{
-		String name = _eventSourceName;
-		if (name == null)
-		{
-			name = getSource().getEventSourceName();
-		}
-		return name;
+		return _eventSourceName;
 	}
 
 }
