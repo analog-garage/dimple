@@ -37,12 +37,12 @@ fg.Solver.setNumParticles(30);
 fg.Solver.setResamplingUpdatesPerParticle(30);
 
 %Create the factor.
-realProduct = com.analog.lyric.dimple.FactorFunctions.Product(1.0);
+realProduct = FactorFunction('Product', 1.0);
 fg.addFactor(realProduct,c,a,b);
 
 %Set the inputs for a and b.
-a.Input = com.analog.lyric.dimple.FactorFunctions.Normal(3,1);
-b.Input = com.analog.lyric.dimple.FactorFunctions.Normal(5,1);
+a.Input = FactorFunction('Normal', 3, 1);
+b.Input = FactorFunction('Normal', 5, 1);
 
 %Optionally use tempering
 fg.Solver.setInitialTemperature(1);

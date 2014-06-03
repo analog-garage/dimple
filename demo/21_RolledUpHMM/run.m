@@ -104,7 +104,7 @@ disp('retrieve dynamic results');
 for i = 1:3
     ds.add([1 0]);
     fg.advance();
-    fg.solve(false);
+    fg.solveOneStep();
     weather.get(1).Belief
 end
 
