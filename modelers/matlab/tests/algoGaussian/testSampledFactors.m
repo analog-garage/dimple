@@ -9,9 +9,9 @@
 %
 %   Unless required by applicable law or agreed to in writing, software
 %   distributed under the License is distributed on an "AS IS" BASIS,
-%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-%   See the License for the specific language governing permissions and
-%   limitations under the License.
+%   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+%   implied. See the License for the specific language governing
+%   permissions and limitations under the License.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function testSampledFactors()
 
@@ -27,9 +27,25 @@ if (repeatable)
     reset(rs,seed);
 end
 
+% Statistics toolbox is needed for some tests.
+hasStats = true;
+if (isempty(ver('stats')))
+   dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Communications Toolbox not installed');
+   hasStats = false;
+else
+  [hasLicense err] = license('checkout', 'statistics_toolbox');
+  if ~hasLicense
+      dtrace(true, 'WARNING: testSampledFactors some tests skipped because Statistics Toolbox license could not be obtained');
+      hasStats = false;
+  end
+end
+
+
 test1(debugPrint, repeatable);
-test2(debugPrint, repeatable);
-test3(debugPrint, repeatable);
+if hasStats
+    test2(debugPrint, repeatable);
+    test3(debugPrint, repeatable);
+end
 test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
