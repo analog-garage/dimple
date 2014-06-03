@@ -73,7 +73,7 @@ public abstract class FactorGraphEvent extends ModelEvent
 		out.format("%s %s '%s'",
 			addRemoveType()._verb,
 			nodeType()._description,
-			getNode());
+			getNode().getName());
 	}
 	
 	/*--------------------------

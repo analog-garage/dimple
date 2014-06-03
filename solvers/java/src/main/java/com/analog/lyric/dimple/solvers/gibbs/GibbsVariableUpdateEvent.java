@@ -64,7 +64,7 @@ public class GibbsVariableUpdateEvent extends GibbsSolverVariableEvent
 	@Override
 	protected void printDetails(PrintStream out, int verbosity)
 	{
-		out.format("sample for '%s' set to '%s'", getModelObject(), getNewValue());
+		out.format("sample for '%s' set to '%s'", getSourceName(), getNewValue());
 		if (verbosity > 0)
 		{
 			out.format(" (was %s)", getOldValue());

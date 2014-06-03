@@ -102,17 +102,17 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 		switch (getType())
 		{
 		case ADDED:
-			out.format("fixed value on '%s' set to '%s'", getModelObject(), getNewValue());
+			out.format("fixed value on '%s' set to '%s'", getSourceName(), getNewValue());
 			break;
 		case CHANGED:
-			out.format("fixed value on '%s' set to '%s'", getModelObject(), getNewValue());
+			out.format("fixed value on '%s' set to '%s'", getSourceName(), getNewValue());
 			if (verbosity > 0)
 			{
 				out.format(" (was %s)", getOldValue());
 			}
 			break;
 		case REMOVED:
-			out.format("fixed value removed from '%s'", getModelObject());
+			out.format("fixed value removed from '%s'", getSourceName());
 			if (verbosity > 0)
 			{
 				out.format(" (was %s)", getOldValue());

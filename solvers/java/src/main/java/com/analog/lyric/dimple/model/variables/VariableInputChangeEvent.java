@@ -69,17 +69,17 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 		switch (getType())
 		{
 		case ADDED:
-			out.format("input on '%s' set to '%s'", getModelObject(), getNewInput());
+			out.format("input on '%s' set to '%s'", getSourceName(), getNewInput());
 			break;
 		case CHANGED:
-			out.format("input on '%s' set to '%s'", getModelObject(), getNewInput());
+			out.format("input on '%s' set to '%s'", getSourceName(), getNewInput());
 			if (verbosity > 0)
 			{
 				out.format(" (was %s)", getOldInput());
 			}
 			break;
 		case REMOVED:
-			out.format("input removed from '%s'", getModelObject());
+			out.format("input removed from '%s'", getSourceName());
 			if (verbosity > 0)
 			{
 				out.format(" (was %s)", getOldInput());
