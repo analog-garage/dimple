@@ -223,7 +223,6 @@ public class BitSetUtil
 	 */
 	public static int setMaskedValue(int word, int mask, int value)
 	{
-		assert((value & mask) == value);
 		return (word & ~mask) | value;
 	}
 	
