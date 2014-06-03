@@ -45,8 +45,8 @@ test1(debugPrint, repeatable);
 if hasStats
     test2(debugPrint, repeatable);
     test3(debugPrint, repeatable);
+    test4(debugPrint, repeatable);
 end
-test4(debugPrint, repeatable);
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
 
