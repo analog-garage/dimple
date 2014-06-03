@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.events;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import com.analog.lyric.dimple.model.core.BoundaryVariableAddEvent;
 import com.analog.lyric.dimple.model.core.BoundaryVariableRemoveEvent;
@@ -37,7 +38,6 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 
 
 /**
@@ -74,7 +74,7 @@ public enum StandardDimpleEvents implements Iterable<Class<? extends DimpleEvent
 	@SuppressWarnings("unchecked")
 	private StandardDimpleEvents()
 	{
-		_eventTypes = Maps.newTreeMap(Caseless.COMPARATOR);
+		_eventTypes = new TreeMap<String,Class<? extends DimpleEvent>>(Caseless.COMPARATOR);
 			
 		final Class<?>[] eventTypes = new Class<?>[] {
 			BoundaryVariableAddEvent.class,
