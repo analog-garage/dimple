@@ -84,11 +84,19 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
     	return getParentGraph();
     }
     
-	@Override
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Default implementation provided by this class returns the event source name
+     * of {@link #getModelEventSource()} if non-null, otherwise the result of the {@link #toString()} method.
+     * <p>
+     * This behavior is likely to change in the future.
+     */
+    @Override
 	public String getEventSourceName()
 	{
-		// FIXME - determine what this should be
-		return toString();
+		IModelEventSource modelObj = getModelEventSource();
+		return modelObj != null ? modelObj.getEventSourceName() : toString();
 	}
 
     @Override
