@@ -34,6 +34,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFF000000;
 
 	private static final int MESSAGE_EVENT_MASK = 0x03000000;

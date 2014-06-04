@@ -68,6 +68,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	 * Constants
 	 */
 	
+	@SuppressWarnings("hiding")
 	protected static final int EVENT_MASK = 0x03;
 
 	/*-------

@@ -84,6 +84,7 @@ public class FactorGraph extends FactorBase
 	 * Flags that are reserved for use by this class and should not be
 	 * used by subclasses when invoking {@link #setFlags(int)} or {@link #clearFlags()}.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED = 0xFFFFFF00;
 	
 	private static final int FACTOR_ADD_EVENT               = 0xFFFF0100;
@@ -1347,7 +1348,7 @@ public class FactorGraph extends FactorBase
 		if (_portVersionId == _versionId && _ports != null)
 			return _ports;
 
-		ArrayList<Port> _ports = new ArrayList<Port>();
+		_ports = new ArrayList<Port>();
 
 		FactorList factors = getNonGraphFactorsFlat();
 

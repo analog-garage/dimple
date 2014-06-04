@@ -68,8 +68,10 @@ public class SRealVariable extends SRealVariableBase
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
+	@SuppressWarnings("hiding")
 	protected final static int RESERVED_FLAGS = 0xFFFF0003;
 
+	@SuppressWarnings("hiding")
 	protected static final int EVENT_MASK = 0x03;
 
 	/*-------

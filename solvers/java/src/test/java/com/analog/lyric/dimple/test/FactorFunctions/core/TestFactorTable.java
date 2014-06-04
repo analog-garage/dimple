@@ -60,7 +60,7 @@ public class TestFactorTable
 	final Random rand = new Random(42);
 	final DiscreteDomain domain2 = DiscreteDomain.range(0,1);
 	final DiscreteDomain domain3 = DiscreteDomain.range(0,2);
-	final DiscreteDomain domain5 = DiscreteDomain.range(0,5);
+	final DiscreteDomain domain6 = DiscreteDomain.range(0,5);
 	final DiscreteDomain domain32 = DiscreteDomain.range(0,31);
 	final DiscreteDomain domain256 = DiscreteDomain.range(0, 255);
 	final DiscreteDomain domainMax = DiscreteDomain.range(0,Integer.MAX_VALUE - 1);
@@ -297,7 +297,7 @@ public class TestFactorTable
 		assertFalse(t2x2x2.isDeterministicDirected());
 		assertInvariants(t2x2x2);
 		
-		IFactorTable t2x3x4 = FactorTable.create(domain2, domain3, domain5);
+		IFactorTable t2x3x4 = FactorTable.create(domain2, domain3, domain6);
 		t2x3.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
 		t2x3x4.randomizeWeights(rand);
 		assertInvariants(t2x3x4);
@@ -701,7 +701,7 @@ public class TestFactorTable
 	@Test
 	public void testCreateMarginal()
 	{
-		testCreateMarginal(domain2, domain3, domain5);
+		testCreateMarginal(domain2, domain3, domain6);
 	}
 	
 	private void testCreateMarginal(DiscreteDomain ... domains)
@@ -736,7 +736,6 @@ public class TestFactorTable
 	{
 		int iterations = 10000;
 		
-		Random rand = new Random(13);
 		DiscreteDomain domain10 = DiscreteDomain.range(0,9);
 		DiscreteDomain domain20 = DiscreteDomain.range(0,19);
 		DiscreteDomain domain5 = DiscreteDomain.range(0,4);
@@ -836,7 +835,6 @@ public class TestFactorTable
 	
 	private void binarySearchVsHashTable(int size, int iterations)
 	{
-		Random rand = new Random(123);
 		int[] array = new int[size];
 		for (int i = 0; i < size; ++i)
 		{

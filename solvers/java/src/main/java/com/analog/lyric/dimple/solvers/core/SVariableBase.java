@@ -35,6 +35,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
 	/*-------

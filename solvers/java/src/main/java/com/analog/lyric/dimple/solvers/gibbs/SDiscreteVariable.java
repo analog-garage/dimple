@@ -53,8 +53,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFFF0003;
 	
+	@SuppressWarnings("hiding")
 	protected static final int EVENT_MASK = 0x03;
 
 	public static final String DEFAULT_DISCRETE_SAMPLER_NAME = "CDFSampler";

@@ -16,15 +16,19 @@
 
 package com.analog.lyric.dimple.test;
 
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.model.variables.Discrete;
-
-import org.junit.* ;
-
-import static org.junit.Assert.* ;
-
-import java.util.Arrays;
 
 
 public class VariableTest {
@@ -46,17 +50,17 @@ public class VariableTest {
 	}
 	
 	@Test
-	public void test_bit() 
+	public void test_bit()
 	{
 		Bit a = new Bit();
 		
 		assertTrue(a instanceof Discrete);
-		DiscreteDomain d = (DiscreteDomain)a.getDomain();
+		DiscreteDomain d = a.getDomain();
 		assertArrayEquals(d.getElements(),new Object [] {0,1});
 	}
 
 	@Test
-	public void test_simpleStuff()  
+	public void test_simpleStuff()
 	{
 		Double[] domain = new Double[]{0.0, 1.0};
 		Discrete v = new Discrete(domain[0], domain[1]);
@@ -65,15 +69,16 @@ public class VariableTest {
 		
 		assertTrue(v.getId() > -1);
 		
-		double[] input = new double[]{.5, .5}; 
+		double[] input = new double[]{.5, .5};
 		v.setInput(input);
 		assertTrue(Arrays.equals(v.getInput(), input));
 		assertTrue(Arrays.equals(v.getBelief(), input));
 		
-	}	
+	}
 	
+	@SuppressWarnings("unused")
 	@Test(expected=Exception.class)
-	public void test_BlowUp() 
+	public void test_BlowUp()
 	{
 		//should kaboom
 		new Discrete();

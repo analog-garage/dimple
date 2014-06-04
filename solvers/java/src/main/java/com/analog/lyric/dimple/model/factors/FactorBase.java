@@ -33,6 +33,7 @@ public abstract class FactorBase extends Node
 	 * Flags that are reserved for use by this class and should not be
 	 * used by subclasses when invoking {@link #setFlags(int)} or {@link #clearFlags()}.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED = 0xFFFF0000;
 
 	/*--------------

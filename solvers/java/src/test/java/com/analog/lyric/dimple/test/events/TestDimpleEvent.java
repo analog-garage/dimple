@@ -115,8 +115,8 @@ public class TestDimpleEvent
 		@Override
 		public IModelEventSource getModelObject()
 		{
-			IDimpleEventSource source = getSource();
-			return source != null ? source.getModelEventSource() : null;
+			IDimpleEventSource src = getSource();
+			return src != null ? src.getModelEventSource() : null;
 		}
 	}
 	

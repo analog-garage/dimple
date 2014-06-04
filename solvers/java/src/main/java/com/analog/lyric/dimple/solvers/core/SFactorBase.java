@@ -36,6 +36,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	/**
 	 * Bits in {@link #_flags} reserved by this class and its superclasses.
 	 */
+	@SuppressWarnings("hiding")
 	protected static final int RESERVED_FLAGS = 0xFFF00000;
 	
 	

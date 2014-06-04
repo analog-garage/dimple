@@ -483,19 +483,13 @@ public class FactorGraphWalker implements Iterator<INode>
 					stack.push(_depthChangeSentinel);
 					this._currentDepth = newDepth;
 					this._maxDepthSeen = Math.max(this._maxDepthSeen, this._currentDepth);
-					int nPushed = 0;
 					for (int i = 0, size = nPortsOut; i < size; ++i)
 					{
 						INode portOut = portsOut.get(i);
 						if (i != portIn.index)
 						{
-							++nPushed;
 							stack.push(new Port(portOut,portOut.getPortNum(node)));
 						}
-					}
-					if (nPushed == 0)
-					{
-						new String();
 					}
 				}
 			}

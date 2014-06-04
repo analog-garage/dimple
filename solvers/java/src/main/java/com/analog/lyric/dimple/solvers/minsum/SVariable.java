@@ -34,7 +34,6 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	 */
 	protected double[][] _savedOutMsgArray = new double[0][];
 	protected double[] _dampingParams = new double[0];
-	protected double[] _input;
 	protected boolean _dampingInUse = false;
 
 	
