@@ -47,6 +47,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	 * <p>
 	 * May return a previously cached value.
 	 */
+	@SafeVarargs
 	public static <T extends Domain> DomainList<T> create(int[] outputIndices, T ... domains)
 	{
 		if (allDiscrete(domains))
@@ -70,6 +71,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	 * <p>
 	 * May return a previously cached value.
 	 */
+	@SafeVarargs
 	public static <T extends Domain> DomainList<T> create(T ... domains)
 	{
 		return create(null, domains);

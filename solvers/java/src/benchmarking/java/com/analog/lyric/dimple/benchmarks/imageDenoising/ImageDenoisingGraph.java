@@ -16,8 +16,6 @@
 
 package com.analog.lyric.dimple.benchmarks.imageDenoising;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -90,10 +88,8 @@ public class ImageDenoisingGraph
 
 	private double[] loadFactorTableValues(String name)
 	{
-		InputStream i = this.getClass().getResourceAsStream(name);
-		try
+		try (Scanner scanner = new Scanner(this.getClass().getResourceAsStream(name)))
 		{
-			Scanner scanner = new Scanner(i);
 			ArrayList<Double> m = new ArrayList<Double>();
 			while (scanner.hasNextDouble())
 			{
@@ -102,25 +98,13 @@ public class ImageDenoisingGraph
 			double[] data = Doubles.toArray(m);
 			return data;
 		}
-		finally
-		{
-			if (i != null)
-			{
-				try
-				{
-					i.close();
-				}
-				catch (IOException e)
-				{
-				}
-			}
-		}
 	}
 
 	public void setInput(DoubleSpace likelihoods)
 	{
 		likelihoods.iter(new IterFunctionWithCoordinates()
 		{
+			@Override
 			public void apply(double value, int... coordinates)
 			{
 				int row = coordinates[0];
@@ -141,6 +125,7 @@ public class ImageDenoisingGraph
 	{
 		return DoubleSpaceFactory.generate(new GeneratorFunction()
 		{
+			@Override
 			public double apply(int... coordinates)
 			{
 				return getValue(coordinates);

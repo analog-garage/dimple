@@ -150,6 +150,7 @@ public class TestPrimitiveIterator
 		Long
 	}
 	
+	@SafeVarargs
 	private final <T extends Number> void testIterable(PrimitiveIterable<T> iterable, T ... expected)
 	{
 		PrimitiveIterator<T> iterator = iterable.iterator();
@@ -161,6 +162,7 @@ public class TestPrimitiveIterator
 		testPrimitiveIterator(iterator, expected);
 	}
 	
+	@SafeVarargs
 	private final <T extends Number> void testNumberIterator(PrimitiveIterator<T> iterator, T ... expected)
 	{
 		int i = 0;
@@ -173,6 +175,7 @@ public class TestPrimitiveIterator
 		assertEquals(expected.length, i);
 	}
 
+	@SafeVarargs
 	private final <T extends Number> void testPrimitiveIterator(PrimitiveIterator<T> iterator, T ... expected)
 	{
 		

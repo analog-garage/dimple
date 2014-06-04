@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.benchmarks.imageDenoising;
 
-import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.range;
+import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -124,6 +124,7 @@ public class ImageDenoisingBenchmark
 		image.transform(new Threshold(128));
 		image.transform(new TransformFunction()
 		{
+			@Override
 			public double apply(double v)
 			{
 				return v * 2.0 - 1.0;
@@ -135,6 +136,7 @@ public class ImageDenoisingBenchmark
 		image.transform(new TransformFunction()
 		{
 			// LLR
+			@Override
 			public double apply(double v)
 			{
 				return -2.0 * v / noiseVariance;
@@ -143,6 +145,7 @@ public class ImageDenoisingBenchmark
 		image.transform(new TransformFunction()
 		{
 			// likelihood
+			@Override
 			public double apply(double v)
 			{
 				return 1.0 / (1.0 + Math.exp(v));

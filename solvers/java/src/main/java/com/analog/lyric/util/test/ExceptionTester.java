@@ -41,6 +41,7 @@ public class ExceptionTester
 	 * will be performed.
 	 * @param args are the parameters of the method call.
 	 */
+	@SafeVarargs
 	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
 		Object object, String methodName, T ... args)
 	{
@@ -63,6 +64,7 @@ public class ExceptionTester
 	 * @param args are the parameters of the method call.
 	 * @since 0.06
 	 */
+	@SafeVarargs
 	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
 		Object object, Class<?> declaringClass, String methodName, T ... args)
 	{
@@ -105,6 +107,7 @@ public class ExceptionTester
 	 * Same as {@link #expectThrow(Class, String, Object, String, Object...)} but with null
 	 * {@code messagePattern}.
 	 */
+	@SafeVarargs
 	public static <T> void expectThrow(Class<? extends Throwable> exceptionClass, Object object, String methodName,
 		T ... args)
 	{
