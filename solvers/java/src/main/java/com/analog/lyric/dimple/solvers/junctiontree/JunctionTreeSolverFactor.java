@@ -38,7 +38,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * @since 0.05
@@ -312,7 +312,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 				}
 			}
 			
-			@NotNull JointDomainIndexer fromDomains = targetFactor.getFactorTable().getDomainIndexer();
+			@NonNull JointDomainIndexer fromDomains = targetFactor.getFactorTable().getDomainIndexer();
 			// TODO: get target domains without forcing instantiation of factor table?
 			JointDomainIndexer toDomains = sourceFactor.getFactorTable().getDomainIndexer();
 			

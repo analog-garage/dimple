@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -99,7 +99,7 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	 * its comparator will be used to determine priorities. Otherwise the natural order will be used
 	 * (see {@link #KeyedPriorityQueue(int, Comparator)}).
 	 */
-	public KeyedPriorityQueue(@NotNull Collection<? extends E> collection)
+	public KeyedPriorityQueue(@NonNull Collection<? extends E> collection)
 	{
 		super(collection);
 	}

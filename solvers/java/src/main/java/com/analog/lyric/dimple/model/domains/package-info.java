@@ -10,6 +10,6 @@
 /**
  * Variable domain classes and related helpers.
  */
-@NotNullByDefault
+@NonNullByDefault
 package com.analog.lyric.dimple.model.domains;
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;

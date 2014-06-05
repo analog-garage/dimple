@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -33,7 +33,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @author Christopher Barber
  * @since 0.05
  */
-@NotNullByDefault
+@NonNullByDefault
 public interface IHeap<E> extends Collection<E>, Cloneable
 {
 	/*------------------

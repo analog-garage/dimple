@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * Utility methods for cloning.
@@ -28,7 +28,7 @@ import com.analog.lyric.util.misc.NotNullByDefault;
  * @since 0.05
  * @author Christopher Barber
  */
-@NotNullByDefault
+@NonNullByDefault
 public abstract class Clones
 {
 	/**

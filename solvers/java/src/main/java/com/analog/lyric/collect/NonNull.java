@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Contains static methods that convert a null parameter into
  * an immutable non-null instance.
  */
-@NotNullByDefault
+@NonNullByDefault
 public final class NonNull
 {
 	/**

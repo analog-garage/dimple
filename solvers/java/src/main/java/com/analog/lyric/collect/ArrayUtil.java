@@ -22,15 +22,15 @@ import java.util.Comparator;
 
 import cern.colt.list.IntArrayList;
 
-import com.analog.lyric.util.misc.NotNull;
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
  * Contains static utility methods pertaining to arrays.
  */
-@NotNullByDefault
+@NonNullByDefault
 public abstract class ArrayUtil
 {
 	/**
@@ -214,7 +214,7 @@ public abstract class ArrayUtil
 	{
 		final int destSize = sourceIndices.length;
 		
-		@NotNull T[] result = destination != null ? destination :
+		@NonNull T[] result = destination != null ? destination :
 			(T[])Array.newInstance(source.getClass().getComponentType(), destSize);
 		
 		for (int to = 0; to < destSize; ++to)

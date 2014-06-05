@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -39,7 +39,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @see SkipSet
  * @see SkipMap
  */
-@NotNullByDefault
+@NonNullByDefault
 public abstract class AbstractSkipList<K>
 {
 

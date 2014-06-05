@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -31,7 +31,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @author Christopher Barber
  * @since 0.0.5
  */
-@NotNullByDefault
+@NonNullByDefault
 public class BinaryHeap<E> extends AbstractHeap<E>
 {
 	/**

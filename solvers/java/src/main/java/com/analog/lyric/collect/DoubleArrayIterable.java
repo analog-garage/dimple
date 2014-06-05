@@ -16,9 +16,9 @@
 
 package com.analog.lyric.collect;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
-@NotNullByDefault
+@NonNullByDefault
 public class DoubleArrayIterable
 	extends AbstractPrimitiveArrayIterable<Double>
 	implements PrimitiveIterable.OfDouble

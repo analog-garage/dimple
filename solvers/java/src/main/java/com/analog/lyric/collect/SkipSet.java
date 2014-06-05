@@ -23,8 +23,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 
-import com.analog.lyric.util.misc.NotNull;
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
@@ -35,7 +35,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
      * Construction
      */
     
-	public SkipSet(@NotNull Comparator<? super E> comparator)
+	public SkipSet(@NonNull Comparator<? super E> comparator)
 	{
 		super(comparator, (short)1);
 	}
@@ -43,7 +43,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <T extends Comparable<T>> SkipSet<T> create()
+	public static @NonNull <T extends Comparable<T>> SkipSet<T> create()
 	{
 		return create(Ordering.natural());
 	}
@@ -51,7 +51,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <T> SkipSet<T> create(@NotNull Comparator<? super T> comparator)
+	public static @NonNull <T> SkipSet<T> create(@NonNull Comparator<? super T> comparator)
 	{
 		return new SkipSet<T>(comparator);
 	}
@@ -59,7 +59,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <T extends Comparable<T>> SkipSet<T> create(@NotNull Collection<? extends T> collection)
+	public static @NonNull <T extends Comparable<T>> SkipSet<T> create(@NonNull Collection<? extends T> collection)
 	{
 		final SkipSet<T> set = create();
 		set.addAll(collection);
@@ -69,7 +69,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <T> SkipSet<T> create(@NotNull SortedSet<T> set)
+	public static @NonNull <T> SkipSet<T> create(@NonNull SortedSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
 		result.addAll(set);
@@ -79,7 +79,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <T> SkipSet<T> create(@NotNull SkipSet<T> set)
+	public static @NonNull <T> SkipSet<T> create(@NonNull SkipSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
 		result.addAll(set);
@@ -211,7 +211,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		}
 	}
 	
-	@NotNullByDefault
+	@NonNullByDefault
 	public static class Iterator<E> extends KeyIterator<E> implements ReleasableIterator<E>
 	{
 		private static final ThreadLocal<KeyIterator<?>> reusableInstance = new ThreadLocal<KeyIterator<?>>();

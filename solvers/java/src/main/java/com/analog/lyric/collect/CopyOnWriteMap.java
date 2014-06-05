@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * A {@link Map} implementation that delegates to another map
@@ -51,8 +51,8 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * State
 	 */
 	
-	private final @NotNull Map<K,V> _originalMap;
-	private @NotNull AtomicReference<Map<K,V>> _map;
+	private final @NonNull Map<K,V> _originalMap;
+	private @NonNull AtomicReference<Map<K,V>> _map;
 
 	/*--------------
 	 * Construction
@@ -63,7 +63,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * the first mutating operation, which will trigger a copy
 	 * to be made.
 	 */
-	public CopyOnWriteMap(@NotNull Map<K,V> underlyingMap)
+	public CopyOnWriteMap(@NonNull Map<K,V> underlyingMap)
 	{
 		_originalMap = underlyingMap;
 		_map = new AtomicReference<Map<K,V>>(underlyingMap);
@@ -221,7 +221,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * The underlying map to which this one delegates until the first
 	 * time a mutating operation is called on this map. Set in the constructor.
 	 */
-	public @NotNull Map<K,V> originalMap()
+	public @NonNull Map<K,V> originalMap()
 	{
 		return _originalMap;
 	}
@@ -256,7 +256,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * Subclasses may override this method to return other map types or use a different
 	 * copying technique.
 	 */
-	protected @NotNull Map<K,V> copyOriginalMap()
+	protected @NonNull Map<K,V> copyOriginalMap()
 	{
 		Map<K,V> map = createEmptyMap(_originalMap.size());
 		map.putAll(_originalMap);
@@ -272,7 +272,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * <p>
 	 * Subclasses may override this method to return other map types.
 	 */
-	protected @NotNull Map<K,V> createEmptyMap(int capacity)
+	protected @NonNull Map<K,V> createEmptyMap(int capacity)
 	{
 		if (_originalMap instanceof SortedMap)
 		{
@@ -295,7 +295,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * Note that if {@link #wasCopied()} is true, this will return the same
 	 * object as {@link #mutableMap()}.
 	 */
-	protected @NotNull Map<K,V> readOnlyMap()
+	protected @NonNull Map<K,V> readOnlyMap()
 	{
 		return _map.get();
 	}
@@ -306,7 +306,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * first time it is invoked after construction or after call to {@link #revertToOriginalMap()}.
 	 * Use {@link #readOnlyMap()} for read-only operations.
 	 */
-	protected @NotNull Map<K,V> mutableMap()
+	protected @NonNull Map<K,V> mutableMap()
 	{
 		Map<K,V> map = _map.get();
 		

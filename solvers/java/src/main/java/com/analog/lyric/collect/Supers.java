@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Primitives;
@@ -34,7 +34,7 @@ import com.google.common.primitives.Primitives;
 /**
  * Static utility methods related to super classes.
  */
-@NotNullByDefault
+@NonNullByDefault
 public abstract class Supers
 {
 	// NOTE: Originally I tried to use the CacheBuilder class from Google's guava library, but that created

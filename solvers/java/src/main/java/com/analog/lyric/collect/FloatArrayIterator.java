@@ -19,14 +19,14 @@ package com.analog.lyric.collect;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * {@link PrimitiveIterator.OfFloat} implementation based on an underlying
  * float array.
  */
 @ThreadSafe
-@NotNullByDefault
+@NonNullByDefault
 public final class FloatArrayIterator extends AbstractPrimitiveArrayIterator<Float> implements PrimitiveIterator.OfFloat
 {
 	/*-------

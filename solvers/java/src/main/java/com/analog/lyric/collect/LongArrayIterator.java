@@ -19,7 +19,7 @@ package com.analog.lyric.collect;
 
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * {@link PrimitiveIterator.OfLong} implementation based on an underlying
@@ -30,7 +30,7 @@ import com.analog.lyric.util.misc.NotNullByDefault;
  * longs is not atomic in Java.
  */
 @ThreadSafe
-@NotNullByDefault
+@NonNullByDefault
 public final class LongArrayIterator extends AbstractPrimitiveArrayIterator<Long> implements PrimitiveIterator.OfLong
 {
 	/*-------

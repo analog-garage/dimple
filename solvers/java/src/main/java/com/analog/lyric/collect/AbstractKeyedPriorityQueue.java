@@ -29,7 +29,7 @@ import java.util.PriorityQueue;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
@@ -69,7 +69,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		_keyToEntry = new HashMap<K,Entry<E>>(initialCapacity);
 	}
 	
-	public AbstractKeyedPriorityQueue(@NotNull Collection<? extends E> collection)
+	public AbstractKeyedPriorityQueue(@NonNull Collection<? extends E> collection)
 	{
 		this(collection.size(), Comparators.fromCollection(collection));
 		addAll(collection);
@@ -312,7 +312,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	@NotThreadSafe
 	private class IteratorImpl implements Iterator<E>
 	{
-		private @NotNull final Iterator<Entry<E>> _iterator;
+		private @NonNull final Iterator<Entry<E>> _iterator;
 		private @Nullable E _last = null;
 		
 		private IteratorImpl()

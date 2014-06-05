@@ -17,27 +17,23 @@
 package com.analog.lyric.util.misc;
 
 import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Denotes default null annotation for contained elements.
+ * Indicates that variable or field is intended to never be null.
  * <p>
- * Indicates that elements within the package, type, method or constructor that was marked
- * with this annotation should be considered to implicitly be marked as {@link NotNull} if
- * not explicitly marked otherwise.
- * <p>
- * This is for static analysis by JDT in Eclipse.
+ * For use in static null analysis in Eclipse.
  * <p>
  * @since 0.06
  * @author Christopher Barber
  */
 @Documented
-@Retention(value=CLASS)
-@Target(value={PACKAGE, TYPE, METHOD, CONSTRUCTOR})
-public @interface NotNullByDefault
+@Retention(RetentionPolicy.CLASS)
+@Target({ FIELD, LOCAL_VARIABLE, METHOD, PARAMETER } )
+public @interface NonNull
 {
 }

@@ -22,8 +22,8 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import com.analog.lyric.util.misc.NotNull;
-import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.base.Objects;
 
@@ -32,7 +32,7 @@ import com.google.common.base.Objects;
 public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 {
 
-	@NotNullByDefault
+	@NonNullByDefault
 	public static class Entry<K,V> implements Map.Entry<K, V>
 	{
 		private final Object[] node;
@@ -95,12 +95,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected final V getNodeValue(@NotNull Object[] node)
+	protected final V getNodeValue(@NonNull Object[] node)
 	{
 		return (V)node[1];
 	}
 	
-	protected final V setNodeValue(@NotNull Object[] node, V value)
+	protected final V setNodeValue(@NonNull Object[] node, V value)
 	{
 		@SuppressWarnings("unchecked")
 		V oldValue = (V)node[1];
@@ -112,7 +112,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Construction
 	 */
 
-	public SkipMap(@NotNull Comparator<? super K> comparator)
+	public SkipMap(@NonNull Comparator<? super K> comparator)
 	{
 		super(comparator, (short)2);
 	}
@@ -120,7 +120,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	/**
 	 * @since 0.05
 	 */
-	public static @NotNull <K,V> SkipMap<K,V> create(@NotNull Comparator<? super K> comparator)
+	public static @NonNull <K,V> SkipMap<K,V> create(@NonNull Comparator<? super K> comparator)
 	{
 		return new SkipMap<K,V>(comparator);
 	}
@@ -398,9 +398,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class EntrySet<K,V> extends AbstractSet<Entry<K,V>>
 		implements ReleasableIterableCollection<Entry<K,V>>
 	{
-		private final @NotNull SkipMap<K,V> map;
+		private final @NonNull SkipMap<K,V> map;
 		
-		private EntrySet(@NotNull SkipMap<K,V> map)
+		private EntrySet(@NonNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -455,9 +455,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 	public static class KeySet<K,V> extends AbstractSet<K> implements ReleasableIterableCollection<K>
 	{
-		private final @NotNull SkipMap<K,V> map;
+		private final @NonNull SkipMap<K,V> map;
 		
-		private KeySet(@NotNull SkipMap<K,V> map)
+		private KeySet(@NonNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -496,9 +496,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class ValueCollection<K,V> extends AbstractCollection<V>
 		implements ReleasableIterableCollection<V>
 	{
-		private final @NotNull SkipMap<K,V> map;
+		private final @NonNull SkipMap<K,V> map;
 		
-		private ValueCollection(@NotNull SkipMap<K,V> map)
+		private ValueCollection(@NonNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -539,7 +539,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Iterating over the entire set costs O(n) in the size of the map. The
 	 * {@link #remove} method is supported but costs O(log(n)).
 	 */
-	@NotNullByDefault
+	@NonNullByDefault
 	public static class Iterator<K,V> implements ReleasableIterator<Entry<K,V>>
 	{
 		/*
@@ -703,7 +703,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 	}
 
-	@NotNullByDefault
+	@NonNullByDefault
 	public static class KeyIterator<K,V> extends AbstractSkipList.KeyIterator<K>
 		implements ReleasableIterator<K>
 	{
@@ -747,7 +747,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 	}
 	
-	@NotNullByDefault
+	@NonNullByDefault
 	public static class ValueIterator<K,V> implements ReleasableIterator<V>
 	{
 		/*
