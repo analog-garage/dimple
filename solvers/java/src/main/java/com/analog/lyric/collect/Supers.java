@@ -23,7 +23,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
@@ -44,31 +43,10 @@ public abstract class Supers
 	// to actually edit MATLAB's internal classpath.txt file to put the desired guava jar before google-collections.
 	// In this case, it is easy enough to implement our own cache, but this may come up again - cbarber
 	
-	private static class SuperClassCache // JAVA7: extends ClassValue<ImmutableList<Class?>>
+	private static class SuperClassCache extends ClassValue<ImmutableList<Class<?>>>
 	{
-		// JAVA7: In Java 7, we can simply subclass ClassValue and just implement computeValue.
-		
-		private final ConcurrentHashMap<Class<?>,ImmutableList<Class<?>>> _cache =
-			new ConcurrentHashMap<Class<?>,ImmutableList<Class<?>>>();
-		
-		public ImmutableList<Class<?>> get(Class<?> c)
-		{
-			ImmutableList<Class<?>> supers = _cache.get(c);
-			if (supers == null)
-			{
-				synchronized(this)
-				{
-					supers = _cache.get(c);
-					if (supers == null)
-					{
-						_cache.put(c, supers = computeValue(c));
-					}
-				}
-			}
-			return supers;
-		}
-		
-		private ImmutableList<Class<?>> computeValue(Class<?> c)// throws Exception
+		@Override
+		protected ImmutableList<Class<?>> computeValue(Class<?> c)// throws Exception
 		{
 			ArrayList<Class<?>> supers = new ArrayList<Class<?>>();
 
