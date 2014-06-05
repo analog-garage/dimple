@@ -19,11 +19,14 @@ package com.analog.lyric.collect;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * {@link PrimitiveIterator.OfInt} implementation based on an underlying
  * int array.
  */
 @ThreadSafe
+@NotNullByDefault
 public final class IntArrayIterator extends AbstractPrimitiveArrayIterator<Integer> implements PrimitiveIterator.OfInt
 {
 	/*-------

@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Primitives;
 
@@ -32,6 +34,7 @@ import com.google.common.primitives.Primitives;
 /**
  * Static utility methods related to super classes.
  */
+@NotNullByDefault
 public abstract class Supers
 {
 	// NOTE: Originally I tried to use the CacheBuilder class from Google's guava library, but that created
@@ -121,7 +124,7 @@ public abstract class Supers
 	 * 
 	 * @since 0.05
 	 */
-	public static Object invokeMethod(Object object, String methodName, Object ... args)
+	public static @Nullable Object invokeMethod(Object object, String methodName, @Nullable Object ... args)
 		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
 	{
 		return invokeMethod(object, object instanceof Class<?> ? (Class<?>)object : object.getClass(), methodName, args);
@@ -149,7 +152,8 @@ public abstract class Supers
 	 * 
 	 * @since 0.06
 	 */
-	public static Object invokeMethod(Object object, Class<?> declaredClass, String methodName, Object ... args)
+	public static @Nullable Object invokeMethod(Object object, Class<?> declaredClass, String methodName,
+		@Nullable Object ... args)
 		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
 	{
 		Method method = lookupMethod(declaredClass, methodName, args);
@@ -202,7 +206,8 @@ public abstract class Supers
 	 * 
 	 * @since 0.05
 	 */
-	public static Method lookupMethod(Object object, String methodName, Object ... args) throws NoSuchMethodException
+	public static Method lookupMethod(Object object, String methodName, @Nullable Object ... args)
+		throws NoSuchMethodException
 	{
 		Class<?> objClass = object instanceof Class ? (Class<?>)object : object.getClass();
 		
@@ -361,7 +366,7 @@ public abstract class Supers
 	 * <li>Otherwise, the nearest superclass of both {@code c1} and {@code c2} will be returned.
 	 * </ul>
 	 */
-	public static Class<?> nearestCommonSuperClass(Class<?> c1, Class<?> c2)
+	public static @Nullable Class<?> nearestCommonSuperClass(Class<?> c1, Class<?> c2)
 	{
 		if (c1.isAssignableFrom(c2))
 		{
@@ -408,13 +413,14 @@ public abstract class Supers
 	/**
 	 * Returns the nearest common superclass (not interface) for all of the objects.
 	 */
-	public static <T> Class<?> nearestCommonSuperClass(T obj, Object ... moreObjects)
+	public static <T> Class<?> nearestCommonSuperClass(@Nullable T obj, Object ... moreObjects)
 	{
 		Class<?> superclass = nearestCommonSuperClass(moreObjects);
 		if (obj != null)
 		{
 			superclass = nearestCommonSuperClass(superclass, obj.getClass());
 		}
+		assert(superclass != null);
 		return superclass;
 	}
 	
@@ -467,6 +473,7 @@ public abstract class Supers
 			c = nearestCommonSuperClass(c, objects[i].getClass());
 		}
 		
+		assert(c != null);
 		return c;
 	}
 	

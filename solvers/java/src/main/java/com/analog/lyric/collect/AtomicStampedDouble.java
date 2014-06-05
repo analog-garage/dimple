@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicStampedReference;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * Maintains a double value along with an integer "stamp" that can be updated atomically.
  * <p>
@@ -33,6 +35,7 @@ import net.jcip.annotations.ThreadSafe;
  * @since 0.05
  */
 @ThreadSafe
+@NotNullByDefault
 public class AtomicStampedDouble implements Serializable
 {
 	/*-------

@@ -18,9 +18,12 @@ package com.analog.lyric.collect;
 
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * Iterators supporting unboxed iteration of primitive types.
  */
+@NotNullByDefault
 public interface PrimitiveIterator<T> extends Iterator<T>
 {
 	// JAVA8: This is a partial copy of part of a new interface proposed for java.util package in Java 8.

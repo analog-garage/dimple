@@ -16,6 +16,9 @@
 
 package com.analog.lyric.collect;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
+@NotNullByDefault
 public class LongArrayIterable
 	extends AbstractPrimitiveArrayIterable<Long>
 	implements PrimitiveIterable.OfLong

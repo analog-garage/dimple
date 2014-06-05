@@ -23,12 +23,14 @@ import java.util.Comparator;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NotNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
  * Contains static utility methods pertaining to arrays.
  */
+@NotNullByDefault
 public abstract class ArrayUtil
 {
 	/**
@@ -66,7 +68,7 @@ public abstract class ArrayUtil
 	 * the same as {@code array}. Otherwise returns a new array with component
 	 * type same as {@code type}.
 	 */
-	public static @NotNull <T> T[] allocateArrayOfType(@NotNull Class<?> type, @Nullable T[] array, int minSize)
+	public static <T> T[] allocateArrayOfType(Class<?> type, @Nullable T[] array, int minSize)
 	{
 		if (array != null)
 		{
@@ -94,7 +96,7 @@ public abstract class ArrayUtil
 	 * 
 	 * @see #subsetFuzzyEqual(double[], int[], double)
 	 */
-	public static boolean allFuzzyEqual(@NotNull double[] array, double tolerance)
+	public static boolean allFuzzyEqual(double[] array, double tolerance)
 	{
 		if (array.length > 1)
 		{
@@ -129,7 +131,7 @@ public abstract class ArrayUtil
 	 * @return a newly allocated array.
 	 * @since 0.05
 	 */
-	public static @NotNull int[] contractSortedIndexList(@NotNull int[] list, @NotNull int[] remove)
+	public static int[] contractSortedIndexList(int[] list, int[] remove)
 	{
 		final int originalLength = list.length;
 		final int excludeLength = remove.length;
@@ -171,7 +173,7 @@ public abstract class ArrayUtil
 	 * Copies contents of collection into a new array with given component type.
 	 * @since 0.05
 	 */
-	public static @NotNull <T> T[] copy(@NotNull Class<T> componentType, @NotNull Collection<T> collection)
+	public static <T> T[] copy(Class<T> componentType, Collection<T> collection)
 	{
 		return collection.toArray((T[]) Array.newInstance(componentType, collection.size()));
 	}
@@ -188,7 +190,7 @@ public abstract class ArrayUtil
 	 * @see #copyFromIndices(Object[], int[], Object[])
 	 * @since 0.05
 	 */
-	public static @NotNull <T> T[] copyFromIndices(@NotNull T[] source, @NotNull int[] sourceIndices)
+	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices)
 	{
 		return copyFromIndices(source, sourceIndices, null);
 	}
@@ -207,7 +209,7 @@ public abstract class ArrayUtil
 	 * @see #copyFromIndices(Object[], int[])
 	 * @since 0.05
 	 */
-	public static @NotNull <T> T[] copyFromIndices(@NotNull T[] source, @NotNull int[] sourceIndices,
+	public static <T> T[] copyFromIndices(T[] source, int[] sourceIndices,
 		@Nullable T[] destination)
 	{
 		final int destSize = sourceIndices.length;
@@ -235,7 +237,7 @@ public abstract class ArrayUtil
 	 * 
 	 * @since 0.06
 	 */
-	public static <K> int linearSearch(@NotNull IKeyed<K>[] array, @NotNull K key, int fromIndex, int toIndex)
+	public static <K> int linearSearch(IKeyed<K>[] array, K key, int fromIndex, int toIndex)
 	{
 		for (int i = fromIndex; i < toIndex; ++i)
 		{
@@ -258,7 +260,7 @@ public abstract class ArrayUtil
 	 * 
 	 * @since 0.06
 	 */
-	public static <K> int linearSearch(@NotNull IKeyed<K>[] array, @NotNull K key)
+	public static <K> int linearSearch(IKeyed<K>[] array, K key)
 	{
 		return linearSearch(array, key, 0, array.length);
 	}
@@ -267,7 +269,7 @@ public abstract class ArrayUtil
 	 * Determines if array is ordered according to provided comparator.
 	 * @since 0.05
 	 */
-	public static <T> boolean isSorted(@NotNull T[] array, @NotNull Comparator<T> comparator)
+	public static <T> boolean isSorted(T[] array, Comparator<T> comparator)
 	{
 		final int size = array.length;
 		
@@ -292,7 +294,7 @@ public abstract class ArrayUtil
 	 * Determines if array is ordered according to elements' {@link Comparable#compareTo(Object)} method.
 	 * @since 0.05
 	 */
-	public static <T extends Comparable<T>> boolean isSorted(@NotNull T[] array)
+	public static <T extends Comparable<T>> boolean isSorted(T[] array)
 	{
 		final int size = array.length;
 		
@@ -323,7 +325,7 @@ public abstract class ArrayUtil
 	 * 
 	 * @see #allFuzzyEqual(double[], double)
 	 */
-	public static boolean subsetFuzzyEqual(@NotNull double[] array, @NotNull int[] arraySubindices, double tolerance)
+	public static boolean subsetFuzzyEqual(double[] array, int[] arraySubindices, double tolerance)
 	{
 		if (arraySubindices.length > 1)
 		{
@@ -412,7 +414,7 @@ public abstract class ArrayUtil
 	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
 	 * [0, array.length].
 	 */
-	public static @NotNull double[] copyArrayForInsert(@Nullable double[] array, int insertionPoint, int insertLength)
+	public static double[] copyArrayForInsert(@Nullable double[] array, int insertionPoint, int insertLength)
 	{
 		if (array == null)
 		{
@@ -435,7 +437,7 @@ public abstract class ArrayUtil
 	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
 	 * [0, array.length].
 	 */
-	public static @NotNull int[] copyArrayForInsert(@Nullable int[] array, int insertionPoint, int insertLength)
+	public static int[] copyArrayForInsert(@Nullable int[] array, int insertionPoint, int insertLength)
 	{
 		if (array == null)
 		{
@@ -457,7 +459,7 @@ public abstract class ArrayUtil
 	 * @throws ArrayIndexOutOfBoundsException if {@code insertionPoint} is not in the range
 	 * [0, array.length].
 	 */
-	public static @NotNull int[][] copyArrayForInsert(@Nullable int[][] array, int insertionPoint, int insertLength)
+	public static int[][] copyArrayForInsert(@Nullable int[][] array, int insertionPoint, int insertLength)
 	{
 		if (array == null)
 		{

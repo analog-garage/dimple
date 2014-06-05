@@ -23,10 +23,13 @@ import java.util.NoSuchElementException;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * Partial implementation of {@link PrimitiveIterator} based on a {@link DataInput} object.
  */
 @ThreadSafe
+@NotNullByDefault
 public abstract class AbstractPrimitiveDataInputIterator<T> implements PrimitiveIterator<T>
 {
 	/*-------

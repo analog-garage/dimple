@@ -22,6 +22,9 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A priority queue that only holds one instance of an element.
  * <p>
@@ -81,7 +84,7 @@ public class UniquePriorityQueue<E> extends AbstractKeyedPriorityQueue<E,E> impl
 	 * then natural ordering will be used and all elements must implement {@link Comparable}
 	 * and must be comparable to existing elements in the queue.
 	 */
-	public UniquePriorityQueue(int initialCapacity, Comparator<? super E> priorityComparator)
+	public UniquePriorityQueue(int initialCapacity, @Nullable Comparator<? super E> priorityComparator)
 	{
 		super(initialCapacity, priorityComparator);
 	}
@@ -94,7 +97,7 @@ public class UniquePriorityQueue<E> extends AbstractKeyedPriorityQueue<E,E> impl
 	 * its comparator will be used to determine priorities. Otherwise the natural order will be used
 	 * (see {@link #UniquePriorityQueue(int, Comparator)}).
 	 */
-	public UniquePriorityQueue(Collection<? extends E> collection)
+	public UniquePriorityQueue(@NotNull Collection<? extends E> collection)
 	{
 		super(collection);
 	}

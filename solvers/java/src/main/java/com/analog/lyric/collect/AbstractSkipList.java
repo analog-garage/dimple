@@ -21,6 +21,9 @@ import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Abstract base class for collections based on a skip list.
  * <p>
@@ -36,6 +39,7 @@ import java.util.Random;
  * @see SkipSet
  * @see SkipMap
  */
+@NotNullByDefault
 public abstract class AbstractSkipList<K>
 {
 
@@ -143,7 +147,7 @@ public abstract class AbstractSkipList<K>
 		{
 			while (true)
 			{
-				final Object[] nextAtLevel = this.getNextNodeAtDepthOffset(node, i);
+				final @Nullable Object[] nextAtLevel = this.getNextNodeAtDepthOffset(node, i);
 				if (nextAtLevel == null || c.compare(this.getNodeKey(nextAtLevel), key) >= 0)
 				{
 					break;
@@ -169,12 +173,16 @@ public abstract class AbstractSkipList<K>
 
 	private final void removeNextNode(Object[] precursor)
 	{
-		Object[] node = this.getNextNode(this.getNextNode(precursor));
+		Object[] x = this.getNextNode(precursor);
+		assert(x != null);
+		Object[] node = this.getNextNode(x);
+		assert(node != null);
 		short maxOffset = this.maxDepthOffset;
 
 		for (int i = this.minDepthOffset; i <= maxOffset; ++i)
 		{
 			Object[] prev = this.getNextNodeAtDepthOffset(precursor, i);
+			assert(prev != null);
 			if (this.getNextNodeAtDepthOffset(prev, i) != node)
 			{
 				break;
@@ -253,7 +261,9 @@ public abstract class AbstractSkipList<K>
 	protected final Object[] addNode(K key)
 	{
 		final Object[] precursor = this.makePrecursorNode(key);
-		Object[] node = this.getNextNode(this.getNextNode(precursor));
+		final Object[] x = this.getNextNode(precursor);
+		assert(x != null);
+		Object[] node = this.getNextNode(x);
 
 		if (node == null || comparator.compare(this.getNodeKey(node), key) != 0)
 		{
@@ -289,6 +299,7 @@ public abstract class AbstractSkipList<K>
 			for (int i = this.minDepthOffset; i <= maxOffset; i++)
 			{
 				Object[] prevNode = this.getNextNodeAtDepthOffset(precursor, i);
+				assert(prevNode != null);
 				this.setNextNodeAtDepthOffset(node, i, this.getNextNodeAtDepthOffset(prevNode, i));
 				this.setNextNodeAtDepthOffset(prevNode, i, node);
 			}
@@ -310,12 +321,12 @@ public abstract class AbstractSkipList<K>
 	 * Returns the node containing the least element in the set with value greater than or
 	 * equal to {@code value}. Returns null if there is no such value.
 	 */
-	protected final Object[] findCeilingNode(K key)
+	protected final @Nullable Object[] findCeilingNode(K key)
 	{
 		return this.getNextNode(this.findLowerNode(key));
 	}
 
-	protected final Object[] findFloorNode(K key)
+	protected final @Nullable Object[] findFloorNode(K key)
 	{
 		Object[] node = this.findLowerNode(key);
 		
@@ -331,7 +342,7 @@ public abstract class AbstractSkipList<K>
 		return node;
 	}
 
-	protected final Object[] findHigherNode(K key)
+	protected final @Nullable Object[] findHigherNode(K key)
 	{
 		Object[] node = this.findCeilingNode(key);
 		while (node != null && this.comparator.compare(key, this.getNodeKey(node)) == 0)
@@ -350,10 +361,11 @@ public abstract class AbstractSkipList<K>
 		Object[] precursor = this.makePrecursorNode(key);
 		Object[] node = this.getNextNode(precursor);
 		this.releasePrecursorNode(precursor);
+		assert(node != null);
 		return node;
 	}
 
-	protected final Object[] firstNode()
+	protected final @Nullable Object[] firstNode()
 	{
 		if (this.isEmpty())
 		{
@@ -403,18 +415,18 @@ public abstract class AbstractSkipList<K>
 	}
 	
 	/** Returns the next node in the list after {@code node}. */
-	protected final Object[] getNextNode(Object[] node)
+	protected final @Nullable Object[] getNextNode(Object[] node)
 	{
 		return (Object[])node[this.minDepthOffset];
 	}
 	
 	/** Returns the next node in the list at the given depth offset. */
-	protected final Object[] getNextNodeAtDepthOffset(Object[] node, int depthOffset)
+	protected final @Nullable Object[] getNextNodeAtDepthOffset(Object[] node, int depthOffset)
 	{
 		return (Object[])node[depthOffset];
 	}
 	
-	protected final Object[] getNode(K key)
+	protected final @Nullable Object[] getNode(K key)
 	{
 		Object[]node = this.findCeilingNode(key);
 		return node != null && key.equals(this.getNodeKey(node)) ? node : null;
@@ -434,7 +446,7 @@ public abstract class AbstractSkipList<K>
 		return (short)(node.length - 1);
 	}
 	
-	protected final Object[] lastNode()
+	protected final @Nullable Object[] lastNode()
 	{
 		Object[] node = null;
 		
@@ -445,7 +457,7 @@ public abstract class AbstractSkipList<K>
 			{
 				while (true)
 				{
-					Object[] next = this.getNextNodeAtDepthOffset(node, level);
+					@Nullable Object[] next = this.getNextNodeAtDepthOffset(node, level);
 					
 					if (next != null)
 					{
@@ -462,14 +474,14 @@ public abstract class AbstractSkipList<K>
 		return node;
 	}
 	
-	protected final Object[] makeNode(int maxDepth, K key)
+	protected final Object[] makeNode(int maxDepth, @Nullable K key)
 	{
 		Object[] node = new Object[maxDepth + this.minDepthOffset + 1];
 		node[0] = key;
 		return node;
 	}
 
-	protected final Object[] pollFirstNode()
+	protected final @Nullable Object[] pollFirstNode()
 	{
 		Object[] firstNode = this.getNextNode(this.head);
 		
@@ -483,7 +495,7 @@ public abstract class AbstractSkipList<K>
 		return firstNode;
 	}
 	
-	protected final Object[] pollLastNode()
+	protected final @Nullable Object[] pollLastNode()
 	{
 		// TODO: implement pollLastNode more efficiently
 
@@ -500,14 +512,16 @@ public abstract class AbstractSkipList<K>
 	 * Remove and return node with given {@code key}. Returns null if {@code key} is null or
 	 * no such key in list.
 	 */
-	protected final Object[] removeNode(K key)
+	protected final @Nullable Object[] removeNode(@Nullable K key)
 	{
-		Object[] node = null;
+		@Nullable Object[] node = null;
 		
 		if (key != null)
 		{
 			final Object[] precursor = this.makePrecursorNode(key);
-			node = this.getNextNode(this.getNextNode(precursor));
+			final Object[] x = this.getNextNode(precursor);
+			assert(x != null);
+			node = this.getNextNode(x);
 
 			if (node != null)
 			{
@@ -531,7 +545,7 @@ public abstract class AbstractSkipList<K>
 	 * must either be null or have {@link #getNodeMaxDepthOffset} no less than
 	 * {@code depthOffset}.
 	 */
-	protected final void setNextNodeAtDepthOffset(Object[] node, int depthOffset, Object[] nextNode)
+	protected final void setNextNodeAtDepthOffset(Object[] node, int depthOffset, @Nullable Object[] nextNode)
 	{
 		assert(nextNode == null || nextNode.length > depthOffset);
 		node[depthOffset] = nextNode;
@@ -553,13 +567,13 @@ public abstract class AbstractSkipList<K>
 		 */
 		
 		/** The underlying set to be iterated over. This may be null. */
-		protected AbstractSkipList<K> list;
+		protected @Nullable AbstractSkipList<K> list;
 		
 		/** The next node to be returned by {@link #next}. Null when there are no more nodes. */
-		private Object[] nextNode;
+		private @Nullable Object[] nextNode;
 		
 		/** The last key returned by {@link #next}. Could be null. */
-		private K lastKey;
+		private @Nullable K lastKey;
 		
 		/*
 		 * Construction/initialization methods
@@ -568,7 +582,7 @@ public abstract class AbstractSkipList<K>
 		/**
 		 * Constructs iterator over given {@code list}, which may be null.
 		 */
-		public KeyIterator(AbstractSkipList<K> list)
+		public KeyIterator(@Nullable AbstractSkipList<K> list)
 		{
 			this.reset(list);
 		}
@@ -578,14 +592,15 @@ public abstract class AbstractSkipList<K>
 		 */
 		public void reset()
 		{
-			this.nextNode = this.list == null ? null : this.list.getNextNode(list.head);
+			final @Nullable AbstractSkipList<K> list2 = this.list;
+			this.nextNode = this.list == null ? null : list2.getNextNode(list2.head);
 			this.lastKey = null;
 		}
 		
 		/**
 		 * Resets iterator to beginning of {@code newList}, which may be null.
 		 */
-		public void reset(AbstractSkipList<K> newList)
+		public void reset(@Nullable AbstractSkipList<K> newList)
 		{
 			this.list = newList;
 			this.reset();
@@ -609,16 +624,20 @@ public abstract class AbstractSkipList<K>
 		 * It is not necessary to invoke {@link #hasNext} before calling this method.
 		 */
 		@Override
-		public K next()
+		public @Nullable K next()
 		{
+			final AbstractSkipList<K> list2 = list;
 			K key = null;
-			Object[] n = this.nextNode;
-			if (n != null)
+			if (list2 != null)
 			{
-				key = this.list.getNodeKey(n);
-				this.nextNode = this.list.getNextNode(n);
+				Object[] n = this.nextNode;
+				if (n != null)
+				{
+					key = list2.getNodeKey(n);
+					this.nextNode = list2.getNextNode(n);
+				}
+				this.lastKey = key;
 			}
-			this.lastKey = key;
 			return key;
 		}
 
@@ -629,7 +648,13 @@ public abstract class AbstractSkipList<K>
 		@Override
 		public void remove()
 		{
-			this.list.removeNode(this.lastKey);
+			final @Nullable AbstractSkipList<K> list2 = this.list;
+			if (list2 == null || this.lastKey == null)
+			{
+				throw new IllegalStateException();
+			}
+				
+			list2.removeNode(this.lastKey);
 			this.lastKey = null;
 		}
 

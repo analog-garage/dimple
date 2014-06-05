@@ -21,45 +21,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Contains static methods that convert a null parameter into
  * an immutable non-null instance.
  */
+@NotNullByDefault
 public final class NonNull
 {
 	/**
 	 * Returns {@code l} if non-null, otherwise returns an immutable empty list.
 	 */
-	public static <T> List<T> list(List<T> l)
+	public static <T> List<T> list(@Nullable List<T> l)
 	{
-		if (l == null)
+		if (l != null)
 		{
-			l = Collections.emptyList();
+			return l;
 		}
-		return l;
+		
+		return Collections.emptyList();
 	}
 	
 	/**
 	 * Returns {@code m} if non-null, otherwise returns an immutable empty map.
 	 */
-	public static <K,V> Map<K,V> map(Map<K,V> m)
+	public static <K,V> Map<K,V> map(@Nullable Map<K,V> m)
 	{
-		if (m == null)
+		if (m != null)
 		{
-			m = Collections.emptyMap();
+			return m;
 		}
-		return m;
+		
+		return Collections.emptyMap();
 	}
 	
 	/**
 	 * Returns {@code s} if non-null, otherwise returns an immutable empty set.
 	 */
-	public static <T> Set<T> set(Set<T> s)
+	public static <T> Set<T> set(@Nullable Set<T> s)
 	{
-		if (s == null)
+		if (s != null)
 		{
-			s = Collections.emptySet();
+			return s;
 		}
-		return s;
+		
+		return Collections.emptySet();
 	}
 }

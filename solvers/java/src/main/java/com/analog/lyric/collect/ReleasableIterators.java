@@ -19,16 +19,20 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
+@NotNullByDefault
 public class ReleasableIterators
 {
 
 	private static final class Wrapper<T> implements ReleasableIterator<T>
 	{
-		private Iterator<T> _iter;
+		private @Nullable Iterator<T> _iter;
 
 		private Wrapper(Iterator<T> iter)
 		{
-			this.reset(iter);
+			_iter = iter;
 		}
 
 		private static final ThreadLocal<Wrapper<?>> instance = new ThreadLocal<Wrapper<?>>();
@@ -54,18 +58,21 @@ public class ReleasableIterators
 			this._iter = iter;
 		}
 
+		@SuppressWarnings("null")
 		@Override
 		public boolean hasNext()
 		{
 			return this._iter.hasNext();
 		}
 
+		@SuppressWarnings("null")
 		@Override
 		public T next()
 		{
 			return this._iter.next();
 		}
 
+		@SuppressWarnings("null")
 		@Override
 		public void remove()
 		{
@@ -77,7 +84,7 @@ public class ReleasableIterators
 		{
 			if (instance.get() == null)
 			{
-				this.reset(null);
+				_iter = null;
 				instance.set(this);
 			}
 		}

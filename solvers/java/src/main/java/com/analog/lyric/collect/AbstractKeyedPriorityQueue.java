@@ -29,6 +29,8 @@ import java.util.PriorityQueue;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
 /**
@@ -49,14 +51,14 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	
 	protected final PriorityQueue<Entry<E>> _queue;
 	protected final Map<K,Entry<E>> _keyToEntry;
-	protected final Comparator<? super E> _priorityComparator;
+	protected final @Nullable Comparator<? super E> _priorityComparator;
 	protected int _insertOrder = 0;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public AbstractKeyedPriorityQueue(int initialCapacity, Comparator<? super E> comparator)
+	public AbstractKeyedPriorityQueue(int initialCapacity, @Nullable Comparator<? super E> comparator)
 	{
 		_priorityComparator = comparator;
 		if (comparator == null)
@@ -67,7 +69,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		_keyToEntry = new HashMap<K,Entry<E>>(initialCapacity);
 	}
 	
-	public AbstractKeyedPriorityQueue(Collection<? extends E> collection)
+	public AbstractKeyedPriorityQueue(@NotNull Collection<? extends E> collection)
 	{
 		this(collection.size(), Comparators.fromCollection(collection));
 		addAll(collection);
@@ -182,14 +184,14 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	}
 
 	@Override
-	public E peek()
+	public @Nullable E peek()
 	{
 		Entry<E> entry = _queue.peek();
 		return entry != null ? entry._element : null;
 	}
 
 	@Override
-	public E poll()
+	public @Nullable E poll()
 	{
 		Entry<E> entry = _queue.poll();
 		if (entry == null)
@@ -214,7 +216,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	 * If null, then natural ordering of elements will be used and methods that
 	 * add elements to the queue will only accept {@link Comparable} objects.
 	 */
-	public final Comparator<? super E> comparator()
+	public final @Nullable Comparator<? super E> comparator()
 	{
 		return _priorityComparator;
 	}
@@ -310,8 +312,8 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	@NotThreadSafe
 	private class IteratorImpl implements Iterator<E>
 	{
-		private final Iterator<Entry<E>> _iterator;
-		private E _last = null;
+		private @NotNull final Iterator<Entry<E>> _iterator;
+		private @Nullable E _last = null;
 		
 		private IteratorImpl()
 		{
@@ -325,7 +327,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		}
 
 		@Override
-		public E next()
+		public @Nullable E next()
 		{
 			return _last = _iterator.next()._element;
 		}

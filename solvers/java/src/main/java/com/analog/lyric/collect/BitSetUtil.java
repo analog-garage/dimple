@@ -18,6 +18,9 @@ package com.analog.lyric.collect;
 
 import java.util.BitSet;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
+@NotNullByDefault
 public class BitSetUtil
 {
 

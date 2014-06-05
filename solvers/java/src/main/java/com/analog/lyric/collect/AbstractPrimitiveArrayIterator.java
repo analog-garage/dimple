@@ -21,11 +21,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * Partial implementation of {@link PrimitiveIterator} based on an
  * array of the primitive type.
  */
 @ThreadSafe
+@NotNullByDefault
 public abstract class AbstractPrimitiveArrayIterator<T> implements PrimitiveIterator<T>
 {
 	/*-------

@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
+import com.analog.lyric.util.misc.NotNull;
 
 public class TestHeap
 {
@@ -80,13 +81,13 @@ public class TestHeap
 		
 		IEntry<Element> bogusEntry = new IEntry<Element>() {
 			@Override
-			public IEntry<Element> clone()
+			public @NotNull IEntry<Element> clone()
 			{
-				return null;
+				return this;
 			}
 			
 			@Override
-			public Element getElement()
+			public @NotNull Element getElement()
 			{
 				return elements[0];
 			}

@@ -19,6 +19,9 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Priority queue supporting dynamically changeable priorities of type double.
  * <p>
@@ -30,6 +33,7 @@ import java.util.Iterator;
  * @author Christopher Barber
  * @since 0.05
  */
+@NotNullByDefault
 public interface IHeap<E> extends Collection<E>, Cloneable
 {
 	/*------------------
@@ -155,7 +159,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * Assume O({@link #size}) time complexity unless implementation documents
 	 * otherwise.
 	 */
-	public IEntry<E> entryForElement(Object element);
+	public @Nullable IEntry<E> entryForElement(@Nullable Object element);
 	
 	/**
 	 * Ensure that queue has sufficient capacity for the specified number of elements.
@@ -201,7 +205,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * @see #peekEntry()
 	 * @see #poll()
 	 */
-	public E peek();
+	public @Nullable E peek();
 	
 	/**
 	 * Returns entry that will be returned by {@link #pollEntry()} without removing it from the queue.
@@ -209,7 +213,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * @see #peek()
 	 * @see #pollEntry()
 	 */
-	public IEntry<E> peekEntry();
+	public @Nullable IEntry<E> peekEntry();
 	
 	/**
 	 * Removes element with the lowest priority from the queue.
@@ -217,7 +221,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * @see #pollEntry()
 	 * @see #peek()
 	 */
-	public E poll();
+	public @Nullable E poll();
 	
 	/**
 	 * Removes and returns entry with the lowest priority from the queue.
@@ -225,7 +229,7 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 * @see #poll()
 	 * @see #peekEntry()
 	 */
-	public IEntry<E> pollEntry();
+	public @Nullable IEntry<E> pollEntry();
 	
 	/**
 	 * Remove given entry from queue.

@@ -22,6 +22,9 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.base.Objects;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
@@ -29,6 +32,7 @@ import com.google.common.base.Objects;
 public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 {
 
+	@NotNullByDefault
 	public static class Entry<K,V> implements Map.Entry<K, V>
 	{
 		private final Object[] node;
@@ -39,7 +43,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 
 		@Override
-		public boolean equals(Object other)
+		public boolean equals(@Nullable Object other)
 		{
 			if (this == other)
 			{
@@ -85,18 +89,18 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 	}
 	
-	private Entry<K,V> makeEntry(Object[] node)
+	private @Nullable Entry<K,V> makeEntry(@Nullable Object[] node)
 	{
 		return node == null ? null : new Entry<K,V>(node);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected final V getNodeValue(Object[] node)
+	protected final V getNodeValue(@NotNull Object[] node)
 	{
 		return (V)node[1];
 	}
 	
-	protected final V setNodeValue(Object[] node, V value)
+	protected final V setNodeValue(@NotNull Object[] node, V value)
 	{
 		@SuppressWarnings("unchecked")
 		V oldValue = (V)node[1];
@@ -108,7 +112,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Construction
 	 */
 
-	public SkipMap(Comparator<? super K> comparator)
+	public SkipMap(@NotNull Comparator<? super K> comparator)
 	{
 		super(comparator, (short)2);
 	}
@@ -116,7 +120,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	/**
 	 * @since 0.05
 	 */
-	public static <K,V> SkipMap<K,V> create(Comparator<? super K> comparator)
+	public static @NotNull <K,V> SkipMap<K,V> create(@NotNull Comparator<? super K> comparator)
 	{
 		return new SkipMap<K,V>(comparator);
 	}
@@ -292,18 +296,18 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * NavigableMap methods
 	 */
 	
-	public Map.Entry<K,V> ceilingEntry(K key)
+	public @Nullable Map.Entry<K,V> ceilingEntry(K key)
 	{
 		return this.makeEntry(this.findCeilingNode(key));
 	}
 
-	public K ceilingKey(K key)
+	public @Nullable K ceilingKey(K key)
 	{
 		Object[] node = this.findCeilingNode(key);
 		return node == null ? null : this.getNodeKey(node);
 	}
 
-	public Map.Entry<K,V> firstEntry()
+	public @Nullable Map.Entry<K,V> firstEntry()
 	{
 		return this.makeEntry(this.getNextNode(this.head));
 	}
@@ -311,33 +315,33 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	/**
 	 * Returns greatest value in set that is less than or equal to {@code value} or null.
 	 */
-	public Map.Entry<K,V> floorEntry(K key)
+	public @Nullable Map.Entry<K,V> floorEntry(K key)
 	{
 		return this.makeEntry(this.findFloorNode(key));
 	}
 	
-	public K floorKey(K key)
+	public @Nullable K floorKey(K key)
 	{
 		Object[] node = this.findFloorNode(key);
 		return node == null ? null : this.getNodeKey(node);
 	}
 
-	public Map.Entry<K,V> higherEntry(K key)
+	public @Nullable Map.Entry<K,V> higherEntry(K key)
 	{
 		return this.makeEntry(this.findHigherNode(key));
 	}
 
-	public K higherKey(K key)
+	public @Nullable K higherKey(K key)
 	{
 		Object[] node = this.findHigherNode(key);
 		return node == null ? null : this.getNodeKey(node);
 	}
-	public Map.Entry<K, V> lastEntry()
+	public @Nullable Map.Entry<K, V> lastEntry()
 	{
 		return this.makeEntry(this.lastNode());
 	}
 	
-	public Map.Entry<K,V> lowerEntry(K key)
+	public @Nullable Map.Entry<K,V> lowerEntry(K key)
 	{
 		Object[] node = this.findLowerNode(key);
 		return node == this.head ? null : this.makeEntry(node);
@@ -348,12 +352,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		return this.getNodeKey(this.findLowerNode(key));
 	}
 
-	public Map.Entry<K,V> pollFirstEntry()
+	public @Nullable Map.Entry<K,V> pollFirstEntry()
 	{
 		return this.makeEntry(this.pollFirstNode());
 	}
 
-	public Map.Entry<K,V> pollLastEntry()
+	public @Nullable Map.Entry<K,V> pollLastEntry()
 	{
 		return this.makeEntry(this.pollLastNode());
 	}
@@ -369,14 +373,14 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 	
 	/** Like {@link #get} but {@code key} must be of type {@code K}. */
-	public V get2(K key)
+	public @Nullable V get2(K key)
 	{
 		Object[] node = this.getNode(key);
 		return node != null ? this.getNodeValue(node) : null;
 	}
 
 	/** Like {@link #remove} but {@code key} must be of type {@code K}. */
-	public V remove2(K key)
+	public @Nullable V remove2(K key)
 	{
 		Object[] node = this.removeNode(key);
 		return node == null ? null : this.getNodeValue(node);
@@ -389,9 +393,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class EntrySet<K,V> extends AbstractSet<Entry<K,V>>
 		implements ReleasableIterableCollection<Entry<K,V>>
 	{
-		private final SkipMap<K,V> map;
+		private final @NotNull SkipMap<K,V> map;
 		
-		private EntrySet(SkipMap<K,V> map)
+		private EntrySet(@NotNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -446,9 +450,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 	public static class KeySet<K,V> extends AbstractSet<K> implements ReleasableIterableCollection<K>
 	{
-		private final SkipMap<K,V> map;
+		private final @NotNull SkipMap<K,V> map;
 		
-		private KeySet(SkipMap<K,V> map)
+		private KeySet(@NotNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -487,9 +491,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class ValueCollection<K,V> extends AbstractCollection<V>
 		implements ReleasableIterableCollection<V>
 	{
-		private final SkipMap<K,V> map;
+		private final @NotNull SkipMap<K,V> map;
 		
-		private ValueCollection(SkipMap<K,V> map)
+		private ValueCollection(@NotNull SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -530,6 +534,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Iterating over the entire set costs O(n) in the size of the map. The
 	 * {@link #remove} method is supported but costs O(log(n)).
 	 */
+	@NotNullByDefault
 	public static class Iterator<K,V> implements ReleasableIterator<Entry<K,V>>
 	{
 		/*
@@ -537,13 +542,13 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 */
 
 		/** The underlying map to be iterated over. This may be null. */
-		protected SkipMap<K,V> map;
+		protected @Nullable SkipMap<K,V> map;
 
 		/** The next node to be returned by {@link #next}. Null when there are no more nodes. */
-		private Object[] nextNode;
+		private @Nullable Object[] nextNode;
 
 		/** The last value returned by {@link #next}. Could be null. */
-		private K lastKey;
+		private @Nullable K lastKey;
 
 		private static final ThreadLocal<Iterator<?,?>> reusableInstance = new ThreadLocal<Iterator<?,?>>();
 		
@@ -554,12 +559,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		/**
 		 * Constructs iterator over given {@code map}, which may be null.
 		 */
-		public Iterator(SkipMap<K,V> map)
+		public Iterator(@Nullable SkipMap<K,V> map)
 		{
 			this.reset(map);
 		}
 
-		protected static <K,V> Iterator<K,V> make(SkipMap<K,V> map)
+		protected static <K,V> Iterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
 			Iterator<K,V> iter = (Iterator<K, V>)Iterator.reusableInstance.get();
 			
@@ -591,13 +596,14 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 */
 		public void reset()
 		{
-			this.nextNode = this.map == null ? null : this.map.getNextNode(this.map.head);
+			final @Nullable SkipMap<K,V> map2 = this.map;
+			this.nextNode = map2 == null ? null : map2.getNextNode(map2.head);
 		}
 
 		/**
 		 * Resets iterator to beginning of {@code newMap}, which may be null.
 		 */
-		public void reset(SkipMap<K,V> newMap)
+		public void reset(@Nullable SkipMap<K,V> newMap)
 		{
 			this.map = newMap;
 			this.reset();
@@ -621,7 +627,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 * It is not necessary to invoke {@link #hasNext} before calling this method.
 		 */
 		@Override
-		public Entry<K,V> next()
+		public @Nullable Entry<K,V> next()
 		{
 			Object[] node = this.advance();
 			return node == null ? null : new Entry<K,V>(node);
@@ -630,7 +636,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		@Override
 		public void remove()
 		{
-			this.map.removeNode(this.lastKey);
+			final SkipMap<K,V> map2 = map;
+			if (map2 == null)
+			{
+				throw new IllegalStateException();
+			}
+			map2.removeNode(this.lastKey);
 		}
 		
 		/*
@@ -643,10 +654,16 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 * You can obtain the key to which this value was mapped by calling
 		 * {@link #getLastKey} before the next call to {@link #next} or {@link #nextValue}.
 		 */
-		public V nextValue()
+		public @Nullable V nextValue()
 		{
-			Object[] node = this.advance();
-			return node == null ? null : this.map.getNodeValue(node);
+			final SkipMap<K,V> map2 = this.map;
+			@Nullable V result = null;
+			if (map2 != null)
+			{
+				@Nullable Object[] node = this.advance();
+				result =  node == null ? null : map2.getNodeValue(node);
+			}
+			return result;
 		}
 		
 		/**
@@ -654,39 +671,45 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 * or with the last entry returned by {@link #next}. Returns null if at start
 		 * or end of iteration.
 		 */
-		public K getLastKey()
+		public @Nullable K getLastKey()
 		{
 			return this.lastKey;
 		}
 		
-		private Object[] advance()
+		private @Nullable Object[] advance()
 		{
-			Object[] node = this.nextNode;
-			if (node != null)
+			final SkipMap<K,V> map2 = this.map;
+			@Nullable Object[] node = null;
+			if (map2 != null)
 			{
-				this.lastKey = this.map.getNodeKey(node);
-				this.nextNode = this.map.getNextNode(node);
-				return node;
+				node = this.nextNode;
+				if (node != null)
+				{
+					this.lastKey = map2.getNodeKey(node);
+					this.nextNode = map2.getNextNode(node);
+					return node;
+				}
+				else
+				{
+					this.lastKey = null;
+				}
 			}
-			else
-			{
-				this.lastKey = null;
-			}
-			return null;
+			return node;
 		}
 	}
 
+	@NotNullByDefault
 	public static class KeyIterator<K,V> extends AbstractSkipList.KeyIterator<K>
 		implements ReleasableIterator<K>
 	{
 		private static final ThreadLocal<KeyIterator<?,?>> reusableInstance= new ThreadLocal<KeyIterator<?,?>>();
 		
-		public KeyIterator(SkipMap<K,V> map)
+		public KeyIterator(@Nullable SkipMap<K,V> map)
 		{
 			super(map);
 		}
 		
-		public static <K,V> KeyIterator<K,V> make(SkipMap<K,V> map)
+		public static <K,V> KeyIterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
 			KeyIterator<K,V> iter = (KeyIterator<K, V>) KeyIterator.reusableInstance.get();
 			
@@ -713,12 +736,13 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 			}
 		}
 		
-		public void reset(SkipMap<K,V> map)
+		public void reset(@Nullable SkipMap<K,V> map)
 		{
 			super.reset(map);
 		}
 	}
 	
+	@NotNullByDefault
 	public static class ValueIterator<K,V> implements ReleasableIterator<V>
 	{
 		/*
@@ -726,13 +750,13 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 */
 		
 		/** The underlying set to be iterated over. This may be null. */
-		protected SkipMap<K,V> map;
+		protected @Nullable SkipMap<K,V> map;
 		
 		/** The next node to be returned by {@link #next}. Null when there are no more nodes. */
-		private Object[] nextNode;
+		private @Nullable Object[] nextNode;
 		
 		/** The last key returned by {@link #next}. Could be null. */
-		private K lastKey;
+		private @Nullable K lastKey;
 		
 		private static final ThreadLocal<ValueIterator<?,?>> reusableInstance = new ThreadLocal<ValueIterator<?,?>>();
 		
@@ -740,12 +764,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 * Construction/initialization methods
 		 */
 		
-		public ValueIterator(SkipMap<K,V> map)
+		public ValueIterator(@Nullable SkipMap<K,V> map)
 		{
 			this.reset(map);
 		}
 		
-		public static <K,V> ValueIterator<K,V> make(SkipMap<K,V> map)
+		public static <K,V> ValueIterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
 			ValueIterator<K,V> iter = (ValueIterator<K, V>) ValueIterator.reusableInstance.get();
 			
@@ -777,13 +801,14 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 */
 		public void reset()
 		{
-			this.nextNode = this.map == null ? null : this.map.getNextNode(map.head);
+			final @Nullable SkipMap<K,V> map2 = this.map;
+			this.nextNode = map2 == null ? null : map2.getNextNode(map2.head);
 		}
 		
 		/**
 		 * Resets iterator to beginning of {@code newList}, which may be null.
 		 */
-		public void reset(SkipMap<K,V> newMap)
+		public void reset(@Nullable SkipMap<K,V> newMap)
 		{
 			this.map = newMap;
 			this.reset();
@@ -807,18 +832,22 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		 * It is not necessary to invoke {@link #hasNext} before calling this method.
 		 */
 		@Override
-		public V next()
+		public @Nullable V next()
 		{
-			K key = null;
 			V value = null;
-			Object[] n = this.nextNode;
-			if (n != null)
+			final SkipMap<K,V> map2 = map;
+			if (map2 != null)
 			{
-				value = this.map.getNodeValue(n);
-				key = this.map.getNodeKey(n);
-				this.nextNode = this.map.getNextNode(n);
+				K key = null;
+				Object[] n = this.nextNode;
+				if (n != null)
+				{
+					value = map2.getNodeValue(n);
+					key = map2.getNodeKey(n);
+					this.nextNode = map2.getNextNode(n);
+				}
+				this.lastKey = key;
 			}
-			this.lastKey = key;
 			return value;
 		}
 
@@ -829,7 +858,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		@Override
 		public void remove()
 		{
-			this.map.removeNode(this.lastKey);
+			final SkipMap<K,V> map2 = map;
+			if (map2 == null)
+			{
+				throw new IllegalStateException();
+			}
+			map2.removeNode(this.lastKey);
 			this.lastKey = null;
 		}
 

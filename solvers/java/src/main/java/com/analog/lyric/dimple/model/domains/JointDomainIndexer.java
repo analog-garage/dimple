@@ -131,6 +131,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		Class<?> elementClass = domains[0].getElementClass();
 		for (int i = domains.length; --i >= 1; )
 		{
+			assert(elementClass != null);
 			elementClass = Supers.nearestCommonSuperClass(elementClass, domains[i].getElementClass());
 		}
 		_elementClass = elementClass;

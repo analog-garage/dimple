@@ -22,6 +22,9 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A priority queue that works on elements that have inherent keys and that does not allow
  * more than one entry with the same key.
@@ -83,7 +86,7 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	 * then natural ordering will be used and all elements must implement {@link Comparable}
 	 * and must be comparable to existing elements in the queue.
 	 */
-	public KeyedPriorityQueue(int initialCapacity, Comparator<? super E> priorityComparator)
+	public KeyedPriorityQueue(int initialCapacity, @Nullable Comparator<? super E> priorityComparator)
 	{
 		super(initialCapacity, priorityComparator);
 	}
@@ -96,7 +99,7 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	 * its comparator will be used to determine priorities. Otherwise the natural order will be used
 	 * (see {@link #KeyedPriorityQueue(int, Comparator)}).
 	 */
-	public KeyedPriorityQueue(Collection<? extends E> collection)
+	public KeyedPriorityQueue(@NotNull Collection<? extends E> collection)
 	{
 		super(collection);
 	}

@@ -23,11 +23,15 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * 
  * @author Christopher Barber
  * @since 0.05
  */
+@NotNullByDefault
 public final class Comparators
 {
 	private Comparators() {} // Prevent instantiation
@@ -111,7 +115,7 @@ public final class Comparators
 	 * 
 	 * <If collection is a {@link SortedSet} returns {@link SortedSet#comparator()}, else returns null.
 	 */
-	public static <T> Comparator<? super T> fromCollection(Collection<? extends T> collection)
+	public static @Nullable <T> Comparator<? super T> fromCollection(Collection<? extends T> collection)
 	{
 		if (collection instanceof SortedSet)
 		{

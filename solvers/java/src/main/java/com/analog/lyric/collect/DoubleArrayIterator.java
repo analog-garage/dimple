@@ -18,6 +18,8 @@ package com.analog.lyric.collect;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * {@link PrimitiveIterator.OfDouble} implementation based on an underlying
  * double array.
@@ -27,6 +29,7 @@ import net.jcip.annotations.ThreadSafe;
  * doubles is not atomic in Java.
  */
 @ThreadSafe
+@NotNullByDefault
 public class DoubleArrayIterator extends AbstractPrimitiveArrayIterator<Double>
 	implements PrimitiveIterator.OfDouble
 {

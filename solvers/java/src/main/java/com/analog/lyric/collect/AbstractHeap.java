@@ -19,6 +19,9 @@ package com.analog.lyric.collect;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Base implementation of {@link IHeap} with default implementation
  * of some methods.
@@ -26,6 +29,7 @@ import java.util.Iterator;
  * @author Christopher Barber
  * @since 0.05
  */
+@NotNullByDefault
 public abstract class AbstractHeap<E>
 	extends AbstractCollection<E>
 	implements IHeap<E>
@@ -105,13 +109,13 @@ public abstract class AbstractHeap<E>
 	 */
 	
 	@Override
-	public boolean contains(Object object)
+	public boolean contains(@Nullable Object object)
 	{
 		return entryForElement(object) != null;
 	}
 	
 	@Override
-	public boolean remove(Object object)
+	public boolean remove(@Nullable Object object)
 	{
 		IEntry<E> entry = entryForElement(object);
 		return entry != null ? removeEntry(entry) : false;
@@ -140,13 +144,13 @@ public abstract class AbstractHeap<E>
 	}
 	
 	@Override
-	public IEntry<E> entryForElement(Object element)
+	public @Nullable IEntry<E> entryForElement(@Nullable Object element)
 	{
 		Iterator<? extends IEntry<E>> iter = entryIterator();
 		while (iter.hasNext())
 		{
 			IEntry<E> entry = iter.next();
-			if (element.equals(entry.getElement()))
+			if (entry.getElement().equals(element))
 			{
 				return entry;
 			}
@@ -205,14 +209,14 @@ public abstract class AbstractHeap<E>
 	}
 	
 	@Override
-	public E peek()
+	public @Nullable E peek()
 	{
 		final IEntry<E> entry = peekEntry();
 		return entry != null ? entry.getElement() : null;
 	}
 
 	@Override
-	public E poll()
+	public @Nullable E poll()
 	{
 		final IEntry<E> entry = pollEntry();
 		return entry != null ? entry.getElement() : null;

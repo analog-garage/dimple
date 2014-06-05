@@ -16,9 +16,12 @@
 
 package com.analog.lyric.collect;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+
 /**
  * Iterables supporting unboxed iteration of primitive types.
  */
+@NotNullByDefault
 public interface PrimitiveIterable<T> extends Iterable<T>
 {
 	@Override

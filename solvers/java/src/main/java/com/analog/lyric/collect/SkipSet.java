@@ -23,6 +23,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 
+import com.analog.lyric.util.misc.NotNull;
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
 public class SkipSet<E> extends AbstractSkipList<E>
@@ -32,7 +35,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
      * Construction
      */
     
-	public SkipSet(Comparator<? super E> comparator)
+	public SkipSet(@NotNull Comparator<? super E> comparator)
 	{
 		super(comparator, (short)1);
 	}
@@ -40,7 +43,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static <T extends Comparable<T>> SkipSet<T> create()
+	public static @NotNull <T extends Comparable<T>> SkipSet<T> create()
 	{
 		return create(Ordering.natural());
 	}
@@ -48,7 +51,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static <T> SkipSet<T> create(Comparator<? super T> comparator)
+	public static @NotNull <T> SkipSet<T> create(@NotNull Comparator<? super T> comparator)
 	{
 		return new SkipSet<T>(comparator);
 	}
@@ -56,7 +59,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static <T extends Comparable<T>> SkipSet<T> create(Collection<? extends T> collection)
+	public static @NotNull <T extends Comparable<T>> SkipSet<T> create(@NotNull Collection<? extends T> collection)
 	{
 		final SkipSet<T> set = create();
 		set.addAll(collection);
@@ -66,7 +69,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static <T> SkipSet<T> create(SortedSet<T> set)
+	public static @NotNull <T> SkipSet<T> create(@NotNull SortedSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
 		result.addAll(set);
@@ -76,7 +79,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * @since 0.05
 	 */
-	public static <T> SkipSet<T> create(SkipSet<T> set)
+	public static @NotNull <T> SkipSet<T> create(@NotNull SkipSet<T> set)
 	{
 		final SkipSet<T> result = create(set.comparator());
 		result.addAll(set);
@@ -208,18 +211,19 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		}
 	}
 	
+	@NotNullByDefault
 	public static class Iterator<E> extends KeyIterator<E> implements ReleasableIterator<E>
 	{
 		private static final ThreadLocal<KeyIterator<?>> reusableInstance = new ThreadLocal<KeyIterator<?>>();
 
-		public Iterator(SkipSet<E> set)
+		public Iterator(@Nullable SkipSet<E> set)
 		{
 			super(set);
 		}
 		
-		protected static <T> Iterator<T> make(SkipSet<T> set)
+		protected static <T> Iterator<T> make(@Nullable SkipSet<T> set)
 		{
-			Iterator<T> iter = (Iterator<T>)Iterator.reusableInstance.get();
+			@Nullable Iterator<T> iter = (Iterator<T>)Iterator.reusableInstance.get();
 			
 			if (iter != null)
 			{
@@ -244,7 +248,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 			}
 		}
 
-		public void reset(SkipSet<E> set)
+		public void reset(@Nullable SkipSet<E> set)
 		{
 			super.reset(set);
 		}
@@ -351,20 +355,33 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/*
 	 * SortedSet methods - this class does not explicitly implement this interface since the subset methods are missing.
 	 */
-	
+
+	/**
+	 * Returns first element of set.
+	 * @throws NoSuchElementException if set is empty.
+	 */
 	public E first()
 	{
-		return this.getNodeKey(this.firstNode());
-	}
-	
-	public E last()
-	{
-		if (this.isEmpty())
+		final Object[] node = this.firstNode();
+		if (node == null)
 		{
 			throw new NoSuchElementException();
 		}
+		return this.getNodeKey(node);
+	}
 	
-		return this.getNodeKey(this.lastNode());
+	/**
+	 * Returns last element of set.
+	 * @throws NoSuchElementException if set is empty.
+	 */
+	public E last()
+	{
+		final Object[] node = this.lastNode();
+		if (node == null)
+		{
+			throw new NoSuchElementException();
+		}
+		return this.getNodeKey(node);
 	}
 	
 	/*
@@ -375,7 +392,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	 * Returns lowest value in set that is greater than or equal to {@code value} or null.
 	 * This is faster than {@link #floor} method.
 	 */
-	public E ceiling(E value)
+	public @Nullable E ceiling(E value)
 	{
 		Object[] node = this.findCeilingNode(value);
 		return node == null ? null : this.getNodeKey(node);
@@ -384,30 +401,30 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	/**
 	 * Returns greatest value in set that is less than or equal to {@code value} or null.
 	 */
-	public E floor(E value)
+	public @Nullable E floor(E value)
 	{
 		Object[] node = this.findFloorNode(value);
 		return node == null ? null : this.getNodeKey(node);
 	}
 	
-	public E higher(E key)
+	public @Nullable E higher(E key)
 	{
 		Object[] node = this.findHigherNode(key);
 		return node == null ? null : this.getNodeKey(node);
 	}
 	
-	public E lower(E value)
+	public @Nullable E lower(E value)
 	{
 		return this.getNodeKey(this.findLowerNode(value));
 	}
 	
-	public E pollFirst()
+	public @Nullable E pollFirst()
 	{
 		Object[] node = this.pollFirstNode();
 		return node == null ? null : this.getNodeKey(node);
 	}
 	
-	public E pollLast()
+	public @Nullable E pollLast()
 	{
 		Object[] node = this.pollLastNode();
 		return node == null ? null : this.getNodeKey(node);

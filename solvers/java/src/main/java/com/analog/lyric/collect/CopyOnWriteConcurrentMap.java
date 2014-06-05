@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.NotNull;
+
 /**
  * An extension of {@link CopyOnWriteMap} for delegating to a {@link ConcurrentMap}.
  */
@@ -39,7 +41,7 @@ public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implemen
 	 * the first mutating operation, which will trigger a copy
 	 * to be made.
 	 */
-	public CopyOnWriteConcurrentMap(ConcurrentMap<K,V> underlyingMap)
+	public CopyOnWriteConcurrentMap(@NotNull ConcurrentMap<K,V> underlyingMap)
 	{
 		super(underlyingMap);
 	}
@@ -89,13 +91,13 @@ public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implemen
 	 */
 	
 	@Override
-	public ConcurrentMap<K,V> originalMap()
+	public @NotNull ConcurrentMap<K,V> originalMap()
 	{
 		return (ConcurrentMap<K, V>)super.originalMap();
 	}
 	
 	@Override
-	protected ConcurrentMap<K,V> copyOriginalMap()
+	protected @NotNull ConcurrentMap<K,V> copyOriginalMap()
 	{
 		return (ConcurrentMap<K, V>) super.copyOriginalMap();
 	}
@@ -110,7 +112,7 @@ public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implemen
 	 * Subclasses may override this method to return other map types.
 	 */
 	@Override
-	protected ConcurrentMap<K,V> createEmptyMap(int capacity)
+	protected @NotNull ConcurrentMap<K,V> createEmptyMap(int capacity)
 	{
 		Map<K,V> original = originalMap();
 		if (original instanceof SortedMap)
@@ -128,13 +130,13 @@ public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implemen
 	 */
 	
 	@Override
-	protected ConcurrentMap<K,V> readOnlyMap()
+	protected @NotNull ConcurrentMap<K,V> readOnlyMap()
 	{
 		return (ConcurrentMap<K, V>) super.readOnlyMap();
 	}
 	
 	@Override
-	protected ConcurrentMap<K,V> mutableMap()
+	protected @NotNull ConcurrentMap<K,V> mutableMap()
 	{
 		return (ConcurrentMap<K, V>) super.mutableMap();
 	}

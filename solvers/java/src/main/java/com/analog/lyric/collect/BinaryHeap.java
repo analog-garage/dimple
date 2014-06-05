@@ -19,6 +19,9 @@ package com.analog.lyric.collect;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NotNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Array-based binary heap implementation of {@link IHeap}.
  * <p>
@@ -28,6 +31,7 @@ import java.util.Iterator;
  * @author Christopher Barber
  * @since 0.0.5
  */
+@NotNullByDefault
 public class BinaryHeap<E> extends AbstractHeap<E>
 {
 	/**
@@ -225,12 +229,12 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 	}
 	
 	@Override
-	public Entry<E> entryForElement(Object element)
+	public @Nullable Entry<E> entryForElement(@Nullable Object element)
 	{
 		for (int i = 0, end = _heap.size(); i < end; ++i)
 		{
 			Entry<E> entry = _heap.get(i);
-			if (element.equals(entry.getElement()))
+			if (entry.getElement().equals(element))
 			{
 				return entry;
 			}
@@ -292,7 +296,7 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 	}
 
 	@Override
-	public Entry<E> peekEntry()
+	public @Nullable Entry<E> peekEntry()
 	{
 		Entry<E> entry = null;
 		
@@ -306,7 +310,7 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 	}
 
 	@Override
-	public Entry<E> pollEntry()
+	public @Nullable Entry<E> pollEntry()
 	{
 		Entry<E> entry = null;
 
