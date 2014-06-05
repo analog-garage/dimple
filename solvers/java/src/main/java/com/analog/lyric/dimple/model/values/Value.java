@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.values;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -29,7 +30,6 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
-import com.google.common.base.Objects;
 
 /**
  * Holder for a values for a given {@link Domain}.
@@ -321,7 +321,7 @@ public abstract class Value implements Cloneable, Serializable
 	 */
 	public boolean valueEquals(Value other)
 	{
-		return Objects.equal(getObject(), other.getObject());
+		return Objects.equals(getObject(), other.getObject());
 	}
 	
 	/*-----------------------

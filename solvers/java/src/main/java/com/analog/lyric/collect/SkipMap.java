@@ -21,11 +21,11 @@ import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
-import com.google.common.base.Objects;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
 
@@ -53,7 +53,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 			if (other instanceof Entry)
 			{
 				Entry<?,?> that = (Entry<?,?>)other;
-				return node[0].equals(that.node[0]) && Objects.equal(node[1], that.node[1]);
+				return node[0].equals(that.node[0]) && Objects.equals(node[1], that.node[1]);
 			}
 			
 			return false;
@@ -149,7 +149,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 				for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
 				{
 					Object key = node[0], value = node[1];
-					if (!Objects.equal(otherMap.get(key), value))
+					if (!Objects.equals(otherMap.get(key), value))
 					{
 						return false;
 					}
@@ -199,7 +199,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	{
 		for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
 		{
-			if (Objects.equal(this.getNodeValue(node), value))
+			if (Objects.equals(this.getNodeValue(node), value))
 			{
 				return true;
 			}
