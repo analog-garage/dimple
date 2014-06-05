@@ -170,11 +170,7 @@ public class Serializer
 		{
 			Element domain_item = doc.createElement("domain_element");
 			Object domainElementObject = dd.getElement(j);
-			String domainElementString = "null";
-			if(domainElementObject != null)
-			{
-				domainElementString = domainElementObject.toString().toString();
-			}
+			String domainElementString = domainElementObject.toString().toString(); // ??
 			domain_item.setAttribute("value", domainElementString);
 			domain_entry.appendChild(domain_item);
 		}

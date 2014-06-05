@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.Arrays;
 
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Doubles;
 
@@ -102,7 +103,7 @@ public class DoubleRangeDomain extends DoubleDiscreteDomain
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{

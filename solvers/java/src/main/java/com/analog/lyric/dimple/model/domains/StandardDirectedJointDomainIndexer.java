@@ -25,6 +25,7 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Directed implementation of {@link JointDomainIndexer}.
@@ -132,7 +133,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{
@@ -367,7 +368,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	}
 
 	@Override
-	public int[] jointIndexToIndices(int jointIndex, int[] indices)
+	public int[] jointIndexToIndices(int jointIndex, @Nullable int[] indices)
 	{
 		indices = allocateIndices(indices);
 		final int inputIndex = jointIndex / _outputCardinality;

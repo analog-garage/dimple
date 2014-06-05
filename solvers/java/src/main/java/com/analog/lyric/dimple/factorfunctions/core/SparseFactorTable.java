@@ -24,6 +24,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
@@ -207,7 +208,7 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 			
 		final DiscreteIndicesIterator addedIterator =
 			scratch.addedIndices.length > 0 ?
-				new DiscreteIndicesIterator(converter.getAddedDomains(), scratch.addedIndices) :
+				new DiscreteIndicesIterator(Objects.requireNonNull(converter.getAddedDomains()), scratch.addedIndices) :
 				new DiscreteIndicesIterator(ArrayUtil.EMPTY_INT_ARRAY, scratch.addedIndices);
 
 		for (int i = 0; i < oldSparseSize; ++i)

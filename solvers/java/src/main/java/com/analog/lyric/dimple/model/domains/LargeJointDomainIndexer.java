@@ -21,6 +21,7 @@ import java.util.Comparator;
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 public class LargeJointDomainIndexer extends JointDomainIndexer
 {
@@ -125,7 +126,7 @@ public class LargeJointDomainIndexer extends JointDomainIndexer
 	}
 
 	@Override
-	public int[] undirectedJointIndexToIndices(int jointIndex, int[] indices)
+	public int[] undirectedJointIndexToIndices(int jointIndex, @Nullable int[] indices)
 	{
 		throw noJointIndexing("undirectedJointIndexToIndices");
 	}

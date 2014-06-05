@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.domains;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 @Immutable
 public class StandardJointDomainIndexer extends JointDomainIndexer
@@ -212,7 +213,7 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	}
 	
 	@Override
-	public final int[] undirectedJointIndexToIndices(int jointIndex, int[] indices)
+	public final int[] undirectedJointIndexToIndices(int jointIndex, @Nullable int[] indices)
 	{
 		final int[] products = _products;
 		

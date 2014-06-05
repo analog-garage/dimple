@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Complex;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -64,25 +65,25 @@ public abstract class Domain implements Serializable
 	 * If domain {@link #isDiscrete()} returns object cast to {@link DiscreteDomain},
 	 * otherwise returns null.
 	 */
-	public DiscreteDomain asDiscrete() { return null; }
+	public @Nullable DiscreteDomain asDiscrete() { return null; }
 	
 	/**
 	 * If domain {@link #isReal()} returns object cast to {@link RealDomain},
 	 * otherwise returns null.
 	 */
-	public RealDomain asReal() { return null; }
+	public @Nullable RealDomain asReal() { return null; }
 	
 	/**
 	 * If domain {@link #isRealJoint()} returns object cast to {@link RealJointDomain},
 	 * otherwise returns null.
 	 */
-	public RealJointDomain asRealJoint() { return null; }
+	public @Nullable RealJointDomain asRealJoint() { return null; }
 	
 	/**
 	 * If domain {@link #isComplex()} returns object cast to {@link ComplexDomain},
 	 * otherwise returns null.
 	 */
-	public ComplexDomain asComplex() { return null; }
+	public @Nullable ComplexDomain asComplex() { return null; }
 	
 	/**
 	 * True if domain only contains values that can be represented using an {@code int}.

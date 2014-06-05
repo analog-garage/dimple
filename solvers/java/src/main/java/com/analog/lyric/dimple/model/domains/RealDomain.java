@@ -16,9 +16,10 @@
 
 package com.analog.lyric.dimple.model.domains;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
-
 import net.jcip.annotations.Immutable;
+
+import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 @Immutable
 public class RealDomain extends Domain
@@ -131,7 +132,7 @@ public class RealDomain extends Domain
 	 */
 	
 	@Override
-	public final boolean equals(Object other)
+	public final boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 			return true;

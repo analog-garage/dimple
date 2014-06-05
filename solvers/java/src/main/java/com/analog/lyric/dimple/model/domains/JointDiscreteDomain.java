@@ -22,6 +22,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A discrete domain representing the Cartesian product of other discrete domains.
@@ -63,7 +64,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{
@@ -264,7 +265,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	 * @see #getElement(int)
 	 * @see #getElementIndices(int, int[])
 	 */
-	public <T> T[] getElement(int i, T[] array)
+	public <T> T[] getElement(int i, @Nullable T[] array)
 	{
 		return _domains.jointIndexToElements(i, array);
 	}

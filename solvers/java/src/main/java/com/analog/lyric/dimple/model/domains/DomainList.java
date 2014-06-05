@@ -21,6 +21,8 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.RandomAccess;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * An immutable ordered list of {@link Domain}.
  */
@@ -48,7 +50,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	 * May return a previously cached value.
 	 */
 	@SafeVarargs
-	public static <T extends Domain> DomainList<T> create(int[] outputIndices, T ... domains)
+	public static <T extends Domain> DomainList<T> create(@Nullable int[] outputIndices, T ... domains)
 	{
 		if (allDiscrete(domains))
 		{
@@ -121,7 +123,7 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	/**
 	 * Casts this object to {@link JointDomainIndexer} or else returns null.
 	 */
-	public JointDomainIndexer asJointDomainIndexer()
+	public @Nullable JointDomainIndexer asJointDomainIndexer()
 	{
 		return null;
 	}

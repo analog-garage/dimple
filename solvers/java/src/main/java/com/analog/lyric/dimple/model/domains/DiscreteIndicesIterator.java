@@ -21,6 +21,8 @@ import java.util.Iterator;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * An iterator over any array of integer indices each with a specified bounds
  * iterating over the index at position n before that at n+1. This is the
@@ -81,7 +83,7 @@ public final class DiscreteIndicesIterator implements Iterator<int[]>
 	 * 
 	 * @see #DiscreteIndicesIterator(DomainList)
 	 */
-	public DiscreteIndicesIterator(DomainList<DiscreteDomain> domains, int[] indices)
+	public DiscreteIndicesIterator(DomainList<DiscreteDomain> domains, @Nullable int[] indices)
 	{
 		this(limitsFromDomains(domains), indices, false);
 	}
@@ -103,12 +105,12 @@ public final class DiscreteIndicesIterator implements Iterator<int[]>
 	 * 
 	 * @see #DiscreteIndicesIterator(int[], int[])
 	 */
-	public DiscreteIndicesIterator(int[] sizes, int[] indices)
+	public DiscreteIndicesIterator(int[] sizes, @Nullable int[] indices)
 	{
 		this(sizes, indices, true);
 	}
 	
-	private DiscreteIndicesIterator(int[] sizesOrLimits, int[] indices, boolean sizes)
+	private DiscreteIndicesIterator(int[] sizesOrLimits, @Nullable int[] indices, boolean sizes)
 	{
 		final int dimensions = sizesOrLimits.length;
 		

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 {
 	/*-------
@@ -43,7 +45,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{

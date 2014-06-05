@@ -20,6 +20,7 @@ import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,7 +31,7 @@ import cern.colt.map.OpenIntIntHashMap;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
-import com.google.common.base.Objects;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Supports conversion of indexes between two {@link JointDomainIndexer}s.
@@ -64,10 +65,10 @@ public abstract class JointDomainReindexer
 			this.converter = converter;
 			fromIndices = new int[converter._fromDomains.size()];
 			toIndices = new int[converter._toDomains.size()];
-			addedIndices =
-				converter._addedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[converter._addedDomains.size()];
-			removedIndices =
-				converter._removedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[converter._removedDomains.size()];
+			final JointDomainIndexer addedDomains = converter._addedDomains;
+			addedIndices = addedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[addedDomains.size()];
+			final JointDomainIndexer removedDomains = converter._removedDomains;
+			removedIndices = removedDomains == null ? ArrayUtil.EMPTY_INT_ARRAY : new int[removedDomains.size()];
 			int joinedSize =
 				Math.abs(Math.abs(fromIndices.length - toIndices.length) -
 					Math.abs(addedIndices.length - removedIndices.length));
@@ -80,6 +81,7 @@ public abstract class JointDomainReindexer
 		 * has null for {@link JointDomainReindexer#getAddedDomains()}, then
 		 * {@code addedJointIndex} will be ignored.
 		 */
+		@SuppressWarnings("null")
 		public void writeIndices(int fromJointIndex, int addedJointIndex)
 		{
 			converter._fromDomains.jointIndexToIndices(fromJointIndex, fromIndices);
@@ -97,7 +99,8 @@ public abstract class JointDomainReindexer
 		 * it in that {@code removedJointIndexRef}. Returns -1 if {@code #toIndices}
 		 * contains negative value.
 		 */
-		public int readIndices(AtomicInteger removedJointIndexRef)
+		@SuppressWarnings("null")
+		public int readIndices(@Nullable AtomicInteger removedJointIndexRef)
 		{
 			if (toIndices[0] < 0)
 			{
@@ -126,9 +129,9 @@ public abstract class JointDomainReindexer
 	 * State
 	 */
 	
-	protected final JointDomainIndexer _addedDomains;
+	protected final @Nullable JointDomainIndexer _addedDomains;
 	protected final JointDomainIndexer _fromDomains;
-	protected final JointDomainIndexer _removedDomains;
+	protected final @Nullable JointDomainIndexer _removedDomains;
 	protected final JointDomainIndexer _toDomains;
 	
 	private final AtomicReference<Indices> _scratch = new AtomicReference<Indices>();
@@ -139,9 +142,9 @@ public abstract class JointDomainReindexer
 	
 	protected JointDomainReindexer(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains)
+		@Nullable JointDomainIndexer removedDomains)
 	{
 		_fromDomains = fromDomains;
 		_addedDomains = addedDomains;
@@ -251,9 +254,9 @@ public abstract class JointDomainReindexer
 	 */
 	public static JointDomainReindexer createPermuter(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains,
+		@Nullable JointDomainIndexer removedDomains,
 		int[] oldToNewIndex)
 	{
 		return new JointDomainIndexPermuter(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex);
@@ -541,7 +544,7 @@ public abstract class JointDomainReindexer
 			fromDomains = indexer.getToDomains();
 		}
 		
-		return indexer;
+		return Objects.requireNonNull(indexer);
 	}
 
 	/**
@@ -553,7 +556,7 @@ public abstract class JointDomainReindexer
 	 * 
 	 * @since 0.05
 	 */
-	public JointDomainReindexer appendTo(JointDomainReindexer prev)
+	public JointDomainReindexer appendTo(@Nullable JointDomainReindexer prev)
 	{
 		return prev != null ? prev.combineWith(this) : this;
 	}
@@ -572,7 +575,7 @@ public abstract class JointDomainReindexer
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -584,8 +587,8 @@ public abstract class JointDomainReindexer
 			JointDomainReindexer that = (JointDomainReindexer)other;
 			return _fromDomains.equals(that._fromDomains) &&
 				_toDomains.equals(that._toDomains) &&
-				Objects.equal(_addedDomains, that._addedDomains) &&
-				Objects.equal(_removedDomains, that._removedDomains);
+				Objects.equals(_addedDomains, that._addedDomains) &&
+				Objects.equals(_removedDomains, that._removedDomains);
 		}
 		
 		return false;
@@ -602,7 +605,7 @@ public abstract class JointDomainReindexer
 	 * Returns {@link JointDomainIndexer} representing the subdomains to be added to
 	 * the factor table. This may be null if no dimensions are to be added.
 	 */
-	public final JointDomainIndexer getAddedDomains()
+	public final @Nullable JointDomainIndexer getAddedDomains()
 	{
 		return _addedDomains;
 	}
@@ -613,7 +616,7 @@ public abstract class JointDomainReindexer
 	 * Returns {@link JointDomainIndexer} representing the subdomains to be removed from
 	 * the factor table. This may be null if no dimensions are to be removed.
 	 */
-	public final JointDomainIndexer getRemovedDomains()
+	public final @Nullable JointDomainIndexer getRemovedDomains()
 	{
 		return _removedDomains;
 	}
@@ -683,14 +686,15 @@ public abstract class JointDomainReindexer
 		{
 			Indices scratch = getScratch();
 
+			final JointDomainIndexer addedDomains = _addedDomains;
 			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 			{
 				_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
 				for (int added = getAddedCardinality(); --added >= 0;)
 				{
-					if (_addedDomains != null)
+					if (addedDomains != null)
 					{
-						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+						addedDomains.jointIndexToIndices(added, scratch.addedIndices);
 					}
 					convertIndices(scratch);
 					if (scratch.toIndices[0] >= 0)
@@ -724,9 +728,11 @@ public abstract class JointDomainReindexer
 		
 		final double[] weights = new double[_toDomains.getCardinality()];
 		
+		final JointDomainIndexer addedDomains = _addedDomains;
+		
 		if (hasFastJointIndexConversion())
 		{
-			if (_addedDomains == null)
+			if (addedDomains == null)
 			{
 				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 				{
@@ -741,7 +747,7 @@ public abstract class JointDomainReindexer
 			{
 				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 				{
-					for (int added = _addedDomains.getCardinality(); --added >= 0;)
+					for (int added = addedDomains.getCardinality(); --added >= 0;)
 					{
 						final int newJoint = convertJointIndex(oldJoint, added);
 						if (newJoint >= 0)
@@ -756,7 +762,7 @@ public abstract class JointDomainReindexer
 		{
 			Indices scratch = getScratch();
 
-			if (_addedDomains == null)
+			if (addedDomains == null)
 			{
 				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 				{
@@ -773,9 +779,9 @@ public abstract class JointDomainReindexer
 				for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 				{
 					_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
-					for (int added = _addedDomains.getCardinality(); --added >= 0;)
+					for (int added = addedDomains.getCardinality(); --added >= 0;)
 					{
-						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+						addedDomains.jointIndexToIndices(added, scratch.addedIndices);
 						convertIndices(scratch);
 						if (scratch.toIndices[0] >= 0)
 						{
@@ -791,7 +797,7 @@ public abstract class JointDomainReindexer
 		return weights;
 	}
 	
-	public int convertJointIndex(int oldJointIndex, int addedJointIndex, AtomicInteger removedJointIndex)
+	public int convertJointIndex(int oldJointIndex, int addedJointIndex, @Nullable AtomicInteger removedJointIndex)
 	{
 		Indices scratch = getScratch();
 
@@ -959,6 +965,7 @@ public abstract class JointDomainReindexer
 	 * The number of different possible combinations of values in {@link #getAddedDomains()}
 	 * or else returns 1 if no added domains.
 	 */
+	@SuppressWarnings("null")
 	public final int getAddedCardinality()
 	{
 		return _addedDomains == null ? 1 : _addedDomains.getCardinality();
@@ -968,6 +975,7 @@ public abstract class JointDomainReindexer
 	 * The number of different possible combinations of values in {@link #getRemovedDomains()}
 	 * or else returns 1 if no removed domains.
 	 */
+	@SuppressWarnings("null")
 	public final int getRemovedCardinality()
 	{
 		return _removedDomains == null ? 1 : _removedDomains.getCardinality();
@@ -982,6 +990,7 @@ public abstract class JointDomainReindexer
 	/**
 	 * Default computation of {@link #hashCode()}
 	 */
+	@SuppressWarnings("null")
 	protected int computeHashCode()
 	{
 		int hash = _fromDomains.hashCode() * 7 + _toDomains.hashCode();
@@ -1030,15 +1039,16 @@ public abstract class JointDomainReindexer
 		else
 		{
 			Indices scratch = getScratch();
+			final JointDomainIndexer addedDomains = _addedDomains;
 
 			for (int oldJoint = _fromDomains.getCardinality(); --oldJoint >= 0;)
 			{
 				_fromDomains.jointIndexToIndices(oldJoint, scratch.fromIndices);
 				for (int added = getAddedCardinality(); --added >= 0;)
 				{
-					if (_addedDomains != null)
+					if (addedDomains != null)
 					{
-						_addedDomains.jointIndexToIndices(added, scratch.addedIndices);
+						addedDomains.jointIndexToIndices(added, scratch.addedIndices);
 					}
 					convertIndices(scratch);
 					values[_toDomains.jointIndexFromIndices(scratch.toIndices)] = oldValues[oldJoint];

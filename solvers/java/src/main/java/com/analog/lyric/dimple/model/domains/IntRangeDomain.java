@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A discrete domain defined by a range of integers separated by a constant positive interval.
  * <p>
@@ -76,7 +78,7 @@ public class IntRangeDomain extends IntDiscreteDomain
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{

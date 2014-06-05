@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.model.domains;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A {@link JointDomainReindexer} that supports the splitting/joining of adjacent subdomains.
  */
@@ -146,7 +148,7 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -236,7 +238,7 @@ public final class JointDomainIndexJoiner extends JointDomainReindexer
 	}
 
 	@Override
-	public int convertJointIndex(int oldJointIndex, int addedJointIndex, AtomicInteger removedJointIndex)
+	public int convertJointIndex(int oldJointIndex, int addedJointIndex, @Nullable AtomicInteger removedJointIndex)
 	{
 		return oldJointIndex;
 	}

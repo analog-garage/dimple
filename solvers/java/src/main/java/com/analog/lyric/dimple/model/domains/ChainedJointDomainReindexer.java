@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 public final class ChainedJointDomainReindexer extends JointDomainReindexer
 {
@@ -29,7 +30,7 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 	
 	private int _hashCode;
 	private final JointDomainReindexer[] _converters;
-	private volatile ChainedJointDomainReindexer _inverse;
+	private volatile @Nullable ChainedJointDomainReindexer _inverse;
 	private final boolean _hasFastJointIndexConversion;
 	private final boolean _maintainsJointIndexOrder;
 	
@@ -39,9 +40,9 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 	
 	private ChainedJointDomainReindexer(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains,
+		@Nullable JointDomainIndexer removedDomains,
 		JointDomainReindexer ... converters
 		)
 	{
@@ -60,16 +61,16 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 		_maintainsJointIndexOrder = maintainsOrder;
 	}
 		
-	static JointDomainReindexer create(JointDomainReindexer ... converters)
+	static JointDomainReindexer create(JointDomainReindexer firstConverter, JointDomainReindexer ... moreConverters)
 	{
-		switch (converters.length)
+		if (moreConverters.length == 0)
 		{
-		case 0:
-			return null;
-			
-		case 1:
-			return converters[0];
+			return firstConverter;
 		}
+
+		JointDomainReindexer[] converters = new JointDomainReindexer[moreConverters.length + 1];
+		converters[0] = firstConverter;
+		System.arraycopy(moreConverters, 0, converters,  1, moreConverters.length);
 		
 		// TODO: eliminate consecutive converters that cancel each other out, i.e. a converter
 		// followed by its inverse.
@@ -150,7 +151,7 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -287,7 +288,7 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 	}
 	
 	@Override
-	public int convertJointIndex(int jointIndex, int addedJointIndex, AtomicInteger removedJointIndexRef)
+	public int convertJointIndex(int jointIndex, int addedJointIndex, @Nullable AtomicInteger removedJointIndexRef)
 	{
 		if (_removedDomains == null || removedJointIndexRef == null)
 		{
@@ -299,18 +300,20 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 		for (JointDomainReindexer converter : _converters)
 		{
 			int localAddedJointIndex = 0;
-			if (converter._addedDomains != null)
+			final JointDomainIndexer addedDomains = converter._addedDomains;
+			if (addedDomains != null)
 			{
-				int card = converter._addedDomains.getCardinality();
+				int card = addedDomains.getCardinality();
 				localAddedJointIndex = addedJointIndex;
 				addedJointIndex /= card;
 				localAddedJointIndex -= card * addedJointIndex;
 			}
 			jointIndex = converter.convertJointIndex(jointIndex, localAddedJointIndex, removedJointIndexRef);
 
-			if (converter._removedDomains != null)
+			final JointDomainIndexer removedDomains = converter._removedDomains;
+			if (removedDomains != null)
 			{
-				removedJointIndex *= converter._removedDomains.getCardinality();
+				removedJointIndex *= removedDomains.getCardinality();
 				removedJointIndex += removedJointIndexRef.get();
 			}
 			

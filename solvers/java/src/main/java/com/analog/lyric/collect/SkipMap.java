@@ -278,17 +278,22 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 	public K firstKey()
 	{
-		return this.getNodeKey(this.firstNode());
+		final Object[] node = this.firstNode();
+		if (node == null)
+		{
+			throw new NoSuchElementException();
+		}
+		return this.getNodeKey(node);
 	}
 
 	public K lastKey()
 	{
-		if (this.isEmpty())
+		final Object[] node = this.lastNode();
+		if (node == null)
 		{
 			throw new NoSuchElementException();
 		}
-		
-		return this.getNodeKey(this.lastNode());
+		return this.getNodeKey(node);
 
 	}
 

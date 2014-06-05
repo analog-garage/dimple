@@ -21,6 +21,7 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -243,7 +244,7 @@ public abstract class DiscreteDomain extends Domain
 	 * The default implementation simply does an elementwise comparison.
 	 */
 	@Override
-	public boolean equals(Object thatObj)
+	public boolean equals(@Nullable Object thatObj)
 	{
 		if (this == thatObj)
 		{
@@ -263,15 +264,9 @@ public abstract class DiscreteDomain extends Domain
 		
 		for (int i = 0, end = size(); i < end; ++i)
 		{
-			Object thisElt = this.getElement(i);
-			Object thatElt = that.getElement(i);
-			
-			if (thisElt != thatElt)
+			if (!this.getElement(i).equals(that.getElement(i)))
 			{
-				if (thisElt == null || !thisElt.equals(thatElt))
-				{
-					return false;
-				}
+				return false;
 			}
 		}
 		
@@ -337,7 +332,7 @@ public abstract class DiscreteDomain extends Domain
 	 * If this is a {@link TypedDiscreteDomain} with element type that extends {@code elementClass}
 	 * returns this object, otherwise null.
 	 */
-	public abstract <T> TypedDiscreteDomain<T> asTypedDomain(Class<T> elementClass);
+	public abstract @Nullable <T> TypedDiscreteDomain<T> asTypedDomain(Class<T> elementClass);
 	
 	/**
 	 * Common superclass of all elements.
@@ -359,7 +354,7 @@ public abstract class DiscreteDomain extends Domain
 	 * <p>
 	 * @see #getElements(Object[])
 	 */
-	public Object[] getElements()
+	public @Nullable Object[] getElements()
 	{
 		return getElements(null);
 	}
@@ -374,7 +369,7 @@ public abstract class DiscreteDomain extends Domain
 	 * array will be returned with the same component type as {@code array}. Otherwise a new
 	 * array will be returned with component type same as {@link #getElementClass()}.
 	 */
-	public <T> T[] getElements(T[] array)
+	public <T> T[] getElements(@Nullable T[] array)
 	{
 		final int length = size();
 		

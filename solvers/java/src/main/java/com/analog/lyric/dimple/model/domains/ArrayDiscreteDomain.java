@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.domains;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 import com.analog.lyric.collect.Supers;
 
@@ -48,7 +49,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 		elements[0] = firstElement;
 		for (int i = moreElements.length; --i>=offset;)
 		{
-			elements[i+1-offset] = moreElements[i];
+			elements[i+1-offset] = Objects.requireNonNull(moreElements[i]);
 		}
 		_elements = (Element[])elements;
 		

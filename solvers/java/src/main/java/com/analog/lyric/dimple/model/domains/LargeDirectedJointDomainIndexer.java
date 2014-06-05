@@ -19,10 +19,12 @@ package com.analog.lyric.dimple.model.domains;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Objects;
 
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndexer
 {
@@ -36,7 +38,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	private final int[] _inputIndices;
 	private final int[] _outputIndices;
 	private final int _outputCardinality;
-	private final int[] _outputProducts;
+	private final @Nullable int[] _outputProducts;
 	
 	private final Comparator<int[]> _indicesComparator;
 	
@@ -116,7 +118,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{
@@ -240,12 +242,12 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	@Override
 	public int outputIndexFromIndices(int ... indices)
 	{
-		assertSupportsOutputIndexing("outputIndexFromIndices");
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexFromIndices");
 		final int length = indices.length;
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
-			joint += indices[i] * _outputProducts[i];
+			joint += indices[i] * outputProducts[i];
 		}
 		return joint;
 	}
@@ -253,12 +255,12 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	@Override
 	public int outputIndexFromValues(Value ... values)
 	{
-		assertSupportsOutputIndexing("outputIndexFromValues");
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexFromValues");
 		final int length = values.length;
 		int joint = 0;
 		for (int i = 0, end = length; i != end; ++i) // != is slightly faster than < comparison
 		{
-			joint += values[i].getIndex() * _outputProducts[i];
+			joint += values[i].getIndex() * outputProducts[i];
 		}
 		return joint;
 	}
@@ -266,15 +268,15 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	@Override
 	public void outputIndexToElements(int outputIndex, Object[] elements)
 	{
-		assertSupportsOutputIndexing("outputIndexToElements");
-		locationToElements(outputIndex, elements, _outputIndices, _outputProducts);
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToElements");
+		locationToElements(outputIndex, elements, _outputIndices, outputProducts);
 	}
 	
 	@Override
 	public void outputIndexToIndices(int outputIndex, int[] indices)
 	{
-		assertSupportsOutputIndexing("outputIndexToIndices");
-		locationToIndices(outputIndex, indices, _outputIndices, _outputProducts);
+		final int[] outputProducts = assertSupportsOutputIndexing("outputIndexToIndices");
+		locationToIndices(outputIndex, indices, _outputIndices, outputProducts);
 	}
 
 	@Override
@@ -283,12 +285,14 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 		return _outputCardinality > 0;
 	}
 	
-	private void assertSupportsOutputIndexing(String method)
+	private int[] assertSupportsOutputIndexing(String method)
 	{
 		if (!supportsOutputIndexing())
 		{
 			throw new DimpleException("%s.%s not supported for very large joint output domain cardinality",
 				getClass().getSimpleName(), method);
 		}
+		
+		return Objects.requireNonNull(_outputProducts);
 	}
 }

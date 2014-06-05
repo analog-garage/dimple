@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * {@link JointDomainReindexer} implementation that permutes the domain order
  * including added and removed domains in the permutation.
@@ -50,11 +52,11 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 	
 	private JointDomainIndexPermuter(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains,
+		@Nullable JointDomainIndexer removedDomains,
 		int[] oldToNewIndex,
-		JointDomainIndexPermuter inverse)
+		@Nullable JointDomainIndexPermuter inverse)
 	{
 		super(fromDomains, addedDomains, toDomains, removedDomains);
 		
@@ -200,9 +202,9 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 
 	JointDomainIndexPermuter(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains,
+		@Nullable JointDomainIndexer removedDomains,
 		int[] oldToNewIndex)
 	{
 		this(fromDomains, addedDomains, toDomains, removedDomains, oldToNewIndex, null);
@@ -219,7 +221,7 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -288,6 +290,7 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 		}
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public int convertJointIndex(int jointIndex, int addedJointIndex)
 	{
@@ -319,8 +322,9 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 		}
 	}
 	
+	@SuppressWarnings("null")
 	@Override
-	public int convertJointIndex(int jointIndex, int addedJointIndex, AtomicInteger removedJointIndexRef)
+	public int convertJointIndex(int jointIndex, int addedJointIndex, @Nullable AtomicInteger removedJointIndexRef)
 	{
 		switch (_jointIndexConversionType)
 		{

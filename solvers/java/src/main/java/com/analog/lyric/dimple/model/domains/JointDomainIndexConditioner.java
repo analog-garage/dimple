@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.Immutable;
 import cern.colt.list.IntArrayList;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * 
  * @since 0.05
@@ -42,11 +44,11 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 	
 	private JointDomainIndexConditioner(
 		JointDomainIndexer fromDomains,
-		JointDomainIndexer addedDomains,
+		@Nullable JointDomainIndexer addedDomains,
 		JointDomainIndexer toDomains,
-		JointDomainIndexer removedDomains,
+		@Nullable JointDomainIndexer removedDomains,
 		int[] conditionedValues,
-		JointDomainIndexConditioner inverse)
+		@Nullable JointDomainIndexConditioner inverse)
 	{
 		super(fromDomains, addedDomains, toDomains, removedDomains);
 		_conditionedValues = conditionedValues.clone();
@@ -98,7 +100,7 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -199,7 +201,7 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 	}
 	
 	@Override
-	public int convertJointIndex(int oldJointIndex, int addedJointIndex, AtomicInteger removedJointIndex)
+	public int convertJointIndex(int oldJointIndex, int addedJointIndex, @Nullable AtomicInteger removedJointIndex)
 	{
 		assert(_supportsJointIndexing);
 		if (_addedDomains != null)

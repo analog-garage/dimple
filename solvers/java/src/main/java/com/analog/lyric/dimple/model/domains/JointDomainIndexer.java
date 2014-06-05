@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Random;
 
 import net.jcip.annotations.Immutable;
@@ -31,6 +32,7 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -134,7 +136,8 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 			assert(elementClass != null);
 			elementClass = Supers.nearestCommonSuperClass(elementClass, domains[i].getElementClass());
 		}
-		_elementClass = elementClass;
+		// This could only be null if the getElementClass() could return null or a primitive type.
+		_elementClass = Objects.requireNonNull(elementClass);
 	}
 	
 	JointDomainIndexer(DiscreteDomain[] domains)
@@ -142,7 +145,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		this(computeHashCode(domains), domains);
 	}
 	
-	private static JointDomainIndexer lookupOrCreate(BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
+	private static JointDomainIndexer lookupOrCreate(@Nullable BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
 	{
 		// TODO: implement cache...
 		
@@ -172,7 +175,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 	}
 	
-	static JointDomainIndexer lookupOrCreate(int[] outputIndices, DiscreteDomain[] domains, boolean cloneDomains)
+	static JointDomainIndexer lookupOrCreate(@Nullable int[] outputIndices, DiscreteDomain[] domains, boolean cloneDomains)
 	{
 		BitSet outputs = null;
 		
@@ -184,7 +187,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return lookupOrCreate(outputs, domains, cloneDomains);
 	}
 
-	public static JointDomainIndexer create(BitSet outputs, DiscreteDomain ... domains)
+	public static JointDomainIndexer create(@Nullable BitSet outputs, DiscreteDomain ... domains)
 	{
 		return lookupOrCreate(outputs, domains, true);
 	}
@@ -216,7 +219,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * If {@code outputs} is null, this will instead return an undirected indexer.
 	 */
-	public static JointDomainIndexer create(BitSet outputs, JointDomainIndexer domains)
+	public static JointDomainIndexer create(@Nullable BitSet outputs, JointDomainIndexer domains)
 	{
 		return lookupOrCreate(outputs, domains._domains, false);
 	}
@@ -225,7 +228,9 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * Returns a new domain list that concatenates the domains of this list
 	 * with {@code that}. Only produces a directed list if both lists are directed.
 	 */
-	public static JointDomainIndexer concat(JointDomainIndexer domains1, JointDomainIndexer domains2)
+	public static @Nullable JointDomainIndexer concat(
+		@Nullable JointDomainIndexer domains1,
+		@Nullable JointDomainIndexer domains2)
 	{
 		if (domains1 == null)
 		{
@@ -236,6 +241,15 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 			return domains1;
 		}
 		
+		return concatNonNull(domains1, domains2);
+	}
+	
+	/**
+	 * Returns a new domain list that concatenates the domains of this list
+	 * with {@code that}. Only produces a directed list if both lists are directed.
+	 */
+	public static JointDomainIndexer concatNonNull(JointDomainIndexer domains1, JointDomainIndexer domains2)
+	{
 		final int size1 = domains1.size();
 		final int size2 = domains2.size();
 		final int size = size1 + domains2.size();
@@ -301,7 +315,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 */
 	
 	@Override
-	public boolean equals(Object that)
+	public boolean equals(@Nullable Object that)
 	{
 		if (this == that)
 		{
@@ -356,7 +370,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * the same as {@code elements}. Otherwise returns a new array with component
 	 * type same as {@link #getElementClass()}.
 	 */
-	public final <T> T[] allocateElements(T [] elements)
+	public final <T> T[] allocateElements(@Nullable T [] elements)
 	{
 		return ArrayUtil.allocateArrayOfType(_elementClass,  elements,  _domains.length);
 	}
@@ -367,7 +381,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * If {@code indices} is non-null and is sufficiently long, it will be returned.
 	 * Otherwise a newly allocated array will be returned.
 	 */
-	public final int[] allocateIndices(int [] indices)
+	public final int[] allocateIndices(@Nullable int [] indices)
 	{
 		if (indices == null || indices.length < _domains.length)
 		{
@@ -381,7 +395,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return elementsToIndices(elements, null);
 	}
 	
-	public final int[] elementsToIndices(Object[] elements, int indices[])
+	public final int[] elementsToIndices(Object[] elements, @Nullable int indices[])
 	{
 		indices = allocateIndices(indices);
 		for (int i = 0, end = _domains.length; i < end; ++i)
@@ -396,7 +410,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		return elementsFromIndices(indices, null);
 	}
 	
-	public final Object[] elementsFromIndices(int indices[], Object[] elements)
+	public final Object[] elementsFromIndices(int indices[], @Nullable Object[] elements)
 	{
 		elements = allocateElements(elements);
 		for (int i = 0, end = _domains.length; i < end; ++i)
@@ -477,7 +491,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Use {@link #getInputDomainIndex(int)} to lookup an index without allocating a new array object.
 	 */
-	public int[] getInputDomainIndices()
+	public @Nullable int[] getInputDomainIndices()
 	{
 		return null;
 	}
@@ -491,7 +505,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @see #getInputDomainIndex(int)
 	 * @see #getOutputSet()
 	 */
-	public BitSet getInputSet()
+	public @Nullable BitSet getInputSet()
 	{
 		return null;
 	}
@@ -535,7 +549,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * Use {@link #getOutputDomainIndex(int)} to lookup an index without allocating a new array object.
 	 */
-	public int[] getOutputDomainIndices()
+	public @Nullable int[] getOutputDomainIndices()
 	{
 		return null;
 	}
@@ -548,7 +562,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @see #getOutputDomainIndex(int)
 	 * @see #getInputSet()
 	 */
-	public BitSet getOutputSet()
+	public @Nullable BitSet getOutputSet()
 	{
 		return null;
 	}
@@ -775,7 +789,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @see #jointIndexToIndices(int, int[])
 	 * @see #jointIndexFromElements(Object...)
 	 */
-	public <T> T[] jointIndexToElements(int jointIndex, T[] elements)
+	public <T> T[] jointIndexToElements(int jointIndex, @Nullable T[] elements)
 	{
 		return undirectedJointIndexToElements(jointIndex, elements);
 	}
@@ -815,7 +829,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * @see #jointIndexFromIndices(int...)
 	 * @see #jointIndexToElementIndex(int, int)
 	 */
-	public int[] jointIndexToIndices(int jointIndex, int[] indices)
+	public int[] jointIndexToIndices(int jointIndex, @Nullable int[] indices)
 	{
 		return undirectedJointIndexToIndices(jointIndex, indices);
 	}
@@ -919,7 +933,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	
 	public abstract int undirectedJointIndexFromValues(Value ... values);
 	
-	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements);
+	public abstract <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements);
 	
 	public final Object[] undirectedJointIndexToElements(int jointIndex)
 	{
@@ -939,7 +953,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 */
 	public abstract int undirectedJointIndexToElementIndex(int jointIndex, int domainIndex);
 	
-	public abstract int[] undirectedJointIndexToIndices(int jointIndex, int[] indices);
+	public abstract int[] undirectedJointIndexToIndices(int jointIndex, @Nullable int[] indices);
 	
 	public final int[] undirectedJointIndexToIndices(int jointIndex)
 	{
@@ -965,7 +979,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * 
 	 * @see #randomJointIndex(Random)
 	 */
-	public int[] randomIndices(Random rand, int[] indices)
+	public int[] randomIndices(Random rand, @Nullable int[] indices)
 	{
 		indices = allocateIndices(indices);
 		for (int i = 0; i < size(); ++i)

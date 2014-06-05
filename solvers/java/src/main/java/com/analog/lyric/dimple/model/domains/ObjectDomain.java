@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Domain of all Java objects.
  * <p>
@@ -57,7 +59,7 @@ public final class ObjectDomain extends Domain
 	 */
 	
 	@Override
-	public boolean inDomain(Object value)
+	public boolean inDomain(@Nullable Object value)
 	{
 		return true;
 	}

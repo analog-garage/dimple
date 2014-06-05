@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 @Immutable
 public class RealJointDomain extends Domain
 {
@@ -116,7 +118,7 @@ public class RealJointDomain extends Domain
 	 */
 	
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 		if (this == obj)
 			return true;
 
