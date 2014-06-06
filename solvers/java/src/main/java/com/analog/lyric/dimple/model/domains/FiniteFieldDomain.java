@@ -109,7 +109,7 @@ public class FiniteFieldDomain extends TypedDiscreteDomain<FiniteFieldNumber>
 	}
 
 	@Override
-	public final int getIndex(Object value)
+	public final int getIndex(@Nullable Object value)
 	{
 		if (value instanceof FiniteFieldNumber)
 			return ((FiniteFieldNumber)value).intValue();

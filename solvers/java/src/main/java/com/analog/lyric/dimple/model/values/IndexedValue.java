@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.IKeyed;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
 
@@ -59,7 +60,7 @@ public class IndexedValue implements Comparable<IndexedValue>, IKeyed<Integer>
 	 * True if {@code other} is an {@code IndexedValue} with same {@link #getIndex()} value.
 	 */
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{

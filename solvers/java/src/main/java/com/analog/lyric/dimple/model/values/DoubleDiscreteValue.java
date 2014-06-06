@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base class for {@link DiscreteValue} implementations for
@@ -102,13 +104,13 @@ public abstract class DoubleDiscreteValue extends DiscreteValue
 	}
 	
 	@Override
-	public Double getObject()
+	public @NonNull Double getObject()
 	{
 		return _value;
 	}
 
 	@Override
-	public final void setObject(Object value)
+	public final void setObject(@Nullable Object value)
 	{
 		setDouble(FactorFunctionUtilities.toDouble(value));
 	}

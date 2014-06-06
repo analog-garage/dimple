@@ -16,8 +16,12 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class FiniteFieldValue extends DiscreteValue
 {
@@ -32,7 +36,7 @@ public class FiniteFieldValue extends DiscreteValue
 
 	public FiniteFieldValue(FiniteFieldValue other)	// Copy constructor
 	{
-		_value = ((FiniteFieldNumber)other.getObject()).clone();
+		_value = other.getObject().clone();
 	}
 
 	@Override
@@ -48,15 +52,15 @@ public class FiniteFieldValue extends DiscreteValue
 	}
 	
 	@Override
-	public Object getObject()
+	public @NonNull FiniteFieldNumber getObject()
 	{
 		return _value;
 	}
 
 	@Override
-	public void setObject(Object value)
+	public void setObject(@Nullable Object value)
 	{
-		_value = (FiniteFieldNumber)value;
+		_value = (FiniteFieldNumber)Objects.requireNonNull(value);
 	}
 
 	@Override

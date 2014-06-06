@@ -10,4 +10,7 @@
 /**
  * Value holder classes.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.model.values;
+import com.analog.lyric.util.misc.NonNullByDefault;
+

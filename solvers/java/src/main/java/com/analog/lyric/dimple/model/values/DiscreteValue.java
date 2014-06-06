@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * Base class for {@link Value} implementations for {@link DiscreteDomain}s.
@@ -33,6 +34,9 @@ public abstract class DiscreteValue extends Value
 	
 	@Override
 	public abstract int getIndex();
+	
+	@Override
+	public abstract @NonNull Object getObject();
 	
 	@Override
 	public abstract void setIndex(int index);

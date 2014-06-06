@@ -17,8 +17,11 @@
 package com.analog.lyric.dimple.model.values;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.util.misc.Nullable;
+import com.sun.istack.internal.NotNull;
 
 public class RealJointValue extends Value
 {
@@ -72,15 +75,15 @@ public class RealJointValue extends Value
 	}
 	
 	@Override
-	public double[] getObject()
+	public @NotNull double[] getObject()
 	{
 		return _value;
 	}
 	
 	@Override
-	public void setObject(Object value)
+	public void setObject(@Nullable Object value)
 	{
-		_value = (double[])value;
+		_value = (double[])Objects.requireNonNull(value);
 	}
 	
 	public final double[] getValue() {return _value;}

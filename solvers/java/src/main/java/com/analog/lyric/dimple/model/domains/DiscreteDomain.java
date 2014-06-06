@@ -290,7 +290,7 @@ public abstract class DiscreteDomain extends Domain
 	}
 	
 	@Override
-	public boolean inDomain(Object value)
+	public boolean inDomain(@Nullable Object value)
 	{
 		return (getIndex(value) >= 0);
 	}
@@ -417,13 +417,13 @@ public abstract class DiscreteDomain extends Domain
 	 * {@code value} is not an element of this domain.
 	 * @see #getIndexOrThrow(Object)
 	 */
-	public abstract int getIndex(Object value);
+	public abstract int getIndex(@Nullable Object value);
 	
 	/**
 	 * Like {@link #getIndex(Object)} but throws a {@link DimpleException} instead of returning
 	 * -1 on failure.
 	 */
-	public int getIndexOrThrow(Object value)
+	public int getIndexOrThrow(@Nullable Object value)
 	{
 		int index = getIndex(value);
 		if (index < 0)

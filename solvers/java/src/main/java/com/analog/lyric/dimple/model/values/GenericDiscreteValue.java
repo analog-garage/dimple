@@ -16,7 +16,11 @@
 
 package com.analog.lyric.dimple.model.values;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class GenericDiscreteValue extends DiscreteValue
 {
@@ -71,7 +75,7 @@ public class GenericDiscreteValue extends DiscreteValue
 	{
 		if (_domain.equals(other.getDomain()))
 		{
-			_value = other.getObject();
+			_value = Objects.requireNonNull(other.getObject());
 			_index = other.getIndex();
 		}
 		else
@@ -87,14 +91,15 @@ public class GenericDiscreteValue extends DiscreteValue
 	}
 	
 	@Override
-	public final Object getObject()
+	public final @NonNull Object getObject()
 	{
 		return _value;
 	}
 	
 	@Override
-	public final void setObject(Object value)
+	public final void setObject(@Nullable Object value)
 	{
+		Objects.requireNonNull(value);
 		_index = _domain.getIndex(value);
 		_value = value;
 	}

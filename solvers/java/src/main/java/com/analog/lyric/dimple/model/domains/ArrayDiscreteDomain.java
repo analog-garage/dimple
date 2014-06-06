@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import com.analog.lyric.collect.Supers;
+import com.analog.lyric.util.misc.Nullable;
 
 public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 {
@@ -117,7 +118,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 	}
 	
 	@Override
-	public boolean inDomain(Object value)
+	public boolean inDomain(@Nullable Object value)
 	{
 		return _elementToIndex.containsKey(value);
 	}
@@ -158,7 +159,7 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 
 	// Find the list of elements corresponding to the value; return -1 if not a valid value
 	@Override
-	public int getIndex(Object value)
+	public int getIndex(@Nullable Object value)
 	{
 		Integer index = _elementToIndex.get(value);
 		return index != null ? index : -1;

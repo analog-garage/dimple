@@ -145,7 +145,7 @@ public abstract class Domain implements Serializable
 	 * @return true if {@code value} is a valid member of the domain. Implementors
 	 * should not throw a cast exception.
 	 */
-	public abstract boolean inDomain(Object value);
+	public abstract boolean inDomain(@Nullable Object value);
 	
 	/**
 	 * @return true if {@code representation} corresponds to a valid member of the domain for
@@ -162,7 +162,7 @@ public abstract class Domain implements Serializable
 	/**
 	 * @return an exception stating that {@code value} is not a member of this domain.
 	 */
-	public DimpleException domainError(Object value)
+	public DimpleException domainError(@Nullable Object value)
 	{
 		return new DimpleException("'%s' is not a member of domain '%s'", value, this);
 	}

@@ -65,7 +65,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	 */
 	
 	@Override
-	public final boolean inDomain(Object value)
+	public final boolean inDomain(@Nullable Object value)
 	{
 		return value.getClass() == _enumClass;
 	}
@@ -111,7 +111,7 @@ public final class EnumDomain<E extends Enum<E>> extends TypedDiscreteDomain<E>
 	}
 
 	@Override
-	public int getIndex(Object value)
+	public int getIndex(@Nullable Object value)
 	{
 		if (value.getClass() == _enumClass)
 		{

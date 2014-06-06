@@ -108,7 +108,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	 * 
 	 */
 	@Override
-	public boolean inDomain(Object value)
+	public boolean inDomain(@Nullable Object value)
 	{
 		Object[] values = ArrayUtil.toArray(value);
 		if (values != null)
@@ -183,7 +183,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	}
 
 	@Override
-	public int getIndex(Object value)
+	public int getIndex(@Nullable Object value)
 	{
 		try
 		{
@@ -196,7 +196,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	}
 	
 	@Override
-	public int getIndexOrThrow(Object value)
+	public int getIndexOrThrow(@Nullable Object value)
 	{
 		if (value instanceof Object[])
 		{

@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.domains.IntDomain;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Holder for {@code int} values.
@@ -80,13 +82,13 @@ public class IntValue extends Value
 	}
 	
 	@Override
-	public Object getObject()
+	public @NonNull Integer getObject()
 	{
 		return _value;
 	}
 	
 	@Override
-	public void setObject(Object value)
+	public void setObject(@Nullable Object value)
 	{
 		_value = FactorFunctionUtilities.toInteger(value);
 	}

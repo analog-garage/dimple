@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import java.util.Objects;
 import java.util.Random;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -68,7 +69,7 @@ public class TrivialNonuniformBlockProposer implements IBlockProposalKernel
 			Domain domain = variableDomain[i];
 			if (domain.isDiscrete())
 			{
-				DiscreteDomain discreteDomain = domain.asDiscrete();
+				DiscreteDomain discreteDomain = Objects.requireNonNull(domain.asDiscrete());
 				Value v = Value.create(discreteDomain);
 				v.setIndex(newArray[i]);
 				newValue[i] = v;

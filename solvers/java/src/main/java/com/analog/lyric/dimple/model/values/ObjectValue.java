@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.ObjectDomain;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Holder for arbitrary values represented as {@link Object}.
@@ -29,13 +30,13 @@ public class ObjectValue extends Value
 	 * State
 	 */
 	
-	private Object _object;
+	private @Nullable Object _object;
 	
 	/*--------------
 	 * Construction
 	 */
 
-	ObjectValue(Object value)
+	ObjectValue(@Nullable Object value)
 	{
 		_object = value;
 	}
@@ -62,13 +63,13 @@ public class ObjectValue extends Value
 	}
 	
 	@Override
-	public Object getObject()
+	public @Nullable Object getObject()
 	{
 		return _object;
 	}
 
 	@Override
-	public void setObject(Object value)
+	public void setObject(@Nullable Object value)
 	{
 		_object = value;
 	}

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public abstract class IntDiscreteDomain extends TypedDiscreteDomain<Integer>
 {
 	private static final long serialVersionUID = 1L;
@@ -67,7 +69,7 @@ public abstract class IntDiscreteDomain extends TypedDiscreteDomain<Integer>
 	 * @see #getIndex(int)
 	 */
 	@Override
-	public int getIndex(Object value)
+	public int getIndex(@Nullable Object value)
 	{
 		if (value instanceof Number)
 		{

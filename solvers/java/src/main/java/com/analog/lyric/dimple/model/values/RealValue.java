@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.model.values;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A holder for a real (i.e. {@code double} value).
@@ -84,13 +86,13 @@ public class RealValue extends Value
 	}
 	
 	@Override
-	public Object getObject()
+	public @NonNull Double getObject()
 	{
 		return _value;
 	}
 	
 	@Override
-	public void setObject(Object value)
+	public void setObject(@Nullable Object value)
 	{
 		_value = ((Number)value).doubleValue();
 	}

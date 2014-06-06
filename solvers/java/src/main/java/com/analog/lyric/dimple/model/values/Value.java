@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Holder for a values for a given {@link Domain}.
@@ -53,7 +54,7 @@ public abstract class Value implements Cloneable, Serializable
 	 * <p>
 	 * If {@code domain} is null, an {@link ObjectValue} will be returned.
 	 */
-	public static Value create(Domain domain)
+	public static Value create(@Nullable Domain domain)
 	{
 		if (domain != null)
 		{
@@ -147,7 +148,7 @@ public abstract class Value implements Cloneable, Serializable
 	 * <p>
 	 * Simply calls {@link Value#setObject(Object)} on instance returned by {@link #create(Domain)}.
 	 */
-	public static Value create(Domain domain, Object value)
+	public static Value create(Domain domain, @Nullable Object value)
 	{
 		Value instance = create(domain);
 		instance.setObject(value);
@@ -187,7 +188,7 @@ public abstract class Value implements Cloneable, Serializable
 	/**
 	 * Creates a {@code Value} instance with specified {@code initialValue}.
 	 */
-	public static Value create(Object initialValue)
+	public static Value create(@Nullable Object initialValue)
 	{
 		if (initialValue instanceof Number)
 		{
@@ -239,12 +240,12 @@ public abstract class Value implements Cloneable, Serializable
 	 * This may create a new object if underlying representation is a primitive type such as {@code int} or
 	 * {@code double}; in such cases it is preferable to use {@link #getInt()}, {@link #getDouble()}, etc.
 	 */
-	public abstract Object getObject();
+	public abstract @Nullable Object getObject();
 	
 	/**
 	 * Sets current value from an {@link Object}.
 	 */
-	public abstract void setObject(Object value);
+	public abstract void setObject(@Nullable Object value);
 	
 	/**
 	 * Returns current value as a {@code boolean}.

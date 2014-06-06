@@ -148,7 +148,7 @@ public class RealJointDomain extends Domain
 	 * elements are contained in the correspond {@link RealDomain} in {@link #getRealDomains()}.
 	 */
 	@Override
-	public boolean inDomain(Object value)
+	public boolean inDomain(@Nullable Object value)
 	{
 		if (value.getClass().isArray() && Array.getLength(value) == _size)
 		{
