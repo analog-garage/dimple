@@ -40,4 +40,5 @@ import java.lang.annotation.Target;
 @Target(value={PACKAGE, TYPE, METHOD, CONSTRUCTOR})
 public @interface NonNullByDefault
 {
+	boolean value() default true;
 }
