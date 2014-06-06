@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
 import com.analog.lyric.collect.Supers;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Utility functions for testing exception behavior.
@@ -42,8 +43,8 @@ public class ExceptionTester
 	 * @param args are the parameters of the method call.
 	 */
 	@SafeVarargs
-	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
-		Object object, String methodName, T ... args)
+	public static <T> void expectThrow(Class<? extends Throwable> expectedException, @Nullable String messagePattern,
+		Object object, String methodName, @Nullable T ... args)
 	{
 		Class<?> declaringClass = object instanceof Class ? (Class<?>)object : object.getClass();
 		expectThrow(expectedException, messagePattern, object, declaringClass, methodName, args);
@@ -65,8 +66,8 @@ public class ExceptionTester
 	 * @since 0.06
 	 */
 	@SafeVarargs
-	public static <T> void expectThrow(Class<? extends Throwable> expectedException, String messagePattern,
-		Object object, Class<?> declaringClass, String methodName, T ... args)
+	public static <T> void expectThrow(Class<? extends Throwable> expectedException, @Nullable String messagePattern,
+		Object object, Class<?> declaringClass, String methodName, @Nullable T ... args)
 	{
 		boolean caughtSomething = false;
 		
@@ -109,7 +110,7 @@ public class ExceptionTester
 	 */
 	@SafeVarargs
 	public static <T> void expectThrow(Class<? extends Throwable> exceptionClass, Object object, String methodName,
-		T ... args)
+		@Nullable T ... args)
 	{
 		expectThrow(exceptionClass, null, object, methodName, args);
 	}

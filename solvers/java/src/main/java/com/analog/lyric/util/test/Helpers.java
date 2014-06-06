@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -42,6 +43,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class Helpers
@@ -54,14 +56,14 @@ public class Helpers
 	{
 		return MakeSimpleThreeLevelGraph(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph MakeSimpleThreeLevelGraph(IFactorGraphFactory<?> graphFactory)
+	static public FactorGraph MakeSimpleThreeLevelGraph(@Nullable IFactorGraphFactory<?> graphFactory)
 	{
 		return MakeSimpleThreeLevelGraphs(graphFactory)[0];
 	}
 
 	
 	static public FactorGraph MakeSimpleGraph(String tag,
-											 IFactorGraphFactory<?> graphFactory,
+											 @Nullable IFactorGraphFactory<?> graphFactory,
 											 boolean randomInput)
 	{
 		Discrete vB1 = new Discrete(0.0, 1.0);
@@ -93,7 +95,7 @@ public class Helpers
 		return MakeSimpleGraph(tag, Model.getInstance().getDefaultGraphFactory(), false);
 	}
 	static public FactorGraph MakeTrivialRandomGraph(String tag,
-												 	 IFactorGraphFactory<?> graphFactory,
+												 	 @Nullable IFactorGraphFactory<?> graphFactory,
 												 	 int variables,
 												 	 int extraFactors,
 												 	 int maxDegree,
@@ -160,7 +162,7 @@ public class Helpers
 		return fg;
 	}
 	static public FactorGraph MakeSimpleChainGraph(	String tag,
-												 	IFactorGraphFactory<?> graphFactory,
+												 	@Nullable IFactorGraphFactory<?> graphFactory,
 												 	int factors,
 												 	boolean randomInput)
 	{
@@ -195,14 +197,13 @@ public class Helpers
 		return fg;
 	}
 	static public FactorGraph MakeSimpleLoopyGraph(	String tag,
-												 	IFactorGraphFactory<?> graphFactory,
+												 	@Nullable IFactorGraphFactory<?> graphFactory,
 												 	boolean randomInput)
 	{
 		IFactorGraphFactory<?> oldFactory = Model.getInstance().getDefaultGraphFactory();
 		Model.getInstance().setDefaultGraphFactory(graphFactory);
 		FactorGraph fg = null;
-		try
-		{
+
 		Discrete vB1 = new Discrete(0.0, 1.0);
 		Discrete vO1 = new Discrete(0.0, 1.0);
 		Discrete vO2 = new Discrete(0.0, 1.0);
@@ -238,8 +239,7 @@ public class Helpers
 				((Discrete)variables.getByIndex(variable)).setInput(trivialRandomCodeword[variable]);
 			}
 		}
-		}
-		catch(Exception e){}
+
 		Model.getInstance().setDefaultGraphFactory(oldFactory);
 		return fg;
 	}
@@ -247,7 +247,7 @@ public class Helpers
 	{
 		return MakeSimpleThreeLevelGraphs(Model.getInstance().getDefaultGraphFactory());
 	}
-	static public FactorGraph[] MakeSimpleThreeLevelGraphs(IFactorGraphFactory<?> factory)
+	static public FactorGraph[] MakeSimpleThreeLevelGraphs(@Nullable IFactorGraphFactory<?> factory)
 	{
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
 		Discrete vRootO1 = new Discrete(0.0, 1.0);
@@ -742,7 +742,7 @@ public class Helpers
 		return diffSum;
 	}
 	
-	static VariableBase[] ordered_vars;
+	static @Nullable VariableBase[] ordered_vars;
 	
 	public static void initFgForDecode(FactorGraph fg, IFactorGraphFactory<?> solver, ISchedule schedule, int iterations)
 			
@@ -773,13 +773,14 @@ public class Helpers
 		// Some graphs have explicitNames of "order_vv#" so that this routine can work on
 		// graphs such as fec
 		boolean hasOrderNames = (namedVar != null);
-		if (hasOrderNames && ordered_vars == null) {
-			ordered_vars = new VariableBase[variables.size()];
+		if (hasOrderNames && ordered_vars == null)
+		{
+			final VariableBase[] vars = ordered_vars = new VariableBase[variables.size()];
 			for(int i = 0; i < variables.size(); ++i) {
 				VariableBase thisVar;
 				String orderName = "order_vv" + i;
 				thisVar = fg.getVariableByName(orderName);
-				ordered_vars[i] = thisVar;
+				vars[i] = thisVar;
 			}
 		}
 
@@ -790,7 +791,7 @@ public class Helpers
 			if (hasOrderNames) {
 				//String orderName = "order_vv" + i;
 				//thisVar = fg.getVariableByName(orderName);
-				thisVar = ordered_vars[i];
+				thisVar = Objects.requireNonNull(ordered_vars)[i];
 			} else {
 	        	thisVar = variables.getByIndex(i);
 	        }
@@ -808,7 +809,7 @@ public class Helpers
 			if (hasOrderNames) {
 				//String orderName = "order_vv" + i;
 				//thisVar = fg.getVariableByName(orderName);
-				thisVar = ordered_vars[i];
+				thisVar = Objects.requireNonNull(ordered_vars)[i];
 			} else {
 	        	thisVar = variables.getByIndex(i);
 	        }
@@ -878,7 +879,7 @@ public class Helpers
 		long diffDBG = 0;
 
 		ArrayList<VariableBase>	variables = (ArrayList<VariableBase>) fg.getVariables().values();
-		IFactorGraphFactory<?>	solver = fg.getFactorGraphFactory();
+		IFactorGraphFactory<?>	solver = Objects.requireNonNull(fg.getFactorGraphFactory());
 		ISchedule schedule = fg.getSchedule();
 		
 		double[][] codewordWithTooManyErrors 	= zerosCodeWord(variables.size(), (int)(variables.size() * 0.9) );
