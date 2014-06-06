@@ -29,6 +29,7 @@ import java.util.Set;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Provides basic logging of dimple events.
@@ -64,12 +65,12 @@ public class DimpleEventLogger implements Closeable
 	/**
 	 * Events will be printed on this stream, if non-null.
 	 */
-	private volatile PrintStream _out;
+	private volatile @Nullable PrintStream _out;
 	
 	/**
 	 * The file used for {@link #_out}, if opened by {@link #open(File)}.
 	 */
-	private volatile File _file = null;
+	private volatile @Nullable File _file = null;
 	
 	private volatile int _verbosity;
 	
@@ -143,11 +144,12 @@ public class DimpleEventLogger implements Closeable
 	@Override
 	public synchronized void close()
 	{
-		if (_out != null)
+		final PrintStream out = _out;
+		if (out != null)
 		{
-			if (_out != System.out && _out != System.err)
+			if (out != System.out && out != System.err)
 			{
-				_out.close();
+				out.close();
 			}
 			_out = null;
 		}
@@ -162,7 +164,7 @@ public class DimpleEventLogger implements Closeable
 	 * 
 	 * @since 0.06
 	 */
-	public File file()
+	public @Nullable File file()
 	{
 		return _file;
 	}
@@ -350,7 +352,7 @@ public class DimpleEventLogger implements Closeable
 	 * The current stream used for logging. May be null.
 	 * @since 0.06
 	 */
-	public PrintStream out()
+	public @Nullable PrintStream out()
 	{
 		return _out;
 	}

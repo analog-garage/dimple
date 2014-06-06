@@ -23,6 +23,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.util.misc.IPrintable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Abstract base class for all Dimple events.
@@ -113,7 +114,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	 * @see #getSourceName()
 	 */
 	@Override
-	public IDimpleEventSource getSource()
+	public @Nullable IDimpleEventSource getSource()
 	{
 		return (IDimpleEventSource)source;
 	}
@@ -152,7 +153,7 @@ public abstract class DimpleEvent extends EventObject implements IPrintable
 	 *
 	 * @since 0.06
 	 */
-	public abstract IModelEventSource getModelObject();
+	public abstract @Nullable IModelEventSource getModelObject();
 	
 	/**
 	 * The id of the model object associated with the source of the event, if applicable.

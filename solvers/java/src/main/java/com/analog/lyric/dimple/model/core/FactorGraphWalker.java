@@ -21,7 +21,11 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+
+import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * An iterator that walks through connected nodes in a {@link FactorGraph}
@@ -59,20 +63,20 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * State
 	 */
 	
-	private FactorGraph _rootGraph;
-	private INode _firstNode;
+	private @Nullable FactorGraph _rootGraph;
+	private @Nullable INode _firstNode;
 	private Order _searchOrder = Order.BREADTH_FIRST;
 	private int _maxSearchDepth = Integer.MAX_VALUE;
 	private int _maxRelativeNestingDepth;
 
-	private Set<INode> _visitedNodes = null;
+	private Set<INode> _visitedNodes = new LinkedHashSet<INode>();
 	private boolean _visitedNodesWasExposed = true;
 	private Deque<Port> _portDeque = new ArrayDeque<Port>();
 	private int _currentDepth;
 	private int _maxDepthSeen;
-	private INode _nextNode;
+	private @Nullable INode _nextNode;
 	private int _cycleCount;
-	private Port _depthChangeSentinel = new Port(null,-42);
+	private final Port _depthChangeSentinel = new Port(new Real(),-42);
 	
 
 	/*
@@ -156,7 +160,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * {@code firstNode} must have {@code graph} as an ancestor.
 	 * Otherwise the same as {@link #init()}.
 	 */
-	public FactorGraphWalker init(FactorGraph graph, INode firstNode)
+	public FactorGraphWalker init(@Nullable FactorGraph graph, @Nullable INode firstNode)
 	{
 		this._rootGraph = graph;
 		this._firstNode = firstNode;
@@ -223,7 +227,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 */
 	public final FactorGraphWalker useBreadthFirst()
 	{
-		assert(this._visitedNodes.isEmpty());
+		assert(getVisitedNodesSize() == 0);
 		this._searchOrder = Order.BREADTH_FIRST;
 		return this;
 	}
@@ -237,7 +241,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 */
 	public final FactorGraphWalker useDepthFirst()
 	{
-		assert(this._visitedNodes.isEmpty());
+		assert(getVisitedNodesSize() == 0);
 		this._searchOrder = Order.DEPTH_FIRST;
 		return this;
 	}
@@ -285,7 +289,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * this method.
 	 */
 	@Override
-	public INode next()
+	public @Nullable INode next()
 	{
 		INode node = this._nextNode;
 		
@@ -332,7 +336,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * Returns the first node to be visited in the graph traversal. If
 	 * null, an arbitrary node will be selected from the graph.
 	 */
-	public final INode getFirstNode()
+	public final @Nullable INode getFirstNode()
 	{
 		return this._firstNode;
 	}
@@ -341,7 +345,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * Returns the root graph that is being traversed. Set by
 	 * constructor or {@link #init(FactorGraph)} method.
 	 */
-	public final FactorGraph getRootGraph()
+	public final @Nullable FactorGraph getRootGraph()
 	{
 		return this._rootGraph;
 	}
@@ -370,7 +374,7 @@ public class FactorGraphWalker implements Iterator<INode>
 	 * Private methods
 	 */
 	
-	private INode nextBreadthFirst()
+	private @Nullable INode nextBreadthFirst()
 	{
 		INode node = null;
 	
@@ -386,7 +390,7 @@ public class FactorGraphWalker implements Iterator<INode>
 			}
 			
 			node = portIn.node;
-			int relativeDepth = node.getDepthBelowAncestor(this._rootGraph);
+			int relativeDepth = node.getDepthBelowAncestor(Objects.requireNonNull(this._rootGraph));
 			
 			if (relativeDepth < 0)
 			{
@@ -436,7 +440,7 @@ public class FactorGraphWalker implements Iterator<INode>
 		return null;
 	}
 
-	private INode nextDepthFirst()
+	private @Nullable INode nextDepthFirst()
 	{
 		INode node = null;
 		
@@ -452,7 +456,7 @@ public class FactorGraphWalker implements Iterator<INode>
 			}
 			
 			node = portIn.node;
-			int relativeDepth = node.getDepthBelowAncestor(this._rootGraph);
+			int relativeDepth = node.getDepthBelowAncestor(Objects.requireNonNull(this._rootGraph));
 			
 			if (relativeDepth < 0)
 			{

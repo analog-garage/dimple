@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import com.analog.lyric.util.misc.Nullable;
+
 
 public class Edge implements Comparable<Edge>
 {
@@ -31,6 +33,7 @@ public class Edge implements Comparable<Edge>
 	public INameable getLeft(){return _left;}
 	public INameable getRight(){return _right;}
 	
+	@Override
 	public int compareTo(Edge e)
 	{
 		int diff = 0;
@@ -44,18 +47,21 @@ public class Edge implements Comparable<Edge>
 		}
 		return diff;
 	}
+	@Override
 	public int hashCode()
 	{
-		return (_left.getUUID().toString() + 
+		return (_left.getUUID().toString() +
 				_right.getUUID().toString()).hashCode();
 	}
-	public boolean equals(Object o)
+	@Override
+	public boolean equals(@Nullable Object o)
 	{
 		return this == o ||
-			   (o instanceof Edge && 
+			   (o instanceof Edge &&
 				compareTo((Edge)o) == 0);
 	}
 
+	@Override
 	public String toString()
 	{
 		return String.format("Edge [%s] <-> [%s]", _left.getLabel(), _right.getLabel());

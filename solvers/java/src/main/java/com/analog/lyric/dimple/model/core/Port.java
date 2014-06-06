@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public class Port
 {
 	public INode node;
@@ -33,7 +35,7 @@ public class Port
 	}
 	
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(@Nullable Object obj)
 	{
 		if (obj instanceof Port)
 		{

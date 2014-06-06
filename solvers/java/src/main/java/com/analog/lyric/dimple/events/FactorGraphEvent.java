@@ -22,6 +22,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base class for model events whose source is a {@link FactorGraph}.
@@ -52,7 +53,7 @@ public abstract class FactorGraphEvent extends ModelEvent
 	 */
 
 	@Override
-	public FactorGraph getSource()
+	public @Nullable FactorGraph getSource()
 	{
 		return (FactorGraph)source;
 	}
@@ -62,7 +63,7 @@ public abstract class FactorGraphEvent extends ModelEvent
 	 */
 
 	@Override
-	public FactorGraph getModelObject()
+	public @Nullable FactorGraph getModelObject()
 	{
 		return (FactorGraph)source;
 	}
@@ -80,7 +81,7 @@ public abstract class FactorGraphEvent extends ModelEvent
 	 * FactorGraphEvent methods
 	 */
 	
-	public abstract Node getNode();
+	public abstract @Nullable Node getNode();
 	
 	protected static enum NodeType
 	{

@@ -29,12 +29,15 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
 /**
  * Test for {@link DimpleEvent}
  * @author Christopher Barber
  */
+@NonNullByDefault
 public class TestDimpleEvent
 {
 	@Test
@@ -113,7 +116,7 @@ public class TestDimpleEvent
 		}
 
 		@Override
-		public IModelEventSource getModelObject()
+		public @Nullable IModelEventSource getModelObject()
 		{
 			IDimpleEventSource src = getSource();
 			return src != null ? src.getModelEventSource() : null;
@@ -130,19 +133,19 @@ public class TestDimpleEvent
 		}
 		
 		@Override
-		public FactorGraph getContainingGraph()
+		public @Nullable FactorGraph getContainingGraph()
 		{
 			return null;
 		}
 
 		@Override
-		public IDimpleEventListener getEventListener()
+		public @Nullable IDimpleEventListener getEventListener()
 		{
 			return null;
 		}
 
 		@Override
-		public IDimpleEventSource getEventParent()
+		public @Nullable IDimpleEventSource getEventParent()
 		{
 			return null;
 		}
@@ -154,7 +157,7 @@ public class TestDimpleEvent
 		}
 
 		@Override
-		public IModelEventSource getModelEventSource()
+		public @Nullable IModelEventSource getModelEventSource()
 		{
 			return null;
 		}

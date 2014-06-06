@@ -12,6 +12,7 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -25,7 +26,7 @@ public interface IMessageUpdateEvent
 
 	public int getEdge();
 	
-	public abstract ISolverFactor getFactor();
+	public abstract @Nullable ISolverFactor getFactor();
 
 	/**
 	 * The new value of the message after update.
@@ -37,9 +38,9 @@ public interface IMessageUpdateEvent
 	 * The previous value of the message, prior to update. May be null.
 	 * @since 0.06
 	 */
-	public abstract IParameterizedMessage getOldMessage();
+	public abstract @Nullable IParameterizedMessage getOldMessage();
 
-	public abstract ISolverVariable getVariable();
+	public abstract @Nullable ISolverVariable getVariable();
 
 	/**
 	 * True if this is a {@link VariableToFactorMessageEvent} and false if it is

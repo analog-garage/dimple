@@ -48,6 +48,8 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedM
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Unit test for {@link SNode} base class.
@@ -59,7 +61,7 @@ public class TestSNode
 {
 	private static class TestNode extends SNode
 	{
-		private ISolverFactorGraph _parent = null;
+		private @Nullable ISolverFactorGraph _parent = null;
 		private boolean _supportsMessageEvents = false;
 		final private Set<Integer> _updatedEdges = new HashSet<Integer>();
 		final private Map<Integer,TestMessage> _messages = new HashMap<Integer, TestMessage>();
@@ -78,13 +80,13 @@ public class TestSNode
 		}
 
 		@Override
-		public ISolverFactorGraph getParentGraph()
+		public @Nullable ISolverFactorGraph getParentGraph()
 		{
 			return _parent;
 		}
 
 		@Override
-		public ISolverFactorGraph getRootGraph()
+		public @Nullable ISolverFactorGraph getRootGraph()
 		{
 			return _parent;
 		}
@@ -108,7 +110,7 @@ public class TestSNode
 		}
 
 		@Override
-		public Object getInputMsg(int portIndex)
+		public @Nullable Object getInputMsg(int portIndex)
 		{
 			return null;
 		}
@@ -145,7 +147,7 @@ public class TestSNode
 		}
 		
 		@Override
-		protected IParameterizedMessage cloneMessage(int edge)
+		protected @Nullable IParameterizedMessage cloneMessage(int edge)
 		{
 			if (_supportsMessageEvents)
 			{
@@ -159,7 +161,8 @@ public class TestSNode
 		}
 		
 		@Override
-		public SolverEvent createMessageEvent(int edge, IParameterizedMessage oldMsg, IParameterizedMessage newMsg)
+		public @Nullable SolverEvent createMessageEvent(int edge,
+			@Nullable IParameterizedMessage oldMsg, @Nullable IParameterizedMessage newMsg)
 		{
 			SolverEvent event = null;
 			
@@ -193,6 +196,7 @@ public class TestSNode
 		}
 	}
 	
+	@NonNullByDefault
 	private static class TestMessage extends ParameterizedMessageBase
 	{
 		private static final long serialVersionUID = 1L;
@@ -229,13 +233,15 @@ public class TestSNode
 		}
 	}
 	
+	@NonNullByDefault
 	private static class TestEvent extends SolverEvent
 	{
 		private static final long serialVersionUID = 1L;
-		private final IParameterizedMessage _oldMsg;
-		private final IParameterizedMessage _newMsg;
+		private final @Nullable IParameterizedMessage _oldMsg;
+		private final @Nullable IParameterizedMessage _newMsg;
 
-		protected TestEvent(ISolverEventSource source, IParameterizedMessage oldMsg, IParameterizedMessage newMsg)
+		protected TestEvent(ISolverEventSource source, @Nullable IParameterizedMessage oldMsg,
+			@Nullable IParameterizedMessage newMsg)
 		{
 			super(source);
 			_oldMsg = oldMsg;
@@ -243,7 +249,7 @@ public class TestSNode
 		}
 
 		@Override
-		public IModelEventSource getModelObject()
+		public @Nullable IModelEventSource getModelObject()
 		{
 			return getSource().getModelEventSource();
 		}
@@ -254,6 +260,7 @@ public class TestSNode
 		}
 	}
 	
+	@NonNullByDefault
 	private static class TestHandler extends DimpleEventHandler<TestEvent>
 	{
 		@Override

@@ -20,6 +20,7 @@ import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 
 import org.junit.Test;
@@ -220,7 +221,7 @@ public class TestHeap
 		{
 			entry = heap.entryForElement(element);
 			element._expectedPriority = rand.nextDouble();
-			heap.changePriority(entry, element._expectedPriority);
+			heap.changePriority(Objects.requireNonNull(entry), element._expectedPriority);
 			assertTrue(heap.isOrdered());
 		}
 		assertInvariants(heap);
@@ -233,7 +234,7 @@ public class TestHeap
 			{
 				entry = heap.entryForElement(element);
 				element._expectedPriority = rand.nextDouble();
-				heap.changePriority(entry, element._expectedPriority);
+				heap.changePriority(Objects.requireNonNull(entry), element._expectedPriority);
 				assertFalse(heap.isOrdered());
 			}
 			assertInvariants(heap);
@@ -287,7 +288,7 @@ public class TestHeap
 		assertFalse(entries2.hasNext());
 		
 		heap2.clear();
-		assertFalse(heap2.containsEntry(heap.peekEntry()));
+		assertFalse(heap2.containsEntry(Objects.requireNonNull(heap.peekEntry())));
 		
 		//
 		// Test merge

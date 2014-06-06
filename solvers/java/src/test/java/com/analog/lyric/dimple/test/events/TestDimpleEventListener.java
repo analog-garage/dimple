@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Test;
 
@@ -49,6 +50,8 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
@@ -57,6 +60,7 @@ import com.google.common.collect.Iterators;
  * @since 0.06
  * @author Christopher Barber
  */
+@NonNullByDefault
 public class TestDimpleEventListener
 {
 
@@ -95,7 +99,7 @@ public class TestDimpleEventListener
 		}
 
 		@Override
-		public IModelEventSource getModelObject()
+		public @Nullable IModelEventSource getModelObject()
 		{
 			return getSource().getModelEventSource();
 		}
@@ -385,7 +389,8 @@ public class TestDimpleEventListener
 		final int nHandlers = handlers.length;
 		
 		final boolean expectedListening = !(nHandlers == 0 || nHandlers == 1 && handlers[nHandlers - 1].isBlocker());
-		assertEquals(expectedListening, listener.isListeningFor(event.getClass(), event.getSource()));
+		final IDimpleEventSource source = Objects.requireNonNull(event.getSource());
+		assertEquals(expectedListening, listener.isListeningFor(event.getClass(), source));
 	}
 	
 	private void assertInvariants(DimpleEventListener listener)

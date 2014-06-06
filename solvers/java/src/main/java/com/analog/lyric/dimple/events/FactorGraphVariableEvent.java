@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base class for events that originate on a {@link FactorGraph} and involve
@@ -40,7 +41,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 */
 	
 	private transient final VariableBase _variable;
-	private final String _variableName;
+	private final @Nullable String _variableName;
 	
 	/*--------------
 	 * Construction
@@ -97,7 +98,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 * @since 0.06
 	 * @see #getVariableName()
 	 */
-	public VariableBase getVariable()
+	public @Nullable VariableBase getVariable()
 	{
 		return _variable;
 	}
@@ -112,6 +113,7 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	 */
 	public String getVariableName()
 	{
-		return _variableName != null ? _variable.getEventSourceName() : _variableName;
+		final String name = _variableName;
+		return name == null ? _variable.getEventSourceName() : name;
 	}
 }

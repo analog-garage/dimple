@@ -22,12 +22,15 @@ import com.analog.lyric.dimple.events.SolverVariableEvent;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
+@NonNullByDefault
 public class VariableToFactorMessageEvent extends SolverVariableEvent implements IMessageUpdateEvent
 {
 	private static final long serialVersionUID = 1L;
@@ -37,8 +40,8 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	 */
 	
 	private final int _edge;
-	private final ISolverFactor _factor;
-	private final IParameterizedMessage _oldMessage;
+	private final transient @Nullable ISolverFactor _factor;
+	private final @Nullable IParameterizedMessage _oldMessage;
 	private final IParameterizedMessage _newMessage;
 	
 	/*--------------
@@ -55,7 +58,7 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	VariableToFactorMessageEvent(
 		ISolverVariable variable,
 		int edge,
-		IParameterizedMessage oldMessage,
+		@Nullable IParameterizedMessage oldMessage,
 		IParameterizedMessage newMessage)
 	{
 		super(variable);
@@ -94,12 +97,13 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	@Override
 	public double computeKLDivergence()
 	{
-		if (_oldMessage == null)
+		final IParameterizedMessage oldMsg = _oldMessage;
+		if (oldMsg== null)
 		{
 			return Double.POSITIVE_INFINITY;
 		}
 		
-		return _oldMessage.computeKLDivergence(_newMessage);
+		return oldMsg.computeKLDivergence(_newMessage);
 	}
 	
 	@Override
@@ -109,7 +113,7 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	}
 	
 	@Override
-	public ISolverFactor getFactor()
+	public @Nullable ISolverFactor getFactor()
 	{
 		return _factor;
 	}
@@ -121,13 +125,13 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	}
 	
 	@Override
-	public final IParameterizedMessage getOldMessage()
+	public final @Nullable IParameterizedMessage getOldMessage()
 	{
 		return _oldMessage;
 	}
 
 	@Override
-	public ISolverVariable getVariable()
+	public @Nullable ISolverVariable getVariable()
 	{
 		return getSolverObject();
 	}

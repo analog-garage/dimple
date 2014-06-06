@@ -288,33 +288,24 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	{
 		FactorGraph templateGraph = getFactorGraph();
 		
-		
-		if (templateGraph.getSchedule() != null)
+		FixedSchedule fs = (FixedSchedule)templateGraph.getSchedule();
+
+		ArrayList<IScheduleEntry> schedule = fs.getSchedule();
+		final int size = schedule.size();
+		ArrayList<IScheduleEntry> newSchedule = new ArrayList<IScheduleEntry>(size);
+
+		for (int i = 0; i < size; i++)
 		{
-			FixedSchedule fs = (FixedSchedule)templateGraph.getSchedule();
-			
-			ArrayList<IScheduleEntry> schedule = fs.getSchedule();
-			final int size = schedule.size();
-			ArrayList<IScheduleEntry> newSchedule = new ArrayList<IScheduleEntry>(size);
-			
-			for (int i = 0; i < size; i++)
-			{
-				IScheduleEntry entry = schedule.get(i);
-				
-				IScheduleEntry newEntry = copyToRoot ?
-											entry.copyToRoot(old2newObjs) :
-											entry.copy(old2newObjs);
+			IScheduleEntry entry = schedule.get(i);
+
+			IScheduleEntry newEntry = copyToRoot ?
+				entry.copyToRoot(old2newObjs) :
+					entry.copy(old2newObjs);
 				if (newEntry != null)
 					newSchedule.add(newEntry);
-				
-			}
+
+		}
 			return new FixedSchedule(newSchedule);
-		}
-		else
-		{
-			return null;
-			
-		}
 	}
 	
 	@Override

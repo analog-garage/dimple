@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.solvers.core.VariableToFactorMessageEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 
 
@@ -130,7 +131,7 @@ public enum StandardDimpleEvents implements Iterable<Class<? extends DimpleEvent
 		return _eventTypes.size();
 	}
 	
-	public Class<? extends DimpleEvent> get(String name)
+	public @Nullable Class<? extends DimpleEvent> get(String name)
 	{
 		return _eventTypes.get(name);
 	}

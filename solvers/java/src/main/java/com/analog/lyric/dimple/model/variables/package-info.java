@@ -10,4 +10,7 @@
 /**
  * Model variables.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.model.variables;
+import com.analog.lyric.util.misc.NonNullByDefault;
+

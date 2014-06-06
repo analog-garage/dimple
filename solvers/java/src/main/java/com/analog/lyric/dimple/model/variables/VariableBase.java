@@ -35,6 +35,8 @@ import com.analog.lyric.dimple.solvers.core.SNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.primitives.Ints;
 
 
@@ -68,12 +70,12 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	 * State
 	 */
 	
-	protected Object _input = null;
-	protected Object _fixedValue = null;
+	protected @Nullable Object _input = null;
+	protected @Nullable Object _fixedValue = null;
 	protected String _modelerClassName;
-	protected ISolverVariable _solverVariable = null;
-	protected Map<String,Object> _properties = null;
-	private Domain _domain;
+	protected @Nullable ISolverVariable _solverVariable = null;
+	protected @Nullable Map<String,Object> _properties = null;
+	private final Domain _domain;
     private boolean _hasFixedValue = false;
     
     public static Comparator<VariableBase> orderById = new Comparator<VariableBase>() {
@@ -110,7 +112,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	 */
 	
 	@Override
-	public VariableBase clone()
+	public @NonNull VariableBase clone()
 	{
 		/*******
 		 * NOTE: Any derived class that defines instance variables that are
@@ -162,7 +164,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
      * Returns the solver-specific variable instance associated with this model variable if any.
      */
 	@Override
-	public ISolverVariable getSolver()
+	public @Nullable ISolverVariable getSolver()
 	{
 		return _solverVariable;
 	}
@@ -170,36 +172,30 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	@Override
 	public double getScore()
 	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverVariable.getScore();
+		return requireSolver("getScore").getScore();
 	}
 
 	@Override
 	public double getBetheEntropy()
 	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set");
-		
-		return _solverVariable.getBetheEntropy();
+		return requireSolver("getBetheEntropy").getBetheEntropy();
 	}
 	
 	@Override
 	public double getInternalEnergy()
 	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver needs to be set");
-		
-		return _solverVariable.getInternalEnergy();
+		return requireSolver("getInternalEnergy").getInternalEnergy();
 		
 	}
 	
 	@Override
 	public void initialize(int portNum)
 	{
-		if (_solverVariable != null)
-			_solverVariable.resetEdgeMessages(portNum);
+		final ISolverVariable svar = _solverVariable;
+		if (svar != null)
+		{
+			svar.resetEdgeMessages(portNum);
+		}
 	}
     
 	/**
@@ -217,15 +213,13 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	@Override
 	public void update()
 	{
-		checkSolverNotNull();
-		_solverVariable.update();
+		requireSolver("update").update();
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		checkSolverNotNull();
-		_solverVariable.updateEdge(outPortNum);
+		requireSolver("updateEdge").updateEdge(outPortNum);
 	}
 
 	/*--------------
@@ -256,7 +250,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 		return _domain;
 	}
 	
-    public Object getInputObject()
+    public @Nullable Object getInputObject()
     {
     	return _input;
     }
@@ -265,16 +259,17 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
      * Returns the solver-specific variable instance associated with this model variable if it is
      * an instance of the specified {@code solverVariableClass}, otherwise returns null.
      */
-	public <T extends ISolverVariable> T getSolverIfType(Class<? extends T> solverVariableClass)
+	public @Nullable <T extends ISolverVariable> T getSolverIfType(Class<? extends T> solverVariableClass)
 	{
-		T svar = null;
+		final ISolverVariable svar = _solverVariable;
+		T result = null;
 		
-		if (_solverVariable != null && solverVariableClass.isAssignableFrom(_solverVariable.getClass()))
+		if (svar != null && solverVariableClass.isAssignableFrom(svar.getClass()))
 		{
-			svar = solverVariableClass.cast(_solverVariable);
+			result = solverVariableClass.cast(svar);
 		}
 		
-		return svar;
+		return result;
 	}
 	
     /**
@@ -282,7 +277,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
      * an instance of the specified {@code solverVariableClass} and has {@link SNode#getParentGraph()} equal to
      * {@code solverGraph}, otherwise returns null.
      */
-	public <T extends ISolverVariable> T getSolverIfTypeAndGraph(
+	public @Nullable <T extends ISolverVariable> T getSolverIfTypeAndGraph(
 		Class<? extends T> solverVariableClass,
 		ISolverFactorGraph solverGraph)
 	{
@@ -320,14 +315,14 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     	return isFlagSet(DETERMINISTIC_OUTPUT);
     }
 	
-   public void setGuess(Object guess)
+   public void setGuess(@Nullable Object guess)
     {
-    	_solverVariable.setGuess(guess);
+    	requireSolver("setGuess").setGuess(guess);
     }
 
-    public Object getGuess()
+    public @Nullable Object getGuess()
     {
-    	return _solverVariable.getGuess();
+    	return requireSolver("getGuess").getGuess();
     }
     
 	public void moveInputs(VariableBase other)
@@ -335,17 +330,17 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 		_input = other._input;
 		_fixedValue = other._fixedValue;
 		_hasFixedValue = other._hasFixedValue;
-		_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+		requireSolver("moveInputs").setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
 	}
 
 	
-	public void createSolverObject(ISolverFactorGraph factorGraph)
+	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			_solverVariable = factorGraph.createVariable(this);
-			_solverVariable.createNonEdgeSpecificState();
-			_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+			final ISolverVariable svar = _solverVariable = factorGraph.createVariable(this);
+			svar.createNonEdgeSpecificState();
+			svar.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
 		}
 		else
 		{
@@ -355,30 +350,33 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	
 	public void setProperty(String key,Object value)
 	{
-		if (_properties == null)
+		Map<String,Object> properties = _properties;
+		if (properties == null)
 		{
-			_properties = new HashMap<String,Object>();
+			properties = _properties = new HashMap<String,Object>();
 		}
-		_properties.put(key, value);
+		properties.put(key, value);
 	}
-	public Object getProperty(String key)
+	
+	public @Nullable Object getProperty(String key)
 	{
-		return _properties == null ? null : _properties.get(key);
+		final Map<String, Object> properties = _properties;
+		return properties == null ? null : properties.get(key);
 	}
 
-	public Object getFixedValueObject()
+	public @Nullable Object getFixedValueObject()
 	{
 		return _fixedValue;
 	}
 	
 	// FIXME: we do not allow null values in any currently supported domain, so we should make
 	// setting this to null the same as removing the fixed value
-	public void setFixedValueObject(Object value)
+	public void setFixedValueObject(@Nullable Object value)
 	{
 		setInputOrFixedValue(value, null);
 	}
 	
-    public void setInputObject(Object value)
+    public void setInputObject(@Nullable Object value)
     {
     	setInputOrFixedValue(null, value);
     }
@@ -404,10 +402,11 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     	return _modelerClassName;
     }
         
-    public Object getBeliefObject()
+    public @Nullable Object getBeliefObject()
     {
-    	if (_solverVariable != null)
-    		return _solverVariable.getBelief();
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar != null)
+    		return svar.getBelief();
     	else
     		return getInputObject();
     }
@@ -573,17 +572,25 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     	setFlags(DETERMINISTIC_OUTPUT);
     }
     
+    /*-------------------
+     * Protected methods
+     */
+    
+    protected ISolverVariable requireSolver(String methodName)
+    {
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar == null)
+    	{
+    		throw new DimpleException("solver must be set before using '%s'", methodName);
+    	}
+    	return svar;
+    }
+    
     /*-----------------
      * Private methods
      */
     
-	private void checkSolverNotNull()
-	{
-		if (_solverVariable == null)
-			throw new DimpleException("solver must be set before performing this action.");
-	}
-	
-    protected final void setInputOrFixedValue(Object newFixedValue, Object newInput)
+    protected final void setInputOrFixedValue(@Nullable Object newFixedValue, @Nullable Object newInput)
     {
     	final boolean fixedValue = newFixedValue != null;
     	final Object prevInput = _input;
@@ -594,8 +601,11 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     	_fixedValue = newFixedValue;
     	_input = newInput;
     	
-    	if (_solverVariable != null)
-			_solverVariable.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar != null)
+    	{
+			svar.setInputOrFixedValue(_input,_fixedValue,_hasFixedValue);
+    	}
     
     	final int eventFlags = getChangeEventFlags();
     	

@@ -10,4 +10,6 @@
 /**
  * Model factors.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.model.factors;
+import com.analog.lyric.util.misc.NonNullByDefault;

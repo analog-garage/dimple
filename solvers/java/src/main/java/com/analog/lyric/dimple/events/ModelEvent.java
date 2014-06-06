@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.events;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Abstract base class for events involving changes to a Dimple model.
  * 
@@ -43,7 +45,7 @@ public abstract class ModelEvent extends DimpleEvent
 	 */
 	
 	@Override
-	public IModelEventSource getSource()
+	public @Nullable IModelEventSource getSource()
 	{
 		return (IModelEventSource)source;
 	}
@@ -53,7 +55,7 @@ public abstract class ModelEvent extends DimpleEvent
 	 */
 
 	@Override
-	public IModelEventSource getModelObject()
+	public @Nullable IModelEventSource getModelObject()
 	{
 		return (IModelEventSource)source;
 	}

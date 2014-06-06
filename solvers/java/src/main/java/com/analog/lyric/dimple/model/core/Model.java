@@ -22,10 +22,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Nullable;
 
 public class Model
 {
-	IFactorGraphFactory<?> _defaultGraphFactory;
+	@Nullable IFactorGraphFactory<?> _defaultGraphFactory;
 
 	private Model()
 	{
@@ -55,12 +56,12 @@ public class Model
 		setDefaultGraphFactory(new com.analog.lyric.dimple.solvers.sumproduct.Solver());
 	}
 	
-	public IFactorGraphFactory<?> getDefaultGraphFactory()
+	public @Nullable IFactorGraphFactory<?> getDefaultGraphFactory()
 	{
 		return _defaultGraphFactory;
 	}
 
-	public void setDefaultGraphFactory(IFactorGraphFactory<?> graphFactory)
+	public void setDefaultGraphFactory(@Nullable IFactorGraphFactory<?> graphFactory)
 	{
 		_defaultGraphFactory = graphFactory;
 	}

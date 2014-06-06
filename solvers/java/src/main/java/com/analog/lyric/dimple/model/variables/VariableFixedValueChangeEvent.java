@@ -22,6 +22,8 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 
 /**
  * 
@@ -58,14 +60,14 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 	 * State
 	 */
 	
-	private final Object _oldValue;
-	private final Object _newValue;
+	private final @Nullable Object _oldValue;
+	private final @Nullable Object _newValue;
 	
 	/**
 	 * @param variable
 	 * @since 0.06
 	 */
-	VariableFixedValueChangeEvent(VariableBase variable, Object oldValue, Object newValue)
+	VariableFixedValueChangeEvent(VariableBase variable, @Nullable Object oldValue, @Nullable Object newValue)
 	{
 		super(variable);
 		_oldValue = oldValue;
@@ -133,7 +135,7 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 	 * <p>
 	 * @since 0.06
 	 */
-	public Object getNewValue()
+	public @Nullable Object getNewValue()
 	{
 		return _newValue;
 	}
@@ -146,7 +148,7 @@ public class VariableFixedValueChangeEvent extends VariableChangeEvent
 	 * <p>
 	 * @since 0.06
 	 */
-	public Object getOldValue()
+	public @Nullable Object getOldValue()
 	{
 		return _oldValue;
 	}

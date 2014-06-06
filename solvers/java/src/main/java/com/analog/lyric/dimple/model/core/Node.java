@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import cern.colt.map.OpenIntIntHashMap;
@@ -37,6 +38,8 @@ import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 
 public abstract class Node implements INode, Cloneable
@@ -69,9 +72,9 @@ public abstract class Node implements INode, Cloneable
 	
 	private int _id;
 	private UUID _UUID;
-	protected String _name;
-	protected String _label;
-	private FactorGraph _parentGraph;
+	protected @Nullable String _name;
+	protected @Nullable String _label;
+	private @Nullable FactorGraph _parentGraph;
 	
 	private List<INode> _siblings;
 	
@@ -93,7 +96,7 @@ public abstract class Node implements INode, Cloneable
 	/**
 	 * Reverse mapping of sibling id to its index plus one. Created lazily as needed.
 	 */
-	private OpenIntIntHashMap _siblingToIndex = null;
+	private @Nullable OpenIntIntHashMap _siblingToIndex = null;
 
 	/*--------------
 	 * Construction
@@ -101,7 +104,7 @@ public abstract class Node implements INode, Cloneable
 	
 	public Node()
 	{
-		init(NodeId.getNext(),
+		this(NodeId.getNext(),
 			 NodeId.getNextUUID(),
 			 null,
 			 null,
@@ -110,7 +113,7 @@ public abstract class Node implements INode, Cloneable
 	}
 	public Node(int id)
 	{
-		init(id,
+		this(id,
 				NodeId.getNextUUID(),
 			 null,
 			 null,
@@ -121,7 +124,7 @@ public abstract class Node implements INode, Cloneable
 				 UUID UUID,
 				 String name)
 	{
-		init(id,
+		this(id,
 			 UUID,
 			 name,
 			 null,
@@ -130,24 +133,24 @@ public abstract class Node implements INode, Cloneable
 	}
 	public Node(int id,
 			 UUID UUID,
-			 String name,
-			 String label,
-			 FactorGraph parentGraph,
-			 ArrayList<INode> nodes)
+			 @Nullable String name,
+			 @Nullable String label,
+			 @Nullable FactorGraph parentGraph,
+			 ArrayList<INode> siblings)
 	{
-		init(id,
-			 UUID,
-			 name,
-			 label,
-			 parentGraph,
-			 nodes);
+		_id = id;
+		_UUID = UUID;
+		_name = name;
+		_label = label;
+		_siblings = siblings;
+		_parentGraph = parentGraph;
 	}
 		
 	public void init(int id,
 					 UUID UUID,
-					 String name,
-					 String label,
-					 FactorGraph parentGraph,
+					 @Nullable String name,
+					 @Nullable String label,
+					 @Nullable FactorGraph parentGraph,
 					 ArrayList<INode> siblings)
 	{
 		_id = id;
@@ -159,7 +162,7 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	@Override
-	public Node clone()
+	public @NonNull Node clone()
 	{
 		/*******
 		 * NOTE: Any derived class that defines instance variables that are
@@ -187,20 +190,20 @@ public abstract class Node implements INode, Cloneable
 	 */
 	
 	@Override
-	public FactorGraph getContainingGraph()
+	public @Nullable FactorGraph getContainingGraph()
 	{
 		return _parentGraph;
 	}
 	
 	@Override
-	public IDimpleEventListener getEventListener()
+	public @Nullable IDimpleEventListener getEventListener()
 	{
 		FactorGraph fg = getContainingGraph();
 		return fg != null ? fg.getEventListener() : null;
 	}
 	
 	@Override
-	public FactorGraph getEventParent()
+	public @Nullable FactorGraph getEventParent()
 	{
 		return _parentGraph;
 	}
@@ -259,11 +262,11 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public Factor asFactor() { return null; }
+	public @Nullable Factor asFactor() { return null; }
 	@Override
-	public FactorGraph asFactorGraph() { return null; }
+	public @Nullable FactorGraph asFactorGraph() { return null; }
 	@Override
-	public VariableBase asVariable() { return null;}
+	public @Nullable VariableBase asVariable() { return null;}
 	
 	@Override
 	public boolean isFactor() { return false; }
@@ -291,7 +294,7 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public FactorGraph getAncestorAtHeight(int height)
+	public @Nullable FactorGraph getAncestorAtHeight(int height)
 	{
 		FactorGraph ancestor = this.getParentGraph();
 		
@@ -313,7 +316,7 @@ public abstract class Node implements INode, Cloneable
 	 * 
 	 * @see #getCommonAncestor(Node)
 	 */
-	public FactorGraph getCommonAncestor(Node other, List<FactorGraph> uncommonAncestors)
+	public @Nullable FactorGraph getCommonAncestor(Node other, @Nullable List<FactorGraph> uncommonAncestors)
 	{
 		// First try some common special cases to avoid computation of full path to the root.
 		FactorGraph thisParent = getParentGraph();
@@ -375,7 +378,7 @@ public abstract class Node implements INode, Cloneable
 	 * 
 	 * @see #getCommonAncestor(Node, List)
 	 */
-	public FactorGraph getCommonAncestor(Node other)
+	public @Nullable FactorGraph getCommonAncestor(Node other)
 	{
 		return getCommonAncestor(other, null);
 	}
@@ -439,7 +442,7 @@ public abstract class Node implements INode, Cloneable
 			node = node.getParentGraph();
 		}
 
-		return node;
+		return Objects.requireNonNull(node);
 	}
 
 	@Override
@@ -518,9 +521,10 @@ public abstract class Node implements INode, Cloneable
 	public void connect(INode node)
 	{
 		_siblings.add(node);
-		if (_siblingToIndex != null)
+		final OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+		if (siblingToIndex != null)
 		{
-			_siblingToIndex.put(node.getId(), _siblings.size());
+			siblingToIndex.put(node.getId(), _siblings.size());
 		}
 	}
 	
@@ -542,7 +546,7 @@ public abstract class Node implements INode, Cloneable
 	}
 
 	@Override
-	public void setParentGraph(FactorGraph parentGraph)
+	public void setParentGraph(@Nullable FactorGraph parentGraph)
 	{
 		_parentGraph = parentGraph;
 	}
@@ -552,7 +556,7 @@ public abstract class Node implements INode, Cloneable
 	 * or this is the root graph.
 	 */
 	@Override
-	public FactorGraph getParentGraph()
+	public @Nullable FactorGraph getParentGraph()
 	{
 		return _parentGraph;
 	}
@@ -561,7 +565,7 @@ public abstract class Node implements INode, Cloneable
 	 * Returns the outermost graph containing this node. Returns the node itself if it is the root graph.
 	 */
 	@Override
-	public FactorGraph getRootGraph()
+	public @Nullable FactorGraph getRootGraph()
 	{
 		FactorGraph root = _parentGraph;
 		boolean more = root != null;
@@ -610,15 +614,16 @@ public abstract class Node implements INode, Cloneable
 	}
 	
 	@Override
-	public void setName(String name)
+	public void setName(@Nullable String name)
 	{
 		if(name != null && name.contains("."))
 		{
 			throw new DimpleException("ERROR '.' is not a valid character in names");
 		}
-		if(_parentGraph != null)
+		final FactorGraph parentGraph = _parentGraph;
+		if(parentGraph != null)
 		{
-			_parentGraph.setChildName(this, name);
+			parentGraph.setChildName(this, name);
 		}
 
 		this._name = name;
@@ -626,7 +631,7 @@ public abstract class Node implements INode, Cloneable
 	
 	
 	@Override
-	public void setLabel(String name)
+	public void setLabel(@Nullable String name)
 	{
 		_label = name;
 	}
@@ -649,9 +654,10 @@ public abstract class Node implements INode, Cloneable
 	@Override
 	public void setUUID(UUID newUUID)
 	{
-		if(_parentGraph != null)
+		final FactorGraph parentGraph = _parentGraph;
+		if (parentGraph != null)
 		{
-			_parentGraph.setChildUUID(this, newUUID);
+			parentGraph.setChildUUID(this, newUUID);
 		}
 
 		_UUID = newUUID;
@@ -663,9 +669,10 @@ public abstract class Node implements INode, Cloneable
 	public String getQualifiedName()
 	{
 		String s = getName();
-		if(s != null && getParentGraph() != null)
+		final FactorGraph parent = getParentGraph();
+		if (parent != null)
 		{
-			s = getParentGraph().getQualifiedName() + "." + s;
+			s = parent.getQualifiedName() + "." + s;
 		}
 		return s;
 	}
@@ -692,14 +699,15 @@ public abstract class Node implements INode, Cloneable
 	public String getQualifiedLabel()
 	{
 		String s = getLabel();
-		if(s != null && getParentGraph() != null)
+		final FactorGraph parentGraph = _parentGraph;
+		if (parentGraph != null)
 		{
-			s = _parentGraph.getQualifiedLabel() + "." + s;
+			s = parentGraph.getQualifiedLabel() + "." + s;
 		}
 		return s;
 	}
 	@Override
-	public String getExplicitName()
+	public @Nullable String getExplicitName()
 	{
 		return _name;
 	}
@@ -841,7 +849,7 @@ public abstract class Node implements INode, Cloneable
 		return BitSetUtil.isMaskSet(_flags, mask);
 	}
 	
-	protected final void raiseEvent(DimpleEvent event)
+	protected final void raiseEvent(@Nullable DimpleEvent event)
 	{
 		if (event != null)
 		{
@@ -866,10 +874,11 @@ public abstract class Node implements INode, Cloneable
 			{
 				_siblingIndices[index] = 0;
 			}
-			if (_siblingToIndex != null)
+			final OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+			if (siblingToIndex != null)
 			{
-				_siblingToIndex.removeKey(oldNode.getId());
-				_siblingToIndex.put(newNode.getId(), index + 1);
+				siblingToIndex.removeKey(oldNode.getId());
+				siblingToIndex.put(newNode.getId(), index + 1);
 			}
 		}
 	}
@@ -901,18 +910,20 @@ public abstract class Node implements INode, Cloneable
 	{
 		int nSiblings = _siblings.size();
 		
-		if (_siblingToIndex == null && nSiblings > 10)
+		OpenIntIntHashMap siblingToIndex = _siblingToIndex;
+		
+		if (siblingToIndex == null && nSiblings > 10)
 		{
-			_siblingToIndex = new OpenIntIntHashMap(nSiblings);
+			siblingToIndex = _siblingToIndex = new OpenIntIntHashMap(nSiblings);
 			for (int i = 0; i < nSiblings; ++i)
 			{
-				_siblingToIndex.put(_siblings.get(i).getId(), i + 1);
+				siblingToIndex.put(_siblings.get(i).getId(), i + 1);
 			}
 		}
 		
-		if (_siblingToIndex != null)
+		if (siblingToIndex != null)
 		{
-			return _siblingToIndex.get(node.getId()) - 1;
+			return siblingToIndex.get(node.getId()) - 1;
 		}
 		else
 		{

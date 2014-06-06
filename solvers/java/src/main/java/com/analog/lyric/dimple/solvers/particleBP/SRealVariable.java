@@ -539,7 +539,7 @@ public class SRealVariable extends SRealVariableBase
 			particleMin = _initialParticleMin;
 			particleMax = _initialParticleMax;
 		}
-		else if (_var.getDomain() != null)
+		else// if (_var.getDomain() != null)
 		{
 			if (!Double.isInfinite(_domain.getLowerBound()) && !Double.isInfinite(_domain.getUpperBound()))
 			{

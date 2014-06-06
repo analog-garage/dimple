@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base interface for model components.
@@ -39,19 +40,19 @@ public interface INode  extends INameable, IModelEventSource
 	 * If node is a {@link Factor} returns it, otherwise null.
 	 * @see #isFactor()
 	 */
-	public Factor asFactor();
+	public @Nullable Factor asFactor();
 	
 	/**
 	 * If node is a {@link FactorGraph} returns it, otherwise null.
 	 * @see #isFactorGraph()
 	 */
-	public FactorGraph asFactorGraph();
+	public @Nullable FactorGraph asFactorGraph();
 	
 	/**
 	 * If node is a {@link VariableBase} returns it, otherwise null.
 	 * @see #isVariable()
 	 */
-	public VariableBase asVariable();
+	public @Nullable VariableBase asVariable();
 	
 	/**
 	 * True if this is a {@link Factor}.
@@ -138,11 +139,11 @@ public interface INode  extends INameable, IModelEventSource
 	public void updateEdge(int outPortNum);
 	public void updateEdge(INode other);
 	
-	public ISolverNode getSolver();
+	public @Nullable ISolverNode getSolver();
 	
-	public void setParentGraph(FactorGraph parentGraph) ;
-	public FactorGraph getParentGraph();
-	public FactorGraph getRootGraph();
+	public void setParentGraph(@Nullable FactorGraph parentGraph) ;
+	public @Nullable FactorGraph getParentGraph();
+	public @Nullable FactorGraph getRootGraph();
 	public boolean hasParentGraph();
 	public int getPortNum(INode node) ;
 	public ArrayList<INode> getConnectedNodeAndParents(int index);
@@ -161,7 +162,7 @@ public interface INode  extends INameable, IModelEventSource
 	 * </pre>
 	 * @see #getDepthBelowAncestor
 	 */
-	FactorGraph getAncestorAtHeight(int height);
+	@Nullable FactorGraph getAncestorAtHeight(int height);
 	
 	/**
 	 * Returns the node's depth below the root {@link FactorGraph}, the number

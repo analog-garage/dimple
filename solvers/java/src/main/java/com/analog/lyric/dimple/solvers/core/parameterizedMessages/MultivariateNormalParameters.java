@@ -22,15 +22,16 @@ import Jama.Matrix;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.math.LyricEigenvalueDecomposition;
+import com.analog.lyric.util.misc.Nullable;
 
 public class MultivariateNormalParameters extends ParameterizedMessageBase
 {
 	private static final long serialVersionUID = 1L;
 
-	private double [] _vector;
+	private double [] _vector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	// Cache means to avoid having to recompute
-	private double [] _mean = null;
-	private double [][] _matrix;
+	private @Nullable double [] _mean = null;
+	private double [][] _matrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	private boolean _isInInformationForm;
 	private double eps = 0.0000001; //minimum value for small eigenvalues or 1/(max value)
 

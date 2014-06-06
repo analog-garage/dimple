@@ -18,6 +18,7 @@ import java.io.PrintStream;
  * @since 0.06
  * @author Christopher Barber
  */
+@NonNullByDefault
 public interface IPrintable
 {
 

@@ -21,6 +21,7 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.events.SolverVariableEvent;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * 
@@ -28,6 +29,7 @@ import com.analog.lyric.dimple.events.SolverVariableEvent;
  * @author Christopher Barber
  */
 @Immutable
+@NonNullByDefault
 public abstract class GibbsSolverVariableEvent extends SolverVariableEvent
 {
 	/*-----------

@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.serializerdetails.Deserializer;
 import com.analog.lyric.dimple.model.serializerdetails.Serializer;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Nullable;
 
 public class xmlSerializer
 {
@@ -77,7 +78,8 @@ public class xmlSerializer
 		return _deserializer.deserializeFactorTableFromXML(docName);
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	public FactorGraph deserializeFromXML(String docName, @Nullable IFactorGraphFactory<?> solver)
+		throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		return _deserializer.deserializeFromXML(docName, solver);
 	}
@@ -112,10 +114,7 @@ public class xmlSerializer
 	public void setDbg(boolean dbg)
 	{
 		_dbg = dbg;
-		if(_deserializer != null)
-		{
-			_deserializer.setDbg(dbg);
-		}
+		_deserializer.setDbg(dbg);
 		_serializer.setDbg(dbg);
 	}
 	public boolean isDbg() {

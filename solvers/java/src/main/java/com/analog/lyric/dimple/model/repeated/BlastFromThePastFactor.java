@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverBlastFromThePastFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 public class BlastFromThePastFactor extends Factor
 {
@@ -38,18 +39,24 @@ public class BlastFromThePastFactor extends Factor
 	}
 
 	@Override
-	public void createSolverObject(ISolverFactorGraph factorGraph)
+	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
-		_solverFactor = factorGraph.createBlastFromThePast(this);
-		((ISolverBlastFromThePastFactor)_solverFactor).createMessages(
-				_variableConnectedToBlast,
-				_portForOtherVariable);
+		if (factorGraph != null)
+		{
+			final ISolverBlastFromThePastFactor sfactor = factorGraph.createBlastFromThePast(this);
+			_solverFactor = sfactor;
+			sfactor.createMessages(_variableConnectedToBlast, _portForOtherVariable);
+		}
+		else
+		{
+			_solverFactor = null;
+		}
 	}
 	
 	
 	public void advance()
 	{
-		((ISolverBlastFromThePastFactor)_solverFactor).advance();
+		((ISolverBlastFromThePastFactor)requireSolver("advance")).advance();
 	}
 	
 	

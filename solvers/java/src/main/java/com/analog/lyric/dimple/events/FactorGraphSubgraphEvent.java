@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -37,7 +38,7 @@ public abstract class FactorGraphSubgraphEvent extends FactorGraphEvent
 	 */
 	
 	private transient final FactorGraph _subgraph;
-	private final String _subgraphName;
+	private final @Nullable String _subgraphName;
 	
 	/*--------------
 	 * Construction
@@ -72,7 +73,7 @@ public abstract class FactorGraphSubgraphEvent extends FactorGraphEvent
 	 */
 	
 	@Override
-	public Node getNode()
+	public @Nullable Node getNode()
 	{
 		return _subgraph;
 	}
@@ -94,7 +95,7 @@ public abstract class FactorGraphSubgraphEvent extends FactorGraphEvent
 	 * @since 0.06
 	 * @see #getSubgraphName()
 	 */
-	public FactorGraph getSubgraph()
+	public @Nullable FactorGraph getSubgraph()
 	{
 		return _subgraph;
 	}
@@ -109,7 +110,8 @@ public abstract class FactorGraphSubgraphEvent extends FactorGraphEvent
 	 */
 	public String getSubgraphName()
 	{
-		return _subgraphName != null ? _subgraph.getEventSourceName() : _subgraphName;
+		final String name = _subgraphName;
+		return name == null ? _subgraph.getEventSourceName() : name;
 	}
 
 }

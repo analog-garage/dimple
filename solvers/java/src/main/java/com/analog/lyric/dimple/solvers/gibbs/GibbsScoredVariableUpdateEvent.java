@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 import java.io.PrintStream;
 
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * Gibbs variable update event that includes sample scores.
@@ -26,6 +27,7 @@ import com.analog.lyric.dimple.model.values.Value;
  * @since 0.06
  * @author Christopher Barber
  */
+@NonNullByDefault
 public class GibbsScoredVariableUpdateEvent extends GibbsVariableUpdateEvent
 {
 	/*-------

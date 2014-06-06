@@ -23,7 +23,9 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 public class Discrete extends VariableBase
 {
@@ -60,7 +62,7 @@ public class Discrete extends VariableBase
      */
     
     @Override
-    public IDiscreteSolverVariable getSolver()
+    public @Nullable IDiscreteSolverVariable getSolver()
     {
     	return (IDiscreteSolverVariable)super.getSolver();
     }
@@ -87,7 +89,7 @@ public class Discrete extends VariableBase
     }
     
     @Override
-    public Integer getFixedValueObject()
+    public @Nullable Integer getFixedValueObject()
     {
     	return (Integer)super.getFixedValueObject();
     }
@@ -115,8 +117,9 @@ public class Discrete extends VariableBase
     @Override
 	public Object getBeliefObject()
     {
-    	if (_solverVariable != null)
-    		return _solverVariable.getBelief();
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar != null)
+    		return svar.getBelief();
     	else
     		return getInputObject();
     }
@@ -131,18 +134,20 @@ public class Discrete extends VariableBase
     	getSolver().setGuessIndex(guess);
     }
     
-    public Object getValue()
+    public @Nullable Object getValue()
     {
-    	if (_solverVariable != null)
-    		return _solverVariable.getValue();
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar != null)
+    		return svar.getValue();
     	else
     		return null;
     }
    
     public int getValueIndex()
     {
-    	if (_solverVariable != null)
-    		return ((SDiscreteVariableBase)_solverVariable).getValueIndex();
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar != null)
+    		return ((SDiscreteVariableBase)svar).getValueIndex();
     	else
     		return 0;
     }
@@ -179,10 +184,6 @@ public class Discrete extends VariableBase
     	for (int i = thisIsFirst ? 1 : 0; i < dimensions; ++i)
     	{
     		final Discrete var = variables[i].asDiscreteVariable();
-    		if (var == null)
-    		{
-    			throw new DimpleException("Discrete.createJointNoFactors does not support non-discrete variables");
-    		}
     		domains[i] = var.getDomain();
     		subdomainWeights[i] = var.getInput();
     	}
@@ -193,7 +194,7 @@ public class Discrete extends VariableBase
     	return jointVar;
     }
 	
-	public void setInput(double ... value)
+	public void setInput(@Nullable double ... value)
 	{
 		setInputObject(value);
 	}

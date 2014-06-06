@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.factors;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Objects;
 
 import cern.colt.list.IntArrayList;
 
@@ -36,14 +37,15 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 public class Factor extends FactorBase implements Cloneable
 {
 	private String _modelerFunctionName = "";
-	protected ISolverFactor _solverFactor = null;
+	protected @Nullable ISolverFactor _solverFactor = null;
 	private FactorFunction _factorFunction;
-	int [] _directedTo = null;
-	int [] _directedFrom = null;
+	@Nullable int [] _directedTo = null;
+	@Nullable int [] _directedFrom = null;
 	
 	
 	@Override
@@ -75,17 +77,17 @@ public class Factor extends FactorBase implements Cloneable
 			addVariable(variables[i]);
 	}
 	
-	public Factor(int id,VariableBase [] variables, String modelerFunctionName)
-	{
-		super(id);
-				
-		_modelerFunctionName = modelerFunctionName;
-		for (int i = 0; i < variables.length; i++)
-		{
-			connect(variables[i]);
-			variables[i].connect(this);
-		}
-	}
+//	public Factor(int id,VariableBase [] variables, String modelerFunctionName)
+//	{
+//		super(id);
+//
+//		_modelerFunctionName = modelerFunctionName;
+//		for (int i = 0; i < variables.length; i++)
+//		{
+//			connect(variables[i]);
+//			variables[i].connect(this);
+//		}
+//	}
 
 	public IFactorTable getFactorTable()
 	{
@@ -149,7 +151,7 @@ public class Factor extends FactorBase implements Cloneable
 
 	
 	@Override
-	public ISolverFactor getSolver()
+	public @Nullable ISolverFactor getSolver()
 	{
 		return _solverFactor;
 	}
@@ -160,12 +162,12 @@ public class Factor extends FactorBase implements Cloneable
     	return "Factor";
     }
 	
-	public void createSolverObject(ISolverFactorGraph factorGraph)
+	public void createSolverObject(@Nullable ISolverFactorGraph factorGraph)
 	{
 		if (factorGraph != null)
 		{
-			_solverFactor = factorGraph.createFactor(this);
-			_solverFactor.createMessages();
+			ISolverFactor factor = _solverFactor = factorGraph.createFactor(this);
+			factor.createMessages();
 		}
 		else
 		{
@@ -222,10 +224,11 @@ public class Factor extends FactorBase implements Cloneable
 				removeFixedVariablesImpl(oldFunction, oldFactorTable, constantVariables, constantIndices.elements());
 			
 			int[] newDirectedTo = null;
-			if (isDirected() && !oldFunction.isDirected())
+			final int[] oldDirectedTo = _directedTo;
+			if (oldDirectedTo != null && !oldFunction.isDirected())
 			{
 				// If factor function is not inherently directed, then update the directed indices.
-				newDirectedTo = ArrayUtil.contractSortedIndexList(_directedTo, constantIndices.elements());
+				newDirectedTo = ArrayUtil.contractSortedIndexList(oldDirectedTo, constantIndices.elements());
 			}
 
 			setFactorFunction(newFunction);
@@ -252,7 +255,7 @@ public class Factor extends FactorBase implements Cloneable
 	 */
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
-		IFactorTable oldFactorTable,
+		@Nullable IFactorTable oldFactorTable,
 		ArrayList<VariableBase> constantVariables,
 		int[] constantIndices)
 	{
@@ -315,8 +318,9 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public void initialize(int portNum)
 	{
-		if (_solverFactor != null)
-			_solverFactor.resetEdgeMessages(portNum);
+		final ISolverFactor sfactor = _solverFactor;
+		if (sfactor != null)
+			sfactor.resetEdgeMessages(portNum);
 	}
     
 	/**
@@ -333,13 +337,15 @@ public class Factor extends FactorBase implements Cloneable
 			setDirectedTo(_factorFunction.getDirectedToIndices(getSiblingCount()));
 			if (_factorFunction.isDeterministicDirected())
 			{
-				for (int to : _directedTo)
+				final int[] directedTo = Objects.requireNonNull(_directedTo);
+				for (int to : directedTo)
 				{
 					getSibling(to).setDeterministicOutput();
 				}
-				if (_directedTo.length > 0)
+				if (directedTo.length > 0)
 				{
-					for (int from : _directedFrom)
+					final int[] directedFrom = _directedFrom;
+					for (int from : directedFrom)
 					{
 						getSibling(from).setDeterministicInput();
 					}
@@ -351,21 +357,27 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public void update()
 	{
-		checkSolverNotNull();
-		_solverFactor.update();
+		requireSolver("update").update();
 	}
 
 	@Override
 	public void updateEdge(int outPortNum)
 	{
-		checkSolverNotNull();
-		_solverFactor.updateEdge(outPortNum);
+		requireSolver("updateEdge").updateEdge(outPortNum);
 	}
 	
-	private void checkSolverNotNull()
+	protected ISolverFactor requireSolver(String method)
 	{
-		if (_solverFactor == null)
-			throw new DimpleException("solver must be set before performing this action.");
+		return requireSolver(method, _solverFactor);
+	}
+	
+	protected <T extends ISolverFactor> T requireSolver(String method, @Nullable T solverFactor)
+	{
+		if (solverFactor == null)
+		{
+			throw new DimpleException("solver must be set before using '%s'.", method);
+		}
+		return solverFactor;
 	}
 	
 	@Internal
@@ -377,29 +389,20 @@ public class Factor extends FactorBase implements Cloneable
 	@Override
 	public double getScore()
 	{
-		if (_solverFactor == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverFactor.getScore();
+		return requireSolver("getScore").getScore();
 	}
 	
 	@Override
 	public double getInternalEnergy()
 	{
-		if (_solverFactor == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverFactor.getInternalEnergy();
+		return requireSolver("getInternalEnergy").getInternalEnergy();
 		
 	}
 
 	@Override
 	public double getBetheEntropy()
 	{
-		if (_solverFactor == null)
-			throw new DimpleException("solver needs to be set before calculating energy");
-		
-		return _solverFactor.getBetheEntropy();
+		return requireSolver("getBetheEntropy").getBetheEntropy();
 		
 	}
 
@@ -418,13 +421,13 @@ public class Factor extends FactorBase implements Cloneable
 			setFactorFunction(getFactorFunction());
 	}
 	
-	public int [] getDirectedTo()
+	public @Nullable int [] getDirectedTo()
 	{
 		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
 		return _directedTo;
 	}
-	public int [] getDirectedFrom()
+	public @Nullable int [] getDirectedFrom()
 	{
 		// FIXME: this may change the value of isDirected()!
 		ensureDirectedToSet();
@@ -437,12 +440,13 @@ public class Factor extends FactorBase implements Cloneable
 		
 		VariableList vl = null;
 		
-		if (isDirected())
+		final int[] directedTo = _directedTo;
+		if (directedTo != null)
 		{
-			vl = new VariableList(_directedTo.length);
-			for (int i = 0; i < _directedTo.length; i++)
+			vl = new VariableList(directedTo.length);
+			for (int i = 0; i < directedTo.length; i++)
 			{
-				vl.add(getSibling(_directedTo[i]));
+				vl.add(getSibling(directedTo[i]));
 			}
 		}
 		else
@@ -479,7 +483,7 @@ public class Factor extends FactorBase implements Cloneable
 		BitSet toSet = new BitSet(directedTo.length);
 		
 		final int nVariables = getSiblingCount();
-		_directedFrom = new int[nVariables-directedTo.length];
+		final int[] directedFrom = _directedFrom = new int[nVariables-directedTo.length];
 		
 		boolean sort = false;
 		int prev = -1;
@@ -499,7 +503,7 @@ public class Factor extends FactorBase implements Cloneable
 			(fromVarIndex = toSet.nextClearBit(fromVarIndex)) < nVariables;
 			++fromVarIndex, ++i)
 		{
-			_directedFrom[i] = fromVarIndex;
+			directedFrom[i] = fromVarIndex;
 		}
 		
 		if (sort)
@@ -518,9 +522,10 @@ public class Factor extends FactorBase implements Cloneable
 			}
 		}
 
-		if (_solverFactor != null)
+		ISolverFactor sfactor = _solverFactor;
+		if (sfactor != null)
 		{
-			_solverFactor.setDirectedTo(directedTo);
+			sfactor.setDirectedTo(directedTo);
 		}
 		
 	}

@@ -20,11 +20,12 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
+import com.analog.lyric.util.misc.Nullable;
 
-public class RealJoint extends VariableBase 
+public class RealJoint extends VariableBase
 {
 	// Constructors...
-	public RealJoint(int size) 
+	public RealJoint(int size)
 	{
 		this(RealJointDomain.create(size));
 	}
@@ -32,7 +33,7 @@ public class RealJoint extends VariableBase
 	{
 		this(domain, "RealJoint");
 	}
-	public RealJoint(RealJointDomain domain, String modelerClassName) 
+	public RealJoint(RealJointDomain domain, String modelerClassName)
 	{
 		super(domain, modelerClassName);
 	}
@@ -42,7 +43,7 @@ public class RealJoint extends VariableBase
 	{
 		return (RealJointDomain)getDomain();
 	}
-	public Object getInput() 
+	public @Nullable Object getInput()
 	{
 		return getInputObject();
 	}
@@ -50,7 +51,7 @@ public class RealJoint extends VariableBase
 	
 	public double[] getValue()
 	{
-		return (double[])_solverVariable.getValue();
+		return (double[])requireSolver("getValue").getValue();
 	}
 
 	
@@ -64,7 +65,7 @@ public class RealJoint extends VariableBase
 			return (double[])tmp;
 	}
 	
-	public void setFixedValue(double[] fixedValue) 
+	public void setFixedValue(double[] fixedValue)
 	{
 		// Verify that the fixed value is in the domain of the variable
 		if (!((RealJointDomain)getDomain()).inDomain(fixedValue))
@@ -73,7 +74,7 @@ public class RealJoint extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 	
-	public void setInput(FactorFunction[] input)
+	public void setInput(@Nullable FactorFunction[] input)
 	{
 		setInputObject(input);
 	}
@@ -83,12 +84,12 @@ public class RealJoint extends VariableBase
 		setInputObject(new MultivariateNormalParameters(means,covar));
 	}
 
-	public void setInput(MultivariateNormalParameters msg)
+	public void setInput(@Nullable MultivariateNormalParameters msg)
 	{
 		setInputObject(msg);
 	}
 	
-	public MultivariateNormalParameters getBelief()
+	public @Nullable MultivariateNormalParameters getBelief()
 	{
 		return (MultivariateNormalParameters)getBeliefObject();
 	}

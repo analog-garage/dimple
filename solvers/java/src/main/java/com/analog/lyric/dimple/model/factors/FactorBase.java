@@ -21,6 +21,7 @@ import java.util.List;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public abstract class FactorBase extends Node
@@ -59,11 +60,11 @@ public abstract class FactorBase extends Node
 	
 	/** {@inheritDoc} If null {@link #asFactorGraph()} will be non-null. */
 	@Override
-	public Factor asFactor() { return null; }
+	public @Nullable Factor asFactor() { return null; }
 	
 	/** {@inheritDoc} If null {@link #asFactor()} will be non-null. */
 	@Override
-	public FactorGraph asFactorGraph() { return null; }
+	public @Nullable FactorGraph asFactorGraph() { return null; }
 
 	//public abstract void initialize();
 	

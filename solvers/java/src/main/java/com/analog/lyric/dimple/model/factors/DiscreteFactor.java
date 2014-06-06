@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A factor with only {@link Discrete} variables.
@@ -84,13 +85,13 @@ public class DiscreteFactor extends Factor
 
 	public int[][] getPossibleBeliefIndices()
 	{
-		return _solverFactor.getPossibleBeliefIndices();
+		return requireSolver("getPossibleBeliefIndices").getPossibleBeliefIndices();
 	}
 	
 	@Override
 	protected FactorFunction removeFixedVariablesImpl(
 		FactorFunction oldFunction,
-		IFactorTable oldFactorTable,
+		@Nullable IFactorTable oldFactorTable,
 		ArrayList<VariableBase> constantVariables,
 		int[] constantIndices)
 	{
@@ -205,7 +206,7 @@ public class DiscreteFactor extends Factor
 	
 	public double [] getBelief()
 	{
-		return (double[])_solverFactor.getBelief();
+		return (double[])requireSolver("getBelief").getBelief();
 	}
 
 

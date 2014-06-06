@@ -20,6 +20,8 @@ import java.io.PrintStream;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 
 /**
  * 
@@ -42,8 +44,8 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 	 * State
 	 */
 	
-	private final Object _oldInput;
-	private final Object _newInput;
+	private final @Nullable Object _oldInput;
+	private final @Nullable Object _newInput;
 	
 	/*--------------
 	 * Construction
@@ -52,7 +54,7 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 	/**
 	 * @since 0.06
 	 */
-	VariableInputChangeEvent(VariableBase variable, Object oldInput, Object newInput)
+	VariableInputChangeEvent(VariableBase variable, @Nullable Object oldInput, @Nullable Object newInput)
 	{
 		super(variable);
 		_oldInput = oldInput;
@@ -92,12 +94,12 @@ public class VariableInputChangeEvent extends VariableChangeEvent
 	 * VariableInputChangeEvent methods
 	 */
 	
-	public Object getNewInput()
+	public @Nullable Object getNewInput()
 	{
 		return _newInput;
 	}
 	
-	public Object getOldInput()
+	public @Nullable Object getOldInput()
 	{
 		return _oldInput;
 	}

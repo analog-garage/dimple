@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -67,13 +68,13 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	 */
 	
     @Override
-	public FactorGraph getContainingGraph()
+	public @Nullable FactorGraph getContainingGraph()
 	{
     	return getModelObject().getContainingGraph();
 	}
 
     @Override
-    public IDimpleEventListener getEventListener()
+    public @Nullable IDimpleEventListener getEventListener()
     {
     	return getContainingGraph().getEventListener();
     }
@@ -100,7 +101,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	}
 
     @Override
-    public IModelEventSource getModelEventSource()
+    public @Nullable IModelEventSource getModelEventSource()
     {
     	return getModelObject();
     }
@@ -110,7 +111,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 	 */
 	
     @Override
-	public ISolverFactorGraph getContainingSolverGraph()
+	public @Nullable ISolverFactorGraph getContainingSolverGraph()
 	{
     	return getParentGraph();
 	}
@@ -176,7 +177,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
 		return BitSetUtil.isMaskSet(_flags, mask);
 	}
 	
-	protected final void raiseEvent(SolverEvent event)
+	protected final void raiseEvent(@Nullable SolverEvent event)
 	{
 		if (event != null)
 		{

@@ -22,6 +22,7 @@ import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.RealJoint;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * Event raised when variable sample is changed by Gibbs solver.
@@ -33,6 +34,7 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
  * @author Christopher Barber
  */
 @Immutable
+@NonNullByDefault
 public class GibbsVariableUpdateEvent extends GibbsSolverVariableEvent
 {
 	/*-------

@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,6 +33,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.Supers;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.MapMaker;
 
 
@@ -172,7 +174,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * @return the previous value.
 	 * @since 0.06
 	 */
-	public static DimpleEventListener setDefault(DimpleEventListener listener)
+	public static @Nullable DimpleEventListener setDefault(@Nullable DimpleEventListener listener)
 	{
 		return _defaultListener.getAndSet(listener);
 	}
@@ -374,7 +376,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * 
 	 * @since 0.06
 	 */
-	public ReleasableIterator<IDimpleEventSource> eventSources(IDimpleEventSource source)
+	public ReleasableIterator<IDimpleEventSource> eventSources(@Nullable IDimpleEventSource source)
 	{
 		EventSourceIterator iterator = _eventSourceIterator.getAndSet(null);
 		if (iterator == null)
@@ -413,10 +415,10 @@ public class DimpleEventListener implements IDimpleEventListener
 		boolean handleSubclasses,
 		IDimpleEventSource target)
 	{
-		if (handler == null || eventClass == null || target == null)
-		{
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(handler);
+		Objects.requireNonNull(eventClass);
+		Objects.requireNonNull(target);
+		
 		final Entry entry = new Entry(handler, eventClass, handleSubclasses, target);
 			
 		synchronized(this)
@@ -660,7 +662,7 @@ public class DimpleEventListener implements IDimpleEventListener
 		 * True if other entry has same {@link #eventClass}, {@link #eventSource}, and {@link #eventHandler}.
 		 */
 		@Override
-		public boolean equals(Object other)
+		public boolean equals(@Nullable Object other)
 		{
 			if (this == other)
 			{
@@ -759,8 +761,8 @@ public class DimpleEventListener implements IDimpleEventListener
 	@NotThreadSafe
 	private class EventSourceIterator implements ReleasableIterator<IDimpleEventSource>
 	{
-		private IDimpleEventSource _next;
-		private IDimpleEventSource _prev;
+		private @Nullable IDimpleEventSource _next;
+		private @Nullable IDimpleEventSource _prev;
 		
 		/*--------------
 		 * Construction
@@ -770,7 +772,7 @@ public class DimpleEventListener implements IDimpleEventListener
 		{
 		}
 		
-		private void init(IDimpleEventSource source)
+		private void init(@Nullable IDimpleEventSource source)
 		{
 			_next = source;
 			_prev = null;
@@ -787,7 +789,7 @@ public class DimpleEventListener implements IDimpleEventListener
 		}
 
 		@Override
-		public IDimpleEventSource next()
+		public @Nullable IDimpleEventSource next()
 		{
 			IDimpleEventSource source = _next;
 			
@@ -795,9 +797,10 @@ public class DimpleEventListener implements IDimpleEventListener
 			{
 				// Find next source.
 				
-				if (_prev != null)
+				final IDimpleEventSource prev = _prev;
+				if (prev != null)
 				{
-					_next = _prev.getEventParent();
+					_next = prev.getEventParent();
 					_prev = null;
 				}
 				else

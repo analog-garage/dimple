@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class SNode extends SolverEventSource implements ISolverNode
 {
@@ -199,7 +200,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 * <p>
 	 * @since 0.06
 	 */
-	protected IParameterizedMessage cloneMessage(int edge)
+	protected @Nullable IParameterizedMessage cloneMessage(int edge)
 	{
 		return null;
 	}
@@ -247,10 +248,10 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 * @param newMessage is the new message value, which must not be null.
 	 * @since 0.06
 	 */
-	protected SolverEvent createMessageEvent(
+	protected @Nullable SolverEvent createMessageEvent(
 		int edge,
-		IParameterizedMessage oldMessage,
-		IParameterizedMessage newMessage)
+		@Nullable IParameterizedMessage oldMessage,
+		@Nullable IParameterizedMessage newMessage)
 	{
 		return null;
 	}

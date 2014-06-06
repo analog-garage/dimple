@@ -46,7 +46,7 @@ public abstract class Supers
 	private static class SuperClassCache extends ClassValue<ImmutableList<Class<?>>>
 	{
 		@Override
-		protected ImmutableList<Class<?>> computeValue(Class<?> c)// throws Exception
+		protected ImmutableList<Class<?>> computeValue(@Nullable Class<?> c)
 		{
 			ArrayList<Class<?>> supers = new ArrayList<Class<?>>();
 

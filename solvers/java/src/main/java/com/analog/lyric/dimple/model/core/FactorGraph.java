@@ -70,6 +70,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.cache.LoadingCache;
 
 
@@ -116,17 +117,17 @@ public class FactorGraph extends FactorBase
 	
 	// TODO : some state only needs to be in root graph. Put it in common object.
 	
-	private ISchedule _schedule = null;
-	private IScheduler _explicitlyAssociatedScheduler = null;
-	private IScheduler _solverSpecificDefaultScheduler = null;
+	private @Nullable ISchedule _schedule = null;
+	private @Nullable IScheduler _explicitlyAssociatedScheduler = null;
+	private @Nullable IScheduler _solverSpecificDefaultScheduler = null;
 	private long _versionId = 0;
 	private long _scheduleVersionId = 0;
 	private long _scheduleAssociatedGraphVerisionId = -1;
 	private boolean _hasCustomScheduleSet = false;
-	private Class<? extends ISolverFactorGraph> _schedulerSolverClass;
-	private IFactorGraphFactory<?> _solverFactory;
-	private ISolverFactorGraph _solverFactorGraph;
-	private LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
+	private @Nullable Class<? extends ISolverFactorGraph> _schedulerSolverClass;
+	private @Nullable IFactorGraphFactory<?> _solverFactory;
+	private @Nullable ISolverFactorGraph _solverFactorGraph;
+	private @Nullable LoadingCache<Functions, JointFactorFunction> _jointFactorCache = null;
 	private final HashSet<VariableStreamBase> _variableStreams = new HashSet<VariableStreamBase>();
 	private final ArrayList<FactorGraphStream> _factorGraphStreams = new ArrayList<FactorGraphStream>();
 	private int _numSteps = 1;
@@ -137,7 +138,7 @@ public class FactorGraph extends FactorBase
 	 * <p>
 	 * This field should only be set on the root graph.
 	 */
-	private volatile DimpleEventListener _eventListener = null;
+	private volatile @Nullable DimpleEventListener _eventListener = null;
 
 	//new identity related members
 	private final HashMap<String, Object> _name2object = new HashMap<String, Object>();
@@ -155,23 +156,26 @@ public class FactorGraph extends FactorBase
 	{
 		this(new VariableBase[0], "");
 	}
-	public FactorGraph(String name)
+	public FactorGraph(@Nullable String name)
 	{
 		this(null, name);
 	}
-	public FactorGraph(VariableBase ... boundaryVariables)
+	public FactorGraph(@Nullable VariableBase ... boundaryVariables)
 	{
 		this(boundaryVariables, "");
 	}
 
-	public FactorGraph(VariableBase[] boundaryVariables, String name)
+	public FactorGraph(@Nullable VariableBase[] boundaryVariables, @Nullable String name)
 	{
 		this(boundaryVariables, name, Model.getInstance().getDefaultGraphFactory());
 	}
 
 
 
-	public FactorGraph(VariableBase[] boundaryVariables, String name, IFactorGraphFactory<?> solver)
+	public FactorGraph(
+		@Nullable VariableBase[] boundaryVariables,
+		@Nullable String name,
+		@Nullable IFactorGraphFactory<?> solver)
 		{
 		if (boundaryVariables != null)
 			addBoundaryVariables(boundaryVariables);
@@ -212,7 +216,7 @@ public class FactorGraph extends FactorBase
 	}
 	
 	@Override
-	public DimpleEventListener getEventListener()
+	public @Nullable DimpleEventListener getEventListener()
 	{
 		return getRootGraph()._eventListener;
 	}
@@ -273,7 +277,7 @@ public class FactorGraph extends FactorBase
 	 * contents. May be set to null to turn off listening.
 	 * @since 0.06
 	 */
-	public void setEventListener(DimpleEventListener listener)
+	public void setEventListener(@Nullable DimpleEventListener listener)
 	{
 		_eventListener = listener;
 		notifyListenerChanged();
@@ -286,21 +290,22 @@ public class FactorGraph extends FactorBase
 	 * 
 	 ******************************************************************/
 
-	private ISolverFactorGraph setSolverFactorySubGraph(ISolverFactorGraph parentSolverGraph,
-		IFactorGraphFactory<?> factory)
+	private @Nullable ISolverFactorGraph setSolverFactorySubGraph(@Nullable ISolverFactorGraph parentSolverGraph,
+		@Nullable IFactorGraphFactory<?> factory)
 	{
 		_solverFactory = factory;
 		return _solverFactorGraph = parentSolverGraph.createSubGraph(this, factory);
 	}
 
-	private void setSolverFactorySubGraphRecursive(ISolverFactorGraph parentSolverGraph, IFactorGraphFactory<?> factory)
+	private void setSolverFactorySubGraphRecursive(@Nullable ISolverFactorGraph parentSolverGraph,
+		@Nullable IFactorGraphFactory<?> factory)
 	{
 		ISolverFactorGraph solverGraph = setSolverFactorySubGraph(parentSolverGraph, factory);
 		for (FactorGraph fg : getNestedGraphs())
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 	}
 
-	public <SG extends ISolverFactorGraph> SG setSolverFactory(IFactorGraphFactory<SG> factory)
+	public @Nullable <SG extends ISolverFactorGraph> SG setSolverFactory(@Nullable IFactorGraphFactory<SG> factory)
 	{
 
 		// First, clear out solver-specific state
@@ -319,9 +324,9 @@ public class FactorGraph extends FactorBase
 		for (Factor f : getNonGraphFactorsFlat())
 			f.createSolverObject(_solverFactorGraph);
 
-		if (_solverFactorGraph != null)
+		if (solverGraph != null)
 		{
-			_solverFactorGraph.postSetSolverFactory();
+			solverGraph.postSetSolverFactory();
 		}
 		
 		return solverGraph;
@@ -538,10 +543,11 @@ public class FactorGraph extends FactorBase
 
 		addFactor(f,vars);
 
-		if (_solverFactorGraph != null)
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		if (sfg != null)
 		{
 			f.createSolverObject(_solverFactorGraph);
-			_solverFactorGraph.postAddFactor(f);
+			sfg.postAddFactor(f);
 		}
 
 
@@ -975,8 +981,9 @@ public class FactorGraph extends FactorBase
 
 	public boolean customFactorExists(String funcName)
 	{
-		if (_solverFactorGraph != null)
-			return _solverFactorGraph.customFactorExists(funcName);
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		if (sfg != null)
+			return sfg.customFactorExists(funcName);
 		else
 			return false;
 	}
@@ -990,7 +997,7 @@ public class FactorGraph extends FactorBase
 
 	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler
 	// Setting the schedule to null removes any previously set custom schedule
-	public void setSchedule(ISchedule schedule)
+	public void setSchedule(@Nullable ISchedule schedule)
 	{
 		_hasCustomScheduleSet = (schedule != null);
 		_setSchedule(schedule);
@@ -999,13 +1006,12 @@ public class FactorGraph extends FactorBase
 	// Get the schedule if one exists or create one if not already created
 	public ISchedule getSchedule()
 	{
-		_createScheduleIfNeeded();
-		return _schedule;
+		return _createScheduleIfNeeded();
 	}
 
 	// This is the method to use when specifically setting the scheduler, overriding any default scheduler that would otherwise be used
 	// Setting the scheduler to null removes any previously set scheduler
-	public void setScheduler(IScheduler scheduler)
+	public void setScheduler(@Nullable IScheduler scheduler)
 	{
 		// Associate the scheduler with the factor graph.
 		// This association is maintained by a FactorGraph object so that it can use
@@ -1015,7 +1021,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	// Get the scheduler that would be used if no custom schedule is set
-	public IScheduler getScheduler()
+	public @Nullable IScheduler getScheduler()
 	{
 		if (_hasCustomScheduleSet)
 			return null;
@@ -1040,7 +1046,7 @@ public class FactorGraph extends FactorBase
 	}
 
 	// Get the scheduler that has been explicitly set, if any
-	public IScheduler getExplicitlySetScheduler()
+	public @Nullable IScheduler getExplicitlySetScheduler()
 	{
 		return _explicitlyAssociatedScheduler;
 	}
@@ -1049,13 +1055,13 @@ public class FactorGraph extends FactorBase
 	// Allow a specific solver to set a default scheduler that overrides the normal default
 	// This would be used if the client doesn't otherwise specify a schedule
 	// This should be set by the solver factor-graph's constructor
-	public void setSolverSpecificDefaultScheduler(IScheduler scheduler)
+	public void setSolverSpecificDefaultScheduler(@Nullable IScheduler scheduler)
 	{
 		_solverSpecificDefaultScheduler = scheduler;
 	}
 	
 
-	private void _setSchedule(ISchedule schedule)
+	private void _setSchedule(@Nullable ISchedule schedule)
 	{
 		if (schedule != null)
 		{
@@ -1064,32 +1070,38 @@ public class FactorGraph extends FactorBase
 		_schedule = schedule;
 		_scheduleVersionId++;
 		_scheduleAssociatedGraphVerisionId = _versionId;
-		_schedulerSolverClass = (_solverFactorGraph == null) ? null : _solverFactorGraph.getClass();
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		_schedulerSolverClass = (sfg == null) ? null : sfg.getClass();
 	}
 
-	private void _createSchedule()
+	private ISchedule _createSchedule()
 	{
 		IScheduler scheduler = getScheduler();	// Get the scheduler or create one if not already set
 		if (scheduler == null)
 			throw new DimpleException("Custom schedule has been set, but is not up-to-date with the current graph.");
-		_setSchedule(scheduler.createSchedule(this));
+		final ISchedule schedule = scheduler.createSchedule(this);
+		_setSchedule(schedule);
+		return schedule;
 	}
 
-	private void _createScheduleIfNeeded()
+	private ISchedule _createScheduleIfNeeded()
 	{
 		// If there's no schedule yet, or if it isn't up-to-date, then create one
 		// Otherwise, don't bother to spend the time since there's already a perfectly good schedule
-		if (!isUpToDateSchedulePresent())
-			_createSchedule();
+		final ISchedule schedule = _schedule;
+		return schedule != null && isUpToDateSchedulePresent() ? schedule : _createSchedule();
 	}
 
 	
 	// Has the solver changed since last time the schedule has been created
 	private boolean _solverHasChanged()
 	{
-		if (_schedulerSolverClass == null && _solverFactorGraph == null)
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		final Class<? extends ISolverFactorGraph> sfgClass = _schedulerSolverClass;
+		
+		if (sfgClass == null && sfg == null)
 			return false;
-		else if (_schedulerSolverClass != null && _solverFactorGraph != null && _schedulerSolverClass.equals(_solverFactorGraph.getClass()))
+		else if (sfgClass != null && sfg != null && sfgClass.equals(sfg.getClass()))
 			return false;
 		else
 			return true;
@@ -1165,7 +1177,7 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	private void _setParentGraph(FactorGraph parentGraph)
+	private void _setParentGraph(@Nullable FactorGraph parentGraph)
 	{
 		boolean noLongerRoot = parentGraph != null && getParentGraph() == null;
 		setParentGraph(parentGraph);
@@ -1191,9 +1203,9 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	private FactorGraph(VariableBase[] boundaryVariables,
+	private FactorGraph(@Nullable VariableBase[] boundaryVariables,
 			FactorGraph templateGraph,
-			FactorGraph parentGraph)
+			@Nullable FactorGraph parentGraph)
 			{
 		this(boundaryVariables,
 				templateGraph,
@@ -1203,9 +1215,9 @@ public class FactorGraph extends FactorBase
 			}
 
 	// Copy constructor -- create a graph incorporating all of the variables, functions, and sub-graphs of the template graph
-	private FactorGraph(VariableBase[] boundaryVariables,
+	private FactorGraph(@Nullable VariableBase[] boundaryVariables,
 			FactorGraph templateGraph,
-			FactorGraph parentGraph,
+			@Nullable FactorGraph parentGraph,
 			boolean copyToRoot,
 			Map<Node, Node> old2newObjs)
 			{
@@ -1299,11 +1311,12 @@ public class FactorGraph extends FactorBase
 
 		//Now that we've copied the graph, let's copy the Schedule if it's
 		//already been created.
-		if (templateGraph._schedule != null)
+		ISchedule templateSchedule = templateGraph._schedule;
+		if (templateSchedule != null)
 		{
 			ISchedule scheduleCopy = copyToRoot ?
-					templateGraph._schedule.copyToRoot(old2newObjs) :
-						templateGraph._schedule.copy(old2newObjs);
+					templateSchedule.copyToRoot(old2newObjs) :
+						templateSchedule.copy(old2newObjs);
 			_setSchedule(scheduleCopy);	// Might or might not be a custom schedule
 			_hasCustomScheduleSet = templateGraph._hasCustomScheduleSet;
 		}
@@ -1340,15 +1353,19 @@ public class FactorGraph extends FactorBase
 
 
 	private long _portVersionId = -1;
-	private ArrayList<Port> _ports;
+	private @Nullable ArrayList<Port> _ports;
 
 	@Override
 	public ArrayList<Port> getPorts()
 	{
-		if (_portVersionId == _versionId && _ports != null)
-			return _ports;
+		ArrayList<Port> ports = _ports;
+		
+		if (ports != null && _portVersionId != _versionId)
+		{
+			return ports;
+		}
 
-		_ports = new ArrayList<Port>();
+		ports = _ports = new ArrayList<Port>();
 
 		FactorList factors = getNonGraphFactorsFlat();
 
@@ -1359,12 +1376,13 @@ public class FactorGraph extends FactorBase
 			{
 				if (_boundaryVariables.contains(f.getSibling(i)))
 				{
-					_ports.add(new Port(f,i));
+					ports.add(new Port(f,i));
 				}
 			}
 		}
 		_portVersionId = _versionId;
-		return _ports;
+		
+		return ports;
 	}
 
 	@Override
@@ -1574,33 +1592,35 @@ public class FactorGraph extends FactorBase
 		for (FactorGraph g : getNestedGraphs())
 			g.initialize();
 
-		if (_solverFactorGraph != null)
-			_solverFactorGraph.initialize();
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		if (sfg != null)
+		{
+			sfg.initialize();
+		}
 	}
 	
-	private void checkSolverIsSet()
+	private ISolverFactorGraph checkSolverIsSet()
 	{
-		if (_solverFactorGraph == null)
+		ISolverFactorGraph sfg = _solverFactorGraph;
+		if (sfg == null)
 			throw new DimpleException("solver needs to be set first");
+		return sfg;
 	}
 
 	public void solve()
 	{
-		checkSolverIsSet();
-		_solverFactorGraph.solve();
+		checkSolverIsSet().solve();
 	}
 
 	public void solveOneStep()
 	{
-		checkSolverIsSet();
-		_solverFactorGraph.solveOneStep();
+		checkSolverIsSet().solveOneStep();
 	}
 
 
 	public void continueSolve()
 	{
-		checkSolverIsSet();
-		_solverFactorGraph.continueSolve();
+		checkSolverIsSet().continueSolve();
 	}
 
 	/**
@@ -1676,11 +1696,19 @@ public class FactorGraph extends FactorBase
 
 		for (FactorBase f : factors)
 		{
-			FactorGraph subsubgraph = f.asFactorGraph();
-			if (subsubgraph != null)
-				subgraph.remove(subsubgraph);
+			final Factor factor = f.asFactor();
+			if (factor != null)
+			{
+				subgraph.remove(factor);
+			}
 			else
-				subgraph.remove(f.asFactor());
+			{
+				FactorGraph subsubgraph = f.asFactorGraph();
+				if (subsubgraph != null)
+				{
+					subgraph.remove(subsubgraph);
+				}
+			}
 		}
 
 		removeVariables(arr);
@@ -1973,7 +2001,7 @@ public class FactorGraph extends FactorBase
 	@SuppressWarnings("all")
 	protected MapList<INode> depthFirstSearchRecursive(
 		INode node,
-		INode previousNode,
+		@Nullable INode previousNode,
 		MapList<INode> foundNodes,
 		IMapList<INode> nodeList,
 		int currentDepth,
@@ -2073,7 +2101,7 @@ public class FactorGraph extends FactorBase
 
 	}
 
-	public boolean isAncestorOf(INode node)
+	public boolean isAncestorOf(@Nullable INode node)
 	{
 		if (node == null || node.getParentGraph() == null)
 			return false;
@@ -2097,7 +2125,7 @@ public class FactorGraph extends FactorBase
 	 ***********************************************/
 
 	@Override
-	public ISolverFactorGraph getSolver()
+	public @Nullable ISolverFactorGraph getSolver()
 	{
 		return _solverFactorGraph;
 	}
@@ -2252,7 +2280,7 @@ public class FactorGraph extends FactorBase
 		return _boundaryVariables.contains(mv);
 	}
 
-	public VariableBase getVariable(int id)
+	public @Nullable VariableBase getVariable(int id)
 	{
 		VariableBase v;
 		v = _ownedVariables.getByKey(id);
@@ -2412,7 +2440,7 @@ public class FactorGraph extends FactorBase
 		return getFactors(0);
 	}
 
-	public Factor getFactor(int id)
+	public @Nullable Factor getFactor(int id)
 	{
 		Factor f;
 		f = getNonGraphFactorsTop().getByKey(id);
@@ -2425,7 +2453,7 @@ public class FactorGraph extends FactorBase
 		return null;
 	}
 
-	INode getFirstNode()
+	@Nullable INode getFirstNode()
 	{
 		INode node = null;
 
@@ -2545,7 +2573,7 @@ public class FactorGraph extends FactorBase
 		//add new UUID, if there is one
 		_UUID2object.put(newUUID, childFound);
 	}
-	public void setChildName(INameable child, String newName)
+	public void setChildName(INameable child, @Nullable String newName)
 	{
 		INameable childFound = (INameable) getObjectByUUID(child.getUUID());
 
@@ -2574,7 +2602,7 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	private Object getObjectByNameOrUUIDWithoutRecurse(String string)
+	private @Nullable Object getObjectByNameOrUUIDWithoutRecurse(String string)
 	{
 		//try first as a simple name; qualified names won't be found
 		//	'.' is prevented from being part of a simple name
@@ -2608,7 +2636,7 @@ public class FactorGraph extends FactorBase
 		return o;
 	}
 
-	public Object getObjectByName(String name)
+	public @Nullable Object getObjectByName(@Nullable String name)
 	{
 		Object o = null;
 
@@ -2673,12 +2701,12 @@ public class FactorGraph extends FactorBase
 		return o;
 	}
 
-	public Object getObjectByUUID(UUID uuid)
+	public @Nullable Object getObjectByUUID(UUID uuid)
 	{
 		return _UUID2object.get(uuid);
 	}
 
-	public VariableBase 	getVariableByName(String name)
+	public @Nullable VariableBase 	getVariableByName(String name)
 	{
 		VariableBase v = null;
 		Object o = getObjectByName(name);
@@ -2689,7 +2717,7 @@ public class FactorGraph extends FactorBase
 
 		return v;
 	}
-	public Factor 	 	getFactorByName(String name)
+	public @Nullable Factor 	 	getFactorByName(String name)
 	{
 		Factor f = null;
 		Object o = getObjectByName(name);
@@ -2699,7 +2727,7 @@ public class FactorGraph extends FactorBase
 		}
 		return f;
 	}
-	public FactorGraph getGraphByName(String name)
+	public @Nullable FactorGraph getGraphByName(String name)
 	{
 		FactorGraph fg = null;
 		Object o = getObjectByName(name);
@@ -2709,7 +2737,7 @@ public class FactorGraph extends FactorBase
 		}
 		return fg;
 	}
-	public VariableBase getVariableByUUID(UUID uuid)
+	public @Nullable VariableBase getVariableByUUID(UUID uuid)
 	{
 		VariableBase v = null;
 		Object o = getObjectByUUID(uuid);
@@ -2719,7 +2747,7 @@ public class FactorGraph extends FactorBase
 		}
 		return v;
 	}
-	public Factor  	getFactorByUUID(UUID uuid)
+	public @Nullable Factor  	getFactorByUUID(UUID uuid)
 	{
 		Factor f = null;
 		Object o = getObjectByUUID(uuid);
@@ -2730,7 +2758,7 @@ public class FactorGraph extends FactorBase
 		}
 		return f;
 	}
-	public FactorGraph getGraphByUUID(UUID uuid)
+	public @Nullable FactorGraph getGraphByUUID(UUID uuid)
 	{
 		FactorGraph fg = null;
 		Object o = getObjectByUUID(uuid);
@@ -2851,10 +2879,6 @@ public class FactorGraph extends FactorBase
 			{
 				fnName = fn.getQualifiedLabel();
 			}
-			if(fnName == null)
-			{
-				fnName = Integer.toString(fn.getId());
-			}
 			sb.append(String.format("fn  [%s]\n", fnName));
 
 			for(int i = 0, end = fn.getSiblingCount(); i < end; i++)
@@ -2866,10 +2890,6 @@ public class FactorGraph extends FactorBase
 						v.getParentGraph().getParentGraph() != null)
 				{
 					vName = v.getQualifiedLabel();
-				}
-				if(vName == null)
-				{
-					vName = Integer.toString(v.getId());
 				}
 				sb.append(String.format("\t-> [%s]\n", vName));
 			}
@@ -2884,10 +2904,6 @@ public class FactorGraph extends FactorBase
 			{
 				vName = v.getQualifiedLabel();
 			}
-			if(vName == null)
-			{
-				vName = Integer.toString(v.getId());
-			}
 			sb.append(String.format("var [%s]\n", vName));
 
 			for(int i = 0, end = v.getSiblingCount(); i < end; i++)
@@ -2897,10 +2913,6 @@ public class FactorGraph extends FactorBase
 				if(fn.getParentGraph().getParentGraph() != null)
 				{
 					fnName = fn.getQualifiedLabel();
-				}
-				if(fnName == null)
-				{
-					fnName = Integer.toString(fn.getId());
 				}
 				sb.append(String.format("\t-> [%s]\n", fnName));
 			}
@@ -2966,7 +2978,8 @@ public class FactorGraph extends FactorBase
 
 	public boolean isSolverRunning()
 	{
-		return _solverFactorGraph != null && _solverFactorGraph.isSolverRunning();
+		final ISolverFactorGraph sfg = _solverFactorGraph;
+		return sfg != null && sfg.isSolverRunning();
 	}
 
 	//TODO: should these only be on solver?
@@ -3127,7 +3140,7 @@ public class FactorGraph extends FactorBase
 		}
 		return variablesByDomain;
 	}
-	public IFactorGraphFactory<?> getFactorGraphFactory()
+	public @Nullable IFactorGraphFactory<?> getFactorGraphFactory()
 	{
 		return _solverFactory;
 	}
@@ -3174,21 +3187,24 @@ public class FactorGraph extends FactorBase
 
 
 	// For operating collectively on groups of variables that are not already part of a variable vector
-	protected HashMap<Integer, ArrayList<VariableBase>> _variableGroups;
+	protected @Nullable HashMap<Integer, ArrayList<VariableBase>> _variableGroups;
 	protected int _variableGroupID = 0;
 	public int defineVariableGroup(ArrayList<VariableBase> variableList)
 	{
-		if (_variableGroups == null) _variableGroups = new HashMap<Integer, ArrayList<VariableBase>>();
-		_variableGroups.put(_variableGroupID, variableList);
+		HashMap<Integer, ArrayList<VariableBase>> variableGroups = _variableGroups;
+		if (variableGroups == null)
+		{
+			variableGroups = _variableGroups = new HashMap<Integer, ArrayList<VariableBase>>();
+		}
+		variableGroups.put(_variableGroupID, variableList);
 		return _variableGroupID++;
 	}
 
-	public ArrayList<VariableBase> getVariableGroup(int variableGroupID)
+	public @Nullable ArrayList<VariableBase> getVariableGroup(int variableGroupID)
 	{
-		return _variableGroups.get(variableGroupID);
+		final HashMap<Integer, ArrayList<VariableBase>> groups = _variableGroups;
+		return groups != null ? groups.get(variableGroupID) : null;
 	}
-
-
 
 	/****************************
 	 * addFactor stuff
@@ -3210,7 +3226,8 @@ public class FactorGraph extends FactorBase
 	{
 		return deserializeFromXML(docName, null);
 	}
-	static public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	static public FactorGraph deserializeFromXML(String docName, @Nullable IFactorGraphFactory<?> solver)
+		throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		com.analog.lyric.dimple.model.core.xmlSerializer x
 		= new com.analog.lyric.dimple.model.core.xmlSerializer();

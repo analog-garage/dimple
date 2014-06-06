@@ -208,7 +208,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * If {@code outputIndices} is null, this will instead return an undirected indexer.
 	 */
-	public static JointDomainIndexer create(int[] outputDomainIndices, DiscreteDomain[] domains)
+	public static JointDomainIndexer create(@Nullable int[] outputDomainIndices, DiscreteDomain[] domains)
 	{
 		return lookupOrCreate(outputDomainIndices, domains, true);
 	}

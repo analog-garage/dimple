@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.model.variables;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class Real extends VariableBase
@@ -52,7 +53,7 @@ public class Real extends VariableBase
 		return getDomain();
 	}
 	
-	public Object getInput()
+	public @Nullable Object getInput()
 	{
 		return getInputObject();
 	}
@@ -60,7 +61,7 @@ public class Real extends VariableBase
 	
 	public double getValue()
 	{
-		return (Double)_solverVariable.getValue();
+		return (Double)requireSolver("getValue").getValue();
 	}
 	
 	// Fix the variable to a specific value
@@ -82,12 +83,12 @@ public class Real extends VariableBase
 		setFixedValueObject(fixedValue);
 	}
 
-	public void setInput(FactorFunction input)
+	public void setInput(@Nullable FactorFunction input)
 	{
 		setInputObject(input);
 	}
 	
-	public void setInput(double[] input)
+	public void setInput(@Nullable double[] input)
 	{
 		setInputObject(input);
 	}

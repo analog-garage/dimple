@@ -7,9 +7,6 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
-/**
- * Core factor graph API.
- */
 @NonNullByDefault
-package com.analog.lyric.dimple.model.core;
+package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 import com.analog.lyric.util.misc.NonNullByDefault;

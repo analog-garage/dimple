@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -25,5 +26,5 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
  */
 public interface ISolverEventSource extends IDimpleEventSource
 {
-	public ISolverFactorGraph getContainingSolverGraph();
+	public @Nullable ISolverFactorGraph getContainingSolverGraph();
 }
