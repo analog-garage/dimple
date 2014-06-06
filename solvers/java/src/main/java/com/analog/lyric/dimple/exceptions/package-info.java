@@ -10,4 +10,7 @@
 /**
  * Exceptions classes specific to Dimple.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.exceptions;
+import com.analog.lyric.util.misc.NonNullByDefault;
+
