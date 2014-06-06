@@ -16,12 +16,17 @@
 
 package com.analog.lyric.math;
 
-public class Functions 
+import net.jcip.annotations.NotThreadSafe;
+
+@NotThreadSafe
+public class Functions
 {
-	private static class ApproximateFactorialHelper
+	private static enum ApproximateFactorialHelper
 	{
-		private static int CACHE_SIZE = 100;
-		private double [] _cache = new double[CACHE_SIZE];
+		INSTANCE;
+		
+		private static final int CACHE_SIZE = 100;
+		private final double [] _cache = new double[CACHE_SIZE];
 		
 		public double run(int n)
 		{
@@ -54,14 +59,9 @@ public class Functions
 			}
 		}
 	}
-	private static ApproximateFactorialHelper _factorialHelper;
-	
 	public static double logfactorial(int n)
 	{
-		if (_factorialHelper == null)
-			_factorialHelper = new ApproximateFactorialHelper();
-		
-		return _factorialHelper.run(n);
+		return ApproximateFactorialHelper.INSTANCE.run(n);
 	}
 	
 	public static double [][] transpose(double [][] mat)
