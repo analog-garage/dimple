@@ -22,7 +22,6 @@ import java.util.Comparator;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -97,7 +96,7 @@ public class UniquePriorityQueue<E> extends AbstractKeyedPriorityQueue<E,E> impl
 	 * its comparator will be used to determine priorities. Otherwise the natural order will be used
 	 * (see {@link #UniquePriorityQueue(int, Comparator)}).
 	 */
-	public UniquePriorityQueue(@NonNull Collection<? extends E> collection)
+	public UniquePriorityQueue(Collection<? extends E> collection)
 	{
 		super(collection);
 	}
@@ -107,13 +106,13 @@ public class UniquePriorityQueue<E> extends AbstractKeyedPriorityQueue<E,E> impl
 	 */
 	
 	@Override
-	public boolean contains(Object object)
+	public boolean contains(@Nullable Object object)
 	{
 		return containsKey(object);
 	}
 
 	@Override
-	public boolean remove(Object object)
+	public boolean remove(@Nullable Object object)
 	{
 		return removeKey(object);
 	}

@@ -21,6 +21,7 @@ import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.analog.lyric.collect.ReleasableIterator;
@@ -201,11 +202,12 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		{
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
-			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
+			raiseEvent(new GibbsScoredVariableUpdateEvent(this, Objects.requireNonNull(oldValue), oldSampleScore,
 				_outputMsg.clone(), getCurrentSampleScore(), rejectCount));
 			break;
 		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone(), rejectCount));
+			raiseEvent(new GibbsVariableUpdateEvent(this, Objects.requireNonNull(oldValue),
+				_outputMsg.clone(),rejectCount));
 			break;
 		}
 	}

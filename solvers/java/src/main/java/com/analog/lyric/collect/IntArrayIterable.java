@@ -16,9 +16,7 @@
 
 package com.analog.lyric.collect;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
 
-@NonNullByDefault
 public class IntArrayIterable
 	extends AbstractPrimitiveArrayIterable<Integer>
 	implements PrimitiveIterable.OfInt

@@ -23,6 +23,7 @@ import java.util.Comparator;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -44,6 +45,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @see UniquePriorityQueue
  */
 @NotThreadSafe
+@NonNullByDefault(false)
 public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPriorityQueue<K,E> implements Serializable
 {
 	/*-------
@@ -144,19 +146,19 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	 * Indicates whether queue contains element with the given key.
 	 */
 	@Override
-	public boolean containsKey(Object key)
+	public boolean containsKey(@Nullable Object key)
 	{
 		return super.containsKey(key);
 	}
 	
 	@Override
-	public E get(Object key)
+	public @Nullable E get(@Nullable Object key)
 	{
 		return super.get(key);
 	}
 	
 	@Override
-	public boolean removeKey(Object key)
+	public boolean removeKey(@Nullable Object key)
 	{
 		return super.removeKey(key);
 	}

@@ -12,4 +12,6 @@
  * 
  * @author Christopher Barber
  */
+@NonNullByDefault
 package com.analog.lyric.collect;
+import com.analog.lyric.util.misc.NonNullByDefault;

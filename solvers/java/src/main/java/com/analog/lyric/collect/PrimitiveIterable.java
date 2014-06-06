@@ -16,13 +16,10 @@
 
 package com.analog.lyric.collect;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-import com.sun.istack.internal.NotNull;
 
 /**
  * Iterables supporting unboxed iteration of primitive types.
  */
-@NonNullByDefault
 public interface PrimitiveIterable<T> extends Iterable<T>
 {
 	@Override
@@ -32,7 +29,7 @@ public interface PrimitiveIterable<T> extends Iterable<T>
 	{
 		// FIXME: I don't think this @NotNull should be necessary? JDT bug?
 		@Override
-		public @NotNull PrimitiveIterator.OfDouble iterator();
+		public PrimitiveIterator.OfDouble iterator();
 	}
 
 	public static interface OfFloat extends PrimitiveIterable<Float>

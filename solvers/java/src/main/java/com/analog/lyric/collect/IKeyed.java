@@ -16,6 +16,8 @@
 
 package com.analog.lyric.collect;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Simple interface for element with an inherent key.
  * 
@@ -28,5 +30,5 @@ public interface IKeyed<K>
 	/**
 	 * Returns key for this element.
 	 */
-	public K getKey();
+	public @Nullable K getKey();
 }

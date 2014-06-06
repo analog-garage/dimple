@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * Represents the neighbors of a {@link ISolverVariableGibbs} that need to be included in the variable's
@@ -283,7 +284,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	
 	@Override
-	public ReleasableIterator<ISolverNodeGibbs> iterator()
+	public @NonNull ReleasableIterator<ISolverNodeGibbs> iterator()
 	{
 		return ReleasableArrayIterator.create(_neighbors);
 	}

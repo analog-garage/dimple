@@ -16,9 +16,7 @@
 
 package com.analog.lyric.collect;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
 
-@NonNullByDefault
 public class FloatArrayIterable
 	extends AbstractPrimitiveArrayIterable<Float>
 	implements PrimitiveIterable.OfFloat

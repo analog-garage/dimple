@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A {@link Map} implementation that delegates to another map
@@ -45,6 +47,7 @@ import com.analog.lyric.util.misc.NonNull;
  * explicit synchronization is needed.
  */
 @ThreadSafe
+@NonNullByDefault(false)
 public class CopyOnWriteMap<K, V> implements Map<K, V>
 {
 	/*-------
@@ -139,7 +142,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	}
 
 	@Override
-	public V get(Object key)
+	public @Nullable V get(Object key)
 	{
 		return readOnlyMap().get(key);
 	}
@@ -163,7 +166,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
-	public V put(K key, V value)
+	public @Nullable V put(K key, @Nullable V value)
 	{
 		return mutableMap().put(key, value);
 	}
@@ -182,7 +185,7 @@ public class CopyOnWriteMap<K, V> implements Map<K, V>
 	 * already copied and {@link #originalMap()} does not contain {@code key}.
 	 */
 	@Override
-	public V remove(Object key)
+	public @Nullable V remove(Object key)
 	{
 		Map<K,V> map = _map.get();
 		

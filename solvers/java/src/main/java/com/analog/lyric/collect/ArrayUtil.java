@@ -23,14 +23,12 @@ import java.util.Comparator;
 import cern.colt.list.IntArrayList;
 
 import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
 /**
  * Contains static utility methods pertaining to arrays.
  */
-@NonNullByDefault
 public abstract class ArrayUtil
 {
 	/**

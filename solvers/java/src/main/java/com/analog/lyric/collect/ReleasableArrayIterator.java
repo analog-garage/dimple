@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * {@link ReleasableIterator} that visits all of the elements of an array.
  * 
@@ -28,7 +30,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public final class ReleasableArrayIterator<T> implements ReleasableIterator<T>
 {
-	private T[] _array;
+	private @Nullable T[] _array;
 	private int _size;
 	private int _index;
 
@@ -65,6 +67,7 @@ public final class ReleasableArrayIterator<T> implements ReleasableIterator<T>
 		return _index < _size;
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public T next()
 	{

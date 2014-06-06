@@ -25,11 +25,13 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * An extension of {@link CopyOnWriteMap} for delegating to a {@link ConcurrentMap}.
  */
 @ThreadSafe
+@NonNullByDefault(false)
 public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implements ConcurrentMap<K,V>
 {
 	/*--------------

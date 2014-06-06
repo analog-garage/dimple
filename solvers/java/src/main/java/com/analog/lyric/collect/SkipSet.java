@@ -28,6 +28,7 @@ import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
+@NonNullByDefault(false) // to avoid clashes with methods overridden from standard library
 public class SkipSet<E> extends AbstractSkipList<E>
 	implements Set<E>, ReleasableIterableCollection<E>, Cloneable
 {
@@ -211,7 +212,6 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		}
 	}
 	
-	@NonNullByDefault
 	public static class Iterator<E> extends KeyIterator<E> implements ReleasableIterator<E>
 	{
 		private static final ThreadLocal<KeyIterator<?>> reusableInstance = new ThreadLocal<KeyIterator<?>>();
@@ -255,7 +255,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 	}
 	
 	@Override
-	public Iterator<E> iterator()
+	public @NonNull Iterator<E> iterator()
 	{
 		return Iterator.make(this);
 	}

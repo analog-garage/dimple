@@ -23,7 +23,6 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.Immutable;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -31,7 +30,6 @@ import com.analog.lyric.util.misc.Nullable;
  * @author Christopher Barber
  * @since 0.05
  */
-@NonNullByDefault
 public final class Comparators
 {
 	private Comparators() {} // Prevent instantiation

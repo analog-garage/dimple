@@ -30,6 +30,7 @@ import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Ordering;
 
@@ -41,6 +42,7 @@ import com.google.common.collect.Ordering;
  * @author Christopher Barber
  */
 @NotThreadSafe
+@NonNullByDefault(false)
 public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> implements Serializable
 {
 	/*-------
@@ -229,7 +231,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	/**
 	 * Indicates whether queue contains element with the given key.
 	 */
-	protected boolean containsKey(Object key)
+	protected boolean containsKey(@Nullable Object key)
 	{
 		return _keyToEntry.containsKey(key);
 	}
@@ -237,7 +239,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	/**
 	 * Returns element in queue with given key or null.
 	 */
-	protected E get(Object key)
+	protected @Nullable E get(@Nullable Object key)
 	{
 		Entry<E> entry = _keyToEntry.get(key);
 		return entry != null ? entry._element : null;
@@ -247,7 +249,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	 * Remove entry with given key from the queue.
 	 * @return false if queue did not contain element for the key.
 	 */
-	protected boolean removeKey(Object key)
+	protected boolean removeKey(@Nullable Object key)
 	{
 		Entry<E> entry = _keyToEntry.remove(key);
 		if (entry != null)

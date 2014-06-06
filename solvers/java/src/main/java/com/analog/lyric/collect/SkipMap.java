@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import com.analog.lyric.util.misc.NonNull;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
@@ -32,7 +30,6 @@ import com.analog.lyric.util.misc.Nullable;
 public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 {
 
-	@NonNullByDefault
 	public static class Entry<K,V> implements Map.Entry<K, V>
 	{
 		private final Object[] node;
@@ -95,12 +92,12 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected final V getNodeValue(@NonNull Object[] node)
+	protected final @Nullable V getNodeValue(Object[] node)
 	{
 		return (V)node[1];
 	}
 	
-	protected final V setNodeValue(@NonNull Object[] node, V value)
+	protected final @Nullable V setNodeValue(Object[] node, @Nullable V value)
 	{
 		@SuppressWarnings("unchecked")
 		V oldValue = (V)node[1];
@@ -112,7 +109,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Construction
 	 */
 
-	public SkipMap(@NonNull Comparator<? super K> comparator)
+	public SkipMap(Comparator<? super K> comparator)
 	{
 		super(comparator, (short)2);
 	}
@@ -120,7 +117,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	/**
 	 * @since 0.05
 	 */
-	public static @NonNull <K,V> SkipMap<K,V> create(@NonNull Comparator<? super K> comparator)
+	public static <K,V> SkipMap<K,V> create(Comparator<? super K> comparator)
 	{
 		return new SkipMap<K,V>(comparator);
 	}
@@ -132,7 +129,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 */
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		if (this == other)
 		{
@@ -180,13 +177,13 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 */
 	
 	@Override
-	public boolean containsKey(Object key)
+	public boolean containsKey(@Nullable Object key)
 	{
 		try
 		{
 			@SuppressWarnings("unchecked")
 			K k = (K)key;
-			return this.containsNode(k);
+			return k != null && this.containsNode(k);
 		}
 		catch (ClassCastException ex)
 		{
@@ -195,7 +192,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 	
 	@Override
-	public boolean containsValue(Object value)
+	public boolean containsValue(@Nullable Object value)
 	{
 		for (Object[] node = this.getNextNode(this.head); node != null; node = this.getNextNode(node))
 		{
@@ -216,18 +213,24 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 
 	@Override
-	public V get(Object key)
+	public @Nullable V get(@Nullable Object key)
 	{
-		try
+		V result = null;
+		
+		if (key != null)
 		{
-			@SuppressWarnings("unchecked")
-			K k = (K)key;
-			return this.get2(k);
+			try
+			{
+				@SuppressWarnings("unchecked")
+				K k = (K)key;
+				result = this.get2(k);
+			}
+			catch (ClassCastException ex)
+			{
+			}
 		}
-		catch (ClassCastException ex)
-		{
-			return null;
-		}
+		
+		return result;
 	}
 	
 	@Override
@@ -237,7 +240,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 
 	@Override
-	public V put(K key, V value)
+	public @Nullable V put(K key, @Nullable V value)
 	{
 		return this.setNodeValue(this.addNode(key), value);
 	}
@@ -252,18 +255,24 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 	
 	@Override
-	public V remove(Object key)
+	public @Nullable V remove(@Nullable Object key)
 	{
-		try
+		V result = null;
+		
+		if (key != null)
 		{
-			@SuppressWarnings("unchecked")
-			K k = (K)key;
-			return this.remove2(k);
+			try
+			{
+				@SuppressWarnings("unchecked")
+				K k = (K)key;
+				result = this.remove2(k);
+			}
+			catch (ClassCastException ex)
+			{
 		}
-		catch (ClassCastException ex)
-		{
-			return null;
 		}
+		
+		return result;
 	}
 	
 	@Override
@@ -398,9 +407,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class EntrySet<K,V> extends AbstractSet<Entry<K,V>>
 		implements ReleasableIterableCollection<Entry<K,V>>
 	{
-		private final @NonNull SkipMap<K,V> map;
+		private final SkipMap<K,V> map;
 		
-		private EntrySet(@NonNull SkipMap<K,V> map)
+		private EntrySet(SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -412,7 +421,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 
 		@Override
-		public boolean contains(Object obj)
+		public boolean contains(@Nullable Object obj)
 		{
 			try
 			{
@@ -436,7 +445,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 		@SuppressWarnings("rawtypes")
 		@Override
-		public boolean remove(Object obj)
+		public boolean remove(@Nullable Object obj)
 		{
 			if (obj instanceof Map.Entry)
 			{
@@ -455,9 +464,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 	public static class KeySet<K,V> extends AbstractSet<K> implements ReleasableIterableCollection<K>
 	{
-		private final @NonNull SkipMap<K,V> map;
+		private final SkipMap<K,V> map;
 		
-		private KeySet(@NonNull SkipMap<K,V> map)
+		private KeySet(SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -469,7 +478,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 
 		@Override
-		public boolean contains(Object key)
+		public boolean contains(@Nullable Object key)
 		{
 			return this.map.containsKey(key);
 		}
@@ -481,9 +490,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 
 		@Override
-		public boolean remove(Object key)
+		public boolean remove(@Nullable Object key)
 		{
-			return this.map.remove(key) != null;
+			return key != null && this.map.remove(key) != null;
 		}
 
 		@Override
@@ -496,9 +505,9 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	public static class ValueCollection<K,V> extends AbstractCollection<V>
 		implements ReleasableIterableCollection<V>
 	{
-		private final @NonNull SkipMap<K,V> map;
+		private final SkipMap<K,V> map;
 		
-		private ValueCollection(@NonNull SkipMap<K,V> map)
+		private ValueCollection(SkipMap<K,V> map)
 		{
 			this.map = map;
 		}
@@ -510,7 +519,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 		
 		@Override
-		public boolean contains(Object value)
+		public boolean contains(@Nullable Object value)
 		{
 			return this.map.containsValue(value);
 		}
@@ -539,7 +548,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	 * Iterating over the entire set costs O(n) in the size of the map. The
 	 * {@link #remove} method is supported but costs O(log(n)).
 	 */
-	@NonNullByDefault
 	public static class Iterator<K,V> implements ReleasableIterator<Entry<K,V>>
 	{
 		/*
@@ -703,7 +711,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 	}
 
-	@NonNullByDefault
 	public static class KeyIterator<K,V> extends AbstractSkipList.KeyIterator<K>
 		implements ReleasableIterator<K>
 	{
@@ -747,7 +754,6 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 	}
 	
-	@NonNullByDefault
 	public static class ValueIterator<K,V> implements ReleasableIterator<V>
 	{
 		/*

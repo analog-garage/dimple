@@ -22,8 +22,6 @@ import java.io.IOException;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import com.analog.lyric.util.misc.NonNullByDefault;
-
 /**
  * {@link PrimitiveIterator.OfDouble} implementation based on an underlying
  * {@link DataInput} object.
@@ -31,7 +29,6 @@ import com.analog.lyric.util.misc.NonNullByDefault;
  * May not be thread safe if the underlying {@link DataInput} object is not.
  */
 @ThreadSafe
-@NonNullByDefault
 public class DoubleDataInputIterator extends AbstractPrimitiveDataInputIterator<Double>
 	implements PrimitiveIterator.OfDouble
 {
