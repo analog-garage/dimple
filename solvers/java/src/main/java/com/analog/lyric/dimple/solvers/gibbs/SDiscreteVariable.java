@@ -20,6 +20,7 @@ import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -199,11 +200,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		{
 		case UPDATE_EVENT_SCORED:
 			// TODO: non-conjugate samplers already compute sample scores, so we shouldn't have to do here.
-			raiseEvent(new GibbsScoredVariableUpdateEvent(this, oldValue, oldSampleScore,
+			raiseEvent(new GibbsScoredVariableUpdateEvent(this, Objects.requireNonNull(oldValue), oldSampleScore,
 				_outputMsg.clone(), getCurrentSampleScore(), rejected ? 1 : 0));
 			break;
 		case UPDATE_EVENT_SIMPLE:
-			raiseEvent(new GibbsVariableUpdateEvent(this, oldValue, _outputMsg.clone(), rejected ? 1 : 0));
+			raiseEvent(new GibbsVariableUpdateEvent(this, Objects.requireNonNull(oldValue),
+				_outputMsg.clone(), rejected ? 1 : 0));
 			break;
 		}
 	}

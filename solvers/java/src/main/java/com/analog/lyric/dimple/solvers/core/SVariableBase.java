@@ -171,7 +171,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	protected @Nullable SolverEvent createMessageEvent(
 		int edge,
 		@Nullable IParameterizedMessage oldMessage,
-		@Nullable IParameterizedMessage newMessage)
+		IParameterizedMessage newMessage)
 	{
 		return new VariableToFactorMessageEvent(this, edge, oldMessage, newMessage);
 	}

@@ -251,7 +251,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	protected @Nullable SolverEvent createMessageEvent(
 		int edge,
 		@Nullable IParameterizedMessage oldMessage,
-		@Nullable IParameterizedMessage newMessage)
+		IParameterizedMessage newMessage)
 	{
 		return null;
 	}

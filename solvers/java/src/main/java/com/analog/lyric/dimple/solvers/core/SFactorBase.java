@@ -180,7 +180,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	protected @Nullable SolverEvent createMessageEvent(
 		int edge,
 		@Nullable IParameterizedMessage oldMessage,
-		@Nullable IParameterizedMessage newMessage)
+		IParameterizedMessage newMessage)
 	{
 		return new FactorToVariableMessageEvent(this, edge, oldMessage, newMessage);
 	}

@@ -162,7 +162,7 @@ public class TestSNode
 		
 		@Override
 		public @Nullable SolverEvent createMessageEvent(int edge,
-			@Nullable IParameterizedMessage oldMsg, @Nullable IParameterizedMessage newMsg)
+			@Nullable IParameterizedMessage oldMsg, IParameterizedMessage newMsg)
 		{
 			SolverEvent event = null;
 			
