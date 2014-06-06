@@ -22,17 +22,17 @@ import java.util.List;
 // TODO: extend List<T>
 public interface IMapList<T extends IGetId> extends Collection<T>
 {
-	public abstract void addAll(T[] nodes);
+	public abstract void addAll(@Nullable T[] nodes);
 
 	public abstract boolean contains(IGetId node);
 
 	public abstract void ensureCapacity(int minCapacity);
 
-	public abstract T getByKey(int id);
+	public abstract @Nullable T getByKey(int id);
 
 	public abstract T getByIndex(int index);
 	
-	public abstract T removeByIndex(int index);
+	public abstract @Nullable T removeByIndex(int index);
 
 	public abstract List<T> values();
 }

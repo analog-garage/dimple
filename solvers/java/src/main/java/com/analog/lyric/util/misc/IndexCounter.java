@@ -24,7 +24,7 @@ public class IndexCounter implements Iterator<int[]>, Iterable<int[]>
 {
 
 	public int [] _domainLengths;
-	public int [] _currentLocation;
+	public @Nullable int [] _currentLocation;
 	
 	public IndexCounter(int [] domainLengths)
 	{
@@ -33,53 +33,62 @@ public class IndexCounter implements Iterator<int[]>, Iterable<int[]>
 	}
 	
 	@Override
-	public Iterator<int[]> iterator() 
+	public Iterator<int[]> iterator()
 	{
-		_currentLocation = new int[_domainLengths.length];
-		_currentLocation[0] = -1;
+		final int[] cur = _currentLocation = new int[_domainLengths.length];
+		cur[0] = -1;
 		return this;
 	}
 
 	@Override
-	public boolean hasNext() 
+	public boolean hasNext()
 	{
-		for (int i = 0; i < _domainLengths.length; i++)
+		final int[] cur = _currentLocation;
+		if (cur != null)
 		{
-			if (_currentLocation[i] < (_domainLengths[i]-1))
-				return true;
+			for (int i = 0; i < _domainLengths.length; i++)
+			{
+				if (cur[i] < (_domainLengths[i]-1))
+					return true;
+			}
 		}
 		return false;
 	}
 
 	@Override
-	public int [] next() 
+	public @Nullable int [] next()
 	{
 		//increment
 		boolean carry = true;
 		
-		for (int i = 0; i < _domainLengths.length; i++)
+		final int[] cur = _currentLocation;
+		
+		if (cur != null)
 		{
-			_currentLocation[i]++;
-			if (_currentLocation[i] == _domainLengths[i])
+			for (int i = 0; i < _domainLengths.length; i++)
 			{
-				carry = true;
-				_currentLocation[i] = 0;
-			}
-			else
-			{
-				carry = false;
-				break;
+				cur[i]++;
+				if (cur[i] == _domainLengths[i])
+				{
+					carry = true;
+					cur[i] = 0;
+				}
+				else
+				{
+					carry = false;
+					break;
+				}
 			}
 		}
 		
 		if (carry)
 			throw new NoSuchElementException();
 
-		return  _currentLocation;
+		return cur;
 	}
 
 	@Override
-	public void remove() 
+	public void remove()
 	{
 		throw new UnsupportedOperationException();
 	}

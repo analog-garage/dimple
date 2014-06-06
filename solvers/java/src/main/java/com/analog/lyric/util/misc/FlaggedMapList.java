@@ -62,7 +62,7 @@ public class FlaggedMapList<T extends IGetId> extends MapList<T> implements IFla
 	}
 
 	@Override
-	public boolean remove(Object value)
+	public boolean remove(@Nullable Object value)
 	{
 		if (!(value instanceof IGetId))
 		{
@@ -112,7 +112,7 @@ public class FlaggedMapList<T extends IGetId> extends MapList<T> implements IFla
 	 */
 	
 	@Override
-	public T removeByIndex(int index)
+	public @Nullable T removeByIndex(int index)
 	{
 		T value = super.removeByIndex(index);
 		

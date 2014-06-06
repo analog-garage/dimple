@@ -2306,17 +2306,21 @@ public class FactorGraph extends FactorBase
 
 		for (FactorBase fb : _ownedFactors)
 		{
-			FactorGraph subgraph = fb.asFactorGraph();
-			if (subgraph != null)
+			Factor factor = fb.asFactor();
+			if (factor != null)
 			{
-				if (relativeNestingDepth > 0)
-				{
-					f.addAll((subgraph).getNonGraphFactors(relativeNestingDepth-1));
-				}
+				f.add(factor);
 			}
 			else
 			{
-				f.add(fb.asFactor());
+				FactorGraph subgraph = fb.asFactorGraph();
+				if (subgraph != null)
+				{
+					if (relativeNestingDepth > 0)
+					{
+						f.addAll((subgraph).getNonGraphFactors(relativeNestingDepth-1));
+					}
+				}
 			}
 		}
 

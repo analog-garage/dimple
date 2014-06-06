@@ -32,39 +32,39 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 
 public class FactorGraphDiffs
 {
-	private INameable _a = null;
-	private INameable _b = null;
-	private ArrayList<INameable>	_childrenInANotB = null;
-	private ArrayList<INameable>	_childrenInBNotA = null;
-	private ArrayList<FactorGraphDiffs> _childDiffs = null;
+	private @Nullable INameable _a = null;
+	private @Nullable INameable _b = null;
+	private @Nullable ArrayList<INameable>	_childrenInANotB = null;
+	private @Nullable ArrayList<INameable>	_childrenInBNotA = null;
+	private @Nullable ArrayList<FactorGraphDiffs> _childDiffs = null;
 	
 	public FactorGraphDiffs()
 	{
 		this(null, null);
 	}
-	public FactorGraphDiffs(INameable a, INameable b)
+	public FactorGraphDiffs(@Nullable INameable a, @Nullable INameable b)
 	{
 		_a = a;
 		_b = b;
 	}
 	
-	public INameable getA()
+	public @Nullable INameable getA()
 	{
 		return _a;
 	}
-	public INameable getB()
+	public @Nullable INameable getB()
 	{
 		return _a;
 	}
-	public ArrayList<INameable> inANotB()
+	public @Nullable ArrayList<INameable> inANotB()
 	{
 		return _childrenInANotB;
 	}
-	public ArrayList<INameable> inBNotA()
+	public @Nullable ArrayList<INameable> inBNotA()
 	{
 		return _childrenInBNotA;
 	}
-	public ArrayList<FactorGraphDiffs> childDiffs()
+	public @Nullable ArrayList<FactorGraphDiffs> childDiffs()
 	{
 		return _childDiffs;
 	}
@@ -79,7 +79,7 @@ public class FactorGraphDiffs
 		return s;
 	}
 	
-	static private String typeString(INameable n)
+	static private String typeString(@Nullable INameable n)
 	{
 		String s = "";
 		if(n instanceof FactorGraph)
@@ -119,29 +119,34 @@ public class FactorGraphDiffs
 			String bName = "none";
 			int inANotB = 0;
 			int inBNotA = 0;
-			int childDiffs = 0;
+			int childDiffsCount = 0;
 			String typeString = "none";
-			if(_a != null)
+			final INameable a = _a;
+			if(a != null)
 			{
-				aName = _a.getQualifiedLabel();
-				typeString = typeString(_a);
+				aName = a.getQualifiedLabel();
+				typeString = typeString(a);
 			}
-			if(_b != null)
+			final INameable b = _b;
+			if(b != null)
 			{
-				bName = _b.getQualifiedLabel();
-				typeString = typeString(_b);
+				bName = b.getQualifiedLabel();
+				typeString = typeString(b);
 			}
-			if(_childrenInANotB != null)
+			final ArrayList<INameable> childrenInANotB = _childrenInANotB;
+			if(childrenInANotB != null)
 			{
-				inANotB = _childrenInANotB.size();
+				inANotB = childrenInANotB.size();
 			}
-			if(_childrenInBNotA != null)
+			final ArrayList<INameable> childrenInBNotA = _childrenInBNotA;
+			if(childrenInBNotA != null)
 			{
-				inANotB = _childrenInBNotA.size();
+				inANotB = childrenInBNotA.size();
 			}
-			if(_childDiffs != null)
+			final ArrayList<FactorGraphDiffs> childDiffs = _childDiffs;
+			if(childDiffs != null)
 			{
-				childDiffs = _childDiffs.size();
+				childDiffsCount = childDiffs.size();
 			}
 			
 			s += String.format("[%s]  a:[%s]  b:[%s]  inANotB:%d  inBNotA:%d  childDiffs:%d"
@@ -150,16 +155,16 @@ public class FactorGraphDiffs
 					,bName
 					,inANotB
 					,inBNotA
-					,childDiffs);
+					,childDiffsCount);
 			pathDBG |= 0x00000004;
 			String oneMoreTab = tabString(numTabs + 1);
 			String twoMoreTabs = tabString(numTabs + 2);
 			pathDBG |= 0x00000008;
-			if(_childrenInANotB != null)
+			if(childrenInANotB != null)
 			{
 				pathDBG |= 0x00000010;
 				s += String.format("\n%sIn A not B:\n", oneMoreTab);
-				for(INameable n : _childrenInANotB)
+				for(INameable n : childrenInANotB)
 				{
 					pathDBG |= 0x00000020;
 					s += twoMoreTabs;
@@ -182,7 +187,7 @@ public class FactorGraphDiffs
 			{
 				pathDBG |= 0x00000080;
 				s += String.format("\n%sIn B not A:\n", oneMoreTab);
-				for(INameable n : _childrenInBNotA)
+				for(INameable n : childrenInBNotA)
 				{
 					pathDBG |= 0x00000100;
 					s += twoMoreTabs;
@@ -201,11 +206,11 @@ public class FactorGraphDiffs
 				}
 			}
 			pathDBG |= 0x00000200;
-			if(_childDiffs != null)
+			if(childDiffs != null)
 			{
 				pathDBG |= 0x00000400;
 				s += String.format("\n%sChild diffs:\n", oneMoreTab);
-				for(FactorGraphDiffs d : _childDiffs)
+				for(FactorGraphDiffs d : childDiffs)
 				{
 					pathDBG |= 0x00000800;
 					s += twoMoreTabs;
@@ -254,31 +259,34 @@ public class FactorGraphDiffs
 	}
 	private void addANotB(INameable node)
 	{
-		if(_childrenInANotB == null)
+		ArrayList<INameable> childrenInANotB = _childrenInANotB;
+		if(childrenInANotB == null)
 		{
-			_childrenInANotB = new ArrayList<INameable>();
+			childrenInANotB = _childrenInANotB = new ArrayList<INameable>();
 		}
-		_childrenInANotB.add(node);
+		childrenInANotB.add(node);
 		//System.out.println("--addANotB [" + node.getLabel() + "] [\n" + toString() + "\n]\n");
 	}
 	private void addBNotA(INameable node)
 	{
-		if(_childrenInBNotA == null)
+		ArrayList<INameable> childrenInBNotA = _childrenInBNotA;
+		if(childrenInBNotA == null)
 		{
-			_childrenInBNotA = new ArrayList<INameable>();
+			childrenInBNotA = _childrenInBNotA = new ArrayList<INameable>();
 		}
-		_childrenInBNotA.add(node);
+		childrenInBNotA.add(node);
 		//System.out.println("--addBNotA [" + node.getLabel() + "] [\n" + toString() + "\n]\n");
 	}
 	private void addDifference(FactorGraphDiffs difference)
 	{
-		if(_childDiffs == null)
+		ArrayList<FactorGraphDiffs> childDiffs = _childDiffs;
+		if(childDiffs == null)
 		{
-			_childDiffs = new ArrayList<FactorGraphDiffs>();
+			childDiffs = _childDiffs = new ArrayList<FactorGraphDiffs>();
 		}
-		_childDiffs.add(difference);
+		childDiffs.add(difference);
 	}
-	private void addDifference(INameable a, INameable b, ArrayList<FactorGraphDiffs> childFactorGraphDiffs)
+	private void addDifference(INameable a, INameable b, @Nullable ArrayList<FactorGraphDiffs> childFactorGraphDiffs)
 	{
 		FactorGraphDiffs oneDiff = new FactorGraphDiffs();
 		oneDiff._a = a;
@@ -323,7 +331,7 @@ public class FactorGraphDiffs
 			INameable a,
 			INameable b,
 			boolean quickExit,
-			boolean byName) 
+			boolean byName)
 	{
 		INode ndA = (INode) a;
 		INode ndB = (INode) b;
@@ -410,14 +418,14 @@ public class FactorGraphDiffs
 										 NameableMap aMap,
 										 NameableMap bMap,
 										 boolean quickExit,
-										 boolean byName) 
+										 boolean byName)
 	{
 		boolean someInANotB = false;
 		
 		//a against b
 		for(INameable nA : aMap)
 		{
-			INameable nB = null;
+			@Nullable INameable nB = null;
 			if(byName)
 			{
 				nB = bMap.get(nA.getName());
@@ -459,8 +467,7 @@ public class FactorGraphDiffs
 							quickExit,
 							byName);
 				}
-				if(oneDiff != null &&
-				   !oneDiff.noDiffs())
+				if(!oneDiff.noDiffs())
 				{
 					diffs.addDifference(oneDiff);
 					if(quickExit)
@@ -503,7 +510,7 @@ public class FactorGraphDiffs
 			   FactorGraph a,
 			   FactorGraph b,
 			   boolean quickExit,
-			   boolean byName)  
+			   boolean byName)
 	{
 		FactorGraph aRoot = a;
 		FactorGraph bRoot = b;
@@ -525,7 +532,7 @@ public class FactorGraphDiffs
 								   FactorGraph a,
 								   FactorGraph b,
 								   boolean quickExit,
-								   boolean byName)  
+								   boolean byName)
 	{
 		FactorGraphDiffs diffs = new FactorGraphDiffs(a, b);
 		

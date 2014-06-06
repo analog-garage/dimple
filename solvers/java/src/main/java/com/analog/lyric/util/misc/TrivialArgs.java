@@ -21,11 +21,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-public class TrivialArgs 
+@NonNullByDefault(false)
+public class TrivialArgs
 {
 	private HashMap<String, ArrayList<String>> _args = null;
 
-	static public String getDefaultArg(){return "dflt";} 
+	static public String getDefaultArg(){return "dflt";}
 	static public String getArgName(String arg)
 	{
 		String argName = null;
@@ -34,7 +35,7 @@ public class TrivialArgs
 			argName = arg.substring(1);
 		}
 		return argName;
-	} 
+	}
 	
 	public void addReplace(String[] args)
 	{
@@ -54,12 +55,12 @@ public class TrivialArgs
 			}
 			add(args);
 		}
-	}	
+	}
 	public void addReplace(HashMap<String, ArrayList<String>> args)
 	{
 		String defaultArg = getDefaultArg();
 		_args.remove(defaultArg);
-		_args.put(defaultArg, new ArrayList<String>());		
+		_args.put(defaultArg, new ArrayList<String>());
 
 		for(Entry<String, ArrayList<String>> entry: args.entrySet())
 		{
@@ -70,7 +71,7 @@ public class TrivialArgs
 	
 	public void addReplace(String arg, String value)
 	{
-		addReplace(arg, new String[]{value});		
+		addReplace(arg, new String[]{value});
 	}
 	public void addReplace(String arg, String[] values)
 	{
@@ -94,8 +95,8 @@ public class TrivialArgs
 	{
 		if(!_args.containsKey(arg))
 		{
-			_args.put(arg, new ArrayList<String>());			
-		}		
+			_args.put(arg, new ArrayList<String>());
+		}
 
 		ArrayList<String> existingValues = _args.get(arg);
 		existingValues.addAll(values);
@@ -117,7 +118,7 @@ public class TrivialArgs
 				String argName = getArgName(arg);
 				if(argName != null)
 				{
-					currArgName = argName; 
+					currArgName = argName;
 					
 					if(!_args.containsKey(currArgName))
 					{
@@ -130,39 +131,39 @@ public class TrivialArgs
 					ArrayList<String> values = _args.get(currArgName);
 					values.add(arg);
 				}
-			}		
+			}
 		}
 	}
-	public TrivialArgs(String args, String defaults) 
+	public TrivialArgs(String args, String defaults)
 	{
 		init(args.split(" "), defaults.split(" "));
 	}
-	public TrivialArgs(String[] args, String[] defaults) 
+	public TrivialArgs(String[] args, String[] defaults)
 	{
 		init(args, defaults);
 	}
-	public TrivialArgs(String[] defaults) 
+	public TrivialArgs(String[] defaults)
 	{
 		init(new String[]{}, defaults);
 	}
-	public TrivialArgs(String defaults) 
+	public TrivialArgs(String defaults)
 	{
 		init(new String[]{}, defaults.split(" "));
-	}	
-	public TrivialArgs() 
+	}
+	public TrivialArgs()
 	{
 		init(new String[]{}, new String[]{});
 	}
-	public void init(String[] args, String[] defaults) 
+	public void init(String[] args, String[] defaults)
 	{
 		_args = new HashMap<String, ArrayList<String>>();
 		addReplace(defaults);
-		addReplace(args);		
+		addReplace(args);
 	}
 	
 	public HashMap<String, ArrayList<String>> getArgs() {return _args;}
 	public ArrayList<String> getArgs(String argName) {return _args.get(argName);}
-	public String getArg(String argName) 
+	public String getArg(String argName)
 	{
 		String arg = null;
 		ArrayList<String> argList = getArgs(argName);
@@ -173,6 +174,7 @@ public class TrivialArgs
 		return arg;
 	}
 	
+	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();

@@ -104,13 +104,13 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public boolean contains(Object arg0)
+	public boolean contains(@Nullable Object arg0)
 	{
 		return (arg0 instanceof IGetId) ? contains((IGetId)arg0) : false ;
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> objects)
+	public boolean containsAll(@Nullable Collection<?> objects)
 	{
 		for (Object object : objects)
 		{
@@ -144,7 +144,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * @see #removeByIndex(int)
 	 */
 	@Override
-	public boolean remove(Object node)
+	public boolean remove(@Nullable Object node)
 	{
 		boolean removed = false;
 		
@@ -176,7 +176,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> arg0)
+	public boolean removeAll(@Nullable Collection<?> arg0)
 	{
 		boolean changed = false;
 		for (Object o : arg0)
@@ -188,7 +188,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> keep)
+	public boolean retainAll(@Nullable Collection<?> keep)
 	{
 		boolean changed = false;
 		for (int i = size(); --i >= 0;)
@@ -228,7 +228,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 */
 	
 	@Override
-	public void addAll(T[] nodes)
+	public void addAll(@Nullable T[] nodes)
 	{
 		if (nodes != null)
 		{
@@ -251,7 +251,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public T getByKey(int id)
+	public @Nullable T getByKey(int id)
 	{
 		return (T) _hashMap.get(id);
 	}
@@ -273,7 +273,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * than once, and you want to remove all instances instead use {@link #remove(Object)}.
 	 */
 	@Override
-	public T removeByIndex(int index)
+	public @Nullable T removeByIndex(int index)
 	{
 		T elt = _arrayList.remove(index);
 		if (_hashMap.size() < _arrayList.size() || !_arrayList.contains(elt))
