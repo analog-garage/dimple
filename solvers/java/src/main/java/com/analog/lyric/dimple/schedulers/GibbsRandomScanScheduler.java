@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.schedule.GibbsRandomScanSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @author jeffb
@@ -35,25 +36,25 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
  *         associated scheduler, that scheduler is ignored in creating this
  *         schedule. I believe this is a necessary limitation for Gibbs sampling
  *         to operate properly.
- *         
+ * 
  */
 public class GibbsRandomScanScheduler implements IGibbsScheduler
 {
-	private GibbsRandomScanSchedule _schedule;
+	private @Nullable GibbsRandomScanSchedule _schedule;
 	
 	@Override
-	public ISchedule createSchedule(FactorGraph g) 
+	public ISchedule createSchedule(FactorGraph g)
 	{
-		_schedule = new GibbsRandomScanSchedule(g);
-		return _schedule;
+		return _schedule = new GibbsRandomScanSchedule(g);
 	}
 	
 	// Add a block schedule entry, which will replace individual variable updates included in the block
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
-		if (_schedule == null)
+		final GibbsRandomScanSchedule schedule = _schedule;
+		if (schedule == null)
 			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
-		_schedule.addBlockScheduleEntry(blockScheduleEntry);
+		schedule.addBlockScheduleEntry(blockScheduleEntry);
 	}
 }

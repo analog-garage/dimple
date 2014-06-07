@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -41,18 +42,18 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
  */
 public class GibbsSequentialScanScheduler implements IGibbsScheduler
 {
-	FixedSchedule _schedule;
+	@Nullable FixedSchedule _schedule;
 	
 	@Override
 	public ISchedule createSchedule(FactorGraph g)
 	{
-		_schedule = new FixedSchedule();
+		FixedSchedule schedule = _schedule = new FixedSchedule();
 
 		// Update all owned variables
 		for (VariableBase v : g.getVariablesFlat())
-			_schedule.add(new NodeScheduleEntry(v));
+			schedule.add(new NodeScheduleEntry(v));
 
-		return _schedule;
+		return schedule;
 	}
 
 	
@@ -60,9 +61,10 @@ public class GibbsSequentialScanScheduler implements IGibbsScheduler
 	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
-		if (_schedule == null)
+		FixedSchedule schedule = _schedule;
+		if (schedule == null)
 			throw new DimpleException("Schedule must be created before adding a block schedule entry.");
 		
-		_schedule.addBlockScheduleEntry(blockScheduleEntry);
+		schedule.addBlockScheduleEntry(blockScheduleEntry);
 	}
 }

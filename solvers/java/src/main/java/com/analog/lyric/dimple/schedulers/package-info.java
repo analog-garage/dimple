@@ -10,4 +10,7 @@
 /**
  * Core inference scheduling API.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.schedulers;
+import com.analog.lyric.util.misc.NonNullByDefault;
+
