@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -208,17 +209,17 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	}
 	
 	// Add a series of schedule entries
-	public void add(IScheduleEntry[] entries)
+	public void add(@Nullable IScheduleEntry[] entries)
 	{
 		if (entries != null) for (IScheduleEntry entry : entries) add(entry);
 	}
-	public void add(Iterable<IScheduleEntry> entries)
+	public void add(@Nullable Iterable<IScheduleEntry> entries)
 	{
 		if (entries != null) for (IScheduleEntry entry : entries) add(entry);
 	}
 	
 	// Add a sub-schedule
-	public void add(ISchedule s)
+	public void add(@Nullable ISchedule s)
 	{
 		if (s != null) _schedule.add(new SubScheduleEntry(s));
 	}

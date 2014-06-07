@@ -20,11 +20,11 @@ import java.util.Map;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class ScheduleBase implements ISchedule
 {
-	protected FactorGraph _factorGraph;
-	
+	protected @Nullable FactorGraph _factorGraph;
 	
 	/*
 	 * This method is called when setSchedule is called on the FactorGraph.
@@ -36,18 +36,19 @@ public abstract class ScheduleBase implements ISchedule
 	}
 	
 	@Override
-	public FactorGraph getFactorGraph()
+	public @Nullable FactorGraph getFactorGraph()
 	{
 		return _factorGraph;
 	}
 
 	@Override
-	public ISchedule copy(Map<Node,Node> old2newObjs)
+	public @Nullable ISchedule copy(Map<Node,Node> old2newObjs)
 	{
 		return null;
 	}
+	
 	@Override
-	public ISchedule copyToRoot(Map<Node,Node> old2newObjs)
+	public @Nullable ISchedule copyToRoot(Map<Node,Node> old2newObjs)
 	{
 		return null;
 	}

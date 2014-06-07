@@ -21,6 +21,7 @@ import java.util.Map;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -37,7 +38,7 @@ public interface ISchedule extends Iterable<IScheduleEntry>
 	 * This method is called when setSchedule is called on the FactorGraph.
 	 */
 	public void attach(FactorGraph factorGraph) ;
-	public FactorGraph getFactorGraph();
-	public ISchedule copy(Map<Node,Node> old2newObjs) ;
-	public ISchedule copyToRoot(Map<Node,Node> old2newObjs) ;
+	public @Nullable FactorGraph getFactorGraph();
+	public @Nullable ISchedule copy(Map<Node,Node> old2newObjs) ;
+	public @Nullable ISchedule copyToRoot(Map<Node,Node> old2newObjs) ;
 }

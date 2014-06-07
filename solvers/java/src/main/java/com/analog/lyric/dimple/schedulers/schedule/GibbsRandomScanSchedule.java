@@ -18,12 +18,14 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.GibbsSequentialScanScheduler;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.BlockScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * @author jeffb
@@ -45,6 +47,7 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 	protected FixedSchedule _scheduleEntryPool;
 
 	
+	@SuppressWarnings("null")
 	public GibbsRandomScanSchedule(FactorGraph factorGraph)
 	{
 		_factorGraph = factorGraph;
@@ -52,7 +55,7 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 	}
 	
 	@Override
-	public void attach(FactorGraph factorGraph) 
+	public void attach(FactorGraph factorGraph)
 	{
 		super.attach(factorGraph);
 		initialize();
@@ -62,7 +65,13 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 	{
 		// Create a pool of schedule entries that will be randomly chosen from
 		// By default, this is the same set of nodes in a sequential-scan schedule
-		_scheduleEntryPool = (FixedSchedule)new GibbsSequentialScanScheduler().createSchedule(_factorGraph);
+		_scheduleEntryPool = (FixedSchedule)new GibbsSequentialScanScheduler().createSchedule(getFactorGraph());
+	}
+
+	@Override
+	public @NonNull FactorGraph getFactorGraph()
+	{
+		return Objects.requireNonNull(_factorGraph);
 	}
 
 	@Override
@@ -81,6 +90,7 @@ public class GibbsRandomScanSchedule extends ScheduleBase implements IGibbsSched
 
 	
 	// Add a block schedule entry, which will replace individual variable updates included in the block
+	@Override
 	public void addBlockScheduleEntry(BlockScheduleEntry blockScheduleEntry)
 	{
 		_scheduleEntryPool.addBlockScheduleEntry(blockScheduleEntry);

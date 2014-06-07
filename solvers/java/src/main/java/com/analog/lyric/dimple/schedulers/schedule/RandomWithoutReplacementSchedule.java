@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.schedulers.schedule;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
@@ -27,6 +28,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * @author jeffb
@@ -48,6 +50,7 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 	protected int[] _factorIndices;
 
 
+	@SuppressWarnings("null")
 	public RandomWithoutReplacementSchedule(FactorGraph factorGraph)
 	{
 		_factorGraph = factorGraph;
@@ -63,9 +66,15 @@ public class RandomWithoutReplacementSchedule extends ScheduleBase
 
 	protected void initialize()
 	{
-		_factors = _factorGraph.getNonGraphFactors();
+		_factors = getFactorGraph().getNonGraphFactors();
 		_numFactors = _factors.size();
 		_factorIndices = new int[_numFactors];
+	}
+	
+	@Override
+	public @NonNull FactorGraph getFactorGraph()
+	{
+		return Objects.requireNonNull(_factorGraph);
 	}
 
 	@Override
