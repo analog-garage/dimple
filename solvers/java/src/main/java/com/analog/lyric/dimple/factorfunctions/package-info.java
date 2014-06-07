@@ -10,4 +10,6 @@
 /**
  * Standard {@link com.analog.lyric.dimple.factorfunctions.core.FactorFunction} implementations.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.factorfunctions;
+import com.analog.lyric.util.misc.NonNullByDefault;

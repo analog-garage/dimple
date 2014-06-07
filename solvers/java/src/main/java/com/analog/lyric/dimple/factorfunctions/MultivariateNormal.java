@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -55,22 +56,20 @@ public class MultivariateNormal extends FactorFunction
 //	public MultivariateNormal() {super();}	// TODO: Implement variable parameters case
 	public MultivariateNormal(double[] mean, double[][] covariance)
 	{
-		super();
-		initializeConstantParameters(new MultivariateNormalParameters(mean, covariance));
+		this(new MultivariateNormalParameters(mean, covariance));
 	}
 	public MultivariateNormal(double[] vector, double[][] matrix, boolean informationForm)
 	{
-		super();
-		MultivariateNormalParameters parameters = new MultivariateNormalParameters();
-		if (informationForm)
-			parameters.setInformation(vector, matrix);
-		else
-			parameters.setMeanAndCovariance(vector, matrix);
-		initializeConstantParameters(parameters);
+		this(new MultivariateNormalParameters(vector, matrix, informationForm));
 	}
+
 	public MultivariateNormal(MultivariateNormalParameters parameters)
 	{
 		super();
+		_parameters = parameters;
+		_informationMatrix = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+		_mean = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		_diff = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		initializeConstantParameters(parameters);
 	}
 	

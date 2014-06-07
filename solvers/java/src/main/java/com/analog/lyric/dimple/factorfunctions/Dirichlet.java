@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions;
 
 import org.apache.commons.math3.special.Gamma;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -47,6 +48,7 @@ public class Dirichlet extends FactorFunction
 	public Dirichlet()		// Variable parameters
 	{
 		super();
+		_alphaMinusOne = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
 	}

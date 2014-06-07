@@ -22,10 +22,12 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class HMM
 {
 
+	@NonNullByDefault
 	public static class TransitionFactorFunction extends FactorFunction
 	{
 		public TransitionFactorFunction()
@@ -59,6 +61,7 @@ public class HMM
 		}
 	}
 	
+	@NonNullByDefault
 	public static class ObservationFactorFunction extends FactorFunction
 	{
 		public ObservationFactorFunction()

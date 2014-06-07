@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -152,7 +153,7 @@ public class MatrixVectorProduct extends FactorFunction
 	}
     
     @Override
-    public final int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+    public final @Nullable int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
     {
     	final FactorFunction function = factor.getFactorFunction();
     	

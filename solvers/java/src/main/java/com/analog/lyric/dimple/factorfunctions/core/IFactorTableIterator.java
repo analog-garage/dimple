@@ -21,6 +21,7 @@ import java.util.Iterator;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Iterator over entries in a {@link IFactorTable}.
@@ -67,7 +68,7 @@ public interface IFactorTableIterator extends Iterator<FactorTableEntry>
 	 * @see #advance()
 	 */
 	@Override
-	public abstract FactorTableEntry next();
+	public abstract @Nullable FactorTableEntry next();
 	
 	/**
 	 * Method not supported.
@@ -97,7 +98,7 @@ public interface IFactorTableIterator extends Iterator<FactorTableEntry>
 	 * Returns current entry or null either if end of iteration has been reached or
 	 * neither {@link #advance()} nor {@link #next()} has been called at least once.
 	 */
-	public abstract FactorTableEntry getEntry();
+	public abstract @Nullable FactorTableEntry getEntry();
 
 	/**
 	 * Returns the energy for the entry at the current iteration.
@@ -121,7 +122,7 @@ public interface IFactorTableIterator extends Iterator<FactorTableEntry>
 	 * @see #indices()
 	 * @see #indicesUnsafe()
 	 */
-	public abstract int[] indices(int[] array);
+	public abstract int[] indices(@Nullable int[] array);
 
 	/**
 	 * Returns domain indices corresponding to the table entry at the current iteration in read-only array.

@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 @NotThreadSafe
 public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
@@ -46,7 +47,7 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 		_domains = domains;
 	}
 	
-	protected FactorTableBase(BitSet directedTo, DiscreteDomain ... domains)
+	protected FactorTableBase(@Nullable BitSet directedTo, DiscreteDomain ... domains)
 	{
 		_domains = JointDomainIndexer.create(directedTo, domains);
 	}
@@ -120,13 +121,13 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
-	public final BitSet getInputSet()
+	public final @Nullable BitSet getInputSet()
 	{
 		return _domains.getInputSet();
 	}
 	
 	@Override
-	public final BitSet getOutputSet()
+	public final @Nullable BitSet getOutputSet()
 	{
 		return _domains.getOutputSet();
 	}
@@ -181,13 +182,13 @@ public abstract class FactorTableBase implements IFactorTableBase, IFactorTable
 	}
 	
 	@Override
-	public Object[] sparseIndexToElements(int sparseIndex, Object[] elements)
+	public Object[] sparseIndexToElements(int sparseIndex, @Nullable Object[] elements)
 	{
 		return _domains.jointIndexToElements(sparseIndexToJointIndex(sparseIndex), elements);
 	}
 	
 	@Override
-	public int[] sparseIndexToIndices(int sparseIndex, int[] indices)
+	public int[] sparseIndexToIndices(int sparseIndex, @Nullable int[] indices)
 	{
 		return _domains.jointIndexToIndices(sparseIndexToJointIndex(sparseIndex), indices);
 	}

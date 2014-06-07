@@ -46,6 +46,20 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 	{
 		setMeanAndCovariance(mean.clone(), cloneMatrix(covariance));
 	}
+	
+	public MultivariateNormalParameters(double[] vector, double[][] matrix, boolean informationForm)
+	{
+		this();
+		if (informationForm)
+		{
+			setInformation(vector.clone(), cloneMatrix(matrix));
+		}
+		else
+		{
+			setMeanAndCovariance(vector.clone(), cloneMatrix(matrix));
+		}
+	}
+
 	public MultivariateNormalParameters(MultivariateNormalParameters other)		// Copy constructor
 	{
 		set(other);

@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 
 public class GibbsTest
@@ -34,7 +35,7 @@ public class GibbsTest
 	protected static boolean debugPrint = false;
 	
 	@Test
-	public void basicTest() 
+	public void basicTest()
 	{
 		int numSamples = 10000;
 		int updatesPerSample = 2;
@@ -75,8 +76,8 @@ public class GibbsTest
 		double bMean = (double)bSum/(double)bSamples.length;
 		if (debugPrint) System.out.println("sbi: " + bMean);
 
-		if (debugPrint) System.out.println("aBest: " + (Integer)sa.getBestSample());
-		if (debugPrint) System.out.println("bBest: " + (Integer)sb.getBestSample());
+		if (debugPrint) System.out.println("aBest: " + sa.getBestSample());
+		if (debugPrint) System.out.println("bBest: " + sb.getBestSample());
 		
 		double totalPotential = 0;
 		totalPotential += sA.getPotential(new int[]{sa.getBestSampleIndex()});
@@ -111,10 +112,12 @@ public class GibbsTest
 		assertTrue(nearlyEquals(Math.exp(-totalPotential),0.6));
 	}
 	
-	public static class PA extends FactorFunction 
+	@NonNullByDefault
+	public static class PA extends FactorFunction
 	{
 		public PA() {super("PA");}
-	    public double eval(Object ... input)
+	    @Override
+		public double eval(Object ... input)
 	    {
 	    	double value = 0;
 	    	int a = (Integer)input[0];
@@ -126,10 +129,12 @@ public class GibbsTest
 	    }
 	}
 	
-	public static class PBA extends FactorFunction 
+	@NonNullByDefault
+	public static class PBA extends FactorFunction
 	{
 		public PBA() {super("PBA");}
-	    public double eval(Object ... input)
+	    @Override
+		public double eval(Object ... input)
 	    {
 	    	double value = 0;
 	    	int b = (Integer)input[0];

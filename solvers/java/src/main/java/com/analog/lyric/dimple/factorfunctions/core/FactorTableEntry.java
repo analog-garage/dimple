@@ -21,6 +21,7 @@ import java.io.Serializable;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Holds the information for one factor table entry from a {@link IFactorTableIterator}
@@ -33,7 +34,7 @@ public final class FactorTableEntry implements Serializable
 	private final JointDomainIndexer _domains;
 	private final int _sparseIndex;
 	private final int _jointIndex;
-	private final int[] _jointIndices;
+	private final @Nullable int[] _jointIndices;
 	private final double _energy;
 	private final double _weight;
 	
@@ -57,7 +58,8 @@ public final class FactorTableEntry implements Serializable
 	/**
 	 * @since 0.05
 	 */
-	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, int[] jointIndices, double energy, double weight)
+	public FactorTableEntry(JointDomainIndexer domains, int sparseIndex, @Nullable int[] jointIndices, double energy,
+		double weight)
 	{
 		_domains = domains;
 		_sparseIndex = sparseIndex;
@@ -103,12 +105,13 @@ public final class FactorTableEntry implements Serializable
 	 * @see #indices()
 	 * @see #values(Object[])
 	 */
-	public int[] indices(int[] indices)
+	public int[] indices(@Nullable int[] indices)
 	{
 		indices = _domains.allocateIndices(indices);
-		if (_jointIndices != null)
+		final int[] jointIndices = _jointIndices;
+		if (jointIndices != null)
 		{
-			System.arraycopy(_jointIndices, 0, indices, 0, _jointIndices.length);
+			System.arraycopy(jointIndices, 0, indices, 0, jointIndices.length);
 		}
 		else
 		{
@@ -135,12 +138,13 @@ public final class FactorTableEntry implements Serializable
 		return values(null);
 	}
 	
-	public <T> T[] values(T[] elements)
+	public <T> T[] values(@Nullable T[] elements)
 	{
 		elements = _domains.allocateElements(elements);
-		if (_jointIndices != null)
+		final int[] jointIndices = _jointIndices;
+		if (jointIndices != null)
 		{
-			_domains.elementsFromIndices(_jointIndices, elements);
+			_domains.elementsFromIndices(jointIndices, elements);
 		}
 		else
 		{

@@ -17,8 +17,10 @@
 package com.analog.lyric.dimple.examples;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
-public class ThreeBitXor extends FactorFunction 
+@NonNullByDefault
+public class ThreeBitXor extends FactorFunction
 {
 	@Override
 	public double eval(Object ... args)

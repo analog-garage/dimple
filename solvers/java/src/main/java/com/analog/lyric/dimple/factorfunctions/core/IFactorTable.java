@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.domains.JointDiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface IFactorTable extends IFactorTableBase
 {
@@ -159,9 +160,9 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getEnergySlice(int, int ...)
 	 * @see #getWeightSlice(double[], int, int ...)
 	 */
-	public double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices);
+	public double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	
-	public double[] getEnergySlice(double[] slize, int sliceDimension, Value ... values);
+	public double[] getEnergySlice(@Nullable double[] slize, int sliceDimension, Value ... values);
 	
 	/**
 	 * Returns the underlying array of sparse element indices.
@@ -229,9 +230,9 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getWeightSlice(int, int ...)
 	 * @see #getEnergySlice(double[], int, int ...)
 	 */
-	public double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices);
+	public double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	
-	public double[] getWeightSlice(double[] slice, int sliceDimension, Value ... values);
+	public double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, Value ... values);
 	
 	/**
 	 * True if the current factor table representation supports {@link #getIndicesSparseUnsafe}.
@@ -320,7 +321,7 @@ public interface IFactorTable extends IFactorTableBase
 	 * to the domains that are to be designated as outputs. The highest bit must be less than the number of
 	 * domains ({@link #getDimensions()}).
 	 */
-	public void setDirected(BitSet outputSet);
+	public void setDirected(@Nullable BitSet outputSet);
 	
 	/**
 	 * {@inheritDoc}

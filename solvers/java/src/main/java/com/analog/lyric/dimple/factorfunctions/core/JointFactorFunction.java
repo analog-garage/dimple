@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +34,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -79,7 +81,7 @@ public class JointFactorFunction extends FactorFunction
 		 */
 		
 		@Override
-		public boolean equals(Object other)
+		public boolean equals(@Nullable Object other)
 		{
 			if (other == this)
 			{
@@ -208,7 +210,7 @@ public class JointFactorFunction extends FactorFunction
 		}
 
 		@Override
-		public JointFactorFunction getIfPresent(Object key)
+		public JointFactorFunction getIfPresent(@Nullable Object key)
 		{
 			return _map.get(key);
 		}
@@ -282,6 +284,6 @@ public class JointFactorFunction extends FactorFunction
 			tables.add(Tuple2.create(factorTable, indices));
 		}
 		
-		return FactorTable.product(tables);
+		return Objects.requireNonNull(FactorTable.product(tables));
 	}
 }

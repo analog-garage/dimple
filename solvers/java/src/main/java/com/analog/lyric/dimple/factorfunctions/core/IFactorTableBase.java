@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface IFactorTableBase extends Cloneable, Serializable, Iterable<FactorTableEntry>
 {
@@ -170,7 +171,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * bits instead of the set bits).
 	 * @see #getOutputSet
 	 */
-	public BitSet getInputSet();
+	public @Nullable BitSet getInputSet();
 	
 	/**
 	 * If {@link #isDirected()} returns object indicating the indices of the subset of dimensions/domains
@@ -179,7 +180,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * bits instead of the set bits).
 	 * @see #getInputSet()
 	 */
-	public BitSet getOutputSet();
+	public @Nullable BitSet getOutputSet();
 
 	/**
 	 * Returns weight of factor table entry for given {@code elements}.
@@ -367,7 +368,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @see #sparseIndexToIndices(int, int[])
 	 * @see #sparseIndexFromElements(Object...)
 	 */
-	public abstract Object[] sparseIndexToElements(int sparseIndex, Object[] elements);
+	public abstract Object[] sparseIndexToElements(int sparseIndex, @Nullable Object[] elements);
 	
 	/**
 	 * Converts sparse index (one per table entry) to joint index (one per valid combination
@@ -395,7 +396,7 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * @see #sparseIndexToElements(int, Object[])
 	 * @see #sparseIndexFromIndices(int...)
 	 */
-	public abstract int[] sparseIndexToIndices(int sparseIndex, int[] indices);
+	public abstract int[] sparseIndexToIndices(int sparseIndex, @Nullable int[] indices);
 	
 	public abstract int[] sparseIndexToIndices(int sparseIndex);
 

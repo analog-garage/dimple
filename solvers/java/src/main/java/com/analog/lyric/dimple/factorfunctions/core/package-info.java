@@ -10,4 +10,7 @@
 /**
  * Factor functions and factor tables.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.factorfunctions.core;
+import com.analog.lyric.util.misc.NonNullByDefault;
+

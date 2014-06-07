@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Objects;
 
 import net.jcip.annotations.NotThreadSafe;
 import cern.colt.map.OpenIntDoubleHashMap;
@@ -43,6 +44,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.Misc;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Ints;
 
@@ -163,9 +165,9 @@ public class FactorTable extends SparseFactorTableBase
 	{
 		super(that);
 		
-		_denseEnergies = ArrayUtil.cloneArray(that._denseEnergies);
-		_denseWeights = ArrayUtil.cloneArray(that._denseWeights);
-		_sparseIndexToJointIndex = ArrayUtil.cloneArray(that._sparseIndexToJointIndex);
+		_denseEnergies = Objects.requireNonNull(ArrayUtil.cloneArray(that._denseEnergies));
+		_denseWeights = Objects.requireNonNull(ArrayUtil.cloneArray(that._denseWeights));
+		_sparseIndexToJointIndex = Objects.requireNonNull(ArrayUtil.cloneArray(that._sparseIndexToJointIndex));
 	}
 
 	/**
@@ -337,7 +339,7 @@ public class FactorTable extends SparseFactorTableBase
 		return create(JointDomainIndexer.create(domains));
 	}
 	
-	public static IFactorTable create(BitSet outputSet, DiscreteDomain ... domains)
+	public static IFactorTable create(@Nullable BitSet outputSet, DiscreteDomain ... domains)
 	{
 		return create(JointDomainIndexer.create(outputSet, domains));
 	}
@@ -410,7 +412,7 @@ public class FactorTable extends SparseFactorTableBase
 	 * Invokes {@link #product(ArrayList, FactorTableRepresentation)} with null representation
 	 * argument.
 	 */
-	public static IFactorTable product(ArrayList<Tuple2<IFactorTable,int[]>> entries)
+	public static @Nullable IFactorTable product(ArrayList<Tuple2<IFactorTable,int[]>> entries)
 	{
 		return product(entries, null);
 	}
@@ -433,8 +435,8 @@ public class FactorTable extends SparseFactorTableBase
 	 * <p>
 	 * @return Newly constructed table.
 	 */
-	public static IFactorTable product(
-		ArrayList<Tuple2<IFactorTable,int[]>> entries, FactorTableRepresentation representation)
+	public static @Nullable IFactorTable product(
+		ArrayList<Tuple2<IFactorTable,int[]>> entries, @Nullable FactorTableRepresentation representation)
 	{
 		final int nFactors = entries.size();
 		if (nFactors < 1)
@@ -663,7 +665,7 @@ public class FactorTable extends SparseFactorTableBase
 		_representation = in.readInt();
 		int size = in.readInt();
 		
-		double[] values = null;
+		double[] values = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		
 		if (!hasDeterministicRepresentation())
 		{
@@ -1288,7 +1290,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	public int[] sparseIndexToIndices(int sparseIndex, int[] indices)
+	public int[] sparseIndexToIndices(int sparseIndex, @Nullable int[] indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		if ((_representation & SPARSE_INDICES) != 0)
@@ -1523,7 +1525,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	public final double[] getEnergySlice(double[] slice, int sliceDimension, int ... indices)
+	public final double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int ... indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		final int savedIndex = indices[sliceDimension];
@@ -1535,7 +1537,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	public final double[] getEnergySlice(double[] slice, int sliceDimension, Value ... values)
+	public final double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, Value ... values)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		final int savedIndex = values[sliceDimension].getIndex();
@@ -1546,7 +1548,7 @@ public class FactorTable extends SparseFactorTableBase
 		return getEnergySliceImpl(slice, sliceDimension, start);
 	}
 
-	private final double[] getEnergySliceImpl(double[] slice, int sliceDimension, int start)
+	private final double[] getEnergySliceImpl(@Nullable double[] slice, int sliceDimension, int start)
 	{
 		final JointDomainIndexer indexer = getDomainIndexer();
 		final int size = indexer.getDomainSize(sliceDimension);
@@ -1576,7 +1578,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	public final double[] getWeightSlice(double[] slice, int sliceDimension, int ... indices)
+	public final double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, int ... indices)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		final int savedIndex = indices[sliceDimension];
@@ -1588,7 +1590,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 	
 	@Override
-	public final double[] getWeightSlice(double[] slice, int sliceDimension, Value ... values)
+	public final double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, Value ... values)
 	{
 		JointDomainIndexer indexer = getDomainIndexer();
 		final int savedIndex = values[sliceDimension].getIndex();
@@ -1599,7 +1601,7 @@ public class FactorTable extends SparseFactorTableBase
 		return getEnergySliceImpl(slice, sliceDimension, start);
 	}
 
-	private final double[] getWeightSliceImpl(double[] slice, int sliceDimension, int start)
+	private final double[] getWeightSliceImpl(@Nullable double[] slice, int sliceDimension, int start)
 	{
 		final JointDomainIndexer indexer = getDomainIndexer();
 		final int size = indexer.getDomainSize(sliceDimension);
@@ -2122,12 +2124,12 @@ public class FactorTable extends SparseFactorTableBase
 			FactorTable other = (FactorTable)that;
 			_nonZeroWeights = other._nonZeroWeights;
 			_representation = other._representation;
-			_denseEnergies = ArrayUtil.cloneArray(other._denseEnergies);
-			_denseWeights = ArrayUtil.cloneArray(other._denseWeights);
-			_sparseEnergies = ArrayUtil.cloneArray(other._sparseEnergies);
-			_sparseWeights = ArrayUtil.cloneArray(other._sparseWeights);
-			_sparseIndexToJointIndex = ArrayUtil.cloneArray(other._sparseIndexToJointIndex);
-			_sparseIndices = ArrayUtil.cloneArray(other._sparseIndices);
+			_denseEnergies = Objects.requireNonNull(ArrayUtil.cloneArray(other._denseEnergies));
+			_denseWeights = Objects.requireNonNull(ArrayUtil.cloneArray(other._denseWeights));
+			_sparseEnergies = Objects.requireNonNull(ArrayUtil.cloneArray(other._sparseEnergies));
+			_sparseWeights = Objects.requireNonNull(ArrayUtil.cloneArray(other._sparseWeights));
+			_sparseIndexToJointIndex = Objects.requireNonNull(ArrayUtil.cloneArray(other._sparseIndexToJointIndex));
+			_sparseIndices = Objects.requireNonNull(ArrayUtil.cloneArray(other._sparseIndices));
 			_computedMask = other._computedMask;
 		}
 		else
@@ -2757,7 +2759,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 
 	@Override
-	void setDirected(BitSet outputSet, boolean assertConditional)
+	void setDirected(@Nullable BitSet outputSet, boolean assertConditional)
 	{
 		final JointDomainIndexer oldDomains = getDomainIndexer();
 		final JointDomainIndexer newDomains = JointDomainIndexer.create(outputSet, oldDomains);

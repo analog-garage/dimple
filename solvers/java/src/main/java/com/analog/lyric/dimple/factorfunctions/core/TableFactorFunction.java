@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class TableFactorFunction extends FactorFunction
@@ -43,26 +46,23 @@ public class TableFactorFunction extends FactorFunction
 	
 
     @Override
-	public boolean convertFactorTable(JointDomainIndexer oldDomains, JointDomainIndexer newDomains)
+	public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
     {
     	boolean converted = false;
     	
     	if (oldDomains != null && newDomains != null)
     	{
-    		if (_factorTable != null)
-    		{
-    			_factorTable.setConditional(newDomains.getOutputSet());
-				converted = true;
-    		}
+    		_factorTable.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
+    		converted = true;
     	}
     	
     	return converted;
     }
 
     @Override
-	public boolean factorTableExists(JointDomainIndexer domains)
+	public boolean factorTableExists(@Nullable JointDomainIndexer domains)
 	{
-    	if (domains.size() != _factorTable.getDimensions())
+    	if (domains ==null || domains.size() != _factorTable.getDimensions())
     	{
     		return false;
     	}
@@ -86,8 +86,14 @@ public class TableFactorFunction extends FactorFunction
 	}
 	
     @Override
-	public IFactorTable getFactorTable(JointDomainIndexer domains)
+	public IFactorTable getFactorTable(@Nullable JointDomainIndexer domains)
     {
+    	if (domains == null)
+    	{
+    		// Invoke superclass version to throw error
+    		return super.getFactorTable((JointDomainIndexer)null);
+    	}
+    	
     	//first step, convert domains to DiscreteDOmains
     	//make sure domain lists match
     	if (domains.size() != _factorTable.getDimensions())
@@ -98,7 +104,7 @@ public class TableFactorFunction extends FactorFunction
     }
     
     @Override
-	public IFactorTable getFactorTableIfExists(JointDomainIndexer domains)
+	public @Nullable IFactorTable getFactorTableIfExists(@Nullable JointDomainIndexer domains)
     {
     	return factorTableExists(domains) ? _factorTable : null;
     }
@@ -107,7 +113,7 @@ public class TableFactorFunction extends FactorFunction
 	@Override
 	public boolean isDirected() {return _factorTable.isDirected();}
 	@Override
-	protected int[] getDirectedToIndices() {return _factorTable.getDomainIndexer().getOutputDomainIndices();}
+	protected @Nullable int[] getDirectedToIndices() {return _factorTable.getDomainIndexer().getOutputDomainIndices();}
 	
 	// For deterministic directed factors...
 	// This means that for any given input, only one of its outputs has non-zero value (equivalently, finite energy)

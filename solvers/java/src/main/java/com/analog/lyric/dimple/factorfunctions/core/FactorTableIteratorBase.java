@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Common implementation base for {@link IFactorTableIterator}s.
  */
@@ -25,15 +27,15 @@ abstract class FactorTableIteratorBase implements IFactorTableIterator
 	int _sparseIndex = 0;
 	double _energy = Double.POSITIVE_INFINITY;
 	double _weight = 0.0;
-	FactorTableEntry _entry = null;
-	int[] _jointIndices = null;
+	@Nullable FactorTableEntry _entry = null;
+	@Nullable int[] _jointIndices = null;
 
 	FactorTableIteratorBase()
 	{
 	}
 
 	@Override
-	public final FactorTableEntry next()
+	public final @Nullable FactorTableEntry next()
 	{
 		advance();
 		return getEntry();
@@ -46,7 +48,7 @@ abstract class FactorTableIteratorBase implements IFactorTableIterator
 	}
 
 	@Override
-	public final FactorTableEntry getEntry()
+	public final @Nullable FactorTableEntry getEntry()
 	{
 		if (_entry == null && !done())
 		{
@@ -69,7 +71,7 @@ abstract class FactorTableIteratorBase implements IFactorTableIterator
 	}
 	
 	@Override
-	public final int[] indices(int[] array)
+	public final int[] indices(@Nullable int[] array)
 	{
 		final int[] unsafeResult = indicesUnsafe();
 		final int length = unsafeResult.length;

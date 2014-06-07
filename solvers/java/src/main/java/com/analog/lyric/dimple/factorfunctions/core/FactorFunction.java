@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +35,7 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 @ThreadSafe
 public abstract class FactorFunction
@@ -56,7 +58,7 @@ public abstract class FactorFunction
 		this(null);
 	}
 	
-    protected FactorFunction(String name)
+    protected FactorFunction(@Nullable String name)
     {
 		_name = name != null ? name : getClass().getSimpleName();
 	}
@@ -65,7 +67,7 @@ public abstract class FactorFunction
      * FactorFunction methods
      */
     
-    public boolean convertFactorTable(JointDomainIndexer oldDomains, JointDomainIndexer newDomains)
+    public boolean convertFactorTable(@Nullable JointDomainIndexer oldDomains, @Nullable JointDomainIndexer newDomains)
     {
     	boolean converted = false;
     	
@@ -78,7 +80,7 @@ public abstract class FactorFunction
     			IFactorTable table = tables.get(oldDomains);
     			if (table != null)
     			{
-    				table.setConditional(newDomains.getOutputSet());
+    				table.setConditional(Objects.requireNonNull(newDomains.getOutputSet()));
     			}
     		}
     	}
@@ -142,7 +144,7 @@ public abstract class FactorFunction
 	/**
 	 * @since 0.05
 	 */
-   public boolean factorTableExists(JointDomainIndexer domains)
+   public boolean factorTableExists(@Nullable JointDomainIndexer domains)
     {
     	boolean exists = false;
     	if (domains != null)
@@ -170,10 +172,10 @@ public abstract class FactorFunction
 		return fullArgumentList[0];
 	}
 
-	public int[] getDirectedToIndices(int numEdges)
+	public @Nullable int[] getDirectedToIndices(int numEdges)
 	{return getDirectedToIndices();}	// May depend on the number of edges
 
-	protected int[] getDirectedToIndices()
+	protected @Nullable int[] getDirectedToIndices()
 	{return null;}	// This can be overridden instead, if result doesn't depend on the number of edges
 
 	/**
@@ -187,7 +189,7 @@ public abstract class FactorFunction
 	 * 
 	 * @since 0.05
 	 */
-	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+	public @Nullable int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
 	{
 		return null;
 	}
@@ -203,7 +205,7 @@ public abstract class FactorFunction
     /**
      * @since 0.05
      */
-    public IFactorTable getFactorTable(JointDomainIndexer domains)
+    public IFactorTable getFactorTable(@Nullable JointDomainIndexer domains)
     {
     	if (domains == null)
     	{
@@ -243,7 +245,7 @@ public abstract class FactorFunction
     /**
      * @since 0.05
      */
-    public IFactorTable getFactorTableIfExists(JointDomainIndexer domains)
+    public @Nullable IFactorTable getFactorTableIfExists(@Nullable JointDomainIndexer domains)
     {
     	IFactorTable factorTable = null;
     	if (domains != null)
@@ -260,7 +262,7 @@ public abstract class FactorFunction
     /**
      * @since 0.05
      */
-    public IFactorTable getFactorTableIfExists(Factor factor)
+    public @Nullable IFactorTable getFactorTableIfExists(Factor factor)
     {
     	return getFactorTableIfExists(factor.getDomainList().asJointDomainIndexer());
     }
@@ -442,7 +444,7 @@ public abstract class FactorFunction
 	 * 
 	 * @since 0.05
 	 */
-	public Object getConstantByIndex(int index)
+	public @Nullable Object getConstantByIndex(int index)
 	{
 		return null;
 	}
@@ -525,7 +527,7 @@ public abstract class FactorFunction
 	 * Return all edges within the range of indices specified
 	 * @since 0.06
 	 */
-	public int[] getEdgesByIndexRange(int minIndex, int maxIndex)
+	public @Nullable int[] getEdgesByIndexRange(int minIndex, int maxIndex)
 	{
 		int[] edges = new int[maxIndex - minIndex + 1];
 		for (int i = 0, index = minIndex; index <= maxIndex; i++, index++)

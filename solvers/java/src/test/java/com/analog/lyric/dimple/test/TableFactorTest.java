@@ -17,9 +17,13 @@
 package com.analog.lyric.dimple.test;
 
 
-import org.junit.*;
+import static org.junit.Assert.*;
 
-import static org.junit.Assert.* ;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.XorDelta;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
@@ -46,7 +50,7 @@ public class TableFactorTest {
 	public void tearDown()  {
 	}
 	@Test
-	public void test_simple() 
+	public void test_simple()
 	{
 		Discrete[] vs = new Discrete[]
         {
@@ -55,14 +59,14 @@ public class TableFactorTest {
 				new Discrete(0.0,1.0),
         };
 
-		FactorGraph fg = new FactorGraph(); 
+		FactorGraph fg = new FactorGraph();
 		fg.setSolverFactory(new com.analog.lyric.dimple.test.dummySolver.DummySolver());
 		
 		Factor fCustom = fg.addFactor(new CustomFactorFunctionWrapper("dummyCustomFactor"), vs[0],vs[1],vs[2]);
 		Factor fCustom2 = fg.addFactor(new CustomFactorFunctionWrapper("dummyCustomFactor"), vs[0],vs[1],vs[2]);
 		XorDelta xorFF = new XorDelta();
-		DiscreteFactor tf = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);		
-		DiscreteFactor tf2 = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);		
+		DiscreteFactor tf = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);
+		DiscreteFactor tf2 = (DiscreteFactor) fg.addFactor(xorFF, vs[0],vs[1],vs[2]);
 
 		fCustom.setName("fCustom");
 		fCustom2.setName("fCustom2");
@@ -86,15 +90,12 @@ public class TableFactorTest {
 		assertTrue(!tf.equals(tf2));
 		assertTrue(!tf.equals(otf2));
 		
-		
-		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe() != null);
-		assertTrue(tf.getFactorTable().getWeightsSparseUnsafe()!= null);
 		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe().length == 4);
 		assertTrue(tf.getFactorTable().getIndicesSparseUnsafe()[0].length == 3);
 	}
 	
 	@Test
-	public void test_some_accessors() 
+	public void test_some_accessors()
 	{
 		
 	}

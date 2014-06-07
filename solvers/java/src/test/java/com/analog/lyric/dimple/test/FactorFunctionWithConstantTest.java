@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 
 public class FactorFunctionWithConstantTest
@@ -37,7 +38,7 @@ public class FactorFunctionWithConstantTest
 	// This is a bit tricky since the list must exclude constant entries and renumber the remaining ones
 	// to match the numbering of the remaining non-constant variable edges
 	@Test
-	public void test1() 
+	public void test1()
 	{
 		int numBits = 10;
 		Bit[] b = new Bit[numBits];
@@ -68,7 +69,8 @@ public class FactorFunctionWithConstantTest
 		assertTrue(Arrays.equals(d6, new int[]{1, 3, 4, 5}));
 	}
 	
-	public static class FF1 extends FactorFunction 
+	@NonNullByDefault
+	public static class FF1 extends FactorFunction
 	{
 		@Override
 	    public double evalEnergy(Object ... input)

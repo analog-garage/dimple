@@ -19,7 +19,6 @@ package com.analog.lyric.util.test;
 import java.util.Random;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 {
@@ -37,7 +36,6 @@ public class AlwaysTrueUpToNRowsFactorFunction extends FactorFunction
 	}
 
 	@Override
-	@NonNullByDefault(false) // FIXME: remove after adding notation to FactorFunction
 	public double evalEnergy(Object... input)
 	{
 		double value = _randomWeights ? -Math.log(_r.nextDouble()) : 0;

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -247,7 +248,7 @@ public class TestFactorTable
 		assertFalse(xor2.isConditional());
 		try
 		{
-			xor2.setConditional(xor2.getDomainIndexer().getOutputSet());
+			xor2.setConditional(Objects.requireNonNull(xor2.getDomainIndexer().getOutputSet()));
 			fail("expected exception");
 		}
 		catch (DimpleException ex)
@@ -259,7 +260,7 @@ public class TestFactorTable
 		assertTrue(xor2.isDeterministicDirected());
 		assertEquals(1.0, xor2.getWeightForSparseIndex(1), 0.0);
 		xor2.setWeightForSparseIndex(23.0, 1);
-		xor2.makeConditional(xor2.getDomainIndexer().getOutputSet());
+		xor2.makeConditional(Objects.requireNonNull(xor2.getDomainIndexer().getOutputSet()));
 		assertTrue(xor2.isDeterministicDirected());
 		
 		xor2.setRepresentation(FactorTableRepresentation.DENSE_ENERGY);
@@ -303,26 +304,10 @@ public class TestFactorTable
 		assertInvariants(t2x3x4);
 		testRandomOperations(t2x3x4, 10000);
 		
-		try
-		{
-			xor2.setConditional(null);
-			fail("expected exception");
-		}
-		catch (IllegalArgumentException ex)
-		{
-			assertThat(ex.getMessage(), containsString("requires non-null argument"));
-		}
-		try
-		{
-			xor2.makeConditional(null);
-			fail("expected exception");
-		}
-		catch (IllegalArgumentException ex)
-		{
-			assertThat(ex.getMessage(), containsString("requires non-null argument"));
-		}
+		expectThrow(NullPointerException.class, xor2, "setConditional", new Object[] { null } );
+		
 	}
-	
+
 	@Test
 	public void testSparseFactorTable()
 	{

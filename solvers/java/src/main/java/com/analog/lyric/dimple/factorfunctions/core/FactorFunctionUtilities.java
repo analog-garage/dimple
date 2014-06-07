@@ -16,18 +16,21 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 import com.google.common.primitives.Primitives;
 
 public class FactorFunctionUtilities
 {
-	public static final double [][] toDouble2DArray(Object value)
+	public static final double [][] toDouble2DArray(@Nullable Object value)
 	{
-		return (double[][])value;
+		return (double[][])Objects.requireNonNull(value);
 	}
 
-	public static final double[] toDoubleArray(Object value)
+	public static final double[] toDoubleArray(@Nullable Object value)
 	{
 		if (value instanceof double[])
 			return (double[])value;
@@ -43,7 +46,7 @@ public class FactorFunctionUtilities
 			throw new DimpleException("Invalid input type");
 	}
 	
-	public static final int[] toIntArray(Object value)
+	public static final int[] toIntArray(@Nullable Object value)
 	{
 		if (value instanceof int[])
 			return (int[])value;
@@ -60,7 +63,7 @@ public class FactorFunctionUtilities
 	}
 
 	
-	public static final double toDouble(Object value)
+	public static final double toDouble(@Nullable Object value)
 	{
 		double out = 0;
     	if (value instanceof Number)
@@ -76,7 +79,7 @@ public class FactorFunctionUtilities
     	return out;
 	}
 	
-	public static final int toInteger(Object value)
+	public static final int toInteger(@Nullable Object value)
 	{
 		int out = 0;
     	if (value instanceof Number)
@@ -93,7 +96,7 @@ public class FactorFunctionUtilities
     	return out;
 	}
 	
-	public static final boolean toBoolean(Object value)
+	public static final boolean toBoolean(@Nullable Object value)
 	{
 		boolean out;
     	if (value instanceof Number)

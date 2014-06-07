@@ -123,7 +123,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		_factorFunction = function;
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
-			setDirectedTo(_factorFunction.getDirectedToIndices(getSiblingCount()));
+			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
 	}
 	
 	protected void addVariable(VariableBase variable)
@@ -334,7 +334,7 @@ public class Factor extends FactorBase implements Cloneable
 	{
 		if (_factorFunction.isDirected())	// Automatically set direction if inherent in factor function
 		{
-			setDirectedTo(_factorFunction.getDirectedToIndices(getSiblingCount()));
+			setDirectedTo(Objects.requireNonNull(_factorFunction.getDirectedToIndices(getSiblingCount())));
 			if (_factorFunction.isDeterministicDirected())
 			{
 				final int[] directedTo = Objects.requireNonNull(_directedTo);

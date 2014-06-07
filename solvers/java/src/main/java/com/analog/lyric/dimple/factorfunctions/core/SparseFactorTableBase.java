@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.factorfunctions.core;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -24,6 +25,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -99,9 +101,9 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 		_nonZeroWeights = that._nonZeroWeights;
 		_representation = that._representation;
 		_computedMask = that._computedMask;
-		_sparseEnergies = ArrayUtil.cloneArray(that._sparseEnergies);
-		_sparseWeights = ArrayUtil.cloneArray(that._sparseWeights);
-		_sparseIndices = ArrayUtil.cloneArray(that._sparseIndices);
+		_sparseEnergies = Objects.requireNonNull(ArrayUtil.cloneArray(that._sparseEnergies));
+		_sparseWeights = Objects.requireNonNull(ArrayUtil.cloneArray(that._sparseWeights));
+		_sparseIndices = Objects.requireNonNull(ArrayUtil.cloneArray(that._sparseIndices));
 	}
 
 	/*--------------------------
@@ -177,7 +179,7 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	}
 	
 	@Override
-	public final void setDirected(BitSet outputSet)
+	public final void setDirected(@Nullable BitSet outputSet)
 	{
 		setDirected(outputSet, false);
 	}
@@ -261,10 +263,7 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	@Override
 	public final void setConditional(BitSet outputSet)
 	{
-		if (outputSet == null)
-		{
-			throw new IllegalArgumentException("setConditional(BitSet) requires non-null argument");
-		}
+		Objects.requireNonNull(outputSet);
 		setDirected(outputSet, true);
 	}
 
@@ -289,10 +288,7 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	@Override
 	public final void makeConditional(BitSet outputSet)
 	{
-		if (outputSet == null)
-		{
-			throw new IllegalArgumentException("setConditionalAndNroa(BitSet) requires non-null argument");
-		}
+		Objects.requireNonNull(outputSet);
 		setDirected(outputSet, false);
 		normalizeConditional();
 	}
@@ -338,7 +334,7 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	
 	abstract boolean normalizeUndirected(boolean justCheck);
 	
-	abstract void setDirected(BitSet outputSet, boolean assertConditional);
+	abstract void setDirected(@Nullable BitSet outputSet, boolean assertConditional);
 
 	abstract void setRepresentation(int newRep);
 

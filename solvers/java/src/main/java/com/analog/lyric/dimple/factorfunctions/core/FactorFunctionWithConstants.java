@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class FactorFunctionWithConstants extends FactorFunction
@@ -170,7 +171,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public final Object getConstantByIndex(int index)
+	public final @Nullable Object getConstantByIndex(int index)
 	{
 		if (index < _smallestConstantIndex || index > _largestConstantIndex)	// Index beyond the ends of the list of constants
 			return null;
@@ -196,7 +197,7 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public int[] getEdgesByIndexRange(int minIndex, int maxIndex)
+	public @Nullable int[] getEdgesByIndexRange(int minIndex, int maxIndex)
 	{
 		int numEdges = maxIndex - minIndex + 1 - numConstantsInIndexRange(minIndex, maxIndex);
 		if (numEdges < 1)
@@ -246,22 +247,30 @@ public class FactorFunctionWithConstants extends FactorFunction
 	}
 	
 	@Override
-	public int[] getDirectedToIndices(int numEdges)
+	public @Nullable int[] getDirectedToIndices(int numEdges)
 	{
 		// Add the constants to the total number of edges
 		int[] directedToIndices = _factorFunction.getDirectedToIndices(numEdges + _constants.length);
-		return contractIndexList(directedToIndices);	// Remove the constant indices
+		if (directedToIndices != null)
+		{
+			directedToIndices = contractIndexList(directedToIndices);	// Remove the constant indices
+		}
+		return directedToIndices;
 	}
 	
 	@Override
-	public int[] getDirectedToIndices()
+	public @Nullable int[] getDirectedToIndices()
 	{
 		int[] directedToIndices = _factorFunction.getDirectedToIndices();
-		return contractIndexList(directedToIndices);	// Remove the constant indices
+		if (directedToIndices != null)
+		{
+			directedToIndices = contractIndexList(directedToIndices);	// Remove the constant indices
+		}
+		return directedToIndices;
 	}
 
 	@Override
-	public int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
+	public @Nullable int[] getDirectedToIndicesForInput(Factor factor, int inputEdge)
 	{
 		int[] directedToIndices = _factorFunction.getDirectedToIndicesForInput(factor, expandInputEdge(inputEdge));
 		if (directedToIndices != null)

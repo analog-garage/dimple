@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * Test generation of {@link GibbsVariableUpdateEvent}s.
@@ -51,6 +52,7 @@ import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
  */
 public class TestGibbsVariableUpdateEvent
 {
+	@NonNullByDefault
 	static class BogoFunction extends FactorFunction
 	{
 		@Override

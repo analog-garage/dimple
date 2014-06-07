@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import java.util.Objects;
+
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -48,6 +51,7 @@ public class Categorical extends FactorFunction
 	public Categorical()		// Variable parameters
 	{
 		super();
+		_alpha = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 		_parametersConstant = false;
 		_firstDirectedToIndex = 1;	// Parameter vector is an array (one RealJoint variable)
 	}
@@ -93,7 +97,7 @@ public class Categorical extends FactorFunction
     {
     	int index = 0;
     	if (!_parametersConstant)
-    		_alpha = (double[])values[index++].getObject();		// First argument is the parameter vector, if not constant
+    		_alpha = (double[])Objects.requireNonNull(values[index++].getObject());	// First argument is the parameter vector, if not constant
 
     	final int length = values.length;
     	double sum = 0;

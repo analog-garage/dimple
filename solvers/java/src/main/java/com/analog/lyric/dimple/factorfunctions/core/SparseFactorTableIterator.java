@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions.core;
 
+import java.util.Objects;
+
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -85,7 +87,7 @@ final class SparseFactorTableIterator extends FactorTableIteratorBase
 	@Override
 	public int[] indicesUnsafe()
 	{
-		return _jointIndices;
+		return Objects.requireNonNull(_jointIndices);
 	}
 	
 	@Override

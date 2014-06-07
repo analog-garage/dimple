@@ -853,13 +853,14 @@ public class FactorGraph extends FactorBase
 		
 		// Create the joint factor function
 		FactorGraph root = getRootGraph();
-		if (root._jointFactorCache == null)
+		LoadingCache<Functions,JointFactorFunction> jointFactorCache = root._jointFactorCache;
+		if (jointFactorCache == null)
 		{
-			root._jointFactorCache = JointFactorFunction.createCache();
+			jointFactorCache = root._jointFactorCache = JointFactorFunction.createCache();
 		}
 		
 		final JointFactorFunction.Functions jointFunctions = new JointFactorFunction.Functions(oldToNew);
-		final FactorFunction jointFunction = JointFactorFunction.getFromCache(root._jointFactorCache, jointFunctions);
+		final FactorFunction jointFunction = JointFactorFunction.getFromCache(jointFactorCache, jointFunctions);
 		
 		// Determine common parent
 		final List<FactorGraph> uncommonAncestors = new LinkedList<FactorGraph>();
