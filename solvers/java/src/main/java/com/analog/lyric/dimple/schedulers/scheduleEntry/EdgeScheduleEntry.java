@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 
 
@@ -65,17 +66,17 @@ public class EdgeScheduleEntry implements IScheduleEntry
 	}
 	
 	@Override
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs)
+	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, false);
 	}
 	@Override
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
+	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs)
 	{
 		return copy(old2newObjs, true);
 	}
 	
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
+	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
 	{
 		boolean skip = false;
 		boolean isBoundaryVariable = false;

@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -36,7 +37,7 @@ public interface IScheduleEntry
 	public void update();
 	
 	
-	public IScheduleEntry copy(Map<Node,Node> old2newObjs);
-	public IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
-	public Iterable<Port> getPorts();
+	public @Nullable IScheduleEntry copy(Map<Node,Node> old2newObjs);
+	public @Nullable IScheduleEntry copyToRoot(Map<Node,Node> old2newObjs);
+	public @Nullable Iterable<Port> getPorts();
 }

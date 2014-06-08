@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * @since 0.06
@@ -58,7 +59,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	
 	
 	@Override
-	public void attachNodes(INode[] nodes)			// Nodes must all be variables
+	public void attachNodes(@NonNull INode[] nodes)			// Nodes must all be variables
 	{
 		_numVariables = nodes.length;
 		_variables = new VariableBase[_numVariables];
@@ -127,7 +128,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	}
 
 	@Override
-	public INode[] getNodeList()
+	public @NonNull INode[] getNodeList()
 	{
 		return getVariableList();
 	}
@@ -196,7 +197,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 
 	// Make a new block updater of the same type, but with different variables
 	@Override
-	public IBlockUpdater create()
+	public @NonNull IBlockUpdater create()
 	{
 		return new BlockMHSampler(_proposalKernel);
 	}

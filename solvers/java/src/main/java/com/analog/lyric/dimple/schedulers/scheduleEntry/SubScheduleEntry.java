@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -77,7 +78,7 @@ public class SubScheduleEntry implements IScheduleEntry
 	}
 
 	@Override
-	public Iterable<Port> getPorts()
+	public @Nullable Iterable<Port> getPorts()
 	{
 		//This is a subgraph.
 		ArrayList<Port> ports = new ArrayList<Port>();

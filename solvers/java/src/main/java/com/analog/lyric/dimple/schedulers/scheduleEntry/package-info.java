@@ -10,4 +10,6 @@
 /**
  * Inference schedule entries.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
+import com.analog.lyric.util.misc.NonNullByDefault;
