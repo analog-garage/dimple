@@ -68,7 +68,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 */
 	
 	@Override
-	public IOptionHolder getOptionParent()
+	public @Nullable IOptionHolder getOptionParent()
 	{
 		return getParentGraph();
 	}

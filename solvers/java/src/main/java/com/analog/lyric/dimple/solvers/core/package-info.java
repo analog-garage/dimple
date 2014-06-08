@@ -10,4 +10,6 @@
 /**
  * Solver implementation base classes.
  */
+//@NonNullByDefault
 package com.analog.lyric.dimple.solvers.core;
+

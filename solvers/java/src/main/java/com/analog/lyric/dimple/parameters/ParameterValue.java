@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.util.concurrent.AtomicDouble;
 
 @ThreadSafe
@@ -64,7 +65,7 @@ public class ParameterValue extends AtomicDouble implements Cloneable
 	/**
 	 * Returns this object or null if it is not a {@link SharedParameterValue}.
 	 */
-	public SharedParameterValue asSharedValue()
+	public @Nullable SharedParameterValue asSharedValue()
 	{
 		return null;
 	}

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @author cbarber
@@ -50,7 +51,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	 * throws an exception if it is true.
 	 */
 	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
+	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
 		if (create)
 		{
@@ -64,7 +65,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	 * Default implementation returns null.
 	 */
 	@Override
-	public IOptionHolder getOptionParent()
+	public @Nullable IOptionHolder getOptionParent()
 	{
 		return null;
 	}

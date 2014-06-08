@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core.proxy;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,6 +31,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IOptions;
 import com.analog.lyric.options.Options;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.0.5
@@ -41,7 +44,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	 * State
 	 */
 	
-	private ConcurrentMap<IOptionKey<?>,Object> _localOptions = null;
+	private @Nullable ConcurrentMap<IOptionKey<?>,Object> _localOptions = null;
 	
 	/*--------------
 	 * Construction
@@ -67,7 +70,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	}
 
 	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
+	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
 		ConcurrentMap<IOptionKey<?>,Object> localOptions = null;
 		final ISolverNode delegate = getDelegate();
@@ -86,7 +89,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 		}
 		else
 		{
-			localOptions = delegate.getLocalOptions(create||!_localOptions.isEmpty());
+			localOptions = delegate.getLocalOptions(create||!Objects.requireNonNull(_localOptions).isEmpty());
 			localOptions.putAll(_localOptions);
 			_localOptions = null;
 		}
@@ -101,14 +104,14 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	}
 
 	@Override
-	public Set<IOptionKey<?>> getRelevantOptionKeys()
+	public @NonNull Set<IOptionKey<?>> getRelevantOptionKeys()
 	{
 		final ISolverNode delegate = getDelegate();
 		return delegate != null ? delegate.getRelevantOptionKeys() : Collections.EMPTY_SET;
 	}
 
 	@Override
-	public IOptions options()
+	public @NonNull IOptions options()
 	{
 		return new Options(this);
 	}
@@ -230,7 +233,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	 * Local methods
 	 */
 	
-	public abstract ISolverNode getDelegate();
+	public abstract @Nullable ISolverNode getDelegate();
 
 	protected RuntimeException unsupported(String method)
 	{

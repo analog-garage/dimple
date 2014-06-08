@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -52,7 +53,7 @@ public abstract class SolverFactorEvent extends SolverEvent
 	 */
 	
 	@Override
-	public Factor getModelObject()
+	public @Nullable Factor getModelObject()
 	{
 		return getSource().getModelObject();
 	}

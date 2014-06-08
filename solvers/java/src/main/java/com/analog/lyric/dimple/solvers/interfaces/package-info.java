@@ -10,4 +10,6 @@
 /**
  * Core interfaces for Dimple solvers.
  */
+//@NonNullByDefault
 package com.analog.lyric.dimple.solvers.interfaces;
+

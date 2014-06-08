@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.util.concurrent.AtomicDoubleArray;
 
 @ThreadSafe
@@ -112,7 +113,7 @@ public abstract class ParameterListN<Key extends IParameterKey>
 	}
 	
 	@Override
-	public SharedParameterValue getSharedValue(int index)
+	public @Nullable SharedParameterValue getSharedValue(int index)
 	{
 		assertIndexInRange(index);
 		return null;
@@ -182,7 +183,7 @@ public abstract class ParameterListN<Key extends IParameterKey>
 	}
 	
 	@Override
-	public final void setSharedValue(int index, SharedParameterValue value)
+	public final void setSharedValue(int index, @Nullable SharedParameterValue value)
 	{
 		setShared(index, value != null);
 	}

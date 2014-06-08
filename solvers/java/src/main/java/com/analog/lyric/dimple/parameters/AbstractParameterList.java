@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 @ThreadSafe
 public abstract class AbstractParameterList<Key extends IParameterKey> implements IParameterList<Key>
@@ -42,7 +43,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	private class IteratorImpl implements Iterator<Parameter<Key>>
 	{
 		private final AtomicInteger _index = new AtomicInteger(0);
-		private final Key[] _keys = getKeys();
+		private final @Nullable Key[] _keys = getKeys();
 		
 		@Override
 		public boolean hasNext()
@@ -61,7 +62,8 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 				shared = false;
 				value = new SharedParameterValue(get(i));
 			}
-			return new Parameter<Key>(_keys != null ? _keys[i] : null, i, value, isFixed(i), shared);
+			final Key[] keys = _keys;
+			return new Parameter<Key>(keys != null ? keys[i] : null, i, value, isFixed(i), shared);
 		}
 
 		@Override
@@ -89,7 +91,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
-	public SharedParameterValue getSharedValue(Key key)
+	public @Nullable SharedParameterValue getSharedValue(Key key)
 	{
 		assertHasKeys("getSharedValue");
 		return getSharedValue(key.ordinal());
@@ -202,7 +204,7 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 	}
 	
 	@Override
-	public void setSharedValue(Key key, SharedParameterValue value)
+	public void setSharedValue(Key key, @Nullable SharedParameterValue value)
 	{
 		assertHasKeys("setSharedValue");
 		setSharedValue(key.ordinal(), value);

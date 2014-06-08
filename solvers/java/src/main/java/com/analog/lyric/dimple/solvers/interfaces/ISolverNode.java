@@ -22,6 +22,7 @@ package com.analog.lyric.dimple.solvers.interfaces;
 import com.analog.lyric.dimple.events.ISolverEventSource;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @author schweitz
@@ -44,10 +45,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
 	/**
 	 * Returns the solver factor graph to which this node belongs.
 	 */
-	public ISolverFactorGraph getParentGraph();
+	public @Nullable ISolverFactorGraph getParentGraph();
 	
 	//Gets the highest level graph to which this node belongs.
-	public ISolverFactorGraph getRootGraph();
+	public @Nullable ISolverFactorGraph getRootGraph();
 
 	/**
 	 * Returns solver node attached to this node through edge with given index.
@@ -69,7 +70,7 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
     public double getBetheEntropy() ;
     
     //Return the model object associated with this solver node.
-    public INode getModelObject();
+    public @Nullable INode getModelObject();
     
     //Returns the input messages for a specified port
     public Object getInputMsg(int portIndex);

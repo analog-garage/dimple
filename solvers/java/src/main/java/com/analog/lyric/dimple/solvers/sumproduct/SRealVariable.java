@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -253,7 +254,7 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int newArraySize = Math.max(_inputMsgs.length,portNum + 1);
 		_inputMsgs = Arrays.copyOf(_inputMsgs,newArraySize);
 		_inputMsgs[portNum] = createDefaultMessage();

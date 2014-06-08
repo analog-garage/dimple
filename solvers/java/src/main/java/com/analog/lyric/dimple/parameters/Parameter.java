@@ -21,6 +21,8 @@ import java.io.Serializable;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Simple holder for a {@link IParameterKey}/value pair.
  */
@@ -33,7 +35,7 @@ public final class Parameter<Key extends IParameterKey> implements Serializable
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final Key _key;
+	private final @Nullable Key _key;
 	private final int _index;
 	private final SharedParameterValue _value;
 	private final boolean _fixed;
@@ -43,7 +45,7 @@ public final class Parameter<Key extends IParameterKey> implements Serializable
 	 * Construction
 	 */
 
-	Parameter(Key key, int index, SharedParameterValue value, boolean fixed, boolean shared)
+	Parameter(@Nullable Key key, int index, SharedParameterValue value, boolean fixed, boolean shared)
 	{
 		_key = key;
 		_index = index;
@@ -165,7 +167,7 @@ public final class Parameter<Key extends IParameterKey> implements Serializable
 	/**
 	 * Key identifying the parameter. May be null in which case only the {@link #index()} is relevant.
 	 */
-	public Key key()
+	public @Nullable Key key()
 	{
 		return _key;
 	}
@@ -194,7 +196,7 @@ public final class Parameter<Key extends IParameterKey> implements Serializable
 		return _value.get();
 	}
 	
-	public SharedParameterValue sharedValue()
+	public @Nullable SharedParameterValue sharedValue()
 	{
 		return _shared ? _value : null;
 	}

@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -572,7 +573,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	public Object [] createMessages(ISolverFactor factor)
 	{
 		Object [] retval = super.createMessages(factor);
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int newArraySize = _inputMessages.length;
 		_logInPortMsgs = Arrays.copyOf(_logInPortMsgs, newArraySize);
 		_logInPortMsgs[portNum] = new double[_inputMessages[portNum].length];

@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.parameters;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Abstract base class for {@link IParameterList} implementations with eight or less parameters.
  * <p>
@@ -70,7 +72,7 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	}
 	
 	@Override
-	public final SharedParameterValue getSharedValue(int index)
+	public final @Nullable SharedParameterValue getSharedValue(int index)
 	{
 		return getParameterValue(index).asSharedValue();
 	}
@@ -114,7 +116,7 @@ public abstract class SmallParameterListBase<Key extends IParameterKey> extends 
 	}
 	
 	@Override
-	public final void setSharedValue(int index, SharedParameterValue value)
+	public final void setSharedValue(int index, @Nullable SharedParameterValue value)
 	{
 		assertNotFixed(index);
 		setParameterValue(index, value == null ? getParameterValue(index).toUnshared() : value);

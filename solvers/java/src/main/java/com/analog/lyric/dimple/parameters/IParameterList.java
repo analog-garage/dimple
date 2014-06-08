@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.parameters;
 
 import java.io.Serializable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Interface for holding a set of parameters associated with a parametric function.
  * <p>
@@ -107,7 +109,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * of the array must equal {@link #size()}.
 	 * @see #hasKeys()
 	 */
-	public Key[] getKeys();
+	public @Nullable Key[] getKeys();
 	
 	/**
 	 * Returns {@link SharedParameterValue} object containing parameter value if parameter
@@ -117,7 +119,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * @throws UnsupportedOperationException if {@link #hasKeys()} is false.
 	 * @see #getSharedValue(int)
 	 */
-	public SharedParameterValue getSharedValue(Key key);
+	public @Nullable SharedParameterValue getSharedValue(Key key);
 	
 	/**
 	 * Returns {@link SharedParameterValue} object containing parameter value if parameter
@@ -127,7 +129,7 @@ public interface IParameterList<Key extends IParameterKey>
 	 * @throws IndexOutOfBoundsException if index is less than zero or greater than or equal to {@link #size()}.
 	 * @see #getSharedValue(IParameterKey)
 	 */
-	public SharedParameterValue getSharedValue(int index);
+	public @Nullable SharedParameterValue getSharedValue(int index);
 	
 	/**
 	 * True if parameter list supports parameter access by key.
@@ -210,9 +212,9 @@ public interface IParameterList<Key extends IParameterKey>
 	 * */
 	public void setFixed(Key key, boolean fixed);
 
-	public void setSharedValue(Key key, SharedParameterValue value);
+	public void setSharedValue(Key key, @Nullable SharedParameterValue value);
 	
-	public void setSharedValue(int index, SharedParameterValue value);
+	public void setSharedValue(int index, @Nullable SharedParameterValue value);
 	
 	/**
 	 * Sets whether given parameter may be shared.

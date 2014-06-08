@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -477,7 +478,7 @@ public class SRealVariable extends SRealVariableBase
 			_particleValues[i] = 0.0;
 		_logWeight = new double[_numParticles];
 
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int numPorts = Math.max(_inPortMsgs.length, portNum+1);
 		
 		_inPortMsgs = Arrays.copyOf(_inPortMsgs,numPorts);

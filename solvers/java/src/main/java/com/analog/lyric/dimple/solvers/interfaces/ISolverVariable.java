@@ -17,11 +17,12 @@
 package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface ISolverVariable extends ISolverNode
 {
 	@Override
-	public VariableBase getModelObject();
+	public @Nullable VariableBase getModelObject();
 	
 	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue);
 	public Object getBelief();

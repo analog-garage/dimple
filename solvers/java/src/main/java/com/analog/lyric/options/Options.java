@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 @ThreadSafe
 public class Options extends AbstractOptions
 {
@@ -47,13 +49,13 @@ public class Options extends AbstractOptions
 	}
 
 	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
+	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
 		return _holder.getLocalOptions(create);
 	}
 	
 	@Override
-	public IOptionHolder getOptionParent()
+	public @Nullable IOptionHolder getOptionParent()
 	{
 		return _holder.getOptionParent();
 	}
@@ -78,15 +80,15 @@ public class Options extends AbstractOptions
 	 * Options methods
 	 */
 	
-	public static <T> T lookup(IOptionHolder holder, IOptionKey<T> key)
+	public static @Nullable <T> T lookup(IOptionHolder holder, IOptionKey<T> key)
 	{
 		T value = Options.lookupOrNull(holder, key);
 		return value != null ? null : key.defaultValue();
 	}
 
-	public static <T> T lookupOrNull(IOptionHolder holder, IOptionKey<T> key)
+	public static @Nullable <T> T lookupOrNull(IOptionHolder holder, IOptionKey<T> key)
 	{
-		do
+		while (true)
 		{
 			Map<IOptionKey<?>,Object> options = holder.getLocalOptions(false);
 			if (options != null)
@@ -98,9 +100,16 @@ public class Options extends AbstractOptions
 				}
 			}
 			
-			holder = holder.getOptionParent();
-			
-		} while (holder != null);
+			IOptionHolder parent = holder.getOptionParent();
+			if (parent != null)
+			{
+				holder = parent;
+			}
+			else
+			{
+				break;
+			}
+		}
 
 		return null;
 	}

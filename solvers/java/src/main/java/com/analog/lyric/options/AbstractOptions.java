@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.analog.lyric.util.misc.Nullable;
+
 // FIXME: make thread safe
 public abstract class AbstractOptions implements IOptions
 {
@@ -45,14 +47,14 @@ public abstract class AbstractOptions implements IOptions
 	}
 
 	@Override
-	public boolean containsKey(Object key)
+	public boolean containsKey(@Nullable Object key)
 	{
 		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
 		return map != null && map.containsKey(key);
 	}
 
 	@Override
-	public boolean containsValue(Object value)
+	public boolean containsValue(@Nullable Object value)
 	{
 		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
 		return map != null && map.containsValue(value);
@@ -66,7 +68,7 @@ public abstract class AbstractOptions implements IOptions
 	}
 
 	@Override
-	public Object get(Object key)
+	public @Nullable Object get(@Nullable Object key)
 	{
 		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
 		return map != null ? map.get(key) : null;
@@ -99,7 +101,7 @@ public abstract class AbstractOptions implements IOptions
 	}
 
 	@Override
-	public Object remove(Object key)
+	public @Nullable Object remove(@Nullable Object key)
 	{
 		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
 		return map != null ? map.remove(key) : null;
@@ -124,33 +126,33 @@ public abstract class AbstractOptions implements IOptions
 	 */
 	
 	@Override
-	public <T> T get(IOptionKey<T> key)
+	public @Nullable <T> T get(IOptionKey<T> key)
 	{
 		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
 		return map != null ? key.type().cast(map.get(key)) : null;
 	}
 	
 	@Override
-	public <T> IOption<T> getOption(IOptionKey<T> key)
+	public @Nullable <T> IOption<T> getOption(IOptionKey<T> key)
 	{
 		T value = get(key);
 		return value != null ? new Option<T>(key, value) : null;
 	}
 
 	@Override
-	public <T> T lookup(IOptionKey<T> key)
+	public @Nullable <T> T lookup(IOptionKey<T> key)
 	{
 		return Options.lookup(this, key);
 	}
 	
 	@Override
-	public <T> T lookupOrNull(IOptionKey<T> key)
+	public @Nullable <T> T lookupOrNull(IOptionKey<T> key)
 	{
 		return Options.lookupOrNull(this, key);
 	}
 
 	@Override
-	public <T> IOption<T> lookupOption(IOptionKey<T> key)
+	public @Nullable <T> IOption<T> lookupOption(IOptionKey<T> key)
 	{
 		T value = lookup(key);
 		return value != null ? new Option<T>(key, value) : null;

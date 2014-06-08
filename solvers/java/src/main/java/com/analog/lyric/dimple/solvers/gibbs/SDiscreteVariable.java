@@ -700,7 +700,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	@Override
 	public Object[] createMessages(ISolverFactor factor)
 	{
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int length = _inPortMsgs.length;
 		length = Math.max(portNum+1, length);
     	

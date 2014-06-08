@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 @Immutable
 public abstract class OptionKey<T> implements IOptionKey<T>
@@ -52,7 +53,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * @see OptionRegistry#addFromClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> IOptionKey<T> inClass(Class<?> declaringClass, String name)
+	public static <T> IOptionKey<T> inClass(@Nullable Class<?> declaringClass, @Nullable String name)
 	{
 		try
 		{
@@ -162,7 +163,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	}
 	
 	@Override
-	public T lookup(IOptionHolder holder)
+	public @Nullable T lookup(IOptionHolder holder)
 	{
 		return holder.options().lookup(this);
 	}
@@ -191,7 +192,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * This method is implemented using reflection and is not expected to be very fast. It is
 	 * intended to be
 	 */
-	public static <T> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
+	public static @Nullable<T> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
 	{
 		IOptionKey<T> canonical = null;
 		

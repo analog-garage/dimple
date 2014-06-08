@@ -19,6 +19,8 @@ package com.analog.lyric.options;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Interface for object that can hold option values.
  * <p>
@@ -37,7 +39,7 @@ public interface IOptionHolder
 	 * @return local option map. May return null if there are no locally set options and {@code create}
 	 * is false.
 	 */
-	public ConcurrentMap<IOptionKey<?>,Object> getLocalOptions(boolean create);
+	public @Nullable ConcurrentMap<IOptionKey<?>,Object> getLocalOptions(boolean create);
 	
 	/**
 	 * The "parent" of this option holder to which option lookup will be delegated for option
@@ -47,12 +49,12 @@ public interface IOptionHolder
 	 * <p>
 	 * @return the parent object or null if there is none.
 	 */
-	public IOptionHolder getOptionParent();
+	public @Nullable IOptionHolder getOptionParent();
 	
 	/**
 	 * Return a list of option keys that are relevant to this object, i.e. ones whose values affect
 	 * the behavior of the object.
-	 * @return set of option keys. May return null if there aren't any.
+	 * @return set of option keys.
 	 */
 	public Set<IOptionKey<?>> getRelevantOptionKeys();
 	

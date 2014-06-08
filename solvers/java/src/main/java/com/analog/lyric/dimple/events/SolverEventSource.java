@@ -80,7 +80,7 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
     }
     
     @Override
-    public ISolverFactorGraph getEventParent()
+    public @Nullable ISolverFactorGraph getEventParent()
     {
     	return getParentGraph();
     }

@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A unique key for looking up or setting a value from a {@link IOptionHolder}.
  * <p>
@@ -48,8 +50,7 @@ public interface IOptionKey<T> extends Serializable
 	 * <p>
 	 * @see Enum#getDeclaringClass
 	 */
-	
-	public abstract Class<?> getDeclaringClass();
+	public abstract @Nullable Class<?> getDeclaringClass();
 	
 	/**
 	 * The unqualified name of the option.
@@ -61,7 +62,7 @@ public interface IOptionKey<T> extends Serializable
 	 * <p>
 	 * @see Enum#name
 	 */
-	public abstract String name();
+	public abstract @Nullable String name();
 	
 	/*---------------
 	 * Other methods
@@ -85,7 +86,7 @@ public interface IOptionKey<T> extends Serializable
 	 * holder.options().lookup(this)
 	 * </pre>
 	 */
-	public abstract T lookup(IOptionHolder holder);
+	public abstract @Nullable T lookup(IOptionHolder holder);
 	
 	/**
 	 * Set the option value locally on the given {@code holder}.

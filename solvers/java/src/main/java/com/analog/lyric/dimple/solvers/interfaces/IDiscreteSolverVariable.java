@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.interfaces;
 
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -26,7 +27,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 public interface IDiscreteSolverVariable extends ISolverVariable
 {
 	@Override
-	public Discrete getModelObject();
+	public @Nullable Discrete getModelObject();
 	
 	public int getGuessIndex();
 	public void setGuessIndex(int guess);

@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -242,7 +243,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	public Object [] createMessages(ISolverFactor factor)
 	{
 		Object [] retval = super.createMessages(factor);
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		int newArraySize = _inputMessages.length;
 		
 		

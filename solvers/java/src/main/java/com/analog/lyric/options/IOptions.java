@@ -20,20 +20,22 @@ import java.util.Map;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 @ThreadSafe
 public interface IOptions extends IOptionHolder, Map<IOptionKey<?>,Object>
 {
-	public <T> T get(IOptionKey<T> key);
+	public @Nullable <T> T get(IOptionKey<T> key);
 
-	public <T> IOption<T> getOption(IOptionKey<T> key);
+	public @Nullable <T> IOption<T> getOption(IOptionKey<T> key);
 
 	public IOptionHolder getOptionHolder();
 	
-	public <T> T lookup(IOptionKey<T> key);
+	public @Nullable <T> T lookup(IOptionKey<T> key);
 
-	public <T> T lookupOrNull(IOptionKey<T> key);
+	public @Nullable <T> T lookupOrNull(IOptionKey<T> key);
 	
-	public <T> IOption<T> lookupOption(IOptionKey<T> key);
+	public @Nullable <T> IOption<T> lookupOption(IOptionKey<T> key);
 	
 	public <T> void set(IOptionKey<T> key, T value);
 	

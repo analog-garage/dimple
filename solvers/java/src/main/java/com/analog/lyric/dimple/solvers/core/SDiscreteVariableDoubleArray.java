@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -84,7 +85,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		//Retrieve the variable port associated with this factor
-		int portNum = _var.getPortNum(factor.getModelObject());
+		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		
 		//Resize the message arrays.
 		int newArraySize = Math.max(_inputMessages.length,portNum + 1);

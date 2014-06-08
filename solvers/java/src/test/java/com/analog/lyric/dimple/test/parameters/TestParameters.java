@@ -34,11 +34,14 @@ import com.analog.lyric.dimple.parameters.ParameterList2;
 import com.analog.lyric.dimple.parameters.ParameterListN;
 import com.analog.lyric.dimple.parameters.SharedParameterValue;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.google.common.util.concurrent.AtomicDoubleArray;
 
+@NonNullByDefault
 public class TestParameters
 {
 	/*---------------
@@ -70,7 +73,7 @@ public class TestParameters
 		}
 
 		@Override
-		public IParameterKey[] getKeys()
+		public @Nullable IParameterKey[] getKeys()
 		{
 			return null;
 		}
@@ -100,7 +103,7 @@ public class TestParameters
 		 @Override
 		 public Double defaultValue() { return _defaultValue; }
 		 @Override
-		public Double lookup(IOptionHolder holder) { return holder.options().lookup(this); }
+		public @Nullable Double lookup(IOptionHolder holder) { return holder.options().lookup(this); }
 		 @Override
 		public void set(IOptionHolder holder, Double value) { holder.options().set(this,  value); }
 		 @Override
@@ -488,7 +491,9 @@ public class TestParameters
 		{
 			try
 			{
-				list.get(null);
+				@SuppressWarnings("unchecked")
+				Key key = (Key) new ParameterKey(0, Object.class, "bogus");
+				list.get(key);
 				fail("should not get here");
 			}
 			catch (UnsupportedOperationException ex)

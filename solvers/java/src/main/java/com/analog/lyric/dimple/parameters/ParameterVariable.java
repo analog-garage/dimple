@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.parameters;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A {@link Real} variable that implements a parameter of a parametric factor
@@ -40,7 +41,7 @@ public abstract class ParameterVariable extends Real
 	
 	public abstract int getParameterIndex();
 	
-	public abstract IParameterKey getParameterKey();
+	public abstract @Nullable IParameterKey getParameterKey();
 	
 	/*-----------------
 	 * Implementations
@@ -92,7 +93,7 @@ public abstract class ParameterVariable extends Real
 		}
 		
 		@Override
-		public final IParameterKey getParameterKey()
+		public final @Nullable IParameterKey getParameterKey()
 		{
 			return null;
 		}
