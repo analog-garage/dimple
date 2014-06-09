@@ -18,20 +18,22 @@ package com.analog.lyric.dimple.learning;
 
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public class BasicTrainingSet implements ITrainingSet
 {
 	/*-------
 	 * State
 	 */
 	
-	private final ITrainingSample _commonAssignments;
+	private final @Nullable ITrainingSample _commonAssignments;
 	private final Iterable<ITrainingSample> _samples;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public BasicTrainingSet(ITrainingSample commonAssignments, Iterable<ITrainingSample> samples)
+	public BasicTrainingSet(@Nullable ITrainingSample commonAssignments, Iterable<ITrainingSample> samples)
 	{
 		_commonAssignments = commonAssignments;
 		_samples = samples;
@@ -53,7 +55,7 @@ public class BasicTrainingSet implements ITrainingSet
 	}
 
 	@Override
-	public ITrainingSample getCommonAssignments()
+	public @Nullable ITrainingSample getCommonAssignments()
 	{
 		return _commonAssignments;
 	}

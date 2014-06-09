@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -32,9 +33,9 @@ public interface ITrainingSample
 	
 	public Iterable<ITrainingAssignment> getAssignments();
 	
-	public ITrainingAssignment getAssignmentForVariable(VariableBase variable);
+	public @Nullable ITrainingAssignment getAssignmentForVariable(VariableBase variable);
 	
-	public ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable);
+	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable);
 	
 	/**
 	 * @return the training set from which this sample was obtained.

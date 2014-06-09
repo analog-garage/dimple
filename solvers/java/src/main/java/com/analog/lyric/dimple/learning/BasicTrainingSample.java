@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * A basic implementation of {@link ITrainingSample}.
@@ -80,15 +81,18 @@ public class BasicTrainingSample implements ITrainingSample
 	 * 
 	 */
 	@Override
-	public ITrainingAssignment getAssignmentForVariable(VariableBase variable)
+	public @Nullable ITrainingAssignment getAssignmentForVariable(VariableBase variable)
 	{
 		FactorGraph fg = variable.getParentGraph();
 		
-		for (ITrainingAssignment assignment : _assignments)
+		if (fg != null)
 		{
-			if (assignment.getVariable(fg) == variable)
+			for (ITrainingAssignment assignment : _assignments)
 			{
-				return assignment;
+				if (assignment.getVariable(fg) == variable)
+				{
+					return assignment;
+				}
 			}
 		}
 		
@@ -99,9 +103,10 @@ public class BasicTrainingSample implements ITrainingSample
 	 * 
 	 */
 	@Override
-	public ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
+	public @Nullable ITrainingAssignment getAssignmentForSolverVariable(ISolverVariable variable)
 	{
-		return getAssignmentForVariable(variable.getModelObject());
+		final VariableBase modelVar = variable.getModelObject();
+		return modelVar != null ? getAssignmentForVariable(modelVar) : null;
 	}
 
 	/*

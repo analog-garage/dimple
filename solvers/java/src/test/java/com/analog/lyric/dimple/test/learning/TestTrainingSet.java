@@ -86,7 +86,7 @@ public class TestTrainingSet
 			break;
 		case FIXED:
 		case VALUE:
-			assertTrue(var.getDomain().containsValueWithRepresentation(value));
+			assertTrue(value != null && var.getDomain().containsValueWithRepresentation(value));
 			break;
 		case INPUTS:
 			break;

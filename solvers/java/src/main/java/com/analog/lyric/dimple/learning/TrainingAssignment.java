@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.learning;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 import net.jcip.annotations.Immutable;
@@ -25,6 +26,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @author cbarber
@@ -40,7 +42,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	private static final long serialVersionUID = 1L;
 	
 	protected final TrainingAssignmentType _type;
-	protected final Object _value;
+	protected final @Nullable Object _value;
 	
 	@Immutable
 	private static class ByUUID extends TrainingAssignment
@@ -49,7 +51,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 
 		private final UUID _varId;
 		
-		private ByUUID(TrainingAssignmentType type, Object value,  UUID varId)
+		private ByUUID(TrainingAssignmentType type, @Nullable Object value,  UUID varId)
 		{
 			super(type, value);
 			_varId = varId;
@@ -58,7 +60,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		@Override
 		public VariableBase getVariable(FactorGraph model)
 		{
-			return model.getVariableByUUID(_varId);
+			return Objects.requireNonNull(model.getVariableByUUID(_varId));
 		}
 	}
 	
@@ -69,7 +71,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		
 		private final String _varName;
 
-		private ByName(TrainingAssignmentType type, Object value,  String varName)
+		private ByName(TrainingAssignmentType type, @Nullable Object value,  String varName)
 		{
 			super(type, value);
 			_varName = varName;
@@ -78,7 +80,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		@Override
 		public VariableBase getVariable(FactorGraph model)
 		{
-			return model.getVariableByName(_varName);
+			return Objects.requireNonNull(model.getVariableByName(_varName));
 		}
 	}
 	
@@ -89,7 +91,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		
 		private final int _varId;
 		
-		private ById(TrainingAssignmentType type, Object value, int varId)
+		private ById(TrainingAssignmentType type, @Nullable Object value, int varId)
 		{
 			super(type, value);
 			_varId = varId;
@@ -98,7 +100,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		@Override
 		public VariableBase getVariable(FactorGraph model)
 		{
-			return model.getVariable(_varId);
+			return Objects.requireNonNull(model.getVariable(_varId));
 		}
 	}
 	
@@ -109,7 +111,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		
 		private final transient VariableBase _var;
 		
-		private ByVariableBase(TrainingAssignmentType type, Object value, VariableBase var)
+		private ByVariableBase(TrainingAssignmentType type, @Nullable Object value, VariableBase var)
 		{
 			super(type, value);
 			_var = var;
@@ -137,28 +139,28 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	 * Construction
 	 */
 	
-	protected TrainingAssignment(TrainingAssignmentType type, Object value)
+	protected TrainingAssignment(TrainingAssignmentType type, @Nullable Object value)
 	{
 		_type = type;
 		_value = value;
 	}
 	
-	public static TrainingAssignment create(UUID varId, TrainingAssignmentType type, Object value)
+	public static TrainingAssignment create(UUID varId, TrainingAssignmentType type, @Nullable Object value)
 	{
 		return new ByUUID(type, value, varId);
 	}
 	
-	public static TrainingAssignment create(int varId, TrainingAssignmentType type, Object value)
+	public static TrainingAssignment create(int varId, TrainingAssignmentType type, @Nullable Object value)
 	{
 		return new ById(type, value, varId);
 	}
 
-	public static TrainingAssignment create(String varName, TrainingAssignmentType type, Object value)
+	public static TrainingAssignment create(String varName, TrainingAssignmentType type, @Nullable Object value)
 	{
 		return new ByName(type, value, varName);
 	}
 	
-	public static TrainingAssignment create(VariableBase var, TrainingAssignmentType type, Object value)
+	public static TrainingAssignment create(VariableBase var, TrainingAssignmentType type, @Nullable Object value)
 	{
 		return new ByVariableBase(type, value, var);
 	}
@@ -173,7 +175,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 		applyToModelVariable(getVariable(model), getAssignmentType(), getValue());
 	}
 	
-	public static void applyToModelVariable(VariableBase var, TrainingAssignmentType type, Object value)
+	public static void applyToModelVariable(VariableBase var, TrainingAssignmentType type, @Nullable Object value)
 	{
 		switch (type)
 		{
@@ -198,10 +200,14 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	@Override
 	public void applyToSolver(ISolverFactorGraph solver)
 	{
-		applyToSolverVariable(getSolverVariable(solver), getAssignmentType(), getValue());
+		final ISolverVariable var = getSolverVariable(solver);
+		if (var != null)
+		{
+			applyToSolverVariable(var, getAssignmentType(), getValue());
+		}
 	}
 	
-	public static void applyToSolverVariable(ISolverVariable var, TrainingAssignmentType type, Object value)
+	public static void applyToSolverVariable(ISolverVariable var, TrainingAssignmentType type, @Nullable Object value)
 	{
 		switch (type)
 		{
@@ -236,7 +242,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	 * 
 	 */
 	@Override
-	public ISolverVariable getSolverVariable(ISolverFactorGraph solver)
+	public @Nullable ISolverVariable getSolverVariable(@Nullable ISolverFactorGraph solver)
 	{
 		return solver != null ? solver.getSolverVariable(this.getVariable(solver.getModelObject())) : null;
 	}
@@ -245,7 +251,7 @@ public abstract class TrainingAssignment implements ITrainingAssignment, Seriali
 	 * 
 	 */
 	@Override
-	public Object getValue()
+	public @Nullable Object getValue()
 	{
 		return _value;
 	}

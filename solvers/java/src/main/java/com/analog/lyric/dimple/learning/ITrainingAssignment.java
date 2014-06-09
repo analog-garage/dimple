@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Represents an assignment (or lack thereof) to a random variable for the purpose
@@ -55,7 +56,7 @@ public interface ITrainingAssignment
 	 * applied. The assignment does not necessarily contain a direct
 	 * pointer to the variable.
 	 */
-	public ISolverVariable getSolverVariable(ISolverFactorGraph solver);
+	public @Nullable ISolverVariable getSolverVariable(@Nullable ISolverFactorGraph solver);
 	
 	/**
 	 * The type of value will depend on {@link #getAssignmentType()}:
@@ -76,5 +77,5 @@ public interface ITrainingAssignment
 	 * not the element itself.
 	 * </d>
 	 */
-	public Object getValue();
+	public @Nullable Object getValue();
 }

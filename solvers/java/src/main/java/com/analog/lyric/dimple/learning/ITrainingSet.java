@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.learning;
 
+import com.analog.lyric.util.misc.Nullable;
+
 
 
 /**
@@ -33,5 +35,5 @@ public interface ITrainingSet extends Iterable<ITrainingSample>
 	 * and {@link TrainingAssignmentType#INPUTS}. May be null if there are no common
 	 * assignments in the training set.
 	 */
-	public ITrainingSample getCommonAssignments();
+	public @Nullable ITrainingSample getCommonAssignments();
 }
