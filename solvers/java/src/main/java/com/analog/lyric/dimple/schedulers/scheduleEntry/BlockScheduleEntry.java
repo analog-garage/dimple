@@ -45,6 +45,13 @@ public class BlockScheduleEntry implements IScheduleEntry
 	{
 		this(blockUpdaterClass.newInstance(), nodeList);
 	}
+	public BlockScheduleEntry(IBlockUpdater blockUpdater, Object... nodeList)	// For MATLAB
+	{
+		_blockUpdater = blockUpdater;
+		INode[] nodes = new INode[nodeList.length];
+		System.arraycopy(nodeList, 0, nodes, 0, nodeList.length);
+		_blockUpdater.attachNodes(nodes);
+	}
 
 	
 	@Override

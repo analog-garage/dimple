@@ -31,6 +31,7 @@ end
 test1(debugPrint, repeatable);
 test2(debugPrint, repeatable);
 test3(debugPrint, repeatable);
+test4(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testBlockScheduleEntries');
 
@@ -230,3 +231,95 @@ assertEqual(nnz(arrayfun(@(a,b,c)a==1 && b==1 && c==0, as,bs,cs)), 0);
 end
 
 
+
+% Test with scheduler rather than custom schedule
+function test4(debugPrint, repeatable)
+
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
+import com.analog.lyric.dimple.test.solvers.gibbs.TrivialUniformBlockProposer;
+
+table1 = zeros(2,2,2);
+table1(:,:,1) = [2 5; 1 0];
+table1(:,:,2) = [4 1; 3 7];
+
+table2 = [1 2; 3 4];
+
+fg = FactorGraph();
+fg.Solver = 'SumProduct';
+a = Bit;
+b = Bit;
+c = Bit;
+d = Bit;
+x = Bit(1,4);
+
+a.Input = 0.2;
+fg.addFactor([0.7 0.3], b);   % For variety, do prior for b differently
+
+fg.addFactor(table1, a, b, c);
+fg.addFactor(table2, c, d);
+fg.addFactor([1 2; 2 1], x(1), a);
+fg.addFactor([1 2; 2 7], x(2), b);
+fg.addFactor([1 2; 2 1], x(3), c);
+fg.addFactor([1 2; 2 7], x(4), d);
+
+fg.solve();
+aB = a.Belief;
+bB = b.Belief;
+cB = c.Belief;
+dB = d.Belief;
+xB = x.Belief;
+
+
+fg.Solver = 'Gibbs';
+
+% Use uniform proposal kernel with default scheduler
+fg.Scheduler.addBlockScheduleEntry(BlockMHSampler(TrivialUniformBlockProposer),x(2:3),c);
+fg.Scheduler.addBlockScheduleEntry({BlockMHSampler(TrivialUniformBlockProposer),a,b});
+
+if repeatable
+    fg.Solver.setSeed(2);
+end
+
+fg.Solver.setNumSamples(10000);
+fg.Solver.saveAllSamples();
+fg.solve();
+
+assertElementsAlmostEqual(aB/a.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(bB/b.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(cB/c.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(dB/d.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(xB/x.Belief, 1, 'absolute', 0.04);
+
+as = a.Solver.getAllSampleIndices();
+bs = b.Solver.getAllSampleIndices();
+cs = c.Solver.getAllSampleIndices();
+
+assertEqual(nnz(arrayfun(@(a,b,c)a==1 && b==1 && c==0, as,bs,cs)), 0);
+
+
+% Use uniform proposal kernel with random scheduler
+fg.Scheduler = 'GibbsRandomScanScheduler';
+fg.Scheduler.addBlockScheduleEntries({BlockMHSampler(TrivialUniformBlockProposer),x(2:3),c}, ...
+                                     {BlockMHSampler(TrivialUniformBlockProposer),a,b});
+
+if repeatable
+    fg.Solver.setSeed(2);
+end
+
+fg.Solver.setNumSamples(10000);
+fg.Solver.saveAllSamples();
+fg.solve();
+
+assertElementsAlmostEqual(aB/a.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(bB/b.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(cB/c.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(dB/d.Belief, 1, 'absolute', 0.04);
+assertElementsAlmostEqual(xB/x.Belief, 1, 'absolute', 0.04);
+
+as = a.Solver.getAllSampleIndices();
+bs = b.Solver.getAllSampleIndices();
+cs = c.Solver.getAllSampleIndices();
+
+assertEqual(nnz(arrayfun(@(a,b,c)a==1 && b==1 && c==0, as,bs,cs)), 0);
+
+end

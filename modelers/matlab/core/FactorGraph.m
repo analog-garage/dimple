@@ -560,6 +560,10 @@ classdef FactorGraph < Node
         function set.Scheduler(obj,scheduler)
             obj.setScheduler(scheduler);
         end
+        
+        function scheduler = get.Scheduler(obj)
+            scheduler = Scheduler(obj);
+        end
 
         
         function set.Schedule(obj,schedule)
