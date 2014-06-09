@@ -10,4 +10,6 @@
 /**
  * Supports "rolled-up" graphs.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.model.repeated;
+import com.analog.lyric.util.misc.NonNullByDefault;

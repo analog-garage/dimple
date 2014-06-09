@@ -17,23 +17,25 @@
 package com.analog.lyric.dimple.model.repeated;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
 {
 	private Domain _domain;
 	
-	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();	
-	private IDataSource _dataSource = null;
-	private IDataSink _dataSink = null;
+	private ArrayList<VariableBase> _variables = new ArrayList<VariableBase>();
+	private @Nullable IDataSource _dataSource = null;
+	private @Nullable IDataSink _dataSink = null;
 	private ArrayList<VariableStreamSlice> _slices = new ArrayList<VariableStreamSlice>();
 	private VariableStreamSlice _slice;
 	
 
-	public VariableStreamBase(Domain domain) 
+	public VariableStreamBase(Domain domain)
 	{
 		_domain = domain;
 		_slice = getSlice(0);
@@ -59,10 +61,11 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	
 	public void advanceState()
 	{
-		if (_dataSink != null)
+		final IDataSink dataSink = _dataSink;
+		if (dataSink != null)
 		{
 			Object output = _variables.get(0).getBeliefObject();
-			_dataSink.push(output);
+			dataSink.push(Objects.requireNonNull(output));
 		}
 		
 		for (int i = 0; i < _variables.size()-1; i++)
@@ -72,9 +75,10 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		}
 		_variables.get(_variables.size()-1).getSolver().createNonEdgeSpecificState();
 
-		if (_dataSource != null)
+		final IDataSource dataSource = _dataSource;
+		if (dataSource != null)
 		{
-			Object input = _dataSource.getNext();
+			Object input = dataSource.getNext();
 			_variables.get(_variables.size()-1).setInputObject(input);
 		}
 		else
@@ -94,11 +98,11 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		return ss;
 	}
 	
-	public IDataSink getDataSink()
+	public @Nullable IDataSink getDataSink()
 	{
 		return _dataSink;
 	}
-	public IDataSource getDataSource()
+	public @Nullable IDataSource getDataSource()
 	{
 		return _dataSource;
 	}
@@ -108,42 +112,43 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		_dataSink = sink;
 	}
 	
-	public void setDataSource(IDataSource source) 
+	public void setDataSource(IDataSource source)
 	{
 		_dataSource = source;
 		
 		//fill variables with data
 		for (VariableBase vb : _variables)
 		{
-			if (!_dataSource.hasNext())
+			if (!source.hasNext())
 				throw new DimpleException("not enough data in data source");
 			
-			vb.setInputObject(_dataSource.getNext());
+			vb.setInputObject(source.getNext());
 		}
 	}
 	
 	abstract protected VariableBase instantiateVariable(Domain domain) ;
 	
-	protected VariableBase createVariable() 
+	protected VariableBase createVariable()
 	{
 		VariableBase tmp;
 		
 		tmp = instantiateVariable(_domain);
 		
+		final IDataSource dataSource = _dataSource;
 		if (_dataSource != null)
 		{
 			
-			if (!_dataSource.hasNext())
+			if (!dataSource.hasNext())
 				throw new DimpleException("out of data");
 			
-			tmp.setInputObject(_dataSource.getNext());
+			tmp.setInputObject(dataSource.getNext());
 		}
 		
 		return tmp;
 
 	}
 	
-	public boolean variableAvailableFor(double index) 
+	public boolean variableAvailableFor(double index)
 	{
 		if (index < 0)
 		{
@@ -155,7 +160,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		
 		while (localIndex >= _variables.size() )
 		{
-			if (_dataSource != null && !_dataSource.hasNext())
+			if (!hasNext())
 			{
 				return false;
 			}
@@ -167,17 +172,19 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 	}
 	
 	
-	public VariableBase get(int index) 
+	@Override
+	public VariableBase get(int index)
 	{
 		return get(index,false);
 	}
 	
-	public VariableBase get(int index,boolean createIfDoesntExist) 
+	@Override
+	public VariableBase get(int index,boolean createIfDoesntExist)
 	{
 		if (index < 0)
 			throw new DimpleException("negative indexing not allowed");
 		
-		int localIndex = (int)(index);
+		int localIndex = (index);
 		
 		if (!createIfDoesntExist && localIndex >= _variables.size())
 			throw new DimpleException("A variable has not yet been instantiated for the specified index: " + index);
@@ -191,12 +198,13 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 
 	}
 
-	public boolean hasNext()  
+	public boolean hasNext()
 	{
-		if (_dataSource == null)
+		final IDataSource dataSource = _dataSource;
+		if (dataSource == null)
 			return true;
 		else
-			return _dataSource.hasNext();
+			return dataSource.hasNext();
 
 	}
 	
@@ -205,6 +213,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		return _slice.copy();
 	}
 	
+	@Override
 	public VariableStreamBase getStream()
 	{
 		return this;

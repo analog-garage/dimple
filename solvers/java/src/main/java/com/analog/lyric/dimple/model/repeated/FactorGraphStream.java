@@ -23,6 +23,7 @@ import java.util.HashSet;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * This class represents one stream of Nested Factor Graphs.
@@ -42,10 +43,10 @@ public class FactorGraphStream
 	/*
 	 * The constructor adds Factors and Variables and BlastFromThePastFactors.
 	 */
-	public FactorGraphStream(FactorGraph fg, 
+	public FactorGraphStream(FactorGraph fg,
 			FactorGraph repeatedGraph,
 			int bufferSize,
-			Object ... args) 
+			Object ... args)
 	{
 		//Save arguments so that we can increase buffer size later
 		_args = args;
@@ -104,7 +105,7 @@ public class FactorGraphStream
 					_parameter2blastFromThePastHandler.put(var,pbftph);
 				}
 				
-				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());				
+				_parameter2blastFromThePastHandler.get(var).addBlastFromThePast(p.getSiblingPort());
 				
 			}
 			else
@@ -124,7 +125,7 @@ public class FactorGraphStream
 					
 					//For each variable before this one
 					for (int i = index-1; i >= 0; i--)
-					{					
+					{
 						//add blast from the past
 						VariableBase var2 = vsb.get(i);
 	
@@ -154,7 +155,7 @@ public class FactorGraphStream
 		return _nestedGraphs.size();
 	}
 
-	public void setBufferSize(int size) 
+	public void setBufferSize(int size)
 	{
 		if (size > _bufferSize)
 		{
@@ -185,7 +186,7 @@ public class FactorGraphStream
 		private BlastFromThePastFactor _mainFlastFromThePast;
 		private ArrayList<BlastFromThePastFactor> _allBlastFromThePasts = new ArrayList<BlastFromThePastFactor>();
 		
-		public ParameterBlastFromThePastHandler(VariableBase var,FactorGraph fg, 
+		public ParameterBlastFromThePastHandler(VariableBase var,FactorGraph fg,
 				BlastFromThePastFactor originalPlastFromPast)
 		{
 			_otherVar = var;
@@ -217,7 +218,7 @@ public class FactorGraphStream
 		}
 	}
 
-	public void advance() 
+	public void advance()
 	{
 	
 		//Deal with parameters
@@ -255,14 +256,14 @@ public class FactorGraphStream
 
 
 
-	public boolean hasNext() 
+	public boolean hasNext()
 	{
         for (VariableStreamBase s : _variableStreams)
         {
                 if (!s.hasNext())
                         return false;
         }
-        return true;	
+        return true;
         
 	}
 
@@ -281,7 +282,7 @@ public class FactorGraphStream
 		_nestedGraphs.add(ng);
 	}
 
-	private VariableStreamBase getVariableStream(VariableBase var)
+	private @Nullable VariableStreamBase getVariableStream(VariableBase var)
 	{
 		for (int i = 0; i < _variableStreams.size(); i++)
 		{
