@@ -13,4 +13,6 @@
  * @since 0.06
  * @author Christopher Barber
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.model.transform;
+import com.analog.lyric.util.misc.NonNullByDefault;

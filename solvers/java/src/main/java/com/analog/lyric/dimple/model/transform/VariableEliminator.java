@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import com.analog.lyric.dimple.model.factors.FactorBase;
 import com.analog.lyric.dimple.model.factors.FactorList;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
@@ -175,7 +177,7 @@ public class VariableEliminator
 	 */
 	
 	private final FactorGraph _model;
-	private final Random _rand;
+	private final @Nullable Random _rand;
 	
 	/**
 	 * If true, then variables with fixed values will be eliminated first and will be
@@ -212,7 +214,7 @@ public class VariableEliminator
 	 * with the lower id ({@link VariableBase#getId()}), which is useful
 	 * for testing.
 	 */
-	public VariableEliminator(FactorGraph model, boolean useConditioning, Random rand)
+	public VariableEliminator(FactorGraph model, boolean useConditioning, @Nullable Random rand)
 	{
 		_model = model;
 		_rand = rand;
@@ -382,6 +384,8 @@ public class VariableEliminator
 		ArrayList<VariableBase> bestList = new ArrayList<VariableBase>(eliminator._nVariables);
 		Stats bestStats = null;
 		
+		Random rand = eliminator.getRandomizer();
+		
 		for (int attempt = 0; attempt < nAttempts; ++attempt)
 		{
 			// Pick a cost function
@@ -394,7 +398,7 @@ public class VariableEliminator
 				}
 				else
 				{
-					costIndex = Arrays.binarySearch(functionCDF, eliminator._rand.nextDouble());
+					costIndex = Arrays.binarySearch(functionCDF, rand.nextDouble());
 					if (costIndex < 0)
 					{
 						costIndex = -costIndex - 1;
@@ -450,6 +454,11 @@ public class VariableEliminator
 			}
 		}
 		
+		if (bestStats == null)
+		{
+			bestStats = new Stats(null, 0);
+		}
+		
 		return new Ordering(bestList, bestStats);
 	}
 	
@@ -467,7 +476,7 @@ public class VariableEliminator
 	 * 
 	 * @see #VariableEliminator(FactorGraph, boolean, Random)
 	 */
-	public Random getRandomizer()
+	public @Nullable Random getRandomizer()
 	{
 		return _rand;
 	}
@@ -577,7 +586,7 @@ public class VariableEliminator
 		}
 
 		@Override
-		public VariableBase next()
+		public @Nullable VariableBase next()
 		{
 			final CostFunction costFunction = _costFunction;
 			final IHeap<Var> heap = _heap;
@@ -595,9 +604,9 @@ public class VariableEliminator
 				_stats.addConditionedVariable();
 			}
 			long cliqueCardinality = isConditioned ? 1 : var.cardinality();
-			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 			{
-				final Var neighbor = link._var;
+				final Var neighbor = link.var();
 				neighbor.removeNeighbor(var);
 				cliqueCardinality *= neighbor.cardinality();
 			}
@@ -605,12 +614,12 @@ public class VariableEliminator
 			_stats.addClique(var, cliqueCardinality);
 
 			// Add edges between remaining neighbors
-			for (VarLink link1 = var._neighborList._next; link1._var != null; link1 = link1._next)
+			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 			{
 				final Var neighbor1 = link1._var;
-				for (VarLink link2 = link1._next; link2._var != null; link2 = link2._next)
+				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
-					final Var neighbor2 = link2._var;
+					final Var neighbor2 = link2.var();
 					if (neighbor1.addNeighbor(neighbor2))
 					{
 						neighbor2.addNeighbor(neighbor1);
@@ -624,28 +633,36 @@ public class VariableEliminator
 			if (costFunction.neighborsOnly())
 			{
 				heap.deferOrderingForBulkChange(var.nNeighbors());
-				for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+				for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 				{
-					final Var neighbor = link._var;
-					heap.changePriority(neighbor._heapEntry, neighbor.adjustedCost(costFunction));
+					final Var neighbor = link.var();
+					IEntry<Var> heapEntry = neighbor._heapEntry;
+					if (heapEntry != null)
+					{
+						heap.changePriority(heapEntry, neighbor.adjustedCost(costFunction));
+					}
 				}
 			}
 			else
 			{
 				Set<Var> changeSet = new HashSet<Var>();
-				for (VarLink link1 = var._neighborList._next; link1._var != null; link1 = link1._next)
+				for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 				{
-					final Var neighbor = link1._var;
+					final Var neighbor = link1.var();
 					changeSet.add(neighbor);
-					for (VarLink link2 = neighbor._neighborList._next; link2._var != null; link2 = link2._next)
+					for (VarLink link2 = neighbor._neighborList._next; link2.hasVar(); link2 = link2._next)
 					{
-						changeSet.add(link2._var);
+						changeSet.add(link2.var());
 					}
 				}
 				heap.deferOrderingForBulkChange(changeSet.size());
 				for (Var change : changeSet)
 				{
-					heap.changePriority(change._heapEntry, change.adjustedCost(costFunction));
+					IEntry<Var> heapEntry = change._heapEntry;
+					if (heapEntry != null)
+					{
+						heap.changePriority(heapEntry, change.adjustedCost(costFunction));
+					}
 				}
 			}
 
@@ -677,7 +694,7 @@ public class VariableEliminator
 		/**
 		 * Identifies cost evaluator used by this iterator.
 		 */
-		public CostFunction getCostEvaluator()
+		public @Nullable CostFunction getCostEvaluator()
 		{
 			return _stats.cost();
 		}
@@ -712,7 +729,7 @@ public class VariableEliminator
 	 */
 	public static class Stats implements Cloneable
 	{
-		private final CostFunction _cost;
+		private final @Nullable CostFunction _cost;
 		
 		private int _addedEdges;
 		private long _addedEdgeWeight;
@@ -735,7 +752,7 @@ public class VariableEliminator
 			this(null, -1);
 		}
 		
-		private Stats(CostFunction costFunction, int value)
+		private Stats(@Nullable CostFunction costFunction, int value)
 		{
 			_cost = costFunction;
 			
@@ -912,7 +929,7 @@ public class VariableEliminator
 		/**
 		 * The cost function used to generate these stats, if from {@link OrderIterator}.
 		 */
-		public CostFunction cost()
+		public @Nullable CostFunction cost()
 		{
 			return _cost;
 		}
@@ -1034,9 +1051,9 @@ public class VariableEliminator
 				// they will need to be merged.
 				final Set<VariableBase> variables = Sets.newHashSetWithExpectedSize(size);
 				variables.add(variable);
-				for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+				for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 				{
-					variables.add(link._var._variable);
+					variables.add(link.var()._variable);
 				}
 				
 				int nCliqueFactors = 0;
@@ -1086,13 +1103,13 @@ public class VariableEliminator
 	public static class Var
 	{
 		final VariableBase _variable;
-		final VarLink _neighborList = new VarLink(null);
+		final VarLink _neighborList = new VarLink();
 		final Map<Var, VarLink> _neighborMap;
 		
 		/**
 		 * Pointer to heap entry for this object for use in efficient reprioritization.
 		 */
-		IEntry<Var> _heapEntry = null;
+		@Nullable IEntry<Var> _heapEntry = null;
 		
 		/**
 		 * Can be set to a value in the range [0.0 and 1.0) to be used by
@@ -1202,13 +1219,23 @@ public class VariableEliminator
 	 */
 	public static final class VarLink
 	{
-		private final Var _var;
+		private final @Nullable Var _var;
 		private VarLink _prev = this;
 		private VarLink _next = this;
 		
 		VarLink(Var info)
 		{
 			_var = info;
+		}
+		
+		VarLink()
+		{
+			_var = null;
+		}
+		
+		public boolean hasVar()
+		{
+			return _var != null;
 		}
 		
 		/**
@@ -1224,7 +1251,7 @@ public class VariableEliminator
 		 */
 		public Var var()
 		{
-			return _var;
+			return Objects.requireNonNull(_var);
 		}
 		
 		void insertBefore(VarLink next)
@@ -1250,7 +1277,7 @@ public class VariableEliminator
 	
 	public static abstract class CostFunction
 	{
-		private VariableCost _type = null;
+		private @Nullable VariableCost _type = null;
 		
 		protected CostFunction()
 		{
@@ -1294,7 +1321,7 @@ public class VariableEliminator
 		 * If this is a standard built-in cost function, returns its corresponding descriptor,
 		 * otherwise returns null.
 		 */
-		public final VariableCost type()
+		public final @Nullable VariableCost type()
 		{
 			return _type;
 		}
@@ -1341,9 +1368,9 @@ public class VariableEliminator
 		{
 			double weight = 1.0;
 			
-			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 			{
-				weight *= link._var.cardinality();
+				weight *= link.var().cardinality();
 			}
 			
 			return weight;
@@ -1374,12 +1401,12 @@ public class VariableEliminator
 		{
 			double count = 0.0;
 			
-			for (VarLink link1 = var._neighborList._next; link1._var != null; link1 = link1._next)
+			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 			{
-				final Var neighbor1 = link1._var;
-				for (VarLink link2 = link1._next; link2._var != null; link2 = link2._next)
+				final Var neighbor1 = link1.var();
+				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
-					final Var neighbor2 = link2._var;
+					final Var neighbor2 = link2.var();
 					if (!neighbor1.isAdjacent(neighbor2))
 					{
 						++count;
@@ -1415,12 +1442,12 @@ public class VariableEliminator
 		{
 			double weight = 0.0;
 			
-			for (VarLink link1 = var._neighborList._next; link1._var != null; link1 = link1._next)
+			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 			{
-				final Var neighbor1 = link1._var;
-				for (VarLink link2 = link1._next; link2._var != null; link2 = link2._next)
+				final Var neighbor1 = link1.var();
+				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
-					final Var neighbor2 = link2._var;
+					final Var neighbor2 = link2.var();
 					if (!neighbor1.isAdjacent(neighbor2))
 					{
 						weight += neighbor1.cardinality() * neighbor2.cardinality();
@@ -1515,9 +1542,9 @@ public class VariableEliminator
 				factor.clearMarked();
 			}
 
-			for (VarLink link = var._neighborList._next; link._var != null; link = link._next)
+			for (VarLink link = var._neighborList._next; link.hasVar(); link = link._next)
 			{
-				link._var._variable.clearMarked();
+				link.var()._variable.clearMarked();
 			}
 		}
 
@@ -1540,13 +1567,14 @@ public class VariableEliminator
 	 */
 	private double generateCostIncrement(VariableBase variable)
 	{
-		if (_rand == null)
+		final Random rand = _rand;
+		if (rand == null)
 		{
 			return (double)variable.getId() / (double)Integer.MAX_VALUE;
 		}
 		else
 		{
-			return _rand.nextDouble();
+			return rand.nextDouble();
 		}
 	}
 	

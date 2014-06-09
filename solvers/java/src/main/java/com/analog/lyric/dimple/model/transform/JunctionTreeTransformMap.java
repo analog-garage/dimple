@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -32,6 +33,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterables;
 
 /**
@@ -52,8 +54,8 @@ public class JunctionTreeTransformMap
 	private final FactorGraph _sourceModel;
 	private final long _sourceVersion;
 	private final FactorGraph _targetModel;
-	private final Map<Factor,Factor> _sourceToTargetFactors;
-	private final Map<VariableBase, VariableBase> _sourceToTargetVariables;
+	private final @Nullable Map<Factor,Factor> _sourceToTargetFactors;
+	private final @Nullable Map<VariableBase, VariableBase> _sourceToTargetVariables;
 	private final LinkedHashMap<VariableBase, AddedJointVariable<?>> _addedDeterministicVariables;
 	private final Set<VariableBase> _conditionedVariables;
 	
@@ -210,7 +212,7 @@ public class JunctionTreeTransformMap
 		return Iterables.unmodifiableIterable(_addedDeterministicVariables.values());
 	}
 	
-	public <Var extends VariableBase> AddedJointVariable<Var> getAddedDeterministicVariable(Var targetVariable)
+	public @Nullable <Var extends VariableBase> AddedJointVariable<Var> getAddedDeterministicVariable(Var targetVariable)
 	{
 		return (AddedJointVariable<Var>) _addedDeterministicVariables.get(targetVariable);
 	}
@@ -278,11 +280,12 @@ public class JunctionTreeTransformMap
 	 */
 	public Factor sourceToTargetFactor(Factor sourceFactor)
 	{
-		if (_sourceToTargetFactors == null)
+		final Map<Factor,Factor> sourceToTargetFactors = _sourceToTargetFactors;
+		if (sourceToTargetFactors == null)
 		{
 			return sourceFactor;
 		}
-		return _sourceToTargetFactors.get(sourceFactor);
+		return sourceToTargetFactors.get(sourceFactor);
 	}
 	
 	/**
@@ -306,11 +309,12 @@ public class JunctionTreeTransformMap
 	 */
 	public VariableBase sourceToTargetVariable(VariableBase sourceVariable)
 	{
-		if (_sourceToTargetVariables == null)
+		final Map<VariableBase, VariableBase> sourceToTargetVariables = _sourceToTargetVariables;
+		if (sourceToTargetVariables == null)
 		{
 			return sourceVariable;
 		}
-		return _sourceToTargetVariables.get(sourceVariable);
+		return sourceToTargetVariables.get(sourceVariable);
 	}
 	
 	/**
@@ -379,12 +383,12 @@ public class JunctionTreeTransformMap
 
 	void addFactorMapping(Factor sourceFactor, Factor targetFactor)
 	{
-		_sourceToTargetFactors.put(sourceFactor, targetFactor);
+		Objects.requireNonNull(_sourceToTargetFactors).put(sourceFactor, targetFactor);
 	}
 
 	void addVariableMapping(VariableBase sourceVariable, VariableBase targetVariable)
 	{
-		_sourceToTargetVariables.put(sourceVariable, targetVariable);
+		Objects.requireNonNull(_sourceToTargetVariables).put(sourceVariable, targetVariable);
 	}
 	
 }
