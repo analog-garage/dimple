@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.schedulers.dependencyGraph;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.INode;
@@ -25,29 +27,56 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.helpers.LastUpdateGrap
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 /*
  * A single node in the StaticDependencyGraph.
  * Corresponds to an IScheduleEntry object.
  */
-public class StaticDependencyGraphNode 
+public class StaticDependencyGraphNode
 {
 	private int _phase;
-	private ArrayList<StaticDependencyGraphNode> _dependents = new ArrayList<StaticDependencyGraphNode>();
+	private List<StaticDependencyGraphNode> _dependents = new ArrayList<StaticDependencyGraphNode>();
 	private  int _numDependencies;
 	private int _numDependenciesLeft;
 	private IScheduleEntry _scheduleEntry;
 	private int _id = -1;
 		
-
+	private static class Sentinel extends StaticDependencyGraphNode
+	{
+		private Sentinel()
+		{
+			super(bogusEntry());
+		}
+		
+		// HACK to shut up null warnings
+		@NonNullByDefault(false)
+		private static IScheduleEntry bogusEntry()
+		{
+			return null;
+		}
+		
+		@Override
+		public boolean isSentinel()
+		{
+			return true;
+		}
+	}
+	
 	/*
 	 * Provide empty constructor so we can generate a sentinel object for telling a thread
 	 * when to stop working.
 	 */
-	public StaticDependencyGraphNode()
+	private StaticDependencyGraphNode(IScheduleEntry entry)
 	{
-		
-	}	
+		_dependents = Collections.EMPTY_LIST;
+		_scheduleEntry = entry;
+	}
+	
+	public static StaticDependencyGraphNode createSentinel()
+	{
+		return new Sentinel();
+	}
 	
 	/*
 	 * The constructor will set up dependencies.
@@ -163,6 +192,11 @@ public class StaticDependencyGraphNode
 	public int getNumDependencies()
 	{
 		return _numDependencies;
+	}
+	
+	public boolean isSentinel()
+	{
+		return false;
 	}
 	
 	/*

@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphN
 import com.analog.lyric.dimple.schedulers.scheduleEntry.EdgeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * The LastUpdateGraph data structure provides the ability to retrieve edges associated
@@ -57,7 +58,7 @@ public class LastUpdateGraph
 	/*
 	 * Get the last node to either read from or write on this edge.
 	 */
-	public StaticDependencyGraphNode getLastNode(Edge e)
+	public @Nullable StaticDependencyGraphNode getLastNode(Edge e)
 	{
 		return _edge2lastNode.get(e);
 	}

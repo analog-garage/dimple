@@ -32,7 +32,7 @@ class SingleQueueWorker implements Callable<Object>
 	private LinkedBlockingQueue<StaticDependencyGraphNode> _workQueue;
 	private AtomicInteger _nodesDone;
 	
-	public SingleQueueWorker(LinkedBlockingQueue<StaticDependencyGraphNode> 
+	public SingleQueueWorker(LinkedBlockingQueue<StaticDependencyGraphNode>
 		workQueue,
 		int numNodes,
 		AtomicInteger nodesDone)
@@ -42,15 +42,15 @@ class SingleQueueWorker implements Callable<Object>
 	}
 	
 	@Override
-	public Object call() throws Exception 
+	public Object call() throws Exception
 	{
 		//Keep going until there is nothing left.
 		while(true)
 		{
 			StaticDependencyGraphNode entry = _workQueue.take();	// Pull the next entry from the work queue (blocking if there are none)
 			
-			//If we find poison, there's nothing left to do.  Put the poison back for the next thread.
-			if (entry instanceof Poison)
+			//If we find sentinel, there's nothing left to do.  Put the sentinel back for the next thread.
+			if (entry.isSentinel())
 			{
 				_workQueue.add(entry);
 				break;
@@ -62,10 +62,10 @@ class SingleQueueWorker implements Callable<Object>
 			//Decrement the number of ndoes that are done.
 			int nodesLeft = _nodesDone.decrementAndGet();
 			
-			//If we're done, add Poison and quit.
+			//If we're done, add sentinel and quit.
 			if (nodesLeft == 0)
 			{
-				_workQueue.add(new Poison());
+				_workQueue.add(StaticDependencyGraphNode.createSentinel());
 				break;
 			}
 						
@@ -83,7 +83,7 @@ class SingleQueueWorker implements Callable<Object>
 					//Decrement
 					numDepsLeft = dependent.getNumDependenciesLeft();
 					numDepsLeft--;
-					dependent.setNumDependenciesLeft(numDepsLeft);					
+					dependent.setNumDependenciesLeft(numDepsLeft);
 				}
 				
 				//If there are 0 dependencies left, this was the last guy to touch it so

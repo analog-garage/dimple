@@ -17,12 +17,13 @@
 package com.analog.lyric.dimple.schedulers.dependencyGraph.helpers;
 
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * Utility class used by LastUpdateGraph and StaticDependencyGraphNodes for
  * tracking the last schedule entry to affect an edge.
  */
-public class Edge 
+public class Edge
 {
 	public INode from;
 	public INode to;
@@ -40,7 +41,7 @@ public class Edge
 	}
 	
 	@Override
-	public boolean equals(Object other)
+	public boolean equals(@Nullable Object other)
 	{
 		Edge otherEdge = (Edge)other;
 		return otherEdge.from == from && otherEdge.to == to;
