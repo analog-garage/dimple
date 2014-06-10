@@ -127,7 +127,7 @@ public abstract class PNodeVector extends PObject
 	{
 		return _nodes[index];
 	}
-	Node [] getModelerNodes()
+	public Node[] getModelerNodes()
 	{
 		return _nodes;
 	}

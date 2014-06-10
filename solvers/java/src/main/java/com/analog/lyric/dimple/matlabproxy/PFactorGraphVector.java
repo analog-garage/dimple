@@ -711,6 +711,11 @@ public class PFactorGraphVector extends PFactorVector
     	getGraph().setScheduler(scheduler);
 	}
 	
+	public IScheduler getScheduler()
+	{
+		return getGraph().getScheduler();
+	}
+	
 		
 	public PFactorGraphStream [] getFactorGraphStreams()
 	{
