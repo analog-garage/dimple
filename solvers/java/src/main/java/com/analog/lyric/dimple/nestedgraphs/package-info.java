@@ -10,4 +10,7 @@
 /**
  * Specializations of {@link FactorGraph} intended to be used as nested graphs.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.nestedgraphs;
+import com.analog.lyric.util.misc.NonNullByDefault;
+

@@ -51,12 +51,14 @@ public class MultiplexerCPD extends FactorGraph
 		this(zDomains,false,false);
 	}
 	
+	@SuppressWarnings("null")
 	public MultiplexerCPD(Object [][] zDomains, boolean oneBased, boolean aAsDoubles)
 	{
 		super("MultiplexerCPD");
 		create(zDomains,oneBased,aAsDoubles);
 	}
 
+	@SuppressWarnings("null")
 	public MultiplexerCPD(Object [] domain, int numZs, boolean oneBased, boolean aAsDoubles)
 	{
 		super("MultiplexerCPD");
@@ -74,6 +76,7 @@ public class MultiplexerCPD extends FactorGraph
 	/**
 	 * @since 0.05
 	 */
+	@SuppressWarnings("null")
 	public MultiplexerCPD(DiscreteDomain [] domains, boolean oneBased, boolean aAsDoubles)
 	{
 		super("MultiplexerCPD");
