@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.util.misc.Nullable;
 
 public class RealJointConjugateSamplerRegistry
 {
@@ -29,7 +30,7 @@ public class RealJointConjugateSamplerRegistry
 	
 
 	// Find a sampler compatible with the specified factor function as an input
-	public static IRealJointConjugateSampler findCompatibleSampler(FactorFunction ff)
+	public static @Nullable IRealJointConjugateSampler findCompatibleSampler(FactorFunction ff)
 	{
 
 		for (IRealJointConjugateSamplerFactory sampler : availableConjugateSamplers)
@@ -40,7 +41,7 @@ public class RealJointConjugateSamplerRegistry
 
 	
 	// Get a sampler by name; assumes it is located in this package
-	public static IRealJointConjugateSampler get(String samplerName)
+	public static @Nullable IRealJointConjugateSampler get(String samplerName)
 	{
 		String fullQualifiedName = RealJointConjugateSamplerRegistry.class.getPackage().getName() + "." + samplerName;
 		try

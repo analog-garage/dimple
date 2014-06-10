@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DirichletParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class DirichletSampler implements IRealJointConjugateSampler
@@ -34,18 +35,19 @@ public class DirichletSampler implements IRealJointConjugateSampler
 	private int _dimension = -1;
 	
 	@Override
-	public final double[] nextSample(Port[] ports, FactorFunction input)
+	public final double[] nextSample(Port[] ports, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, ports, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+		@Nullable FactorFunction input)
 	{
 		if (_dimension < 0)	// Just do this once
 			setDimension(ports, input);
-		int dimension = _dimension;		
+		int dimension = _dimension;
 
 		DirichletParameters parameters = (DirichletParameters)aggregateParameters;
 		if (parameters.getSize() != dimension)
@@ -106,7 +108,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		{
 			// Corner case where some, but not all, of the samples are zero
 			// Add a little to the zero sample values and adjust the others accordingly
-			double zeroAdjustment = Double.MIN_VALUE * (double)numZeros / (dimension - numZeros);
+			double zeroAdjustment = Double.MIN_VALUE * numZeros / (dimension - numZeros);
 			for (int i = 0; i < dimension; i++)
 			{
 				if (sample[i] == 0)
@@ -135,7 +137,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		return new DirichletParameters();
 	}
 	
-	private void setDimension(Port[] ports, FactorFunction input)
+	private void setDimension(Port[] ports, @Nullable FactorFunction input)
 	{
 		int numPorts = ports.length;
 		int dimension = 0;
@@ -160,7 +162,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		public IRealJointConjugateSampler create() {return new DirichletSampler();}
 		
 		@Override
-		public boolean isCompatible(FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable FactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;

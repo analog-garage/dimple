@@ -20,10 +20,12 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface IRealJointConjugateSampler extends ISampler
 {
-	public double[] nextSample(Port[] ports, FactorFunction input);
+	public double[] nextSample(Port[] ports, @Nullable FactorFunction input);
 	public IParameterizedMessage createParameterMessage();
-	public void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input);
+	public void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+		@Nullable FactorFunction input);
 }

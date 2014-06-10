@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class BetaSampler implements IRealConjugateSampler
@@ -30,14 +31,15 @@ public class BetaSampler implements IRealConjugateSampler
 	private final BetaParameters _parameters = new BetaParameters();
 
 	@Override
-	public final double nextSample(Port[] ports, FactorFunction input)
+	public final double nextSample(Port[] ports, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, ports, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+		@Nullable FactorFunction input)
 	{
 		double alphaMinusOne = 0;
 		double betaMinusOne = 0;
@@ -84,7 +86,7 @@ public class BetaSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new BetaSampler();}
 		
 		@Override
-		public boolean isCompatible(FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable FactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;

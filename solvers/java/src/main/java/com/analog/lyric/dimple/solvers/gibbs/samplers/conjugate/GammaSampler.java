@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class GammaSampler implements IRealConjugateSampler
@@ -30,14 +31,15 @@ public class GammaSampler implements IRealConjugateSampler
 	private final GammaParameters _parameters = new GammaParameters();
 
 	@Override
-	public final double nextSample(Port[] ports, FactorFunction input)
+	public final double nextSample(Port[] ports, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, ports, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+		@Nullable FactorFunction input)
 	{
 		double alphaMinusOne = 0;
 		double beta = 0;
@@ -84,7 +86,7 @@ public class GammaSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new GammaSampler();}
 		
 		@Override
-		public boolean isCompatible(FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable FactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;

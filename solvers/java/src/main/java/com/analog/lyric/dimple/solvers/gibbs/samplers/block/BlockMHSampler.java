@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs.samplers.block;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -35,6 +36,7 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.06
@@ -42,52 +44,55 @@ import com.analog.lyric.util.misc.NonNull;
  */
 public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 {
-	private IBlockProposalKernel _proposalKernel;
-	private VariableBase[] _variables;
-	private ISolverVariableGibbs[] _sVariables;
-	private SFactorGraph _sRootGraph;
-	private Domain[] _domains;
-	private int _numVariables;
-	private Set<ISolverNodeGibbs> _neighbors;
+	private @Nullable IBlockProposalKernel _proposalKernel;
+	private VariableBase[] _variables = new VariableBase[0];
+	private @Nullable ISolverVariableGibbs[] _sVariables;
+	private @Nullable SFactorGraph _sRootGraph;
+	private @Nullable Domain[] _domains;
+	private int _numVariables = 0;
+	private @Nullable Set<ISolverNodeGibbs> _neighbors;
 	
 	
-	public BlockMHSampler() {}
-	public BlockMHSampler(IBlockProposalKernel proposalKernel)
+	public BlockMHSampler()
+	{
+		this(null);
+	}
+	
+	public BlockMHSampler(@Nullable IBlockProposalKernel proposalKernel)
 	{
 		_proposalKernel = proposalKernel;
 	}
-	
 	
 	@Override
 	public void attachNodes(@NonNull INode[] nodes)			// Nodes must all be variables
 	{
 		_numVariables = nodes.length;
 		_variables = new VariableBase[_numVariables];
-		_sVariables = new ISolverVariableGibbs[_numVariables];
-		_domains = new Domain[_numVariables];
+		final ISolverVariableGibbs[] sVariables = _sVariables = new ISolverVariableGibbs[_numVariables];
+		final Domain[] domains = _domains = new Domain[_numVariables];
 		for (int i = 0; i < _numVariables; i++)
 		{
 			VariableBase variable = (VariableBase)nodes[i];
 			_variables[i] = variable;
-			_sVariables[i] = (ISolverVariableGibbs)variable.getSolver();
-			_domains[i] = variable.getDomain();
+			sVariables[i] = (ISolverVariableGibbs)variable.getSolver();
+			domains[i] = variable.getDomain();
 		}
-		_sRootGraph = (SFactorGraph)_sVariables[0].getRootGraph();
+		_sRootGraph = (SFactorGraph)sVariables[0].getRootGraph();
 		
 		// Pre-determine neighbors that will need to be scored
-		_neighbors = new HashSet<ISolverNodeGibbs>();
+		final Set<ISolverNodeGibbs> neighborSet = _neighbors = new HashSet<ISolverNodeGibbs>();
 		for (int i = 0; i < _numVariables; i++)
 		{
-			GibbsNeighbors neighbors = GibbsNeighbors.create(_sVariables[i]);
+			GibbsNeighbors neighbors = GibbsNeighbors.create(sVariables[i]);
 			if (neighbors == null)	// No deterministic dependents, neighbors are same as siblings
 			{
 				for (Factor f : _variables[i].getSiblings())
-					_neighbors.add((ISolverNodeGibbs)f.getSolver());
+					neighborSet.add((ISolverNodeGibbs)f.getSolver());
 			}
 			else	// Has deterministic dependents
 			{
 				for (ISolverNodeGibbs n : neighbors)
-					_neighbors.add(n);
+					neighborSet.add(n);
 			}
 		}
 	}
@@ -95,14 +100,19 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	@Override
 	public void update()
 	{
-		if (_proposalKernel == null)
+		final IBlockProposalKernel proposalKernel = _proposalKernel;
+		if (proposalKernel == null)
 			throw new DimpleException("Must specify a block proposal kernel. No default is defined.");
 
 		final Value[] sampleValue = new Value[_numVariables];
-		for (int i = 0; i < _numVariables; i++)
-			sampleValue[i] = _sVariables[i].getCurrentSampleValue().clone();
+		if (_numVariables > 0)
+		{
+			final ISolverVariableGibbs[] sVariables = Objects.requireNonNull(_sVariables);
+			for (int i = 0; i < _numVariables; i++)
+				sampleValue[i] = sVariables[i].getCurrentSampleValue().clone();
+		}
 		
-		final BlockProposal proposal = _proposalKernel.next(sampleValue, _domains);
+		final BlockProposal proposal = proposalKernel.next(sampleValue, _domains);
 		final Value[] proposalValue = proposal.value;
 
 		// Get the potential for the current sample value
@@ -147,14 +157,15 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	{
 		_proposalKernel = BlockProposalKernelRegistry.get(proposalKernelName);
 	}
-	public IBlockProposalKernel getProposalKernel()
+	public @Nullable IBlockProposalKernel getProposalKernel()
 	{
 		return _proposalKernel;
 	}
 	public String getProposalKernelName()
 	{
-		if (_proposalKernel != null)
-			return _proposalKernel.getClass().getSimpleName();
+		final IBlockProposalKernel proposalKernel = _proposalKernel;
+		if (proposalKernel != null)
+			return proposalKernel.getClass().getSimpleName();
 		else
 			return "";
 	}
@@ -173,11 +184,14 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	{
 		double score = 0;
 		
-		for (ISolverVariableGibbs v : _sVariables)
-			score += v.getPotential();
+		if (_numVariables > 0)
+		{
+			for (ISolverVariableGibbs v : Objects.requireNonNull(_sVariables))
+				score += v.getPotential();
 		
-		for (ISolverNodeGibbs n : _neighbors)
-			score += n.getPotential();
+			for (ISolverNodeGibbs n : Objects.requireNonNull(_neighbors))
+				score += n.getPotential();
+		}
 			
 		return score;
 	}
@@ -189,10 +203,17 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 
 	public void setCurrentSample(Value[] sampleValues)
 	{
-		_sRootGraph.deferDeterministicUpdates();
-		for (int i = 0; i < _numVariables; i++)
-			_sVariables[i].setCurrentSample(sampleValues[i]);
-		_sRootGraph.processDeferredDeterministicUpdates();
+		if (_numVariables > 0)
+		{
+			final SFactorGraph sRootGraph = Objects.requireNonNull(_sRootGraph);
+			final ISolverVariableGibbs[] sVariables = Objects.requireNonNull(_sVariables);
+			sRootGraph.deferDeterministicUpdates();
+			for (int i = 0; i < _numVariables; i++)
+			{
+				sVariables[i].setCurrentSample(sampleValues[i]);
+			}
+			sRootGraph.processDeferredDeterministicUpdates();
+		}
 	}
 
 	// Make a new block updater of the same type, but with different variables
@@ -208,14 +229,19 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 	@Override
 	public void initialize()
 	{
-		if (_proposalKernel == null)
+		final IBlockProposalKernel proposalKernel = _proposalKernel;
+		if (proposalKernel == null)
 			throw new DimpleException("Must specify a block proposal kernel. No default is defined.");
 
 		final Value[] sampleValue = new Value[_numVariables];
-		for (int i = 0; i < _numVariables; i++)
-			sampleValue[i] = _sVariables[i].getCurrentSampleValue().clone();
+		if (_numVariables > 0)
+		{
+			final ISolverVariableGibbs[] sVariables = Objects.requireNonNull(_sVariables);
+			for (int i = 0; i < _numVariables; i++)
+				sampleValue[i] = sVariables[i].getCurrentSampleValue().clone();
+		}
 		
-		final BlockProposal proposal = _proposalKernel.next(sampleValue, _domains);
+		final BlockProposal proposal = proposalKernel.next(sampleValue, _domains);
 		final Value[] proposalValue = proposal.value;
 
 		setNextSampleValue(proposalValue);

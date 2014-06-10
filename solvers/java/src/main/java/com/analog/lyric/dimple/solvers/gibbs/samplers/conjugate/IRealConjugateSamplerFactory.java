@@ -18,10 +18,11 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.domains.RealDomain;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface IRealConjugateSamplerFactory
 {
 	public IRealConjugateSampler create();
-	public boolean isCompatible(FactorFunction factorFunction);
+	public boolean isCompatible(@Nullable FactorFunction factorFunction);
 	public boolean isCompatible(RealDomain domain);
 }

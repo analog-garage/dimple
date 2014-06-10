@@ -388,8 +388,9 @@ public class SRealVariable extends SRealVariableBase
 
 		// If there are inputs, see if there's an available conjugate sampler
 		IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
-		if (_input != null)
-			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(_input);
+		final FactorFunction input = _input;
+		if (input != null)
+			inputConjugateSampler = RealConjugateSamplerRegistry.findCompatibleSampler(input);
 
 		// Determine if there are bounds
 		double hi = _domain.getUpperBound();
@@ -398,7 +399,7 @@ public class SRealVariable extends SRealVariableBase
 		if (inputConjugateSampler != null)
 		{
 			// Sample from the input if there's an available sampler
-			double sampleValue = inputConjugateSampler.nextSample(new Port[0], _input);
+			double sampleValue = inputConjugateSampler.nextSample(new Port[0], input);
 			
 			// If there are also bounds, clip at the bounds
 			if (sampleValue > hi) sampleValue = hi;

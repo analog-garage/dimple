@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.IParameterizedMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 public class NormalSampler implements IRealConjugateSampler
 {
@@ -30,14 +31,15 @@ public class NormalSampler implements IRealConjugateSampler
 	private final NormalParameters _parameters = new NormalParameters();
 	
 	@Override
-	public final double nextSample(Port[] ports, FactorFunction input)
+	public final double nextSample(Port[] ports, @Nullable FactorFunction input)
 	{
 		aggregateParameters(_parameters, ports, input);
 		return nextSample(_parameters);
 	}
 	
 	@Override
-	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports, FactorFunction input)
+	public final void aggregateParameters(IParameterizedMessage aggregateParameters, Port[] ports,
+		@Nullable FactorFunction input)
 	{
 		double totalPrecision = 0;
 		double totalMeanPrecisionProduct = 0;
@@ -95,7 +97,7 @@ public class NormalSampler implements IRealConjugateSampler
 		public IRealConjugateSampler create() {return new NormalSampler();}
 		
 		@Override
-		public boolean isCompatible(FactorFunction factorFunction)
+		public boolean isCompatible(@Nullable FactorFunction factorFunction)
 		{
 			if (factorFunction == null)
 				return true;
