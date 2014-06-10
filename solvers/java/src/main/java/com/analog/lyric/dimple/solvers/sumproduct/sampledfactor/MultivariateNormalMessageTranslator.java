@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.MultivariateNormal;
@@ -25,13 +26,14 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealJointVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 {
-	private MultivariateNormalParameters _inputMessage;
-	private MultivariateNormalParameters _outputMessage;
-	private MultivariateNormal _variableInput;
-	private com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable _solverVariable;
+	private @Nullable MultivariateNormalParameters _inputMessage;
+	private @Nullable MultivariateNormalParameters _outputMessage;
+	private @Nullable MultivariateNormal _variableInput;
+	private @Nullable com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable _solverVariable;
 
 	public MultivariateNormalMessageTranslator(Port port, VariableBase variable)
 	{
@@ -42,6 +44,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	}
 
 
+	@SuppressWarnings("null")
 	@Override
 	public final void setMessageDirection(MessageDirection messageDirection)
 	{
@@ -61,11 +64,12 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 		}
 		else
 		{
-			if (_variableInput == null)
-				_variableInput = new MultivariateNormal(inputMessage);
+			MultivariateNormal variableInput = _variableInput;
+			if (variableInput == null)
+				variableInput = _variableInput = new MultivariateNormal(inputMessage);
 			else
-				_variableInput.setParameters(inputMessage);
-			_variable.setInputObject(_variableInput);
+				variableInput.setParameters(inputMessage);
+			_variable.setInputObject(variableInput);
 		}
 	}
 	
@@ -79,7 +83,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	public final void setOutputMessageFromVariableBelief()
 	{
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		List<double[]> sampleValues = _solverVariable._getSampleArrayUnsafe();
+		List<double[]> sampleValues = Objects.requireNonNull(_solverVariable)._getSampleArrayUnsafe();
 		int numSamples = sampleValues.size();
 		int dimension = sampleValues.get(0).length;
 
@@ -120,7 +124,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 			}
 		}
 		
-		_outputMessage.setMeanAndCovariance(mean, covariance);
+		Objects.requireNonNull(_outputMessage).setMeanAndCovariance(mean, covariance);
 	}
 	
 	
@@ -128,8 +132,8 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	public final void initialize()
 	{
 		SRealJointVariable var = (SRealJointVariable)_port.node.getSibling(_port.index).getSolver();
-		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(_outputMessage);
-		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(_inputMessage);
+		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(Objects.requireNonNull(_outputMessage));
+		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(Objects.requireNonNull(_inputMessage));
 		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable)_variable.getSolver();
 	}
 	
@@ -146,13 +150,13 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	}
 
 	@Override
-	public final Object getInputMessage()
+	public final @Nullable Object getInputMessage()
 	{
 		return _inputMessage;
 	}
 
 	@Override
-	public final Object getOutputMessage()
+	public final @Nullable Object getOutputMessage()
 	{
 		return _outputMessage;
 	}

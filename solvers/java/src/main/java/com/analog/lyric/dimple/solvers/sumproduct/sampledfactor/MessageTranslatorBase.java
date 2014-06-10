@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /**
@@ -31,7 +32,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
  * associated variable in the message graph.
  *
  */
-public abstract class MessageTranslatorBase 
+public abstract class MessageTranslatorBase
 {
 	protected Port _port;
 	protected VariableBase _variable;
@@ -51,7 +52,7 @@ public abstract class MessageTranslatorBase
 	public abstract void initialize();
 	public abstract void createInputMessage(Object msg);
 	public abstract void createOutputMessage(Object msg);
-	public abstract Object getInputMessage();
-	public abstract Object getOutputMessage();
+	public abstract @Nullable Object getInputMessage();
+	public abstract @Nullable Object getOutputMessage();
 	public abstract void moveMessages(MessageTranslatorBase other);
 }

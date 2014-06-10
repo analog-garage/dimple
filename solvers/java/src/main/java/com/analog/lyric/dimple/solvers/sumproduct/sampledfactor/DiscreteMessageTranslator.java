@@ -16,17 +16,19 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 public class DiscreteMessageTranslator extends MessageTranslatorBase
 {
-	private double[] _inputMessage;
-	private double[] _outputMessage;
-	
+	private @Nullable double[] _inputMessage;
+	private @Nullable double[] _outputMessage;
 
 	public DiscreteMessageTranslator(Port port, VariableBase variable)
 	{
@@ -66,8 +68,8 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	public final void initialize()
 	{
 		SDiscreteVariable var = (SDiscreteVariable)_port.node.getSibling(_port.index).getSolver();
-		_outputMessage = (double[])var.resetInputMessage(_outputMessage);
-		_inputMessage = (double[])var.resetInputMessage(_inputMessage);
+		_outputMessage = var.resetInputMessage(Objects.requireNonNull(_outputMessage));
+		_inputMessage = var.resetInputMessage(Objects.requireNonNull(_inputMessage));
 	}
 
 	@Override
@@ -83,13 +85,13 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	}
 		
 	@Override
-	public final Object getInputMessage()
+	public final @Nullable Object getInputMessage()
 	{
 		return _inputMessage;
 	}
 	
 	@Override
-	public final Object getOutputMessage()
+	public final @Nullable Object getOutputMessage()
 	{
 		return _outputMessage;
 	}

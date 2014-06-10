@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import java.util.Objects;
+
 import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -25,13 +27,14 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.sumproduct.SRealVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 public class NormalMessageTranslator extends MessageTranslatorBase
 {
-	private NormalParameters _inputMessage;
-	private NormalParameters _outputMessage;
+	private @Nullable NormalParameters _inputMessage;
+	private @Nullable NormalParameters _outputMessage;
 	private Normal _variableInput;
-	private com.analog.lyric.dimple.solvers.gibbs.SRealVariable _solverVariable;
+	private @Nullable com.analog.lyric.dimple.solvers.gibbs.SRealVariable _solverVariable;
 
 	public NormalMessageTranslator(Port port, VariableBase variable)
 	{
@@ -44,6 +47,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	}
 
 
+	@SuppressWarnings("null")
 	@Override
 	public final void setMessageDirection(MessageDirection messageDirection)
 	{
@@ -78,8 +82,10 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setOutputMessageFromVariableBelief()
 	{
+		final NormalParameters outputMessage = Objects.requireNonNull(_outputMessage);
+		
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		DoubleArrayList sampleValues = _solverVariable._getSampleArrayUnsafe();
+		DoubleArrayList sampleValues = Objects.requireNonNull(_solverVariable)._getSampleArrayUnsafe();
 		int numSamples = sampleValues.size();
 
 		// For all sample values, compute the output message
@@ -90,7 +96,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 			double tmp = sampleValues.get(i);
 			if (Double.isInfinite(tmp) || Double.isNaN(tmp))
 			{
-				_outputMessage.setNull();
+				outputMessage.setNull();
 				return;
 			}
 			sum += tmp;
@@ -99,8 +105,8 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 		double mean = sum / numSamples;
 		double variance = (sumsq - sum*mean) / (numSamples - 1);
 		
-		_outputMessage.setMean(mean);
-		_outputMessage.setVariance(variance);
+		outputMessage.setMean(mean);
+		outputMessage.setVariance(variance);
 	}
 	
 	
@@ -108,8 +114,8 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	public final void initialize()
 	{
 		SRealVariable var = (SRealVariable)_port.node.getSibling(_port.index).getSolver();
-		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
-		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
+		_outputMessage = (NormalParameters)var.resetInputMessage(Objects.requireNonNull(_outputMessage));
+		_inputMessage = (NormalParameters)var.resetInputMessage(Objects.requireNonNull(_inputMessage));
 		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealVariable)_variable.getSolver();
 	}
 	
@@ -126,13 +132,13 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	}
 
 	@Override
-	public final Object getInputMessage()
+	public final @Nullable Object getInputMessage()
 	{
 		return _inputMessage;
 	}
 
 	@Override
-	public final Object getOutputMessage()
+	public final @Nullable Object getOutputMessage()
 	{
 		return _outputMessage;
 	}

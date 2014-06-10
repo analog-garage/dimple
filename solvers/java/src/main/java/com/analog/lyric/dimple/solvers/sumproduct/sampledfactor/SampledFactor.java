@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @author jeff
@@ -93,8 +94,7 @@ public class SampledFactor extends SFactorBase
 		
 		// Create a private message graph on which the Gibbs sampler will be run
 		_messageGraph = new FactorGraph();
-		_messageGraph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		_solverGraph = (com.analog.lyric.dimple.solvers.gibbs.SFactorGraph)(_messageGraph.getSolver());
+		_solverGraph = _messageGraph.createSolver(new com.analog.lyric.dimple.solvers.gibbs.Solver());
 		_messageGraph.addFactor(factor.getFactorFunction(), _privateVariables);
 	}
 	
@@ -186,13 +186,13 @@ public class SampledFactor extends SFactorBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return _messageTranslator[portIndex].getInputMessage();
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return _messageTranslator[portIndex].getOutputMessage();
 	}
