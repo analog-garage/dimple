@@ -21,6 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraphNode;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * Object that retrieves data from the work queue until there is nothing left.
@@ -42,7 +43,7 @@ class SingleQueueWorker implements Callable<Object>
 	}
 	
 	@Override
-	public Object call() throws Exception
+	public @Nullable Object call() throws Exception
 	{
 		//Keep going until there is nothing left.
 		while(true)

@@ -19,7 +19,9 @@ package com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * Responsible for picking of a chunk of schedule entries,
@@ -34,8 +36,8 @@ class WorkerWithStealing implements Callable<Object>
 	private ArrayList<IScheduleEntry> _nodes;
 	private boolean _stealing;
 	
-	public WorkerWithStealing(ArrayList<IScheduleEntry> nodes, 
-			int which, ConcurrentLinkedQueue<IScheduleEntry> [] deques, 
+	public WorkerWithStealing(ArrayList<IScheduleEntry> nodes,
+			int which, ConcurrentLinkedQueue<IScheduleEntry> [] deques,
 			boolean stealing)
 	{
 		_which = which;
@@ -46,8 +48,8 @@ class WorkerWithStealing implements Callable<Object>
 	
 	
 	@Override
-	public Object call() throws Exception 
-	{			
+	public @Nullable Object call() throws Exception
+	{
 		//Which thread am I?
 		int which = _which;
 		
@@ -68,11 +70,11 @@ class WorkerWithStealing implements Callable<Object>
 		}
 		
 		//Pick off the first guy
-		IScheduleEntry n = _deques[which].poll();		
+		IScheduleEntry n = _deques[which].poll();
 	
 		//Until there's nothing left.
 		while (n != null)
-		{	
+		{
 			//update the schedule entry.
 			n.update();
 						
@@ -85,7 +87,7 @@ class WorkerWithStealing implements Callable<Object>
 				for (int i = 0; i < _deques.length; i++)
 				{
 					//Start after my entry so not everyone looks from the beginning.
-					n = _deques[(_which + i) % _deques.length].poll();				
+					n = _deques[(_which + i) % _deques.length].poll();
 					
 					//If I still find no work, we're done.
 					if (n != null)
@@ -93,7 +95,7 @@ class WorkerWithStealing implements Callable<Object>
 				}
 			}
 			
-		}	
+		}
 		return null;
 	}
 }

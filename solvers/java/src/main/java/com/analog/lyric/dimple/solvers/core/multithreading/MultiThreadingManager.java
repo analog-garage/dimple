@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -24,22 +25,23 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.schedulers.dependencyGraph.StaticDependencyGraph;
 import com.analog.lyric.dimple.solvers.core.multithreading.phasealgorithm.PhaseMultithreadingAlgorithm;
 import com.analog.lyric.dimple.solvers.core.multithreading.singlequeuealgorithm.SingleQueueMutlithreadingAlgorithm;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * The MultiThreading Manager handles the collection of multithreading algorithms
  * Dimple currently supports.
  */
-public class MultiThreadingManager 
+public class MultiThreadingManager
 {
 	private int _numWorkers;
 	private FactorGraph _factorGraph;
 	private long _cachedVersionId = -1;
-	private StaticDependencyGraph _cachedDependencyGraph;
+	private @Nullable StaticDependencyGraph _cachedDependencyGraph;
 	private HashMap<MultithreadingMode,MultithreadingAlgorithm> _mode2alg = new HashMap<MultithreadingMode, MultithreadingAlgorithm>();
 	private MultithreadingMode _whichAlg = MultithreadingMode.Phase;
-	private ExecutorService _service;
+	private @Nullable ExecutorService _service;
 
-	public MultiThreadingManager(FactorGraph fg, ExecutorService service)
+	public MultiThreadingManager(FactorGraph fg, @Nullable ExecutorService service)
 	{
 		_service = service;
 		setNumWorkersToDefault();
@@ -56,10 +58,11 @@ public class MultiThreadingManager
 	
 	public ExecutorService getService()
 	{
-		if (_service == null)
+		final ExecutorService service = _service;
+		if (service == null)
 			return ThreadPool.getThreadPool();
 		else
-			return _service;
+			return service;
 	}
 	
 	public MultithreadingMode [] getModes()
@@ -121,7 +124,7 @@ public class MultiThreadingManager
 			_cachedDependencyGraph = new StaticDependencyGraph(_factorGraph);
 		}
 		
-		return _cachedDependencyGraph;
+		return Objects.requireNonNull(_cachedDependencyGraph);
 	}
 	
 	

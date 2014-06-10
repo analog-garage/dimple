@@ -16,23 +16,25 @@
 
 package com.analog.lyric.dimple.solvers.core.multithreading;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * This class is used to create a singleton ThreadPool.  The threadpool
- * must be global so that we don't leak threads when FactorGraphs are destroyed 
+ * must be global so that we don't leak threads when FactorGraphs are destroyed
  * 
  * @author shershey
  *
  */
-public class ThreadPool 
+public class ThreadPool
 {
-	private static ExecutorService _service; 
+	private static @Nullable ExecutorService _service;
 	private static int _numThreads;
 	
 	private ThreadPool()
@@ -48,7 +50,7 @@ public class ThreadPool
 			setNumThreadsToDefault();
 		}
 		
-		return _service;
+		return Objects.requireNonNull(_service);
 	}
 	
 	public static void setNumThreadsToDefault()
@@ -76,15 +78,16 @@ public class ThreadPool
 	
 	private static void cleanupService()
 	{
-		if (_service != null)
+		final ExecutorService service = _service;
+		if (service != null)
 		{
 			
-			_service.shutdown();
+			service.shutdown();
 			try {
-				_service.awaitTermination(1,TimeUnit.SECONDS);
+				service.awaitTermination(1,TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
 				throw new DimpleException("Failed to shutdown multithreading service");
-			}				
+			}
 		}
 		
 	}
