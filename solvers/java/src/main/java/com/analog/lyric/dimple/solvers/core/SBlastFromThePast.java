@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.events.SolverEventSource;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
@@ -27,12 +29,13 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.options.IOptionHolder;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SBlastFromThePast extends SolverEventSource implements ISolverBlastFromThePastFactor
 {
 	private BlastFromThePastFactor _factor;
-	protected Port _portForOtherVar;
-	protected Port _portForBlastVar;
+	protected @Nullable Port _portForOtherVar;
+	protected @Nullable Port _portForBlastVar;
 	
 	public SBlastFromThePast(BlastFromThePastFactor f)
 	{
@@ -56,7 +59,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	@Override
@@ -74,7 +77,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		return _factor;
 	}
 	
-	public Port getOtherVariablePort()
+	public @Nullable Port getOtherVariablePort()
 	{
 		return _portForOtherVar;
 	}
@@ -220,6 +223,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		throw new DimpleException("Not implemented");
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void advance()
 	{

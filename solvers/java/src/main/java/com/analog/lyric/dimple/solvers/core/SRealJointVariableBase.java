@@ -16,16 +16,18 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
  */
 public abstract class SRealJointVariableBase extends SVariableBase
 {
-	protected double[] _guessValue;
+	protected double[] _guessValue = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected boolean _guessWasSet = false;
 
     
@@ -38,7 +40,7 @@ public abstract class SRealJointVariableBase extends SVariableBase
 	public void initialize()
 	{
 		super.initialize();
-		_guessWasSet = false;
+		setGuess(null);
 	}
 	
 	/*---------------
@@ -68,15 +70,23 @@ public abstract class SRealJointVariableBase extends SVariableBase
 	}
 	
 	@Override
-	public void setGuess(Object guess)
+	public void setGuess(@Nullable Object guess)
 	{
-		_guessValue = (double[])guess;
+		if (guess == null)
+		{
+			_guessWasSet = false;
+			_guessValue = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		}
+		else
+		{
+			_guessValue = (double[])guess;
 
-		// Make sure the number is within the domain of the variable
-		if (!_var.getDomain().inDomain(_guessValue))
-			throw new DimpleException("Guess is not within the domain of the variable");
-		
-		_guessWasSet = true;
+			// Make sure the number is within the domain of the variable
+			if (!_var.getDomain().inDomain(_guessValue))
+				throw new DimpleException("Guess is not within the domain of the variable");
+
+			_guessWasSet = true;
+		}
 	}
 
 }

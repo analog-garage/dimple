@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public class GenericSamplerRegistry
 {
 	private static ArrayList<String> _packages = new ArrayList<String>();
@@ -27,7 +29,7 @@ public class GenericSamplerRegistry
 	}
 	
 	// Get a sampler by name; assumes it is located in this package
-	public static IGenericSampler get(String samplerName)
+	public static @Nullable IGenericSampler get(String samplerName)
 	{
 		for (String s : _packages)
 		{

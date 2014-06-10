@@ -18,10 +18,12 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+import cern.colt.list.IntArrayList;
+
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
@@ -30,7 +32,6 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.CDFSampler;
@@ -41,6 +42,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IGenericSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.IMCMCSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.primitives.Doubles;
 
 
@@ -68,34 +70,36 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
 	private boolean _visited = false;
 
-	private double[][] _inPortMsgs = new double[0][];
+	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	private DiscreteValue _outputMsg;
-	private long[] _beliefHistogram;
+	private @Nullable long[] _beliefHistogram;
 	private double[] _input;
 	private double[] _conditional;
-	private ArrayList<Integer> _sampleIndexArray;
+	private @Nullable IntArrayList _sampleIndexArray;
 	private int _bestSampleIndex;
-	private DiscreteValue _initialSampleValue = null;
+	private @Nullable DiscreteValue _initialSampleValue = null;
 	private double _beta = 1;
-	private Discrete _varDiscrete;
+	private final Discrete _varDiscrete;
 	private boolean _holdSampleValue = false;
-	private IGenericSampler _sampler;
+	private @Nullable IGenericSampler _sampler;
 	private String _defaultSamplerName = DEFAULT_DISCRETE_SAMPLER_NAME;
 	private boolean _samplerSpecificallySpecified = false;
 
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
-	private GibbsNeighbors _neighbors = null;
+	private @Nullable GibbsNeighbors _neighbors = null;
 
 	/*--------------
 	 * Construction
 	 */
 	
-	public SDiscreteVariable(VariableBase var)
+	@SuppressWarnings("null")
+	public SDiscreteVariable(Discrete var)
 	{
 		super(var);
-		_varDiscrete = (Discrete)_var;
+		_varDiscrete = var;
+		_input = createDefaultMessage();
 	}
 
 	/*---------------------
@@ -192,10 +196,15 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Sample from the conditional distribution
 		boolean rejected = false;
 		if (_sampler instanceof IDiscreteDirectSampler)
-			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg.clone(), _conditional, minEnergy, this);
+		{
+			((IDiscreteDirectSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(),
+				_conditional, minEnergy, this);
+		}
 		else if (_sampler instanceof IMCMCSampler)
-			rejected = !((IMCMCSampler)_sampler).nextSample(_outputMsg.clone(), this);
-
+		{
+			rejected = !((IMCMCSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg.clone(), this);
+		}
+		
 		switch (updateEventFlags)
 		{
 		case UPDATE_EVENT_SCORED:
@@ -264,9 +273,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			setCurrentSampleIndex(_varDiscrete.getFixedValueIndex());
 			return;
 		}
-		if (_initialSampleValue != null && restartCount == 0)
+		
+		final DiscreteValue initialSampleValue = _initialSampleValue;
+		if (initialSampleValue != null && restartCount == 0)
 		{
-			setCurrentSample(_initialSampleValue);
+			setCurrentSample(initialSampleValue);
 			return;
 		}
 
@@ -278,7 +289,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 				minEnergy = _input[i];
 		
 		if (_sampler instanceof CDFSampler)
-			((IDiscreteDirectSampler)_sampler).nextSample(_outputMsg, _input, minEnergy, this);
+			((CDFSampler)Objects.requireNonNull(_sampler)).nextSample(_outputMsg, _input, minEnergy, this);
 		else	// If the actual sampler isn't a CDF sampler, make a CDF sampler to use for random restart
 		{
 			IDiscreteDirectSampler sampler = new CDFSampler();
@@ -347,12 +358,14 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void updateBelief()
 	{
 		_beliefHistogram[_outputMsg.getIndex()]++;
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public double[] getBelief()
 	{
@@ -388,7 +401,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
 	
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixed)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixed)
 	{
 		if (input == null)
 		{
@@ -413,7 +426,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	
 	@Override
-	public void postAddFactor(Factor f)
+	public void postAddFactor(@Nullable Factor f)
 	{
 		// Set the default sampler
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultDiscreteSampler();
@@ -422,7 +435,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     @Override
 	public final void saveAllSamples()
     {
-    	_sampleIndexArray = new ArrayList<Integer>();
+    	_sampleIndexArray = new IntArrayList();
     }
     
     @Override
@@ -434,8 +447,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     @Override
 	public final void saveCurrentSample()
     {
-    	if (_sampleIndexArray != null)
-    		_sampleIndexArray.add(_outputMsg.getIndex());
+    	final IntArrayList sampleIndexArray = _sampleIndexArray;
+    	if (sampleIndexArray != null)
+    	{
+    		sampleIndexArray.add(_outputMsg.getIndex());
+    	}
     }
     
     @Override
@@ -497,7 +513,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Also return if the variable is set to a fixed value
 		if (_var.hasFixedValue()) return;
 		
-		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
+		final GibbsNeighbors neighbors = _neighbors;
+		boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
 
 		DiscreteValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -511,7 +528,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			_neighbors.update(oldValue);
+			neighbors.update(Objects.requireNonNull(oldValue));
 		}
 	}
 	
@@ -533,7 +550,8 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	// Sets the sample regardless of whether the value is fixed or held
 	private final void setCurrentSampleIndexForce(int index)
 	{
-		boolean hasDeterministicDependents = _neighbors != null && _neighbors.hasDeterministicDependents();
+		final GibbsNeighbors neighbors = _neighbors;
+		boolean hasDeterministicDependents = neighbors != null && neighbors.hasDeterministicDependents();
 
 		DiscreteValue oldValue = null;
 		if (hasDeterministicDependents)
@@ -547,7 +565,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			_neighbors.update(oldValue);
+			Objects.requireNonNull(neighbors).update(Objects.requireNonNull(oldValue));
 		}
 	}
     
@@ -571,24 +589,25 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 
     public final Object[] getAllSamples()
     {
-		if (_sampleIndexArray == null)
+    	final IntArrayList sampleIndexArray = _sampleIndexArray;
+    	
+		if (sampleIndexArray == null)
 			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
-		int length = _sampleIndexArray.size();
+		int length = sampleIndexArray.size();
     	DiscreteDomain domain = _varDiscrete.getDiscreteDomain();
     	Object[] retval = new Object[length];
     	for (int i = 0; i < length; i++)
-    		retval[i] = domain.getElement(_sampleIndexArray.get(i));
+    		retval[i] = domain.getElement(sampleIndexArray.get(i));
     	return retval;
     }
     public final int[] getAllSampleIndices()
     {
-		if (_sampleIndexArray == null)
+    	final IntArrayList sampleIndexArray = _sampleIndexArray;
+
+    	if (sampleIndexArray == null)
 			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
-    	int length = _sampleIndexArray.size();
-    	int[] retval = new int[length];
-    	for (int i = 0; i < length; i++)
-    		retval[i] = _sampleIndexArray.get(i);
-    	return retval;
+    	
+    	return Arrays.copyOf(sampleIndexArray.elements(), sampleIndexArray.size());
     }
 
 	public final void setAndHoldSampleValue(Object value)
@@ -621,17 +640,19 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	}
 	public final void setInitialSampleIndex(int initialSampleIndex)
 	{
-		_initialSampleValue = Value.create(_varDiscrete.getDomain());
-		_initialSampleValue.setIndex(initialSampleIndex);
+		DiscreteValue val = _initialSampleValue = Value.create(_varDiscrete.getDomain());
+		val.setIndex(initialSampleIndex);
 	}
 
-	public final Object getInitialSampleValue()
+	public final @Nullable Object getInitialSampleValue()
 	{
-		return _initialSampleValue.getObject();
+		final DiscreteValue val = _initialSampleValue;
+		return val != null ? val.getObject() : null;
 	}
 	public final int getInitialSampleIndex()
 	{
-		return _initialSampleValue.getIndex();
+		final DiscreteValue val = _initialSampleValue;
+		return val != null ? val.getIndex() : -1;
 	}
 	
     // TODO: move to ISolverVariableGibbs
@@ -644,40 +665,47 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 	
     // TODO move to bottom
 
-	// Set/get the sampler to be used for this variable
-	public final void setDefaultSampler(String samplerName)
-		{
-		_defaultSamplerName = samplerName;
-		}
-	public final String getDefaultSamplerName()
-		{
-		return _defaultSamplerName;
-		}
-	public final void setSampler(ISampler sampler)
-		{
-		_sampler = (IGenericSampler)sampler;
-		_samplerSpecificallySpecified = true;
-		}
-	public final void setSampler(String samplerName)
-		{
-		_sampler = GenericSamplerRegistry.get(samplerName);
-		_samplerSpecificallySpecified = true;
-			}
-	@Override
-	public final ISampler getSampler()
-			{
-		if (!_samplerSpecificallySpecified)
-			initialize();	// To determine the appropriate sampler
-		_sampler.initialize(_var.getDomain());
-		return _sampler;
-				}
+    // Set/get the sampler to be used for this variable
+    public final void setDefaultSampler(String samplerName)
+    {
+    	_defaultSamplerName = samplerName;
+    }
+    public final String getDefaultSamplerName()
+    {
+    	return _defaultSamplerName;
+    }
+    public final void setSampler(ISampler sampler)
+    {
+    	_sampler = (IGenericSampler)sampler;
+    	_samplerSpecificallySpecified = true;
+    }
+    public final void setSampler(String samplerName)
+    {
+    	_sampler = GenericSamplerRegistry.get(samplerName);
+    	_samplerSpecificallySpecified = true;
+    }
+    @Override
+    public final ISampler getSampler()
+    {
+    	IGenericSampler sampler = _sampler;
+    	
+    	if (sampler == null || !_samplerSpecificallySpecified)
+    	{
+    		IGenericSampler newSampler = GenericSamplerRegistry.get(_defaultSamplerName);
+    		if (newSampler != sampler)
+    		{
+    			newSampler.initialize(_var.getDomain());
+    			sampler = newSampler;
+    		}
+    	}
+    	
+    	return Objects.requireNonNull(sampler);
+    }
+	
 	public final String getSamplerName()
 	{
-		ISampler sampler = getSampler();
-		if (sampler != null)
-			return sampler.getClass().getSimpleName();
-		else
-			return "";
+		final ISampler sampler = getSampler();
+		return sampler.getClass().getSimpleName();
 	}
 
 	
@@ -804,20 +832,22 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		// Clear out sample state
 		_bestSampleIndex = -1;
-		if (_sampleIndexArray != null) _sampleIndexArray.clear();
+		final IntArrayList sampleIndexArray = _sampleIndexArray;
+		if (sampleIndexArray != null) sampleIndexArray.clear();
 
-		int messageLength = _varDiscrete.getDiscreteDomain().size();
-		for (int i = 0; i < messageLength; i++)
-			_beliefHistogram[i] = 0;
+		Arrays.fill(_beliefHistogram, 0);
 		
 		if (_var.hasFixedValue())
 			setCurrentSampleIndexForce((Integer)_var.getFixedValueObject());
 		else
 			setCurrentSampleIndexForce(_outputMsg.getIndex());
 		
-		if (!_samplerSpecificallySpecified)
-			_sampler = GenericSamplerRegistry.get(_defaultSamplerName);	// If not specifically specified, use the default sampler
-		_sampler.initialize(_var.getDomain());
+		IGenericSampler sampler = _sampler;
+		if (sampler == null || !_samplerSpecificallySpecified)
+		{
+			// If not specifically specified, use the default sampler
+			sampler = _sampler = GenericSamplerRegistry.get(_defaultSamplerName);
+		}
+		sampler.initialize(_var.getDomain());
 	}
-
 }

@@ -16,10 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -53,7 +56,7 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	@Override
 	public ISolverFactor getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 
 	/*-------------------------
@@ -77,9 +80,10 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	}
 
 	@Override
-	public Object getBelief()
+	public @Nullable Object getBelief()
 	{
-		return getDelegate().getBelief();
+		final ISolverVariable delegate = getDelegate();
+		return delegate != null ? delegate.getBelief() : null;
 	}
 
 	@Override
@@ -89,7 +93,7 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	}
 
 	@Override
-	public void setGuess(Object guess)
+	public void setGuess(@Nullable Object guess)
 	{
 		getDelegate().setGuess(guess);
 	}
@@ -105,7 +109,7 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	{
 		if (other instanceof ProxySolverNode)
 		{
-			other = ((ProxySolverNode)other).getDelegate();
+			other = Objects.requireNonNull(((ProxySolverNode)other).getDelegate());
 		}
 		getDelegate().moveNonEdgeSpecificState(other);
 	}
@@ -127,7 +131,7 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	 */
 	
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		ISolverVariable delegate = getDelegate();
 		if (delegate != null)
@@ -141,5 +145,5 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	 */
 	
 	@Override
-	public abstract ISolverVariable getDelegate();
+	public abstract @Nullable ISolverVariable getDelegate();
 }

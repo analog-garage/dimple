@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.junctiontree.JunctionTreeSolverGraphBase;
 import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -28,15 +29,15 @@ import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
  */
 public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<SFactorGraph>
 {
-	private final JunctionTreeMAPSolverGraph _parent;
+	private final @Nullable JunctionTreeMAPSolverGraph _parent;
 	private final JunctionTreeMAPSolverGraph _root;
 
 	/*--------------
 	 * Construction
 	 */
 
-	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory,
-		JunctionTreeMAPSolverGraph parent)
+	JunctionTreeMAPSolverGraph(FactorGraph sourceModel, @Nullable IFactorGraphFactory<?> solverFactory,
+		@Nullable JunctionTreeMAPSolverGraph parent)
 	{
 		super(sourceModel, solverFactory);
 		_parent = parent;
@@ -53,7 +54,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<SFac
 	 */
 	
 	@Override
-	public JunctionTreeMAPSolverGraph getParentGraph()
+	public @Nullable JunctionTreeMAPSolverGraph getParentGraph()
 	{
 		return _parent;
 	}
@@ -69,7 +70,7 @@ public class JunctionTreeMAPSolverGraph extends JunctionTreeSolverGraphBase<SFac
 	 */
 	
 	@Override
-	public JunctionTreeMAPSolverGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory)
+	public JunctionTreeMAPSolverGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory)
 	{
 		return new JunctionTreeMAPSolverGraph(subgraph, factory, this);
 	}

@@ -28,12 +28,13 @@ import com.analog.lyric.dimple.solvers.core.SRealJointVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SRealJointVariable extends SRealJointVariableBase
 {
 
 	private int _numVars;
-	private MultivariateNormalParameters _input;
+	private @Nullable MultivariateNormalParameters _input;
 	private MultivariateNormalParameters [] _outputMsgs = new MultivariateNormalParameters[0];
 	private MultivariateNormalParameters [] _inputMsgs = new MultivariateNormalParameters[0];
 
@@ -45,10 +46,10 @@ public class SRealJointVariable extends SRealJointVariableBase
 	}
 	
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (hasFixedValue)
-			_input = createFixedValueMessage((double[])fixedValue);
+			_input = createFixedValueMessage((double[])Objects.requireNonNull(fixedValue));
 		else if (input == null)
 			_input = null;
 		else
@@ -103,10 +104,11 @@ public class SRealJointVariable extends SRealJointVariableBase
 	@Override
 	public double getScore()
 	{
-		if (_input == null)
+		final MultivariateNormalParameters input = _input;
+		if (input == null)
 			return 0;
 		else
-			return (new MultivariateNormal(_input)).evalEnergy(getGuess());
+			return (new MultivariateNormal(input)).evalEnergy(getGuess());
 	}
 	
 
@@ -119,24 +121,26 @@ public class SRealJointVariable extends SRealJointVariableBase
 
 	private void doUpdate(MultivariateNormalParameters outMsg, int outPortNum)
 	{
+		final MultivariateNormalParameters input = _input;
+		
     	// If fixed value, just return the input, which has been set to a zero-variance message
 		if (_var.hasFixedValue())
 		{
-			outMsg.set(_input);
+			outMsg.set(Objects.requireNonNull(_input));
 			return;
 		}
 
 		double[] vector;
 		double[][] matrix;
-		if (_input == null)
+		if (input == null)
 		{
 			vector = new double[_numVars];
 			matrix = new double[_numVars][_numVars];
 		}
 		else
 		{
-			vector = _input.getInformationVector();
-			matrix = _input.getInformationMatrix();
+			vector = input.getInformationVector();
+			matrix = input.getInformationMatrix();
 		}
 		
 		for (int i = 0; i < _outputMsgs.length; i++ )

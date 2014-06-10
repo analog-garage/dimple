@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.ISampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.ISamplerClient;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable, ISamplerClient
 {
@@ -43,7 +44,7 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	 * 
 	 * @since 0.06
 	 */
-	public ISampler getSampler();
+	public @Nullable ISampler getSampler();
 	
 	/**
 	 * Returns an iterator over the nodes other than this variable node that should be
@@ -63,5 +64,5 @@ public interface ISolverVariableGibbs extends ISolverNodeGibbs, ISolverVariable,
 	@Internal
 	public void randomRestart(int restartCount);
 	@Internal
-	public void postAddFactor(Factor f);
+	public void postAddFactor(@Nullable Factor f);
 }

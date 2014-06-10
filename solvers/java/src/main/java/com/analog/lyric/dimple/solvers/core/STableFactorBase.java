@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class STableFactorBase extends SFactorBase
 {
@@ -26,7 +27,7 @@ public abstract class STableFactorBase extends SFactorBase
 	 * State
 	 */
 	
-	private IFactorTable _factorTable = null;
+	private @Nullable IFactorTable _factorTable = null;
 
 	/*--------------
 	 * Construction
@@ -79,15 +80,16 @@ public abstract class STableFactorBase extends SFactorBase
     
     public final IFactorTable getFactorTable()
 	{
-		if (_factorTable==null)
+    	IFactorTable factorTable = _factorTable;
+		if (factorTable==null)
 		{
-			_factorTable = getFactor().getFactorTable();
-			setTableRepresentation(_factorTable);
+			factorTable = _factorTable = getFactor().getFactorTable();
+			setTableRepresentation(factorTable);
 		}
-		return this._factorTable;
+		return factorTable;
 	}
     
-    protected final IFactorTable getFactorTableIfComputed()
+    protected final @Nullable IFactorTable getFactorTableIfComputed()
     {
     	return _factorTable;
     }

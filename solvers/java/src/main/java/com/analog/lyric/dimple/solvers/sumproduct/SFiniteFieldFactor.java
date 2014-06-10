@@ -1,6 +1,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
@@ -26,8 +27,8 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 public abstract class SFiniteFieldFactor extends SFactorBase
 {
 
-	protected double [][] _inputMsgs;
-	protected double [][] _outputMsgs;
+	protected double [][] _inputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double [][] _outputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	
 	public SFiniteFieldFactor(Factor factor)
 	{
@@ -59,7 +60,7 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	public void resetEdgeMessages(int i)
 	{
 		SDiscreteVariable sv = (SDiscreteVariable)_factor.getSibling(i).getSolver();
-		_inputMsgs[i] = (double[])sv.resetInputMessage(_inputMsgs[i]);
+		_inputMsgs[i] = sv.resetInputMessage(_inputMsgs[i]);
 	}
 
 	@Override

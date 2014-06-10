@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.lp;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
@@ -30,6 +31,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation;
 import com.analog.lyric.dimple.solvers.lp.LPFactorMarginalConstraint;
 import com.analog.lyric.dimple.solvers.lp.LPVariableConstraint;
@@ -38,6 +40,7 @@ import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
 import com.analog.lyric.dimple.solvers.lp.STableFactor;
 import com.analog.lyric.dimple.solvers.lp.SVariable;
 import com.analog.lyric.dimple.solvers.lp.Solver;
+import com.analog.lyric.util.test.Unchecked;
 
 public class LPSolverTestCase
 {
@@ -79,9 +82,9 @@ public class LPSolverTestCase
 		try { solver.setOutputMsg(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
 		try { solver.setOutputMsgValues(0, "foo"); fail("exception expected"); } catch (DimpleException ex) {}
 		try { solver.getOutputMsg(0); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.moveMessages(null, 0, 1); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.estimateParameters(null, 0, 0, 0); fail("exception expected"); } catch (DimpleException ex) {}
-		try { solver.baumWelch(null, 0, 0); fail("exception expected"); } catch (DimpleException ex) {}
+		expectThrow(DimpleException.class, solver, "moveMessages", null, 0, 1);
+		expectThrow(DimpleException.class, solver, "estimateParameters", null, 0, 0, 0.0);
+		expectThrow(DimpleException.class, solver, "baumWelch", null, 0, 0);
 	}
 	
 	/**
@@ -113,11 +116,11 @@ public class LPSolverTestCase
 			// Test do-nothing methods
 			svar.resetEdgeMessages(0);
 			svar.updateEdge(0);
-			svar.moveMessages(null, 0, 1);
+			svar.moveMessages(svar, 0, 1);
 			assertNull(svar.getInputMsg(0));
 			assertNull(svar.getOutputMsg(0));
-			assertNull(svar.createMessages(null));
-			assertNull(svar.resetInputMessage(null));
+			assertNull(svar.createMessages(Unchecked.nullValue(ISolverFactor.class)));
+			assertNull(svar.resetInputMessage(""));
 			
 			int lpVar = svar.getLPVarIndex();
 			int nValidAssignments = svar.getNumberOfValidAssignments();
@@ -174,7 +177,7 @@ public class LPSolverTestCase
 			sfactor.createMessages();
 			sfactor.updateEdge(0);
 			sfactor.resetEdgeMessages(0);
-			sfactor.moveMessages(null, 0 , 1);
+			sfactor.moveMessages(sfactor, 0 , 1);
 			assertNull(sfactor.getInputMsg(0));
 			assertNull(sfactor.getOutputMsg(0));
 		}

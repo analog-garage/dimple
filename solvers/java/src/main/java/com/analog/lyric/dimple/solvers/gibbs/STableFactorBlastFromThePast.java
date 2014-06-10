@@ -26,13 +26,13 @@ import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
+import com.analog.lyric.util.misc.Nullable;
 
 public class STableFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
-    protected DiscreteValue[] _inPortMsgs = null;
     protected int _numPorts;
-	private double [] _outputMsg;
-	private DiscreteValue _inputMsg;
+	private @Nullable double [] _outputMsg;
+	private @Nullable DiscreteValue _inputMsg;
 	private boolean _visited = false;
 	
 	public STableFactorBlastFromThePast(BlastFromThePastFactor f)
@@ -64,7 +64,9 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	@Override
 	public double getPotential()
 	{
-		return _outputMsg[_inputMsg.getIndex()];
+		final DiscreteValue inputMsg = _inputMsg;
+		final double[] outputMsg = _outputMsg;
+		return inputMsg != null & outputMsg != null ? outputMsg[inputMsg.getIndex()] : Double.POSITIVE_INFINITY;
 	}
 	
 	@Override
@@ -74,7 +76,7 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 	}
 
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValue)
+	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}

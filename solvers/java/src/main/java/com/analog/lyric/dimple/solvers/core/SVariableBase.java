@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -68,7 +70,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	@Override
 	public ISolverFactor getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	/**
@@ -81,7 +83,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	 * new solver graph object, which may not be applicable to this instance.
 	 */
 	@Override
-	public ISolverFactorGraph getParentGraph()
+	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
 		FactorGraph mgraph = _var.getParentGraph();
@@ -93,7 +95,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 	
 	@Override
-	public ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
 		FactorGraph mgraph = _var.getRootGraph();
@@ -111,9 +113,12 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 
 	@Override
-	public void setGuess(Object guess)
+	public void setGuess(@Nullable Object guess)
 	{
-		throw new DimpleException("not supported");
+		if (guess != null)
+		{
+			throw new DimpleException("not supported");
+		}
 	}
 
 	@Override
@@ -141,7 +146,7 @@ public abstract class SVariableBase extends SNode implements ISolverVariable
 	}
 	
 	@Override
-	public Object resetOutputMessage(Object message)
+	public @Nullable Object resetOutputMessage(Object message)
 	{
 		return resetInputMessage(message);
 	}

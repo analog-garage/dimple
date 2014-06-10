@@ -10,4 +10,6 @@
 /**
  * Sum-product belief propagation for inferring marginals on discrete and real graphs.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.solvers.sumproduct;
+import com.analog.lyric.util.misc.NonNullByDefault;

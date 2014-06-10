@@ -16,11 +16,12 @@
 
 package com.analog.lyric.dimple.solvers.core.kbest;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.IndexCounter;
 
 /*
- * This class provides an implementation for update and updateEdge that can 
+ * This class provides an implementation for update and updateEdge that can
  * be used by solver factor classes.  It implements a k best algorithm.
  * 
  * pseudocode of algorithm
@@ -29,26 +30,26 @@ import com.analog.lyric.util.misc.IndexCounter;
  *	For each input msg
  *		sort by probability and pick the k most likely
  *
- *	initialize outputMsg to zero (or equivalent) for all values	
+ *	initialize outputMsg to zero (or equivalent) for all values
  *
  *	For every single value of the output message (not just the kbset)
  *	
  *		For the n^k combinations of inputs (where n is number of input edges)
  *			prod = calculate factor function (or equivalent for minsum)
  *			prod *= all of the input probabilities for those values
- *			
+ *	
  *			sum the prod with the current value for the output message at this value (or equivalent for minsum)
  *
  *	Normalize outputmsg (subtract smallest value)
  *
  * There is no optimization for update(all)
  */
-public class KBestFactorEngine 
+public class KBestFactorEngine
 {
 	private int _k;
 	private IKBestFactor _kbestFactor;
-	private double [][] _outPortMsgs;
-	private double [][] _inPortMsgs;
+	private double [][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	private double [][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	
 	private void updateCache()
 	{
@@ -119,7 +120,7 @@ public class KBestFactorEngine
 			{
 				//Here we check to see that k is actually less than the domain length
 				if (_k < inPortMsg.length)
-					domainIndices[i] = _kbestFactor.findKBestForMsg(inPortMsg,_k);					
+					domainIndices[i] = _kbestFactor.findKBestForMsg(inPortMsg,_k);
 				else
 				{
 					//If it's not, we just map indices one to one.
@@ -148,7 +149,7 @@ public class KBestFactorEngine
 			domainIndices[outPortNum][0] = outputIndex;
 		
 
-			//For all elements of cartesian product			
+			//For all elements of cartesian product
 			for (int [] indices : ic)
 			{
 				//initialize the sum
@@ -184,7 +185,7 @@ public class KBestFactorEngine
 		Object [] ffInput = new Object[inputIndices.length];
 		for (int i = 0; i < ffInput.length; i++)
 			ffInput[i] = domains[i][inputIndices[i]];
-		return _kbestFactor.evalFactorFunction(ffInput);		
+		return _kbestFactor.evalFactorFunction(ffInput);
 	}
 
 	protected IKBestFactor getIKBestFactor()

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import java.util.Objects;
 import java.util.Random;
 
 import com.analog.lyric.dimple.factorfunctions.ComplexNegate;
@@ -71,11 +72,12 @@ import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomNormalCons
 import com.analog.lyric.dimple.solvers.sumproduct.sampledfactor.SampledFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.IMapList;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SFactorGraph extends SFactorGraphBase
 {
 	private double _damping = 0;
-	private IFactorTable _currentFactorTable = null;
+	private @Nullable IFactorTable _currentFactorTable = null;
 	private int _sampledFactorSamplesPerUpdate = SampledFactor.DEFAULT_SAMPLES_PER_UPDATE;
 	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
 	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
@@ -112,7 +114,7 @@ public class SFactorGraph extends SFactorGraphBase
 		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
 		boolean hasConstants = factor.getFactorFunction().hasConstants();
 		
-		if (factor.isDiscrete())	// Factor contains only discrete variables		
+		if (factor.isDiscrete())	// Factor contains only discrete variables
 		{
 			// First see if any custom factor should be created
 			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
@@ -252,10 +254,11 @@ public class SFactorGraph extends SFactorGraphBase
 		_damping = damping;
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
-			if (f.getSolver() instanceof STableFactor)
+			final ISolverFactor sf = f.getSolver();
+			if (sf instanceof STableFactor)
 			{
 				// TODO: Damping currently works only on table factors, should work on all cases
-				STableFactor tf = (STableFactor)f.getSolver();
+				STableFactor tf = (STableFactor)Objects.requireNonNull(sf);
 				setDampingForTableFactor(tf);
 			}
 		}
@@ -385,7 +388,7 @@ public class SFactorGraph extends SFactorGraphBase
 		
 	}
 	
-	public static int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
+	public static @Nullable int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
 	{
 		
 		return null;
@@ -466,7 +469,7 @@ public class SFactorGraph extends SFactorGraphBase
 	
 	
 	// REFACTOR: make this package-protected?
-	public IFactorTable getCurrentFactorTable()
+	public @Nullable IFactorTable getCurrentFactorTable()
 	{
 		return _currentFactorTable;
 	}
@@ -492,6 +495,7 @@ public class SFactorGraph extends SFactorGraphBase
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

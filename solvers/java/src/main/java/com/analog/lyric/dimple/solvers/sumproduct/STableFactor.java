@@ -19,7 +19,9 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import static com.analog.lyric.math.Utilities.*;
 
 import java.util.Arrays;
+import java.util.Objects;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -34,6 +36,7 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class STableFactor extends STableFactorDoubleArray implements IKBestFactor
@@ -42,8 +45,8 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	protected double [][] _savedOutMsgArray;
-	protected double [][][] _outPortDerivativeMsgs;
+	protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected @Nullable double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams;
 	protected TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
@@ -62,7 +65,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		
 		_dampingParams = new double[_factor.getSiblingCount()];
 		_tableFactorEngine = new TableFactorEngine(this);
-		
 		
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
@@ -446,16 +448,16 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	
 	public void initializeDerivativeMessages(int weights)
 	{
-		_outPortDerivativeMsgs = new double[weights][_inputMsgs.length][];
+		final double[][][] msgs = _outPortDerivativeMsgs = new double[weights][_inputMsgs.length][];
 		for (int i = 0; i < weights; i++)
 			for (int j = 0; j < _inputMsgs.length; j++)
-				_outPortDerivativeMsgs[i][j] = new double[_inputMsgs[j].length];
+				msgs[i][j] = new double[_inputMsgs[j].length];
 	}
 	
 	public double [] getMessageDerivative(int wn, VariableBase var)
 	{
 		int index = getFactor().getPortNum(var);
-		return _outPortDerivativeMsgs[wn][index];
+		return Objects.requireNonNull(_outPortDerivativeMsgs)[wn][index];
 	}
 	
 	public double calculateMessageForDomainValueAndTableIndex(int domainValue, int outPortNum, int tableIndex)
@@ -565,7 +567,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			
 		}
 		
-		_outPortDerivativeMsgs[wn][outPortNum][d] = derivative;
+		Objects.requireNonNull(_outPortDerivativeMsgs)[wn][outPortNum][d] = derivative;
 		
 		
 	}

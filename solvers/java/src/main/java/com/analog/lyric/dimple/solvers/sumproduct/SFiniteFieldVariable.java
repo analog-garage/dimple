@@ -21,10 +21,11 @@ import java.util.HashMap;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 
 /*
- * This class provides an implementation for FiniteField variables (with a characteristic of 2).  
+ * This class provides an implementation for FiniteField variables (with a characteristic of 2).
  * It does not modify
  * the update algorithm but provides dlog and power tables for the FiniteField function classes.
  * The dlog (discrete log) table can be used for calculating the discrete log of the variable.
@@ -33,24 +34,24 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
  * There is a unique pair of lookup tables for each primitive polynomial.  As a result we cache
  * the lookup tables for each unique primitive polynomial.
  */
-public class SFiniteFieldVariable extends SDiscreteVariable 
+public class SFiniteFieldVariable extends SDiscreteVariable
 {
 	//global cache of lookup tables.
 	private static HashMap<Integer,LookupTables> _poly2tables = new HashMap<Integer,LookupTables>();
 	
 	//A pointer to the correct lookup table for this variable.
-	private LookupTables _tables = null;
+	private @Nullable LookupTables _tables = null;
 	private int _numBits;
 
 
-	public SFiniteFieldVariable(VariableBase var) 
+	public SFiniteFieldVariable(VariableBase var)
 	{
 		super(var);
 		
 		setPrimitivePolynomial((FiniteFieldDomain)var.getDomain());
 	}
 	
-	public LookupTables getTables()
+	public @Nullable LookupTables getTables()
 	{
 		return _tables;
 	}
@@ -61,7 +62,7 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 	}
 	
 	//This gets called once, shortly after the Variable is instantiated.
-	private void setPrimitivePolynomial(FiniteFieldDomain domain) 
+	private void setPrimitivePolynomial(FiniteFieldDomain domain)
 	{
 		int key = domain.getPrimitivePolynomial();
 		_numBits = domain.getN();
@@ -90,9 +91,9 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 		private int [] _dlogTable;
 		
 		
-		//The constructor constructs the tables. 
-		public LookupTables(int poly, int polySize) 
-		{			
+		//The constructor constructs the tables.
+		public LookupTables(int poly, int polySize)
+		{
 			_poly = poly;
 						
 			//Num entries is 2^polySize-1
@@ -112,7 +113,7 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 				//LFSR equation
 				current = ((current >> (polySize-1))*_poly ^ (current << 1)) & numEntries;
 				
-				//If we get back to 1 before ending the sequence, this is not a primitive 
+				//If we get back to 1 before ending the sequence, this is not a primitive
 				//polynomial.
 				if (current == 1)
 					throw new DimpleException("polynomial is not irreducible");

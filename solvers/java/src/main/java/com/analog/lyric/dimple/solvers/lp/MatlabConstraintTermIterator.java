@@ -23,6 +23,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 @Matlab
 @NotThreadSafe
@@ -34,16 +35,16 @@ public class MatlabConstraintTermIterator implements TermIterator
 	
 	private final LPVariableConstraint.TermIterator _varIterator;
 	private final LPFactorMarginalConstraint.TermIterator _factorIterator;
-	private final Iterator<IntegerEquation> _constraintIterator;
+	private final @Nullable Iterator<IntegerEquation> _constraintIterator;
 	private final int _size;
-	private IntegerEquation.TermIterator _curIterator;
+	private @Nullable IntegerEquation.TermIterator _curIterator;
 	private int _row;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	MatlabConstraintTermIterator(List<IntegerEquation> constraints, int nTerms)
+	MatlabConstraintTermIterator(@Nullable List<IntegerEquation> constraints, int nTerms)
 	{
 		_varIterator = new LPVariableConstraint.TermIterator(null);
 		_factorIterator = new LPFactorMarginalConstraint.TermIterator(null);
@@ -60,21 +61,24 @@ public class MatlabConstraintTermIterator implements TermIterator
 	@Override
 	public boolean advance()
 	{
-		if (_curIterator == null || !_curIterator.advance())
+		IntegerEquation.TermIterator curIterator = _curIterator;
+
+		if (curIterator == null || !curIterator.advance())
 		{
-			if (_constraintIterator != null && _constraintIterator.hasNext())
+			final Iterator<IntegerEquation> constraintIterator = _constraintIterator;
+			if (constraintIterator != null && constraintIterator.hasNext())
 			{
-				IntegerEquation constraint = _constraintIterator.next();
+				IntegerEquation constraint = constraintIterator.next();
 				LPVariableConstraint varConstraint = constraint.asVariableConstraint();
 				if (varConstraint != null)
 				{
-					_curIterator = _varIterator.reset(varConstraint);
+					curIterator = _curIterator = _varIterator.reset(varConstraint);
 				}
 				else
 				{
-					_curIterator = _factorIterator.reset(constraint.asFactorConstraint());
+					curIterator = _curIterator = _factorIterator.reset(constraint.asFactorConstraint());
 				}
-				_curIterator.advance(); // assume this will return true
+				curIterator.advance(); // assume this will return true
 				++_row;
 			}
 			else
@@ -90,13 +94,15 @@ public class MatlabConstraintTermIterator implements TermIterator
 	@Override
 	public int getVariable()
 	{
-		return _curIterator != null ? _curIterator.getVariable() + 1 : -1;
+		final IntegerEquation.TermIterator curIterator = _curIterator;
+		return curIterator != null ? curIterator.getVariable() + 1 : -1;
 	}
 
 	@Override
 	public int getCoefficient()
 	{
-		return _curIterator != null ? _curIterator.getCoefficient() : 0;
+		final IntegerEquation.TermIterator curIterator = _curIterator;
+		return curIterator != null ? curIterator.getCoefficient() : 0;
 	}
 
 	/*

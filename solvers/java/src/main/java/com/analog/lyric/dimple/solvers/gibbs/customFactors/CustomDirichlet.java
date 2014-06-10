@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
@@ -153,7 +154,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomDirichlet)other)._outputMsgs[otherPortNum];

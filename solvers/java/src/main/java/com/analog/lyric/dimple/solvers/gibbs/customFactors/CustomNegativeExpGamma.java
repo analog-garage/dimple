@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugateFactor
 {
@@ -235,7 +236,7 @@ public class CustomNegativeExpGamma extends SRealFactor implements IRealConjugat
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomNegativeExpGamma)other)._outputMsgs[otherPortNum];

@@ -19,21 +19,23 @@ package com.analog.lyric.dimple.test.dummySolver;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 public class DummyCustomFactor extends SFactorBase
 {
 	
-	public DummyCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor) 
+	public DummyCustomFactor(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		super(factor);
-	}	
+	}
 
-	public void doUpdateEdge(int outPortNum) 
+	@Override
+	public void doUpdateEdge(int outPortNum)
 	{
 		
 	}
 
-	public Object getDefaultMessage(Port port) 
+	public @Nullable Object getDefaultMessage(Port port)
 	{
 		com.analog.lyric.dimple.model.variables.Discrete var = (com.analog.lyric.dimple.model.variables.Discrete)port.getConnectedNode();
 		DummyDiscreteVariable v = (DummyDiscreteVariable)var.getSolver();
@@ -41,7 +43,7 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 	}
 
@@ -56,13 +58,13 @@ public class DummyCustomFactor extends SFactorBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;
 	}

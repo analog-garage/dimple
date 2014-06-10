@@ -17,7 +17,11 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
+
+import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -54,6 +58,7 @@ import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.schedulers.GibbsDefaultScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.IGibbsSchedule;
+import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.gibbs.customFactors.CustomBernoulli;
@@ -79,13 +84,14 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGraph
 {
-	private IGibbsSchedule _schedule;
-	private Iterator<IScheduleEntry> _scheduleIterator;
-	private ArrayList<IBlockInitializer> _blockInitializers;
+	private @Nullable IGibbsSchedule _schedule;
+	private @Nullable Iterator<IScheduleEntry> _scheduleIterator;
+	private @Nullable ArrayList<IBlockInitializer> _blockInitializers;
 	private int _numSamples;
 	private int _updatesPerSample;
 	private int _burnInUpdates;
@@ -98,8 +104,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private double _temperature;
 	private double _minPotential = Double.MAX_VALUE;
 	private boolean _firstSample = true;
-	private boolean _saveAllScores = false;
-	private ArrayList<Double> _scoreArray;
+	private @Nullable DoubleArrayList _scoreArray;
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
 	private final double LOG2 = Math.log(2);
@@ -108,7 +113,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 * Priority queue of deterministic factors whose outputs should be
 	 * reevaluated. Lazily created.
 	 */
-	private KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> _deferredDeterministicFactorUpdates = null;
+	private @Nullable KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> _deferredDeterministicFactorUpdates = null;
 	
 	/**
 	 * The number of requests to defer update of deterministic directed factor outputs.
@@ -153,7 +158,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (var.getModelerClassName().equals("Real"))
 			return new SRealVariable(var);
 		else
-			return new SDiscreteVariable(var);
+			return new SDiscreteVariable((Discrete)var);
 	}
 	
 	
@@ -227,13 +232,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	@Override
-	public ISolverFactorGibbs getSolverFactor(Factor factor)
+	public @Nullable ISolverFactorGibbs getSolverFactor(Factor factor)
 	{
 		return (ISolverFactorGibbs)super.getSolverFactor(factor);
 	}
 	
 	@Override
-	public ISolverVariableGibbs getSolverVariable(VariableBase variable)
+	public @Nullable ISolverVariableGibbs getSolverVariable(VariableBase variable)
 	{
 		return (ISolverVariableGibbs)super.getSolverVariable(variable);
 	}
@@ -242,7 +247,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void initialize()
 	{
 		// Make sure the schedule is created before factor initialization to allow custom factors to modify the schedule if needed
-		_schedule = (IGibbsSchedule)_factorGraph.getSchedule();
+		final IGibbsSchedule schedule = _schedule = (IGibbsSchedule)_factorGraph.getSchedule();
 
 		// Same as SFactorGraphBase.initialize() but with deferral of deterministic updates
 		_blockInitializers = null;
@@ -259,13 +264,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (FactorGraph g : fg.getNestedGraphs())
 			g.getSolver().initialize();
 		deferDeterministicUpdates();
-		if (_blockInitializers != null)
-			for (IBlockInitializer b : _blockInitializers)	// After initializing all variables and factors, invoke any block initializers
+		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
+		if (blockInitializers != null)
+			for (IBlockInitializer b : blockInitializers)	// After initializing all variables and factors, invoke any block initializers
 				b.initialize();
 		processDeferredDeterministicUpdates();
 
 		
-		_scheduleIterator = _schedule.iterator();
+		_scheduleIterator = schedule.iterator();
 		_minPotential = Double.POSITIVE_INFINITY;
 		_firstSample = true;
 		
@@ -275,8 +281,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (_burnInScans >= 0) _burnInUpdates = _burnInScans * _factorGraph.getVariables().size();
 		if (_temper) setTemperature(_initialTemperature);
 		
-		if (_scoreArray != null)
-			_scoreArray.clear();
+		final DoubleArrayList scoreArray = _scoreArray;
+		if (scoreArray != null)
+			scoreArray.clear();
 	}
 
 	@Override
@@ -324,12 +331,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@Override
 	public void iterate(int numIters)
 	{
+		Iterator<IScheduleEntry> scheduleIterator = Objects.requireNonNull(_scheduleIterator);
+		final ISchedule schedule = Objects.requireNonNull(_schedule);
+		
 		for (int iterNum = 0; iterNum < numIters; iterNum++)
 		{
-			if (!_scheduleIterator.hasNext())
-				_scheduleIterator = _schedule.iterator();	// Wrap-around the schedule if reached the end
+			if (!scheduleIterator.hasNext())
+				scheduleIterator = _scheduleIterator = schedule.iterator();	// Wrap-around the schedule if reached the end
 
-			_scheduleIterator.next().update();
+			scheduleIterator.next().update();
 		}
 		
 		// Allow interruption (if the solver is run as a thread); currently interruption is allowed only between iterations, not within a single iteration
@@ -359,8 +369,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 		
 		// If requested save score value for each sample
-		if (_saveAllScores)
-			_scoreArray.add(totalPotential);
+		final DoubleArrayList scoreArray = _scoreArray;
+		if (scoreArray != null)
+		{
+			scoreArray.add(totalPotential);
+		}
 		
 		// If tempering, reduce the temperature
 		if (_temper)
@@ -393,8 +406,10 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		
 		for (VariableBase v : _factorGraph.getVariables())
 			getSolverVariable(v).randomRestart(restartCount);
-		if (_blockInitializers != null)
-			for (IBlockInitializer b : _blockInitializers)	// Also invoke any block initializers
+		
+		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
+		if (blockInitializers != null)
+			for (IBlockInitializer b : blockInitializers)	// Also invoke any block initializers
 				b.initialize();
 
 		processDeferredDeterministicUpdates();
@@ -432,8 +447,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample
 	public void saveAllScores()
 	{
-		_saveAllScores = true;
-		_scoreArray = new ArrayList<Double>();
+		_scoreArray = new DoubleArrayList();
 	}
 	
 	/**
@@ -443,20 +457,16 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	 */
 	public void disableSavingAllScores()
 	{
-		_saveAllScores = false;
 		_scoreArray = null;
 	}
 	
 	// If the score had been saved, return the array of score values
-	public final double[] getAllScores()
+	public final @Nullable double[] getAllScores()
 	{
-		if (_saveAllScores)
+		final DoubleArrayList scoreArray = _scoreArray;
+		if (scoreArray != null)
 		{
-			int length = _scoreArray.size();
-			double[] retval = new double[length];
-			for (int i = 0; i < length; i++)
-				retval[i] = _scoreArray.get(i);
-			return retval;
+			return Arrays.copyOf(scoreArray.elements(), scoreArray.size());
 		}
 		else
 			return null;
@@ -498,7 +508,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 			throw new DimpleException("Scans per sample must be greater than 0.");
 		
 		_scansPerSample = scansPerSample;
-		_updatesPerSample = _scansPerSample * ((_schedule != null) ? _schedule.size() : _factorGraph.getVariableCount());
+		
+		final IGibbsSchedule schedule = _schedule;
+		_updatesPerSample = _scansPerSample * (schedule != null ? schedule.size() : _factorGraph.getVariableCount());
 	}
 	
 	// Set/get the number of single-variable updates for the burn-in period prior to collecting samples
@@ -660,7 +672,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public String getMatlabSolveWrapper() {
+	public @Nullable String getMatlabSolveWrapper() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -672,13 +684,13 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex) {
+	public @Nullable Object getInputMsg(int portIndex) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex) {
+	public @Nullable Object getOutputMsg(int portIndex) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -700,11 +712,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 				_deferredDeterministicFactorUpdates =
 					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, SFactorUpdate.Equal.INSTANCE);
 			}
-			SFactorUpdate update = _deferredDeterministicFactorUpdates.get(sfactor);
+			SFactorUpdate update = Objects.requireNonNull(_deferredDeterministicFactorUpdates).get(sfactor);
 			if (update == null)
 			{
 				update = new SFactorUpdate(sfactor);
-				_deferredDeterministicFactorUpdates.offer(update);
+				Objects.requireNonNull(_deferredDeterministicFactorUpdates).offer(update);
 			}
 			update.addVariableUpdate(changedVariableIndex, oldValue);
 		}
@@ -732,10 +744,12 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		if (--_deferDeterministicFactorUpdatesCounter <= 0)
 		{
 			++_deferDeterministicFactorUpdatesCounter;
-			if (_deferredDeterministicFactorUpdates != null)
+			final KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate> deferredUpdates =
+				_deferredDeterministicFactorUpdates;
+			if (deferredUpdates != null)
 			{
 				SFactorUpdate update = null;
-				while ((update = _deferredDeterministicFactorUpdates.poll()) != null)
+				while ((update = deferredUpdates.poll()) != null)
 				{
 					update.performUpdate();
 				}
@@ -749,6 +763,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		++_deferDeterministicFactorUpdatesCounter;
 	}
 	
+	@Override
 	public boolean checkAllEdgesAreIncludedInSchedule()
 	{
 		return false;
@@ -756,21 +771,26 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 	public void addBlockInitializer(IBlockInitializer blockInitializer)
 	{
-		if (_blockInitializers == null)
-			_blockInitializers = new ArrayList<IBlockInitializer>();
+		ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
+		
+		if (blockInitializers == null)
+			blockInitializers = _blockInitializers = new ArrayList<IBlockInitializer>();
 
-		_blockInitializers.add(blockInitializer);
+		blockInitializers.add(blockInitializer);
 	}
 	
 	public void removeBlockInitializer(IBlockInitializer blockInitializer)
 	{
-		if (_blockInitializers != null)
-			_blockInitializers.remove(blockInitializer);
+		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
+
+		if (blockInitializers != null)
+			blockInitializers.remove(blockInitializer);
 	}
 
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

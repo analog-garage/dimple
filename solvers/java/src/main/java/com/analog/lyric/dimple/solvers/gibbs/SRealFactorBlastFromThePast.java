@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SBlastFromThePast;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SRealFactorBlastFromThePast extends SBlastFromThePast implements ISolverFactorGibbs
 {
@@ -34,6 +35,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	private Object[] _outputMsgs;
 	private boolean _visited;
 	
+	@SuppressWarnings("null")
 	public SRealFactorBlastFromThePast(BlastFromThePastFactor f)
 	{
 		super(f);
@@ -48,7 +50,9 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	
 	private void getMessages()
 	{
+		@SuppressWarnings("null")
 		VariableBase vb = (VariableBase)_portForOtherVar.node;
+		@SuppressWarnings("null")
 		int index = _portForOtherVar.index;
 		Factor f = vb.getSibling(index);
 		ISolverFactor sf = f.getSolver();
@@ -92,7 +96,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 	}
 
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValue)
+	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValue)
 	{
 		throw DimpleException.unsupportedMethod(getClass(), "updateNeighborVariableValuesNow");
 	}

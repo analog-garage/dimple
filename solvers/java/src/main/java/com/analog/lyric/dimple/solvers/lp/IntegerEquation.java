@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.lp;
 
 import java.io.PrintStream;
 
+import com.analog.lyric.util.misc.Nullable;
+
 
 /**
  * Represents a linear equation with integer coefficients of the form:
@@ -72,7 +74,7 @@ public abstract class IntegerEquation
 	/**
 	 * Returns non-null if this is a {@link LPVariableConstraint}.
 	 */
-	public LPVariableConstraint asVariableConstraint()
+	public @Nullable LPVariableConstraint asVariableConstraint()
 	{
 		return null;
 	}
@@ -80,7 +82,7 @@ public abstract class IntegerEquation
 	/**
 	 * Returns non-null if this is a {@link LPFactorMarginalConstraint}.
 	 */
-	public LPFactorMarginalConstraint asFactorConstraint()
+	public @Nullable LPFactorMarginalConstraint asFactorConstraint()
 	{
 		return null;
 	}

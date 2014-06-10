@@ -23,11 +23,12 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class DummyDiscreteVariable extends SDiscreteVariableBase
 {
-	private double [] _input = new double[1];
+	private @Nullable double [] _input = new double[1];
 	protected Discrete _varDiscrete;
 
 	public DummyDiscreteVariable(Discrete var)
@@ -47,11 +48,12 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 		return _var;
 	}
 
-	public Object getDefaultMessage(Port port)
+	public @Nullable Object getDefaultMessage(@Nullable Port port)
 	{
-		if (_input != null)
+		final double[] input = _input;
+		if (input != null)
 		{
-			double[] msg = new double[_input.length];
+			double[] msg = new double[input.length];
 			java.util.Arrays.fill(msg, java.lang.Math.PI);
 	
 			return msg;
@@ -62,7 +64,7 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 
 
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 		{
@@ -95,20 +97,20 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public double[] getBelief()
+	public @Nullable double[] getBelief()
 	{
 		return _input;
 	}
 
 
 	@Override
-	public Object[] createMessages(ISolverFactor factor)
+	public @Nullable Object[] createMessages(ISolverFactor factor)
 	{
 		return null;
 	}
 
 	@Override
-	public Object resetInputMessage(Object message)
+	public @Nullable Object resetInputMessage(Object message)
 	{
 		return null;
 	}
@@ -119,13 +121,13 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;
 	}

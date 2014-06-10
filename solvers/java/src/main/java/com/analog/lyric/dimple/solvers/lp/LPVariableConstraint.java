@@ -21,6 +21,8 @@ import java.io.PrintStream;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * Represents a linear equality describing the constraint that the probabilities
  * of a discrete random variable's values add up to one. The assumption is that the
@@ -39,7 +41,7 @@ public final class LPVariableConstraint extends IntegerEquation
 		private int _cur;
 		private int _last;
 		
-		TermIterator(LPVariableConstraint varConstraint)
+		TermIterator(@Nullable LPVariableConstraint varConstraint)
 		{
 			reset(varConstraint);
 		}
@@ -47,7 +49,7 @@ public final class LPVariableConstraint extends IntegerEquation
 		/**
 		 * Reset the iterator from a new variable constraint.
 		 */
-		public TermIterator reset(LPVariableConstraint varConstraint)
+		public TermIterator reset(@Nullable LPVariableConstraint varConstraint)
 		{
 			if (varConstraint == null)
 			{

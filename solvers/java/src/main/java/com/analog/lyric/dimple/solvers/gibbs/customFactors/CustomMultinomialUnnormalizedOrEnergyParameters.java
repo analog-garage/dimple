@@ -42,6 +42,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
@@ -120,6 +121,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 
 
 	// For MultinomialBlockProposal.ICustomMultinomial interface
+	@Override
 	public final double[] getCurrentAlpha()
 	{
 		double[] alphas = new double[_dimension];
@@ -136,14 +138,17 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 
 		return alphas;
 	}
+	@Override
 	public final boolean isAlphaEnergyRepresentation()
 	{
 		return _useEnergyParameters;
 	}
+	@Override
 	public final boolean hasConstantN()
 	{
 		return _hasConstantN;
 	}
+	@Override
 	public final int getN()
 	{
 		return _constantN;
@@ -316,7 +321,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -327,13 +332,13 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomMultinomialUnnormalizedOrEnergyParameters)other)._outputMsgs[otherPortNum];

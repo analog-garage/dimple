@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorDoubleArray;
+import com.analog.lyric.util.misc.NonNull;
 
 /*
  * The Multiplexer factor is a directed factor
@@ -136,7 +137,7 @@ public class CustomMultiplexer extends STableFactorDoubleArray
 	}
 	
 	@Override
-	protected void setTableRepresentation(IFactorTable table)
+	protected void setTableRepresentation(@NonNull IFactorTable table)
 	{
 	}
 

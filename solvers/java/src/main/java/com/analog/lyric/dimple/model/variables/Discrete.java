@@ -109,13 +109,13 @@ public class Discrete extends VariableBase
      * Discrete methods
      */
     
-    public double [] getBelief()
+    public @Nullable double [] getBelief()
     {
     	return (double[])getBeliefObject();
     }
     
     @Override
-	public Object getBeliefObject()
+	public @Nullable Object getBeliefObject()
     {
     	final ISolverVariable svar = _solverVariable;
     	if (svar != null)

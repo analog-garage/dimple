@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.NonNull;
 
 public abstract class GaussianFactorBase extends SFactorBase
 {
@@ -73,7 +74,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
+	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{
 		GaussianFactorBase s = (GaussianFactorBase)other;
 	

@@ -25,6 +25,8 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteEnergyMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class SVariable extends SDiscreteVariableDoubleArray
@@ -188,7 +190,7 @@ public class SVariable extends SDiscreteVariableDoubleArray
 
 
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 			_input = MessageConverter.initialValue(((DiscreteDomain)_var.getDomain()).size());
@@ -263,10 +265,11 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	}
 
 	@Override
-	public Object resetInputMessage(Object message)
+	public @NonNull double[] resetInputMessage(Object message)
 	{
-		Arrays.fill((double[])message, 0);
-		return message;
+		final double[] result = (double[])message;
+		Arrays.fill(result, 0);
+		return result;
 	}
 
 	@Override

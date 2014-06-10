@@ -40,6 +40,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjug
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomMultiplexer extends SRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
@@ -269,7 +270,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomMultiplexer)other)._outputMsgs[otherPortNum];

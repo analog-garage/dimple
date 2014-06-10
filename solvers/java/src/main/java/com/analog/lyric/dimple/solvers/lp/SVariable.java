@@ -28,6 +28,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 @NotThreadSafe
 public class SVariable extends SDiscreteVariableBase
@@ -57,7 +58,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * is not allowed to take based on the input probabilities. If all values are allowed or if not yet computed, this
 	 * will simply be null.
 	 */
-	private BitSet _invalidAssignments;
+	private @Nullable BitSet _invalidAssignments;
 	
 	/**
 	 * The number of valid assignments to the variable, or negative if not yet computed.
@@ -66,8 +67,8 @@ public class SVariable extends SDiscreteVariableBase
 	
 	
 	private boolean _fixedValue;
-	private double[] _inputs = null;
-	private double[] _beliefs = null;
+	private @Nullable double[] _inputs = null;
+	private @Nullable double[] _beliefs = null;
 	
 	/*--------------
 	 * Construction
@@ -87,7 +88,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * Returns null.
 	 */
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;
 	}
@@ -95,14 +96,14 @@ public class SVariable extends SDiscreteVariableBase
 	@Override
 	public Discrete getModelObject()
 	{
-		return (Discrete)super.getModelObject();
+		return super.getModelObject();
 	}
 	
 	/**
 	 * Returns null.
 	 */
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;
 	}
@@ -148,7 +149,7 @@ public class SVariable extends SDiscreteVariableBase
 	 */
 	
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		int fixedValueIndex = -1;
 		
@@ -178,8 +179,8 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (fixedValueIndex >= 0)
 		{
-			_inputs = new double[getModelObject().getDomain().size()];
-			_inputs[fixedValueIndex] = 1.0;
+			final double[] inputs = _inputs = new double[getModelObject().getDomain().size()];
+			inputs[fixedValueIndex] = 1.0;
 			_beliefs = _inputs;
 			_fixedValue = true;
 		}
@@ -190,7 +191,7 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public double[] getBelief()
+	public @Nullable double[] getBelief()
 	{
 		return _beliefs;
 	}
@@ -199,7 +200,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * Returns null.
 	 */
 	@Override
-	public Object[] createMessages(ISolverFactor factor)
+	public @Nullable Object[] createMessages(ISolverFactor factor)
 	{
 		return null;
 	}
@@ -208,7 +209,7 @@ public class SVariable extends SDiscreteVariableBase
 	 * Does nothing. Returns null.
 	 */
 	@Override
-	public Object resetInputMessage(Object message)
+	public @Nullable Object resetInputMessage(Object message)
 	{
 		return null;
 	}
@@ -228,14 +229,15 @@ public class SVariable extends SDiscreteVariableBase
 		{
 			domainIndex = lpVar - _lpVarIndex;
 
-			if (_invalidAssignments != null)
+			final BitSet invalidAssignments = _invalidAssignments;
+			if (invalidAssignments != null)
 			{
 				domainIndex = -1;
 
 				while (lpVar-- >= _lpVarIndex)
 				{
 					// Find next clear (valid assignment) bit
-					domainIndex = _invalidAssignments.nextClearBit(domainIndex + 1);
+					domainIndex = invalidAssignments.nextClearBit(domainIndex + 1);
 				}
 			}
 		}
@@ -299,11 +301,12 @@ public class SVariable extends SDiscreteVariableBase
 				double w = inputWeights[i];
 				if (w == 0.0)
 				{
-					if (_invalidAssignments == null)
+					BitSet invalidAssignments = _invalidAssignments;
+					if (invalidAssignments == null)
 					{
-						_invalidAssignments = new BitSet(i);
+						invalidAssignments = _invalidAssignments = new BitSet(i);
 					}
-					_invalidAssignments.set(i, true);
+					invalidAssignments.set(i, true);
 				}
 				else
 				{
@@ -450,12 +453,13 @@ public class SVariable extends SDiscreteVariableBase
 		_nValidAssignments = -1;
 	}
 	
+	@SuppressWarnings("null")
 	double getInput(int index)
 	{
 		return _inputs[index];
 	}
 	
-	double[] getInputs()
+	@Nullable double[] getInputs()
 	{
 		return _inputs;
 	}

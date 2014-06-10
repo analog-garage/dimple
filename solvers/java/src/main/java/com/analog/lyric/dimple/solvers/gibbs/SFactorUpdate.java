@@ -25,6 +25,7 @@ import net.jcip.annotations.NotThreadSafe;
 import com.analog.lyric.collect.IKeyed;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -37,7 +38,7 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	 */
 	
 	private final ISolverFactorGibbs _sfactor;
-	private Set<IndexedValue> _updates;
+	private @Nullable Set<IndexedValue> _updates;
 	private final int _incrementalUpdateThreshold;
 
 	static enum Equal implements Comparator<SFactorUpdate>
@@ -79,10 +80,11 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	
 	void addVariableUpdate(int variableIndex, Value oldValue)
 	{
-		if (_updates != null)
+		final Set<IndexedValue> updates = _updates;
+		if (updates != null)
 		{
-			_updates.add(new IndexedValue(variableIndex, oldValue));
-			if (_updates.size() > _incrementalUpdateThreshold)
+			updates.add(new IndexedValue(variableIndex, oldValue));
+			if (updates.size() > _incrementalUpdateThreshold)
 			{
 				// Once we have exceeded the threshold, there is no point in
 				// saving entries.

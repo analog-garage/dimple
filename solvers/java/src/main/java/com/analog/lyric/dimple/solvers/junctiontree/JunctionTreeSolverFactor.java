@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -53,8 +54,8 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	
 	private final JunctionTreeSolverGraphBase<?> _root;
 	
-	private ISolverFactor _delegate;
-	private JointDomainReindexer _reindexer;
+	private @Nullable ISolverFactor _delegate;
+	private @Nullable JointDomainReindexer _reindexer;
 	private boolean _reindexerComputed = false;
 	
 	/*--------------
@@ -226,7 +227,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	 * Private methods
 	 */
 	
-	private ISolverFactor getDelegate()
+	private @Nullable ISolverFactor getDelegate()
 	{
 		final ISolverFactor delegate = _delegate;
 		if (delegate != null)
@@ -241,7 +242,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		}
 	}
 
-	private JointDomainReindexer getDelegateReindexer()
+	private @Nullable JointDomainReindexer getDelegateReindexer()
 	{
 		if (!_reindexerComputed)
 		{
@@ -319,8 +320,9 @@ public class JunctionTreeSolverFactor extends SFactorBase
 			if (!targetVarsToSplit.isEmpty())
 			{
 				targetVarsToSplit.trimToSize();
-				_reindexer = JointDomainReindexer.createSplitter(fromDomains, targetVarsToSplit.elements());
-				fromDomains = _reindexer.getToDomains();
+				JointDomainReindexer reindexer = _reindexer =
+					JointDomainReindexer.createSplitter(fromDomains, targetVarsToSplit.elements());
+				fromDomains = reindexer.getToDomains();
 			}
 			
 			// Remaining entries in targetVarToSourceIndex should be conditioned variables

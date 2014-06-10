@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -29,12 +30,13 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 {
 	protected Factor _realFactor;
-	protected Value [] _inputMsgs;
+	protected @Nullable Value [] _inputMsgs;
 	//	private Object[] _scratchValues;
 	protected int _numPorts;
 	protected boolean _isDeterministicDirected;
@@ -84,8 +86,9 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			
 			Object[] values = new Object[numPorts];
 			
+			final Value[] inputMsgs = Objects.requireNonNull(_inputMsgs);
 			for (int port = 0; port < numPorts; port++)
-				values[port] = _inputMsgs[port].getObject();
+				values[port] = inputMsgs[port].getObject();
 
 			//TODO: these could be cached instead.
 			double[] outputMsgs = (double[])var.getSolver().getInputMsg(_factor.getSiblingPortIndex(outPortNum));
@@ -105,8 +108,10 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		if (_isDeterministicDirected)
 			return 0;
 
-		return _realFactor.getFactorFunction().evalEnergy(_inputMsgs);
+		final Value[] inputMsgs = _inputMsgs;
+		return inputMsgs != null ? _realFactor.getFactorFunction().evalEnergy(inputMsgs) : Double.POSITIVE_INFINITY;
 	}
+	
 	public double getPotential(Object[] inputs)
 	{
 	    return _realFactor.getFactorFunction().evalEnergy(inputs);
@@ -121,17 +126,19 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
+	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final Factor factor = _factor;
 		final FactorFunction function = factor.getFactorFunction();
 		int[] directedTo = factor.getDirectedTo();
 
+		final Value[] inputMsgs = Objects.requireNonNull(_inputMsgs);
+		
 		if (oldValues != null && _outputsValid)
 		{
 			AtomicReference<int[]> changedOutputsHolder = new AtomicReference<int[]>();
-			function.updateDeterministic(_inputMsgs, oldValues, changedOutputsHolder);
+			function.updateDeterministic(inputMsgs, oldValues, changedOutputsHolder);
 			int[] changedOutputs = changedOutputsHolder.get();
 			if (changedOutputs != null)
 			{
@@ -142,13 +149,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			for (int outputIndex : directedTo)
 			{
 				VariableBase variable = factor.getSibling(outputIndex);
-				Value newValue = _inputMsgs[outputIndex];
+				Value newValue = inputMsgs[outputIndex];
 				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 			}
 		}
 		else
 		{
-			function.evalDeterministic(factor, _inputMsgs);
+			function.evalDeterministic(factor, inputMsgs);
 			_outputsValid = true;
 
 			// Update the directed-to variables with the computed values
@@ -158,7 +165,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				for (int outputIndex : directedTo)
 				{
 					VariableBase variable = factor.getSibling(outputIndex);
-					Value newValue = _inputMsgs[outputIndex];
+					Value newValue = inputMsgs[outputIndex];
 					// FIXME: is sample already set? Just need to handle side-effects?
 					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
 				}
@@ -173,13 +180,13 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	{
 		final Factor factor = _factor;
 		_numPorts = factor.getSiblingCount();
-		_inputMsgs = new Value[_numPorts];
+		final Value[] inputMsgs = _inputMsgs = new Value[_numPorts];
 		_outputsValid = false;
 //		_scratchValues = new Object[_numPorts];
 		for (int i = 0; i < _numPorts; i++)
 		{
 			Object [] messages = factor.getSibling(i).getSolver().createMessages(this);
-			_inputMsgs[i] = (Value)messages[1];
+			inputMsgs[i] = (Value)messages[1];
 		}
 	}
 
@@ -192,19 +199,21 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Value getInputMsg(int portIndex)
 	{
-		return _inputMsgs[portIndex];
+		final Value[] inputMsgs = _inputMsgs;
+		return inputMsgs != null ? inputMsgs[portIndex] : null;
 	}
 
 
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;	// No output message by default (except for custom factors)
 	}
 
 
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
 	{

@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.cs.Sort;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -36,7 +37,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    protected double [][] _savedOutMsgArray;
+    protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     protected double [] _dampingParams;
     protected int _k;
     protected TableFactorEngine _tableFactorEngine;

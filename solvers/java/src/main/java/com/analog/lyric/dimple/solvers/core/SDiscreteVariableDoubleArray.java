@@ -23,6 +23,8 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -44,6 +46,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	public SDiscreteVariableDoubleArray(VariableBase var)
 	{
 		super(var);
+		_input = createDefaultMessage();
 	}
 
 	/*-------------------------
@@ -57,7 +60,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 	 * reasons, it'soften good to cache the input.
 	 */
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue,
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue,
 			boolean hasFixedValue)
 	{
 		if (input == null)
@@ -115,6 +118,9 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		
 	}
 
+	@Override
+	public abstract @NonNull double[] resetInputMessage(Object message);
+	
 	/**
 	 * This method is used for introspection
 	 */
@@ -151,7 +157,7 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		//TODO: both variable and factor do this.  Why doesn't factor just ask variable?
 		int domainLength = _var.asDiscreteVariable().getDiscreteDomain().size();
     	double[] retVal = new double[domainLength];
-    	return (double[])resetInputMessage(retVal);
+    	return resetInputMessage(retVal);
     }
 	
 

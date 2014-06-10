@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -25,19 +26,20 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class SRealFactor extends SFactorBase
 {
 	protected Factor _realFactor;
 	protected int _numPorts;
-	protected double [][] _inPortMsgs;
-	protected double [][] _outMsgArray;
-	protected Object[][] _variableDomains;
-	protected Object[] _variableValues;
-	protected int[] _variableIndices;
-	protected int[] _variableDomainLengths;
-	protected boolean[] _realVariable;
+	protected double [][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double [][] _outMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected Object[][] _variableDomains = ArrayUtil.EMPTY_OBJECT_ARRAY_ARRAY;
+	protected Object[] _variableValues = ArrayUtil.EMPTY_OBJECT_ARRAY;
+	protected int[] _variableIndices = ArrayUtil.EMPTY_INT_ARRAY;
+	protected int[] _variableDomainLengths = ArrayUtil.EMPTY_INT_ARRAY;
+	protected @Nullable boolean[] _realVariable; // FIXME: not currently used
 	protected boolean _moreCombinations;
 	protected double _beta = 1;
 
@@ -243,7 +245,7 @@ public class SRealFactor extends SFactorBase
 		_variableValues = new Object[_numPorts];
 		_variableIndices = new int[_numPorts];
 		_variableDomainLengths = new int[_numPorts];
-		_realVariable = new boolean[_numPorts];
+		final boolean[] realVariable = _realVariable = new boolean[_numPorts];
 
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
@@ -254,13 +256,13 @@ public class SRealFactor extends SFactorBase
 	    	if (var instanceof Real)
 	    	{
 	    		ParticleBPSolverVariableToFactorMessage tmp = (ParticleBPSolverVariableToFactorMessage)messages[1];
-	    		_realVariable[iPort] = true;
+	    		realVariable[iPort] = true;
 	    		_variableDomains[iPort] = tmp.particleValues;
 	    		_inPortMsgs[iPort] = tmp.messageValues;
 	    	}
 	    	else
 	    	{
-	    		_realVariable[iPort] = true;
+	    		realVariable[iPort] = true;
 	    		_variableDomains[iPort] = ((Discrete)var).getDiscreteDomain().getElements();
 	    		_inPortMsgs[iPort] = (double[])messages[1];
 	    	}

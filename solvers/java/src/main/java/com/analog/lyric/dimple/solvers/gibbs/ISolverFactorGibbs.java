@@ -21,6 +21,7 @@ import java.util.Collection;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 {
@@ -36,6 +37,6 @@ public interface ISolverFactorGibbs extends ISolverFactor, ISolverNodeGibbs
 	 * @param oldValue
 	 */
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue);
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues);
+	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues);
 	public void updateEdgeMessage(int portIndex);
 }

@@ -27,7 +27,7 @@ import com.analog.lyric.util.misc.Nullable;
  * Contains static methods that convert a null parameter into
  * an immutable non-null instance.
  */
-public final class NonNull
+public final class NotNull
 {
 	/**
 	 * Returns {@code l} if non-null, otherwise returns an immutable empty list.

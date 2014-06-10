@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.events.DimpleEventHandler;
 import com.analog.lyric.dimple.events.DimpleEventListener;
@@ -42,6 +43,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * {@link DimpleEventHandler} for testing {@link IMessageUpdateEvent}.
@@ -231,9 +233,10 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 	}
 	
 	
-	private void assertEdgeMessageEvent(ISolverVariable svar, int edge, Iterator<IMessageUpdateEvent> eventIter)
+	private void assertEdgeMessageEvent(@Nullable ISolverVariable svar, int edge,
+		Iterator<IMessageUpdateEvent> eventIter)
 	{
-		if (DimpleEventListener.sourceHasListenerFor(svar, VariableToFactorMessageEvent.class))
+		if (DimpleEventListener.sourceHasListenerFor(Objects.requireNonNull(svar), VariableToFactorMessageEvent.class))
 		{
 			assertTrue(eventIter.hasNext());
 			IMessageUpdateEvent event = eventIter.next();
@@ -244,9 +247,10 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		}
 	}
 	
-	private void assertEdgeMessageEvent(ISolverFactor sfactor, int edge, Iterator<IMessageUpdateEvent> eventIter)
+	private void assertEdgeMessageEvent(@Nullable ISolverFactor sfactor, int edge,
+		Iterator<IMessageUpdateEvent> eventIter)
 	{
-		if (DimpleEventListener.sourceHasListenerFor(sfactor, FactorToVariableMessageEvent.class))
+		if (DimpleEventListener.sourceHasListenerFor(Objects.requireNonNull(sfactor), FactorToVariableMessageEvent.class))
 		{
 			assertTrue(eventIter.hasNext());
 			IMessageUpdateEvent event = eventIter.next();

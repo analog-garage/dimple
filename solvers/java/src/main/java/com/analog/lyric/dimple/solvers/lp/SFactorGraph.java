@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.lp.IntegerEquation.TermIterator;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 @NotThreadSafe
 public class SFactorGraph extends SFactorGraphBase
@@ -65,7 +66,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * <p>
 	 * Null if not yet computed.
 	 */
-	private double[] _objectiveFunction = null;
+	private @Nullable double[] _objectiveFunction = null;
 
 	/**
 	 * List of linear constraints describing this graph. The first {@link #getNumberOfVariableConstraints()}
@@ -73,7 +74,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * <p>
 	 * Null if not yet computed.
 	 */
-	private List<IntegerEquation> _constraints = null;
+	private @Nullable List<IntegerEquation> _constraints = null;
 	
 	/**
 	 * Number of non-zero terms in all of the {@link #_constraints}.
@@ -146,7 +147,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * the model's parent graph's solver will be returned. Otherwise null.
 	 */
 	@Override
-	public ISolverFactorGraph getParentGraph()
+	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph parentSolver = null;
 
@@ -164,7 +165,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * the model's root graph's solver will be returned. Otherwise this.
 	 */
 	@Override
-	public ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph rootSolver = this;
 
@@ -322,7 +323,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * "matlab" and otherwise returns null.
 	 */
 	@Override
-	public String getMatlabSolveWrapper()
+	public @Nullable String getMatlabSolveWrapper()
 	{
 		return useMatlabSolver() ? "dimpleLPSolve" : null;
 	}
@@ -433,7 +434,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * @see #buildLPState()
 	 */
 	@Matlab
-	public double[] getObjectiveFunction()
+	public @Nullable double[] getObjectiveFunction()
 	{
 		return _objectiveFunction;
 	}
@@ -443,7 +444,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * constraints will be of type {@link LPVariableConstraint} and the remainder will be of
 	 * type {@link LPFactorMarginalConstraint}.
 	 */
-	public List<IntegerEquation> getConstraints()
+	public @Nullable List<IntegerEquation> getConstraints()
 	{
 		return _constraints;
 	}
@@ -486,12 +487,12 @@ public class SFactorGraph extends SFactorGraphBase
 		return _lpMatlabSolver;
 	}
 	@Matlab
-	public void setMatlabLPSolver(String name)
+	public void setMatlabLPSolver(@Nullable String name)
 	{
 		_lpMatlabSolver = name != null ? name : "";
 	}
 	@Matlab
-	public void setLPSolverName(String name)
+	public void setLPSolverName(@Nullable String name)
 	{
 		_lpSolverName = name != null ? name : "";
 	}
@@ -505,7 +506,8 @@ public class SFactorGraph extends SFactorGraphBase
 	@Matlab
 	public int getNumberOfConstraints()
 	{
-		return _constraints != null ? _constraints.size() : -1;
+		final List<IntegerEquation> constraints = _constraints;
+		return constraints != null ? constraints.size() : -1;
 	}
 	
 	/**
@@ -516,7 +518,8 @@ public class SFactorGraph extends SFactorGraphBase
 	 */
 	public int getNumberOfLPVariables()
 	{
-		return _objectiveFunction != null ? _objectiveFunction.length : -1;
+		final double[] objectiveFunction = _objectiveFunction;
+		return objectiveFunction != null ? objectiveFunction.length : -1;
 	}
 	
 	@Matlab
@@ -542,13 +545,14 @@ public class SFactorGraph extends SFactorGraphBase
 	 */
 	public void printConstraints(PrintStream out)
 	{
-		if (_constraints == null)
+		final List<IntegerEquation> constraints = _constraints;
+		if (constraints == null)
 		{
 			out.println("Constraints not yet computed.");
 			return;
 		}
 		
-		for (IntegerEquation constraint : _constraints)
+		for (IntegerEquation constraint : constraints)
 		{
 			constraint.print(out);
 		}
@@ -644,7 +648,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * associated with input model factor or else null.
 	 */
 	@Override
-	public STableFactor getSolverFactor(Factor factor)
+	public @Nullable STableFactor getSolverFactor(Factor factor)
 	{
 		return _factorMap.get(factor);
 	}
@@ -654,7 +658,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * associated with input model variable or else null.
 	 */
 	@Override
-	public SVariable getSolverVariable(VariableBase var)
+	public @Nullable SVariable getSolverVariable(VariableBase var)
 	{
 		return _varMap.get(var);
 	}
@@ -691,6 +695,7 @@ public class SFactorGraph extends SFactorGraphBase
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

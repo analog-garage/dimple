@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverFactorGraph;
 import com.analog.lyric.dimple.solvers.core.proxy.ProxySolverVariable;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -62,7 +63,7 @@ public class JunctionTreeSolverVariable extends ProxySolverVariable
 	 */
 	
 	@Override
-	public ISolverVariable getDelegate()
+	public @Nullable ISolverVariable getDelegate()
 	{
 		return _root.getDelegateSolverVariable(this);
 	}

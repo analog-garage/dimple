@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
@@ -26,9 +27,9 @@ import com.analog.lyric.math.Utilities;
 
 public class SuwaTodoSampler implements IDiscreteDirectSampler
 {
-	protected double[] _samplerScratch;
-	protected int _lengthRoundedUp;
-	protected int _length = -1;
+	protected double[] _samplerScratch = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+	protected int _lengthRoundedUp = 0;
+	protected int _length = 0;
 
 	@Override
 	public void initialize(Domain variableDomain)
@@ -41,7 +42,7 @@ public class SuwaTodoSampler implements IDiscreteDirectSampler
 	
 	@Override
 	public void nextSample(DiscreteValue sampleValue, double[] energy, double minEnergy, IDiscreteSamplerClient samplerClient)
-	{		
+	{
 		RandomGenerator rand = DimpleRandomGenerator.rand;
 		final int length = energy.length;
 		int sampleIndex;

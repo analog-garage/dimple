@@ -7,9 +7,6 @@
  * for the specific language governing permissions and limitations under the License.
  ********************************************************************************/
 
-/**
- * Particle belief-propagation solver.
- */
-@NonNullByDefault
-package com.analog.lyric.dimple.solvers.particleBP;
-import com.analog.lyric.util.misc.NonNullByDefault;
+//@NonNullByDefault
+package com.analog.lyric.dimple.solvers.gibbs.customFactors;
+

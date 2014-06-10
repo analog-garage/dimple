@@ -16,7 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
-import java.util.List;
+import cern.colt.list.DoubleArrayList;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
@@ -79,7 +79,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	public final void setOutputMessageFromVariableBelief()
 	{
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		List<Double> sampleValues = _solverVariable._getSampleArrayUnsafe();
+		DoubleArrayList sampleValues = _solverVariable._getSampleArrayUnsafe();
 		int numSamples = sampleValues.size();
 
 		// For all sample values, compute the output message
@@ -90,7 +90,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 			double tmp = sampleValues.get(i);
 			if (Double.isInfinite(tmp) || Double.isNaN(tmp))
 			{
-				_outputMessage.setNull();				
+				_outputMessage.setNull();
 				return;
 			}
 			sum += tmp;

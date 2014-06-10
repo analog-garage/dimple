@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -94,7 +95,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	}
 
 	@Override
-	public String getMatlabSolveWrapper()
+	public @Nullable String getMatlabSolveWrapper()
 	{
 		ISolverFactorGraph sfg = getDelegate();
 		return sfg != null ? sfg.getMatlabSolveWrapper() : null;
@@ -236,7 +237,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	 */
 	
 	@Override
-	public abstract Delegate getDelegate();
+	public abstract @Nullable Delegate getDelegate();
 	
 	/**
 	 * Should be invoked by implementing subclass when delegate changes.
@@ -245,7 +246,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	 * @return delegate
 	 * @since 0.05
 	 */
-	protected Delegate notifyNewDelegate(Delegate delegate)
+	protected @Nullable Delegate notifyNewDelegate(@Nullable Delegate delegate)
 	{
 		if (delegate != null)
 		{

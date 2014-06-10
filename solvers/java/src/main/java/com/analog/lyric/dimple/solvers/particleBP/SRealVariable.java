@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SRealVariable extends SRealVariableBase
 {
@@ -45,7 +46,7 @@ public class SRealVariable extends SRealVariableBase
 	protected double _initialParticleMin = 0;
 	protected double _initialParticleMax = 0;
 	protected boolean _initialParticleRangeSet = false;
-	protected FactorFunction _input;
+	protected @Nullable FactorFunction _input;
 	protected RealDomain _domain;
 	double[][] _inPortMsgs = new double[0][];
 	double[][] _logInPortMsgs = new double[0][];
@@ -63,7 +64,8 @@ public class SRealVariable extends SRealVariableBase
 			throw new DimpleException("Expected real domain");
 
 		_domain = (RealDomain)var.getDomain();
-
+		_particleValues = new Double[_numParticles];
+		_logWeight = new double[_numParticles];
 	}
 
 	@Override
@@ -77,11 +79,13 @@ public class SRealVariable extends SRealVariableBase
 
 		double[] outMsgs = _outMsgArray[outPortNum].messageValues;
 
+		final FactorFunction input = _input;
+		
 		for (int m = 0; m < M; m++)
 		{
 			double prior = 1;
-			if (_input != null)
-				try {prior = _input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+			if (input != null)
+				try {prior = input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 				double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 				for (int d = 0; d < D; d++)
@@ -122,14 +126,15 @@ public class SRealVariable extends SRealVariableBase
 		int M = _numParticles;
 		int D = _var.getSiblingCount();
 
-
+		final FactorFunction input = _input;
+		
 		//Compute alphas
 		double[] alphas = new double[M];
 		for (int m = 0; m < M; m++)
 		{
 			double prior = 1;
-			if (_input != null)
-				try {prior = _input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+			if (input != null)
+				try {prior = input.eval(new Object[]{_particleValues[m]});} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 				double alpha = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 				for (int d = 0; d < D; d++)
@@ -190,7 +195,8 @@ public class SRealVariable extends SRealVariableBase
 		double _upperBound = _domain.getUpperBound();
 		int M = _numParticles;
 
-
+		final FactorFunction input = _input;
+		
 		// For each sample value
 		for (int m = 0; m < M; m++)
 		{
@@ -200,9 +206,9 @@ public class SRealVariable extends SRealVariableBase
 
 
 			// Start with the potential for the current particle value
-			if (_input != null)
+			if (input != null)
 				try {
-					potential = -Math.log(_input.eval(new Object[]{sampleValue})) * _beta;
+					potential = input.evalEnergy(new Object[]{sampleValue}) * _beta;
 				}
 				catch (Exception e)
 				{
@@ -238,8 +244,8 @@ public class SRealVariable extends SRealVariableBase
 
 				// Sum up the potentials from the input and all connected factors
 				potentialProposed = 0;
-				if (_input != null)
-					try {potentialProposed = -Math.log(_input.eval(new Object[]{proposalValue})) * _beta;} catch (Exception e) {e.printStackTrace(); System.exit(1);}
+				if (input != null)
+					try {potentialProposed = input.evalEnergy(new Object[]{proposalValue}) * _beta;} catch (Exception e) {e.printStackTrace(); System.exit(1);}
 
 					for (int portIndex = 0; portIndex < numPorts; portIndex++)
 					{
@@ -294,21 +300,21 @@ public class SRealVariable extends SRealVariableBase
 
 
 	@Override
-	public Object getBelief()
+	public double[] getBelief()
 	{
 		final double minLog = -100;
 		int M = _numParticles;
 		int D = _var.getSiblingCount();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
-
+		final FactorFunction input = _input;
 		double[] outBelief = new double[M];
-
+		
 		for (int m = 0; m < M; m++)
 		{
 			double prior = 1;
-			if (_input != null)
-				prior = _input.eval(new Object[]{_particleValues[m]});
+			if (input != null)
+				prior = input.eval(new Object[]{_particleValues[m]});
 			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 			for (int d = 0; d < D; d++)
@@ -348,15 +354,15 @@ public class SRealVariable extends SRealVariableBase
 		int D = _var.getSiblingCount();
 		double maxLog = Double.NEGATIVE_INFINITY;
 
-
+		final FactorFunction input = _input;
 		double[] outBelief = new double[M];
 
 		for (int m = 0; m < M; m++)
 		{
 			double value = valueSet[m];
 			double prior = 1;
-			if (_input != null)
-				prior = _input.eval(new Object[]{value});
+			if (input != null)
+				prior = input.eval(new Object[]{value});
 			double out = (prior == 0) ? minLog : Math.log(prior) * _beta;
 
 			for (int d = 0; d < D; d++)
@@ -448,7 +454,7 @@ public class SRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 			_input = null;
@@ -460,7 +466,7 @@ public class SRealVariable extends SRealVariableBase
 	public double getScore()
 	{
 		if (_guessWasSet)
-			return _input.evalEnergy(_guessValue);
+			return Objects.requireNonNull(_input).evalEnergy(_guessValue);
 		else
 			throw new DimpleException("This solver doesn't provide a default value. Must set guesses for all variables.");
 	}
@@ -474,8 +480,7 @@ public class SRealVariable extends SRealVariableBase
 	public Object[] createMessages(ISolverFactor factor)
 	{
 		_particleValues = new Double[_numParticles];
-		for (int i = 0; i < _particleValues.length; i++)
-			_particleValues[i] = 0.0;
+		Arrays.fill(_particleValues, 0.0);
 		_logWeight = new double[_numParticles];
 
 		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));

@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Matlab;
 import com.analog.lyric.util.misc.Misc;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base class for solver graphs using junction tree algorithm to transform graph into a tree
@@ -50,15 +51,15 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	extends ProxySolverFactorGraph<Delegate>
 {
 	private final JunctionTreeTransform _transformer;
-	private final IFactorGraphFactory<?> _solverFactory;
+	private final @Nullable IFactorGraphFactory<?> _solverFactory;
 	
-	private JunctionTreeTransformMap _transformMap = null;
+	private @Nullable JunctionTreeTransformMap _transformMap = null;
 	
 	/*--------------
 	 * Construction
 	 */
 
-	protected JunctionTreeSolverGraphBase(FactorGraph sourceModel, IFactorGraphFactory<?> solverFactory)
+	protected JunctionTreeSolverGraphBase(FactorGraph sourceModel, @Nullable IFactorGraphFactory<?> solverFactory)
 	{
 		super(sourceModel);
 		_transformer = new JunctionTreeTransform();
@@ -124,7 +125,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 
 	@Override
-	public abstract JunctionTreeSolverGraphBase<Delegate> getParentGraph();
+	public abstract @Nullable JunctionTreeSolverGraphBase<Delegate> getParentGraph();
 	
 	@Override
 	public double getScore()
@@ -164,11 +165,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 */
 	
 	@Override
-	public Delegate getDelegate()
+	public @Nullable Delegate getDelegate()
 	{
-		if (_transformMap != null)
+		final JunctionTreeTransformMap transformMap = _transformMap;
+		if (transformMap != null)
 		{
-			return (Delegate) _transformMap.target().getSolver();
+			return (Delegate) transformMap.target().getSolver();
 		}
 		
 		return null;
@@ -187,7 +189,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	
 	@Override
 	public abstract JunctionTreeSolverGraphBase<Delegate> createSubGraph(FactorGraph subgraph,
-		IFactorGraphFactory<?> factory);
+		@Nullable IFactorGraphFactory<?> factory);
 
 	@Override
 	public ISolverVariable createVariable(VariableBase var)
@@ -220,13 +222,13 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	}
 	
 	@Override
-	public JunctionTreeSolverFactor getSolverFactor(Factor factor)
+	public @Nullable JunctionTreeSolverFactor getSolverFactor(Factor factor)
 	{
 		return (JunctionTreeSolverFactor)factor.getSolver();
 	}
 	
 	@Override
-	public JunctionTreeSolverVariable getSolverVariable(VariableBase variable)
+	public @Nullable JunctionTreeSolverVariable getSolverVariable(VariableBase variable)
 	{
 		return (JunctionTreeSolverVariable)variable.getSolver();
 	}
@@ -236,8 +238,10 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	{
 		if (isTransformValid())
 		{
+			final JunctionTreeTransformMap transformMap = _transformMap;
+			
 			// Copy inputs/fixed values to transformed model in case they have changed.
-			for (Entry<VariableBase,VariableBase> entry : _transformMap.sourceToTargetVariables().entrySet())
+			for (Entry<VariableBase,VariableBase> entry : transformMap.sourceToTargetVariables().entrySet())
 			{
 				final VariableBase sourceVar = entry.getKey();
 				if (sourceVar != null)
@@ -292,7 +296,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * JunctionTreeSolverGraph methods
 	 */
 	
-	public IFactorGraphFactory<?> getDelegateSolverFactory()
+	public @Nullable IFactorGraphFactory<?> getDelegateSolverFactory()
 	{
 		return _solverFactory;
 	}
@@ -309,7 +313,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * Returns transformed graph and accompanying mapping data. May be null if not yet computed
 	 * (i.e. {@link #initialize()} not yet run.
 	 */
-	public JunctionTreeTransformMap getTransformMap()
+	public @Nullable JunctionTreeTransformMap getTransformMap()
 	{
 		return _transformMap;
 	}
@@ -421,11 +425,12 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * Package methods
 	 */
 	
-	ISolverVariable getDelegateSolverVariable(JunctionTreeSolverVariable var)
+	@Nullable ISolverVariable getDelegateSolverVariable(JunctionTreeSolverVariable var)
 	{
-		if (_transformMap != null)
+		final JunctionTreeTransformMap transformMap = _transformMap;
+		if (transformMap != null)
 		{
-			return _transformMap.sourceToTargetVariable(var.getModelObject()).getSolver();
+			return transformMap.sourceToTargetVariable(var.getModelObject()).getSolver();
 		}
 		return null;
 	}
@@ -436,19 +441,21 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	
 	private boolean isTransformValid()
 	{
-		return _transformMap != null && _transformMap.isValid();
+		final JunctionTreeTransformMap transformMap = _transformMap;
+		return transformMap != null && transformMap.isValid();
 	}
 	
-	private ISolverFactorGraph updateDelegate()
+	private @Nullable ISolverFactorGraph updateDelegate()
 	{
 		if (!isTransformValid())
 		{
-			_transformMap = _transformer.transform(getModelObject());
-			_transformMap.target().setSolverFactory(_solverFactory);
+			final JunctionTreeTransformMap transformMap = _transformMap = _transformer.transform(getModelObject());
+			transformMap.target().setSolverFactory(_solverFactory);
 		}
 		return notifyNewDelegate(getDelegate());
 	}
 
+	@Override
 	public boolean checkAllEdgesAreIncludedInSchedule()
 	{
 		return true;

@@ -19,10 +19,12 @@ package com.analog.lyric.dimple.model.repeated;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.Nullable;
 
 /*
@@ -213,7 +215,7 @@ public class FactorGraphStream
 				f.advance();
 			
 			Object belief = _myVar.getBeliefObject();
-			_mainFlastFromThePast.getSolver().setOutputMsg(0,belief);
+			_mainFlastFromThePast.getSolver().setOutputMsg(0, Objects.requireNonNull(belief));
 			
 		}
 	}
@@ -245,7 +247,8 @@ public class FactorGraphStream
 		for (int j = 0; j < _nestedGraphs.size()-1; j++)
 		{
 			//Tell it to move all factor messages to left
-			_nestedGraphs.get(j).getSolver().moveMessages(_nestedGraphs.get(j+1).getSolver());
+			final ISolverFactorGraph otherGraph = Objects.requireNonNull(_nestedGraphs.get(j+1).getSolver());
+			_nestedGraphs.get(j).getSolver().moveMessages(otherGraph);
 		}
 
 		//Newest nested graph should initialiaze its messages

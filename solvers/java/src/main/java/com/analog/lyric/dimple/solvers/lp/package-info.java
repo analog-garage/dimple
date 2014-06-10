@@ -12,4 +12,7 @@
  *
  * @author Christopher Barber
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.solvers.lp;
+import com.analog.lyric.util.misc.NonNullByDefault;
+

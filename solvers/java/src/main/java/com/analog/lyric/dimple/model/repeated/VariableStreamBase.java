@@ -22,6 +22,7 @@ import java.util.Objects;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Nullable;
 
 public abstract class VariableStreamBase implements IVariableStreamSlice
@@ -71,7 +72,8 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		for (int i = 0; i < _variables.size()-1; i++)
 		{
 			_variables.get(i).moveInputs(_variables.get(i+1));
-			_variables.get(i).getSolver().moveNonEdgeSpecificState(_variables.get(i+1).getSolver());
+			final ISolverVariable otherVar = Objects.requireNonNull(_variables.get(i+1).getSolver());
+			_variables.get(i).getSolver().moveNonEdgeSpecificState(otherVar);
 		}
 		_variables.get(_variables.size()-1).getSolver().createNonEdgeSpecificState();
 

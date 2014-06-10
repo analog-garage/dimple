@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.core.SVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
@@ -69,7 +70,7 @@ public class STableFactor extends STableFactorBase
 	 * NOTE: for large non-sparse factor tables, we would want a representation that does not take
 	 * O(size-of-factor-table) space.
 	 */
-	private BitSet _invalidAssignments = null;
+	private @Nullable BitSet _invalidAssignments = null;
 	
 	/*--------------
 	 * Construction
@@ -135,7 +136,7 @@ public class STableFactor extends STableFactorBase
 	 * Always returns null.
 	 */
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return null;
 	}
@@ -144,7 +145,7 @@ public class STableFactor extends STableFactorBase
 	 * Always returns null.
 	 */
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return null;
 	}
@@ -220,11 +221,12 @@ public class STableFactor extends STableFactorBase
 
 				if (skipEntry)
 				{
-					if (_invalidAssignments == null)
+					BitSet invalidAssignments = _invalidAssignments;
+					if (invalidAssignments == null)
 					{
-						_invalidAssignments = new BitSet(i);
+						invalidAssignments = _invalidAssignments = new BitSet(i);
 					}
-					_invalidAssignments.set(i);
+					invalidAssignments.set(i);
 				}
 				else
 				{
@@ -251,9 +253,10 @@ public class STableFactor extends STableFactorBase
 			final double[] weights = factorTable.getWeightsSparseUnsafe();
 			final int nWeights = weights.length;
 
+			final BitSet invalidAssignments = _invalidAssignments;
 			for (int i = 0; i < nWeights; ++i)
 			{
-				if (_invalidAssignments != null && nWeights <= (i = _invalidAssignments.nextClearBit(i)))
+				if (invalidAssignments != null && nWeights <= (i = invalidAssignments.nextClearBit(i)))
 				{
 					break;
 				}
@@ -304,9 +307,10 @@ public class STableFactor extends STableFactorBase
 		// variables in this factor that have the same variable value.
 		final SortedSetMultimap<Integer, Integer> marginalConstraints = TreeMultimap.create();
 		
+		final BitSet invalidAssignments = _invalidAssignments;
 		for (int i = 0, lpFactor = _lpVarIndex; i < nRows; ++i, ++lpFactor)
 		{
-			if (_invalidAssignments != null && nRows <= (i = _invalidAssignments.nextClearBit(i)))
+			if (invalidAssignments != null && nRows <= (i = invalidAssignments.nextClearBit(i)))
 			{
 				break;
 			}

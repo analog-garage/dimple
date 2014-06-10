@@ -23,12 +23,13 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.SDiscreteVariable;
+import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 
-public class SFactorGraph extends SFactorGraphBase 
+public class SFactorGraph extends SFactorGraphBase
 {
 	protected int _numIterationsBetweenResampling = 1;
 	protected int _defaultResamplingUpdatesPerParticle = 1;
@@ -47,7 +48,7 @@ public class SFactorGraph extends SFactorGraphBase
 		public double temperingHalfLifeInSamples = 1;
 	}
 	
-	protected SFactorGraph(FactorGraph factorGraph, Arguments arguments)  
+	protected SFactorGraph(FactorGraph factorGraph, @Nullable Arguments arguments)
 	{
 		super(factorGraph);
 //		setNumSamples(arguments.numSamples);
@@ -60,14 +61,14 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public boolean customFactorExists(String funcName) 
+	public boolean customFactorExists(String funcName)
 	{
 		return false;
 	}
 
 
 	@Override
-	public ISolverFactor createFactor(Factor factor)  
+	public ISolverFactor createFactor(Factor factor)
 	{
 		if (factor.isDiscrete())
 			return new STableFactor(factor);
@@ -77,7 +78,7 @@ public class SFactorGraph extends SFactorGraphBase
 	
 
 	@Override
-	public ISolverVariable createVariable(VariableBase var)  
+	public ISolverVariable createVariable(VariableBase var)
 	{
 		if (var.getModelerClassName().equals("Real"))
 		{
@@ -91,7 +92,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	@Override
-	public void initialize() 
+	public void initialize()
 	{
 		super.initialize();
 //		_minPotential = Double.MAX_VALUE;
@@ -99,7 +100,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 	
 	@Override
-	public void iterate(int numIters) 
+	public void iterate(int numIters)
 	{
 		VariableList vars = _factorGraph.getVariables();
 		
@@ -112,7 +113,7 @@ public class SFactorGraph extends SFactorGraphBase
 				{
 					ISolverVariable vs = v.getSolver();
 					if (vs instanceof SRealVariable)
-						((SRealVariable)vs).resample();	
+						((SRealVariable)vs).resample();
 				}
 				iterationsBeforeResampling = _numIterationsBetweenResampling;
 			}
@@ -149,14 +150,14 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor fs = f.getSolver();
 			if (fs instanceof SRealFactor)
-				((SRealFactor)fs).setBeta(beta);	
+				((SRealFactor)fs).setBeta(beta);
 		}
 		
 		for (VariableBase v : _factorGraph.getVariables())
 		{
 			ISolverVariable vs = v.getSolver();
 			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setBeta(beta);	
+				((SRealVariable)vs).setBeta(beta);
 		}
 
 		
@@ -179,7 +180,7 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverVariable vs = v.getSolver();
 			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setNumParticles(numParticles);	
+				((SRealVariable)vs).setNumParticles(numParticles);
 		}
 	}
 
@@ -191,7 +192,7 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverVariable vs = v.getSolver();
 			if (vs instanceof SRealVariable)
-				((SRealVariable)vs).setResamplingUpdatesPerParticle(updatesPerParticle);	
+				((SRealVariable)vs).setResamplingUpdatesPerParticle(updatesPerParticle);
 		}
 	}
 	
@@ -219,6 +220,7 @@ public class SFactorGraph extends SFactorGraphBase
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

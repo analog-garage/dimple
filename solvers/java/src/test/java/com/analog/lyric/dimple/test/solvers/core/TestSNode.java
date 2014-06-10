@@ -48,7 +48,6 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.ParameterizedM
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -184,7 +183,7 @@ public class TestSNode
 		}
 		
 		@Override
-		protected Class<? extends SolverEvent> messageEventType()
+		protected @Nullable Class<? extends SolverEvent> messageEventType()
 		{
 			return _supportsMessageEvents ? TestEvent.class : super.messageEventType();
 		}
@@ -196,7 +195,6 @@ public class TestSNode
 		}
 	}
 	
-	@NonNullByDefault
 	private static class TestMessage extends ParameterizedMessageBase
 	{
 		private static final long serialVersionUID = 1L;
@@ -215,7 +213,7 @@ public class TestSNode
 		}
 		
 		@Override
-		public void print(PrintStream out, int verbosity)
+		public void print(@Nullable PrintStream out, int verbosity)
 		{
 			out.format("TestMessage(counter=%d)", _counter);
 		}
@@ -233,7 +231,6 @@ public class TestSNode
 		}
 	}
 	
-	@NonNullByDefault
 	private static class TestEvent extends SolverEvent
 	{
 		private static final long serialVersionUID = 1L;
@@ -260,7 +257,6 @@ public class TestSNode
 		}
 	}
 	
-	@NonNullByDefault
 	private static class TestHandler extends DimpleEventHandler<TestEvent>
 	{
 		@Override

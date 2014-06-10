@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.core;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class SRealVariableBase extends SVariableBase
 {
@@ -36,7 +37,7 @@ public abstract class SRealVariableBase extends SVariableBase
 	 * State
 	 */
 	
-    protected double _guessValue = 0;
+    protected double _guessValue = Double.NaN;
     protected boolean _guessWasSet = false;
 
     /*---------------
@@ -52,7 +53,7 @@ public abstract class SRealVariableBase extends SVariableBase
 	public void initialize()
 	{
 		super.initialize();
-		_guessWasSet = false;
+		setGuess(null);
 	}
 	
 	/*---------------
@@ -82,21 +83,29 @@ public abstract class SRealVariableBase extends SVariableBase
 	}
 	
 	@Override
-	public void setGuess(Object guess)
+	public void setGuess(@Nullable Object guess)
 	{
-		// Convert the guess to a number
-		if (guess instanceof Double)
-			_guessValue = (Double)guess;
-		else if (guess instanceof Integer)
-			_guessValue = (Integer)guess;
+		if (guess == null)
+		{
+			_guessWasSet = false;
+			_guessValue = Double.NaN;
+		}
 		else
-			throw new DimpleException("Guess is not a value type (must be Double or Integer)");
+		{
+			// Convert the guess to a number
+			if (guess instanceof Double)
+				_guessValue = (Double)guess;
+			else if (guess instanceof Integer)
+				_guessValue = (Integer)guess;
+			else
+				throw new DimpleException("Guess is not a value type (must be Double or Integer)");
 
-		// Make sure the number is within the domain of the variable
-		if (!_var.getDomain().inDomain(_guessValue))
-			throw new DimpleException("Guess is not within the domain of the variable");
-		
-		_guessWasSet = true;
+			// Make sure the number is within the domain of the variable
+			if (!_var.getDomain().inDomain(_guessValue))
+				throw new DimpleException("Guess is not within the domain of the variable");
+
+			_guessWasSet = true;
+		}
 	}
 	
 }

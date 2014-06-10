@@ -16,21 +16,20 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class STableFactorDoubleArray extends STableFactorBase
 {
-	protected double [][] _inputMsgs = new double[0][];
-	protected double [][] _outputMsgs;
+	protected double [][] _inputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double [][] _outputMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 
 	public STableFactorDoubleArray(Factor factor)
 	{
 		super(factor);
 	}
-	
-	
 
 	@Override
 	public void createMessages()

@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomMultinomial extends SRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
@@ -114,18 +115,22 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	}
 
 	// For MultinomialBlockProposal.ICustomMultinomial interface
+	@Override
 	public final double[] getCurrentAlpha()
 	{
 		return (_hasConstantAlpha ? _constantAlpha : _alphaVariable.getCurrentSample()).clone();
 	}
+	@Override
 	public final boolean isAlphaEnergyRepresentation()
 	{
 		return false;
 	}
+	@Override
 	public final boolean hasConstantN()
 	{
 		return _hasConstantN;
 	}
+	@Override
 	public final int getN()
 	{
 		return _constantN;
@@ -260,7 +265,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	
 	
 	@Override
-	public void createMessages() 
+	public void createMessages()
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
@@ -270,13 +275,13 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	}
 	
 	@Override
-	public Object getOutputMsg(int portIndex) 
+	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
 	@Override
-	public void moveMessages(ISolverNode other, int thisPortNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
 		super.moveMessages(other, thisPortNum, otherPortNum);
 		_outputMsgs[thisPortNum] = ((CustomMultinomial)other)._outputMsgs[otherPortNum];

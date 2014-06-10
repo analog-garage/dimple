@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Test;
 
@@ -147,9 +148,9 @@ public class TestGibbsVariableUpdateEvent
 		Factor fcd = model.addFactor(function, c1, d1);
 		
 		SFactorGraph sgraph = model.setSolverFactory(new GibbsSolver());
-		ISolverVariableGibbs sd1 = sgraph.getSolverVariable(d1);
-		ISolverVariableGibbs sr1 = sgraph.getSolverVariable(r1);
-		ISolverVariableGibbs sc1 = sgraph.getSolverVariable(c1);
+		ISolverVariableGibbs sd1 = Objects.requireNonNull(sgraph.getSolverVariable(d1));
+		ISolverVariableGibbs sr1 = Objects.requireNonNull(sgraph.getSolverVariable(r1));
+		ISolverVariableGibbs sc1 = Objects.requireNonNull(sgraph.getSolverVariable(c1));
 		
 		sgraph.setBurnInScans(0);
 		sgraph.setNumSamples(1);

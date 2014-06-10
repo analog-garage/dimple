@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -67,7 +69,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	public Factor getFactor()
@@ -83,7 +85,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 
 
 	@Override
-	public ISolverFactorGraph getParentGraph()
+	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		ISolverFactorGraph graph = null;
 		FactorGraph mgraph = _factor.getParentGraph();
@@ -95,7 +97,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	}
 
 	@Override
-	public ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		ISolverFactorGraph graph = null;
 		FactorGraph mgraph = _factor.getRootGraph();
@@ -157,7 +159,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 			INode otherVariable = otherFactor.getSibling(i);
 			int thisIndex = factor.getSiblingPortIndex(i);
 			int otherIndex = otherFactor.getSiblingPortIndex(i);
-			thisVariable.getSolver().moveMessages(otherVariable.getSolver(), thisIndex,otherIndex);
+			thisVariable.getSolver().moveMessages(Objects.requireNonNull(otherVariable.getSolver()), thisIndex,otherIndex);
 		}
 	}
 

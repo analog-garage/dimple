@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
-import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IProposalKernel;
@@ -25,10 +26,11 @@ import com.analog.lyric.dimple.solvers.core.proposalKernels.Proposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.ProposalKernelRegistry;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.UniformDiscreteProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 public class MHSampler implements IMCMCSampler
 {
-	protected IProposalKernel _proposalKernel;
+	protected @Nullable IProposalKernel _proposalKernel;
 
 	@Override
 	public void initialize(Domain variableDomain)
@@ -36,17 +38,21 @@ public class MHSampler implements IMCMCSampler
 		if (_proposalKernel == null)
 		{
 			// Set default proposal kernel
-			if (variableDomain instanceof DiscreteDomain)
+			if (variableDomain.isDiscrete())
+			{
 				_proposalKernel = new UniformDiscreteProposalKernel();
+			}
 			else
+			{
 				_proposalKernel = new NormalProposalKernel();
+			}
 		}
 	}
 	
 	@Override
 	public boolean nextSample(Value sampleValue, ISamplerClient samplerClient)
 	{
-		final Proposal proposal = _proposalKernel.next(sampleValue, samplerClient.getDomain());
+		final Proposal proposal = Objects.requireNonNull(_proposalKernel).next(sampleValue, samplerClient.getDomain());
 		final Value proposalValue = proposal.value;
 
 		// Get the potential for the current sample value
@@ -86,14 +92,15 @@ public class MHSampler implements IMCMCSampler
 	{
 		_proposalKernel = ProposalKernelRegistry.get(proposalKernelName);
 	}
-	public IProposalKernel getProposalKernel()
+	public @Nullable IProposalKernel getProposalKernel()
 	{
 		return _proposalKernel;
 	}
 	public String getProposalKernelName()
 	{
-		if (_proposalKernel != null)
-			return _proposalKernel.getClass().getSimpleName();
+		final IProposalKernel proposalKernel = _proposalKernel;
+		if (proposalKernel != null)
+			return proposalKernel.getClass().getSimpleName();
 		else
 			return "";
 	}

@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs;
 
 import java.util.Collection;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -29,6 +30,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.STableFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
@@ -37,8 +39,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	 * State
 	 */
 	
-    protected DiscreteValue[] _inPortMsgs = null;
-    protected double[][] _outPortMsgs = null;
+    protected DiscreteValue[] _inPortMsgs = new DiscreteValue[0];
+    protected double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
     protected int _numPorts;
     protected boolean _isDeterministicDirected;
     private boolean _visited = false;
@@ -123,7 +125,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	}
 	
 	@Override
-	public void updateNeighborVariableValuesNow(Collection<IndexedValue> oldValues)
+	public void updateNeighborVariableValuesNow(@Nullable Collection<IndexedValue> oldValues)
 	{
 		// Compute the output values of the deterministic factor function from the input values
 		final Factor factor = _factor;

@@ -73,10 +73,10 @@ public interface ISolverNode extends IOptionHolder, ISolverEventSource
     public @Nullable INode getModelObject();
     
     //Returns the input messages for a specified port
-    public Object getInputMsg(int portIndex);
+    public @Nullable Object getInputMsg(int portIndex);
     
     //Returns the output message for a specified port.
-    public Object getOutputMsg(int portIndex);
+    public @Nullable Object getOutputMsg(int portIndex);
     
     //Replace the input message with the specified object
     public void setInputMsg(int portIndex,Object obj);

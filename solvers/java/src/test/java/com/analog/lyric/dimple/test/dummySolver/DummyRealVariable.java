@@ -20,6 +20,7 @@ import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 public class DummyRealVariable extends SRealVariableBase
 {
@@ -30,28 +31,28 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public Object getBelief()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object[] createMessages(ISolverFactor factor)
+	public @Nullable Object getBelief()
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Object resetInputMessage(Object message)
+	public @Nullable Object[] createMessages(ISolverFactor factor)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public @Nullable Object resetInputMessage(Object message)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -72,14 +73,14 @@ public class DummyRealVariable extends SRealVariableBase
 	}
 
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		// TODO Auto-generated method stub
 		return null;

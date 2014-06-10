@@ -18,8 +18,11 @@ package com.analog.lyric.dimple.solvers.lp;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Objects;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Represents a linear equality describing the constraint that the marginal probability
@@ -38,9 +41,9 @@ public final class LPFactorMarginalConstraint extends IntegerEquation
 	public static class TermIterator implements IntegerEquation.TermIterator
 	{
 		private int _index;
-		private int[] _lpVars;
+		private @Nullable int[] _lpVars;
 		
-		TermIterator(LPFactorMarginalConstraint constraint)
+		TermIterator(@Nullable LPFactorMarginalConstraint constraint)
 		{
 			reset(constraint);
 		}
@@ -48,7 +51,7 @@ public final class LPFactorMarginalConstraint extends IntegerEquation
 		/**
 		 * Reset the iterator from a new variable constraint.
 		 */
-		public TermIterator reset(LPFactorMarginalConstraint constraint)
+		public TermIterator reset(@Nullable LPFactorMarginalConstraint constraint)
 		{
 			_index = -1;
 			_lpVars = constraint != null ? constraint._lpVars : null;
@@ -58,13 +61,14 @@ public final class LPFactorMarginalConstraint extends IntegerEquation
 		@Override
 		public boolean advance()
 		{
-			return _lpVars != null && ++_index < _lpVars.length;
+			final int[] lpVars = _lpVars;
+			return lpVars != null && ++_index < lpVars.length;
 		}
 
 		@Override
 		public int getVariable()
 		{
-			return _lpVars[_index];
+			return Objects.requireNonNull(_lpVars)[_index];
 		}
 
 		@Override

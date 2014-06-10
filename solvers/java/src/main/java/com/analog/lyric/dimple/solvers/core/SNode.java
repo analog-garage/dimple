@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.SolverEvent;
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -86,7 +88,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	@Override
@@ -205,7 +207,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 		return null;
 	}
 
-	private final IParameterizedMessage[] cloneMessages()
+	private final @Nullable IParameterizedMessage[] cloneMessages()
 	{
 		IParameterizedMessage[] messages = null;
 		
@@ -261,7 +263,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 	 * events that can be created by this object. Default implementation returns null.
 	 * @since 0.06
 	 */
-	protected Class<? extends SolverEvent> messageEventType()
+	protected @Nullable Class<? extends SolverEvent> messageEventType()
 	{
 		return null;
 	}
@@ -314,7 +316,7 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 				final IDimpleEventListener listener = getEventListener();
 				if (listener != null)
 				{
-					enabled = listener.isListeningFor(messageEventType(), this);
+					enabled = listener.isListeningFor(Objects.requireNonNull(messageEventType()), this);
 				}
 			}
 			setFlagValue(MESSAGE_EVENT_MASK, enabled ? MESSAGE_EVENT_ENABLED : MESSAGE_EVENT_NONE);

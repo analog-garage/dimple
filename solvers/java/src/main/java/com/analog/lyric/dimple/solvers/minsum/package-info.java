@@ -10,4 +10,6 @@
 /**
  * Min-sum belief-propagation solver for discrete MAP inference.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.solvers.minsum;
+import com.analog.lyric.util.misc.NonNullByDefault;

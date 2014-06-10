@@ -16,10 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -53,7 +56,7 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	@Override
 	public ISolverVariable getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 
 	/*-----------------------
@@ -81,7 +84,7 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	{
 		if (other instanceof ProxySolverNode)
 		{
-			other = ((ProxySolverNode)other).getDelegate();
+			other = Objects.requireNonNull(((ProxySolverNode)other).getDelegate());
 		}
 		getDelegate().moveMessages(other);
 	}
@@ -103,5 +106,5 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	 */
 	
 	@Override
-	public abstract ISolverFactor getDelegate();
+	public abstract @Nullable ISolverFactor getDelegate();
 }

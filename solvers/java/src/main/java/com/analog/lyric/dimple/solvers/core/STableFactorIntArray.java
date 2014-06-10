@@ -16,14 +16,15 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 
 public abstract class STableFactorIntArray extends STableFactorBase
 {
-	protected int [][] _inputMsgs = new int[0][];
-	protected int [][] _outputMsgs;
+	protected int [][] _inputMsgs = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
+	protected int [][] _outputMsgs = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
 
 	public STableFactorIntArray(Factor factor)
 	{

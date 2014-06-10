@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.NonNull;
 
 /**
  * @author jeff
@@ -80,7 +81,7 @@ public class SampledFactor extends SFactorBase
 			_privateVariables[edge] = var.clone();
 			_privateVariables[edge].setInputObject(null);
 
-			// Create a message translator based on the variable type 
+			// Create a message translator based on the variable type
 			// TODO: Allow alternative message representations for continuous variables
 			if (var.getDomain().isDiscrete())
 				_messageTranslator[edge] = new DiscreteMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
@@ -178,7 +179,7 @@ public class SampledFactor extends SFactorBase
 	}
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)
+	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPortNum)
 	{
 		SampledFactor s = (SampledFactor)other;
 		_messageTranslator[portNum].moveMessages(s._messageTranslator[otherPortNum]);

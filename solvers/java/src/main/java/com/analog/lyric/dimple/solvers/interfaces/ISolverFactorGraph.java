@@ -22,6 +22,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.repeated.BlastFromThePastFactor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface ISolverFactorGraph extends ISolverNode
 {
@@ -34,7 +35,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	/**
 	 * Create a new solver-specific solver graph representing given subgraph.
 	 */
-	public ISolverFactorGraph createSubGraph(FactorGraph subgraph, IFactorGraphFactory<?> factory);
+	public @Nullable ISolverFactorGraph createSubGraph(FactorGraph subgraph, @Nullable IFactorGraphFactory<?> factory);
 	
 	/**
 	 * Create a new solver-specific variable representing the given model variable.
@@ -44,12 +45,12 @@ public interface ISolverFactorGraph extends ISolverNode
 	/**
 	 * @return solver-specific factor representing the given model factor or else null.
 	 */
-	public ISolverFactor getSolverFactor(Factor factor);
+	public @Nullable ISolverFactor getSolverFactor(Factor factor);
 
 	/**
 	 * @return solver-specific variable representing the given model variable or else null.
 	 */
-	public ISolverVariable getSolverVariable(VariableBase var);
+	public @Nullable ISolverVariable getSolverVariable(VariableBase var);
 
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor);
 	public ISolverFactor createFactor(Factor factor);
@@ -96,7 +97,7 @@ public interface ISolverFactorGraph extends ISolverNode
 	 * @return name of MATLAB function used to do actual solve in MATLAB interface or null if there is none.
 	 */
 	@Matlab
-	public String getMatlabSolveWrapper();
+	public @Nullable String getMatlabSolveWrapper();
 	
 	public void useMultithreading(boolean use);
 	public boolean useMultithreading();

@@ -98,7 +98,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	}
 
 	@Override
-	public ISolverFactorGraph getOptionParent()
+	public @Nullable ISolverFactorGraph getOptionParent()
 	{
 		return getParentGraph();
 	}
@@ -145,13 +145,13 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	}
 
 	@Override
-	public ISolverFactorGraph getParentGraph()
+	public @Nullable ISolverFactorGraph getParentGraph()
 	{
 		return getModelObject().getParentGraph().getSolver();
 	}
 
 	@Override
-	public ISolverFactorGraph getRootGraph()
+	public @Nullable ISolverFactorGraph getRootGraph()
 	{
 		return getModelObject().getRootGraph().getSolver();
 	}
@@ -159,7 +159,7 @@ public abstract class ProxySolverNode extends SolverEventSource implements ISolv
 	@Override
 	public ISolverNode getSibling(int edge)
 	{
-		return getModelObject().getSibling(edge).getSolver();
+		return Objects.requireNonNull(getModelObject().getSibling(edge).getSolver());
 	}
 	
 	@Override

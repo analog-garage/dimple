@@ -66,11 +66,11 @@ public class Port
 		node.getSolver().setOutputMsgValues(index,obj);
 	}
 	
-	public Object getInputMsg()
+	public @Nullable Object getInputMsg()
 	{
 		return node.getSolver().getInputMsg(index);
 	}
-	public Object getOutputMsg()
+	public @Nullable Object getOutputMsg()
 	{
 		return node.getSolver().getOutputMsg(index);
 	}

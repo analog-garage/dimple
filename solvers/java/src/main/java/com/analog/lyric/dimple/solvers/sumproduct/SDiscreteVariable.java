@@ -19,6 +19,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -27,6 +28,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 {
@@ -34,12 +36,13 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-    double [][] _logInPortMsgs = new double[0][];
-    double [][] _savedOutMsgArray = new double[0][];
-    double [][] _outPortDerivativeMsgs = new double[0][];
-    double [] _dampingParams = new double[0];
+    double [][] _logInPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    double [][] _outPortDerivativeMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     private boolean _calculateDerivative = false;
 	protected boolean _dampingInUse = false;
+    @Nullable private double [][][] _outMessageDerivative;
 
 	public SDiscreteVariable(VariableBase var)
     {
@@ -504,7 +507,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 	    	derivative = (df*g - f*dg)/(g*g);
     	}
     	
-    	_outMessageDerivative[weight][outPortNum][d] = derivative;
+    	Objects.requireNonNull(_outMessageDerivative)[weight][outPortNum][d] = derivative;
     }
     
     public double calculatedg(int outPortNum,int wn)
@@ -519,8 +522,6 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     	return sum;
     }
 
-    double [][][] _outMessageDerivative;
-
 	public void initializeDerivativeMessages(int weights)
 	{
 		_outMessageDerivative = new double[weights][_inputMessages.length][_input.length];
@@ -529,7 +530,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     public double [] getMessageDerivative(int wn, Factor f)
     {
     	int portNum = getVariable().getPortNum(f);
-    	return _outMessageDerivative[wn][portNum];
+    	return Objects.requireNonNull(_outMessageDerivative)[wn][portNum];
     }
     
     public double calculatedf(int outPortNum, double f, int d, int wn)
@@ -589,10 +590,8 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 		return retval;
 	}
 	
-
-	
 	@Override
-	public Object resetInputMessage(Object message)
+	public double[] resetInputMessage(Object message)
 	{
     	double [] retval = (double[])message;
     	int domainLength = retval.length;
@@ -600,10 +599,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     	
     	Arrays.fill(retval, val);
     	return retval;
-
 	}
-	
-	
 
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPortNum)

@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.NonNull;
 
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {
@@ -196,7 +197,7 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
 
 	@Override
-	public void moveMessages(ISolverNode other, int portNum, int otherPort)
+	public void moveMessages(@NonNull ISolverNode other, int portNum, int otherPort)
 	{
 		CustomXor x = (CustomXor)other;
 		_inPortMsgs[portNum] = x._inPortMsgs[otherPort];

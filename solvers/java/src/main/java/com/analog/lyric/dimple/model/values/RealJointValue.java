@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
+import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
-import com.sun.istack.internal.NotNull;
 
 public class RealJointValue extends Value
 {
@@ -81,7 +81,7 @@ public class RealJointValue extends Value
 	}
 	
 	@Override
-	public @NotNull double[] getObject()
+	public @NonNull double[] getObject()
 	{
 		return _value;
 	}

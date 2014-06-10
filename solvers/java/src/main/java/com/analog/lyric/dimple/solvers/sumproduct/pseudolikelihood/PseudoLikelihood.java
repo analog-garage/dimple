@@ -32,6 +32,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
+import com.analog.lyric.util.misc.NonNull;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm
@@ -234,7 +235,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	//One step of gradient descent simply calculates the gradient
 	//and applies it.
 	@Override
-	public void runStep(FactorGraph fg)
+	public void runStep(@NonNull FactorGraph fg)
 	{
 		double [][] gradient = calculateGradient();
 		applyGradient(gradient);

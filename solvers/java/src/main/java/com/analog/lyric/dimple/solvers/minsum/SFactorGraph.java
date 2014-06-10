@@ -95,7 +95,10 @@ public class SFactorGraph extends SFactorGraphBase
 		for (Factor f : _factorGraph.getNonGraphFactors())
 		{
 			STableFactor tf = (STableFactor)f.getSolver();
-			setDampingForTableFactor(tf);
+			if (tf != null)
+			{
+				setDampingForTableFactor(tf);
+			}
 		}
 	}
 	
@@ -130,6 +133,7 @@ public class SFactorGraph extends SFactorGraphBase
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}

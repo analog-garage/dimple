@@ -24,10 +24,10 @@ public interface ISolverVariable extends ISolverNode
 	@Override
 	public @Nullable VariableBase getModelObject();
 	
-	public void setInputOrFixedValue(Object input,Object fixedValue, boolean hasFixedValue);
-	public Object getBelief();
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue);
+	public @Nullable Object getBelief();
 	public Object getValue();
-    public void setGuess(Object guess);
+    public void setGuess(@Nullable Object guess);
     public Object getGuess();
     
     @Override
@@ -39,13 +39,13 @@ public interface ISolverVariable extends ISolverNode
     //This method should return an Object array with two elements, the first
     //being the newly created input message and the second being the newly created
     //output message.
-    public Object [] createMessages(ISolverFactor factor);
+    public @Nullable Object [] createMessages(ISolverFactor factor);
     
     //Method to reset an input message's values
-	public Object resetInputMessage(Object message);
+	public @Nullable Object resetInputMessage(Object message);
 	
 	//Method to reset an output message's values
-	public Object resetOutputMessage(Object message);
+	public @Nullable Object resetOutputMessage(Object message);
 	
     //Move global state from other node to this one
     public void moveNonEdgeSpecificState(ISolverNode other);

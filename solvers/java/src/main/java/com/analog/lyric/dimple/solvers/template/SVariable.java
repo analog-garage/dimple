@@ -33,7 +33,7 @@ import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
  */
 public class SVariable extends SDiscreteVariableDoubleArray
 {
-	public SVariable(VariableBase var) 
+	public SVariable(VariableBase var)
 	{
 		super(var);
 	}
@@ -43,19 +43,16 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	 * This is the main work horse of the variable message passing.
 	 * This is a toy solver that simply adds all input messages and the input
 	 * to create an output message.
-	 *  
+	 * 
 	 * Developers can also override update() if they want to speed up computation
 	 * when terms can be reused.
 	 */
 	@Override
-	protected void doUpdateEdge(int outPortNum) 
+	protected void doUpdateEdge(int outPortNum)
 	{
 		double [] output = _outputMessages[outPortNum];
 		
-		for (int i = 0; i < output.length; i++)
-		{
-			output[i] = _input[i];
-		}
+		System.arraycopy(_input, 0, output, 0, output.length);
 		
 		for (int i = 0; i < _inputMessages.length; i++)
 		{
@@ -72,17 +69,14 @@ public class SVariable extends SDiscreteVariableDoubleArray
 
 	/**
 	 * This method calculates the belief for a given variable.
-	 * This toy solver simply sums together all messages and the input. 
+	 * This toy solver simply sums together all messages and the input.
 	 */
 	@Override
-	public double[] getBelief() 
+	public double[] getBelief()
 	{
 		double [] output = new double[_input.length];
 		
-		for (int i = 0; i < output.length; i++)
-		{
-			output[i] = _input[i];
-		}
+		System.arraycopy(_input, 0, output, 0, output.length);
 		
 		for (int i = 0; i < _inputMessages.length; i++)
 		{
@@ -91,16 +85,17 @@ public class SVariable extends SDiscreteVariableDoubleArray
 				output[j] += _inputMessages[i][j];
 			}
 		}
-		return output;		
+		return output;
 	}
 	/**
 	 * This method is called to initialize the input.
 	 */
 	@Override
-	public Object resetInputMessage(Object message) 
+	public double[] resetInputMessage(Object message)
 	{
-		Arrays.fill((double[])message, 0);
-		return message;
+		final double[] result = (double[])message;
+		Arrays.fill(result, 0);
+		return result;
 	}
 
 

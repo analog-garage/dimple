@@ -21,10 +21,11 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IDiscreteSolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 public abstract class SDiscreteVariableBase extends SVariableBase implements IDiscreteSolverVariable
 {
-	protected int _guessIndex = 0;
+	protected int _guessIndex = -1;
 	protected boolean _guessWasSet = false;
 
     
@@ -37,7 +38,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	public void initialize()
 	{
 		super.initialize();
-		_guessWasSet = false;
+		setGuess(null);
 	}
 
 	/*---------------
@@ -55,7 +56,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	 */
 	
 	@Override
-	public abstract double[] getBelief();
+	public abstract @Nullable double[] getBelief();
 	
 	@Override
 	public Object getValue()
@@ -93,14 +94,22 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	}
 	
 	@Override
-	public void setGuess(Object guess)
+	public void setGuess(@Nullable Object guess)
 	{
-		DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
-		int guessIndex = domain.getIndex(guess);
-		if (guessIndex == -1)
-			throw new DimpleException("Guess is not a valid value");
-		
-		setGuessIndex(guessIndex);
+		if (guess == null)
+		{
+			_guessWasSet = false;
+			_guessIndex = -1;
+		}
+		else
+		{
+			DiscreteDomain domain = (DiscreteDomain)_var.getDomain();
+			int guessIndex = domain.getIndex(guess);
+			if (guessIndex == -1)
+				throw new DimpleException("Guess is not a valid value");
+
+			setGuessIndex(guessIndex);
+		}
 	}
 	
 	@Override

@@ -56,6 +56,7 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.generic.MHSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.primitives.Doubles;
 
 /**** WARNING: Whenever editing this class, also make the corresponding edit to SRealVariable.
@@ -78,18 +79,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	
 	private RealJoint _varReal;
 	private RealJointValue _outputMsg;
-	private Object[] _inputMsg = null;
+	private @Nullable Object[] _inputMsg = null;
 	private double[] _sampleValue;
 	private double[] _initialSampleValue;
 	private boolean _initialSampleValueSet = false;
-	private FactorFunction[] _inputArray;
-	private FactorFunction _inputJoint;
+	private @Nullable FactorFunction[] _inputArray;
+	private @Nullable FactorFunction _inputJoint;
 	private RealJointDomain _domain;
 	private String _defaultSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
-	private IMCMCSampler _sampler = null;
-	private IRealJointConjugateSampler _conjugateSampler = null;
+	private @Nullable IMCMCSampler _sampler = null;
+	private @Nullable IRealJointConjugateSampler _conjugateSampler = null;
 	private boolean _samplerSpecificallySpecified = false;
-	private ArrayList<double[]> _sampleArray;
+	private @Nullable ArrayList<double[]> _sampleArray;
 	private double[] _bestSampleValue;
 	private double _beta = 1;
 	private boolean _holdSampleValue = false;
@@ -100,7 +101,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	/**
 	 * List of neighbors for sample scoring. Instantiated during initialization.
 	 */
-	private GibbsNeighbors _neighbors = null;
+	private @Nullable GibbsNeighbors _neighbors = null;
 
 	/*--------------
 	 * Construction
@@ -126,6 +127,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			_initialSampleValue[i] = 0;
 			_bestSampleValue[i] = 0;
 		}
+		
+		_outputMsg = createDefaultMessage();
 	}
 	
 	/*---------------------
@@ -167,15 +170,17 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 		// Get the next sample value from the sampler
 		int rejectCount = 0;
-		if (_conjugateSampler == null)
+		IRealJointConjugateSampler conjugateSampler = _conjugateSampler;
+		if (conjugateSampler == null)
 		{
 			// Use MCMC sampler
 			RealValue nextSample = RealValue.create();
+			IMCMCSampler sampler = Objects.requireNonNull(_sampler);
 			for (int i = 0; i < _numRealVars; i++)
 			{
 				_tempIndex = i;		// Save this to be used by the call-back from sampler
 				nextSample.setDouble(_sampleValue[i]);
-				if (!_sampler.nextSample(nextSample, this))
+				if (!sampler.nextSample(nextSample, this))
 				{
 					++rejectCount;
 				}
@@ -195,7 +200,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
 			}
-			setCurrentSample(_conjugateSampler.nextSample(ports, _inputJoint));
+			setCurrentSample(conjugateSampler.nextSample(ports, _inputJoint));
 		}
 
 		switch (updateEventFlags)
@@ -251,48 +256,54 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		
 		computeScore:
 		{
-		if (!_domain.inDomain(_sampleValue))
+			if (!_domain.inDomain(_sampleValue))
 				break computeScore; // outside the domain
-		
-		double potential = 0;
 
-		// Sum up the potentials from the input and all connected factors
-		if (_inputJoint != null)
+			double potential = 0;
+
+			// Sum up the potentials from the input and all connected factors
+			final FactorFunction inputJoint = _inputJoint;
+			if (inputJoint != null)
 			{
-			potential += _inputJoint.evalEnergy(_sampleValue);
+				potential += inputJoint.evalEnergy(_sampleValue);
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;
 				}
 			}
-		else if (_inputArray != null)
-		{
-			for (int i = 0; i < _numRealVars; i++)
+			else
+			{
+				final FactorFunction[] inputArray = _inputArray;
+				if (inputArray != null)
 				{
-				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
-					if (!Doubles.isFinite(potential))
+					for (int i = 0; i < _numRealVars; i++)
 					{
-						break computeScore;
-		}
+						potential += inputArray[i].evalEnergy(_sampleValue[i]);
+						if (!Doubles.isFinite(potential))
+						{
+							break computeScore;
+						}
+					}
 				}
 			}
 
 			ReleasableIterator<ISolverNodeGibbs> scoreNodes = getSampleScoreNodes();
 			while (scoreNodes.hasNext())
-		{
+			{
 				potential += scoreNodes.next().getPotential();
 				if (!Doubles.isFinite(potential))
 				{
 					break computeScore;
-		}
+				}
 			}
 			scoreNodes.release();
 
 			sampleScore = potential * _beta;	// Incorporate current temperature
-	}
-		
+		}
+
 		return sampleScore;
 	}
+	
 	@Override
 	public final void setNextSampleValue(Value sampleValue)
 	{
@@ -312,7 +323,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	// TODO move to local methods?
 	// For conjugate samplers
-	public final IRealJointConjugateSampler getConjugateSampler()
+	public final @Nullable IRealJointConjugateSampler getConjugateSampler()
 	{
 		return _conjugateSampler;
 	}
@@ -391,13 +402,16 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		}
 
 		// If the variable has an input, sample from that (bounded by the domain)
-		if (_inputJoint != null)		// Input is a joint input
+		final FactorFunction inputJoint = _inputJoint;
+		final FactorFunction[] inputArray = _inputArray;
+		if (inputJoint != null)		// Input is a joint input
 		{
 			// Don't use the global conjugate sampler since other factors might not be conjugate
-			IRealJointConjugateSampler inputConjugateSampler = RealJointConjugateSamplerRegistry.findCompatibleSampler(_inputJoint);
+			IRealJointConjugateSampler inputConjugateSampler =
+				RealJointConjugateSamplerRegistry.findCompatibleSampler(inputJoint);
 			if (inputConjugateSampler != null)
 			{
-				double[] sampleValue = inputConjugateSampler.nextSample(new Port[0], _inputJoint);
+				double[] sampleValue = inputConjugateSampler.nextSample(new Port[0], inputJoint);
 				
 				// Clip if necessary
 				for (int i = 0; i < _numRealVars; i++)
@@ -428,12 +442,12 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 				}
 			}
 		}
-		else if (_inputArray != null)	// Input is an array of separate inputs
+		else if (inputArray != null)	// Input is an array of separate inputs
 		{
 			for (int i = 0; i < _numRealVars; i++)
 			{
 				RealDomain realDomain = _domain.getRealDomain(i);
-				FactorFunction input = (_inputArray != null) ? _inputArray[i] : null;
+				FactorFunction input = (_inputArray != null) ? inputArray[i] : null;
 
 				// If there are inputs, see if there's an available conjugate sampler
 				IRealConjugateSampler inputConjugateSampler = null;		// Don't use the global conjugate sampler since other factors might not be conjugate
@@ -491,7 +505,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	}
 
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (input == null)
 		{
@@ -506,19 +520,19 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		else if (input instanceof Object[])
 		{
 			_inputJoint = null;
-			_inputArray = new FactorFunction[_numRealVars];
+			final FactorFunction[] inputArray = _inputArray = new FactorFunction[_numRealVars];
 			for (int i = 0; i < _numRealVars; i++)
-				_inputArray[i] = (FactorFunction)((Object[])input)[i];
+				inputArray[i] = (FactorFunction)((Object[])input)[i];
 		}
 		else
 			throw new DimpleException("Invalid input type");
 
 		if (hasFixedValue)
-			setCurrentSampleForce((double[])fixedValue);
+			setCurrentSampleForce((double[])Objects.requireNonNull(fixedValue));
 	}
 
 	@Override
-	public void postAddFactor(Factor f)
+	public void postAddFactor(@Nullable Factor f)
 	{
 		// Set the default sampler
 		_defaultSamplerName = ((SFactorGraph)_var.getRootGraph().getSolver()).getDefaultRealSampler();
@@ -539,13 +553,16 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			value = _sampleValue;
 		
 		// Get the score
-		if (_inputJoint != null)
-			return _inputJoint.evalEnergy(value);
-		else if (_inputArray != null)
+		final FactorFunction inputJoint = _inputJoint;
+		if (inputJoint != null)
+			return inputJoint.evalEnergy(value);
+		
+		final FactorFunction[] inputArray = _inputArray;
+		if (inputArray != null)
 		{
 			double score = 0;
 			for (int i = 0; i < _numRealVars; i++)
-				score += _inputArray[i].evalEnergy(value[i]);
+				score += inputArray[i].evalEnergy(value[i]);
 			return score;
 		}
 		else
@@ -578,8 +595,9 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	@Override
 	public final void saveCurrentSample()
 	{
-		if (_sampleArray != null)
-			_sampleArray.add(_sampleValue.clone());
+		final ArrayList<double[]> sampleArray = _sampleArray;
+		if (sampleArray != null)
+			sampleArray.add(_sampleValue.clone());
 	}
 
 	@Override
@@ -594,13 +612,17 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	{
 		if (_var.hasFixedValue())
 			return 0;
-		else if (_inputJoint != null)
-			return _inputJoint.evalEnergy(_sampleValue);
-		else if (_inputArray != null)
+		
+		final FactorFunction inputJoint = _inputJoint;
+		if (inputJoint != null)
+			return inputJoint.evalEnergy(_sampleValue);
+		
+		final FactorFunction[] inputArray = _inputArray;
+		if (inputArray != null)
 		{
 			double potential = 0;
 			for (int i = 0; i < _numRealVars; i++)
-				potential += _inputArray[i].evalEnergy(_sampleValue[i]);
+				potential += inputArray[i].evalEnergy(_sampleValue[i]);
 			return potential;
 		}
 		else
@@ -622,7 +644,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	@Override
 	public final void setCurrentSample(Value value)
 	{
-		setCurrentSample(value.getObject());
+		setCurrentSample(value.getDoubleArray());
 	}
 	
     /*---------------
@@ -657,7 +679,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		if (hasDeterministicDependents)
 		{
 			// If this variable has deterministic dependents, then set their values
-			setDeterministicDependentValues(oldValue);
+			setDeterministicDependentValues(Objects.requireNonNull(oldValue));
 		}
 	}
 	
@@ -680,14 +702,15 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		if (hasDeterministicDependents)
 		{
 			// If this variable has deterministic dependents, then set their values
-			setDeterministicDependentValues(oldValue);
+			setDeterministicDependentValues(Objects.requireNonNull(oldValue));
 		}
 	}
 	
 	private final void setDeterministicDependentValues(RealJointValue oldValue)
 	{
-		if (_neighbors != null)
-			_neighbors.update(oldValue);
+		final GibbsNeighbors neighbors = _neighbors;
+		if (neighbors != null)
+			neighbors.update(oldValue);
 	}
 
 
@@ -703,17 +726,18 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	public final double[][] getAllSamples()
 	{
-		if (_sampleArray == null)
+		final ArrayList<double[]> sampleArray = _sampleArray;
+		if (sampleArray == null)
 			throw new DimpleException("No samples saved. Must call saveAllSamples on variable or entire graph prior to solving");
-		int length = _sampleArray.size();
+		int length = sampleArray.size();
 		double[][] retval = new double[length][];
 		for (int i = 0; i < length; i++)
-			retval[i] = _sampleArray.get(i);
+			retval[i] = sampleArray.get(i);
 		return retval;
 	}
 
 	// This is meant for internal use, not as a user accessible method
-	public final List<double[]> _getSampleArrayUnsafe()
+	public final @Nullable List<double[]> _getSampleArrayUnsafe()
 	{
 		return _sampleArray;
 	}
@@ -745,13 +769,13 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	public final void setProposalStandardDeviation(double stdDev)
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
+			((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().setParameters(stdDev);
 	}
 	@Deprecated
 	public final double getProposalStandardDeviation()
 	{
 		if (_sampler instanceof MHSampler)
-			return (Double)((MHSampler)_sampler).getProposalKernel().getParameters()[0];
+			return (Double)((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().getParameters()[0];
 		else
 			return 0;
 	}
@@ -760,7 +784,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	public final void setProposalKernelParameters(Object... parameters)
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)_sampler).getProposalKernel().setParameters(parameters);
+			((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().setParameters(parameters);
 	}
 	
 	// FIXME: REMOVE
@@ -770,19 +794,19 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)_sampler).setProposalKernel(proposalKernel);
+			((MHSampler)Objects.requireNonNull(_sampler)).setProposalKernel(proposalKernel);
 	}
 	@Deprecated
 	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
+			((MHSampler)Objects.requireNonNull(_sampler)).setProposalKernel(proposalKernelName);
 	}
 	@Deprecated
-	public final IProposalKernel getProposalKernel()
+	public final @Nullable IProposalKernel getProposalKernel()
 	{
 		if (_sampler instanceof MHSampler)
-			return ((MHSampler)_sampler).getProposalKernel();
+			return ((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel();
 		else
 			return null;
 	}
@@ -807,11 +831,11 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		_samplerSpecificallySpecified = true;
 	}
 	@Override
-	public final ISampler getSampler()
+	public final @Nullable ISampler getSampler()
 	{
 		if (_samplerSpecificallySpecified)
 		{
-			_sampler.initialize(_var.getDomain());
+			Objects.requireNonNull(_sampler).initialize(_var.getDomain());
 			return _sampler;
 		}
 		else if (_var.hasParentGraph())
@@ -820,7 +844,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			initialize();	// To determine the appropriate sampler
 			if (_conjugateSampler == null)
 			{
-				_sampler.initialize(_var.getDomain());
+				Objects.requireNonNull(_sampler).initialize(_var.getDomain());
 				return _sampler;
 			}
 			else
@@ -881,14 +905,14 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	// TODO move to ISolverNode
 	@Override
-	public Object getInputMsg(int portIndex)
+	public @Nullable Object getInputMsg(int portIndex)
 	{
 		return _inputMsg;
 	}
 
 	// TODO move to ISolverNode
 	@Override
-	public Object getOutputMsg(int portIndex)
+	public @Nullable Object getOutputMsg(int portIndex)
 	{
 		return _outputMsg;
 	}
@@ -897,9 +921,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	@Override
 	public void setInputMsg(int portIndex, Object obj)
 	{
-		if (_inputMsg == null)
-			_inputMsg = new Object[_var.getSiblingCount()];
-		_inputMsg[portIndex] = obj;
+		Object[] inputMsg = _inputMsg;
+		if (inputMsg == null)
+			inputMsg = new Object[_var.getSiblingCount()];
+		inputMsg[portIndex] = obj;
 	}
 
 	// TODO move to ISolverNode
@@ -928,7 +953,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		
 		// Clear out sample state
 		_bestSampleValue = _sampleValue;
-		if (_sampleArray != null) _sampleArray.clear();
+		final ArrayList<double[]> sampleArray = _sampleArray;
+		if (sampleArray != null) sampleArray.clear();
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)
@@ -939,8 +965,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			if (_conjugateSampler == null)
 				_sampler = (IMCMCSampler)GenericSamplerRegistry.get(_defaultSamplerName);	// If not, use the default sampler
 		}
-		if (_sampler != null)
-			_sampler.initialize(_var.getDomain());
+		
+		final IMCMCSampler sampler = _sampler;
+		if (sampler != null)
+			sampler.initialize(_var.getDomain());
 	}
 
 	// TODO move to ISolverVariable
@@ -989,7 +1017,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 
 	
 	// Find a single conjugate sampler consistent with all neighboring factors and the Input
-	public IRealJointConjugateSampler findConjugateSampler()
+	public @Nullable IRealJointConjugateSampler findConjugateSampler()
 	{
 		Set<IRealJointConjugateSamplerFactory> availableSamplerFactories = findConjugateSamplerFactories();
 		if (availableSamplerFactories.isEmpty())

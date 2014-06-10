@@ -13,4 +13,6 @@
  * @since 0.05
  * @author Christopher Barber
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.solvers.core.proxy;
+import com.analog.lyric.util.misc.NonNullByDefault;

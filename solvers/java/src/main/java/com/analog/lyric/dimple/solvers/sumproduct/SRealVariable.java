@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.solvers.core.SRealVariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.util.misc.Nullable;
 
 
 
@@ -35,7 +36,7 @@ public class SRealVariable extends SRealVariableBase
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	private NormalParameters _input;
+	private @Nullable NormalParameters _input;
 	private NormalParameters[] _inputMsgs = new NormalParameters[0];
 	private NormalParameters[] _outputMsgs = new NormalParameters[0];
     
@@ -46,7 +47,7 @@ public class SRealVariable extends SRealVariableBase
 
 
 	@Override
-	public void setInputOrFixedValue(Object input, Object fixedValue, boolean hasFixedValue)
+	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (hasFixedValue)
 			_input = createFixedValueMessage((Double)fixedValue);
@@ -59,9 +60,9 @@ public class SRealVariable extends SRealVariableBase
     			Normal normalInput = (Normal)input;
     			if (!normalInput.hasConstantParameters())
     				throw new DimpleException("Normal factor function used as Input must have constant parameters");
-    			_input = new NormalParameters();
-    			_input.setMean(normalInput.getMean());
-    			_input.setPrecision(normalInput.getPrecision());
+    			final NormalParameters newInput = _input = new NormalParameters();
+    			newInput.setMean(normalInput.getMean());
+    			newInput.setPrecision(normalInput.getPrecision());
     		}
     		else	// Input is array in the form [mean, standard deviation]
     		{
@@ -72,9 +73,9 @@ public class SRealVariable extends SRealVariableBase
     			if (vals[1] < 0)
     				throw new DimpleException("Expect standard deviation to be >= 0");
 
-    			_input = new NormalParameters();
-    			_input.setMean(vals[0]);
-    			_input.setStandardDeviation(vals[1]);
+    			final NormalParameters newInput = _input = new NormalParameters();
+    			newInput.setMean(vals[0]);
+    			newInput.setStandardDeviation(vals[1]);
     		}
     	}
     	
@@ -83,10 +84,12 @@ public class SRealVariable extends SRealVariableBase
     @Override
 	protected void doUpdateEdge(int outPortNum)
     {
+    	final NormalParameters input = _input;
+
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
     	{
-        	_outputMsgs[outPortNum].set(_input);
+        	_outputMsgs[outPortNum].set(Objects.requireNonNull(input));
         	return;
     	}
     	
@@ -95,10 +98,11 @@ public class SRealVariable extends SRealVariableBase
     	double mu = 0;
     	double tau = 0;
     	double muTau = 0;
-    	if (_input != null)
+    	
+    	if (input != null)
     	{
-        	mu = _input.getMean();
-        	tau = _input.getPrecision();
+        	mu = input.getMean();
+        	tau = input.getPrecision();
         	muTau = mu * tau;
     	}
     	
@@ -165,17 +169,19 @@ public class SRealVariable extends SRealVariableBase
     @Override
 	public Object getBelief()
     {
+    	final NormalParameters input = _input;
+
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
-    		return _input.clone();
+    		return input.clone();
     	
     	double mu = 0;
     	double tau = 0;
     	double muTau = 0;
-    	if (_input != null)
+    	if (input != null)
     	{
-        	mu = _input.getMean();
-        	tau = _input.getPrecision();
+        	mu = input.getMean();
+        	tau = input.getPrecision();
         	muTau = mu * tau;
     	}
     	
@@ -244,10 +250,11 @@ public class SRealVariable extends SRealVariableBase
 	@Override
 	public double getScore()
 	{
-		if (_input == null)
+		final NormalParameters input = _input;
+		if (input == null)
 			return 0;
 		else
-			return (new Normal(_input)).evalEnergy(getGuess());
+			return (new Normal(input)).evalEnergy(getGuess());
 	}
 	
 

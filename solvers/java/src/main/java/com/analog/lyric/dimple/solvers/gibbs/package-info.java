@@ -10,4 +10,6 @@
 /**
  * Gibbs sampler based solver.
  */
+@NonNullByDefault
 package com.analog.lyric.dimple.solvers.gibbs;
+import com.analog.lyric.util.misc.NonNullByDefault;

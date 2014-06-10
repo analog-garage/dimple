@@ -80,7 +80,7 @@ public class TestSumProductMessageEvents
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
+		SFactorGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -128,7 +128,7 @@ public class TestSumProductMessageEvents
 		Factor factor = model.addFactor(new FiniteFieldAdd(), vars[0], vars[1], vars[2]);
 		factor.setName("ff-add");
 		
-		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
+		SFactorGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -168,7 +168,7 @@ public class TestSumProductMessageEvents
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
+		SFactorGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
@@ -209,7 +209,7 @@ public class TestSumProductMessageEvents
 			factor.setName(String.format("factor%d-%d",i,j));
 		}
 		
-		SFactorGraph solver = model.setSolverFactory(new SumProductSolver());
+		SFactorGraph solver = model.createSolver(new SumProductSolver());
 		
 		//
 		// Test events
