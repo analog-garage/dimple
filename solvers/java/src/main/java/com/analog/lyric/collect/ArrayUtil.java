@@ -47,6 +47,20 @@ public abstract class ArrayUtil
 	public static final double[][] EMPTY_DOUBLE_ARRAY_ARRAY = new double[0][];
 	
 	/**
+	 * Canonical empty Object array.
+	 * 
+	 * @since 0.06
+	 */
+	public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+	
+	/**
+	 * Canonical empty Object array.
+	 * 
+	 * @since 0.06
+	 */
+	public static final Object[][] EMPTY_OBJECT_ARRAY_ARRAY = new Object[0][];
+	
+	/**
 	 * Canonical empty int array.
 	 */
 	public static final int[] EMPTY_INT_ARRAY = new int[0];
