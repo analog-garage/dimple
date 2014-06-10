@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -305,6 +306,28 @@ public class FactorGraph extends FactorBase
 			fg.setSolverFactorySubGraphRecursive(solverGraph, factory);
 	}
 
+	/**
+	 * Creates solver graph and attaches to this model.
+	 * <p>
+	 * Same as {@link #setSolverFactory(IFactorGraphFactory)} but does not accept a null
+	 * factory and returns a non-null solver graph.
+	 * <p>
+	 * @param factory
+	 * @since 0.06
+	 */
+	public <SG extends ISolverFactorGraph> SG createSolver(IFactorGraphFactory<SG> factory)
+	{
+		return Objects.requireNonNull(setSolverFactory(Objects.requireNonNull(factory)));
+	}
+	
+	/**
+	 * Sets solver for graph.
+	 * 
+	 * @param factory is used to construct the solver graph and will be used to create solver
+	 * state for any nodes subsequently added to the graph. If null, then the solver will be
+	 * cleared from the graph.
+	 * @return The newly created solver graph or else null if {@code factory} was null.
+	 */
 	public @Nullable <SG extends ISolverFactorGraph> SG setSolverFactory(@Nullable IFactorGraphFactory<SG> factory)
 	{
 
