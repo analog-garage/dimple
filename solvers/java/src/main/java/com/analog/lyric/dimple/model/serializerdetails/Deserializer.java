@@ -45,6 +45,7 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.util.misc.Nullable;
 
 public class Deserializer
 {
@@ -56,7 +57,7 @@ public class Deserializer
 	public Deserializer(boolean dbg)
 	{
 		_dbg = dbg;
-		clear();
+		_fg = new FactorGraph();
 	}
 	
 	protected void clear()
@@ -424,14 +425,16 @@ public class Deserializer
 	
 	class FactorFunctionHolder
 	{
-		String name;
-		int [][] indices;
+		@Nullable String name;
+		@Nullable int [][] indices;
 		int id;
-		double [] probs;
-		TableFactorFunction factorFunc;
+		@Nullable double [] probs;
+		@Nullable TableFactorFunction factorFunc;
 	}
 	
-	public FactorGraph deserializeFromXML(String docName, IFactorGraphFactory<?> solver) throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException
+	public FactorGraph deserializeFromXML(String docName, @Nullable IFactorGraphFactory<?> solver)
+		throws ParserConfigurationException, SAXException, IOException, ClassNotFoundException, InstantiationException,
+		IllegalAccessException
 	{
 		deserializeFromXMLToMemory(docName);
 		
@@ -537,7 +540,7 @@ public class Deserializer
 		return _fg;
 	}
 	
-	public IFactorTable deserializeFactorTableFromXML(String docName)
+	public @Nullable IFactorTable deserializeFactorTableFromXML(String docName)
 	{
 		IFactorTable ct = null;
 		try

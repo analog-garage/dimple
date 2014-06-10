@@ -16,21 +16,23 @@
 
 package com.analog.lyric.dimple.model.serializerdetails;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
+import com.analog.lyric.util.misc.Nullable;
 
 class xmlsFactorTable
 {
 	public String _functionName;
 	public int _ephemeralId;
-	public int[][] _indices;
-	public int[] _jointIndices;
+	public @Nullable int[][] _indices;
+	public @Nullable int[] _jointIndices;
 	public double[] _weights;
-	public JointDomainIndexer _domains;
+	public @Nullable JointDomainIndexer _domains;
 	
-	public xmlsFactorTable(){}
 	public xmlsFactorTable(
 		String functionName, int ephemeralId, int[] jointIndices, double[] weights, JointDomainIndexer domains)
 	{
@@ -85,22 +87,23 @@ class xmlsFactorTable
 
 	public IFactorTable makeTable()
 	{
-		IFactorTable table = FactorTable.create(_domains);
-		table.setWeightsSparse(_jointIndices, _weights);
+		IFactorTable table = FactorTable.create(Objects.requireNonNull(_domains));
+		table.setWeightsSparse(Objects.requireNonNull(_jointIndices), _weights);
 		return table;
 	}
 	
 	public IFactorTable makeTable(DiscreteDomain[] domains)
 	{
-		if (_jointIndices != null)
+		final int[] jointIndices = _jointIndices;
+		if (jointIndices != null)
 		{
 			IFactorTable table = FactorTable.create(domains);
-			table.setWeightsSparse(_jointIndices, _weights);
+			table.setWeightsSparse(jointIndices, _weights);
 			return table;
 		}
 		else
 		{
-			return FactorTable.create(_indices, _weights, domains);
+			return FactorTable.create(Objects.requireNonNull(_indices), _weights, domains);
 		}
 	}
 }

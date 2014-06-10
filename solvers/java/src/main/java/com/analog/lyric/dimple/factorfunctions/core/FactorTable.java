@@ -730,7 +730,7 @@ public class FactorTable extends SparseFactorTableBase
 	}
 
 	@Deprecated
-	public static IFactorTable deserializeFromXML(String docName)
+	public static @Nullable IFactorTable deserializeFromXML(String docName)
 	{
 		com.analog.lyric.dimple.model.core.xmlSerializer x
 			= new com.analog.lyric.dimple.model.core.xmlSerializer();

@@ -73,7 +73,7 @@ public class xmlSerializer
 		return _serializer.serializeFactorTableToXML(ct, ctName, targetDirectory);
 	}
 
-	public IFactorTable deserializeFactorTableFromXML(String docName)
+	public @Nullable IFactorTable deserializeFactorTableFromXML(String docName)
 	{
 		return _deserializer.deserializeFactorTableFromXML(docName);
 	}

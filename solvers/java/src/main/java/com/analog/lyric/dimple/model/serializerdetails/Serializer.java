@@ -196,7 +196,7 @@ public class Serializer
 		elFactorTable.appendChild(elFactorTable_size);
 		
 		Element elFactorTable_indices = doc.createElement("indices");
-		final int[] indices = xct._domains.allocateIndices(null);
+		final int[] indices = domains.allocateIndices(null);
 		for(int row = 0, rowend = jointIndices.length; row <  rowend; ++row)
 		{
 			domains.jointIndexToIndices(jointIndices[row], indices);
@@ -223,9 +223,9 @@ public class Serializer
 		elFactorTable.appendChild(elValue);
 		
 		Element elDomains = doc.createElement("domains");
-		for (int i = 0, end = xct._domains.size(); i < end; i++)
+		for (int i = 0, end = domains.size(); i < end; i++)
 		{
-			appendDomainElement(xct._domains.get(i), doc, elDomains);
+			appendDomainElement(domains.get(i), doc, elDomains);
 		}
 		elFactorTable.appendChild(elDomains);
 
