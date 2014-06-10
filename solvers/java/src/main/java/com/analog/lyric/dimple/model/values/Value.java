@@ -263,6 +263,16 @@ public abstract class Value implements Cloneable, Serializable
 		return FactorFunctionUtilities.toDouble(getObject());
 	}
 	
+	public double[] getDoubleArray()
+	{
+		Object val = getObject();
+		if (val instanceof double[])
+		{
+			return (double[])val;
+		}
+		return new double[] { getDouble() };
+	}
+	
 	/**
 	 * Sets current value from a {@code double}.
 	 */

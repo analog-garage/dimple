@@ -75,6 +75,12 @@ public class RealJointValue extends Value
 	}
 	
 	@Override
+	public double[] getDoubleArray()
+	{
+		return _value;
+	}
+	
+	@Override
 	public @NotNull double[] getObject()
 	{
 		return _value;
