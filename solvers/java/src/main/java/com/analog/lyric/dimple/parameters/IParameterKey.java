@@ -36,6 +36,7 @@ import com.analog.lyric.options.IOptionKey;
  * static {@code values()} method can be used to provide the list of keys required when
  * implementing {@link IParameterList#getKeys()}.
  * <pre>
+ * {@literal @}SuppressWarnings("null") // May be necessary if null warnings enabled
  * public enum GuassianParameter implements IParameterKey
  * {
  *     mean(0, RealDomain.full()),

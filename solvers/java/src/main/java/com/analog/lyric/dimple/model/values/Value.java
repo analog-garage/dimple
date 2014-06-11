@@ -222,7 +222,7 @@ public abstract class Value implements Cloneable, Serializable
 	@Override
 	public String toString()
 	{
-		return getObject().toString();
+		return getObject() + "";
 	}
 	
 	/*---------------

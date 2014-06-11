@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import static java.util.Objects.*;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -263,8 +265,8 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 
 		if (domains1.isDirected() & domains2.isDirected())
 		{
-			outputs = domains1.getOutputSet();
-			for (int i : domains2.getOutputDomainIndices())
+			outputs = requireNonNull(domains1.getOutputSet());
+			for (int i : requireNonNull(domains2.getOutputDomainIndices()))
 			{
 				outputs.set(size1 + i);
 			}
@@ -296,7 +298,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		
 		if (isDirected())
 		{
-			final BitSet theseOutputs = getOutputSet();
+			final BitSet theseOutputs = requireNonNull(getOutputSet());
 			outputs = new BitSet(length);
 			for (int i = 0; i < length; ++i)
 			{

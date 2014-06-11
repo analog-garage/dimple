@@ -16,6 +16,8 @@
 
 package com.analog.lyric.util.misc;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -112,7 +114,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public boolean containsAll(@Nullable Collection<?> objects)
 	{
-		for (Object object : objects)
+		for (Object object : requireNonNull(objects))
 		{
 			if (!contains(object))
 			{
@@ -176,10 +178,10 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
-	public boolean removeAll(@Nullable Collection<?> arg0)
+	public boolean removeAll(@Nullable Collection<?> elements)
 	{
 		boolean changed = false;
-		for (Object o : arg0)
+		for (Object o : requireNonNull(elements))
 		{
 			if(remove(o))
 				changed = true;
@@ -190,6 +192,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public boolean retainAll(@Nullable Collection<?> keep)
 	{
+		requireNonNull(keep);
 		boolean changed = false;
 		for (int i = size(); --i >= 0;)
 		{

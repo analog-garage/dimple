@@ -94,7 +94,7 @@ public class FactorGraphDiffs
 		{
 			s = "Factor  ";
 		}
-		else
+		else if (n != null)
 		{
 			s = n.getClass().toString();
 		}
@@ -183,7 +183,7 @@ public class FactorGraphDiffs
 				}
 			}
 			pathDBG |= 0x00000040;
-			if(_childrenInBNotA != null)
+			if(childrenInBNotA != null)
 			{
 				pathDBG |= 0x00000080;
 				s += String.format("\n%sIn B not A:\n", oneMoreTab);
@@ -512,19 +512,9 @@ public class FactorGraphDiffs
 			   boolean quickExit,
 			   boolean byName)
 	{
-		FactorGraph aRoot = a;
-		FactorGraph bRoot = b;
-		while(aRoot.hasParentGraph())
-		{
-			aRoot = aRoot.getParentGraph();
-		}
-		while(bRoot.hasParentGraph())
-		{
-			bRoot = bRoot.getParentGraph();
-		}
 		return getFactorGraphDiffsNoRootSearch(
-				   aRoot,
-				   bRoot,
+				   a.getRootGraph(),
+				   b.getRootGraph(),
 				   quickExit,
 				   byName);
 	}

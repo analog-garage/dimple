@@ -53,7 +53,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * @see OptionRegistry#addFromClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> IOptionKey<T> inClass(@Nullable Class<?> declaringClass, @Nullable String name)
+	public static <T> IOptionKey<T> inClass(Class<?> declaringClass, String name)
 	{
 		try
 		{

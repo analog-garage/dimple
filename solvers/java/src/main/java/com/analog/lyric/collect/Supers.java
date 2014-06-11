@@ -16,6 +16,8 @@
 
 package com.analog.lyric.collect;
 
+import static java.util.Objects.*;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -48,14 +50,13 @@ public abstract class Supers
 		{
 			ArrayList<Class<?>> supers = new ArrayList<Class<?>>();
 
-			while (true)
+			while (c != null)
 			{
 				Class<?> s = c.getSuperclass();
-				if (s == null)
+				if (s != null)
 				{
-					break;
+					supers.add(s);
 				}
-				supers.add(s);
 				c = s;
 			}
 			
@@ -140,14 +141,18 @@ public abstract class Supers
 			int declaredSize = declaredTypes.length;
 			
 			int nArgs = args == null ? 0 : args.length;
-			if (nArgs != declaredSize || !declaredTypes[declaredSize - 1].isInstance(args[declaredSize - 1]))
+			if (nArgs != declaredSize ||
+				!declaredTypes[declaredSize - 1].isInstance(requireNonNull(args)[declaredSize - 1]))
 			{
 				Class<?> varArgType = declaredTypes[declaredSize - 1].getComponentType();
 
 				Object varargs = args == null ? null : Array.newInstance(varArgType, nArgs + 1 - declaredSize);
-				for (int i = 0, j = declaredSize - 1; j < nArgs; ++i, ++j)
+				if (args != null)
 				{
-					Array.set(varargs, i, args[j]);
+					for (int i = 0, j = declaredSize - 1; j < nArgs; ++i, ++j)
+					{
+						Array.set(varargs, i, args[j]);
+					}
 				}
 
 				if (nArgs > 0)
@@ -158,11 +163,11 @@ public abstract class Supers
 				{
 					args = new Object[declaredSize];
 				}
-				args[declaredSize - 1] = varargs;
+				requireNonNull(args)[declaredSize - 1] = varargs;
 			}
 		}
 		
-		return method.invoke(object,  args);
+		return method.invoke(object, args);
 	}
 	
 	/**
@@ -189,9 +194,12 @@ public abstract class Supers
 		
 		int nArgs = args == null ? 0 : args.length;
 		Class<?>[] argTypes = new Class<?>[nArgs];
-		for (int i = 0; i < nArgs; ++i)
+		if (args != null)
 		{
-			argTypes[i] = args[i] == null ? null : Primitives.unwrap(args[i].getClass());
+			for (int i = 0; i < nArgs; ++i)
+			{
+				argTypes[i] = args[i] == null ? null : Primitives.unwrap(args[i].getClass());
+			}
 		}
 		
 		// First try direct match:
@@ -249,11 +257,14 @@ public abstract class Supers
 				}
 			}
 			
-			for (int i = end; i < argTypes.length; ++i)
+			if (varArgType != null)
 			{
-				if (!varArgType.isAssignableFrom(argTypes[i]))
+				for (int i = end; i < argTypes.length; ++i)
 				{
-					continue outer;
+					if (!varArgType.isAssignableFrom(argTypes[i]))
+					{
+						continue outer;
+					}
 				}
 			}
 			
@@ -433,7 +444,7 @@ public abstract class Supers
 			return declaredType;
 		}
 		
-		Class<?> c = objects[i].getClass();
+		Class<?> c = requireNonNull(objects[i].getClass());
 		
 		// Compute common superclass for all of the classes of elements in the array.
 		while (++i < n)
@@ -446,7 +457,7 @@ public abstract class Supers
 			{
 				break;
 			}
-			c = nearestCommonSuperClass(c, objects[i].getClass());
+			c = requireNonNull(nearestCommonSuperClass(c, objects[i].getClass()));
 		}
 		
 		assert(c != null);

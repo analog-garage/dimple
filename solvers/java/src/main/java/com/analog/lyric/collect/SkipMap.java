@@ -423,18 +423,22 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		@Override
 		public boolean contains(@Nullable Object obj)
 		{
-			try
+			if (obj != null)
 			{
-				@SuppressWarnings("unchecked")
-				Entry<K,V> entry = (Entry<K, V>)obj;
-				K key = entry.getKey();
-				
-				return entry.node == this.map.getNode(key);
+				try
+				{
+					@SuppressWarnings("unchecked")
+					Entry<K,V> entry = (Entry<K, V>)obj;
+					K key = entry.getKey();
+
+					return entry.node == this.map.getNode(key);
+				}
+				catch (ClassCastException ex)
+				{
+				}
 			}
-			catch (ClassCastException ex)
-			{
-				return false;
-			}
+
+			return false;
 		}
 
 		@Override

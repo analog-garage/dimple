@@ -83,6 +83,7 @@ public class TestParameters
 		}
 	}
 	
+	@SuppressWarnings("null")
 	public static enum Alpha implements IParameterKey
 	{
 		alpha(0, RealDomain.unbounded());

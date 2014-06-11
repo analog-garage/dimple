@@ -202,7 +202,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 		{
 			return getIndexFromSubelements((Object[])value);
 		}
-		else if (value.getClass().isArray())
+		else if (value != null && value.getClass().isArray())
 		{
 			int size = getDimensions();
 			Object[] values = new Object[size];

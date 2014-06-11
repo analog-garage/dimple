@@ -32,6 +32,7 @@ public class TestOptionKey
 	public static final IOptionKey<Boolean> YES =
 		new BooleanOptionKey(TestOptionKey.class, "YES");
 	
+	@SuppressWarnings("null")
 	public static enum Option implements IOptionKey<Object>
 	{
 		A(42),
@@ -86,7 +87,7 @@ public class TestOptionKey
 
 	void assertOptionInvariants(IOptionKey<?> key)
 	{
-		assertNotNull(key.getDeclaringClass());
+		Class<?> declaringClass = key.getDeclaringClass();
 		assertNotNull(key.name());
 		assertNotNull(key.type());
 		assertTrue(key.type().isInstance(key.defaultValue()));
@@ -101,6 +102,6 @@ public class TestOptionKey
 		IOptionKey<?> key2 = SerializationTester.clone(key);
 		assertSame(key2, key);
 		
-		assertEquals(key.getDeclaringClass().getName() + "." + key.name(), OptionKey.qualifiedName(key));
+		assertEquals(declaringClass.getName() + "." + key.name(), OptionKey.qualifiedName(key));
 	}
 }

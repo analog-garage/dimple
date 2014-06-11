@@ -591,7 +591,7 @@ public abstract class AbstractSkipList<K>
 		public void reset()
 		{
 			final @Nullable AbstractSkipList<K> list2 = this.list;
-			this.nextNode = this.list == null ? null : list2.getNextNode(list2.head);
+			this.nextNode = list2 == null ? null : list2.getNextNode(list2.head);
 			this.lastKey = null;
 		}
 		

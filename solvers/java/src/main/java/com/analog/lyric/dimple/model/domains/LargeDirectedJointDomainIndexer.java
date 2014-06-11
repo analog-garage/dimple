@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
@@ -226,7 +228,7 @@ public final class LargeDirectedJointDomainIndexer extends LargeJointDomainIndex
 	{
 		assertSupportsOutputIndexing("outputIndexFromElements");
 		final DiscreteDomain[] domains = _domains;
-		final int[] products = _outputProducts;
+		final int[] products = requireNonNull(_outputProducts);
 		int joint = 0;
 		for (int i = 0, end = products.length; i < end; ++i)
 		{

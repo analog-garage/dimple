@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,9 +101,11 @@ public final class JointDomainIndexPermuter extends JointDomainReindexer
 						String.format("'oldToNewIndex' contains two entries mapping to %d", to));
 				}
 				int fromDomainSize =
-					from < fromSize ? fromDomains.getDomainSize(from) : addedDomains.getDomainSize(from - fromSize);
+					from < fromSize ? fromDomains.getDomainSize(from) :
+						requireNonNull(addedDomains).getDomainSize(from - fromSize);
 				int toDomainSize =
-					to < toSize ? toDomains.getDomainSize(to) : removedDomains.getDomainSize(to - toSize);
+					to < toSize ? toDomains.getDomainSize(to) :
+						requireNonNull(removedDomains).getDomainSize(to - toSize);
 				if (fromDomainSize != toDomainSize)
 				{
 					throw new IllegalArgumentException(

@@ -494,7 +494,7 @@ public abstract class ArrayUtil
 			return (Object[])value;
 		}
 		
-		if (value.getClass().isArray())
+		if (value != null && value.getClass().isArray())
 		{
 			final int size = Array.getLength(value);
 			final Object[] array = new Object[size];
@@ -523,7 +523,7 @@ public abstract class ArrayUtil
 			return (int[])value;
 		}
 		
-		if (value.getClass().isArray())
+		if (value != null && value.getClass().isArray())
 		{
 			final int size = Array.getLength(value);
 			final int[] array = new int[size];

@@ -244,9 +244,12 @@ public final class ChainedJointDomainReindexer extends JointDomainReindexer
 			}
 		}
 		
-		System.arraycopy(prev.toIndices, 0, indices.toIndices, 0, indices.toIndices.length);
-		
-		prev.release();
+		if (prev != null)
+		{
+			System.arraycopy(prev.toIndices, 0, indices.toIndices, 0, indices.toIndices.length);
+
+			prev.release();
+		}
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public interface IOptionKey<T> extends Serializable
 	 * <p>
 	 * @see Enum#getDeclaringClass
 	 */
-	public abstract @Nullable Class<?> getDeclaringClass();
+	public abstract Class<?> getDeclaringClass();
 	
 	/**
 	 * The unqualified name of the option.
@@ -62,7 +62,7 @@ public interface IOptionKey<T> extends Serializable
 	 * <p>
 	 * @see Enum#name
 	 */
-	public abstract @Nullable String name();
+	public abstract String name();
 	
 	/*---------------
 	 * Other methods

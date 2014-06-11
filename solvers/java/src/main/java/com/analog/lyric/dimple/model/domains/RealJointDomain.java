@@ -150,7 +150,7 @@ public class RealJointDomain extends Domain
 	@Override
 	public boolean inDomain(@Nullable Object value)
 	{
-		if (value.getClass().isArray() && Array.getLength(value) == _size)
+		if (value != null && value.getClass().isArray() && Array.getLength(value) == _size)
 		{
 			if (_homogeneous)
 			{

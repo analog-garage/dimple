@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.domains;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -71,7 +73,8 @@ public final class JointDomainIndexConditioner extends JointDomainReindexer
 			if (_supportsJointIndexing)
 			{
 				final int toCardinality = toDomains.getCardinality();
-				addedJointIndex = -removedDomains.jointIndexFromIndices(conditionedValues) * toCardinality;
+				addedJointIndex =
+					-requireNonNull(removedDomains).jointIndexFromIndices(conditionedValues) * toCardinality;
 			}
 		}
 		
