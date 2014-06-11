@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
@@ -47,7 +48,7 @@ public class UniformDiscreteProposalKernel implements IProposalKernel
 	}
 
 	@Override
-	public Object[] getParameters()
+	public @Nullable Object[] getParameters()
 	{
 		return null;
 	}

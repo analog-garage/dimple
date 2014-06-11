@@ -36,12 +36,13 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable _yVariable;
-	private SDiscreteVariable _xVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable _yVariable;
+	private @Nullable SDiscreteVariable _xVariable;
 	private boolean _hasConstantY;
 	private boolean _hasConstantX;
 	private boolean _useEnergyParameters;
@@ -54,8 +55,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	private int _xPort = -1;
 	private int _constantYValue;
 	private int _constantXValue;
-	private int[] _parameterXIndices;
-	private int[] _parameterYIndices;
+	private @Nullable int[] _parameterXIndices;
+	private @Nullable int[] _parameterYIndices;
 	private static final int NUM_DISCRETE_VARIABLES = 2;
 	private static final int Y_INDEX = 0;
 	private static final int X_INDEX = 1;
@@ -66,6 +67,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -197,8 +199,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		// Create a mapping between the edge connecting parameters and the XY coordinates in the parameter array
 		int numParameterConstants = factorFunction.numConstantsAtOrAboveIndex(NUM_DISCRETE_VARIABLES);
 		_numParameterEdges = _numParameters - numParameterConstants;
-		_parameterXIndices = new int[_numParameterEdges];
-		_parameterYIndices = new int[_numParameterEdges];
+		final int[] parameterXIndices = _parameterXIndices = new int[_numParameterEdges];
+		final int[] parameterYIndices = _parameterYIndices = new int[_numParameterEdges];
 		if (numParameterConstants > 0)
 		{
 			int[] constantIndices = factorFunction.getConstantIndices();
@@ -217,8 +219,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 					else
 					{
 						// Parameter is variable
-						_parameterXIndices[parameterEdgeOffset] = x;
-						_parameterYIndices[parameterEdgeOffset] = y;
+						parameterXIndices[parameterEdgeOffset] = x;
+						parameterYIndices[parameterEdgeOffset] = y;
 						parameterEdgeOffset++;
 					}
 				}
@@ -230,8 +232,8 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 			{
 				for (int y = 0; y < _yDimension; y++, parameterEdgeOffset++)
 				{
-					_parameterXIndices[parameterEdgeOffset] = x;
-					_parameterYIndices[parameterEdgeOffset] = y;
+					parameterXIndices[parameterEdgeOffset] = x;
+					parameterYIndices[parameterEdgeOffset] = y;
 				}
 			}
 		}
@@ -243,17 +245,19 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
-			_outputMsgs[port] = new GammaParameters();
+			outputMsgs[port] = new GammaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

@@ -27,7 +27,6 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.gibbs.STableFactor;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 
 public class GibbsTest
@@ -112,7 +111,6 @@ public class GibbsTest
 		assertTrue(nearlyEquals(Math.exp(-totalPotential),0.6));
 	}
 	
-	@NonNullByDefault
 	public static class PA extends FactorFunction
 	{
 		public PA() {super("PA");}
@@ -129,7 +127,6 @@ public class GibbsTest
 	    }
 	}
 	
-	@NonNullByDefault
 	public static class PBA extends FactorFunction
 	{
 		public PBA() {super("PBA");}

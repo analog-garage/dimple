@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -153,7 +154,7 @@ public class MultinomialBlockProposal implements IBlockProposalKernel
 	@Override
 	public void setParameters(Object... parameters) {}
 	@Override
-	public Object[] getParameters() {return null;}
+	public @Nullable Object[] getParameters() {return null;}
 	
 	
 	// Interface to be used by the custom factor using this proposal, allowing this class to access additional information needed

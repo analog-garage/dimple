@@ -32,12 +32,13 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SRealVariable _alphaVariable;
-	private SRealVariable _betaVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SRealVariable _alphaVariable;
+	private @Nullable SRealVariable _betaVariable;
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
 	private boolean _hasFactorFunctionConstructorConstants;
@@ -55,6 +56,7 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -154,17 +156,19 @@ public class CustomBeta extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			_outputMsgs[port] = new BetaParameters();
+			outputMsgs[port] = new BetaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

@@ -31,12 +31,13 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomExchangeableDirichlet extends SRealFactor implements IRealJointConjugateFactor
 {
-	private Object[] _outputMsgs;
+	private @Nullable Object[] _outputMsgs;
 	private double _constantAlphaMinusOne;
-	private SRealVariable _alphaVariable;
+	private @Nullable SRealVariable _alphaVariable;
 	private int _dimension;
 	private int _numParameterEdges;
 	private boolean _hasConstantParameters;
@@ -47,6 +48,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -134,17 +136,19 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
-			_outputMsgs[port] = new DirichletParameters(_dimension);
+			outputMsgs[port] = new DirichletParameters(_dimension);
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

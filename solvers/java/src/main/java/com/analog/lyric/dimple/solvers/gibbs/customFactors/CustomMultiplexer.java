@@ -41,18 +41,19 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjug
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomMultiplexer extends SRealFactor implements IRealConjugateFactor, IRealJointConjugateFactor
 {
-	private ISampler[] _conjugateSampler;
-	private Object[] _outputMsgs;
-	private SDiscreteVariable _selectorVariable;
-	private ISolverRealVariableGibbs _outputVariable;
+	private @Nullable ISampler[] _conjugateSampler;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable _selectorVariable;
+	private @Nullable ISolverRealVariableGibbs _outputVariable;
 	private int _outputPortNumber;
 	private int _selectorPortNumber;
 	private int _firstInputPortNumber;
 	private int _outputVariableSiblingPortIndex;
-	private int[] _inputPortMap;
+	private @Nullable int[] _inputPortMap;
 	private boolean _incompatibleWithConjugateSampling = false;
 	private boolean _hasFactorFunctionConstants;
 	private boolean _hasConstantSelector;
@@ -67,6 +68,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -139,13 +141,14 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	}
 
 	
+	@SuppressWarnings("null")
 	@Override
 	public void initialize()
 	{
 		super.initialize();
 		
 		// Determine if any ports can use a conjugate sampler
-		_conjugateSampler = new ISampler[_numPorts];
+		final ISampler[] conjugateSampler = _conjugateSampler = new ISampler[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 		{
 			INode var = _factor.getSibling(port);
@@ -153,29 +156,29 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 			if (var instanceof Real)
 			{
 				SRealVariable svar = (SRealVariable)var.getSolver();
-				_conjugateSampler[port] = svar.getConjugateSampler();
+				conjugateSampler[port] = svar.getConjugateSampler();
 				
-				if (_conjugateSampler[port] != null)
+				if (conjugateSampler[port] != null)
 				{
 					// Create message and tell the variable to use it
-					_outputMsgs[port] = ((IRealConjugateSampler)_conjugateSampler[port]).createParameterMessage();
+					_outputMsgs[port] = ((IRealConjugateSampler)conjugateSampler[port]).createParameterMessage();
 					svar.setInputMsg(varPortNum, _outputMsgs[port]);
 				}
 			}
 			else if (var instanceof RealJoint)
 			{
 				SRealJointVariable svar = (SRealJointVariable)var.getSolver();
-				_conjugateSampler[port] = svar.getConjugateSampler();
+				conjugateSampler[port] = svar.getConjugateSampler();
 
-				if (_conjugateSampler[port] != null)
+				if (conjugateSampler[port] != null)
 				{
 					// Create message and tell the variable to use it
-					_outputMsgs[port] = ((IRealJointConjugateSampler)_conjugateSampler[port]).createParameterMessage();
+					_outputMsgs[port] = ((IRealJointConjugateSampler)conjugateSampler[port]).createParameterMessage();
 					svar.setInputMsg(varPortNum, _outputMsgs[port]);
 				}
 			}
 			else
-				_conjugateSampler[port] = null;
+				conjugateSampler[port] = null;
 		}
 		
 		
@@ -184,7 +187,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		
 		// Set up _inputPortMap, which maps the selector value to port index
 		int numInputEdges = _numPorts - _firstInputPortNumber;
-		_inputPortMap = new int[numInputEdges];
+		final int[] inputPortMap = _inputPortMap = new int[numInputEdges];
 		if (_hasFactorFunctionConstants)
 		{
 			FactorFunction factorFunction = _factor.getFactorFunction();
@@ -201,7 +204,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 				else
 				{
 					if (port > _firstInputPortNumber)
-						_inputPortMap[selectorIndex++] = port++;
+						inputPortMap[selectorIndex++] = port++;
 					else
 						port++;
 				}
@@ -210,7 +213,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		else	// No constants
 		{
 			for (int i = 0; i < numInputEdges; i++)
-				_inputPortMap[i] = i + _firstInputPortNumber;
+				inputPortMap[i] = i + _firstInputPortNumber;
 		}
 	}
 	
@@ -263,12 +266,14 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		_outputMsgs = new Object[_numPorts];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

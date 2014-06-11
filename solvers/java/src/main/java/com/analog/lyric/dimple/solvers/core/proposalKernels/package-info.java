@@ -8,7 +8,5 @@
  ********************************************************************************/
 
 @NonNullByDefault
-package com.analog.lyric.dimple.solvers.gibbs.customFactors;
-
+package com.analog.lyric.dimple.solvers.core.proposalKernels;
 import com.analog.lyric.util.misc.NonNullByDefault;
-

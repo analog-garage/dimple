@@ -34,12 +34,13 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.math.DimpleRandomGenerator;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable _outputVariable;
-	private SDiscreteVariable _NParameterVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable _outputVariable;
+	private @Nullable SDiscreteVariable _NParameterVariable;
 	private int _probabilityParameterEdge;
 	private int _constantNParameterValue;
 	private int _constantOutputValue;
@@ -65,10 +66,13 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			// Port is the probability-parameter input
 			// Determine sample alpha and beta parameters
 
+			@SuppressWarnings("null")
 			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 
 			// Get the current values of N and the output count
+			@SuppressWarnings("null")
 			int N = _hasConstantNParameter ? _constantNParameterValue : _NParameterVariable.getCurrentSampleIndex();
+			@SuppressWarnings("null")
 			int numOnes = _hasConstantOutput ? _constantOutputValue : _outputVariable.getCurrentSampleIndex();
 			int numZeros = N - numOnes;
 			
@@ -174,17 +178,19 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		if (_probabilityParameterEdge != NO_PORT)
-			_outputMsgs[_probabilityParameterEdge] = new BetaParameters();
+			outputMsgs[_probabilityParameterEdge] = new BetaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
@@ -195,6 +201,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	
 	public class BlockInitializer implements IBlockInitializer
 	{
+		@SuppressWarnings("null")
 		@Override
 		public void initialize()
 		{

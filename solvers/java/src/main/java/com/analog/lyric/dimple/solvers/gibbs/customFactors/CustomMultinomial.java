@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.analog.lyric.dimple.factorfunctions.Multinomial;
@@ -40,23 +41,24 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomMultinomial extends SRealFactor implements IRealJointConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable[] _outputVariables;
-	private SDiscreteVariable _NVariable;
-	private SRealJointVariable _alphaVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable[] _outputVariables;
+	private @Nullable SDiscreteVariable _NVariable;
+	private @Nullable SRealJointVariable _alphaVariable;
 	private int _dimension;
 	private int _alphaParameterEdge;
 	private int _numOutputEdges;
 	private int _constantN;
-	private double[] _constantAlpha;
-	private int[] _constantOutputCounts;
+	private @Nullable double[] _constantAlpha;
+	private @Nullable int[] _constantOutputCounts;
 	private boolean _hasConstantN;
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantOutputs;
-	private boolean[] _hasConstantOutput;
+	private @Nullable boolean[] _hasConstantOutput;
 	private static final int NO_PORT = -1;
 	private static final int ALPHA_PARAMETER_INDEX_FIXED_N = 0;	// If N is in constructor then alpha is first index (0)
 	private static final int OUTPUT_MIN_INDEX_FIXED_N = 1;		// If N is in constructor then output starts at second index (1)
@@ -69,6 +71,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -118,7 +121,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	@Override
 	public final double[] getCurrentAlpha()
 	{
-		return (_hasConstantAlpha ? _constantAlpha : _alphaVariable.getCurrentSample()).clone();
+		return (_hasConstantAlpha ? _constantAlpha : Objects.requireNonNull(_alphaVariable).getCurrentSample()).clone();
 	}
 	@Override
 	public final boolean isAlphaEnergyRepresentation()
@@ -150,12 +153,13 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
 		BlockMHSampler blockSampler = new BlockMHSampler(new MultinomialBlockProposal(this));
-		INode[] nodeList = new INode[_outputVariables.length + (_hasConstantN ? 0 : 1)];
+		final SDiscreteVariable[] outputVariables = Objects.requireNonNull(_outputVariables);
+		INode[] nodeList = new INode[outputVariables.length + (_hasConstantN ? 0 : 1)];
 		int nodeIndex = 0;
 		if (!_hasConstantN)
-			nodeList[nodeIndex++] = _NVariable.getModelObject();
-		for (int i = 0; i < _outputVariables.length; i++, nodeIndex++)
-			nodeList[nodeIndex] = _outputVariables[i].getModelObject();
+			nodeList[nodeIndex++] = Objects.requireNonNull(_NVariable).getModelObject();
+		for (int i = 0; i < outputVariables.length; i++, nodeIndex++)
+			nodeList[nodeIndex] = outputVariables[i].getModelObject();
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
 		
 		// Add the block updater to the schedule
@@ -225,7 +229,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		
 		// Save the output constant or variables as well
 		_numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		_hasConstantOutput = null;
@@ -234,20 +238,20 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		{
 			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
 			_dimension = _numOutputEdges + numConstantOutputs;
-			_hasConstantOutput = new boolean[_dimension];
-			_constantOutputCounts = new int[numConstantOutputs];
+			final boolean[] hasConstantOutput = _hasConstantOutput = new boolean[_dimension];
+			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				if (factorFunction.isConstantIndex(index))
 				{
-					_hasConstantOutput[i] = true;
-					_constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
+					hasConstantOutput[i] = true;
+					constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
 				}
 				else
 				{
-					_hasConstantOutput[i] = false;
+					hasConstantOutput[i] = false;
 					int outputEdge = factorFunction.getEdgeByIndex(index);
-					_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+					outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 				}
 			}
 		}
@@ -257,7 +261,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
-				_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 
@@ -269,17 +273,19 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		if (_alphaParameterEdge != NO_PORT)
-			_outputMsgs[_alphaParameterEdge] = new DirichletParameters();
+			outputMsgs[_alphaParameterEdge] = new DirichletParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

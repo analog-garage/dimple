@@ -112,7 +112,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 				sampleValue[i] = sVariables[i].getCurrentSampleValue().clone();
 		}
 		
-		final BlockProposal proposal = proposalKernel.next(sampleValue, _domains);
+		final BlockProposal proposal = proposalKernel.next(sampleValue, Objects.requireNonNull(_domains));
 		final Value[] proposalValue = proposal.value;
 
 		// Get the potential for the current sample value
@@ -241,7 +241,7 @@ public class BlockMHSampler implements IBlockSampler, IBlockInitializer
 				sampleValue[i] = sVariables[i].getCurrentSampleValue().clone();
 		}
 		
-		final BlockProposal proposal = proposalKernel.next(sampleValue, _domains);
+		final BlockProposal proposal = proposalKernel.next(sampleValue, Objects.requireNonNull(_domains));
 		final Value[] proposalValue = proposal.value;
 
 		setNextSampleValue(proposalValue);

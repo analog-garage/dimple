@@ -32,11 +32,12 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.BetaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable[] _outputVariables;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable[] _outputVariables;
 	private int _numParameterEdges;
 	private int _numOutputEdges;
 	private int _constantOutputZeroCount;
@@ -59,12 +60,14 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 			// Port is the parameter input
 			// Determine sample alpha and beta parameters
 
+			@SuppressWarnings("null")
 			BetaParameters outputMsg = (BetaParameters)_outputMsgs[portNum];
 
 			// Start with the ports to variable outputs
 			int numZeros = 0;
 			for (int i = 0; i < _numOutputEdges; i++)
 			{
+				@SuppressWarnings("null")
 				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				if (outputIndex == 0)
 					numZeros++;
@@ -165,9 +168,9 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 		
 		// Save output variables
 		List<? extends VariableBase> siblings = _factor.getSiblings();
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+			outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	
@@ -176,17 +179,19 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
-			_outputMsgs[port] = new BetaParameters();
+			outputMsgs[port] = new BetaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

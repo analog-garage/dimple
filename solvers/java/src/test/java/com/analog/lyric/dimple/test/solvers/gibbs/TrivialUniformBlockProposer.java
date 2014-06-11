@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.BlockProposal;
 import com.analog.lyric.dimple.solvers.core.proposalKernels.IBlockProposalKernel;
 import com.analog.lyric.math.DimpleRandomGenerator;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * 
@@ -62,7 +63,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 	}
 
 	@Override
-	public Object[] getParameters()
+	public @Nullable Object[] getParameters()
 	{
 		return null;
 	}

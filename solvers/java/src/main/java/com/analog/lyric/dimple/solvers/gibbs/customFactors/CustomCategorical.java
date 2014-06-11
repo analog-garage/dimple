@@ -33,15 +33,16 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.DirichletSampler
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealJointConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomCategorical extends SRealFactor implements IRealJointConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable[] _outputVariables;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable[] _outputVariables;
 	private int _parameterDimension;
 	private int _numParameterEdges;
 	private int _numOutputEdges;
-	private int[] _constantOutputCounts;
+	private @Nullable int[] _constantOutputCounts;
 	private boolean _hasConstantOutputs;
 	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
@@ -52,6 +53,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -116,13 +118,13 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			FactorFunction factorFunction = _factor.getFactorFunction();
 			Object[] constantValues = factorFunction.getConstants();
 			int[] constantIndices = factorFunction.getConstantIndices();
-			_constantOutputCounts = new int[_parameterDimension];
+			final int[] constantOutputCounts = _constantOutputCounts = new int[_parameterDimension];
 			for (int i = 0; i < constantIndices.length; i++)
 			{
 				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
 				{
 					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-					_constantOutputCounts[outputValue]++;	// Histogram among constant outputs
+					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
 				}
 			}
 		}
@@ -165,9 +167,9 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 
 		
 		// Save output variables
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+			outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	
@@ -176,17 +178,19 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
-			_outputMsgs[port] = new DirichletParameters(_parameterDimension);
+			outputMsgs[port] = new DirichletParameters(_parameterDimension);
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

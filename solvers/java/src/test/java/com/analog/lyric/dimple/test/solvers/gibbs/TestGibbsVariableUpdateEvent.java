@@ -43,7 +43,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
-import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Test generation of {@link GibbsVariableUpdateEvent}s.
@@ -53,7 +53,6 @@ import com.analog.lyric.util.misc.NonNullByDefault;
  */
 public class TestGibbsVariableUpdateEvent
 {
-	@NonNullByDefault
 	static class BogoFunction extends FactorFunction
 	{
 		@Override
@@ -210,7 +209,7 @@ public class TestGibbsVariableUpdateEvent
 	 * 
 	 * @return the cumulative {@link GibbsScoredVariableUpdateEvent#getScoreDifference()} if available, otherwise zero.
 	 */
-	private double assertEvents(VariableUpdateHandler handler, Class<? extends DimpleEvent> expectedClass,
+	private double assertEvents(VariableUpdateHandler handler, @Nullable Class<? extends DimpleEvent> expectedClass,
 		IDimpleEventSource ... sources)
 	{
 		double scoreDifference = 0.0;

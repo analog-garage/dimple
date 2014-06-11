@@ -43,27 +43,27 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NegativeExpGammaSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor implements IRealConjugateFactor, MultinomialBlockProposal.ICustomMultinomial
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable[] _outputVariables;
-	private SDiscreteVariable _NVariable;
-	private SRealVariable[] _alphaVariables;
-	private FactorFunction _factorFunction;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable[] _outputVariables;
+	private @Nullable SDiscreteVariable _NVariable;
+	private @Nullable SRealVariable[] _alphaVariables;
+	private @Nullable FactorFunction _factorFunction;
 	private int _dimension;
 	private int _alphaParameterMinIndex;
 	private int _alphaParameterMinEdge;
 	private int _alphaParameterMaxEdge;
 	private int _numOutputEdges;
 	private int _constantN;
-	private int[] _constantOutputCounts;
+	private @Nullable int[] _constantOutputCounts;
 	private boolean _hasConstantN;
 	private boolean _hasConstantOutputs;
-	private boolean[] _hasConstantOutput;
 	private boolean _hasConstantAlphas;
-	private boolean[] _hasConstantAlpha;
-	private double[] _constantAlpha;
+	private @Nullable boolean[] _hasConstantAlpha;
+	private @Nullable double[] _constantAlpha;
 	private boolean _useEnergyParameters;
 	private static final int NO_PORT = -1;
 	private static final int ALPHA_PARAMETER_MIN_INDEX_FIXED_N = 0;	// If N is in constructor then alpha is first index (0)
@@ -75,6 +75,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -121,6 +122,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 
 
 	// For MultinomialBlockProposal.ICustomMultinomial interface
+	@SuppressWarnings("null")
 	@Override
 	public final double[] getCurrentAlpha()
 	{
@@ -156,6 +158,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void initialize()
 	{
@@ -243,7 +246,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		_hasConstantAlphas = false;
 		_hasConstantAlpha = null;
 		_constantAlpha = null;
-		_alphaVariables = new SRealVariable[_dimension];
+		final SRealVariable[] alphaVariables = _alphaVariables = new SRealVariable[_dimension];
 		_alphaParameterMinEdge = NO_PORT;
 		_alphaParameterMaxEdge = NO_PORT;
 		int[] edges = factorFunction.getEdgesByIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex);
@@ -255,20 +258,20 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		if (factorFunction.hasConstantsInIndexRange(_alphaParameterMinIndex, alphaParameterMaxIndex))	// Some constant alphas
 		{
 			_hasConstantAlphas = true;
-			_hasConstantAlpha = new boolean[_dimension];
-			_constantAlpha = new double[_dimension];
+			final boolean[] hasConstantAlpha = _hasConstantAlpha = new boolean[_dimension];
+			final double[] constantAlpha = _constantAlpha = new double[_dimension];
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
 				if (factorFunction.isConstantIndex(index))
 				{
-					_hasConstantAlpha[i] = true;
-					_constantAlpha[i] = (Double)factorFunction.getConstantByIndex(index);
+					hasConstantAlpha[i] = true;
+					constantAlpha[i] = (Double)factorFunction.getConstantByIndex(index);
 				}
 				else
 				{
-					_hasConstantAlpha[i] = false;
+					hasConstantAlpha[i] = false;
 					int alphaEdge = factorFunction.getEdgeByIndex(index);
-					_alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+					alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
 				}
 			}
 		}
@@ -277,7 +280,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			for (int i = 0, index = _alphaParameterMinIndex; i < _dimension; i++, index++)
 			{
 				int alphaEdge = factorFunction.getEdgeByIndex(index);
-				_alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
+				alphaVariables[i] = (SRealVariable)((siblings.get(alphaEdge)).getSolver());
 			}
 		}
 
@@ -285,27 +288,23 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		// Save the output constant or variables as well
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
-		_hasConstantOutput = null;
 		if (_hasConstantOutputs)
 		{
 			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
-			_hasConstantOutput = new boolean[_dimension];
-			_constantOutputCounts = new int[numConstantOutputs];
+			final int[] constantOutputCounts = _constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				if (factorFunction.isConstantIndex(index))
 				{
-					_hasConstantOutput[i] = true;
-					_constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
+					constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
 				}
 				else
 				{
-					_hasConstantOutput[i] = false;
 					int outputEdge = factorFunction.getEdgeByIndex(index);
-					_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+					outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 				}
 			}
 		}
@@ -314,7 +313,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
-				_outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
+				outputVariables[i] = (SDiscreteVariable)((siblings.get(outputEdge)).getSolver());
 			}
 		}
 	}
@@ -325,18 +324,20 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		if (_alphaParameterMinEdge >= 0)
 			for (int port = _alphaParameterMinEdge; port <= _alphaParameterMaxEdge; port++)	// Only parameter edges
-				_outputMsgs[port] = new GammaParameters();
+				outputMsgs[port] = new GammaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

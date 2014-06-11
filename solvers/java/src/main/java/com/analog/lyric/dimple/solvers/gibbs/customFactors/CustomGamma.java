@@ -32,13 +32,14 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SRealVariable[] _outputVariables;
-	private SRealVariable _alphaVariable;
-	private SRealVariable _betaVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SRealVariable[] _outputVariables;
+	private @Nullable SRealVariable _alphaVariable;
+	private @Nullable SRealVariable _betaVariable;
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
 	private boolean _hasConstantOutputs;
@@ -62,6 +63,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -204,9 +206,9 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 		_numOutputEdges = _numPorts - _numParameterEdges;
 		
 		// Save output variables
-		_outputVariables = new SRealVariable[_numOutputEdges];
+		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+			outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 	
@@ -215,18 +217,20 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 			if (port != _alphaParameterPort)
-				_outputMsgs[port] = new GammaParameters();
+				outputMsgs[port] = new GammaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

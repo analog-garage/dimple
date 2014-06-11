@@ -34,13 +34,14 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSa
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.NormalSampler;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SRealVariable[] _outputVariables;
-	private SRealVariable _meanVariable;
-	private SRealVariable _precisionVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SRealVariable[] _outputVariables;
+	private @Nullable SRealVariable _meanVariable;
+	private @Nullable SRealVariable _precisionVariable;
 	private boolean _hasConstantMean;
 	private boolean _hasConstantPrecision;
 	private boolean _hasConstantOutputs;
@@ -65,6 +66,7 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -244,9 +246,9 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 		_numOutputEdges = _numPorts - _numParameterEdges;
 		
 		// Save output variables
-		_outputVariables = new SRealVariable[_numOutputEdges];
+		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[_numOutputEdges];
 		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+			outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
 	}
 	
 
@@ -255,20 +257,22 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 			if (port == _precisionParameterPort)
-				_outputMsgs[port] = new GammaParameters();
+				outputMsgs[port] = new GammaParameters();
 			else if (port == _meanParameterPort)
-				_outputMsgs[port] = new NormalParameters();
+				outputMsgs[port] = new NormalParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{

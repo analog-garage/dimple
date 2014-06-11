@@ -37,7 +37,6 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverNodeGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.Solver;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class TestGibbsNeighborList
 {
@@ -246,7 +245,6 @@ public class TestGibbsNeighborList
 	 */
 	
 	// Replicates first argument to remaining args.
-	@NonNullByDefault
 	static class Copy extends FactorFunction
 	{
 		@Override

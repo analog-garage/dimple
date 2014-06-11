@@ -18,10 +18,11 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.Nullable;
 
 public interface IProposalKernel
 {
 	public Proposal next(Value currentValue, Domain variableDomain);
 	public void setParameters(Object... parameters);
-	public Object[] getParameters();
+	public @Nullable Object[] getParameters();
 }

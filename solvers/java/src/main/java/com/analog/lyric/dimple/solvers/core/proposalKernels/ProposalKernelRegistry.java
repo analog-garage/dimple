@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.core.proposalKernels;
 
 import java.util.ArrayList;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public class ProposalKernelRegistry
 {
 	private static ArrayList<String> _packages = new ArrayList<String>();
@@ -27,7 +29,7 @@ public class ProposalKernelRegistry
 	}
 	
 	// Get a proposal kernel by name; assumes it is located in this package
-	public static IProposalKernel get(String proposalKernelName)
+	public static @Nullable IProposalKernel get(String proposalKernelName)
 	{
 		for (String s : _packages)
 		{

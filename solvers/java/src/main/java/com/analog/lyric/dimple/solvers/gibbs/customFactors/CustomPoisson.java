@@ -31,11 +31,12 @@ import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.GammaSampler;
 import com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate.IRealConjugateSamplerFactory;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 {
-	private Object[] _outputMsgs;
-	private SDiscreteVariable _outputVariable;
+	private @Nullable Object[] _outputMsgs;
+	private @Nullable SDiscreteVariable _outputVariable;
 	private int _lambdaParameterEdge;
 	private int _constantOutputValue;
 	private boolean _hasConstantOutput;
@@ -49,6 +50,7 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 		super(factor);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void updateEdgeMessage(int portNum)
 	{
@@ -143,17 +145,19 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 	{
 		super.createMessages();
 		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
-		_outputMsgs = new Object[_numPorts];
+		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		if (_lambdaParameterEdge != NO_PORT)
-			_outputMsgs[_lambdaParameterEdge] = new GammaParameters();
+			outputMsgs[_lambdaParameterEdge] = new GammaParameters();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public Object getOutputMsg(int portIndex)
 	{
 		return _outputMsgs[portIndex];
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void moveMessages(@NonNull ISolverNode other, int thisPortNum, int otherPortNum)
 	{
