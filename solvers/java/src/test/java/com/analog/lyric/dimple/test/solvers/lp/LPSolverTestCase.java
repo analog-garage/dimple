@@ -40,12 +40,13 @@ import com.analog.lyric.dimple.solvers.lp.SFactorGraph;
 import com.analog.lyric.dimple.solvers.lp.STableFactor;
 import com.analog.lyric.dimple.solvers.lp.SVariable;
 import com.analog.lyric.dimple.solvers.lp.Solver;
+import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.Unchecked;
 
 public class LPSolverTestCase
 {
 	public final FactorGraph model;
-	public String[] expectedConstraints = null;
+	public @Nullable String[] expectedConstraints = null;
 
 	public final SFactorGraph solver;
 	
@@ -261,19 +262,19 @@ public class LPSolverTestCase
 			assertFalse(termIter.advance());
 		}
 		
-		
-		if (expectedConstraints != null)
+		final String[] expectedConstraints2 = expectedConstraints;
+		if (expectedConstraints2 != null)
 		{
 			Iterator<IntegerEquation> constraintIter = constraints.iterator();
-			assertEquals(expectedConstraints.length, solver.getNumberOfConstraints());
-			for (int i = 0, end = expectedConstraints.length; i < end; ++i)
+			assertEquals(expectedConstraints2.length, solver.getNumberOfConstraints());
+			for (int i = 0, end = expectedConstraints2.length; i < end; ++i)
 			{
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				IntegerEquation constraint = constraintIter.next();
 				constraint.print(new PrintStream(out));
 				String actual = out.toString().trim();
 
-				String expected = expectedConstraints[i].trim();
+				String expected = expectedConstraints2[i].trim();
 
 				if (!expected.equals(actual))
 				{

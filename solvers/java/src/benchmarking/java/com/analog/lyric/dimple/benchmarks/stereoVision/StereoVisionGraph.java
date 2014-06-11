@@ -22,7 +22,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class StereoVisionGraph
 {
@@ -125,7 +124,6 @@ public class StereoVisionGraph
 		return result;
 	}
 
-	@NonNullByDefault
 	private static class rho_p extends FactorFunction
 	{
 		@Override

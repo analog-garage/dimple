@@ -29,11 +29,12 @@ import com.analog.lyric.dimple.model.core.Model;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.util.misc.Nullable;
 
 
 public class FiniteFieldTest {
 
-	static IFactorGraphFactory<?> _oldSolver;
+	static @Nullable IFactorGraphFactory<?> _oldSolver;
 	
 	@BeforeClass
 	public static void setUpBeforeClass()  {

@@ -30,14 +30,12 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.minsum.MinSumSolver;
 import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
 import com.analog.lyric.dimple.test.solvers.core.TestMessageUpdateEventHandler;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 /**
  * 
  * @since 0.06
  * @author Christopher Barber
  */
-@NonNullByDefault
 public class TestMinSumMessageEvents
 {
 	private final Random _rand = new Random(42);

@@ -50,7 +50,6 @@ import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -60,7 +59,6 @@ import com.google.common.collect.Iterators;
  * @since 0.06
  * @author Christopher Barber
  */
-@NonNullByDefault
 public class TestDimpleEventListener
 {
 

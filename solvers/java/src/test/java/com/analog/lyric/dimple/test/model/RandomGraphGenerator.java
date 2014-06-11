@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.ObjectArrays;
 
 /**
@@ -70,7 +71,7 @@ public class RandomGraphGenerator
 		return _domains;
 	}
 	
-	public RandomGraphGenerator domains(DiscreteDomain ... domains)
+	public RandomGraphGenerator domains(@Nullable DiscreteDomain ... domains)
 	{
 		_domains = (domains != null && domains.length > 0) ? domains : _defaultDomains;
 		return this;
@@ -376,7 +377,7 @@ public class RandomGraphGenerator
 		return newDiscrete(name + counter);
 	}
 	
-	public Discrete newDiscrete(String name)
+	public Discrete newDiscrete(@Nullable String name)
 	{
 		return newDiscrete(chooseDomain(), name);
 	}
@@ -386,7 +387,7 @@ public class RandomGraphGenerator
 		return newDiscrete(DiscreteDomain.range(1, cardinality), name);
 	}
 	
-	public Discrete newDiscrete(DiscreteDomain domain, String name)
+	public Discrete newDiscrete(DiscreteDomain domain, @Nullable String name)
 	{
 		Discrete var = new Discrete(domain);
 		if (name == null || name.isEmpty())

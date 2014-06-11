@@ -17,7 +17,10 @@
 package com.analog.lyric.dimple.test;
 
 
-import static org.junit.Assert.assertTrue;
+import static java.util.Objects.*;
+import static org.junit.Assert.*;
+
+import java.util.Objects;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,6 +34,7 @@ import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
+import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.Helpers;
 
 public class FactorGraphDiffsTest {
@@ -52,11 +56,11 @@ public class FactorGraphDiffsTest {
 	public void tearDown()  {
 	}
 	
-	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean expectedResult, String tag)
+	FactorGraphDiffs check(@Nullable FactorGraph a, FactorGraph b, boolean expectedResult, String tag)
 	{
 		return check(a, b, expectedResult, true, tag, false);
 	}
-	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint)
+	FactorGraphDiffs check(@Nullable FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint)
 	{
 		FactorGraphDiffs diffs = null;
 		try
@@ -123,8 +127,8 @@ public class FactorGraphDiffsTest {
 	public void checkNameChange( INameable n,
 			 FactorGraph g1,
 			 FactorGraph g2,
-			 FactorGraph pg1,
-			 FactorGraph pg2)
+			 @Nullable FactorGraph pg1,
+			 @Nullable FactorGraph pg2)
 	{
 		checkNameChange(n,
 				 null,
@@ -133,12 +137,12 @@ public class FactorGraphDiffsTest {
 				 pg1,
 				 pg2);
 	}
-	public void checkNameChange( INameable n,
-								 INameable n2,
+	public void checkNameChange( @Nullable INameable n,
+								 @Nullable INameable n2,
 								 FactorGraph g1,
 								 FactorGraph g2,
-								 FactorGraph pg1,
-								 FactorGraph pg2)
+								 @Nullable FactorGraph pg1,
+								 @Nullable FactorGraph pg2)
 	{
 		String oldName = n.getName();
 		n.setName("x");
@@ -156,7 +160,7 @@ public class FactorGraphDiffsTest {
 
 		if(pg1 != null)
 		{
-			diffs = pg1.getFactorGraphDiffsByName(pg2);
+			diffs = pg1.getFactorGraphDiffsByName(Objects.requireNonNull(pg2));
 			diffs.toString();
 			assertTrue(!diffs.noDiffs());
 		}
@@ -170,7 +174,7 @@ public class FactorGraphDiffsTest {
 	
 			if(pg1 != null)
 			{
-				diffs = pg1.getFactorGraphDiffsByName(pg2);
+				diffs = pg1.getFactorGraphDiffsByName(Objects.requireNonNull(pg2));
 				diffs.toString();
 				assertTrue(!diffs.noDiffs());
 			}
@@ -181,7 +185,7 @@ public class FactorGraphDiffsTest {
 		assertTrue(diffs.noDiffs());
 		if(pg1 != null)
 		{
-			diffs = pg1.getFactorGraphDiffsByName(pg2);
+			diffs = pg1.getFactorGraphDiffsByName(Objects.requireNonNull(pg2));
 			assertTrue(diffs.noDiffs());
 		}
 	}
@@ -250,7 +254,8 @@ public class FactorGraphDiffsTest {
 		assertTrue(diffs.noDiffs());
 	}
 
-	public void leaf_connectivity(FactorGraph fgLeaf1, FactorGraph fgLeaf2, Discrete vB1, Discrete vB2)
+	public void leaf_connectivity(@Nullable FactorGraph fgLeaf1, FactorGraph fgLeaf2,
+		@Nullable Discrete vB1, @Nullable Discrete vB2)
 	{
 		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 1");
 		check(fgLeaf1.copyRoot(), fgLeaf2.copyRoot(), true, "leaf_connectivity 1 root");
@@ -365,7 +370,6 @@ public class FactorGraphDiffsTest {
 		
 	}
 	
-	
 	public void mid_connectivity(FactorGraph fgMid1,
 								 FactorGraph fgMid2,
 								 Discrete vB1,
@@ -374,7 +378,7 @@ public class FactorGraphDiffsTest {
 								 String leafName)
 	{
 		FactorGraph fgLeaf1 = (FactorGraph)fgMid1.getObjectByName(leafName);
-		FactorGraph fgLeaf2 = (FactorGraph)fgMid2.getObjectByName(leafName);
+		FactorGraph fgLeaf2 = requireNonNull((FactorGraph)fgMid2.getObjectByName(leafName));
 		leaf_connectivity(fgLeaf1,
 						  fgLeaf2,
 						  (Discrete) fgMid1.getObjectByName(boundaryName),
@@ -414,8 +418,8 @@ public class FactorGraphDiffsTest {
 
 		mid_connectivity(fgMid1,
 						 fgMid2,
-						 (Discrete)fgMid1.getObjectByName("vMidB1"),
-						 (Discrete)fgMid2.getObjectByName("vMidB1"),
+						 requireNonNull((Discrete)fgMid1.getObjectByName("vMidB1")),
+						 requireNonNull((Discrete)fgMid2.getObjectByName("vMidB1")),
 						 "vMidO2",
 						 "Leaf");
 		
@@ -437,13 +441,13 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgRoot1 = fgs1[0];
 		FactorGraph fgRoot2 = fgs2[0];
 		
-		FactorGraph fgMid1 = (FactorGraph)fgRoot1.getObjectByName("Mid");
-		FactorGraph fgMid2 = (FactorGraph)fgRoot2.getObjectByName("Mid");
+		FactorGraph fgMid1 = requireNonNull((FactorGraph)fgRoot1.getObjectByName("Mid"));
+		FactorGraph fgMid2 = requireNonNull((FactorGraph)fgRoot2.getObjectByName("Mid"));
 		
 		String boundaryName = "vRootO2";
 		mid_connectivity(fgMid1, fgMid2,
-						  (Discrete) fgRoot1.getObjectByName(boundaryName),
-						  (Discrete) fgRoot2.getObjectByName(boundaryName),
+						  requireNonNull((Discrete) fgRoot1.getObjectByName(boundaryName)),
+						  requireNonNull((Discrete) fgRoot2.getObjectByName(boundaryName)),
 						  "vMidO2",
 						  "Leaf");
 		
@@ -454,8 +458,8 @@ public class FactorGraphDiffsTest {
 
 		String leafName = "Mid.Leaf";
 		boundaryName = "Mid.vMidO2";
-		FactorGraph fgLeaf1 = (FactorGraph)fgRoot1.getObjectByName(leafName);
-		FactorGraph fgLeaf2 = (FactorGraph)fgRoot2.getObjectByName(leafName);
+		FactorGraph fgLeaf1 = requireNonNull((FactorGraph)fgRoot1.getObjectByName(leafName));
+		FactorGraph fgLeaf2 = requireNonNull((FactorGraph)fgRoot2.getObjectByName(leafName));
 		Discrete vB1 = (Discrete)fgRoot1.getObjectByName(boundaryName);
 		Discrete vB2 = (Discrete)fgRoot2.getObjectByName(boundaryName);
 		leaf_connectivity(fgLeaf1,
@@ -465,8 +469,8 @@ public class FactorGraphDiffsTest {
 
 		leafName = "Mid";
 		boundaryName = "vRootO2";
-		fgMid1 = (FactorGraph)fgRoot1.getObjectByName(leafName);
-		fgMid2 = (FactorGraph)fgRoot2.getObjectByName(leafName);
+		fgMid1 = requireNonNull((FactorGraph)fgRoot1.getObjectByName(leafName));
+		fgMid2 = requireNonNull((FactorGraph)fgRoot2.getObjectByName(leafName));
 		vB1 = (Discrete)fgRoot1.getObjectByName(boundaryName);
 		vB2 = (Discrete)fgRoot2.getObjectByName(boundaryName);
 		leaf_connectivity(fgMid1,
@@ -503,13 +507,13 @@ public class FactorGraphDiffsTest {
 		FactorGraph fgRoot1 		= fgs1[0];
 		FactorGraph fgRoot2 		= fgs2[0];
 		
-		FactorGraph fgMid1Leaf 		= (FactorGraph) fgMid1.getObjectByName("Leaf");
-		FactorGraph fgMid2Leaf 		= (FactorGraph) fgMid2.getObjectByName("Leaf");
-		FactorGraph fgRoot1Mid 		= (FactorGraph) fgRoot1.getObjectByName("Mid");
+		FactorGraph fgMid1Leaf 		= requireNonNull((FactorGraph) fgMid1.getObjectByName("Leaf"));
+		FactorGraph fgMid2Leaf 		= requireNonNull((FactorGraph) fgMid2.getObjectByName("Leaf"));
+		FactorGraph fgRoot1Mid 		= requireNonNull((FactorGraph) fgRoot1.getObjectByName("Mid"));
 		//FactorGraph fgRoot2Mid 		= (FactorGraph) fgRoot2.getObjectByName("Mid");
-		FactorGraph fgRoot1Leaf 	= (FactorGraph) fgRoot1.getObjectByName("Mid.Leaf");
+		FactorGraph fgRoot1Leaf 	= requireNonNull((FactorGraph) fgRoot1.getObjectByName("Mid.Leaf"));
 		//FactorGraph fgRoot2Leaf 	= (FactorGraph) fgRoot2.getObjectByName("Mid.Leaf");
-		FactorGraph fgRoot1MidLeaf 	= (FactorGraph) fgRoot1Mid.getObjectByName("Leaf");
+		FactorGraph fgRoot1MidLeaf 	= requireNonNull((FactorGraph) fgRoot1Mid.getObjectByName("Leaf"));
 		//FactorGraph fgRoot2MidLeaf 	= (FactorGraph) fgRoot2Mid.getObjectByName("Leaf");
 		
 		check(fgLeaf1, 	fgMid1Leaf, 	false, 	"3compare 1");
@@ -518,22 +522,22 @@ public class FactorGraphDiffsTest {
 		check(fgMid1, 	fgRoot1Mid, 	false, 	"3compare 2");
 		check(fgRoot1Leaf, 	fgRoot1MidLeaf, 	true, 	"3compare 2");
 			
-		Factor fRoot = (Factor) fgRoot1.getObjectByName("fRoot");
-		Factor fMid = (Factor) fgMid1.getObjectByName("fMid");
-		Factor fMidLeaf = (Factor) fgMid1.getObjectByName("Mid.Leaf.fLeaf");
-		Factor fLeaf = (Factor) fgMid1Leaf.getObjectByName("fLeaf");
+		Factor fRoot = requireNonNull((Factor) fgRoot1.getObjectByName("fRoot"));
+		Factor fMid = requireNonNull((Factor) fgMid1.getObjectByName("fMid"));
+		Factor fMidLeaf = requireNonNull((Factor) fgMid1.getObjectByName("Mid.Leaf.fLeaf"));
+		Factor fLeaf = requireNonNull((Factor) fgMid1Leaf.getObjectByName("fLeaf"));
 		
-		Discrete vMidB1 = (Discrete) fgMid1.getObjectByName("vMidB1");
-		Discrete vMidO1 = (Discrete) fgMid1.getObjectByName("vMidO1");
+		Discrete vMidB1 = requireNonNull((Discrete) fgMid1.getObjectByName("vMidB1"));
+		Discrete vMidO1 = requireNonNull((Discrete) fgMid1.getObjectByName("vMidO1"));
 		Discrete vMidO2 = (Discrete) fgMid1.getObjectByName("vMidO2");
 
 		Discrete vRootB1 = (Discrete) fgRoot1.getObjectByName("vRootB1");
 		Discrete vRootO1 = (Discrete) fgRoot1.getObjectByName("vRootO1");
 		Discrete vRootO2 = (Discrete) fgRoot1.getObjectByName("vRootO2");
 		
-		Discrete vMidLeafO1 = (Discrete) fgMid1.getObjectByName("Mid.Leaf.vLeafO1");
+		Discrete vMidLeafO1 = requireNonNull((Discrete) fgMid1.getObjectByName("Mid.Leaf.vLeafO1"));
 		Discrete vMidLeafO2 = (Discrete) fgMid1.getObjectByName("Mid.Leaf.vLeafO2");
-		Discrete vLeafO1 = (Discrete) fgMid1Leaf.getObjectByName("vLeafO1");
+		Discrete vLeafO1 = requireNonNull((Discrete) fgMid1Leaf.getObjectByName("vLeafO1"));
 		Discrete vLeafO2 = (Discrete) fgMid1Leaf.getObjectByName("vLeafO2");
 		
 		checkNameChange(fMid,
@@ -574,19 +578,19 @@ public class FactorGraphDiffsTest {
 				fgMid1Leaf, fgMid2Leaf,
 				fgMid1, fgMid2);
 
-		fRoot = (Factor) fgRoot1.getObjectByName("fRoot");
-		fMid = (Factor) fgRoot1.getObjectByName("Mid.fMid");
-		fLeaf = (Factor) fgRoot1.getObjectByName("Mid.Leaf.fLeaf");
+		fRoot = requireNonNull((Factor) fgRoot1.getObjectByName("fRoot"));
+		fMid = requireNonNull((Factor) fgRoot1.getObjectByName("Mid.fMid"));
+		fLeaf = requireNonNull((Factor) fgRoot1.getObjectByName("Mid.Leaf.fLeaf"));
 		
-		vRootB1 = (Discrete) fgRoot1.getObjectByName("vRootB1");
-		vRootO1 = (Discrete) fgRoot1.getObjectByName("vRootO1");
-		vRootO2 = (Discrete) fgRoot1.getObjectByName("vRootO2");
+		vRootB1 = requireNonNull((Discrete) fgRoot1.getObjectByName("vRootB1"));
+		vRootO1 = requireNonNull((Discrete) fgRoot1.getObjectByName("vRootO1"));
+		vRootO2 = requireNonNull((Discrete) fgRoot1.getObjectByName("vRootO2"));
 
-		vMidO1 = (Discrete) fgRoot1.getObjectByName("Mid.vMidO1");
-		vMidO2 = (Discrete) fgRoot1.getObjectByName("Mid.vMidO2");
+		vMidO1 = requireNonNull((Discrete) fgRoot1.getObjectByName("Mid.vMidO1"));
+		vMidO2 = requireNonNull((Discrete) fgRoot1.getObjectByName("Mid.vMidO2"));
 		
-		vLeafO1 = (Discrete) fgRoot1.getObjectByName("Mid.Leaf.vLeafO1");
-		vLeafO2 = (Discrete) fgRoot1.getObjectByName("Mid.Leaf.vLeafO2");
+		vLeafO1 = requireNonNull((Discrete) fgRoot1.getObjectByName("Mid.Leaf.vLeafO1"));
+		vLeafO2 = requireNonNull((Discrete) fgRoot1.getObjectByName("Mid.Leaf.vLeafO2"));
 
 		checkNameChange(fgRoot1, 	fgRoot1, fgRoot2, null, null);
 		checkNameChange(fgRoot1Mid, fgRoot1, fgRoot2, null, null);

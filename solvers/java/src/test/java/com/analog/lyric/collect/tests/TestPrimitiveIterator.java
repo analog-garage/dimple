@@ -40,6 +40,7 @@ import com.analog.lyric.collect.LongArrayIterable;
 import com.analog.lyric.collect.LongArrayIterator;
 import com.analog.lyric.collect.PrimitiveIterable;
 import com.analog.lyric.collect.PrimitiveIterator;
+import com.analog.lyric.util.misc.Nullable;
 
 public class TestPrimitiveIterator
 {
@@ -117,7 +118,7 @@ public class TestPrimitiveIterator
 		// Test AbstractPrimitiveArrayIterator
 		PrimitiveIterator<Double> emptyIter = new AbstractPrimitiveArrayIterator<Double>(0, 0) {
 				@Override
-				public Double next()
+				public @Nullable Double next()
 				{
 					nextIndex();
 					return null;

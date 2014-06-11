@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterables;
 
 /**
@@ -139,7 +140,7 @@ public class JointIndexer
 
 	private class CoordinatesIterator implements Iterator<int[]>
 	{
-		private int[] _current;
+		private @Nullable int[] _current;
 
 		private final List<Iterator<Integer>> _iterators;
 
@@ -171,15 +172,16 @@ public class JointIndexer
 		public int[] next()
 		{
 			final int dimensions = getDimensionsCount();
-			if (_current == null)
+			int[] current = _current;
+			if (current == null)
 			{
-				_current = new int[dimensions];
+				current = _current = new int[dimensions];
 				for (int i = dimensions - 1; i >= 0; i--)
 				{
 					final Iterator<Integer> it = _iterators.get(i);
 					if (it.hasNext())
 					{
-						_current[i] = it.next();
+						current[i] = it.next();
 					}
 				}
 			}
@@ -190,14 +192,14 @@ public class JointIndexer
 					final Iterator<Integer> it = _iterators.get(i);
 					if (it.hasNext())
 					{
-						_current[i] = it.next();
+						current[i] = it.next();
 						for (int j = i + 1; j < dimensions; j++)
 						{
 							final Iterator<Integer> it_j = _indexers.get(j).iterator();
 							_iterators.set(j, it_j);
 							if (it_j.hasNext())
 							{
-								_current[j] = it_j.next();
+								current[j] = it_j.next();
 							}
 							else
 							{
@@ -209,7 +211,7 @@ public class JointIndexer
 				}
 
 			}
-			return _current.clone();
+			return current.clone();
 		}
 
 		@Override

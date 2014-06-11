@@ -31,11 +31,11 @@ public class Dataset
 
 	public Dataset(String name) throws IOException
 	{
-		setName(name);
+		_name = name;
 		URL urlImageL = this.getClass().getResource(String.format("datasets/%s/imageL.png", name));
 		URL urlImageR = this.getClass().getResource(String.format("datasets/%s/imageR.png", name));
-		setImageL(Image.loadImage(urlImageL));
-		setImageR(Image.loadImage(urlImageR));
+		_imageL = Image.loadImage(urlImageL);
+		_imageR = Image.loadImage(urlImageR);
 		if (!Arrays.equals(getImageL().getDimensions(), getImageR().getDimensions()))
 		{
 			throw new IllegalArgumentException(

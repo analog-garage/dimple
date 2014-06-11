@@ -26,6 +26,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.NonNullByDefault;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * An extension of {@link CopyOnWriteMap} for delegating to a {@link ConcurrentMap}.
@@ -74,7 +75,7 @@ public class CopyOnWriteConcurrentMap<K, V> extends CopyOnWriteMap<K,V> implemen
 	 * {@link #wasCopied()} will be true after invoking this.
 	 */
 	@Override
-	public V replace(K key, V value)
+	public @Nullable V replace(K key, V value)
 	{
 		return mutableMap().replace(key,  value);
 	}

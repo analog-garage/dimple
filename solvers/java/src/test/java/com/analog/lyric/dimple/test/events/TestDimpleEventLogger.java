@@ -36,7 +36,6 @@ import com.analog.lyric.dimple.model.core.FactorAddEvent;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.io.Files;
 
@@ -198,7 +197,6 @@ public class TestDimpleEventLogger
 		assertSame(listener, fg2.getEventListener());
 	}
 	
-	@NonNullByDefault
 	private static class TestEvent extends DimpleEvent
 	{
 		private static final long serialVersionUID = 1L;

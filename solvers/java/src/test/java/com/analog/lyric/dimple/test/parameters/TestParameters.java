@@ -34,14 +34,12 @@ import com.analog.lyric.dimple.parameters.ParameterList2;
 import com.analog.lyric.dimple.parameters.ParameterListN;
 import com.analog.lyric.dimple.parameters.SharedParameterValue;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.google.common.util.concurrent.AtomicDoubleArray;
 
-@NonNullByDefault
 public class TestParameters
 {
 	/*---------------

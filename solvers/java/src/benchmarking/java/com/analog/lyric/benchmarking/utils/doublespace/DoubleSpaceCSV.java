@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.analog.lyric.util.misc.Nullable;
+
 public class DoubleSpaceCSV
 {
 
@@ -34,7 +36,7 @@ public class DoubleSpaceCSV
 	 * @return The constructed 2-dimensional DoubleSpace.
 	 * @throws IOException
 	 */
-	public static DoubleSpace loadCSV(InputStream is) throws IOException
+	public static @Nullable DoubleSpace loadCSV(InputStream is) throws IOException
 	{
 		final BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		String line;

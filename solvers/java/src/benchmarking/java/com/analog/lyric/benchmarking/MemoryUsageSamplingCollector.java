@@ -153,13 +153,10 @@ public class MemoryUsageSamplingCollector implements DataCollector
 	private long getMemoryUsage()
 	{
 		long result = 0;
-		if (_memoryPools != null)
+		for (MemoryPoolMXBean memoryPool : _memoryPools)
 		{
-			for (MemoryPoolMXBean memoryPool : _memoryPools)
-			{
-				long poolUsage = memoryPool.getUsage().getUsed();
-				result += poolUsage;
-			}
+			long poolUsage = memoryPool.getUsage().getUsed();
+			result += poolUsage;
 		}
 		return result;
 	}

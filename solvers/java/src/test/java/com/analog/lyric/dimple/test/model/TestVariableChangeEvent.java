@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableFixedValueChangeEvent;
 import com.analog.lyric.dimple.model.variables.VariableInputChangeEvent;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Test for {@link VariableChangeEvent}s on {@link VariableBase}.
@@ -184,7 +185,8 @@ public class TestVariableChangeEvent
 			_events.add(event);
 		}
 		
-		void assertEvent(VariableBase var, VariableFixedValueChangeEvent.Type type, Object oldValue, Object newValue)
+		void assertEvent(VariableBase var, VariableFixedValueChangeEvent.Type type,
+			@Nullable Object oldValue, @Nullable Object newValue)
 		{
 			VariableFixedValueChangeEvent event = _events.poll();
 			assertNotNull(event);
@@ -228,7 +230,8 @@ public class TestVariableChangeEvent
 			_events.add(event);
 		}
 		
-		void assertEvent(VariableBase var, VariableInputChangeEvent.Type type, Object oldInput, Object newInput)
+		void assertEvent(VariableBase var, VariableInputChangeEvent.Type type,
+			@Nullable Object oldInput, @Nullable Object newInput)
 		{
 			VariableInputChangeEvent event = _events.poll();
 			assertNotNull(event);

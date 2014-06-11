@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.model;
 
 import static com.analog.lyric.math.Utilities.*;
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -82,16 +83,16 @@ public class TestJointDomainIndexer
 		
 		DomainList<?> dl2by2 = DomainList.create(new Domain[] { d2, d2 });
 		assertTrue(dl2by2.isDiscrete());
-		testInvariants(dl2by2.asJointDomainIndexer());
+		testInvariants(requireNonNull(dl2by2.asJointDomainIndexer()));
 		
 		// Test concat
 		assertSame(dl2, JointDomainIndexer.concat(dl2, null));
 		assertSame(dl2, JointDomainIndexer.concat(null, dl2));
-		JointDomainIndexer dl2by2a = JointDomainIndexer.concat(dl2, dl2);
+		JointDomainIndexer dl2by2a = requireNonNull(JointDomainIndexer.concat(dl2, dl2));
 		testInvariants(dl2by2a);
 		assertEquals(dl2by2, dl2by2a);
 		
-		JointDomainIndexer dlfoo = JointDomainIndexer.concat(dl2to3, dl2from3);
+		JointDomainIndexer dlfoo = requireNonNull(JointDomainIndexer.concat(dl2to3, dl2from3));
 		testInvariants(dlfoo);
 		assertTrue(dlfoo.isDirected());
 		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputDomainIndices());

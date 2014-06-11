@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INameable;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.Nullable;
 
 public class NamesTest {
 
@@ -52,9 +53,9 @@ public class NamesTest {
 	public void tearDown()  {
 	}
 
-	public void testObjectName(	INameable nameable, 
-								String expectedName, 
-								String expectedExplicitName,
+	public void testObjectName(	INameable nameable,
+								String expectedName,
+								@Nullable String expectedExplicitName,
 								String expectedQualifiedName)
 	{
 		UUID uuidGot = nameable.getUUID();
@@ -74,15 +75,15 @@ public class NamesTest {
 		assertTrue(qualifiedNameGot.equals(expectedQualifiedName));
 		//no guarantee on what these are, they should just be something
 		assertTrue(nameable.getLabel().length() != 0);
-		assertTrue(nameable.getQualifiedLabel().length() != 0);		
+		assertTrue(nameable.getQualifiedLabel().length() != 0);
 	}
 	
 	@Test
-	public void test_names() 
+	public void test_names()
 	{
-		//Here we are only testing that 
-		//name functions pass through to solver correctly, 
-		//not their functionality, which is 
+		//Here we are only testing that
+		//name functions pass through to solver correctly,
+		//not their functionality, which is
 		//tested in solver's names test
 		
 		Discrete v1 = new Discrete(0.0, 1.0);
@@ -93,9 +94,9 @@ public class NamesTest {
 		FactorGraph fg = new FactorGraph();
 		testObjectName(fg, fg.getUUID().toString(), null, fg.getUUID().toString());
 		assertTrue(fg.toString().length() != 0);
-		assertTrue(fg.getNodeString().length() != 0);		
+		assertTrue(fg.getNodeString().length() != 0);
 		assertTrue(fg.getAdjacencyString().length() != 0);
-		assertTrue(fg.getFullString().length() != 0);		
+		assertTrue(fg.getFullString().length() != 0);
 		
 		Factor f = fg.addFactor(new XorDelta(), v1, v2);
 
@@ -113,7 +114,7 @@ public class NamesTest {
 		testObjectName(v1, "v1", "v1", "fg.v1");
 		testObjectName(v2, "v2", "v2", "fg.v2");
 	}
-	public void test_parentGraphNameStuff() 
+	public void test_parentGraphNameStuff()
 	{
 		//3 new variables
 		int[] variableIds = new int[]
@@ -156,12 +157,12 @@ public class NamesTest {
 			Discrete vFoundUUID = (Discrete) fg.getObjectByUUID(variables[i].getUUID());
 			assertTrue(vNotFound == null);
 			assertTrue(vFound == variables[i]);
-			assertTrue(vFoundUUID == variables[i]);			
+			assertTrue(vFoundUUID == variables[i]);
 		}
 		
 		
 		//verify can add name
-		//also test qualified names		
+		//also test qualified names
 		String fgNameSet = "fgName";
 		fg.setName(fgNameSet);
 		assertTrue(fg.getName().equals(fgNameSet));
@@ -184,11 +185,11 @@ public class NamesTest {
 		String VariableName = "vName";
 		for(int i = 0; i < variableIds.length; ++i)
 		{
-			String VariableBaseName = VariableName + Integer.toString(i); 
-			variables[i].setName(VariableBaseName);	
+			String VariableBaseName = VariableName + Integer.toString(i);
+			variables[i].setName(VariableBaseName);
 			assertTrue(variables[i].getName().equals(VariableBaseName));
 			String qualifiedName = fg.getName() + "." + VariableBaseName;
-			String variableQualifiedName = variables[i].getQualifiedName(); 
+			String variableQualifiedName = variables[i].getQualifiedName();
 			assertTrue(variableQualifiedName.equals(qualifiedName));
 			
 			Discrete vNotFound = (Discrete) fg.getObjectByName(variables[i].getUUID().toString());
@@ -196,7 +197,7 @@ public class NamesTest {
 			Discrete vFoundQualified = (Discrete) fg.getObjectByName(variables[i].getQualifiedName());
 			assertTrue(vNotFound == null);
 			assertTrue(vFound == variables[i]);
-			assertTrue(vFoundQualified == variables[i]);						
+			assertTrue(vFoundQualified == variables[i]);
 		}
 		
 		//invalid names
@@ -262,11 +263,11 @@ public class NamesTest {
 		Discrete vFoundUUID = (Discrete) fg.getObjectByUUID(variables[0].getUUID());
 		assertTrue(vNotFound == null);
 		assertTrue(vFound == variables[0]);
-		assertTrue(vFoundUUID == variables[0]);			
-	}		
+		assertTrue(vFoundUUID == variables[0]);
+	}
 
 	@Test
-	public void test_SearchByUUID() 
+	public void test_SearchByUUID()
 	{
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
 		Discrete vRootO1 = new Discrete(0.0, 1.0);
@@ -280,7 +281,7 @@ public class NamesTest {
 		Discrete vLeafO1 = new Discrete(0.0, 1.0);
 		Discrete vLeafO2 = new Discrete(0.0, 1.0);
 
-		FactorGraph fgRoot = new FactorGraph(vRootB1); 
+		FactorGraph fgRoot = new FactorGraph(vRootB1);
 		FactorGraph fgMid  = new FactorGraph(vMidB1);
 		FactorGraph fgLeaf = new FactorGraph(vLeafB1);
 
@@ -306,7 +307,7 @@ public class NamesTest {
 		fgLeaf.setName("Leaf");
 							
 		//One sub graph
-		fgMid.addGraph(fgLeaf, new Discrete[]{vMidO2});		
+		fgMid.addGraph(fgLeaf, new Discrete[]{vMidO2});
 		
 		//Two sub graphs
 		fgRoot.addGraph(fgMid, new Discrete[]{vRootO2});
@@ -367,7 +368,7 @@ public class NamesTest {
 	}
 
 	@Test
-	public void test_NameNestingStuff() 
+	public void test_NameNestingStuff()
 	{
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
 		Discrete vRootO1 = new Discrete(0.0, 1.0);
@@ -381,7 +382,7 @@ public class NamesTest {
 		Discrete vLeafO1 = new Discrete(0.0, 1.0);
 		Discrete vLeafO2 = new Discrete(0.0, 1.0);
 
-		FactorGraph fgRoot = new FactorGraph(vRootB1); 
+		FactorGraph fgRoot = new FactorGraph(vRootB1);
 		FactorGraph fgMid  = new FactorGraph(vMidB1);
 		FactorGraph fgLeaf = new FactorGraph(vLeafB1);
 		
@@ -485,8 +486,8 @@ public class NamesTest {
 		vLeafO1 = (Discrete) fgLeaf.getObjectByName("vLeafO1");
 		vLeafO2 = (Discrete) fgLeaf.getObjectByName("vLeafO2");
 		fLeaf = (Factor) fgLeaf.getObjectByName("fLeaf");
-		assertTrue(vLeafB1 == null && 
-				   vLeafO1 != null && 
+		assertTrue(vLeafB1 == null &&
+				   vLeafO1 != null &&
 				   vLeafO2 != null &&
 				   fLeaf != null);
 		vLeafB1 = (Discrete) fgMid.getObjectByName("Mid.vMidO2");
@@ -518,8 +519,8 @@ public class NamesTest {
 		assertTrue(((Discrete)fgRoot.getObjectByName("vRootO1")).getUUID() == vRootO1.getUUID());
 		assertTrue(((Discrete)fgRoot.getObjectByName("vRootO2")).getUUID() == vRootO2.getUUID());
 		
-		assertTrue(fgMid != null && 
-				   fgLeaf != null && 
+		assertTrue(fgMid != null &&
+				   fgLeaf != null &&
 				   vMidB1 != null &&
 				   vMidO1 != null &&
 				   vMidO2 != null &&
@@ -582,10 +583,10 @@ public class NamesTest {
 		Discrete vRootO3 = new Discrete(0.0, 1.0);
 		Discrete vRootO4 = new Discrete(0.0, 1.0);
 		vRootO3.setName("vRootO3");
-		vRootO4.setName("vRootO4");		
+		vRootO4.setName("vRootO4");
 		
 		//Factor - by change name
-		Factor fRoot2 = fgRoot.addFactor(xorFF, vRootO1, vRootO3, vRootO4);		
+		Factor fRoot2 = fgRoot.addFactor(xorFF, vRootO1, vRootO3, vRootO4);
 		excepted = false;
 		try{fRoot2.setName("fRoot");}catch(Exception e){excepted = true;}
 		assertTrue(excepted);
@@ -615,7 +616,7 @@ public class NamesTest {
 
 	}
 	
-	void typeByName(FactorGraph fg, Object expected, boolean equals, String id, String type) 
+	void typeByName(FactorGraph fg, @Nullable Object expected, boolean equals, String id, String type)
 	{
 		Object got = null;
 		if(type.equals("variable"))
@@ -629,7 +630,7 @@ public class NamesTest {
 		}
 		else if(type.equals("graph"))
 		{
-			got = fg.getGraphByName(id);			
+			got = fg.getGraphByName(id);
 		}
 		if(got == null)
 		{
@@ -654,7 +655,7 @@ public class NamesTest {
 			}
 		}
 	}
-	void typeByUUID(FactorGraph fg, Object expected, boolean equals, UUID id, String type) 
+	void typeByUUID(FactorGraph fg, @Nullable Object expected, boolean equals, UUID id, String type)
 	{
 		Object got = null;
 		if(type.equals("variable"))
@@ -668,7 +669,7 @@ public class NamesTest {
 		}
 		else if(type.equals("graph"))
 		{
-			got = fg.getGraphByUUID(id);			
+			got = fg.getGraphByUUID(id);
 		}
 		if(got == null)
 		{
@@ -695,7 +696,7 @@ public class NamesTest {
 	}
 	
 	@Test
-	public void test_getObjectByType() 
+	public void test_getObjectByType()
 	{
 		Discrete variables[] = new Discrete[]
   		{
@@ -705,7 +706,7 @@ public class NamesTest {
   		};
   		//new graph
   		Discrete[] dummyVars = new Discrete[0];
-  		FactorGraph fg = new FactorGraph(dummyVars);  	
+  		FactorGraph fg = new FactorGraph(dummyVars);
   		XorDelta xorFF = new XorDelta();
   		Factor fn = fg.addFactor(xorFF, variables);
 
@@ -760,7 +761,7 @@ public class NamesTest {
 		typeByUUID(fg, fgSub, true, fgSub.getUUID(), "graph");
 	}
 	
-	public void test_getObjectByTypeMatlabProxy() 
+	public void test_getObjectByTypeMatlabProxy()
 	{
 		assertTrue(false);
 		/*
@@ -774,7 +775,7 @@ public class NamesTest {
 
 		PVariableVector variablesSub = mf.createVariableVector("PVariable",new PDiscreteDomain( new DiscreteDomain(0.0, 1.0)), 3);
 		PVariableVector dummyVarsSub = mf.createVariableVector("PVariable", new PDiscreteDomain( new DiscreteDomain(0.0, 1.0)), 1);
-  		PFactorGraph fgSub = mf.createGraph(dummyVarsSub);  	
+  		PFactorGraph fgSub = mf.createGraph(dummyVarsSub);
   		fgSub.createTableFactor(0,variablesSub,"dummy");
  		
 		fgSub = fg.addGraph(fgSub, dummyVars);
@@ -830,9 +831,9 @@ public class NamesTest {
 	}
 
 	@Test
-	public void testSetLabel() 
+	public void testSetLabel()
 	{
-		FactorGraph fg = new FactorGraph();		
+		FactorGraph fg = new FactorGraph();
 		fg.setName("fg");
 		Discrete[] discretes = new Discrete[10];
 		for(int i =0; i < discretes.length; ++i)

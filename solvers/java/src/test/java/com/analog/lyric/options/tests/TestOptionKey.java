@@ -24,7 +24,6 @@ import com.analog.lyric.options.BooleanOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.OptionKey;
-import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -33,7 +32,6 @@ public class TestOptionKey
 	public static final IOptionKey<Boolean> YES =
 		new BooleanOptionKey(TestOptionKey.class, "YES");
 	
-	@NonNullByDefault
 	public static enum Option implements IOptionKey<Object>
 	{
 		A(42),

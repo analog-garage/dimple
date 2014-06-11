@@ -26,9 +26,9 @@ import org.junit.Test;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap;
 import com.analog.lyric.dimple.model.transform.JunctionTreeTransformMap.AddedJointVariable;
-import com.analog.lyric.dimple.model.transform.JunctionTreeTransform;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.solvers.gibbs.GibbsSolver;
 import com.analog.lyric.dimple.solvers.gibbs.ISolverVariableGibbs;
 import com.analog.lyric.dimple.solvers.gibbs.SFactorGraph;
 import com.analog.lyric.util.misc.Misc;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Tests for {@link JunctionTreeTransform}
@@ -206,7 +207,7 @@ public class TestJunctionTreeTransform
 		testGraph(model, true);
 	}
 	
-	private void testGraph(FactorGraph model, Boolean expectIdentity)
+	private void testGraph(FactorGraph model, @Nullable Boolean expectIdentity)
 	{
 		try
 		{
@@ -221,7 +222,7 @@ public class TestJunctionTreeTransform
 		}
 	}
 	
-	private void testGraphImpl(FactorGraph model, Boolean expectIdentity)
+	private void testGraphImpl(FactorGraph model, @Nullable Boolean expectIdentity)
 	{
 		JunctionTreeTransform jt = new JunctionTreeTransform().random(rand);
 		assertSame(rand, jt.random());

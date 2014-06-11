@@ -26,7 +26,6 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
-import com.analog.lyric.util.misc.NonNullByDefault;
 
 
 public class FactorFunctionWithConstantTest
@@ -69,7 +68,6 @@ public class FactorFunctionWithConstantTest
 		assertTrue(Arrays.equals(d6, new int[]{1, 3, 4, 5}));
 	}
 	
-	@NonNullByDefault
 	public static class FF1 extends FactorFunction
 	{
 		@Override

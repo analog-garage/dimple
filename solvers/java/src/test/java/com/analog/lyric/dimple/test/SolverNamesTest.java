@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.model.core.NodeId;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.util.misc.Nullable;
 
 //JUnit3
 public class SolverNamesTest extends TestCase {
@@ -276,7 +277,7 @@ public class SolverNamesTest extends TestCase {
 		assertTrue(vFoundUUID == variables[0]);
 	}
 	
-	void typeByName(FactorGraph fg, Object expected, boolean equals, String id, String type)
+	void typeByName(FactorGraph fg, @Nullable Object expected, boolean equals, String id, String type)
 	{
 		Object got = null;
 		if(type.equals("variable"))
@@ -315,7 +316,7 @@ public class SolverNamesTest extends TestCase {
 			}
 		}
 	}
-	void typeByUUID(FactorGraph fg, Object expected, boolean equals, UUID id, String type)
+	void typeByUUID(FactorGraph fg, @Nullable Object expected, boolean equals, UUID id, String type)
 	{
 		Object got = null;
 		if(type.equals("variable"))
