@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 @Matlab
 public abstract class PNodeVector extends PObject
@@ -300,7 +301,7 @@ public abstract class PNodeVector extends PObject
 			_nodes[i].updateEdge(portNum);
 	}
 	
-	public ISolverNode getSolver(int index)
+	public @Nullable ISolverNode getSolver(int index)
 	{
 		Node n = getModelerNode(index);
 		return n.getSolver();

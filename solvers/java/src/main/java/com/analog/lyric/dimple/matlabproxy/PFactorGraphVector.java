@@ -50,6 +50,7 @@ import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 @Matlab
 public class PFactorGraphVector extends PFactorVector
@@ -107,7 +108,7 @@ public class PFactorGraphVector extends PFactorVector
 		return (FactorGraph)getModelerNode(0);
 	}
 	
-	public String getMatlabSolveWrapper()
+	public @Nullable String getMatlabSolveWrapper()
 	{
 		return getGraph().getSolver().getMatlabSolveWrapper();
 	}
@@ -154,7 +155,8 @@ public class PFactorGraphVector extends PFactorVector
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
 
-    	Factor f = getGraph().addFactor(new TableFactorFunction("table", factorTable.getModelerObject()),PHelpers.convertToMVariablesAndConstants(vars));
+    	Factor f = getGraph().addFactor(new TableFactorFunction("table", factorTable.getModelerObject()),
+    		PHelpers.convertToMVariablesAndConstants(vars));
     	
     	if (f.isDiscrete())
     		return new PDiscreteFactorVector((DiscreteFactor) f);
@@ -349,7 +351,7 @@ public class PFactorGraphVector extends PFactorVector
 
 	}
 	
-	public void setSolver(IFactorGraphFactory<?> solver)
+	public void setSolver(@Nullable IFactorGraphFactory<?> solver)
 	{
 		getGraph().setSolverFactory(solver);
 	}
@@ -635,7 +637,7 @@ public class PFactorGraphVector extends PFactorVector
 	}
 	
 
-	public PFactorGraphVector getParentGraph()
+	public @Nullable PFactorGraphVector getParentGraph()
 	{
 		FactorGraph mgraph = getGraph().getParentGraph();
 		if(mgraph != null)
@@ -649,7 +651,7 @@ public class PFactorGraphVector extends PFactorVector
 		return new PFactorGraphVector(getGraph().getRootGraph());
 	}
 
-	public PVariableVector getVariableByName(String name)
+	public @Nullable PVariableVector getVariableByName(String name)
 	{
 		VariableBase mo = getGraph().getVariableByName(name);
 		if (mo != null)
@@ -658,7 +660,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorVector getFactorByName(String name)
+	public @Nullable PFactorVector getFactorByName(String name)
 	{
 		Factor mo = getGraph().getFactorByName(name);
 		if(mo != null)
@@ -667,7 +669,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorGraphVector getGraphByName(String name)
+	public @Nullable PFactorGraphVector getGraphByName(String name)
 	{
 		FactorGraph mo = getGraph().getGraphByName(name);
 		if(mo != null)
@@ -676,7 +678,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PVariableVector getVariableByUUID(UUID uuid)
+	public @Nullable PVariableVector getVariableByUUID(UUID uuid)
 	{
 		VariableBase mo = getGraph().getVariableByUUID(uuid);
 		if(mo != null)
@@ -685,7 +687,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorVector getFactorByUUID(UUID uuid)
+	public @Nullable PFactorVector getFactorByUUID(UUID uuid)
 	{
 		Factor mo = getGraph().getFactorByUUID(uuid);
 		if(mo != null)
@@ -694,7 +696,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public PFactorGraphVector getGraphByUUID(UUID uuid)
+	public @Nullable PFactorGraphVector getGraphByUUID(UUID uuid)
 	{
 		FactorGraph mo = getGraph().getGraphByUUID(uuid);
 		if(mo != null)
@@ -703,7 +705,7 @@ public class PFactorGraphVector extends PFactorVector
 			return null;
 	}
 	
-	public void setScheduler(IScheduler scheduler)
+	public void setScheduler(@Nullable IScheduler scheduler)
 	{
     	if (getGraph().isSolverRunning())
     		throw new DimpleException("No changes allowed while the solver is running.");
@@ -711,7 +713,7 @@ public class PFactorGraphVector extends PFactorVector
     	getGraph().setScheduler(scheduler);
 	}
 	
-	public IScheduler getScheduler()
+	public @Nullable IScheduler getScheduler()
 	{
 		return getGraph().getScheduler();
 	}
@@ -771,7 +773,7 @@ public class PFactorGraphVector extends PFactorVector
 	}
 
 	
-	public PVariableVector split(PVariableVector variable, Object [] factors)
+	public PVariableVector split(PVariableVector variable, @Nullable Object [] factors)
 	{
 		Factor [] pfactors = {};
 		

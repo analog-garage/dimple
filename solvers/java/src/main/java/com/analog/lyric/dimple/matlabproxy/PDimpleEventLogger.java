@@ -27,6 +27,7 @@ import com.analog.lyric.dimple.events.DimpleEventLogger;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.StandardDimpleEvents;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Proxy wrapper for {@link DimpleEventLogger}.
@@ -68,7 +69,7 @@ public class PDimpleEventLogger extends PObject implements Closeable
 	 * Methods
 	 */
 	
-	public String filename()
+	public @Nullable String filename()
 	{
 		File file = _logger.file();
 		if (file != null)
@@ -139,7 +140,7 @@ public class PDimpleEventLogger extends PObject implements Closeable
 		}
 	}
 	
-	public PrintStream out()
+	public @Nullable PrintStream out()
 	{
 		return _logger.out();
 	}

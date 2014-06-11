@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.matlabproxy;
 
 import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.util.misc.Matlab;
+import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Base class for Dimple MATLAB proxy objects.
@@ -29,7 +30,7 @@ public abstract class PObject
 	 * Returns the modeler object wrapped by this proxy or null
 	 * if not applicable for this type of object.
 	 */
-	public Object getModelerObject() { return null; }
+	public @Nullable Object getModelerObject() { return null; }
 
 	/**
 	 * True if object applies only to discrete variables.
