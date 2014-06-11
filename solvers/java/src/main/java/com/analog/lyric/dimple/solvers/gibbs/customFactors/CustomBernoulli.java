@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.Bernoulli;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.BetaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
@@ -37,11 +38,9 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	private Object[] _outputMsgs;
 	private SDiscreteVariable[] _outputVariables;
 	private int _numParameterEdges;
-	private int _numOutputEdges;
 	private int _constantOutputZeroCount;
 	private int _constantOutputOneCount;
 	private boolean _hasConstantOutputs;
-	private boolean _hasFactorFunctionConstructorConstants;
 	private static final int NUM_PARAMETERS = 1;
 	private static final int PARAMETER_INDEX = 0;
 	
@@ -62,13 +61,13 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 
 			// Start with the ports to variable outputs
 			int numZeros = 0;
-			for (int i = 0; i < _numOutputEdges; i++)
+			for (int i = 0; i < _outputVariables.length; i++)
 			{
 				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				if (outputIndex == 0)
 					numZeros++;
 			}
-			int numOnes = (_numPorts - _numParameterEdges) - numZeros;
+			int numOnes = _outputVariables.length - numZeros;
 			
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
@@ -96,7 +95,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	
 	public boolean isPortParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber < _numParameterEdges);
 	}
 
@@ -107,47 +106,25 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	{
 		super.initialize();
 		
-		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
-		
-
-		// Pre-compute statistics associated with any constant output values
-		_constantOutputZeroCount = 0;
-		_constantOutputOneCount = 0;
-		if (_hasConstantOutputs)
-		{
-			FactorFunction	factorFunction = _factor.getFactorFunction();
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			for (int i = 0; i < constantIndices.length; i++)
-			{
-				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
-				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-					if (outputValue == 0)
-						_constantOutputZeroCount++;
-					else
-						_constantOutputOneCount++;
-				}
-			}
-		}
+		determineConstantsAndEdges();
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		Bernoulli specificFactorFunction = (Bernoulli)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
+		List<? extends VariableBase> siblings = _factor.getSiblings();
 		_numParameterEdges = NUM_PARAMETERS;
 		_hasConstantOutputs = false;
-		if (_hasFactorFunctionConstructorConstants)
+		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameter provided in the factor-function constructor
 			_numParameterEdges = 0;
@@ -159,14 +136,50 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 			_numParameterEdges = factorFunction.isConstantIndex(PARAMETER_INDEX) ? 0 : 1;
 			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(PARAMETER_INDEX + 1);
 		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
 
 		
-		// Save output variables
-		List<? extends VariableBase> siblings = _factor.getSiblings();
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
-		for (int i = 0; i < _numOutputEdges; i++)
-			_outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+		// Pre-compute statistics associated with any constant output values
+		_constantOutputZeroCount = 0;
+		_constantOutputOneCount = 0;
+		if (_hasConstantOutputs)
+		{
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
+			for (int i = 0; i < constantIndices.length; i++)
+			{
+				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
+				{
+					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					if (outputValue == 0)
+						_constantOutputZeroCount++;
+					else
+						_constantOutputOneCount++;
+				}
+			}
+		}
+
+		
+		// Save output variables and add to the statistics any output variables that have fixed values
+		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
+		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+			if (!(siblings.get(edge).hasFixedValue()))
+				numVariableOutputs++;
+		_outputVariables = new SDiscreteVariable[numVariableOutputs];
+		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		{
+			Discrete outputVariable = (Discrete)siblings.get(edge);
+			if (outputVariable.hasFixedValue())
+			{
+				int outputValue = outputVariable.getFixedValueIndex();
+				if (outputValue == 0)
+					_constantOutputZeroCount++;
+				else
+					_constantOutputOneCount++;
+				_hasConstantOutputs = true;
+			}
+			else
+				_outputVariables[index++] = (SDiscreteVariable)outputVariable.getSolver();
+		}
 	}
 	
 	
@@ -174,7 +187,7 @@ public class CustomBernoulli extends SRealFactor implements IRealConjugateFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
 			_outputMsgs[port] = new BetaParameters();

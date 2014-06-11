@@ -76,7 +76,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	
 	public boolean isPortOutputVariable(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber >= _numParameterEdges);
 	}
 
@@ -88,11 +88,11 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 		super.initialize();
 		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
@@ -132,7 +132,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = _numParameterEdges; port < _numPorts; port++)	// Only output edges
 			_outputMsgs[port] = new DirichletParameters(_dimension);

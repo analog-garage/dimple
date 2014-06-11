@@ -48,7 +48,6 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	private SRealJointVariable _alphaVariable;
 	private int _dimension;
 	private int _alphaParameterEdge;
-	private int _numOutputEdges;
 	private int _constantN;
 	private double[] _constantAlpha;
 	private int[] _constantOutputCounts;
@@ -109,7 +108,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	
 	public boolean isPortAlphaParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber == _alphaParameterEdge);
 	}
 
@@ -140,7 +139,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		
 		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
 		
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
@@ -172,7 +171,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		Multinomial specificFactorFunction = (Multinomial)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
@@ -219,8 +218,8 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		}
 		
 		// Save the output constant or variables as well
-		_numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
-		_outputVariables = new SDiscreteVariable[_numOutputEdges];
+		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
+		_outputVariables = new SDiscreteVariable[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		_hasConstantOutput = null;
@@ -228,7 +227,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		if (_hasConstantOutputs)
 		{
 			int numConstantOutputs = factorFunction.numConstantsAtOrAboveIndex(outputMinIndex);
-			_dimension = _numOutputEdges + numConstantOutputs;
+			_dimension = numOutputEdges + numConstantOutputs;
 			_hasConstantOutput = new boolean[_dimension];
 			_constantOutputCounts = new int[numConstantOutputs];
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
@@ -248,7 +247,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		}
 		else	// No constant outputs
 		{
-			_dimension = _numOutputEdges;
+			_dimension = numOutputEdges;
 			for (int i = 0, index = outputMinIndex; i < _dimension; i++, index++)
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(index);
@@ -263,7 +262,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	public void createMessages() 
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		if (_alphaParameterEdge != NO_PORT)
 			_outputMsgs[_alphaParameterEdge] = new DirichletParameters();

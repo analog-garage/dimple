@@ -98,7 +98,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	
 	public boolean isPortParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber >= _startingParameterEdge);
 	}
 
@@ -110,11 +110,11 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 		super.initialize();
 				
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
@@ -163,7 +163,7 @@ public class CustomDiscreteTransition extends SRealFactor implements IRealJointC
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		for (int port = _startingParameterEdge; port < _numPorts; port++)	// Only parameter edges
 			_outputMsgs[port] = new DirichletParameters(_yDimension);

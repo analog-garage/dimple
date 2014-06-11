@@ -53,6 +53,7 @@ test22(debugPrint, repeatable);
 test23(debugPrint, repeatable);
 test24(debugPrint, repeatable);
 test25(debugPrint, repeatable);
+test26(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testComplexVariables');
 
@@ -143,6 +144,7 @@ assertElementsAlmostEqual(mean(ms), expectedMean, 'absolute', 0.01);
 assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
 
 end
+
 
 
 
@@ -1238,7 +1240,6 @@ end
 
 
 
-
 % Gamma prior on Poisson distribution
 function test25(debugPrint, repeatable)
 
@@ -1288,6 +1289,52 @@ ls = lambda.Solver.getAllSamples();
 
 lambdaMean = mean(ls);
 assertElementsAlmostEqual(lambdaMean/lambdaData, 1, 'absolute', 0.01);
+
+end
+
+
+% Normal sampler, variable data
+function test26(debugPrint, repeatable)
+
+priorMean = 3;
+priorPrecision = 0.01;
+dataMean = 10;
+dataPrecision = .001;
+numDatapoints = 100;
+data = dataMean + randn(1,numDatapoints) * dataPrecision;
+expectedPrecision = priorPrecision + numDatapoints * dataPrecision;
+expectedMean = (priorMean * priorPrecision + sum(data) * dataPrecision) / expectedPrecision;
+
+fg = FactorGraph();
+fg.Solver = 'Gibbs';
+
+m = Real();
+x = Real(1,numDatapoints);
+
+m.Input = FactorFunction('Normal',priorMean,priorPrecision);
+for i=1:numDatapoints
+    x(i).Input = {'Normal',data(i),1e6};
+end
+
+fg.addFactor('Normal', m, dataPrecision, x);    % Fixed precision
+
+assert(strcmp(m.Solver.getSamplerName,'NormalSampler'));
+assert(strcmp(x(1).Solver.getSamplerName,'NormalSampler'));
+
+fg.Solver.setNumSamples(1000);
+fg.Solver.saveAllSamples();
+fg.Solver.saveAllScores();
+
+if (repeatable)
+    fg.Solver.setSeed(4);					% Make this repeatable
+end
+
+fg.solve();
+
+ms = m.Solver.getAllSamples;
+
+assertElementsAlmostEqual(mean(ms), expectedMean, 'absolute', 0.01);
+assertElementsAlmostEqual(std(ms), 1/sqrt(expectedPrecision), 'absolute', 0.05);
 
 end
 

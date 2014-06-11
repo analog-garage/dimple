@@ -90,7 +90,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	
 	public boolean isPortProbabilityParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber == _probabilityParameterEdge);
 	}
 
@@ -102,14 +102,14 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 		super.initialize();
 				
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
 		
 		// Create a block initializer to initialize the neighboring variables
 		((SFactorGraph)_factor.getRootGraph().getSolver()).addBlockInitializer(new CustomBinomial.BlockInitializer());
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
@@ -172,7 +172,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		_outputMsgs = new Object[_numPorts];
 		if (_probabilityParameterEdge != NO_PORT)
 			_outputMsgs[_probabilityParameterEdge] = new BetaParameters();
