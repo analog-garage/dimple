@@ -29,6 +29,7 @@ public abstract class MultivariateGaussianFactorBase extends SFactorBase
 	protected MultivariateNormalParameters [] _inputMsgs;
 	protected MultivariateNormalParameters [] _outputMsgs;
 	
+	@SuppressWarnings("null")
 	public MultivariateGaussianFactorBase(Factor factor)
 	{
 		super(factor);

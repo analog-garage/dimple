@@ -33,6 +33,7 @@ import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.solvers.core.ParameterEstimator;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 /*
  * The pseudolikelihood class uses the Pseudolikelihood algorithm
@@ -44,7 +45,7 @@ public class PseudoLikelihood extends ParameterEstimator
 	private double _scaleFactor;
 	private HashMap<Factor,FactorInfo> _factor2factorInfo = new HashMap<Factor, FactorInfo>();
 	private HashMap<VariableBase, VariableInfo> _var2varInfo = new HashMap<VariableBase, VariableInfo>();
-	private int [][] _data;
+	private @Nullable int [][] _data;
 	private HashMap<VariableBase,Integer> _var2index = new HashMap<VariableBase, Integer>();
 	private VariableBase [] _vars;
 	
@@ -294,6 +295,12 @@ public class PseudoLikelihood extends ParameterEstimator
 	//Used for calculating the numerical gradient
 	public double calculatePseudoLikelihood()
 	{
+		final int[][] data = _data;
+		if (data == null)
+		{
+			return 0;
+		}
+		
 		//1/M sum(m) sum(i) sum(j in neighbors(i)) tehta(xj,xi)
 		//- 1/M sum(m) sum(i) log Z(neighbors(i))
 		
@@ -306,7 +313,8 @@ public class PseudoLikelihood extends ParameterEstimator
 		//1/M sum(m) sum(i) sum(j in neighbors(i)) tehta(xj,xi)
 		
 		//for each data point
-		for (int m = 0; m < _data.length; m++)
+		final int size = data.length;
+		for (int m = 0; m < size; m++)
 		{
 			//for each variable
 			for (VariableBase v : vl)
@@ -318,7 +326,7 @@ public class PseudoLikelihood extends ParameterEstimator
 					final int nVars = f.getSiblingCount();
 					int [] indices = new int[nVars];
 					for (int i = 0; i < nVars; i++)
-						indices[i] = _data[m][_var2index.get(f.getSibling(i))];
+						indices[i] = data[m][_var2index.get(f.getSibling(i))];
 					
 					//add the term.
 					total -= f.getFactorTable().getEnergyForIndices(indices);
@@ -326,13 +334,13 @@ public class PseudoLikelihood extends ParameterEstimator
 			}
 		}
 		
-		total /= _data.length;
+		total /= size;
 		
 		//- 1/M sum(m) sum(i) log Z(neighbors(i))
 		double total2 = 0;
 		
 		//for each data point
-		for (int m = 0; m < _data.length; m++)
+		for (int m = 0; m < size; m++)
 		{
 			//for each variable
 			for (VariableBase v : vl)
@@ -356,7 +364,7 @@ public class PseudoLikelihood extends ParameterEstimator
 							if (fv == v)
 								indices[i] = d;
 							else
-								indices[i] = _data[m][_var2index.get(fv)];
+								indices[i] = data[m][_var2index.get(fv)];
 						}
 						
 						//multiply in that term.
@@ -373,7 +381,7 @@ public class PseudoLikelihood extends ParameterEstimator
 		}
 		
 		//return the totals
-		total -= total2 / _data.length;
+		total -= total2 / size;
 		return total;
 	}
 	

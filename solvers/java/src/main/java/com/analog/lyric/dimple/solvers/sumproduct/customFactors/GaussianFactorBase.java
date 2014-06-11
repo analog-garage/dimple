@@ -28,6 +28,7 @@ public abstract class GaussianFactorBase extends SFactorBase
 	protected NormalParameters[] _inputMsgs;
 	protected NormalParameters[] _outputMsgs;
 	
+	@SuppressWarnings("null")
 	public GaussianFactorBase(Factor factor)
 	{
 		super(factor);
@@ -47,15 +48,15 @@ public abstract class GaussianFactorBase extends SFactorBase
 		final Factor factor = _factor;
 		final int nVars = factor.getSiblingCount();
 		
-	    _inputMsgs = new NormalParameters[nVars];
-	    _outputMsgs = new NormalParameters[nVars];
+	    final NormalParameters[] inputMsgs = _inputMsgs = new NormalParameters[nVars];
+	    final NormalParameters[] outputMsgs = _outputMsgs = new NormalParameters[nVars];
 		// Messages are created in variable constructor, just save a reference here
 	    for (int index = 0; index < nVars; ++index)
 		{
 			ISolverVariable sv = factor.getSibling(index).getSolver();
 			Object[] messages = sv.createMessages(this);
-			_outputMsgs[index] = (NormalParameters)messages[0];
-			_inputMsgs[index] = (NormalParameters)messages[1];
+			outputMsgs[index] = (NormalParameters)messages[0];
+			inputMsgs[index] = (NormalParameters)messages[1];
 		}
 		
 	}

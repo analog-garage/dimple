@@ -18,6 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
 import java.util.LinkedList;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /*
  * Used to store information about Factors and Variables.
  * There is a one-to-one relationship between NodeInfos and variables and factors.
@@ -26,7 +28,7 @@ import java.util.LinkedList;
 public class NodeInfo
 {
 	private SparseJointHistogram _hist;
-	private SparseJointDistribution _dist;
+	private @Nullable SparseJointDistribution _dist;
 	private int [] _indices;
 
 	public NodeInfo(int [] indices)
@@ -43,7 +45,7 @@ public class NodeInfo
 	{
 		//picks off only the indices of interest from all of the indices
 		//add this to the histogram.
-		_hist.add(indicesToRelevantOnes(allDataIndices));				
+		_hist.add(indicesToRelevantOnes(allDataIndices));
 		
 		//invalidate the distribution.
 		_dist = null;
@@ -52,10 +54,12 @@ public class NodeInfo
 	//Retrieve a distribution from the histogram.
 	public SparseJointDistribution getDistribution()
 	{
-		if (_dist == null)
-			_dist = _hist.getDistribution();
+		SparseJointDistribution dist = _dist;
+
+		if (dist == null)
+			dist = _dist = _hist.getDistribution();
 		
-		return _dist;
+		return dist;
 	}
 	
 	//Reset counting.

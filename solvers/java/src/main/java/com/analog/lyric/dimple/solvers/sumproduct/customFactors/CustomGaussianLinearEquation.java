@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -26,7 +27,7 @@ import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParamete
 
 public class CustomGaussianLinearEquation extends GaussianFactorBase
 {
-	private double[] _weightVector;
+	private double[] _weightVector = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private double _initialWeightedSum;
 
 	

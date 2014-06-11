@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -25,9 +26,9 @@ import com.analog.lyric.util.misc.NonNull;
 
 public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFactor
 {
-	private double[][] _inPortMsgs = new double[0][];
-    private double[][] _outPortMsgs = null;
-    private double [] _savedOutMsgsLLR;
+	private double[][] _inPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    private double[][] _outPortMsgs = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    private double [] _savedOutMsgsLLR = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	private int _constantParity;
 	private int _numPorts;
 

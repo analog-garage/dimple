@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import java.util.Objects;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
@@ -44,7 +46,7 @@ public class CustomFiniteFieldProjection extends SFiniteFieldFactor
 		
 		//First variable is the FiniteFieldVariable
 		//Other variables should be bits.
-		_ffVar = (SFiniteFieldVariable)factor.getSibling(0).getSolver();
+		_ffVar = (SFiniteFieldVariable)Objects.requireNonNull(factor.getSibling(0).getSolver());
 		_portIndex2bitIndex = new int[nEdges];
 		
 		for (int i = 0; i < nEdges; i++)

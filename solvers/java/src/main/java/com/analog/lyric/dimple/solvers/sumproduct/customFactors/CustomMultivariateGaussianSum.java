@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Real;
@@ -26,7 +27,7 @@ public class CustomMultivariateGaussianSum extends MultivariateGaussianFactorBas
 {
 	protected int _sumIndex;
 	private int _sumPort;
-	private double[] _constantSum;
+	private double[] _constantSum = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 
 	
 	public CustomMultivariateGaussianSum(Factor factor)
