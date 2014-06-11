@@ -49,7 +49,7 @@ function testNaNError()
     end
 
     msg = '';
-    fg.Solver.initialize();
+    fg.initialize();
     try
         fg.Solver.iterate(100);
     catch E
