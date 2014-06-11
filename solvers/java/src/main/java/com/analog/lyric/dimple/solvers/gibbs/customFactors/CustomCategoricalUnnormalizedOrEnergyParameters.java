@@ -26,6 +26,7 @@ import com.analog.lyric.dimple.factorfunctions.CategoricalUnnormalizedParameters
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SDiscreteVariable;
@@ -42,12 +43,10 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	private @Nullable Object[] _outputMsgs;
 	private @Nullable SDiscreteVariable[] _outputVariables;
 	private @Nullable FactorFunction _factorFunction;
-	private int _numParameters;
+	private int _parameterDimension;
 	private int _numParameterEdges;
-	private int _numOutputEdges;
 	private @Nullable int[] _constantOutputCounts;
 	private boolean _hasConstantOutputs;
-	private boolean _hasFactorFunctionConstructorConstants;
 	private boolean _useEnergyParameters;
 
 	public CustomCategoricalUnnormalizedOrEnergyParameters(Factor factor)
@@ -73,7 +72,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 
 			// Start with the ports to variable outputs
 			int count = 0;
-			for (int i = 0; i < _numOutputEdges; i++)
+			for (int i = 0; i < _outputVariables.length; i++)
 			{
 				int outputIndex = _outputVariables[i].getCurrentSampleIndex();
 				if (outputIndex == parameterIndex)
@@ -106,7 +105,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	
 	public boolean isPortParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber < _numParameterEdges);
 	}
 
@@ -117,59 +116,41 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	{
 		super.initialize();
 		
-		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
-		
-		
-		// Pre-compute statistics associated with any constant output values
-		_constantOutputCounts = null;
-		if (_hasConstantOutputs)
-		{
-			FactorFunction factorFunction = _factor.getFactorFunction();
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			final int[] constantOutputCounts = _constantOutputCounts = new int[_numParameters];
-			for (int i = 0; i < constantIndices.length; i++)
-			{
-				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= _numParameters)
-				{
-					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
-					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
+		determineConstantsAndEdges();
 				}
-			}
-		}
-	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		_factorFunction = factorFunction;
 		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstructorConstants;
 		if (containedFactorFunction instanceof CategoricalUnnormalizedParameters)
 		{
 			CategoricalUnnormalizedParameters specificFactorFunction = (CategoricalUnnormalizedParameters)containedFactorFunction;
-			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-			_numParameters = specificFactorFunction.getDimension();
+			hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+			_parameterDimension = specificFactorFunction.getDimension();
 			_useEnergyParameters = false;
 		}
 		else if (containedFactorFunction instanceof CategoricalEnergyParameters)
 		{
 			CategoricalEnergyParameters specificFactorFunction = (CategoricalEnergyParameters)containedFactorFunction;
-			_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
-			_numParameters = specificFactorFunction.getDimension();
+			hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+			_parameterDimension = specificFactorFunction.getDimension();
 			_useEnergyParameters = true;
 		}
 		else
 			throw new DimpleException("Invalid factor function");
 
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
-		_numParameterEdges = _numParameters;
+		List<? extends VariableBase> siblings = _factor.getSiblings();
+		_numParameterEdges = _parameterDimension;
 		_hasConstantOutputs = false;
-		if (_hasFactorFunctionConstructorConstants)
+		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_numParameterEdges = 0;
@@ -177,17 +158,51 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 		}
 		else if (hasFactorFunctionConstants)
 		{
-			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(_numParameters);
-			int numConstantParameters = factorFunction.numConstantsInIndexRange(0, _numParameters - 1);
-			_numParameterEdges = _numParameters - numConstantParameters;
+			_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(_parameterDimension);
+			int numConstantParameters = factorFunction.numConstantsInIndexRange(0, _parameterDimension - 1);
+			_numParameterEdges = _parameterDimension - numConstantParameters;
 		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
+
 	
-		// Save output variables
-		List<? extends VariableBase> siblings = _factor.getSiblings();
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
-		for (int i = 0; i < _numOutputEdges; i++)
-			outputVariables[i] = (SDiscreteVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+		// Pre-compute statistics associated with any constant output values
+		_constantOutputCounts = null;
+		if (_hasConstantOutputs)
+		{
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
+			final int[] constantOutputCounts = _constantOutputCounts = new int[_parameterDimension];
+			for (int i = 0; i < constantIndices.length; i++)
+			{
+				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= _parameterDimension)
+				{
+					int outputValue = FactorFunctionUtilities.toInteger(constantValues[i]);
+					constantOutputCounts[outputValue]++;	// Histogram among constant outputs
+	}
+			}
+		}
+	
+	
+		// Save output variables and add to the statistics any output variables that have fixed values
+		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
+		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+			if (!(siblings.get(edge).hasFixedValue()))
+				numVariableOutputs++;
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numVariableOutputs];
+		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		{
+			Discrete outputVariable = (Discrete)siblings.get(edge);
+			if (outputVariable.hasFixedValue())
+			{
+				int outputValue = outputVariable.getFixedValueIndex();
+				int[] constantOutputCounts = _constantOutputCounts;
+				if (constantOutputCounts == null)
+					constantOutputCounts = _constantOutputCounts = new int[_parameterDimension];
+				constantOutputCounts[outputValue]++;	// Histogram among constant outputs
+				_hasConstantOutputs = true;
+			}
+			else
+				outputVariables[index++] = (SDiscreteVariable)outputVariable.getSolver();
+		}
 	}
 	
 	
@@ -195,7 +210,7 @@ public class CustomCategoricalUnnormalizedOrEnergyParameters extends SRealFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numParameterEdges; port++)	// Only parameter edges
 			outputMsgs[port] = new GammaParameters();

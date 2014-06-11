@@ -56,7 +56,6 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	private int _alphaParameterMinIndex;
 	private int _alphaParameterMinEdge;
 	private int _alphaParameterMaxEdge;
-	private int _numOutputEdges;
 	private int _constantN;
 	private @Nullable int[] _constantOutputCounts;
 	private boolean _hasConstantN;
@@ -116,7 +115,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	
 	public boolean isPortAlphaParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber >= _alphaParameterMinEdge && portNumber <= _alphaParameterMaxEdge);
 	}
 
@@ -166,7 +165,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		
 		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
 		
 		
 		// Create a block schedule entry with a BlockMHSampler and a MultinomialBlockProposal kernel
@@ -198,7 +197,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
@@ -286,9 +285,9 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 
 		
 		// Save the output constant or variables as well
+		int numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
-		_numOutputEdges = _numPorts - factorFunction.getEdgeByIndex(outputMinIndex);
-		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[_numOutputEdges];
+		final SDiscreteVariable[] outputVariables = _outputVariables = new SDiscreteVariable[numOutputEdges];
 		_hasConstantOutputs = factorFunction.hasConstantAtOrAboveIndex(outputMinIndex);
 		_constantOutputCounts = null;
 		if (_hasConstantOutputs)
@@ -323,7 +322,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		if (_alphaParameterMinEdge >= 0)
 			for (int port = _alphaParameterMinEdge; port <= _alphaParameterMaxEdge; port++)	// Only parameter edges

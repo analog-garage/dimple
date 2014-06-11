@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.LogNormal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -45,9 +46,6 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 	private boolean _hasConstantMean;
 	private boolean _hasConstantPrecision;
 	private boolean _hasConstantOutputs;
-	private boolean _hasFactorFunctionConstants;
-	private boolean _hasFactorFunctionConstructorConstants;
-	private int _numOutputEdges;
 	private int _numParameterEdges;
 	private int _meanParameterPort = -1;
 	private int _precisionParameterPort = -1;
@@ -79,9 +77,9 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 				
 			// Start with the ports to variable outputs
 			double sum = 0;
-			for (int i = 0; i < _numOutputEdges; i++)
+			for (int i = 0; i < _outputVariables.length; i++)
 				sum += Math.log(_outputVariables[i].getCurrentSample());
-			int count = _numOutputEdges;
+			int count = _outputVariables.length;
 
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
@@ -107,15 +105,14 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 			double mean = _hasConstantMean ? _constantMeanValue : _meanVariable.getCurrentSample();
 			
 			// Start with the ports to variable outputs
-			List<? extends VariableBase> siblings = _factor.getSiblings();
 			double sum = 0;
-			for (int port = _numParameterEdges; port < _numPorts; port++)
+			for (int i = 0; i < _outputVariables.length; i++)
 			{
-				double value = Math.log(((SRealVariable)((siblings.get(port)).getSolver())).getCurrentSample());
+				double value = Math.log(_outputVariables[i].getCurrentSample());
 				double diff = value - mean;
 				sum += diff*diff;
 			}
-			int count = _numOutputEdges;
+			int count = _outputVariables.length;
 			
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
@@ -146,13 +143,13 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 	
 	public boolean isPortMeanParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber == _meanParameterPort);
 	}
 	
 	public boolean isPortPrecisionParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber == _precisionParameterPort);
 	}
 
@@ -163,43 +160,18 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 	{
 		super.initialize();
 		
-		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
-		
-		
-		// Pre-compute statistics associated with any constant output values
-		_hasConstantOutputs = false;
-		if (_hasFactorFunctionConstants)
-		{
-			FactorFunction factorFunction = _factor.getFactorFunction();
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			_constantOutputCount = 0;
-			_constantOutputSum = 0;
-			_constantOutputSumOfSquares = 0;
-			for (int i = 0; i < constantIndices.length; i++)
-			{
-				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
-				{
-					double outputValue = Math.log((Double)constantValues[i]);
-					_constantOutputSum += outputValue;
-					_constantOutputSumOfSquares += outputValue*outputValue;
-					_constantOutputCount++;
+		determineConstantsAndEdges();
 				}
-			}
-			_hasConstantOutputs = true;
-		}
-	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		LogNormal specificFactorFunction = (LogNormal)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		_hasFactorFunctionConstants = factorFunction.hasConstants();
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
@@ -213,7 +185,7 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 		_constantMeanValue = 0;
 		_constantPrecisionValue = 0;
 		_numParameterEdges = 0;
-		if (_hasFactorFunctionConstructorConstants)
+		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantMean = true;
@@ -243,12 +215,50 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 				_numParameterEdges++;
 			}
 		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
 		
-		// Save output variables
-		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[_numOutputEdges];
-		for (int i = 0; i < _numOutputEdges; i++)
-			outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+		// Pre-compute statistics associated with any constant output values
+		_hasConstantOutputs = false;
+		_constantOutputCount = 0;
+		_constantOutputSum = 0;
+		_constantOutputSumOfSquares = 0;
+		if (hasFactorFunctionConstants)
+		{
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
+			for (int i = 0; i < constantIndices.length; i++)
+			{
+				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
+				{
+					double outputValue = Math.log((Double)constantValues[i]);
+					_constantOutputSum += outputValue;
+					_constantOutputSumOfSquares += outputValue*outputValue;
+					_constantOutputCount++;
+	}
+			}
+			_hasConstantOutputs = true;
+		}
+	
+		
+		// Save output variables and add to the statistics any output variables that have fixed values
+		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
+		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+			if (!(siblings.get(edge).hasFixedValue()))
+				numVariableOutputs++;
+		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[numVariableOutputs];
+		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		{
+			Real outputVariable = (Real)siblings.get(edge);
+			if (outputVariable.hasFixedValue())
+			{
+				double outputValue = Math.log(outputVariable.getFixedValue());
+				_constantOutputSum += outputValue;
+				_constantOutputSumOfSquares += outputValue*outputValue;
+				_constantOutputCount++;
+				_hasConstantOutputs = true;
+			}
+			else
+				outputVariables[index++] = (SRealVariable)outputVariable.getSolver();
+		}
 	}
 	
 
@@ -256,7 +266,7 @@ public class CustomLogNormal extends SRealFactor implements IRealConjugateFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 			if (port == _precisionParameterPort)

@@ -98,7 +98,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
 		Set<IRealConjugateSamplerFactory> availableSamplers = new HashSet<IRealConjugateSamplerFactory>();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		if (_incompatibleWithConjugateSampling)
 			return availableSamplers;
 		if (isPortInputVariable(portNumber))
@@ -119,7 +119,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber)
 	{
 		Set<IRealJointConjugateSamplerFactory> availableSamplers = new HashSet<IRealJointConjugateSamplerFactory>();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		if (_incompatibleWithConjugateSampling)
 			return availableSamplers;
 		if (isPortInputVariable(portNumber))
@@ -183,7 +183,8 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		
 		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
+		determineConstantsAndEdges();
+		
 		
 		// Set up _inputPortMap, which maps the selector value to port index
 		int numInputEdges = _numPorts - _firstInputPortNumber;
@@ -218,7 +219,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();

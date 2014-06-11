@@ -24,6 +24,7 @@ import com.analog.lyric.dimple.factorfunctions.Gamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
 import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.GammaParameters;
 import com.analog.lyric.dimple.solvers.gibbs.SRealFactor;
@@ -43,9 +44,6 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 	private boolean _hasConstantAlpha;
 	private boolean _hasConstantBeta;
 	private boolean _hasConstantOutputs;
-	private boolean _hasFactorFunctionConstants;
-	private boolean _hasFactorFunctionConstructorConstants;
-	private int _numOutputEdges;
 	private int _numParameterEdges;
 	private int _alphaParameterPort = -1;
 	private int _betaParameterPort = -1;
@@ -75,9 +73,9 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 			
 			// Start with the ports to variable outputs
 			double sum = 0;
-			for (int i = 0; i < _numOutputEdges; i++)
+			for (int i = 0; i < _outputVariables.length; i++)
 				sum += _outputVariables[i].getCurrentSample();
-			int count = _numOutputEdges;
+			int count = _outputVariables.length;
 			
 			// Include any constant outputs also
 			if (_hasConstantOutputs)
@@ -115,7 +113,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 	
 	public boolean isPortAlphaParameter(int portNumber)
 	{
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		return (portNumber == _alphaParameterPort);
 	}
 
@@ -126,40 +124,18 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 	{
 		super.initialize();
 		
-		
 		// Determine what parameters are constants or edges, and save the state
-		determineParameterConstantsAndEdges();
-		
-		
-		// Pre-compute statistics associated with any constant output values
-		_hasConstantOutputs = false;
-		if (_hasFactorFunctionConstants)
-		{
-			FactorFunction factorFunction = _factor.getFactorFunction();
-			Object[] constantValues = factorFunction.getConstants();
-			int[] constantIndices = factorFunction.getConstantIndices();
-			_constantOutputCount = 0;
-			_constantOutputSum = 0;
-			for (int i = 0; i < constantIndices.length; i++)
-			{
-				if (_hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
-				{
-					_constantOutputSum += (Double)constantValues[i];
-					_constantOutputCount++;
+		determineConstantsAndEdges();
 				}
-			}
-			_hasConstantOutputs = true;
-		}
-	}
 	
 	
-	private void determineParameterConstantsAndEdges()
+	private void determineConstantsAndEdges()
 	{
 		// Get the factor function and related state
 		FactorFunction factorFunction = _factor.getFactorFunction();
 		Gamma specificFactorFunction = (Gamma)factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
-		_hasFactorFunctionConstants = factorFunction.hasConstants();
-		_hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
+		boolean hasFactorFunctionConstants = factorFunction.hasConstants();
+		boolean hasFactorFunctionConstructorConstants = specificFactorFunction.hasConstantParameters();
 
 		
 		// Pre-determine whether or not the parameters are constant; if so save the value; if not save reference to the variable
@@ -173,7 +149,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 		_constantAlphaMinusOneValue = 0;
 		_constantBetaValue = 0;
 		_numParameterEdges = 0;
-		if (_hasFactorFunctionConstructorConstants)
+		if (hasFactorFunctionConstructorConstants)
 		{
 			// The factor function has fixed parameters provided in the factor-function constructor
 			_hasConstantAlpha = true;
@@ -203,12 +179,46 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 				_numParameterEdges++;
 			}
 		}
-		_numOutputEdges = _numPorts - _numParameterEdges;
 		
-		// Save output variables
-		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[_numOutputEdges];
-		for (int i = 0; i < _numOutputEdges; i++)
-			outputVariables[i] = (SRealVariable)((siblings.get(i + _numParameterEdges)).getSolver());
+		
+		// Pre-compute statistics associated with any constant output values
+		_hasConstantOutputs = false;
+		if (hasFactorFunctionConstants)
+		{
+			Object[] constantValues = factorFunction.getConstants();
+			int[] constantIndices = factorFunction.getConstantIndices();
+			_constantOutputCount = 0;
+			_constantOutputSum = 0;
+			for (int i = 0; i < constantIndices.length; i++)
+			{
+				if (hasFactorFunctionConstructorConstants || constantIndices[i] >= NUM_PARAMETERS)
+				{
+					_constantOutputSum += (Double)constantValues[i];
+					_constantOutputCount++;
+	}
+			}
+			_hasConstantOutputs = true;
+		}
+	
+
+		// Save output variables and add to the statistics any output variables that have fixed values
+		int numVariableOutputs = 0;		// First, determine how many output variables are not fixed
+		for (int edge = _numParameterEdges; edge < _numPorts; edge++)
+			if (!(siblings.get(edge).hasFixedValue()))
+				numVariableOutputs++;
+		final SRealVariable[] outputVariables = _outputVariables = new SRealVariable[numVariableOutputs];
+		for (int edge = _numParameterEdges, index = 0; edge < _numPorts; edge++)
+		{
+			Real outputVariable = (Real)siblings.get(edge);
+			if (outputVariable.hasFixedValue())
+			{
+				_constantOutputSum += outputVariable.getFixedValue();
+				_constantOutputCount++;
+				_hasConstantOutputs = true;
+			}
+			else
+				outputVariables[index++] = (SRealVariable)outputVariable.getSolver();
+		}
 	}
 	
 	
@@ -216,7 +226,7 @@ public class CustomGamma extends SRealFactor implements IRealConjugateFactor
 	public void createMessages()
 	{
 		super.createMessages();
-		determineParameterConstantsAndEdges();	// Call this here since initialize may not have been called yet
+		determineConstantsAndEdges();	// Call this here since initialize may not have been called yet
 		final Object[] outputMsgs = _outputMsgs = new Object[_numPorts];
 		for (int port = 0; port < _numPorts; port++)
 			if (port != _alphaParameterPort)
