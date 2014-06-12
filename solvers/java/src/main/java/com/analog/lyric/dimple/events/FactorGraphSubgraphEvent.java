@@ -79,6 +79,12 @@ public abstract class FactorGraphSubgraphEvent extends FactorGraphEvent
 	}
 	
 	@Override
+	public String getNodeName()
+	{
+		return getSubgraphName();
+	}
+	
+	@Override
 	protected final NodeType nodeType()
 	{
 		return NodeType.SUBGRAPH;

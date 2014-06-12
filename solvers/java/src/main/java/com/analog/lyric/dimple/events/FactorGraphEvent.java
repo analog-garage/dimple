@@ -74,7 +74,7 @@ public abstract class FactorGraphEvent extends ModelEvent
 		out.format("%s %s '%s'",
 			addRemoveType()._verb,
 			nodeType()._description,
-			getNode().getName());
+			getNodeName());
 	}
 	
 	/*--------------------------
@@ -82,6 +82,8 @@ public abstract class FactorGraphEvent extends ModelEvent
 	 */
 	
 	public abstract @Nullable Node getNode();
+	
+	public abstract String getNodeName();
 	
 	protected static enum NodeType
 	{

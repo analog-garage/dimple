@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.options.AbstractOptionHolder;
@@ -70,13 +71,15 @@ public abstract class SolverEventSource extends AbstractOptionHolder implements 
     @Override
 	public @Nullable FactorGraph getContainingGraph()
 	{
-    	return getModelObject().getContainingGraph();
+    	final INode node = getModelObject();
+    	return node != null ? node.getContainingGraph() : null;
 	}
 
     @Override
     public @Nullable IDimpleEventListener getEventListener()
     {
-    	return getContainingGraph().getEventListener();
+    	final INode node = getModelObject();
+    	return node != null ? node.getEventListener() : null;
     }
     
     @Override

@@ -209,7 +209,10 @@ public class DimpleEventLogger implements Closeable
 		for (IDimpleEventSource source : sources)
 		{
 			DimpleEventListener listener = listenerForSource(source);
-			listener.register(_handler, eventType, source);
+			if (listener != null)
+			{
+				listener.register(_handler, eventType, source);
+			}
 		}
 	}
 	
@@ -256,13 +259,17 @@ public class DimpleEventLogger implements Closeable
 		int nRemoved = 0;
 		for (IDimpleEventSource source : sources)
 		{
-			FactorGraph rootGraph = source.getContainingGraph().getRootGraph();
-			DimpleEventListener listener = rootGraph.getEventListener();
-			if (listener!= null)
+			FactorGraph containingGraph = source.getContainingGraph();
+			if (containingGraph != null)
 			{
-				if (listener.unregister(_handler, eventType, source))
+				FactorGraph rootGraph = containingGraph.getRootGraph();
+				DimpleEventListener listener = rootGraph.getEventListener();
+				if (listener!= null)
 				{
-					++nRemoved;
+					if (listener.unregister(_handler, eventType, source))
+					{
+						++nRemoved;
+					}
 				}
 			}
 		}
@@ -383,20 +390,27 @@ public class DimpleEventLogger implements Closeable
 	 * Private methods
 	 */
 	
-	private DimpleEventListener listenerForSource(IDimpleEventSource source)
+	private @Nullable DimpleEventListener listenerForSource(IDimpleEventSource source)
 	{
-		final FactorGraph rootGraph = source.getContainingGraph().getRootGraph();
-
-		DimpleEventListener listener = rootGraph.getEventListener();
-		if (listener == null)
+		DimpleEventListener listener = null;
+		
+		final FactorGraph containingGraph = source.getContainingGraph();
+		if (containingGraph != null)
 		{
-			listener = DimpleEventListener.getDefault();
-			rootGraph.setEventListener(listener);
+
+			final FactorGraph rootGraph = containingGraph.getRootGraph();
+
+			listener = rootGraph.getEventListener();
+			if (listener == null)
+			{
+				listener = DimpleEventListener.getDefault();
+				rootGraph.setEventListener(listener);
+			}
+
+			_graphs.add(rootGraph);
+			_listeners.add(listener);
 		}
-
-		_graphs.add(rootGraph);
-		_listeners.add(listener);
-
+		
 		return listener;
 	}
 	

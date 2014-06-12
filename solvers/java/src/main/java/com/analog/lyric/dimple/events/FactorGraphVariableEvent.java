@@ -82,6 +82,12 @@ public abstract class FactorGraphVariableEvent extends FactorGraphEvent
 	}
 	
 	@Override
+	public String getNodeName()
+	{
+		return getVariableName();
+	}
+	
+	@Override
 	protected NodeType nodeType()
 	{
 		return NodeType.VARIABLE;
