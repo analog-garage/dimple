@@ -53,13 +53,23 @@ function testDemos()
         dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Communications Toolbox not installed');
         skipLDPC = true;
     else
-    
         [hasLicense err] = license('checkout', 'communication_toolbox');
         if ~hasLicense
             dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Communications Toolbox license could not be obtained');
             skipLDPC = true;
         end
     end
+    if (isempty(ver('Signal')))
+        dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Signal Processing Toolbox not installed');
+        skipLDPC = true;
+    else
+        [hasLicense err] = license('checkout', 'signal_toolbox');
+        if ~hasLicense
+            dtrace(true, 'WARNING: testDemos runSingleCodeword was skipped because Signal Processing Toolbox license could not be obtained');
+            skipLDPC = true;
+        end
+    end
+
 
     %Single codeword
     if(~skipLDPC)
