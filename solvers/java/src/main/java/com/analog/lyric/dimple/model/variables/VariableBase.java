@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import static java.util.Objects.*;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -475,10 +477,11 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 		
 		if (_solverVariable != null)
 		{
-			createSolverObject(getParentGraph().getSolver());
+			final FactorGraph parent = requireNonNull(getParentGraph());
+			createSolverObject(parent.getSolver());
 			
 			for (Factor f : getFactors())
-				f.createSolverObject(getParentGraph().getSolver());
+				f.createSolverObject(parent.getSolver());
 		}
 	}
 	
@@ -546,6 +549,24 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     	throw new DimpleException("not implemented");
     }
     
+    /**
+     * Returns solver variable or throws an exception if not yet set.
+     * <p>
+     * For internal use only.
+     * <p>
+     * @since 0.06
+     */
+    @Internal
+    public ISolverVariable requireSolver(String methodName)
+    {
+    	final ISolverVariable svar = _solverVariable;
+    	if (svar == null)
+    	{
+    		throw new DimpleException("solver must be set before using '%s'", methodName);
+    	}
+    	return svar;
+    }
+    
    /**
      * Sets {@link #isDeterministicInput()} to true.
      * 
@@ -570,20 +591,6 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     public final void setDeterministicOutput()
     {
     	setFlags(DETERMINISTIC_OUTPUT);
-    }
-    
-    /*-------------------
-     * Protected methods
-     */
-    
-    protected ISolverVariable requireSolver(String methodName)
-    {
-    	final ISolverVariable svar = _solverVariable;
-    	if (svar == null)
-    	{
-    		throw new DimpleException("solver must be set before using '%s'", methodName);
-    	}
-    	return svar;
     }
     
     /*-----------------

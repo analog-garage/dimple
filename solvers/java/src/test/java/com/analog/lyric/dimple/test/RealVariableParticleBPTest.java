@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class RealVariableParticleBPTest
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 	
+	@SuppressWarnings("null")
 	@Test
 	public void basicTest1()
 	{
@@ -174,6 +176,7 @@ public class RealVariableParticleBPTest
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Test
 	public void basicTest2()
 	{
@@ -281,6 +284,7 @@ public class RealVariableParticleBPTest
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Test
 	public void basicTest3()
 	{
@@ -368,7 +372,7 @@ public class RealVariableParticleBPTest
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.particleBP.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		SFactorGraph solver = requireNonNull((SFactorGraph)graph.getSolver());
 		solver.setNumIterations(numIterations);
 
 		double aPriorMean = 1;
@@ -388,9 +392,9 @@ public class RealVariableParticleBPTest
 		
 		graph.addFactor(new Sum(1.0),c,b,a);
 				
-		SRealVariable sa = (SRealVariable)a.getSolver();
-		SRealVariable sb = (SRealVariable)b.getSolver();
-		SRealVariable sc = (SRealVariable)c.getSolver();
+		SRealVariable sa = requireNonNull((SRealVariable)a.getSolver());
+		SRealVariable sb = requireNonNull((SRealVariable)b.getSolver());
+		SRealVariable sc = requireNonNull((SRealVariable)c.getSolver());
 		
 		sa.setProposalStandardDeviation(0.1);
 		sb.setProposalStandardDeviation(0.1);
@@ -417,9 +421,9 @@ public class RealVariableParticleBPTest
 		graph.solve();
 
 
-		double[] aBelief = (double[])a.getBeliefObject();
-		double[] bBelief = (double[])b.getBeliefObject();
-		double[] cBelief = (double[])c.getBeliefObject();
+		double[] aBelief = requireNonNull((double[])a.getBeliefObject());
+		double[] bBelief = requireNonNull((double[])b.getBeliefObject());
+		double[] cBelief = requireNonNull((double[])c.getBeliefObject());
 		double[] aParticles = sa.getParticleValues();
 		double[] bParticles = sb.getParticleValues();
 		double[] cParticles = sc.getParticleValues();

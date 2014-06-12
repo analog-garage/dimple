@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.test.solvers.lp;
 
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
@@ -100,14 +101,14 @@ public class LPSolverTestCase
 		final int nLPVars = solver.getNumberOfLPVariables();
 		assertTrue(nLPVars >= 0);
 		
-		final double[] objective = solver.getObjectiveFunction();
+		final double[] objective = requireNonNull(solver.getObjectiveFunction());
 		assertEquals(nLPVars, objective.length);
 		
 		int nVarsUsed = 0;
 		
 		for (VariableBase var : model.getVariables())
 		{
-			SVariable svar = solver.getSolverVariable(var);
+			SVariable svar = requireNonNull(solver.getSolverVariable(var));
 			assertSame(svar, solver.createVariable(var));
 			
 			Discrete mvar = svar.getModelObject();
@@ -169,7 +170,7 @@ public class LPSolverTestCase
 		
 		for (Factor factor : model.getFactors())
 		{
-			STableFactor sfactor = solver.getSolverFactor(factor);
+			STableFactor sfactor = requireNonNull(solver.getSolverFactor(factor));
 			assertSame(sfactor, solver.createFactor(factor));
 			assertSame(factor, sfactor.getModelObject());
 			assertSame(solver, sfactor.getParentGraph());
@@ -297,7 +298,7 @@ public class LPSolverTestCase
 		solver.setSolution(solution);
 		for (VariableBase var : model.getVariables())
 		{
-			SVariable svar = solver.getSolverVariable(var);
+			SVariable svar = requireNonNull(solver.getSolverVariable(var));
 			double[] belief = svar.getBelief();
 			if (svar.hasFixedValue())
 			{

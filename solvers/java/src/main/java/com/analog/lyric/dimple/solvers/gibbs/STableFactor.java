@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.Collection;
 
 import com.analog.lyric.collect.ArrayUtil;
@@ -121,7 +123,7 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
-		((SFactorGraph)getRootGraph()).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
+		((SFactorGraph)requireNonNull(getRootGraph())).scheduleDeterministicDirectedUpdate(this, variableIndex, oldValue);
 	}
 	
 	@Override
@@ -139,7 +141,9 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 			{
 				VariableBase variable = factor.getSibling(outputIndex);
 				// FIXME: is sample value already set? Just need to handle side effects?
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(_inPortMsgs[outputIndex]);
+				ISolverVariableGibbs svar =
+					(ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow");
+				svar.setCurrentSample(_inPortMsgs[outputIndex]);
 			}
 		}
 	}
@@ -158,8 +162,8 @@ public class STableFactor extends STableFactorBase implements ISolverFactorGibbs
 	    
 	    for (int port = 0; port < _numPorts; port++)
 	    {
-	    	ISolverVariable svar = factor.getSibling(port).getSolver();
-	    	Object [] messages = svar.createMessages(this);
+	    	ISolverVariable svar = requireNonNull(factor.getSibling(port).getSolver());
+	    	Object [] messages = requireNonNull(svar.createMessages(this));
 	    	_inPortMsgs[port] = (DiscreteValue)messages[1];
 	    	_outPortMsgs[port] = (double[])messages[0];
 	    }

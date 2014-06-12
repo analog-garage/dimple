@@ -43,6 +43,16 @@ public class Edge
 	@Override
 	public boolean equals(@Nullable Object other)
 	{
+		if (other == this)
+		{
+			return true;
+		}
+		
+		if (!(other instanceof Edge))
+		{
+			return false;
+		}
+		
 		Edge otherEdge = (Edge)other;
 		return otherEdge.from == from && otherEdge.to == to;
 	}

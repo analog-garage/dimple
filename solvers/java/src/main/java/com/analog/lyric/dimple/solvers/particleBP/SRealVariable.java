@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.particleBP;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -217,17 +219,18 @@ public class SRealVariable extends SRealVariableBase
 
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				FactorBase factorNode = _var.getSibling(portIndex);
+				Factor factorNode = _var.getSibling(portIndex);
 				int factorPortNumber = 0;
 				try {
 					factorPortNumber = factorNode.getPortNum(_var);
-					}
+				}
 				catch (Exception e)
 				{
+					// FIXME: why is this here? Was this meant to be a temporary debugging hack?
 					e.printStackTrace(); System.exit(1);
 				}
 				
-				SRealFactor factor = (SRealFactor)(factorNode.getSolver());
+				SRealFactor factor = requireNonNull((SRealFactor)(factorNode.getSolver()));
 				potential += factor.getMarginalPotential(sampleValue, factorPortNumber);
 			}
 
@@ -249,10 +252,10 @@ public class SRealVariable extends SRealVariableBase
 
 					for (int portIndex = 0; portIndex < numPorts; portIndex++)
 					{
-						FactorBase factorNode = _var.getSibling(portIndex);
+						Factor factorNode = requireNonNull(_var.getSibling(portIndex));
 						int factorPortNumber = 0;
 						try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
-						SRealFactor factor = (SRealFactor)(factorNode.getSolver());
+						SRealFactor factor = (SRealFactor)(factorNode.requireSolver("resample"));
 						potentialProposed += factor.getMarginalPotential(proposalValue, factorPortNumber);
 					}
 
@@ -280,10 +283,10 @@ public class SRealVariable extends SRealVariableBase
 			// Update the incoming messages for the new particle value
 			for (int d = 0; d < numPorts; d++)
 			{
-				FactorBase factorNode = _var.getSibling(d);
+				Factor factorNode = requireNonNull(_var.getSibling(d));
 				int factorPortNumber = 0;
 				try {factorPortNumber = factorNode.getPortNum(_var);} catch (Exception e) {e.printStackTrace(); System.exit(1);}
-				SRealFactor factor = (SRealFactor)(factorNode.getSolver());
+				SRealFactor factor = (SRealFactor)(factorNode.requireSolver("resample"));
 				_inPortMsgs[d][m] = Math.exp(factor.getMarginalPotential(sampleValue, factorPortNumber));
 			}
 
@@ -369,7 +372,7 @@ public class SRealVariable extends SRealVariableBase
 			{
 				FactorBase factorNode = _var.getSibling(d);
 				int factorPortNumber = factorNode.getPortNum(_var);
-				SRealFactor factor = (SRealFactor)(factorNode.getSolver());
+				SRealFactor factor = requireNonNull((SRealFactor)(factorNode.getSolver()));
 				out -= factor.getMarginalPotential(value, factorPortNumber);	// Potential is -log(p)
 			}
 
@@ -404,7 +407,7 @@ public class SRealVariable extends SRealVariableBase
 	{
 		_numParticles = numParticles;
 		for (Factor factor : _var.getFactors())
-			factor.getSolver().createMessages();
+			factor.requireSolver("setNumParticles").createMessages();
 	}
 	public int getNumParticles() {return _numParticles;}
 

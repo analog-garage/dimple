@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -94,6 +96,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	
 	
 	// For Real variable inputs and outputs
+	@SuppressWarnings("null")
 	@Override
 	public Set<IRealConjugateSamplerFactory> getAvailableRealConjugateSamplers(int portNumber)
 	{
@@ -115,6 +118,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 	}
 
 	// For RealJoint variable inputs and outputs
+	@SuppressWarnings("null")
 	@Override
 	public Set<IRealJointConjugateSamplerFactory> getAvailableRealJointConjugateSamplers(int portNumber)
 	{
@@ -249,7 +253,7 @@ public class CustomMultiplexer extends SRealFactor implements IRealConjugateFact
 		_hasConstantSelector = factorFunction.isConstantIndex(SELECTOR_INDEX);
 		if (_hasConstantSelector)
 		{
-			_selectorConstantValue = (Integer)factorFunction.getConstantByIndex(SELECTOR_INDEX);
+			_selectorConstantValue = requireNonNull((Integer)factorFunction.getConstantByIndex(SELECTOR_INDEX));
 			_firstInputPortNumber = FIRST_INPUT_PORT_INDEX - 1;
 		}
 		else

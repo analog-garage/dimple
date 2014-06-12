@@ -274,6 +274,7 @@ public class SFactorGraph extends SFactorGraphBase
 	 * and all of the variable ports connected to it.  This might cause problems in the future
 	 * when we support different damping parameters per edge.
 	 */
+	@SuppressWarnings("null")
 	protected void setDampingForTableFactor(STableFactor tf)
 	{
 		Factor factor = tf.getFactor();
@@ -402,6 +403,7 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	
+	@SuppressWarnings("null")
 	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft,
 			int weightIndex)
 	{
@@ -453,6 +455,7 @@ public class SFactorGraph extends SFactorGraphBase
 		return result;
 	}
 	
+	@SuppressWarnings("null")
 	public void setCalculateDerivative(boolean val)
 	{
 		for (Factor f : _factorGraph.getFactorsFlat())
@@ -481,9 +484,10 @@ public class SFactorGraph extends SFactorGraphBase
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
-			if (f.getSolver() instanceof STableFactor)
+			ISolverFactor sf = f.getSolver();
+			if (sf instanceof STableFactor)
 			{
-				STableFactor tf = (STableFactor)(f.getSolver());
+				STableFactor tf = (STableFactor)sf;
 				tf.getFactorTable().getIndicesSparseUnsafe();
 				tf.getFactorTable().getWeightsSparseUnsafe();
 			}

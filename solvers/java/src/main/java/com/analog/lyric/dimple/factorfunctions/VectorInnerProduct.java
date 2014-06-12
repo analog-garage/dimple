@@ -65,8 +65,6 @@ public class VectorInnerProduct extends FactorFunction
 		double expectedOutValue = 0;
 		double[] firstInput = null;
 		double[] secondInput = null;
-		boolean firstInputIsArray = false;
-		boolean secondInputIsArray = false;
 		
 		// Figure out the type of inputs (array or list of arguments)
 		final int numArgs = arguments.length;
@@ -75,29 +73,27 @@ public class VectorInnerProduct extends FactorFunction
 		if (firstInputArg instanceof double[])
 		{
 			firstInput = (double[])firstInputArg;
-			firstInputIsArray = true;
 		}
 		if (lastInputArg instanceof double[])
 		{
 			secondInput = (double[])lastInputArg;
-			secondInputIsArray = true;
 		}
 		
 		// Compute the output
-		if (firstInputIsArray && secondInputIsArray)
+		if (firstInput != null && secondInput != null)
 		{
 			int vectorLength = firstInput.length;
 			for (int i = 0; i < vectorLength; i++)
 				expectedOutValue += firstInput[i] * secondInput[i];
 		}
-		else if (firstInputIsArray)
+		else if (firstInput != null)
 		{
 			int vectorLength = firstInput.length;
 			int secondIndex = 2;
 			for (int i = 0; i < vectorLength; i++)
 				expectedOutValue += firstInput[i] * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
 		}
-		else if (secondInputIsArray)
+		else if (secondInput != null)
 		{
 			int vectorLength = secondInput.length;
 			int firstIndex = 1;
@@ -138,8 +134,6 @@ public class VectorInnerProduct extends FactorFunction
 		double outValue = 0;
 		double[] firstInput = null;
 		double[] secondInput = null;
-		boolean firstInputIsArray = false;
-		boolean secondInputIsArray = false;
 		
 		// Figure out the type of inputs (array or list of arguments)
 		final int numArgs = arguments.length;
@@ -148,29 +142,27 @@ public class VectorInnerProduct extends FactorFunction
 		if (firstInputArg instanceof double[])
 		{
 			firstInput = (double[])firstInputArg;
-			firstInputIsArray = true;
 		}
 		if (lastInputArg instanceof double[])
 		{
 			secondInput = (double[])lastInputArg;
-			secondInputIsArray = true;
 		}
 		
 		// Compute the output
-		if (firstInputIsArray && secondInputIsArray)
+		if (firstInput != null && secondInput != null)
 		{
 			int vectorLength = firstInput.length;
 			for (int i = 0; i < vectorLength; i++)
 				outValue += firstInput[i] * secondInput[i];
 		}
-		else if (firstInputIsArray)
+		else if (firstInput != null)
 		{
 			int vectorLength = firstInput.length;
 			int secondIndex = 2;
 			for (int i = 0; i < vectorLength; i++)
 				outValue += firstInput[i] * FactorFunctionUtilities.toDouble(arguments[secondIndex++]);
 		}
-		else if (secondInputIsArray)
+		else if (secondInput != null)
 		{
 			int vectorLength = secondInput.length;
 			int firstIndex = 1;

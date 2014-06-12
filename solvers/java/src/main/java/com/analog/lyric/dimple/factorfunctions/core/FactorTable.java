@@ -567,7 +567,7 @@ public class FactorTable extends SparseFactorTableBase
 		}
 		
 		// Convert to target representation
-		if (representation != null)
+		if (representation != null && newTable != null)
 		{
 			newTable.setRepresentation(representation);
 		}
@@ -2476,12 +2476,12 @@ public class FactorTable extends SparseFactorTableBase
 						return false;
 					}
 				}
-				if (!justCheck)
+				if (normalizers != null)
 				{
 					normalizers[ii] = totalForInput;
 				}
 			}
-			if (!justCheck)
+			if (normalizers != null)
 			{
 				for (int si = 0, size = _sparseWeights.length; si < size; ++si)
 				{
@@ -2524,12 +2524,12 @@ public class FactorTable extends SparseFactorTableBase
 						return false;
 					}
 				}
-				if (!justCheck)
+				if (normalizers != null)
 				{
 					normalizers[ii] = Math.log(totalForInput);
 				}
 			}
-			if (!justCheck)
+			if (normalizers != null)
 			{
 				for (int si = 0, size = _sparseEnergies.length; si < size; ++si)
 				{
@@ -2566,12 +2566,12 @@ public class FactorTable extends SparseFactorTableBase
 						return false;
 					}
 				}
-				if (!justCheck)
+				if (normalizers != null)
 				{
 					normalizers[inputIndex] = totalForInput;
 				}
 			}
-			if (!justCheck)
+			if (normalizers != null)
 			{
 				for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
 				{
@@ -2610,12 +2610,12 @@ public class FactorTable extends SparseFactorTableBase
 						return false;
 					}
 				}
-				if (!justCheck)
+				if (normalizers != null)
 				{
 					normalizers[inputIndex] = Math.log(totalForInput);
 				}
 			}
-			if (!justCheck)
+			if (normalizers != null)
 			{
 				for (int jointIndex = 0, inputIndex = 0; inputIndex < inputSize; ++inputIndex, jointIndex += outputSize)
 				{

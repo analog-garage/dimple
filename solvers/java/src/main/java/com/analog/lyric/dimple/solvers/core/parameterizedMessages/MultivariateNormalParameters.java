@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core.parameterizedMessages;
 
+import static java.util.Objects.*;
+
 import java.io.PrintStream;
 
 import Jama.Matrix;
@@ -116,7 +118,7 @@ public class MultivariateNormalParameters extends ParameterizedMessageBase
 			double[][] matrix = _matrix;
 			// switch to covariance form to compute the mean
 			toCovarianceFormat();
-			mean = _mean;
+			mean = requireNonNull(_mean);
 			// switch back to original values.
 			_vector = vector;
 			_matrix = matrix;

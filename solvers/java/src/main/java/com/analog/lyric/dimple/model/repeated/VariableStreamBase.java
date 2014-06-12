@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.repeated;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -72,10 +74,10 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		for (int i = 0; i < _variables.size()-1; i++)
 		{
 			_variables.get(i).moveInputs(_variables.get(i+1));
-			final ISolverVariable otherVar = Objects.requireNonNull(_variables.get(i+1).getSolver());
-			_variables.get(i).getSolver().moveNonEdgeSpecificState(otherVar);
+			final ISolverVariable otherVar = requireNonNull(_variables.get(i+1).getSolver());
+			requireNonNull(_variables.get(i).getSolver()).moveNonEdgeSpecificState(otherVar);
 		}
-		_variables.get(_variables.size()-1).getSolver().createNonEdgeSpecificState();
+		requireNonNull(_variables.get(_variables.size()-1).getSolver()).createNonEdgeSpecificState();
 
 		final IDataSource dataSource = _dataSource;
 		if (dataSource != null)
@@ -137,7 +139,7 @@ public abstract class VariableStreamBase implements IVariableStreamSlice
 		tmp = instantiateVariable(_domain);
 		
 		final IDataSource dataSource = _dataSource;
-		if (_dataSource != null)
+		if (dataSource != null)
 		{
 			
 			if (!dataSource.hasNext())

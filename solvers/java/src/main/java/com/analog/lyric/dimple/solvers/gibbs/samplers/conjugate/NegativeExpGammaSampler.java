@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.factorfunctions.NegativeExpGamma;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
@@ -54,7 +56,7 @@ public class NegativeExpGammaSampler implements IRealConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			GammaParameters message = (GammaParameters)(ports[port].getOutputMsg());
+			GammaParameters message = requireNonNull((GammaParameters)(ports[port].getOutputMsg()));
 			alphaMinusOne += message.getAlphaMinusOne();
 			beta += message.getBeta();
 		}

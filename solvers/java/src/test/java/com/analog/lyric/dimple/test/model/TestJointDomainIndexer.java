@@ -153,6 +153,7 @@ public class TestJointDomainIndexer
 		assertTrue(DomainList.allDiscrete(new DiscreteDomain[] { d2, d3 }));
 	}
 	
+	@SuppressWarnings("null")
 	public static void testInvariants(JointDomainIndexer indexer)
 	{
 		Random rand = new Random(42);
@@ -605,6 +606,7 @@ public class TestJointDomainIndexer
 		testInvariants(converter, true);
 	}
 	
+	@SuppressWarnings("null")
 	private void testInvariants(JointDomainReindexer converter, boolean testInverse)
 	{
 		assertEquals(converter, converter);

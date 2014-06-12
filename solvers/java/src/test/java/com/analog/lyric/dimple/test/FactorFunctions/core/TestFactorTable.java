@@ -18,6 +18,7 @@ package com.analog.lyric.dimple.test.FactorFunctions.core;
 
 import static com.analog.lyric.math.Utilities.*;
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -477,7 +478,8 @@ public class TestFactorTable
 			entries.add(new Tuple2<IFactorTable,int[]>(entry));
 		}
 
-		final IFactorTable newTable = FactorTable.product(entries, FactorTableRepresentation.ALL_SPARSE);
+		final IFactorTable newTable =
+			requireNonNull(FactorTable.product(entries, FactorTableRepresentation.ALL_SPARSE));
 		assertEquals(FactorTableRepresentation.ALL_SPARSE, newTable.getRepresentation());
 		
 		class Tuple {
@@ -657,6 +659,7 @@ public class TestFactorTable
 		while (oldIter.hasNext())
 		{
 			FactorTableEntry entry = oldIter.next();
+			requireNonNull(entry);
 			entry.indices(oldIndices);
 			
 			for (int i = 0; i < oldIndices.length; ++i)
@@ -1374,7 +1377,7 @@ public class TestFactorTable
 		BitSet fromSet = table.getInputSet();
 		if (table.isDirected())
 		{
-			assertNotNull(fromSet != null);
+			requireNonNull(fromSet);
 			assertTrue(fromSet.cardinality() > 0);
 		}
 		else
@@ -1451,6 +1454,7 @@ public class TestFactorTable
 				while (iter.hasNext())
 				{
 					FactorTableEntry entry = iter.next();
+					requireNonNull(entry);
 					assertEquals(i, entry.jointIndex());
 					assertArrayEquals(entry.indices(), iter.indicesUnsafe());
 					if (entry.weight() != 0.0)
@@ -1510,7 +1514,7 @@ public class TestFactorTable
 			
 			if (supportsJoint)
 			{
-				assertNull(iter.next());
+				assertNull(requireNonNull(iter).next());
 
 				i = 0;
 				iter = table.fullIterator();
@@ -1591,6 +1595,7 @@ public class TestFactorTable
 				{
 					assertTrue(iter.hasNext());
 					FactorTableEntry entry = iter.next();
+					requireNonNull(entry);
 					assertEquals(si, entry.sparseIndex());
 					assertEquals(energy, entry.energy(), 1e-12);
 					assertEquals(weight, entry.weight(), 1e-12);

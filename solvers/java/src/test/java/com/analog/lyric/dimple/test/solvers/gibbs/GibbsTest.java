@@ -33,6 +33,7 @@ public class GibbsTest
 {
 	protected static boolean debugPrint = false;
 	
+	@SuppressWarnings("null")
 	@Test
 	public void basicTest()
 	{

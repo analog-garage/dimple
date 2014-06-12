@@ -402,6 +402,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 			STableFactor sft = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
 			double inputMsg = _inputMessages[i][domain];
 			double tmp = f / inputMsg;
+			@SuppressWarnings("null")
 			double der = sft.getMessageDerivative(weightIndex,getVariable())[domain];
 			tmp = tmp * der;
 			sum += tmp;
@@ -543,6 +544,7 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
 			{
 				double thisMsg = _inputMessages[i][d];
 				STableFactor stf = (STableFactor)getVariable().getConnectedNodesFlat().getByIndex(i).getSolver();
+				@SuppressWarnings("null")
 				double [] dfactor = stf.getMessageDerivative(wn,getVariable());
 				
 				df += f/thisMsg * dfactor[d];
@@ -562,7 +564,8 @@ public class SDiscreteVariable extends SDiscreteVariableDoubleArray
     public void updateDerivative(int outPortNum)
     {
     	SFactorGraph sfg = (SFactorGraph)getRootGraph();
-    	int numWeights = sfg.getCurrentFactorTable().sparseSize();
+    	@SuppressWarnings("null")
+		int numWeights = sfg.getCurrentFactorTable().sparseSize();
     	
     	for (int wn = 0; wn < numWeights; wn++)
     	{

@@ -21,7 +21,6 @@ import java.util.HashMap;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.FiniteFieldDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
-import com.analog.lyric.util.misc.Nullable;
 
 
 /*
@@ -40,18 +39,26 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 	private static HashMap<Integer,LookupTables> _poly2tables = new HashMap<Integer,LookupTables>();
 	
 	//A pointer to the correct lookup table for this variable.
-	private @Nullable LookupTables _tables = null;
-	private int _numBits;
-
+	private final LookupTables _tables;
+	private final int _numBits;
 
 	public SFiniteFieldVariable(VariableBase var)
 	{
 		super(var);
 		
-		setPrimitivePolynomial((FiniteFieldDomain)var.getDomain());
+		final FiniteFieldDomain domain = (FiniteFieldDomain)var.getDomain();
+		int key = domain.getPrimitivePolynomial();
+		_numBits = domain.getN();
+		
+		//Create the tables if they don't exist.
+		if (!_poly2tables.containsKey(key))
+			_poly2tables.put(key,new LookupTables(key, _numBits));
+
+		//save the tables.
+		_tables = _poly2tables.get(key);
 	}
 	
-	public @Nullable LookupTables getTables()
+	public LookupTables getTables()
 	{
 		return _tables;
 	}
@@ -59,26 +66,6 @@ public class SFiniteFieldVariable extends SDiscreteVariable
 	public int getNumBits()
 	{
 		return _numBits;
-	}
-	
-	//This gets called once, shortly after the Variable is instantiated.
-	private void setPrimitivePolynomial(FiniteFieldDomain domain)
-	{
-		int key = domain.getPrimitivePolynomial();
-		_numBits = domain.getN();
-		
-		if (_tables != null)
-			throw new DimpleException("poly already set");
-		else
-		{
-			//Create the tables if they don't exist.
-			if (!_poly2tables.containsKey(key))
-				_poly2tables.put(key,new LookupTables(key, _numBits));
-
-			//save the tables.
-			_tables = _poly2tables.get(key);
-		}
-		
 	}
 	
 	/*

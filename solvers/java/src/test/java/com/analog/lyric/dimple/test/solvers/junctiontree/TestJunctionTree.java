@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.junctiontree;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -138,12 +139,12 @@ public class TestJunctionTree
 	private void testGraphImpl(FactorGraph model, boolean useMap, boolean useConditioning)
 	{
 		JunctionTreeSolverGraphBase<?> jtgraph =
-			model.setSolverFactory(useMap ? new JunctionTreeMAPSolver() : new JunctionTreeSolver());
+			model.createSolver(useMap ? new JunctionTreeMAPSolver() : new JunctionTreeSolver());
 		jtgraph.useConditioning(useConditioning);
 		jtgraph.getTransformer().random(_rand); // set random generator so we can reproduce failures
 		model.solve();
 		
-		FactorGraph transformedModel = jtgraph.getDelegate().getModelObject();
+		FactorGraph transformedModel = requireNonNull(jtgraph.getDelegate()).getModelObject();
 		RandomGraphGenerator.labelFactors(transformedModel);
 		assertTrue(transformedModel.isForest());
 		

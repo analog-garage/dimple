@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -135,7 +137,7 @@ public class CustomCategorical extends SRealFactor implements IRealJointConjugat
 			if (hasConstantParameters)
 			{
 				double[] constantParameters = (double[])factorFunction.getConstantByIndex(PARAMETER_INDEX);
-				_parameterDimension = constantParameters.length;
+				_parameterDimension = requireNonNull(constantParameters).length;
 			}
 			else
 			{

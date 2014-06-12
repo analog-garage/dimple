@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
@@ -94,6 +95,7 @@ public class TestSupers
 // FIXME
 //			Supers.invokeMethod(Arrays.class, "asList", 1,2,3);
 			List<?> list = (List<?>)Supers.invokeMethod(Arrays.class, "asList", "1", "2", "3");
+			requireNonNull(list);
 			assertArrayEquals(new Object[] {"1", "2", "3",}, list.toArray());
 		}
 		catch (Exception ex)

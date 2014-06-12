@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.test.solvers.core;
 
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.io.PrintStream;
@@ -213,7 +214,7 @@ public class TestSNode
 		}
 		
 		@Override
-		public void print(@Nullable PrintStream out, int verbosity)
+		public void print(PrintStream out, int verbosity)
 		{
 			out.format("TestMessage(counter=%d)", _counter);
 		}
@@ -264,13 +265,10 @@ public class TestSNode
 		{
 			TestMessage oldMsg = (TestMessage)event._oldMsg;
 			TestMessage newMsg = (TestMessage)event._newMsg;
+			requireNonNull(newMsg);
 			if (oldMsg != null)
 			{
 				assertEquals(oldMsg._counter + 1, newMsg._counter);
-			}
-			else
-			{
-				assertNotNull(newMsg);
 			}
 		}
 	}

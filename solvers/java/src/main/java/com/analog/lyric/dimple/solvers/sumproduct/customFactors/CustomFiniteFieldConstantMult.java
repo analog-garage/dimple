@@ -167,5 +167,4 @@ public class CustomFiniteFieldConstantMult extends SFiniteFieldFactor
 	{
 		
 	}
-
 }

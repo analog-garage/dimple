@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+import static java.util.Objects.*;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -151,7 +152,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 			// each neighboring factor update its entire message to this variable than the alternative, below
 			for (int port = 0; port < numPorts; port++)
 			{
-				((ISolverFactorGibbs)_var.getSibling(port).getSolver()).updateEdgeMessage(_var.getSiblingPortIndex(port));
+				((ISolverFactorGibbs)_var.getSibling(port).requireSolver("update")).updateEdgeMessage(_var.getSiblingPortIndex(port));
 			}
 			
 			// Sum up the messages to get the conditional distribution
@@ -421,10 +422,12 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		
 		if (hasFixed)
 		{
-			setCurrentSampleIndexForce((Integer)_var.getFixedValueObject());
+			// FIXME: is this correct? Why does it ignore fixedValue argument?
+			setCurrentSampleIndexForce(requireNonNull((Integer)_var.getFixedValueObject()));
 		}
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(@Nullable Factor f)
 	{
@@ -528,7 +531,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			neighbors.update(Objects.requireNonNull(oldValue));
+			requireNonNull(neighbors).update(requireNonNull(oldValue));
 		}
 	}
 	
@@ -695,11 +698,11 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
     		if (newSampler != sampler)
     		{
     			newSampler.initialize(_var.getDomain());
-    			sampler = newSampler;
     		}
+			sampler = newSampler;
     	}
     	
-    	return Objects.requireNonNull(sampler);
+    	return sampler;
     }
 	
 	public final String getSamplerName()
@@ -838,7 +841,7 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		Arrays.fill(_beliefHistogram, 0);
 		
 		if (_var.hasFixedValue())
-			setCurrentSampleIndexForce((Integer)_var.getFixedValueObject());
+			setCurrentSampleIndexForce(requireNonNull((Integer)_var.getFixedValueObject()));
 		else
 			setCurrentSampleIndexForce(_outputMsg.getIndex());
 		

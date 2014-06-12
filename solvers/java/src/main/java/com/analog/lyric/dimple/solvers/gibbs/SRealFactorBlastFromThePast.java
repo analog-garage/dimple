@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.Collection;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -55,7 +57,7 @@ public class SRealFactorBlastFromThePast extends SBlastFromThePast implements IS
 		@SuppressWarnings("null")
 		int index = _portForOtherVar.index;
 		Factor f = vb.getSibling(index);
-		ISolverFactor sf = f.getSolver();
+		ISolverFactor sf = requireNonNull(f.getSolver());
 		int numEdges = f.getSiblingCount();
 		_inputMsgs = new Value[numEdges];
 		_outputMsgs = new Object[numEdges];

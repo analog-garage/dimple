@@ -363,6 +363,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		return sum;
 	}
 	
+	@SuppressWarnings("null")
 	public double calculateDerivativeOfInternalEnergyWithRespectToWeight(int weightIndex)
 	{
 		SFactorGraph sfg = (SFactorGraph)getRootGraph();
@@ -395,6 +396,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		return sum;
 	}
 	
+	@SuppressWarnings("null")
 	public double calculateDerivativeOfBeliefNumeratorWithRespectToWeight(int weightIndex, int index, boolean isFactorOfInterest)
 	{
 		double [] weights = _factor.getFactorTable().getWeightsSparseUnsafe();
@@ -521,6 +523,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 					if (j != outPortNum)
 					{
 						SDiscreteVariable sv = (SDiscreteVariable)getFactor().getConnectedNodesFlat().getByIndex(j).getSolver();
+						@SuppressWarnings("null")
 						double [] dvar = sv.getMessageDerivative(wn,getFactor());
 								
 						sum += (prod / _inputMsgs[j][indices[i][j]]) * dvar[indices[i][j]];
@@ -585,7 +588,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public void updateDerivative(int outPortNum)
 	{
 		SFactorGraph sfg = (SFactorGraph)getRootGraph();
+		@SuppressWarnings("null")
 		IFactorTable ft = sfg.getCurrentFactorTable();
+		@SuppressWarnings("null")
 		int numWeights = ft.sparseSize();
 		
 		for (int wn = 0; wn < numWeights; wn++)
@@ -597,6 +602,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double calculateDerivativeOfBetheEntropyWithRespectToWeight(int weightIndex)
 	{
 		
+		@SuppressWarnings("null")
 		boolean isFactorOfInterest = ((SFactorGraph)getRootGraph()).getCurrentFactorTable() == getFactor().getFactorTable();
 				
 		//Belief'(weightIndex)*(-log(Belief(weightIndex))) + Belief(weightIndex)*(-log(Belief(weightIndex)))'

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.Domain;
@@ -42,7 +44,7 @@ public class TrivialUniformBlockProposer implements IBlockProposalKernel
 			Domain domain = variableDomain[i];
 			if (domain.isDiscrete())
 			{
-				DiscreteDomain discreteDomain = domain.asDiscrete();
+				DiscreteDomain discreteDomain = requireNonNull(domain.asDiscrete());
 				int domainSize = discreteDomain.size();
 				Value v = Value.create(discreteDomain);
 				v.setIndex(DimpleRandomGenerator.rand.nextInt(domainSize));

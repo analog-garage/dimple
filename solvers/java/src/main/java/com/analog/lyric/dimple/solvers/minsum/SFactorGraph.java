@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
@@ -123,7 +125,7 @@ public class SFactorGraph extends SFactorGraphBase
 			VariableBase var = (VariableBase)nodes.getByIndex(i);
 			for (int j = 0, endj = var.getSiblingCount(); j < endj; j++)
 			{
-				SVariable svar = (SVariable)var.getSolver();
+				SVariable svar = requireNonNull((SVariable)var.getSolver());
 				svar.setDamping(j,_damping);
 			}
 		}

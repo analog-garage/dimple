@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.transform;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -385,6 +387,10 @@ public class VariableEliminator
 		Stats bestStats = null;
 		
 		Random rand = eliminator.getRandomizer();
+		if (rand == null)
+		{
+			rand = new Random();
+		}
 		
 		for (int attempt = 0; attempt < nAttempts; ++attempt)
 		{
@@ -616,7 +622,7 @@ public class VariableEliminator
 			// Add edges between remaining neighbors
 			for (VarLink link1 = var._neighborList._next; link1.hasVar(); link1 = link1._next)
 			{
-				final Var neighbor1 = link1._var;
+				final Var neighbor1 = link1.var();
 				for (VarLink link2 = link1._next; link2.hasVar(); link2 = link2._next)
 				{
 					final Var neighbor2 = link2.var();
@@ -1165,7 +1171,7 @@ public class VariableEliminator
 		 */
 		public int cardinality()
 		{
-			return _variable.getDomain().asDiscrete().size();
+			return requireNonNull(_variable.getDomain().asDiscrete()).size();
 		}
 		
 		/**

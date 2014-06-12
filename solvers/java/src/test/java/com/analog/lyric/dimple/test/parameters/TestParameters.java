@@ -629,9 +629,10 @@ public class TestParameters
 				break;
 			case 1:
 				assertFalse(param.fixed());
-				if (param.key() != null)
+				Key key = param.key();
+				if (key != null)
 				{
-					assertEquals(param.key().defaultValue(), param.value(), 0.0);
+					assertEquals(key.defaultValue(), param.value(), 0.0);
 				}
 				else
 				{

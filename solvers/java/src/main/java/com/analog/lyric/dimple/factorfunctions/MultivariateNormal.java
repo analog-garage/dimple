@@ -134,7 +134,7 @@ public class MultivariateNormal extends FactorFunction
     	double sum = 0;
     	for (; index < length; index++)
     	{
-    		double[] x = (double[])values[index].getObject();	// Remaining inputs are multivariate Normal random variable vectors
+    		double[] x = values[index].getDoubleArray();	// Remaining inputs are multivariate Normal random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		for (int i = 0; i < _dimension; i++)

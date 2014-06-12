@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.factors;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -344,7 +346,7 @@ public class Factor extends FactorBase implements Cloneable
 				}
 				if (directedTo.length > 0)
 				{
-					final int[] directedFrom = _directedFrom;
+					final int[] directedFrom = requireNonNull(_directedFrom);
 					for (int from : directedFrom)
 					{
 						getSibling(from).setDeterministicInput();
@@ -366,7 +368,8 @@ public class Factor extends FactorBase implements Cloneable
 		requireSolver("updateEdge").updateEdge(outPortNum);
 	}
 	
-	protected ISolverFactor requireSolver(String method)
+	@Internal
+	public ISolverFactor requireSolver(String method)
 	{
 		return requireSolver(method, _solverFactor);
 	}

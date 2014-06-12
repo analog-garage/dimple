@@ -24,7 +24,7 @@ public interface IParameterizedMessage extends Cloneable, Serializable, IPrintab
 {
 	public abstract IParameterizedMessage clone();
 	
-	/**
+		/**
 	 * Computes the KL divergence of this message with respect to a
 	 * another message of the same type. I.e. it should compute:
 	 * <blockquote>

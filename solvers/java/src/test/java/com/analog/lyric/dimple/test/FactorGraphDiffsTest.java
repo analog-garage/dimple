@@ -56,11 +56,11 @@ public class FactorGraphDiffsTest {
 	public void tearDown()  {
 	}
 	
-	FactorGraphDiffs check(@Nullable FactorGraph a, FactorGraph b, boolean expectedResult, String tag)
+	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean expectedResult, String tag)
 	{
 		return check(a, b, expectedResult, true, tag, false);
 	}
-	FactorGraphDiffs check(@Nullable FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint)
+	FactorGraphDiffs check(FactorGraph a, FactorGraph b, boolean noDiffsExpected, boolean byName, String tag, boolean bPrint)
 	{
 		FactorGraphDiffs diffs = null;
 		try
@@ -137,7 +137,7 @@ public class FactorGraphDiffsTest {
 				 pg1,
 				 pg2);
 	}
-	public void checkNameChange( @Nullable INameable n,
+	public void checkNameChange( INameable n,
 								 @Nullable INameable n2,
 								 FactorGraph g1,
 								 FactorGraph g2,
@@ -204,10 +204,10 @@ public class FactorGraphDiffsTest {
 		compareToSelf(fgLeaf1);
 		compareToSelf(fgLeaf2);
 		
-		Discrete vB12 = (Discrete) fgLeaf2.getObjectByName("vLeafB1");
-		Discrete vO12 = (Discrete) fgLeaf2.getObjectByName("vLeafO1");
-		Discrete vO22 = (Discrete) fgLeaf2.getObjectByName("vLeafO2");
-		Factor fLeaf2 = (Factor) fgLeaf2.getObjectByName("fLeaf");
+		Discrete vB12 = requireNonNull((Discrete) fgLeaf2.getObjectByName("vLeafB1"));
+		Discrete vO12 = requireNonNull((Discrete) fgLeaf2.getObjectByName("vLeafO1"));
+		Discrete vO22 = requireNonNull((Discrete) fgLeaf2.getObjectByName("vLeafO2"));
+		Factor fLeaf2 = requireNonNull((Factor) fgLeaf2.getObjectByName("fLeaf"));
 		
 		//Name change, change back, boundary
 		vB12.setName("x");
@@ -254,7 +254,7 @@ public class FactorGraphDiffsTest {
 		assertTrue(diffs.noDiffs());
 	}
 
-	public void leaf_connectivity(@Nullable FactorGraph fgLeaf1, FactorGraph fgLeaf2,
+	public void leaf_connectivity(FactorGraph fgLeaf1, FactorGraph fgLeaf2,
 		@Nullable Discrete vB1, @Nullable Discrete vB2)
 	{
 		check(fgLeaf1, fgLeaf2, true, "leaf_connectivity 1");
@@ -355,9 +355,9 @@ public class FactorGraphDiffsTest {
 		check(fgLeaf1, fgLeaf2, false, "leaf_connectivity 10");
 		
 		//fix up
-		FactorGraph ownedFgOtherB = (FactorGraph) fgLeaf2.getObjectByName("Other2");
+		FactorGraph ownedFgOtherB = requireNonNull((FactorGraph) fgLeaf2.getObjectByName("Other2"));
 		ownedFgOtherB.setName("OtherB");
-		Factor ownedFOtherB = (Factor) ownedFgOtherB.getObjectByName("fOtherA");
+		Factor ownedFOtherB = requireNonNull((Factor) ownedFgOtherB.getObjectByName("fOtherA"));
 		ownedFOtherB.setName("fOtherB");
 		fgLeaf2.addGraph(fgOtherA, vB2);
 		
@@ -377,7 +377,7 @@ public class FactorGraphDiffsTest {
 								 String boundaryName,
 								 String leafName)
 	{
-		FactorGraph fgLeaf1 = (FactorGraph)fgMid1.getObjectByName(leafName);
+		FactorGraph fgLeaf1 = requireNonNull((FactorGraph)fgMid1.getObjectByName(leafName));
 		FactorGraph fgLeaf2 = requireNonNull((FactorGraph)fgMid2.getObjectByName(leafName));
 		leaf_connectivity(fgLeaf1,
 						  fgLeaf2,

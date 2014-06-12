@@ -35,6 +35,7 @@ public class DummyCustomFactor extends SFactorBase
 		
 	}
 
+	@SuppressWarnings("null")
 	public @Nullable Object getDefaultMessage(Port port)
 	{
 		com.analog.lyric.dimple.model.variables.Discrete var = (com.analog.lyric.dimple.model.variables.Discrete)port.getConnectedNode();

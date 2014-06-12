@@ -138,6 +138,7 @@ public class TestJunctionTreeTransform
 	 * 
 	 * @param transformMap
 	 */
+	@SuppressWarnings("null")
 	private void assertModelsEquivalent(JunctionTreeTransformMap transformMap)
 	{
 		final FactorGraph source = transformMap.source();

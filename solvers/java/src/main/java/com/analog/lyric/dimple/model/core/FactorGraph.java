@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -67,9 +69,12 @@ import com.analog.lyric.dimple.schedulers.DefaultScheduler;
 import com.analog.lyric.dimple.schedulers.IScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
+import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.MapList;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.cache.LoadingCache;
@@ -295,7 +300,7 @@ public class FactorGraph extends FactorBase
 		@Nullable IFactorGraphFactory<?> factory)
 	{
 		_solverFactory = factory;
-		return _solverFactorGraph = parentSolverGraph.createSubGraph(this, factory);
+		return _solverFactorGraph = parentSolverGraph != null ? parentSolverGraph.createSubGraph(this, factory) : null;
 	}
 
 	private void setSolverFactorySubGraphRecursive(@Nullable ISolverFactorGraph parentSolverGraph,
@@ -434,7 +439,8 @@ public class FactorGraph extends FactorBase
 
 	public void advance()
 	{
-
+		ISolverFactorGraph solver = requireSolver("advance");
+		
 		for (VariableStreamBase vs : _variableStreams)
 		{
 			vs.advanceState();
@@ -444,7 +450,7 @@ public class FactorGraph extends FactorBase
 			s.advance();
 		}
 
-		getSolver().postAdvance();
+		solver.postAdvance();
 
 	}
 
@@ -750,9 +756,11 @@ public class FactorGraph extends FactorBase
 			{
 				throw new DimpleException("Cannot take ownership of boundary variable [" + v.getLabel() + "]");
 			}
-			if(v.hasParentGraph())
+			
+			final FactorGraph parent = v.getParentGraph();
+			if (parent != null)
 			{
-				throw new DimpleException("Variable [" + v.getLabel() + "] already owned by graph [" + v.getParentGraph().getLabel() + "]");
+				throw new DimpleException("Variable [" + v.getLabel() + "] already owned by graph [" + parent.getLabel() + "]");
 			}
 			addOwnedVariable(v, false);
 			v.createSolverObject(_solverFactorGraph);
@@ -892,17 +900,22 @@ public class FactorGraph extends FactorBase
 		{
 			parentGraph = factors[i - 1].getCommonAncestor(factors[i], uncommonAncestors);
 		}
+
+		if (parentGraph == null)
+		{
+			throw new DimpleException("Cannot join factors because they are not in the same root graph");
+		}
 		
 		// Remove old factors
 		for (Factor factor : factors)
 		{
-			factor.getParentGraph().remove(factor);
+			requireNonNull(factor.getParentGraph()).remove(factor);
 		}
 
 		// If all factors did not have the same parent, then remove any intermediate subgraphs.
 		for (FactorGraph subgraph : uncommonAncestors)
 		{
-			subgraph.getParentGraph().absorbSubgraph(subgraph);
+			requireNonNull(subgraph.getParentGraph()).absorbSubgraph(subgraph);
 		}
 		
 		// Add new factor
@@ -1305,23 +1318,31 @@ public class FactorGraph extends FactorBase
 			else
 			{
 				Factor fTemplate = fb.asFactor();
-				Factor fCopy = fTemplate.clone();
-				old2newObjs.put(fTemplate,fCopy);
-
-				addNameAndUUID(fCopy);
-				fCopy.setParentGraph(this);
-				_ownedFactors.add(fCopy);
-				for (INode n : fTemplate.getSiblings())
+				if (fTemplate != null)
 				{
-					VariableBase vTemplate = (VariableBase)n;
-					VariableBase var = (VariableBase)old2newObjs.get(vTemplate);
-					fCopy.connect(var);
-					if (templateGraph._boundaryVariables.contains(vTemplate))
+					Factor fCopy = fTemplate.clone();
+					old2newObjs.put(fTemplate,fCopy);
+
+					addNameAndUUID(fCopy);
+					fCopy.setParentGraph(this);
+					_ownedFactors.add(fCopy);
+					for (INode n : fTemplate.getSiblings())
 					{
-						var.connect(fCopy);		// Boundary variable in template graph: connect port to corresponding boundary variable in this graph
+						VariableBase vTemplate = (VariableBase)n;
+						VariableBase var = (VariableBase)old2newObjs.get(vTemplate);
+						fCopy.connect(var);
+						if (templateGraph._boundaryVariables.contains(vTemplate))
+						{
+							// Boundary variable in template graph: connect port to corresponding boundary
+							// variable in this graph
+							var.connect(fCopy);
+						}
+						else
+						{
+							// Owned variable in template graph: connect port to new copy of template variable
+							var.connect(fCopy);
+						}
 					}
-					else
-						var.connect(fCopy);			// Owned variable in template graph: connect port to new copy of template variable
 				}
 			}
 		}
@@ -1514,13 +1535,13 @@ public class FactorGraph extends FactorBase
 
 	public void baumWelch(IFactorTable [] tables,int numRestarts,int numSteps)
 	{
-		getSolver().baumWelch(tables, numRestarts, numSteps);
+		requireSolver("baumWelch").baumWelch(tables, numRestarts, numSteps);
 
 	}
 
 	public void estimateParameters(IFactorTable [] tables,int numRestarts,int numSteps, double stepScaleFactor)
 	{
-		getSolver().estimateParameters(tables, numRestarts, numSteps,  stepScaleFactor);
+		requireSolver("estimateParameters").estimateParameters(tables, numRestarts, numSteps,  stepScaleFactor);
 
 	}
 
@@ -1574,11 +1595,22 @@ public class FactorGraph extends FactorBase
 	public void recreateMessages()
 	{
 		for (VariableBase v : getVariablesFlat())
-			v.getSolver().createNonEdgeSpecificState();
+		{
+			final ISolverVariable sv = v.getSolver();
+			if (sv != null)
+			{
+				sv.createNonEdgeSpecificState();
+			}
+		}
 
 		for (Factor f : getNonGraphFactorsFlat() )
-			f.getSolver().createMessages();
-
+		{
+			final ISolverFactor sf = f.getSolver();
+			if (sf != null)
+			{
+				sf.createMessages();
+			}
+		}
 	}
 
 	/**
@@ -2903,7 +2935,8 @@ public class FactorGraph extends FactorBase
 		for(Factor fn : allFunctions)
 		{
 			String fnName = fn.getLabel();
-			if(fn.getParentGraph().getParentGraph() != null)
+			final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
+			if(fnParent.getParentGraph() != null)
 			{
 				fnName = fn.getQualifiedLabel();
 			}
@@ -2914,8 +2947,9 @@ public class FactorGraph extends FactorBase
 				VariableBase v = fn.getSibling(i);
 
 				String vName = v.getLabel();
-				if(v.getParentGraph() != null && // can happen with boundary variables
-						v.getParentGraph().getParentGraph() != null)
+				final FactorGraph vParent = v.getParentGraph();
+				if (vParent != null && // can happen with boundary variables
+					vParent.getParentGraph() != null)
 				{
 					vName = v.getQualifiedLabel();
 				}
@@ -2927,8 +2961,9 @@ public class FactorGraph extends FactorBase
 		for(VariableBase v : allVariables)
 		{
 			String vName = v.getLabel();
-			if(v.getParentGraph() != null && //can happen with boundary variables
-					v.getParentGraph().getParentGraph() != null)
+			final FactorGraph vParent = v.getParentGraph();
+			if(vParent != null && //can happen with boundary variables
+				vParent.getParentGraph() != null)
 			{
 				vName = v.getQualifiedLabel();
 			}
@@ -2938,7 +2973,8 @@ public class FactorGraph extends FactorBase
 			{
 				Factor fn = v.getFactors()[i];
 				String fnName = fn.getLabel();
-				if(fn.getParentGraph().getParentGraph() != null)
+				final FactorGraph fnParent = requireNonNull(fn.getParentGraph());
+				if(fnParent.getParentGraph() != null)
 				{
 					fnName = fn.getQualifiedLabel();
 				}
@@ -3025,11 +3061,10 @@ public class FactorGraph extends FactorBase
 	@Override
 	public FactorGraph getRootGraph()
 	{
-		FactorGraph root = super.getRootGraph();
-		if(root == null)
-		{
-			root = this;
-		}
+		FactorGraph root = this;
+		
+		for (FactorGraph parent; (parent = root.getParentGraph()) != null; root = parent) {}
+		
 		return root;
 	}
 
@@ -3193,24 +3228,24 @@ public class FactorGraph extends FactorBase
 	@Override
 	public double getScore()
 	{
-		return getSolver().getScore();
+		return requireSolver("getScore").getScore();
 	}
 
 	public double getBetheFreeEnergy()
 	{
-		return getSolver().getBetheFreeEnergy();
+		return requireSolver("getBetheFreeEnergy").getBetheFreeEnergy();
 	}
 
 	@Override
 	public double getInternalEnergy()
 	{
-		return getSolver().getInternalEnergy();
+		return requireSolver("getInternalEnergy").getInternalEnergy();
 	}
 
 	@Override
 	public double getBetheEntropy()
 	{
-		return getSolver().getBetheEntropy();
+		return requireSolver("getBetheEntropy").getBetheEntropy();
 	}
 
 
@@ -3291,6 +3326,21 @@ public class FactorGraph extends FactorBase
 				false,
 				false);
 	}
-
+	
+	/**
+	 * Returns solver graph or throws an error if null.
+	 * <p>
+	 * For internal use only.
+	 */
+	@Internal
+	public ISolverFactorGraph requireSolver(String method)
+	{
+		ISolverFactorGraph solver = getSolver();
+		if (solver == null)
+		{
+			throw new DimpleException("Solver not set. Required by '%s'", method);
+		}
+		return solver;
+	}
 }
 

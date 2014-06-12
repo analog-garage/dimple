@@ -56,6 +56,7 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 		_variable.setInputObject(null);
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public final void setOutputMessageFromVariableBelief()
 	{
@@ -64,6 +65,7 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	}
 	
 
+	@SuppressWarnings("null")
 	@Override
 	public final void initialize()
 	{

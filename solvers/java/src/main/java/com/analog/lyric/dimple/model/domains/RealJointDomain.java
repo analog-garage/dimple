@@ -272,6 +272,12 @@ public class RealJointDomain extends Domain
 		return _size;
 	}
 	
+	/**
+	 * True if values are confined to a subset of R<sup>n</sup>
+	 * <p>
+	 * True if at least one subdomain in {@link #getRealDomains()} is bounded.
+	 */
+	@Override
 	public final boolean isBounded()
 	{
 		// True if any dimension is bounded
@@ -283,10 +289,4 @@ public class RealJointDomain extends Domain
 		
 		return false;
 	}
-	
-	public final boolean isUnbounded()
-	{
-		return !isBounded();
-	}
-
 }

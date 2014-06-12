@@ -15,6 +15,8 @@
 ********************************************************************************/
 package com.analog.lyric.dimple.solvers.lp;
 
+import static java.util.Objects.*;
+
 import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -154,7 +156,11 @@ public class SFactorGraph extends SFactorGraphBase
 		FactorGraph fg = getModelObject();
 		if (fg.getSolver() == this)
 		{
-			parentSolver = fg.getParentGraph().getSolver();
+			FactorGraph parent = fg.getParentGraph();
+			if (parent != null)
+			{
+				parentSolver = parent.getSolver();
+			}
 		}
 
 		return parentSolver;
@@ -354,11 +360,11 @@ public class SFactorGraph extends SFactorGraphBase
 			throw new DimpleException("Cannot load underlying LP solver '%s': %s'", _lpSolverName, ex.toString());
 		}
 		
-		buildLPState();
+		buildLPState(); // computes object function and constraints
 
 		Problem problem = new Problem();
 		
-		double[] objectiveCoefficients = getObjectiveFunction();
+		double[] objectiveCoefficients = requireNonNull(getObjectiveFunction());
 		Linear objective = new Linear();
 		for (int i = 0, end = objectiveCoefficients.length; i < end; ++i)
 		{
@@ -367,7 +373,7 @@ public class SFactorGraph extends SFactorGraphBase
 		}
 		problem.setObjective(objective);
 		
-		for (IntegerEquation constraint : getConstraints())
+		for (IntegerEquation constraint : requireNonNull(getConstraints()))
 		{
 			Linear linear = new Linear();
 			TermIterator iter = constraint.getTerms();

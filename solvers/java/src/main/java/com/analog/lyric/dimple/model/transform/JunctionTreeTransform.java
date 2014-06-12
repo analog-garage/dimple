@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.transform;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -406,7 +408,7 @@ public class JunctionTreeTransform
 				final int nEdgeVars = edge._variables.length;
 				final int[] a = new int[nEdgeVars];
 				
-				final Discrete jointVar = edge._jointVariable;
+				final Discrete jointVar = requireNonNull(edge._jointVariable);
 				newVariables[edgei] = jointVar;
 				newDomains[edgei] = jointVar.getDiscreteDomain();
 				for (int vari = 0; vari < nEdgeVars; ++vari)
@@ -422,8 +424,8 @@ public class JunctionTreeTransform
 			}
 			
 			// Compute new factor table energies and indices.
-			final Factor mergedFactor = _mergedFactor;
-			final IFactorTable oldFactorTable = mergedFactor.getFactorTable();
+			final Factor mergedFactor = requireNonNull(_mergedFactor);
+			final IFactorTable oldFactorTable = requireNonNull(mergedFactor.getFactorTable());
 			final int nEntries = oldFactorTable.countNonZeroWeights();
 
 			final int[][] indices = new int[nEntries][];
@@ -467,7 +469,7 @@ public class JunctionTreeTransform
 			newFactorTable.setEnergiesSparse(indices, energies);
 
 			// Remove the old factor
-			FactorGraph graph = mergedFactor.getParentGraph();
+			FactorGraph graph = requireNonNull(mergedFactor.getParentGraph());
 			graph.remove(mergedFactor);
 			
 			// Create new factor attached to edge variables
@@ -898,6 +900,7 @@ public class JunctionTreeTransform
 		SetMultimap<Discrete, Clique> varToCliques)
 	{
 		final int nCliques = cliques.size();
+		assert(nCliques > 0);
 		final IHeap<Clique> heap = BinaryHeap.create(nCliques);
 		
 		heap.deferOrderingForBulkAdd(nCliques);
@@ -910,15 +913,15 @@ public class JunctionTreeTransform
 			}
 			clique._heapEntry = heap.offer(clique, Double.POSITIVE_INFINITY);
 		}
-		heap.changePriority(Objects.requireNonNull(maxClique._heapEntry), Double.NEGATIVE_INFINITY);
+		requireNonNull(maxClique);
+		heap.changePriority(requireNonNull(maxClique._heapEntry), Double.NEGATIVE_INFINITY);
 		
 		// Edges with more than one variable
 		List<CliqueEdge> multiVariateEdges = Lists.newArrayListWithCapacity(nCliques - 1);
 		final FactorGraph targetModel = transformMap.target();
 		
-		while (!heap.isEmpty())
+		for (Clique clique; (clique = heap.poll()) != null;)
 		{
-			Clique clique = heap.poll();
 			clique._inSpanningTree = true;
 			clique._heapEntry = null;
 			
@@ -928,7 +931,7 @@ public class JunctionTreeTransform
 				final Clique prevClique = addedEdge._from;
 				if (addedEdge.isMergeable())
 				{
-					if (prevClique.absorbClique(clique, varToCliques))
+					if (requireNonNull(prevClique).absorbClique(clique, varToCliques))
 					{
 						clique = prevClique;
 					}
@@ -945,7 +948,7 @@ public class JunctionTreeTransform
 						multiVariateEdges.add(addedEdge);
 						transformMap.addDeterministicVariable(addedVar);
 					}
-					prevClique.addEdge(addedEdge);
+					requireNonNull(prevClique).addEdge(addedEdge);
 					clique.addEdge(addedEdge);
 				}
 			}

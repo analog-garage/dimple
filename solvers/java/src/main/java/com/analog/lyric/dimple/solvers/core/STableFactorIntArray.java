@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
@@ -44,8 +46,8 @@ public abstract class STableFactorIntArray extends STableFactorBase
 	    
 	    for (int index = 0, end = nVars; index < end; index++)
 	    {
-	    	ISolverVariable is = factor.getSibling(index).getSolver();
-	    	Object [] messages = is.createMessages(this);
+	    	ISolverVariable is = requireNonNull(factor.getSibling(index).getSolver());
+	    	Object [] messages = requireNonNull(is.createMessages(this));
 	    	_outputMsgs[index] = (int[])messages[0];
 	    	_inputMsgs[index] = (int[])messages[1];
 	    }

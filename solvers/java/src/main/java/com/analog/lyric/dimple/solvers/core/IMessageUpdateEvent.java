@@ -27,6 +27,7 @@ public interface IMessageUpdateEvent
 	public int getEdge();
 	
 	public abstract @Nullable ISolverFactor getFactor();
+	public String getFactorName();
 
 	/**
 	 * The new value of the message after update.
@@ -42,6 +43,8 @@ public interface IMessageUpdateEvent
 
 	public abstract @Nullable ISolverVariable getVariable();
 
+	public String getVariableName();
+	
 	/**
 	 * True if this is a {@link VariableToFactorMessageEvent} and false if it is
 	 * a {@link FactorToVariableMessageEvent}.

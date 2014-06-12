@@ -19,8 +19,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -136,18 +136,13 @@ public class CustomGaussianSum extends GaussianFactorBase
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);
+			Domain domain = v.getDomain();
 			
-			// Must be real
-			if (v.getDomain().isDiscrete())
+			// Must be unbounded univariate real
+			if (!domain.isReal() || domain.isBounded())
+			{
 				return false;
-			
-			// Must be univariate
-			if (v instanceof RealJoint)
-				return false;
-			
-			// Must be unbounded
-			if (v.getDomain().asReal().isBounded())
-				return false;
+			}
 		}
 		return true;
 	}

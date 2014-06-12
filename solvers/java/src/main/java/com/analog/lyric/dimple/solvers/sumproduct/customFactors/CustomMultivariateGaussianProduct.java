@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.MultivariateNormalParameters;
 
@@ -91,21 +91,21 @@ public class CustomMultivariateGaussianProduct extends MultivariateGaussianFacto
 		if (ff.getConstantCount() != 1)
 			return false;
 		
-		// Variables must be RealJoint
 		VariableBase y = factor.getSibling(0);
 		VariableBase x = factor.getSibling(1);
-		if (y.getDomain().isDiscrete() || x.getDomain().isDiscrete())
-			return false;
-		if (y instanceof Real || x instanceof Real)
-			return false;
-		
-		// Variables must be unbounded
-		if (y.getDomain().asRealJoint().isBounded() || x.getDomain().asRealJoint().isBounded())
-			return false;
 
+		RealJointDomain yDomain = y.getDomain().asRealJoint();
+		RealJointDomain xDomain = x.getDomain().asRealJoint();
+		
+		// Variables must be unbounded multivariate reals
+		if (yDomain == null || xDomain == null || yDomain.isBounded() || xDomain.isBounded())
+		{
+			return false;
+		}
+		
 		// Constant must be a matrix of the proper size
-		int yDimension = y.getDomain().asRealJoint().getDimensions();
-		int xDimension = x.getDomain().asRealJoint().getDimensions();
+		int yDimension = yDomain.getDimensions();
+		int xDimension = xDomain.getDimensions();
 		Object constant = ff.getConstants()[0];
 		if (!(constant instanceof double[][]))
 			return false;

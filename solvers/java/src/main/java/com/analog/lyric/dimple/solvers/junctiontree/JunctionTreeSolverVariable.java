@@ -27,7 +27,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @author Christopher Barber
  *
  */
-public class JunctionTreeSolverVariable extends ProxySolverVariable
+public class JunctionTreeSolverVariable extends ProxySolverVariable<ISolverVariable>
 {
 	/*-------
 	 * State

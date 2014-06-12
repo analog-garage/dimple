@@ -91,13 +91,13 @@ public abstract class AbstractOptions implements IOptions
 	@Override
 	public Object put(IOptionKey<?> key, Object value)
 	{
-		return getLocalOptions(true).put(key, value);
+		return createLocalOptions().put(key, value);
 	}
 
 	@Override
 	public void putAll(Map<? extends IOptionKey<?>, ? extends Object> m)
 	{
-		getLocalOptions(true).putAll(m);
+		createLocalOptions().putAll(m);
 	}
 
 	@Override

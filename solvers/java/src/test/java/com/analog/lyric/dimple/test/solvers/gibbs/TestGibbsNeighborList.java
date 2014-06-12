@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import com.analog.lyric.dimple.solvers.gibbs.Solver;
 
 public class TestGibbsNeighborList
 {
+	@SuppressWarnings("null")
 	@Test
 	public void test()
 	{
@@ -196,7 +198,7 @@ public class TestGibbsNeighborList
 			expectedNodes.add((ISolverNodeGibbs)node.getSolver());
 		}
 		
-		ISolverVariableGibbs svar = (ISolverVariableGibbs)var.getSolver();
+		ISolverVariableGibbs svar = requireNonNull((ISolverVariableGibbs)var.getSolver());
 		
 		int count = 0;
 		ReleasableIterator<ISolverNodeGibbs> iter = svar.getSampleScoreNodes();

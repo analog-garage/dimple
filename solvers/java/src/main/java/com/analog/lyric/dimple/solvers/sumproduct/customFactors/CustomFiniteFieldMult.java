@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -35,6 +37,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	private DoubleFFT_1D _fft;
 	
 	
+	@SuppressWarnings("null")
 	public CustomFiniteFieldMult(Factor factor)
 	{
 		super(factor);
@@ -42,7 +45,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 			throw new DimpleException("Only supports 3 arguments");
 		
 		//TODO: check all have same prime poly
-		final Discrete v0 = (Discrete)factor.getSibling(0);
+		final Discrete v0 = requireNonNull((Discrete)factor.getSibling(0));
 		
 		//TODO: error check
 		int poly = ((SFiniteFieldVariable)v0.getSolver()).getTables().getPoly();
@@ -90,6 +93,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 	
 	public void updateBackward(double [] yInput,double [] zInput, double [] xOutput)
 	{
+		@SuppressWarnings("null")
 		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
 		int [] dlogTable = tables.getDlogTable();
 		int [] powTable = tables.getPowerTable();
@@ -159,6 +163,7 @@ public class CustomFiniteFieldMult extends SFiniteFieldFactor
 		double [] zOutput = _outputMsgs[2];
 
 		
+		@SuppressWarnings("null")
 		final LookupTables tables = ((SFiniteFieldVariable)_factor.getSibling(0).getSolver()).getTables();
 		int [] dlogTable = tables.getDlogTable();
 		int [] powTable = tables.getPowerTable();

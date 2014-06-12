@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +25,7 @@ import java.util.Set;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.IKeyed;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.values.IndexedValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.Nullable;
@@ -59,8 +62,9 @@ public final class SFactorUpdate implements IKeyed<ISolverFactorGibbs>
 	SFactorUpdate(ISolverFactorGibbs sfactor)
 	{
 		_sfactor = sfactor;
-		int nEdges = sfactor.getModelObject().getSiblingCount();
-		_incrementalUpdateThreshold = sfactor.getModelObject().getFactorFunction().updateDeterministicLimit(nEdges);
+		Factor factor = requireNonNull(sfactor.getModelObject());
+		int nEdges = factor.getSiblingCount();
+		_incrementalUpdateThreshold = factor.getFactorFunction().updateDeterministicLimit(nEdges);
 		_updates = _incrementalUpdateThreshold > 0 ? new HashSet<IndexedValue>() : null;
 	}
 	

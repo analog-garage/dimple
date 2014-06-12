@@ -31,6 +31,7 @@ import com.analog.lyric.benchmarking.utils.functional.TransformFunction;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
+@SuppressWarnings("null")
 public class ImageDenoisingBenchmark
 {
 	private final boolean saveResult = false;

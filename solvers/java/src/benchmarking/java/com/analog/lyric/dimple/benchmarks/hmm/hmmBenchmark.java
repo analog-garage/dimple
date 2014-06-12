@@ -25,6 +25,7 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
 
+@SuppressWarnings("null")
 public class hmmBenchmark
 {
 	private static final Random rng = new Random(0);

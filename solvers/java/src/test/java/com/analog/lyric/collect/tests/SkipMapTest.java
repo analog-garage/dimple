@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Comparator;
@@ -77,6 +78,7 @@ public class SkipMapTest
 		assertNull(map1.get("not a valid key"));
 		
 		Map.Entry<Integer, String> firstEntry = map1.firstEntry();
+		requireNonNull(firstEntry);
 		assertEquals("23", firstEntry.getValue());
 		assertEquals("23", map1.get(map1.firstKey()));
 		firstEntry.setValue("xxx");
@@ -188,6 +190,7 @@ public class SkipMapTest
 		for (int i = map1.size(); i > 0; --i)
 		{
 			Map.Entry<Integer,String> entry = iter.next();
+			requireNonNull(entry);
 			String value = iter2.nextValue();
 			Integer key = iter2.getLastKey();
 			assertEquals(value, entry.getValue());

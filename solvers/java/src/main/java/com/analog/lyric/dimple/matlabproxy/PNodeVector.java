@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.matlabproxy;
 
 
+import static java.util.Objects.*;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -327,7 +329,7 @@ public abstract class PNodeVector extends PObject
 	
 	public void invokeSolverMethod(String methodName,Object ... args)
 	{
-		ISolverNode sn = _nodes[0].getSolver();
+		ISolverNode sn = requireNonNull(_nodes[0].getSolver());
 		
 		Method [] ms = sn.getClass().getMethods();
 		for (Method m : ms)
@@ -357,7 +359,7 @@ public abstract class PNodeVector extends PObject
 	
 	public Object [] invokeSolverMethodWithReturnValue(String methodName,Object ... args)
 	{
-		ISolverNode sn = _nodes[0].getSolver();
+		ISolverNode sn = requireNonNull(_nodes[0].getSolver());
 		
 		Method [] ms = sn.getClass().getMethods();
 		for (Method m : ms)

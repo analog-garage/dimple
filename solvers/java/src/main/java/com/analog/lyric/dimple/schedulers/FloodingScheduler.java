@@ -39,13 +39,14 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
  *         this scheduler is used as a fall-back to a different scheduler.
  */
 public class FloodingScheduler implements IScheduler
-{	
+{
 	@SuppressWarnings("all")
 	protected Class _subGraphSchedulerClass = FloodingScheduler.class;
 
 	
+	@Override
 	@SuppressWarnings("unchecked")
-	public ISchedule createSchedule(FactorGraph factorGraph) 
+	public ISchedule createSchedule(FactorGraph factorGraph)
 	{
 		FixedSchedule schedule = new FixedSchedule();
 
@@ -64,9 +65,11 @@ public class FloodingScheduler implements IScheduler
 		
 		// Update all the sub-graphs
 		for (FactorGraph sg : factorGraph.getNestedGraphs())
-			if (sg.getExplicitlySetScheduler() != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
+		{
+			final IScheduler scheduler = sg.getExplicitlySetScheduler();
+			if (scheduler != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
 			{
-				ISchedule tmp = sg.getExplicitlySetScheduler().createSchedule(sg);
+				ISchedule tmp = scheduler.createSchedule(sg);
 				tmp.attach(sg);
 				schedule.add(tmp);
 			}
@@ -81,6 +84,7 @@ public class FloodingScheduler implements IScheduler
 				tmp.attach(sg);
 				schedule.add(tmp);
 			}
+		}
 
 		return schedule;
 	}

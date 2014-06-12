@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.FactorFunctions;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.BitSet;
@@ -217,7 +218,7 @@ public class FactorFunctionTester
 	
 	private static boolean valueFuzzyEquals(Value value, Object object, double tolerance)
 	{
-		Object valueObj = value.getObject();
+		Object valueObj = requireNonNull(value.getObject());
 		if (valueObj instanceof Number && object instanceof Number)
 		{
 			return DoubleMath.fuzzyEquals(((Number)valueObj).doubleValue(), ((Number)object).doubleValue(), tolerance);

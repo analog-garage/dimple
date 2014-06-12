@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -117,10 +119,11 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 	}
 
 	// For MultinomialBlockProposal.ICustomMultinomial interface
+	@SuppressWarnings("null")
 	@Override
 	public final double[] getCurrentAlpha()
 	{
-		return (_hasConstantAlpha ? _constantAlpha : Objects.requireNonNull(_alphaVariable).getCurrentSample()).clone();
+		return (_hasConstantAlpha ? _constantAlpha : _alphaVariable.getCurrentSample()).clone();
 	}
 	@Override
 	public final boolean isAlphaEnergyRepresentation()
@@ -162,7 +165,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		BlockScheduleEntry blockScheduleEntry = new BlockScheduleEntry(blockSampler, nodeList);
 		
 		// Add the block updater to the schedule
-		FactorGraph rootGraph = _factor.getRootGraph();
+		FactorGraph rootGraph = requireNonNull(_factor.getRootGraph());
 		if (rootGraph.hasCustomSchedule())	// If there's a custom schedule
 		{
 			FixedSchedule schedule = (FixedSchedule)rootGraph.getSchedule();	// A custom schedule is a fixed schedule
@@ -176,7 +179,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		}
 			
 		// Use the block sampler to initialize the neighboring variables
-		((SFactorGraph)rootGraph.getSolver()).addBlockInitializer(blockSampler);
+		((SFactorGraph)rootGraph.requireSolver("initialize")).addBlockInitializer(blockSampler);
 	}
 	
 	
@@ -203,7 +206,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 		{
 			_hasConstantN = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
-				_constantN = (Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX);
+				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
 			else
 				_NVariable = (SDiscreteVariable)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
 			alphaParameterIndex = ALPHA_PARAMETER_INDEX;
@@ -244,7 +247,7 @@ public class CustomMultinomial extends SRealFactor implements IRealJointConjugat
 				if (factorFunction.isConstantIndex(index))
 				{
 					hasConstantOutput[i] = true;
-					constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
+					constantOutputCounts[i] = requireNonNull((Integer)factorFunction.getConstantByIndex(index));
 				}
 				else
 				{

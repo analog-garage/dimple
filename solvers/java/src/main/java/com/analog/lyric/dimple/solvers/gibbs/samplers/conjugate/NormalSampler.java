@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
@@ -57,7 +59,7 @@ public class NormalSampler implements IRealConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (mean, precision)
-			NormalParameters message = (NormalParameters)(ports[port].getOutputMsg());
+			NormalParameters message = requireNonNull((NormalParameters)(ports[port].getOutputMsg()));
 			double mean = message.getMean();
 			double precision = message.getPrecision();
 			

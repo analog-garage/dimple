@@ -145,6 +145,7 @@ public class TestDimpleEventListener
 		}
 	}
 	
+	@SuppressWarnings("null")
 	@Test
 	public void testListener()
 	{

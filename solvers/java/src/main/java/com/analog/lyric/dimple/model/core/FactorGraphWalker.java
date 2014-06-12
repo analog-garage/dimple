@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
@@ -411,7 +413,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<? extends INode> siblingNodes = node.getSiblings();
+			List<? extends INode> siblingNodes = requireNonNull(node).getSiblings();
 			int nSiblings = siblingNodes.size();
 			if (nSiblings > 0)
 			{
@@ -477,7 +479,7 @@ public class FactorGraphWalker implements Iterator<INode>
 				continue;
 			}
 			
-			List<? extends INode> portsOut = node.getSiblings();
+			List<? extends INode> portsOut = requireNonNull(node).getSiblings();
 			int nPortsOut = portsOut.size();
 			if (nPortsOut > 0)
 			{

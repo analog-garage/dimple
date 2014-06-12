@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -88,6 +90,7 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void initialize()
 	{
@@ -135,9 +138,9 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 				_numParameterEdges = 1;
 				_constantAlphaMinusOne = null;
 				List<? extends VariableBase> siblings = _factor.getSiblings();
-				final SRealJointVariable alphaVariable = _alphaVariable =
+				_alphaVariable =
 					(SRealJointVariable)((siblings.get(factorFunction.getEdgeByIndex(PARAMETER_INDEX))).getSolver());
-				_dimension = alphaVariable.getDimension();
+				_dimension = requireNonNull(_alphaVariable).getDimension();
 			}
 		}
 	}
@@ -203,7 +206,8 @@ public class CustomDirichlet extends SRealFactor implements IRealJointConjugateF
 						value[i] /= sum;												// Normalize
 
 					// Set the output variable value
-					((SRealJointVariable)((siblings.get(edge)).getSolver())).setCurrentSample(value);
+					SRealJointVariable svar = ((SRealJointVariable)((siblings.get(edge)).getSolver()));
+					requireNonNull(svar).setCurrentSample(value);
 				}
 			}
 		}

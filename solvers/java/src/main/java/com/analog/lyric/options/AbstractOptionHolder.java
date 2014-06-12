@@ -45,6 +45,12 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 		}
 	}
 
+	@Override
+	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
+	{
+		throw DimpleException.unsupported("createLocalOptions()");
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * Default implementation always returns null if {@code create} is false and
@@ -55,7 +61,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	{
 		if (create)
 		{
-			throw DimpleException.unsupported("getLocalOptions(false)");
+			return createLocalOptions();
 		}
 		return null;
 	}

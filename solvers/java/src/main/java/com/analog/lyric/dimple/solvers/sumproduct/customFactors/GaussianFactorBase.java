@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
@@ -53,8 +55,8 @@ public abstract class GaussianFactorBase extends SFactorBase
 		// Messages are created in variable constructor, just save a reference here
 	    for (int index = 0; index < nVars; ++index)
 		{
-			ISolverVariable sv = factor.getSibling(index).getSolver();
-			Object[] messages = sv.createMessages(this);
+			ISolverVariable sv = requireNonNull(factor.getSibling(index).getSolver());
+			Object[] messages = requireNonNull(sv.createMessages(this));
 			outputMsgs[index] = (NormalParameters)messages[0];
 			inputMsgs[index] = (NormalParameters)messages[1];
 		}

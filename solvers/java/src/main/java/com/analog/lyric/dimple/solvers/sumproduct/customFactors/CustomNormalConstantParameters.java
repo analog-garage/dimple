@@ -16,11 +16,13 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Normal;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -57,7 +59,11 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		if (specificFactorFunction.hasConstantParameters())
 			outputMessage = specificFactorFunction.getParameters();
 		else if (factorFunction.isConstantIndex(MEAN_PARAMETER_INDEX) && factorFunction.isConstantIndex(PRECISION_PARAMETER_INDEX))
-			outputMessage = new NormalParameters((Double)factorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX), (Double)factorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
+		{
+			double mean = requireNonNull((Double)factorFunction.getConstantByIndex(MEAN_PARAMETER_INDEX));
+			double precision = requireNonNull((Double)factorFunction.getConstantByIndex(PRECISION_PARAMETER_INDEX));
+			outputMessage = new NormalParameters(mean, precision);
+		}
 		else
 			throw new DimpleException("Normal factor must have constant parameters");
 		
@@ -85,18 +91,13 @@ public class CustomNormalConstantParameters extends GaussianFactorBase
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);
+			Domain domain = v.getDomain();
 			
-			// Must be real
-			if (v.getDomain().isDiscrete())
+			// Must be unbounded univariate real
+			if (!domain.isReal() || domain.isBounded())
+			{
 				return false;
-			
-			// Must be univariate
-			if (v instanceof RealJoint)
-				return false;
-			
-			// Must be unbounded
-			if (v.getDomain().asReal().isBounded())
-				return false;
+			}
 		}
 		return true;
 	}

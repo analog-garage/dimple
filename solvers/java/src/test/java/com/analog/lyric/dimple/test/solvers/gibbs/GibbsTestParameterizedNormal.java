@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Random;
@@ -46,7 +47,7 @@ public class GibbsTestParameterizedNormal
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		SFactorGraph solver = requireNonNull((SFactorGraph)graph.getSolver());
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);
@@ -83,8 +84,8 @@ public class GibbsTestParameterizedNormal
 		graph.addFactor(new Normal(), vars);
 
 
-		SRealVariable svModelMean = (SRealVariable)vModelMean.getSolver();
-		SRealVariable svModelInverseVariance = (SRealVariable)vModelInverseVariance.getSolver();
+		SRealVariable svModelMean = requireNonNull((SRealVariable)vModelMean.getSolver());
+		SRealVariable svModelInverseVariance = requireNonNull((SRealVariable)vModelInverseVariance.getSolver());
 
 
 

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -236,7 +238,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 		{
 			_hasConstantN = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantN)
-				_constantN = (Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX);
+				_constantN = requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
 			else
 				_NVariable = (SDiscreteVariable)((siblings.get(factorFunction.getEdgeByIndex(N_PARAMETER_INDEX))).getSolver());
 		}
@@ -264,7 +266,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 				if (factorFunction.isConstantIndex(index))
 				{
 					hasConstantAlpha[i] = true;
-					constantAlpha[i] = (Double)factorFunction.getConstantByIndex(index);
+					constantAlpha[i] = (Double)requireNonNull(factorFunction.getConstantByIndex(index));
 				}
 				else
 				{
@@ -298,7 +300,7 @@ public class CustomMultinomialUnnormalizedOrEnergyParameters extends SRealFactor
 			{
 				if (factorFunction.isConstantIndex(index))
 				{
-					constantOutputCounts[i] = (Integer)factorFunction.getConstantByIndex(index);
+					constantOutputCounts[i] = requireNonNull((Integer)factorFunction.getConstantByIndex(index));
 				}
 				else
 				{

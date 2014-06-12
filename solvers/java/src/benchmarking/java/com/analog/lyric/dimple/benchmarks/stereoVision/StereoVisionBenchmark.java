@@ -24,9 +24,10 @@ import com.analog.lyric.benchmarking.utils.functional.Functions;
 import com.analog.lyric.dimple.benchmarks.utils.Image;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 
+@SuppressWarnings("null")
 public class StereoVisionBenchmark
 {
-	private final boolean saveResult = false;	
+	private final boolean saveResult = false;
 	
 	@Benchmark(warmupIterations = 0, iterations = 2)
 	public boolean stereoVisionArtScaledGibbs() throws IOException

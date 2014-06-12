@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -213,7 +215,7 @@ public abstract class ParameterEstimator
 					{
 						Misc.breakpoint();
 					}
-					double [] belief = (double[])f.getSolver().getBelief();
+					double [] belief = (double[])requireNonNull(f.getSolver()).getBelief();
 					for (int i = 0; i < sum.length; i++)
 						sum[i] += belief[i];
 
@@ -228,7 +230,10 @@ public abstract class ParameterEstimator
 
 				//Set the weights to that
 				ft.replaceWeightsSparse(sum);
-				ft.makeConditional(BitSetUtil.bitsetFromIndices(directedTo.length + directedFrom.length, directedTo));
+				if (directedTo != null && directedFrom != null)
+				{
+					ft.makeConditional(BitSetUtil.bitsetFromIndices(directedTo.length + directedFrom.length, directedTo));
+				}
 	}
 		}
 	}

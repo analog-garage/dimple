@@ -16,7 +16,10 @@
 
 package com.analog.lyric.dimple.solvers.lp;
 
+import static java.util.Objects.*;
+
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -155,7 +158,7 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (hasFixedValue)
 		{
-			fixedValueIndex = (Integer)fixedValue;
+			fixedValueIndex = (Integer)requireNonNull(fixedValue);
 		}
 		else if (input != null)
 		{
@@ -191,9 +194,16 @@ public class SVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public @Nullable double[] getBelief()
+	public double[] getBelief()
 	{
-		return _beliefs;
+		double[] beliefs = _beliefs;
+		if (beliefs == null)
+		{
+			final int size = getModelObject().getDomain().size();
+			beliefs = new double[size];
+			Arrays.fill(beliefs,1.0/size);
+		}
+		return beliefs;
 	}
 
 	/**
@@ -257,13 +267,13 @@ public class SVariable extends SDiscreteVariableBase
 		
 		if (lpVar >= 0)
 		{
-			if (_invalidAssignments == null)
+			final BitSet invalidAssignments = _invalidAssignments;
+			if (invalidAssignments == null)
 			{
 				lpVar += domainIndex;
 			}
 			else
 			{
-				BitSet invalidAssignments = _invalidAssignments;
 				if (invalidAssignments.get(domainIndex))
 				{
 					return -1;
@@ -294,7 +304,7 @@ public class SVariable extends SDiscreteVariableBase
 
 		int cardinality = 0;
 		int domlength = getModelObject().getDomain().size();
-		if (_inputs != null)
+		if (inputWeights != null)
 		{
 			for (int i = inputWeights.length; --i >=0 ;)
 			{

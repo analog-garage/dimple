@@ -17,6 +17,7 @@
 package com.analog.lyric.collect.tests;
 
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
@@ -395,6 +396,7 @@ public class TestHeap
 		{
 			// Don't peek if ordering is deferred to avoid changing state.
 			IEntry<Element> entry = heap.peekEntry();
+			requireNonNull(entry);
 			assertSame(heap.peek(), entry.getElement());
 		}
 		
@@ -421,6 +423,7 @@ public class TestHeap
 			assertTrue(heap.contains(element));
 			
 			IEntry<Element> entry2 = heap.entryForElement(element);
+			requireNonNull(entry2);
 			assertSame(element, entry2.getElement());
 		}
 		assertFalse(elements.hasNext());

@@ -75,7 +75,7 @@ public class FactorFunctionUtilities
     		out = (Boolean)value ? 1 : 0;
     	}
     	else
-    		throw new DimpleException("Invalid value type '%s'", value.getClass());
+    		throw new DimpleException("Invalid value type '%s'", value != null ? value.getClass() : "null");
     	return out;
 	}
 	

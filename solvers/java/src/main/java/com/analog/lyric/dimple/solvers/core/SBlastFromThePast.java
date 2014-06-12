@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import java.util.Objects;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -112,7 +114,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 		final Factor factor = _factor;
 	    for (int index = 0, nVars = factor.getSiblingCount(); index < nVars; index++)
 	    {
-	    	ISolverVariable is = factor.getSibling(index).getSolver();
+	    	ISolverVariable is = requireNonNull(factor.getSibling(index).getSolver());
 	    	is.createMessages(this);
 	    }
 	    
@@ -201,7 +203,7 @@ public class SBlastFromThePast extends SolverEventSource implements ISolverBlast
 	{
 		VariableBase var = _factor.getSibling(portIndex);
 		int index = var.getPortNum(getModelObject());
-		var.getSolver().setInputMsg(index,obj);
+		var.requireSolver("setOutputMsg").setInputMsg(index,obj);
 	}
 
 	@Override

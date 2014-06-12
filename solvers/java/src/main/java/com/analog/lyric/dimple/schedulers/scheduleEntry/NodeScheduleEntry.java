@@ -16,9 +16,12 @@
 
 package com.analog.lyric.dimple.schedulers.scheduleEntry;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.Port;
@@ -69,15 +72,15 @@ public class NodeScheduleEntry implements IScheduleEntry
 		boolean skip = false;
 		boolean isBoundaryVariable = false;
 		
-		
-		if (this.getNode() instanceof VariableBase)
+		final INode node = getNode();
+		if (node instanceof VariableBase)
 		{
-			isBoundaryVariable = this.getNode().getParentGraph().getBoundaryVariables().contains(this.getNode());
+			final FactorGraph fg = requireNonNull(node.getParentGraph());
+			isBoundaryVariable = fg.getBoundaryVariables().contains(node);
 			
 			if(copyToRoot)
 			{
-				skip = isBoundaryVariable &&
-				   this.getNode().getParentGraph().hasParentGraph();
+				skip = isBoundaryVariable && fg.hasParentGraph();
 			}
 			else
 			{
@@ -87,7 +90,7 @@ public class NodeScheduleEntry implements IScheduleEntry
 		
 		if (!skip)
 		{
-			INode newNode = old2newObjs.get(this.getNode());
+			INode newNode = old2newObjs.get(node);
 			return new NodeScheduleEntry(newNode);
 		
 		}

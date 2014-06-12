@@ -16,7 +16,8 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
-import static org.junit.Assert.assertTrue;
+import static java.util.Objects.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -35,9 +36,9 @@ public class RealVariableGibbsTest
 	protected static boolean debugPrint = false;
 	protected static boolean repeatable = true;
 	
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "null" })
 	@Test
-	public void basicTest1() 
+	public void basicTest1()
 	{
 		if (debugPrint) System.out.println("== basicTest1 ==");
 
@@ -104,14 +105,14 @@ public class RealVariableGibbsTest
 		
 		assertTrue(nearlyEquals(aMean,0.8050875226168582));
 		assertTrue(nearlyEquals(bMean,-0.1921312702232493));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.8043550661413381));
-		assertTrue(nearlyEquals((Double)sb.getBestSample(),-0.20700427734616236));
+		assertTrue(nearlyEquals(sa.getBestSample(),0.8043550661413381));
+		assertTrue(nearlyEquals(sb.getBestSample(),-0.20700427734616236));
 	}
 	
 	
 	@SuppressWarnings("deprecation")
 	@Test
-	public void basicTest2() 
+	public void basicTest2()
 	{
 		if (debugPrint) System.out.println("== basicTest2 ==");
 		
@@ -121,7 +122,7 @@ public class RealVariableGibbsTest
 
 		FactorGraph graph = new FactorGraph();
 		graph.setSolverFactory(new com.analog.lyric.dimple.solvers.gibbs.Solver());
-		SFactorGraph solver = (SFactorGraph)graph.getSolver();
+		SFactorGraph solver = requireNonNull((SFactorGraph)graph.getSolver());
 		solver.setNumSamples(numSamples);
 		solver.setUpdatesPerSample(updatesPerSample);
 		solver.setBurnInUpdates(burnInUpdates);
@@ -146,8 +147,8 @@ public class RealVariableGibbsTest
 		double fR1 = 1/(fSigma1*fSigma1);
 		graph.addFactor(new MixedNormal(fMean0, fR0, fMean1, fR1), a, b);
 		
-		SRealVariable sa = (SRealVariable)a.getSolver();
-		SDiscreteVariable sb = (SDiscreteVariable)b.getSolver();
+		SRealVariable sa = requireNonNull((SRealVariable)a.getSolver());
+		SDiscreteVariable sb = requireNonNull((SDiscreteVariable)b.getSolver());
 		
 		sa.setProposalStandardDeviation(1.0);
 
@@ -171,7 +172,7 @@ public class RealVariableGibbsTest
 		if (debugPrint)
 		{
 			System.out.print("a = [");
-			for (Object s : aSamples) System.out.print((Double)s + " ");
+			for (Object s : aSamples) System.out.print(s + " ");
 			System.out.print("];\n");
 		}
 
@@ -181,13 +182,13 @@ public class RealVariableGibbsTest
 		if (debugPrint) System.out.println("bExpectedMean: " + bProb1);
 		
 		if (debugPrint) System.out.println("aBest: " + (Double)sa.getBestSample());
-		if (debugPrint) System.out.println("bBest: " + (Integer)sb.getBestSample());
+		if (debugPrint) System.out.println("bBest: " + sb.getBestSample());
 		
 		assertTrue(nearlyEquals(aMean,0.20867216566185906));
 		assertTrue(nearlyEquals(bMean,0.6055));
-		assertTrue(nearlyEquals((Double)sa.getBestSample(),0.977986266650138));
+		assertTrue(nearlyEquals(sa.getBestSample(),0.977986266650138));
 		assertTrue((Integer)sb.getBestSample() == 1);
-	}	
+	}
 	
 	
 	private static double TOLLERANCE = 1e-12;

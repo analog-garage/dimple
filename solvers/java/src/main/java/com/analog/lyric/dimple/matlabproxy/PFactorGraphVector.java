@@ -46,6 +46,7 @@ import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.SubScheduleEntry;
 import com.analog.lyric.dimple.solvers.interfaces.IFactorGraphFactory;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.FactorGraphDiffs;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.MapList;
@@ -110,7 +111,8 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public @Nullable String getMatlabSolveWrapper()
 	{
-		return getGraph().getSolver().getMatlabSolveWrapper();
+		ISolverFactorGraph solverGraph = getGraph().getSolver();
+		return solverGraph != null ? solverGraph.getMatlabSolveWrapper() : null;
 	}
 	
 	public int getNumSteps()
@@ -199,7 +201,7 @@ public class PFactorGraphVector extends PFactorVector
     
     public void startContinueSolve()
     {
-    	getGraph().getSolver().continueSolve();
+    	getSolverGraph().continueSolve();
     }
     
     public void continueSolve()
@@ -221,7 +223,7 @@ public class PFactorGraphVector extends PFactorVector
     
     public void startSolveOneStep()
     {
-    	getGraph().getSolver().startSolveOneStep();
+    	getSolverGraph().startSolveOneStep();
     }
     
     public boolean isSolverRunning()
@@ -232,7 +234,7 @@ public class PFactorGraphVector extends PFactorVector
     
     public void startSolver()
     {
-    	getGraph().getSolver().startSolver();
+    	getSolverGraph().startSolver();
     }
     
 	public PVariableVector getVariableVector(int relativeNestingDepth,int forceIncludeBoundaryVariables)
@@ -303,7 +305,7 @@ public class PFactorGraphVector extends PFactorVector
 	
 	public void interruptSolver()
 	{
-		getGraph().getSolver().interruptSolver();
+		getSolverGraph().interruptSolver();
 	}
 	
 
@@ -649,6 +651,16 @@ public class PFactorGraphVector extends PFactorVector
 	public PFactorGraphVector getRootGraph()
 	{
 		return new PFactorGraphVector(getGraph().getRootGraph());
+	}
+	
+	private ISolverFactorGraph getSolverGraph()
+	{
+		ISolverFactorGraph solverGraph = getGraph().getSolver();
+		if (solverGraph == null)
+		{
+			throw new DimpleException("Solver not set.");
+		}
+		return solverGraph;
 	}
 
 	public @Nullable PVariableVector getVariableByName(String name)

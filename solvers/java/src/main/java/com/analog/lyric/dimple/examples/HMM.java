@@ -16,12 +16,14 @@
 
 package com.analog.lyric.dimple.examples;
 
+import static java.util.Objects.*;
 import cern.colt.Arrays;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Discrete;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class HMM
@@ -125,13 +127,14 @@ public class HMM
 		
 		MondayWeather.setInput(0.7,0.3);
 		
-		HMM.getSolver().setNumIterations(20);
+		ISolverFactorGraph solver = requireNonNull(HMM.getSolver());
+		solver.setNumIterations(20);
 		HMM.solve();
 		
 		double [] belief = TuesdayWeather.getBelief();
 		System.out.println(Arrays.toString(belief));
-		HMM.getSolver().iterate();
-		HMM.getSolver().iterate(5);
+		solver.iterate();
+		solver.iterate(5);
 	}
 
 }

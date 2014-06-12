@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class TestArrayUtil
 		assertNull(ArrayUtil.cloneArray((int[][])null));
 		assertSame(ArrayUtil.EMPTY_INT_ARRAY_ARRAY, ArrayUtil.cloneArray(new int[0][]));
 		int ii[][] = new int[][] { new int[] { 1, 2}, new int[] { 3, 4} };
-		int ii2[][] = ArrayUtil.cloneArray(ii);
+		int ii2[][] = requireNonNull(ArrayUtil.cloneArray(ii));
 		assertArrayEquals(ii, ii2);
 		assertNotSame(ii, ii2);
 		assertSame(ii[0], ii2[0]);

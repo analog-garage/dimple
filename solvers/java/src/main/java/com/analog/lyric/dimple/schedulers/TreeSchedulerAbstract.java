@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.schedulers;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +116,7 @@ public abstract class TreeSchedulerAbstract implements IScheduler
 			boolean moreInThisPath = true;
 			while (moreInThisPath)
 			{
-				NodeUpdateState nodeState = updateState.get(node.getId());
+				NodeUpdateState nodeState = updateState.get(requireNonNull(node).getId());
 				INode nextNode = null;
 				if (!nodeState.doneUpdatingAllOutputs() && nodeState.readyToUpdateAllOutputs())
 				{

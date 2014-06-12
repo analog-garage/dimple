@@ -16,6 +16,7 @@
 
 package com.analog.lyric.util.test;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -466,15 +467,7 @@ public class Helpers
 				sb.append("[");
 				sb.append(d.getLabel());
 				sb.append("]: {" );
-				double[] oneVariablesRet;
-				if(getbeliefs)
-				{
-					oneVariablesRet = d.getBelief();
-				}
-				else
-				{
-					oneVariablesRet = d.getInput();
-				}
+				double[] oneVariablesRet = requireNonNull(getbeliefs ? d.getBelief() : d.getInput());
 
 				for(int j = 0; j < oneVariablesRet.length; j++)
 				{
@@ -553,7 +546,7 @@ public class Helpers
 	{
 		try
 		{
-			double[] belief = (double[]) variable.getBeliefObject();
+			double[] belief = requireNonNull(variable.getBelief());
 			sb.append(" {" );
 			for(int j = 0; j < belief.length; j++)
 			{
@@ -749,7 +742,7 @@ public class Helpers
 	{
 		fg.setSolverFactory(solver);
 		fg.setSchedule(schedule);
-		fg.getSolver().setNumIterations(iterations);
+		requireNonNull(fg.getSolver()).setNumIterations(iterations);
 	}
 	
 	public static double[][] decodeGeneralCodeword( double[][] codewordWithErrors,

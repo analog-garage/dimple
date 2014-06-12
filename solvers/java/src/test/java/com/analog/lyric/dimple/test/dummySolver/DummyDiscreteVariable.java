@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.test.dummySolver;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.variables.Discrete;
@@ -97,9 +99,9 @@ public class DummyDiscreteVariable extends SDiscreteVariableBase
 	}
 
 	@Override
-	public @Nullable double[] getBelief()
+	public double[] getBelief()
 	{
-		return _input;
+		return requireNonNull(_input);
 	}
 
 

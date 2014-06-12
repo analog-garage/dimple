@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.particleBP;
 
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
@@ -250,7 +252,8 @@ public class SRealFactor extends SFactorBase
 		for (int iPort = 0; iPort < _numPorts; iPort++)
 	    {
 	    	VariableBase var = factor.getSibling(iPort);
-	    	Object [] messages = var.getSolver().createMessages(this);
+	    	@SuppressWarnings("null")
+			Object [] messages = requireNonNull(var.getSolver().createMessages(this));
 
 	    	// Is the variable connected to the port real or discrete
 	    	if (var instanceof Real)

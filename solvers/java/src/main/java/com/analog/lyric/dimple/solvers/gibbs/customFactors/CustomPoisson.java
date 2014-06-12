@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -116,7 +118,10 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 		{
 			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX_FIXED_LAMBDA);
 			if (_hasConstantOutput)
-				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
+			{
+				_constantOutputValue =
+					requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_LAMBDA));
+			}
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_LAMBDA);
@@ -130,7 +135,9 @@ public class CustomPoisson extends SRealFactor implements IRealConjugateFactor
 			
 			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
-				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX);
+			{
+				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX));
+			}
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);

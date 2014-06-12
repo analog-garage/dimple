@@ -17,11 +17,13 @@
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.LinearEquation;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -98,7 +100,8 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 			if (factorFunction.isConstantIndex(index))
 			{
 				// Constant in this position, so subtract off the initial weighted sum (move to the other side of the equation)
-				_initialWeightedSum -= extendedWeightVector[index] * (Double)factorFunction.getConstantByIndex(index);
+				_initialWeightedSum -=
+					extendedWeightVector[index] * (Double)requireNonNull(factorFunction.getConstantByIndex(index));
 			}
 			else
 			{
@@ -117,17 +120,13 @@ public class CustomGaussianLinearEquation extends GaussianFactorBase
 		{
 			VariableBase v = factor.getSibling(i);
 			
-			// Must be real
-			if (v.getDomain().isDiscrete())
-				return false;
+			Domain domain = v.getDomain();
 			
-			// Must be univariate
-			if (v instanceof RealJoint)
+			// Must be an unbounded univariate real
+			if (!domain.isReal() || domain.isBounded())
+			{
 				return false;
-			
-			// Must be unbounded
-			if (v.getDomain().asReal().isBounded())
-				return false;
+			}
 		}
 		return true;
 	}

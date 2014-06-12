@@ -16,6 +16,8 @@
 
 package com.analog.lyric.benchmarking.utils.doublespace;
 
+import static java.util.Objects.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +65,7 @@ public class DoubleSpaceCSV
 				{
 					throw new IllegalArgumentException("All rows of csv text must have same quantity of columns.");
 				}
+				requireNonNull(result);
 				for (int column = 0; column < columns; column++)
 				{
 					final double value = Double.parseDouble(tokens[column]);

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,6 +25,7 @@ import java.util.Objects;
 
 import cern.colt.list.DoubleArrayList;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.KeyedPriorityQueue;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Bernoulli;
@@ -254,15 +257,15 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		FactorGraph fg = _factorGraph;
 		deferDeterministicUpdates();
 		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
-			fg.getOwnedVariable(i).getSolver().initialize();
+			fg.getOwnedVariable(i).requireSolver("initialize").initialize();
 		if (!fg.hasParentGraph())
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
-				fg.getBoundaryVariable(i).getSolver().initialize();
+				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
 		processDeferredDeterministicUpdates();
 		for (Factor f : fg.getNonGraphFactorsTop())
-			f.getSolver().initialize();
+			f.requireSolver("initialize").initialize();
 		for (FactorGraph g : fg.getNestedGraphs())
-			g.getSolver().initialize();
+			g.requireSolver("initialize").initialize();
 		deferDeterministicUpdates();
 		final ArrayList<IBlockInitializer> blockInitializers = _blockInitializers;
 		if (blockInitializers != null)
@@ -348,6 +351,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	
+	@SuppressWarnings("null")
 	protected void oneSample()
 	{
 		iterate(_updatesPerSample);
@@ -384,6 +388,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void postAdvance()
 	{
@@ -400,6 +405,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		}
 	}
 	
+	@SuppressWarnings("null")
 	public void randomRestart(int restartCount)
 	{
 		deferDeterministicUpdates();
@@ -420,6 +426,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	
 
 	// Get the total potential over all factors of the graph given the current sample values (including input priors on variables)
+	@SuppressWarnings("null")
 	public double getTotalPotential()
 	{
 		double totalPotential = 0;
@@ -431,6 +438,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Before running, calling this method instructs the solver to save all sample values for all variables in the graph
+	@SuppressWarnings("null")
 	public void saveAllSamples()
 	{
 		for (VariableBase v : _factorGraph.getVariables())
@@ -438,6 +446,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Disable saving all samples if it had previously been set
+	@SuppressWarnings("null")
 	public void disableSavingAllSamples()
 	{
 		for (VariableBase v : _factorGraph.getVariables())
@@ -473,6 +482,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 	
 	// Set/get the current temperature for all variables in the graph (for tempering)
+	@SuppressWarnings("null")
 	public void setTemperature(double T)
 	{
 		_temperature = T;
@@ -535,9 +545,9 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (VariableBase v : _factorGraph.getVariables())
 		{
 			if (v instanceof Real)
-				((SRealVariable)v.getSolver()).setDefaultSampler(samplerName);
+				((SRealVariable)v.requireSolver("setDefaultRealSampler")).setDefaultSampler(samplerName);
 			else if (v instanceof RealJoint)
-				((SRealJointVariable)v.getSolver()).setDefaultSampler(samplerName);
+				((SRealJointVariable)v.requireSolver("setDefaultRealSampler")).setDefaultSampler(samplerName);
 		}
 	}
 	public String getDefaultRealSampler() {return _defaultRealSamplerName;}
@@ -549,7 +559,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		for (VariableBase v : _factorGraph.getVariables())
 		{
 			if (v instanceof Discrete)
-				((SDiscreteVariable)v.getSolver()).setDefaultSampler(samplerName);
+				((SDiscreteVariable)v.requireSolver("setDefaultDiscreteSampler")).setDefaultSampler(samplerName);
 		}
 	}
 	public String getDefaultDiscreteSampler() {return _defaultDiscreteSamplerName;}
@@ -576,6 +586,11 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public double[] getVariableSampleValues(int variableGroupID)
 	{
 		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
+		if (variableList == null)
+		{
+			return ArrayUtil.EMPTY_DOUBLE_ARRAY;
+		}
+		
 		int numVariables = variableList.size();
 		double[] result = new double[numVariables];
 		for (int i = 0; i < numVariables; i++)
@@ -594,47 +609,56 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	public void setAndHoldVariableSampleValues(int variableGroupID, double[] values)
 	{
 		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
-		int numVariables = variableList.size();
-		if (numVariables != values.length) throw new DimpleException("Number of values must match the number of variables");
-		for (int i = 0; i < numVariables; i++)
+		if (variableList != null)
 		{
-			ISolverVariable var = variableList.get(i).getSolver();
-			if (var instanceof SDiscreteVariable)
-				((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
-			else if (var instanceof SRealVariable)
-				((SRealVariable)var).setAndHoldSampleValue(values[i]);
-			else
-				throw new DimpleException("Invalid variable class");
+			int numVariables = variableList.size();
+			if (numVariables != values.length) throw new DimpleException("Number of values must match the number of variables");
+			for (int i = 0; i < numVariables; i++)
+			{
+				ISolverVariable var = variableList.get(i).getSolver();
+				if (var instanceof SDiscreteVariable)
+					((SDiscreteVariable)var).setAndHoldSampleValue(values[i]);
+				else if (var instanceof SRealVariable)
+					((SRealVariable)var).setAndHoldSampleValue(values[i]);
+				else
+					throw new DimpleException("Invalid variable class");
+			}
 		}
 	}
 	public void holdVariableSampleValues(int variableGroupID)
 	{
 		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
-		int numVariables = variableList.size();
-		for (int i = 0; i < numVariables; i++)
+		if (variableList != null)
 		{
-			ISolverVariable var = variableList.get(i).getSolver();
-			if (var instanceof SDiscreteVariable)
-				((SDiscreteVariable)var).holdSampleValue();
-			else if (var instanceof SRealVariable)
-				((SRealVariable)var).holdSampleValue();
-			else
-				throw new DimpleException("Invalid variable class");
+			int numVariables = variableList.size();
+			for (int i = 0; i < numVariables; i++)
+			{
+				ISolverVariable var = variableList.get(i).getSolver();
+				if (var instanceof SDiscreteVariable)
+					((SDiscreteVariable)var).holdSampleValue();
+				else if (var instanceof SRealVariable)
+					((SRealVariable)var).holdSampleValue();
+				else
+					throw new DimpleException("Invalid variable class");
+			}
 		}
 	}
 	public void releaseVariableSampleValues(int variableGroupID)
 	{
 		ArrayList<VariableBase> variableList = _factorGraph.getVariableGroup(variableGroupID);
-		int numVariables = variableList.size();
-		for (int i = 0; i < numVariables; i++)
+		if (variableList != null)
 		{
-			ISolverVariable var = variableList.get(i).getSolver();
-			if (var instanceof SDiscreteVariable)
-				((SDiscreteVariable)var).releaseSampleValue();
-			else if (var instanceof SRealVariable)
-				((SRealVariable)var).releaseSampleValue();
-			else
-				throw new DimpleException("Invalid variable class");
+			int numVariables = variableList.size();
+			for (int i = 0; i < numVariables; i++)
+			{
+				ISolverVariable var = variableList.get(i).getSolver();
+				if (var instanceof SDiscreteVariable)
+					((SDiscreteVariable)var).releaseSampleValue();
+				else if (var instanceof SRealVariable)
+					((SRealVariable)var).releaseSampleValue();
+				else
+					throw new DimpleException("Invalid variable class");
+			}
 		}
 	}
 	
@@ -645,6 +669,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		throw new DimpleException("The length of a run in the Gibbs solver is not specified by a number of 'iterations', but by the number of 'samples'");
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(Factor f)
 	{
@@ -658,6 +683,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 		processDeferredDeterministicUpdates();
 	}
 	
+	@SuppressWarnings("null")
 	@Override
 	public void postSetSolverFactory()
 	{
@@ -712,17 +738,17 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 				_deferredDeterministicFactorUpdates =
 					new KeyedPriorityQueue<ISolverFactorGibbs, SFactorUpdate>(11, SFactorUpdate.Equal.INSTANCE);
 			}
-			SFactorUpdate update = Objects.requireNonNull(_deferredDeterministicFactorUpdates).get(sfactor);
+			SFactorUpdate update = requireNonNull(_deferredDeterministicFactorUpdates).get(sfactor);
 			if (update == null)
 			{
 				update = new SFactorUpdate(sfactor);
-				Objects.requireNonNull(_deferredDeterministicFactorUpdates).offer(update);
+				requireNonNull(_deferredDeterministicFactorUpdates).offer(update);
 			}
 			update.addVariableUpdate(changedVariableIndex, oldValue);
 		}
 		else
 		{
-			final Factor factor = sfactor.getModelObject();
+			final Factor factor = requireNonNull(sfactor.getModelObject());
 			final int nEdges = factor.getSiblingCount();
 			IndexedValue.SingleList oldValues = null;
 			if (factor.getFactorFunction().updateDeterministicLimit(nEdges) > 0)

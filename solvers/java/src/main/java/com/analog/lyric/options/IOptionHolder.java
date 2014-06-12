@@ -38,8 +38,16 @@ public interface IOptionHolder
 	 * were no local options.
 	 * @return local option map. May return null if there are no locally set options and {@code create}
 	 * is false.
+	 * @see #createLocalOptions()
 	 */
 	public @Nullable ConcurrentMap<IOptionKey<?>,Object> getLocalOptions(boolean create);
+	
+	/**
+	 * Returns map containing the options that have been set directly on this
+	 * object, creating if necessary.
+	 * @since 0.06
+	 */
+	public ConcurrentMap<IOptionKey<?>,Object> createLocalOptions();
 	
 	/**
 	 * The "parent" of this option holder to which option lookup will be delegated for option

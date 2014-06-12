@@ -16,6 +16,9 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
+import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Nullable;
 
 public class Port
@@ -58,21 +61,23 @@ public class Port
 
 	public void setInputMsgValues(Object obj)
 	{
-		node.getSolver().setInputMsgValues(index, obj);
+		requireNonNull(node.getSolver()).setInputMsgValues(index, obj);
 	}
 
 	public void setOutputMsgValues(Object obj)
 	{
-		node.getSolver().setOutputMsgValues(index,obj);
+		requireNonNull(node.getSolver()).setOutputMsgValues(index,obj);
 	}
 	
 	public @Nullable Object getInputMsg()
 	{
-		return node.getSolver().getInputMsg(index);
+		final ISolverNode snode = node.getSolver();
+		return snode != null ? snode.getInputMsg(index) : null;
 	}
 	public @Nullable Object getOutputMsg()
 	{
-		return node.getSolver().getOutputMsg(index);
+		final ISolverNode snode = node.getSolver();
+		return snode != null ? snode.getOutputMsg(index) : null;
 	}
 	public INode getSibling()
 	{

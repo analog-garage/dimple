@@ -24,16 +24,18 @@ import com.analog.lyric.dimple.solvers.sumproduct.SFiniteFieldFactor;
 public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 {
 	
-	public CustomFiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor) 
+	public CustomFiniteFieldAdd(com.analog.lyric.dimple.model.factors.Factor factor)
 	{
 		super(factor);
 		
 		if (factor.getPorts().size() != 3)
 			throw new DimpleException("Only supports 3 arguments");
 
-	}	
+	}
 
-	public void doUpdateEdge(int outPortNum) 
+	@Override
+	@SuppressWarnings("null")
+	public void doUpdateEdge(int outPortNum)
 	{
 		double [] inputs1 = null;
 		double [] inputs2 = null;
@@ -44,14 +46,14 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 		{
 			if (outPortNum == i)
 			{
-				outputs = (double[])_outputMsgs[i];
+				outputs = _outputMsgs[i];
 			}
 			else
 			{
 				if (inputs1 == null)
-					inputs1 = (double[])_inputMsgs[i];
+					inputs1 = _inputMsgs[i];
 				else
-					inputs2 = (double[])_inputMsgs[i];
+					inputs2 = _inputMsgs[i];
 			}
 		}
 
@@ -117,7 +119,7 @@ public class CustomFiniteFieldAdd extends SFiniteFieldFactor
 			tmp=in;
 			in=out;
 			out=tmp;
-		} 
+		}
 
 		/* If "n" is even, then we need to copy "out" to "in" to make the
 		     output appear in the correct array. */

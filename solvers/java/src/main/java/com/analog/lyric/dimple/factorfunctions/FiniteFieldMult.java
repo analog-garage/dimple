@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.factorfunctions;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -58,11 +60,13 @@ public class FiniteFieldMult extends FactorFunction
     public double evalEnergy(Value[] values)
     {
     	// Allow one constant input
-    	FiniteFieldNumber result = (FiniteFieldNumber)values[0].getObject();
+    	FiniteFieldNumber result = requireNonNull((FiniteFieldNumber)values[0].getObject());
     	Object arg1 = values[1].getObject();
-    	FiniteFieldNumber input1 = (arg1 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg1 : result.cloneWithNewValue(FactorFunctionUtilities.toInteger(arg1));
+    	FiniteFieldNumber input1 = (arg1 instanceof FiniteFieldNumber) ?
+    		(FiniteFieldNumber)arg1 : result.cloneWithNewValue(FactorFunctionUtilities.toInteger(arg1));
     	Object arg2 = values[2].getObject();
-    	FiniteFieldNumber input2 = (arg2 instanceof FiniteFieldNumber) ? (FiniteFieldNumber)arg2 : result.cloneWithNewValue(FactorFunctionUtilities.toInteger(arg2));
+    	FiniteFieldNumber input2 = (arg2 instanceof FiniteFieldNumber) ?
+    		(FiniteFieldNumber)arg2 : result.cloneWithNewValue(FactorFunctionUtilities.toInteger(arg2));
     	
     	if (!result.isCompatible(input1) || !result.isCompatible(input2))
     		throw new DimpleException("Primitive polynomials must match.");

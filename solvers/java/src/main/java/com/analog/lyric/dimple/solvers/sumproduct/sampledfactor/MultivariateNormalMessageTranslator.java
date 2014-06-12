@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import static java.util.Objects.*;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +59,7 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
-		MultivariateNormalParameters inputMessage = (MultivariateNormalParameters)getInputMessage();
+		MultivariateNormalParameters inputMessage = (MultivariateNormalParameters)requireNonNull(getInputMessage());
 		if (inputMessage.isNull())
 		{
 			_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
@@ -83,7 +85,9 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	public final void setOutputMessageFromVariableBelief()
 	{
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		List<double[]> sampleValues = Objects.requireNonNull(_solverVariable)._getSampleArrayUnsafe();
+		@SuppressWarnings("null")
+		List<double[]> sampleValues = _solverVariable._getSampleArrayUnsafe();
+		@SuppressWarnings("null")
 		int numSamples = sampleValues.size();
 		int dimension = sampleValues.get(0).length;
 
@@ -128,12 +132,13 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public final void initialize()
 	{
 		SRealJointVariable var = (SRealJointVariable)_port.node.getSibling(_port.index).getSolver();
-		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(Objects.requireNonNull(_outputMessage));
-		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(Objects.requireNonNull(_inputMessage));
+		_outputMessage = (MultivariateNormalParameters)var.resetInputMessage(_outputMessage);
+		_inputMessage = (MultivariateNormalParameters)var.resetInputMessage(_inputMessage);
 		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealJointVariable)_variable.getSolver();
 	}
 	

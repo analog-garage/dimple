@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.minsum.customFactors;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
@@ -188,8 +190,8 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 	    
 		for (int i = 0; i < nVars; i++)
 		{
-			ISolverVariable sv = factor.getSibling(i).getSolver();
-			Object [] messages = sv.createMessages(this);
+			ISolverVariable sv = requireNonNull(factor.getSibling(i).getSolver());
+			Object [] messages = requireNonNull(sv.createMessages(this));
 			_outPortMsgs[i] = (double[])messages[0];
 			_inPortMsgs[i] = (double[])messages[1];
 		}

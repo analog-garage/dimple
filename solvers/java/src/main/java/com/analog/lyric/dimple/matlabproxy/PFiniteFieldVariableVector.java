@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.matlabproxy;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.domains.FiniteFieldNumber;
 import com.analog.lyric.dimple.model.variables.FiniteFieldVariable;
@@ -86,7 +88,7 @@ public class PFiniteFieldVariableVector extends PDiscreteVariableVector
 		VariableBase [] vars = getVariableArray();
 		for (int i = 0; i < vars.length; i++)
 		{
-			retval[i] = ((FiniteFieldNumber)vars[i].getGuess()).intValue();
+			retval[i] = ((FiniteFieldNumber)requireNonNull(vars[i].getGuess())).intValue();
 		}
 		return retval;
 	}

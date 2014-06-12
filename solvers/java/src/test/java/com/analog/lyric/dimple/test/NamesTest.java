@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.test;
 
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class NamesTest {
 		}
 		else
 		{
-			assertTrue(explcititNameGot.equals(expectedExplicitName));
+			assertTrue(requireNonNull(explcititNameGot).equals(expectedExplicitName));
 		}
 		assertTrue(qualifiedNameGot.equals(expectedQualifiedName));
 		//no guarantee on what these are, they should just be something
@@ -114,6 +115,8 @@ public class NamesTest {
 		testObjectName(v1, "v1", "v1", "fg.v1");
 		testObjectName(v2, "v2", "v2", "fg.v2");
 	}
+	
+	@SuppressWarnings("null")
 	public void test_parentGraphNameStuff()
 	{
 		//3 new variables
@@ -311,8 +314,8 @@ public class NamesTest {
 		
 		//Two sub graphs
 		fgRoot.addGraph(fgMid, new Discrete[]{vRootO2});
-		fgMid = (FactorGraph)fgRoot.getObjectByName("Mid");
-		fgLeaf = (FactorGraph)fgRoot.getObjectByName("Mid.Leaf");
+		fgMid = requireNonNull((FactorGraph)fgRoot.getObjectByName("Mid"));
+		fgLeaf = requireNonNull((FactorGraph)fgRoot.getObjectByName("Mid.Leaf"));
 
 		
 		{
@@ -367,6 +370,7 @@ public class NamesTest {
 		
 	}
 
+	@SuppressWarnings("null")
 	@Test
 	public void test_NameNestingStuff()
 	{

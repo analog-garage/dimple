@@ -18,8 +18,8 @@ package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.NormalParameters;
 
@@ -103,15 +103,14 @@ public class CustomGaussianProduct extends GaussianFactorBase
 		// Variables must be real and univariate
 		VariableBase a = factor.getSibling(0);
 		VariableBase b = factor.getSibling(1);
-		if (a.getDomain().isDiscrete() || b.getDomain().isDiscrete())
-			return false;
-		if (a instanceof RealJoint || b instanceof RealJoint)
-			return false;
 		
-		// Variables must be unbounded
-		if (a.getDomain().asReal().isBounded() || b.getDomain().asReal().isBounded())
+		Domain aDomain = a.getDomain();
+		Domain bDomain = b.getDomain();
+		
+		if (!aDomain.isReal() || !bDomain.isReal() || aDomain.isBounded() || bDomain.isBounded())
+		{
 			return false;
-
+		}
 		
 		// Constant must be non-zero
 		double constant = (Double)ff.getConstants()[0];

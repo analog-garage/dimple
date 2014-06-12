@@ -125,7 +125,7 @@ public class ExchangeableDirichlet extends FactorFunction
     	int N = length - index;			// Number of non-parameter variables
     	for (; index < length; index++)
     	{
-    		double[] x = (double[])values[index].getObject();	// Remaining inputs are Dirichlet distributed random variable vectors
+    		double[] x = values[index].getDoubleArray();	// Remaining inputs are Dirichlet distributed random variable vectors
     		if (x.length != _dimension)
 	    		throw new DimpleException("Dimension of variable does not equal to the dimension of the parameter vector.");
     		double xSum = 0;

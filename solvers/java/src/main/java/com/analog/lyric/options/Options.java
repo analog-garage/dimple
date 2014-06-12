@@ -49,6 +49,12 @@ public class Options extends AbstractOptions
 	}
 
 	@Override
+	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
+	{
+		return _holder.createLocalOptions();
+	}
+
+	@Override
 	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
 		return _holder.getLocalOptions(create);

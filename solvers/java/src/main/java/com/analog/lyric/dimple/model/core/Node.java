@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -170,19 +172,24 @@ public abstract class Node implements INode, Cloneable
 		 * must first call super.clone(), and then deep-copy those instance
 		 * variables to the clone.
 		 *******/
-		Node n = null;
-		try {n = (Node)(super.clone());}
-		catch (CloneNotSupportedException e) {e.printStackTrace();}
+		try
+		{
+			final Node n = (Node)(super.clone());
 		
-		n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
-		n._id = NodeId.getNext();
-		n._UUID = NodeId.getNextUUID();
-		n._parentGraph = null;
-		n._name = _name;
-		if (_label != null)
-			n._label = _label;
-		
-		return n;
+			n._siblings = new ArrayList<INode>();	// Clear the ports in the clone
+			n._id = NodeId.getNext();
+			n._UUID = NodeId.getNextUUID();
+			n._parentGraph = null;
+			n._name = _name;
+			if (_label != null)
+				n._label = _label;
+
+			return n;
+		}
+		catch (CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e); // should never happen
+		}
 	}
 	
 	/*----------------------------
@@ -439,7 +446,7 @@ public abstract class Node implements INode, Cloneable
 		
 		for (int depth = node.getDepth(); depth > desiredDepth; --depth)
 		{
-			node = node.getParentGraph();
+			node = requireNonNull(node.getParentGraph());
 		}
 
 		return Objects.requireNonNull(node);
@@ -567,21 +574,8 @@ public abstract class Node implements INode, Cloneable
 	@Override
 	public @Nullable FactorGraph getRootGraph()
 	{
-		FactorGraph root = _parentGraph;
-		boolean more = root != null;
-		while(more)
-		{
-			FactorGraph temp = root.getParentGraph();
-			if(temp != null)
-			{
-				root = temp;
-			}
-			else
-			{
-				more = false;
-			}
-		}
-		return root;
+		FactorGraph parent = _parentGraph;
+		return parent != null ? parent.getRootGraph() : null;
 	}
 	
 	@Override
@@ -940,7 +934,7 @@ public abstract class Node implements INode, Cloneable
 	
 	private boolean isConnected(INode node, int portIndex)
 	{
-		INode other = _siblings.get(portIndex);
+		INode other = requireNonNull(_siblings.get(portIndex));
 		
 		if (other == node)
 			return true;
@@ -950,12 +944,12 @@ public abstract class Node implements INode, Cloneable
 		// have the caller of this method walk up this node's parent graphs and see if any of them are
 		// a direct sibling of 'node'?
 		
-		while (other.getParentGraph() != null)
+		for (FactorGraph parent; (parent = other.getParentGraph()) != null; other = parent)
 		{
-			other = other.getParentGraph();
-			
-			if (other == node)
+			if (parent == node)
+			{
 				return true;
+			}
 		}
 		
 		return false;

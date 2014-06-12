@@ -18,7 +18,7 @@ package com.analog.lyric.dimple.solvers.gibbs.samplers.generic;
 
 import java.util.ArrayList;
 
-import com.analog.lyric.util.misc.Nullable;
+import com.analog.lyric.dimple.exceptions.DimpleException;
 
 public class GenericSamplerRegistry
 {
@@ -29,7 +29,7 @@ public class GenericSamplerRegistry
 	}
 	
 	// Get a sampler by name; assumes it is located in this package
-	public static @Nullable IGenericSampler get(String samplerName)
+	public static IGenericSampler get(String samplerName)
 	{
 		for (String s : _packages)
 		{
@@ -44,7 +44,8 @@ public class GenericSamplerRegistry
 				continue;
 			}
 		}
-		return null;
+		
+		throw new DimpleException("Could not find sampler with name '%s'", samplerName);
 	}
 	
 	public static void addPackage(String packageName)

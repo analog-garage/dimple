@@ -73,7 +73,7 @@ public class DiscreteTransition extends FactorFunction
     	final int x = values[1].getInt(); // Second argument is x (input variable)
 
     	// Choose column of A indexed by input variable x
-    	final double[] Acol = (double[])values[x + NUM_DATA_ARGUMENTS].getObject();
+    	final double[] Acol = values[x + NUM_DATA_ARGUMENTS].getDoubleArray();
 
     	return -Math.log(Acol[y]);
 	}

@@ -91,6 +91,18 @@ public abstract class Domain implements Serializable
 	public boolean hasIntCompatibleValues() { return false; }
 	
 	/**
+	 * True if the elements of the domain are bounded to some subset.
+	 * <p>
+	 * The default implementation returns true if not {@link #isDiscrete()}.
+	 * <p>
+	 * @since 0.06
+	 */
+	public boolean isBounded()
+	{
+		return !isDiscrete();
+	}
+	
+	/**
 	 * True if domain is an instance of {@link Discrete}.
 	 * @see #asDiscrete()
 	 */

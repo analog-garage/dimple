@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.model;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayDeque;
@@ -177,7 +178,7 @@ public class TestFactorGraphEvent
 		handler.assertNoEvents();
 	
 		listener.register(handler, VariableRemoveEvent.class, false, root);
-		assertTrue(root.getEventListener().isListeningFor(VariableRemoveEvent.class, root));
+		assertTrue(requireNonNull(root.getEventListener()).isListeningFor(VariableRemoveEvent.class, root));
 		root.notifyListenerChanged();
 		root.remove(c);
 		handler.assertEvent(VariableRemoveEvent.class, root, c);

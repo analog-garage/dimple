@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.core;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -68,14 +69,14 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		
 		for (VariableBase var : model.getVariables())
 		{
-			ISolverVariable svar = solver.getSolverVariable(var);
+			ISolverVariable svar = requireNonNull(solver.getSolverVariable(var));
 			assertTrue(listener.isListeningFor(VariableToFactorMessageEvent.class, svar));
 			assertSame(listener, svar.getEventListener());
 		}
 		
 		for (Factor factor : model.getFactors())
 		{
-			ISolverFactor sfactor = solver.getSolverFactor(factor);
+			ISolverFactor sfactor = requireNonNull(solver.getSolverFactor(factor));
 			assertTrue(listener.isListeningFor(FactorToVariableMessageEvent.class, sfactor));
 			assertSame(listener, sfactor.getEventListener());
 		}
@@ -261,6 +262,7 @@ public class TestMessageUpdateEventHandler extends DimpleEventHandler<SolverEven
 		}
 	}
 	
+	@SuppressWarnings("null")
 	void printEvent(IMessageUpdateEvent event)
 	{
 		ISolverNode source, target;

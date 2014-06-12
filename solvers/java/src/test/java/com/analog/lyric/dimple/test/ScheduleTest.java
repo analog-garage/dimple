@@ -30,6 +30,7 @@ import com.analog.lyric.dimple.model.variables.VariableList;
 import com.analog.lyric.dimple.schedulers.schedule.FixedSchedule;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.NodeScheduleEntry;
+import com.analog.lyric.dimple.solvers.minsum.SFactorGraph;
 import com.analog.lyric.dimple.solvers.minsum.Solver;
 import com.analog.lyric.util.test.Helpers;
 
@@ -37,19 +38,19 @@ import com.analog.lyric.util.test.Helpers;
  * @author schweitz
  *
  */
-public class ScheduleTest 
+public class ScheduleTest
 {
 	@Test
-	public void verify_im_not_crazy() 
+	public void verify_im_not_crazy()
 	{
 		int factors = 10;
 		String tag = "crazy";
 		int iterations = 1;
 
-		FactorGraph fg = new FactorGraph();		
-		fg.setSolverFactory(new Solver());
+		FactorGraph fg = new FactorGraph();
+		SFactorGraph solver = fg.createSolver(new Solver());
 		fg.setName(tag);
-		fg.getSolver().setNumIterations(iterations);
+		solver.setNumIterations(iterations);
 
 		Discrete[] variables = new Discrete[factors + 1];
 		for(int variable = 0; variable < variables.length; ++variable)
@@ -98,7 +99,7 @@ public class ScheduleTest
 		Helpers.compareBeliefs(beliefsA, beliefsC);
 
 		fg = Helpers.MakeSimpleChainGraph(tag, fg.getFactorGraphFactory(), factors, true);
-		fg.getSolver().setNumIterations(iterations);
+		solver.setNumIterations(iterations);
 		fg.solve();
 
 		beliefsA = Helpers.beliefs(fg, true);

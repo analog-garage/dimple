@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import static java.util.Objects.*;
+
 import java.util.Map.Entry;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
@@ -238,7 +240,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	{
 		if (isTransformValid())
 		{
-			final JunctionTreeTransformMap transformMap = _transformMap;
+			final JunctionTreeTransformMap transformMap = requireNonNull(_transformMap);
 			
 			// Copy inputs/fixed values to transformed model in case they have changed.
 			for (Entry<VariableBase,VariableBase> entry : transformMap.sourceToTargetVariables().entrySet())
@@ -264,32 +266,36 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 			// FIXME: update proxy factor mappings
 		}
 		
-		getDelegate().initialize();
+		requireNonNull(getDelegate()).initialize();
 	}
 	
 	@Override
 	public void iterate()
 	{
-		updateDelegate().iterate();
+		updateDelegate();
+		requireDelegate("iterate").iterate();
 	}
 	
 	@Override
 	public void solve()
 	{
 		getModelObject().initialize();
-		updateDelegate().solve();
+		updateDelegate();
+		requireDelegate("solve").solve();
 	}
 	
 	@Override
 	public void solveOneStep()
 	{
-		updateDelegate().solveOneStep();
+		updateDelegate();
+		requireDelegate("solveOneStep").solveOneStep();
 	}
 	
 	@Override
 	public void startSolver()
 	{
-		updateDelegate().startSolver();
+		updateDelegate();
+		requireDelegate("startSolver").startSolver();
 	}
 	
 	/*---------------------------------

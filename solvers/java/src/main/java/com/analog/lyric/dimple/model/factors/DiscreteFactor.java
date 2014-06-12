@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.factors;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,6 +97,7 @@ public class DiscreteFactor extends Factor
 		ArrayList<VariableBase> constantVariables,
 		int[] constantIndices)
 	{
+		requireNonNull(oldFactorTable);
 		final int nRemoved = constantIndices.length;
 		final int[] valueIndices = new int[oldFactorTable.getDimensions()];
 		Arrays.fill(valueIndices, -1);

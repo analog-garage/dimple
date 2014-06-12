@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.transform;
 
+import static java.util.Objects.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -252,7 +254,7 @@ public class JunctionTreeTransformMap
 			VariableBase targetVar = sourceToTargetVariable(sourceVar);
 			if (!targetVar.hasFixedValue())
 				return false;
-			if (!sourceVar.getFixedValueObject().equals(targetVar.getFixedValueObject()))
+			if (!requireNonNull(sourceVar.getFixedValueObject()).equals(targetVar.getFixedValueObject()))
 				return false;
 		}
 		

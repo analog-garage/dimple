@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,6 +32,7 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorBase;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Nullable;
 
 
@@ -72,15 +75,17 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 	@Override
 	public void updateEdgeMessage(int outPortNum)
 	{
-		INode var = _factor.getSibling(outPortNum);
+		INode node = requireNonNull(_factor.getSibling(outPortNum));
 
-		if (var instanceof Discrete)
+		if (node instanceof Discrete)
 		{
+			final Discrete var = (Discrete)node;
+			
 			// This edge connects to a discrete variable, so send an output message
 			// This method only considers the current conditional values, and does propagate
 			// to any other variables (unlike get ConditionalPotential)
 			// This should only be called if this factor is not a deterministic directed factor
-			DiscreteDomain outputVariableDomain = ((Discrete)var).getDiscreteDomain();
+			DiscreteDomain outputVariableDomain = var.getDiscreteDomain();
 			FactorFunction factorFunction = _realFactor.getFactorFunction();
 			int numPorts = _factor.getSiblingCount();
 			
@@ -91,8 +96,11 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				values[port] = inputMsgs[port].getObject();
 
 			//TODO: these could be cached instead.
-			double[] outputMsgs = (double[])var.getSolver().getInputMsg(_factor.getSiblingPortIndex(outPortNum));
+			ISolverVariable svar = var.getSolver();
+			@SuppressWarnings("null")
+			double[] outputMsgs = (double[])svar.getInputMsg(_factor.getSiblingPortIndex(outPortNum));
 			
+			@SuppressWarnings("null")
 			int outputMsgLength = outputMsgs.length;
 			for (int i = 0; i < outputMsgLength; i++)
 			{
@@ -119,6 +127,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void updateNeighborVariableValue(int variableIndex, Value oldValue)
 	{
@@ -133,7 +142,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 		final FactorFunction function = factor.getFactorFunction();
 		int[] directedTo = factor.getDirectedTo();
 
-		final Value[] inputMsgs = Objects.requireNonNull(_inputMsgs);
+		final Value[] inputMsgs = requireNonNull(_inputMsgs);
 		
 		if (oldValues != null && _outputsValid)
 		{
@@ -146,11 +155,14 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 			}
 
 			// Update the directed-to variables with the computed values
-			for (int outputIndex : directedTo)
+			if (directedTo != null)
 			{
-				VariableBase variable = factor.getSibling(outputIndex);
-				Value newValue = inputMsgs[outputIndex];
-				((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+				for (int outputIndex : directedTo)
+				{
+					VariableBase variable = requireNonNull(factor.getSibling(outputIndex));
+					Value newValue = inputMsgs[outputIndex];
+					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
+				}
 			}
 		}
 		else
@@ -164,10 +176,10 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 				// Full update
 				for (int outputIndex : directedTo)
 				{
-					VariableBase variable = factor.getSibling(outputIndex);
+					VariableBase variable = requireNonNull(factor.getSibling(outputIndex));
 					Value newValue = inputMsgs[outputIndex];
 					// FIXME: is sample already set? Just need to handle side-effects?
-					((ISolverVariableGibbs)variable.getSolver()).setCurrentSample(newValue);
+					((ISolverVariableGibbs)variable.requireSolver("updateNeighborVariableValuesNow")).setCurrentSample(newValue);
 				}
 			}
 		}
@@ -175,6 +187,7 @@ public class SRealFactor extends SFactorBase implements ISolverFactorGibbs
 
 
 
+	@SuppressWarnings("null")
 	@Override
 	public void createMessages()
 	{

@@ -47,8 +47,9 @@ public class SequentialScheduler implements IScheduler
 	protected Class _subGraphSchedulerClass = SequentialScheduler.class;
 
 
+	@Override
 	@SuppressWarnings("unchecked")
-	public ISchedule createSchedule(FactorGraph g) 
+	public ISchedule createSchedule(FactorGraph g)
 	{
 		FixedSchedule schedule = new FixedSchedule();
 
@@ -76,16 +77,17 @@ public class SequentialScheduler implements IScheduler
 			}
 
 			// Then update the sub-graph
-			if (sg.getExplicitlySetScheduler() != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
+			final IScheduler scheduler =sg.getExplicitlySetScheduler();
+			if (scheduler != null)	// If there's a scheduler associated with the sub-graph, use that and re-create the sub-graph schedule
 			{
-				ISchedule tmp = sg.getExplicitlySetScheduler().createSchedule(sg);
+				ISchedule tmp = scheduler.createSchedule(sg);
 				tmp.attach(sg);
 				schedule.add(tmp);
 			}
 			else										// Otherwise, create a new schedule for the sub-graph too (sequential by default)
 			{
 				ISchedule tmp =null;
-				try 
+				try
 				{
 					tmp =((IScheduler)_subGraphSchedulerClass.getConstructor().newInstance()).createSchedule(sg);
 				}

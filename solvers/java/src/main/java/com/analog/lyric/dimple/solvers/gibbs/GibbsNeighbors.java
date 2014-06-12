@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -80,7 +82,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 */
 	public static @Nullable GibbsNeighbors create(ISolverVariableGibbs svar)
 	{
-		final VariableBase var = svar.getModelObject();
+		final VariableBase var = requireNonNull(svar.getModelObject());
 		final int nSiblings = var.getSiblingCount();
 
 		// Neighbors at front of list, other visited nodes at end. The counter indicates
@@ -182,7 +184,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		protected @Nullable Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder,
 			@Nullable Queue<Work> queue)
 		{
-			final VariableBase variable = _varNode.getModelObject();
+			final VariableBase variable = requireNonNull(_varNode.getModelObject());
 			final int nSiblings = variable.getSiblingCount();
 			
 			int counter = counterHolder[0];
@@ -239,7 +241,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		@Override
 		protected Queue<Work> handle(Deque<ISolverNodeGibbs> visited, int[] counterHolder, Queue<Work> queue)
 		{
-			final Factor factor = _factorNode.getModelObject();
+			final Factor factor = requireNonNull(_factorNode.getModelObject());
 			final FactorFunction function = factor.getFactorFunction();
 			int[] outputEdges = function.getDirectedToIndicesForInput(factor, _incomingEdge);
 			if (outputEdges == null)
@@ -259,23 +261,26 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 			}
 			
 			int counter = counterHolder[0];
-			for (int edge : outputEdges)
+			if (outputEdges != null)
 			{
-				VariableBase variable = factor.getSibling(edge);
-				ISolverVariableGibbs svariable = (ISolverVariableGibbs)variable.getSolver();
-				if (svariable.setVisited(true))
+				for (int edge : outputEdges)
 				{
-					if (svariable.hasPotential())
+					VariableBase variable = factor.getSibling(edge);
+					ISolverVariableGibbs svariable = requireNonNull((ISolverVariableGibbs)variable.getSolver());
+					if (svariable.setVisited(true))
 					{
-						visited.addFirst(svariable);
-						counter++;
+						if (svariable.hasPotential())
+						{
+							visited.addFirst(svariable);
+							counter++;
+						}
+						else
+						{
+							visited.addLast(svariable);
+						}
+						queue.add(new VarWork(svariable, factor.getSiblingPortIndex(edge)));
 					}
-					else
-					{
-						visited.addLast(svariable);
-					}
-					queue.add(new VarWork(svariable, factor.getSiblingPortIndex(edge)));
-				}
+			}
 			}
 			counterHolder[0] = counter;
 			return queue;

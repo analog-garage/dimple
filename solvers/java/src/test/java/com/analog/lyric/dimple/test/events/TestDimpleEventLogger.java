@@ -47,6 +47,7 @@ import com.google.common.io.Files;
  */
 public class TestDimpleEventLogger
 {
+	@SuppressWarnings("null")
 	@Test
 	public void test() throws IOException
 	{
@@ -215,7 +216,8 @@ public class TestDimpleEventLogger
 		@Override
 		public @Nullable IModelEventSource getModelObject()
 		{
-			return getSource().getModelEventSource();
+			IDimpleEventSource src = getSource();
+			return src != null ? src.getModelEventSource() : null;
 		}
 	}
 	

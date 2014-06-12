@@ -27,7 +27,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.05
  */
 public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph>
-	extends ProxySolverNode implements ISolverFactorGraph
+	extends ProxySolverNode<Delegate> implements ISolverFactorGraph
 {
 	/*-------
 	 * State
@@ -72,7 +72,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	@Override
 	public void continueSolve()
 	{
-		getDelegate().continueSolve();
+		requireDelegate("continueSolve").continueSolve();
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	@Override
 	public double getBetheFreeEnergy()
 	{
-		return getDelegate().getBetheFreeEnergy();
+		return requireDelegate("getBetheFreeEnergy").getBetheFreeEnergy();
 	}
 
 	@Override
@@ -141,55 +141,55 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	@Override
 	public void iterate()
 	{
-		getDelegate().iterate();
+		requireDelegate("iterate").iterate();
 	}
 
 	@Override
 	public void iterate(int numIters)
 	{
-		getDelegate().iterate(numIters);
+		requireDelegate("iterate").iterate(numIters);
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other)
 	{
-		getDelegate().moveMessages(other);
+		requireDelegate("moveMessages").moveMessages(other);
 	}
 
 	@Override
 	public void solve()
 	{
-		getDelegate().solve();
+		requireDelegate("solve").solve();
 	}
 
 	@Override
 	public void solveOneStep()
 	{
-		getDelegate().solveOneStep();
+		requireDelegate("solveOneSte").solveOneStep();
 	}
 
 	@Override
 	public void startContinueSolve()
 	{
-		getDelegate().startContinueSolve();
+		requireDelegate("startContinueSolve").startContinueSolve();
 	}
 
 	@Override
 	public void startSolveOneStep()
 	{
-		getDelegate().startSolveOneStep();
+		requireDelegate("startSolveOneStep").startSolveOneStep();
 	}
 
 	@Override
 	public void startSolver()
 	{
-		getDelegate().startSolver();
+		requireDelegate("startSolver").startSolver();
 	}
 
 	@Override
 	public void postAdvance()
 	{
-		getDelegate().postAdvance();
+		requireDelegate("postAdvance").postAdvance();
 	}
 
 	@Override
@@ -235,9 +235,6 @@ public abstract class ProxySolverFactorGraph<Delegate extends ISolverFactorGraph
 	/*-------------------------
 	 * ProxySolverNode methods
 	 */
-	
-	@Override
-	public abstract @Nullable Delegate getDelegate();
 	
 	/**
 	 * Should be invoked by implementing subclass when delegate changes.

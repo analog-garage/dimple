@@ -87,8 +87,11 @@ public class PFactorVector extends PNodeVector
 		for (Node v : getModelerNodes())
 		{
 			final Factor f = v.asFactor();
-			for (int i = 0, nVars = f.getSiblingCount(); i < nVars; ++i)
-				retval.add(f.getSibling(i));
+			if (f != null)
+			{
+				for (int i = 0, nVars = f.getSiblingCount(); i < nVars; ++i)
+					retval.add(f.getSibling(i));
+			}
 		}
 		
 		VariableBase [] realRetVal = new VariableBase[retval.size()];

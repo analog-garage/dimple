@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.schedulers.schedule;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -181,8 +183,9 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	
 	public void add(INode node)
 	{
-		if (node.isFactorGraph())
-			add(new SubScheduleEntry(node.asFactorGraph().getSchedule()));
+		final FactorGraph fg = node.asFactorGraph();
+		if (fg != null)
+			add(new SubScheduleEntry(fg.getSchedule()));
 		else
 			add(new NodeScheduleEntry(node));
 	}
@@ -287,7 +290,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 	
 	public ISchedule copy(Map<Node,Node> old2newObjs, boolean copyToRoot)
 	{
-		FactorGraph templateGraph = getFactorGraph();
+		FactorGraph templateGraph = requireNonNull(getFactorGraph());
 		
 		FixedSchedule fs = (FixedSchedule)templateGraph.getSchedule();
 
@@ -306,7 +309,7 @@ public class FixedSchedule extends ScheduleBase implements IGibbsSchedule
 					newSchedule.add(newEntry);
 
 		}
-			return new FixedSchedule(newSchedule);
+		return new FixedSchedule(newSchedule);
 	}
 	
 	@Override

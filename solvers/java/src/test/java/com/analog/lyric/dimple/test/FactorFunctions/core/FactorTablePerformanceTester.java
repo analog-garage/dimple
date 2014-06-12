@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.test.FactorFunctions.core;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -247,7 +249,7 @@ public class FactorTablePerformanceTester
 				@Override
 				public void run()
 				{
-					final FactorTable ftable = getNewTable();
+					final FactorTable ftable = requireNonNull(getNewTable());
 					final int numPorts = numPorts_;
 					final double[][] outMsgs = outMsgs_;
 					final double[][] inMsgs = inMsgs_;

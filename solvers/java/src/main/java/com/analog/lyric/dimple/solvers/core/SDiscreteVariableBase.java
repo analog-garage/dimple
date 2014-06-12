@@ -56,7 +56,7 @@ public abstract class SDiscreteVariableBase extends SVariableBase implements IDi
 	 */
 	
 	@Override
-	public abstract @Nullable double[] getBelief();
+	public abstract double[] getBelief();
 	
 	@Override
 	public Object getValue()

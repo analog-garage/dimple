@@ -15,6 +15,8 @@
 ********************************************************************************/
 
 package com.analog.lyric.dimple.model.serializerdetails;
+import static java.util.Objects.*;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,7 +67,7 @@ public class Serializer
 		e.setAttribute("explicitName", explicitName);
 		String class_string = v.getModelerClassName();
 		String belief_string = "";
-		Object belief = v.getBeliefObject();
+		Object belief = requireNonNull(v.getBeliefObject());
 		for(Object o : ((double[])belief))
 		{
 			belief_string += o.toString();
@@ -88,7 +90,7 @@ public class Serializer
 		
 		
 		String input_string = "";
-		Object input = v.getInputObject();
+		Object input = requireNonNull(v.getInputObject());
 
 		for(Object o : ((double[])input))
 		{
@@ -182,8 +184,8 @@ public class Serializer
 			 Document doc,
 			 Element parent)
 	{
-		final JointDomainIndexer domains = xct._domains;
-		final int[] jointIndices = xct._jointIndices;
+		final JointDomainIndexer domains = requireNonNull(xct._domains);
+		final int[] jointIndices = requireNonNull(xct._jointIndices);
 		final double[] weights = xct._weights;
 		final int columns = domains.size();
 		
@@ -275,7 +277,7 @@ public class Serializer
 	        graph.setAttribute("edgedefault", "undirected");
 	        graph.setAttribute("numBoundaryVariables",
 	        				   Integer.toString(bl.size()));
-	        graph.setAttribute("solverClass", fg.getFactorGraphFactory().getClass().getName());
+	        graph.setAttribute("solverClass", requireNonNull(fg.getFactorGraphFactory()).getClass().getName());
 	        //Variables
 	        int i = 0;
 	        for(VariableBase v : bl)

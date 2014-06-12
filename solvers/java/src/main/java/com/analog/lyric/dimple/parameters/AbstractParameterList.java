@@ -167,11 +167,14 @@ public abstract class AbstractParameterList<Key extends IParameterKey> implement
 		if (hasKeys())
 		{
 			Key[] keys = getKeys();
-			for (int i = 0, end = keys.length; i < end; ++i)
+			if (keys != null)
 			{
-				if (!isFixed(i))
+				for (int i = 0, end = keys.length; i < end; ++i)
 				{
-					set(i, keys[i].defaultValue());
+					if (!isFixed(i))
+					{
+						set(i, keys[i].defaultValue());
+					}
 				}
 			}
 		}

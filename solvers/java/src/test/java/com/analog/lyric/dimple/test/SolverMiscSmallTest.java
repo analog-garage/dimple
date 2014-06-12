@@ -18,7 +18,7 @@
 package com.analog.lyric.dimple.test;
 
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -30,12 +30,13 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.test.Helpers;
 
-public class SolverMiscSmallTest 
+public class SolverMiscSmallTest
 {
+	@SuppressWarnings("null")
 	@Test
-	public void test_getParentAndGetRoot() 
+	public void test_getParentAndGetRoot()
 	{
-		FactorGraph fgRoot = Helpers.MakeSimpleThreeLevelGraph();		
+		FactorGraph fgRoot = Helpers.MakeSimpleThreeLevelGraph();
 		FactorGraph fgMid  = fgRoot.getGraphByName("Mid");
 		FactorGraph fgLeaf = fgRoot.getGraphByName("Mid.Leaf");
 				
@@ -74,6 +75,6 @@ public class SolverMiscSmallTest
 		assertTrue(SvLeafO1.getRootGraph() 		== SfgRoot);
 		assertTrue(SfRoot.getRootGraph() 		== SfgRoot);
 		assertTrue(SfMid.getRootGraph() 		== SfgRoot);
-		assertTrue(SfLeaf.getRootGraph() 		== SfgRoot);		
+		assertTrue(SfLeaf.getRootGraph() 		== SfgRoot);
 	}
 }

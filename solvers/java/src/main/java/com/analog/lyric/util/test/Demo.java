@@ -16,6 +16,8 @@
 
 package com.analog.lyric.util.test;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -53,7 +55,7 @@ public class Demo {
 		XorDelta xorFF = new XorDelta();
 		Factor f = fg.addFactor(xorFF,v1,v2,v3);
 				
-		((SFactorGraph)fg.getSolver()).setNumIterations(1);
+		((SFactorGraph)requireNonNull(fg.getSolver())).setNumIterations(1);
 
 
 		fg.solve();
@@ -65,7 +67,7 @@ public class Demo {
 		if(print)
 		{
 			//////////////////////////////////////////////////////////
-			//PRINTING GRAPH		
+			//PRINTING GRAPH
 			System.out.println("-------------------------------------------------------------------------");
 			System.out.println("before naming...\n");
 			System.out.println(fg.getFullString());
@@ -91,7 +93,7 @@ public class Demo {
 		}
 		
 		//////////////////////////////////////////////////////////
-		//NESTED GRAPHS 
+		//NESTED GRAPHS
 		
 		//Variables
 		Discrete vRootB1 = new Discrete(0.0, 1.0);
@@ -158,15 +160,15 @@ public class Demo {
 		temps.add(fgRoot.getObjectByName("fgRoot.vRootO2"));
 		
 		//further down
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO1"));		
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO2"));		
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf"));		
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO1"));		
-		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO2"));		
+		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO1"));
+		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.vMidO2"));
+		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf"));
+		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO1"));
+		temps.add(fgRoot.getObjectByName("fgRoot.fgMid.fgLeaf.vLeafO2"));
 
 		//sub graphs still have their own tables, and can be searched
-		fgMid = (FactorGraph) fgRoot.getObjectByName("fgMid");
-		fgLeaf = (FactorGraph) fgMid.getObjectByName("fgLeaf");
+		fgMid = requireNonNull((FactorGraph) fgRoot.getObjectByName("fgMid"));
+		fgLeaf = requireNonNull((FactorGraph) fgMid.getObjectByName("fgLeaf"));
 		temps.add(fgMid.getObjectByName("vMidO1"));
 		temps.add(fgMid.getObjectByName("fgMid.fgLeaf.vLeafO1"));
 		temps.add(fgLeaf.getObjectByName("vLeafO1"));

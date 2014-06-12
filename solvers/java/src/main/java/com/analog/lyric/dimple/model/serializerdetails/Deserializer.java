@@ -487,20 +487,17 @@ public class Deserializer
 				}
 			}
 			
-			boolean classExists = false;
 			@SuppressWarnings("all")
 			Class factorFunctionClass  = null;
 			try
 			{
 				factorFunctionClass  = Class.forName(qualifiedHack);
-				classExists = true;
 			}
 			catch(Exception e){}
-			catch(NoClassDefFoundError e){}
 		    
 		    Factor f = null;
 		    //If we have that class, build with that class.
-		    if(classExists)
+		    if (factorFunctionClass != null)
 		    {
 				f = _fg.addFactor((FactorFunction)factorFunctionClass.newInstance(),
 			 			arguments);
@@ -529,13 +526,14 @@ public class Deserializer
 		    	f = _fg.addFactor(ff, arguments);
 		    }
 		    
-		    		     
-
-			if(xF.getExplicitName().length() > 0)
-			{
-				f.setName(xF.getExplicitName());
-			}
-			f.setUUID(xF.getUUID());
+		    if (f != null)
+		    {
+		    	if (xF.getExplicitName().length() > 0)
+		    	{
+		    		f.setName(xF.getExplicitName());
+		    	}
+		    	f.setUUID(xF.getUUID());
+		    }
 		}
 		return _fg;
 	}

@@ -354,7 +354,7 @@ public abstract class DiscreteDomain extends Domain
 	 * <p>
 	 * @see #getElements(Object[])
 	 */
-	public @Nullable Object[] getElements()
+	public Object[] getElements()
 	{
 		return getElements(null);
 	}

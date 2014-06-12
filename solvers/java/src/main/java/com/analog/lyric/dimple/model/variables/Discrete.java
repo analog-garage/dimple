@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.model.variables;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -109,29 +111,35 @@ public class Discrete extends VariableBase
      * Discrete methods
      */
     
-    public @Nullable double [] getBelief()
+    public double [] getBelief()
     {
     	return (double[])getBeliefObject();
     }
     
     @Override
-	public @Nullable Object getBeliefObject()
+	public Object getBeliefObject()
     {
     	final ISolverVariable svar = _solverVariable;
     	if (svar != null)
-    		return svar.getBelief();
-    	else
-    		return getInputObject();
+    	{
+    		final Object belief = svar.getBelief();
+    		if (belief != null)
+    		{
+    			return belief;
+    		}
+    	}
+    	
+    	return getInputObject();
     }
     
     public int getGuessIndex()
     {
-    	return getSolver().getGuessIndex();
+    	return requireNonNull(getSolver()).getGuessIndex();
     }
     
     public void setGuessIndex(int guess)
     {
-    	getSolver().setGuessIndex(guess);
+    	requireNonNull(getSolver()).setGuessIndex(guess);
     }
     
     public @Nullable Object getValue()

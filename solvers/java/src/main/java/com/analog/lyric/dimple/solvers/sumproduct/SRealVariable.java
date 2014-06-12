@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -50,7 +52,7 @@ public class SRealVariable extends SRealVariableBase
 	public void setInputOrFixedValue(@Nullable Object input, @Nullable Object fixedValue, boolean hasFixedValue)
 	{
 		if (hasFixedValue)
-			_input = createFixedValueMessage((Double)fixedValue);
+			_input = createFixedValueMessage(requireNonNull((Double)fixedValue));
 		else if (input == null)
     		_input = null;
     	else
@@ -173,7 +175,7 @@ public class SRealVariable extends SRealVariableBase
 
     	// If fixed value, just return the input, which has been set to a zero-variance message
     	if (_var.hasFixedValue())
-    		return input.clone();
+    		return requireNonNull(input).clone();
     	
     	double mu = 0;
     	double tau = 0;

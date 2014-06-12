@@ -183,16 +183,17 @@ public class RealDomain extends Domain
 		return (value >= _lowerBound) && (value <= _upperBound);
 	}
 	
+	/**
+	 * True if values are confined to a subset of the reals.
+	 * <p>
+	 * True when {@link #getLowerBound} is greater than negative infinity or
+	 * {@link #getUpperBound()} is less than positive infinity.
+	 */
+	@Override
 	public final boolean isBounded()
 	{
-		return !isUnbounded();
+		return _lowerBound > Double.NEGATIVE_INFINITY || _upperBound < Double.POSITIVE_INFINITY;
 	}
-	
-	public final boolean isUnbounded()
-	{
-		return (_lowerBound == Double.NEGATIVE_INFINITY) && (_upperBound == Double.POSITIVE_INFINITY);
-	}
-	
 	
 	@Override
 	public String toString()

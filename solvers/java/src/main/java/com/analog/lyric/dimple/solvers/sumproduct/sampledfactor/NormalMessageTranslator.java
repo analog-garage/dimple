@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import static java.util.Objects.*;
+
 import java.util.Objects;
 
 import cern.colt.list.DoubleArrayList;
@@ -60,7 +62,7 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
-		NormalParameters inputMessage = (NormalParameters)getInputMessage();
+		NormalParameters inputMessage = (NormalParameters)requireNonNull(getInputMessage());
 		if (inputMessage.getPrecision() == 0)
 		{
 			_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
@@ -85,7 +87,9 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 		final NormalParameters outputMessage = Objects.requireNonNull(_outputMessage);
 		
 		// Get the raw sample array to avoid making a copy; this is unsafe, so be careful not to modify it
-		DoubleArrayList sampleValues = Objects.requireNonNull(_solverVariable)._getSampleArrayUnsafe();
+		@SuppressWarnings("null")
+		DoubleArrayList sampleValues = _solverVariable._getSampleArrayUnsafe();
+		@SuppressWarnings("null")
 		int numSamples = sampleValues.size();
 
 		// For all sample values, compute the output message
@@ -110,12 +114,13 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	}
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public final void initialize()
 	{
 		SRealVariable var = (SRealVariable)_port.node.getSibling(_port.index).getSolver();
-		_outputMessage = (NormalParameters)var.resetInputMessage(Objects.requireNonNull(_outputMessage));
-		_inputMessage = (NormalParameters)var.resetInputMessage(Objects.requireNonNull(_inputMessage));
+		_outputMessage = (NormalParameters)var.resetInputMessage(_outputMessage);
+		_inputMessage = (NormalParameters)var.resetInputMessage(_inputMessage);
 		_solverVariable = (com.analog.lyric.dimple.solvers.gibbs.SRealVariable)_variable.getSolver();
 	}
 	

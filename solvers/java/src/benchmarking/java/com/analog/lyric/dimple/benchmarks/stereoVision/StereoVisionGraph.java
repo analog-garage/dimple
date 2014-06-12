@@ -82,6 +82,7 @@ public class StereoVisionGraph
 		{
 			for (int x = 0; x < _width; x++)
 			{
+				@SuppressWarnings("null")
 				int value = (Integer) _variables[y][x].getValue();
 				image.put((double) value / _depthRange, y, x);
 			}

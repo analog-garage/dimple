@@ -47,6 +47,7 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 		getMessages();
 	}
 	
+	@SuppressWarnings("null")
 	private void getMessages()
 	{
 		_outputMsg = (double[])getOtherVariablePort().node.getSolver().getInputMsg(getOtherVariablePort().index);
@@ -61,6 +62,7 @@ public class STableFactorBlastFromThePast extends SBlastFromThePast implements I
 		getMessages();
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public double getPotential()
 	{

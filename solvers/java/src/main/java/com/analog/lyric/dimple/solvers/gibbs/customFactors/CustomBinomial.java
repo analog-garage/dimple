@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,6 +103,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 
 	
 	
+	@SuppressWarnings("null")
 	@Override
 	public void initialize()
 	{
@@ -140,7 +143,7 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			
 			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX_FIXED_N);
 			if (_hasConstantOutput)
-				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_N);
+				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX_FIXED_N));
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX_FIXED_N);
@@ -151,7 +154,10 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 		{
 			_hasConstantNParameter = factorFunction.isConstantIndex(N_PARAMETER_INDEX);
 			if (_hasConstantNParameter)
-				_constantNParameterValue = (Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX);
+			{
+				_constantNParameterValue =
+				requireNonNull((Integer)factorFunction.getConstantByIndex(N_PARAMETER_INDEX));
+			}
 			else
 			{
 				int nParameterEdge = factorFunction.getEdgeByIndex(N_PARAMETER_INDEX);
@@ -163,7 +169,9 @@ public class CustomBinomial extends SRealFactor implements IRealConjugateFactor
 			
 			_hasConstantOutput = factorFunction.isConstantIndex(OUTPUT_INDEX);
 			if (_hasConstantOutput)
-				_constantOutputValue = (Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX);
+			{
+				_constantOutputValue = requireNonNull((Integer)factorFunction.getConstantByIndex(OUTPUT_INDEX));
+			}
 			else
 			{
 				int outputEdge = factorFunction.getEdgeByIndex(OUTPUT_INDEX);

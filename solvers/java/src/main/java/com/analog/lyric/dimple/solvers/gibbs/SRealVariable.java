@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+import static java.util.Objects.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,8 +191,8 @@ public class SRealVariable extends SRealVariableBase
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = _var.getSibling(portIndex);
-				ISolverNode factor = factorNode.getSolver();
+				Factor factorNode = requireNonNull(_var.getSibling(portIndex));
+				ISolverFactor factor = requireNonNull(factorNode.getSolver());
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[portIndex] = factorNode.getPort(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
@@ -326,8 +327,8 @@ public class SRealVariable extends SRealVariableBase
 		{
 			if (port != outPortNum)
 			{
-				INode factorNode = _var.getSibling(port);
-				ISolverNode factor = factorNode.getSolver();
+				Factor factorNode = requireNonNull(_var.getSibling(port));
+				ISolverFactor factor = requireNonNull(factorNode.getSolver());
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[i++] = factorNode.getPorts().get(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
@@ -438,6 +439,7 @@ public class SRealVariable extends SRealVariableBase
 			setCurrentSampleForce(FactorFunctionUtilities.toDouble(fixedValue));
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(@Nullable Factor f)
 	{
@@ -562,7 +564,7 @@ public class SRealVariable extends SRealVariableBase
 		// If this variable has deterministic dependents, then set their values
 		if (hasDeterministicDependents)
 		{
-			neighbors.update(Objects.requireNonNull(oldValue));
+			requireNonNull(neighbors).update(requireNonNull(oldValue));
 		}
 	}
 

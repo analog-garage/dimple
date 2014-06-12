@@ -22,12 +22,12 @@ import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
-import com.analog.lyric.util.misc.Nullable;
 
 /**
  * @since 0.05
  */
-public abstract class ProxySolverFactor extends ProxySolverNode implements ISolverFactor
+public abstract class ProxySolverFactor<Delegate extends ISolverFactor>
+	extends ProxySolverNode<Delegate> implements ISolverFactor
 {
 	protected final Factor _modelFactor;
 	
@@ -66,7 +66,7 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	@Override
 	public Object getBelief()
 	{
-		return getDelegate().getBelief();
+		return requireDelegate("getBelief").getBelief();
 	}
 
 	@Override
@@ -84,9 +84,9 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	{
 		if (other instanceof ProxySolverNode)
 		{
-			other = Objects.requireNonNull(((ProxySolverNode)other).getDelegate());
+			other = Objects.requireNonNull(((ProxySolverNode<?>)other).getDelegate());
 		}
-		getDelegate().moveMessages(other);
+		requireDelegate("moveMessages").moveMessages(other);
 	}
 
 	@Override
@@ -100,11 +100,4 @@ public abstract class ProxySolverFactor extends ProxySolverNode implements ISolv
 	{
 		throw unsupported("setDirectedTo");
 	}
-
-	/*-------------------------
-	 * ProxySolverNode methods
-	 */
-	
-	@Override
-	public abstract @Nullable ISolverFactor getDelegate();
 }

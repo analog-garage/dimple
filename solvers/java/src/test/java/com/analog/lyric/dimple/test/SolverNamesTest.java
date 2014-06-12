@@ -89,6 +89,7 @@ public class SolverNamesTest extends TestCase {
 
 	//JUnit4
 	//@Test
+	@SuppressWarnings("null")
 	public void test_parentGraphNameStuff()
 	{
 		//3 new variables

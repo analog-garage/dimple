@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.factorfunctions.Beta;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.Port;
@@ -54,7 +56,7 @@ public class BetaSampler implements IRealConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			BetaParameters message = (BetaParameters)(ports[port].getOutputMsg());
+			BetaParameters message = requireNonNull((BetaParameters)(ports[port].getOutputMsg()));
 			alphaMinusOne += message.getAlphaMinusOne();
 			betaMinusOne += message.getBetaMinusOne();
 		}

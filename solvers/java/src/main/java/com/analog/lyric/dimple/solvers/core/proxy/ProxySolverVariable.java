@@ -27,7 +27,8 @@ import com.analog.lyric.util.misc.Nullable;
 /**
  * @since 0.05
  */
-public abstract class ProxySolverVariable extends ProxySolverNode implements ISolverVariable
+public abstract class ProxySolverVariable<Delegate extends ISolverVariable>
+	extends ProxySolverNode<Delegate> implements ISolverVariable
 {
 	protected final VariableBase _modelVariable;
 	
@@ -89,19 +90,19 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	@Override
 	public Object getGuess()
 	{
-		return getDelegate().getGuess();
+		return requireDelegate("getGuess").getGuess();
 	}
 
 	@Override
 	public void setGuess(@Nullable Object guess)
 	{
-		getDelegate().setGuess(guess);
+		requireDelegate("setGuess").setGuess(guess);
 	}
 
 	@Override
 	public Object getValue()
 	{
-		return getDelegate().getValue();
+		return requireDelegate("getValue").getValue();
 	}
 
 	@Override
@@ -109,9 +110,9 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 	{
 		if (other instanceof ProxySolverNode)
 		{
-			other = Objects.requireNonNull(((ProxySolverNode)other).getDelegate());
+			other = Objects.requireNonNull(((ProxySolverNode<?>)other).getDelegate());
 		}
-		getDelegate().moveNonEdgeSpecificState(other);
+		requireDelegate("moveNonEdgeSpecificState").moveNonEdgeSpecificState(other);
 	}
 
 	@Override
@@ -139,11 +140,4 @@ public abstract class ProxySolverVariable extends ProxySolverNode implements ISo
 			delegate.setInputOrFixedValue(input, fixedValue, hasFixedValue);
 		}
 	}
-	
-	/*-------------------------
-	 * ProxySolverNode methods
-	 */
-	
-	@Override
-	public abstract @Nullable ISolverVariable getDelegate();
 }

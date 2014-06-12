@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -29,7 +30,6 @@ import com.analog.lyric.dimple.schedulers.RandomWithReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.RandomWithoutReplacementScheduler;
 import com.analog.lyric.dimple.schedulers.schedule.ISchedule;
 import com.analog.lyric.dimple.schedulers.scheduleEntry.IScheduleEntry;
-
 import com.analog.lyric.math.DimpleRandomGenerator;
 
 
@@ -47,7 +47,7 @@ public class RandomSchedulerTest
 		RandomWithoutReplacementScheduler scheduler = new RandomWithoutReplacementScheduler();
 		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
-		g.getSolver().setNumIterations(20);
+		requireNonNull(g.getSolver()).setNumIterations(20);
 
 		DiscreteDomain bit = DiscreteDomain.bit();
 		Discrete a = new Discrete(bit);
@@ -102,7 +102,7 @@ public class RandomSchedulerTest
 		RandomWithReplacementScheduler scheduler = new RandomWithReplacementScheduler();
 		DimpleRandomGenerator.setSeed(1);		// Make it repeatable
 		g.setScheduler(scheduler);
-		g.getSolver().setNumIterations(20);
+		requireNonNull(g.getSolver()).setNumIterations(20);
 
 		DiscreteDomain bit = DiscreteDomain.bit();
 		Discrete a = new Discrete(bit);

@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect.tests;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.Map;
@@ -74,8 +75,8 @@ public class SkipMapTester<K, V> extends MapTester<K, V>
 		}
 		else
 		{
-			assertEquals(map.firstKey(), firstEntry.getKey());
-			assertEquals(map.lastKey(), lastEntry.getKey());
+			assertEquals(map.firstKey(), requireNonNull(firstEntry).getKey());
+			assertEquals(map.lastKey(), requireNonNull(lastEntry).getKey());
 		}
 		
 		Map.Entry<K, V> prevEntry = null;
@@ -93,6 +94,7 @@ public class SkipMapTester<K, V> extends MapTester<K, V>
 			assertEquals(key, map.floorKey(key));
 			
 			entry = map.ceilingEntry(key);
+			requireNonNull(entry);
 			assertEquals(key, entry.getKey());
 			assertEquals(value, entry.getValue());
 			assertEquals(key, map.ceilingKey(key));
@@ -110,10 +112,12 @@ public class SkipMapTester<K, V> extends MapTester<K, V>
 				assertEquals(key, map.higherKey(prevKey));
 				
 				Map.Entry<K,V> lowerEntry = map.lowerEntry(key);
+				requireNonNull(lowerEntry);
 				assertEquals(prevKey, lowerEntry.getKey());
 				assertEquals(prevEntry.getValue(), lowerEntry.getValue());
 				
 				Map.Entry<K,V> higherEntry = map.higherEntry(prevKey);
+				requireNonNull(higherEntry);
 				assertEquals(key, higherEntry.getKey());
 				assertEquals(value, higherEntry.getValue());
 			}

@@ -54,6 +54,7 @@ public class FiniteFieldTest {
 	public void tearDown()  {
 	}
 		
+	@SuppressWarnings("null")
 	@Test
 	public void test_doubleXor()
 	{

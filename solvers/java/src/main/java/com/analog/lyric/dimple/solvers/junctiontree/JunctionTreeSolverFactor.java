@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.junctiontree;
 
+import static java.util.Objects.*;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -164,7 +166,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	@Override
 	public double[] getBelief()
 	{
-		final ISolverFactor delegate = getDelegate();
+		final ISolverFactor delegate = requireNonNull(getDelegate());
 		final double[] beliefs = (double[]) delegate.getBelief();
 		
 		final JointDomainReindexer reindexer = getDelegateReindexer();
@@ -189,7 +191,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 	@Override
 	public int[][] getPossibleBeliefIndices()
 	{
-		final ISolverFactor delegate = getDelegate();
+		final ISolverFactor delegate = requireNonNull(getDelegate());
 		
 		final JointDomainReindexer reindexer = getDelegateReindexer();
 		if (reindexer == null)
@@ -237,7 +239,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 		else
 		{
 			final Factor sourceFactor = getFactor();
-			final Factor targetFactor = _root.getTransformMap().sourceToTargetFactor(sourceFactor);
+			final Factor targetFactor = requireNonNull(_root.getTransformMap()).sourceToTargetFactor(sourceFactor);
 			return _delegate = targetFactor.getSolver();
 		}
 	}
@@ -250,7 +252,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 			
 			// TODO: detect when no conversion is needed
 			
-			final JunctionTreeTransformMap transformMap = _root.getTransformMap();
+			final JunctionTreeTransformMap transformMap = requireNonNull(_root.getTransformMap());
 			final Factor sourceFactor = getFactor();
 			final Factor targetFactor = transformMap.sourceToTargetFactor(sourceFactor);
 

@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.test.model;
 
 import static com.analog.lyric.util.test.ExceptionTester.*;
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -560,8 +561,8 @@ public class TestVariableEliminator
 		
 		OrderIterator iterator = eliminator.orderIterator(cost);
 		assertSame(eliminator, iterator.getEliminator());
-		assertSame(cost, iterator.getCostEvaluator().type());
-		assertSame(cost, iterator.getStats().cost().type());
+		assertSame(cost, requireNonNull(iterator.getCostEvaluator()).type());
+		assertSame(cost, requireNonNull(iterator.getStats().cost()).type());
 		
 		int nVariables = model.getVariableCount();
 		assertEquals(nVariables, iterator.size());

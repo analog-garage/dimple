@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.test.solvers.gibbs;
 
+import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ public class TestGibbsVariableUpdateEvent
 			}
 		}
 		
+		@SuppressWarnings("null")
 		void printEvent(GibbsVariableUpdateEvent event)
 		{
 			System.out.format("%s: %s %s => %s",
@@ -146,7 +148,7 @@ public class TestGibbsVariableUpdateEvent
 		Factor frc = model.addFactor(function, r1, c1);
 		Factor fcd = model.addFactor(function, c1, d1);
 		
-		SFactorGraph sgraph = model.setSolverFactory(new GibbsSolver());
+		SFactorGraph sgraph = requireNonNull(model.setSolverFactory(new GibbsSolver()));
 		ISolverVariableGibbs sd1 = Objects.requireNonNull(sgraph.getSolverVariable(d1));
 		ISolverVariableGibbs sr1 = Objects.requireNonNull(sgraph.getSolverVariable(r1));
 		ISolverVariableGibbs sc1 = Objects.requireNonNull(sgraph.getSolverVariable(c1));

@@ -16,8 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.customFactors;
 
+import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.RealJoint;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
 
@@ -36,18 +36,13 @@ public class CustomGaussianSubtract extends CustomGaussianSum
 		for (int i = 0, end = factor.getSiblingCount(); i < end; i++)
 		{
 			VariableBase v = factor.getSibling(i);
+			Domain domain = v.getDomain();
 			
-			// Must be real
-			if (v.getDomain().isDiscrete())
+			// Must be unbounded univariate real
+			if (!domain.isReal() || domain.isBounded())
+			{
 				return false;
-			
-			// Must be univariate
-			if (v instanceof RealJoint)
-				return false;
-			
-			// Must be unbounded
-			if (v.getDomain().asReal().isBounded())
-				return false;
+			}
 		}
 		return true;
 	}

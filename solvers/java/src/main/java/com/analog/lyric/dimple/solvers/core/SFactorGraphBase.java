@@ -17,6 +17,8 @@
 package com.analog.lyric.dimple.solvers.core;
 
 
+import static java.util.Objects.*;
+
 import java.util.Objects;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -131,7 +133,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myFactors.size(); i++)
 		{
-			ISolverFactor sf = myFactors.getByIndex(i).getSolver();
+			ISolverFactor sf = requireNonNull(myFactors.getByIndex(i).getSolver());
 			sf.moveMessages(Objects.requireNonNull(otherFactors.getByIndex(i).getSolver()));
 		}
 		
@@ -140,7 +142,7 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		
 		for (int i = 0; i < myVars.size(); i++)
 		{
-			ISolverVariable sv = myVars.getByIndex(i).getSolver();
+			ISolverVariable sv = requireNonNull(myVars.getByIndex(i).getSolver());
 			sv.moveNonEdgeSpecificState(Objects.requireNonNull(otherVars.getByIndex(i).getSolver()));
 		}
 		
@@ -517,19 +519,19 @@ public abstract class SFactorGraphBase  extends SNode implements ISolverFactorGr
 		FactorGraph fg = _factorGraph;
 		for (int i = 0, end = fg.getOwnedVariableCount(); i < end; ++i)
 		{
-			fg.getOwnedVariable(i).getSolver().initialize();
+			fg.getOwnedVariable(i).requireSolver("initialize").initialize();
 		}
 		if (!fg.hasParentGraph())
 		{
 			for (int i = 0, end = fg.getBoundaryVariableCount(); i <end; ++i)
 			{
-				fg.getBoundaryVariable(i).getSolver().initialize();
+				fg.getBoundaryVariable(i).requireSolver("initialize").initialize();
 			}
 		}
 		for (Factor f : fg.getNonGraphFactorsTop())
-			f.getSolver().initialize();
+			f.requireSolver("initialize").initialize();
 		for (FactorGraph g : fg.getNestedGraphs())
-			g.getSolver().initialize();
+			g.requireSolver("initialize").initialize();
 	}
 	
 	/***********************************************

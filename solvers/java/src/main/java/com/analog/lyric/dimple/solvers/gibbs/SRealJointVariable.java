@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.solvers.gibbs;
 
 import static com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent.*;
+import static java.util.Objects.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +29,6 @@ import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.core.Port;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
@@ -194,8 +194,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			Port[] ports = new Port[numPorts];
 			for (int portIndex = 0; portIndex < numPorts; portIndex++)
 			{
-				INode factorNode = _var.getSibling(portIndex);
-				ISolverNode factor = factorNode.getSolver();
+				Factor factorNode = requireNonNull(_var.getSibling(portIndex));
+				ISolverFactor factor = factorNode.requireSolver("update");
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[portIndex] = factorNode.getPorts().get(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
@@ -342,8 +342,8 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		{
 			if (port != outPortNum)
 			{
-				INode factorNode = _var.getSibling(port);
-				ISolverNode factor = factorNode.getSolver();
+				Factor factorNode = requireNonNull(_var.getSibling(port));
+				ISolverFactor factor = requireNonNull(factorNode.getSolver());
 				int factorPortNumber = factorNode.getPortNum(_var);
 				ports[i++] = factorNode.getPorts().get(factorPortNumber);
 				((ISolverFactorGibbs)factor).updateEdgeMessage(factorPortNumber);	// Run updateEdgeMessage for each neighboring factor
@@ -531,6 +531,7 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 			setCurrentSampleForce((double[])Objects.requireNonNull(fixedValue));
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	public void postAddFactor(@Nullable Factor f)
 	{
@@ -765,48 +766,54 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalStandardDeviation(double stdDev)
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().setParameters(stdDev);
+			((MHSampler)_sampler).getProposalKernel().setParameters(stdDev);
 	}
+	@SuppressWarnings("null")
 	@Deprecated
 	public final double getProposalStandardDeviation()
 	{
 		if (_sampler instanceof MHSampler)
-			return (Double)((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().getParameters()[0];
+			return (Double)((MHSampler)_sampler).getProposalKernel().getParameters()[0];
 		else
 			return 0;
 	}
 	// Set the proposal kernel parameters more generally
+	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernelParameters(Object... parameters)
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel().setParameters(parameters);
+			((MHSampler)_sampler).getProposalKernel().setParameters(parameters);
 	}
 	
 	// FIXME: REMOVE
 	// There should be a way to call these directly via the samplers
 	// If so, they should be removed from here since this makes this sampler-specific
+	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernel(IProposalKernel proposalKernel)					// IProposalKernel object
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)Objects.requireNonNull(_sampler)).setProposalKernel(proposalKernel);
+			((MHSampler)_sampler).setProposalKernel(proposalKernel);
 	}
+	@SuppressWarnings("null")
 	@Deprecated
 	public final void setProposalKernel(String proposalKernelName)						// Name of proposal kernel
 	{
 		if (_sampler instanceof MHSampler)
-			((MHSampler)Objects.requireNonNull(_sampler)).setProposalKernel(proposalKernelName);
+			((MHSampler)_sampler).setProposalKernel(proposalKernelName);
 	}
+	@SuppressWarnings("null")
 	@Deprecated
 	public final @Nullable IProposalKernel getProposalKernel()
 	{
 		if (_sampler instanceof MHSampler)
-			return ((MHSampler)Objects.requireNonNull(_sampler)).getProposalKernel();
+			return ((MHSampler)_sampler).getProposalKernel();
 		else
 			return null;
 	}

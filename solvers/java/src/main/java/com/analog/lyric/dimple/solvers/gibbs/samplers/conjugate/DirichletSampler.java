@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.samplers.conjugate;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Dirichlet;
 import com.analog.lyric.dimple.factorfunctions.ExchangeableDirichlet;
@@ -70,7 +72,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		for (int port = 0; port < numPorts; port++)
 		{
 			// The message from each neighboring factor is an array with elements (alpha, beta)
-			DirichletParameters message = (DirichletParameters)(ports[port].getOutputMsg());
+			DirichletParameters message = requireNonNull((DirichletParameters)(ports[port].getOutputMsg()));
 			int messageSize = message.getSize();
 			if (messageSize == 0)	// Uninitialized message, which implies uninformative
 			{
@@ -137,6 +139,7 @@ public class DirichletSampler implements IRealJointConjugateSampler
 		return new DirichletParameters();
 	}
 	
+	@SuppressWarnings("null")
 	private void setDimension(Port[] ports, @Nullable FactorFunction input)
 	{
 		int numPorts = ports.length;

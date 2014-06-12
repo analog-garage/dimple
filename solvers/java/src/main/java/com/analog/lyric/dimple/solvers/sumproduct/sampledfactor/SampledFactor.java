@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.sampledfactor;
 
+import static java.util.Objects.*;
+
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
@@ -171,8 +173,8 @@ public class SampledFactor extends SFactorBase
 		final Factor factor = _factor;
 		for (int i = 0, nVars = factor.getSiblingCount(); i < nVars; i++)
 		{
-			ISolverVariable var = factor.getSibling(i).getSolver();
-			Object [] messages = var.createMessages(this);
+			ISolverVariable var = requireNonNull(factor.getSibling(i).getSolver());
+			Object [] messages = requireNonNull(var.createMessages(this));
 			_messageTranslator[i].createInputMessage(messages[1]);
 			_messageTranslator[i].createOutputMessage(messages[0]);
 		}

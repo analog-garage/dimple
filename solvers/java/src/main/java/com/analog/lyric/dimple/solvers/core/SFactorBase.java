@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import java.util.Objects;
 
 import com.analog.lyric.dimple.events.SolverEvent;
@@ -144,7 +146,7 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 	public void moveMessages(ISolverNode other)
 	{
 		Factor factor = getModelObject();
-		INode otherFactor = other.getModelObject();
+		INode otherFactor = requireNonNull(other.getModelObject());
 		
 		int nSiblings = factor.getSiblingCount();
 		
@@ -159,7 +161,8 @@ public abstract class SFactorBase extends SNode implements ISolverFactor
 			INode otherVariable = otherFactor.getSibling(i);
 			int thisIndex = factor.getSiblingPortIndex(i);
 			int otherIndex = otherFactor.getSiblingPortIndex(i);
-			thisVariable.getSolver().moveMessages(Objects.requireNonNull(otherVariable.getSolver()), thisIndex,otherIndex);
+			ISolverNode thisSolver = requireNonNull(thisVariable.getSolver());
+			thisSolver.moveMessages(Objects.requireNonNull(otherVariable.getSolver()), thisIndex,otherIndex);
 		}
 	}
 

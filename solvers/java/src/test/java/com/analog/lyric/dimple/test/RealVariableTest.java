@@ -16,12 +16,12 @@
 
 package com.analog.lyric.dimple.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.Normal;
+import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.variables.Real;
@@ -31,8 +31,9 @@ public class RealVariableTest
 {
 	protected static boolean debugPrint = false;
 	
+	@SuppressWarnings("null")
 	@Test
-	public void test1() 
+	public void test1()
 	{
 		if (debugPrint) System.out.println("== test1 ==");
 

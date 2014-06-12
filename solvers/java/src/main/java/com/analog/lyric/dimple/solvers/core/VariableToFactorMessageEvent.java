@@ -16,6 +16,8 @@ p*   Copyright 2014 Analog Devices, Inc.
 
 package com.analog.lyric.dimple.solvers.core;
 
+import static java.util.Objects.*;
+
 import java.io.PrintStream;
 
 import com.analog.lyric.dimple.events.SolverVariableEvent;
@@ -39,6 +41,7 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	
 	private final int _edge;
 	private final transient @Nullable ISolverFactor _factor;
+	private final String _factorName;
 	private final @Nullable IParameterizedMessage _oldMessage;
 	private final IParameterizedMessage _newMessage;
 	
@@ -62,7 +65,8 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 		super(variable);
 		assert(newMessage != null);
 		_edge = edge;
-		_factor = variable.getSibling(edge);
+		ISolverFactor factor = _factor = requireNonNull(variable.getSibling(edge));
+		_factorName = factor.getEventSourceName();
 		_oldMessage = oldMessage;
 		_newMessage = newMessage;
 	}
@@ -74,16 +78,20 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	@Override
 	protected void printDetails(PrintStream out, int verbosity)
 	{
-		out.format("update from '%s' to '%s\n", getVariable().getEventSourceName(), getFactor().getEventSourceName());
+		out.format("update from '%s' to '%s\n", getVariableName(), getFactorName());
 		out.print("  new message: ");
 		getNewMessage().print(out, verbosity);
 		if (verbosity > 0)
 		{
-			out.print("\n  old message: ");
-			getOldMessage().print(out, verbosity);
-			if (verbosity > 1)
+			IParameterizedMessage oldMsg = getOldMessage();
+			if (oldMsg != null)
 			{
-				out.format("\n  KL divergence is %g", computeKLDivergence());
+				out.print("\n  old message: ");
+				oldMsg.print(out, verbosity);
+				if (verbosity > 1)
+				{
+					out.format("\n  KL divergence is %g", computeKLDivergence());
+				}
 			}
 		}
 	}
@@ -117,6 +125,12 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 	}
 	
 	@Override
+	public String getFactorName()
+	{
+		return _factorName;
+	}
+	
+	@Override
 	public final IParameterizedMessage getNewMessage()
 	{
 		return _newMessage;
@@ -134,6 +148,12 @@ public class VariableToFactorMessageEvent extends SolverVariableEvent implements
 		return getSolverObject();
 	}
 
+	@Override
+	public String getVariableName()
+	{
+		return getSourceName();
+	}
+	
 	@Override
 	public final boolean isToFactor()
 	{

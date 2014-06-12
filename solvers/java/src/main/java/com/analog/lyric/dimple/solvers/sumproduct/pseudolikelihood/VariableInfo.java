@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.sumproduct.pseudolikelihood;
 
+import static java.util.Objects.*;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -238,7 +240,7 @@ public class VariableInfo extends NodeInfo
 	//uses a breadth first search to find all neighboring variables.
 	private static VariableBase [] getNeighbors(VariableBase var)
 	{
-		IMapList<INode> ml = var.getRootGraph().depthFirstSearchFlat(var, 2);
+		IMapList<INode> ml = requireNonNull(var.getRootGraph()).depthFirstSearchFlat(var, 2);
 		HashSet<VariableBase> neighbors = new HashSet<VariableBase>();
 		for (INode n : ml)
 		{

@@ -16,6 +16,8 @@
 
 package com.analog.lyric.dimple.solvers.gibbs.customFactors;
 
+import static java.util.Objects.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -117,7 +119,7 @@ public class CustomExchangeableDirichlet extends SRealFactor implements IRealJoi
 			if (_hasConstantParameters)
 			{
 				_numParameterEdges = 0;
-				_constantAlphaMinusOne = (Double)factorFunction.getConstantByIndex(PARAMETER_INDEX) - 1;
+				_constantAlphaMinusOne = (Double)requireNonNull(factorFunction.getConstantByIndex(PARAMETER_INDEX)) - 1;
 				_alphaVariable = null;
 			}
 			else	// Parameter is a variable
