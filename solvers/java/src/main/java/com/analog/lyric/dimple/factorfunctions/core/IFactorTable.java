@@ -200,6 +200,17 @@ public interface IFactorTable extends IFactorTableBase
 	 * @see #getEnergiesSparseUnsafe()
 	 */
 	public double[] getWeightsSparseUnsafe();
+
+	/**
+	 * Returns the underlying array of dense weights without copying for speed.
+	 * <p>
+	 * <b>IMPORTANT</b>: modifying the contents of the array may put the factor table into
+	 * an invalid state. This should be treated as a read-only value.
+	 * <p>
+	 * If necessary, this method will implicitly modify the representation to include dense weights
+	 * <p>
+	 */
+	public double[] getWeightsDenseUnsafe();	
 	
 	/**
 	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other

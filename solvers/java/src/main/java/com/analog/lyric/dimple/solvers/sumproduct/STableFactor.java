@@ -35,6 +35,7 @@ import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorEngine;
 import com.analog.lyric.dimple.solvers.core.kbest.KBestFactorTableEngine;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteMessage;
 import com.analog.lyric.dimple.solvers.core.parameterizedMessages.DiscreteWeightMessage;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -48,12 +49,13 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected @Nullable double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams;
-	protected TableFactorEngine _tableFactorEngine;
+	protected @Nullable TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
 	protected int _k;
 	protected boolean _kIsSmallerThanDomain = false;
 	protected boolean _updateDerivative = false;
 	protected boolean _dampingInUse = false;
+	protected byte _treeUpdateFlags = 0;
 	
 	/*--------------
 	 * Construction
@@ -64,7 +66,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		super(factor);
 		
 		_dampingParams = new double[_factor.getSiblingCount()];
-		_tableFactorEngine = new TableFactorEngine(this);
 		
 		//TODO: should I recheck for factor table every once in a while?
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
@@ -74,6 +75,21 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		else
 		{
 			_kbestFactorEngine = new KBestFactorEngine(this);
+		}
+	}
+
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		
+		if (isTreeUpdateEnabled() && _factor.getSiblingCount() > 1)
+		{
+			_tableFactorEngine = new TableFactorEngineTree(this);
+		}
+		else
+		{		
+			_tableFactorEngine = new TableFactorEngine(this);
 		}
 	}
 	
@@ -90,6 +106,19 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 	    
 	}
+	
+	private TableFactorEngine getTableFactorEngine()
+	{
+		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
+		if (tableFactorEngine != null)
+		{
+			return tableFactorEngine;
+		}
+		else
+		{
+			throw new DimpleException("The solver was not initialized. Use solve() or call initialize() before iterate().");
+		}		
+	}
 
 	@Override
 	protected void doUpdate()
@@ -99,7 +128,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			//TODO: damping
 			_kbestFactorEngine.update();
 		else
-			_tableFactorEngine.update();
+			getTableFactorEngine().update();
 		
 		if (_updateDerivative)
 			for (int i = 0; i < _inputMsgs.length ;i++)
@@ -114,7 +143,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
-			_tableFactorEngine.updateEdge(outPortNum);
+			getTableFactorEngine().updateEdge(outPortNum);
 
 		if (_updateDerivative)
 			updateDerivative(outPortNum);
@@ -211,6 +240,86 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public double getDamping(int index)
 	{
 		return _dampingParams[index];
+	}
+	
+	protected static final byte TREEUPDATE_ENABLE_EXPLICITLY_SET = 2;
+	protected static final byte TREEUPDATE_ENABLED = 1;
+	
+	/**
+	 * Enables use of the tree update algorithm on this factor, if its degree is greater than 1. The tree update algorithm is
+	 * employed only when all of the factor's edges are updated together with an update call. If the schedule instead uses
+	 * update_edge, the algorithm is not used.
+	 * 
+	 * @since 0.06
+	 */
+	public void enableTreeUpdate()
+	{
+		_treeUpdateFlags |= (TREEUPDATE_ENABLE_EXPLICITLY_SET | TREEUPDATE_ENABLED);
+	}
+	
+	/**
+	 * Disables use of the tree update algorithm on this factor.
+	 * 
+	 * @see #enableTreeUpdate()
+	 * @since 0.06
+	 */
+	public void disableTreeUpdate()
+	{
+		_treeUpdateFlags = (byte) ((_treeUpdateFlags | TREEUPDATE_ENABLE_EXPLICITLY_SET) & ~TREEUPDATE_ENABLED);
+	}
+	
+	/**
+	 * Reverts to the default setting for enabling of the tree update algorithm, eliminating the effect of previous calls to
+	 * {@link #enableTreeUpdate()} or {@link #disableTreeUpdate()}.
+	 * 
+	 * @since 0.06
+	 */
+	public void useDefaultTreeUpdateEnable()
+	{
+		_treeUpdateFlags &= ~TREEUPDATE_ENABLE_EXPLICITLY_SET;
+	}
+	
+	/**
+	 * Indicates if the tree update algorithm is enabled for this factor. If
+	 * {@link #enableTreeUpdate()} or {@link #disableTreeUpdate()} has been called, returns
+	 * accordingly. If neither has been called, or if their effect has been reset by
+	 * {@link #useDefaultTreeUpdateEnable()}, returns the default setting. Only the sum-product
+	 * solver supports the tree update algorithm; if the root graph is for a different solver,
+	 * always returns false.
+	 * 
+	 * @return True if the tree update algorithm is enabled on this factor.
+	 * @since 0.06
+	 */
+	public boolean isTreeUpdateEnabled()
+	{
+		ISolverFactorGraph rootGraph = getRootGraph();
+		if (rootGraph instanceof SFactorGraph)
+		{
+			SFactorGraph sfg = (SFactorGraph) rootGraph;
+			if (sfg.isTreeUpdateSupported())
+			{
+				if (isTreeUpdateExplicitlySet())
+				{
+					return (_treeUpdateFlags & TREEUPDATE_ENABLED) != 0;
+				}
+				else
+				{
+					return sfg.getDefaultTreeUpdateEnabled();
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Indicates if the tree update algorithm enable has been explicitly set.
+	 * 
+	 * @return True if using an explicit setting. False if using the default.
+	 * @since 0.06
+	 */
+	protected boolean isTreeUpdateExplicitlySet()
+	{
+		return (_treeUpdateFlags & TREEUPDATE_ENABLE_EXPLICITLY_SET) != 0;
 	}
 	
 	public int getK()

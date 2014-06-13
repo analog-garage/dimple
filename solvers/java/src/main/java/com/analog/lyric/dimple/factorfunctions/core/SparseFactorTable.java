@@ -1397,4 +1397,10 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 			_sparseWeights[sparseIndex] = weight;
 		}
 	}
+
+	@Override
+	public double[] getWeightsDenseUnsafe()
+	{
+		throw notDense("getWeightsDenseUnsafe");
+	}
 }

@@ -34,7 +34,7 @@ public class TableFactorEngine
 		_tableFactor = tableFactor;
 		_factor = _tableFactor.getFactor();
 	}
-	
+		
 	public void updateEdge(int outPortNum)
 	{
 	    int[][] table = _tableFactor.getFactorTable().getIndicesSparseUnsafe();
