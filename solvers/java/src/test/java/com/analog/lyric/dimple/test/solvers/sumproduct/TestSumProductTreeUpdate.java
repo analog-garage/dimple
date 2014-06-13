@@ -21,6 +21,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineTree;
 import com.google.common.primitives.Ints;
@@ -31,20 +32,32 @@ import com.google.common.primitives.Ints;
  */
 public class TestSumProductTreeUpdate
 {
-	private void doTest(final int zeroControl, final double sparsityControl, final double damping, final boolean useMultithreading, final int EXPECTED_HASH)
+	private void doTest(final int zeroControl,
+		final double sparsityControl,
+		final double damping,
+		final boolean useMultithreading,
+		final int EXPECTED_HASH)
 	{
 		FactorGraph fg = new FactorGraph();
 		Graph g = new Graph(fg, zeroControl);
-		fg.getSolver().useMultithreading(useMultithreading);
-		TableFactorEngineTree.setSparseThreshold(sparsityControl);
-		SFactorGraph solver = ((SFactorGraph) fg.getSolver());
-		solver.setDamping(damping);
-		solver.setDefaultTreeUpdateEnabled(true);
-		fg.solve();
-		int[][] values = g.getValues();
-		int[] flat = Ints.concat(values);
-		int hash = Arrays.hashCode(flat);
-		assertEquals(EXPECTED_HASH, hash);
+		ISolverFactorGraph solver = fg.getSolver();
+		if (solver != null)
+		{
+			solver.useMultithreading(useMultithreading);
+			TableFactorEngineTree.setSparseThreshold(sparsityControl);
+			SFactorGraph ssolver = (SFactorGraph) solver;
+			ssolver.setDamping(damping);
+			ssolver.setDefaultTreeUpdateEnabled(true);
+			fg.solve();
+			int[][] values = g.getValues();
+			int[] flat = Ints.concat(values);
+			int hash = Arrays.hashCode(flat);
+			assertEquals(EXPECTED_HASH, hash);
+		}
+		else
+		{
+			fail("solver was null");
+		}
 	}
 
 	@Test
@@ -219,6 +232,7 @@ public class TestSumProductTreeUpdate
 			return factorTable;
 		}
 
+		@SuppressWarnings("null")
 		public int getValue(int row, int col)
 		{
 			return (Integer) (_vs[row][col].getValue());

@@ -59,7 +59,7 @@ public class TableFactorEngineTree extends TableFactorEngine
 	/**
 	 * The update plan for the factor related to this update engine.
 	 */
-	private FactorUpdatePlan _updatePlan;
+	private final FactorUpdatePlan _updatePlan;
 
 	/**
 	 * @see #getSparseThreshold
@@ -97,15 +97,6 @@ public class TableFactorEngineTree extends TableFactorEngine
 	public TableFactorEngineTree(STableFactor tableFactor)
 	{
 		super(tableFactor);
-	}
-
-	/**
-	 * Prepares an update plan for this instance based on its factor's factor table.
-	 * 
-	 * @since 0.06
-	 */
-	public void initialize()
-	{
 		_updatePlan = lookupOrCreateUpdatePlan(_tableFactor.getFactorTable());
 	}
 
@@ -571,8 +562,10 @@ public class TableFactorEngineTree extends TableFactorEngine
 				}
 				else
 				{
-					// Because useThreadLocalValues is only false at the root of the tree, with factor tables from the model,
-					// and because the sum-product solver sets those tables' representation to sparse, it is most likely
+					// Because useThreadLocalValues is only false at the root of the tree, with
+					// factor tables from the model,
+					// and because the sum-product solver sets those tables' representation to
+					// sparse, it is most likely
 					// impossible to hit this branch. But just in case...
 					values = factorTable.getWeightsDenseUnsafe();
 				}

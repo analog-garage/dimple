@@ -166,13 +166,4 @@ public class TableFactorEngine
 	    	
 	    }
 	}
-
-	/**
-	 * Called during solver graph initialization.
-	 * 
-	 * @since 0.06
-	 */
-	public void initialize()
-	{
-	}
 }

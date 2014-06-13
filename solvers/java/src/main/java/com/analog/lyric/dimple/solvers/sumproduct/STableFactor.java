@@ -49,7 +49,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
 	protected @Nullable double [][][] _outPortDerivativeMsgs;
 	protected double [] _dampingParams;
-	protected TableFactorEngine _tableFactorEngine;
+	protected @Nullable TableFactorEngine _tableFactorEngine;
 	protected KBestFactorEngine _kbestFactorEngine;
 	protected int _k;
 	protected boolean _kIsSmallerThanDomain = false;
@@ -91,8 +91,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		{		
 			_tableFactorEngine = new TableFactorEngine(this);
 		}
-
-		_tableFactorEngine.initialize();
 	}
 	
 	/*---------------------
@@ -108,6 +106,19 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	    	_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 	    
 	}
+	
+	private TableFactorEngine getTableFactorEngine()
+	{
+		final TableFactorEngine tableFactorEngine = _tableFactorEngine;
+		if (tableFactorEngine != null)
+		{
+			return tableFactorEngine;
+		}
+		else
+		{
+			throw new DimpleException("The solver was not initialized. Use solve() or call initialize() before iterate().");
+		}		
+	}
 
 	@Override
 	protected void doUpdate()
@@ -117,7 +128,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			//TODO: damping
 			_kbestFactorEngine.update();
 		else
-			_tableFactorEngine.update();
+			getTableFactorEngine().update();
 		
 		if (_updateDerivative)
 			for (int i = 0; i < _inputMsgs.length ;i++)
@@ -132,7 +143,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		if (_kIsSmallerThanDomain)
 			_kbestFactorEngine.updateEdge(outPortNum);
 		else
-			_tableFactorEngine.updateEdge(outPortNum);
+			getTableFactorEngine().updateEdge(outPortNum);
 
 		if (_updateDerivative)
 			updateDerivative(outPortNum);
