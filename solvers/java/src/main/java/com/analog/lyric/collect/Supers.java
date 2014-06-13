@@ -305,7 +305,9 @@ public abstract class Supers
 			}
 			else
 			{
-				return (T[])Array.newInstance(rootClass, 0);
+				@SuppressWarnings("unchecked")
+				final T[] array =  (T[])Array.newInstance(rootClass, 0);
+				return array;
 			}
 		}
 		Class<?> c = nearestCommonSuperClass(elements);
@@ -331,6 +333,7 @@ public abstract class Supers
 	public static <T> T[] copyOf(Class<?> componentType, T[] elements)
 	{
 		final int n = elements.length;
+		@SuppressWarnings("unchecked")
 		T[] array = (T[])Array.newInstance(componentType, n);
 		for (int i = 0; i <n; ++i)
 		{

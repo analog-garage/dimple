@@ -55,6 +55,7 @@ import com.analog.lyric.dimple.model.transform.VariableEliminator.VariableCost;
 import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.model.variables.VariableList;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -553,6 +554,7 @@ public class JunctionTreeTransform
 		}
 		
 		@Override
+		@NonNullByDefault(false)
 		public int compareTo(CliqueEdge that)
 		{
 			return _variableComparator.compare(this._jointVariable, that._jointVariable);
@@ -645,6 +647,7 @@ public class JunctionTreeTransform
 			// Make sure conditioned variables are at front of the ordering.
 			Collections.sort(eliminationOrder, new Comparator<VariableBase>() {
 				@Override
+				@NonNullByDefault(false)
 				public int compare(VariableBase var1, VariableBase var2)
 				{
 					return var1.hasFixedValue() ? (var2.hasFixedValue() ? 0 : -1) : (var2.hasFixedValue() ? 1 : 0);

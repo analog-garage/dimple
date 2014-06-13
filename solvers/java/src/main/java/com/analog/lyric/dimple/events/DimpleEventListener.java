@@ -33,6 +33,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.collect.Supers;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.MapMaker;
 
@@ -742,6 +743,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 * subclasses coming before superclasses. Ties are broken using the event class names,
 	 * which ensures that multiple entries for the same class will be next to each other.
 	 */
+	@NonNullByDefault(false)
 	private static enum EntryEventClassOrder implements Comparator<Entry>
 	{
 		COMPARATOR;

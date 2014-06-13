@@ -201,6 +201,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		
 		try
 		{
+			@SuppressWarnings("unchecked")
 			IOptionKey<T> option = (IOptionKey<T>)declaringClass.getField(name).get(null);
 			if (name.equals(option.name()) && option.type() == key.type())
 			{

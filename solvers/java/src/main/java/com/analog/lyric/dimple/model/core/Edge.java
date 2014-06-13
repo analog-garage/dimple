@@ -16,6 +16,7 @@
 
 package com.analog.lyric.dimple.model.core;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 
@@ -34,6 +35,7 @@ public class Edge implements Comparable<Edge>
 	public INameable getRight(){return _right;}
 	
 	@Override
+	@NonNullByDefault(false)
 	public int compareTo(Edge e)
 	{
 		int diff = 0;

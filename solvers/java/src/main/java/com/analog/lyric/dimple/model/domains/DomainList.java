@@ -55,7 +55,10 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 		if (allDiscrete(domains))
 		{
 			DiscreteDomain[] discreteDomains = Arrays.copyOf(domains, domains.length, DiscreteDomain[].class);
-			return (DomainList<T>) JointDomainIndexer.lookupOrCreate(outputIndices, discreteDomains, false);
+			@SuppressWarnings("unchecked")
+			DomainList<T> domainList =
+				(DomainList<T>) JointDomainIndexer.lookupOrCreate(outputIndices, discreteDomains, false);
+			return domainList;
 		}
 	
 		// TODO: implement cache

@@ -38,6 +38,7 @@ import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.primitives.Ints;
 
@@ -82,6 +83,7 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
     
     public static Comparator<VariableBase> orderById = new Comparator<VariableBase>() {
 		@Override
+		@NonNullByDefault(false)
 		public int compare(VariableBase var1, VariableBase var2)
 		{
 			return Ints.compare(var1.getId(), var2.getId());
@@ -159,7 +161,9 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	@Override
 	public List<Factor> getSiblings()
 	{
-		return (List<Factor>)super.getSiblings();
+		@SuppressWarnings("unchecked")
+		List<Factor> siblings = (List<Factor>)super.getSiblings();
+		return siblings;
 	}
 	
     /**

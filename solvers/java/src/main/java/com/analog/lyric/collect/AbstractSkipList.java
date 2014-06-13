@@ -133,7 +133,7 @@ public abstract class AbstractSkipList<K>
 	 * precedes the lowest node with key greater than or equal to {@code key}.
 	 * Return node for reuse using {@link #releasePrecursorNode}.
 	 */
-	private final Object[] makePrecursorNode(K key)
+	private final Object[] makePrecursorNode(@Nullable K key)
 	{
 		Object[] precursor = allocatePrecursorNode();
 		
@@ -256,7 +256,7 @@ public abstract class AbstractSkipList<K>
 	 */
 	
 	/** Finds node with given {@code key}, adding a new one if missing, and returns it. */
-	protected final Object[] addNode(K key)
+	protected final Object[] addNode(@Nullable K key)
 	{
 		final Object[] precursor = this.makePrecursorNode(key);
 		final Object[] x = this.getNextNode(precursor);

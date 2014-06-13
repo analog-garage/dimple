@@ -25,6 +25,7 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.analog.lyric.collect.SkipSet;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class SkipSetTest
 {
@@ -34,6 +35,7 @@ public class SkipSetTest
 	{
 		Comparator<Integer> naturalOrder = new Comparator<Integer>() {
 			@Override
+			@NonNullByDefault(false)
 			public int compare(Integer i1, Integer i2)
 			{
 				return i1.compareTo(i2);

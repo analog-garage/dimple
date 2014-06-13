@@ -351,6 +351,7 @@ public class SFactorGraph extends SFactorGraphBase
 		
 		try
 		{
+			@SuppressWarnings("unchecked")
 			Class<SolverFactory> factoryClass =
 				(Class<SolverFactory>)Class.forName(String.format("net.sf.javailp.SolverFactory%s", _lpSolverName));
 			solver = factoryClass.newInstance().get();

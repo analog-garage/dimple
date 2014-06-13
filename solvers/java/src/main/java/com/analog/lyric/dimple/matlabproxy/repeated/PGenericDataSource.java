@@ -34,12 +34,12 @@ public class PGenericDataSource<Type extends GenericDataSource<Type2>,Type2> imp
 
 	public PGenericDataSource(Class<Type> c, int numVars)
 	{
-		
-		_dataSources = (Type[])Array.newInstance(c,numVars);
+		@SuppressWarnings("unchecked")
+		Type[] dataSources = _dataSources = (Type[])Array.newInstance(c,numVars);
 		
 		for (int i = 0; i < numVars; i++)
 			try {
-				_dataSources[i] = c.newInstance();
+				dataSources[i] = c.newInstance();
 			} catch (Exception e) {
 				throw new DimpleException("ack");
 			}

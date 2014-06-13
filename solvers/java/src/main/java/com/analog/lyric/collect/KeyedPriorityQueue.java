@@ -137,7 +137,7 @@ public class KeyedPriorityQueue<K,E extends IKeyed<K>> extends AbstractKeyedPrio
 	 */
 
 	@Override
-	protected K getKeyFromElement(E element)
+	protected @Nullable K getKeyFromElement(@NonNull E element)
 	{
 		return element.getKey();
 	}

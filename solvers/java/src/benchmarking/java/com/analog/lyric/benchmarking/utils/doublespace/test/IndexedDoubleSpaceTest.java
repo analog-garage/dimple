@@ -16,11 +16,10 @@
 
 package com.analog.lyric.benchmarking.utils.doublespace.test;
 
-import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.just;
-import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.range;
-import static com.analog.lyric.benchmarking.utils.doublespace.test.Utilities.compareIterables;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static com.analog.lyric.benchmarking.utils.doublespace.IndexerFactory.*;
+import static com.analog.lyric.benchmarking.utils.doublespace.test.Utilities.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,10 +31,12 @@ import org.junit.Test;
 import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpace;
 import com.analog.lyric.benchmarking.utils.doublespace.DoubleSpaceFactory;
 import com.analog.lyric.benchmarking.utils.doublespace.JointIndexer;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class IndexedDoubleSpaceTest
 {
 	@Test
+	@NonNullByDefault(false)
 	public void testPunchthrough()
 	{
 		final DoubleSpace s = DoubleSpaceFactory.create(4, 4);
@@ -50,6 +51,7 @@ public class IndexedDoubleSpaceTest
 		{
 			assertThat(s.get(coordinates), equalTo(1.0));
 		}
+		
 		final Comparator<int[]> coordinatesComparator = new Comparator<int[]>()
 		{
 

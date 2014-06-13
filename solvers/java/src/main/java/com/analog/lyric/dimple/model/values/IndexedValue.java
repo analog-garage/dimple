@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.collect.IKeyed;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
@@ -88,6 +89,7 @@ public class IndexedValue implements Comparable<IndexedValue>, IKeyed<Integer>
 	 * Comparison based on integer comparison of {@link #getIndex()} values.
 	 */
 	@Override
+	@NonNullByDefault(false)
 	public int compareTo(IndexedValue other)
 	{
 		return Ints.compare(_index, other._index);

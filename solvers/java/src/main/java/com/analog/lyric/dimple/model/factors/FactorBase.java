@@ -85,7 +85,9 @@ public abstract class FactorBase extends Node
 	@Override
 	public List<? extends VariableBase> getSiblings()
 	{
-		return (List<VariableBase>)super.getSiblings();
+		@SuppressWarnings("unchecked")
+		List<? extends VariableBase> siblings = (List<VariableBase>)super.getSiblings();
+		return siblings;
 	}
 	
 }

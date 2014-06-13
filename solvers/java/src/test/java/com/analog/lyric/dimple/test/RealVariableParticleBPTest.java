@@ -234,6 +234,7 @@ public class RealVariableParticleBPTest
 		double[] aBelief = (double[])a.getBeliefObject();
 		double[] bBelief = (double[])b.getBeliefObject();
 		double[] aParticles = sa.getParticleValues();
+		@SuppressWarnings("unchecked")
 		TypedDiscreteDomain<Integer> bDomain = (TypedDiscreteDomain<Integer>) b.getDiscreteDomain();
 		if (debugPrint)
 		{

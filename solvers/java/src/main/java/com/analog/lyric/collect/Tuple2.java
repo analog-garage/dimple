@@ -20,6 +20,8 @@ import java.util.Map;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 // TODO: Create additional Tuple classes as needed...
 
 /**
@@ -120,7 +122,7 @@ public class Tuple2<T1,T2> extends Tuple implements Map.Entry<T1,T2>
 	 * Not supported.
 	 */
 	@Override
-	public final T2 setValue(T2 value)
+	public final @Nullable T2 setValue(@Nullable T2 value)
 	{
 		throw new UnsupportedOperationException("tuples are immutable");
 	}

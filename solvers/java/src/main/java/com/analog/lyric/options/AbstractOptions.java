@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 // FIXME: make thread safe
@@ -89,12 +90,14 @@ public abstract class AbstractOptions implements IOptions
 	}
 
 	@Override
+	@NonNullByDefault(false)
 	public Object put(IOptionKey<?> key, Object value)
 	{
 		return createLocalOptions().put(key, value);
 	}
 
 	@Override
+	@NonNullByDefault(false)
 	public void putAll(Map<? extends IOptionKey<?>, ? extends Object> m)
 	{
 		createLocalOptions().putAll(m);

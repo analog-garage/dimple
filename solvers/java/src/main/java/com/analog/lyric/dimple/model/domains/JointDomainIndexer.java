@@ -34,6 +34,7 @@ import com.analog.lyric.collect.Supers;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -1224,6 +1225,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 		}
 		
 		@Override
+		@NonNullByDefault(false)
 		public int compare(int[] array1, int[] array2)
 		{
 			int diff = array1.length - array2.length;

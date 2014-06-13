@@ -56,7 +56,9 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	{
 		super(domains.hashCode());
 		_domains = domains;
-		_elementClass = (Class<Element[]>) Array.newInstance(domains.getElementClass(), 0).getClass();
+		@SuppressWarnings("unchecked")
+		Class<Element[]> elementClass = (Class<Element[]>) Array.newInstance(domains.getElementClass(), 0).getClass();
+		_elementClass = elementClass;
 	}
 	
 	/*----------------

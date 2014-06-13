@@ -84,7 +84,7 @@ public abstract class ArrayUtil
 	{
 		if (array != null)
 		{
-			Class<? extends T> componentType = (Class<? extends T>) array.getClass().getComponentType();
+			Class<?> componentType = array.getClass().getComponentType();
 			if (componentType.isAssignableFrom(type))
 			{
 				if (array.length >= minSize)
@@ -98,7 +98,9 @@ public abstract class ArrayUtil
 			}
 		}
 		
-		return (T[])Array.newInstance(type, minSize);
+		@SuppressWarnings("unchecked")
+		T[] result = (T[])Array.newInstance(type, minSize);
+		return result;
 	}
 	
 	/**
@@ -187,7 +189,9 @@ public abstract class ArrayUtil
 	 */
 	public static <T> T[] copy(Class<T> componentType, Collection<T> collection)
 	{
-		return collection.toArray((T[]) Array.newInstance(componentType, collection.size()));
+		@SuppressWarnings("unchecked")
+		final T[] array = (T[]) Array.newInstance(componentType, collection.size());
+		return collection.toArray(array);
 	}
 	
 	/**
@@ -226,6 +230,7 @@ public abstract class ArrayUtil
 	{
 		final int destSize = sourceIndices.length;
 		
+		@SuppressWarnings("unchecked")
 		@NonNull T[] result = destination != null ? destination :
 			(T[])Array.newInstance(source.getClass().getComponentType(), destSize);
 		

@@ -72,6 +72,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	 * @return true
 	 */
 	@Override
+	@NonNullByDefault(false)
 	public boolean add(T node)
 	{
 		_hashMap.put(node.getId(), node);
@@ -80,6 +81,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 	
 	@Override
+	@NonNullByDefault(false)
 	public boolean addAll(Collection<? extends T> collection)
 	{
 		if (collection == this)
@@ -221,6 +223,7 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	}
 
 	@Override
+	@NonNullByDefault(false)
 	public <T2> T2[] toArray(T2[] array)
 	{
 		return _arrayList.toArray(array);
@@ -256,7 +259,9 @@ public class MapList<T extends IGetId>  implements IMapList<T>
 	@Override
 	public @Nullable T getByKey(int id)
 	{
-		return (T) _hashMap.get(id);
+		@SuppressWarnings("unchecked")
+		T value = (T) _hashMap.get(id);
+		return value;
 	}
 	
 	/**

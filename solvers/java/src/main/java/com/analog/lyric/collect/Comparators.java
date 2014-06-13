@@ -23,6 +23,7 @@ import java.util.SortedSet;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -35,6 +36,7 @@ public final class Comparators
 	private Comparators() {} // Prevent instantiation
 	
 	@Immutable
+	@NonNullByDefault(false)
 	private static enum LexicalIntArrayComparator implements Comparator<int[]>, Serializable
 	{
 		INSTANCE;
@@ -60,6 +62,7 @@ public final class Comparators
 	}
 	
 	@Immutable
+	@NonNullByDefault(false)
 	private static enum ReverseLexicalIntArrayComparator implements Comparator<int[]>, Serializable
 	{
 		INSTANCE;
@@ -115,10 +118,9 @@ public final class Comparators
 	 */
 	public static @Nullable <T> Comparator<? super T> fromCollection(Collection<? extends T> collection)
 	{
-		if (collection instanceof SortedSet)
-		{
-			return (Comparator<? super T>) ((SortedSet<? extends T>)collection).comparator();
-		}
-		return null;
+		@SuppressWarnings("unchecked")
+		Comparator<? super T> comparator = collection instanceof SortedSet ?
+			(Comparator<? super T>) ((SortedSet<? extends T>)collection).comparator() : null ;
+		return comparator;
 	}
 }

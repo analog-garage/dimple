@@ -65,7 +65,9 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		_priorityComparator = comparator;
 		if (comparator == null)
 		{
-			comparator = (Comparator<E>)Ordering.natural();
+			@SuppressWarnings("unchecked")
+			final Comparator<E> natural = (Comparator<E>)Ordering.natural();
+			comparator = natural;
 		}
 		_queue = new PriorityQueue<Entry<E>>(initialCapacity, new EntryComparator<E>(comparator));
 		_keyToEntry = new HashMap<K,Entry<E>>(initialCapacity);
@@ -226,7 +228,7 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 	/**
 	 * Returns the key for a given element.
 	 */
-	protected abstract K getKeyFromElement(E element);
+	protected abstract @Nullable K getKeyFromElement(@NonNull E element);
 	
 	/**
 	 * Indicates whether queue contains element with the given key.
@@ -337,14 +339,16 @@ public abstract class AbstractKeyedPriorityQueue<K,E> extends AbstractQueue<E> i
 		@Override
 		public void remove()
 		{
-			if (_last == null)
+			final E last = _last;
+			
+			if (last == null)
 			{
 				throw new IllegalStateException("Iterator.remove() invoked not called after next()");
 			}
 			
 			_iterator.remove();
 			// If that didn't throw an exception, remove from the map as well.
-			_keyToEntry.remove(getKeyFromElement(_last));
+			_keyToEntry.remove(getKeyFromElement(last));
 			_last = null;
 		}
 	}

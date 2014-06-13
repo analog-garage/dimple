@@ -351,7 +351,7 @@ final class StandardDirectedJointDomainIndexer extends StandardJointDomainIndexe
 	}
 	
 	@Override
-	public <T> T[] jointIndexToElements(int jointIndex, T[] elements)
+	public <T> T[] jointIndexToElements(int jointIndex, @Nullable T[] elements)
 	{
 		elements = allocateElements(elements);
 		final int inputIndex = jointIndex / _outputCardinality;

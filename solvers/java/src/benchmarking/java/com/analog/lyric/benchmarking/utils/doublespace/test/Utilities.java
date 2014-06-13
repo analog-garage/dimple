@@ -16,12 +16,13 @@
 
 package com.analog.lyric.benchmarking.utils.doublespace.test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 import java.util.Arrays;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.Nullable;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Booleans;
@@ -37,7 +38,7 @@ public class Utilities
 	private static Function<Object, String> stringify = new Function<Object, String>()
 	{
 		@Override
-		public String apply(Object o)
+		public String apply(@Nullable Object o)
 		{
 			if (o instanceof Object[])
 			{
@@ -73,7 +74,7 @@ public class Utilities
 			}
 			else
 			{
-				return o.toString();
+				return o + "";
 			}
 		}
 	};

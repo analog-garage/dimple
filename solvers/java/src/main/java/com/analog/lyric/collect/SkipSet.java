@@ -223,6 +223,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		
 		protected static <T> Iterator<T> make(@Nullable SkipSet<T> set)
 		{
+			@SuppressWarnings("unchecked")
 			@Nullable Iterator<T> iter = (Iterator<T>)Iterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -326,6 +327,7 @@ public class SkipSet<E> extends AbstractSkipList<E>
 		return this.toArray(new Object[this.size()]);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] a)
 	{

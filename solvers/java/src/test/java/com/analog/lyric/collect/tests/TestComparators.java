@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 import com.analog.lyric.collect.Comparators;
+import com.analog.lyric.util.misc.NonNullByDefault;
 
 public class TestComparators
 {
@@ -40,6 +41,7 @@ public class TestComparators
 		
 		Comparator<? super Integer> comparator = new Comparator<Integer>() {
 			@Override
+			@NonNullByDefault(false)
 			public int compare(Integer arg0, Integer arg1)
 			{
 				return arg1.compareTo(arg0);

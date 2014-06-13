@@ -56,6 +56,8 @@ public abstract class Clones
 			throw new CloneNotSupportedException(objectClass.getName());
 		}
 		
-		return (T) cloneMethod.invoke(object);
+		@SuppressWarnings("unchecked")
+		T clone = (T) cloneMethod.invoke(object);
+		return clone;
 	}
 }

@@ -37,6 +37,7 @@ public class ReleasableIterators
 
 		static <T> Wrapper<T> make(Iterator<T> iter)
 		{
+			@SuppressWarnings("unchecked")
 			Wrapper<T> wrapper = (Wrapper<T>)Wrapper.instance.get();
 			if (wrapper != null)
 			{

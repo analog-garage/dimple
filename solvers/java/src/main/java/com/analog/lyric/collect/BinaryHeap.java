@@ -98,12 +98,14 @@ public class BinaryHeap<E> extends AbstractHeap<E>
 	 */
 	public BinaryHeap(BinaryHeap<E> that)
 	{
-		_heap = (ArrayList<Entry<E>>) that._heap.clone();
+		@SuppressWarnings("unchecked")
+		final ArrayList<Entry<E>> heap = (ArrayList<Entry<E>>) that._heap.clone();
+		_heap = heap;
 		_deferOrdering = that._deferOrdering;
 		_orderedUpto = that._orderedUpto;
-		for (int i = 0, end = _heap.size(); i < end; ++i)
+		for (int i = 0, end = heap.size(); i < end; ++i)
 		{
-			_heap.set(i, _heap.get(i).clone());
+			heap.set(i, heap.get(i).clone());
 		}
 	}
 	

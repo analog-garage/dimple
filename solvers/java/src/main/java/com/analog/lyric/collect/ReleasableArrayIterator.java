@@ -48,6 +48,7 @@ public final class ReleasableArrayIterator<T> implements ReleasableIterator<T>
 	 */
 	static public <T2> ReleasableArrayIterator<T2> create(T2[] array)
 	{
+		@SuppressWarnings("unchecked")
 		ReleasableArrayIterator<T2> iter = (ReleasableArrayIterator<T2>) _reusableInstance.getAndSet(null);
 		if (iter == null)
 		{

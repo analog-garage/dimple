@@ -225,6 +225,7 @@ public class TestFactorGraphEvent
 		
 		private <Event extends FactorGraphEvent> Event assertEvent(Class<Event> eventType, FactorGraph source, Node node)
 		{
+			@SuppressWarnings("unchecked")
 			Event event = (Event) _queue.remove();
 			assertTrue(eventType.isAssignableFrom(event.getClass()));
 			assertSame(source, event.getSource());

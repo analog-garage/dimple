@@ -216,7 +216,9 @@ public class JunctionTreeTransformMap
 	
 	public @Nullable <Var extends VariableBase> AddedJointVariable<Var> getAddedDeterministicVariable(Var targetVariable)
 	{
-		return (AddedJointVariable<Var>) _addedDeterministicVariables.get(targetVariable);
+		@SuppressWarnings("unchecked")
+		AddedJointVariable<Var> var = (AddedJointVariable<Var>) _addedDeterministicVariables.get(targetVariable);
+		return var;
 	}
 	
 	/**

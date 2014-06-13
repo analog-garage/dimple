@@ -377,6 +377,7 @@ public abstract class Value implements Cloneable, Serializable
 		final int nDomains = domains.length;
 		assert(nDomains > 0 && nDomains <= size);
 		
+		@SuppressWarnings("unchecked")
 		final T[] output = (T[]) Array.newInstance(valueClass, size);
 		for (int i = 0; i < size; ++i)
 		{

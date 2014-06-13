@@ -114,7 +114,7 @@ public class LargeJointDomainIndexer extends JointDomainIndexer
 	}
 
 	@Override
-	public <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements)
+	public <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements)
 	{
 		throw noJointIndexing("undirectedJointIndexToElements");
 	}

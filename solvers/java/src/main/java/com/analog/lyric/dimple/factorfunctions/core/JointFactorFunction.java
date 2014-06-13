@@ -34,6 +34,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.util.misc.Internal;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.cache.AbstractLoadingCache;
 import com.google.common.cache.CacheLoader;
@@ -68,6 +69,7 @@ public class JointFactorFunction extends FactorFunction
 			// a canonical ordering, but it is better than nothing.
 			Arrays.sort(_functions, new Comparator<Tuple2<FactorFunction, int[]>> () {
 				@Override
+				@NonNullByDefault(false)
 				public int compare(Tuple2<FactorFunction, int[]> f1, Tuple2<FactorFunction, int[]> f2)
 				{
 					return f1.first.getName().compareTo(f2.first.getName());
@@ -123,6 +125,7 @@ public class JointFactorFunction extends FactorFunction
 	private final Functions _functions;
 	private final int _newNumInputs;
 	
+	@NonNullByDefault(false)
 	private static class Loader extends CacheLoader<Functions, JointFactorFunction>
 	{
 		private static final Loader INSTANCE = new Loader();
@@ -189,7 +192,7 @@ public class JointFactorFunction extends FactorFunction
 			new ConcurrentHashMap<Functions, JointFactorFunction>();
 		
 		@Override
-		public JointFactorFunction get(Functions key) throws ExecutionException
+		public JointFactorFunction get(@Nullable Functions key) throws ExecutionException
 		{
 			JointFactorFunction function = _map.get(key);
 			

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 // TODO: implement NavigableMap - requires implementing various submap/keyset views.
@@ -78,7 +79,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		}
 
 		@Override
-		public V setValue(V value)
+		public @Nullable V setValue(@Nullable V value)
 		{
 			V oldValue = this.getValue();
 			node[1] = value;
@@ -240,12 +241,13 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 	}
 
 	@Override
-	public @Nullable V put(K key, @Nullable V value)
+	public @Nullable V put(@Nullable K key, @Nullable V value)
 	{
 		return this.setNodeValue(this.addNode(key), value);
 	}
 
 	@Override
+	@NonNullByDefault(false)
 	public void putAll(Map<? extends K, ? extends V> m)
 	{
 		for (Map.Entry<? extends K, ? extends V> entry : m.entrySet())
@@ -583,6 +585,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 
 		protected static <K,V> Iterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
+			@SuppressWarnings("unchecked")
 			Iterator<K,V> iter = (Iterator<K, V>)Iterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -727,6 +730,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		
 		public static <K,V> KeyIterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
+			@SuppressWarnings("unchecked")
 			KeyIterator<K,V> iter = (KeyIterator<K, V>) KeyIterator.reusableInstance.get();
 			
 			if (iter != null)
@@ -786,6 +790,7 @@ public class SkipMap<K, V> extends AbstractSkipList<K> implements Map<K, V>
 		
 		public static <K,V> ValueIterator<K,V> make(@Nullable SkipMap<K,V> map)
 		{
+			@SuppressWarnings("unchecked")
 			ValueIterator<K,V> iter = (ValueIterator<K, V>) ValueIterator.reusableInstance.get();
 			
 			if (iter != null)

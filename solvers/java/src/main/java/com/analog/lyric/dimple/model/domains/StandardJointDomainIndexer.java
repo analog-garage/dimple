@@ -178,7 +178,7 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 	}
 
 	@Override
-	public final <T> T[] undirectedJointIndexToElements(int jointIndex, T[] elements)
+	public final <T> T[] undirectedJointIndexToElements(int jointIndex, @Nullable T[] elements)
 	{
 		final DiscreteDomain[] domains = _domains;
 		final int[] products = _products;
@@ -189,7 +189,9 @@ public class StandardJointDomainIndexer extends JointDomainIndexer
 		for (int i = products.length; --i >= 0;)
 		{
 			final int index = jointIndex / (product = products[i]);
-			elements[i] = (T) domains[i].getElement(index);
+			@SuppressWarnings("unchecked")
+			T element = (T) domains[i].getElement(index);
+			elements[i] = element;
 			jointIndex -= index * product;
 		}
 		return elements;

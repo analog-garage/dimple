@@ -37,6 +37,7 @@ import com.analog.lyric.dimple.solvers.core.VariableToFactorMessageEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsScoredVariableUpdateEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsSolverVariableEvent;
 import com.analog.lyric.dimple.solvers.gibbs.GibbsVariableUpdateEvent;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 
@@ -57,6 +58,7 @@ public enum StandardDimpleEvents implements Iterable<Class<? extends DimpleEvent
 	
 	private final NavigableMap<String,Class<? extends DimpleEvent>> _eventTypes;
 	
+	@NonNullByDefault(false)
 	private static enum Caseless implements Comparator<String>
 	{
 		COMPARATOR;

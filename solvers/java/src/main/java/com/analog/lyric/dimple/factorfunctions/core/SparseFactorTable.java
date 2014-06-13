@@ -37,6 +37,8 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer.Indices;
 import com.analog.lyric.dimple.model.values.Value;
+import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.math.DoubleMath;
 
@@ -116,13 +118,14 @@ public class SparseFactorTable extends SparseFactorTableBase implements IFactorT
 	}
 	
 	@Immutable
+	@NonNullByDefault(false)
 	private final static class IndexEntryComparator implements Comparator<IndexEntry>, Serializable
 	{
 		private static final long serialVersionUID = 1L;
 
 		private final Comparator<int[]> _indicesComparator;
 		
-		IndexEntryComparator(JointDomainIndexer domains)
+		IndexEntryComparator(@NonNull JointDomainIndexer domains)
 		{
 			_indicesComparator = domains.getIndicesComparator();
 		}

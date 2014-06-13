@@ -142,7 +142,9 @@ public class ArrayDiscreteDomain<Element> extends TypedDiscreteDomain<Element>
 	@Override
 	public final Class<? extends Element> getElementClass()
 	{
-		return (Class<? extends Element>) _elements.getClass().getComponentType();
+		@SuppressWarnings("unchecked")
+		Class<? extends Element> elementClass = (Class<? extends Element>) _elements.getClass().getComponentType();
+		return elementClass;
 	}
 	
 	@Override

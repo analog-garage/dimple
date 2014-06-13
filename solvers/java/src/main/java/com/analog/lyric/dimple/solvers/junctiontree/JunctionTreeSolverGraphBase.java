@@ -172,7 +172,9 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 		final JunctionTreeTransformMap transformMap = _transformMap;
 		if (transformMap != null)
 		{
-			return (Delegate) transformMap.target().getSolver();
+			@SuppressWarnings("unchecked")
+			Delegate delegate = (Delegate) transformMap.target().getSolver();
+			return delegate;
 		}
 		
 		return null;

@@ -42,7 +42,9 @@ public class SerializationTester
 			
 			ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 			ObjectInputStream in = new ObjectInputStream(bin);
-			return (T) in.readObject();
+			@SuppressWarnings("unchecked")
+			T clone = (T) in.readObject();
+			return clone;
 		}
 		catch (IOException ex)
 		{
