@@ -267,7 +267,7 @@ public class JunctionTreeSolverFactor extends SFactorBase
 				
 				if (null != targetVarToSourceIndex.put(targetVar, si))
 				{
-					// FIXME
+					// FIXME - junction tree support duplicate variables
 					throw new DimpleException("junction tree does not support factor with duplicate variables");
 				}
 			}

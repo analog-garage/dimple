@@ -39,11 +39,10 @@ public class PGenericDataSource<Type extends GenericDataSource<Type2>,Type2> imp
 		
 		for (int i = 0; i < numVars; i++)
 			try {
-				_dataSources[i] = (Type)c.newInstance();
+				_dataSources[i] = c.newInstance();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				throw new DimpleException("ack");
-			}	
+			}
 		}
 		
 	public void add(Type2 [] data)
@@ -63,7 +62,7 @@ public class PGenericDataSource<Type extends GenericDataSource<Type2>,Type2> imp
 	}
 	
 	@Override
-	public IDataSource[] getModelObjects() 
+	public IDataSource[] getModelObjects()
 	{
 		return _dataSources;
 	}

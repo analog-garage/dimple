@@ -16,23 +16,20 @@
 
 package com.analog.lyric.math;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
-
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
-public class LyricEigenvalueDecomposition extends EigenvalueDecomposition 
+import com.analog.lyric.dimple.exceptions.DimpleException;
+
+public class LyricEigenvalueDecomposition extends EigenvalueDecomposition
 {
 
-	public LyricEigenvalueDecomposition(Matrix arg0)  
+	public LyricEigenvalueDecomposition(Matrix arg0)
 	{
 		super(checkMatrix(arg0));
-		
-		
-		// TODO Auto-generated constructor stub
 	}
 	
-	public static Matrix checkMatrix(Matrix m) 
+	public static Matrix checkMatrix(Matrix m)
 	{
 		for (int i = 0; i < m.getRowDimension(); i++)
 		{

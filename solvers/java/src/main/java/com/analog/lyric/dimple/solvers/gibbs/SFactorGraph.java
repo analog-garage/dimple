@@ -698,34 +698,29 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	}
 
 	@Override
-	public @Nullable String getMatlabSolveWrapper() {
-		// TODO Auto-generated method stub
+	public @Nullable String getMatlabSolveWrapper()
+	{
 		return null;
 	}
 
 	@Override
 	public void resetEdgeMessages(int portNum) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public @Nullable Object getInputMsg(int portIndex) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public @Nullable Object getOutputMsg(int portIndex) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void moveMessages(ISolverNode other, int thisPortNum,
-			int otherPortNum) {
-		// TODO Auto-generated method stub
-		
+			int otherPortNum)
+	{
 	}
 
 	void scheduleDeterministicDirectedUpdate(ISolverFactorGibbs sfactor, int changedVariableIndex, Value oldValue)

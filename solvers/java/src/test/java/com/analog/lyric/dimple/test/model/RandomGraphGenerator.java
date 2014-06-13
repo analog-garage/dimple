@@ -485,7 +485,6 @@ public class RandomGraphGenerator
 		for (int j = digits.size(); --j>=0;)
 		{
 			sb.append((char)('a' + digits.get(j)));
-			// FIXME
 		}
 		return sb.toString();
 	}

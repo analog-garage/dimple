@@ -185,7 +185,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	@Override
 	public ISolverBlastFromThePastFactor createBlastFromThePast(BlastFromThePastFactor factor)
 	{
-		// FIXME
+		// FIXME - blast from the past factor in junction tree
 		throw unsupported("createBlastFromThePast");
 	}
 	

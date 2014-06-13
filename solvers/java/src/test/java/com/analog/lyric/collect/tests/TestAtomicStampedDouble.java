@@ -131,7 +131,6 @@ public class TestAtomicStampedDouble
 			}
 			catch (InterruptedException ex)
 			{
-				// TODO Auto-generated catch block
 				ex.printStackTrace();
 			}
 		}
@@ -161,7 +160,6 @@ public class TestAtomicStampedDouble
 			}
 			catch (InterruptedException ex)
 			{
-				// TODO Auto-generated catch block
 				ex.printStackTrace();
 			}
 			

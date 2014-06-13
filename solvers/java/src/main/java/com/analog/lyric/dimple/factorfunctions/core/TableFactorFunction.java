@@ -66,9 +66,6 @@ public class TableFactorFunction extends FactorFunction
     	{
     		return false;
     	}
-    	// FIXME:
-//    		throw new RuntimeException("domain lists don't match sizes.  argument size: " + domains.size() +
-//    			" factorTable's domain size: " + _factorTable.getDomains().length);
     	    	
     	return true;
 	}

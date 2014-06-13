@@ -698,7 +698,8 @@ public class JunctionTreeTransform
 		
 		if (orderStats.factorsWithDuplicateVariables() > 0)
 		{
-			throw DimpleException.unsupported("factors with duplicate variables"); // FIXME
+			 // FIXME - support duplicate variables in JunctionTreeTransform
+			throw DimpleException.unsupported("factors with duplicate variables");
 		}
 		
 		// 2) Make copy of the factor graph

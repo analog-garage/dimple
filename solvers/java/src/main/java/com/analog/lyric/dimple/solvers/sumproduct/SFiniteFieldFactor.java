@@ -35,7 +35,6 @@ public abstract class SFiniteFieldFactor extends SFactorBase
 	public SFiniteFieldFactor(Factor factor)
 	{
 		super(factor);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

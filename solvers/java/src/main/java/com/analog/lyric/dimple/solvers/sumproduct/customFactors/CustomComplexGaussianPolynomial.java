@@ -84,10 +84,6 @@ public class CustomComplexGaussianPolynomial extends MultivariateGaussianFactorB
 
 
 		//double [] coeffs = (double[])constants[0];
-
-
-
-		// TODO Auto-generated constructor stub
 	}
 
 	public void setNumIterations(int num)

@@ -82,7 +82,7 @@ public class TestSupers
 	}
 	
 	@Test
-	public void testeInvokeMethod()
+	public void testInvokeMethod()
 	{
 		try
 		{
@@ -92,7 +92,7 @@ public class TestSupers
 			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foo%s", new Object[] {"bar"}));
 			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foobar"));
 			assertEquals("foobar", Supers.invokeMethod(String.class, "format", "foobar", new Object[] {}));
-// FIXME
+// FIXME - Supers.invokeMethod support for auto boxing of primitives
 //			Supers.invokeMethod(Arrays.class, "asList", 1,2,3);
 			List<?> list = (List<?>)Supers.invokeMethod(Arrays.class, "asList", "1", "2", "3");
 			requireNonNull(list);
@@ -146,7 +146,7 @@ public class TestSupers
 			m = Supers.lookupMethod(String.class, "format", "hi");
 			assertEquals("format", m.getName());
 			assertArrayEquals(new Object[] { String.class, Object[].class }, m.getParameterTypes());
-// FIXME
+// FIXME - Supers.lookupMethod support for autoboxing of primitives
 //			m = Supers.lookupMethod(Arrays.class, "asList", 1, 2, 3);
 //			assertEquals("asList", m.getName());
 		}

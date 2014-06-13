@@ -1508,7 +1508,7 @@ public class TestFactorTable
 				}
 				else
 				{
-					// FIXME
+					// FIXME - test invariants for conditional SparseFactorTable
 				}
 			}
 			
