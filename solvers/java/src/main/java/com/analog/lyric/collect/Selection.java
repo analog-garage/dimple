@@ -30,97 +30,6 @@ public class Selection
 {
 	
 	/*
-	 * Given a list, a left index, a right index, and a pivot index, this method
-	 * will create a partition between all elements less than the pivot value
-	 * and all elements greater than the pivot value.  The operation is done in
-	 * place and returns the new position of the original pivot index.
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static int partition(Object [] list, int left, int right, int pivotIndex)
-	{
-		Object  pivotValue = list[pivotIndex];
-		
-		//swap list[pivotIndex] and list[right]  // Move pivot to end
-		Object tmp = list[pivotIndex];
-		list[pivotIndex] = list[right];
-		list[right] = tmp;
-		
-		int storeIndex = left;
-		
-		for (int i = left; i <= right; i++)
-		{
-			if (((Comparable)list[i]).compareTo(pivotValue) < 0)
-			{
-	             //swap list[storeIndex] and list[i]
-				tmp = list[storeIndex];
-				list[storeIndex] = list[i];
-				list[i] = tmp;
-	                          
-				storeIndex++;
-			}
-		}
-	     
-	    //swap list[right] and list[storeIndex]  // Move pivot to its final place
-		tmp = list[right];
-		list[right] = list[storeIndex];
-		list[storeIndex] = tmp;
-		
-	    return storeIndex;
-	}
-	
-
-	/*
-	 * Given a list, a left index, a right index, and an index, k, this method
-	 * will return the kth smallest object.  The objects must implement the
-	 * Comparable interface.
-	 */
-	private static Object select(Object [] list, int left, int right, int k)
-	{
-	     while (true)
-	     {
-	         //select pivotIndex between left and right
-	    	 int pivotIndex = (right-left)/2+left;
-	         int pivotNewIndex = partition(list, left, right, pivotIndex);
-	         
-	         int pivotDist = pivotNewIndex - left + 1;
-	         
-	         if (pivotDist == k)
-	             return list[pivotNewIndex];
-	         else if ( k < pivotDist)
-	             right = pivotNewIndex - 1;
-	         else
-	         {
-	             k = k - pivotDist;
-	             left = pivotNewIndex + 1;
-	         }
-	     }
-	}
-	
-	/*
-	 * Given a list and an index, k, this method
-	 * will return the kth smallest object.  The objects must implement the
-	 * Comparable interface.
-	 */
-	public static Object select(Object [] list,int k)
-	{
-		Object [] newlist = list.clone();
-		return select(newlist,0,list.length-1,k);
-	}
-	
-	/*
-	 * Given a list of doubles and an index, k, this method
-	 * will return the kth smallest double.
-	 */
-	public static double select(double [] list, int k)
-	{
-		Double [] newlist = new Double[list.length];
-		for (int i = 0; i < list.length; i++)
-			newlist[i] = list[i];
-		
-		return (Double)select(newlist,0,list.length-1,k);
-	}
-	
-	/*
 	 * Given a list of doubles and an index, k, this method
 	 * will return indices for the k smallest values
 	 */
@@ -202,6 +111,101 @@ public class Selection
 			 result[i] = indexOfObj;
 		 
 		 return result;
+	}
+
+
+	/*
+	 * Given a list of doubles and an index, k, this method
+	 * will return the kth smallest double.
+	 */
+	public static double select(double [] list, int k)
+	{
+		Double [] newlist = new Double[list.length];
+		for (int i = 0; i < list.length; i++)
+			newlist[i] = list[i];
+		
+		return (Double)select(newlist,0,list.length-1,k);
+	}
+
+	/*
+	 * Given a list and an index, k, this method
+	 * will return the kth smallest object.  The objects must implement the
+	 * Comparable interface.
+	 */
+	public static Object select(Object [] list,int k)
+	{
+		Object [] newlist = list.clone();
+		return select(newlist,0,list.length-1,k);
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+
+	/*
+	 * Given a list, a left index, a right index, and a pivot index, this method
+	 * will create a partition between all elements less than the pivot value
+	 * and all elements greater than the pivot value.  The operation is done in
+	 * place and returns the new position of the original pivot index.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static int partition(Object [] list, int left, int right, int pivotIndex)
+	{
+		Object  pivotValue = list[pivotIndex];
+		
+		//swap list[pivotIndex] and list[right]  // Move pivot to end
+		Object tmp = list[pivotIndex];
+		list[pivotIndex] = list[right];
+		list[right] = tmp;
+		
+		int storeIndex = left;
+		
+		for (int i = left; i <= right; i++)
+		{
+			if (((Comparable)list[i]).compareTo(pivotValue) < 0)
+			{
+	             //swap list[storeIndex] and list[i]
+				tmp = list[storeIndex];
+				list[storeIndex] = list[i];
+				list[i] = tmp;
+	                          
+				storeIndex++;
+			}
+		}
+	     
+	    //swap list[right] and list[storeIndex]  // Move pivot to its final place
+		tmp = list[right];
+		list[right] = list[storeIndex];
+		list[storeIndex] = tmp;
+		
+	    return storeIndex;
+	}
+
+	/*
+	 * Given a list, a left index, a right index, and an index, k, this method
+	 * will return the kth smallest object.  The objects must implement the
+	 * Comparable interface.
+	 */
+	private static Object select(Object [] list, int left, int right, int k)
+	{
+	     while (true)
+	     {
+	         //select pivotIndex between left and right
+	    	 int pivotIndex = (right-left)/2+left;
+	         int pivotNewIndex = partition(list, left, right, pivotIndex);
+	         
+	         int pivotDist = pivotNewIndex - left + 1;
+	         
+	         if (pivotDist == k)
+	             return list[pivotNewIndex];
+	         else if ( k < pivotDist)
+	             right = pivotNewIndex - 1;
+	         else
+	         {
+	             k = k - pivotDist;
+	             left = pivotNewIndex + 1;
+	         }
+	     }
 	}
 	
 }
