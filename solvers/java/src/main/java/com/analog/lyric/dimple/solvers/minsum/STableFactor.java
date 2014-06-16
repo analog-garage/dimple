@@ -211,7 +211,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public int[] findKBestForMsg(double[] msg, int k)
 	{
-		return Selection.quickfindFirstKindices(msg, k);
+		return Selection.findFirstKIndices(msg, k);
 	}
 
 

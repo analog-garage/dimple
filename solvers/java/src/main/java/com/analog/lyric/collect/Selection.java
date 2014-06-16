@@ -39,13 +39,13 @@ public class Selection
 	 * @param array is a non-empty array in any order.
 	 * @param k is in the range [1, array.length]
 	 */
-	public static int [] quickfindFirstKindices(double [] array, int k)
+	public static int [] findFirstKIndices(double [] array, int k)
 	{
 		Double [] newlist = new Double[array.length];
 		for (int i = 0; i < newlist.length; i++)
 			newlist[i] = array[i];
 		
-		return quickfindFirstKindices(newlist,k);
+		return findFirstKIndices(newlist,k);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class Selection
 	 * @param array is a non-empty array in any order.
 	 * @param k is in the range [1, array.length]
 	 */
-	public static <T extends Comparable<T>> int [] quickfindFirstKindices(T[] array, int k)
+	public static <T extends Comparable<T>> int [] findFirstKIndices(T[] array, int k)
 	 {
 		 //select the kth
 		 T obj = select(array,k-1);
@@ -88,13 +88,13 @@ public class Selection
 	 * @param array is a non-empty array in any order.
 	 * @param k is in the range [1, array.length]
 	 */
-	public static int [] quickfindLastKindices(double [] array, int k)
+	public static int [] findLastKIndices(double [] array, int k)
 	{
 		Double [] newlist = new Double[array.length];
 		for (int i = 0; i < newlist.length; i++)
 			newlist[i] = array[i];
 		
-		return quickfindLastKindices(newlist,k);
+		return findLastKIndices(newlist,k);
 	}
 	
 	/**
@@ -106,7 +106,7 @@ public class Selection
 	 * @param array is a non-empty array in any order.
 	 * @param k is in the range [1, array.length]
 	 */
-	public static <T extends Comparable<T>> int [] quickfindLastKindices(T[] array, int k)
+	public static <T extends Comparable<T>> int [] findLastKIndices(T[] array, int k)
 	{
 		T obj = select(array,array.length-k);
 		
