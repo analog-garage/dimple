@@ -48,11 +48,10 @@ public class Selection
 	 * will return indices for the k smallest values.  The objects
 	 * must implement Comparable
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static int [] quickfindFirstKindices(Object [] list, int k)
+	public static <T extends Comparable<T>> int [] quickfindFirstKindices(T [] list, int k)
 	 {
 		 //select the kth
-		 Object obj = select(list,k);
+		 T obj = select(list,k);
 		 
 		 int [] result = new int[k];
 		 
@@ -61,7 +60,7 @@ public class Selection
 		 
 		 for (int i = 0; i < list.length; i++)
 		 {
-			 if (((Comparable)list[i]).compareTo(obj) < 0)
+			 if (list[i].compareTo(obj) < 0)
 			 {
 				 result[index] = i;
 				 index++;
@@ -86,10 +85,9 @@ public class Selection
 		return quickfindLastKindices(newlist,k);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static int [] quickfindLastKindices(Object [] list, int k)
+	public static <T extends Comparable<T>> int [] quickfindLastKindices(T[] list, int k)
 	{
-		Object obj = select(list,1+list.length-k);
+		T obj = select(list,1+list.length-k);
 		
 		 int [] result = new int[k];
 		 
@@ -98,7 +96,7 @@ public class Selection
 		 
 		 for (int i = 0; i < list.length; i++)
 		 {
-			 if (((Comparable)list[i]).compareTo(obj) > 0)
+			 if (list[i].compareTo(obj) > 0)
 			 {
 				 result[index] = i;
 				 index++;
@@ -124,7 +122,7 @@ public class Selection
 		for (int i = 0; i < list.length; i++)
 			newlist[i] = list[i];
 		
-		return (Double)select(newlist,0,list.length-1,k);
+		return select(newlist,0,list.length-1,k);
 	}
 
 	/*
@@ -132,7 +130,7 @@ public class Selection
 	 * will return the kth smallest object.  The objects must implement the
 	 * Comparable interface.
 	 */
-	public static Object select(Object [] list,int k)
+	public static <T extends Comparable<T>> T select(T[] list,int k)
 	{
 		return select(list.clone(),0,list.length-1,k);
 	}
@@ -147,13 +145,12 @@ public class Selection
 	 * and all elements greater than the pivot value.  The operation is done in
 	 * place and returns the new position of the original pivot index.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static int partition(Object [] list, int left, int right, int pivotIndex)
+	private static <T extends Comparable<T>> int partition(T[] list, int left, int right, int pivotIndex)
 	{
-		Object  pivotValue = list[pivotIndex];
+		T pivotValue = list[pivotIndex];
 		
 		//swap list[pivotIndex] and list[right]  // Move pivot to end
-		Object tmp = list[pivotIndex];
+		T tmp = list[pivotIndex];
 		list[pivotIndex] = list[right];
 		list[right] = tmp;
 		
@@ -161,7 +158,7 @@ public class Selection
 		
 		for (int i = left; i <= right; i++)
 		{
-			if (((Comparable)list[i]).compareTo(pivotValue) < 0)
+			if (list[i].compareTo(pivotValue) < 0)
 			{
 	             //swap list[storeIndex] and list[i]
 				tmp = list[storeIndex];
@@ -185,7 +182,7 @@ public class Selection
 	 * will return the kth smallest object.  The objects must implement the
 	 * Comparable interface.
 	 */
-	private static Object select(Object [] list, int left, int right, int k)
+	private static <T extends Comparable<T>> T select(T[] list, int left, int right, int k)
 	{
 	     while (true)
 	     {
