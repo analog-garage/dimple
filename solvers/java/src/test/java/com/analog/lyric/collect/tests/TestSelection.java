@@ -20,9 +20,13 @@ import static com.analog.lyric.collect.Selection.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 
 import org.junit.Test;
+
+import com.google.common.collect.Ordering;
+
 
 /**
  * Tests for {@code Selection} class
@@ -45,6 +49,16 @@ public class TestSelection
 			testCase(array);
 		}
 		
+		double[] array = new double[21];
+		testCase(array);
+		
+		for (int i = 0; i < array.length; i +=3)
+		{
+			array[i] = i;
+			array[i+1] = i;
+			array[i+2] = i;
+		}
+		testCase(array);
 	}
 	
 	private void testCase(double[] array)
@@ -65,7 +79,23 @@ public class TestSelection
 			assertEquals(expected, select(unsortedArray, k-1), 0.0);
 			assertEquals(expected, select(unsortedArray2, k-1), 0.0);
 			
+			Comparator<Double> natural = Ordering.natural();
+			assertEquals(expected, select(natural, unsortedArray2, k-1), 0.0);
+			
 			int[] indices = findFirstKIndices(unsortedArray, k);
+			Arrays.sort(indices);
+			assertEquals(k, indices.length);
+			for (int i = 0; i < indices.length; ++i)
+			{
+				if (i > 0)
+				{
+					assertTrue(indices[i] > indices[i-1]);
+				}
+				final int index = indices[i];
+				assertTrue(unsortedArray[index] <= expected);
+			}
+
+			indices = findFirstKIndices(unsortedArray2, k);
 			Arrays.sort(indices);
 			assertEquals(k, indices.length);
 			for (int i = 0; i < indices.length; ++i)
@@ -80,6 +110,19 @@ public class TestSelection
 
 			expected = sortedArray[sortedArray.length - k];
 			indices = findLastKIndices(unsortedArray, k);
+			Arrays.sort(indices);
+			assertEquals(k, indices.length);
+			for (int i = 0; i < indices.length; ++i)
+			{
+				if (i > 0)
+				{
+					assertTrue(indices[i] > indices[i-1]);
+				}
+				final int index = indices[i];
+				assertTrue(unsortedArray[index] >= expected);
+			}
+
+			indices = findLastKIndices(unsortedArray2, k);
 			Arrays.sort(indices);
 			assertEquals(k, indices.length);
 			for (int i = 0; i < indices.length; ++i)
