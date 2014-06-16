@@ -318,6 +318,9 @@ public class TestValue
 		assertEquals(23.1, value.getObject());
 		assertEquals(23, value.getInt());
 		assertEquals(23.1, value.getDouble(), 0.0);
+		double[] doubles = new double[] { 1.2, 3.4 } ;
+		value.setObject(doubles);
+		assertSame(doubles, value.getDoubleArray());
 		
 		value = Value.create((Domain)null);
 		assertNull(value.getObject());
@@ -354,6 +357,7 @@ public class TestValue
 			assertEquals(number.intValue(), value.getInt());
 			assertEquals(number.doubleValue(), value.getDouble(), 0.0);
 			assertEquals(number.doubleValue() != 0.0, value.getBoolean());
+			assertArrayEquals(new double[] { number.doubleValue() }, value.getDoubleArray(), 0.0);
 		}
 		else if (objValue instanceof Boolean)
 		{
@@ -361,6 +365,10 @@ public class TestValue
 			assertEquals(bool, value.getBoolean());
 			assertEquals(bool, value.getInt() == 1);
 			assertEquals(bool, value.getDouble() == 1.0);
+		}
+		else if (objValue instanceof double[])
+		{
+			assertArrayEquals((double[])objValue, value.getDoubleArray(), 0.0);
 		}
 		
 		Value value2 = value.clone();
