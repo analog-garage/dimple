@@ -89,7 +89,7 @@ public class Selection
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static int [] quickfindLastKindices(Object [] list, int k)
 	{
-		Object obj = select(list,list.length-k);
+		Object obj = select(list,1+list.length-k);
 		
 		 int [] result = new int[k];
 		 
@@ -134,8 +134,7 @@ public class Selection
 	 */
 	public static Object select(Object [] list,int k)
 	{
-		Object [] newlist = list.clone();
-		return select(newlist,0,list.length-1,k);
+		return select(list.clone(),0,list.length-1,k);
 	}
 	
 	/*-----------------
