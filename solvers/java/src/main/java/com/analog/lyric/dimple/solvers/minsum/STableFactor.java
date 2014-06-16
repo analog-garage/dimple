@@ -19,7 +19,7 @@ package com.analog.lyric.dimple.solvers.minsum;
 import java.util.Arrays;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.cs.Sort;
+import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -211,7 +211,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public int[] findKBestForMsg(double[] msg, int k)
 	{
-		return Sort.quickfindFirstKindices(msg, k);
+		return Selection.quickfindFirstKindices(msg, k);
 	}
 
 

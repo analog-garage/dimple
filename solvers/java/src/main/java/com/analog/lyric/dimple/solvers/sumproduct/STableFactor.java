@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.analog.lyric.collect.ArrayUtil;
-import com.analog.lyric.cs.Sort;
+import com.analog.lyric.collect.Selection;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
@@ -435,7 +435,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	@Override
 	public int[] findKBestForMsg(double[] msg, int k)
 	{
-		return Sort.quickfindLastKindices(msg, k);
+		return Selection.quickfindLastKindices(msg, k);
 	}
 
 	/******************************************************

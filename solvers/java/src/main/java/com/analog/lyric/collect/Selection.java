@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
+*   Copyright 2012-2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -14,18 +14,25 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.cs;
+package com.analog.lyric.collect;
 
-/*
- * This class provides methods associated with sorting.
+/**
+ * Provides efficient implementations of variants of the <em>selection</em> problem.
+ * <p>
+ * The selection problem involves efficiently finding the nth element in a set of unordered
+ * elements for some ordering relation. Obviously this can be done trivially by sorting,
+ * which requires O(n log n) operations, but this class implements an algorithm that
+ * takes O(n) time.
+ * <p>
+ * @since 0.06
  */
-public class Sort 
+public class Selection
 {
 	
 	/*
 	 * Given a list, a left index, a right index, and a pivot index, this method
 	 * will create a partition between all elements less than the pivot value
-	 * and all elements greater than the pivot value.  The operation is done in 
+	 * and all elements greater than the pivot value.  The operation is done in
 	 * place and returns the new position of the original pivot index.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -49,7 +56,7 @@ public class Sort
 				list[storeIndex] = list[i];
 				list[i] = tmp;
 	                          
-				storeIndex++;				
+				storeIndex++;
 			}
 		}
 	     
@@ -86,7 +93,7 @@ public class Sort
 	             k = k - pivotDist;
 	             left = pivotNewIndex + 1;
 	         }
-	     }		
+	     }
 	}
 	
 	/*
@@ -102,7 +109,7 @@ public class Sort
 	
 	/*
 	 * Given a list of doubles and an index, k, this method
-	 * will return the kth smallest double.  
+	 * will return the kth smallest double.
 	 */
 	public static double select(double [] list, int k)
 	{
@@ -115,7 +122,7 @@ public class Sort
 	
 	/*
 	 * Given a list of doubles and an index, k, this method
-	 * will return indices for the k smallest values  
+	 * will return indices for the k smallest values
 	 */
 	public static int [] quickfindFirstKindices(double [] list, int k)
 	{
