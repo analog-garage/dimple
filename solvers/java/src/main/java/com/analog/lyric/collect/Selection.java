@@ -16,6 +16,7 @@
 
 package com.analog.lyric.collect;
 
+
 /**
  * Provides efficient implementations of variants of the <em>selection</em> problem.
  * <p>
@@ -56,21 +57,15 @@ public class Selection
 		 int [] result = new int[k];
 		 
 		 int index = 0;
-		 int indexOfObj = -1;
 		 
-		 for (int i = 0; i < list.length; i++)
+		 for (int i = 0, end = list.length; i < end; i++)
 		 {
-			 if (list[i].compareTo(obj) < 0)
+			 if (list[i].compareTo(obj) <= 0)
 			 {
 				 result[index] = i;
 				 index++;
 			 }
-			 else if (obj == list[i])
-				 indexOfObj = i;
 		 }
-		 
-		 for (int i = index; index < result.length; index++)
-			 result[i] = indexOfObj;
 		 
 		 return result;
 	 }
@@ -92,21 +87,15 @@ public class Selection
 		 int [] result = new int[k];
 		 
 		 int index = 0;
-		 int indexOfObj = -1;
 		 
-		 for (int i = 0; i < list.length; i++)
+		 for (int i = 0, end = list.length; i < end; i++)
 		 {
-			 if (list[i].compareTo(obj) > 0)
+			 if (list[i].compareTo(obj) >= 0)
 			 {
 				 result[index] = i;
 				 index++;
 			 }
-			 else if (obj == list[i])
-				 indexOfObj = i;
 		 }
-		 
-		 for (int i = index; index < result.length; index++)
-			 result[i] = indexOfObj;
 		 
 		 return result;
 	}
@@ -147,30 +136,29 @@ public class Selection
 	 */
 	private static <T extends Comparable<T>> int partition(T[] list, int left, int right, int pivotIndex)
 	{
-		T pivotValue = list[pivotIndex];
+		final T pivotValue = list[pivotIndex];
 		
 		//swap list[pivotIndex] and list[right]  // Move pivot to end
-		T tmp = list[pivotIndex];
 		list[pivotIndex] = list[right];
-		list[right] = tmp;
+		list[right] = pivotValue;
 		
 		int storeIndex = left;
 		
 		for (int i = left; i <= right; i++)
 		{
-			if (list[i].compareTo(pivotValue) < 0)
+			final T cur = list[i];
+			if (cur.compareTo(pivotValue) < 0)
 			{
 	             //swap list[storeIndex] and list[i]
-				tmp = list[storeIndex];
-				list[storeIndex] = list[i];
-				list[i] = tmp;
+				list[i] = list[storeIndex];
+				list[storeIndex] = cur;
 	                          
 				storeIndex++;
 			}
 		}
 	     
 	    //swap list[right] and list[storeIndex]  // Move pivot to its final place
-		tmp = list[right];
+		final T tmp = list[right];
 		list[right] = list[storeIndex];
 		list[storeIndex] = tmp;
 		
@@ -193,9 +181,13 @@ public class Selection
 	         int pivotDist = pivotNewIndex - left + 1;
 	         
 	         if (pivotDist == k)
+	         {
 	             return list[pivotNewIndex];
+	         }
 	         else if ( k < pivotDist)
+	         {
 	             right = pivotNewIndex - 1;
+	         }
 	         else
 	         {
 	             k = k - pivotDist;
