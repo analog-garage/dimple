@@ -30,37 +30,45 @@ package com.analog.lyric.collect;
 public class Selection
 {
 	
-	/*
-	 * Given a list of doubles and an index, k, this method
-	 * will return indices for the k smallest values
+	/**
+	 * Returns the indices of the k lowest elements.
+	 * <p>
+	 * Returns a newly allocated array of the indices of the {@code k} lowest
+	 * elements in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array is a non-empty array in any order.
+	 * @param k is in the range [1, array.length]
 	 */
-	public static int [] quickfindFirstKindices(double [] list, int k)
+	public static int [] quickfindFirstKindices(double [] array, int k)
 	{
-		Double [] newlist = new Double[list.length];
+		Double [] newlist = new Double[array.length];
 		for (int i = 0; i < newlist.length; i++)
-			newlist[i] = list[i];
+			newlist[i] = array[i];
 		
 		return quickfindFirstKindices(newlist,k);
 	}
 
-	
-	/*
-	 * Given a list of objects and an index, k, this method
-	 * will return indices for the k smallest values.  The objects
-	 * must implement Comparable
+	/**
+	 * Returns the indices of the k lowest elements.
+	 * <p>
+	 * Returns a newly allocated array of the indices of the {@code k} lowest
+	 * elements in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array is a non-empty array in any order.
+	 * @param k is in the range [1, array.length]
 	 */
-	public static <T extends Comparable<T>> int [] quickfindFirstKindices(T [] list, int k)
+	public static <T extends Comparable<T>> int [] quickfindFirstKindices(T[] array, int k)
 	 {
 		 //select the kth
-		 T obj = select(list,k);
+		 T obj = select(array,k-1);
 		 
 		 int [] result = new int[k];
 		 
 		 int index = 0;
 		 
-		 for (int i = 0, end = list.length; i < end; i++)
+		 for (int i = 0, end = array.length; i < end; i++)
 		 {
-			 if (list[i].compareTo(obj) <= 0)
+			 if (array[i].compareTo(obj) <= 0)
 			 {
 				 result[index] = i;
 				 index++;
@@ -71,26 +79,44 @@ public class Selection
 	 }
 	
 
-	public static int [] quickfindLastKindices(double [] list, int k)
+	/**
+	 * Returns the indices of the k highest elements.
+	 * <p>
+	 * Returns a newly allocated array of the indices of the {@code k} highest
+	 * elements in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array is a non-empty array in any order.
+	 * @param k is in the range [1, array.length]
+	 */
+	public static int [] quickfindLastKindices(double [] array, int k)
 	{
-		Double [] newlist = new Double[list.length];
+		Double [] newlist = new Double[array.length];
 		for (int i = 0; i < newlist.length; i++)
-			newlist[i] = list[i];
+			newlist[i] = array[i];
 		
 		return quickfindLastKindices(newlist,k);
 	}
 	
-	public static <T extends Comparable<T>> int [] quickfindLastKindices(T[] list, int k)
+	/**
+	 * Returns the indices of the k highest elements.
+	 * <p>
+	 * Returns a newly allocated array of the indices of the {@code k} highest
+	 * elements in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array is a non-empty array in any order.
+	 * @param k is in the range [1, array.length]
+	 */
+	public static <T extends Comparable<T>> int [] quickfindLastKindices(T[] array, int k)
 	{
-		T obj = select(list,1+list.length-k);
+		T obj = select(array,array.length-k);
 		
 		 int [] result = new int[k];
 		 
 		 int index = 0;
 		 
-		 for (int i = 0, end = list.length; i < end; i++)
+		 for (int i = 0, end = array.length; i < end; i++)
 		 {
-			 if (list[i].compareTo(obj) >= 0)
+			 if (array[i].compareTo(obj) >= 0)
 			 {
 				 result[index] = i;
 				 index++;
@@ -101,38 +127,50 @@ public class Selection
 	}
 
 
-	/*
-	 * Given a list of doubles and an index, k, this method
-	 * will return the kth smallest double.
+	/**
+	 * Returns the kth element in array in natural order.
+	 * <p>
+	 * Returns index of kth element in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array a non-empty array in any order.
+	 * @param k a number in the range [0, array.length-1]
 	 */
-	public static double select(double [] list, int k)
+	public static double select(double [] array, int k)
 	{
-		Double [] newlist = new Double[list.length];
-		for (int i = 0; i < list.length; i++)
-			newlist[i] = list[i];
+		Double [] newlist = new Double[array.length];
+		for (int i = 0; i < array.length; i++)
+			newlist[i] = array[i];
 		
-		return select(newlist,0,list.length-1,k);
+		return select(newlist,0,array.length-1,k);
 	}
 
-	/*
-	 * Given a list and an index, k, this method
-	 * will return the kth smallest object.  The objects must implement the
-	 * Comparable interface.
+	/**
+	 * Returns the kth element in array in natural order.
+	 * <p>
+	 * Returns index of kth element in {@linkplain Comparable natural order}.
+	 * <p>
+	 * @param array a non-empty array in any order.
+	 * @param k a number in the range [0, array.length-1]
 	 */
-	public static <T extends Comparable<T>> T select(T[] list,int k)
+	public static <T extends Comparable<T>> T select(T[] array,int k)
 	{
-		return select(list.clone(),0,list.length-1,k);
+		return select(array.clone(),0,array.length-1,k);
 	}
 	
 	/*-----------------
 	 * Private methods
 	 */
 
-	/*
+	/**
 	 * Given a list, a left index, a right index, and a pivot index, this method
 	 * will create a partition between all elements less than the pivot value
 	 * and all elements greater than the pivot value.  The operation is done in
 	 * place and returns the new position of the original pivot index.
+	 * 
+	 * @param list is a non-empty unordered array
+	 * @param left is in the range [0, list.length-1]
+	 * @param right is in the range [0, list.length-1]
+	 * @param pivotIndex is in the range [0, list.length-1]
 	 */
 	private static <T extends Comparable<T>> int partition(T[] list, int left, int right, int pivotIndex)
 	{
@@ -165,13 +203,19 @@ public class Selection
 	    return storeIndex;
 	}
 
-	/*
+	/**
 	 * Given a list, a left index, a right index, and an index, k, this method
-	 * will return the kth smallest object.  The objects must implement the
-	 * Comparable interface.
+	 * will return the kth smallest object.
+	 * 
+	 * @param list is a non-empty unordered array
+	 * @param left is in the range [0, list.length-1]
+	 * @param right is in the range [0, list.length-1]
+	 * @param k is in the range [0,list.length-1]
 	 */
 	private static <T extends Comparable<T>> T select(T[] list, int left, int right, int k)
 	{
+		++k; // Convert to one-based indexing
+		
 	     while (true)
 	     {
 	         //select pivotIndex between left and right

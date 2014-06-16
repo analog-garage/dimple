@@ -62,8 +62,8 @@ public class TestSelection
 		for (int k = 1; k <= array.length; ++k)
 		{
 			double expected = sortedArray[k-1];
-			assertEquals(expected, select(unsortedArray, k), 0.0);
-			assertEquals(expected, (Double)select(unsortedArray2, k), 0.0);
+			assertEquals(expected, select(unsortedArray, k-1), 0.0);
+			assertEquals(expected, select(unsortedArray2, k-1), 0.0);
 			
 			int[] indices = quickfindFirstKindices(unsortedArray, k);
 			Arrays.sort(indices);
@@ -77,7 +77,7 @@ public class TestSelection
 				final int index = indices[i];
 				assertTrue(unsortedArray[index] <= expected);
 			}
-			
+
 			expected = sortedArray[sortedArray.length - k];
 			indices = quickfindLastKindices(unsortedArray, k);
 			Arrays.sort(indices);
