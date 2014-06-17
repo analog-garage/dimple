@@ -98,6 +98,9 @@ public class TestBitSetUtil
 				assertEquals(x ^ mask, BitSetUtil.clearMask(x, mask));
 				assertEquals(x, BitSetUtil.setBit(x, bit));
 				assertEquals(x, BitSetUtil.setMask(x, mask));
+				assertEquals(x, BitSetUtil.setMaskedValue(x, mask, mask));
+				assertEquals(x^mask, BitSetUtil.setMaskedValue(x, mask, 0));
+				assertEquals(mask, BitSetUtil.getMaskedValue(x, mask));
 			}
 			else
 			{
@@ -107,6 +110,9 @@ public class TestBitSetUtil
 				assertEquals(x, BitSetUtil.clearMask(x, mask));
 				assertEquals(x|mask, BitSetUtil.setBit(x, bit));
 				assertEquals(x|mask, BitSetUtil.setMask(x, mask));
+				assertEquals(x|mask, BitSetUtil.setMaskedValue(x, mask, mask));
+				assertEquals(x, BitSetUtil.setMaskedValue(x, mask, 0));
+				assertEquals(0, BitSetUtil.getMaskedValue(x, mask));
 			}
 		}
 	}
@@ -130,6 +136,9 @@ public class TestBitSetUtil
 				assertEquals(x ^ mask, BitSetUtil.clearMask(x, mask));
 				assertEquals(x, BitSetUtil.setBit(x, bit));
 				assertEquals(x, BitSetUtil.setMask(x, mask));
+				assertEquals(x, BitSetUtil.setMaskedValue(x, mask, mask));
+				assertEquals(x^mask, BitSetUtil.setMaskedValue(x, mask, 0));
+				assertEquals(mask, BitSetUtil.getMaskedValue(x, mask));
 			}
 			else
 			{
@@ -139,6 +148,9 @@ public class TestBitSetUtil
 				assertEquals(x, BitSetUtil.clearMask(x, mask));
 				assertEquals(x|mask, BitSetUtil.setBit(x, bit));
 				assertEquals(x|mask, BitSetUtil.setMask(x, mask));
+				assertEquals(x|mask, BitSetUtil.setMaskedValue(x, mask, mask));
+				assertEquals(x, BitSetUtil.setMaskedValue(x, mask, 0));
+				assertEquals(0, BitSetUtil.getMaskedValue(x, mask));
 			}
 		}
 	}

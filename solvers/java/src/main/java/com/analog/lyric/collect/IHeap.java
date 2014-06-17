@@ -167,6 +167,9 @@ public interface IHeap<E> extends Collection<E>, Cloneable
 	 */
 	public void ensureCapacity(int capacity);
 	
+	/**
+	 * Returns an iterator over the heap entries not necessarily in heap order.
+	 */
 	public Iterator<? extends IEntry<E>> entryIterator();
 	
 	/**

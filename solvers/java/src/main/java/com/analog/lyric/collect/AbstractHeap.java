@@ -107,6 +107,9 @@ public abstract class AbstractHeap<E>
 	 */
 	
 	@Override
+	public abstract void clear();
+	
+	@Override
 	public boolean contains(@Nullable Object object)
 	{
 		return entryForElement(object) != null;

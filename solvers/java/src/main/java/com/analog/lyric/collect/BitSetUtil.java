@@ -51,26 +51,6 @@ public class BitSetUtil
 	}
 
 	/**
-	 * Computes map of indexes into {@code bitset} that indicates the nth set or clear bit. If
-	 * the value {@code n} of {@code indexMap[i]} is non-negative, then bit {@code i} is the {@code nth}
-	 * set bit (counting from zero), and if negative then {@code i} is the {@code (-1-n)th} clear bit.
-	 * 
-	 * @param bitset
-	 * @param indexMap is an array whose length must equal {@code bitset.size()} and whose values
-	 * will computed by this function.
-	 * @return the number of bits set in {@code bitset}.
-	 */
-	public static int bitsetToIndexMap(BitSet bitset, int[] indexMap)
-	{
-		int nTrue = 0;
-		for (int i = 0, end = indexMap.length; i < end; ++i)
-		{
-			indexMap[i] = bitset.get(i) ? nTrue++ : nTrue-i-1;
-		}
-		return nTrue;
-	}
-
-	/**
 	 * Sets bit at {@code index} in {@code bits} to zero.
 	 * 
 	 * @param bits
@@ -237,7 +217,6 @@ public class BitSetUtil
 	 */
 	public static long setMaskedValue(long word, long mask, long value)
 	{
-		assert((value & mask) == value);
 		return (word & ~mask) | value;
 	}
 }

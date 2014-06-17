@@ -20,16 +20,20 @@ import static com.analog.lyric.util.test.ExceptionTester.*;
 import static java.util.Objects.*;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
 import org.junit.Test;
 
+import com.analog.lyric.collect.AbstractHeap;
 import com.analog.lyric.collect.BinaryHeap;
 import com.analog.lyric.collect.IHeap;
 import com.analog.lyric.collect.IHeap.IEntry;
 import com.analog.lyric.util.misc.NonNull;
+import com.analog.lyric.util.misc.Nullable;
 
 public class TestHeap
 {
@@ -47,6 +51,11 @@ public class TestHeap
 	public void test()
 	{
 		testHeap(new BinaryHeap<Element>());
+		
+		IHeap<Element> crappyHeap = new CrappyHeap<Element>();
+		assertFalse(crappyHeap.deferOrderingForBulkAdd(42));
+		assertFalse(crappyHeap.deferOrderingForBulkChange(42));
+		testHeap(crappyHeap);
 	}
 	
 	private void testHeap(IHeap<Element> heap)
@@ -114,6 +123,7 @@ public class TestHeap
 		assertFalse(entry.isOwned());
 		assertFalse(heap.containsEntry(entry));
 		assertInvariants(heap);
+		
 		
 		//
 		// Clear
@@ -354,6 +364,8 @@ public class TestHeap
 	{
 		IEntry<Element> prevEntry = null;
 		
+		boolean usePollEntry = true;
+		
 		while (!heap.isEmpty())
 		{
 			IEntry<Element> nextEntry = heap.peekEntry();
@@ -361,11 +373,21 @@ public class TestHeap
 			assertSame(nextEntry.getElement(), heap.peek());
 			assertTrue(heap.isOrdered());
 		
-			assertSame(nextEntry, heap.pollEntry());
-			if (prevEntry != null)
+			if (usePollEntry)
 			{
-				assertTrue(prevEntry.getPriority() <= nextEntry.getPriority());
+				assertSame(nextEntry, heap.pollEntry());
+				if (prevEntry != null)
+				{
+					assertTrue(prevEntry.getPriority() <= nextEntry.getPriority());
+				}
 			}
+			else
+			{
+				assertSame(nextEntry.getElement(), heap.poll());
+				assertNotSame(nextEntry, heap.peekEntry());
+			}
+			
+			usePollEntry = !usePollEntry;
 			prevEntry = nextEntry;
 		}
 	}
@@ -428,5 +450,139 @@ public class TestHeap
 		}
 		assertFalse(elements.hasNext());
 		assertEquals(size, count);
+	}
+	
+	/**
+	 * Crappy IHeap implementation for testing default methods in AbstractHeap
+	 */
+	public static class CrappyHeap<E> extends AbstractHeap<E>
+	{
+		private static class Entry<E> extends AbstractHeap.AbstractEntry<E>
+		{
+			private boolean _owned = true;
+			
+			protected Entry(E element, double priority)
+			{
+				super(element, priority);
+			}
+
+			@Override
+			public boolean isOwned()
+			{
+				return _owned;
+			}
+
+			@Override
+			public Entry<E> clone()
+			{
+				return new Entry<E>(getElement(), _priority);
+			}
+			
+			private void setPriority(double priority)
+			{
+				_priority = priority;
+			}
+		}
+		
+		private List<Entry<E>> _entries = new ArrayList<Entry<E>>();
+		
+		@Override
+		public boolean changePriority(IEntry<E> entry, double priority)
+		{
+			if (_entries.contains(entry))
+			{
+				((Entry<?>)entry).setPriority(priority);
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public Iterator<? extends com.analog.lyric.collect.IHeap.IEntry<E>> entryIterator()
+		{
+			return _entries.iterator();
+		}
+
+		@Override
+		public Entry<E> offer(E element, double priority)
+			throws IllegalArgumentException
+		{
+			if (Double.isNaN(priority))
+			{
+				throw new IllegalArgumentException();
+			}
+			Entry<E> entry = new Entry<E>(element, priority);
+			_entries.add(entry);
+			return entry;
+		}
+
+		/*
+		 * 
+		 */
+		@Override
+		public @Nullable Entry<E> peekEntry()
+		{
+			Entry<E> first = null;
+			if (!_entries.isEmpty())
+			{
+				first = _entries.get(0);
+				for (Entry<E> entry : _entries)
+				{
+					if (entry.getPriority() < first.getPriority())
+					{
+						first = entry;
+					}
+				}
+			}
+			return first;
+		}
+
+		/*
+		 * 
+		 */
+		@Override
+		public @Nullable Entry<E> pollEntry()
+		{
+			Entry<E> entry = peekEntry();
+			if (entry != null)
+			{
+				removeEntry(entry);
+			}
+			return entry;
+		}
+
+		@Override
+		public boolean removeEntry(com.analog.lyric.collect.IHeap.IEntry<E> entry)
+		{
+			boolean removed = _entries.remove(entry);
+			if (removed)
+			{
+				((Entry<?>)entry)._owned = false;
+			}
+			return removed;
+		}
+
+		@Override
+		public void clear()
+		{
+			_entries.clear();
+		}
+		
+		@Override
+		public CrappyHeap<E> clone()
+		{
+			CrappyHeap<E> clone = new CrappyHeap<E>();
+			for (Entry<E> entry : _entries)
+			{
+				clone.offer(entry.getElement(), entry.getPriority());
+			}
+			return clone;
+		}
+
+		@Override
+		public int size()
+		{
+			return _entries.size();
+		}
 	}
 }
