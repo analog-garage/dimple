@@ -195,7 +195,7 @@ If no solver is specified, the SumProduct solver is used by default.
 
 The SumProduct solver supports both discrete and continuous variables.  The SumProduct solver uses the sum-product form of belief propagation to perform inference on a graph.  For discrete variables, each message to or from a factor is in the form of a vector of length equal to the domain size of the variable.  For continuous variables, messages are represented using a Gaussian parameterization.  In some cases, this is an approximation to the exact message.  For Real variables, a message is in the form of a pair of values representing the mean and variance of the corresponding Normal distribution.  For Complex and RealJoint variables, a message is in the form of a vector and matrix, representing the mean and covariance of the corresponding multivariate Normal distribution.
 
-While the Gaussian representation of messages for continuous variables is sometimes and approximation, there are some specific built-in factors for which exact Gaussian messages are computed.  This can be done when a factor preserves the Gaussian form of the distribution on each edge.  The following table is a list of such lists built-in factors.  See section~\ref{sec:builtInFactors} for more information on built-in factors.
+While the Gaussian representation of messages for continuous variables is sometimes an approximation, there are some specific built-in factors for which exact Gaussian messages are computed.  This can be done when a factor preserves the Gaussian form of the distribution on each edge.  The following table is a list of such lists built-in factors.  See section~\ref{sec:builtInFactors} for more information on built-in factors.
 
 \begin{longtable} {p{3.5cm} p{3.0cm} p{7.0cm}}
 Built-in Factor & Variable Types &  Notes \\
@@ -218,6 +218,8 @@ LinearEquation & Real & Linear equation.  All connected variables must be Real a
 \end{longtable}
 
 For factors that are neither discrete-only or listed in the above table, an approximate computation is used in computing messages from such a factor.  This includes any factor that connects to both discrete and continuous variables as well as factors that connect only to continuous variables but do not appear in the list above.  The approximate method is sample based and uses Gibbs sampling to sample from the factor, allowing approximate messages to be computed from the sample statistics.  Several methods described below allow control over the behavior of these sampled factors.
+
+For discrete-only factors, it is possible to use an alternative algorithm, referred to as the optimized update algorithm, to compute all messages outbound from the factor with fewer operations than are required by the default algorithm, which decreases execution time. The optimized update algorithm has greater impact on factors of higher degree. The optimized update algorithm can be applied only when the schedule calls for all of a factor's outbound messages to be updated together. Because this algorithm uses more memory than the default algorithm, it must be programmatically-enabled in order to be used. See the solver-specific factor methods below for controlling enabling of the optimized update algorithm.
 
 The following sections list the solver-specific methods for the SumProduct solver.
 
@@ -383,9 +385,56 @@ The solver will only use the K best values for each variable when calculating ou
 
 IMPORTANT: k-best and damping are not compatible with each other\footnote{This restriction may be removed in a future version of Dimple.}.
 
+\subpara{enableOptimizedUpdate}
 
+Enables use of the optimized update algorithm for the factor.
 
+\ifmatlab
+\begin{lstlisting}
+factor.Solver.enableOptimizedUpdate();
+\end{lstlisting}
+\fi
 
+\ifjava
+\begin{lstlisting}
+STableFactor sfactor = (STableFactor)f.getSolver();
+sfactor.enableOptimizedUpdate();
+\end{lstlisting}
+\fi
+
+\subpara{disableOptimizedUpdate}
+
+Disables use of the optimized update algorithm for the factor.
+
+\ifmatlab
+\begin{lstlisting}
+factor.Solver.disableOptimizedUpdate();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+STableFactor sfactor = (STableFactor)f.getSolver();
+sfactor.disableOptimizedUpdate();
+\end{lstlisting}
+\fi
+
+\subpara{useDefaultOptimizedUpdateEnable}
+
+Causes the factor to revert to the default setting for the optimized update algorithm enable. The default setting is False.
+
+\ifmatlab
+\begin{lstlisting}
+factor.Solver.useDefaultOptimizedUpdateEnable();
+\end{lstlisting}
+\fi
+
+\ifjava
+\begin{lstlisting}
+STableFactor sfactor = (STableFactor)f.getSolver();
+sfactor.useDefaultOptimizedUpdateEnable();
+\end{lstlisting}
+\fi
 
 \subsubsection{Min-Sum Solver}
 
