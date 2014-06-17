@@ -20,8 +20,11 @@ import java.util.Arrays;
 
 import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.Selection;
+<<<<<<< HEAD
 import com.analog.lyric.dimple.environment.DimpleEnvironment;
+=======
 import com.analog.lyric.dimple.exceptions.DimpleException;
+>>>>>>> Optimized update algorithm for minsum and automatic update algorithm selection
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
@@ -187,11 +190,11 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		table.setRepresentation(FactorTableRepresentation.SPARSE_ENERGY_WITH_INDICES);
 	}
-
+	
 	/**
-	 * Gets the update algorithm approach.
+	 * Indicates if the optimized update algorithm is enabled for this factor. TODO
 	 * 
-	 * @since 0.07
+	 * @since 0.06
 	 */
 	public UpdateApproach getUpdateApproach()
 	{
@@ -199,19 +202,20 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	}
 	
 	/**
-	 * Sets the update algorithm approach.
+	 * Enables or disables the optimized update algorithm. TODO
 	 * 
+	 * @param approach True to enable the optimized update algorithm.
 	 * @since 0.07
 	 */
-	public void setUpdateApproach(UpdateApproach approach)
+	public void setUpdateApproach(final UpdateApproach approach)
 	{
 		_sTableFactorOptimizedUpdateImpl.setUpdateApproach(approach);
 	}
 
 	/**
-	 * Reverts to the inherited setting for the update algorithm approach.
+	 * Reverts to the inherited setting for enabling of the optimized update algorithm.
 	 * 
-	 * @since 0.07
+	 * @since 0.06
 	 */
 	public void unsetUpdateApproach()
 	{
@@ -242,107 +246,46 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		}
 	}
 
-	/**
-	 * Gets the optimized update sparse threshold.
-	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
-	 */
 	public double getOptimizedUpdateSparseThreshold()
 	{
 		return _sTableFactorOptimizedUpdateImpl.getOptimizedUpdateSparseThreshold();
 	}
 	
-	/**
-	 * Sets the optimized update sparse threshold. The optimized update algorithm uses auxiliary
-	 * factor tables during update. This density setting determines whether it uses sparse or dense
-	 * representations for them. Sparse representations often offer superior execution time, but use
-	 * more memory because indices are stored. The automatic update approach considers the impact of
-	 * this setting when estimating update cost for the optimized update algorithm.
-	 * 
-	 * @param value A density, below which the system uses a sparse representation for auxiliary
-	 *        factor tables.
-	 * @since 0.07
-	 */
 	public void setOptimizedUpdateSparseThreshold(double value)
 	{
 		_sTableFactorOptimizedUpdateImpl.setOptimizedUpdateSparseThreshold(value);
 	}
 
-	/**
-	 * Resets the optimized update sparse threshold to use the inherited value.
-	 * 
-	 * @see #setOptimizedUpdateSparseThreshold(double)
-	 * @since 0.07
-	 */
 	public void unsetOptimizedUpdateSparseThreshold()
 	{
 		_sTableFactorOptimizedUpdateImpl.unsetOptimizedUpdateSparseThreshold();
 	}
 	
-	/**
-	 * Gets the automatic memory allocation scaling factor.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
 	public double getAutomaticMemoryAllocationScalingFactor()
 	{
 		return _sTableFactorOptimizedUpdateImpl.getAutomaticMemoryAllocationScalingFactor();
 	}
 	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The memory allocation estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
 	public void setAutomaticMemoryAllocationScalingFactor(double value)
 	{
 		_sTableFactorOptimizedUpdateImpl.setAutomaticMemoryAllocationScalingFactor(value);
 	}
 	
-	/**
-	 * Resets the automatic memory allocation scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
-	 * @since 0.07
-	 */
 	public void unsetAutomaticMemoryAllocationScalingFactor()
 	{
 		_sTableFactorOptimizedUpdateImpl.unsetAutomaticMemoryAllocationScalingFactor();
 	}
-
-	/**
-	 * Gets the automatic execution time scaling factor.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
+	
 	public double getAutomaticExecutionTimeScalingFactor()
 	{
 		return _sTableFactorOptimizedUpdateImpl.getAutomaticExecutionTimeScalingFactor();
 	}
 	
-	/**
-	 * When the update approach is automatic, the system chooses which update algorithm to use by
-	 * estimating the execution time and memory allocation of each. The execution time estimate
-	 * is scaled by this factor in the cost estimation.
-	 * 
-	 * @since 0.07
-	 */
 	public void setAutomaticExecutionTimeScalingFactor(double value)
 	{
 		_sTableFactorOptimizedUpdateImpl.setAutomaticExecutionTimeScalingFactor(value);
 	}
 	
-	/**
-	 * Resets the automatic execution time scaling factor to use the inherited value.
-	 * 
-	 * @see #setAutomaticExecutionTimeScalingFactor(double)
-	 * @since 0.07
-	 */
 	public void unsetAutomaticExecutionTimeScalingFactor()
 	{
 		_sTableFactorOptimizedUpdateImpl.unsetAutomaticExecutionTimeScalingFactor();

@@ -1,18 +1,18 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
 package com.analog.lyric.dimple.solvers.sumproduct;
 
@@ -49,6 +49,18 @@ import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostEstimationTableWrapper;
+import com.analog.lyric.dimple.solvers.optimizedupdate.CostType;
+import com.analog.lyric.dimple.solvers.optimizedupdate.Costs;
+import com.analog.lyric.dimple.solvers.optimizedupdate.FactorUpdatePlan;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IMarginalizationStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostEstimationTableWrapperAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.ISFactorGraphToCostOptimizerAdapter;
+import com.analog.lyric.dimple.solvers.optimizedupdate.IUpdateStepEstimator;
+import com.analog.lyric.dimple.solvers.optimizedupdate.SFactorGraphOptimizedUpdateImpl;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateApproach;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateCostOptimizer;
+import com.analog.lyric.dimple.solvers.optimizedupdate.UpdateSettings;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomComplexGaussianPolynomial;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldAdd;
 import com.analog.lyric.dimple.solvers.sumproduct.customFactors.CustomFiniteFieldConstantMult;
@@ -79,15 +91,13 @@ public class SFactorGraph extends SFactorGraphBase
 	private int _sampledFactorBurnInScansPerUpdate = SampledFactor.DEFAULT_BURN_IN_SCANS_PER_UPDATE;
 	private int _sampledFactorScansPerSample = SampledFactor.DEFAULT_SCANS_PER_SAMPLE;
 	private static Random _rand = new Random();
-	private boolean _defaultOptimizedUpdateEnabled;
-
+	final SFactorGraphOptimizedUpdateImpl _optimizedUpdateImpl = new SFactorGraphOptimizedUpdateImpl(this);
 
 	public SFactorGraph(FactorGraph factorGraph)
 	{
 		super(factorGraph);
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
-	
 
 	@Override
 	public ISolverVariable createVariable(VariableBase var)
@@ -102,39 +112,52 @@ public class SFactorGraph extends SFactorGraphBase
 			return new SDiscreteVariable(var);
 	}
 
-	
-
 	@Override
 	public ISolverFactor createFactor(Factor factor)
 	{
-		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In case it's wrapped
+		FactorFunction factorFunction = factor.getFactorFunction().getContainedFactorFunction();	// In
+																									// case
+																									// it's
+																									// wrapped
 		String factorName = factorFunction.getName();
 		boolean noFF = factorFunction instanceof CustomFactorFunctionWrapper;
 		boolean hasConstants = factor.getFactorFunction().hasConstants();
-		
+
 		if (factor.isDiscrete())	// Factor contains only discrete variables
 		{
 			// First see if any custom factor should be created
-			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd"))) && !hasConstants)		// "finiteFieldAdd" for backward compatibility
+			if (((factorFunction instanceof FiniteFieldAdd) || (noFF && factorName.equals("finiteFieldAdd")))
+				&& !hasConstants)		// "finiteFieldAdd" for backward compatibility
 				return new CustomFiniteFieldAdd(factor);
-			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult" for backward compatibility
+			else if ((factorFunction instanceof FiniteFieldMult) || (noFF && factorName.equals("finiteFieldMult")))					// "finiteFieldMult"
+			// for
+			// backward
+			// compatibility
 			{
 				if (hasConstants)
 					return new CustomFiniteFieldConstantMult(factor);
 				else
 					return new CustomFiniteFieldMult(factor);
 			}
-			else if ((factorFunction instanceof FiniteFieldProjection) || (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection" for backward compatibility
+			else if ((factorFunction instanceof FiniteFieldProjection)
+				|| (noFF && factorName.equals("finiteFieldProjection")))		// "finiteFieldProjection"
+				// for backward
+				// compatibility
 				return new CustomFiniteFieldProjection(factor);
-			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD" for backward compatibility
+			else if ((factorFunction instanceof Multiplexer) || (noFF && factorName.equals("multiplexerCPD")))	// "multiplexerCPD"
+																												// for
+																												// backward
+																												// compatibility
 				return new CustomMultiplexer(factor);															// Currently only supports discrete variables
-			else	// No custom factor exists, so create a generic one
+			else
+			// No custom factor exists, so create a generic one
 			{
 				// For discrete case, create a table factor
 				return new STableFactor(factor);
 			}
 		}
-		else	// Factor includes at least one continuous variable
+		else
+		// Factor includes at least one continuous variable
 		{
 			// First see if any custom factor should be created
 			if ((factorFunction instanceof Sum) && CustomGaussianSum.isFactorCompatible(factor))
@@ -147,23 +170,31 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomGaussianProduct(factor);
 			else if ((factorFunction instanceof ComplexSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianSum(factor);
-			else if ((factorFunction instanceof ComplexSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
+			else if ((factorFunction instanceof ComplexSubtract)
+				&& CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianSubtract(factor);
-			else if ((factorFunction instanceof ComplexNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
+			else if ((factorFunction instanceof ComplexNegate)
+				&& CustomMultivariateGaussianNegate.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianNegate(factor);
-			else if ((factorFunction instanceof RealJointSum) && CustomMultivariateGaussianSum.isFactorCompatible(factor))
+			else if ((factorFunction instanceof RealJointSum)
+				&& CustomMultivariateGaussianSum.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianSum(factor);
-			else if ((factorFunction instanceof RealJointSubtract) && CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
+			else if ((factorFunction instanceof RealJointSubtract)
+				&& CustomMultivariateGaussianSubtract.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianSubtract(factor);
-			else if ((factorFunction instanceof RealJointNegate) && CustomMultivariateGaussianNegate.isFactorCompatible(factor))
+			else if ((factorFunction instanceof RealJointNegate)
+				&& CustomMultivariateGaussianNegate.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianNegate(factor);
-			else if ((factorFunction instanceof MatrixRealJointVectorProduct) && CustomMultivariateGaussianProduct.isFactorCompatible(factor))
+			else if ((factorFunction instanceof MatrixRealJointVectorProduct)
+				&& CustomMultivariateGaussianProduct.isFactorCompatible(factor))
 				return new CustomMultivariateGaussianProduct(factor);
 			else if ((factorFunction instanceof Normal) && CustomNormalConstantParameters.isFactorCompatible(factor))
 				return new CustomNormalConstantParameters(factor);
-			else if ((factorFunction instanceof MultivariateNormal) && CustomMultivariateNormalConstantParameters.isFactorCompatible(factor))
+			else if ((factorFunction instanceof MultivariateNormal)
+				&& CustomMultivariateNormalConstantParameters.isFactorCompatible(factor))
 				return new CustomMultivariateNormalConstantParameters(factor);
-			else if ((factorFunction instanceof LinearEquation) && CustomGaussianLinearEquation.isFactorCompatible(factor))
+			else if ((factorFunction instanceof LinearEquation)
+				&& CustomGaussianLinearEquation.isFactorCompatible(factor))
 				return new CustomGaussianLinearEquation(factor);
 			else if (noFF && factorName.equals("add"))								// For backward compatibility
 			{
@@ -183,18 +214,20 @@ public class SFactorGraph extends SFactorGraphBase
 				return new CustomGaussianLinear(factor);
 			else if (noFF && factorName.equals("polynomial"))						// For backward compatibility
 				return new CustomComplexGaussianPolynomial(factor);
-			else	// No custom factor exists, so create a generic one
+			else
+			// No custom factor exists, so create a generic one
 			{
-				// For non-discrete factor that doesn't have a custom factor, create a sampled factor
+				// For non-discrete factor that doesn't have a custom factor, create a sampled
+				// factor
 				SampledFactor sf = new SampledFactor(factor);
 				sf.setSamplesPerUpdate(_sampledFactorSamplesPerUpdate);
 				return sf;
 			}
 		}
 	}
-	
 
-	// This should return true only for custom factors that do not have a corresponding FactorFunction of the same name
+	// This should return true only for custom factors that do not have a corresponding
+	// FactorFunction of the same name
 	@Override
 	public boolean customFactorExists(String funcName)
 	{
@@ -204,7 +237,8 @@ public class SFactorGraph extends SFactorGraphBase
 			return true;
 		else if (funcName.equals("finiteFieldProjection"))												// For backward compatibility
 			return true;
-		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use "Multiplexer" instead
+		else if (funcName.equals("multiplexerCPD"))														// For backward compatibility; should use
+			// "Multiplexer" instead
 			return true;
 		else if (funcName.equals("add"))																// For backward compatibility
 			return true;
@@ -217,7 +251,6 @@ public class SFactorGraph extends SFactorGraphBase
 		else
 			return false;
 	}
-	
 
 	private boolean isMultivariate(Factor factor)
 	{
@@ -227,21 +260,19 @@ public class SFactorGraph extends SFactorGraphBase
 			return false;
 	}
 
-
 	public static Random getRandom()
 	{
 		return _rand;
 	}
-	
+
 	public void setSeed(long seed)
 	{
 		_rand = new Random(seed);				// Used for parameter estimation
 		DimpleRandomGenerator.setSeed(seed);	// Used for sampled factors
 	}
-	
 
 	/*
-	 * Set the global solver damping parameter.  We have to go through all factor graphs
+	 * Set the global solver damping parameter. We have to go through all factor graphs
 	 * and update the damping parameter on all existing table functions in that graph.
 	 */
 	public void setDamping(double damping)
@@ -249,7 +280,7 @@ public class SFactorGraph extends SFactorGraphBase
 		_damping = damping;
 		setOption(SumProductOptions.damping, damping);
 	}
-	
+
 	public double getDamping()
 	{
 		return _damping;
@@ -258,7 +289,6 @@ public class SFactorGraph extends SFactorGraphBase
 	/**
 	 * Indicates if this solver supports the optimized update algorithm.
 	 * 
-	 * @return True if this solver does support the optimized update algorithm.
 	 * @since 0.06
 	 */
 	public boolean isOptimizedUpdateSupported()
@@ -267,26 +297,206 @@ public class SFactorGraph extends SFactorGraphBase
 	}
 
 	/**
-	 * Gets the default optimized update algorithm enable. Factors for which the enable is not explicitly set use this value.
+	 * Gets the update algorithm approach.
 	 * 
-	 * @since 0.06
+	 * @since 0.07
 	 */
-	public boolean getDefaultOptimizedUpdateEnabled()
+	public UpdateApproach getUpdateApproach()
 	{
-		return _defaultOptimizedUpdateEnabled;
+		return _optimizedUpdateImpl.getUpdateApproach();
 	}
-	
+
 	/**
-	 * Sets the default optimized update algorithm enable. Factors for which the enable is not explicitly set use this value.
+	 * Sets the update algorithm approach.
 	 * 
-	 * @since 0.06
+	 * @since 0.07
 	 */
-	public void setDefaultOptimizedUpdateEnabled(boolean value)
+	public void setUpdateApproach(UpdateApproach approach)
 	{
-		_defaultOptimizedUpdateEnabled = value;
-		setOption(SumProductOptions.enableOptimizedUpdate, value);
+		_optimizedUpdateImpl.setUpdateApproach(approach);
 	}
-	
+
+	/**
+	 * Sets the optimized update sparse threshold. The optimized update algorithm uses auxiliary
+	 * factor tables during update. This density setting determines whether it uses sparse or dense
+	 * representations for them. Sparse representations often offer superior execution time, but use
+	 * more memory because indices are stored. The automatic update approach considers the impact of
+	 * this setting when estimating update cost for the optimized update algorithm.
+	 * 
+	 * @param value A density, below which the system uses a sparse representation for auxiliary
+	 *        factor tables.
+	 * @since 0.07
+	 */
+	public void setOptimizedUpdateSparseThreshold(double value)
+	{
+		_optimizedUpdateImpl.setOptimizedUpdateSparseThreshold(value);
+	}
+
+	/**
+	 * Gets the optimized update sparse threshold.
+	 * 
+	 * @see #setOptimizedUpdateSparseThreshold(double)
+	 * @since 0.07
+	 */
+	public double getOptimizedUpdateSparseThreshold()
+	{
+		return _optimizedUpdateImpl.getOptimizedUpdateSparseThreshold();
+	}
+
+	/**
+	 * When the update approach is automatic, the system chooses which update algorithm to use by
+	 * estimating the execution time and memory allocation of each. The memory allocation estimate
+	 * is scaled by this factor in the cost estimation.
+	 * 
+	 * @since 0.07
+	 */
+	public void setAutomaticMemoryAllocationScalingFactor(double value)
+	{
+		_optimizedUpdateImpl.setAutomaticMemoryAllocationScalingFactor(value);
+	}
+
+	/**
+	 * @see #setAutomaticMemoryAllocationScalingFactor(double)
+	 * @since 0.07
+	 */
+	public double getAutomaticMemoryAllocationScalingFactor()
+	{
+		return _optimizedUpdateImpl.getAutomaticMemoryAllocationScalingFactor();
+	}
+
+	/**
+	 * When the update approach is automatic, the system chooses which update algorithm to use by
+	 * estimating the execution time and memory allocation of each. The execution time estimate
+	 * is scaled by this factor in the cost estimation.
+	 * 
+	 * @since 0.07
+	 */
+	public void setAutomaticExecutionTimeScalingFactor(double value)
+	{
+		_optimizedUpdateImpl.setAutomaticExecutionTimeScalingFactor(value);
+	}
+
+	/**
+	 * @see #setAutomaticExecutionTimeScalingFactor(double)
+	 * @since 0.07
+	 */
+	public double getAutomaticExecutionTimeScalingFactor()
+	{
+		return _optimizedUpdateImpl.getAutomaticExecutionTimeScalingFactor();
+	}
+
+	private final ISFactorGraphToCostOptimizerAdapter _costOptimizerHelper = new ISFactorGraphToCostOptimizerAdapter() {
+
+		private final ISFactorGraphToCostEstimationTableWrapperAdapter _helper =
+			new ISFactorGraphToCostEstimationTableWrapperAdapter() {
+
+				@Override
+				public IUpdateStepEstimator createSparseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+				{
+					return new TableFactorEngineOptimized.SparseOutputStepEstimator(tableWrapper);
+				}
+
+				@Override
+				public IUpdateStepEstimator createDenseOutputStepEstimator(CostEstimationTableWrapper tableWrapper)
+				{
+					return new TableFactorEngineOptimized.DenseOutputStepEstimator(tableWrapper);
+				}
+
+				@Override
+				public IMarginalizationStepEstimator
+					createSparseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+						int inPortNum,
+						int dimension,
+						CostEstimationTableWrapper g)
+				{
+					return new TableFactorEngineOptimized.SparseMarginalizationStepEstimator(tableWrapper, inPortNum,
+						dimension, g);
+				}
+
+				@Override
+				public IMarginalizationStepEstimator
+					createDenseMarginalizationStepEstimator(CostEstimationTableWrapper tableWrapper,
+						int inPortNum,
+						int dimension,
+						CostEstimationTableWrapper g)
+				{
+					return new TableFactorEngineOptimized.DenseMarginalizationStepEstimator(tableWrapper, inPortNum,
+						dimension, g);
+				}
+
+				@Override
+				public UpdateSettings getFactorTableUpdateSettings(IFactorTable factorTable)
+				{
+					return _optimizedUpdateImpl.getUpdateSettingsForFactorTable(factorTable);
+				}
+			};
+
+		@Override
+		public Costs estimateCostOfNormalUpdate(IFactorTable factorTable)
+		{
+			Costs result = new Costs();
+			int numPorts = factorTable.getDimensions();
+			for (int outPortNum = 0; outPortNum < numPorts; outPortNum++)
+			{
+				result.add(estimateCost_updateEdge(factorTable, outPortNum));
+			}
+			return result;
+		}
+
+		private Costs estimateCost_updateEdge(IFactorTable factorTable, int outPortNum)
+		{
+			long accesses = 0;
+			int nonZeroEntries = factorTable.countNonZeroWeights();
+			int numPorts = factorTable.getDimensions();
+			int outputMsg_length = factorTable.getDomainIndexer().getDomainSize(outPortNum);
+			// 1. fill output message with zero
+			// 2. read each output message entry to compute sum
+			// 3. scale each entry by the sum
+			accesses += 3 * outputMsg_length;
+			// for each entry,
+			// 1. read the value
+			// 2. read the entry indices
+			// 3. read the output index from the entry indices
+			// 4. for each port other than the output port,
+			// 4.1 read the input message
+			// 4.2 read the input message index
+			// 4.3 read the input message entry
+			// 4.4 read the output message entry
+			// 4.5 store the updated output message entry
+			accesses += nonZeroEntries * (3 + (numPorts - 1) * 5);
+			Costs result = new Costs();
+			result.put(CostType.ACCESSES, (double) accesses);
+			return result;
+		}
+
+		@Override
+		public Costs estimateCostOfOptimizedUpdate(IFactorTable factorTable)
+		{
+			return FactorUpdatePlan.estimateCosts(factorTable, _helper);
+		}
+
+		@Override
+		public int getWorkers(FactorGraph factorGraph)
+		{
+			SFactorGraph sfg = (SFactorGraph) factorGraph.getSolver();
+			if (sfg != null && sfg.useMultithreading())
+			{
+				return sfg.getMultithreadingManager().getNumWorkers();
+			}
+			else
+			{
+				return 1;
+			}
+		}
+
+		@Override
+		public UpdateSettings getFactorTableUpdateSettings(IFactorTable factorTable)
+		{
+			return _optimizedUpdateImpl.getUpdateSettingsForFactorTable(factorTable);
+		}
+
+	};
+
 	public void setSampledFactorSamplesPerUpdate(int samplesPerUpdate)
 	{
 		_sampledFactorSamplesPerUpdate = samplesPerUpdate;
@@ -295,14 +505,15 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor s = f.getSolver();
 			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(samplesPerUpdate);
+				((SampledFactor) s).setSamplesPerUpdate(samplesPerUpdate);
 		}
 	}
+
 	public int getSampledFactorSamplesPerUpdate()
 	{
 		return _sampledFactorSamplesPerUpdate;
 	}
-	
+
 	public void setSampledFactorBurnInScansPerUpdate(int burnInScans)
 	{
 		_sampledFactorBurnInScansPerUpdate = burnInScans;
@@ -311,9 +522,10 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor s = f.getSolver();
 			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(burnInScans);
+				((SampledFactor) s).setSamplesPerUpdate(burnInScans);
 		}
 	}
+
 	public int getSampledFactorBurnInScansPerUpdate()
 	{
 		return _sampledFactorBurnInScansPerUpdate;
@@ -327,25 +539,22 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			ISolverFactor s = f.getSolver();
 			if (s instanceof SampledFactor)
-				((SampledFactor)s).setSamplesPerUpdate(scansPerSample);
+				((SampledFactor) s).setSamplesPerUpdate(scansPerSample);
 		}
 	}
+
 	public int getSampledFactorScansPerSample()
 	{
 		return _sampledFactorScansPerSample;
 	}
 
-	
-
-	
 	@Override
-	public void baumWelch(IFactorTable [] fts, int numRestarts, int numSteps)
+	public void baumWelch(IFactorTable[] fts, int numRestarts, int numSteps)
 	{
 		ParameterEstimator pe = new ParameterEstimator.BaumWelch(_factorGraph, fts, SFactorGraph.getRandom());
 		pe.run(numRestarts, numSteps);
 	}
-	
-	
+
 	public class GradientDescent extends ParameterEstimator
 	{
 		private double _scaleFactor;
@@ -359,87 +568,83 @@ public class SFactorGraph extends SFactorGraphBase
 		@Override
 		public void runStep(FactorGraph fg)
 		{
-			//_factorGraph.solve();
+			// _factorGraph.solve();
 			for (IFactorTable ft : getTables())
 			{
-				double [] weights = ft.getWeightsSparseUnsafe();
-			      //for each weight
+				double[] weights = ft.getWeightsSparseUnsafe();
+				// for each weight
 				for (int i = 0; i < weights.length; i++)
 				{
-			           //calculate the derivative
+					// calculate the derivative
 					double derivative = calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(ft, i);
-					
-			        //move the weight in that direction scaled by epsilon
-					ft.setWeightForSparseIndex(weights[i] - weights[i]*derivative*_scaleFactor,i);
+
+					// move the weight in that direction scaled by epsilon
+					ft.setWeightForSparseIndex(weights[i] - weights[i] * derivative * _scaleFactor, i);
 				}
 			}
 		}
-		
+
 	}
-	
-	public void pseudoLikelihood(IFactorTable [] fts,
-			VariableBase [] vars,
-			Object [][] data,
-			int numSteps,
-			double stepScaleFactor)
+
+	public void pseudoLikelihood(IFactorTable[] fts,
+		VariableBase[] vars,
+		Object[][] data,
+		int numSteps,
+		double stepScaleFactor)
 	{
-		
+
 	}
-	
-	public static @Nullable int [][] convertObjects2Indices(VariableBase [] vars, Object [][] data)
+
+	public static @Nullable int[][] convertObjects2Indices(VariableBase[] vars, Object[][] data)
 	{
-		
+
 		return null;
 	}
 
-	
 	@Override
-	public void estimateParameters(IFactorTable [] fts, int numRestarts, int numSteps, double stepScaleFactor)
+	public void estimateParameters(IFactorTable[] fts, int numRestarts, int numSteps, double stepScaleFactor)
 	{
 		new GradientDescent(_factorGraph, fts, getRandom(), stepScaleFactor).run(numRestarts, numSteps);
 	}
 
-	
 	@SuppressWarnings("null")
-	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft,
-			int weightIndex)
+	public double calculateDerivativeOfBetheFreeEnergyWithRespectToWeight(IFactorTable ft, int weightIndex)
 	{
-		//BFE = InternalEnergy - BetheEntropy
-		//InternalEnergy = Sum over all factors (Internal Energy of Factor)
-		//                   + Sum over all variables (Internal Energy of Variable)
-		//BetheEntropy = Sum over all factors (BetheEntropy(factor))
-		//                  + sum over all variables (BetheEntropy(variable)
-		//So derivative of BFE = Sum over all factors that contain the weight
-		//                                              (derivative of Internal Energy of Factor
-		//                                              - derivative of BetheEntropy of Factor)
+		// BFE = InternalEnergy - BetheEntropy
+		// InternalEnergy = Sum over all factors (Internal Energy of Factor)
+		// + Sum over all variables (Internal Energy of Variable)
+		// BetheEntropy = Sum over all factors (BetheEntropy(factor))
+		// + sum over all variables (BetheEntropy(variable)
+		// So derivative of BFE = Sum over all factors that contain the weight
+		// (derivative of Internal Energy of Factor
+		// - derivative of BetheEntropy of Factor)
 		//
-		
+
 		_currentFactorTable = ft;
-		
-				
+
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			((STableFactor)f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+			((STableFactor) f.getSolver()).initializeDerivativeMessages(ft.sparseSize());
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
-			((SDiscreteVariable)vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
-		
+			((SDiscreteVariable) vb.getSolver()).initializeDerivativeMessages(ft.sparseSize());
+
 		setCalculateDerivative(true);
-		
+
 		double result = 0;
 		try
 		{
 			_factorGraph.solve();
 			for (Factor f : _factorGraph.getFactorsFlat())
 			{
-				STableFactor stf = (STableFactor)f.getSolver();
+				STableFactor stf = (STableFactor) f.getSolver();
 				result += stf.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result -= stf.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
-						
+
 			}
 			for (VariableBase v : _factorGraph.getVariablesFlat())
 			{
-				SDiscreteVariable sv = (SDiscreteVariable)v.getSolver();
+				SDiscreteVariable sv = (SDiscreteVariable) v.getSolver();
 				result += sv.calculateDerivativeOfInternalEnergyWithRespectToWeight(weightIndex);
 				result += sv.calculateDerivativeOfBetheEntropyWithRespectToWeight(weightIndex);
 			}
@@ -448,69 +653,61 @@ public class SFactorGraph extends SFactorGraphBase
 		{
 			setCalculateDerivative(false);
 		}
-		
+
 		return result;
 	}
-	
+
 	@SuppressWarnings("null")
 	public void setCalculateDerivative(boolean val)
 	{
 		for (Factor f : _factorGraph.getFactorsFlat())
 		{
-			STableFactor stf = (STableFactor)f.getSolver();
+			STableFactor stf = (STableFactor) f.getSolver();
 			stf.setUpdateDerivative(val);
 		}
 		for (VariableBase vb : _factorGraph.getVariablesFlat())
 		{
-			SDiscreteVariable sv = (SDiscreteVariable)vb.getSolver();
+			SDiscreteVariable sv = (SDiscreteVariable) vb.getSolver();
 			sv.setCalculateDerivative(val);
 		}
 	}
-	
-	
+
 	// REFACTOR: make this package-protected?
 	public @Nullable IFactorTable getCurrentFactorTable()
 	{
 		return _currentFactorTable;
 	}
 
-
 	@Override
 	public void initialize()
 	{
-		TableFactorEngineOptimized.clearUpdatePlans(this);
-		
+		_optimizedUpdateImpl.clearOptimizedUpdatePlans();
+
 		super.initialize();
 		for (Factor f : getModelObject().getFactors())
 		{
 			ISolverFactor sf = f.getSolver();
 			if (sf instanceof STableFactor)
 			{
-				STableFactor tf = (STableFactor)sf;
+				STableFactor tf = (STableFactor) sf;
 				tf.getFactorTable().getIndicesSparseUnsafe();
 				tf.getFactorTable().getWeightsSparseUnsafe();
 			}
 		}
-		
-		//
-		// Update options
-		//
-		
+
 		Long seed = getOption(SumProductOptions.randomSeed);
 		if (seed != null)
 		{
 			setSeed(seed);
 		}
-		
+
 		_damping = getOptionOrDefault(SumProductOptions.damping);
-		
 		_sampledFactorBurnInScansPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorBurnInScansPerUpdate);
 		_sampledFactorSamplesPerUpdate = getOptionOrDefault(SumProductOptions.sampledFactorSamplesPerUpdate);
 		_sampledFactorScansPerSample = getOptionOrDefault(SumProductOptions.sampledFactorScansPerSample);
-		
-		_defaultOptimizedUpdateEnabled = getOptionOrDefault(SumProductOptions.enableOptimizedUpdate);
-	}
 
+		UpdateCostOptimizer.optimize(_factorGraph, _costOptimizerHelper);
+	}
 
 	/*
 	 * 
@@ -519,7 +716,5 @@ public class SFactorGraph extends SFactorGraphBase
 	protected void doUpdateEdge(int edge)
 	{
 	}
-	
-
 
 }
