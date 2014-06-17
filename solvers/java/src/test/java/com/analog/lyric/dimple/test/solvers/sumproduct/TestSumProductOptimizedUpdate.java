@@ -23,14 +23,14 @@ import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
-import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineTree;
+import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineOptimized;
 import com.google.common.primitives.Ints;
 
 /**
  * @since 0.06
  * @author jking
  */
-public class TestSumProductTreeUpdate
+public class TestSumProductOptimizedUpdate
 {
 	private void doTest(final int zeroControl,
 		final double sparsityControl,
@@ -44,10 +44,10 @@ public class TestSumProductTreeUpdate
 		if (solver != null)
 		{
 			solver.useMultithreading(useMultithreading);
-			TableFactorEngineTree.setSparseThreshold(sparsityControl);
+			TableFactorEngineOptimized.setSparseThreshold(sparsityControl);
 			SFactorGraph ssolver = (SFactorGraph) solver;
 			ssolver.setDamping(damping);
-			ssolver.setDefaultTreeUpdateEnabled(true);
+			ssolver.setDefaultOptimizedUpdateEnabled(true);
 			fg.solve();
 			int[][] values = g.getValues();
 			int[] flat = Ints.concat(values);
