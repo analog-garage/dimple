@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -45,27 +44,27 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * Default implementation always throws {@link UnsupportedOperationException}.
+	 */
 	@Override
 	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
 	{
-		throw DimpleException.unsupported("createLocalOptions()");
+		throw new UnsupportedOperationException(
+			String.format("createLocalOptions not supported by '%s'", getClass().getSimpleName()));
 	}
 	
 	/**
 	 * {@inheritDoc}
-	 * Default implementation always returns null if {@code create} is false and
-	 * throws an exception if it is true.
+	 * Default implementation always returns null.
 	 */
 	@Override
 	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
-		if (create)
-		{
-			return createLocalOptions();
-		}
 		return null;
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * Default implementation returns null.

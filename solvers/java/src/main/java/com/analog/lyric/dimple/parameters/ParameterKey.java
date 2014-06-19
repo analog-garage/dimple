@@ -42,9 +42,9 @@ import com.analog.lyric.options.OptionKey;
  * public class GuassianParameter
  * {
  *     public static final ParameterKey mean =
- *         new ParameterKey(0, Parameter2.class, "mean");
+ *         new ParameterKey(0, GuassianParameter.class, "mean");
  *     public static final ParameterKey precision =
- *         new ParameterKey(1, Parameter2.class, "precision", 1.0, RealDomain.nonNegative());
+ *         new ParameterKey(1, GuassianParameter.class, "precision", 1.0, RealDomain.nonNegative());
  * 
  *     private static ParameterKey[] _keys = new ParameterKey[] { mean, precision };
  * 

@@ -189,8 +189,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * a static field or enum instance of {@link #getDeclaringClass()} with given {@link #name()}
 	 * or returns null if there isn't one.
 	 * <p>
-	 * This method is implemented using reflection and is not expected to be very fast. It is
-	 * intended to be
+	 * This method is implemented using reflection and is not expected to be very fast.
 	 */
 	public static @Nullable<T> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
 	{
@@ -213,6 +212,20 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 		}
 
 		return canonical;
+	}
+	
+	/**
+	 * Computes the qualified name of the option.
+	 * <p>
+	 * Shorthand for
+	 * <blockquote>
+	 * {@linkplain #qualifiedName(IOptionKey) OptionKey.qualifiedName}(this)
+	 * </blockquote>
+	 * @since 0.06
+	 */
+	public String qualifiedName()
+	{
+		return qualifiedName(this);
 	}
 	
 	/**

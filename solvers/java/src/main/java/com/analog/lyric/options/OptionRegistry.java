@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.util.misc.Nullable;
+
 /**
  * A registry of known option keys indexed by qualified name. For use in looking up option keys
  * by string either for use in configuration files or in implementing external APIs (e.g. MATLAB).
@@ -93,22 +95,22 @@ public class OptionRegistry
 		}
 		
 		
-		for (Field field : declaringClass.getFields())
+		try
 		{
-			if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
-				IOptionKey.class.isAssignableFrom(field.getType()))
+			for (Field field : declaringClass.getFields())
 			{
-				try
+				if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
+					IOptionKey.class.isAssignableFrom(field.getType()))
 				{
 					add((IOptionKey<?>)field.get(declaringClass));
 					++nAdded;
 				}
-				catch (IllegalAccessException ex)
-				{
-					// This shouldn't happen for public fields, but turn into RuntimeException if it does
-					throw new RuntimeException(ex);
-				}
 			}
+		}
+		catch (IllegalAccessException ex)
+		{
+			// This shouldn't happen for public fields, but turn into RuntimeException if it does
+			throw new RuntimeException(ex);
 		}
 		
 		for (Class<?> innerClass : declaringClass.getDeclaredClasses())
@@ -155,7 +157,7 @@ public class OptionRegistry
 	 * Returns option key with specified name or null if not found.
 	 * @see OptionKey#qualifiedName(IOptionKey)
 	 */
-	public IOptionKey<?> get(String qualifiedName)
+	public @Nullable IOptionKey<?> get(String qualifiedName)
 	{
 		return _optionMap.get(qualifiedName);
 	}
@@ -202,7 +204,7 @@ public class OptionRegistry
 	/**
 	 * Removes and returns key with given qualified name. Returns null if it was not present.
 	 */
-	public IOptionKey<?> remove(String qualifiedName)
+	public @Nullable IOptionKey<?> remove(String qualifiedName)
 	{
 		return _optionMap.remove(qualifiedName);
 	}
@@ -214,5 +216,14 @@ public class OptionRegistry
 	public boolean remove(IOptionKey<?> option)
 	{
 		return _optionMap.remove(OptionKey.qualifiedName(option), option);
+	}
+	
+	/**
+	 * The number of entries in the registry.
+	 * @since 0.06
+	 */
+	public int size()
+	{
+		return _optionMap.size();
 	}
 }

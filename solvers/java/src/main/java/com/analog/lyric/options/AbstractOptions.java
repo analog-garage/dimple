@@ -91,7 +91,7 @@ public abstract class AbstractOptions implements IOptions
 
 	@Override
 	@NonNullByDefault(false)
-	public Object put(IOptionKey<?> key, Object value)
+	public @Nullable Object put(IOptionKey<?> key, Object value)
 	{
 		return createLocalOptions().put(key, value);
 	}
@@ -143,7 +143,7 @@ public abstract class AbstractOptions implements IOptions
 	}
 
 	@Override
-	public @Nullable <T> T lookup(IOptionKey<T> key)
+	public <T> T lookup(IOptionKey<T> key)
 	{
 		return Options.lookup(this, key);
 	}
@@ -157,7 +157,7 @@ public abstract class AbstractOptions implements IOptions
 	@Override
 	public @Nullable <T> IOption<T> lookupOption(IOptionKey<T> key)
 	{
-		T value = lookup(key);
+		T value = lookupOrNull(key);
 		return value != null ? new Option<T>(key, value) : null;
 	}
 	

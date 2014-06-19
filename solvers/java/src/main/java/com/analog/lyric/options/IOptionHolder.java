@@ -37,7 +37,7 @@ public interface IOptionHolder
 	 * @param create if set to true forces creation of empty local option map if there
 	 * were no local options.
 	 * @return local option map. May return null if there are no locally set options and {@code create}
-	 * is false.
+	 * is false or if object does not support local option values.
 	 * @see #createLocalOptions()
 	 */
 	public @Nullable ConcurrentMap<IOptionKey<?>,Object> getLocalOptions(boolean create);
@@ -46,6 +46,7 @@ public interface IOptionHolder
 	 * Returns map containing the options that have been set directly on this
 	 * object, creating if necessary.
 	 * @since 0.06
+	 * @throws UnsupportedOperationException if object does not support local option values.
 	 */
 	public ConcurrentMap<IOptionKey<?>,Object> createLocalOptions();
 	
@@ -67,7 +68,7 @@ public interface IOptionHolder
 	public Set<IOptionKey<?>> getRelevantOptionKeys();
 	
 	/**
-	 * 
+	 * Returns object used for getting/setting options.
 	 */
 	public IOptions options();
 }

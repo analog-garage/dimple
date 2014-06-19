@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
 @Immutable
 public class Option<T> implements IOption<T>
 {
@@ -46,6 +48,29 @@ public class Option<T> implements IOption<T>
 	/*-----------------
 	 * Object methods
 	 */
+	
+	@Override
+	public boolean equals(@Nullable Object other)
+	{
+		if (this == other)
+		{
+			return true;
+		}
+		
+		if (other instanceof Option)
+		{
+			Option<?> that = (Option<?>)other;
+			return _key == that._key && _value.equals(that._value);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return _key.hashCode() * 11 + _value.hashCode();
+	}
 	
 	@Override
 	public String toString()

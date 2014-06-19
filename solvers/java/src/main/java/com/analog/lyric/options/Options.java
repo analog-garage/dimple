@@ -86,10 +86,10 @@ public class Options extends AbstractOptions
 	 * Options methods
 	 */
 	
-	public static @Nullable <T> T lookup(IOptionHolder holder, IOptionKey<T> key)
+	public static <T> T lookup(IOptionHolder holder, IOptionKey<T> key)
 	{
 		T value = Options.lookupOrNull(holder, key);
-		return value != null ? null : key.defaultValue();
+		return value != null ? value : key.defaultValue();
 	}
 
 	public static @Nullable <T> T lookupOrNull(IOptionHolder holder, IOptionKey<T> key)
