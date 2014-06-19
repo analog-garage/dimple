@@ -31,7 +31,7 @@ import com.analog.lyric.math.Utilities;
  * @since 0.06
  * @author jking
  */
-public class TableFactorEngineTree extends TableFactorEngine
+public class TableFactorEngineOptimized extends TableFactorEngine
 {
 	/**
 	 * A table of existing update plans, per solver graph, keyed by factor table. Factors that share
@@ -42,7 +42,7 @@ public class TableFactorEngineTree extends TableFactorEngine
 
 	/**
 	 * When a solver graph is initialized, we create an update plan for each factor table. This
-	 * method clears this map. Note that it does not clear TableFactorEngineTree instances' update
+	 * method clears this map. Note that it does not clear TableFactorEngineOptimized instances' update
 	 * plans.
 	 * 
 	 * @since 0.06
@@ -94,7 +94,7 @@ public class TableFactorEngineTree extends TableFactorEngine
 	 * @param tableFactor
 	 * @since 0.06
 	 */
-	public TableFactorEngineTree(STableFactor tableFactor)
+	public TableFactorEngineOptimized(STableFactor tableFactor)
 	{
 		super(tableFactor);
 		_updatePlan = lookupOrCreateUpdatePlan(_tableFactor.getFactorTable());

@@ -55,7 +55,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	protected boolean _kIsSmallerThanDomain = false;
 	protected boolean _updateDerivative = false;
 	protected boolean _dampingInUse = false;
-	protected byte _treeUpdateFlags = 0;
+	protected byte _updateFlags = 0;
 	
 	/*--------------
 	 * Construction
@@ -83,9 +83,9 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
 		super.initialize();
 		
-		if (isTreeUpdateEnabled() && _factor.getSiblingCount() > 1)
+		if (isOptimizedUpdateEnabled() && _factor.getSiblingCount() > 1)
 		{
-			_tableFactorEngine = new TableFactorEngineTree(this);
+			_tableFactorEngine = new TableFactorEngineOptimized(this);
 		}
 		else
 		{		
@@ -242,84 +242,86 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 		return _dampingParams[index];
 	}
 	
-	protected static final byte TREEUPDATE_ENABLE_EXPLICITLY_SET = 2;
-	protected static final byte TREEUPDATE_ENABLED = 1;
-	
+	protected static final byte OPTIMIZED_UPDATE_ENABLE_EXPLICITLY_SET = 2;
+	protected static final byte OPTIMIZED_UPDATE_ENABLED = 1;
+
 	/**
-	 * Enables use of the tree update algorithm on this factor, if its degree is greater than 1. The tree update algorithm is
-	 * employed only when all of the factor's edges are updated together with an update call. If the schedule instead uses
-	 * update_edge, the algorithm is not used.
+	 * Enables use of the optimized update algorithm on this factor, if its degree is greater than
+	 * 1. The optimized update algorithm is employed only when all of the factor's edges are updated
+	 * together with an update call. If the schedule instead uses update_edge, the algorithm is not
+	 * used.
 	 * 
 	 * @since 0.06
 	 */
-	public void enableTreeUpdate()
+	public void enableOptimizedUpdate()
 	{
-		_treeUpdateFlags |= (TREEUPDATE_ENABLE_EXPLICITLY_SET | TREEUPDATE_ENABLED);
+		_updateFlags |= (OPTIMIZED_UPDATE_ENABLE_EXPLICITLY_SET | OPTIMIZED_UPDATE_ENABLED);
 	}
-	
+
 	/**
-	 * Disables use of the tree update algorithm on this factor.
+	 * Disables use of the optimized update algorithm on this factor.
 	 * 
-	 * @see #enableTreeUpdate()
+	 * @see #enableOptimizedUpdate()
 	 * @since 0.06
 	 */
-	public void disableTreeUpdate()
+	public void disableOptimizedUpdate()
 	{
-		_treeUpdateFlags = (byte) ((_treeUpdateFlags | TREEUPDATE_ENABLE_EXPLICITLY_SET) & ~TREEUPDATE_ENABLED);
+		_updateFlags = (byte) ((_updateFlags | OPTIMIZED_UPDATE_ENABLE_EXPLICITLY_SET) & ~OPTIMIZED_UPDATE_ENABLED);
 	}
-	
+
 	/**
-	 * Reverts to the default setting for enabling of the tree update algorithm, eliminating the effect of previous calls to
-	 * {@link #enableTreeUpdate()} or {@link #disableTreeUpdate()}.
+	 * Reverts to the default setting for enabling of the optimized update algorithm, eliminating
+	 * the effect of previous calls to {@link #enableOptimizedUpdate()} or
+	 * {@link #disableOptimizedUpdate()}.
 	 * 
 	 * @since 0.06
 	 */
-	public void useDefaultTreeUpdateEnable()
+	public void useDefaultOptimizedUpdateEnable()
 	{
-		_treeUpdateFlags &= ~TREEUPDATE_ENABLE_EXPLICITLY_SET;
+		_updateFlags &= ~OPTIMIZED_UPDATE_ENABLE_EXPLICITLY_SET;
 	}
-	
+
 	/**
-	 * Indicates if the tree update algorithm is enabled for this factor. If
-	 * {@link #enableTreeUpdate()} or {@link #disableTreeUpdate()} has been called, returns
-	 * accordingly. If neither has been called, or if their effect has been reset by
-	 * {@link #useDefaultTreeUpdateEnable()}, returns the default setting. Only the sum-product
+	 * Indicates if the optimized update algorithm is enabled for this factor. If
+	 * {@link #enableOptimizedUpdate()} or {@link #disableOptimizedUpdate()} has been called,
+	 * returns accordingly. If neither has been called, or if their effect has been reset by
+	 * {@link #useDefaultOptimizedUpdateEnable()}, returns the default setting. Only the sum-product
 	 * solver supports the tree update algorithm; if the root graph is for a different solver,
 	 * always returns false.
 	 * 
 	 * @return True if the tree update algorithm is enabled on this factor.
 	 * @since 0.06
 	 */
-	public boolean isTreeUpdateEnabled()
+	public boolean isOptimizedUpdateEnabled()
 	{
 		ISolverFactorGraph rootGraph = getRootGraph();
 		if (rootGraph instanceof SFactorGraph)
 		{
 			SFactorGraph sfg = (SFactorGraph) rootGraph;
-			if (sfg.isTreeUpdateSupported())
+			if (sfg.isOptimizedUpdateSupported())
 			{
-				if (isTreeUpdateExplicitlySet())
+				if (isOptimizedUpdateExplicitlySet())
 				{
-					return (_treeUpdateFlags & TREEUPDATE_ENABLED) != 0;
+					return (_updateFlags & OPTIMIZED_UPDATE_ENABLED) != 0;
 				}
 				else
 				{
-					return sfg.getDefaultTreeUpdateEnabled();
+					return sfg.getDefaultOptimizedUpdateEnabled();
 				}
 			}
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Indicates if the tree update algorithm enable has been explicitly set.
+	 * Indicates if the optimized update algorithm enable has been explicitly set.
 	 * 
 	 * @return True if using an explicit setting. False if using the default.
 	 * @since 0.06
 	 */
-	protected boolean isTreeUpdateExplicitlySet()
+	protected boolean isOptimizedUpdateExplicitlySet()
 	{
-		return (_treeUpdateFlags & TREEUPDATE_ENABLE_EXPLICITLY_SET) != 0;
+		return (_updateFlags & OPTIMIZED_UPDATE_ENABLE_EXPLICITLY_SET) != 0;
 	}
 	
 	public int getK()
