@@ -625,9 +625,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			for (final int[] f_indices : all_f_indices)
 			{
 				_msg_indices[n] = f_indices[dimension];
-				int[] indices = remove_entry(f_indices, dimension);
-				g_indices[n] = indices;
-				g_factorTable.setWeightForIndices(1.0 /* Some non-zero value */, indices);
+				g_indices[n] = remove_entry(f_indices, dimension);
 				n += 1;
 			}
 			return new Tuple2<int[][], int[]>(g_indices, _msg_indices);
@@ -636,10 +634,9 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		public MarginalizationStep createMarginalizationStep(final int inPortNum, final int dimension)
 		{
 			final JointDomainIndexer f_indexer = _factorTable.getDomainIndexer();
-			final JointDomainIndexer g_indexer =
-				JointDomainReindexer.createRemover(f_indexer, dimension).getToDomains();
-			IFactorTable g_factorTable = FactorTable.create(g_indexer);
-			g_factorTable.setRepresentation(FactorTableRepresentation.SPARSE_WEIGHT);
+			final JointDomainReindexer g_remover = JointDomainReindexer.createRemover(f_indexer, dimension);
+			final JointDomainIndexer g_indexer = g_remover.getToDomains();
+			IFactorTable g_factorTable = FactorTable.convert(_factorTable, g_remover);
 			if (_isSparse)
 			{
 				Tuple2<int[][], int[]> g_and_msg_indices = process_f_indices(dimension, g_factorTable);
