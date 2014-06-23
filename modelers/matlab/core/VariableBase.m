@@ -135,12 +135,20 @@ classdef VariableBase < Node
         end
         
         function z = power(a,b)
-            z = addBinaryOperatorOverloadedFactor(a,b,@power,com.analog.lyric.dimple.factorfunctions.Power);
+            if (isnumeric(b) && isscalar(b) && (b == 2))
+                z = addUnaryOperatorOverloadedFactor(a,@(x)(x*x),com.analog.lyric.dimple.factorfunctions.Square);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@power,com.analog.lyric.dimple.factorfunctions.Power);
+            end
         end
         
         function z = mpower(a,b)
             if (~isscalar(b)); error('Overloaded matrix power not currently supported. Use ".^" for pointwise power'); end;
-            z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.factorfunctions.Power);
+            if (isnumeric(b) && (b == 2))
+                z = addUnaryOperatorOverloadedFactor(a,@(x)(x.*x),com.analog.lyric.dimple.factorfunctions.Square);
+            else
+                z = addBinaryOperatorOverloadedFactor(a,b,@mpower,com.analog.lyric.dimple.factorfunctions.Power);
+            end
         end
         
         function z = and(a,b)
