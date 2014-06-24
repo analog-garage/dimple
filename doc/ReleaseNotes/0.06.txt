@@ -3,13 +3,16 @@ Dimple version 0.06 release notes
 
 * Dimple is now built with Java 7
 
+
 Significant New Features Since v0.05
 ------------------------------------
-* Added support for generating and handling events.
+* Added support for generating and handling events
 
 * Added built-in factors Multinomial, MultinomialUnnormalizedParameters, and MultinomialEnergyParameters
 
 * Added built-in Poisson factor
+
+* Support for block Metropolis-Hastings sampling in the Gibbs solver
 
 
 Significant Bug Fixes Since v0.05

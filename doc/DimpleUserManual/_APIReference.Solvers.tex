@@ -637,6 +637,7 @@ CDFSampler & Discrete\footnote{In this table, Discrete support implies any of th
 SliceSampler & Real\footnote{In this table, Real support implies any of the continuous variable data types, including Real, Complex, and RealJoint.} & Slice sampler using the doubling procedure.  See Neal, Slice Sampling (2000).  This is the default sampler for real variables. \\
 MHSampler & Discrete \& Real & Metropolis-Hastings sampler.  For discrete variables, the default proposal kernel is uniform over values other than the current value.  For real variables, the default proposal kernel is Normal with standard deviation 1 (the standard deviation is user settable).  Alternate proposal kernels are also available (see below). \\
 SuwaTodoSampler & Discrete & Suwa-Todo sampler.  See Suwa, Todo, Markov Chain Monte Carlo Method without Detailed Balance (2010). \\
+BlockMHSampler & Discrete \& Real & Block Metropolis-Hastings sampler.  Allows block proposals for a collection of more than one variable at a time.  In the current version of Dimple, there are no built-in general purpose block proposal kernels.  To use this sampler, a custom block proposal kernel must be written in Java, and used by specifying a block schedule entry that references this proposal kernel.  See section~\ref{sec:BlockScheduleEntries} for more information.
 \end{longtable}
 
 
@@ -1352,7 +1353,7 @@ factor.getSolver().getPotential(values);
 
 Get the potential value of a factor given the variable values specified by the argument vector. The argument must be a vector with length equal to the number of connected variables. For a table-factor (connected exclusively to discrete variables), each value corresponds the index into the domain list for that variable (not the value of the variable itself). For a real-factor (connected to one or more real variables), each value corresponds to the value of the variable.
 
-\para{Schedulers}
+\para{Schedulers and Schedules}
 
 The built-in schedulers designed for belief propagation are not appropriate for the Gibbs solver.  Instead, there are two built-in schedulers specifically for the Gibbs solver:
 
@@ -1371,6 +1372,87 @@ The user may specify a custom schedule when using the Gibbs solver.  In this cas
 
 To explicitly specify a scheduler, use the Scheduler or Schedule property of the FactorGraph (see sections~\ref{sec:FactorGraph.Scheduler} and~\ref{sec:FactorGraph.Schedule}).
 
+\subpara{Block Schedule Entries}
+\label{sec:BlockScheduleEntries}
+
+The Gibbs solver allows a schedule to optionally include block entries that allow a group of variables to be updated at once.  A block schedule entry can either be included in a custom schedule or added to the schedule produced by one of the Gibbs-specific built-in schedulers.  A block schedule entry includes two pieces of information:
+%
+\begin{itemize}
+\item A reference to a block sampler, which is used to perform the update
+\item A list of variables to be included in this block
+\end{itemize}
+
+In the current version of Dimple, the only built-in block sampler is the BlockMHSampler, which implements block Metropolis-Hastings sampling for the variables included in the block.  The BlockMHSampler requires a block proposal kernel to be specified.  In the current version of Dimple, there are no built-in general purpose block proposal kernels.  To use this sampler, a custom block proposal kernel must be written \ifmatlab in Java \fi (see section~\ref{sec:CreatingACustomProposalKernel}).
+
+\ifmatlab
+To specify a block schedule entry in a custom schedule, the schedule entry consists of a cell-array in which the first element of the cell is a reference to a Java sampler object, and the subsequent entries are the variables to be included in the block.  For example:
+
+\begin{lstlisting}
+import com.analog.lyric.dimple.solvers.gibbs.samplers.block.BlockMHSampler;
+...
+fg.Schedule = {{BlockMHSampler(MyProposalKernel), a, b, c}, d, e};
+\end{lstlisting}
+\fi
+
+\ifjava
+To add a block schedule entry to a custom schedule, the the argument to the \texttt{add} method is a reference to a sampler object, and the subsequent entries are the variables to be included in the block.  For example:
+
+\begin{lstlisting}
+FixedSchedule s = new FixedSchedule();
+s.add(new BlockScheduleEntry(new BlockMHSampler(new MyProposalKernel()), a, b, c));
+s.add(new NodeScheduleEntry(d));
+s.add(new NodeScheduleEntry(e));
+fg.setSchedule(s);
+\end{lstlisting}
+\fi
+
+In the above example, we create a block schedule entry that updates variables a, b, and c together, with separate schedule entries for variables d and e.  The constructor for the BlockMHSampler requires a proposal kernel.  In the above example, ``MyProposalKernel'' is a user-provided custom proposal class \ifmatlab written in Java\fi.  \ifmatlab (Note that the ``import'' line in the above example is simply to avoid having to write the fully qualified name each time the BlockMHSampler is used.) \fi
+
+Block schedule entries can also be used with either of the Gibbs-specific built-in schedulers described above.  When a block entry is added in this way, for each of the variables included in a block entry, the individual variable entires that would have been present in the schedule are removed.  That is, those variables are only included in the corresponding block entry (or entries), but these variables are not also updated independently.  In case of the GibbsRandomScanScheduler, each update selects an entry randomly from among all blocks plus all variables that aren't in a block.
+
+\ifmatlab
+A block schedule entry can be added when using a built-in Gibbs-specific scheduler using:
+\begin{lstlisting}
+fg.Scheduler.addBlockScheduleEntry(blockSampler, listOfVariables);
+\end{lstlisting}
+
+The following example shows adding a block schedule entry that includes two elements of the variable x, and variable y.
+
+\begin{lstlisting}
+fg.Scheduler.addBlockScheduleEntry(BlockMHSampler(MyKernel), x(2:3), y);
+\end{lstlisting}
+
+
+Multiple block schedule entries can be added at once using:
+\begin{lstlisting}
+fg.Scheduler.addBlockScheduleEntries({blockSampler1, listOfVariables1}, {blockSampler1, listOfVariables1}, ...);
+\end{lstlisting}
+
+The following example shows adding a block schedule entry that includes two elements of the variable x, and variable y, and a second block that includes variables a and b.
+
+\begin{lstlisting}
+fg.Scheduler.addBlockScheduleEntries({BlockMHSampler(MyKernel1), x(2:3), y}, {BlockMHSampler(MyKernel2), a, b});
+\end{lstlisting}
+
+\fi
+
+\ifjava
+A block schedule entry can be added when using a built-in Gibbs-specific scheduler using:
+
+\begin{lstlisting}
+((IGibbsScheduler)fg.getScheduler()).addBlockScheduleEntry(new BlockScheduleEntry(blockSampler, listOfVariables));
+\end{lstlisting}
+
+The following example shows adding a block schedule entry that includes the variables a, b, and c.
+
+\begin{lstlisting}
+((IGibbsScheduler)fg.getScheduler()).addBlockScheduleEntry(new BlockScheduleEntry(new BlockMHSampler(new MyProposalKernel()), a, b, c));
+\end{lstlisting}
+
+Note that to use the addBlockScheduleEntry method, the scheduler must first have been explicitly set to one of the Gibbs-specific schedulers.
+\fi
+
+To implement a custom block proposal kernel, a new Java class must be created that implements the IBlockProposalKernel interface.  See section~\ref{sec:CreatingACustomProposalKernel} for more detail.
 
 \subsubsection{Particle BP Solver}
 
