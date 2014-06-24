@@ -12,6 +12,8 @@ Significant New Features Since v0.05
 
 * Added built-in Poisson factor
 
+* Added alternative algorithm for updating factor nodes with the SumProduct solver
+
 * Support for block Metropolis-Hastings sampling in the Gibbs solver
 
 
