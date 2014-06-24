@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
@@ -26,7 +24,6 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Ints;
 
@@ -158,7 +155,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		public FactorUpdatePlan(IFactorTable factorTable)
 		{
 			final int n = factorTable.getDimensions();
-			_steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2((double) n))); // Initial
+			_steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2(n))); // Initial
 																						// capacity
 																						// is not
 																						// exact but
