@@ -11,6 +11,7 @@ Significant New Features Since v0.05
 
 * Added built-in Poisson factor
 
+* Added alternative algorithm for updating factor nodes with the Sum Product sampler
 
 Significant Bug Fixes Since v0.05
 ---------------------------------
