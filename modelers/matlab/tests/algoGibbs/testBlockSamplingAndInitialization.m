@@ -135,7 +135,7 @@ maxN = 100;
 alpha = randSimplex(1,dim);
 
 N = Discrete(0:maxN-1);
-NPrior = normpdf(0:maxN-1, maxN/2, maxN/4);
+NPrior = normPDF(0:maxN-1, maxN/2, maxN/4);
 fg.addFactor(NPrior,N);
 
 x = Multinomial(N, alpha);
@@ -229,7 +229,7 @@ alphaPrior = randSimplex(1,dim);
 alpha = Dirichlet(alphaPrior);
 
 N = Discrete(0:maxN-1);
-NPrior = normpdf(0:maxN-1, maxN/2, maxN/4);
+NPrior = normPDF(0:maxN-1, maxN/2, maxN/4);
 fg.addFactor(NPrior,N);
 
 x = Multinomial(N, alpha);
@@ -332,7 +332,7 @@ for i=1:dim
 end
 
 N = Discrete(0:maxN-1);
-NPrior = normpdf(0:maxN-1, maxN/2, maxN/4);
+NPrior = normPDF(0:maxN-1, maxN/2, maxN/4);
 fg.addFactor(NPrior,N);
 
 x = Multinomial(N, alpha);
@@ -436,7 +436,7 @@ for i=1:dim
 end
 
 N = Discrete(0:maxN-1);
-NPrior = normpdf(0:maxN-1, maxN/2, maxN/4);
+NPrior = normPDF(0:maxN-1, maxN/2, maxN/4);
 fg.addFactor(NPrior,N);
 
 x = MultinomialEnergyParameters(N, alpha);
@@ -595,3 +595,7 @@ function out = normalize(in)
 	out = in/sum(in);
 end
 
+% To avoid the need for statistics toolbox for this test
+function p=normPDF(y,u,s)
+    p = (1/(s * sqrt(2*pi))) * exp(-(y - u).^2 ./ (2 * s^2));
+end

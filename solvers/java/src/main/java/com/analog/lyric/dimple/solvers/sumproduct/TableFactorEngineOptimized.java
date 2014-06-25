@@ -11,6 +11,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,6 +23,9 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Ints;
 
 /**
  * Implements a factor update approach for sum-product that optimally shares partial results. Since
@@ -151,7 +155,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		public FactorUpdatePlan(IFactorTable factorTable)
 		{
 			final int n = factorTable.getDimensions();
-			_steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2((double) n))); // Initial
+			_steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2(n))); // Initial
 																						// capacity
 																						// is not
 																						// exact but
@@ -547,6 +551,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 		private final ThreadLocal<double[]> _values;
 
+		private final int _size;
+
 		private final boolean _isSparse;
 
 		public TableWrapper(IFactorTable factorTable, boolean useThreadLocalValues)
@@ -569,6 +575,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 					// impossible to hit this branch. But just in case...
 					values = factorTable.getWeightsDenseUnsafe();
 				}
+				_size = values.length;
 				_values = new ThreadLocal<double[]>() {
 					@Override
 					protected double[] initialValue()
@@ -579,20 +586,19 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			}
 			else
 			{
-				final int size;
 				if (_isSparse)
 				{
-					size = factorTable.getWeightsSparseUnsafe().length;
+					_size = factorTable.getWeightsSparseUnsafe().length;
 				}
 				else
 				{
-					size = factorTable.getWeightsDenseUnsafe().length;
+					_size = factorTable.getWeightsDenseUnsafe().length;
 				}
 				_values = new ThreadLocal<double[]>() {
 					@Override
 					protected double[] initialValue()
 					{
-						return new double[size];
+						return new double[_size];
 					}
 				};
 			}
@@ -618,9 +624,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		private Tuple2<int[][], int[]> process_f_indices(final int dimension, final IFactorTable g_factorTable)
 		{
 			final int[][] all_f_indices = get_factorTable().getIndicesSparseUnsafe();
-			final double[] f_values = _values.get();
-			final int[] _msg_indices = new int[f_values.length];
-			final int[][] g_indices = new int[f_values.length][];
+			final int[] _msg_indices = new int[_size];
+			final int[][] g_indices = new int[_size][];
 			int n = 0;
 			for (final int[] f_indices : all_f_indices)
 			{
@@ -628,6 +633,41 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 				g_indices[n] = remove_entry(f_indices, dimension);
 				n += 1;
 			}
+
+			// The next section of this function sets the weight for each of the used g_indices to a
+			// non-zero value.
+			Comparator<int[]> comparator = new Comparator<int[]>() {
+				@Override
+				public int compare(int[] o1, int[] o2)
+				{
+					int o1l = o1.length;
+					int o2l = o2.length;
+					if (o2l != o1l)
+					{
+						return Ints.compare(o2l, o1l);
+					}
+					else
+					{
+						for (int i = o1l - 1; i >= 0; i--)
+						{
+							int x = Ints.compare(o1[i], o2[i]);
+							if (x != 0)
+							{
+								return x;
+							}
+						}
+						return 0;
+					}
+				}
+			};
+			ImmutableList<int[]> all_g_indices =
+				ImmutableSortedSet.copyOf(comparator, Arrays.asList(g_indices)).asList();
+			int[][] indices = new int[all_g_indices.size()][];
+			all_g_indices.toArray(indices);
+			double[] weights = new double[indices.length];
+			Arrays.fill(weights, 1.0);
+			g_factorTable.setWeightsSparse(indices, weights);
+			
 			return new Tuple2<int[][], int[]>(g_indices, _msg_indices);
 		}
 
@@ -636,7 +676,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final JointDomainIndexer f_indexer = _factorTable.getDomainIndexer();
 			final JointDomainReindexer g_remover = JointDomainReindexer.createRemover(f_indexer, dimension);
 			final JointDomainIndexer g_indexer = g_remover.getToDomains();
-			IFactorTable g_factorTable = FactorTable.convert(_factorTable, g_remover);
+			IFactorTable g_factorTable = FactorTable.create(g_indexer);
 			if (_isSparse)
 			{
 				Tuple2<int[][], int[]> g_and_msg_indices = process_f_indices(dimension, g_factorTable);

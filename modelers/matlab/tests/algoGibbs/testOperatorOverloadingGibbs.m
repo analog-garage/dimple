@@ -245,6 +245,18 @@ z = d * c;              % Real scalar times vector (non-pointwise operator)
 aa = b^a;               % Discrete vector to scalar power (non-pointwise operator)
 bb = d^c;               % Real vector to scalar power (non-pointwise operator)
 cc = c.^d;              % Real scalar to vector power (pointwise operator)
+aa3 = b^3;              % Discrete vector to constant scalar power (non-pointwise operator)
+bb3 = d^3;              % Real vector to scalar constant power (non-pointwise operator)
+cc3 = d.^3;             % Real vector to constant vector power (pointwise operator)
+aa2 = b^2;              % Discrete vector squared (non-pointwise operator)
+bb2 = d^2;              % Real vector squared (non-pointwise operator)
+cc2 = d.^2;             % Real vector squared (pointwise operator)
+assert(cmpFactorName(aa3(1).Factors{1}, 'Power'));
+assert(cmpFactorName(bb3(1).Factors{1}, 'Power'));
+assert(cmpFactorName(cc3(1).Factors{1}, 'Power'));
+assert(cmpFactorName(aa2(1).Factors{1}, 'Square'));
+assert(cmpFactorName(bb2(1).Factors{1}, 'Square'));
+assert(cmpFactorName(cc2(1).Factors{1}, 'Square'));
 
 dd = A * bt;            % Discrete matrix times discrete column vector
 ee = A * dt;            % Discrete matrix times real column vector
@@ -356,6 +368,12 @@ zs = z.invokeSolverMethodWithReturnValue('getAllSamples');
 aas = aa.invokeSolverMethodWithReturnValue('getAllSamples');
 bbs = bb.invokeSolverMethodWithReturnValue('getAllSamples');
 ccs = cc.invokeSolverMethodWithReturnValue('getAllSamples');
+aa3s = aa3.invokeSolverMethodWithReturnValue('getAllSamples');
+bb3s = bb3.invokeSolverMethodWithReturnValue('getAllSamples');
+cc3s = cc3.invokeSolverMethodWithReturnValue('getAllSamples');
+aa2s = aa2.invokeSolverMethodWithReturnValue('getAllSamples');
+bb2s = bb2.invokeSolverMethodWithReturnValue('getAllSamples');
+cc2s = cc2.invokeSolverMethodWithReturnValue('getAllSamples');
 dds = dd.invokeSolverMethodWithReturnValue('getAllSamples');
 ees = ee.invokeSolverMethodWithReturnValue('getAllSamples');
 ffs = ff.invokeSolverMethodWithReturnValue('getAllSamples');
@@ -462,6 +480,12 @@ zsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), zs, 'UniformOutput', false));
 aasx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), aas, 'UniformOutput', false));
 bbsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), bbs, 'UniformOutput', false));
 ccsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), ccs, 'UniformOutput', false));
+aa3sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), aa3s, 'UniformOutput', false));
+bb3sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), bb3s, 'UniformOutput', false));
+cc3sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), cc3s, 'UniformOutput', false));
+aa2sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), aa2s, 'UniformOutput', false));
+bb2sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), bb2s, 'UniformOutput', false));
+cc2sx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), cc2s, 'UniformOutput', false));
 
 ddsx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), dds', 'UniformOutput', false))';
 eesx = cell2mat(cellfun(@(x)(arrayfun(@(y)y,x)), ees', 'UniformOutput', false))';
@@ -585,6 +609,12 @@ assertElementsAlmostEqual(zsx, dsx .* csx, 'absolute');
 assertElementsAlmostEqual(aasx, bsx .^ asx, 'absolute');
 assertElementsAlmostEqual(bbsx, dsx .^ csx, 'absolute');
 assertElementsAlmostEqual(ccsx, csx .^ dsx, 'absolute');
+assertElementsAlmostEqual(aa3sx, bsx .^ 3, 'absolute');
+assertElementsAlmostEqual(bb3sx, dsx .^ 3, 'absolute');
+assertElementsAlmostEqual(cc3sx, dsx .^ 3, 'absolute');
+assertElementsAlmostEqual(aa2sx, bsx .^ 2, 'absolute');
+assertElementsAlmostEqual(bb2sx, dsx .^ 2, 'absolute');
+assertElementsAlmostEqual(cc2sx, dsx .^ 2, 'absolute');
 
 assertElementsAlmostEqual(uusx, asx / 3, 'absolute');
 assertElementsAlmostEqual(vvsx, 3 ./ asx, 'absolute');

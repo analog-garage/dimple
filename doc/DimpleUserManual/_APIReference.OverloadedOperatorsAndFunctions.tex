@@ -33,8 +33,8 @@ $/$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\f
  & ComplexDivide & C & C,R & C,R & \checkmark\textsuperscript{\ref{ftn:divScalar}} & Complex scalar divide \\
 $./$ & Divide & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise divide \\*
  & ComplexDivide & C & C,R & C,R & \checkmark & Complex pointwise divide \\
-$\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
-$.\wedge$ & Power & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
+$\wedge$ & Power\newline Square\footnote{\label{ftn:Square}If the power is the constant 2, the Square factor is used instead of the Power factor.} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark\footnote{The base may be a vector as long as the exponent is a scalar.} & Scalar power \\
+$.\wedge$ & Power\newline Square\textsuperscript{\ref{ftn:Square}} & D,R\textsuperscript{\ref{ftn:outReal}} & D,R & D,R & \checkmark & Point-wise power \\
 $'$ & ComplexConjugate & C & C & - & \checkmark & Complex conjugate \\
 $<$ & LessThan & B & D,R & D,R & \checkmark & Less than \\
 $>$ & GreaterThan & B & D,R & D,R & \checkmark & Greater than \\
