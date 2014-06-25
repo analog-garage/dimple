@@ -216,6 +216,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 				domainSizes[i] = domainIndexer.getDomainSize(i);
 			}
 			Comparator<Integer> comparator = new Comparator<Integer>() {
+				@NonNullByDefault(false)
 				@Override
 				public int compare(Integer i, Integer j)
 				{

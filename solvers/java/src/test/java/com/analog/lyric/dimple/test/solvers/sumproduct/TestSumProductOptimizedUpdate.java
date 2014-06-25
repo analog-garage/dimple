@@ -152,8 +152,7 @@ public class TestSumProductOptimizedUpdate
 		int[] values = new int[vars.length];
 		for (int i = 0; i < values.length; i++)
 		{
-			Integer value = (Integer) vars[i].getValue();
-			values[i] = value != null ? value : 99999;
+			values[i] = (Integer)vars[i].getValue();
 		}
 		int[] flat = Ints.concat(values);
 		int hash = Arrays.hashCode(flat);
