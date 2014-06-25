@@ -137,7 +137,7 @@ public interface IFactorTable extends IFactorTableBase
 	 * <p>
 	 * Same as {@link #getEnergySlice(double[], int, int[])} but always allocates a new array.
 	 * <p>
-	 * @see #getWeightSlice(int, int ...)
+	 * @see #getWeightSlice(int, int[])
 	 */
 	public double[] getEnergySlice(int sliceDimension, int ... indices);
 	
@@ -157,8 +157,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the energy values
 	 * from the table
 	 * <p>
-	 * @see #getEnergySlice(int, int ...)
-	 * @see #getWeightSlice(double[], int, int ...)
+	 * @see #getEnergySlice(int, int[])
+	 * @see #getWeightSlice(double[], int, int[])
 	 */
 	public double[] getEnergySlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	
@@ -210,15 +210,15 @@ public interface IFactorTable extends IFactorTableBase
 	 * If necessary, this method will implicitly modify the representation to include dense weights
 	 * <p>
 	 */
-	public double[] getWeightsDenseUnsafe();	
+	public double[] getWeightsDenseUnsafe();
 	
 	/**
 	 * Returns an array of weights for the {@code sliceDimension} of the factor table with all other
 	 * dimensions fixed to provided values.
 	 * <p>
-	 * Same as {@link #getWeightSlice(double[], int, int ...)} but always allocates a new array.
+	 * Same as {@link #getWeightSlice(double[], int, int[])} but always allocates a new array.
 	 * <p>
-	 * @see #getEnergySlice(int, int ...)
+	 * @see #getEnergySlice(int, int[])
 	 */
 	public double[] getWeightSlice(int sliceDimension, int ... indices);
 	
@@ -238,8 +238,8 @@ public interface IFactorTable extends IFactorTableBase
 	 * the table (i.e. {@code getDomainIndexer().getDomainSize(sliceDimension)}) holding the weight values
 	 * from the table
 	 * <p>
-	 * @see #getWeightSlice(int, int ...)
-	 * @see #getEnergySlice(double[], int, int ...)
+	 * @see #getWeightSlice(int, int[])
+	 * @see #getEnergySlice(double[], int, int[])
 	 */
 	public double[] getWeightSlice(@Nullable double[] slice, int sliceDimension, int ... indices);
 	

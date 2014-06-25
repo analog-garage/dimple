@@ -144,7 +144,7 @@ public class RealJointDomain extends Domain
 	}
 	
 	/**
-	 * @returns true if value is an array of length matching {@link #getNumVars()} and whose
+	 * @return true if value is an array of length matching {@link #getNumVars()} and whose
 	 * elements are contained in the correspond {@link RealDomain} in {@link #getRealDomains()}.
 	 */
 	@Override

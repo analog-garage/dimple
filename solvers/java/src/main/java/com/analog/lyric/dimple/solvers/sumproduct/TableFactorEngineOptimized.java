@@ -23,6 +23,7 @@ import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Ints;
@@ -637,6 +638,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			// The next section of this function sets the weight for each of the used g_indices to a
 			// non-zero value.
 			Comparator<int[]> comparator = new Comparator<int[]>() {
+				@NonNullByDefault(false)
 				@Override
 				public int compare(int[] o1, int[] o2)
 				{
@@ -719,7 +721,6 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	 * 
 	 * @param entries
 	 * @param index
-	 * @return
 	 * @since 0.06
 	 */
 	private static int[] remove_entry(final int[] entries, final int index)

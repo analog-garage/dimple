@@ -552,7 +552,7 @@ public abstract class JointDomainReindexer
 	 * by first applying the conversion in {@code prev} and passing the result
 	 * to this converter.
 	 * 
-	 * If {@prev} is null, simply returns this.
+	 * If {@code prev} is null, simply returns this.
 	 * 
 	 * @since 0.05
 	 */

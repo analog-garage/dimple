@@ -56,8 +56,14 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	 * Bit mask indicating how the contents of the table are represented. Exposed
 	 * by {@link #getRepresentation()} and {@link #setRepresentation(FactorTableRepresentation)}.
 	 * <p>
-	 * This is a combination of the bits: {@link #DENSE_ENERGY}, {@link #DENSE_WEIGHT}, {@link #SPARSE_ENERGY},
-	 * {@link #SPARSE_WEIGHT}, {@link #SPARSE_INDICES}.
+	 * This is a combination of the bits:
+	 * <ul>
+	 * <li>{@link FactorTable#DENSE_ENERGY},
+	 * <li>{@link FactorTable#DENSE_WEIGHT},
+	 * <li>{@link FactorTable#SPARSE_ENERGY},
+	 * <li>{@link FactorTable#SPARSE_WEIGHT}
+	 * <li>{@link FactorTable#SPARSE_INDICES}.
+	 * </ul>
 	 */
 	int _representation;
 	
@@ -70,7 +76,7 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	 */
 	int _nonZeroWeights;
 	/**
-	 * Same information as {@link #_sparseIndexToJointIndex} but instead of storing joint indices stores
+	 * Same information as FactorTable's _sparseIndexToJointIndex but instead of storing joint indices stores
 	 * arrays of element indices.
 	 */
 	int[][] _sparseIndices = ArrayUtil.EMPTY_INT_ARRAY_ARRAY;
@@ -79,8 +85,14 @@ public abstract class SparseFactorTableBase extends FactorTableBase implements I
 	 * Information computed about the table based on its values. This field is zeroed out whenever
 	 * table weights or energies are changed.
 	 * <p>
-	 * Consists of the bits {@link #DETERMINISTIC_COMPUTED}, {@link #NORMALIZED}, {@link #NORMALIZED_COMPUTED},
-	 * {@link #CONDITIONAL} and {@link #CONDITIONAL_COMPUTED}.
+	 * Consists of the bitsL
+	 * <ul>
+	 * <li>{@link FactorTable#DETERMINISTIC_COMPUTED}
+	 * <li>{@link #NORMALIZED}
+	 * <li>{@link #NORMALIZED_COMPUTED}
+	 * <li>{@link #CONDITIONAL}
+	 * <li>{@link #CONDITIONAL_COMPUTED}.
+	 * </ul>
 	 */
 	int _computedMask = 0;
 

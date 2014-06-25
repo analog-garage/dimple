@@ -429,7 +429,7 @@ public class FactorTable extends SparseFactorTableBase
 	 * or the number of dimensions of the largest factor. When two tables both map a dimension to the same
 	 * dimension in the target table, the domains must match.
 	 * <p>
-	 * @representation is the representation to use for the table to be constructed. If null, the representation
+	 * @param representation is the representation to use for the table to be constructed. If null, the representation
 	 * will be set to either {@link FactorTableRepresentation#DENSE_ENERGY} or
 	 * {@link FactorTableRepresentation#SPARSE_ENERGY} based on the density of the tables.
 	 * <p>
@@ -1654,7 +1654,7 @@ public class FactorTable extends SparseFactorTableBase
 		if (!hasDenseWeights())
 		{
 			setRepresentation(DENSE_WEIGHT);
-		}	
+		}
 		return _denseWeights;
 	}
 	

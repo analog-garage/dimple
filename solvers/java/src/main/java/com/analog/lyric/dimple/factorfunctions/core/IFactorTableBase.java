@@ -211,9 +211,9 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	/**
 	 * Returns the weight of factor table entry with given {@code indices}.
 	 * <p>
-	 * @see #getWeightForElements(Object...)
+	 * @see #getWeightForElements(Object[])
 	 * @see #getWeightForSparseIndex(int)
-	 * @see #getEnergyForIndices(int...)
+	 * @see #getEnergyForIndices(int[])
 	 */
 	public abstract double getWeightForIndices(int ... indices);
 
@@ -329,8 +329,8 @@ public interface IFactorTableBase extends Cloneable, Serializable, Iterable<Fact
 	 * <p>
 	 * @param elements must have length equal to {@link #getDimensions()} and each argument must
 	 * be an element of the corresponding domain.
-	 * @see #sparseIndexFromIndices(int ... )
-	 * @see #sparseIndexFromElements(Object...)
+	 * @see #sparseIndexFromIndices(int[])
+	 * @see #sparseIndexFromElements(Object[])
 	 */
 	public abstract int sparseIndexFromElements(Object ... elements);
 	

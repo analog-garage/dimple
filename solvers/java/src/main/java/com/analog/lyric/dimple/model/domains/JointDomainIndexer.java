@@ -731,7 +731,7 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 * <p>
 	 * @param elements must have length equal to {@link #size()} and each elements must
 	 * be an element of the corresponding domain.
-	 * @see #jointIndexFromIndices(int ... )
+	 * @see #jointIndexFromIndices(int[])
 	 * @see #jointIndexToElements(int, Object[])
 	 */
 	public int jointIndexFromElements(Object ... elements)

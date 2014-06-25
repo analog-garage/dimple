@@ -235,10 +235,12 @@ public class VariableEliminator
 	 * This function builds an eliminator for specified {@code mode} and {@code useConditioning} attribute.
 	 * It then iteratively up to {@code nAttempts} times picks a cost function at random from {@code costFunctions}
 	 * and uses it to build an {@link OrderIterator} from which it generates an ordering. After each iteration,
-	 * the global statistics (from {@link OrderIterator#getStats()}) are compared against the best statistics
-	 * so far using {@link Stats#compareTo(Stats, Stats)} to determine whether to keep the ordering. If the
-	 * stats at any point satisfy the specified threshold values (as determined by {@link Stats#meetsThreshold(Stats)}
-	 * then the function will return immediately.
+	 * the global statistics (from the {@linkplain OrderIterator#getStats() getStats()} method on the iterator)
+	 * are compared against the best statistics so far using the statistic's
+	 * {@linkplain VariableEliminator.Stats#compareTo compareTo} method to determine whether to keep the ordering.
+	 * If the stats at any point satisfy the specified threshold values (as determined by the
+	 * {@linkplain VariableEliminator.Stats#meetsThreshold meetsThreshold method} then the function will return
+	 * immediately.
 	 * <p>
 	 * For example, the following call will generate an order by conditioning out any fixed value variables,
 	 * and will randomly try weighted min neighbors or weighted min fill cost functions up to ten iterations
@@ -256,9 +258,9 @@ public class VariableEliminator
 	 * @param nAttempts is the number of potential iteration orders to compute. If not a positive value,
 	 * then each cost function will be tried once deterministically.
 	 * @param threshold specifies which statistics should be used to evaluate the goodness of a given
-	 * ordering (see {@link Stats#compareTo(Stats, Stats)}) and also threshold values for each
+	 * ordering (see {@link VariableEliminator.Stats#compareTo}) and also threshold values for each
 	 * statistic that will terminate the function before all {@code nAttempts} have been tried
-	 * (see {@link Stats#meetsThreshold(Stats)}). Only statistics with non-negative threshold
+	 * (see {@link VariableEliminator.Stats#meetsThreshold}). Only statistics with non-negative threshold
 	 * values will be considered.
 	 * @param costFunctions is a list of cost functions to be used. If empty, all will be tried.
 	 *
@@ -913,7 +915,7 @@ public class VariableEliminator
 		 * The number of variables that were eliminated by conditioning. That is, the number of variables
 		 * with a fixed value when the variable eliminator is using conditioning.
 		 * <p>
-		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 * Note: this attribute is not used by {@link #compareTo} or {@link #meetsThreshold}.
 		 * <p>
 		 * @see VariableBase#hasFixedValue()
 		 * @see VariableEliminator#usesConditioning()
@@ -943,7 +945,7 @@ public class VariableEliminator
 		/**
 		 * The number of factors with more than one edge to the same variable.
 		 * <p>
-		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 * Note: this attribute is not used by {@link #compareTo} or {@link #meetsThreshold}.
 		 */
 		public int factorsWithDuplicateVariables()
 		{
@@ -1017,7 +1019,7 @@ public class VariableEliminator
 		/**
 		 * The number of variables that are connected to another variable through more than one factor.
 		 * <p>
-		 * Note: this attribute is not used by {@link #compareTo(Stats, Stats)} or {@link #meetsThreshold(Stats)}.
+		 * Note: this attribute is not used by {@link #compareTo} or {@link #meetsThreshold}.
 		 */
 		public int variablesWithDuplicateEdges()
 		{

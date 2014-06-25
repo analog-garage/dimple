@@ -296,7 +296,6 @@ public abstract class SNode extends SolverEventSource implements ISolverNode
 
 	/**
 	 * Indicates whether to generate {@link IMessageUpdateEvent}s.
-	 * @return
 	 * @since 0.06
 	 */
 	private boolean raiseMessageEvents()

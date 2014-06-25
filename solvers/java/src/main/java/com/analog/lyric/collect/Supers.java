@@ -327,8 +327,8 @@ public abstract class Supers
 	 * Returns a new array containing {@code elements} with specified {@code componentType}, which must
 	 * be a super class or interface of all the elements.
 	 * 
-	 * @see #narrowArrayOf(T...)
-	 * @see #copyOf(Class, T...)
+	 * @see #narrowArrayOf(Object[])
+	 * @see #copyOf(Class, Object[])
 	 */
 	public static <T> T[] copyOf(Class<?> componentType, T[] elements)
 	{

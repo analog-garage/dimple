@@ -354,8 +354,8 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	 * elimination ordering. If empty (the default), then all of the standard {@link VariableCost}
 	 * functions will be tried.
 	 * 
-	 * @see #variableEliminatorCostFunctions(CostFunction...)
-	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 * @see #variableEliminatorCostFunctions(VariableEliminator.CostFunction...)
+	 * @see #variableEliminatorCostFunctions(VariableEliminator.VariableCost...)
 	 */
 	public CostFunction[] variableEliminatorCostFunctions()
 	{
@@ -365,7 +365,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	/**
 	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
 	 * @return this
-	 * @see #variableEliminatorCostFunctions(VariableCost...)
+	 * @see #variableEliminatorCostFunctions(VariableEliminator.VariableCost...)
 	 */
 	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(CostFunction ... costFunctions)
 	{
@@ -376,7 +376,7 @@ public abstract class JunctionTreeSolverGraphBase<Delegate extends ISolverFactor
 	/**
 	 * Sets {@link #variableEliminatorCostFunctions()} to specified value.
 	 * @return this
-	 * @see #variableEliminatorCostFunctions(CostFunction...)
+	 * @see #variableEliminatorCostFunctions(VariableEliminator.CostFunction...)
 	 */
 	public JunctionTreeSolverGraphBase<Delegate> variableEliminatorCostFunctions(VariableCost ... costFunctions)
 	{
