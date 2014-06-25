@@ -114,7 +114,6 @@ public class ImageDenoisingGraph
 		});
 	}
 
-	@SuppressWarnings("null")
 	public double getValue(int... coordinates)
 	{
 		int row = coordinates[0];

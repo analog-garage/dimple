@@ -142,24 +142,15 @@ public class Discrete extends VariableBase
     	requireNonNull(getSolver()).setGuessIndex(guess);
     }
     
-    public @Nullable Object getValue()
+    public Object getValue()
     {
-    	final ISolverVariable svar = _solverVariable;
-    	if (svar != null)
-    		return svar.getValue();
-    	else
-    		return null;
+    	return requireSolver("getValue").getValue();
     }
    
     public int getValueIndex()
     {
-    	final ISolverVariable svar = _solverVariable;
-    	if (svar != null)
-    		return ((SDiscreteVariableBase)svar).getValueIndex();
-    	else
-    		return 0;
+    	return ((SDiscreteVariableBase)requireSolver("getValueIndex")).getValueIndex();
     }
-
     
 	private double [] getDefaultPriors(DiscreteDomain domain)
 	{

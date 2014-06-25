@@ -232,7 +232,6 @@ public class TestSumProductOptimizedUpdate
 			return factorTable;
 		}
 
-		@SuppressWarnings("null")
 		public int getValue(int row, int col)
 		{
 			return (Integer) (_vs[row][col].getValue());
