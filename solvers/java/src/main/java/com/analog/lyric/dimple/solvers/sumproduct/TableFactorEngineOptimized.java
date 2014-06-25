@@ -11,6 +11,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +48,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 	/**
 	 * When a solver graph is initialized, we create an update plan for each factor table. This
-	 * method clears this map. Note that it does not clear TableFactorEngineOptimized instances' update
-	 * plans.
+	 * method clears this map. Note that it does not clear TableFactorEngineOptimized instances'
+	 * update plans.
 	 * 
 	 * @since 0.06
 	 */
@@ -124,7 +125,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		FactorUpdatePlan updatePlan = table.get(factorTable);
 		if (updatePlan == null)
 		{
-			updatePlan = new FactorUpdatePlan(factorTable);
+			updatePlan = FactorUpdatePlan.create(factorTable);
 			table.put(factorTable, updatePlan);
 		}
 		return updatePlan;
@@ -134,6 +135,171 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	public void update()
 	{
 		_updatePlan.apply(_tableFactor);
+	}
+
+	/**
+	 * Used along with TreeWalker<T>.
+	 * 
+	 * @param <T> The type that represents a factor table within the optimized update tree. One
+	 *        object of this type is created to represent the root of the update tree, and others
+	 *        are created for each auxiliary table produced at the other nodes of the tree.
+	 * @since 0.06
+	 * @author jking
+	 */
+	protected interface TreeBuilder<T>
+	{
+		/**
+		 * Creates the T for the root of the optimized update tree.
+		 * 
+		 * @param factorTable The factor's original factor table.
+		 * @since 0.06
+		 */
+		public T createRootT(IFactorTable factorTable);
+
+		/**
+		 * Builds a marginalization step.
+		 * 
+		 * @param f The T from which a dimension is being marginalized out.
+		 * @param portNum The port number for the dimension being marginalized out, in the original
+		 *        factor. Note that for any layer below the root, the port number may not match the
+		 *        local dimension.
+		 * @param localDimension The dimension that is being marginalized out of f.
+		 * @return A new T for the table that is produced by marginalizing localDimension out of f.
+		 * @since 0.06
+		 */
+		public T buildMarginalize(T f, final int portNum, final int localDimension);
+
+		/**
+		 * Builds an output step.
+		 * 
+		 * @param f The T holding the output message.
+		 * @param portNum The port number for the dimension being output, in the original factor.
+		 * @since 0.06
+		 */
+		public void buildOutput(T f, final int portNum);
+	}
+
+	/**
+	 * Produces the sequence of marginalization and output steps necessary to apply the optimized
+	 * update algorithm.
+	 * 
+	 * @param <T> The type that represents a factor table within the optimized update tree.
+	 * @since 0.06
+	 * @author jking
+	 */
+	protected static class TreeWalker<T>
+	{
+		private final IFactorTable _factorTable;
+
+		private final int[] _mapping;
+
+		/**
+		 * Constructs an instance that walks a given factor table.
+		 * 
+		 * @since 0.06
+		 */
+		public TreeWalker(IFactorTable factorTable)
+		{
+			_factorTable = factorTable;
+			/*
+			 * The remainder of this method sorts the factor table dimensions by domain size,
+			 * producing an array that contains a mapping from old dimension index to new dimension
+			 * index.
+			 */
+			final int dimensions = factorTable.getDimensions();
+			final int[] domainSizes = new int[dimensions];
+			final JointDomainIndexer domainIndexer = factorTable.getDomainIndexer();
+			List<Integer> indices = new ArrayList<Integer>(dimensions);
+			for (int i = 0; i < dimensions; i++)
+			{
+				indices.add(i);
+				domainSizes[i] = domainIndexer.getDomainSize(i);
+			}
+			Comparator<Integer> comparator = new Comparator<Integer>() {
+				@Override
+				public int compare(Integer i, Integer j)
+				{
+					// Decreasing order
+					return 0 - Integer.compare(domainSizes[i], domainSizes[j]);
+				}
+			};
+			Collections.sort(indices, comparator);
+			_mapping = Ints.toArray(indices);
+		}
+
+		/**
+		 * Produce the optimized update sequence.
+		 * 
+		 * @param treeBuilder Receives calls describing the sequence.
+		 * @since 0.06
+		 */
+		public void accept(TreeBuilder<T> treeBuilder)
+		{
+			T rootT = treeBuilder.createRootT(_factorTable);
+			int order = _factorTable.getDomainIndexer().size();
+			loop(0, 1, rootT, order, treeBuilder, _mapping);
+		}
+
+		private void loop(final int p,
+			int step,
+			final T f,
+			final int order,
+			final TreeBuilder<T> treeBuilder,
+			final int[] entries)
+		{
+			final int left = p;
+			final int right = p + step;
+			loop2(left, right, step * 2, f, order, treeBuilder, entries);
+			if (right < order)
+			{
+				loop2(right, left, step * 2, f, order, treeBuilder, entries);
+			}
+		}
+
+		private void loop2(final int x,
+			final int y,
+			final int step,
+			T f,
+			final int order,
+			TreeBuilder<T> treeBuilder,
+			int[] entries)
+		{
+			final int offset = x > y ? 1 : 0;
+			for (int i = 0; x + i * step < order; i++)
+			{
+				int portNum = _mapping[x + i * step];
+				int rawLocalDimension = i + offset;
+				int localDimension = entries[i + offset];
+				f = treeBuilder.buildMarginalize(f, portNum, localDimension);
+				// Remove the entry at rawLocalDimension from entries, and decrease all entries
+				// greater than that entry by 1:
+				int[] entries2 = new int[entries.length - 1];
+				int k = 0;
+				for (int j = 0; j < entries.length; j++)
+				{
+					if (j != rawLocalDimension)
+					{
+						int v = entries[j];
+						if (v > entries[rawLocalDimension])
+						{
+							v -= 1;
+						}
+						entries2[k] = v;
+						k += 1;
+					}
+				}
+				entries = entries2;
+			}
+			if (y + step < order)
+			{
+				loop(y, step, f, order, treeBuilder, entries);
+			}
+			else
+			{
+				int portNum = _mapping[y];
+				treeBuilder.buildOutput(f, portNum);
+			}
+		}
 	}
 
 	/**
@@ -147,22 +313,50 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	{
 		private final List<UpdateStep> _steps;
 
+		private FactorUpdatePlan(List<UpdateStep> steps)
+		{
+			_steps = steps;
+		}
+
 		/**
 		 * Constructs an update plan for a given factor table. The same plan may be applied to any
 		 * factor that uses the same factor table.
 		 * 
+		 * @param factorTable
 		 * @since 0.06
 		 */
-		public FactorUpdatePlan(IFactorTable factorTable)
+		public static FactorUpdatePlan create(IFactorTable factorTable)
 		{
 			final int n = factorTable.getDimensions();
-			_steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2(n))); // Initial
-																						// capacity
-																						// is not
-																						// exact but
-																						// OK.
-			final int order = factorTable.getDomainIndexer().size();
-			loop(0, 1, new TableWrapper(factorTable), order);
+			// Initial capacity is not exact but it's OK.
+			final List<UpdateStep> steps = new ArrayList<UpdateStep>((int) (n * Utilities.log2(n)));
+			TreeBuilder<TableWrapper> builder = new TreeBuilder<TableWrapper>() {
+
+				@Override
+				public TableWrapper createRootT(IFactorTable rootFactorTable)
+				{
+					return new TableWrapper(rootFactorTable);
+				}
+
+				@Override
+				public TableWrapper buildMarginalize(TableWrapper g, int portNum, int localDimension)
+				{
+					final MarginalizationStep marginalizeStep = g.createMarginalizationStep(portNum, localDimension);
+					steps.add(marginalizeStep);
+					return marginalizeStep.getAuxiliaryTable();
+				}
+
+				@Override
+				public void buildOutput(TableWrapper g, int portNum)
+				{
+					UpdateStep outputStep = g.createOutputStep(portNum);
+					steps.add(outputStep);
+				}
+
+			};
+			TreeWalker<TableWrapper> treeWalker = new TreeWalker<TableWrapper>(factorTable);
+			treeWalker.accept(builder);
+			return new FactorUpdatePlan(steps);
 		}
 
 		/**
@@ -176,54 +370,6 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			for (final UpdateStep step : _steps)
 			{
 				step.apply(tableFactor);
-			}
-		}
-
-		/**
-		 * Along with loop2, performs the tree recursion that produces an update plan. Given a
-		 * factor function of N variables, the algorithm splits the variables into two groups of
-		 * equal size. A new factor function is formed for each of these groups by marginalizing the
-		 * variables in the group, pulling in the input from each variable as it is considered. This
-		 * process is repeated recursively until single-variable tables remain, at which point the
-		 * table's values contain the output message.
-		 * 
-		 * @since 0.06
-		 */
-		private void loop(final int p, int step, final TableWrapper f, final int order)
-		{
-			final int left = p;
-			final int right = p + step;
-			loop2(left, right, step * 2, f, order);
-			if (right < order)
-			{
-				loop2(right, left, step * 2, f, order);
-			}
-		}
-
-		/**
-		 * Along with loop, performs the tree recursion that produces an update plan.
-		 * 
-		 * @see #loop
-		 * @since 0.06
-		 */
-		private void loop2(final int x, final int y, final int step, final TableWrapper f, final int order)
-		{
-			final int offset = x > y ? 1 : 0;
-			TableWrapper g = f;
-			for (int i = 0; x + i * step < order; i++)
-			{
-				final MarginalizationStep marginalizeStep = g.createMarginalizationStep(x + i * step, i + offset);
-				_steps.add(marginalizeStep);
-				g = marginalizeStep.getAuxiliaryTable();
-			}
-			if (y + step < order)
-			{
-				loop(y, step, g, order);
-			}
-			else
-			{
-				UpdateStep outputStep = g.createOutputStep(y);
-				_steps.add(outputStep);
 			}
 		}
 	}
@@ -669,7 +815,7 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			double[] weights = new double[indices.length];
 			Arrays.fill(weights, 1.0);
 			g_factorTable.setWeightsSparse(indices, weights);
-			
+
 			return new Tuple2<int[][], int[]>(g_indices, _msg_indices);
 		}
 
