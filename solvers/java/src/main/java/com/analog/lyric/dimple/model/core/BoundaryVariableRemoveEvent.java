@@ -21,9 +21,11 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.events.FactorGraphVariableEvent;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 
+// BUG 84: there is no way to remove boundary variables so this event is never raised.
+
 /**
  * Event raised when a boundary variable is removed from a graph.
- * 
+ * <p>
  * @since 0.06
  * @author Christopher Barber
  */

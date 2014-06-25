@@ -1,3 +1,7 @@
+%getEventLogger Returns global EventLogger instance, creating it if necessary.
+%
+%   See also EventLogger
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Copyright 2014 Analog Devices, Inc.
 %
