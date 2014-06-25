@@ -17,12 +17,16 @@ import java.util.Random;
 import org.junit.Test;
 
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
+import com.analog.lyric.dimple.factorfunctions.core.FactorTableRepresentation;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
+import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.Bit;
+import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.sumproduct.SFactorGraph;
+import com.analog.lyric.dimple.solvers.sumproduct.STableFactor;
 import com.analog.lyric.dimple.solvers.sumproduct.TableFactorEngineOptimized;
 import com.google.common.primitives.Ints;
 
@@ -115,6 +119,48 @@ public class TestSumProductOptimizedUpdate
 		doTest(zeroControl, sparsityControl, damping, useMultithreading, EXPECTED_HASH);
 	}
 
+	/**
+	 * This test creates a factor connected to several discrete variables whose domain sizes vary.
+	 * 
+	 * @since 0.06
+	 */
+	@Test
+	public void testMixedDomainSizes()
+	{
+		Random rand = new Random();
+		rand.setSeed(0); // Don't be random
+		final FactorGraph fg = new FactorGraph();
+		DiscreteDomain[] domains = new DiscreteDomain[5];
+		Discrete[] vars = new Discrete[5];
+		for (int i = 0; i < domains.length; i++)
+		{
+			domains[i] = DiscreteDomain.range(1, Math.abs(2 - i) + 2);
+			vars[i] = new Discrete(domains[i]);
+		}
+		IFactorTable table = FactorTable.create(domains);
+		table.setRepresentation(FactorTableRepresentation.DENSE_WEIGHT);
+		table.randomizeWeights(rand);
+		Factor f = fg.addFactor(table, vars);
+		STableFactor stf = (STableFactor) f.getSolver();
+		if (stf == null)
+		{
+			fail("STableFactor is null");
+			return;
+		}
+		stf.enableOptimizedUpdate();
+		fg.solve();
+		int[] values = new int[vars.length];
+		for (int i = 0; i < values.length; i++)
+		{
+			Integer value = (Integer) vars[i].getValue();
+			values[i] = value != null ? value : 99999;
+		}
+		int[] flat = Ints.concat(values);
+		int hash = Arrays.hashCode(flat);
+		final int EXPECTED_HASH = 31430530;
+		assertEquals(EXPECTED_HASH, hash);
+	}
+	
 	static private class Graph
 	{
 		private static Random _rnd = new Random();

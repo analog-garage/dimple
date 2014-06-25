@@ -11,6 +11,7 @@ package com.analog.lyric.dimple.solvers.sumproduct;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -190,6 +191,8 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 	{
 		private final IFactorTable _factorTable;
 
+		private final int[] _mapping;
+
 		/**
 		 * Constructs an instance that walks a given factor table.
 		 * 
@@ -198,6 +201,30 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		public TreeWalker(IFactorTable factorTable)
 		{
 			_factorTable = factorTable;
+			/*
+			 * The remainder of this method sorts the factor table dimensions by domain size,
+			 * producing an array that contains a mapping from old dimension index to new dimension
+			 * index.
+			 */
+			final int dimensions = factorTable.getDimensions();
+			final int[] domainSizes = new int[dimensions];
+			final JointDomainIndexer domainIndexer = factorTable.getDomainIndexer();
+			List<Integer> indices = new ArrayList<Integer>(dimensions);
+			for (int i = 0; i < dimensions; i++)
+			{
+				indices.add(i);
+				domainSizes[i] = domainIndexer.getDomainSize(i);
+			}
+			Comparator<Integer> comparator = new Comparator<Integer>() {
+				@Override
+				public int compare(Integer i, Integer j)
+				{
+					// Decreasing order
+					return 0 - Integer.compare(domainSizes[i], domainSizes[j]);
+				}
+			};
+			Collections.sort(indices, comparator);
+			_mapping = Ints.toArray(indices);
 		}
 
 		/**
@@ -210,17 +237,22 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 		{
 			T rootT = treeBuilder.createRootT(_factorTable);
 			int order = _factorTable.getDomainIndexer().size();
-			loop(0, 1, rootT, order, treeBuilder);
+			loop(0, 1, rootT, order, treeBuilder, _mapping);
 		}
 
-		private void loop(final int p, int step, final T f, final int order, TreeBuilder<T> treeBuilder)
+		private void loop(final int p,
+			int step,
+			final T f,
+			final int order,
+			final TreeBuilder<T> treeBuilder,
+			final int[] entries)
 		{
 			final int left = p;
 			final int right = p + step;
-			loop2(left, right, step * 2, f, order, treeBuilder);
+			loop2(left, right, step * 2, f, order, treeBuilder, entries);
 			if (right < order)
 			{
-				loop2(right, left, step * 2, f, order, treeBuilder);
+				loop2(right, left, step * 2, f, order, treeBuilder, entries);
 			}
 		}
 
@@ -229,20 +261,43 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 			final int step,
 			T f,
 			final int order,
-			TreeBuilder<T> treeBuilder)
+			TreeBuilder<T> treeBuilder,
+			int[] entries)
 		{
 			final int offset = x > y ? 1 : 0;
 			for (int i = 0; x + i * step < order; i++)
 			{
-				f = treeBuilder.buildMarginalize(f, x + i * step, i + offset);
+				int portNum = _mapping[x + i * step];
+				int rawLocalDimension = i + offset;
+				int localDimension = entries[i + offset];
+				f = treeBuilder.buildMarginalize(f, portNum, localDimension);
+				// Remove the entry at rawLocalDimension from entries, and decrease all entries
+				// greater than that entry by 1:
+				int[] entries2 = new int[entries.length - 1];
+				int k = 0;
+				for (int j = 0; j < entries.length; j++)
+				{
+					if (j != rawLocalDimension)
+					{
+						int v = entries[j];
+						if (v > entries[rawLocalDimension])
+						{
+							v -= 1;
+						}
+						entries2[k] = v;
+						k += 1;
+					}
+				}
+				entries = entries2;
 			}
 			if (y + step < order)
 			{
-				loop(y, step, f, order, treeBuilder);
+				loop(y, step, f, order, treeBuilder, entries);
 			}
 			else
 			{
-				treeBuilder.buildOutput(f, y);
+				int portNum = _mapping[y];
+				treeBuilder.buildOutput(f, portNum);
 			}
 		}
 	}
