@@ -175,6 +175,8 @@ javadoc {
     exclude docExcludePackages.collect{ '**/' + it.replace('.','/') + '/**' }
     title 'Dimple Java API ' + dimpleVersion
 	options.header 'Dimple ' + dimpleVersion
+	// Allow use of @category tags, which are supported by Eclipse
+	options.tags 'category'
 
 }
 
