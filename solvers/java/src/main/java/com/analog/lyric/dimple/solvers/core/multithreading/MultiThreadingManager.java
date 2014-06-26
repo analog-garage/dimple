@@ -98,7 +98,7 @@ public class MultiThreadingManager
 	
 	public void setNumWorkersToDefault()
 	{
-		_numWorkers = Runtime.getRuntime().availableProcessors();
+		_numWorkers = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
 	}
 	
 	
