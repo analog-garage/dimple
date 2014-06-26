@@ -209,6 +209,7 @@ public interface IFactorTable extends IFactorTableBase
 	 * <p>
 	 * If necessary, this method will implicitly modify the representation to include dense weights
 	 * <p>
+	 * @since 0.06
 	 */
 	public double[] getWeightsDenseUnsafe();
 	

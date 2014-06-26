@@ -25,28 +25,29 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * Parameterized multinomial distribution, which corresponds to p(x | N, alpha),
  * where x is a vector of discrete count variables, N is the total count across all categories, and
  * where alpha is a vector of real probability parameters (not necessarily normalized).
- * 
+ * <p>
  * The domain of each x variable must be a zero-based integer with maximum value N (domain 0 through N).
  * If N is a variable rather than a constant, then the domain of each x must be range from 0 through
  * the maximum value in the domain of N.
- * 
+ * <p>
  * Representing alpha as described, the conjugate prior for alpha is such that
  * each entry of alpha is independently distributed according to
  * a Gamma distribution, all with a common Beta parameter.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * 1) N: Parameter indicating the total count
- * 2...dimension+1) Alpha: A number of Real variables containing unnormalized probabilities, where
+ * <ol>
+ * <li> N: Parameter indicating the total count
+ * <li>...dimension+1) Alpha: A number of Real variables containing unnormalized probabilities, where
  * 	  the number of variables must equal the specified dimension
- * dimension+2...2*dimension+1) x: A number of discrete count variable, where the number of variables
+ * <li>dimension+2...2*dimension+1) x: A number of discrete count variable, where the number of variables
  *    must equal the specified dimension
- *
+ * </ol>
  * N parameter may optionally be specified as a constant in the constructor.
  * In this case, N is not included in the list of arguments.
  * 
+ * @since 0.06
  */
 public class MultinomialUnnormalizedParameters extends FactorFunction
 {
@@ -71,7 +72,7 @@ public class MultinomialUnnormalizedParameters extends FactorFunction
 		_dimension = dimension;
 		_N = N;
     	if (_N < 0) throw new DimpleException("N must be a non-negative value.");
-		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
 		_NParameterConstant = true;
 		_firstDirectedToIndex = dimension;
 		_alpha = new double[dimension];
@@ -85,7 +86,7 @@ public class MultinomialUnnormalizedParameters extends FactorFunction
     	{
     		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
     		if (_N < 0) return Double.POSITIVE_INFINITY;
-    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
     	}
     	
     	for (int i = 0; i < _dimension; i++)
