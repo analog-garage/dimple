@@ -1,7 +1,9 @@
 Dimple version 0.06 release notes
 ==================================
 
-* Dimple is now built with Java 7
+* Dimple is now built with Java 7 and requires MATLAB 2013b or later.
+
+Projects using Dimple will have to be using a version of the Java JVM of at least 1.7. Because MATLAB 2013b is the first version based on Java 7, at least that version will now be required.
 
 
 Significant New Features Since v0.05
