@@ -15,7 +15,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.collect.Tuple2;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.core.FactorTable;
@@ -25,8 +28,6 @@ import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
 import com.analog.lyric.dimple.model.domains.JointDomainReindexer;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.NonNullByDefault;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Ints;
 
 /**
@@ -784,35 +785,16 @@ public class TableFactorEngineOptimized extends TableFactorEngine
 
 			// The next section of this function sets the weight for each of the used g_indices to a
 			// non-zero value.
-			Comparator<int[]> comparator = new Comparator<int[]>() {
-				@NonNullByDefault(false)
-				@Override
-				public int compare(int[] o1, int[] o2)
-				{
-					int o1l = o1.length;
-					int o2l = o2.length;
-					if (o2l != o1l)
-					{
-						return Ints.compare(o2l, o1l);
-					}
-					else
-					{
-						for (int i = o1l - 1; i >= 0; i--)
-						{
-							int x = Ints.compare(o1[i], o2[i]);
-							if (x != 0)
-							{
-								return x;
-							}
-						}
-						return 0;
-					}
-				}
-			};
-			ImmutableList<int[]> all_g_indices =
-				ImmutableSortedSet.copyOf(comparator, Arrays.asList(g_indices)).asList();
-			int[][] indices = new int[all_g_indices.size()][];
-			all_g_indices.toArray(indices);
+			Comparator<int[]> comparator = Comparators.reverseLexicalIntArray();
+			
+			// NOTE: we can't use ImmutableSortedSet.copyOf because it clashes with an old version of
+			// the Google collections library that is automatically included in the Java class path
+			// on versions of MATLAB (at least up to release R2014a).
+			Set<int[]> all_g_indices = // ImmutableSortedSet.copyOf(comparator, Arrays.asList(g_indices));
+				new TreeSet<>(comparator);
+			all_g_indices.addAll(Arrays.asList(g_indices));
+			int[][] indices = all_g_indices.toArray(new int[all_g_indices.size()][]);
+			
 			double[] weights = new double[indices.length];
 			Arrays.fill(weights, 1.0);
 			g_factorTable.setWeightsSparse(indices, weights);
