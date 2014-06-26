@@ -1,0 +1,10 @@
+Dimple version 0.07 release notes
+==================================
+
+
+Significant New Features Since v0.06
+------------------------------------
+
+
+Significant Bug Fixes Since v0.06
+---------------------------------
