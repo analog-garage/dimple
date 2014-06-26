@@ -43,6 +43,7 @@ public abstract class ArrayUtil
 	
 	/**
 	 * Canonical empty double[][].
+	 * @since 0.06
 	 */
 	public static final double[][] EMPTY_DOUBLE_ARRAY_ARRAY = new double[0][];
 	

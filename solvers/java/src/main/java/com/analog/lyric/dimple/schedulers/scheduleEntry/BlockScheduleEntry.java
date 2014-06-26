@@ -26,11 +26,13 @@ import com.analog.lyric.dimple.model.core.Port;
 
 
 /**
+ * A schedule entry that contains a collection of nodes to be updated together.
+ * <p>
+ * This class is primarily targeted at the Gibbs solver for block Gibbs updates. For that case, all
+ * of the nodes in the collection would be variables.
+ *
  * @author jeffb
- * 
- *         A schedule entry that contains a collection of nodes to be updated together.
- *         This class is primarily targeted at the Gibbs solver for block Gibbs updates.
- *         For that case, all of the nodes in the collection would be variables.
+ * @since 0.06
  */
 public class BlockScheduleEntry implements IScheduleEntry
 {

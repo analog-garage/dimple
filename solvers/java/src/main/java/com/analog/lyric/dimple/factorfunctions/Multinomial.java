@@ -25,25 +25,27 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionUtilities;
  * Parameterized multinomial distribution, which corresponds to p(x | N, alpha),
  * where x is a vector of discrete count variables, N is the total count across all categories, and
  * where alpha is a RealJoint variable vector of (not necessarily normalized) probabilities.
- * 
+ * <p>
  * The domain of each x variable must be a zero-based integer with maximum value N (domain 0 through N).
  * If N is a variable rather than a constant, then the domain of each x must be range from 0 through
  * the maximum value in the domain of N.
- * 
+ * <p>
  * Representing alpha as described, the conjugate prior for alpha is
  * a Dirichlet distribution.
  * Depending on the solver, it may or may not be necessary to use a
  * conjugate prior (for the Gibbs solver, for example, it is not).
- * 
+ * <p>
  * The variables in the argument list are ordered as follows:
- * 
- * 1) N: Parameter indicating the total count
- * 2) Alpha: RealJoint variable containing probabilities
- * 3...) x: A number of discrete count variable, where the number of variables
+ * <ol>
+ * <li> N: Parameter indicating the total count
+ * <li> Alpha: RealJoint variable containing probabilities
+ * <li> ... x: A number of discrete count variable, where the number of variables
  *    must equal the dimension of alpha
- *
+ * </ol>
  * N parameter may optionally be specified as a constant in the constructor.
  * In this case, N is not included in the list of arguments.
+ * 
+ * @since 0.06
  */
 public class Multinomial extends FactorFunction
 {
@@ -59,7 +61,7 @@ public class Multinomial extends FactorFunction
 		this();
 		_N = N;
     	if (_N < 0) throw new DimpleException("N must be a non-negative value.");
-		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
 		_NParameterConstant = true;
 		_firstDirectedToIndex = 1;
 	}
@@ -72,7 +74,7 @@ public class Multinomial extends FactorFunction
     	{
     		_N = FactorFunctionUtilities.toInteger(arguments[index++]);				// First argument is N parameter
     		if (_N < 0) return Double.POSITIVE_INFINITY;
-    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma((double)(_N + 1));
+    		_negativeLogFactorialN = -org.apache.commons.math3.special.Gamma.logGamma(_N + 1);
     	}
     	
     	double[] alpha = (double[])arguments[index++];		// Next argument is the probability parameter vector
