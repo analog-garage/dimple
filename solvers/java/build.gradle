@@ -21,13 +21,26 @@
 
 project.description = 'Java API'
 project.version = dimpleVersion
+project.group = 'com.analog.lyric'
 
 apply plugin: 'java'
 apply plugin: 'jacoco' // for java code coverage
 
+apply plugin: 'maven-publish'
+apply plugin: 'bintray'
+
 archivesBaseName = 'dimple'
 
 defaultTasks 'build'
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+	}
+}
 
 //Specify what repositories to use when looking for jars
 repositories {
@@ -276,3 +289,46 @@ task jdiff(dependsOn: 'jdiffAPI', type: Exec) {
 		'com.analog.lyric'
 }
 
+//
+// Publishing
+// 
+
+ task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+ }
+
+ task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+ }
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+			artifactId = 'dimple'
+
+               artifact sourcesJar {
+                    classifier "sources"
+                }
+
+                artifact javadocJar {
+                    classifier "javadoc"
+                }
+		}
+	}
+}
+
+bintray {
+	user = bintrayUser
+	key = bintrayKey
+	publications = ['mavenJava']
+	pkg {
+		repo = 'maven'
+		userOrg = 'lyriclabs'
+		name = 'dimple'
+		desc = 'Dimple probabilistic inference library for Java'
+		licenses = ['Apache-2.0']
+	}
+}
