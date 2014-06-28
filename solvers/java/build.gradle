@@ -27,6 +27,7 @@ apply plugin: 'java'
 apply plugin: 'jacoco' // for java code coverage
 
 apply plugin: 'maven-publish'
+
 apply plugin: 'bintray'
 
 archivesBaseName = 'dimple'
@@ -34,12 +35,12 @@ archivesBaseName = 'dimple'
 defaultTasks 'build'
 
 buildscript {
-	repositories {
-		jcenter()
-	}
-	dependencies {
-		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
-	}
+		repositories {
+			jcenter()
+		}
+		dependencies {
+			classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+		}
 }
 
 //Specify what repositories to use when looking for jars
@@ -309,26 +310,28 @@ publishing {
 			from components.java
 			artifactId = 'dimple'
 
-               artifact sourcesJar {
-                    classifier "sources"
-                }
+           artifact sourcesJar {
+                classifier "sources"
+            }
 
-                artifact javadocJar {
-                    classifier "javadoc"
-                }
+            artifact javadocJar {
+                classifier "javadoc"
+            }
 		}
 	}
 }
 
-bintray {
-	user = bintrayUser
-	key = bintrayKey
-	publications = ['mavenJava']
-	pkg {
-		repo = 'maven'
-		userOrg = 'lyriclabs'
-		name = 'dimple'
-		desc = 'Dimple probabilistic inference library for Java'
-		licenses = ['Apache-2.0']
+if (hasProperty('bintrayUser')) {
+	bintray {
+		user = bintrayUser
+		key = bintrayKey
+		publications = ['mavenJava']
+		pkg {
+			repo = 'maven'
+			userOrg = 'lyriclabs'
+			name = 'dimple'
+			desc = 'Dimple probabilistic inference library for Java'
+			licenses = ['Apache-2.0']
+		}
 	}
 }
