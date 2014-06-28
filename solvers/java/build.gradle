@@ -322,6 +322,10 @@ publishing {
 }
 
 if (hasProperty('bintrayUser')) {
+	// Do not enable bintrayUpload task unless a user/key pair has been
+	// configured in the user's gradle.properties file. We don't want to
+	// put this in the gradle build files themselves because that would
+	// expose our private API key!
 	bintray {
 		user = bintrayUser
 		key = bintrayKey
