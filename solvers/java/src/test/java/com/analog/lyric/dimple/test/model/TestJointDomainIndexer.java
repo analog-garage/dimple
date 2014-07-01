@@ -67,7 +67,7 @@ public class TestJointDomainIndexer
 		
 		JointDomainIndexer dl2by3 = JointDomainIndexer.create(d2, d3);
 		testInvariants(dl2by3);
-		assertEquals(dl2by3, JointDomainIndexer.create(d2, d3));
+		assertSame(dl2by3, JointDomainIndexer.create(d2, d3));
 		assertNotEquals(dl2by3, JointDomainIndexer.create(d3, d2));
 		
 		JointDomainIndexer dl2to3 = JointDomainIndexer.create(new int[] { 1 }, new DiscreteDomain[] {d2, d3 });
@@ -90,7 +90,7 @@ public class TestJointDomainIndexer
 		assertSame(dl2, JointDomainIndexer.concat(null, dl2));
 		JointDomainIndexer dl2by2a = requireNonNull(JointDomainIndexer.concat(dl2, dl2));
 		testInvariants(dl2by2a);
-		assertEquals(dl2by2, dl2by2a);
+		assertSame(dl2by2, dl2by2a);
 		
 		JointDomainIndexer dlfoo = requireNonNull(JointDomainIndexer.concat(dl2to3, dl2from3));
 		testInvariants(dlfoo);
@@ -98,8 +98,8 @@ public class TestJointDomainIndexer
 		assertArrayEquals(new int[] { 1, 2 }, dlfoo.getOutputDomainIndices());
 		assertArrayEquals(new Object[] { d2, d3, d2, d3}, dlfoo.toArray());
 		
-		assertEquals(dl2to3, dlfoo.subindexer(0, 2));
-		assertEquals(dl2from3, dlfoo.subindexer(2, 2));
+		assertSame(dl2to3, dlfoo.subindexer(0, 2));
+		assertSame(dl2from3, dlfoo.subindexer(2, 2));
 		
 		JointDomainIndexer dlbar = JointDomainIndexer.create((BitSet)null, dlfoo);
 		assertTrue(dlfoo.domainsEqual(dlbar));
@@ -474,7 +474,7 @@ public class TestJointDomainIndexer
 		expectThrow(IndexOutOfBoundsException.class, indexer, "validateIndices", indices);
 		
 		JointDomainIndexer domainList2 = SerializationTester.clone(indexer);
-		assertEquals(indexer, domainList2);
+		assertSame(indexer, domainList2);
 		assertEquals(indexer.hashCode(), domainList2.hashCode());
 	}
 	
@@ -516,7 +516,7 @@ public class TestJointDomainIndexer
 		// Remove a domain
 		JointDomainReindexer dl2by3_to_dl3 = JointDomainReindexer.createRemover(dl2by3, 0);
 		assertSame(dl2by3, dl2by3_to_dl3.getFromDomains());
-		assertEquals(dl2, dl2by3_to_dl3.getRemovedDomains());
+		assertSame(dl2, dl2by3_to_dl3.getRemovedDomains());
 		testInvariants(dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2, dl2by3_to_dl3);
 		assertNotEquals(dl2by3_to_dl3by2.hashCode(), dl2by3_to_dl3.hashCode());
