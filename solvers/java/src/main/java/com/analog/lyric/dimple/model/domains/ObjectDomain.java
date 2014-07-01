@@ -54,6 +54,22 @@ public final class ObjectDomain extends Domain
 		return INSTANCE;
 	}
 	
+	@Override
+	protected ObjectDomain intern()
+	{
+		return INSTANCE;
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(@Nullable Object other)
+	{
+		return this == other || other instanceof ObjectDomain;
+	}
+	
 	/*----------------
 	 * Domain methods
 	 */

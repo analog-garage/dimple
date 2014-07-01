@@ -54,6 +54,22 @@ public class IntDomain extends Domain
 		return UNBOUNDED;
 	}
 	
+	@Override
+	protected IntDomain intern()
+	{
+		return unbounded();
+	}
+	
+	/*----------------
+	 * Object methods
+	 */
+	
+	@Override
+	public boolean equals(@Nullable Object other)
+	{
+		return this == other || other instanceof IntDomain;
+	}
+	
 	/*----------------
 	 * Domain methods
 	 */

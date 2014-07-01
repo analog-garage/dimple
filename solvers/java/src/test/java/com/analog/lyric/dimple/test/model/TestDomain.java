@@ -39,6 +39,7 @@ import com.analog.lyric.dimple.model.domains.ObjectDomain;
 import com.analog.lyric.dimple.model.domains.RealDomain;
 import com.analog.lyric.dimple.model.domains.RealJointDomain;
 import com.analog.lyric.dimple.model.domains.TypedDiscreteDomain;
+import com.analog.lyric.util.test.SerializationTester;
 
 public class TestDomain
 {
@@ -70,6 +71,7 @@ public class TestDomain
 		assertReal(unit, 0.0, 1.0);
 		
 		RealDomain percentile = RealDomain.create(0.0, 100.0);
+		assertSame(percentile, RealDomain.create(0.0, 100.0));
 		assertReal(percentile, 0.0, 100.0);
 		
 		//
@@ -81,7 +83,7 @@ public class TestDomain
 		assertEquals(2, bit.size());
 		assertEquals(0, bit.getIntElement(0));
 		assertEquals(1, bit.getIntElement(1));
-		assertEquals(bit, DiscreteDomain.create(0, 1));
+		assertSame(bit, DiscreteDomain.create(0, 1));
 		assertTrue(bit.isIntegral());
 		assertEquals("{0,1}", bit.toString());
 		
@@ -98,7 +100,7 @@ public class TestDomain
 		assertTrue(bool.getElement(1));
 		assertNotEquals(bit, bool);
 		assertNotEquals(bit.hashCode(), bool.hashCode());
-		assertEquals(bool, DiscreteDomain.create(false, true));
+		assertSame(bool, DiscreteDomain.create(false, true));
 		assertNotEquals(bool, DiscreteDomain.create(true, false));
 		assertFalse(bool.isIntegral());
 		assertEquals("{false,true}", bool.toString());
@@ -106,7 +108,7 @@ public class TestDomain
 		EnumDomain<E> e = DiscreteDomain.forEnum(E.class);
 		assertInvariants(e);
 		assertNotEquals(e, DiscreteDomain.forEnum(Bogus.class));
-		assertEquals(e, DiscreteDomain.create(E.A, E.B, E.C));
+		assertSame(e, DiscreteDomain.create(E.A, E.B, E.C));
 		assertEquals("{A,B,C}", e.toString());
 		
 		try
@@ -137,7 +139,7 @@ public class TestDomain
 		{
 			assertEquals(i + 1, r1to5.getIntElement(i));
 		}
-		assertEquals(r1to5, DiscreteDomain.create(1,2,3,4,5));
+		assertSame(r1to5, DiscreteDomain.create(1,2,3,4,5));
 		assertEquals("{1,2,3,4,5}", r1to5.toString());
 		
 		IntRangeDomain r0to4 = DiscreteDomain.range(0,4);
@@ -149,7 +151,7 @@ public class TestDomain
 		{
 			assertEquals(i, r0to4.getIndex(i));
 		}
-		assertEquals(r0to4, DiscreteDomain.create(0, 1, 2, 3, 4));
+		assertSame(r0to4, DiscreteDomain.create(0, 1, 2, 3, 4));
 		
 		IntRangeDomain evenDigits = DiscreteDomain.range(0, 8, 2);
 		assertInvariants(evenDigits);
@@ -160,13 +162,13 @@ public class TestDomain
 			assertEquals(i*2, evenDigits.getIntElement(i));
 			assertEquals(i, evenDigits.getIndex(i*2));
 		}
-		assertEquals(evenDigits, DiscreteDomain.create(0,2,4,6,8));
+		assertSame(evenDigits, DiscreteDomain.create(0,2,4,6,8));
 		assertEquals("{0,2,4,6,8}", evenDigits.toString());
 		
 		IntRangeDomain r0to3 = DiscreteDomain.range(0, 3);
 		assertInvariants(r0to3);
 		assertNotEquals(r0to3, r0to4);
-		assertEquals(r0to3, DiscreteDomain.create(0,1,2,3));
+		assertSame(r0to3, DiscreteDomain.create(0,1,2,3));
 		assertNotEquals(r0to3, DiscreteDomain.create(0,1.0,2,3));
 		
 		TypedDiscreteDomain<Integer> r3to0 = DiscreteDomain.create(3,2,1,0);
@@ -228,7 +230,7 @@ public class TestDomain
 		
 		DoubleRangeDomain halves = DiscreteDomain.range(0.0, 2.5, .5);
 		assertInvariants(halves);
-		assertEquals(halves, DiscreteDomain.create(0.0, 0.5, 1.0, 1.5, 2.0, 2.5));
+		assertSame(halves, DiscreteDomain.create(0.0, 0.5, 1.0, 1.5, 2.0, 2.5));
 		
 		DoubleRangeDomain d0to3 = DiscreteDomain.range(0.0, 3.0);
 		assertInvariants(d0to3);
@@ -359,6 +361,9 @@ public class TestDomain
 		assertEquals(domain, domain);
 		
 		assertEquals(domain.isNumber(), domain.isNumeric() && domain.isScalar());
+		
+		Domain serializedCopy = SerializationTester.clone(domain);
+		assertSame(domain, serializedCopy);
 		
 		if (domain != ObjectDomain.instance())
 		{

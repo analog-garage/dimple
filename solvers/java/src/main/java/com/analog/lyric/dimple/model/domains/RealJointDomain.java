@@ -21,7 +21,9 @@ import java.util.Arrays;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.util.misc.Nullable;
+import com.google.common.collect.Interner;
 
 @Immutable
 public class RealJointDomain extends Domain
@@ -40,6 +42,13 @@ public class RealJointDomain extends Domain
 	 * for all dimensions.
 	 */
 	private final boolean _homogeneous;
+	
+	private static enum InternedDomains
+	{
+		INSTANCE;
+		
+		private final Interner<RealJointDomain> interner = WeakInterner.create();
+	}
 	
 	/*--------------
 	 * Construction
@@ -70,6 +79,12 @@ public class RealJointDomain extends Domain
 		}
 	}
 	
+	@Override
+	protected RealJointDomain intern()
+	{
+		return InternedDomains.INSTANCE.interner.intern(this);
+	}
+	
 	public static RealJointDomain create(RealDomain... domains)
 	{
 		if (domains.length < 1)
@@ -77,7 +92,7 @@ public class RealJointDomain extends Domain
 			throw new IllegalArgumentException("RealJointDomain requires at least one domain");
 		}
 		
-		return new RealJointDomain(domains, true);
+		return new RealJointDomain(domains, true).intern();
 	}
 	
 	public static RealJointDomain create(int size)
@@ -87,7 +102,7 @@ public class RealJointDomain extends Domain
 
 	public static RealJointDomain create(RealDomain domain, int size)
 	{
-		return new RealJointDomain(domain, size);
+		return new RealJointDomain(domain, size).intern();
 	}
 	
 	private static int computeHashCode(RealDomain[] domains)

@@ -18,8 +18,10 @@ package com.analog.lyric.dimple.model.domains;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.util.misc.Nullable;
+import com.google.common.collect.Interner;
 
 @Immutable
 public class RealDomain extends Domain
@@ -67,18 +69,7 @@ public class RealDomain extends Domain
 	 */
 	public static RealDomain create(double lower, double upper)
 	{
-		for (StandardDomain standard : StandardDomain.values())
-		{
-			RealDomain domain = standard.domain;
-			if (domain.getLowerBound() == lower && domain.getUpperBound() == upper)
-			{
-				return domain;
-			}
-		}
-		
-		// TODO: cache other domains as well...
-		
-		return new RealDomain(lower, upper);
+		return new RealDomain(lower, upper).intern();
 	}
 	
 	/**
@@ -86,7 +77,7 @@ public class RealDomain extends Domain
 	 */
 	public static RealDomain create()
 	{
-		return StandardDomain.UNBOUNDED.domain;
+		return InternedDomains.INSTANCE.UNBOUNDED;
 	}
 	
 	/**
@@ -94,7 +85,7 @@ public class RealDomain extends Domain
 	 */
 	public static RealDomain unbounded()
 	{
-		return StandardDomain.UNBOUNDED.domain;
+		return InternedDomains.INSTANCE.UNBOUNDED;
 	}
 	
 	/**
@@ -102,7 +93,7 @@ public class RealDomain extends Domain
 	 */
 	public static RealDomain nonNegative()
 	{
-		return StandardDomain.NON_NEGATIVE.domain;
+		return InternedDomains.INSTANCE.NON_NEGATIVE;
 	}
 	
 	/**
@@ -110,21 +101,31 @@ public class RealDomain extends Domain
 	 */
 	public static RealDomain nonPositive()
 	{
-		return StandardDomain.NON_POSITIVE.domain;
+		return InternedDomains.INSTANCE.NON_POSITIVE;
 	}
 
-	private static enum StandardDomain
+	private static enum InternedDomains
 	{
-		UNBOUNDED(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-		NON_NEGATIVE(0.0, Double.POSITIVE_INFINITY),
-		NON_POSITIVE(Double.NEGATIVE_INFINITY, 0.0);
+		INSTANCE;
+
+		private final Interner<RealDomain> interner;
+		private final RealDomain UNBOUNDED;
+		private final RealDomain NON_NEGATIVE;
+		private final RealDomain NON_POSITIVE;
 		
-		private final RealDomain domain;
-		
-		private StandardDomain(double lower, double upper)
+		private InternedDomains()
 		{
-			domain = new RealDomain(lower, upper);
+			interner = WeakInterner.create();
+			UNBOUNDED = interner.intern(new RealDomain(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+			NON_NEGATIVE = interner.intern(new RealDomain(0.0, Double.POSITIVE_INFINITY));
+			NON_POSITIVE = interner.intern(new RealDomain(Double.NEGATIVE_INFINITY, 0.0));
 		}
+	}
+
+	@Override
+	protected RealDomain intern()
+	{
+		return InternedDomains.INSTANCE.interner.intern(this);
 	}
 	
 	/*----------------

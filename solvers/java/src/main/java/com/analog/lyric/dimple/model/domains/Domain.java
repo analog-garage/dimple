@@ -47,6 +47,25 @@ public abstract class Domain implements Serializable
 		_hashCode = hashCode;
 	}
 	
+	/*---------------
+	 * Serialization
+	 */
+
+	/**
+	 * If supported by subclass, returns interned version
+	 * of domain.
+	 */
+	protected Domain intern()
+	{
+		return this;
+	}
+	
+	protected Object readResolve()
+	{
+		// Replace with interned version of domain, if available.
+		return intern();
+	}
+	
 	/*----------------
 	 * Object methods
 	 */
@@ -56,7 +75,7 @@ public abstract class Domain implements Serializable
 	{
 		return _hashCode;
 	}
-	
+
 	/*----------------
 	 * Domain methods
 	 */

@@ -90,7 +90,7 @@ public class DoubleRangeDomain extends DoubleDiscreteDomain
 		
 		int size = 1 + (int)((tolerance + upperBound - lowerBound) / interval);
 		
-		return new DoubleRangeDomain(lowerBound, upperBound, interval, tolerance, size);
+		return intern(new DoubleRangeDomain(lowerBound, upperBound, interval, tolerance, size));
 	}
 	
 	private static int computeHashCode(double ... values)

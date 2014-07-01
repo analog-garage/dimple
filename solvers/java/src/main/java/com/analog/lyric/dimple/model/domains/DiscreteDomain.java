@@ -19,9 +19,11 @@ package com.analog.lyric.dimple.model.domains;
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.collect.ArrayUtil;
+import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.variables.Bit;
 import com.analog.lyric.util.misc.Nullable;
+import com.google.common.collect.Interner;
 import com.google.common.math.DoubleMath;
 
 /**
@@ -36,6 +38,25 @@ import com.google.common.math.DoubleMath;
 public abstract class DiscreteDomain extends Domain
 {
 	private static final long serialVersionUID = 1L;
+	
+	private static enum InternedDomains
+	{
+		INSTANCE;
+		
+		private final Interner<DiscreteDomain> interner = WeakInterner.create();
+	}
+
+	@Override
+	protected DiscreteDomain intern()
+	{
+		return InternedDomains.INSTANCE.interner.intern(this);
+	}
+	
+	@SuppressWarnings("unchecked")
+	static <D extends DiscreteDomain> D intern(D domain)
+	{
+		return (D)domain.intern();
+	}
 	
 	/*--------------
 	 * Construction
@@ -99,7 +120,7 @@ public abstract class DiscreteDomain extends Domain
 			if (useEnumDomain)
 			{
 				@SuppressWarnings({ "unchecked", "rawtypes" })
-				TypedDiscreteDomain<T> domain = new EnumDomain(eltClass);
+				TypedDiscreteDomain<T> domain = intern(new EnumDomain(eltClass));
 				return domain;
 			}
 		}
@@ -181,17 +202,17 @@ public abstract class DiscreteDomain extends Domain
 			}
 		}
 		
-		return new ArrayDiscreteDomain<T>(firstElt, offset, moreElements);
+		return intern(new ArrayDiscreteDomain<T>(firstElt, offset, moreElements));
 	}
 	
 	public static <E extends Enum<E>> EnumDomain<E> forEnum(Class<E> enumClass)
 	{
-		return new EnumDomain<E>(enumClass);
+		return intern(new EnumDomain<E>(enumClass));
 	}
 	
 	public static <T> JointDiscreteDomain<T> joint(JointDomainIndexer domains)
 	{
-		return new JointDiscreteDomain<T>(domains);
+		return intern(new JointDiscreteDomain<T>(domains));
 	}
 	
 	public static <T> JointDiscreteDomain<T> joint(TypedDiscreteDomain<?>... domains)
@@ -206,12 +227,12 @@ public abstract class DiscreteDomain extends Domain
 
 	public static IntRangeDomain range(int low, int high)
 	{
-		return new IntRangeDomain(low, high, 1);
+		return intern(new IntRangeDomain(low, high, 1));
 	}
 	
 	public static IntRangeDomain range(int low, int high, int interval)
 	{
-		return new IntRangeDomain(low, high, interval);
+		return intern(new IntRangeDomain(low, high, interval));
 	}
 
 	public static DoubleRangeDomain range(double low, double high)
@@ -231,7 +252,7 @@ public abstract class DiscreteDomain extends Domain
 	
 	public static FiniteFieldDomain finiteField(int primitivePolynomial)
 	{
-		return new FiniteFieldDomain(primitivePolynomial);
+		return intern(new FiniteFieldDomain(primitivePolynomial));
 	}
 
 	/*----------------
