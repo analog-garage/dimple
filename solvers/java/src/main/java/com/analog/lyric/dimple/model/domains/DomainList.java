@@ -21,7 +21,10 @@ import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.RandomAccess;
 
+import com.analog.lyric.collect.WeakInterner;
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
+import com.google.common.collect.Interner;
 
 /**
  * An immutable ordered list of {@link Domain}.
@@ -32,6 +35,23 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 
 	final D[] _domains;
 
+	/**
+	 * Responsible for weakly caching all JointDomainIndexer instances.
+	 */
+	private static enum DomainListInterner implements Interner<DomainList<?>>
+	{
+		INSTANCE;
+		
+		private final WeakInterner<DomainList<?>> _interner = WeakInterner.create();
+
+		@NonNullByDefault(false)
+		@Override
+		public DomainList<?> intern(DomainList<?> indexer)
+		{
+			return _interner.intern(indexer);
+		}
+	}
+	
 	/*--------------
 	 * Construction
 	 */
@@ -39,6 +59,28 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 	DomainList(D[] domains)
 	{
 		_domains = domains;
+	}
+	
+	/**
+	 * Returns canonical interned copy of indexer.
+	 * <p>
+	 * Used internally for caching instances upon creation.
+	 * <p>
+	 * @since 0.07
+	 */
+	@SuppressWarnings("unchecked")
+	static <DL extends DomainList<?>> DL intern(DL indexer)
+	{
+		return (DL) DomainListInterner.INSTANCE.intern(indexer);
+	}
+	
+	/**
+	 * Replace instance with canonical interned copy if it exists.
+	 * @since 0.07
+	 */
+	protected Object readResolve()
+	{
+		return intern(this);
 	}
 	
 	/**
@@ -61,11 +103,9 @@ public class DomainList<D extends Domain> extends AbstractList<D> implements Ran
 			return domainList;
 		}
 	
-		// TODO: implement cache
-		
 		// TODO: do something with inputIndices for non-discrete case?
 		
-		return new DomainList<T>(domains);
+		return intern(new DomainList<T>(domains));
 	}
 	
 	/**

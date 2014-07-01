@@ -31,13 +31,11 @@ import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.Comparators;
 import com.analog.lyric.collect.Supers;
-import com.analog.lyric.collect.WeakInterner;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.values.DiscreteValue;
 import com.analog.lyric.dimple.model.values.Value;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
-import com.google.common.collect.Interner;
 
 /**
  * Provides a representation and canonical indexing operations for an ordered list of
@@ -121,23 +119,6 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	 */
 	private final Class<?> _elementClass;
 
-	/**
-	 * Responsible for weakly caching all JointDomainIndexer instances.
-	 */
-	private static enum IndexerInterner implements Interner<JointDomainIndexer>
-	{
-		INSTANCE;
-		
-		private final WeakInterner<JointDomainIndexer> _interner = WeakInterner.create();
-
-		@NonNullByDefault(false)
-		@Override
-		public JointDomainIndexer intern(JointDomainIndexer indexer)
-		{
-			return _interner.intern(indexer);
-		}
-	}
-	
 	/*--------------
 	 * Construction
 	 */
@@ -165,28 +146,6 @@ public abstract class JointDomainIndexer extends DomainList<DiscreteDomain>
 	JointDomainIndexer(DiscreteDomain[] domains)
 	{
 		this(computeHashCode(domains), domains);
-	}
-	
-	/**
-	 * Returns canonical interned copy of indexer.
-	 * <p>
-	 * Used internally for caching instances upon creation.
-	 * <p>
-	 * @since 0.07
-	 */
-	@SuppressWarnings("unchecked")
-	static <Indexer extends JointDomainIndexer> Indexer intern(Indexer indexer)
-	{
-		return (Indexer) IndexerInterner.INSTANCE.intern(indexer);
-	}
-	
-	/**
-	 * Replace instance with canonical interned copy if it exists.
-	 * @since 0.07
-	 */
-	protected Object readResolve()
-	{
-		return intern(this);
 	}
 	
 	private static JointDomainIndexer lookupOrCreate(@Nullable BitSet outputs, DiscreteDomain[] domains, boolean cloneDomains)
