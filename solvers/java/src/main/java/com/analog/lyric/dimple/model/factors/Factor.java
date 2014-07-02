@@ -516,6 +516,8 @@ public class Factor extends FactorBase implements Cloneable
 		
 		_directedTo = directedTo;
 		
+		notifyConnectionsChanged();
+
 		if (curDomains != null)
 		{
 			JointDomainIndexer newDomains = getDomainList().asJointDomainIndexer();
@@ -530,7 +532,6 @@ public class Factor extends FactorBase implements Cloneable
 		{
 			sfactor.setDirectedTo(directedTo);
 		}
-		
 	}
 	
 	public boolean isDirectedTo(int edge)

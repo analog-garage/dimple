@@ -37,6 +37,12 @@ import com.analog.lyric.util.misc.Nullable;
  */
 public class DiscreteFactor extends Factor
 {
+	/*-------
+	 * State
+	 */
+	
+	private @Nullable JointDomainIndexer _domainList = null;
+	
 	/*--------------
 	 * Construction
 	 */
@@ -64,7 +70,13 @@ public class DiscreteFactor extends Factor
 	{
 		return (Discrete)super.getSibling(i);
 	}
-
+	
+	@Override
+	protected void notifyConnectionsChanged()
+	{
+		_domainList = null;
+	}
+	
 	/*----------------
 	 * Factor methods
 	 */
@@ -72,17 +84,24 @@ public class DiscreteFactor extends Factor
 	@Override
 	public JointDomainIndexer getDomainList()
 	{
-		int numVariables = getSiblingCount();
+		JointDomainIndexer domainList = _domainList;
 		
-		DiscreteDomain[] domains = new DiscreteDomain[numVariables];
-		
-		for (int i = 0; i < numVariables; i++)
+		if (domainList == null)
 		{
-			domains[i] = getSibling(i).getDomain();
+			int numVariables = getSiblingCount();
+
+			DiscreteDomain[] domains = new DiscreteDomain[numVariables];
+
+			for (int i = 0; i < numVariables; i++)
+			{
+				domains[i] = getSibling(i).getDomain();
+			}
+
+			domainList = JointDomainIndexer.create(_directedTo, domains);
+			_domainList = domainList;
 		}
 		
-		return JointDomainIndexer.create(_directedTo, domains);
-		
+		return domainList;
 	}
 
 	public int[][] getPossibleBeliefIndices()

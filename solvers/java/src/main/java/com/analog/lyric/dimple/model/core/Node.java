@@ -161,6 +161,7 @@ public abstract class Node implements INode, Cloneable
 		_label = label;
 		_siblings = siblings;
 		_parentGraph = parentGraph;
+		notifyConnectionsChanged();
 	}
 
 	@Override
@@ -533,6 +534,7 @@ public abstract class Node implements INode, Cloneable
 		{
 			siblingToIndex.put(node.getId(), _siblings.size());
 		}
+		notifyConnectionsChanged();
 	}
 	
 	@Override
@@ -544,6 +546,7 @@ public abstract class Node implements INode, Cloneable
 		{
 			_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		}
+		notifyConnectionsChanged();
 	}
 	
 	@Override
@@ -815,6 +818,7 @@ public abstract class Node implements INode, Cloneable
 		_siblings.clear();
 		_siblingIndices = ArrayUtil.EMPTY_INT_ARRAY;
 		_siblingToIndex = null;
+		notifyConnectionsChanged();
 	}
 	
 	/**
@@ -841,6 +845,18 @@ public abstract class Node implements INode, Cloneable
 	protected boolean isFlagSet(int mask)
 	{
 		return BitSetUtil.isMaskSet(_flags, mask);
+	}
+
+	/**
+	 * Invoked when a change is made to the siblings list.
+	 * Subclasses may override this to clear cached state that
+	 * was computed from the siblings. The default implementation
+	 * does nothing.
+	 * 
+	 * @since 0.07
+	 */
+	protected void notifyConnectionsChanged()
+	{
 	}
 	
 	protected final void raiseEvent(@Nullable DimpleEvent event)
@@ -874,6 +890,7 @@ public abstract class Node implements INode, Cloneable
 				siblingToIndex.removeKey(oldNode.getId());
 				siblingToIndex.put(newNode.getId(), index + 1);
 			}
+			notifyConnectionsChanged();
 		}
 	}
 	
