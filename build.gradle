@@ -48,8 +48,8 @@ task(longVersion) {
 			ext.currentBranchName = out.toString().trim()
 		}
 	} catch (Exception ex) {
-		logger.error(ex.toString())
-		ext.currentGitBranchName = 'unknown'
+		logger.error("WARNING: could not determine git branch: " + ex.toString())
+		ext.currentBranchName = 'unknown-branch'
 	}
 
 	// lastGitCommitDate
@@ -62,8 +62,8 @@ task(longVersion) {
 			ext.lastGitCommitDate = out.toString().trim()
 		}
 	} catch (Exception ex) {
-		logger.error(ex.toString())
-		ext.currentGitBranchName = 'unknown'
+		logger.error("WARNING: could not determine git commit date:" + ex.toString())
+		ext.lastGitCommitDate = 'unknown-date'
 	}
 
 	String dimpleLongVersion = "${dimpleVersion} ${currentBranchName} ${lastGitCommitDate}"
