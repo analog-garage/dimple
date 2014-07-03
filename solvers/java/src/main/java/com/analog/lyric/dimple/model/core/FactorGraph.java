@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   Copyright 2012 Analog Devices, Inc.
+ *   Copyright 2012-2014 Analog Devices, Inc.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -152,11 +152,9 @@ public class FactorGraph extends FactorBase
 
 
 
-	/***************************************************************
-	 * 
-	 * Constructors
-	 * 
-	 ******************************************************************/
+	/*--------------
+	 * Construction
+	 */
 
 	public FactorGraph()
 	{
@@ -289,13 +287,10 @@ public class FactorGraph extends FactorBase
 		notifyListenerChanged();
 	}
 
-	/***************************************************************
-	 * 
+	/*==============
 	 * Solver stuff
-	 * @stuff
-	 * 
-	 ******************************************************************/
-
+	 */
+	
 	private @Nullable ISolverFactorGraph setSolverFactorySubGraph(@Nullable ISolverFactorGraph parentSolverGraph,
 		@Nullable IFactorGraphFactory<?> factory)
 	{
@@ -362,13 +357,12 @@ public class FactorGraph extends FactorBase
 
 
 
-	/***************************************************************
-	 * 
-	 * Tables and Functions
-	 * 
-	 ******************************************************************/
+	//========================
+	//
+	// Tables and Functions
+	//
+	//========================
 
-	/** */
 	public static boolean allDomainsAreDiscrete(VariableBase [] vars)
 	{
 		for (int i = 0; i < vars.length; i++)
@@ -1024,11 +1018,12 @@ public class FactorGraph extends FactorBase
 		else
 			return false;
 	}
-	/***************************************************************
-	 * 
-	 * Scheduling
-	 * 
-	 ******************************************************************/
+	
+	//==============
+	//
+	// Scheduling
+	//
+	//==============
 
 
 	// This is the method to use when specifically setting a custom schedule to override an automatic scheduler
@@ -1160,14 +1155,11 @@ public class FactorGraph extends FactorBase
 		
 	}
 
-
-
-
-	/***************************************************************
-	 * 
-	 * Nested Graphs
-	 * 
-	 ******************************************************************/
+	//============================
+	//
+	// Nested Graphs
+	//
+	//============================
 
 	public FactorGraph addFactor(FactorGraph subGraph, VariableBase ... boundaryVariables)
 	{
@@ -1462,12 +1454,12 @@ public class FactorGraph extends FactorBase
 		}
 	}
 
-	/***************************************************************
-	 * 
-	 * Operations on FactorGraph
-	 * 
-	 ******************************************************************/
-
+	//============================
+	//
+	// Operations on FactorGraph
+	//
+	//============================
+	
 	/*
 	 * This method tries to optimize the BetheFreeEnergy by searching over the space of
 	 * FactorTable values.
@@ -1823,11 +1815,11 @@ public class FactorGraph extends FactorBase
 		_versionId++;							// The graph has changed
 	}
 
-	/*********************************************************
-	 * 
-	 * Graph algorithms
-	 * 
-	 *********************************************************/
+	//===================
+	//
+	// Graph algorithms
+	//
+	//===================
 
 	/**
 	 * True if graph is comprised of a set of one or more disjoint trees. That is,
@@ -2173,11 +2165,11 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	/***********************************************
-	 * 
-	 * Introspection
-	 * 
-	 ***********************************************/
+	//=================
+	//
+	// Introspection
+	//
+	//=================
 
 	@Override
 	public @Nullable ISolverFactorGraph getSolver()
@@ -2579,11 +2571,12 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	/***************************************************************
-	 * 
-	 * Names
-	 * 
-	 ******************************************************************/
+	//=========
+	//
+	// Names
+	//
+	//=========
+	
 	private boolean addNameAndUUID(INameable nameable)
 	{
 		boolean added = false;
@@ -3268,13 +3261,9 @@ public class FactorGraph extends FactorBase
 		return groups != null ? groups.get(variableGroupID) : null;
 	}
 
-	/****************************
-	 * addFactor stuff
-	 ***************************/
-
-	/*******************
-	 * Serialization
-	 ********************/
+	//===============
+	// Serialization
+	//===============
 
 	public String serializeToXML(String FgName, String targetDirectory)
 	{
@@ -3297,9 +3286,9 @@ public class FactorGraph extends FactorBase
 	}
 
 
-	/*********************
-	 * FactorGraphDiffs
-	 * *******************/
+	//==================
+	// FactorGraphDiffs
+	//==================
 
 	public FactorGraphDiffs getFactorGraphDiffs(FactorGraph b, boolean quickExit, boolean byName)
 	{
