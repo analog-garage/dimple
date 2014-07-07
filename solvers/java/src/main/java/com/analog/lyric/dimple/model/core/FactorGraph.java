@@ -184,7 +184,10 @@ public class FactorGraph extends FactorBase
 		if (boundaryVariables != null)
 			addBoundaryVariables(boundaryVariables);
 
-		if(name == ""){name = null;}
+		if ("".equals(name))
+		{
+			name = null;
+		}
 		setName(name);
 
 		if(solver != null)
