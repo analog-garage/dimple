@@ -49,6 +49,7 @@ if hasStats
 end
 test5(debugPrint, repeatable);
 test6(debugPrint, repeatable);
+test7(debugPrint, repeatable);
 
 dtrace(debugPrint, '--testSampledFactors');
 end
@@ -321,6 +322,26 @@ function test6(debugPrint, repeatable)
     assert(y.Belief.Precision > 1000);
 
 end
+
+% Test setting fixed-value with sampled factors
+% (this is from a use-case that failed when fixed values were being
+% improperly cleared)
+function test7(debugPrint, repeatable)
+
+dimension=5;
+length = 2;
+TransitionMatrix = Real(dimension,dimension);
+T2 = FactorFunction('DiscreteTransitionUnnormalizedParameters',dimension);
+x=Discrete(0:(dimension-1),length,1);
+fg = FactorGraph;
+for i=1:dimension^2
+    TransitionMatrix(i).FixedValue=1;
+end
+fg.addFactorVectorized(T2,x(2:end),x(1:end-1),{TransitionMatrix,[]});
+fg.solve();
+
+end
+
 
 function C = randCovariance(n)
 

@@ -59,26 +59,30 @@ public class MultivariateNormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
-		MultivariateNormalParameters inputMessage = (MultivariateNormalParameters)requireNonNull(getInputMessage());
-		if (inputMessage.isNull())
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
 		{
-			_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
-		}
-		else
-		{
-			MultivariateNormal variableInput = _variableInput;
-			if (variableInput == null)
-				variableInput = _variableInput = new MultivariateNormal(inputMessage);
+			MultivariateNormalParameters inputMessage = (MultivariateNormalParameters)requireNonNull(getInputMessage());
+			if (inputMessage.isNull())
+			{
+				_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
+			}
 			else
-				variableInput.setParameters(inputMessage);
-			_variable.setInputObject(variableInput);
+			{
+				MultivariateNormal variableInput = _variableInput;
+				if (variableInput == null)
+					variableInput = _variableInput = new MultivariateNormal(inputMessage);
+				else
+					variableInput.setParameters(inputMessage);
+				_variable.setInputObject(variableInput);
+			}
 		}
 	}
 	
 	@Override
 	public final void setVariableInputUniform()
 	{
-		_variable.setInputObject(null);
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
+			_variable.setInputObject(null);
 	}
 
 	@Override
