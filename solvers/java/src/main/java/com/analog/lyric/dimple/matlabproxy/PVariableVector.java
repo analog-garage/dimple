@@ -158,11 +158,4 @@ public class PVariableVector extends PNodeVector
 		return retval;
 	}
 
-	public void setProperty(String key,Object value)
-	{
-		for (VariableBase vb : getVariableArray())
-			vb.setProperty(key, value);
-	}
-
-
 }

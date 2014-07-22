@@ -207,6 +207,12 @@ public class FactorGraph extends FactorBase
 	}
 
 	@Override
+	public NodeType getNodeType()
+	{
+		return NodeType.GRAPH;
+	}
+	
+	@Override
 	public String getClassLabel()
 	{
 		return "Graph";

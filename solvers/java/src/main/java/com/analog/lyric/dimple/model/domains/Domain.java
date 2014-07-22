@@ -105,6 +105,20 @@ public abstract class Domain implements Serializable
 	public @Nullable ComplexDomain asComplex() { return null; }
 	
 	/**
+	 * The number of dimensions for elements of the domain.
+	 * <p>
+	 * Returns one for {@linkplain #isScalar() scalar} domains. For {@link RealJointDomain}
+	 * and {@link JointDiscreteDomain}, returns the size of the array needed to hold the
+	 * components of a single element.
+	 * <p>
+	 * @since 0.07
+	 */
+	public int getDimensions()
+	{
+		return 1;
+	}
+	
+	/**
 	 * True if domain only contains values that can be represented using an {@code int}.
 	 */
 	public boolean hasIntCompatibleValues() { return false; }

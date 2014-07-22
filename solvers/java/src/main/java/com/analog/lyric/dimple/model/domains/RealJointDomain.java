@@ -251,6 +251,7 @@ public class RealJointDomain extends Domain
 	/**
 	 * Returns the number of dimensions, or subdomains that make up this joint domain.
 	 */
+	@Override
 	public final int getDimensions()
 	{
 		return _size;

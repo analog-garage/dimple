@@ -19,9 +19,7 @@ package com.analog.lyric.dimple.model.variables;
 import static java.util.Objects.*;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.analog.lyric.dimple.events.IDataEventSource;
 import com.analog.lyric.dimple.events.IDimpleEventListener;
@@ -30,6 +28,7 @@ import com.analog.lyric.dimple.factorfunctions.Equality;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.Node;
 import com.analog.lyric.dimple.model.core.NodeId;
+import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.factors.FactorBase;
@@ -77,7 +76,6 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 	protected @Nullable Object _fixedValue = null;
 	protected String _modelerClassName;
 	protected @Nullable ISolverVariable _solverVariable = null;
-	protected @Nullable Map<String,Object> _properties = null;
 	private final Domain _domain;
     private boolean _hasFixedValue = false;
     
@@ -145,6 +143,12 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 		return true;
 	}
 	
+	@Override
+	public NodeType getNodeType()
+	{
+		return NodeType.VARIABLE;
+	}
+
 	@Override
 	public String getClassLabel()
     {
@@ -354,22 +358,6 @@ public abstract class VariableBase extends Node implements Cloneable, IDataEvent
 		}
 	}
 	
-	public void setProperty(String key,Object value)
-	{
-		Map<String,Object> properties = _properties;
-		if (properties == null)
-		{
-			properties = _properties = new HashMap<String,Object>();
-		}
-		properties.put(key, value);
-	}
-	
-	public @Nullable Object getProperty(String key)
-	{
-		final Map<String, Object> properties = _properties;
-		return properties == null ? null : properties.get(key);
-	}
-
 	public @Nullable Object getFixedValueObject()
 	{
 		return _fixedValue;

@@ -73,6 +73,13 @@ public interface INode  extends INameable, IModelEventSource
 	public boolean isVariable();
 
 	/**
+	 * Indicates whether node is a factor, graph, or variable.
+	 * <p>
+	 * @since 0.07
+	 */
+	public abstract NodeType getNodeType();
+	
+	/**
 	 * Returns an unmodifiable list of sibling nodes attached to this node.
 	 * This may allocate a new object, so the caller should avoid calling
 	 * this repeatedly for the same node in a loop.
