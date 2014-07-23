@@ -19,6 +19,7 @@ package com.analog.lyric.options;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -49,6 +50,17 @@ public interface IOptionHolder
 	 * @throws UnsupportedOperationException if object does not support local option values.
 	 */
 	public ConcurrentMap<IOptionKey<?>,Object> createLocalOptions();
+	
+	/**
+	 * Iterates over option holders in order in which lookup should be delegated.
+	 * <p>
+	 * The default implementations provided by {@link AbstractOptionHolder} and
+	 * {@link AbstractOptions} returns a {@link OptionParentIterator} instance,
+	 * which simply walks up the chain of option parents.
+	 * <p>
+	 * @since 0.07
+	 */
+	public ReleasableIterator<IOptionHolder> getOptionDelegates();
 	
 	/**
 	 * The "parent" of this option holder to which option lookup will be delegated for option

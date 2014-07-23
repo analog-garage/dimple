@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -31,6 +32,12 @@ public abstract class AbstractOptions implements IOptions
 	 * IOptionHolder methods
 	 */
 	
+	@Override
+	public ReleasableIterator<IOptionHolder> getOptionDelegates()
+	{
+		return OptionParentIterator.create(this);
+	}
+
 	@Override
 	public IOptions options()
 	{

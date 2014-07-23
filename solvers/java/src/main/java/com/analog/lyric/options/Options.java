@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.jcip.annotations.ThreadSafe;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 @ThreadSafe
@@ -94,30 +95,39 @@ public class Options extends AbstractOptions
 
 	public static @Nullable <T> T lookupOrNull(IOptionHolder holder, IOptionKey<T> key)
 	{
-		while (true)
+		Map<IOptionKey<?>,Object> options = holder.getLocalOptions(false);
+		if (options != null)
 		{
-			Map<IOptionKey<?>,Object> options = holder.getLocalOptions(false);
-			if (options != null)
+			final Object value = options.get(key);
+			if (value != null)
 			{
-				Object value = options.get(key);
-				if (value != null)
-				{
-					return key.type().cast(value);
-				}
-			}
-			
-			IOptionHolder parent = holder.getOptionParent();
-			if (parent != null)
-			{
-				holder = parent;
-			}
-			else
-			{
-				break;
+				return key.type().cast(value);
 			}
 		}
 
-		return null;
+		ReleasableIterator<IOptionHolder> delegates = holder.getOptionDelegates();
+		
+		T result = null;
+		
+		while (delegates.hasNext())
+		{
+			final IOptionHolder delegate = delegates.next();
+			
+			options = delegate.getLocalOptions(false);
+			if (options != null)
+			{
+				final Object value = options.get(key);
+				if (value != null)
+				{
+					result = key.type().cast(value);
+					break;
+				}
+			}
+		}
+		
+		delegates.release();
+
+		return result;
 	}
 
 }

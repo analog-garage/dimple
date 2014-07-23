@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -63,6 +64,12 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
 	{
 		return null;
+	}
+	
+	@Override
+	public ReleasableIterator<IOptionHolder> getOptionDelegates()
+	{
+		return OptionParentIterator.create(this);
 	}
 	
 	/**
