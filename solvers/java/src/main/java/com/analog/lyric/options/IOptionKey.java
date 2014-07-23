@@ -17,9 +17,11 @@
 package com.analog.lyric.options;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -39,6 +41,23 @@ import com.analog.lyric.util.misc.Nullable;
 @Immutable
 public interface IOptionKey<T> extends Serializable
 {
+	/**
+	 * Comparator that orders keys by name.
+	 * 
+	 * @since 0.07
+	 */
+	public enum CompareByName implements Comparator<IOptionKey<?>>
+	{
+		INSTANCE;
+		
+		@NonNullByDefault(false)
+		@Override
+		public int compare(IOptionKey<?> key1, IOptionKey<?> key2)
+		{
+			return key1.name().compareTo(key2.name());
+		}
+	}
+	
 	/*-------------------------
 	 * Enum-compatible methods
 	 * 

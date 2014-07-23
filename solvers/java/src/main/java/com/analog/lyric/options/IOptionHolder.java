@@ -60,7 +60,7 @@ public interface IOptionHolder
 	 * <p>
 	 * @since 0.07
 	 */
-	public ReleasableIterator<IOptionHolder> getOptionDelegates();
+	public ReleasableIterator<? extends IOptionHolder> getOptionDelegates();
 	
 	/**
 	 * The "parent" of this option holder to which option lookup will be delegated for option

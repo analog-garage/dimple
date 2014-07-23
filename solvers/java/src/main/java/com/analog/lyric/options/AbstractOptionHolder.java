@@ -67,7 +67,7 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	}
 	
 	@Override
-	public ReleasableIterator<IOptionHolder> getOptionDelegates()
+	public ReleasableIterator<? extends IOptionHolder> getOptionDelegates()
 	{
 		return OptionParentIterator.create(this);
 	}

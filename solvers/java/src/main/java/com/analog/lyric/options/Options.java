@@ -105,7 +105,7 @@ public class Options extends AbstractOptions
 			}
 		}
 
-		ReleasableIterator<IOptionHolder> delegates = holder.getOptionDelegates();
+		ReleasableIterator<? extends IOptionHolder> delegates = holder.getOptionDelegates();
 		
 		T result = null;
 		

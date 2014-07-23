@@ -16,6 +16,7 @@
 
 package com.analog.lyric.options.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import java.util.Map.Entry;
@@ -28,6 +29,7 @@ import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 import com.analog.lyric.options.OptionKey;
+import com.analog.lyric.options.OptionKeys;
 import com.analog.lyric.options.OptionRegistry;
 import com.analog.lyric.options.StringOptionKey;
 import com.analog.lyric.util.misc.Nullable;
@@ -41,7 +43,7 @@ import com.analog.lyric.util.misc.Nullable;
 public class TestOptionRegistry
 {
 	@Test
-	public void test()
+	public void testRegistry()
 	{
 		OptionRegistry registry = new OptionRegistry();
 		assertEquals(0, registry.size());
@@ -71,6 +73,37 @@ public class TestOptionRegistry
 		assertNull(registry.get(FieldOptions.I23.qualifiedName()));
 		assertSame(EnumOptions.E1, registry.get(OptionKey.qualifiedName(EnumOptions.E1)));
 		assertInvariants(registry);
+	}
+	
+	@Test
+	public void testOptionKeys()
+	{
+		testOptionKeys(Object.class);
+		testOptionKeys(getClass());
+		testOptionKeys(EnumOptions.class, EnumOptions.E1);
+		testOptionKeys(FieldOptions.class, FieldOptions.I23, FieldOptions.I42, FieldOptions.S1, FieldOptions.S2);
+	}
+	
+	private void testOptionKeys(Class<?> declaringClass, IOptionKey<?> ... expected)
+	{
+		OptionKeys keys = OptionKeys.declaredInClass(declaringClass);
+		assertSame(keys, OptionKeys.declaredInClass(declaringClass));
+		
+		assertSame(declaringClass, keys.declaringClass());
+		
+		final int size = keys.size();
+		
+		assertEquals(expected.length, size);
+
+		for (int i = 0; i < size; ++i)
+		{
+			IOptionKey<?> key = keys.get(i);
+			assertSame(key, keys.get(key.name()));
+		}
+		
+		assertNull(keys.get("does not exist"));
+		expectThrow(IndexOutOfBoundsException.class, keys, "get", -1);
+		expectThrow(IndexOutOfBoundsException.class, keys, "get", size);
 	}
 	
 	private void assertInvariants(OptionRegistry registry)

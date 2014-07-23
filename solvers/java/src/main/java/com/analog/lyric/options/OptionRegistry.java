@@ -16,7 +16,6 @@
 
 package com.analog.lyric.options;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
@@ -83,34 +82,10 @@ public class OptionRegistry
 	public int addFromClass(Class<?> declaringClass)
 	{
 		int nAdded = 0;
-		if (declaringClass.isEnum() && IOptionKey.class.isAssignableFrom(declaringClass))
+		for (IOptionKey<?> key : OptionKeys.declaredInClass(declaringClass))
 		{
-			// Enum implements IOptionKey, so all of its instances are options
-			// that can be registered.
-			for (Object option : declaringClass.getEnumConstants())
-			{
-				add((IOptionKey<?>)option);
-				++nAdded;
-			}
-		}
-		
-		
-		try
-		{
-			for (Field field : declaringClass.getFields())
-			{
-				if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
-					IOptionKey.class.isAssignableFrom(field.getType()))
-				{
-					add((IOptionKey<?>)field.get(declaringClass));
-					++nAdded;
-				}
-			}
-		}
-		catch (IllegalAccessException ex)
-		{
-			// This shouldn't happen for public fields, but turn into RuntimeException if it does
-			throw new RuntimeException(ex);
+			add(key);
+			++nAdded;
 		}
 		
 		for (Class<?> innerClass : declaringClass.getDeclaredClasses())
