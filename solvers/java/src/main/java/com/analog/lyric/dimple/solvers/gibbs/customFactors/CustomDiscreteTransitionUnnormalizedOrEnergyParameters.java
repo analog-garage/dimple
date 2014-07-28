@@ -144,7 +144,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		FactorFunction containedFactorFunction = factorFunction.getContainedFactorFunction();	// In case the factor function is wrapped
 		if (containedFactorFunction instanceof DiscreteTransitionUnnormalizedParameters)
 		{
-			DiscreteTransitionUnnormalizedParameters specificFactorFunction = (DiscreteTransitionUnnormalizedParameters)factorFunction;
+			DiscreteTransitionUnnormalizedParameters specificFactorFunction = (DiscreteTransitionUnnormalizedParameters)containedFactorFunction;
 			_xDimension = specificFactorFunction.getXDimension();
 			_yDimension = specificFactorFunction.getYDimension();
 			_numParameters = specificFactorFunction.getNumParameters();
@@ -152,7 +152,7 @@ public class CustomDiscreteTransitionUnnormalizedOrEnergyParameters extends SRea
 		}
 		else if (containedFactorFunction instanceof DiscreteTransitionEnergyParameters)
 		{
-			DiscreteTransitionEnergyParameters specificFactorFunction = (DiscreteTransitionEnergyParameters)factorFunction;
+			DiscreteTransitionEnergyParameters specificFactorFunction = (DiscreteTransitionEnergyParameters)containedFactorFunction;
 			_xDimension = specificFactorFunction.getXDimension();
 			_yDimension = specificFactorFunction.getYDimension();
 			_numParameters = specificFactorFunction.getNumParameters();
