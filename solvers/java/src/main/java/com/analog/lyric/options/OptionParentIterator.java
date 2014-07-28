@@ -18,15 +18,18 @@ package com.analog.lyric.options;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
- * 
+ * Iterates chain of option parents.
+ * <p>
+ * Visits chain of option holders from child to parent.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class OptionParentIterator implements ReleasableIterator<IOptionHolder>
+public class OptionParentIterator extends UnmodifiableReleasableIterator<IOptionHolder>
 {
 	private @Nullable IOptionHolder _next;
 	
@@ -36,6 +39,13 @@ public class OptionParentIterator implements ReleasableIterator<IOptionHolder>
 	{
 	}
 	
+	/**
+	 * Returns an iterator starting with given option holder.
+	 * <p>
+	 * @param holder is a non-null option holder, which will be the
+	 * first element in the iteration.
+	 * @since 0.07
+	 */
 	public static OptionParentIterator create(IOptionHolder holder)
 	{
 		OptionParentIterator iter = reusableInstance.getAndSet(null);
@@ -69,20 +79,21 @@ public class OptionParentIterator implements ReleasableIterator<IOptionHolder>
 	}
 
 	@Override
-	public void remove()
-	{
-		throw new UnsupportedOperationException("Iterator.remove");
-	}
-
-	@Override
 	public void release()
 	{
 		_next = null;
 		reusableInstance.set(this);
 	}
 	
+	/* TODO
+	 * Resets iteration beginning with specified element.
+	 * <p>
+	 * @param holder is a non-null option holder which will be the
+	 * next element in the iteration.
+	 * @since 0.07
+	 */
 	public void reset(IOptionHolder holder)
 	{
-		_next = holder.getOptionParent();
+		_next = holder.getOptionParent(); // TODO: start with holder itself instaed of parent.
 	}
 }

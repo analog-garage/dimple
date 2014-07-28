@@ -28,7 +28,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.05
  */
 @NotThreadSafe
-public final class ReleasableArrayIterator<T> implements ReleasableIterator<T>
+public final class ReleasableArrayIterator<T> extends UnmodifiableReleasableIterator<T>
 {
 	private @Nullable T[] _array;
 	private int _size;
@@ -73,12 +73,6 @@ public final class ReleasableArrayIterator<T> implements ReleasableIterator<T>
 	public T next()
 	{
 		return _array[_index++];
-	}
-
-	@Override
-	public void remove()
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	/*----------------------------
