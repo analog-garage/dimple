@@ -16,13 +16,15 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
+
 import net.jcip.annotations.Immutable;
 
 /**
  * A generic {@link IOptionKey} implementation.
  */
 @Immutable
-public class GenericOptionKey<T> extends OptionKey<T>
+public class GenericOptionKey<T extends Serializable> extends OptionKey<T>
 {
 	/*-------
 	 * State

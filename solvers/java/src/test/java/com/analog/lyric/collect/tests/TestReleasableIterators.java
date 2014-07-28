@@ -16,18 +16,47 @@
 
 package com.analog.lyric.collect.tests;
 
+import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableArrayIterator;
+import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.collect.ReleasableIterators;
+import com.analog.lyric.collect.UnmodifiableReleasableIterator;
+import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.ExceptionTester;
 
-public class TestReleasableArrayIterator
+public class TestReleasableIterators
 {
+	@Test
+	public void testUnmodifiableReleasableIterator()
+	{
+		ReleasableIterator<?> iter = new UnmodifiableReleasableIterator<Object>() {
+			@Override
+			public void release()
+			{
+			}
+
+			@Override
+			public boolean hasNext()
+			{
+				return false;
+			}
+
+			@Override
+			public @Nullable Object next()
+			{
+				return null;
+			}
+		};
+		
+		expectThrow(UnsupportedOperationException.class, iter, "remove");
+	}
 
 	@Test
-	public void test()
+	public void testReleaseableArrayIterator()
 	{
 		Integer[] digits = new Integer[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		
@@ -45,4 +74,16 @@ public class TestReleasableArrayIterator
 		iter.release();
 		assertSame(iter, ReleasableArrayIterator.create(digits));
 	}
+	
+	@Test
+	public void testEmptyIterator()
+	{
+		ReleasableIterator<String> iter = ReleasableIterators.emptyIterators();
+		
+		assertFalse(iter.hasNext());
+		assertNull(iter.next());
+		expectThrow(UnsupportedOperationException.class, iter, "remove");
+		iter.release(); // does nothing
+	}
+	
 }

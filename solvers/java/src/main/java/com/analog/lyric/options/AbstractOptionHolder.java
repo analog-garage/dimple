@@ -16,83 +16,60 @@
 
 package com.analog.lyric.options;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.io.Serializable;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
- * @author cbarber
- *
+ * Provides default implementation of some {@link IOptionHolder} methods.
+ * <p>
+ * @see LocalOptionHolder
+ * @see StatelessOptionHolder
+ * @since 0.07
+ * @author Christopher Barber
  */
 public abstract class AbstractOptionHolder implements IOptionHolder
 {
-
-	/**
-	 * {@inheritDoc}
-	 * Default implementation invokes {@code clear} method on map returned
-	 * by {@link #getLocalOptions(boolean)} if not null.
-	 */
 	@Override
-	public void clearLocalOptions()
+	public ReleasableIterator<? extends IOptionHolder> getOptionDelegates()
 	{
-		ConcurrentMap<IOptionKey<?>,Object> localOptions = getLocalOptions(false);
-		if (localOptions != null)
-		{
-			localOptions.clear();
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * Default implementation always throws {@link UnsupportedOperationException}.
-	 */
-	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
-	{
-		throw new UnsupportedOperationException(
-			String.format("createLocalOptions not supported by '%s'", getClass().getSimpleName()));
+		return OptionParentIterator.create(this);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * Default implementation always returns null.
-	 */
-	@Override
-	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
-	{
-		return null;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * Default implementation returns null.
-	 */
 	@Override
 	public @Nullable IOptionHolder getOptionParent()
 	{
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * Default implementation returns empty list.
-	 */
 	@Override
-	public Set<IOptionKey<?>> getRelevantOptionKeys()
+	public <T extends Serializable> T getOptionOrDefault(IOptionKey<T> key)
 	{
-		return Collections.EMPTY_SET;
+		final T value = getOption(key);
+		return value != null ? value : key.defaultValue();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * Default implementation returns new {@link Options} instance for this object.
-	 */
 	@Override
-	public IOptions options()
+	@Nullable
+	public <T extends Serializable> T getOption(IOptionKey<T> key)
 	{
-		return new Options(this);
-	}
+		T result = null;
+		final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
+		
+		while (delegates.hasNext())
+		{
+			final IOptionHolder delegate = delegates.next();
+		
+			result = delegate.getLocalOption(key);
+			if (result != null)
+			{
+				break;
+			}
+		}
+		
+		delegates.release();
 
+		return result;
+	}
 }

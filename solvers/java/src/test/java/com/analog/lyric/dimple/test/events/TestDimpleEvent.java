@@ -29,6 +29,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.events.IDimpleEventSource;
 import com.analog.lyric.dimple.events.IModelEventSource;
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.options.StatelessOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
 
@@ -121,7 +122,7 @@ public class TestDimpleEvent
 		}
 	}
 	
-	private static class TestSource implements IDimpleEventSource
+	private static class TestSource extends StatelessOptionHolder implements IDimpleEventSource
 	{
 		private final String _name;
 		

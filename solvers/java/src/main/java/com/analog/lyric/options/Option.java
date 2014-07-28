@@ -16,35 +16,123 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 import net.jcip.annotations.Immutable;
 
 import com.analog.lyric.util.misc.Nullable;
 
+/**
+ * An immutable option key value pair.
+ * <p>
+ * @param <T> is the type of the value (see {@link IOptionKey} for details).
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
-public class Option<T> implements IOption<T>
+public class Option<T extends Serializable> implements IOption<T>
 {
 	/*-------
 	 * State
 	 */
 	
 	private final IOptionKey<T> _key;
-	private final T _value;
+	private final @Nullable T _value;
 	
 	/*--------------
 	 * Construction
 	 */
 	
+	/**
+	 * Constructs {@code key} paired with its default value.
+	 * <p>
+	 * The {@link #value} attribute will be set to the {@linkplain IOptionKey#defaultValue() defaultValue}
+	 * attribute of {@code key}.
+	 * <p>
+	 * @param key a non-null option key.
+	 * @since 0.07
+	 */
 	public Option(IOptionKey<T> key)
 	{
 		this(key, key.defaultValue());
 	}
 	
-	public Option(IOptionKey<T> key, T value)
+	/**
+	 * Constructs key/value pair from corresponding arguments.
+	 * @param key a non-null option key.
+	 * @param value a non-null value of the correct type for the key.
+	 * @since 0.07
+	 */
+	public Option(IOptionKey<T> key, @Nullable T value)
 	{
 		_key = key;
-		_value = key.type().cast(value);
+		_value = value != null ? key.type().cast(value) : null;
 	}
 	
+	/**
+	 * Constructs key/value pair from corresponding arguments.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @param value is either null or a instance of the key's {@linkplain IOptionKey#type()}.
+	 * @throws ClassCastException if {@code value} does not have compatible type for key.
+	 * @since 0.07
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Serializable> Option<T> create(IOptionKey<T> key, @Nullable Object value)
+	{
+		return new Option<T>(key, (T) value);
+	}
+	
+	/**
+	 * Constructs an option key/value pair by looking it up.
+	 * <p>
+	 * @since 0.07
+	 */
+	public static <T extends Serializable> Option<T> lookup(IOptionHolder holder, IOptionKey<T> key)
+	{
+		return new Option<T>(key, holder.getOption(key));
+	}
+	
+	/*----------------
+	 * Static methods
+	 */
+	
+	private static <T extends Serializable> void doSet(IOptionHolder holder, IOption<T> option)
+	{
+		final IOptionKey<T> key = option.key();
+		final T value = option.value();
+		if (value == null)
+		{
+			holder.unsetOption(key);
+		}
+		else
+		{
+			holder.setOption(key, value);
+		}
+	}
+
+	/**
+	 * Sets multiple options.
+	 * <p>
+	 * Applies each option to {@code holder} in the specified order. The action
+	 * depends on whether the option's {@linkplain #value()} is set: if non-null
+	 * {@linkplain IOptionHolder#setOption setOption} will be invoked on the holder with the
+	 * specified key and value, otherwise {@linkplain IOptionHolder#unsetOption unsetOption}
+	 * will be called.
+	 * <p>
+	 * @param holder is a non-null option holder.
+	 * @param options are zero or more option objects.
+	 * @since 0.07
+	 */
+	public static void setOptions(IOptionHolder holder, IOption<?> ... options)
+	{
+		for (IOption<?> option : options)
+		{
+			doSet(holder, option);
+		}
+	}
+
 	/*-----------------
 	 * Object methods
 	 */
@@ -60,7 +148,7 @@ public class Option<T> implements IOption<T>
 		if (other instanceof Option)
 		{
 			Option<?> that = (Option<?>)other;
-			return _key == that._key && _value.equals(that._value);
+			return _key == that._key && Objects.equals(_value,  that._value);
 		}
 		
 		return false;
@@ -69,13 +157,13 @@ public class Option<T> implements IOption<T>
 	@Override
 	public int hashCode()
 	{
-		return _key.hashCode() * 11 + _value.hashCode();
+		return _key.hashCode() * 11 + Objects.hashCode(_value);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return String.format("%s=%s", _key.toString(), _value.toString());
+		return String.format("%s=%s", _key.toString(), Objects.toString(_value));
 	}
 	
 	/*-----------------
@@ -89,8 +177,9 @@ public class Option<T> implements IOption<T>
 	}
 
 	@Override
-	public final T value()
+	public final @Nullable T value()
 	{
 		return _value;
 	}
+	
 }

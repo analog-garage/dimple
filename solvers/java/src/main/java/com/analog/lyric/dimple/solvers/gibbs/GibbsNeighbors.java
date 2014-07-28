@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
 
+import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.collect.ReleasableArrayIterator;
 import com.analog.lyric.collect.ReleasableIterable;
 import com.analog.lyric.collect.ReleasableIterator;
@@ -344,7 +345,7 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 	 * Iterator that visits immediate solver nodes of source model node.
 	 */
 	@NotThreadSafe
-	private static class SimpleIterator implements ReleasableIterator<ISolverNodeGibbs>
+	private static class SimpleIterator extends UnmodifiableReleasableIterator<ISolverNodeGibbs>
 	{
 		private @Nullable Node _modelNode;
 		private int _size;
@@ -373,12 +374,6 @@ public final class GibbsNeighbors implements ReleasableIterable<ISolverNodeGibbs
 		public @Nullable ISolverNodeGibbs next()
 		{
 			return (ISolverNodeGibbs)Objects.requireNonNull(_modelNode).getSibling(_index++).getSolver();
-		}
-
-		@Override
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		@Override

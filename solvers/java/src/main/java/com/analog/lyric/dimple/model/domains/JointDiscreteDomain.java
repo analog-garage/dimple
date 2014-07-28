@@ -244,6 +244,7 @@ public class JointDiscreteDomain<Element> extends TypedDiscreteDomain<Element[]>
 	 * Returns the number of dimensions, or subdomains that make up this joint domain.
 	 * Same as size of {@link #getDomainIndexer()}.
 	 */
+	@Override
 	public final int getDimensions()
 	{
 		return _domains.size();

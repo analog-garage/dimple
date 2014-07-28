@@ -104,6 +104,20 @@ public class TestSupers
 		}
 	}
 	
+	/**
+	 * Tests {@link Supers#isSubclassOf} and {@link Supers#isStrictSubclassOf}.
+	 */
+	@Test
+	public void testIsSubclassOf()
+	{
+		assertTrue(Supers.isSubclassOf(A.class, A.class));
+		assertFalse(Supers.isStrictSubclassOf(A.class, A.class));
+		assertTrue(Supers.isSubclassOf(D.class, A.class));
+		assertTrue(Supers.isStrictSubclassOf(D.class, A.class));
+		assertFalse(Supers.isSubclassOf(A.class, D.class));
+		assertFalse(Supers.isStrictSubclassOf(A.class, D.class));
+	}
+	
 	@Test
 	public void testLookupMethod()
 	{

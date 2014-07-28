@@ -36,6 +36,7 @@ import com.analog.lyric.dimple.events.IDimpleEventListener;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.model.factors.Factor;
 import com.analog.lyric.dimple.model.variables.VariableBase;
+import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.math.Utilities;
 import com.analog.lyric.util.misc.IMapList;
 import com.analog.lyric.util.misc.Internal;
@@ -44,7 +45,7 @@ import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.Iterators;
 
-public abstract class Node implements INode, Cloneable
+public abstract class Node extends DimpleOptionHolder implements INode, Cloneable
 {
 	/*-----------
 	 * Constants

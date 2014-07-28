@@ -14,32 +14,31 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.options;
+package com.analog.lyric.dimple.model.core;
 
-import java.util.Map;
+import com.analog.lyric.dimple.model.factors.Factor;
+import com.analog.lyric.dimple.model.variables.VariableBase;
 
-import net.jcip.annotations.ThreadSafe;
-
-import com.analog.lyric.util.misc.Nullable;
-
-@ThreadSafe
-public interface IOptions extends IOptionHolder, Map<IOptionKey<?>,Object>
+/**
+ * Identifies type of {@link Node}.
+ * <p>
+ * @since 0.07
+ * @author Christopher Barber
+ */
+public enum NodeType
 {
-	public @Nullable <T> T get(IOptionKey<T> key);
-
-	public @Nullable <T> IOption<T> getOption(IOptionKey<T> key);
-
-	public IOptionHolder getOptionHolder();
+	/**
+	 * Node is a {@link Factor}.
+	 */
+	FACTOR,
 	
-	public @Nullable <T> T lookup(IOptionKey<T> key);
-
-	public @Nullable <T> T lookupOrNull(IOptionKey<T> key);
+	/**
+	 * Node is a {@link FactorGraph}.
+	 */
+	GRAPH,
 	
-	public @Nullable <T> IOption<T> lookupOption(IOptionKey<T> key);
-	
-	public <T> void set(IOptionKey<T> key, T value);
-	
-	public void setOption(IOption<?> option);
-
-	public void unset(IOptionKey<?> key);
+	/**
+	 * Node is a {@link VariableBase}.
+	 */
+	VARIABLE;
 }

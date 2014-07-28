@@ -17,6 +17,7 @@
 package com.analog.lyric.options;
 
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
 import net.jcip.annotations.Immutable;
@@ -25,7 +26,7 @@ import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.util.misc.Nullable;
 
 @Immutable
-public abstract class OptionKey<T> implements IOptionKey<T>
+public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 {
 	/*-------
 	 * State
@@ -53,35 +54,12 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * @see OptionRegistry#addFromClass(Class)
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> IOptionKey<T> inClass(Class<?> declaringClass, String name)
+	public static <T extends Serializable> IOptionKey<T> inClass(Class<?> declaringClass, String name)
 	{
 		try
 		{
-			IOptionKey<T> option = null;
-
-			if (declaringClass.isEnum() && IOptionKey.class.isAssignableFrom(declaringClass))
-			{
-				for (Object obj : declaringClass.getEnumConstants())
-				{
-					option = (IOptionKey<T>)obj;
-					if (name.equals(option.name()))
-					{
-						break;
-					}
-					else
-					{
-						option = null;
-					}
-				}
-			}
-
-			if (option == null)
-			{
-				Field field = declaringClass.getField(name);
-				option = (IOptionKey<T>)field.get(declaringClass);
-			}
-			
-			return option;
+			Field field = declaringClass.getField(name);
+			return (IOptionKey<T>)field.get(declaringClass);
 		}
 		catch (Exception ex)
 		{
@@ -97,7 +75,7 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	 * Because this uses reflection it is not expected to be very fast so it is better to put keys
 	 * in a {@link OptionRegistry} if you need frequent lookup by name.
 	 */
-	public static <T> IOptionKey<T> forQualifiedName(String qualifiedName)
+	public static <T extends Serializable> IOptionKey<T> forQualifiedName(String qualifiedName)
 	{
 		int i = qualifiedName.lastIndexOf('.');
 		if (i < 0)
@@ -163,21 +141,27 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	}
 	
 	@Override
-	public @Nullable T lookup(IOptionHolder holder)
+	public T getOrDefault(IOptionHolder holder)
 	{
-		return holder.options().lookup(this);
+		return holder.getOptionOrDefault(this);
+	}
+	
+	@Override
+	public @Nullable T get(IOptionHolder holder)
+	{
+		return holder.getOption(this);
 	}
 	
 	@Override
 	public void set(IOptionHolder holder, T value)
 	{
-		holder.options().put(this, value);
+		holder.setOption(this, value);
 	}
 	
 	@Override
 	public void unset(IOptionHolder holder)
 	{
-		holder.options().unset(this);
+		holder.unsetOption(this);
 	}
 	
 	/*--------------------
@@ -186,12 +170,12 @@ public abstract class OptionKey<T> implements IOptionKey<T>
 	
 	/**
 	 * Returns the canonical instance of {@code key}, i.e. the one that is publicly declared as
-	 * a static field or enum instance of {@link #getDeclaringClass()} with given {@link #name()}
+	 * a static field of {@link #getDeclaringClass()} with given {@link #name()}
 	 * or returns null if there isn't one.
 	 * <p>
 	 * This method is implemented using reflection and is not expected to be very fast.
 	 */
-	public static @Nullable<T> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
+	public static @Nullable<T extends Serializable> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
 	{
 		IOptionKey<T> canonical = null;
 		

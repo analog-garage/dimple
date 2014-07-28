@@ -1,18 +1,18 @@
 /*******************************************************************************
-*   Copyright 2012 Analog Devices, Inc.
-*
-*   Licensed under the Apache License, Version 2.0 (the "License");
-*   you may not use this file except in compliance with the License.
-*   You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-********************************************************************************/
+ *   Copyright 2012 Analog Devices, Inc.
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ ********************************************************************************/
 
 package com.analog.lyric.collect;
 
@@ -23,16 +23,16 @@ import java.util.Iterator;
  * are expected to be used to avoid excessive allocation and garbage
  * collection in cases where many iterations are being performed.
  * <p>
- * Typical implementations will stash a reusable copy of the iterator
- * in a variable, which will be nulled out when the iterator has been
- * handed out but not yet released. Here is a partial example using
- * a {@link ThreadLocal} variable:
+ * Typical implementations will stash a reusable copy of the iterator in a variable, which will be
+ * nulled out when the iterator has been handed out but not yet released. Here is a partial example
+ * using a {@link ThreadLocal} variable:
  * <p>
+ * 
  * <pre>
  *     public class FooIterator implements ReleasableIterator<Foo>
  *     {
  *         private static final ThreadLocal<FooIterator> resusableInstance = new ThreadLocal<FooIterator>();
- *
+ * 
  *         public static FooIterator make(FooContainer c)
  *         {
  *             FooIterator iter = (FooIterator)FooIterator.reusableInstance.get();
@@ -43,7 +43,7 @@ import java.util.Iterator;
  *                 iter = new FooIterator(c);
  *             }
  *         }
- *
+ * 
  *         public void release()
  *         {
  *             if (FooIterator.reusableInstance.get() == null) {
@@ -51,11 +51,15 @@ import java.util.Iterator;
  *                 FooIterator.reusableInstance.set(this);
  *             }
  *         }
- *
+ * 
  *         // Reset iterator to start of contents of container.
  *         public void reset(FooContainer c)  ...
  *     }
  * </pre>
+ * 
+ * Other possible caching techniques include use of a static
+ * {@linkplain java.util.concurrent.atomic.AtomicReference AtomicReference} or to cache
+ * a reusable instance in the instance of the class that is responsible for creating the iterator.
  *
  * @see ReleasableIterable
  */

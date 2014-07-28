@@ -19,6 +19,7 @@ package com.analog.lyric.collect;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
 public class ReleasableIterators
@@ -89,6 +90,45 @@ public class ReleasableIterators
 		}
 	}
 
+	private static enum EmptyReleasableIterator implements ReleasableIterator<Object>
+	{
+		INSTANCE;
+
+		@Override
+		public boolean hasNext()
+		{
+			return false;
+		}
+
+		@NonNullByDefault(false)
+		@Override
+		public Object next()
+		{
+			return null;
+		}
+
+		@Override
+		public void remove()
+		{
+			throw new UnsupportedOperationException("remove");
+		}
+
+		@Override
+		public void release()
+		{
+		}
+	}
+	
+	/**
+	 * Returns a canonical empty releasable iterator.
+	 * @since 0.07
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> ReleasableIterator<T> emptyIterators()
+	{
+		return (ReleasableIterator<T>) EmptyReleasableIterator.INSTANCE;
+	}
+	
 	/**
 	 * Returns a {@link ReleasableIterator} for given collection.
 	 * <p>

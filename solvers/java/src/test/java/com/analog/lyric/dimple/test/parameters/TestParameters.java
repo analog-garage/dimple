@@ -102,11 +102,13 @@ public class TestParameters
 		 @Override
 		 public Double defaultValue() { return _defaultValue; }
 		 @Override
-		public @Nullable Double lookup(IOptionHolder holder) { return holder.options().lookup(this); }
+		public Double getOrDefault(IOptionHolder holder) { return holder.getOptionOrDefault(this); }
 		 @Override
-		public void set(IOptionHolder holder, Double value) { holder.options().set(this,  value); }
+		public @Nullable Double get(IOptionHolder holder) { return holder.getOption(this); }
 		 @Override
-		public void unset(IOptionHolder holder) { holder.options().unset(this); }
+		public void set(IOptionHolder holder, Double value) { holder.setOption(this,  value); }
+		 @Override
+		public void unset(IOptionHolder holder) { holder.unsetOption(this); }
 		 @Override
 		 public RealDomain domain() { return _domain; }
 	}

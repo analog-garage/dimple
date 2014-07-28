@@ -31,6 +31,7 @@ import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunctionWithConstants;
 import com.analog.lyric.dimple.factorfunctions.core.IFactorTable;
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.model.core.NodeType;
 import com.analog.lyric.dimple.model.domains.Domain;
 import com.analog.lyric.dimple.model.domains.DomainList;
 import com.analog.lyric.dimple.model.domains.JointDomainIndexer;
@@ -60,6 +61,12 @@ public class Factor extends FactorBase implements Cloneable
 	public final boolean isFactor()
 	{
 		return true;
+	}
+	
+	@Override
+	public NodeType getNodeType()
+	{
+		return NodeType.FACTOR;
 	}
 	
 	public String getModelerFunctionName()

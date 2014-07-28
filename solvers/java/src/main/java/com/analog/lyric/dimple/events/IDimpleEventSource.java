@@ -17,6 +17,7 @@
 package com.analog.lyric.dimple.events;
 
 import com.analog.lyric.dimple.model.core.FactorGraph;
+import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -25,7 +26,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.06
  * @author Christopher Barber
  */
-public interface IDimpleEventSource
+public interface IDimpleEventSource extends IOptionHolder
 {
 	/**
 	 * Returns factor graph most immediately containing this object. Returns this object if
@@ -72,4 +73,5 @@ public interface IDimpleEventSource
 	 * @since 0.06
 	 */
 	public void notifyListenerChanged();
+
 }

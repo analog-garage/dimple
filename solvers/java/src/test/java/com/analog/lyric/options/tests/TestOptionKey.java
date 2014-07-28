@@ -19,16 +19,25 @@ package com.analog.lyric.options.tests;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+
 import org.junit.Test;
 
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.options.BooleanOptionKey;
+import com.analog.lyric.options.DoubleListOptionKey;
 import com.analog.lyric.options.DoubleOptionKey;
 import com.analog.lyric.options.GenericOptionKey;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
+import com.analog.lyric.options.IntegerListOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
+import com.analog.lyric.options.OptionDoubleList;
+import com.analog.lyric.options.OptionIntegerList;
 import com.analog.lyric.options.OptionKey;
+import com.analog.lyric.options.OptionKeys;
+import com.analog.lyric.options.OptionStringList;
+import com.analog.lyric.options.StringListOptionKey;
 import com.analog.lyric.options.StringOptionKey;
 import com.analog.lyric.util.misc.Nullable;
 import com.analog.lyric.util.test.SerializationTester;
@@ -50,45 +59,69 @@ public class TestOptionKey
 	public static final IOptionKey<String> G =
 		new GenericOptionKey<String>(TestOptionKey.class, "G", String.class, "g");
 	
+	public static final StringListOptionKey SL0 =
+		new StringListOptionKey(TestOptionKey.class, "SL0");
+	
+	public static final StringListOptionKey SL2 =
+		new StringListOptionKey(TestOptionKey.class, "SL2", "a", "b");
+	
+	public static final DoubleListOptionKey DL0 =
+		new DoubleListOptionKey(TestOptionKey.class, "DL0");
+	
+	public static final DoubleListOptionKey DL2 =
+		new DoubleListOptionKey(TestOptionKey.class, "DL2", 2.3, 4.5);
+	
+	public static final IntegerListOptionKey IL0 =
+		new IntegerListOptionKey(TestOptionKey.class, "IL0");
+	
+	public static final IntegerListOptionKey IL2 =
+		new IntegerListOptionKey(TestOptionKey.class, "IL2", 23, 45);
+
 	@SuppressWarnings("null")
-	public static enum Option implements IOptionKey<Object>
+	public static enum Option implements IOptionKey<Serializable>
 	{
 		A(42),
 		B("barf"),
 		C(1.0);
 		
-		private final Object _defaultValue;
+		private final Serializable _defaultValue;
 		
-		private Option(Object defaultValue) { _defaultValue = defaultValue; }
+		private Option(Serializable defaultValue) { _defaultValue = defaultValue; }
 
 		@Override
-		public Class<Object> type()
+		public Class<Serializable> type()
 		{
-			return Object.class;
+			return Serializable.class;
 		}
 
 		@Override
-		public Object defaultValue()
+		public Serializable defaultValue()
 		{
 			return _defaultValue;
 		}
 
 		@Override
-		public @Nullable Object lookup(IOptionHolder holder)
+		public @Nullable Serializable getOrDefault(IOptionHolder holder)
 		{
-			return holder.options().lookup(this);
+			return holder.getOptionOrDefault(this);
 		}
 
 		@Override
-		public void set(IOptionHolder holder, Object value)
+		public @Nullable Serializable get(IOptionHolder holder)
 		{
-			holder.options().set(this, value);
+			return holder.getOption(this);
+		}
+
+		@Override
+		public void set(IOptionHolder holder, Serializable value)
+		{
+			holder.setOption(this, value);
 		}
 
 		@Override
 		public void unset(IOptionHolder holder)
 		{
-			holder.options().unset(this);
+			holder.unsetOption(this);
 		}
 	}
 	
@@ -100,16 +133,21 @@ public class TestOptionKey
 	@Test
 	public void test()
 	{
-		assertOptionInvariants(YES);
-		assertOptionInvariants(P);
-		assertOptionInvariants(I);
-		assertOptionInvariants(S);
-		assertOptionInvariants(G);
+		for (IOptionKey<?> key : OptionKeys.declaredInClass(getClass()))
+		{
+			assertOptionInvariants(key);
+		}
 		
 		for (Option key : Option.values())
 		{
 			assertOptionInvariants(key);
 		}
+		
+		// Test list keys
+//		ExampleOptionHolder holder = new ExampleOptionHolder();
+		assertTrue(SL0.defaultValue().isEmpty());
+		assertArrayEquals(new Object[] { "a", "b" }, SL2.defaultValue().toArray());
+		
 		
 		OptionKey<String> rogueKey = new StringOptionKey(Object.class, "foo");
 		assertNull(OptionKey.getCanonicalInstance(rogueKey));
@@ -137,7 +175,7 @@ public class TestOptionKey
 			OptionKey.class, "forQualifiedName", "no.such.package.NoSuchClass");
 	}
 
-	<T> void assertOptionInvariants(IOptionKey<T> key)
+	<T extends Serializable> void assertOptionInvariants(IOptionKey<T> key)
 	{
 		Class<T> type = key.type();
 		Class<?> declaringClass = key.getDeclaringClass();
@@ -162,16 +200,19 @@ public class TestOptionKey
 		}
 		
 		ExampleOptionHolder holder = new ExampleOptionHolder();
-		assertEquals(key.defaultValue(), key.lookup(holder));
+		assertEquals(key.defaultValue(), key.getOrDefault(holder));
 		
-		for (Object newValue : new Object[] {"foo", 42, 3.14159})
+		for (Object newValue : new Object[]
+			{ "foo", 42, 3.14159, new OptionStringList("foo", "bar"), new OptionDoubleList(1.324, 234234.2),
+			new OptionIntegerList(2,3,4,5)}
+		)
 		{
 			if (type.isInstance(newValue))
 			{
 				key.set(holder, type.cast(newValue));
-				assertEquals(newValue, key.lookup(holder));
+				assertEquals(newValue, key.getOrDefault(holder));
 				key.unset(holder);
-				assertEquals(key.defaultValue(), key.lookup(holder));
+				assertEquals(key.defaultValue(), key.getOrDefault(holder));
 			}
 		}
 	}

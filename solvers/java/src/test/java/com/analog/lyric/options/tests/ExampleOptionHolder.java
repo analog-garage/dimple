@@ -16,17 +16,12 @@
 
 package com.analog.lyric.options.tests;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.options.IOptionKey;
+import com.analog.lyric.options.LocalOptionHolder;
 import com.analog.lyric.util.misc.Nullable;
 
-class ExampleOptionHolder extends AbstractOptionHolder
+class ExampleOptionHolder extends LocalOptionHolder
 {
-	private @Nullable ConcurrentMap<IOptionKey<?>,Object> _localOptions = null;
 	private @Nullable IOptionHolder _parent;
 	
 	public ExampleOptionHolder()
@@ -40,25 +35,9 @@ class ExampleOptionHolder extends AbstractOptionHolder
 	}
 	
 	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
-	{
-		ConcurrentMap<IOptionKey<?>,Object> localOptions = _localOptions;
-		if (localOptions == null)
-		{
-			localOptions = _localOptions = new ConcurrentHashMap<IOptionKey<?>,Object>();
-		}
-		return localOptions;
-	}
-	
-	@Override
-	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
-	{
-		return create? createLocalOptions() : _localOptions;
-	}
-
-	@Override
 	public @Nullable IOptionHolder getOptionParent()
 	{
 		return _parent;
 	}
+
 }

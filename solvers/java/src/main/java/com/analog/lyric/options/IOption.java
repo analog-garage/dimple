@@ -16,12 +16,33 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
+
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.util.misc.Nullable;
+
+/**
+ * An immutable option key value pair.
+ * <p>
+ * @param <T> is the type of the value (see {@link IOptionKey} for details).
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
-public interface IOption<T>
+public interface IOption<T extends Serializable>
 {
+	/**
+	 * The key that identifies the option.
+	 * @since 0.07
+	 */
 	public abstract IOptionKey<T> key();
-	
-	public abstract T value();
+
+	/**
+	 * The value associated with the option with the given {@link #key}.
+	 * <p>
+	 * Null value can be used to indicate option that was not set.
+	 * @since 0.07
+	 */
+	public abstract @Nullable T value();
 }

@@ -16,6 +16,12 @@
 
 package com.analog.lyric.options;
 
+/**
+ * Key for boolean options.
+ * <p>
+ * @since 0.07
+ * @author Christopher Barber
+ */
 public class BooleanOptionKey extends OptionKey<Boolean>
 {
 	private static final long serialVersionUID = 1L;
@@ -45,6 +51,10 @@ public class BooleanOptionKey extends OptionKey<Boolean>
 		return defaultBooleanValue();
 	}
 
+	/**
+	 * Default value of option.
+	 * @since 0.07
+	 */
 	public final boolean defaultBooleanValue()
 	{
 		return _defaultValue;
