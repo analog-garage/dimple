@@ -171,6 +171,34 @@ public abstract class Supers
 	}
 	
 	/**
+	 * Determine if {@code subClass} is a subtype of {@code superClass}.
+	 * <p>
+	 * This is simply syntactic sugar for:
+	 * <pre>
+	 *     superClass.{@linkplain Class#isAssignableFrom(Class) isAssignableFrom}.(subClass)
+	 * <pre>
+	 * 
+	 * @since 0.07
+	 */
+	public static boolean isSubclassOf(Class<?> subClass, Class<?> superClass)
+	{
+		return superClass.isAssignableFrom(subClass);
+	}
+	
+	/**
+	 * Determine if {@code subClass} is a strict subtype of {@code superClass}.
+	 * <p>
+	 * This is the same as {@link #isSubclassOf} but is false if
+	 * {@code subClass} and {@code superClass} are the same.
+ 	 *
+	 * @since 0.07
+	 */
+	public static boolean isStrictSubclassOf(Class<?> subClass, Class<?> superClass)
+	{
+		return subClass != superClass && superClass.isAssignableFrom(subClass);
+	}
+	
+	/**
 	 * Looks up method with given name and that can be called with the given arguments.
 	 * 
 	 * WARNING: this is primarily intended for use in writing unit tests. Probably should
