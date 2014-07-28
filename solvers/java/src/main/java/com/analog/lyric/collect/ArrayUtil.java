@@ -70,6 +70,12 @@ public abstract class ArrayUtil
 	 * Canonical empty int[][].
 	 */
 	public static final int[][] EMPTY_INT_ARRAY_ARRAY = new int[0][];
+
+	/**
+	 * Canonical empty String[]
+	 * @since 0.07
+	 */
+	public static final String[] EMPTY_STRING_ARRAY = new String[0];
 	
 	/**
 	 * Returns an array with length at least {@code minSize} and with component type
