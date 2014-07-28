@@ -179,7 +179,6 @@ ext {
 		'com.analog.lyric.dimple.solvers.sumproduct.sampledfactor',
 		'com.analog.lyric.dimple.solvers.template',
 		'com.analog.lyric.math',
-		'com.analog.lyric.options',
 		'com.analog.lyric.util'
 		];
 	docExclude = docExcludePackages.join(':');	
