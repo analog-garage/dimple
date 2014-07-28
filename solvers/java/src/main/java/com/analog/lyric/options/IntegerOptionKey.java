@@ -18,6 +18,12 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+/**
+ * Option key with type {@link Integer}.
+ * <p>
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
 public class IntegerOptionKey extends OptionKey<Integer>
 {

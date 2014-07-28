@@ -16,13 +16,6 @@
 
 package com.analog.lyric.dimple.solvers.core.proxy;
 
-import static java.util.Objects.*;
-
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import net.jcip.annotations.NotThreadSafe;
 
 import com.analog.lyric.dimple.events.SolverEventSource;
@@ -31,10 +24,6 @@ import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.options.IOptionKey;
-import com.analog.lyric.options.IOptions;
-import com.analog.lyric.options.Options;
-import com.analog.lyric.util.misc.NonNull;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
@@ -43,12 +32,6 @@ import com.analog.lyric.util.misc.Nullable;
 @NotThreadSafe
 public abstract class ProxySolverNode<Delegate extends ISolverNode> extends SolverEventSource implements ISolverNode
 {
-	/*-------
-	 * State
-	 */
-	
-	private @Nullable ConcurrentMap<IOptionKey<?>,Object> _localOptions = null;
-	
 	/*--------------
 	 * Construction
 	 */
@@ -56,72 +39,11 @@ public abstract class ProxySolverNode<Delegate extends ISolverNode> extends Solv
 	protected ProxySolverNode()
 	{
 	}
-	
-	/*-----------------------
-	 * IOptionHolder methods
-	 */
-	
-	@Override
-	public void clearLocalOptions()
-	{
-		_localOptions = null;
-		final ISolverNode delegate = getDelegate();
-		if (delegate != null)
-		{
-			delegate.clearLocalOptions();
-		}
-	}
-
-	@Override
-	public ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
-	{
-		return requireNonNull(getLocalOptions(true));
-	}
-	
-	@Override
-	public @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
-	{
-		ConcurrentMap<IOptionKey<?>,Object> localOptions = _localOptions;
-		final ISolverNode delegate = getDelegate();
-		
-		if (delegate == null)
-		{
-			if (create && localOptions == null)
-			{
-				localOptions = _localOptions = new ConcurrentHashMap<IOptionKey<?>,Object>();
-			}
-		}
-		else if (localOptions == null)
-		{
-			localOptions = delegate.getLocalOptions(create);
-		}
-		else
-		{
-			localOptions = delegate.getLocalOptions(create||!localOptions.isEmpty());
-			requireNonNull(localOptions).putAll(_localOptions);
-			_localOptions = null;
-		}
-		
-		return localOptions;
-	}
 
 	@Override
 	public @Nullable ISolverFactorGraph getOptionParent()
 	{
 		return getParentGraph();
-	}
-
-	@Override
-	public @NonNull Set<IOptionKey<?>> getRelevantOptionKeys()
-	{
-		final ISolverNode delegate = getDelegate();
-		return delegate != null ? delegate.getRelevantOptionKeys() : Collections.EMPTY_SET;
-	}
-
-	@Override
-	public @NonNull IOptions options()
-	{
-		return new Options(this);
 	}
 
 	/*---------------------

@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Copyright 2013 Analog Devices, Inc.
+*   Copyright 2014 Analog Devices, Inc.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -17,59 +17,63 @@
 package com.analog.lyric.options;
 
 import java.io.Serializable;
+import java.util.Collections;
 
-import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
+
 /**
- * Provides default implementation of some {@link IOptionHolder} methods.
+ * Provides a minimal stateless implementation of {@link IOptionHolder} methods.
+ * <p>
+ * This implementation does not support local options.
  * <p>
  * @see LocalOptionHolder
- * @see StatelessOptionHolder
  * @since 0.07
  * @author Christopher Barber
  */
-public abstract class AbstractOptionHolder implements IOptionHolder
+public abstract class StatelessOptionHolder extends AbstractOptionHolder
 {
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * This implementation does nothing.
+	 */
 	@Override
-	public ReleasableIterator<? extends IOptionHolder> getOptionDelegates()
+	public void clearLocalOptions()
 	{
-		return OptionParentIterator.create(this);
+	}
+
+	@Override
+	public Iterable<IOption<? extends Serializable>> getLocalOptions()
+	{
+		return Collections.emptyList();
 	}
 	
 	@Override
-	public @Nullable IOptionHolder getOptionParent()
+	@Nullable
+	public <T extends Serializable> T getLocalOption(IOptionKey<T> key)
 	{
 		return null;
 	}
 
 	@Override
-	public <T extends Serializable> T getOptionOrDefault(IOptionKey<T> key)
+	public <T extends Serializable> void setOption(IOptionKey<T> key, T value)
 	{
-		final T value = getOption(key);
-		return value != null ? value : key.defaultValue();
+		throw noLocalOptions();
 	}
-
+	
 	@Override
-	@Nullable
-	public <T extends Serializable> T getOption(IOptionKey<T> key)
+	public void unsetOption(IOptionKey<?> key)
 	{
-		T result = null;
-		final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
-		
-		while (delegates.hasNext())
-		{
-			final IOptionHolder delegate = delegates.next();
-		
-			result = delegate.getLocalOption(key);
-			if (result != null)
-			{
-				break;
-			}
-		}
-		
-		delegates.release();
-
-		return result;
+	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+	private RuntimeException noLocalOptions()
+	{
+		return new UnsupportedOperationException(String.format("%s does not support local options",
+			getClass().getSimpleName()));
 	}
 }

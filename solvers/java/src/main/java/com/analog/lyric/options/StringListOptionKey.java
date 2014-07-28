@@ -16,47 +16,67 @@
 
 package com.analog.lyric.options;
 
+import net.jcip.annotations.Immutable;
+
 /**
- * Key for boolean options.
- * <p>
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+@Immutable
+public class StringListOptionKey extends OptionKey<OptionStringList>
 {
 	private static final long serialVersionUID = 1L;
 	
-	private final boolean _defaultValue;
+	private final OptionStringList _defaultValue;
 	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
+	/*--------------
+	 * Construction
+	 */
+	
+	/**
+	 * @param declaringClass
+	 * @param name
+	 * @since 0.07
+	 */
+	public StringListOptionKey(Class<?> declaringClass, String name)
 	{
-		this(declaringClass, name, false);
+		this(declaringClass, name, OptionStringList.EMPTY);
 	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
+	
+	public StringListOptionKey(Class<?> declaringClass, String name, OptionStringList defaultValue)
 	{
 		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
 
-	@Override
-	public final Class<Boolean> type()
+	public StringListOptionKey(Class<?> declaringClass, String name, String ... defaultValue)
 	{
-		return Boolean.class;
+		this(declaringClass, name, new OptionStringList(defaultValue));
 	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
-	/**
-	 * Default value of option.
-	 * @since 0.07
+	
+	/*--------------------
+	 * IOptionKey methods
 	 */
-	public final boolean defaultBooleanValue()
+	
+	@Override
+	public Class<OptionStringList> type()
+	{
+		return OptionStringList.class;
+	}
+
+	@Override
+	public OptionStringList defaultValue()
 	{
 		return _defaultValue;
+	}
+
+	/*-----------------------------
+	 * StringListOptionKey methods
+	 */
+	
+	public void set(IOptionHolder holder, String ... values)
+	{
+		set(holder, new OptionStringList(values));
 	}
 }

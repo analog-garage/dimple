@@ -18,42 +18,41 @@ package com.analog.lyric.options;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.analog.lyric.collect.Supers;
 import com.analog.lyric.collect.UnmodifiableReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
 
 /**
- * Iterates chain of option parents.
- * <p>
- * Visits chain of option holders from child to parent.
+ * Iterates over {@link OptionKeys} from starting declaring class up through its parents.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class OptionParentIterator extends UnmodifiableReleasableIterator<IOptionHolder>
+class HierarchicalOptionKeyIterator extends UnmodifiableReleasableIterator<OptionKeys>
 {
-	private @Nullable IOptionHolder _next;
+	private static final AtomicReference<HierarchicalOptionKeyIterator> _reusableInstance = new AtomicReference<>();
 	
-	private final static AtomicReference<OptionParentIterator> reusableInstance = new AtomicReference<>();
+	private @Nullable Class<?> _next = null;
 	
-	private OptionParentIterator()
+	/*--------------
+	 * Construction
+	 */
+	
+	private HierarchicalOptionKeyIterator()
 	{
 	}
 	
-	/**
-	 * Returns an iterator starting with given option holder.
-	 * <p>
-	 * @param holder is a non-null option holder, which will be the
-	 * first element in the iteration.
-	 * @since 0.07
-	 */
-	public static OptionParentIterator create(IOptionHolder holder)
+	static HierarchicalOptionKeyIterator create(Class<? extends OptionKeyDeclarer> declarer)
 	{
-		OptionParentIterator iter = reusableInstance.getAndSet(null);
+		HierarchicalOptionKeyIterator iter = _reusableInstance.getAndSet(null);
 		if (iter == null)
 		{
-			iter = new OptionParentIterator();
+			iter = new HierarchicalOptionKeyIterator();
 		}
-		iter.reset(holder);
+		if (Supers.isStrictSubclassOf(declarer, OptionKeyDeclarer.class))
+		{
+			iter._next = declarer;
+		}
 		return iter;
 	}
 
@@ -68,32 +67,25 @@ public class OptionParentIterator extends UnmodifiableReleasableIterator<IOption
 	}
 
 	@Override
-	public @Nullable IOptionHolder next()
+	public @Nullable OptionKeys next()
 	{
-		IOptionHolder result = _next;
-		if (result != null)
+		@Nullable Class<?> declarer = _next;
+		if (declarer == null)
 		{
-			_next = result.getOptionParent();
+			return null;
 		}
-		return result;
+		
+		Class<?> superClass = declarer.getSuperclass();
+		_next = superClass != OptionKeyDeclarer.class ? superClass : null;
+		
+		return OptionKeys.declaredInClass(declarer);
 	}
 
 	@Override
 	public void release()
 	{
 		_next = null;
-		reusableInstance.set(this);
+		_reusableInstance.set(this);
 	}
 	
-	/**
-	 * Resets iteration beginning with specified element.
-	 * <p>
-	 * @param holder is a non-null option holder which will be the
-	 * next element in the iteration.
-	 * @since 0.07
-	 */
-	public void reset(IOptionHolder holder)
-	{
-		_next = holder;
-	}
 }

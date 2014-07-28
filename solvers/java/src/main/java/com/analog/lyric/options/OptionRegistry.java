@@ -16,6 +16,7 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
@@ -48,7 +49,6 @@ public class OptionRegistry
 	private final ConcurrentNavigableMap<String,IOptionKey<?>> _optionMap;
 	
 	private static final int publicStatic = Modifier.PUBLIC | Modifier.STATIC;
-	private static final int publicStaticFinal = publicStatic | Modifier.FINAL;
 
 	/*--------------
 	 * Construction
@@ -73,9 +73,8 @@ public class OptionRegistry
 	
 	/**
 	 * Registers statically declared option key instances found reflectively in specified class.
-	 * Adds all statically declared, final fields of type {@link IOptionKey} and if the
-	 * class is an enum type that implements {@link IOptionKey}, it will add all of its
-	 * instances. Also will recursively add from public nested classes.
+	 * Adds all statically declared, final fields of type {@link IOptionKey} whose {@linkplain IOptionKey#name() name}
+	 * attribute matches its declared name. Also will recursively add from public nested classes.
 	 * 
 	 * @return the number of option keys that were added
 	 */
@@ -102,7 +101,7 @@ public class OptionRegistry
 	/**
 	 * Registers option key loaded using {@link OptionKey#forQualifiedName(String)}.
 	 */
-	public <T> IOptionKey<T> addFromQualifiedName(String qualifiedName)
+	public <T extends Serializable> IOptionKey<T> addFromQualifiedName(String qualifiedName)
 	{
 		IOptionKey<T> key = OptionKey.forQualifiedName(qualifiedName);
 		add(key);

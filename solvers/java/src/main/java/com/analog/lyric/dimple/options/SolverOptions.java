@@ -14,49 +14,30 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.options;
+package com.analog.lyric.dimple.options;
+
+import com.analog.lyric.options.BooleanOptionKey;
+import com.analog.lyric.options.IntegerOptionKey;
 
 /**
- * Key for boolean options.
+ * Defines options that are general to multiple solvers.
+ * <p>
+ * Solver-specific option classes should be defined as subclasses of this class.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public class SolverOptions extends DimpleOptions
 {
-	private static final long serialVersionUID = 1L;
-	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
+	/**
+	 * Specifies whether to enable use of multiple threads during solves.
+	 */
+	public final static BooleanOptionKey enableMultithreading =
+		new BooleanOptionKey(SolverOptions.class, "useMultithreading", false);
 
 	/**
-	 * Default value of option.
-	 * @since 0.07
+	 * Specifies the number of iterations to perform when solving.
 	 */
-	public final boolean defaultBooleanValue()
-	{
-		return _defaultValue;
-	}
+	public final static IntegerOptionKey iterations =
+		new IntegerOptionKey(SolverOptions.class, "iterations", 1);
 }

@@ -17,46 +17,64 @@
 package com.analog.lyric.options;
 
 /**
- * Key for boolean options.
- * <p>
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public class IntegerListOptionKey extends OptionKey<OptionIntegerList>
 {
 	private static final long serialVersionUID = 1L;
 	
-	private final boolean _defaultValue;
+	private final OptionIntegerList _defaultValue;
 	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
+	/*--------------
+	 * Construction
+	 */
+	
+	/**
+	 * @param declaringClass
+	 * @param name
+	 * @since 0.07
+	 */
+	public IntegerListOptionKey(Class<?> declaringClass, String name)
 	{
-		this(declaringClass, name, false);
+		this(declaringClass, name, OptionIntegerList.EMPTY);
 	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
+	
+	public IntegerListOptionKey(Class<?> declaringClass, String name, OptionIntegerList defaultValue)
 	{
 		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
 
-	@Override
-	public final Class<Boolean> type()
+	public IntegerListOptionKey(Class<?> declaringClass, String name, int ... defaultValue)
 	{
-		return Boolean.class;
+		this(declaringClass, name, new OptionIntegerList(defaultValue));
 	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
-	/**
-	 * Default value of option.
-	 * @since 0.07
+	
+	/*--------------------
+	 * IOptionKey methods
 	 */
-	public final boolean defaultBooleanValue()
+	
+	@Override
+	public Class<OptionIntegerList> type()
+	{
+		return OptionIntegerList.class;
+	}
+
+	@Override
+	public OptionIntegerList defaultValue()
 	{
 		return _defaultValue;
 	}
+
+	/*-----------------------------
+	 * StringListOptionKey methods
+	 */
+	
+	public void set(IOptionHolder holder, int ... values)
+	{
+		set(holder, new OptionIntegerList(values));
+	}
+
 }

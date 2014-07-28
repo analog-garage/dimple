@@ -28,7 +28,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 
 import com.analog.lyric.collect.ReleasableIterator;
@@ -118,10 +117,6 @@ public class DimpleEventListener implements IDimpleEventListener
 	 */
 	
 	private final ConcurrentMap<IDimpleEventSource, Entry[]> _handlersForSource;
-	
-	// Reusable iterator for visiting event sources in hierarchical order.
-	private final AtomicReference<EventSourceIterator> _eventSourceIterator =
-		new AtomicReference<EventSourceIterator>();
 	
 	private static final AtomicReference<DimpleEventListener> _defaultListener =
 		new AtomicReference<DimpleEventListener>();
@@ -379,13 +374,7 @@ public class DimpleEventListener implements IDimpleEventListener
 	 */
 	public ReleasableIterator<IDimpleEventSource> eventSources(@Nullable IDimpleEventSource source)
 	{
-		EventSourceIterator iterator = _eventSourceIterator.getAndSet(null);
-		if (iterator == null)
-		{
-			iterator = new EventSourceIterator();
-		}
-		iterator.init(source);
-		return iterator;
+		return EventSourceIterator.create(source);
 	}
 	
 	/**
@@ -757,86 +746,6 @@ public class DimpleEventListener implements IDimpleEventListener
 				diff = entry1._eventClass.getName().compareTo(entry2._eventClass.getName());
 			}
 			return diff;
-		}
-	}
-	
-	@NotThreadSafe
-	private class EventSourceIterator implements ReleasableIterator<IDimpleEventSource>
-	{
-		private @Nullable IDimpleEventSource _next;
-		private @Nullable IDimpleEventSource _prev;
-		
-		/*--------------
-		 * Construction
-		 */
-		
-		private EventSourceIterator()
-		{
-		}
-		
-		private void init(@Nullable IDimpleEventSource source)
-		{
-			_next = source;
-			_prev = null;
-		}
-		
-		/*------------------
-		 * Iterator methods
-		 */
-		
-		@Override
-		public boolean hasNext()
-		{
-			return _next != null;
-		}
-
-		@Override
-		public @Nullable IDimpleEventSource next()
-		{
-			IDimpleEventSource source = _next;
-			
-			if (source != null)
-			{
-				// Find next source.
-				
-				final IDimpleEventSource prev = _prev;
-				if (prev != null)
-				{
-					_next = prev.getEventParent();
-					_prev = null;
-				}
-				else
-				{
-					IModelEventSource modelSource = source.getModelEventSource();
-					if (modelSource != source)
-					{
-						_next = modelSource;
-						_prev = source;
-					}
-					else
-					{
-						_next = source.getEventParent();
-					}
-				}
-			}
-
-			return source;
-		}
-
-		@Override
-		public void remove()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		/*----------------------------
-		 * ReleasableIterator methods
-		 */
-		
-		@Override
-		public void release()
-		{
-			_eventSourceIterator.set(this);
 		}
 	}
 	

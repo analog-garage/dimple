@@ -16,6 +16,7 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.AbstractList;
@@ -24,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -32,30 +34,35 @@ import com.analog.lyric.util.misc.Nullable;
  * <p>
  * This object holds the {@link IOptionKey} instances declared in the {@link #declaringClass()}.
  * These will consist of the values of publicly accessible static final fields of type
- * {@link IOptionKey} whose name matches the declared name (including enum instances).
+ * {@link IOptionKey} whose name matches the declared name.
  * <p>
+ * Construct using {@link #declaredInClass(Class)}.
  * @since 0.07
  * @author Christopher Barber
  */
 public final class OptionKeys extends AbstractList<IOptionKey<?>>
 {
+	/*------------
+	 * Constants
+	 */
+	
+	private static final int publicStaticFinal = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+
+	/*--------------
+	 * Static state
+	 */
+	
+	/**
+	 * Used to cache value with declaring class.
+	 */
+	private static ClassValue<OptionKeys> optionKeysClassValue = new DeclaredOptionKeys();
+	
+	/*-------------
+	 * Local state
+	 */
+	
 	private final Class<?> _declaringClass;
 	private final IOptionKey<?>[] _keys;
-	
-	private static final int publicStatic = Modifier.PUBLIC | Modifier.STATIC;
-	private static final int publicStaticFinal = publicStatic | Modifier.FINAL;
-
-	private static class DeclaredOptionKeys extends ClassValue<OptionKeys>
-	{
-		@NonNullByDefault(false)
-		@Override
-		protected OptionKeys computeValue(Class<?> declaringClass)
-		{
-			return new OptionKeys(declaringClass);
-		}
-	}
-	
-	private static ClassValue<OptionKeys> optionKeysClassValue = new DeclaredOptionKeys();
 	
 	/*--------------
 	 * Construction
@@ -73,6 +80,10 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 		this(declaringClass, keysFromClass(declaringClass));
 	}
 	
+	/*----------------
+	 * Static methods
+	 */
+	
 	/**
 	 * List of option keys declared publicly in given class.
 	 * <p>
@@ -80,7 +91,7 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 	 * it is invoked for a given class and will subsequently cache and return the
 	 * same object.
 	 * <p>
-	 * @param declaringClass is either a class or an enum.
+	 * @param declaringClass
 	 * @since 0.07
 	 */
 	public static OptionKeys declaredInClass(Class<?> declaringClass)
@@ -88,32 +99,19 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 		return optionKeysClassValue.get(declaringClass);
 	}
 	
-	private static IOptionKey<?>[] keysFromClass(Class<?> declaringClass)
+	/**
+	 * Iterates over {@link OptionKeys} for classes in hierarchy.
+	 * <p>
+	 * Returns an iterator that produces the {@link OptionKeys} for the classes starting with the
+	 * {@code declaringClass} and on through the chain of superclasses
+	 * upto but not including {@link OptionKeyDeclarer}.
+	 * <p>
+	 * @param declaringClass a subclass of {@link OptionKeyDeclarer}.
+	 * @since 0.07
+	 */
+	public static ReleasableIterator<OptionKeys> declaredInHierarchy(Class<? extends OptionKeyDeclarer> declaringClass)
 	{
-		final List<IOptionKey<?>> keys = new ArrayList<IOptionKey<?>>();
-		
-		try
-		{
-			for (Field field : declaringClass.getFields())
-			{
-				if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
-					IOptionKey.class.isAssignableFrom(field.getType()))
-				{
-					IOptionKey<?> option = (IOptionKey<?>)field.get(declaringClass);
-					if (option.name().equals(field.getName()))
-					{
-						keys.add(option);
-					}
-				}
-			}
-		}
-		catch (IllegalAccessException ex)
-		{
-			// This shouldn't happen for public fields, but turn into RuntimeException if it does
-			throw new RuntimeException(ex);
-		}
-		
-		return keys.toArray(new IOptionKey<?>[keys.size()]);
+		return HierarchicalOptionKeyIterator.create(declaringClass);
 	}
 	
 	/*--------------------
@@ -142,7 +140,7 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 	 */
 	
 	/**
-	 * The class or enum containing the declarations of these option keys.
+	 * The class containing the declarations of these option keys.
 	 *
 	 * @since 0.07
 	 */
@@ -158,8 +156,50 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 	 */
 	public @Nullable IOptionKey<?> get(String name)
 	{
-		GenericOptionKey<?> key = new GenericOptionKey<Object>(_declaringClass, name, Object.class, "");
+		GenericOptionKey<?> key = new GenericOptionKey<Serializable>(_declaringClass, name, Serializable.class, "");
 		final int i = Collections.binarySearch(this, key, IOptionKey.CompareByName.INSTANCE);
 		return i >= 0 ? _keys[i] : null;
+	}
+	
+	/*------------------------
+	 * Private implementation
+	 */
+	
+	private static class DeclaredOptionKeys extends ClassValue<OptionKeys>
+	{
+		@NonNullByDefault(false)
+		@Override
+		protected OptionKeys computeValue(Class<?> declaringClass)
+		{
+			return new OptionKeys(declaringClass);
+		}
+	}
+	
+	private static IOptionKey<?>[] keysFromClass(Class<?> declaringClass)
+	{
+		final List<IOptionKey<?>> keys = new ArrayList<IOptionKey<?>>();
+		
+		try
+		{
+			for (Field field : declaringClass.getFields())
+			{
+				if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
+					IOptionKey.class.isAssignableFrom(field.getType()))
+				{
+					IOptionKey<?> option = (IOptionKey<?>)field.get(declaringClass);
+					if (option.name().equals(field.getName()))
+					{
+						keys.add(option);
+					}
+				}
+			}
+		}
+		catch (IllegalAccessException ex)
+		{
+			// This shouldn't happen for public fields, but turn into RuntimeException if it does
+			throw new RuntimeException(ex);
+		}
+		
+		return keys.toArray(new IOptionKey<?>[keys.size()]);
 	}
 }

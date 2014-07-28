@@ -16,33 +16,40 @@
 
 package com.analog.lyric.options;
 
-import java.io.Serializable;
-
-import net.jcip.annotations.Immutable;
-
 /**
- * A generic {@link IOptionKey} implementation.
+ * Key for options with list of dou les value.
+ * @since 0.07
+ * @author Christopher Barber
  */
-@Immutable
-public class GenericOptionKey<T extends Serializable> extends OptionKey<T>
+public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 {
-	/*-------
-	 * State
-	 */
 	private static final long serialVersionUID = 1L;
 	
-	private final Class<T> _type;
-	private final T _defaultValue;
+	private final OptionDoubleList _defaultValue;
 	
 	/*--------------
 	 * Construction
 	 */
 	
-	public GenericOptionKey(Class<?> declaringClass, String name, Class<T> type, T defaultValue)
+	/**
+	 * @param declaringClass
+	 * @param name
+	 * @since 0.07
+	 */
+	public DoubleListOptionKey(Class<?> declaringClass, String name)
+	{
+		this(declaringClass, name, OptionDoubleList.EMPTY);
+	}
+	
+	public DoubleListOptionKey(Class<?> declaringClass, String name, OptionDoubleList defaultValue)
 	{
 		super(declaringClass, name);
-		_type = type;
 		_defaultValue = defaultValue;
+	}
+
+	public DoubleListOptionKey(Class<?> declaringClass, String name, double ... defaultValue)
+	{
+		this(declaringClass, name, new OptionDoubleList(defaultValue));
 	}
 	
 	/*--------------------
@@ -50,15 +57,28 @@ public class GenericOptionKey<T extends Serializable> extends OptionKey<T>
 	 */
 	
 	@Override
-	public Class<T> type()
+	public Class<OptionDoubleList> type()
 	{
-		return _type;
+		return OptionDoubleList.class;
 	}
 
 	@Override
-	public T defaultValue()
+	public OptionDoubleList defaultValue()
 	{
 		return _defaultValue;
+	}
+
+	/*-----------------------------
+	 * StringListOptionKey methods
+	 */
+	
+	/**
+	 * Sets option to specified list of values.
+	 * @since 0.07
+	 */
+	public void set(IOptionHolder holder, double ... values)
+	{
+		set(holder, new OptionDoubleList(values));
 	}
 
 }

@@ -16,47 +16,36 @@
 
 package com.analog.lyric.options;
 
+import com.analog.lyric.collect.ReleasableIterator;
+
 /**
- * Key for boolean options.
+ * Base for classes that declare option keys.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public abstract class OptionKeyDeclarer
 {
-	private static final long serialVersionUID = 1L;
-	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
 	/**
-	 * Default value of option.
+	 * Returns keys declared directly in concrete class of this instance.
+	 * <p>
+	 * This will not include keys declared in superclasses.
+	 * <p>
 	 * @since 0.07
 	 */
-	public final boolean defaultBooleanValue()
+	public final OptionKeys getOptionKeys()
 	{
-		return _defaultValue;
+		return OptionKeys.declaredInClass(getClass());
 	}
+	
+	/**
+	 * Returns hierarchical iterator over option keys starting with class of this instance.
+	 * <p>
+	 * @since 0.07
+	 */
+	public final ReleasableIterator<OptionKeys> getHierarchicalOptionKeys()
+	{
+		return OptionKeys.declaredInHierarchy(getClass());
+	}
+	
 }

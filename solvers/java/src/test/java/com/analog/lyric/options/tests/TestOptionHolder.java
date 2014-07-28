@@ -21,9 +21,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.options.IOptionHolder;
-import com.analog.lyric.options.IOptions;
+import com.analog.lyric.options.StatelessOptionHolder;
+import com.analog.lyric.options.StringOptionKey;
 
 /**
  * 
@@ -32,25 +32,14 @@ import com.analog.lyric.options.IOptions;
  */
 public class TestOptionHolder
 {
+	public final static StringOptionKey K = new StringOptionKey(TestOptionHolder.class, "K");
+	
 	@Test
 	public void test()
 	{
-		IOptionHolder holder = new AbstractOptionHolder(){};
-		assertNull(holder.getLocalOptions(false));
-		assertNull(holder.getLocalOptions(true));
+		IOptionHolder holder = new StatelessOptionHolder(){};
 		assertNull(holder.getOptionParent());
 		holder.clearLocalOptions(); // doesn't do anything
-		assertTrue(holder.getRelevantOptionKeys().isEmpty());
-		expectThrow(UnsupportedOperationException.class, holder, "createLocalOptions");
-		expectThrow(UnsupportedOperationException.class, holder, "createLocalOptions");
-		
-		IOptions options1 = holder.options();
-		assertNotNull(options1);
-		assertTrue(options1.isEmpty());
-		assertSame(holder, options1.getOptionHolder());
-
-		IOptions options2 = holder.options();
-		assertNotNull(options2);
-		assertNotSame(options1, options2);
+		expectThrow(UnsupportedOperationException.class, holder, "setOption", K, "foo");
 	}
 }

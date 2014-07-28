@@ -25,14 +25,12 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
 import com.analog.lyric.options.OptionRegistry;
 import com.analog.lyric.options.StringOptionKey;
-import com.analog.lyric.util.misc.Nullable;
 
 /**
  * Test for {@link OptionRegistry} class
@@ -51,27 +49,23 @@ public class TestOptionRegistry
 		
 		registry.addFromClass(getClass());
 		assertInvariants(registry);
-		assertEquals(5, registry.size());
+		assertEquals(4, registry.size());
 		
 		assertEquals(2, registry.getAllMatching(".*\\.S\\d").size());
 		assertEquals(1, registry.getAllMatching(Pattern.compile(".*\\.S2")).size());
-		assertEquals(1,	registry.getAllStartingWith(EnumOptions.class.getName()).size());
 		
 		registry.clear();
 		assertInvariants(registry);
 		assertEquals(0, registry.size());
 		
 		registry.addFromQualifiedName(FieldOptions.I23.qualifiedName());
-		registry.add(EnumOptions.E1);
-		assertEquals(2, registry.size());
+		assertEquals(1, registry.size());
 		assertSame(FieldOptions.I23, registry.get(FieldOptions.I23.qualifiedName()));
-		assertSame(EnumOptions.E1, registry.get(OptionKey.qualifiedName(EnumOptions.E1)));
 		assertInvariants(registry);
 		
 		registry.remove(FieldOptions.I23);
-		assertEquals(1, registry.size());
+		assertEquals(0, registry.size());
 		assertNull(registry.get(FieldOptions.I23.qualifiedName()));
-		assertSame(EnumOptions.E1, registry.get(OptionKey.qualifiedName(EnumOptions.E1)));
 		assertInvariants(registry);
 	}
 	
@@ -80,7 +74,6 @@ public class TestOptionRegistry
 	{
 		testOptionKeys(Object.class);
 		testOptionKeys(getClass());
-		testOptionKeys(EnumOptions.class, EnumOptions.E1);
 		testOptionKeys(FieldOptions.class, FieldOptions.I23, FieldOptions.I42, FieldOptions.S1, FieldOptions.S2);
 	}
 	
@@ -127,52 +120,6 @@ public class TestOptionRegistry
 		assertTrue(registry.getAllMatching("does-not-exist").isEmpty());
 	}
 
-	@SuppressWarnings("null")
-	public static enum EnumOptions implements IOptionKey<Object>
-	{
-		E1("e1");
-	
-		private final Object _defaultValue;
-		
-		private EnumOptions(Object defaultValue)
-		{
-			_defaultValue = defaultValue;
-		}
-		
-		@Override
-		public Class<Object> type()
-		{
-			return Object.class;
-		}
-
-		@Override
-		public Object defaultValue()
-		{
-			return _defaultValue;
-		}
-
-		@Override
-		public @Nullable Object lookup(IOptionHolder holder)
-		{
-			return holder.options().lookup(this);
-		}
-
-		/*
-		 * 
-		 */
-		@Override
-		public void set(IOptionHolder holder, Object value)
-		{
-			holder.options().set(this, value);
-		}
-
-		@Override
-		public void unset(IOptionHolder holder)
-		{
-			holder.options().unset(this);
-		}
-	}
-	
 	static class PackageProtectedFieldOptions
 	{
 		public static final IOptionKey<String> S42 = new StringOptionKey(FieldOptions.class, "S42", "42");

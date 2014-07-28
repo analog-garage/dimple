@@ -19,9 +19,9 @@ package com.analog.lyric.dimple.events;
 import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.dimple.model.core.FactorGraph;
 import com.analog.lyric.dimple.model.core.INode;
+import com.analog.lyric.dimple.options.DimpleOptionHolder;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactorGraph;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverNode;
-import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.util.misc.Internal;
 import com.analog.lyric.util.misc.Nullable;
 
@@ -30,7 +30,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.06
  * @author Christopher Barber
  */
-public abstract class SolverEventSource extends AbstractOptionHolder implements ISolverEventSource, ISolverNode
+public abstract class SolverEventSource extends DimpleOptionHolder implements ISolverEventSource, ISolverNode
 {
 	/*-----------
 	 * Constants

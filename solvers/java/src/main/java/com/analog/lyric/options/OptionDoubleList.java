@@ -16,47 +16,31 @@
 
 package com.analog.lyric.options;
 
+import com.google.common.primitives.Doubles;
+
+
 /**
- * Key for boolean options.
- * <p>
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public class OptionDoubleList extends AbstractOptionValueList<Double>
 {
 	private static final long serialVersionUID = 1L;
+
+	final public static OptionDoubleList EMPTY = new OptionDoubleList();
 	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
 	/**
-	 * Default value of option.
+	 * @param elements
 	 * @since 0.07
 	 */
-	public final boolean defaultBooleanValue()
+	public OptionDoubleList(Double[] elements)
 	{
-		return _defaultValue;
+		super(Double.class, elements);
+	}
+
+	public OptionDoubleList(double ... elements)
+	{
+		super(Doubles.asList(elements).toArray(new Double[elements.length]));
 	}
 }

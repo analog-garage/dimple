@@ -16,8 +16,7 @@
 
 package com.analog.lyric.options;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.io.Serializable;
 
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
@@ -25,37 +24,35 @@ import com.analog.lyric.util.misc.Nullable;
 /**
  * Interface for object that can hold option values.
  * <p>
- * Users are expected to access options through the {@link #options()} method. The other methods
- * are intended to be used by implementors of {@link IOptions}.
+ * Concrete implementations will typically extend either {@link LocalOptionHolder} or
+ * {@link StatelessOptionHolder}.
  */
 public interface IOptionHolder
 {
+	/**
+	 * Clears all local options.
+	 * <p>
+	 * Unsets all options set directly on this object. This does not affect option settings
+	 * on other option holders in the {@linkplain #getOptionDelegates() delegate chain}.
+	 */
 	public void clearLocalOptions();
 	
 	/**
-	 * Returns map containing the options that have been set directly on this
-	 * object.
-	 * @param create if set to true forces creation of empty local option map if there
-	 * were no local options.
-	 * @return local option map. May return null if there are no locally set options and {@code create}
-	 * is false or if object does not support local option values.
-	 * @see #createLocalOptions()
-	 */
-	public @Nullable ConcurrentMap<IOptionKey<?>,Object> getLocalOptions(boolean create);
-	
-	/**
-	 * Returns map containing the options that have been set directly on this
-	 * object, creating if necessary.
-	 * @since 0.06
-	 * @throws UnsupportedOperationException if object does not support local option values.
-	 */
-	public ConcurrentMap<IOptionKey<?>,Object> createLocalOptions();
-	
-	/**
-	 * Iterates over option holders in order in which lookup should be delegated.
+	 * Iterators over options set directly on this object.
 	 * <p>
-	 * The default implementations provided by {@link AbstractOptionHolder} and
-	 * {@link AbstractOptions} returns a {@link OptionParentIterator} instance,
+	 * This does not include options set on {@linkplain #getOptionDelegates() delegates}.
+	 * 
+	 * @since 0.07
+	 */
+	public Iterable<IOption<? extends Serializable>> getLocalOptions();
+	
+	/**
+	 * Iterates over option holders in order in of lookup precedence.
+	 * <p>
+	 * This should be the first object returned by the iterator.
+	 * <p>
+	 * The default implementation provided by {@link AbstractOptionHolder}
+	 * returns a {@link OptionParentIterator} instance,
 	 * which simply walks up the chain of option parents.
 	 * <p>
 	 * @since 0.07
@@ -64,7 +61,7 @@ public interface IOptionHolder
 	
 	/**
 	 * The "parent" of this option holder to which option lookup will be delegated for option
-	 * keys that are not set on this object. Used by {@link Options#lookupOrNull(IOptionKey)}.
+	 * keys that are not set on this object. Used by {@link #getOption(IOptionKey)}.
 	 * <p>
 	 * Implementors should ensure that chain of parents is not circular!
 	 * <p>
@@ -73,14 +70,59 @@ public interface IOptionHolder
 	public @Nullable IOptionHolder getOptionParent();
 	
 	/**
-	 * Return a list of option keys that are relevant to this object, i.e. ones whose values affect
-	 * the behavior of the object.
-	 * @return set of option keys.
+	 * Returns value of option with given key or else its default value.
+	 * <p>
+	 * The same as {@link #getOption} but returns the key's
+	 * {@linkplain IOptionKey#defaultValue() defaultValue} instead of null
+	 * if option is not set.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @since 0.07
 	 */
-	public Set<IOptionKey<?>> getRelevantOptionKeys();
+	public <T extends Serializable> T getOptionOrDefault(IOptionKey<T> key);
 	
 	/**
-	 * Returns object used for getting/setting options.
+	 * Returns value of option with given key if set, else null.
+	 * <p>
+	 * Returns the value of the first option setting found in this object or
+	 * in its list of delegates. Specifically it invokes {@link #getLocalOption}
+	 * on each object in {@link #getOptionDelegates()} and returns the first non-null result.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @since 0.07
 	 */
-	public IOptions options();
+	@Nullable
+	public <T extends Serializable> T getOption(IOptionKey<T> key);
+	
+	/**
+	 * Returns value of option with given key if set directly on this object, else null.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @since 0.07
+	 */
+	@Nullable
+	public <T extends Serializable> T getLocalOption(IOptionKey<T> key);
+	
+	/**
+	 * Sets option locally with given key to specified value.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @param value is a non-null value with type compatible with key's {@linkplain IOptionKey#type type}.
+	 * @since 0.07
+	 * @throws UnsupportedOperationException if implementation does not support local option storage.
+	 * @throws IllegalArgumentException if implementation does not support local option storage for given key.
+	 */
+	public <T extends Serializable> void setOption(IOptionKey<T> key, T value);
+	
+	/**
+	 * Unsets local option with given key.
+	 * <p>
+	 * Removes option setting on this object for given key. This does not affect
+	 * option settings on other objects.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @since 0.07
+	 */
+	public void unsetOption(IOptionKey<?> key);
+
 }

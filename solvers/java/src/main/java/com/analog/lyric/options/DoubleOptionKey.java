@@ -18,6 +18,12 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+/**
+ * Key for double options.
+ * <p>
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
 public class DoubleOptionKey extends OptionKey<Double>
 {
@@ -52,6 +58,10 @@ public class DoubleOptionKey extends OptionKey<Double>
 		return defaultDoubleValue();
 	}
 
+	/**
+	 * The default value of the option.
+	 * @since 0.07
+	 */
 	public final double defaultDoubleValue()
 	{
 		return _defaultValue;

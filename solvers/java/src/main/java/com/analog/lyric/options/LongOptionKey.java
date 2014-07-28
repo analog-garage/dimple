@@ -16,46 +16,45 @@
 
 package com.analog.lyric.options;
 
+import net.jcip.annotations.Immutable;
+
 /**
- * Key for boolean options.
+ * Option key with type {@link Long}.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+@Immutable
+public class LongOptionKey extends OptionKey<Long>
 {
 	private static final long serialVersionUID = 1L;
+
+	private final long _defaultValue;
 	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
+	public LongOptionKey(Class<?> declaringClass, String name)
 	{
-		this(declaringClass, name, false);
+		this(declaringClass, name, 0L);
 	}
 
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
+	public LongOptionKey(Class<?> declaringClass, String name, long defaultValue)
 	{
 		super(declaringClass, name);
 		_defaultValue = defaultValue;
 	}
 
 	@Override
-	public final Class<Boolean> type()
+	public Class<Long> type()
 	{
-		return Boolean.class;
+		return Long.class;
 	}
 
 	@Override
-	public final Boolean defaultValue()
+	public Long defaultValue()
 	{
-		return defaultBooleanValue();
+		return _defaultValue;
 	}
 
-	/**
-	 * Default value of option.
-	 * @since 0.07
-	 */
-	public final boolean defaultBooleanValue()
+	public final long defaultLongValue()
 	{
 		return _defaultValue;
 	}

@@ -17,7 +17,6 @@
 /**
  * Statically typed hierarchical option support.
  * <p>
- * 
  * @author Christopher Barber
  * @since 0.07
  */

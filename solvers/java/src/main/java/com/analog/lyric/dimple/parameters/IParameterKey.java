@@ -17,7 +17,6 @@
 package com.analog.lyric.dimple.parameters;
 
 import com.analog.lyric.dimple.model.domains.RealDomain;
-import com.analog.lyric.options.IEnumOptionKey;
 import com.analog.lyric.options.IOptionKey;
 
 /**
@@ -79,10 +78,17 @@ import com.analog.lyric.options.IOptionKey;
  * }
  * </pre>
  */
-public interface IParameterKey extends IEnumOptionKey<Double>
+public interface IParameterKey extends IOptionKey<Double>
 {
 	/**
 	 * The expected domain of values associated with this key. Used to validate new values.
 	 */
 	public abstract RealDomain domain();
+	
+	/**
+	 * The ordinal index of the key in its enumeration. If implemented by an
+	 * actual enum type, then this method is automatically provided.
+	 * @see Enum#ordinal
+	 */
+	public abstract int ordinal();
 }

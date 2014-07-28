@@ -14,18 +14,29 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.options;
+package com.analog.lyric.dimple.options;
+
+import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.dimple.events.EventSourceIterator;
+import com.analog.lyric.dimple.events.IDimpleEventSource;
+import com.analog.lyric.options.LocalOptionHolder;
 
 /**
- * An {@link IOptionKey} specialization for option keys that are a member of
- * an enumeration.
+ * Base class for dimple objects that can hold options and generate events.
+ * 
+ * @since 0.07
+ * @author Christopher Barber
  */
-public interface IEnumOptionKey<T> extends IOptionKey<T>
+public abstract class DimpleOptionHolder extends LocalOptionHolder implements IDimpleEventSource
 {
-	/**
-	 * The ordinal index of the key in its enumeration. If implemented by an
-	 * actual enum type, then this method is automatically provided.
-	 * @see Enum#ordinal
+	/*-----------------------
+	 * IOptionHolder methods
 	 */
-	public abstract int ordinal();
+	
+	@Override
+	public ReleasableIterator<IDimpleEventSource> getOptionDelegates()
+	{
+		return EventSourceIterator.create(this);
+	}
+
 }

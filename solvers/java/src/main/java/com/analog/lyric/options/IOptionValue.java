@@ -16,47 +16,21 @@
 
 package com.analog.lyric.options;
 
+import java.io.Serializable;
+
 /**
- * Key for boolean options.
+ * Base interface for non-primitive option values.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public interface IOptionValue extends Serializable
 {
-	private static final long serialVersionUID = 1L;
-	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
-	/**
-	 * Default value of option.
-	 * @since 0.07
+	/*----------------
+	 * Object methods
 	 */
-	public final boolean defaultBooleanValue()
-	{
-		return _defaultValue;
-	}
+	
+	@Override
+	public String toString();
+
 }

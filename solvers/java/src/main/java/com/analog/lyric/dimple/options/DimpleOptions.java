@@ -14,49 +14,22 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.options;
+package com.analog.lyric.dimple.options;
+
+import com.analog.lyric.options.OptionKeyDeclarer;
 
 /**
- * Key for boolean options.
+ * Base of dimple option hierarchy.
+ * <p>
+ * Root of hierarchy of classes that contain declaration of option keys for
+ * use with dimple.
+ * <p>
+ * Also contains declarations for option keys that are not specific to any
+ * particular component of dimple.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
-public class BooleanOptionKey extends OptionKey<Boolean>
+public class DimpleOptions extends OptionKeyDeclarer
 {
-	private static final long serialVersionUID = 1L;
-	
-	private final boolean _defaultValue;
-	
-	public BooleanOptionKey(Class<?> declaringClass, String name)
-	{
-		this(declaringClass, name, false);
-	}
-
-	public BooleanOptionKey(Class<?> declaringClass, String name, boolean defaultValue)
-	{
-		super(declaringClass, name);
-		_defaultValue = defaultValue;
-	}
-
-	@Override
-	public final Class<Boolean> type()
-	{
-		return Boolean.class;
-	}
-
-	@Override
-	public final Boolean defaultValue()
-	{
-		return defaultBooleanValue();
-	}
-
-	/**
-	 * Default value of option.
-	 * @since 0.07
-	 */
-	public final boolean defaultBooleanValue()
-	{
-		return _defaultValue;
-	}
 }

@@ -27,19 +27,20 @@ import com.analog.lyric.util.misc.Nullable;
 /**
  * A unique key for looking up or setting a value from a {@link IOptionHolder}.
  * <p>
- * @param <T> is the type of the value that will be associated with the key.
+ * @param <T> is the type of the value that will be associated with the key. The type
+ * should either be {@link String}, a wrapped primitive type (e.g. {@link Double}, {@link Boolean}),
+ * or an immutable concrete implementation of {@link IOptionValue}.
  * <p>
- * Conforming concrete implementations can either consist of an enum that implements
- * this interface, or a subclass of {@link OptionKey}. Concrete instances should either
- * be public enum instance values or public static final fields, with given {@link #name()}.
+ * Concrete instances should be public static final fields, with given {@link #name()}, preferably
+ * in a subclass of {@link OptionKeyDeclarer}.
  * <p>
- * {@link OptionKey} also has useful static methods for loading option keys, whether or not
+ * {@link OptionKey} contains useful static methods for loading option keys, whether or not
  * they are implemented as subclasses of that class.
  * <p>
  * @see OptionKey#forQualifiedName
  */
 @Immutable
-public interface IOptionKey<T> extends Serializable
+public interface IOptionKey<T extends Serializable> extends Serializable
 {
 	/**
 	 * Comparator that orders keys by name.
@@ -58,16 +59,8 @@ public interface IOptionKey<T> extends Serializable
 		}
 	}
 	
-	/*-------------------------
-	 * Enum-compatible methods
-	 * 
-	 * These do not need to be defined when implementation is an enum type.
-	 * <p>
+	/**
 	 * Should be the class that contains the declaration of this instance.
-	 * <p>
-	 * For enum implementations, this should be the default implementation provided by the enum.
-	 * <p>
-	 * @see Enum#getDeclaringClass
 	 */
 	public abstract Class<?> getDeclaringClass();
 	
@@ -75,17 +68,9 @@ public interface IOptionKey<T> extends Serializable
 	 * The unqualified name of the option.
 	 * <p>
 	 * Should be a valid Java identifier, and should be the same as the name
-	 * of the field or enum member that holds this instance.
-	 * <p>
-	 * For enum implementations, this should be the default implementation provided by the enum.
-	 * <p>
-	 * @see Enum#name
+	 * of the field that holds this instance.
 	 */
 	public abstract String name();
-	
-	/*---------------
-	 * Other methods
-	 */
 	
 	/**
 	 * The type of the option's value, which should be the same as the type parameter {@code T}.
@@ -98,32 +83,34 @@ public interface IOptionKey<T> extends Serializable
 	public abstract T defaultValue();
 	
 	/**
-	 * Lookup the value of the option in the given {@code holder}.
+	 * Returns the value of the option for the given {@code holder} or else its default value, if not set.
 	 * <p>
-	 * This can be implemented by:
-	 * <pre>
-	 * holder.options().lookup(this)
-	 * </pre>
+	 * This should be implemented by invoking {@linkplain IOptionHolder#getOptionOrDefault getOptionOrDefault}
+	 * on {@code holder}.
 	 */
-	public abstract @Nullable T lookup(IOptionHolder holder);
+	public abstract T getOrDefault(IOptionHolder holder);
+	
+	/**
+	 * Returns the value of the option for the given {@code holder} or null if not set.
+	 * <p>
+	 * This should be implemented by invoking {@linkplain IOptionHolder#getOption getOption}
+	 * on {@code holder}.
+	 */
+	public abstract @Nullable T get(IOptionHolder holder);
 	
 	/**
 	 * Set the option value locally on the given {@code holder}.
 	 * <p>
-	 * This can be implemented by:
-	 * <pre>
-	 * holder.options.set(this, value)
-	 * </pre>
+	 * This should be implemented by invoking {@linkplain IOptionHolder#setOption(IOptionKey,Serializable) setOption}
+	 * on {@code holder}.
 	 */
 	public abstract void set(IOptionHolder holder, T value);
 	
 	/**
 	 * Unset the option locally on the given {@code holder}.
 	 * <p>
-	 * This can be implemented by:
-	 * <pre>
-	 * holder.options.unset(this)
-	 * </pre>
+	 * This should be implemented by invoking {@linkplain IOptionHolder#unsetOption(IOptionKey) unsetOption}
+	 * on {@code holder}.
 	 */
 	public abstract void unset(IOptionHolder holder);
 }
