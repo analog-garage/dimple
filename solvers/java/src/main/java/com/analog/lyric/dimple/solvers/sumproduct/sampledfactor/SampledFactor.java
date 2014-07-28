@@ -82,7 +82,6 @@ public class SampledFactor extends SFactorBase
 			// Create a private copy of each sibling variable to use in the message graph
 			VariableBase var = factor.getSibling(edge);
 			_privateVariables[edge] = var.clone();
-			_privateVariables[edge].setInputObject(null);
 
 			// Create a message translator based on the variable type
 			// TODO: Allow alternative message representations for continuous variables
@@ -92,6 +91,9 @@ public class SampledFactor extends SFactorBase
 				_messageTranslator[edge] = new NormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
 			else // Complex or RealJoint
 				_messageTranslator[edge] = new MultivariateNormalMessageTranslator(factor.getPort(edge), _privateVariables[edge]);
+			
+			// Start with uniform input
+			_messageTranslator[edge].setVariableInputUniform();
 		}
 		
 		// Create a private message graph on which the Gibbs sampler will be run

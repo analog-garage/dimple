@@ -47,13 +47,15 @@ public class DiscreteMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
-		_variable.setInputObject(getInputMessage());
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
+			_variable.setInputObject(getInputMessage());
 	}
 	
 	@Override
 	public final void setVariableInputUniform()
 	{
-		_variable.setInputObject(null);
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
+			_variable.setInputObject(null);
 	}
 
 	@SuppressWarnings("null")

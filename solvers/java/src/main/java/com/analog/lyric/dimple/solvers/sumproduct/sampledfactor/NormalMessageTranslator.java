@@ -62,23 +62,27 @@ public class NormalMessageTranslator extends MessageTranslatorBase
 	@Override
 	public final void setVariableInputFromInputMessage()
 	{
-		NormalParameters inputMessage = (NormalParameters)requireNonNull(getInputMessage());
-		if (inputMessage.getPrecision() == 0)
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
 		{
-			_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
-		}
-		else
-		{
-			_variableInput.setMean(inputMessage.getMean());
-			_variableInput.setPrecision(inputMessage.getPrecision());
-			_variable.setInputObject(_variableInput);
+			NormalParameters inputMessage = (NormalParameters)requireNonNull(getInputMessage());
+			if (inputMessage.getPrecision() == 0)
+			{
+				_variable.setInputObject(null);		// If zero precision, then set the input to null to avoid numerical issues
+			}
+			else
+			{
+				_variableInput.setMean(inputMessage.getMean());
+				_variableInput.setPrecision(inputMessage.getPrecision());
+				_variable.setInputObject(_variableInput);
+			}
 		}
 	}
 	
 	@Override
 	public final void setVariableInputUniform()
 	{
-		_variable.setInputObject(null);
+		if (!_variable.hasFixedValue())		// Only set the input if there isn't already a fixed value
+			_variable.setInputObject(null);
 	}
 
 	@Override
