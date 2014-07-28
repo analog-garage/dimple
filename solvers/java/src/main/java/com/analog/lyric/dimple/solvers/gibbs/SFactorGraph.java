@@ -107,6 +107,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	private double _temperature;
 	private double _minPotential = Double.MAX_VALUE;
 	private boolean _firstSample = true;
+	private boolean _saveAllSamples = false;
 	private @Nullable DoubleArrayList _scoreArray;
 	private String _defaultRealSamplerName = SRealVariable.DEFAULT_REAL_SAMPLER_NAME;
 	private String _defaultDiscreteSamplerName = SDiscreteVariable.DEFAULT_DISCRETE_SAMPLER_NAME;
@@ -441,6 +442,7 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@SuppressWarnings("null")
 	public void saveAllSamples()
 	{
+		_saveAllSamples = true;
 		for (VariableBase v : _factorGraph.getVariables())
 			getSolverVariable(v).saveAllSamples();
 	}
@@ -449,8 +451,14 @@ public class SFactorGraph extends SFactorGraphBase //implements ISolverFactorGra
 	@SuppressWarnings("null")
 	public void disableSavingAllSamples()
 	{
+		_saveAllSamples = true;
 		for (VariableBase v : _factorGraph.getVariables())
 			((ISolverVariableGibbs)(v.getSolver())).disableSavingAllSamples();
+	}
+	
+	protected boolean isSavingAllSamplesEnabled()
+	{
+		return _saveAllSamples;
 	}
 	
 	// Before running, calling this method instructs the solver to save the score (energy/likelihood) values for each sample

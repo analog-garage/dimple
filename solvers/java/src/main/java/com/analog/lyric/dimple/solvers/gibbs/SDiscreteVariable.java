@@ -836,7 +836,10 @@ public class SDiscreteVariable extends SDiscreteVariableBase implements ISolverV
 		// Clear out sample state
 		_bestSampleIndex = -1;
 		final IntArrayList sampleIndexArray = _sampleIndexArray;
-		if (sampleIndexArray != null) sampleIndexArray.clear();
+		if (sampleIndexArray != null)
+			sampleIndexArray.clear();
+		else if (((SFactorGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
+			saveAllSamples();
 
 		Arrays.fill(_beliefHistogram, 0);
 		
