@@ -25,6 +25,16 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.util.misc.Nullable;
 
+/**
+ * Base implementation of {@link IOptionKey} interface.
+ * <p>
+ * This is the preferred base class for implementing option key classes and also
+ * provides useful static methods for naming and construction.
+ * <p>
+ * @param <T> is the type of  the values of the option indexed by this key.
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
 public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 {
@@ -52,6 +62,8 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 * Returns key with specified {@code name} in {@code declaringClass} using Java reflection.
 	 * <p>
 	 * @see OptionRegistry#addFromClass(Class)
+	 * <p>
+	 * @since 0.07
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Serializable> IOptionKey<T> inClass(Class<?> declaringClass, String name)
@@ -69,22 +81,24 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	/**
-	 * Returns key with specified {@code qualifiedName} using Java reflection to load the
+	 * Returns key with specified {@code canonicalName} using Java reflection to load the
 	 * declaring class.
 	 * <p>
 	 * Because this uses reflection it is not expected to be very fast so it is better to put keys
 	 * in a {@link OptionRegistry} if you need frequent lookup by name.
+	 * <p>
+	 * @since 0.07
 	 */
-	public static <T extends Serializable> IOptionKey<T> forQualifiedName(String qualifiedName)
+	public static <T extends Serializable> IOptionKey<T> forCanonicalName(String canonicalName)
 	{
-		int i = qualifiedName.lastIndexOf('.');
+		int i = canonicalName.lastIndexOf('.');
 		if (i < 0)
 		{
-			throw new DimpleException("'%s' is not a qualified option key name", qualifiedName);
+			throw new DimpleException("'%s' is not a canonical option key name", canonicalName);
 		}
 		
-		String className = qualifiedName.substring(0, i);
-		String name = qualifiedName.substring(i + 1);
+		String className = canonicalName.substring(0, i);
+		String name = canonicalName.substring(i + 1);
 		
 		Class<?> declaringClass;
 		try
@@ -169,11 +183,15 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	 */
 	
 	/**
-	 * Returns the canonical instance of {@code key}, i.e. the one that is publicly declared as
+	 * Returns the canonical instance of {@code key}.
+	 * <p>
+	 * Returns the instance of the key that is publicly declared as
 	 * a static field of {@link #getDeclaringClass()} with given {@link #name()}
 	 * or returns null if there isn't one.
 	 * <p>
 	 * This method is implemented using reflection and is not expected to be very fast.
+	 * <p>
+	 * @since 0.07
 	 */
 	public static @Nullable<T extends Serializable> IOptionKey<T> getCanonicalInstance(IOptionKey<T> key)
 	{
@@ -199,13 +217,44 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	/**
-	 * Computes the qualified name of the option.
+	 * Computes the canonical name of the option.
+	 * <p>
+	 * Shorthand for
+	 * <blockquote>
+	 * {@linkplain #canonicalName(IOptionKey) OptionKey.canonicalName}(this)
+	 * </blockquote>
+	 * @since 0.07
+	 */
+	public String canonicalName()
+	{
+		return canonicalName(this);
+	}
+	
+	/**
+	 * Computes the fully qualified canonical name of the option.
+	 * <p>
+	 * This name uniquely identifies the option key. It consists of the fully qualified name of
+	 * {@link #getDeclaringClass()} and {@link #name} separated by '.'. For instance:
+	 * <blockquote>
+	 * "com.analog.lyric.dimple.options.SolverOptions.iterations"
+	 * </blockquote>
+	 * 
+	 * @param option is a non-null option key.
+	 * @since 0.07
+	 */
+	public static String canonicalName(IOptionKey<?> option)
+	{
+		return String.format("%s.%s", option.getDeclaringClass().getName(), option.name());
+	}
+	
+	/**
+	 * Computes the option name qualified by its simple declaring class name.
 	 * <p>
 	 * Shorthand for
 	 * <blockquote>
 	 * {@linkplain #qualifiedName(IOptionKey) OptionKey.qualifiedName}(this)
 	 * </blockquote>
-	 * @since 0.06
+	 * @since 0.07
 	 */
 	public String qualifiedName()
 	{
@@ -213,11 +262,21 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	}
 	
 	/**
-	 * Computes the qualified name of the option, which consists of the full name of
-	 * {@link #getDeclaringClass()} and {@link #name} separated by '.'.
+	 * Computes the option name qualified by its simple declaring class name.
+	 * <p>
+	 * This may be used to disambiguate option keys that may have the same simple name.
+	 * The name consits of the {@linkplain Class#getSimpleName() simple name} of the option's
+	 * {@linkplain IOptionKey#getDeclaringClass() declaring class} and the {@link #name} separated
+	 * by '.'. For instance:
+	 * <blockquote>
+	 * "SolverOptions.iterations"
+	 * </blockquote>
+	 * <p>
+	 * @param option is a non-null option key.
+	 * @since 0.07
 	 */
 	public static String qualifiedName(IOptionKey<?> option)
 	{
-		return String.format("%s.%s", option.getDeclaringClass().getName(), option.name());
+		return String.format("%s.%s", option.getDeclaringClass().getSimpleName(), option.name());
 	}
 }

@@ -19,18 +19,19 @@ package com.analog.lyric.options.tests;
 import static com.analog.lyric.util.test.ExceptionTester.*;
 import static org.junit.Assert.*;
 
-import java.util.Map.Entry;
-import java.util.SortedMap;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import com.analog.lyric.options.AmbiguousOptionNameException;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 import com.analog.lyric.options.OptionKey;
 import com.analog.lyric.options.OptionKeys;
 import com.analog.lyric.options.OptionRegistry;
 import com.analog.lyric.options.StringOptionKey;
+import com.google.common.collect.Iterables;
 
 /**
  * Test for {@link OptionRegistry} class
@@ -44,29 +45,64 @@ public class TestOptionRegistry
 	public void testRegistry()
 	{
 		OptionRegistry registry = new OptionRegistry();
+		assertTrue(registry.autoLoadKeys());
 		assertEquals(0, registry.size());
 		assertInvariants(registry);
 		
-		registry.addFromClass(getClass());
+		assertEquals(4, registry.addFromClass(getClass()));
+		assertEquals(0, registry.addFromClass(getClass()));
 		assertInvariants(registry);
 		assertEquals(4, registry.size());
 		
 		assertEquals(2, registry.getAllMatching(".*\\.S\\d").size());
 		assertEquals(1, registry.getAllMatching(Pattern.compile(".*\\.S2")).size());
 		
-		registry.clear();
+		final String packageName = getClass().getPackage().getName();
+		
+		assertNull(registry.get("SomeOptions.A"));
+		
+		StringOptionKey FooA = com.analog.lyric.options.tests.foo.SomeOptions.A;
+		StringOptionKey FooB = com.analog.lyric.options.tests.foo.SomeOptions.B;
+		StringOptionKey FooD = com.analog.lyric.options.tests.foo.SomeOptions.D;
+		
+		StringOptionKey BarA = com.analog.lyric.options.tests.bar.SomeOptions.A;
+		StringOptionKey BarB = com.analog.lyric.options.tests.bar.SomeOptions.B;
+		StringOptionKey BarC = com.analog.lyric.options.tests.bar.SomeOptions.C;
+		
+		// Test autoloading
+		assertEquals(FooA, registry.get(FooA.canonicalName()));
+		assertEquals(FooA, registry.get("SomeOptions.A"));
+		// Other options in same class also get loaded
+		assertEquals(FooB, registry.get("SomeOptions.B"));
+		assertEquals(FooD, registry.get("SomeOptions.D"));
+		assertInvariants(registry);
+		
+		assertEquals(BarC, registry.get(BarC.canonicalName()));
+		assertEquals(BarC, registry.get("SomeOptions.C"));
+		assertEquals(FooD, registry.get("SomeOptions.D"));
+		assertNull(registry.get("SomeOptions.doesNotExist"));
+		try
+		{
+			registry.get("SomeOptions.A");
+			fail("should not get here");
+		}
+		catch (AmbiguousOptionNameException ex)
+		{
+			// In order in which they were added...
+			assertArrayEquals(new Object[] { FooA, BarA }, ex.ambiguousKeys().toArray());
+		}
+		assertInvariants(registry);
+
+		assertNull(registry.get("this.class.does.not.exist"));
+		
+		assertEquals(false, registry.add(OptionKeys.declaredInClass(BarA.getDeclaringClass())));
+
+		registry = new OptionRegistry(false);
 		assertInvariants(registry);
 		assertEquals(0, registry.size());
 		
-		registry.addFromQualifiedName(FieldOptions.I23.qualifiedName());
-		assertEquals(1, registry.size());
-		assertSame(FieldOptions.I23, registry.get(FieldOptions.I23.qualifiedName()));
-		assertInvariants(registry);
+		assertNull(registry.get(FooA.canonicalName()));
 		
-		registry.remove(FieldOptions.I23);
-		assertEquals(0, registry.size());
-		assertNull(registry.get(FieldOptions.I23.qualifiedName()));
-		assertInvariants(registry);
 	}
 	
 	@Test
@@ -101,21 +137,29 @@ public class TestOptionRegistry
 	
 	private void assertInvariants(OptionRegistry registry)
 	{
-		SortedMap<String, IOptionKey<?>> sortedMap = registry.asSortedMap();
-		for (Entry<String, IOptionKey<?>> entry : sortedMap.entrySet())
+		ArrayList<IOptionKey<?>> all1 = new ArrayList<>();
+		Iterables.addAll(all1, registry);
+		assertEquals(all1.size(), registry.size());
+		
+		for (IOptionKey<?> key : registry)
 		{
-			String name = entry.getKey();
-			IOptionKey<?> optionKey = entry.getValue();
-			
-			assertSame(optionKey, registry.get(name));
-			assertEquals(name, OptionKey.qualifiedName(optionKey));
+			assertEquals(key, registry.get(OptionKey.canonicalName(key)));
+			try
+			{
+				assertEquals(key, registry.get(OptionKey.qualifiedName(key)));
+			}
+			catch (AmbiguousOptionNameException ex)
+			{
+				assertEquals(OptionKey.qualifiedName(key), ex.optionName());
+				assertNotEquals(1, ex.ambiguousKeys().size());
+				assertTrue(ex.ambiguousKeys().indexOf(key) >= 0);
+			}
 		}
 		
 		assertNull(registry.get("this-key-does-not-exist"));
-		assertNull(registry.remove("this-key-does-not-exist"));
 		
-		SortedMap<String,IOptionKey<?>> map2 = registry.getAllMatching(".*");
-		assertEquals(sortedMap, map2);
+		ArrayList<IOptionKey<?>> all2 = registry.getAllMatching(".*");
+		assertEquals(all1, all2);
 		
 		assertTrue(registry.getAllMatching("does-not-exist").isEmpty());
 	}
