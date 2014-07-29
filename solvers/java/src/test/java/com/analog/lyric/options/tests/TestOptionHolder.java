@@ -30,6 +30,7 @@ import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
 import com.analog.lyric.options.IntegerOptionKey;
 import com.analog.lyric.options.LocalOptionHolder;
+import com.analog.lyric.options.Option;
 import com.analog.lyric.options.StatelessOptionHolder;
 import com.analog.lyric.options.StringOptionKey;
 import com.analog.lyric.util.misc.Nullable;
@@ -112,6 +113,40 @@ public class TestOptionHolder
 		child.setOption(K, "gag");
 		assertEquals("gag", child.getOption(K));
 		assertInvariants(child);
+	}
+	
+	/**
+	 * Unit test for {@link Option} class.
+	 * 
+	 * @since 0.07
+	 */
+	@Test
+	public void testOption()
+	{
+		Option<String> strOption = new Option<String>(K);
+		assertSame(K, strOption.key());
+		assertEquals("", strOption.value());
+		assertEquals(strOption, strOption);
+		assertEquals(strOption, new Option<String>(K, ""));
+		assertEquals(strOption.hashCode(), new Option<String>(K).hashCode());
+		assertNotEquals(strOption, "");
+		assertNotEquals(strOption, new Option<String>(K, "x"));
+		assertNotEquals(strOption, new Option<Integer>(I));
+		
+		strOption = new Option<String>(K, "foo");
+		assertEquals("foo", strOption.value());
+		assertEquals("K=foo", strOption.toString());
+		
+		strOption = new Option<String>(K, null);
+		assertNull(strOption.value());
+		
+		IOptionHolder holder = new LocalOptionHolder();
+		Option.setOptions(holder, Option.create(K, "a"), Option.create(I, 42));
+		assertEquals(Option.create(K, "a"), Option.lookup(holder, K));
+		assertEquals(Option.create(I, 42), Option.lookup(holder, I));
+		
+		Option.setOptions(holder, Option.create(I, null));
+		assertNull(holder.getOption(I));
 	}
 	
 	private void assertInvariants(IOptionHolder holder)
