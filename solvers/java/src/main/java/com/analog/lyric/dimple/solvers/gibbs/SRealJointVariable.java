@@ -961,7 +961,10 @@ public class SRealJointVariable extends SRealJointVariableBase implements ISolve
 		// Clear out sample state
 		_bestSampleValue = _sampleValue;
 		final ArrayList<double[]> sampleArray = _sampleArray;
-		if (sampleArray != null) sampleArray.clear();
+		if (sampleArray != null)
+			sampleArray.clear();
+		else if (((SFactorGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
+			saveAllSamples();
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)

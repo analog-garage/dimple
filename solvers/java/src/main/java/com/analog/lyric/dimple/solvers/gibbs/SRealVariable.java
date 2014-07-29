@@ -810,7 +810,10 @@ public class SRealVariable extends SRealVariableBase
 		// Clear out sample state
 		_bestSampleValue = _sampleValue;
 		final DoubleArrayList sampleArray = _sampleArray;
-		if (sampleArray != null) sampleArray.clear();
+		if (sampleArray != null)
+			sampleArray.clear();
+		else if (((SFactorGraph)requireNonNull(requireNonNull(_var.getRootGraph()).getSolver())).isSavingAllSamplesEnabled())
+			saveAllSamples();
 		
 		// Determine which sampler to use
 		if (_samplerSpecificallySpecified)
