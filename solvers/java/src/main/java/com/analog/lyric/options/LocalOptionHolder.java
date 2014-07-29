@@ -18,14 +18,13 @@ package com.analog.lyric.options;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.Nullable;
+import com.google.common.collect.UnmodifiableIterator;
 
 /**
  * Provides standard implementation of {@link IOptionHolder} methods.
@@ -74,7 +73,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 			@Override
 			public Iterator<IOption<? extends Serializable>> iterator()
 			{
-				return new Iterator<IOption<? extends Serializable>>() {
+				return new UnmodifiableIterator<IOption<? extends Serializable>>() {
 
 					final Iterator<Map.Entry<IOptionKey<?>,Object>> _iter = localOptions.entrySet().iterator();
 					
@@ -90,13 +89,6 @@ public class LocalOptionHolder extends AbstractOptionHolder
 						final Map.Entry<IOptionKey<?>,Object> entry = _iter.next();
 						return Option.create(entry.getKey(), entry.getValue());
 					}
-
-					@Override
-					public void remove()
-					{
-						_iter.remove();
-					}
-
 				};
 			}
 			
@@ -107,7 +99,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	@Nullable
 	public <T extends Serializable> T getLocalOption(IOptionKey<T> key)
 	{
-		Map<IOptionKey<?>,Object> options = getLocalOptions(false);
+		Map<IOptionKey<?>,Object> options = getLocalOptionMap(false);
 		if (options != null)
 		{
 			final Object value = options.get(key);
@@ -123,54 +115,24 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	@Override
 	public <T extends Serializable> void setOption(IOptionKey<T> key, T value)
 	{
-		createLocalOptions().put(key, value);
+		createLocalOptionMap().put(key, value);
 	}
 	
 	@Override
 	public void unsetOption(IOptionKey<?> key)
 	{
-		Map<IOptionKey<?>,Object> map = getLocalOptions(false);
+		Map<IOptionKey<?>,Object> map = getLocalOptionMap(false);
 		if (map != null)
 		{
 			map.remove(key);
 		}
 	}
 	
-	/*---------------
-	 * Local methods
-	 */
-	
-	/**
-	 * Gets map of all set options that can be looked up from this object.
-	 * <p>
-	 * @since 0.07
-	 */
-	public Map<IOptionKey<?>, IOption<?>> getAllOptions()
-	{
-		final HashMap<IOptionKey<?>, IOption<?>> map = new HashMap<>();
-		
-		final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
-		while (delegates.hasNext())
-		{
-			for (IOption<?> option : delegates.next().getLocalOptions())
-			{
-				IOptionKey<?> key = option.key();
-				if (!map.containsKey(key))
-				{
-					map.put(key, option);
-				}
-			}
-		}
-		delegates.release();
-		
-		return map;
-	}
-
 	/*-------------------
 	 * Protected methods
 	 */
 	
-	protected ConcurrentMap<IOptionKey<?>, Object> createLocalOptions()
+	protected ConcurrentMap<IOptionKey<?>, Object> createLocalOptionMap()
 	{
 		ConcurrentMap<IOptionKey<?>, Object> localOptions = _localOptions;
 
@@ -194,9 +156,9 @@ public class LocalOptionHolder extends AbstractOptionHolder
 		return localOptions;
 	}
 	
-	protected @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptions(boolean create)
+	protected @Nullable ConcurrentMap<IOptionKey<?>, Object> getLocalOptionMap(boolean create)
 	{
-		return create ? createLocalOptions() : _localOptions;
+		return create ? createLocalOptionMap() : _localOptions;
 	}
 
 }
