@@ -17,10 +17,66 @@
 /**
  * Statically typed hierarchical option support.
  * <p>
+ * This package provides a type-safe framework for getting/setting simple option settings
+ * in a hierarchical fashion.
+ * <p>
+ * Options are indexed by instances of the {@linkplain com.analog.lyric.options.IOptionKey IOptionKey}
+ * interface that are declared as public static final fields of some publicly accessible class.
+ * Typically such classes will contain nothing other than option declarations and will make use
+ * of the concrete subclasses of {@linkplain com.analog.lyric.options.OptionKey OptionKey} provided
+ * by this package. Note that the option key interface allows you to specify default values for
+ * options for use when the option has not been explicitly set.
+ * It is also useful to organize these classes in a hierarchical fashion inheriting
+ * from {@linkplain com.analog.lyric.options.OptionKeyDeclarer OptionKeyDeclarer}. This allows Java IDE
+ * users to easily visualize available options in the class hierarchy viewer. Here is a simple example:
+ * <p>
+ * <blockquote>
+ * <pre>
+ * public class GuiOptions extends OptionKeyDeclarer
+ * {
+ *     /**
+ *      * <em>Document your option here</em>
+ *      *&#047;
+ *     public final StringOptionKey color =
+ *         new StringOptionKey(MyOptions.class, "color", "white");
+ * }
+ * </pre>
+ * </blockquote>
+ * <p>
+ * Classes that support getting and setting options must implement the
+ * {@linkplain com.analog.lyric.options.IOptionHolder} interface and will
+ * typically extend {@linkplain com.analog.lyric.options.LocalOptionHolder LocalOptionHolder},
+ * which provides the ability to store options locally in the object.
+ * <p>
+ * Options can be get or set using the corresponding key with an option holder and can
+ * be done either through methods on the key or the holder:
+ * <p>
+ * <blockquote>
+ * <pre>
+ *     if (GuiOptions.color.get(widget).equals("blue"))
+ *     {
+ *         GuiOptions.color.set(widget, "red");
+ *     }
+ * 
+ *     if (widget.getOption(GuiOptions.color).equals("blue"))
+ *     {
+ *         widget.setOption(GuiOptions.color, "red");
+ *     }
+ * </pre>
+ * </blockquote>
+ * <p>
+ * If you want an object to inherit option values from an other object in a hierarchical
+ * fashion, you can implement the {@linkplain com.analog.lyric.options.IOptionHolder#getOptionParent()
+ * getOptionParent()} method to indicate the default provider for option values. For instance, in a
+ * GUI framework you might want components to inherit attributes such as background color or font size
+ * from elements they are contained in. You can also implement more sophisticated inheritance schemes
+ * by overriding {@linkplain com.analog.lyric.options.IOptionHolder#getOptionDelegates() getOptionDelegates()}.
+ * <p>
  * @author Christopher Barber
  * @since 0.07
  */
 @NonNullByDefault
 package com.analog.lyric.options;
 import com.analog.lyric.util.misc.NonNullByDefault;
+
 

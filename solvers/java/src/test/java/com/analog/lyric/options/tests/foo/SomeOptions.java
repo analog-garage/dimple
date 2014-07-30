@@ -14,36 +14,18 @@
 *   limitations under the License.
 ********************************************************************************/
 
-package com.analog.lyric.options;
+package com.analog.lyric.options.tests.foo;
 
-import net.jcip.annotations.Immutable;
-
-import com.google.common.primitives.Doubles;
-
+import com.analog.lyric.options.StringOptionKey;
 
 /**
- * Represents list of doubles for use as option value.
+ * 
  * @since 0.07
  * @author Christopher Barber
  */
-@Immutable
-public class OptionDoubleList extends AbstractOptionValueList<Double>
+public class SomeOptions
 {
-	private static final long serialVersionUID = 1L;
-
-	final public static OptionDoubleList EMPTY = new OptionDoubleList();
-	
-	/**
-	 * @param elements
-	 * @since 0.07
-	 */
-	public OptionDoubleList(Double[] elements)
-	{
-		super(Double.class, elements);
-	}
-
-	public OptionDoubleList(double ... elements)
-	{
-		super(Doubles.asList(elements).toArray(new Double[elements.length]));
-	}
+	public static final StringOptionKey A = new StringOptionKey(SomeOptions.class, "A", "aaa");
+	public static final StringOptionKey B = new StringOptionKey(SomeOptions.class, "B", "bbb");
+	public static final StringOptionKey D = new StringOptionKey(SomeOptions.class, "D", "ddd");
 }

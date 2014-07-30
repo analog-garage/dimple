@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import net.jcip.annotations.Immutable;
+
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
@@ -40,6 +42,7 @@ import com.analog.lyric.util.misc.Nullable;
  * @since 0.07
  * @author Christopher Barber
  */
+@Immutable
 public final class OptionKeys extends AbstractList<IOptionKey<?>>
 {
 	/*------------

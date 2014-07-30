@@ -16,34 +16,51 @@
 
 package com.analog.lyric.options;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import net.jcip.annotations.Immutable;
 
-import com.google.common.primitives.Doubles;
-
-
 /**
- * Represents list of doubles for use as option value.
+ * Indicates more than one possible match found for an option key lookup.
+ * <p>
+ * Thrown by {@link OptionRegistry#get(String)}.
+ * <p>
  * @since 0.07
  * @author Christopher Barber
  */
 @Immutable
-public class OptionDoubleList extends AbstractOptionValueList<Double>
+public class AmbiguousOptionNameException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
 
-	final public static OptionDoubleList EMPTY = new OptionDoubleList();
+	private final String _lookupName;
+	private final IOptionKey<?>[] _keys;
+	
+	AmbiguousOptionNameException(String lookupName, Collection<IOptionKey<?>> keys)
+	{
+		_lookupName = lookupName;
+		_keys = keys.toArray(new IOptionKey<?>[keys.size()]);
+	}
 	
 	/**
-	 * @param elements
+	 * The name that produced the ambiguous results.
+	 * <p>
 	 * @since 0.07
 	 */
-	public OptionDoubleList(Double[] elements)
+	public final String optionName()
 	{
-		super(Double.class, elements);
+		return _lookupName;
 	}
-
-	public OptionDoubleList(double ... elements)
+	
+	/**
+	 * The list of keys that all matched the given {@link #optionName()}.
+	 * @since 0.07
+	 */
+	public final List<IOptionKey<?>> ambiguousKeys()
 	{
-		super(Doubles.asList(elements).toArray(new Double[elements.length]));
+		return Collections.unmodifiableList(Arrays.asList(_keys));
 	}
 }

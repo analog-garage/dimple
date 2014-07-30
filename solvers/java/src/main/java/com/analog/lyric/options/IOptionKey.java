@@ -37,7 +37,10 @@ import com.analog.lyric.util.misc.Nullable;
  * {@link OptionKey} contains useful static methods for loading option keys, whether or not
  * they are implemented as subclasses of that class.
  * <p>
- * @see OptionKey#forQualifiedName
+ * @see OptionKey#forCanonicalName
+ * @see OptionKey#inClass(Class, String)
+ * @see OptionKey#canonicalName(IOptionKey)
+ * @see OptionKey#qualifiedName(IOptionKey)
  */
 @Immutable
 public interface IOptionKey<T extends Serializable> extends Serializable

@@ -18,6 +18,11 @@ package com.analog.lyric.options;
 
 import net.jcip.annotations.Immutable;
 
+/**
+ * Key for string-valued options.
+ * @since 0.07
+ * @author Christopher Barber
+ */
 @Immutable
 public class StringOptionKey extends OptionKey<String>
 {

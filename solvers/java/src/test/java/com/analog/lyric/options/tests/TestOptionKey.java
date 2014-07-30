@@ -168,11 +168,11 @@ public class TestOptionKey
 		expectThrow(DimpleException.class, "Error loading option key 'NOT_AN_OPTION'.*",
 			OptionKey.class, "inClass",	Option.class, "NOT_AN_OPTION");
 		
-		expectThrow(DimpleException.class, "'frob' is not a qualified option key name",
-			OptionKey.class, "forQualifiedName", "frob");
+		expectThrow(DimpleException.class, "'frob' is not a canonical option key name",
+			OptionKey.class, "forCanonicalName", "frob");
 		
 		expectThrow(DimpleException.class, ".*ClassNotFoundException.*",
-			OptionKey.class, "forQualifiedName", "no.such.package.NoSuchClass");
+			OptionKey.class, "forCanonicalName", "no.such.package.NoSuchClass");
 	}
 
 	<T extends Serializable> void assertOptionInvariants(IOptionKey<T> key)
@@ -187,17 +187,20 @@ public class TestOptionKey
 		IOptionKey<?> key3 = OptionKey.inClass(key.getDeclaringClass(), key.name());
 		assertSame(key3, key);
 		
-		IOptionKey<?> key4 = OptionKey.forQualifiedName(OptionKey.qualifiedName(key));
+		IOptionKey<?> key4 = OptionKey.forCanonicalName(OptionKey.canonicalName(key));
 		assertSame(key, key4);
 		
 		IOptionKey<?> key2 = SerializationTester.clone(key);
 		assertSame(key2, key);
 		
-		assertEquals(declaringClass.getName() + "." + key.name(), OptionKey.qualifiedName(key));
+		assertEquals(declaringClass.getName() + "." + key.name(), OptionKey.canonicalName(key));
+		assertEquals(declaringClass.getSimpleName() + "." + key.name(), OptionKey.qualifiedName(key));
 		if (key instanceof OptionKey)
 		{
+			assertEquals(OptionKey.canonicalName(key), ((OptionKey<?>)key).canonicalName());
 			assertEquals(OptionKey.qualifiedName(key), ((OptionKey<?>)key).qualifiedName());
 		}
+		
 		
 		ExampleOptionHolder holder = new ExampleOptionHolder();
 		assertEquals(key.defaultValue(), key.getOrDefault(holder));
@@ -210,8 +213,10 @@ public class TestOptionKey
 			if (type.isInstance(newValue))
 			{
 				key.set(holder, type.cast(newValue));
+				assertEquals(newValue, key.get(holder));
 				assertEquals(newValue, key.getOrDefault(holder));
 				key.unset(holder);
+				assertNull(key.get(holder));
 				assertEquals(key.defaultValue(), key.getOrDefault(holder));
 			}
 		}
