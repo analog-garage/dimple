@@ -119,6 +119,14 @@ public class SFactorGraph extends SFactorGraphBase
 	{
 		return super.getModelObject();
 	}
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+		_lpSolverName = getOptionOrDefault(LPOptions.LPSolver);
+		_lpMatlabSolver = getOptionOrDefault(LPOptions.MatlabLPSolver);
+	}
 
 	/**
 	 * Does nothing for this solver.
@@ -497,11 +505,13 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setMatlabLPSolver(@Nullable String name)
 	{
 		_lpMatlabSolver = name != null ? name : "";
+		setOption(LPOptions.MatlabLPSolver, _lpMatlabSolver);
 	}
 	@Matlab
 	public void setLPSolverName(@Nullable String name)
 	{
 		_lpSolverName = name != null ? name : "";
+		setOption(LPOptions.LPSolver, _lpMatlabSolver);
 	}
 	
 	/**
