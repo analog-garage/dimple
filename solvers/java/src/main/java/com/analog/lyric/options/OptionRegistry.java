@@ -33,8 +33,10 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 
 /**
- * A registry of known option keys indexed by qualified name. For use in looking up option keys
- * by string either for use in configuration files or in implementing external APIs (e.g. MATLAB).
+ * A registry of known option keys indexed by qualified name.
+ * <p>
+ * For use in looking up option keys by string either for use in configuration files or in
+ * implementing external APIs (e.g. MATLAB).
  * <p>
  * @since 0.07
  */
@@ -46,13 +48,21 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	 */
 	
 	/**
-	 * Maps full and simple class names to declared option keys.
+	 * Maps canonical class names to {@link OptionKeys}.
 	 * <p>
 	 * Writes are protected by lock. Reads are not.
 	 */
 	@GuardedBy("this")
 	private final ConcurrentNavigableMap<String, OptionKeys> _canonicalMap;
 	
+	/**
+	 * Maps simple class names to {@link OptionKeys}
+	 * <p>
+	 * Unlike {@link #_canonicalMap}, this may map name to keys for multiple
+	 * classes with the same simple name.
+	 * <p>
+	 * Writes are protected by lock. Reads are not.
+	 */
 	@GuardedBy("this")
 	private final ConcurrentNavigableMap<String, OptionKeys[]> _simpleMap;
 	
@@ -94,6 +104,10 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	 * Iterable methods
 	 */
 	
+	/**
+	 * Iterates over option keys that are currently registered with this object in
+	 * order of {@linkplain OptionKey#canonicalName(IOptionKey) canonical name}.
+	 */
 	@Override
 	public Iterator<IOptionKey<?>> iterator()
 	{
