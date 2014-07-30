@@ -18,7 +18,6 @@ package com.analog.lyric.options;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -31,6 +30,7 @@ import net.jcip.annotations.ThreadSafe;
 import com.analog.lyric.util.misc.Nullable;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.ObjectArrays;
 
 /**
  * A registry of known option keys indexed by qualified name.
@@ -178,9 +178,7 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 			}
 			else
 			{
-				array = Arrays.copyOf(existingArray, existingArray.length + 1);
-				array[existingArray.length] = keys;
-				_simpleMap.put(classname, array);
+				_simpleMap.put(classname, ObjectArrays.concat(existingArray, keys));
 			}
 			
 			_size += keys.size();

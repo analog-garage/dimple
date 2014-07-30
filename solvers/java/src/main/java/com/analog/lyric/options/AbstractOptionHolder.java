@@ -46,13 +46,33 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 	@Override
 	public <T extends Serializable> T getOptionOrDefault(IOptionKey<T> key)
 	{
-		final T value = getOption(key);
+		final T value = getOptionAndSource(key, null);
 		return value != null ? value : key.defaultValue();
 	}
 
 	@Override
 	@Nullable
 	public <T extends Serializable> T getOption(IOptionKey<T> key)
+	{
+		return getOptionAndSource(key, null);
+	}
+
+	/*------------------------------
+	 * AbstractOptionHolder methods
+	 */
+	
+	/**
+	 * Returns value and source of option with given key if set, else null.
+	 * <p>
+	 * @param key is a non-null option key.
+	 * @param source if non-null with length at least one, the first element will
+	 * be set to the object whose {@linkplain #getLocalOption(IOptionKey) local option}
+	 * setting produced the return value. Nothing will be written if this method returns null.
+	 * @see #getOption
+	 * @since 0.07
+	 */
+	@Nullable
+	public <T extends Serializable> T getOptionAndSource(IOptionKey<T> key, @Nullable IOptionHolder[] source)
 	{
 		T result = null;
 		final ReleasableIterator<? extends IOptionHolder> delegates = getOptionDelegates();
@@ -64,6 +84,10 @@ public abstract class AbstractOptionHolder implements IOptionHolder
 			result = delegate.getLocalOption(key);
 			if (result != null)
 			{
+				if (source != null && source.length > 0)
+				{
+					source[0] = delegate;
+				}
 				break;
 			}
 		}

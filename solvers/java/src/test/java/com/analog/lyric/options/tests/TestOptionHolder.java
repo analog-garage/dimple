@@ -25,6 +25,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.analog.lyric.collect.ReleasableIterator;
+import com.analog.lyric.options.AbstractOptionHolder;
 import com.analog.lyric.options.IOption;
 import com.analog.lyric.options.IOptionHolder;
 import com.analog.lyric.options.IOptionKey;
@@ -97,7 +98,7 @@ public class TestOptionHolder
 		assertEquals(0, Iterables.size(holder.getLocalOptions()));
 		
 		final IOptionHolder parent = holder;
-		IOptionHolder child = new LocalOptionHolder() {
+		AbstractOptionHolder child = new LocalOptionHolder() {
 			@Override
 			public @Nullable IOptionHolder getOptionParent()
 			{
@@ -105,14 +106,29 @@ public class TestOptionHolder
 			}
 		};
 		
+		IOptionHolder[] source = new IOptionHolder[2];
+		
 		assertInvariants(child);
 		assertNull(child.getOption(K));
 		parent.setOption(K, "bar");
 		assertEquals("bar", child.getOption(K));
+		assertEquals("bar", child.getOptionAndSource(K, null));
+		assertEquals("bar", child.getOptionAndSource(K, new IOptionHolder[0]));
+		assertEquals("bar", child.getOptionAndSource(K, source));
+		assertArrayEquals(new Object[] { parent, null }, source);
 		assertInvariants(child);
+		
 		child.setOption(K, "gag");
 		assertEquals("gag", child.getOption(K));
+		assertEquals("gag", child.getOptionAndSource(K, source));
+		assertArrayEquals(new Object[] { child, null }, source);
 		assertInvariants(child);
+		
+		assertNull(child.getOptionAndSource(NOT_SET, source));
+		assertArrayEquals(new Object[] { child, null }, source); // not modified
+		source[0] = null;
+		assertNull(child.getOptionAndSource(NOT_SET, source));
+		assertArrayEquals(new Object[] { null, null }, source);
 	}
 	
 	/**
