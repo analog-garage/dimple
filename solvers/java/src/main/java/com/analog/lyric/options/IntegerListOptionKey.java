@@ -17,7 +17,7 @@
 package com.analog.lyric.options;
 
 /**
- * 
+ * Key for options with list of integer values.
  * @since 0.07
  * @author Christopher Barber
  */

@@ -21,7 +21,7 @@ import com.google.common.primitives.Ints;
 
 
 /**
- * 
+ * Represents list of integers for use as option value.
  * @since 0.07
  * @author Christopher Barber
  */

@@ -16,14 +16,17 @@
 
 package com.analog.lyric.options;
 
+import net.jcip.annotations.Immutable;
+
 import com.google.common.primitives.Doubles;
 
 
 /**
- * 
+ * Represents list of doubles for use as option value.
  * @since 0.07
  * @author Christopher Barber
  */
+@Immutable
 public class OptionDoubleList extends AbstractOptionValueList<Double>
 {
 	private static final long serialVersionUID = 1L;

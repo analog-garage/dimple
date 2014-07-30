@@ -19,7 +19,7 @@ package com.analog.lyric.options;
 import net.jcip.annotations.Immutable;
 
 /**
- * 
+ * Key for options with list of String values.
  * @since 0.07
  * @author Christopher Barber
  */

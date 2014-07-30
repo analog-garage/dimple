@@ -21,7 +21,7 @@ import net.jcip.annotations.Immutable;
 import com.analog.lyric.collect.ArrayUtil;
 
 /**
- * 
+ * Represents list of doubles for use as option value.
  * @since 0.07
  * @author Christopher Barber
  */
