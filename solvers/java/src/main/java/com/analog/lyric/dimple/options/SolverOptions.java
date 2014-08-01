@@ -33,7 +33,7 @@ public class SolverOptions extends DimpleOptions
 	 * Specifies whether to enable use of multiple threads during solves.
 	 */
 	public final static BooleanOptionKey enableMultithreading =
-		new BooleanOptionKey(SolverOptions.class, "useMultithreading", false);
+		new BooleanOptionKey(SolverOptions.class, "enableMultithreading", false);
 
 	/**
 	 * Specifies the number of iterations to perform when solving.
