@@ -18,6 +18,8 @@ package com.analog.lyric.options;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -354,6 +356,15 @@ public class OptionRegistry implements Iterable<IOptionKey<?>>
 	public ArrayList<IOptionKey<?>> getAllMatching(String regexp)
 	{
 		return getAllMatching(Pattern.compile(regexp));
+	}
+	
+	/**
+	 * Iterates over {@link OptionKeys} registered with this object.
+	 * @since 0.07
+	 */
+	public Collection<OptionKeys> getOptionKeys()
+	{
+		return Collections.unmodifiableCollection(_canonicalMap.values());
 	}
 	
 	/**

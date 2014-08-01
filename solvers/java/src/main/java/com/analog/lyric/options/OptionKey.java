@@ -70,7 +70,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	{
 		try
 		{
-			Field field = declaringClass.getField(name);
+			Field field = declaringClass.getDeclaredField(name);
 			return (IOptionKey<T>)field.get(declaringClass);
 		}
 		catch (Exception ex)
@@ -135,12 +135,18 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 	@Override
 	public String toString()
 	{
-		return name();
+		return qualifiedName();
 	}
 	
 	/*--------------------
 	 * IOptionKey methods
 	 */
+	
+	@Override
+	public T convertValue(Object value)
+	{
+		return type().cast(value);
+	}
 	
 	@Override
 	public final Class<?> getDeclaringClass()
@@ -203,7 +209,7 @@ public abstract class OptionKey<T extends Serializable> implements IOptionKey<T>
 		try
 		{
 			@SuppressWarnings("unchecked")
-			IOptionKey<T> option = (IOptionKey<T>)declaringClass.getField(name).get(null);
+			IOptionKey<T> option = (IOptionKey<T>)declaringClass.getDeclaredField(name).get(null);
 			if (name.equals(option.name()) && option.type() == key.type())
 			{
 				canonical = option;

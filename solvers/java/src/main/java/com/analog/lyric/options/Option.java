@@ -74,14 +74,15 @@ public class Option<T extends Serializable> implements IOption<T>
 	 * Constructs key/value pair from corresponding arguments.
 	 * <p>
 	 * @param key is a non-null option key.
-	 * @param value is either null or a instance of the key's {@linkplain IOptionKey#type()}.
-	 * @throws ClassCastException if {@code value} does not have compatible type for key.
+	 * @param value is either null or a value that can be converted using {@code key}'s
+	 * {@linkplain IOptionKey#convertValue convertValue} method.
+	 * @throws RuntimeException if {@code value} does not have compatible type for key.
 	 * @since 0.07
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends Serializable> Option<T> create(IOptionKey<T> key, @Nullable Object value)
 	{
-		return new Option<T>(key, (T) value);
+		return new Option<T>(key, value == null ? null : key.convertValue(value));
 	}
 	
 	/**
@@ -163,7 +164,7 @@ public class Option<T extends Serializable> implements IOption<T>
 	@Override
 	public String toString()
 	{
-		return String.format("%s=%s", _key.toString(), Objects.toString(_value));
+		return String.format("%s=%s", OptionKey.qualifiedName(_key), Objects.toString(_value));
 	}
 	
 	/*-----------------

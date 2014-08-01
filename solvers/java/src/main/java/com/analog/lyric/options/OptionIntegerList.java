@@ -44,4 +44,10 @@ public class OptionIntegerList extends AbstractOptionValueList<Integer>
 	{
 		super(Ints.asList(elements).toArray(new Integer[elements.length]));
 	}
+	
+	@Override
+	public int[] toPrimitiveArray()
+	{
+		return Ints.toArray(this);
+	}
 }

@@ -57,8 +57,6 @@ public class TestOptionRegistry
 		assertEquals(2, registry.getAllMatching(".*\\.S\\d").size());
 		assertEquals(1, registry.getAllMatching(Pattern.compile(".*\\.S2")).size());
 		
-		final String packageName = getClass().getPackage().getName();
-		
 		assertNull(registry.get("SomeOptions.A"));
 		
 		StringOptionKey FooA = com.analog.lyric.options.tests.foo.SomeOptions.A;
@@ -66,7 +64,7 @@ public class TestOptionRegistry
 		StringOptionKey FooD = com.analog.lyric.options.tests.foo.SomeOptions.D;
 		
 		StringOptionKey BarA = com.analog.lyric.options.tests.bar.SomeOptions.A;
-		StringOptionKey BarB = com.analog.lyric.options.tests.bar.SomeOptions.B;
+//		StringOptionKey BarB = com.analog.lyric.options.tests.bar.SomeOptions.B;
 		StringOptionKey BarC = com.analog.lyric.options.tests.bar.SomeOptions.C;
 		
 		// Test autoloading

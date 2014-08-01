@@ -57,6 +57,31 @@ public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 	 */
 	
 	@Override
+	public OptionDoubleList convertValue(Object value)
+	{
+		if (!(value instanceof OptionDoubleList))
+		{
+			Class<?> valueClass = value.getClass();
+
+			if (valueClass.isArray())
+			{
+				Class<?> elementType = valueClass.getComponentType();
+
+				if (elementType == Double.TYPE)
+				{
+					return new OptionDoubleList((double[])value);
+				}
+				else if (elementType == Double.class)
+				{
+					return new OptionDoubleList((Double[])value);
+				}
+			}
+		}
+		
+		return (OptionDoubleList)value;
+	}
+	
+	@Override
 	public Class<OptionDoubleList> type()
 	{
 		return OptionDoubleList.class;
@@ -69,7 +94,7 @@ public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 	}
 
 	/*-----------------------------
-	 * StringListOptionKey methods
+	 * DoubleListOptionKey methods
 	 */
 	
 	/**
@@ -80,5 +105,4 @@ public class DoubleListOptionKey extends OptionKey<OptionDoubleList>
 	{
 		set(holder, new OptionDoubleList(values));
 	}
-
 }

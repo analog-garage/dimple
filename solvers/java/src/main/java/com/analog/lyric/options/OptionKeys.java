@@ -27,6 +27,7 @@ import java.util.List;
 
 import net.jcip.annotations.Immutable;
 
+import com.analog.lyric.collect.BitSetUtil;
 import com.analog.lyric.collect.ReleasableIterator;
 import com.analog.lyric.util.misc.NonNullByDefault;
 import com.analog.lyric.util.misc.Nullable;
@@ -48,9 +49,9 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 	/*------------
 	 * Constants
 	 */
-	
-	private static final int publicStaticFinal = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
 
+	private static final int publicStaticFinal = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+	
 	/*--------------
 	 * Static state
 	 */
@@ -184,15 +185,25 @@ public final class OptionKeys extends AbstractList<IOptionKey<?>>
 		
 		try
 		{
-			for (Field field : declaringClass.getFields())
+			for (Field field : declaringClass.getDeclaredFields())
 			{
-				if ((field.getModifiers() & publicStaticFinal) == publicStaticFinal &&
-					IOptionKey.class.isAssignableFrom(field.getType()))
+				if (IOptionKey.class.isAssignableFrom(field.getType()))
 				{
-					IOptionKey<?> option = (IOptionKey<?>)field.get(declaringClass);
-					if (option.name().equals(field.getName()))
+					final int modifiers = field.getModifiers();
+					
+					if (BitSetUtil.isMaskSet(modifiers, publicStaticFinal))
 					{
-						keys.add(option);
+						// public static final
+						IOptionKey<?> option = (IOptionKey<?>)field.get(declaringClass);
+						if (option.name().equals(field.getName()))
+						{
+							keys.add(option);
+						}
+						else
+						{
+							System.err.format("WARNING: option key name mismatch '%s' vs '%s' in class '%s'\n",
+								field.getName(), option.name(), declaringClass.getName());
+						}
 					}
 				}
 			}

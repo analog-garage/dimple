@@ -16,12 +16,15 @@
 
 package com.analog.lyric.options;
 
+import net.jcip.annotations.Immutable;
+
 /**
  * Key for boolean options.
  * <p>
  * @since 0.07
  * @author Christopher Barber
  */
+@Immutable
 public class BooleanOptionKey extends OptionKey<Boolean>
 {
 	private static final long serialVersionUID = 1L;

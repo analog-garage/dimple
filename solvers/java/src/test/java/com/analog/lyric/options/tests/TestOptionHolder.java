@@ -151,7 +151,7 @@ public class TestOptionHolder
 		
 		strOption = new Option<String>(K, "foo");
 		assertEquals("foo", strOption.value());
-		assertEquals("K=foo", strOption.toString());
+		assertEquals("TestOptionHolder.K=foo", strOption.toString());
 		
 		strOption = new Option<String>(K, null);
 		assertNull(strOption.value());

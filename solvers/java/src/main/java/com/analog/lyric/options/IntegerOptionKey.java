@@ -53,6 +53,27 @@ public class IntegerOptionKey extends OptionKey<Integer>
 	{
 		return defaultIntValue();
 	}
+	
+	@Override
+	public Integer convertValue(Object value)
+	{
+		if (value instanceof Number)
+		{
+			Number number = (Number)value;
+			if (number.intValue() == number.doubleValue())
+			{
+				return number.intValue();
+			}
+			else
+			{
+				throw new IllegalArgumentException(String.format("Cannot convert '%s' to an int", number));
+			}
+		}
+		else
+		{
+			return super.convertValue(value);
+		}
+	}
 
 	public final int defaultIntValue()
 	{

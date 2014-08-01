@@ -46,4 +46,10 @@ public class OptionDoubleList extends AbstractOptionValueList<Double>
 	{
 		super(Doubles.asList(elements).toArray(new Double[elements.length]));
 	}
+	
+	@Override
+	public double[] toPrimitiveArray()
+	{
+		return Doubles.toArray(this);
+	}
 }

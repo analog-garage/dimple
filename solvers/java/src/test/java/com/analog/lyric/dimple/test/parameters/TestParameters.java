@@ -100,6 +100,8 @@ public class TestParameters
 		 @Override
 		 public Class<Double> type() { return Double.class; }
 		 @Override
+		 public Double convertValue(Object value) { return type().cast(value); }
+		 @Override
 		 public Double defaultValue() { return _defaultValue; }
 		 @Override
 		public Double getOrDefault(IOptionHolder holder) { return holder.getOptionOrDefault(this); }
@@ -107,6 +109,7 @@ public class TestParameters
 		public @Nullable Double get(IOptionHolder holder) { return holder.getOption(this); }
 		 @Override
 		public void set(IOptionHolder holder, Double value) { holder.setOption(this,  value); }
+			
 		 @Override
 		public void unset(IOptionHolder holder) { holder.unsetOption(this); }
 		 @Override

@@ -43,6 +43,31 @@ public class LongOptionKey extends OptionKey<Long>
 	}
 
 	@Override
+	public Long convertValue(Object value)
+	{
+		if (value instanceof Long)
+		{
+			return (Long)value;
+		}
+		else if (value instanceof Number)
+		{
+			Number number = (Number)value;
+			if (number.longValue() == number.doubleValue())
+			{
+				return number.longValue();
+			}
+			else
+			{
+				throw new IllegalArgumentException(String.format("Cannot convert '%s' to a long", number));
+			}
+		}
+		else
+		{
+			return super.convertValue(value);
+		}
+	}
+
+	@Override
 	public Class<Long> type()
 	{
 		return Long.class;

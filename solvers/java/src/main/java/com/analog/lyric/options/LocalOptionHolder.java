@@ -115,7 +115,7 @@ public class LocalOptionHolder extends AbstractOptionHolder
 	@Override
 	public <T extends Serializable> void setOption(IOptionKey<T> key, T value)
 	{
-		createLocalOptionMap().put(key, value);
+		createLocalOptionMap().put(key, key.type().cast(value));
 	}
 	
 	@Override

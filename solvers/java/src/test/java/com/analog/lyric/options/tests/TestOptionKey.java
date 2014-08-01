@@ -44,7 +44,7 @@ import com.analog.lyric.util.test.SerializationTester;
 
 public class TestOptionKey
 {
-	public static final IOptionKey<Boolean> YES =
+	public static final BooleanOptionKey YES =
 		new BooleanOptionKey(TestOptionKey.class, "YES");
 	
 	public static final IOptionKey<Double> P =
@@ -88,6 +88,12 @@ public class TestOptionKey
 		
 		private Option(Serializable defaultValue) { _defaultValue = defaultValue; }
 
+		@Override
+		public Serializable convertValue(Object value)
+		{
+			return type().cast(value);
+		}
+		
 		@Override
 		public Class<Serializable> type()
 		{
@@ -182,7 +188,14 @@ public class TestOptionKey
 		assertNotNull(key.name());
 		assertNotNull(type);
 		assertTrue(type.isInstance(key.defaultValue()));
-		assertEquals(key.toString(), key.name());
+		if (declaringClass.isEnum())
+		{
+			assertEquals(key.name(), key.toString());
+		}
+		else
+		{
+			assertEquals(OptionKey.qualifiedName(key), key.toString());
+		}
 		
 		IOptionKey<?> key3 = OptionKey.inClass(key.getDeclaringClass(), key.name());
 		assertSame(key3, key);

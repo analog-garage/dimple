@@ -63,6 +63,15 @@ public interface IOptionKey<T extends Serializable> extends Serializable
 	}
 	
 	/**
+	 * Attempts to convert value to appropriate key value type.
+	 * <p>
+	 * @param value a non-null value.
+	 * @throws RuntimeException if value cannot be converted
+	 * @since 0.07
+	 */
+	public abstract T convertValue(Object value);
+	
+	/**
 	 * Should be the class that contains the declaration of this instance.
 	 */
 	public abstract Class<?> getDeclaringClass();

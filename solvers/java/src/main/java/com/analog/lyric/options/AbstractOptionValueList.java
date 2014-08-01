@@ -79,7 +79,7 @@ public abstract class AbstractOptionValueList<T extends Serializable>
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder('{');
+		StringBuilder sb = new StringBuilder("{");
 		final int size = _array.length;
 		if (size > 0)
 		{
@@ -153,5 +153,18 @@ public abstract class AbstractOptionValueList<T extends Serializable>
 	public Class<? extends T> elementType()
 	{
 		return (Class<? extends T>) _array.getClass().getComponentType();
+	}
+	
+	/**
+	 * Returns array containing values, using primitive element type if possible.
+	 * <p>
+	 * If {@link #elementType()} is a primitive wrapper type (e.g. {@link Double}),
+	 * this will return an array of the corresponding primitive. Otherwise this is the
+	 * same as {@link #toArray()}.
+	 * @since 0.07
+	 */
+	public Object toPrimitiveArray()
+	{
+		return toArray();
 	}
 }
