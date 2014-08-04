@@ -21,8 +21,10 @@ import com.analog.lyric.dimple.model.variables.Discrete;
 import com.analog.lyric.dimple.model.variables.Real;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
+import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
+import com.analog.lyric.util.misc.Nullable;
 
 public class DummyFactorGraph extends SFactorGraphBase
 {
@@ -76,9 +78,16 @@ public class DummyFactorGraph extends SFactorGraphBase
 			return false;
 	}
 
+	@Override
+	public void setMultithreadingManager(@Nullable MultiThreadingManager manager)
+	{
+		super.setMultithreadingManager(manager);
+	}
+	
 	/*
 	 * 
 	 */
+	@Override
 	protected void doUpdateEdge(int edge)
 	{
 	}
