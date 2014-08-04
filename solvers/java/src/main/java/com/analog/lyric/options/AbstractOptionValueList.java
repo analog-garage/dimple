@@ -52,7 +52,7 @@ public abstract class AbstractOptionValueList<T extends Serializable>
 	 * @since 0.07
 	 */
 	@SuppressWarnings("unchecked")
-	AbstractOptionValueList(Class<T> elementType, T ... elements)
+	protected AbstractOptionValueList(Class<T> elementType, T ... elements)
 	{
 		_array = (T[]) Array.newInstance(elementType, elements.length);
 		System.arraycopy(elements, 0, _array, 0, elements.length);
@@ -67,7 +67,7 @@ public abstract class AbstractOptionValueList<T extends Serializable>
 	 * @param elements is the exact array that will be used by this class.
 	 * @since 0.07
 	 */
-	AbstractOptionValueList(T[] elements)
+	protected AbstractOptionValueList(T[] elements)
 	{
 		_array = elements;
 	}
