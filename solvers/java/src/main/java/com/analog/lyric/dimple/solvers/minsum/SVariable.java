@@ -17,8 +17,8 @@
 package com.analog.lyric.dimple.solvers.minsum;
 
 import java.util.Arrays;
-import java.util.Objects;
 
+import com.analog.lyric.collect.ArrayUtil;
 import com.analog.lyric.dimple.model.domains.DiscreteDomain;
 import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SDiscreteVariableDoubleArray;
@@ -35,14 +35,22 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	 * We cache all of the double arrays we use during the update.  This saves
 	 * time when performing the update.
 	 */
-	protected double[][] _savedOutMsgArray = new double[0][];
-	protected double[] _dampingParams = new double[0];
+	protected double[][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+	protected double[] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	protected boolean _dampingInUse = false;
 
 	
 	public SVariable(VariableBase var)
 	{
 		super(var);
+	}
+	
+	@Override
+	public void initialize()
+	{
+		super.initialize();
+
+		configureDampingFromOptions();
 	}
 
 	@Override
@@ -210,26 +218,24 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	}
 
 
+	/**
+	 * @deprecated Use {@link MinSumOptions#damping} or {@link MinSumOptions#nodeSpecificDamping} options instead.
+	 */
+	@Deprecated
 	public void setDamping(int portIndex, double dampingVal)
 	{
-		if (portIndex >= _dampingParams.length)
+		double[] params  = MinSumOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		if (params.length == 0 && dampingVal != 0.0)
 		{
-			double[] tmp = new double [portIndex+1];
-			for (int i = 0; i < _dampingParams.length; i++)
-				tmp[i] = _dampingParams[i];
-
-			_dampingParams = tmp;
+			params = new double[getSiblingCount()];
 		}
-
-		_dampingParams[portIndex] = dampingVal;
+		if (params.length != 0)
+		{
+			params[portIndex] = dampingVal;
+		}
 		
-		if (dampingVal != 0)
-			_dampingInUse = true;
-		
-		_savedOutMsgArray = new double[_dampingParams.length][];
-		for (int i = 0; i < _inputMessages.length; i++)
-			_savedOutMsgArray[i] = new double[_inputMessages[i].length];
-
+		MinSumOptions.nodeSpecificDamping.set(this, params);
+		configureDampingFromOptions();
 	}
 
 	public double getDamping(int portIndex)
@@ -245,21 +251,6 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	public Object [] createMessages(ISolverFactor factor)
 	{
 		Object [] retval = super.createMessages(factor);
-		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
-		int newArraySize = _inputMessages.length;
-		
-		
-		if (_dampingInUse)
-		{
-			_savedOutMsgArray = Arrays.copyOf(_savedOutMsgArray,newArraySize);
-		}
-
-		_dampingParams = Arrays.copyOf(_dampingParams,newArraySize);
-		
-		
-		
-		if (_dampingInUse)
-			_savedOutMsgArray[portNum] = new double[_outputMessages[portNum].length];
 		
 		return retval;
 	}
@@ -279,10 +270,11 @@ public class SVariable extends SDiscreteVariableDoubleArray
 		SVariable sother = (SVariable)other;
 		
 		if (_dampingInUse)
+		{
 			_savedOutMsgArray[portNum] = sother._savedOutMsgArray[otherPort];
 
-		_dampingParams[portNum] = sother._dampingParams[otherPort];
-		
+			_dampingParams[portNum] = sother._dampingParams[otherPort];
+		}
 	}
 
 	/*---------------
@@ -300,4 +292,40 @@ public class SVariable extends SDiscreteVariableDoubleArray
 	{
 		return true;
 	}
+	
+	/*-----------------
+	 * Private methods
+	 */
+	
+    private void configureDampingFromOptions()
+    {
+     	final int size = getSiblingCount();
+    	
+    	_dampingParams =
+    		getReplicatedNonZeroListFromOptions(MinSumOptions.nodeSpecificDamping, MinSumOptions.damping,
+    			size, _dampingParams);
+ 
+    	if (_dampingParams.length > 0 && _dampingParams.length != size)
+    	{
+			// TODO: use a logging API instead?
+			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+				MinSumOptions.nodeSpecificDamping, this);
+    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+    	}
+    	
+    	_dampingInUse = _dampingParams.length > 0;
+    	
+    	if (!_dampingInUse)
+    	{
+    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    	}
+    	else if (_savedOutMsgArray.length != size)
+    	{
+    		_savedOutMsgArray = new double[size][];
+    		for (int i = 0; i < size; i++)
+    	    {
+    			_savedOutMsgArray[i] = new double[_inputMessages[i].length];
+    	    }
+    	}
+    }
 }

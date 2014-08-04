@@ -161,19 +161,10 @@ public class CustomXor extends com.analog.lyric.dimple.solvers.minsum.STableFact
 
 	}
 	
-	
-    
- 
 	@Override
-	public void setDamping(int index, double val)
+	protected void configureSavedMessages(int size)
 	{
-		_dampingParams[index] = val;
-		
-		if (val != 0)
-			_dampingInUse = true;
-		
-		_savedOutMsgsLLR = new double[_dampingParams.length];
-
+		_savedOutMsgsLLR = _dampingInUse ? new double[_dampingParams.length] : ArrayUtil.EMPTY_DOUBLE_ARRAY;
 	}
 	
 	@Override

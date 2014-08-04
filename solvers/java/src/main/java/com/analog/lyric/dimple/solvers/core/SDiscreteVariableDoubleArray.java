@@ -90,10 +90,16 @@ public abstract class SDiscreteVariableDoubleArray extends SDiscreteVariableBase
 		//Retrieve the variable port associated with this factor
 		int portNum = _var.getPortNum(Objects.requireNonNull(factor.getModelObject()));
 		
-		//Resize the message arrays.
-		int newArraySize = Math.max(_inputMessages.length,portNum + 1);
-		_inputMessages = Arrays.copyOf(_inputMessages,newArraySize);
-		_outputMessages = Arrays.copyOf(_outputMessages,newArraySize);
+		//Resize the message arrays if necessary.
+		int newArraySize = getSiblingCount();
+		if (_inputMessages.length != newArraySize)
+		{
+			_inputMessages = Arrays.copyOf(_inputMessages,newArraySize);
+		}
+		if (_outputMessages.length != newArraySize)
+		{
+			_outputMessages = Arrays.copyOf(_outputMessages,newArraySize);
+		}
 		
 		_inputMessages[portNum] = createDefaultMessage();
 		_outputMessages[portNum] = createDefaultMessage();

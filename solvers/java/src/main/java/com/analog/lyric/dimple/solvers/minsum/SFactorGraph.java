@@ -16,21 +16,16 @@
 
 package com.analog.lyric.dimple.solvers.minsum;
 
-import static java.util.Objects.*;
-
 import com.analog.lyric.dimple.exceptions.DimpleException;
 import com.analog.lyric.dimple.factorfunctions.Xor;
 import com.analog.lyric.dimple.factorfunctions.core.CustomFactorFunctionWrapper;
 import com.analog.lyric.dimple.factorfunctions.core.FactorFunction;
-import com.analog.lyric.dimple.model.core.INode;
 import com.analog.lyric.dimple.model.factors.Factor;
-import com.analog.lyric.dimple.model.variables.VariableBase;
 import com.analog.lyric.dimple.solvers.core.SFactorGraphBase;
 import com.analog.lyric.dimple.solvers.core.multithreading.MultiThreadingManager;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverFactor;
 import com.analog.lyric.dimple.solvers.interfaces.ISolverVariable;
 import com.analog.lyric.dimple.solvers.minsum.customFactors.CustomXor;
-import com.analog.lyric.util.misc.IMapList;
 
 
 public class SFactorGraph extends SFactorGraphBase
@@ -43,6 +38,13 @@ public class SFactorGraph extends SFactorGraphBase
 		setMultithreadingManager(new MultiThreadingManager(getModelObject()));
 	}
 
+	@Override
+	public void initialize()
+	{
+		_damping = getOptionOrDefault(MinSumOptions.damping);
+		super.initialize();
+	}
+	
 	@Override
 	public ISolverVariable createVariable(com.analog.lyric.dimple.model.variables.VariableBase var)
 	{
@@ -63,15 +65,15 @@ public class SFactorGraph extends SFactorGraphBase
 		
 		// First see if any custom factor should be created
 		if (factorFunction instanceof Xor)
-			return new CustomXor(factor);
-		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))		// For backward compatibility
-			return new CustomXor(factor);
-		else			// No custom factor exists, so create a generic one
 		{
-			STableFactor tf = new STableFactor(factor);
-			if (_damping != 0)
-				setDampingForTableFactor(tf);
-			return tf;
+			return new CustomXor(factor);
+		}
+		else if (noFF && (factorName.equals("CustomXor") || factorName.equals("customXor")))		// For backward compatibility
+		{
+			return new CustomXor(factor);
+		}else			// No custom factor exists, so create a generic one
+		{
+			return new STableFactor(factor);
 		}
 	}
 	
@@ -93,43 +95,13 @@ public class SFactorGraph extends SFactorGraphBase
 	 */
 	public void setDamping(double damping)
 	{
+		setOption(MinSumOptions.damping, damping);
 		_damping = damping;
-		for (Factor f : _factorGraph.getNonGraphFactors())
-		{
-			STableFactor tf = (STableFactor)f.getSolver();
-			if (tf != null)
-			{
-				setDampingForTableFactor(tf);
-			}
-		}
 	}
 	
 	public double getDamping()
 	{
 		return _damping;
-	}
-
-	/*
-	 * This method applies the global damping parameter to all of the table function's ports
-	 * and all of the variable ports connected to it.  This might cause problems in the future
-	 * when we support different damping parameters per edge.
-	 */
-	protected void setDampingForTableFactor(STableFactor tf)
-	{
-		Factor factor = tf.getFactor();
-		IMapList<INode> nodes = factor.getConnectedNodesFlat();
-		
-		for (int i = 0, endi = factor.getSiblingCount(); i < endi; i++)
-		{
-			tf.setDamping(i,_damping);
-			VariableBase var = (VariableBase)nodes.getByIndex(i);
-			for (int j = 0, endj = var.getSiblingCount(); j < endj; j++)
-			{
-				SVariable svar = requireNonNull((SVariable)var.getSolver());
-				svar.setDamping(j,_damping);
-			}
-		}
-
 	}
 
 	/*

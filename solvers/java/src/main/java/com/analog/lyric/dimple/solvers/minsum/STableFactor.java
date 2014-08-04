@@ -38,7 +38,7 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	 * time when performing the update.
 	 */
     protected double [][] _savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
-    protected double [] _dampingParams;
+    protected double [] _dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
     protected int _k;
     protected TableFactorEngine _tableFactorEngine;
     protected KBestFactorEngine _kbestFactorEngine;
@@ -53,7 +53,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	{
     	super(factor);
     	
-		_dampingParams = new double[_factor.getSiblingCount()];
 		_tableFactorEngine = new TableFactorEngine(this);
 		
 		if (factor.getFactorFunction().factorTableExists(getFactor()))
@@ -62,14 +61,21 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 			_kbestFactorEngine = new KBestFactorEngine(this);
 		
 		//setK(Integer.MAX_VALUE);
-		
 	}
-
+    
     /*---------------------
      * ISolverNode methods
      */
 
-
+    @Override
+    public void initialize()
+    {
+    	super.initialize();
+    	
+    	configureDampingFromOptions();
+	    updateK(getOptionOrDefault(MinSumOptions.maxMessageSize));
+    }
+    
 	@Override
 	public void moveMessages(ISolverNode other, int portNum, int otherPort)
 	{
@@ -98,18 +104,31 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 
 	}
 	
+	public int getK()
+	{
+		return _k;
+	}
+	
 	public void setK(int k)
 	{
-		
-		_k = k;
-		_kbestFactorEngine.setK(k);
-		_kIsSmallerThanDomain = false;
-		for (int i = 0; i < _inputMsgs.length; i++)
+		setOption(MinSumOptions.maxMessageSize, k);
+		updateK(k);
+	}
+	
+	private void updateK(int k)
+	{
+		if (k != _k)
 		{
-			if (_k < _inputMsgs[i].length)
+			_k = k;
+			_kbestFactorEngine.setK(k);
+			_kIsSmallerThanDomain = false;
+			for (int i = 0; i < _inputMsgs.length; i++)
 			{
-				_kIsSmallerThanDomain = true;
-				break;
+				if (_k < _inputMsgs[i].length)
+				{
+					_kIsSmallerThanDomain = true;
+					break;
+				}
 			}
 		}
 	}
@@ -122,18 +141,6 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
 	public void createMessages()
 	{
 		super.createMessages();
-		
-		int numPorts = _factor.getSiblingCount();
-	    if (_dampingInUse)
-	    	_savedOutMsgArray = new double[numPorts][];
-	    
-		for (int port = 0; port < numPorts; port++)
-	    {
-	    	if (_dampingInUse)
-	    		_savedOutMsgArray[port] = new double[_inputMsgs[port].length];
-	    }
-	    
-	    setK(Integer.MAX_VALUE);
 	}
 
 	/*--------------------------
@@ -248,23 +255,72 @@ public class STableFactor extends STableFactorDoubleArray implements IKBestFacto
      * New methods
      */
 	
+	/**
+	 * @deprecated Use {@link MinSumOptions#damping} or {@link MinSumOptions#nodeSpecificDamping} options instead.
+	 */
+	@Deprecated
 	public void setDamping(int index, double val)
 	{
-		_dampingParams[index] = val;
+		double[] params  = MinSumOptions.nodeSpecificDamping.getOrDefault(this).toPrimitiveArray();
+		if (params.length == 0 && val != 0.0)
+		{
+			params = new double[getSiblingCount()];
+		}
+		if (params.length != 0)
+		{
+			params[index] = val;
+		}
 		
-		if (val != 0)
-			_dampingInUse = true;
-		
-		_savedOutMsgArray = new double[_dampingParams.length][];
-		for (int i = 0; i < _inputMsgs.length; i++)
-			_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
-
+		MinSumOptions.nodeSpecificDamping.set(this, params);
+		configureDampingFromOptions();
 	}
 	
 	public double getDamping(int index)
 	{
-		return _dampingParams[index];
+		return _dampingParams.length > 0 ? _dampingParams[index] : 0.0;
 	}
+
+	/*------------------
+	 * Internal methods
+	 */
 	
+    protected void configureDampingFromOptions()
+    {
+     	final int size = getSiblingCount();
+    	
+    	_dampingParams =
+    		getReplicatedNonZeroListFromOptions(MinSumOptions.nodeSpecificDamping, MinSumOptions.damping,
+    			size, _dampingParams);
+ 
+    	if (_dampingParams.length > 0 && _dampingParams.length != size)
+    	{
+			// TODO: use a logging API instead?
+			System.err.format("ERROR: %s has wrong number of parameters for %s\n",
+				MinSumOptions.nodeSpecificDamping, this);
+    		_dampingParams = ArrayUtil.EMPTY_DOUBLE_ARRAY;
+    	}
+    	
+    	_dampingInUse = _dampingParams.length > 0;
+    	
+    	configureSavedMessages(size);
+    }
+    
+    protected void configureSavedMessages(int size)
+    {
+    	if (!_dampingInUse)
+    	{
+    		_savedOutMsgArray = ArrayUtil.EMPTY_DOUBLE_ARRAY_ARRAY;
+    	}
+    	else if (_savedOutMsgArray.length != size)
+    	{
+    		_savedOutMsgArray = new double[size][];
+    		for (int i = 0; i < size; i++)
+    	    {
+    			_savedOutMsgArray[i] = new double[_inputMsgs[i].length];
+    	    }
+    	}
+    }
+
+
 }
 
