@@ -511,7 +511,7 @@ public class SFactorGraph extends SFactorGraphBase
 	public void setLPSolverName(@Nullable String name)
 	{
 		_lpSolverName = name != null ? name : "";
-		setOption(LPOptions.LPSolver, _lpMatlabSolver);
+		setOption(LPOptions.LPSolver, _lpSolverName);
 	}
 	
 	/**

@@ -238,7 +238,6 @@ public class TestLPSolver
 		bug51.testLPState();
 	}
 
-
 	@Test
 	@Ignore
 	public void testGLPK()

@@ -34,7 +34,9 @@ public class LPOptions extends SolverOptions
 	 * <p>
 	 * The following values are supported:
 	 * <dl>
-	 * <dt>"matlab" (default)</dt>
+	 * <dt>""</dt>
+	 * <dd>Use the default, which is currently "matlab"</dd>
+	 * <dt>"matlab"</dt>
 	 * <dd>Only works when using Dimple from MATLAB front-end. This solver uses the LP solver configured
 	 * in MATLAB, which is described by the {@link #MatlabLPSolver} option.</dd>
 	 * <dt>"CPLEX"</dt>
@@ -50,14 +52,17 @@ public class LPOptions extends SolverOptions
 	 * <p>
 	 * @see <a href="http://javailp.sourceforge.net/">Java ILP - Java Interface to ILP Solvers</a>
 	 */
-	public static final StringOptionKey LPSolver = new StringOptionKey(LPOptions.class, "LPSolver", "matlab");
+	public static final StringOptionKey LPSolver =
+		new StringOptionKey(LPOptions.class, "LPSolver");
 	
 	/**
 	 * Name of LP solver to use in MATLAB when "matlab" is the {@link LPSolver} value.
 	 * <p>
 	 * The following values are currently supported:
 	 * <dl>
-	 * <dt>"matlab" (default)<dt>
+	 * <dt>""</dt>
+	 * <dd>Uses the default, which is currently "matlab"</dd>
+	 * <dt>"matlab"<dt>
 	 * <dd>Uses {@code linprog} function from the Optimization Toolbox</dd>
 	 * <dt>"glpk"</dt>
 	 * <dt>"glpkIP"</dt>
@@ -67,5 +72,6 @@ public class LPOptions extends SolverOptions
 	 * 
 	 * The chosen solver must be separately installed and configured for use in MATLAB.
 	 */
-	public static final StringOptionKey MatlabLPSolver = new StringOptionKey(LPOptions.class, "MatlabLPSolver");
+	public static final StringOptionKey MatlabLPSolver =
+		new StringOptionKey(LPOptions.class, "MatlabLPSolver");
 }
